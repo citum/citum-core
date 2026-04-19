@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:43.927Z",
+  "generated_at": "2026-04-19T14:03:29.484Z",
   "style": "wolters-kluwerbrede-schrijfwijzer-author-date",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "d5ca5db2539aad51",
   "citations": {
     "single-item": "Kuhn, <i>The Structure of Scientific Revolutions</i> 1962, afl. 2",
@@ -39,6 +39,7 @@
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Kuhn, <i>Scientific Paradigms and Normal Science</i> 1970, afl. 1, p. 1–13</div>\nT.S. Kuhn, ‘Scientific Paradigms and Normal Science’, <i>Scientific Paradigms and Normal Science</i> 1970, afl. 1, p. 1–13.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Kuhn, <i>The Structure of Scientific Revolutions</i> 1962, afl. 2</div>\nT.S. Kuhn, ‘The Structure of Scientific Revolutions’, <i>The Structure of Scientific Revolutions</i> 1962, afl. 2.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">LeCun, Bengio &#38; Hinton, <i>Deep Learning</i> 2015, p. 436–444</div>\nY. LeCun, Y. Bengio &#38; G. Hinton, ‘Deep Learning’, <i>Deep Learning</i> 2015, p. 436–444.</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><i>Letter to James Smith</i> 1797</div>\n 1797.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><i>Major Breakthrough in Quantum Computing Announced</i> 2024</div>\n 2024.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><i>Method for Efficient Data Compression</i> 2021</div>\n 2021.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><i>Neural Networks for Natural Language Understanding</i> 2019,</div>\n Stanford University 2019.</div>\n",

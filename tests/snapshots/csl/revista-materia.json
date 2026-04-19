@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:31.781Z",
+  "generated_at": "2026-04-19T14:03:17.005Z",
   "style": "revista-materia",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "35a3468b70566b7d",
   "citations": {
     "single-item": "[1]",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">[30] SMITH, J., LEE, A., NGUYEN, B., <i>et al.</i>, <i>Adaptive Climate Risk Modeling for Inland Regions</i>, Journal of Climate Analytics, v. 12, n. 3, pp. 201–219, 2021.</div>\n",
     "  <div class=\"csl-entry\">[31] GARCIA, M., <i>Methods for Robust Climate Attribution</i>, Annual Review of Climate Science, v. 4, pp. 55–80, 2019.</div>\n",
     "  <div class=\"csl-entry\">[32] ———, <i>Methods for Probabilistic Climate Attribution</i>, Annual Review of Climate Science, v. 4, pp. 81–104, 2019.</div>\n",
-    "  <div class=\"csl-entry\">[33] FORTHCOMING, A., <i>Foundations of Declarative Bibliography</i>, Cambridge, University Press.</div>\n"
+    "  <div class=\"csl-entry\">[33] FORTHCOMING, A., <i>Foundations of Declarative Bibliography</i>, Cambridge, University Press.</div>\n",
+    "  <div class=\"csl-entry\">[34] ADAMS, J., “Letter to James Smith,” 1797.</div>\n"
   ]
 }

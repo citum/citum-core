@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:20.281Z",
+  "generated_at": "2026-04-19T14:03:04.345Z",
   "style": "modern-language-association",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "65eb5e29e50a53ae",
   "citations": {
     "single-item": "(Kuhn, “The Structure of Scientific Revolutions”)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, John. “Letter to James Smith.” 1797, Massachusetts Historical Society, Boston, MA, Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua. “The Future of Artificial Intelligence.” Interview by Stephen Colbert, Video-interview. 10 Nov. 2023, https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\"><i>Brown v. Board of Education</i>. <i>U.S. Reports</i>, vol. 347, 17 May 1954, p. 483.</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei. <i>Neural Networks for Natural Language Understanding</i>. 2019. Stanford University, phd-thesis.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:39.276Z",
+  "generated_at": "2026-04-19T14:03:24.732Z",
   "style": "triangle",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "ca925ed5ef39047b",
   "citations": {
     "single-item-1": "Thomas S. <span style=\"font-variant:small-caps;\">Kuhn</span>, « The Structure of Scientific Revolutions », <i>International Encyclopedia of Unified Science</i>, 1962, vol. 2, n<sup>o</sup> 2, doi:10.1234/example.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Maria <span style=\"font-variant:small-caps;\">Garcia</span>, « Methods for Robust Climate Attribution », <i>Annual Review of Climate Science</i>, 2019, vol. 4, pp. 55‑80, doi:10.5555/arcs.2019.4.55 Maria <span style=\"font-variant:small-caps;\">Garcia</span>, « Methods for Probabilistic Climate Attribution », <i>Annual Review of Climate Science</i>, 2019, vol. 4, pp. 81‑104, doi:10.5555/arcs.2019.4.81."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span> John, « Letter to James Smith », 1797.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span> Yoshua, « The Future of Artificial Intelligence »,  entretien réalisé par Stephen <span style=\"font-variant:small-caps;\">Colbert</span>, 10 novembre 2023, URL : https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> Wei, <i>Neural Networks for Natural Language Understanding</i>, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span> K. Anders, « The Role of Deliberate Practice », <i>in</i> K. Anders <span style=\"font-variant:small-caps;\">Ericsson</span>, Neil <span style=\"font-variant:small-caps;\">Charness</span>, Paul J. <span style=\"font-variant:small-caps;\">Feltovich</span> et Robert R. <span style=\"font-variant:small-caps;\">Hoffman</span> (dir.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, 2006, pp. 683‑703.</div>\n",

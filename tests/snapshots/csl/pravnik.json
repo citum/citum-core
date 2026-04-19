@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:30.295Z",
+  "generated_at": "2026-04-19T14:03:15.360Z",
   "style": "pravnik",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "576dafa551f7cb54",
   "citations": {
     "single-item-1": "KUHN, Thomas S. The Structure of Scientific Revolutions. <i>International Encyclopedia of Unified Science</i>. 1962, vol. 2, no. 2.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "GARCIA, Maria. Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i>. 2019, vol. 4.; GARCIA, Maria. Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i>. 2019, vol. 4."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">ADAMS, John. <i>Letter to James Smith</i>. 1797.</div>\n",
     "  <div class=\"csl-entry\">BENGIO, Yoshua. <i>The Future of Artificial Intelligence</i> [online]. 2023. Available at: &#60;https://example.com/interview&#62;</div>\n",
     "  <div class=\"csl-entry\">ERICSSON, K. Anders. The Role of Deliberate Practice. In: ERICSSON, K. Anders et al. (eds). <i>The Cambridge Handbook of Expertise and Expert Performance</i>. Cambridge University Press, 2006, pp. 683–703.</div>\n",
     "  <div class=\"csl-entry\">FORTHCOMING, A. <i>Foundations of Declarative Bibliography</i>. Cambridge: University Press.</div>\n",

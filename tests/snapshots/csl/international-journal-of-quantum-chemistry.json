@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:09.674Z",
+  "generated_at": "2026-04-19T14:02:53.612Z",
   "style": "international-journal-of-quantum-chemistry",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "326301b0c49e48cc",
   "citations": {
     "single-item": "<sup>1</sup>",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">30.</div><div class=\"csl-right-inline\">J. Smith, A. Lee, B. Nguyen and R. Patel, <i>Journal of Climate Analytics</i>, <b>2021</b>, 12, 201–219.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">31.</div><div class=\"csl-right-inline\">M. Garcia, <i>Annual Review of Climate Science</i>, <b>2019</b>, 4, 55–80.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">32.</div><div class=\"csl-right-inline\">M. Garcia, <i>Annual Review of Climate Science</i>, <b>2019</b>, 4, 81–104.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">33.</div><div class=\"csl-right-inline\">A. Forthcoming, <i>Foundations of Declarative Bibliography</i>, University Press, Cambridge.</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">33.</div><div class=\"csl-right-inline\">A. Forthcoming, <i>Foundations of Declarative Bibliography</i>, University Press, Cambridge.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">34.</div><div class=\"csl-right-inline\">J. Adams, <b>1797</b>.</div>\n  </div>\n"
   ]
 }

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:31.594Z",
+  "generated_at": "2026-04-19T14:02:14.278Z",
   "style": "cahiers-mondes-anciens",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "409d53e74ebd3136",
   "citations": {
     "single-item-1": "Kuhn 1962",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Garcia 2019a ; Garcia 2019b"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams J. (1797), « Letter to James Smith ».</div>\n",
     "  <div class=\"csl-entry\">Bengio Y. (2023), « The Future of Artificial Intelligence » [<span style=\"text-decoration:underline;\">https://example.com/interview</span>].</div>\n",
     "  <div class=\"csl-entry\">Chen W. (2019), <i>Neural Networks for Natural Language Understanding</i>.</div>\n",
     "  <div class=\"csl-entry\">Ericsson K. A. (2006), « The Role of Deliberate Practice », dans Ericsson K. A., Charness N., Feltovich P. J. et Hoffman R. R. éd., <i>The Cambridge Handbook of Expertise and Expert Performance</i>, p. 683‑703.</div>\n",

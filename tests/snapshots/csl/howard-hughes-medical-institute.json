@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:07.506Z",
+  "generated_at": "2026-04-19T14:02:51.317Z",
   "style": "howard-hughes-medical-institute",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "4eded9da065c6f6f",
   "citations": {
     "single-item": "<sup>1</sup>",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">30. Smith J, Lee A, Nguyen B, and Patel R. Adaptive Climate Risk Modeling for Inland Regions. (2021) DOI: http://doi.org/10.5555/jca.2021.12.3.201</div>\n",
     "  <div class=\"csl-entry\">31. Garcia M. Methods for Robust Climate Attribution. (2019) DOI: http://doi.org/10.5555/arcs.2019.4.55</div>\n",
     "  <div class=\"csl-entry\">32. Garcia M. Methods for Probabilistic Climate Attribution. (2019) DOI: http://doi.org/10.5555/arcs.2019.4.81</div>\n",
-    "  <div class=\"csl-entry\">33. Forthcoming A. Foundations of Declarative Bibliography. (n.d.)</div>\n"
+    "  <div class=\"csl-entry\">33. Forthcoming A. Foundations of Declarative Bibliography. (n.d.)</div>\n",
+    "  <div class=\"csl-entry\">34. Adams J. Letter to James Smith. (1797)</div>\n"
   ]
 }

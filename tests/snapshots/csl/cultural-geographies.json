@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:59.528Z",
+  "generated_at": "2026-04-19T14:02:42.765Z",
   "style": "cultural-geographies",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "dfef6c0df379c473",
   "citations": {
     "single-item-1": "<span style=\"baseline\">T. S. Kuhn, “The Structure of Scientific Revolutions,” International Encyclopedia of Unified Science II (Chicago, University of Chicago Press, 1962)</span>",
@@ -74,6 +74,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">J. Smith, A. Lee, B. Nguyen and R. Patel, </div><div class=\"csl-right-inline\">“Adaptive Climate Risk Modeling for Inland Regions,” <i>Journal of Climate Analytics</i>, 12, 2021, 201–219.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">M. Garcia, </div><div class=\"csl-right-inline\">“Methods for Robust Climate Attribution,” <i>Annual Review of Climate Science</i>, 4, 2019, 55–80.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">M. Garcia, </div><div class=\"csl-right-inline\">“Methods for Probabilistic Climate Attribution,” <i>Annual Review of Climate Science</i>, 4, 2019, 81–104.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">A. Forthcoming, </div><div class=\"csl-right-inline\"><i>Foundations of Declarative Bibliography</i> (University Press: Cambridge, n.d.).</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">A. Forthcoming, </div><div class=\"csl-right-inline\"><i>Foundations of Declarative Bibliography</i> (University Press: Cambridge, n.d.).</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">J. Adams, </div><div class=\"csl-right-inline\">“Letter to James Smith,” 1797.</div>\n  </div>\n"
   ]
 }

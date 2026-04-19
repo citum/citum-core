@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:31.275Z",
+  "generated_at": "2026-04-19T14:02:13.886Z",
   "style": "bulletin-de-correspondance-hellenique",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "43cb7fca587c4439",
   "citations": {
     "single-item-1": "<span style=\"font-variant:small-caps;\">Kuhn</span> 1962",
@@ -44,6 +44,7 @@
   "bibliography": [
     "  <div class=\"csl-entry\"> \n\n    <div class=\"csl-block\">1954</div>\n<i>Brown v. Board of Education</i>, 1954.</div>\n",
     "  <div class=\"csl-entry\"> \n\n    <div class=\"csl-block\">2018</div>\n“The Role of Theory in Research”, <i>Journal of Theoretical Psychology</i>, 28.3, 2018, p. 201–215.</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Adams</span> 1797</div>\nJohn Adams, “Letter to James Smith”, Massachusetts Historical Society, Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Bengio</span> 2023</div>\nYoshua Bengio, <i>The Future of Artificial Intelligence</i>, 2023, online, https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Chen</span> 2019</div>\nWei Chen, <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Ericsson</span> 2006</div>\nK. Anders Ericsson, “The Role of Deliberate Practice”, in K. Anders Ericsson, Neil Charness, Paul J. Feltovich, Robert R. Hoffman (eds.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, 2006, p. 683–703.</div>\n",

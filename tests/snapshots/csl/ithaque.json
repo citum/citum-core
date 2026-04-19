@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:10.901Z",
+  "generated_at": "2026-04-19T14:02:54.886Z",
   "style": "ithaque",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "63f35306d6c18c90",
   "citations": {
     "single-item-1": "Kuhn, T. S. (1962), “The Structure of Scientific Revolutions.”",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Garcia, M. (2019), “Methods for Robust Climate Attribution” ; Garcia, M. (2019), “Methods for Probabilistic Climate Attribution.”"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, J. (1797), “Letter to James Smith.”</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y. (November 10, 2023), “The Future of Artificial Intelligence,” interview by S. Colbert.</div>\n",
     "  <div class=\"csl-entry\">Chen, W. (2019), <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. A. (2006), “The Role of Deliberate Practice,” dans Ericsson, K. A. <i>et al.</i> (dir.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, p. 683–703.</div>\n",

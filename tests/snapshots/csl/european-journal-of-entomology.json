@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:02.640Z",
+  "generated_at": "2026-04-19T14:02:46.191Z",
   "style": "european-journal-of-entomology",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "a93c8a7a48f9f66d",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming, )"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams J.</span> 1797: Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio Y.</span> 2023: The Future of Artificial Intelligence.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Brown v. Board of Education</span>. 1954: U.S. Reports <b>347</b>: 483.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen W.</span> 2019: <i><span style=\"font-style:normal;\">Neural Networks for Natural Language Understanding</span></i>Stanford University, .</div>\n",

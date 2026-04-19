@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:40.989Z",
+  "generated_at": "2026-04-19T14:03:26.464Z",
   "style": "universitat-heidelberg-historisches-seminar",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "de2a870c78567620",
   "citations": {
     "single-item-1": "Thomas S. <span style=\"font-variant:small-caps;\">Kuhn</span>, The Structure of Scientific Revolutions, in: International Encyclopedia of Unified Science, 2 (1962), University of Chicago Press.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Maria <span style=\"font-variant:small-caps;\">Garcia</span>, Methods for Robust Climate Attribution, in: Annual Review of Climate Science, 4 (2019), S. 55–80; Maria <span style=\"font-variant:small-caps;\">Garcia</span>, Methods for Probabilistic Climate Attribution, in: Annual Review of Climate Science, 4 (2019), S. 81–104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span>, John, Letter to James Smith, 1797.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span>, Yoshua, The Future of Artificial Intelligence.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei, Neural Networks for Natural Language Understanding, Diss., Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span>, K. Anders, The Role of Deliberate Practice, in: The Cambridge Handbook of Expertise and Expert Performance, hrsg. von K. Anders <span style=\"font-variant:small-caps;\">Ericsson</span>/hrsg. von Neil <span style=\"font-variant:small-caps;\">Charness</span>/hrsg. von Paul J. <span style=\"font-variant:small-caps;\">Feltovich</span>/hrsg. von Robert R. <span style=\"font-variant:small-caps;\">Hoffman</span>, Cambridge University Press, 2006, S. 683–703.</div>\n",

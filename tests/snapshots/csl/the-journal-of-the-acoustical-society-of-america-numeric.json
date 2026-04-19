@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:38.204Z",
+  "generated_at": "2026-04-19T14:03:23.578Z",
   "style": "the-journal-of-the-acoustical-society-of-america-numeric",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "15298c0d68b03110",
   "citations": {
     "single-item": "<sup>1</sup>",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\"><sup>30</sup>J. Smith, A. Lee, B. Nguyen, and R. Patel, “Adaptive Climate Risk Modeling for Inland Regions,” Journal of Climate Analytics <b>12</b>, 201–219 (2021). doi:10.5555/jca.2021.12.3.201</div>\n",
     "  <div class=\"csl-entry\"><sup>31</sup>M. Garcia, “Methods for Robust Climate Attribution,” Annual Review of Climate Science <b>4</b>, 55–80 (2019). doi:10.5555/arcs.2019.4.55</div>\n",
     "  <div class=\"csl-entry\"><sup>32</sup>M. Garcia, “Methods for Probabilistic Climate Attribution,” Annual Review of Climate Science <b>4</b>, 81–104 (2019). doi:10.5555/arcs.2019.4.81</div>\n",
-    "  <div class=\"csl-entry\"><sup>33</sup>A. Forthcoming, <i>Foundations of Declarative Bibliography</i>, (Cambridge, University Press, n.d.).</div>\n"
+    "  <div class=\"csl-entry\"><sup>33</sup>A. Forthcoming, <i>Foundations of Declarative Bibliography</i>, (Cambridge, University Press, n.d.).</div>\n",
+    "  <div class=\"csl-entry\"><sup>34</sup>J. Adams, <i>Letter to James Smith</i>.</div>\n"
   ]
 }

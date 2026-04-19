@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:26.595Z",
+  "generated_at": "2026-04-19T14:02:08.519Z",
   "style": "apa-cv",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "ecef61586f722249",
   "citations": {
     "single-item": "Kuhn, T. S. (1962). The Structure of Scientific Revolutions. <i>International Encyclopedia of Unified Science</i>, <i>2</i>(2). https://doi.org/10.1234/example",
@@ -57,6 +57,7 @@
     "  <div class=\"csl-entry\">Brown v. Board of Education, 347 U.S. Reports 483 (U.S. Supreme Court 1954).</div>\n",
     "  <div class=\"csl-entry\">Kafka, F. (1915). <i>Metamorphosis</i> (D. Wyllie, Trans.). Kurt Wolff Verlag.</div>\n",
     "  <div class=\"csl-entry\">Lumière, L. (1896). <i>The Arrival of a Train at La Ciotat Station</i> [Short-film; Film].</div>\n",
+    "  <div class=\"csl-entry\">Adams, J. (1797). <i>Letter to James Smith</i>. Massachusetts Historical Society (Adams Papers, reel 45), Boston, MA.</div>\n",
     "  <div class=\"csl-entry\">Spinoza, B. (1677). <i>Éthique</i>. Jan Rieuwertsz.</div>\n",
     "  <div class=\"csl-entry\">Forthcoming, A. (n.d.). <i>Foundations of Declarative Bibliography</i>. University Press.</div>\n"
   ]

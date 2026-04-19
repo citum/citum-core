@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:05.392Z",
+  "generated_at": "2026-04-19T14:02:49.102Z",
   "style": "guide-des-citations-references-et-abreviations-juridiques",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "34432f981fb589fe",
   "citations": {
     "single-item-1": "T.S. <span style=\"font-variant:small-caps;\">Kuhn</span>, « The Structure of Scientific Revolutions », <i>International Encyclopedia of Unified Science</i>, 2",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "M. <span style=\"font-variant:small-caps;\">Garcia</span>, « Methods for Robust Climate Attribution », <i>Annual Review of Climate Science</i>, 4 ; M. <span style=\"font-variant:small-caps;\">Garcia</span>, « Methods for Probabilistic Climate Attribution », <i>Annual Review of Climate Science</i>, 4"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">J. <span style=\"font-variant:small-caps;\">Adams</span>, « Letter to James Smith », 1797</div>\n",
     "  <div class=\"csl-entry\">Y. <span style=\"font-variant:small-caps;\">Bengio</span>, « The Future of Artificial Intelligence »</div>\n",
     "  <div class=\"csl-entry\">W. <span style=\"font-variant:small-caps;\">Chen</span>, <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, 2019</div>\n",
     "  <div class=\"csl-entry\">K.A. <span style=\"font-variant:small-caps;\">Ericsson</span>, « The Role of Deliberate Practice », <i>The Cambridge Handbook of Expertise and Expert Performance</i>, K.A. Ericsson, N. Charness, P.J. Feltovich et R.R. Hoffman (dir.), Cambridge University Press, 2006, p. 683‑703</div>\n",

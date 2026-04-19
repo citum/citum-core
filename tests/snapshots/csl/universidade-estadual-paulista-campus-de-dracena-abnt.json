@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:40.328Z",
+  "generated_at": "2026-04-19T14:03:25.811Z",
   "style": "universidade-estadual-paulista-campus-de-dracena-abnt",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "4c956086040358db",
   "citations": {
     "single-item": "(KUHN, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(FORTHCOMING, [s.d.])"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">ADAMS, J. <b>Letter to James Smith</b>. [s. l.], , 1797. Massachusetts Historical Society. </div>\n",
     "  <div class=\"csl-entry\">BENGIO, Y. <b>The Future of Artificial Intelligence</b>. [s.l: s.n.]</div>\n",
     "  <div class=\"csl-entry\"><b>Brown v. Board of Education</b>. <b>U.S. Reports</b>, 17 maio. 1954. p. 483.</div>\n",
     "  <div class=\"csl-entry\">CHEN, W. <b>Neural Networks for Natural Language Understanding</b>. 2019. phd-thesis - Stanford University, [s. l.], 2019.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:59.152Z",
+  "generated_at": "2026-04-19T14:02:42.335Z",
   "style": "contributions-to-the-archaeology-of-egypt-nubia-and-the-levant",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "ddcfd0d62aa661bc",
   "citations": {
     "single-item-1": "<span style=\"font-variant:small-caps;\">Kuhn</span> 1962",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "<span style=\"font-variant:small-caps;\">Garcia</span> 2019b; <span style=\"font-variant:small-caps;\">Garcia</span> 2019a"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Adams</span>, J.</div>\n1797 Letter to James Smith. (1797).</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Anon</div>\n1954 <i>Brown v. Board of Education</i>,483.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Anon</div>\n2018 The Role of Theory in Research. <i>Journal of Theoretical Psychology</i> 28 (2018), 201–215.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Bengio</span>, Y.</div>\n2023 The Future of Artificial Intelligence. (2023).</div>\n",

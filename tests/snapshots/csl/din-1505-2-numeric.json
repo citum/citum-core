@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:00.322Z",
+  "generated_at": "2026-04-19T14:02:43.701Z",
   "style": "din-1505-2-numeric",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "a7055058565884a6",
   "citations": {
     "single-item": "[1]",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[30]</div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Smith, John</span> ; <span style=\"font-variant:small-caps;\">Lee, Alice</span> ; <span style=\"font-variant:small-caps;\">Nguyen, Bao</span> ; <span style=\"font-variant:small-caps;\">Patel, Ravi</span>: Adaptive Climate Risk Modeling for Inland Regions. In: <i>Journal of Climate Analytics</i> Bd. 12 (2021), Nr. 3, S. 201–219</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[31]</div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Garcia, Maria</span>: Methods for Robust Climate Attribution. In: <i>Annual Review of Climate Science</i> Bd. 4 (2019), S. 55–80</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[32]</div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Garcia, Maria</span>: Methods for Probabilistic Climate Attribution. In: <i>Annual Review of Climate Science</i> Bd. 4 (2019), S. 81–104</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33]</div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Forthcoming, A.</span>: <i>Foundations of Declarative Bibliography</i>. Cambridge : University Press</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33]</div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Forthcoming, A.</span>: <i>Foundations of Declarative Bibliography</i>. Cambridge : University Press</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[34]</div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Adams, John</span>: Letter to James Smith, 1797</div>\n  </div>\n"
   ]
 }

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:43.701Z",
+  "generated_at": "2026-04-19T14:03:29.253Z",
   "style": "wikipedia-templates",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "f150c431f9094ac8",
   "citations": {
     "single-item": "&#60;ref&#62;{{cite journal | vauthors=((Kuhn, T. S.)) | journal=International Encyclopedia of Unified Science | title=The Structure of Scientific Revolutions | volume=2 | issue=2 | publisher=University of Chicago Press | date= 1962 | doi=10.1234/example}}&#60;/ref&#62;",
@@ -26,6 +26,7 @@
     "no-date-single": "&#60;ref&#62;{{cite book | vauthors=((Forthcoming, A.)) | title=Foundations of Declarative Bibliography | publisher=University Press}}&#60;/ref&#62;"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">{{Citation | vauthors=((Adams, J.)) | year=1797 | title=Letter to James Smith}}</div>\n",
     "  <div class=\"csl-entry\">{{Citation | vauthors=((Bengio, Y.)) | year=2023 | title=The Future of Artificial Intelligence | url=https://example.com/interview}}</div>\n",
     "  <div class=\"csl-entry\">{{Citation | vauthors=((Chen, W.)) | year=2019 | title=Neural Networks for Natural Language Understanding | publisher=Stanford University}}</div>\n",
     "  <div class=\"csl-entry\">{{cite book | vauthors=((Ericsson, K. A.)) | veditors=((Ericsson, K. A.)), ((Charness, N.)), ((Feltovich, P. J.)), ((Hoffman, R. R.)) | date= 2006 | chapter=The Cambridge Handbook of Expertise and Expert Performance | title=The Role of Deliberate Practice | publisher=Cambridge University Press | pages=683–703}}</div>\n",

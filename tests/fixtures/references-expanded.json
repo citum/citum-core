@@ -422,5 +422,15 @@
     "author": [{ "family": "Forthcoming", "given": "A." }],
     "publisher": "University Press",
     "publisher-place": "Cambridge"
+  },
+  "ITEM-34": {
+    "id": "ITEM-34",
+    "type": "manuscript",
+    "title": "Letter to James Smith",
+    "author": [{ "family": "Adams", "given": "John" }],
+    "archive": "Massachusetts Historical Society",
+    "archive-place": "Boston, MA",
+    "archive_location": "Adams Papers, reel 45",
+    "issued": { "date-parts": [[1797]] }
   }
 }

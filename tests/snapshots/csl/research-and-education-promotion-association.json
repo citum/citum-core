@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:31.290Z",
+  "generated_at": "2026-04-19T14:03:16.473Z",
   "style": "research-and-education-promotion-association",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "2d27f925c1b2241d",
   "citations": {
     "single-item": "[1]",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[30] </div><div class=\"csl-right-inline\">Smith J, Lee A, Nguyen B, Patel R (<b><b>2021</b></b>) “Adaptive Climate Risk Modeling for Inland Regions” <i>Journal of Climate Analytics</i> (vol. 12, no. 3, pp. 201–219) https://doi.org/<span style=\"text-decoration:none;\">10.5555/jca.2021.12.3.201</span></div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[31] </div><div class=\"csl-right-inline\">Garcia M (<b><b>2019</b></b>) “Methods for Robust Climate Attribution” <i>Annual Review of Climate Science</i> (vol. 4, pp. 55–80) https://doi.org/<span style=\"text-decoration:none;\">10.5555/arcs.2019.4.55</span></div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[32] </div><div class=\"csl-right-inline\">Garcia M (<b><b>2019</b></b>) “Methods for Probabilistic Climate Attribution” <i>Annual Review of Climate Science</i> (vol. 4, pp. 81–104) https://doi.org/<span style=\"text-decoration:none;\">10.5555/arcs.2019.4.81</span></div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33] </div><div class=\"csl-right-inline\">Forthcoming A (n.d.) “Foundations of Declarative Bibliography” Cambridge, <i>University Press</i>.</div>\n   </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33] </div><div class=\"csl-right-inline\">Forthcoming A (n.d.) “Foundations of Declarative Bibliography” Cambridge, <i>University Press</i>.</div>\n   </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[34] </div><div class=\"csl-right-inline\">Adams J (<b><b>1797</b></b>) “Letter to James Smith”</div>\n  </div>\n"
   ]
 }

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:31.525Z",
+  "generated_at": "2026-04-19T14:02:14.198Z",
   "style": "byzantina-symmeikta",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "8ad1760f402847eb",
   "citations": {
     "single-item": "<sup>1</sup>",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">30. J. Smith - A. Lee - B. Nguyen - R. Patel, Adaptive Climate Risk Modeling for Inland Regions, <i>Journal of Climate Analytics</i> 12 (2021) 201–219.</div>\n",
     "  <div class=\"csl-entry\">31. M. Garcia, Methods for Robust Climate Attribution, <i>Annual Review of Climate Science</i> 4 (2019) 55–80.</div>\n",
     "  <div class=\"csl-entry\">32. M. Garcia, Methods for Probabilistic Climate Attribution, <i>Annual Review of Climate Science</i> 4 (2019) 81–104.</div>\n",
-    "  <div class=\"csl-entry\">33. A. Forthcoming, Foundations of Declarative Bibliography, Cambridge .</div>\n"
+    "  <div class=\"csl-entry\">33. A. Forthcoming, Foundations of Declarative Bibliography, Cambridge .</div>\n",
+    "  <div class=\"csl-entry\">34. J. Adams, Letter to James Smith, 1797, .</div>\n"
   ]
 }

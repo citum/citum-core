@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:15.186Z",
+  "generated_at": "2026-04-19T14:02:59.360Z",
   "style": "juristische-zitierweise-schweizer",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "30665c0ca4603f5d",
   "citations": {
     "single-item-1": "<span style=\"font-variant:small-caps;\">Kuhn</span>.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "<span style=\"font-variant:small-caps;\">Garcia</span>; <span style=\"font-variant:small-caps;\">Garcia</span>."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams John</span>, Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio Yoshua</span>, The Future of Artificial Intelligence, &#60;https://example.com/interview&#62; .</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen Wei</span>, Neural Networks for Natural Language Understanding, phd-thesis, 2019.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson K. Anders</span>, The Role of Deliberate Practice, in:  Ericsson, K. Anders/Charness, Neil/Feltovich, Paul J./Hoffman, Robert R. (eds.), The Cambridge Handbook of Expertise and Expert Performance, 2006, 683–703.</div>\n",

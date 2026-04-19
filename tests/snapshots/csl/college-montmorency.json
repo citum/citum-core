@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:58.770Z",
+  "generated_at": "2026-04-19T14:02:41.926Z",
   "style": "college-montmorency",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "24385ecb7d65e4a5",
   "citations": {
     "single-item-1": "KUHN, Thomas S., “The Structure of Scientific Revolutions,” <i>International Encyclopedia of Unified Science</i>, vol. 2, n° 2, Chicago, University of Chicago Press, 1962.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "GARCIA, Maria, “Methods for Robust Climate Attribution,” <i>Annual Review of Climate Science</i>, vol. 4, 2019, p. 55–80; GARCIA, Maria, “Methods for Probabilistic Climate Attribution,” <i>Annual Review of Climate Science</i>, vol. 4, 2019, p. 81–104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">ADAMS, John, <i>Letter to James Smith</i>, 1797.</div>\n",
     "  <div class=\"csl-entry\">BENGIO, Yoshua, <i>The Future of Artificial Intelligence</i>, video-interview, 10 novembre 2023, https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">CHEN, Wei, <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\">ERICSSON, K. Anders, “The Role of Deliberate Practice,” dans <span style=\"font-style:normal;\">ERICSSON, K. Anders <i>et al.</i></span>, dir., <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, 2006, p. 683–703.</div>\n",

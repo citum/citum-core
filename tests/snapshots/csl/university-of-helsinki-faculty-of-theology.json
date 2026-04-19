@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:42.097Z",
+  "generated_at": "2026-04-19T14:03:27.608Z",
   "style": "university-of-helsinki-faculty-of-theology",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "96cf32ccaf5c99d4",
   "citations": {
     "single-item-1": "Kuhn 1962.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Garcia 2019b; Garcia 2019a."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, John (1797). Letter to James Smith. Adams Papers, reel 45Massachusetts Historical SocietyBoston, MA.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua (2023). The Future of Artificial Intelligence. Interview by S. ColbertVideo-interview. https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei (2019). Neural Networks for Natural Language Understanding. Phd-thesis, Stanford University.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. Anders (2006). The Role of Deliberate Practice. K Anders Ericsson, Neil Charness, Paul J Feltovich, &#38; Robert R Hoffman (ed.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>. Cambridge University Press, 683–703.</div>\n",

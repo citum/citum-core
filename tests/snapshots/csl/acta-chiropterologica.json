@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:23.538Z",
+  "generated_at": "2026-04-19T14:02:05.043Z",
   "style": "acta-chiropterologica",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "3f7643010a142577",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming, n.d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span>, J. 1797. Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span>, Y. 2023. The Future of Artificial Intelligence.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span>, W. 2019. Neural Networks for Natural Language Understanding. phd-thesis, Stanford University. pp.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span>, K. A. 2006. The Role of Deliberate Practice. Pp. 683–703, in The Cambridge Handbook of Expertise and Expert Performance (K. A. <span style=\"font-variant:small-caps;\">Ericsson</span>, N. <span style=\"font-variant:small-caps;\">Charness</span>, P. J. <span style=\"font-variant:small-caps;\">Feltovich</span>, and R. R. <span style=\"font-variant:small-caps;\">Hoffman</span>, eds.). Cambridge University Press.</div>\n",

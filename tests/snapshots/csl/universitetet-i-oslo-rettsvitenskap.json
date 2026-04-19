@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:41.808Z",
+  "generated_at": "2026-04-19T14:03:27.309Z",
   "style": "universitetet-i-oslo-rettsvitenskap",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "c3e8dae29981dc38",
   "citations": {
     "single-item-1": "Kuhn (1962)",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Garcia (2019a), Garcia (2019b)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">Letter to James Smith</div></div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">The Future of Artificial Intelligence</div></div>\n",
     "  <div class=\"csl-entry\">Chen, Wei. <i>Neural Networks for Natural Language Understanding</i> Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. Anders. \"The Role of Deliberate Practice\", i <i>The Cambridge Handbook of Expertise and Expert Performance</i>, K. Anders Ericsson, Neil Charness, Paul J. Feltovich, Robert R. Hoffman (red.)Cambridge University Press, 2006.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:31.910Z",
+  "generated_at": "2026-04-19T14:03:17.143Z",
   "style": "revue-archeologique-de-narbonnaise",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "fb810f1b928e5c54",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming s.d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><b>Adams 1797</b> : ADAMS (J.) – <i>Letter to James Smith</i>, 1797.</div>\n",
     "  <div class=\"csl-entry\"><b>Bengio 2023</b> : BENGIO (Y.) – <i>The Future of Artificial Intelligence</i>, 2023, &#60;https://example.com/interview&#62;.</div>\n",
     "  <div class=\"csl-entry\"><b>Chen 2019</b> : CHEN (W.) – <i><i>Neural Networks for Natural Language Understanding</i></i>, phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\"><b>Ericsson 2006</b> : ERICSSON (K. A.) – The Role of Deliberate Practice. <i>In</i>: ERICSSON (K.A.), CHARNESS (N.), FELTOVICH (P.J.), HOFFMAN (R.R.) dir. <i>The Cambridge Handbook of Expertise and Expert Performance</i>. Cambridge University Press, 2006, 683-703.</div>\n",

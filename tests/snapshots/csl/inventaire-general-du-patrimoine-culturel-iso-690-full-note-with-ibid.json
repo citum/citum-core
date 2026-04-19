@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:09.975Z",
+  "generated_at": "2026-04-19T14:02:53.934Z",
   "style": "inventaire-general-du-patrimoine-culturel-iso-690-full-note-with-ibid",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "517f6646f2cc5efc",
   "citations": {
     "single-item-1": "KUHN, Thomas S. <b>The Structure of Scientific Revolutions</b>. <i>International Encyclopedia of Unified Science</i> [en ligne]. Chicago : University of Chicago Press, 1962, Vol. 2, n° 2. DOI 10.1234/example.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "GARCIA, Maria. <b>Methods for Robust Climate Attribution</b>. <i>Annual Review of Climate Science</i> [en ligne]. 2019, Vol. 4, p. 55‑80. DOI 10.5555/arcs.2019.4.55 ; GARCIA, Maria. <b>Methods for Probabilistic Climate Attribution</b>. <i>Annual Review of Climate Science</i> [en ligne]. 2019, Vol. 4, p. 81‑104. DOI 10.5555/arcs.2019.4.81."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">ADAMS, John. <b>Letter to James Smith</b> [manuscrit]. 1797. Massachusetts Historical Society : Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\">BENGIO, Yoshua. <b>The Future of Artificial Intelligence</b> [en ligne]. 10 novembre 2023. Disponible à : &#60;URL : https://example.com/interview&#62;.</div>\n",
     "  <div class=\"csl-entry\">CHEN, Wei. <b>Neural Networks for Natural Language Understanding</b>. phd-thesis. [S. l.] : Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\">ERICSSON, K. Anders. <b>The Role of Deliberate Practice</b>. Dans : ERICSSON, K. Anders et al. (dir.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>. [S. l.] : Cambridge University Press, 2006, p. 683‑703.</div>\n",

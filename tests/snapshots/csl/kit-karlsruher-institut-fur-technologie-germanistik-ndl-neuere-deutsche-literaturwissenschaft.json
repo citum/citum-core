@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:15.409Z",
+  "generated_at": "2026-04-19T14:02:59.598Z",
   "style": "kit-karlsruher-institut-fur-technologie-germanistik-ndl-neuere-deutsche-literaturwissenschaft",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "98532c5398c821e7",
   "citations": {
     "single-item-1": "Kuhn, Thomas S.: The Structure of Scientific Revolutions. In: International Encyclopedia of Unified Science 2  (1962).",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Garcia, Maria: Methods for Robust Climate Attribution. In: Annual Review of Climate Science 4 (2019), S. 55–80; Garcia, Maria: Methods for Probabilistic Climate Attribution. In: Annual Review of Climate Science 4 (2019), S. 81–104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, John: Letter to James Smith1797.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua: The Future of Artificial Intelligence2023.</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei: Neural Networks for Natural Language Understanding, 2019.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. Anders: The Role of Deliberate Practice. In: The Cambridge Handbook of Expertise and Expert Performance, hg. von K. Anders Ericsson, Neil Charness, Paul J. Feltovich, u. a., 2006, S. 683–703.</div>\n",

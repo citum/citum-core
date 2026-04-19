@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:01.666Z",
+  "generated_at": "2026-04-19T14:02:45.123Z",
   "style": "ens-de-lyon-centre-d-ingenierie-documentaire",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "9a36fd235af7c482",
   "citations": {
     "single-item-1": "T. S. <span style=\"font-variant:small-caps;\">Kuhn</span>, « The Structure of Scientific Revolutions », <i>International Encyclopedia of Unified Science</i>, vol. 2, n<sup>o</sup> 2, University of Chicago Press, 1962 (DOI : 10.1234/example)",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "M. <span style=\"font-variant:small-caps;\">Garcia</span>, « Methods for Robust Climate Attribution », <i>Annual Review of Climate Science</i>, vol. 4, 2019, p. 55-80 ; M. <span style=\"font-variant:small-caps;\">Garcia</span>, « Methods for Probabilistic Climate Attribution », <i>Annual Review of Climate Science</i>, vol. 4, 2019, p. 81-104"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span> John, « Letter to James Smith », 1797. Massachusetts Historical Society, Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\">Anonyme, « The Role of Theory in Research », <i>Journal of Theoretical Psychology</i>, vol. 28, n<sup>o</sup> 3, 2018, p. 201-215. Author unknown.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span> Yoshua, « The Future of Artificial Intelligence », entretien réalisé par Stephen Colbert, 10 novembre 2023 (en ligne : https://example.com/interview).</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> Wei, <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, 2019.</div>\n",

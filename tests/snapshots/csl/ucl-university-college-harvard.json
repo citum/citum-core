@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:39.547Z",
+  "generated_at": "2026-04-19T14:03:25.002Z",
   "style": "ucl-university-college-harvard",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "88616bd15d16fb20",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -28,6 +28,7 @@
   "bibliography": [
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">1954. <i>Brown v. Board of Education</i>.</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">2018. The Role of Theory in Research, <i>Journal of Theoretical Psychology</i>, årg. 28, no. 3, pp. 201–215.</div>\n</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Adams, J., 1797. <i>Letter to James Smith</i>.</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Bengio, Y., 2023. <i>The Future of Artificial Intelligence</i> [Video-interview], [Online].</div>\nTilgængelig fra: <span style=\"text-decoration:underline;\">https://example.com/interview</span>.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Chen, W., 2019. <i>Neural Networks for Natural Language Understanding</i> [Phd-thesis]. Stanford University.</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Ericsson, K.A., 2006. The Role of Deliberate Practice. I: K.A. Ericsson et al. eds. <i>The Cambridge Handbook of Expertise and Expert Performance</i>. Cambridge University Press, pp. 683–703.</div>\n</div>\n",

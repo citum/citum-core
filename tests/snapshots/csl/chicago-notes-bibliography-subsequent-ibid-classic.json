@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:46.569Z",
+  "generated_at": "2026-04-19T14:02:29.607Z",
   "style": "chicago-notes-bibliography-subsequent-ibid-classic",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "77ec3eb7eb96282d",
   "citations": {
     "single-item-1": "Thomas S. Kuhn, “The Structure of Scientific Revolutions,” <i>International Encyclopedia of Unified Science</i> (Chicago) 2, no. 2 (1962), https://doi.org/10.1234/example.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Maria Garcia, “Methods for Robust Climate Attribution,” <i>Annual Review of Climate Science</i> 4 (2019): 55–80, https://doi.org/10.5555/arcs.2019.4.55; Maria Garcia, “Methods for Probabilistic Climate Attribution,” <i>Annual Review of Climate Science</i> 4 (2019): 81–104, https://doi.org/10.5555/arcs.2019.4.81."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, John. “Letter to James Smith.” 1797. Adams Papers, reel 45. Massachusetts Historical Society, Boston, MA.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua. “The Future of Artificial Intelligence.” Video-interview by Stephen Colbert. November 10, 2023. https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education, 347 U.S. Reports 483 (U.S. Supreme Court 1954).</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei. “Neural Networks for Natural Language Understanding.” Phd-thesis, Stanford University, 2019.</div>\n",

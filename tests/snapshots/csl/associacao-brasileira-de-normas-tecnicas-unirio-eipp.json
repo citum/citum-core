@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:29.108Z",
+  "generated_at": "2026-04-19T14:02:11.401Z",
   "style": "associacao-brasileira-de-normas-tecnicas-unirio-eipp",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "20902cc0c0a1e1b4",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming, [no date])"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">ADAMS, John. <b>Letter to James Smith</b>. 1797</div>\n",
     "  <div class=\"csl-entry\">BENGIO, Yoshua. <b>The Future of Artificial Intelligence</b>. 2023. Disponível em: &#60;https://example.com/interview&#62;</div>\n",
     "  <div class=\"csl-entry\">CHEN, Wei. <b>Neural Networks for Natural Language Understanding</b>. 2019. phd-thesis - Stanford University, [no place], 2019.</div>\n",
     "  <div class=\"csl-entry\">ERICSSON, K. Anders. <b>The Role of Deliberate Practice</b>. <i>In</i>: ERICSSON, K. Anders; CHARNESS, Neil; FELTOVICH, Paul J.; HOFFMAN, Robert R. (orgs.). <i>In</i>: <i>The Cambridge Handbook of Expertise and Expert Performance</i>. [no place]: Cambridge University Press, 2006. p. 683–703.</div>\n",

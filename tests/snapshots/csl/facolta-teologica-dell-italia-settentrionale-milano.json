@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:03.357Z",
+  "generated_at": "2026-04-19T14:02:46.935Z",
   "style": "facolta-teologica-dell-italia-settentrionale-milano",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "5898691a1026c8ee",
   "citations": {
     "single-item-1": "T.S. <span style=\"font-variant:small-caps;\">Kuhn</span>, <i>The Structure of Scientific Revolutions</i>, «International Encyclopedia of Unified Science» 2/2 (1962), University of Chicago Press, Chicago",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "M. <span style=\"font-variant:small-caps;\">Garcia</span>, <i>Methods for Robust Climate Attribution</i>, «Annual Review of Climate Science» 4 (2019) <span style=\"baseline\">55-80</span>; M. <span style=\"font-variant:small-caps;\">Garcia</span>, <i>Methods for Probabilistic Climate Attribution</i>, «Annual Review of Climate Science» 4 (2019) <span style=\"baseline\">81-104</span>"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span> J., <i>Letter to James Smith</i>,, Massachusetts Historical Society.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span> Y., <i>The Future of Artificial Intelligence</i>,.</div>\n",
     "  <div class=\"csl-entry\"><i>Brown v. Board of Education</i>, vol. 347, 1954.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> W., <i>Neural Networks for Natural Language Understanding</i>,.</div>\n",

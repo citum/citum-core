@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:41.376Z",
+  "generated_at": "2026-04-19T14:03:26.867Z",
   "style": "universite-de-liege-histoire",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "7657078da4a7ba1a",
   "citations": {
     "single-item-1": "<span style=\"font-variant:small-caps;\">Kuhn</span> T.S., « The Structure of Scientific Revolutions », in <i>International Encyclopedia of Unified Science</i>, vol. 2 (1962), n<sup>o</sup> 2.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "<span style=\"font-variant:small-caps;\">Garcia</span> M., « Methods for Robust Climate Attribution », in <i>Annual Review of Climate Science</i>, vol. 4 (2019), p. 55‑80 ; <span style=\"font-variant:small-caps;\">Garcia</span> M., « Methods for Probabilistic Climate Attribution », in <i>Annual Review of Climate Science</i>, vol. 4 [2019), p. 81‑104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span> J., Massachusetts Historical Society, Adams Papers, reel 45, Letter to James Smith, 1797.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span> Y., « The Future of Artificial Intelligence ».</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> W., <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span> K.A., « The Role of Deliberate Practice », in <span style=\"font-variant:small-caps;\">Ericsson</span> K.A., <span style=\"font-variant:small-caps;\">Charness</span> N., <span style=\"font-variant:small-caps;\">Feltovich</span> P.J. et <span style=\"font-variant:small-caps;\">Hoffman</span> R.R. (dir.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, 2006, p. 683‑703.</div>\n",

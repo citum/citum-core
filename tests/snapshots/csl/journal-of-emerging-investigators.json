@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:12.306Z",
+  "generated_at": "2026-04-19T14:02:56.350Z",
   "style": "journal-of-emerging-investigators",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "97d3fe50ff9419d3",
   "citations": {
     "single-item": "(citation1)",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">30) ---. “Adaptive Climate Risk Modeling for Inland Regions.” <i>Journal of Climate Analytics</i>, vol. 12, no. 3, 2021, pp. 201–19, https://doi.org/10.5555/jca.2021.12.3.201.</div>\n",
     "  <div class=\"csl-entry\">31) Garcia, Maria. “Methods for Robust Climate Attribution.” <i>Annual Review of Climate Science</i>, vol. 4, 2019, pp. 55–80, https://doi.org/10.5555/arcs.2019.4.55.</div>\n",
     "  <div class=\"csl-entry\">32) ---. “Methods for Probabilistic Climate Attribution.” <i>Annual Review of Climate Science</i>, vol. 4, 2019, pp. 81–104, https://doi.org/10.5555/arcs.2019.4.81.</div>\n",
-    "  <div class=\"csl-entry\">33) Forthcoming, A. <i>Foundations of Declarative Bibliography</i>. University Press.</div>\n"
+    "  <div class=\"csl-entry\">33) Forthcoming, A. <i>Foundations of Declarative Bibliography</i>. University Press.</div>\n",
+    "  <div class=\"csl-entry\">34) Adams, John. <i>Letter to James Smith</i>. 1797. Massachusetts Historical Society, Boston, MA, Adams Papers, reel 45.</div>\n"
   ]
 }

@@ -326,20 +326,25 @@ function renderWithCiteprocJs(stylePath, testItems, testCitations, options = {})
   const citations = {};
   if (options.scope !== 'bibliography') {
     testCitations.forEach((cite) => {
-      // Convert Citum citation items to citeproc-js format
-      const suppressAuthor = cite['suppress-author'] === true;
-      const citeprocItems = cite.items.map((item) => toCiteprocItem(item, suppressAuthor));
+      // Scenarios with `clusters` use multi-cluster position tracking; flatten for oracle
+      const clusters = cite.clusters
+        ? cite.clusters
+        : [{ id: cite.id, items: cite.items, 'suppress-author': cite['suppress-author'] }];
 
-      try {
-        const result = citeproc.makeCitationCluster(citeprocItems);
-        // citeproc-js returns [id, text] or formatted cluster
-        citations[cite.id] = result;
-      } catch (e) {
-        if (options.verbose) {
-          console.error(`Error rendering citation cluster ${cite.id}:`, e.message);
+      const parts = [];
+      for (const cluster of clusters) {
+        const suppressAuthor = cluster['suppress-author'] === true;
+        const citeprocItems = cluster.items.map((item) => toCiteprocItem(item, suppressAuthor));
+        try {
+          parts.push(citeproc.makeCitationCluster(citeprocItems));
+        } catch (e) {
+          if (options.verbose) {
+            console.error(`Error rendering citation cluster ${cluster.id}:`, e.message);
+          }
+          parts.push(`ERROR: ${e.message}`);
         }
-        citations[cite.id] = `ERROR: ${e.message}`;
       }
+      citations[cite.id] = parts.join(' | ');
     });
   }
 

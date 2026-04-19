@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:44.253Z",
+  "generated_at": "2026-04-19T14:03:29.816Z",
   "style": "zeitschrift-fur-fantastikforschung",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "2d24d2091df6db1b",
   "citations": {
     "single-item": "Kuhn, »The Structure of Scientific Revolutions«",
@@ -26,6 +26,7 @@
     "no-date-single": "Forthcoming"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, John. <i>Letter to James Smith</i>. Massachusetts Historical Society, Boston, MA, Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua. <i>The Future of Artificial Intelligence</i>. Stephen Colbert., https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">»Brown v. Board of Education«. <i>U.S. Reports</i>, . 483.</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei. <i>Neural Networks for Natural Language Understanding</i>. Stanford University.</div>\n",

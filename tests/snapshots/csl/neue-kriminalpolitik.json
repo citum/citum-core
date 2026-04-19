@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:21.250Z",
+  "generated_at": "2026-04-19T14:03:05.286Z",
   "style": "neue-kriminalpolitik",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "39fdbd2356f19ad9",
   "citations": {
     "single-item-1": "<i>Kuhn</i> 2 (1962).",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "<i>Garcia</i> 4 (2019); <i>Garcia</i> 4 (2019)."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><i>Adams</i> (1797) Letter to James Smith</div>\n",
     "  <div class=\"csl-entry\"><i>Bengio</i> (2023) The Future of Artificial Intelligence</div>\n",
     "  <div class=\"csl-entry\"><i>Chen</i> (2019) Neural Networks for Natural Language Understanding</div>\n",
     "  <div class=\"csl-entry\"><i>Ericsson</i> (2006) The Role of Deliberate Practice. in: Ericsson u. a. (Hrsg.), The Cambridge Handbook of Expertise and Expert Performance, 683–703</div>\n",

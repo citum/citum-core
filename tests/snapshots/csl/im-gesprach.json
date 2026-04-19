@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:08.056Z",
+  "generated_at": "2026-04-19T14:02:51.892Z",
   "style": "im-gesprach",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "35fcf983a3c1fd0a",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming o. J.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">John Adams: Letter to James Smith. 1797 In: <i>Massachusetts Historical Society</i>, Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\">Wei Chen: <i>Neural Networks for Natural Language Understanding</i>. phd-thesis, Stanford University 2019.</div>\n",
     "  <div class=\"csl-entry\">K. Anders Ericsson: The Role of Deliberate Practice. In: <i>The Cambridge Handbook of Expertise and Expert Performance</i>. Hrsg. von K. Anders Ericsson. /Neil Charness. /Paul J. Feltovich. /Robert R. Hoffman. Cambridge University Press 2006, S. 683–703.</div>\n",
     "  <div class=\"csl-entry\">A. Forthcoming: <i>Foundations of Declarative Bibliography</i>. Cambridge: University Press o. J.</div>\n",

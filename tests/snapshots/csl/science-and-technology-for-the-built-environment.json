@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:32.822Z",
+  "generated_at": "2026-04-19T14:03:18.077Z",
   "style": "science-and-technology-for-the-built-environment",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "1afbaed186e5f9a2",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming n.d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, J. 1797. <i>Letter to James Smith</i>.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y. 2023, November 10. The Future of Artificial Intelligence. video-interview.</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education, 347 U.S. Reports 483 (U.S. Supreme Court May 17, 1954).</div>\n",
     "  <div class=\"csl-entry\">Chen, W. 2019. <i>Neural Networks for Natural Language Understanding</i> (phd-thesis). Stanford University.</div>\n",

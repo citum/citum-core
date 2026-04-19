@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:42.003Z",
+  "generated_at": "2026-04-19T14:03:27.511Z",
   "style": "university-of-cambridge-faculty-of-history",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "a177437e63d3e17b",
   "citations": {
     "single-item-1": "Thomas S. Kuhn, “The Structure of Scientific Revolutions,” <i>International Encyclopedia of Unified Science</i>, 2 (Chicago, 1962),.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Maria Garcia, “Methods for Robust Climate Attribution,” <i>Annual Review of Climate Science</i>, 4 (2019), pp. 55–80; Maria Garcia, “Methods for Probabilistic Climate Attribution,” <i>Annual Review of Climate Science</i>, 4 (2019), pp. 81–104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, John, “Letter to James Smith” (1797),.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua, “The Future of Artificial Intelligence” (November 2023),.</div>\n",
     "  <div class=\"csl-entry\"><i>Brown v. Board of Education</i>, <i>U.S. Reports</i>, May 1954, 347.</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei, “Neural Networks for Natural Language Understanding” (phd-thesis, Stanford University, 2019).</div>\n",

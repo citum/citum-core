@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:00.289Z",
+  "generated_at": "2026-04-19T14:02:43.659Z",
   "style": "digital-humanities-im-deutschsprachigen-raum",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "5702d3175c479848",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><b>Adams, John</b> (1797): <i>Letter to James Smith</i>.</div>\n",
     "  <div class=\"csl-entry\"><b>Bengio, Yoshua</b> (2023): <i>The Future of Artificial Intelligence</i>. https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\"><b>Chen, Wei</b> (2019): <i>Neural Networks for Natural Language Understanding</i>. Stanford University.</div>\n",
     "  <div class=\"csl-entry\"><b>Ericsson, K. Anders</b> (2006): \"The Role of Deliberate Practice\" in: Ericsson, K. Anders / Charness, Neil / Feltovich, Paul J. / Hoffman, Robert R. (eds.): <i>The Cambridge Handbook of Expertise and Expert Performance</i>. Cambridge University Press 683–703.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:44.525Z",
+  "generated_at": "2026-04-19T14:03:30.099Z",
   "style": "zeitschrift-fur-theologie-und-kirche",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "3b4b2a472175d978",
   "citations": {
     "single-item-1": "T.S. <span style=\"font-variant:small-caps;\">Kuhn</span>, The Structure of Scientific Revolutions (International Encyclopedia of Unified Science 2, 1962a).",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "M. <span style=\"font-variant:small-caps;\">Garcia</span>, Methods for Robust Climate Attribution (Annual Review of Climate Science 4, 2019a, 55–80), Methods for Probabilistic Climate Attribution (Annual Review of Climate Science 4, 2019b, 81–104)."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">J. <span style=\"font-variant:small-caps;\">Adams</span>, Letter to James Smith, 1797</div>\n",
     "  <div class=\"csl-entry\">Y. <span style=\"font-variant:small-caps;\">Bengio</span>, The Future of Artificial Intelligence, 2023</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education, 1954a</div>\n",
     "  <div class=\"csl-entry\">W. <span style=\"font-variant:small-caps;\">Chen</span>, Neural Networks for Natural Language Understanding, 2019</div>\n",

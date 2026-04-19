@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:35.435Z",
+  "generated_at": "2026-04-19T14:03:20.723Z",
   "style": "swedish-legal",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "65eb3fb543ae4f7d",
   "citations": {
     "single-item-1": "Kuhn International Encyclopedia of Unified Science 2.",
@@ -43,6 +43,7 @@
   },
   "bibliography": [
     "  <div class=\"csl-entry\">Brown v. Board of Education</div>\n",
+    "  <div class=\"csl-entry\">Adams, J., Letter to James Smith, 1797</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y., The Future of Artificial Intelligence, 2023</div>\n",
     "  <div class=\"csl-entry\">Chen, W., Neural Networks for Natural Language Understanding, Stanford University 2019</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. A., The Role of Deliberate Practice, In: The Cambridge Handbook of Expertise and Expert Performance. Ericsson, K. A., Charness, N., Feltovich, P. J., &#38; Hoffman, R. R. (red.), Cambridge University Press 2006, s. 683–703</div>\n",

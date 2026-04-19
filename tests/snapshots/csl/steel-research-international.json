@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:34.877Z",
+  "generated_at": "2026-04-19T14:03:20.161Z",
   "style": "steel-research-international",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "4e780e68c68f1d92",
   "citations": {
     "single-item": "<sup>[1]</sup>",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[30] </div><div class=\"csl-right-inline\">J. Smith, A. Lee, B. Nguyen, R. Patel, <i>Journal of Climate Analytics</i><b> <b>2021</b></b>, 12, 201<span style=\"text-decoration:none;\">, DOI: 10.5555/jca.2021.12.3.201</span>.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[31] </div><div class=\"csl-right-inline\">M. Garcia, <i>Annual Review of Climate Science</i><b> <b>2019</b></b>, 4, 55<span style=\"text-decoration:none;\">, DOI: 10.5555/arcs.2019.4.55</span>.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[32] </div><div class=\"csl-right-inline\">M. Garcia, <i>Annual Review of Climate Science</i><b> <b>2019</b></b>, 4, 81<span style=\"text-decoration:none;\">, DOI: 10.5555/arcs.2019.4.81</span>.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33] </div><div class=\"csl-right-inline\">A. Forthcoming, <i>Foundations of Declarative Bibliography</i>, University Press, Cambridge.</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33] </div><div class=\"csl-right-inline\">A. Forthcoming, <i>Foundations of Declarative Bibliography</i>, University Press, Cambridge.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[34] </div><div class=\"csl-right-inline\">J. Adams<b> <b>1797</b></b>.</div>\n  </div>\n"
   ]
 }

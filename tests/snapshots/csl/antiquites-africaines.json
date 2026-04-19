@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:26.007Z",
+  "generated_at": "2026-04-19T14:02:07.901Z",
   "style": "antiquites-africaines",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "9b6a64d8f37fcd60",
   "citations": {
     "single-item": "<span style=\"font-variant:small-caps;\">Kuhn</span> 1962",
@@ -26,6 +26,7 @@
     "no-date-single": "<span style=\"font-variant:small-caps;\">Forthcoming</span> n.d."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span> 1797, <span style=\"font-variant:small-caps;\">Adams</span> J. <i>Letter to James Smith</i>, [s.l.]. Massachusetts Historical Society, Adams Papers, reel 45. </div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span> 2023, <span style=\"font-variant:small-caps;\">Bengio</span> Y. <i>The Future of Artificial Intelligence</i>, interview by Stephen <span style=\"font-variant:small-caps;\">Colbert</span>, video-interview. https://example.com/interview</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> 2019, <span style=\"font-variant:small-caps;\">Chen</span> W. <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, [s.l.]. </div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span> 2006, <span style=\"font-variant:small-caps;\">Ericsson</span> K. A. “The Role of Deliberate Practice,” <i>in</i> K. A. <span style=\"font-variant:small-caps;\">Ericsson</span>, N. <span style=\"font-variant:small-caps;\">Charness</span>, P. J. <span style=\"font-variant:small-caps;\">Feltovich</span> and R. R. <span style=\"font-variant:small-caps;\">Hoffman</span> (eds.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, [s.l.], p. 683–703. </div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:40.153Z",
+  "generated_at": "2026-04-19T14:03:25.632Z",
   "style": "universidade-de-sao-paulo-instituto-de-matematica-e-estatistica",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "18996a238d95a125",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming n.d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><b>Adams</b> (<b>1797</b>) John Adams. Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\"><b>Bengio</b> (<b>2023</b>) Yoshua Bengio. The Future of Artificial Intelligence. Retrieved from https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\"><b><i>Brown v. Board of Education</i></b> (<b>1954</b>) .</div>\n",
     "  <div class=\"csl-entry\"><b>Chen</b> (<b>2019</b>) Wei Chen. <i>Neural Networks for Natural Language Understanding</i>. Stanford University.</div>\n",

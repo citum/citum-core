@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:16.481Z",
+  "generated_at": "2026-04-19T14:03:00.705Z",
   "style": "lluelles",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "1456f0dc331c15c4",
   "citations": {
     "single-item-1": "Thomas S. <span style=\"font-variant:small-caps;\">Kuhn</span>, “The Structure of Scientific Revolutions,” (1962) 2-2 <i>International Encyclopedia of Unified Science</i><span style=\"font-variant:small-caps;\">, doi : </span>10.1234/example.",
@@ -63,6 +63,7 @@
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Vasari</span>, G., “Renaissance Art and Culture,” dans Encyclopedia of World History, 5, 234–256, Oxford University Press.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Vaswani</span>, A., N. <span style=\"font-variant:small-caps;\">Shazeer</span>, N. <span style=\"font-variant:small-caps;\">Parmar</span>, J. <span style=\"font-variant:small-caps;\">Uszkoreit</span>, L. <span style=\"font-variant:small-caps;\">Jones</span>, A. N. <span style=\"font-variant:small-caps;\">Gomez</span>, L. <span style=\"font-variant:small-caps;\">Kaiser</span> and I. <span style=\"font-variant:small-caps;\">Polosukhin</span>, “Attention Is All You Need,” (2017) 30 <i>Advances in Neural Information Processing Systems</i> 5998–6008.</div>\n",
     "  <div class=\"csl-entry\">“The Role of Theory in Research,” (2018) 28-3 <i>Journal of Theoretical Psychology</i> 201–215.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span>, J. <i>Letter to James Smith</i>, 1797.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span>, Y. <i>The Future of Artificial Intelligence</i>, video-interview, 10 November 2023.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span>, D. and S. <span style=\"font-variant:small-caps;\">Lee</span>. <i>Method for Efficient Data Compression</i>, 13 July 2021.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Lumière</span>, L. <i>The Arrival of a Train at La Ciotat Station</i>, short-film, 1896.</div>\n",

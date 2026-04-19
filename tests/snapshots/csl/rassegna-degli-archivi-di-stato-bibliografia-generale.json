@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:31.067Z",
+  "generated_at": "2026-04-19T14:03:16.211Z",
   "style": "rassegna-degli-archivi-di-stato-bibliografia-generale",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "c304f17d1e16873c",
   "citations": {
     "single-item-1": "<span style=\"font-variant:small-caps;\">T.S. Kuhn</span>, <i>The Structure of Scientific Revolutions</i>, in «International Encyclopedia of Unified Science», 2 (1962), 2.",
@@ -73,6 +73,7 @@
     "  <div class=\"csl-entry\"><i>Brown v. Board of Education</i>, 17 maggio 1954, p. 483.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Franz Kafka</span>, <i>Metamorphosis</i>, trad. di David Wyllie, Leipzig, Kurt Wolff Verlag, 1915.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Louis Lumière</span>, <i>The Arrival of a Train at La Ciotat Station</i>, 1896.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Massachusetts Historical Society</span>, <i>Adams Papers, reel 45</i> «Letter to James Smith».</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Baruch Spinoza</span>, <i>Éthique</i>, Amsterdam, Jan Rieuwertsz, 1677.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">A. Forthcoming</span>, <i>Foundations of Declarative Bibliography</i>, Cambridge, University Press, s.d.</div>\n"
   ]

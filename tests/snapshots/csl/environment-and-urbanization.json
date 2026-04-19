@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:01.825Z",
+  "generated_at": "2026-04-19T14:02:45.309Z",
   "style": "environment-and-urbanization",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "0f1474cb1111136b",
   "citations": {
     "single-item-1": "Kuhn, Thomas S (1962), “The Structure of Scientific Revolutions,” <i>International Encyclopedia of Unified Science</i> Vol 2, No 2, University of Chicago Press, Chicago.",
@@ -74,6 +74,7 @@
     "  <div class=\"csl-entry\">Smith, John, Alice Lee, Bao Nguyen and Ravi Patel (2021), “Adaptive Climate Risk Modeling for Inland Regions,” <i>Journal of Climate Analytics</i> Vol 12, No 3, pages 201–219.</div>\n",
     "  <div class=\"csl-entry\">Garcia, Maria (2019), “Methods for Robust Climate Attribution,” <i>Annual Review of Climate Science</i> Vol 4, pages 55–80.</div>\n",
     "  <div class=\"csl-entry\">Garcia, Maria (2019), “Methods for Probabilistic Climate Attribution,” <i>Annual Review of Climate Science</i> Vol 4, pages 81–104.</div>\n",
-    "  <div class=\"csl-entry\">Forthcoming, A. <i>Foundations of Declarative Bibliography</i>, University Press, Cambridge.</div>\n"
+    "  <div class=\"csl-entry\">Forthcoming, A. <i>Foundations of Declarative Bibliography</i>, University Press, Cambridge.</div>\n",
+    "  <div class=\"csl-entry\">Adams, John (1797), “Letter to James Smith.”</div>\n"
   ]
 }

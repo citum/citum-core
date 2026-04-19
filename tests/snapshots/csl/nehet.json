@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:21.163Z",
+  "generated_at": "2026-04-19T14:03:05.194Z",
   "style": "nehet",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "8ccdb43826c8e683",
   "citations": {
     "single-item-1": "<span style=\"font-variant:small-caps;\">Kuhn</span> 1962",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "<span style=\"font-variant:small-caps;\">Garcia</span> 2019a ;  2019b"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b><span style=\"font-variant:small-caps;\">Adams</span> 1797</b></div>\n\n    <div class=\"csl-left-margin\">Adams J., .</div></div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b><span style=\"font-variant:small-caps;\">Bengio</span> 2023</b></div>\n\n    <div class=\"csl-left-margin\">Bengio Y., .</div></div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b><span style=\"font-variant:small-caps;\">Chen</span> 2019</b></div>\n\n    <div class=\"csl-left-margin\">Chen W., <i><i>Neural Networks for Natural Language Understanding</i></i>, phd-thesis, soutenue à l’Stanford University, 2019.</div></div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b><span style=\"font-variant:small-caps;\">Ericsson</span> 2006</b></div>\n\n    <div class=\"csl-left-margin\">Ericsson K.A., « The Role of Deliberate Practice », dans K.A. Ericsson, N. Charness, P.J. Feltovich &#38; R.R. Hoffman (éds.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, 2006, p. 683‑703.</div></div>\n",

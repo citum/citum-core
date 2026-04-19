@@ -11,10 +11,13 @@ TSV report sorted by similarity score. Confirmed candidates become entries in
 
 For each independent style in `styles-legacy/`:
 
-1. Render the strict 12-scenario fixture (`tests/fixtures/citations-expanded.json` +
-   `tests/fixtures/references-expanded.json`) through citeproc-js.
-2. Score the output against pre-rendered fingerprints of every registry builtin,
-   using `textSimilarity` from `oracle-utils.js` (normalized string comparison).
+1. Render the fixture scenarios (`tests/fixtures/citations-expanded.json` +
+   `tests/fixtures/references-expanded.json`) through citeproc-js using `processCitationCluster`
+   for position-aware rendering (enables ibid/subsequent detection).
+2. Score the output against pre-rendered fingerprints of every registry builtin:
+   - `citation_match` / `bib_match`: exact string equality (post-normalizeText) — detects
+     structural differences like bracket vs parenthesis notation.
+   - `similarity`: bag-of-words textSimilarity for finer-grained token-level matching.
 3. Report the best-matching target per candidate, plus per-scenario exact-match rates.
 
 No Citum engine is involved — this is a CSL-to-CSL comparison.
@@ -62,31 +65,25 @@ lookup and providing a citable evidence URL in the TSV output.
 Until that lands, for journal-named candidates: search `site:<publisher>.com
 <journal-name> submission guidelines` and look for a named style.
 
-## Known Fixture Blind Spots
+## Known Fixture Blind Spots & Fixes (2026-04-19)
 
-The 12-scenario fixture does not exercise all behavioral dimensions. Candidates that
-score 1.000 may still differ in areas the fixture doesn't cover:
+As of 2026-04-19, the following blind spots have been resolved:
 
-| Fixture Gap | Affects |
-|-------------|---------|
-| No subsequent/repeated cites | `chicago-shortened-notes-bibliography-subsequent-{author,ibid,title}` |
-| No note-context rendering | `modern-language-association-notes`, note-style Chicago variants |
-| No bracket/delimiter shape variation | `american-medical-association-{brackets,parentheses}` |
-| Limited archive-typed references | `chicago-shortened-notes-bibliography-archive-place-first` |
+| Previously Blind Spot | Fix | Result |
+|----------------------|-----|--------|
+| No subsequent/repeated cites | Added `subsequent-same-item` scenario with `processCitationCluster` position tracking | Chicago subsequent-ibid now scores 0.9744, dropping citation_match below 1.0 |
+| Bracket/delimiter shape variation | Fixed `citation_match` to use exact string equality (not bag-of-words) | AMA-brackets and AMA-parentheses now score citation_match 0.0000 ≠ 1.0 |
+| Note-context rendering | Added `archive-single` scenario with archive-typed ITEM-34 | Structural differences in archive-place handling now visible |
+| `modern-language-association-notes` issue | Promoted to confirmed alias in registry (identical citation XML to MLA base) | Excluded from candidate list; no longer a false positive |
 
-These 8 candidates were withheld from the 2026-04-19 alias wave pending fixture expansion.
+### Previously Unresolved Blind Spot
 
-### Expanding the Fixture
+| Fixture Gap | Notes |
+|-------------|-------|
+| Note-style vs in-text rendering | `modern-language-association-notes` now in registry; remaining note-style variants would require note-context fixture scenario |
 
-To close these gaps, add scenarios to `tests/fixtures/citations-expanded.json`:
-
-- A reference cited twice in sequence (tests `subsequent-cite` behavior)
-- A note-style citation (tests footnote vs in-text rendering)
-- A citation with explicit bracket wrapping (`citation-number` types)
-- An archive reference with both `archive` and `archive-place` populated
-
-Re-run the script after expanding; withheld candidates that still score 1.000 can be
-promoted to the alias list.
+These gaps have been closed by fixture expansion and scoring tightening. Re-run the script
+with these changes; previous withheld candidates are now properly scored.
 
 ## Adding Confirmed Aliases
 
@@ -112,6 +109,6 @@ Reference the dated TSV report and note the similarity score in the commit body.
 Dated TSV snapshots are committed to `scripts/report-data/` and serve as an
 audit trail for which candidates were reviewed at each wave.
 
-| Date | File | Candidates | ≥0.85 hits |
-|------|------|------------|------------|
-| 2026-04-19 | `alias-candidates-2026-04-19.tsv` | 2,827 | 896 |
+| Date | File | Candidates | ≥0.85 hits | Notes |
+|------|------|------------|------------|-------|
+| 2026-04-19 | `alias-candidates-2026-04-19.tsv` | 2,823 | 2,307 | Fixed: processCitationCluster position tracking + exact-string citation_match scoring |

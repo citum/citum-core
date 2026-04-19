@@ -62,7 +62,7 @@ styles:
     description: "Chicago Notes (without bibliography)"
     fields: [humanities]
   - id: modern-language-association
-    aliases: [mla, taylor-and-francis-style-e]
+    aliases: [mla, taylor-and-francis-style-e, modern-language-association-notes]
     builtin: modern-language-association
     description: "Modern Language Association"
     fields: [humanities]

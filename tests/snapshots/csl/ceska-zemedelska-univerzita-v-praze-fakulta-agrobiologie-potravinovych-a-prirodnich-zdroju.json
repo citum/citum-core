@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:32.296Z",
+  "generated_at": "2026-04-19T14:02:15.024Z",
   "style": "ceska-zemedelska-univerzita-v-praze-fakulta-agrobiologie-potravinovych-a-prirodnich-zdroju",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "4763762c18f27581",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -28,6 +28,7 @@
   "bibliography": [
     "  <div class=\"csl-entry\"> Brown v. Board of Education. , 347 U.S. Reports 483 (U.S. Supreme Court May 17, 1954).</div>\n",
     "  <div class=\"csl-entry\"> The Role of Theory in Research. 2018. Journal of Theoretical Psychology. 28 (3). 201–215.</div>\n",
+    "  <div class=\"csl-entry\">Adams, J. 1797. Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y. 2023. , November 10 The Future of Artificial Intelligence. . video-interview. Retrieved from https://example.com/interview</div>\n",
     "  <div class=\"csl-entry\">Chen, W. 2019. Neural Networks for Natural Language Understanding (phd-thesis). Stanford University.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. A. 2006. The Role of Deliberate Practice. In: K. A. Ericsson, N. Charness, P. J. Feltovich, R. R. Hoffman (Eds.). The Cambridge Handbook of Expertise and Expert Performance. p. 683–703. Cambridge University Press.</div>\n",

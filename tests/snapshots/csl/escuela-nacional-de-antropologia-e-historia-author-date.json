@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:02.134Z",
+  "generated_at": "2026-04-19T14:02:45.658Z",
   "style": "escuela-nacional-de-antropologia-e-historia-author-date",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "55a6d07243eb7f26",
   "citations": {
     "single-item": "[T. S. Kuhn 1962]",
@@ -26,6 +26,7 @@
     "no-date-single": "[A. Forthcoming n.d.]"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Adams, John</span></div>\n\n    <div class=\"csl-left-margin\">1797 </div><div class=\"csl-right-inline\">Letter to James Smith.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Anonymous</span></div>\n\n    <div class=\"csl-left-margin\">1954 </div><div class=\"csl-right-inline\"><i>Brown v. Board of Education</i>, vol. 347. U.S. Supreme Court.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Anonymous</span></div>\n\n    <div class=\"csl-left-margin\">2018 </div><div class=\"csl-right-inline\">The Role of Theory in Research. <i>Journal of Theoretical Psychology</i>, 28 (3): 201–215.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Bengio, Yoshua</span></div>\n\n    <div class=\"csl-left-margin\">2023 </div><div class=\"csl-right-inline\">The Future of Artificial Intelligence Interview by Stephen Colbert. Video-interview. &#60;https://example.com/interview&#62; [<span style=\"font-variant:small-caps;\">video-interview</span>].</div>\n  </div>\n",

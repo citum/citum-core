@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:00.301Z",
+  "generated_at": "2026-04-19T14:02:43.674Z",
   "style": "din-1505-2-alphanumeric",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "4e44b0461eb3be7e",
   "citations": {
     "single-item": "[Kuhn62]",
@@ -26,6 +26,7 @@
     "no-date-single": "[Fort00]"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Adam97] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Adams, John</span>: Letter to James Smith, 1797</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Beng23] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Bengio, Yoshua</span>: The Future of Artificial Intelligence.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Brow54] </div><div class=\"csl-right-inline\"><i>Brown v. Board of Education</i>. Bd. 347, 1954</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Chen19] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Chen, Wei</span>: <i>Neural Networks for Natural Language Understanding</i>, Stanford University, phd-thesis, 2019</div>\n  </div>\n",

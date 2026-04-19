@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:31.738Z",
+  "generated_at": "2026-04-19T14:03:16.962Z",
   "style": "revista-ladinia",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "307124490bd6a312",
   "citations": {
     "single-item": "(<span style=\"font-variant:small-caps;\">Kuhn</span> 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(<span style=\"font-variant:small-caps;\">Forthcoming</span>)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span>, John: <i>Letter to James Smith</i>, 1797.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span>, Yoshua: <i>The Future of Artificial Intelligence</i>, 2023.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei: <i>Neural Networks for Natural Language Understanding</i>, 2019.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span>, K. Anders: <i>The Role of Deliberate Practice</i>, in: <span style=\"font-variant:small-caps;\">Ericsson</span>, K. Anders et al. (eds.), The Cambridge Handbook of Expertise and Expert Performance, 2006, 683–703.</div>\n",

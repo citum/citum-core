@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:00.529Z",
+  "generated_at": "2026-04-19T14:02:43.943Z",
   "style": "duale-hochschule-baden-wurttemberg-villingen-schwenningen-roter-grubert-mattern",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "1c92f5f52b861301",
   "citations": {
     "single-item-1": "Kuhn, 1962.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Garcia, 2019a; Garcia, 2019b."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, John (1797), Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua (2023, 10. November), The Future of Artificial Intelligence, video-interview, in: https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education, , 347 U.S. Reports 483 (U.S. Supreme Court 17. Mai 1954).</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei (2019), Neural Networks for Natural Language Understanding, Phd-thesis 2019.</div>\n",

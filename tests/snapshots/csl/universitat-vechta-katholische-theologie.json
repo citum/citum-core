@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:41.071Z",
+  "generated_at": "2026-04-19T14:03:26.550Z",
   "style": "universitat-vechta-katholische-theologie",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "0492d280caa668e1",
   "citations": {
     "single-item-1": "<span style=\"baseline\"><span style=\"font-variant:small-caps;\">Kuhn, Thomas S.</span></span>, The Structure of Scientific Revolutions, in: International Encyclopedia of Unified Science 2 (1962).",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "<span style=\"baseline\"><span style=\"font-variant:small-caps;\">Garcia, Maria</span></span>, Methods for Robust Climate Attribution, in: Annual Review of Climate Science 4 (2019), 55–80; <span style=\"baseline\"><span style=\"font-variant:small-caps;\">Garcia, Maria</span></span>, Methods for Probabilistic Climate Attribution, in: Annual Review of Climate Science 4 (2019), 81–104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Adams, John</span></span>, Letter to James Smith, 1797 (Massachusetts Historical Society: Adams Papers, reel 45).</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Bengio, Yoshua</span></span>, The Future of Artificial Intelligence, 2023.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Chen, Wei</span></span>, Neural Networks for Natural Language Understanding, 2019.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Ericsson, K. Anders</span></span>, The Role of Deliberate Practice, in: <span style=\"font-variant:small-caps;\">Ericsson, K. Anders</span> / <span style=\"font-variant:small-caps;\">Charness, Neil</span> / <span style=\"font-variant:small-caps;\">Feltovich, Paul J.</span> / <span style=\"font-variant:small-caps;\">Hoffman, Robert R.</span> (Hgg.), The Cambridge Handbook of Expertise and Expert Performance, 2006, 683–703.</div>\n",

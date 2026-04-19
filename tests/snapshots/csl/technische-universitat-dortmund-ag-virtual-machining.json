@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:36.195Z",
+  "generated_at": "2026-04-19T14:03:21.472Z",
   "style": "technische-universitat-dortmund-ag-virtual-machining",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "c987e35183eb1eb9",
   "citations": {
     "single-item": "(T.S. Kuhn (1962))",
@@ -57,6 +57,7 @@
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b><b>Brown v. Board of Education</b></b></div>\nU.S. Reports 347 (1954): 483</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b><b>Metamorphosis</b></b></div>\n\n\n    <div class=\"csl-block\">F. Kafka</div>\n (1915), Kurt Wolff Verlag</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b><b>The Arrival of a Train at La Ciotat Station</b></b></div>\n\n\n    <div class=\"csl-block\">L. Lumière</div>\n (1896)</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b><b>Letter to James Smith</b></b></div>\n\n\n    <div class=\"csl-block\">J. Adams</div>\n (1797)</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b><b>Éthique</b></b></div>\n\n\n    <div class=\"csl-block\">B. Spinoza</div>\n (1677), Jan Rieuwertsz</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b><b>Foundations of Declarative Bibliography</b></b></div>\n\n\n    <div class=\"csl-block\">A. Forthcoming,</div>\n University Press</div>\n"
   ]

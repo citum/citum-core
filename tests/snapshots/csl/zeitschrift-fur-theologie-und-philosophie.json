@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:44.544Z",
+  "generated_at": "2026-04-19T14:03:30.117Z",
   "style": "zeitschrift-fur-theologie-und-philosophie",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "3389a1ae7f7fb895",
   "citations": {
     "single-item-1": "Thomas S. Kuhn, <i>The Structure of Scientific Revolutions</i>, in: International Encyclopedia of Unified Science 2 (1962), DOI: 10.1234/example.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Maria Garcia, <i>Methods for Robust Climate Attribution</i>, in: Annual Review of Climate Science 4 (2019), 55–80, DOI: 10.5555/arcs.2019.4.55; Maria Garcia, <i>Methods for Probabilistic Climate Attribution</i>, in: Annual Review of Climate Science 4 (2019), 81–104, DOI: 10.5555/arcs.2019.4.81."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, John, <i>Letter to James Smith</i>. 1797. Massachusetts Historical Society, Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua, <i>The Future of Artificial Intelligence</i> (video-interview)2023.</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei, <i>Neural Networks for Natural Language Understanding</i> (phd-thesis)2019.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. Anders, <i>The Role of Deliberate Practice</i>, in: K. Anders Ericsson et al. (eds.): The Cambridge Handbook of Expertise and Expert Performance2006, 683–703.</div>\n",

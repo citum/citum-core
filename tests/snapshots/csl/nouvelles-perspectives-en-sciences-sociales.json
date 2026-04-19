@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:25.800Z",
+  "generated_at": "2026-04-19T14:03:10.488Z",
   "style": "nouvelles-perspectives-en-sciences-sociales",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "ad9fc33b7d27d015",
   "citations": {
     "single-item-1": "Thomas S. Kuhn, “The Structure of Scientific Revolutions,” <i>International Encyclopedia of Unified Science</i>, vol. 2, n<sup>o</sup> 2, Chicago, University of Chicago Press, 1962.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Maria Garcia, “Methods for Robust Climate Attribution,” <i>Annual Review of Climate Science</i>, vol. 4, 2019, p. 55–80; Maria Garcia, “Methods for Probabilistic Climate Attribution,” <i>Annual Review of Climate Science</i>, vol. 4, 2019, p. 81–104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, John, <i>Letter to James Smith</i>, Massachusetts Historical Society, Adams Papers, reel 45, 1797.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua, <i>The Future of Artificial Intelligence</i>, 2023.</div>\n",
     "  <div class=\"csl-entry\">“Brown v. Board of Education,” vol. 347, 1954, p. 483.</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei, “Neural Networks for Natural Language Understanding,” phd-thesis, Stanford University, 2019.</div>\n",

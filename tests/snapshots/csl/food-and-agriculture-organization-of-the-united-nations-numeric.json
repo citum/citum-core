@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:03.832Z",
+  "generated_at": "2026-04-19T14:02:47.448Z",
   "style": "food-and-agriculture-organization-of-the-united-nations-numeric",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "ba32107829d405cb",
   "citations": {
     "single-item": "<sup>1</sup>",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">30.</div><div class=\"csl-right-inline\"><b>Smith, J., Lee, A., Nguyen, B. &#38; Patel, R.</b> 2021. Adaptive Climate Risk Modeling for Inland Regions. <i>Journal of Climate Analytics</i>, 12(3): 201–219. https://doi.org/10.5555/jca.2021.12.3.201</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">31.</div><div class=\"csl-right-inline\"><b>Garcia, M.</b> 2019. Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i>, 4: 55–80. https://doi.org/10.5555/arcs.2019.4.55</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">32.</div><div class=\"csl-right-inline\"><b>Garcia, M.</b> 2019. Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i>, 4: 81–104. https://doi.org/10.5555/arcs.2019.4.81</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">33.</div><div class=\"csl-right-inline\"><b>Forthcoming, A.</b> undated. <i>Foundations of Declarative Bibliography</i>. Cambridge, University Press.</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">33.</div><div class=\"csl-right-inline\"><b>Forthcoming, A.</b> undated. <i>Foundations of Declarative Bibliography</i>. Cambridge, University Press.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">34.</div><div class=\"csl-right-inline\"><b>Adams, J.</b> 1797. <i>Letter to James Smith</i></div>\n  </div>\n"
   ]
 }

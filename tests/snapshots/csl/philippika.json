@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:29.344Z",
+  "generated_at": "2026-04-19T14:03:14.293Z",
   "style": "philippika",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "ca586b24db8b3675",
   "citations": {
     "single-item-1": "Kuhn 1962",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Garcia 2019a;  2019b"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams 1797 = Adams, J., .</div>\n",
     "  <div class=\"csl-entry\">Bengio 2023 = Bengio, Y., .</div>\n",
     "  <div class=\"csl-entry\">Chen 2019 = Chen, W., Neural Networks for Natural Language Understanding, phd-thesis, Stanford University 2019.</div>\n",
     "  <div class=\"csl-entry\">Ericsson 2006 = Ericsson, K.A., The Role of Deliberate Practice, in: Ericsson, K.A. et al. (Eds.), The Cambridge Handbook of Expertise and Expert Performance2006, 683–703.</div>\n",

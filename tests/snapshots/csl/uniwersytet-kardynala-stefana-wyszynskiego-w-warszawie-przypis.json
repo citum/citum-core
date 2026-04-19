@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:42.695Z",
+  "generated_at": "2026-04-19T14:03:28.233Z",
   "style": "uniwersytet-kardynala-stefana-wyszynskiego-w-warszawie-przypis",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "7e3cd2a3b4f01501",
   "citations": {
     "single-item-1": "T.S. Kuhn, <i>The Structure of Scientific Revolutions</i>, „International Encyclopedia of Unified Science” 1962, t. 2, nr 2.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "M. Garcia, <i>Methods for Robust Climate Attribution</i>, „Annual Review of Climate Science” 2019, t. 4, s. 55-80; <i>Methods for Probabilistic Climate Attribution</i>, „Annual Review of Climate Science” 2019, t. 4, s. 81-104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams J., <i>Letter to James Smith</i>, 1797.</div>\n",
     "  <div class=\"csl-entry\">Bengio Y., <i>The Future of Artificial Intelligence</i>, video-interview 2023.</div>\n",
     "  <div class=\"csl-entry\">Chen W., <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\">Ericsson K. A., <i>The Role of Deliberate Practice</i>, in: <i>The Cambridge Handbook of Expertise and Expert Performance</i>, ed. K. A. Ericsson, N. Charness, P. J. Feltovich, R. R. Hoffman, 2006, s. 683-703.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:16.112Z",
+  "generated_at": "2026-04-19T14:03:00.317Z",
   "style": "leidraad-voor-juridische-auteurs",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "11c17630538d2d30",
   "citations": {
     "single-item-1": "Kuhn, <i>International Encyclopedia of Unified Science</i> 1962/2.",
@@ -67,6 +67,7 @@
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Weinberg &#38; Freedman 1971 </b></div>\nG.M. Weinberg &#38; D.P. Freedman, <i>The Psychology of Computer Programming</i>, New York: Van Nostrand Reinhold 1971. </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>World Bank 2023 </b></div>\nWorld Bank, <i>World Development Report 2023</i>, Washington, DC: World Bank Group 2023. </div>\n",
     "  <div class=\"csl-entry\">U.S. Supreme Court 17 May 1954, U.S. Reports 347 (<i>Brown v. Board of Education</i>). </div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>‘Letter to James Smith’ </b></div>\nJ. Adams, ‘Letter to James Smith’, 1797. </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>‘The Future of Artificial Intelligence’ </b></div>\nY. Bengio, ‘The Future of Artificial Intelligence’, https://example.com, 10 November 2023. </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>‘Method for Efficient Data Compression’ </b></div>\nD. Johnson &#38; S. Lee, ‘Method for Efficient Data Compression’, 13 July 2021. </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>‘The Arrival of a Train at La Ciotat Station’ </b></div>\nL. Lumière, ‘The Arrival of a Train at La Ciotat Station’, 1896. </div>\n",

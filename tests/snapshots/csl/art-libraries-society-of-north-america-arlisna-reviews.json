@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:28.631Z",
+  "generated_at": "2026-04-19T14:02:10.817Z",
   "style": "art-libraries-society-of-north-america-arlisna-reviews",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "89fb28d91b6915c1",
   "citations": {
     "single-item-1": "Kuhn, “The Structure of Scientific Revolutions.”",
@@ -55,6 +55,7 @@
     "  <div class=\"csl-entry\"><i>Foundations of Declarative Bibliography</i> by A. Forthcoming. University Press, n.d.</div>\n",
     "  <div class=\"csl-entry\">“Global Temperature Anomalies 1880-2023” by NASA Goddard Institute for Space Studies. NASA, 2024. https://data.giss.nasa.gov/gistemp/.</div>\n",
     "  <div class=\"csl-entry\"><i>Handbook of Research Methods in Social Psychology</i> edited by Harry T. Reis, and Charles M. Judd. Cambridge University Press, 2000.</div>\n",
+    "  <div class=\"csl-entry\">“Letter to James Smith” by John Adams, 1797. Adams Papers, reel 45. Massachusetts Historical Society. Boston, MA.</div>\n",
     "  <div class=\"csl-entry\">“Machine Learning for Climate Prediction” by Jane Smith, and Robert Williams. <i>Environmental Research Letters</i>. 15, no. 11 (2020). https://doi.org/10.1088/1748-9326/abc123.</div>\n",
     "  <div class=\"csl-entry\">“Major Breakthrough in Quantum Computing Announced” by Maria Rodriguez. <i>The New York Times</i>, March 15, 2024, sec. Science.</div>\n",
     "  <div class=\"csl-entry\"><i>Metamorphosis</i> by Franz Kafka. Translated by David Wyllie. Kurt Wolff Verlag, 1915.</div>\n",

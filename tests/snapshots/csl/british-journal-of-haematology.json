@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:31.017Z",
+  "generated_at": "2026-04-19T14:02:13.619Z",
   "style": "british-journal-of-haematology",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "bfb52738fc782a08",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, J. (1797) Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y. (2023) The Future of Artificial Intelligence. Available at: https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education (1954).</div>\n",
     "  <div class=\"csl-entry\">Chen, W. (2019) Neural Networks for Natural Language Understanding.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:39.899Z",
+  "generated_at": "2026-04-19T14:03:25.366Z",
   "style": "uni-fribourg-theologie",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "9d317947421343b6",
   "citations": {
     "single-item-1": "<span style=\"font-variant:small-caps;\">Kuhn</span>, <i>The Structure of Scientific Revolutions</i> (1962).",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "<span style=\"font-variant:small-caps;\">Garcia</span>, <i>Methods for Robust Climate Attribution</i> (2019) ; <span style=\"font-variant:small-caps;\">Garcia</span>, <i>Methods for Probabilistic Climate Attribution</i> (2019)."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span>, John : <i>Letter to James Smith</i>, 1797. Massachusetts Historical Society, Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span>, Yoshua : The Future of Artificial Intelligence. 2023 (video-interview).</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei : Neural Networks for Natural Language Understanding. 2019 (phd-thesis).</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span>, K. Anders : The Role of Deliberate Practice. In : <span style=\"font-variant:small-caps;\">Ericsson</span>, K. Anders et al. (eds.) : <i>The Cambridge Handbook of Expertise and Expert Performance</i>. 2006, 683–703.</div>\n",

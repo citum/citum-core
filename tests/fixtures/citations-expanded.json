@@ -1,177 +1,201 @@
 [
-    {
-        "id": "single-item",
-        "items": [
-            {
-                "id": "ITEM-1"
-            }
-        ]
-    },
-    {
-        "id": "multi-item",
-        "items": [
-            {
-                "id": "ITEM-1"
-            },
-            {
-                "id": "ITEM-2",
-                "prefix": "see also "
-            }
-        ]
-    },
-    {
-        "id": "with-locator",
-        "items": [
-            {
-                "id": "ITEM-1",
-                "locator": { "label": "page", "value": "23" }
-            }
-        ]
-    },
-    {
-        "id": "multi-item-with-locators",
-        "items": [
-            {
-                "id": "ITEM-1",
-                "locator": { "label": "page", "value": "10" }
-            },
-            {
-                "id": "ITEM-3",
-                "locator": { "label": "page", "value": "440" },
-                "prefix": "see also "
-            }
-        ]
-    },
-    {
-        "id": "suppress-author",
-        "suppress-author": true,
-        "items": [
-            {
-                "id": "ITEM-1"
-            }
-        ]
-    },
-    {
-        "id": "locator-section-with-suffix",
-        "items": [
-            {
-                "id": "ITEM-2",
-                "locator": { "label": "section", "value": "12" },
-                "suffix": ", esp. discussion"
-            }
-        ]
-    },
-    {
-        "id": "suppress-author-with-locator",
-        "suppress-author": true,
-        "items": [
-            {
-                "id": "ITEM-1",
-                "locator": { "label": "page", "value": "44" }
-            }
-        ]
-    },
-    {
-        "id": "multi-item-with-prefix",
-        "items": [
-            {
-                "id": "ITEM-1",
-                "locator": { "label": "page", "value": "44" }
-            },
-            {
-                "id": "ITEM-3",
-                "prefix": "cf. ",
-                "locator": { "label": "page", "value": "437" }
-            }
-        ]
-    },
-    {
-        "id": "single-with-prefix-and-suffix",
-        "items": [
-            {
-                "id": "ITEM-7",
-                "prefix": "see ",
-                "suffix": ", and references therein"
-            }
-        ]
-    },
-    {
-        "id": "et-al-single-long-list",
-        "items": [
-            {
-                "id": "ITEM-29"
-            }
-        ]
-    },
-    {
-        "id": "disambiguate-add-names-et-al",
-        "items": [
-            {
-                "id": "ITEM-29"
-            },
-            {
-                "id": "ITEM-30"
-            }
-        ]
-    },
-    {
-        "id": "disambiguate-year-suffix",
-        "items": [
-            {
-                "id": "ITEM-31"
-            },
-            {
-                "id": "ITEM-32"
-            }
-        ]
-    },
-    {
-        "id": "et-al-with-locator",
-        "items": [
-            {
-                "id": "ITEM-30",
-                "locator": { "label": "page", "value": "205" }
-            }
-        ]
-    },
-    {
-        "id": "chapter-single",
-        "items": [
-            {
-                "id": "ITEM-4"
-            }
-        ]
-    },
-    {
-        "id": "report-single",
-        "items": [
-            {
-                "id": "ITEM-5"
-            }
-        ]
-    },
-    {
-        "id": "thesis-single",
-        "items": [
-            {
-                "id": "ITEM-11"
-            }
-        ]
-    },
-    {
-        "id": "webpage-single",
-        "items": [
-            {
-                "id": "ITEM-13"
-            }
-        ]
-    },
-    {
-        "id": "no-date-single",
-        "items": [
-            {
-                "id": "ITEM-33"
-            }
-        ]
-    }
+  {
+    "id": "single-item",
+    "items": [
+      {
+        "id": "ITEM-1"
+      }
+    ]
+  },
+  {
+    "id": "multi-item",
+    "items": [
+      {
+        "id": "ITEM-1"
+      },
+      {
+        "id": "ITEM-2",
+        "prefix": "see also "
+      }
+    ]
+  },
+  {
+    "id": "with-locator",
+    "items": [
+      {
+        "id": "ITEM-1",
+        "locator": {
+          "label": "page",
+          "value": "23"
+        }
+      }
+    ]
+  },
+  {
+    "id": "multi-item-with-locators",
+    "items": [
+      {
+        "id": "ITEM-1",
+        "locator": {
+          "label": "page",
+          "value": "10"
+        }
+      },
+      {
+        "id": "ITEM-3",
+        "locator": {
+          "label": "page",
+          "value": "440"
+        },
+        "prefix": "see also "
+      }
+    ]
+  },
+  {
+    "id": "suppress-author",
+    "suppress-author": true,
+    "items": [
+      {
+        "id": "ITEM-1"
+      }
+    ]
+  },
+  {
+    "id": "locator-section-with-suffix",
+    "items": [
+      {
+        "id": "ITEM-2",
+        "locator": {
+          "label": "section",
+          "value": "12"
+        },
+        "suffix": ", esp. discussion"
+      }
+    ]
+  },
+  {
+    "id": "suppress-author-with-locator",
+    "suppress-author": true,
+    "items": [
+      {
+        "id": "ITEM-1",
+        "locator": {
+          "label": "page",
+          "value": "44"
+        }
+      }
+    ]
+  },
+  {
+    "id": "multi-item-with-prefix",
+    "items": [
+      {
+        "id": "ITEM-1",
+        "locator": {
+          "label": "page",
+          "value": "44"
+        }
+      },
+      {
+        "id": "ITEM-3",
+        "prefix": "cf. ",
+        "locator": {
+          "label": "page",
+          "value": "437"
+        }
+      }
+    ]
+  },
+  {
+    "id": "single-with-prefix-and-suffix",
+    "items": [
+      {
+        "id": "ITEM-7",
+        "prefix": "see ",
+        "suffix": ", and references therein"
+      }
+    ]
+  },
+  {
+    "id": "et-al-single-long-list",
+    "items": [
+      {
+        "id": "ITEM-29"
+      }
+    ]
+  },
+  {
+    "id": "disambiguate-add-names-et-al",
+    "items": [
+      {
+        "id": "ITEM-29"
+      },
+      {
+        "id": "ITEM-30"
+      }
+    ]
+  },
+  {
+    "id": "disambiguate-year-suffix",
+    "items": [
+      {
+        "id": "ITEM-31"
+      },
+      {
+        "id": "ITEM-32"
+      }
+    ]
+  },
+  {
+    "id": "et-al-with-locator",
+    "items": [
+      {
+        "id": "ITEM-30",
+        "locator": {
+          "label": "page",
+          "value": "205"
+        }
+      }
+    ]
+  },
+  {
+    "id": "chapter-single",
+    "items": [
+      {
+        "id": "ITEM-4"
+      }
+    ]
+  },
+  {
+    "id": "report-single",
+    "items": [
+      {
+        "id": "ITEM-5"
+      }
+    ]
+  },
+  {
+    "id": "thesis-single",
+    "items": [
+      {
+        "id": "ITEM-11"
+      }
+    ]
+  },
+  {
+    "id": "webpage-single",
+    "items": [
+      {
+        "id": "ITEM-13"
+      }
+    ]
+  },
+  {
+    "id": "no-date-single",
+    "items": [
+      {
+        "id": "ITEM-33"
+      }
+    ]
+  }
 ]

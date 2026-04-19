@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:42.377Z",
+  "generated_at": "2026-04-19T14:03:27.900Z",
   "style": "university-of-tasmania-simplified-author-date",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "5843ee0368fd6b28",
   "citations": {
     "single-item": "(Kuhn TS, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming A)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams J, 1797, <i>Letter to James Smith</i></div>\n",
     "  <div class=\"csl-entry\">Bengio Y, 10 Nov 2023, <i>The Future of Artificial Intelligence</i>, https://example.com/interview</div>\n",
     "  <div class=\"csl-entry\">Chen W, 2019, <i>Neural Networks for Natural Language Understanding</i>, Stanford University.</div>\n",
     "  <div class=\"csl-entry\">Ericsson KA, 2006, 'The Role of Deliberate Practice', in Ericsson, K.A. et al. (Eds.), The Cambridge Handbook of Expertise and Expert Performance. Cambridge University Press, pp. 683–703</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:31.572Z",
+  "generated_at": "2026-04-19T14:03:16.789Z",
   "style": "revista-ciencias-tecnicas-agropecuarias",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "ed81a13452356f3f",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming, [s.f])"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">ADAMS, J.: ¨Letter to James Smith¨, Massachusetts Historical Society, Adams Papers, reel 45, 1797. </div>\n",
     "  <div class=\"csl-entry\">BENGIO, Y.: <i>The Future of Artificial Intelligence</i>, <i>[en línea] </i>entr. Stephen Colbert, 2023. <i>Disponible en: https://example.com/interview</i> </div>\n",
     "  <div class=\"csl-entry\">CHEN, W.: <i>Neural Networks for Natural Language Understanding</i>, Tesis (en opción al phd-thesis), Stanford University, 2019. </div>\n",
     "  <div class=\"csl-entry\">ERICSSON, K.A.: ¨The Role of Deliberate Practice¨, edit. K. Anders Ericsson, Neil Charness, Paul J. Feltovich, and Robert R. Hoffman, <i>The Cambridge Handbook of Expertise and Expert Performance</i>, pp. 683–703, Ed. Cambridge University Press, 2006. </div>\n",

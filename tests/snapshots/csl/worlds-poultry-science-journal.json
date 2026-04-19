@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:44.010Z",
+  "generated_at": "2026-04-19T14:03:29.569Z",
   "style": "worlds-poultry-science-journal",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "8c52e2ef8ebba457",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming n.d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><b><b><b><b>ADAMS</b>, J.</b></b></b> 1797. Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\"><b><b><b><b>BENGIO</b>, Y.</b></b></b> 2023, November 10. The Future of Artificial Intelligence (video-interview).</div>\n",
     "  <div class=\"csl-entry\"><b><b>BROWN V. BOARD OF EDUCATION</b></b>. 1954. , <i>US Reports</i>, Vol. 347, p. 483.</div>\n",
     "  <div class=\"csl-entry\"><b><b><b><b>CHEN</b>, W.</b></b></b> 2019. Neural Networks for Natural Language Understanding (phd-thesis, Stanford University).</div>\n",

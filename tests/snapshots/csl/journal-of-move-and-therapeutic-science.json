@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:13.340Z",
+  "generated_at": "2026-04-19T14:02:57.411Z",
   "style": "journal-of-move-and-therapeutic-science",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "23422f50b4d8f9cb",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming, n.d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">Adams J.</div><div class=\"csl-right-inline\"> Letter to James Smith. 1797.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">Bengio Y.</div><div class=\"csl-right-inline\"> The Future of Artificial Intelligence. 2023. Available at: https://example.com/interview.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">Brown v. Board of Education</div><div class=\"csl-right-inline\"> U.S. Reports 347, 483 (U.S. Supreme Court 1954).</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">Chen W.</div><div class=\"csl-right-inline\"> Neural Networks for Natural Language Understanding. 2019.</div>\n  </div>\n",

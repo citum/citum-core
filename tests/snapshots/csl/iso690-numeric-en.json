@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:10.712Z",
+  "generated_at": "2026-04-19T14:02:54.710Z",
   "style": "iso690-numeric-en",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "27635fde30896a74",
   "citations": {
     "single-item": "(1)",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">30. </div><div class=\"csl-right-inline\">SMITH, John, LEE, Alice, NGUYEN, Bao and PATEL, Ravi. Adaptive Climate Risk Modeling for Inland Regions. <i>Journal of Climate Analytics</i>. 2021. Vol. 12, no. 3, p. 201–219. DOI 10.5555/jca.2021.12.3.201.</div>\n   </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">31. </div><div class=\"csl-right-inline\">GARCIA, Maria. Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i>. 2019. Vol. 4, p. 55–80. DOI 10.5555/arcs.2019.4.55.</div>\n   </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">32. </div><div class=\"csl-right-inline\">GARCIA, Maria. Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i>. 2019. Vol. 4, p. 81–104. DOI 10.5555/arcs.2019.4.81.</div>\n   </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">33. </div><div class=\"csl-right-inline\">FORTHCOMING, A. <i>Foundations of Declarative Bibliography</i>. . Cambridge : University Press, [no date].</div>\n   </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">33. </div><div class=\"csl-right-inline\">FORTHCOMING, A. <i>Foundations of Declarative Bibliography</i>. . Cambridge : University Press, [no date].</div>\n   </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">34. </div><div class=\"csl-right-inline\">ADAMS, John. <i>Letter to James Smith</i>. . 1797. </div>\n  <div class=\"csl-right-inline\">Massachusetts Historical Society: Adams Papers, reel 45</div>\n  </div>\n"
   ]
 }

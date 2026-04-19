@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:59.271Z",
+  "generated_at": "2026-04-19T14:02:42.464Z",
   "style": "corrosion",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "1ec874a5d8e0c535",
   "citations": {
     "single-item": "<sup>1</sup>",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">30. </div><div class=\"csl-right-inline\">Smith, J., A. Lee, B. Nguyen, and R. Patel, <i>Journal of Climate Analytics</i> 12 (2021): pp. 201–219.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">31. </div><div class=\"csl-right-inline\">Garcia, M., <i>Annual Review of Climate Science</i> 4 (2019): pp. 55–80.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">32. </div><div class=\"csl-right-inline\">Garcia, M., <i>Annual Review of Climate Science</i> 4 (2019): pp. 81–104.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">33. </div><div class=\"csl-right-inline\">Forthcoming, A., <i>Foundations of Declarative Bibliography</i> (Cambridge: University Press, n.d.).</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">33. </div><div class=\"csl-right-inline\">Forthcoming, A., <i>Foundations of Declarative Bibliography</i> (Cambridge: University Press, n.d.).</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">34. </div><div class=\"csl-right-inline\">Adams, J., “Letter to James Smith” (1797).</div>\n  </div>\n"
   ]
 }

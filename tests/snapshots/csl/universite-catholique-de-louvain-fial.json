@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:41.191Z",
+  "generated_at": "2026-04-19T14:03:26.674Z",
   "style": "universite-catholique-de-louvain-fial",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "df973fb333a895e7",
   "citations": {
     "single-item-1": "<span style=\"font-variant:small-caps;\">Kuhn</span> Thomas S., « The Structure of Scientific Revolutions », dans <i>International Encyclopedia of Unified Science</i>, 2, 1962.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "<span style=\"font-variant:small-caps;\">Garcia</span> Maria, « Methods for Robust Climate Attribution », dans <i>Annual Review of Climate Science</i>, 4, 2019, pp. 55‑80 ; <span style=\"font-variant:small-caps;\">Garcia</span> Maria, « Methods for Probabilistic Climate Attribution », dans <i>Annual Review of Climate Science</i>, 4, 2019, pp. 81‑104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span> John, <i>Letter to James Smith</i>, s. l., 1797.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span> Yoshua, <i>The Future of Artificial Intelligence</i>, s. l., 2023.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> Wei, <i>Neural Networks for Natural Language Understanding</i>, Phd-thesis, s. l., Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span> K. Anders, « The Role of Deliberate Practice », dans Ericsson, K. Anders et al., <i>The Cambridge Handbook of Expertise and Expert Performance</i>, s. l., Cambridge University Press, 2006, pp. 683‑703.</div>\n",

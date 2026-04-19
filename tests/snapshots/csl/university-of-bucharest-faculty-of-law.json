@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:41.982Z",
+  "generated_at": "2026-04-19T14:03:27.489Z",
   "style": "university-of-bucharest-faculty-of-law",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "6f56a9aa3a927ace",
   "citations": {
     "single-item-1": "A se vedea T.S. Kuhn, The Structure of Scientific Revolutions, în International Encyclopedia of Unified Science, vol. 2, nr. 2 , .",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "A se vedea M. Garcia, Methods for Robust Climate Attribution, în Annual Review of Climate Science, vol. 4p. 55–80; M. Garcia, Methods for Probabilistic Climate Attribution, în Annual Review of Climate Science, vol. 4p. 81–104."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">J. Adams, <i>Letter to James Smith</i>, 1797.</div>\n",
     "  <div class=\"csl-entry\">Y. Bengio, <i>The Future of Artificial Intelligence</i>, 2023.</div>\n",
     "  <div class=\"csl-entry\">W. Chen, <i>Neural Networks for Natural Language Understanding</i>, phd-thesis.</div>\n",
     "  <div class=\"csl-entry\">K.A. Ericsson, The Role of Deliberate Practice, <i>in</i> K. Anders Ericsson, Neil Charness, Paul J. Feltovich and Robert R. Hoffman (dir.) , <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, 2006, p. 683–703.</div>\n",

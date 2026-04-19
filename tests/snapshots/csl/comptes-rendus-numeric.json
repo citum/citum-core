@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:58.962Z",
+  "generated_at": "2026-04-19T14:02:42.131Z",
   "style": "comptes-rendus-numeric",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "ed3b321f60e1a14f",
   "citations": {
     "single-item": "[1]",
@@ -58,6 +58,7 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[30]</div><div class=\"csl-right-inline\">John Smith, Alice Lee, Bao Nguyen and Ravi Patel, “Adaptive Climate Risk Modeling for Inland Regions”, <i>Journal of Climate Analytics</i> <b>12</b> (2021), no. 3, pp. 201–219. https://doi.org/10.5555/jca.2021.12.3.201.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[31]</div><div class=\"csl-right-inline\">Maria Garcia, “Methods for Robust Climate Attribution”, <i>Annual Review of Climate Science</i> <b>4</b> (2019), pp. 55–80. https://doi.org/10.5555/arcs.2019.4.55.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[32]</div><div class=\"csl-right-inline\">Maria Garcia, “Methods for Probabilistic Climate Attribution”, <i>Annual Review of Climate Science</i> <b>4</b> (2019), pp. 81–104. https://doi.org/10.5555/arcs.2019.4.81.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33]</div><div class=\"csl-right-inline\">A. Forthcoming, <i>Foundations of Declarative Bibliography</i>, University Press: Cambridge, MISSING PUBLICATION/RELEASE/DEFENSE YEAR.</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33]</div><div class=\"csl-right-inline\">A. Forthcoming, <i>Foundations of Declarative Bibliography</i>, University Press: Cambridge, MISSING PUBLICATION/RELEASE/DEFENSE YEAR.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[34]</div><div class=\"csl-right-inline\">John Adams, “Letter to James Smith” (1797), Adams Papers, reel 45.</div>\n  </div>\n"
   ]
 }

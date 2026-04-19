@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:42.719Z",
+  "generated_at": "2026-04-19T14:03:28.258Z",
   "style": "uppsala-universitet-historia",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "6d1e5788fc2d9429",
   "citations": {
     "single-item-1": "Kuhn 1962.",
@@ -74,6 +74,7 @@
     "  <div class=\"csl-entry\">Weinberg, Gerald M., &#38; Freedman, Daniel P., 1971, <i>The Psychology of Computer Programming</i>  silver anniversary edition., New York.</div>\n",
     "  <div class=\"csl-entry\">World Bank, 2023, <i>World Development Report 2023</i>, Washington, DC: World Bank Group.</div>\n",
     "  <div class=\"csl-entry\">\"The Role of Theory in Research\", 2018, <i>Journal of Theoretical Psychology</i>, <i>28</i> (<i>3</i>), p. 201–215.</div>\n",
-    "  <div class=\"csl-entry\">\"Brown v. Board of Education\", 347 U.S. Reports 483 (U.S. Supreme Court May 17, 1954).</div>\n"
+    "  <div class=\"csl-entry\">\"Brown v. Board of Education\", 347 U.S. Reports 483 (U.S. Supreme Court May 17, 1954).</div>\n",
+    "  <div class=\"csl-entry\">Massachusetts Historical Society, Adams Papers, reel 45, Letter to James Smith, 1797</div>\n"
   ]
 }

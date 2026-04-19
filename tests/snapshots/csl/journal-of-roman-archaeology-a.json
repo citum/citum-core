@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:14.025Z",
+  "generated_at": "2026-04-19T14:02:58.133Z",
   "style": "journal-of-roman-archaeology-a",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "355d7843f57b79df",
   "citations": {
     "single-item-1": "Kuhn 1962",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Garcia 2019b; Garcia 2019a"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, J. 1797. Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y. 2023. The Future of Artificial Intelligence.</div>\n",
     "  <div class=\"csl-entry\">Chen, W. 2019. <i>Neural Networks for Natural Language Understanding</i> (phd-thesis, Stanford University).</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K.A. 2006. “The Role of Deliberate Practice,” in Ericsson, K.A. et al. (edd.), <i>The Cambridge Handbook of Expertise and Expert Performance</i> 683–703.</div>\n",

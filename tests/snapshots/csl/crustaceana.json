@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:59.386Z",
+  "generated_at": "2026-04-19T14:02:42.594Z",
   "style": "crustaceana",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "888436e37f8c2c8d",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming, n.d.))"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Adams</span>, J.</span>, 1797. Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\">Anonymous, 1954. 347 U.S. Reports (U.S. Supreme Court) Brown v. Board of Education. 483pp.</div>\n",
     "  <div class=\"csl-entry\">Anonymous, 2018. The Role of Theory in Research. Journal of Theoretical Psychology, <b>28</b>: 201–215</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Bengio</span>, Y.</span>, 2023. The Future of Artificial Intelligence</div>\n",

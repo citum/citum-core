@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:25.330Z",
+  "generated_at": "2026-04-19T14:02:07.127Z",
   "style": "anabases",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "698fc99a73745367",
   "citations": {
     "single-item-1": "<span style=\"font-variant:small-caps;\">Kuhn</span> 1962",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "<span style=\"font-variant:small-caps;\">Garcia</span> 2019a ; 2019b"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span> 1797 : John <span style=\"font-variant:small-caps;\">Adams</span>, <i><i>Letter to James Smith</i></i>, 1797.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span> 2023 : Yoshua <span style=\"font-variant:small-caps;\">Bengio</span>, <i><i>The Future of Artificial Intelligence</i></i>, 2023, online : https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\"> 1954 : in <i>U.S. Reports</i>, 347, vol. 347, 1954, 483.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> 2019 : Wei <span style=\"font-variant:small-caps;\">Chen</span>, <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, 2019.</div>\n",

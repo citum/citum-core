@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:34.118Z",
+  "generated_at": "2026-04-19T14:03:19.377Z",
   "style": "sorbonne-student-law-review",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "d084ab05e1ac4c2c",
   "citations": {
     "single-item-1": "T.S. Kuhn, “The Structure of Scientific Revolutions,” <i>International Encyclopedia of Unified Science</i>, University of Chicago Press, 1962, vol. 2, no. 2, DOI:10.1234/example",
@@ -64,6 +64,7 @@
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Vaswani</span> A. et al., “Attention Is All You Need,” <i>Advances in Neural Information Processing Systems</i>, 2017, vol. 30, pp. 5998-6008.</div>\n",
     "  <div class=\"csl-entry\">Anonymous, “The Role of Theory in Research,” <i>Journal of Theoretical Psychology</i>, 2018, vol. 28, no. 3, pp. 201-215.</div>\n",
     "  <div class=\"csl-entry\">U.S. Supreme Court, <i>Brown v. Board of Education</i>, May 17, 1954, <i>U.S. Reports</i>, vol. 347, p. 483.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span> J., “Letter to James Smith,” 1797.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span> Y., “The Future of Artificial Intelligence,” November 10, 2023, https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span> D., <span style=\"font-variant:small-caps;\">Lee</span> S., “Method for Efficient Data Compression,” July 13, 2021.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Lumière</span> L., “The Arrival of a Train at La Ciotat Station,” 1896.</div>\n",

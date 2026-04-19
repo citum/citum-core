@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:42.223Z",
+  "generated_at": "2026-04-19T14:03:27.740Z",
   "style": "university-of-pretoria-harvard-theology-religion",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "804490d05bcb87a7",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming n.d.)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, J., 1797.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y., 2023, The Future of Artificial Intelligence, Video-interview, on 10 November 2023, from https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\"><i>Brown v. Board of Education</i>, 1954, V. 347.</div>\n",
     "  <div class=\"csl-entry\">Chen, W., 2019, Neural Networks for Natural Language Understanding, phd-thesis, Stanford University.</div>\n",

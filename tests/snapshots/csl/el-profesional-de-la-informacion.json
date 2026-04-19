@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:01.131Z",
+  "generated_at": "2026-04-19T14:02:44.567Z",
   "style": "el-profesional-de-la-informacion",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "8ffaceb2165e6aa1",
   "citations": {
     "single-item": "(<b>Kuhn</b>, 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(<b>Forthcoming</b>)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Adams</b>, <b>John</b> (1797). “Letter to James Smith”, .</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Bengio</b>, <b>Yoshua</b> (2023). “The Future of Artificial Intelligence”, .</div>\n\n\n    <div class=\"csl-block\"><i>https://example.com/interview</i></div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Chen</b>, <b>Wei</b> (2019). “Neural Networks for Natural Language Understanding”, .</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Ericsson</b>, <b>K. Anders</b> (2006). “The Role of Deliberate Practice”. En: <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press. pp. 683–703. .</div>\n</div>\n",

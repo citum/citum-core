@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:44:07.670Z",
+  "generated_at": "2026-04-19T14:02:51.495Z",
   "style": "human-rights-law-review",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "67a8317e949a8a4a",
   "citations": {
     "single-item-1": "Kuhn, “The Structure of Scientific Revolutions” (1962) 2(2) <i>International Encyclopedia of Unified Science</i>.",
@@ -66,6 +66,7 @@
     "  <div class=\"csl-entry\">Weinberg, Gerald M and Daniel P Freedman, <i>The Psychology of Computer Programming</i> (Silver Anniversary Edition, 1971)</div>\n",
     "  <div class=\"csl-entry\">World Bank, World Development Report 2023, World Bank Group, 2023, 2023</div>\n",
     "  <div class=\"csl-entry\"><i>Brown v Board of Education</i> 347U.S. Reports 483</div>\n",
+    "  <div class=\"csl-entry\">Adams, John, <i>Letter to James Smith</i>, 1797</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei, <i>Neural Networks for Natural Language Understanding</i> (phd-thesis, 2019)</div>\n",
     "  <div class=\"csl-entry\">Colbert, Stephen, Interview with Yoshua Bengio, “The Future of Artificial Intelligence” (video-interview, November 10, 2023) available at: https://example.com/interview</div>\n",
     "  <div class=\"csl-entry\">Johnson, David and Sarah Lee, “Method for Efficient Data Compression”</div>\n",

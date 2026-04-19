@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:30.159Z",
+  "generated_at": "2026-04-19T14:02:12.657Z",
   "style": "bioarchaeology-international",
-  "fixture_hash": "51c95c2c6d288eec",
+  "fixture_hash": "15d373b85a564791",
   "csl_hash": "568063569b2ea9bf",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -26,6 +26,7 @@
     "no-date-single": "(Forthcoming)"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">Adams, John. </div><div class=\"csl-indent\">1797. Letter to James Smith. Adams Papers, reel 45. Massachusetts Historical Society. Boston, MA.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">Anon. </div><div class=\"csl-indent\">1954. <i>Brown v. Board of Education</i>. <i>U.S. Reports</i>. Vol. 347. May 17.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">Anon. </div><div class=\"csl-indent\">2018. The Role of Theory in Research. <i>Journal of Theoretical Psychology</i> 28(3): 201–215.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">Bengio, Yoshua. </div><div class=\"csl-indent\">2023. The Future of Artificial Intelligence Interview by Stephen Colbertvideo-interview. November 10.</div>\n  </div>\n",

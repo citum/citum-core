@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-03-29T23:43:29.287Z",
+  "generated_at": "2026-04-19T14:02:11.601Z",
   "style": "ausonius-editions",
-  "fixture_hash": "60e7d93d480558fa",
+  "fixture_hash": "2c87efef734f50d2",
   "csl_hash": "4f70dfc5ff6520a2",
   "citations": {
     "single-item-1": "Kuhn 1962.",
@@ -42,6 +42,7 @@
     "note-disambiguate-year-suffix": "Garcia 2019b ; Garcia 2019a."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\">Adams, J. (1797) : <i>Letter to James Smith</i>.</div>\n",
     "  <div class=\"csl-entry\">Anonymous (1954) : <i>Brown v. Board of Education</i>, 483.</div>\n",
     "  <div class=\"csl-entry\">Anonymous (2018) : “The Role of Theory in Research,” <i>Journal of Theoretical Psychology</i>, 28-3, 201–215.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y. (2023) : <i>The Future of Artificial Intelligence</i>.</div>\n",
