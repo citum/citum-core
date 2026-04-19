@@ -205,6 +205,12 @@ CI validates:
 
 ## Schema Changelog
 
+#### schema-v1.0.0 (2026-04-19)
+- Schema version bumped from 0.35.0 to 1.0.0
+
+#### schema-v0.35.0 (2026-04-19)
+- Schema version bumped from 0.34.0 to 0.35.0
+
 #### schema-v0.34.0 (2026-04-19)
 - Expanded StylePreset enum to include 14 families
 - Reduced duplication across 13 styles via presets
