@@ -51,16 +51,16 @@ node scripts/find-alias-candidates.js --help
 **Before aliasing**, confirm the candidate is a true clone (not a same-family variant
 with intentional differences the fixture doesn't exercise — see Known Blind Spots below).
 
-### Web Confirmation (Planned Enhancement)
+### Web Confirmation (bean csl26-vepq)
 
-A future `--confirm-web` flag will query a search API for each candidate above the
-threshold: `"<journal name>" citation style` and `"<journal name>" author guidelines`.
-The results surface whether the journal's own instructions name the parent style
-explicitly — reducing the need for per-row manual lookup and providing a citable
-evidence URL in the TSV output.
+A `--confirm-web` flag is tracked in bean **csl26-vepq**. It will query a search API
+for each candidate above the threshold: `"<journal name>" citation style` and
+`"<journal name>" author guidelines`. The results surface whether the journal's own
+instructions name the parent style explicitly — reducing the need for per-row manual
+lookup and providing a citable evidence URL in the TSV output.
 
-Until then, for journal-named candidates: search `site:<publisher>.com <journal-name>
-submission guidelines` and look for a named style.
+Until that lands, for journal-named candidates: search `site:<publisher>.com
+<journal-name> submission guidelines` and look for a named style.
 
 ## Known Fixture Blind Spots
 
