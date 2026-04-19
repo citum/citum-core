@@ -43,6 +43,19 @@ function normalizeForSchema(value) {
     Object.entries(value).map(([key, entryValue]) => [key, normalizeForSchema(entryValue)])
   );
 
+  if (
+    normalized.processing &&
+    typeof normalized.processing === 'object' &&
+    !Array.isArray(normalized.processing) &&
+    !('custom' in normalized.processing) &&
+    !('label' in normalized.processing)
+  ) {
+    const keys = Object.keys(normalized.processing);
+    if (keys.length > 0 && keys.every(k => ['sort', 'group', 'disambiguate'].includes(k))) {
+      normalized.processing = { custom: normalized.processing };
+    }
+  }
+
   return normalized;
 }
 

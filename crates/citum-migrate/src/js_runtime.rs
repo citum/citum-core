@@ -177,8 +177,8 @@ mod tests {
 
         let cases = [
             ("apa", "bibliography"),
+            ("apa", "citation"),
             ("ieee", "bibliography"),
-            ("chicago-notes-bibliography", "citation"),
         ];
 
         let mut runtime = EmbeddedTemplateRuntime::new(&workspace_root).unwrap();
@@ -205,13 +205,15 @@ mod tests {
         }
     }
 
-    /// Recursively strips fields that are subject to fragile floating-point heuristic drift
-    /// between the Node.js and Deno runtimes (e.g., 'confidence' and 'wrap').
+    /// Recursively strips `confidence`, a floating-point heuristic score that can drift
+    /// between the Node.js and Deno runtimes near threshold boundaries.
+    ///
+    /// Structural fields like `wrap` (a discrete string enum) are intentionally preserved —
+    /// divergence there indicates a real inference disagreement, not runtime noise.
     fn strip_fragile_heuristics(val: &mut serde_json::Value) {
         match val {
             serde_json::Value::Object(map) => {
                 map.remove("confidence");
-                map.remove("wrap");
                 for v in map.values_mut() {
                     strip_fragile_heuristics(v);
                 }
