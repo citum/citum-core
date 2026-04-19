@@ -1,40 +1,32 @@
+preset: elsevier-with-titles
 info:
   title: Amercian Mathematical Society (label)
   fields:
-  - math
+    - math
   source:
     csl-id: http://www.zotero.org/styles/american-mathematical-society-label
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: American Mathematical Society
-      email: tech-support@ams.org
-      uri: https://www.ams.org
+      - name: American Mathematical Society
+        email: tech-support@ams.org
+        uri: https://www.ams.org
     links:
-    - href: http://www.zotero.org/styles/american-mathematical-society-label
-      rel: self
-    - href: http://www.zotero.org/styles/elsevier-with-titles
-      rel: template
-    - href: https://www.ams.org/arc/styleguide
-      rel: documentation
-    - href: https://mirrors.ctan.org/biblio/bibtex/contrib/misc/amsplain.bst
-      rel: documentation
+      - href: http://www.zotero.org/styles/american-mathematical-society-label
+        rel: self
+      - href: http://www.zotero.org/styles/elsevier-with-titles
+        rel: template
+      - href: https://www.ams.org/arc/styleguide
+        rel: documentation
+      - href: https://mirrors.ctan.org/biblio/bibtex/contrib/misc/amsplain.bst
+        rel: documentation
 options:
   processing:
     label:
       preset: ams
-      # AMS amsplain.bst uses 4 chars for single-author labels (Kuhn -> Kuhn62)
       single-author-chars: 4
-      # AMS shows all initials for up to 4 authors (SLKZ21 not SLK+21)
       et-al-min: 5
-      # AMS takes 4 initials when >4 authors (not 3+marker); empty marker best approx
-      # until processor supports 4-initial et-al truncation (known gap: VSP+17 vs VSPU17)
       et-al-marker: ''
-  substitute:
-    contributor-role-form: short
-    template:
-    - editor
-    - translator
   contributors:
     display-as-sort: all
     delimiter: ', '
@@ -50,7 +42,7 @@ options:
 citation:
   sort: author-date-title
   template:
-  - number: citation-label
+    - number: citation-label
   wrap:
     punctuation: brackets
   delimiter: ''
@@ -66,43 +58,61 @@ bibliography:
     separator: ', '
   type-variants:
     article-journal:
-    - number: citation-label
-      wrap:
-        punctuation: brackets
-      suffix: ' '
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - variable: publisher-place
-    - number: volume
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: ' '
-    - number: pages
-      prefix: ' '
+      - number: citation-label
+        wrap:
+          punctuation: brackets
+        suffix: ' '
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+      - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher
+      - variable: publisher-place
+      - number: volume
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+        prefix: ' '
+      - number: pages
+        prefix: ' '
     chapter:
-    - number: citation-label
-      wrap:
-        punctuation: brackets
-      suffix: ' '
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - variable: publisher-place
-    - number: volume
-    - number: pages
-      prefix: 'pp. '
+      - number: citation-label
+        wrap:
+          punctuation: brackets
+        suffix: ' '
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+      - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher
+      - variable: publisher-place
+      - number: volume
+      - number: pages
+        prefix: 'pp. '
     paper-conference:
+      - number: citation-label
+        wrap:
+          punctuation: brackets
+        suffix: ' '
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+      - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher
+      - variable: publisher-place
+      - number: volume
+      - date: issued
+        form: year
+      - number: pages
+        prefix: 'pp. '
+  template:
     - number: citation-label
       wrap:
         punctuation: brackets
@@ -119,22 +129,4 @@ bibliography:
     - date: issued
       form: year
     - number: pages
-      prefix: 'pp. '
-  template:
-  - number: citation-label
-    wrap:
-      punctuation: brackets
-    suffix: ' '
-  - contributor: author
-    form: long
-    name-order: family-first
-  - title: primary
-  - title: parent-monograph
-  - title: parent-serial
-  - variable: publisher
-  - variable: publisher-place
-  - number: volume
-  - date: issued
-    form: year
-  - number: pages
-    prefix: ' '
+      prefix: ' '

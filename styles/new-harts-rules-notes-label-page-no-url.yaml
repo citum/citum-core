@@ -1,3 +1,4 @@
+preset: new-harts-rules-notes-label-page
 info:
   title: 'New Hart''s Rules: The Oxford Style Guide 2nd edition (notes, page abbreviations, without URLs)'
   description: Oxford source citations, notes system, page abbreviations with locator (NHR 17.2.5), without URLs
@@ -26,28 +27,6 @@ info:
         rel: self
       - href: https://en.wikipedia.org/wiki/Hart's_Rules
         rel: documentation
-options:
-  substitute:
-    contributor-role-form: short
-    template: []
-  processing: note
-  contributors:
-    and: text
-    delimiter-precedes-last: contextual
-    demote-non-dropping-particle: display-and-sort
-  dates:
-    month: long
-    uncertainty-marker: '?'
-    approximation-marker: 'ca. '
-    range-delimiter: –
-  titles:
-    monograph:
-      emph: true
-    periodical:
-      emph: true
-    serial:
-      emph: true
-  page-range-format: minimal
 citation:
   options:
     contributors:
@@ -254,12 +233,12 @@ citation:
         emph: true
       - date: issued
         form: year
-        prefix: ", "
+        prefix: ', '
       - number: volume
         form: roman
-        prefix: ", "
+        prefix: ', '
       - number: pages
-        prefix: ", p. "
+        prefix: ', p. '
     patent:
       - contributor: author
         form: long
@@ -269,15 +248,15 @@ citation:
           use-first: 1
       - title: primary
       - number: number
-        prefix: ", Patent "
+        prefix: ', Patent '
       - delimiter: none
         group:
           - date: issued
             form: month-day
-            prefix: ", issued "
+            prefix: ', issued '
           - date: issued
             form: year
-            prefix: ", "
+            prefix: ', '
   template:
     - contributor: author
       form: long
@@ -516,7 +495,7 @@ bibliography:
       - date: issued
         form: year
         prefix: ', '
-        suffix: ')'
+        suffix: )
     personal_communication: []
     personal-communication: []
   template:

@@ -1,262 +1,355 @@
+preset: apa-7th
 info:
   title: Springer - SocPsych (numeric, brackets)
   fields:
-  - psychology
+    - psychology
   source:
     csl-id: http://www.zotero.org/styles/springer-socpsych-brackets
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Charles Parnot
-      email: charles.parnot@gmail.com
-      uri: http://twitter.com/cparnot
+      - name: Charles Parnot
+        email: charles.parnot@gmail.com
+        uri: http://twitter.com/cparnot
     links:
-    - href: http://www.zotero.org/styles/springer-socpsych-brackets
-      rel: self
-    - href: http://www.zotero.org/styles/apa
-      rel: template
-    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/instruct-authors-e.pdf
-      rel: documentation
-    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
-      rel: documentation
-    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
-      rel: documentation
+      - href: http://www.zotero.org/styles/springer-socpsych-brackets
+        rel: self
+      - href: http://www.zotero.org/styles/apa
+        rel: template
+      - href: http://www.springer.com/cda/content/document/cda_downloaddocument/instruct-authors-e.pdf
+        rel: documentation
+      - href: http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
+        rel: documentation
+      - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
+        rel: documentation
 options:
   substitute:
     contributor-role-form: short
     template:
-    - editor
-    - translator
+      - editor
+      - translator
     overrides:
       report: []
   processing: numeric
   contributors:
     display-as-sort: all
     name-form: initials
-    initialize-with: ". "
+    initialize-with: '. '
     shorten:
       min: 8
       use-first: 6
       and-others: et-al
       delimiter-precedes-last: contextual
-    delimiter: ", "
+    delimiter: ', '
     delimiter-precedes-last: always
     demote-non-dropping-particle: never
-    sort-separator: ", "
-  dates: long
+    sort-separator: ', '
   titles: humanities
-  punctuation-in-quote: true
   volume-pages-delimiter: comma
 citation:
   use-preset: numeric-citation
   wrap:
     punctuation: brackets
-  multi-cite-delimiter: ", "
+  multi-cite-delimiter: ', '
 bibliography:
   options:
     contributors:
       display-as-sort: all
       name-form: initials
-      initialize-with: ". "
+      initialize-with: '. '
       shorten:
         min: 8
         use-first: 6
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
       delimiter-precedes-last: always
-      sort-separator: ", "
-    separator: ". "
+      sort-separator: ', '
+    separator: '. '
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 7
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-    - prefix: ". In "
-      group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 7
+      - date: issued
+        form: year
         wrap:
           punctuation: parentheses
-    - number: pages
-      prefix: ", "
-    - variable: publisher
-      prefix: "). "
-    - variable: doi
-      prefix: https://doi.org/
-    - variable: publisher-place
-    - variable: url
+        prefix: ' '
+      - title: primary
+      - prefix: '. In '
+        group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
+        emph: true
+      - group:
+          - number: volume
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - number: pages
+        prefix: ', '
+      - variable: publisher
+        prefix: '). '
+      - variable: doi
+        prefix: https://doi.org/
+      - variable: publisher-place
+      - variable: url
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 7
-    - title: primary
-    - prefix: ". In "
-      group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 7
+      - title: primary
+      - prefix: '. In '
+        group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
         emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - number: pages
-      prefix: ", "
-    - variable: publisher
-      prefix: "). "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+      - group:
+          - number: volume
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - number: pages
+        prefix: ', '
+      - variable: publisher
+        prefix: '). '
+      - variable: doi
+      - variable: publisher-place
+      - variable: url
     article-newspaper:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 7
-    - title: primary
-    - prefix: ". In "
-      group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 7
+      - title: primary
+      - prefix: '. In '
+        group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
         emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - number: pages
-      prefix: ", "
-    - variable: publisher
-      prefix: "). "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+      - group:
+          - number: volume
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - number: pages
+        prefix: ', '
+      - variable: publisher
+        prefix: '). '
+      - variable: doi
+      - variable: publisher-place
+      - variable: url
     broadcast:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 7
-    - title: primary
-    - prefix: ". In "
-      group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 7
+      - title: primary
+      - prefix: '. In '
+        group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
         emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - number: pages
-      prefix: ", "
-    - variable: publisher
-      prefix: "). "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+      - group:
+          - number: volume
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - number: pages
+        prefix: ', '
+      - variable: publisher
+        prefix: '). '
+      - variable: doi
+      - variable: publisher-place
+      - variable: url
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 7
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-    - prefix: ". In "
-      group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "In "
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 7
+      - date: issued
+        form: year
         wrap:
           punctuation: parentheses
-    - number: pages
-      prefix: "pp. "
-      wrap:
-        punctuation: parentheses
-    - variable: publisher
-      prefix: "). "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+        prefix: ' '
+      - title: primary
+      - prefix: '. In '
+        group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+            prefix: 'In '
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
+        emph: true
+      - group:
+          - number: volume
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - number: pages
+        prefix: 'pp. '
+        wrap:
+          punctuation: parentheses
+      - variable: publisher
+        prefix: '). '
+      - variable: doi
+      - variable: publisher-place
+      - variable: url
     interview:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 7
-    - title: primary
-    - prefix: ". In "
-      group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 7
+      - title: primary
+      - prefix: '. In '
+        group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
         emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
+      - group:
+          - number: volume
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - number: pages
+        prefix: ', '
+      - variable: publisher
+        prefix: '). '
+      - variable: doi
+      - variable: publisher-place
+      - variable: url
+    paper-conference:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 7
+      - date: issued
+        form: year
         wrap:
           punctuation: parentheses
-    - number: pages
-      prefix: ", "
-    - variable: publisher
-      prefix: "). "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
-    paper-conference:
+        prefix: ' '
+      - title: primary
+      - prefix: '. In '
+        group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
+        emph: true
+      - group:
+          - number: volume
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - number: pages
+        prefix: 'pp. '
+        wrap:
+          punctuation: parentheses
+      - variable: publisher
+        prefix: '). '
+      - variable: doi
+      - variable: publisher-place
+      - variable: url
+    patent:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 7
+      - title: primary
+      - prefix: '. In '
+        group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
+        emph: true
+      - group:
+          - number: volume
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - number: pages
+        prefix: ', '
+      - variable: publisher
+        prefix: '). '
+      - variable: doi
+      - variable: publisher-place
+      - variable: url
+    personal_communication:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 7
+      - title: primary
+      - prefix: '. In '
+        group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
+        emph: true
+      - group:
+          - number: volume
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - number: pages
+        prefix: ', '
+      - variable: publisher
+        prefix: '). '
+      - variable: doi
+      - variable: publisher-place
+      - variable: url
+  template:
     - contributor: author
       form: long
       name-order: family-first
@@ -267,120 +360,26 @@ bibliography:
       form: year
       wrap:
         punctuation: parentheses
-      prefix: " "
+      prefix: ' '
     - title: primary
-    - prefix: ". In "
+    - prefix: '. In '
       group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
+        - contributor: editor
+          form: verb
+          name-order: given-first
+        - title: parent-monograph
+          emph: true
     - title: parent-serial
       emph: true
     - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
+        - number: volume
+        - number: issue
+          wrap:
+            punctuation: parentheses
     - number: pages
-      prefix: "pp. "
-      wrap:
-        punctuation: parentheses
+      prefix: ', '
     - variable: publisher
-      prefix: "). "
+      prefix: '). '
     - variable: doi
     - variable: publisher-place
     - variable: url
-    patent:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 7
-    - title: primary
-    - prefix: ". In "
-      group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - number: pages
-      prefix: ", "
-    - variable: publisher
-      prefix: "). "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
-    personal_communication:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 7
-    - title: primary
-    - prefix: ". In "
-      group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - number: pages
-      prefix: ", "
-    - variable: publisher
-      prefix: "). "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten:
-      min: 8
-      use-first: 7
-  - date: issued
-    form: year
-    wrap:
-      punctuation: parentheses
-    prefix: " "
-  - title: primary
-  - prefix: ". In "
-    group:
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - title: parent-monograph
-      emph: true
-  - title: parent-serial
-    emph: true
-  - group:
-    - number: volume
-    - number: issue
-      wrap:
-        punctuation: parentheses
-  - number: pages
-    prefix: ", "
-  - variable: publisher
-    prefix: "). "
-  - variable: doi
-  - variable: publisher-place
-  - variable: url

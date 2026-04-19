@@ -1,3 +1,4 @@
+preset: mhra-notes
 info:
   title: MHRA Style Guide 4th edition (notes, place of publication)
   description: MHRA source citations, notes system, with place of publication (MHRA 7.3)
@@ -23,18 +24,6 @@ info:
       - href: https://www.mhra.org.uk/style/
         rel: documentation
 options:
-  locators:
-    default-label-form: short
-    range-format: expanded
-    fallback-delimiter: ', '
-  substitute:
-    contributor-role-form: short
-    template: []
-  processing: note
-  contributors:
-    and: text
-    delimiter-precedes-last: contextual
-    demote-non-dropping-particle: display-and-sort
   dates:
     month: long
     uncertainty-marker: '?'
@@ -47,7 +36,6 @@ options:
       emph: true
     serial:
       emph: true
-  page-range-format: minimal-two
 citation:
   options:
     contributors:
@@ -314,12 +302,12 @@ citation:
         emph: true
       - date: issued
         form: year
-        prefix: ", "
+        prefix: ', '
       - number: volume
         form: roman
-        prefix: ", "
+        prefix: ', '
       - number: pages
-        prefix: ", p. "
+        prefix: ', p. '
     patent:
       - contributor: author
         form: long
@@ -329,15 +317,15 @@ citation:
           use-first: 1
       - title: primary
       - number: number
-        prefix: ", Patent "
+        prefix: ', Patent '
       - delimiter: none
         group:
           - date: issued
             form: month-day
-            prefix: ", issued "
+            prefix: ', issued '
           - date: issued
             form: year
-            prefix: ", "
+            prefix: ', '
     interview:
       - contributor: interviewer
         form: long
@@ -350,12 +338,12 @@ citation:
           punctuation: quotes
       - contributor: author
         form: long
-        prefix: ", interview with "
+        prefix: ', interview with '
       - date: issued
         form: month-day
-        prefix: ", "
+        prefix: ', '
       - variable: medium
-        prefix: ", "
+        prefix: ', '
       - variable: url
   template:
     - contributor: author
@@ -686,7 +674,7 @@ bibliography:
       - date: issued
         form: year
         prefix: ', '
-        suffix: ')'
+        suffix: )
     personal_communication: []
     personal-communication: []
   template:

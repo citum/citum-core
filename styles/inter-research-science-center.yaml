@@ -1,41 +1,42 @@
+preset: american-medical-association
 info:
   title: Inter-Research Science Center
   fields:
-  - biology
+    - biology
   source:
     csl-id: http://www.zotero.org/styles/inter-research-science-center
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Stefania M Gorgopa
-      email: stefania.gorgopa@gmail.com
+      - name: Stefania M Gorgopa
+        email: stefania.gorgopa@gmail.com
     links:
-    - href: http://www.zotero.org/styles/inter-research-science-center
-      rel: self
-    - href: http://www.zotero.org/styles/american-medical-association
-      rel: template
-    - href: https://www.int-res.com/journals/guidelines-for-authors/guidelines-authors/
-      rel: documentation
+      - href: http://www.zotero.org/styles/inter-research-science-center
+        rel: self
+      - href: http://www.zotero.org/styles/american-medical-association
+        rel: template
+      - href: https://www.int-res.com/journals/guidelines-for-authors/guidelines-authors/
+        rel: documentation
 options:
   substitute:
     contributor-role-form: short
     template:
-    - editor
-    - translator
-    - title
+      - editor
+      - translator
+      - title
   processing:
     sort:
       shorten-names: false
       render-substitutions: false
       template:
-      - key: year
-        ascending: true
-      - key: author
-        ascending: true
+        - key: year
+          ascending: true
+        - key: author
+          ascending: true
     group:
       template:
-      - year
-      - author
+        - year
+        - author
     disambiguate:
       names: false
       add-givenname: false
@@ -43,20 +44,20 @@ options:
   contributors:
     display-as-sort: all
     name-form: initials
-    initialize-with: ""
+    initialize-with: ''
     shorten:
       min: 3
       use-first: 1
       and-others: et-al
       delimiter-precedes-last: contextual
-    delimiter: ", "
+    delimiter: ', '
     delimiter-precedes-last: never
     demote-non-dropping-particle: sort-only
-    sort-separator: " "
+    sort-separator: ' '
   dates:
     month: long
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
     range-delimiter: –
   titles:
     periodical:
@@ -67,62 +68,62 @@ citation:
   options:
     contributors:
       name-form: initials
-      initialize-with: ". "
+      initialize-with: '. '
       shorten:
         min: 3
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
       delimiter-precedes-last: never
   template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten:
-      min: 3
-      use-first: 1
-  - date: issued
-    form: year
-    prefix: " "
-  - variable: locator
-    prefix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 3
+        use-first: 1
+    - date: issued
+      form: year
+      prefix: ' '
+    - variable: locator
+      prefix: ' '
   wrap:
     punctuation: parentheses
-  delimiter: ". "
-  multi-cite-delimiter: ", "
+  delimiter: '. '
+  multi-cite-delimiter: ', '
 bibliography:
   options:
     contributors:
       display-as-sort: all
       name-form: initials
-      initialize-with: ""
+      initialize-with: ''
       delimiter-precedes-last: never
-      sort-separator: " "
+      sort-separator: ' '
     hanging-indent: true
     entry-suffix: .
-    separator: ". "
+    separator: '. '
   template:
-  - contributor: author
-    form: long
-    name-order: family-first
-  - date: issued
-    form: year
-    wrap:
-      punctuation: parentheses
-    prefix: " "
-  - title: primary
-    prefix: " "
-  - group:
-    - contributor: editor
-      form: verb
+    - contributor: author
+      form: long
       name-order: family-first
-    - title: parent-monograph
-  - title: parent-serial
-  - number: volume
-  - variable: publisher
-  - variable: publisher-place
-    prefix: ", "
-  - number: pages
-    prefix: ":"
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: ' '
+    - title: primary
+      prefix: ' '
+    - group:
+        - contributor: editor
+          form: verb
+          name-order: family-first
+        - title: parent-monograph
+    - title: parent-serial
+    - number: volume
+    - variable: publisher
+    - variable: publisher-place
+      prefix: ', '
+    - number: pages
+      prefix: ':'
   sort: author-title-date

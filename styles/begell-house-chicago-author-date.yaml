@@ -1,3 +1,4 @@
+preset: chicago-author-date-18th
 info:
   title: Begell House - Chicago Manual of Style
   description: The author-date variant of the Begell House Chicago style
@@ -6,12 +7,12 @@ info:
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     links:
-    - href: http://www.zotero.org/styles/begell-house-chicago-author-date
-      rel: self
-    - href: http://www.zotero.org/styles/chicago-author-date
-      rel: template
-    - href: http://dl.begellhouse.com/forauthors/journals/6a7c7e10642258cc.html
-      rel: documentation
+      - href: http://www.zotero.org/styles/begell-house-chicago-author-date
+        rel: self
+      - href: http://www.zotero.org/styles/chicago-author-date
+        rel: template
+      - href: http://dl.begellhouse.com/forauthors/journals/6a7c7e10642258cc.html
+        rel: documentation
 options:
   substitute:
     template: []
@@ -23,20 +24,20 @@ options:
   contributors:
     display-as-sort: all
     name-form: initials
-    initialize-with: ". "
+    initialize-with: '. '
     shorten:
       min: 11
       use-first: 7
       and-others: et-al
       delimiter-precedes-last: contextual
-    delimiter: ", "
+    delimiter: ', '
     delimiter-precedes-last: never
     demote-non-dropping-particle: display-and-sort
-    sort-separator: ", "
+    sort-separator: ', '
   dates:
     month: long
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
     range-delimiter: –
   titles:
     monograph:
@@ -46,7 +47,6 @@ options:
     serial:
       emph: true
   page-range-format: chicago
-  punctuation-in-quote: true
 citation:
   options:
     contributors:
@@ -55,94 +55,196 @@ citation:
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
   template:
-  - contributor: author
-    form: long
-    name-order: given-first
-    shorten:
-      min: 3
-      use-first: 1
-  - date: issued
-    form: year
-    prefix: ", "
+    - contributor: author
+      form: long
+      name-order: given-first
+      shorten:
+        min: 3
+        use-first: 1
+    - date: issued
+      form: year
+      prefix: ', '
   wrap:
     punctuation: parentheses
-  delimiter: ". "
-  multi-cite-delimiter: "; "
+  delimiter: '. '
+  multi-cite-delimiter: '; '
 bibliography:
   options:
     contributors:
       display-as-sort: all
       name-form: initials
-      initialize-with: ". "
+      initialize-with: '. '
       shorten:
         min: 11
         use-first: 7
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
       delimiter-precedes-last: never
-      sort-separator: ", "
+      sort-separator: ', '
     hanging-indent: true
     entry-suffix: .
-    separator: ", "
+    separator: ', '
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ", no. "
-    - variable: doi
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher-place
-    - date: issued
-      form: year
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - number: volume
+      - number: issue
+        prefix: ', no. '
+      - variable: doi
+      - variable: publisher
+      - number: pages
+        prefix: 'pp. '
+      - variable: publisher-place
+      - date: issued
+        form: year
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - variable: doi
-    - variable: publisher
-    - number: pages
-    - variable: publisher-place
-    - date: issued
-      form: year
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - number: volume
+      - variable: doi
+      - variable: publisher
+      - number: pages
+      - variable: publisher-place
+      - date: issued
+        form: year
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ", no. "
-    - variable: doi
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher-place
-    - date: issued
-      form: year
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - number: volume
+      - number: issue
+        prefix: ', no. '
+      - variable: doi
+      - variable: publisher
+      - number: pages
+        prefix: 'pp. '
+      - variable: publisher-place
+      - date: issued
+        form: year
     paper-conference:
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - number: volume
+      - number: issue
+        prefix: ', no. '
+      - variable: doi
+      - variable: publisher
+      - number: pages
+        prefix: 'pp. '
+      - variable: publisher-place
+      - date: issued
+        form: year
+    legal_case:
+      - contributor: author
+        form: long
+        sort-separator: ', '
+        shorten:
+          min: 11
+          use-first: 7
+          and-others: et-al
+          delimiter-precedes-last: always
+        and: text
+      - contributor: recipient
+        form: long
+        delimiter: ', '
+        shorten:
+          min: 11
+          use-first: 7
+          and-others: et-al
+          delimiter-precedes-last: contextual
+        and: text
+      - title: primary
+      - variable: authority
+      - title: parent-serial
+        emph: true
+      - date: issued
+        form: year
+      - term: no-date
+        form: short
+    patent:
+      - contributor: author
+        form: long
+        sort-separator: ', '
+        shorten:
+          min: 11
+          use-first: 7
+          and-others: et-al
+          delimiter-precedes-last: always
+        and: text
+      - contributor: recipient
+        form: long
+        delimiter: ', '
+        shorten:
+          min: 11
+          use-first: 7
+          and-others: et-al
+          delimiter-precedes-last: contextual
+        and: text
+      - title: primary
+      - title: parent-serial
+        emph: true
+      - number: number
+      - term: and
+        form: long
+      - date: issued
+        form: full
+      - term: no-date
+        form: short
+    personal_communication:
+      - contributor: author
+        form: long
+        sort-separator: ', '
+        shorten:
+          min: 11
+          use-first: 7
+          and-others: et-al
+          delimiter-precedes-last: always
+        and: text
+      - variable: genre
+      - contributor: recipient
+        form: long
+        delimiter: ', '
+        shorten:
+          min: 11
+          use-first: 7
+          and-others: et-al
+          delimiter-precedes-last: contextual
+        and: text
+      - title: primary
+      - title: parent-serial
+        emph: true
+      - date: issued
+        form: full
+      - term: no-date
+        form: short
+  template:
     - contributor: author
       form: long
       name-order: family-first
@@ -153,118 +255,16 @@ bibliography:
       emph: true
     - number: volume
     - number: issue
-      prefix: ", no. "
+      prefix: ', no. '
     - variable: doi
     - variable: publisher
     - number: pages
-      prefix: "pp. "
     - variable: publisher-place
     - date: issued
       form: year
-    legal_case:
-    - contributor: author
-      form: long
-      sort-separator: ", "
-      shorten:
-        min: 11
-        use-first: 7
-        and-others: et-al
-        delimiter-precedes-last: always
-      and: text
-    - contributor: recipient
-      form: long
-      delimiter: ", "
-      shorten:
-        min: 11
-        use-first: 7
-        and-others: et-al
-        delimiter-precedes-last: contextual
-      and: text
-    - title: primary
-    - variable: authority
-    - title: parent-serial
-      emph: true
-    - date: issued
-      form: year
-    - term: no-date
-      form: short
-    patent:
-    - contributor: author
-      form: long
-      sort-separator: ", "
-      shorten:
-        min: 11
-        use-first: 7
-        and-others: et-al
-        delimiter-precedes-last: always
-      and: text
-    - contributor: recipient
-      form: long
-      delimiter: ", "
-      shorten:
-        min: 11
-        use-first: 7
-        and-others: et-al
-        delimiter-precedes-last: contextual
-      and: text
-    - title: primary
-    - title: parent-serial
-      emph: true
-    - number: number
-    - term: and
-      form: long
-    - date: issued
-      form: full
-    - term: no-date
-      form: short
-    personal_communication:
-    - contributor: author
-      form: long
-      sort-separator: ", "
-      shorten:
-        min: 11
-        use-first: 7
-        and-others: et-al
-        delimiter-precedes-last: always
-      and: text
-    - variable: genre
-    - contributor: recipient
-      form: long
-      delimiter: ", "
-      shorten:
-        min: 11
-        use-first: 7
-        and-others: et-al
-        delimiter-precedes-last: contextual
-      and: text
-    - title: primary
-    - title: parent-serial
-      emph: true
-    - date: issued
-      form: full
-    - term: no-date
-      form: short
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-  - title: primary
-  - title: parent-monograph
-    emph: true
-  - title: parent-serial
-    emph: true
-  - number: volume
-  - number: issue
-    prefix: ", no. "
-  - variable: doi
-  - variable: publisher
-  - number: pages
-  - variable: publisher-place
-  - date: issued
-    form: year
   sort:
     template:
-    - key: title
-      ascending: true
-    - key: issued
-      ascending: true
+      - key: title
+        ascending: true
+      - key: issued
+        ascending: true

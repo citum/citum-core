@@ -1,37 +1,37 @@
+preset: chicago
 info:
   title: Chicago Manual of Style 17th edition (notes and bibliography)
   description: Chicago-style source citations (with Bluebook for legal citations), notes and bibliography system, 17th edition
   fields:
-  - anthropology
-  - communications
-  - geography
-  - history
-  - humanities
-  - law
-  - linguistics
-  - literature
-  - philosophy
-  - science
-  - sociology
-  - theology
+    - anthropology
+    - communications
+    - geography
+    - history
+    - humanities
+    - law
+    - linguistics
+    - literature
+    - philosophy
+    - science
+    - sociology
+    - theology
   source:
     csl-id: http://www.zotero.org/styles/chicago-notes-bibliography-17th-edition
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Andrew Dunning
-      uri: https://orcid.org/0000-0003-0464-5036
+      - name: Andrew Dunning
+        uri: https://orcid.org/0000-0003-0464-5036
     links:
-    - href: http://www.zotero.org/styles/chicago-notes-bibliography-17th-edition
-      rel: self
-    - href: http://www.zotero.org/styles/chicago-notes-bibliography
-      rel: template
-    - href: https://www.chicagomanualofstyle.org/
-      rel: documentation
-  short-name: "Chicago Notes"
-  edition: "17th edition"
+      - href: http://www.zotero.org/styles/chicago-notes-bibliography-17th-edition
+        rel: self
+      - href: http://www.zotero.org/styles/chicago-notes-bibliography
+        rel: template
+      - href: https://www.chicagomanualofstyle.org/
+        rel: documentation
+  short-name: Chicago Notes
+  edition: 17th edition
 options:
-  processing: note
   contributors:
     shorten:
       min: 11
@@ -42,8 +42,8 @@ options:
   locators: note
   dates:
     month: long
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
     range-delimiter: –
   titles:
     monograph:
@@ -52,8 +52,6 @@ options:
       emph: true
     serial:
       emph: true
-  page-range-format: chicago16
-  punctuation-in-quote: true
 citation:
   options:
     contributors:
@@ -64,76 +62,116 @@ citation:
         delimiter-precedes-last: contextual
   ibid:
     note-start-text-case: capitalize-first
-    suffix: ""
-    delimiter: ", "
+    suffix: ''
+    delimiter: ', '
     template:
-    - term: ibid
-    - variable: locator
-      suffix: .
+      - term: ibid
+      - variable: locator
+        suffix: .
   subsequent:
     options:
       contributors:
         name-form: family-only
     type-variants:
       default:
+        - contributor: author
+          form: short
+        - title: primary
+          form: short
+          prefix: ', '
+    template:
       - contributor: author
         form: short
       - title: primary
         form: short
-        prefix: ", "
-    template:
-    - contributor: author
-      form: short
-    - title: primary
-      form: short
-      prefix: ", "
-    - variable: locator
-      prefix: ", "
+        prefix: ', '
+      - variable: locator
+        prefix: ', '
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: given-first
-      shorten:
-        min: 4
-        use-first: 1
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten:
-        min: 4
-        use-first: 1
-    - number: pages
-    - variable: url
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - variable: doi
-      prefix: https://doi.org/
-    - number: number
-      prefix: ", Patent "
-    - delimiter: none
-      group:
-      - date: issued
-        form: month-day
-        prefix: ", issued "
+      - contributor: author
+        form: long
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - title: primary
+        wrap:
+          punctuation: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - number: pages
+      - variable: url
+      - variable: publisher-place
+      - variable: publisher
+        prefix: ': '
+      - number: volume
       - date: issued
         form: year
-        prefix: ", "
+        wrap:
+          punctuation: parentheses
+        prefix: ' '
+      - variable: doi
+        prefix: https://doi.org/
+      - number: number
+        prefix: ', Patent '
+      - delimiter: none
+        group:
+          - date: issued
+            form: month-day
+            prefix: ', issued '
+          - date: issued
+            form: year
+            prefix: ', '
     default:
+      - contributor: author
+        form: long
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - title: primary
+        wrap:
+          punctuation: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        shorten:
+          min: 4
+          use-first: 1
+      - number: pages
+      - variable: url
+      - variable: publisher-place
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+        prefix: ' '
+      - variable: doi
+      - delimiter: none
+        group:
+          - date: issued
+            form: month-day
+            prefix: ', issued '
+          - date: issued
+            form: year
+            prefix: ', '
+  template:
     - contributor: author
       form: long
       name-order: given-first
@@ -157,67 +195,27 @@ citation:
     - variable: url
     - variable: publisher-place
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - number: volume
     - date: issued
       form: year
       wrap:
         punctuation: parentheses
-      prefix: " "
+      prefix: ' '
     - variable: doi
+    - number: number
+      prefix: ', Patent '
     - delimiter: none
       group:
-      - date: issued
-        form: month-day
-        prefix: ", issued "
-      - date: issued
-        form: year
-        prefix: ", "
-  template:
-  - contributor: author
-    form: long
-    name-order: given-first
-    shorten:
-      min: 4
-      use-first: 1
-  - title: primary
-    wrap:
-      punctuation: quotes
-  - title: parent-monograph
-    emph: true
-  - title: parent-serial
-    emph: true
-  - contributor: editor
-    form: verb
-    name-order: given-first
-    shorten:
-      min: 4
-      use-first: 1
-  - number: pages
-  - variable: url
-  - variable: publisher-place
-  - variable: publisher
-    prefix: ": "
-  - number: volume
-  - date: issued
-    form: year
-    wrap:
-      punctuation: parentheses
-    prefix: " "
-  - variable: doi
-  - number: number
-    prefix: ", Patent "
-  - delimiter: none
-    group:
-    - date: issued
-      form: month-day
-      prefix: ", issued "
-    - date: issued
-      form: year
-      prefix: ", "
+        - date: issued
+          form: month-day
+          prefix: ', issued '
+        - date: issued
+          form: year
+          prefix: ', '
   suffix: .
-  delimiter: ", "
-  multi-cite-delimiter: "; "
+  delimiter: ', '
+  multi-cite-delimiter: '; '
 bibliography:
   options:
     contributors:
@@ -229,54 +227,54 @@ bibliography:
     subsequent-author-substitute: ———
     hanging-indent: true
     entry-suffix: .
-    separator: ", "
+    separator: ', '
   type-variants:
     article-journal:
+      - contributor: author
+        form: long
+        name-order: family-first-only
+      - title: primary
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
+        emph: true
+      - variable: publisher-place
+      - number: volume
+      - date: issued
+        form: year
+        prefix: ' '
+      - number: pages
+        prefix: ': '
+      - variable: publisher
+        prefix: ': '
+      - variable: doi
+        prefix: https://doi.org/
+      - variable: url
+  template:
     - contributor: author
       form: long
       name-order: family-first-only
     - title: primary
     - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
+        - contributor: editor
+          form: verb
+          name-order: given-first
+        - title: parent-monograph
+          emph: true
     - title: parent-serial
       emph: true
     - variable: publisher-place
     - number: volume
     - date: issued
       form: year
-      prefix: " "
+      prefix: ' '
     - number: pages
-      prefix: ": "
+      prefix: ': '
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - variable: doi
-      prefix: https://doi.org/
     - variable: url
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first-only
-  - title: primary
-  - group:
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - title: parent-monograph
-      emph: true
-  - title: parent-serial
-    emph: true
-  - variable: publisher-place
-  - number: volume
-  - date: issued
-    form: year
-    prefix: " "
-  - number: pages
-    prefix: ": "
-  - variable: publisher
-    prefix: ": "
-  - variable: doi
-  - variable: url

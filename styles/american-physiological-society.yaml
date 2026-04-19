@@ -1,145 +1,144 @@
+preset: nlm-citation-sequence
 info:
   title: American Physiological Society
   description: A style for many APS journals
   fields:
-  - medicine
+    - medicine
   source:
     csl-id: http://www.zotero.org/styles/american-physiological-society
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Michael Berkowitz
-      email: mberkowi@gmu.edu
+      - name: Michael Berkowitz
+        email: mberkowi@gmu.edu
     links:
-    - href: http://www.zotero.org/styles/american-physiological-society
-      rel: self
-    - href: http://www.zotero.org/styles/nlm-citation-sequence
-      rel: template
-    - href: https://journals.physiology.org/author-info.references
-      rel: documentation
+      - href: http://www.zotero.org/styles/american-physiological-society
+        rel: self
+      - href: http://www.zotero.org/styles/nlm-citation-sequence
+        rel: template
+      - href: https://journals.physiology.org/author-info.references
+        rel: documentation
 options:
   substitute: editor-translator-long
-  processing: numeric
   contributors: numeric-all-authors
   dates: short
   titles: humanities
-  punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
   wrap:
     punctuation: parentheses
-  multi-cite-delimiter: ", "
+  multi-cite-delimiter: ', '
 bibliography:
   options:
     contributors:
       display-as-sort: all
       name-form: initials
-      initialize-with: ""
-      delimiter: ", "
+      initialize-with: ''
+      delimiter: ', '
       delimiter-precedes-last: always
-      sort-separator: " "
+      sort-separator: ' '
     entry-suffix: .
-    separator: ". "
+    separator: '. '
   type-variants:
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
+      - contributor: author
+        form: long
         name-order: family-first
-      - title: parent-monograph
+      - title: primary
+        prefix: ' '
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: family-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
         emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - variable: publisher
-    - number: pages
-      prefix: ": "
-    - date: issued
-      form: year
-      prefix: ", "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+      - number: volume
+      - variable: publisher
+      - number: pages
+        prefix: ': '
+      - date: issued
+        form: year
+        prefix: ', '
+      - variable: doi
+      - variable: publisher-place
+      - variable: url
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
+      - contributor: author
+        form: long
         name-order: family-first
-      - title: parent-monograph
+      - title: primary
+        prefix: ' '
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: family-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
         emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ": "
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - date: issued
-      form: year
-      prefix: ", "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+      - number: volume
+      - number: issue
+        prefix: ': '
+      - variable: publisher
+      - number: pages
+        prefix: 'pp. '
+      - date: issued
+        form: year
+        prefix: ', '
+      - variable: doi
+      - variable: publisher-place
+      - variable: url
     paper-conference:
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+        prefix: ' '
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: family-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
+        emph: true
+      - number: volume
+      - number: issue
+        prefix: ': '
+      - variable: publisher
+      - number: pages
+        prefix: 'pp. '
+      - date: issued
+        form: year
+        prefix: ', '
+      - variable: doi
+      - variable: publisher-place
+      - variable: url
+  template:
     - contributor: author
       form: long
       name-order: family-first
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
-      - contributor: editor
-        form: verb
-        name-order: family-first
-      - title: parent-monograph
-        emph: true
+        - contributor: editor
+          form: verb
+          name-order: family-first
+        - title: parent-monograph
+          emph: true
     - title: parent-serial
       emph: true
     - number: volume
     - number: issue
-      prefix: ": "
+      prefix: ': '
     - variable: publisher
     - number: pages
-      prefix: "pp. "
+      prefix: ': '
     - date: issued
       form: year
-      prefix: ", "
+      prefix: ', '
     - variable: doi
     - variable: publisher-place
     - variable: url
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-  - title: primary
-    prefix: " "
-  - group:
-    - contributor: editor
-      form: verb
-      name-order: family-first
-    - title: parent-monograph
-      emph: true
-  - title: parent-serial
-    emph: true
-  - number: volume
-  - number: issue
-    prefix: ": "
-  - variable: publisher
-  - number: pages
-    prefix: ": "
-  - date: issued
-    form: year
-    prefix: ", "
-  - variable: doi
-  - variable: publisher-place
-  - variable: url

@@ -1,3 +1,4 @@
+preset: harvard
 info:
   title: Cite Them Right 12th edition (author-date/Harvard)
   description: Harvard according to Cite Them Right, 11th edition.
@@ -6,21 +7,21 @@ info:
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Patrick O'Brien
+      - name: Patrick O'Brien
     links:
-    - href: http://www.zotero.org/styles/harvard-cite-them-right
-      rel: self
-    - href: http://www.zotero.org/styles/harvard-cite-them-right-11th-edition
-      rel: template
-    - href: http://www.citethemrightonline.com/
-      rel: documentation
-  short-name: "Harvard"
+      - href: http://www.zotero.org/styles/harvard-cite-them-right
+        rel: self
+      - href: http://www.zotero.org/styles/harvard-cite-them-right-11th-edition
+        rel: template
+      - href: http://www.citethemrightonline.com/
+        rel: documentation
+  short-name: Harvard
 options:
   substitute:
     contributor-role-form: short
     template:
-    - editor
-    - translator
+      - editor
+      - translator
     overrides:
       article-newspaper article-magazine article-journal: []
   processing:
@@ -28,11 +29,11 @@ options:
       shorten-names: false
       render-substitutions: false
       template:
-      - key: year
-        ascending: true
+        - key: year
+          ascending: true
     group:
       template:
-      - year
+        - year
     disambiguate:
       names: true
       add-givenname: true
@@ -46,13 +47,13 @@ options:
       use-first: 1
       and-others: et-al
       delimiter-precedes-last: contextual
-    delimiter: ", "
+    delimiter: ', '
     delimiter-precedes-last: never
     demote-non-dropping-particle: sort-only
   dates:
     month: long
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
     range-delimiter: –
   titles:
     monograph:
@@ -61,32 +62,31 @@ options:
       emph: true
     serial:
       emph: true
-  punctuation-in-quote: true
 citation:
   options:
     contributors:
       name-form: initials
-      initialize-with: ". "
+      initialize-with: '. '
       shorten:
         min: 4
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
       delimiter-precedes-last: never
   template:
-  - contributor: author
-    form: short
-    name-order: family-first
-  - date: issued
-    form: year
-    prefix: ", "
-  - variable: locator
-    prefix: ", "
+    - contributor: author
+      form: short
+      name-order: family-first
+    - date: issued
+      form: year
+      prefix: ', '
+    - variable: locator
+      prefix: ', '
   wrap:
     punctuation: parentheses
-  delimiter: ". "
-  multi-cite-delimiter: "; "
+  delimiter: '. '
+  multi-cite-delimiter: '; '
 bibliography:
   options:
     contributors:
@@ -100,128 +100,168 @@ bibliography:
         delimiter-precedes-last: contextual
       delimiter-precedes-last: never
     entry-suffix: .
-    separator: ", "
+    separator: ', '
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 1
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      wrap:
-        punctuation: quotes
-      prefix: " "
-    - prefix: ", in "
-      group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
+      - contributor: author
+        form: long
+        name-order: family-first
         shorten:
-          min: 4
+          min: 5
           use-first: 1
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - group:
-      - number: volume
-      - number: issue
+      - date: issued
+        form: year
         wrap:
           punctuation: parentheses
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-      prefix: https://doi.org/
-    - variable: url
+        prefix: ' '
+      - title: primary
+        wrap:
+          punctuation: quotes
+        prefix: ' '
+      - prefix: ', in '
+        group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+            shorten:
+              min: 4
+              use-first: 1
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
+        emph: true
+      - variable: publisher-place
+      - variable: publisher
+        prefix: ': '
+      - group:
+          - number: volume
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - number: pages
+        prefix: 'pp. '
+      - variable: doi
+        prefix: https://doi.org/
+      - variable: url
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 1
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      wrap:
-        punctuation: quotes
-      prefix: " "
-    - prefix: ", in "
-      group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
+      - contributor: author
+        form: long
+        name-order: family-first
         shorten:
-          min: 4
+          min: 5
           use-first: 1
-      - title: parent-monograph
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+        prefix: ' '
+      - title: primary
+        wrap:
+          punctuation: quotes
+        prefix: ' '
+      - prefix: ', in '
+        group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+            shorten:
+              min: 4
+              use-first: 1
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
         emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - group:
-      - number: volume
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-    - variable: url
+      - variable: publisher-place
+      - variable: publisher
+        prefix: ': '
+      - group:
+          - number: volume
+      - number: pages
+        prefix: 'pp. '
+      - variable: doi
+      - variable: url
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 1
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      wrap:
-        punctuation: quotes
-      prefix: " "
-    - prefix: ", in "
-      group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
+      - contributor: author
+        form: long
+        name-order: family-first
         shorten:
-          min: 4
+          min: 5
           use-first: 1
-        prefix: "in "
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - group:
-      - number: volume
-      - number: issue
+      - date: issued
+        form: year
         wrap:
           punctuation: parentheses
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-    - variable: url
+        prefix: ' '
+      - title: primary
+        wrap:
+          punctuation: quotes
+        prefix: ' '
+      - prefix: ', in '
+        group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+            shorten:
+              min: 4
+              use-first: 1
+            prefix: 'in '
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
+        emph: true
+      - variable: publisher-place
+      - variable: publisher
+        prefix: ': '
+      - group:
+          - number: volume
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - number: pages
+        prefix: 'pp. '
+      - variable: doi
+      - variable: url
     paper-conference:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 5
+          use-first: 1
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+        prefix: ' '
+      - title: primary
+        wrap:
+          punctuation: quotes
+        prefix: ' '
+      - prefix: ', in '
+        group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+            shorten:
+              min: 4
+              use-first: 1
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
+        emph: true
+      - variable: publisher-place
+      - variable: publisher
+        prefix: ': '
+      - group:
+          - number: volume
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - number: pages
+        prefix: 'pp. '
+      - variable: doi
+      - variable: url
+  template:
     - contributor: author
       form: long
       name-order: family-first
@@ -232,72 +272,32 @@ bibliography:
       form: year
       wrap:
         punctuation: parentheses
-      prefix: " "
+      prefix: ' '
     - title: primary
       wrap:
         punctuation: quotes
-      prefix: " "
-    - prefix: ", in "
+      prefix: ' '
+    - prefix: ', in '
       group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 1
-      - title: parent-monograph
-        emph: true
+        - contributor: editor
+          form: verb
+          name-order: given-first
+          shorten:
+            min: 4
+            use-first: 1
+        - title: parent-monograph
+          emph: true
     - title: parent-serial
       emph: true
     - variable: publisher-place
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
+        - number: volume
+        - number: issue
+          wrap:
+            punctuation: parentheses
     - number: pages
-      prefix: "pp. "
     - variable: doi
     - variable: url
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten:
-      min: 5
-      use-first: 1
-  - date: issued
-    form: year
-    wrap:
-      punctuation: parentheses
-    prefix: " "
-  - title: primary
-    wrap:
-      punctuation: quotes
-    prefix: " "
-  - prefix: ", in "
-    group:
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten:
-        min: 4
-        use-first: 1
-    - title: parent-monograph
-      emph: true
-  - title: parent-serial
-    emph: true
-  - variable: publisher-place
-  - variable: publisher
-    prefix: ": "
-  - group:
-    - number: volume
-    - number: issue
-      wrap:
-        punctuation: parentheses
-  - number: pages
-  - variable: doi
-  - variable: url
   sort: author-date-title

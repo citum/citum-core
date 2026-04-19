@@ -1,128 +1,168 @@
+preset: american-institute-of-physics
 info:
   title: American Physical Society
   description: Common style use by APS publications.
   fields:
-  - physics
+    - physics
   source:
     csl-id: http://www.zotero.org/styles/american-physics-society
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Richard Karnesky
-      email: karnesky+zotero@gmail.com
-      uri: http://arc.nucapt.northwestern.edu/Richard_Karnesky
-    - name: Brenton M. Wiernik
+      - name: Richard Karnesky
+        email: karnesky+zotero@gmail.com
+        uri: http://arc.nucapt.northwestern.edu/Richard_Karnesky
+      - name: Brenton M. Wiernik
     links:
-    - href: http://www.zotero.org/styles/american-physics-society
-      rel: self
-    - href: http://www.zotero.org/styles/american-institute-of-physics
-      rel: template
-    - href: https://journals.aps.org/prl/authors#techformat
-      rel: documentation
+      - href: http://www.zotero.org/styles/american-physics-society
+        rel: self
+      - href: http://www.zotero.org/styles/american-institute-of-physics
+        rel: template
+      - href: https://journals.aps.org/prl/authors#techformat
+        rel: documentation
 options:
-  substitute: editor-translator-long
-  processing: numeric
   contributors: physics-numeric
-  dates: long
-  titles: humanities
-  punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
-  prefix: " ["
-  suffix: "]"
+  prefix: ' ['
+  suffix: ']'
   collapse: citation-number
-  multi-cite-delimiter: ","
+  multi-cite-delimiter: ','
 bibliography:
   options:
     contributors:
       name-form: initials
-      initialize-with: ". "
-      delimiter: ", "
+      initialize-with: '. '
+      delimiter: ', '
     entry-suffix: .
-    separator: ", "
+    separator: ', '
   type-variants:
     chapter:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: primary
-      emph: true
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - variable: publisher
-    - variable: url
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: pages
-      prefix: "pp. "
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+        emph: true
+      - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher-place
+      - variable: publisher
+      - variable: url
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+      - number: pages
+        prefix: 'pp. '
     dataset:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: primary
-      emph: true
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - variable: publisher
-    - variable: url
-    - number: pages
-      prefix: "), "
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+        emph: true
+      - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher-place
+      - variable: publisher
+      - variable: url
+      - number: pages
+        prefix: '), '
     entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: primary
-      emph: true
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - variable: publisher
-    - variable: url
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: pages
-      prefix: "pp. "
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+        emph: true
+      - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher-place
+      - variable: publisher
+      - variable: url
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+      - number: pages
+        prefix: 'pp. '
     interview:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: primary
-      emph: true
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - variable: publisher
-    - variable: url
-    - number: pages
-      prefix: "), "
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+        emph: true
+      - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher-place
+      - variable: publisher
+      - variable: url
+      - number: pages
+        prefix: '), '
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: primary
-      emph: true
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - variable: publisher
-    - variable: url
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: pages
-      prefix: "pp. "
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+        emph: true
+      - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher-place
+      - variable: publisher
+      - variable: url
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+      - number: pages
+        prefix: 'pp. '
     personal_communication:
+      - contributor: author
+        form: long
+        name-order: given-first
+        prefix: 'pp. '
+      - title: primary
+        emph: true
+      - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher-place
+      - variable: publisher
+      - variable: url
+      - number: pages
+        prefix: '), '
+    software:
+      - number: citation-number
+        wrap:
+          punctuation: brackets
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+        emph: true
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+    patent:
+      - number: citation-number
+        wrap:
+          punctuation: brackets
+      - contributor: author
+        form: long
+        shorten:
+          min: 11
+          use-first: 1
+          and-others: et-al
+          delimiter-precedes-last: contextual
+        and: text
+      - title: primary
+        emph: true
+      - date: issued
+        form: year
+      - term: no-date
+        form: short
+  template:
     - contributor: author
       form: long
       name-order: given-first
-      prefix: "pp. "
     - title: primary
       emph: true
     - title: parent-monograph
@@ -130,53 +170,9 @@ bibliography:
     - variable: publisher-place
     - variable: publisher
     - variable: url
-    - number: pages
-      prefix: "), "
-    software:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: primary
-      emph: true
     - date: issued
       form: year
       wrap:
         punctuation: parentheses
-    patent:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      shorten:
-        min: 11
-        use-first: 1
-        and-others: et-al
-        delimiter-precedes-last: contextual
-      and: text
-    - title: primary
-      emph: true
-    - date: issued
-      form: year
-    - term: no-date
-      form: short
-  template:
-  - contributor: author
-    form: long
-    name-order: given-first
-  - title: primary
-    emph: true
-  - title: parent-monograph
-  - title: parent-serial
-  - variable: publisher-place
-  - variable: publisher
-  - variable: url
-  - date: issued
-    form: year
-    wrap:
-      punctuation: parentheses
-  - number: pages
-    prefix: "), "
+    - number: pages
+      prefix: '), '

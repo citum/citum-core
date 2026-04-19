@@ -1,123 +1,176 @@
+preset: bmj
 info:
   title: Nature Publishing Group - NLM/Vancouver
   description: Superscript Vancouver style for some NPG journals, with et-al-min="7" and et-al-use-first="6"
   fields:
-  - science
+    - science
   source:
     csl-id: http://www.zotero.org/styles/nature-publishing-group-vancouver
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Sebastian Karcher
+      - name: Sebastian Karcher
     links:
-    - href: http://www.zotero.org/styles/nature-publishing-group-vancouver
-      rel: self
-    - href: http://www.zotero.org/styles/bmj
-      rel: template
-    - href: https://www.nature.com/tpj/authors-and-referees/gta
-      rel: documentation
+      - href: http://www.zotero.org/styles/nature-publishing-group-vancouver
+        rel: self
+      - href: http://www.zotero.org/styles/bmj
+        rel: template
+      - href: https://www.nature.com/tpj/authors-and-referees/gta
+        rel: documentation
 options:
   substitute: editor-short
-  processing: numeric
   contributors:
     display-as-sort: all
     name-form: initials
-    initialize-with: ""
+    initialize-with: ''
     shorten:
       min: 7
       use-first: 6
       and-others: et-al
       delimiter-precedes-last: contextual
-    delimiter: ", "
+    delimiter: ', '
     delimiter-precedes-last: always
     delimiter-precedes-et-al: never
     demote-non-dropping-particle: sort-only
-    sort-separator: " "
+    sort-separator: ' '
   dates: short
-  titles: humanities
 citation:
   use-preset: numeric-citation
-  multi-cite-delimiter: ","
+  multi-cite-delimiter: ','
 bibliography:
   options:
     contributors:
       display-as-sort: all
       name-form: initials
-      initialize-with: ""
+      initialize-with: ''
       shorten:
         min: 7
         use-first: 6
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
       delimiter-precedes-last: always
       delimiter-precedes-et-al: never
-      sort-separator: " "
+      sort-separator: ' '
     entry-suffix: .
-    separator: ". "
+    separator: '. '
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - title: parent-serial
-      emph: true
-    - date: issued
-      form: year
-    - number: volume
-    - number: pages
-      prefix: ": "
-    - variable: doi
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - title: parent-serial
+        emph: true
+      - date: issued
+        form: year
+      - number: volume
+      - number: pages
+        prefix: ': '
+      - variable: doi
     legal_case:
-    - title: primary
-    - date: issued
-      form: year
+      - title: primary
+      - date: issued
+        form: year
     webpage:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-    - date: issued
-      form: year
-    - variable: url
-    - date: accessed
-      form: month-day
-      prefix: " (accessed "
-      suffix: ")"
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+      - date: issued
+        form: year
+      - variable: url
+      - date: accessed
+        form: month-day
+        prefix: ' (accessed '
+        suffix: )
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
         emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - variable: publisher
-    - number: pages
-      prefix: ": "
-    - variable: publisher-place
-      prefix: ": "
-    - variable: url
-      prefix: .
+      - number: volume
+      - variable: publisher
+      - number: pages
+        prefix: ': '
+      - variable: publisher-place
+        prefix: ': '
+      - variable: url
+        prefix: .
     chapter:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+            prefix: 'on '
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
+        emph: true
+      - number: volume
+      - variable: publisher
+      - number: pages
+        prefix: ': '
+      - variable: publisher-place
+        prefix: ': '
+      - date: issued
+        form: year
+        prefix: ', '
+      - variable: url
+        prefix: .
+    entry-encyclopedia:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
+        emph: true
+      - number: volume
+      - variable: publisher
+      - number: pages
+        prefix: ': '
+      - variable: publisher-place
+        prefix: ': '
+      - variable: url
+        prefix: .
+  template:
     - contributor: author
       form: long
       name-order: family-first
@@ -125,77 +178,23 @@ bibliography:
         min: 8
         use-first: 6
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
-        emph: true
+        - contributor: editor
+          form: verb
+          name-order: given-first
+        - title: parent-monograph
+          emph: true
     - title: parent-serial
       emph: true
     - number: volume
     - variable: publisher
     - number: pages
-      prefix: ": "
+      prefix: ': '
     - variable: publisher-place
-      prefix: ": "
+      prefix: ': '
     - date: issued
       form: year
-      prefix: ", "
+      prefix: ', '
     - variable: url
       prefix: .
-    entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - variable: publisher
-    - number: pages
-      prefix: ": "
-    - variable: publisher-place
-      prefix: ": "
-    - variable: url
-      prefix: .
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten:
-      min: 8
-      use-first: 6
-  - title: primary
-    prefix: " "
-  - group:
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - title: parent-monograph
-      emph: true
-  - title: parent-serial
-    emph: true
-  - number: volume
-  - variable: publisher
-  - number: pages
-    prefix: ": "
-  - variable: publisher-place
-    prefix: ": "
-  - date: issued
-    form: year
-    prefix: ", "
-  - variable: url
-    prefix: .

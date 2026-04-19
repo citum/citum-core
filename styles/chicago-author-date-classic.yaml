@@ -1,33 +1,34 @@
+preset: chicago-author-date
 info:
   title: Chicago Manual of Style 18th edition (author-date, classic variants)
   description: 'Chicago-style source citations (with Bluebook for legal citations), author-date system, with classic variants: 3-em dash for repeated names (CMOS18 13.113), chapter page numbers (CMOS18 14.8), and place of publication (CMOS18 14.30)'
   fields:
-  - anthropology
-  - communications
-  - geography
-  - history
-  - humanities
-  - law
-  - linguistics
-  - literature
-  - philosophy
-  - science
-  - sociology
-  - theology
+    - anthropology
+    - communications
+    - geography
+    - history
+    - humanities
+    - law
+    - linguistics
+    - literature
+    - philosophy
+    - science
+    - sociology
+    - theology
   source:
     csl-id: http://www.zotero.org/styles/chicago-author-date-classic
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Andrew Dunning
-      uri: https://orcid.org/0000-0003-0464-5036
+      - name: Andrew Dunning
+        uri: https://orcid.org/0000-0003-0464-5036
     links:
-    - href: http://www.zotero.org/styles/chicago-author-date-classic
-      rel: self
-    - href: http://www.zotero.org/styles/chicago-notes-bibliography
-      rel: template
-    - href: https://www.chicagomanualofstyle.org/
-      rel: documentation
+      - href: http://www.zotero.org/styles/chicago-author-date-classic
+        rel: self
+      - href: http://www.zotero.org/styles/chicago-notes-bibliography
+        rel: template
+      - href: https://www.chicagomanualofstyle.org/
+        rel: documentation
 options:
   processing:
     disambiguate:
@@ -43,8 +44,8 @@ options:
     demote-non-dropping-particle: display-and-sort
   dates:
     month: long
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
     range-delimiter: –
   titles:
     component: {}
@@ -52,8 +53,6 @@ options:
       emph: true
     periodical:
       emph: true
-  page-range-format: chicago16
-  punctuation-in-quote: true
 citation:
   options:
     contributors:
@@ -64,30 +63,30 @@ citation:
         delimiter-precedes-last: contextual
   type-variants:
     personal_communication:
+      - contributor: author
+        form: long
+        name-order: given-first
+        shorten:
+          min: 3
+          use-first: 1
+      - variable: locator
+        prefix: ' '
+  template:
     - contributor: author
       form: long
       name-order: given-first
       shorten:
         min: 3
         use-first: 1
+    - date: issued
+      form: year
+      prefix: ' '
     - variable: locator
-      prefix: " "
-  template:
-  - contributor: author
-    form: long
-    name-order: given-first
-    shorten:
-      min: 3
-      use-first: 1
-  - date: issued
-    form: year
-    prefix: " "
-  - variable: locator
-    prefix: " "
+      prefix: ' '
   wrap:
     punctuation: parentheses
-  delimiter: ". "
-  multi-cite-delimiter: "; "
+  delimiter: '. '
+  multi-cite-delimiter: '; '
 bibliography:
   options:
     contributors:
@@ -99,39 +98,79 @@ bibliography:
     subsequent-author-substitute: ———
     hanging-indent: true
     entry-suffix: .
-    separator: ". "
+    separator: '. '
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - date: issued
-      form: year
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 3
+      - date: issued
+        form: year
+      - title: primary
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
         emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - prefix: ") "
-      group:
-      - number: volume
-      - number: issue
-    - number: pages
-      prefix: ": "
-    - variable: publisher
-      prefix: ": "
-    - variable: doi
-      prefix: https://doi.org/
-    - variable: url
+      - variable: publisher-place
+      - prefix: ') '
+        group:
+          - number: volume
+          - number: issue
+      - number: pages
+        prefix: ': '
+      - variable: publisher
+        prefix: ': '
+      - variable: doi
+        prefix: https://doi.org/
+      - variable: url
     article-magazine:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 3
+      - date: issued
+        form: year
+      - title: primary
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
+        emph: true
+      - variable: publisher-place
+      - prefix: ') '
+        group:
+          - number: volume
+      - number: pages
+        prefix: ': '
+      - variable: publisher
+        prefix: ': '
+      - variable: doi
+      - variable: url
+    legal_case:
+      - title: primary
+      - variable: authority
+      - title: parent-serial
+      - number: number
+      - date: issued
+        form: year
+      - term: at
+        form: long
+      - variable: locator
+      - variable: doi
+        prefix: https://doi.org/
+  template:
     - contributor: author
       form: long
       name-order: family-first
@@ -142,62 +181,22 @@ bibliography:
       form: year
     - title: primary
     - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
+        - contributor: editor
+          form: verb
+          name-order: given-first
+        - title: parent-monograph
+          emph: true
     - title: parent-serial
       emph: true
     - variable: publisher-place
-    - prefix: ") "
+    - prefix: ') '
       group:
-      - number: volume
+        - number: volume
+        - number: issue
     - number: pages
-      prefix: ": "
+      prefix: ': '
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - variable: doi
     - variable: url
-    legal_case:
-    - title: primary
-    - variable: authority
-    - title: parent-serial
-    - number: number
-    - date: issued
-      form: year
-    - term: at
-      form: long
-    - variable: locator
-    - variable: doi
-      prefix: https://doi.org/
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten:
-      min: 8
-      use-first: 3
-  - date: issued
-    form: year
-  - title: primary
-  - group:
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - title: parent-monograph
-      emph: true
-  - title: parent-serial
-    emph: true
-  - variable: publisher-place
-  - prefix: ") "
-    group:
-    - number: volume
-    - number: issue
-  - number: pages
-    prefix: ": "
-  - variable: publisher
-    prefix: ": "
-  - variable: doi
-  - variable: url
   sort: author-date-title

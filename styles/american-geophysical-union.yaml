@@ -1,3 +1,4 @@
+preset: apa-7th
 info:
   title: American Geophysical Union
   description: The American Geophysical Union generic style
@@ -42,7 +43,6 @@ options:
     sort-separator: ', '
   dates: numeric
   titles: humanities
-  punctuation-in-quote: true
   volume-pages-delimiter: comma
 citation:
   options:

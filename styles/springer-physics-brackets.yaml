@@ -1,188 +1,182 @@
+preset: american-physics-society
 info:
   title: Springer - Physics (numeric, brackets)
   description: This style is similar to American Physical Society (APS) and is used by a number of Springer publications.
   fields:
-  - physics
+    - physics
   source:
     csl-id: http://www.zotero.org/styles/springer-physics-brackets
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Charles Parnot
-      email: charles.parnot@gmail.com
-      uri: http://twitter.com/cparnot
+      - name: Charles Parnot
+        email: charles.parnot@gmail.com
+        uri: http://twitter.com/cparnot
     links:
-    - href: http://www.zotero.org/styles/springer-physics-brackets
-      rel: self
-    - href: http://www.zotero.org/styles/american-physics-society
-      rel: template
-    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
-      rel: documentation
-    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
-      rel: documentation
-options:
-  substitute: editor-translator-long
-  processing: numeric
-  contributors: physics-numeric
-  dates: long
-  titles: humanities
-  punctuation-in-quote: true
+      - href: http://www.zotero.org/styles/springer-physics-brackets
+        rel: self
+      - href: http://www.zotero.org/styles/american-physics-society
+        rel: template
+      - href: http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
+        rel: documentation
+      - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
+        rel: documentation
 citation:
   use-preset: numeric-citation
   wrap:
     punctuation: brackets
-  multi-cite-delimiter: ","
+  multi-cite-delimiter: ','
 bibliography:
   options:
     contributors:
       name-form: initials
-      initialize-with: ". "
-      delimiter: ", "
+      initialize-with: '. '
+      delimiter: ', '
     entry-suffix: .
-    separator: ", "
+    separator: ', '
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-    - title: parent-serial
-    - number: volume
-    - number: pages
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: parent-monograph
+      - title: parent-serial
+      - number: volume
+      - number: pages
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
     book:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-    - title: parent-serial
-    - title: primary
-      emph: true
-    - number: volume
-    - number: pages
-    - variable: publisher
-      prefix: " ("
-    - variable: publisher-place
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: parent-monograph
+      - title: parent-serial
+      - title: primary
+        emph: true
+      - number: volume
+      - number: pages
+      - variable: publisher
+        prefix: ' ('
+      - variable: publisher-place
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
     chapter:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - term: in
-    - title: parent-monograph
-    - contributor: editor
-      form: verb
-    - variable: publisher
-    - date: issued
-      form: year
-    - number: pages
-      prefix: "pp. "
+      - contributor: author
+        form: long
+        name-order: given-first
+      - term: in
+      - title: parent-monograph
+      - contributor: editor
+        form: verb
+      - variable: publisher
+      - date: issued
+        form: year
+      - number: pages
+        prefix: 'pp. '
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-    - title: parent-serial
-    - title: primary
-      emph: true
-    - number: volume
-    - number: pages
-    - variable: publisher
-      prefix: " ("
-    - variable: publisher-place
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: parent-monograph
+      - title: parent-serial
+      - title: primary
+        emph: true
+      - number: volume
+      - number: pages
+      - variable: publisher
+        prefix: ' ('
+      - variable: publisher-place
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
     personal_communication:
+      - contributor: author
+        form: long
+        name-order: given-first
+        prefix: 'pp. '
+      - title: parent-monograph
+      - title: parent-serial
+      - number: volume
+      - number: pages
+      - variable: publisher
+        prefix: ' ('
+      - variable: publisher-place
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+    report:
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+      - variable: publisher
+      - variable: publisher-place
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+    thesis:
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+      - variable: genre
+      - variable: publisher
+      - date: issued
+        form: year
+    legal-case:
+      - title: primary
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+      - number: pages
+        prefix: ', p. '
+    patent:
+      - contributor: author
+        form: long
+        name-order: given-first
+      - number: patent-number
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+    motion-picture:
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: primary
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+    broadcast:
+      - contributor: author
+        form: long
+        name-order: given-first
+      - title: parent-serial
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+  template:
     - contributor: author
       form: long
       name-order: given-first
-      prefix: "pp. "
     - title: parent-monograph
     - title: parent-serial
     - number: volume
     - number: pages
     - variable: publisher
-      prefix: " ("
+      prefix: ' ('
     - variable: publisher-place
     - date: issued
       form: year
       wrap:
         punctuation: parentheses
-    report:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: primary
-    - variable: publisher
-    - variable: publisher-place
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    thesis:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: primary
-    - variable: genre
-    - variable: publisher
-    - date: issued
-      form: year
-    legal-case:
-    - title: primary
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: pages
-      prefix: ", p. "
-    patent:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - number: patent-number
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    motion-picture:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: primary
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    broadcast:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-serial
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-  template:
-  - contributor: author
-    form: long
-    name-order: given-first
-  - title: parent-monograph
-  - title: parent-serial
-  - number: volume
-  - number: pages
-  - variable: publisher
-    prefix: " ("
-  - variable: publisher-place
-  - date: issued
-    form: year
-    wrap:
-      punctuation: parentheses

@@ -1,3 +1,4 @@
+preset: mhra-notes
 info:
   title: MHRA Style Guide 4th edition (author-date, place of publication)
   description: MHRA source citations, author-date system, with place of publication (MHRA 7.3)
@@ -43,7 +44,6 @@ options:
       emph: true
     periodical:
       emph: true
-  page-range-format: minimal-two
 citation:
   options:
     contributors:
@@ -351,7 +351,7 @@ bibliography:
         prefix: '. '
       - number: number
         prefix: ', Patent '
-      - delimiter: ""
+      - delimiter: ''
         group:
           - date: issued
             form: month-day
@@ -382,7 +382,7 @@ bibliography:
       shorten:
         min: 4
         use-first: 1
-    - delimiter: ""
+    - delimiter: ''
       group:
         - variable: publisher-place
         - variable: publisher

@@ -1,3 +1,4 @@
+preset: annual-reviews
 info:
   title: Annual Reviews (sorted alphabetically)
   source:
@@ -5,162 +6,191 @@ info:
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Michael Berkowitz
-      email: mberkowi@gmu.edu
+      - name: Michael Berkowitz
+        email: mberkowi@gmu.edu
     links:
-    - href: http://www.zotero.org/styles/annual-reviews-alphabetical
-      rel: self
-    - href: http://www.zotero.org/styles/annual-reviews
-      rel: template
-    - href: http://www.annualreviews.org/page/authors/author-instructions/preparing/handbooks
-      rel: documentation
-options:
-  substitute: editor-translator-short
-  processing: numeric
-  contributors:
-    display-as-sort: all
-    name-form: initials
-    initialize-with: ""
-    shorten:
-      min: 7
-      use-first: 5
-      and-others: et-al
-      delimiter-precedes-last: contextual
-    delimiter: ", "
-    demote-non-dropping-particle: never
-    sort-separator: " "
-  dates: short
-  titles: humanities
-  page-range-format: chicago
-  punctuation-in-quote: true
-citation:
-  use-preset: numeric-citation
-  wrap:
-    punctuation: parentheses
-  multi-cite-delimiter: ", "
+      - href: http://www.zotero.org/styles/annual-reviews-alphabetical
+        rel: self
+      - href: http://www.zotero.org/styles/annual-reviews
+        rel: template
+      - href: http://www.annualreviews.org/page/authors/author-instructions/preparing/handbooks
+        rel: documentation
 bibliography:
   sort: author-date-title
   options:
     contributors:
       display-as-sort: all
       name-form: initials
-      initialize-with: ""
+      initialize-with: ''
       shorten:
         min: 7
         use-first: 5
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
-      sort-separator: " "
-    separator: ". "
+      delimiter: ', '
+      sort-separator: ' '
+    separator: '. '
   type-variants:
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 5
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - group:
-      - number: volume
-    - variable: publisher-place
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 5
+      - date: issued
+        form: year
+        prefix: ' '
+      - title: primary
+      - group:
+          - number: volume
+      - variable: publisher-place
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
         emph: true
-    - title: parent-serial
-      emph: true
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher
+      - number: pages
+        prefix: 'pp. '
+      - variable: publisher
     book:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 5
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher-place
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 5
+      - date: issued
+        form: year
+        prefix: ' '
+      - title: primary
+      - group:
+          - number: volume
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - variable: publisher-place
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+            prefix: 'on '
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
         emph: true
-    - title: parent-serial
-      emph: true
-    - number: pages
-    - variable: publisher
+      - number: pages
+      - variable: publisher
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 5
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher-place
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 5
+      - date: issued
+        form: year
+        prefix: ' '
+      - title: primary
+      - group:
+          - number: volume
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - variable: publisher-place
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
         emph: true
-    - title: parent-serial
-      emph: true
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher
+      - number: pages
+        prefix: 'pp. '
+      - variable: publisher
     film:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 5
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher-place
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - number: pages
-    - variable: publisher
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 5
+      - date: issued
+        form: year
+        prefix: ' '
+      - title: primary
+      - group:
+          - number: volume
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - variable: publisher-place
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - number: pages
+      - variable: publisher
     legal-case:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 5
+      - date: issued
+        form: year
+        prefix: ' '
+      - title: primary
+      - group:
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - variable: publisher-place
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      - title: parent-serial
+        emph: true
+      - variable: publisher
+    patent:
+      - number: citation-number
+        suffix: '. '
+      - contributor: author
+        form: long
+        sort-separator: ' '
+        shorten:
+          min: 7
+          use-first: 5
+          and-others: et-al
+          delimiter-precedes-last: contextual
+      - date: issued
+        form: year
+      - title: primary
+    entry-encyclopedia:
+      - number: citation-number
+        suffix: '. '
+      - contributor: author
+        form: long
+        sort-separator: ' '
+        shorten:
+          min: 7
+          use-first: 5
+          and-others: et-al
+          delimiter-precedes-last: contextual
+      - date: issued
+        form: year
+      - title: primary
+  template:
     - contributor: author
       form: long
       name-order: family-first
@@ -169,74 +199,21 @@ bibliography:
         use-first: 5
     - date: issued
       form: year
-      prefix: " "
+      prefix: ' '
     - title: primary
     - group:
-      - number: issue
-        wrap:
-          punctuation: parentheses
+        - number: volume
+        - number: issue
+          wrap:
+            punctuation: parentheses
     - variable: publisher-place
     - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
+        - contributor: editor
+          form: verb
+          name-order: given-first
+        - title: parent-monograph
+          emph: true
     - title: parent-serial
       emph: true
+    - number: pages
     - variable: publisher
-    patent:
-    - number: citation-number
-      suffix: ". "
-    - contributor: author
-      form: long
-      sort-separator: " "
-      shorten:
-        min: 7
-        use-first: 5
-        and-others: et-al
-        delimiter-precedes-last: contextual
-    - date: issued
-      form: year
-    - title: primary
-    entry-encyclopedia:
-    - number: citation-number
-      suffix: ". "
-    - contributor: author
-      form: long
-      sort-separator: " "
-      shorten:
-        min: 7
-        use-first: 5
-        and-others: et-al
-        delimiter-precedes-last: contextual
-    - date: issued
-      form: year
-    - title: primary
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten:
-      min: 8
-      use-first: 5
-  - date: issued
-    form: year
-    prefix: " "
-  - title: primary
-  - group:
-    - number: volume
-    - number: issue
-      wrap:
-        punctuation: parentheses
-  - variable: publisher-place
-  - group:
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - title: parent-monograph
-      emph: true
-  - title: parent-serial
-    emph: true
-  - number: pages
-  - variable: publisher

@@ -1,92 +1,90 @@
+preset: nlm-citation-sequence-superscript-year-only-no-issue
 info:
   title: Landes Bioscience Journals
   description: Vancouver style adapted for Landes Bioscience Journals (et al for 10+ authors, only year, space after semicolon
   fields:
-  - medicine
+    - medicine
   source:
     csl-id: http://www.zotero.org/styles/landes-bioscience-journals
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Sebastian Karcher
+      - name: Sebastian Karcher
     links:
-    - href: http://www.zotero.org/styles/landes-bioscience-journals
-      rel: self
-    - href: http://www.zotero.org/styles/nlm-citation-sequence-superscript-year-only-no-issue
-      rel: template
-    - href: http://www.nlm.nih.gov/bsd/uniform_requirements.html
-      rel: documentation
-    - href: http://www.landesbioscience.com/journals/intravital/guidelines/
-      rel: documentation
+      - href: http://www.zotero.org/styles/landes-bioscience-journals
+        rel: self
+      - href: http://www.zotero.org/styles/nlm-citation-sequence-superscript-year-only-no-issue
+        rel: template
+      - href: http://www.nlm.nih.gov/bsd/uniform_requirements.html
+        rel: documentation
+      - href: http://www.landesbioscience.com/journals/intravital/guidelines/
+        rel: documentation
 options:
   substitute: editor-long
-  processing: numeric
   contributors: numeric-large
   dates: short
-  page-range-format: minimal
-  punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
-  multi-cite-delimiter: ","
+  multi-cite-delimiter: ','
 bibliography:
   options:
     contributors:
       display-as-sort: all
       name-form: initials
-      initialize-with: ""
+      initialize-with: ''
       shorten:
         min: 11
         use-first: 10
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
       delimiter-precedes-last: always
-      sort-separator: " "
+      sort-separator: ' '
     entry-suffix: .
-    separator: ". "
+    separator: '. '
   type-variants:
     chapter:
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+        prefix: ' '
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+            prefix: 'on '
+          - title: parent-monograph
+      - title: parent-serial
+      - number: volume
+      - variable: url
+      - variable: publisher-place
+      - variable: publisher
+        prefix: ': '
+      - date: issued
+        form: year
+        prefix: '; '
+      - number: pages
+        prefix: '. page '
+  template:
     - contributor: author
       form: long
       name-order: family-first
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
+        - contributor: editor
+          form: verb
+          name-order: given-first
+        - title: parent-monograph
     - title: parent-serial
     - number: volume
     - variable: url
     - variable: publisher-place
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - date: issued
       form: year
-      prefix: "; "
+      prefix: '; '
     - number: pages
-      prefix: ". page "
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-  - title: primary
-    prefix: " "
-  - group:
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - title: parent-monograph
-  - title: parent-serial
-  - number: volume
-  - variable: url
-  - variable: publisher-place
-  - variable: publisher
-    prefix: ": "
-  - date: issued
-    form: year
-    prefix: "; "
-  - number: pages
-    prefix: ". page "
+      prefix: '. page '

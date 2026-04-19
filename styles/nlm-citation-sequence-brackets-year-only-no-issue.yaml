@@ -1,77 +1,100 @@
+preset: nlm-citation-sequence-brackets
 info:
   title: 'NLM Style Guide (Vancouver): Citing Medicine 2nd edition (citation-sequence, brackets, year-only dates, no issue numbers)'
   description: 'Citing Medicine: The NLM Style Guide for Authors, Editors, and Publishers, 2nd edition (2015), based on ANSI/NISO Z39.29-2005 (R2010); citation-sequence system, with in-text indicators in brackets, year-only dates, and no issue numbers.'
   fields:
-  - medicine
+    - medicine
   source:
     csl-id: http://www.zotero.org/styles/nlm-citation-sequence-brackets-year-only-no-issue
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Charles Parnot
-      email: charles.parnot@gmail.com
-      uri: http://twitter.com/cparnot
+      - name: Charles Parnot
+        email: charles.parnot@gmail.com
+        uri: http://twitter.com/cparnot
     links:
-    - href: http://www.zotero.org/styles/nlm-citation-sequence-brackets-year-only-no-issue
-      rel: self
-    - href: http://www.zotero.org/styles/nlm-citation-sequence-brackets
-      rel: template
-    - href: https://www.nlm.nih.gov/citingmedicine
-      rel: documentation
-    - href: https://www.nlm.nih.gov/bsd/uniform_requirements.html
-      rel: documentation
-    - href: https://www.icmje.org/recommendations/
-      rel: documentation
+      - href: http://www.zotero.org/styles/nlm-citation-sequence-brackets-year-only-no-issue
+        rel: self
+      - href: http://www.zotero.org/styles/nlm-citation-sequence-brackets
+        rel: template
+      - href: https://www.nlm.nih.gov/citingmedicine
+        rel: documentation
+      - href: https://www.nlm.nih.gov/bsd/uniform_requirements.html
+        rel: documentation
+      - href: https://www.icmje.org/recommendations/
+        rel: documentation
 options:
   substitute:
     contributor-role-form: long
     template:
-    - editor
-  processing: numeric
+      - editor
   contributors:
     display-as-sort: all
     name-form: initials
-    initialize-with: ""
+    initialize-with: ''
     shorten:
       min: 7
       use-first: 6
       and-others: et-al
       delimiter-precedes-last: contextual
-    delimiter: ", "
+    delimiter: ', '
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only
-    sort-separator: " "
+    sort-separator: ' '
   dates:
     month: short
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
     range-delimiter: –
-  page-range-format: minimal
-  punctuation-in-quote: true
 citation:
   template:
-  - number: citation-number
+    - number: citation-number
   wrap:
     punctuation: brackets
-  multi-cite-delimiter: ","
+  multi-cite-delimiter: ','
 bibliography:
   options:
     contributors:
       display-as-sort: all
       name-form: initials
-      initialize-with: ""
+      initialize-with: ''
       shorten:
         min: 7
         use-first: 6
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
       delimiter-precedes-last: always
-      sort-separator: " "
+      sort-separator: ' '
     entry-suffix: .
-    separator: ". "
+    separator: '. '
   type-variants:
     chapter:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+            prefix: 'on '
+          - title: parent-monograph
+      - title: parent-serial
+      - date: issued
+        form: year
+      - number: volume
+      - variable: publisher-place
+      - variable: publisher
+        prefix: ': '
+      - variable: url
+      - number: pages
+        prefix: ':'
+  template:
     - contributor: author
       form: long
       name-order: family-first
@@ -79,44 +102,19 @@ bibliography:
         min: 8
         use-first: 6
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
+        - contributor: editor
+          form: verb
+          name-order: given-first
+        - title: parent-monograph
     - title: parent-serial
     - date: issued
       form: year
     - number: volume
     - variable: publisher-place
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - variable: url
     - number: pages
-      prefix: ":"
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten:
-      min: 8
-      use-first: 6
-  - title: primary
-    prefix: " "
-  - group:
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - title: parent-monograph
-  - title: parent-serial
-  - date: issued
-    form: year
-  - number: volume
-  - variable: publisher-place
-  - variable: publisher
-    prefix: ": "
-  - variable: url
-  - number: pages
-    prefix: ":"
+      prefix: ':'

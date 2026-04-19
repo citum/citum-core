@@ -1,40 +1,41 @@
+preset: american-society-of-civil-engineers
 info:
   title: American Statistical Association
   description: A style for the American Statistical Association used for all their journals.
   fields:
-  - math
+    - math
   source:
     csl-id: http://www.zotero.org/styles/american-statistical-association
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Patrick O'Brien
+      - name: Patrick O'Brien
     links:
-    - href: http://www.zotero.org/styles/american-statistical-association
-      rel: self
-    - href: http://www.zotero.org/styles/american-society-of-civil-engineers
-      rel: template
-    - href: http://amstat.tfjournals.com/asa-style-guide/
-      rel: documentation
+      - href: http://www.zotero.org/styles/american-statistical-association
+        rel: self
+      - href: http://www.zotero.org/styles/american-society-of-civil-engineers
+        rel: template
+      - href: http://amstat.tfjournals.com/asa-style-guide/
+        rel: documentation
 options:
   substitute:
     contributor-role-form: short
     template:
-    - editor
-    - translator
+      - editor
+      - translator
   processing:
     sort:
       shorten-names: false
       render-substitutions: false
       template:
-      - key: author
-        ascending: true
-      - key: year
-        ascending: true
+        - key: author
+          ascending: true
+        - key: year
+          ascending: true
     group:
       template:
-      - author
-      - year
+        - author
+        - year
     disambiguate:
       names: false
       add-givenname: false
@@ -42,144 +43,169 @@ options:
   contributors:
     display-as-sort: all
     name-form: initials
-    initialize-with: ". "
+    initialize-with: '. '
     shorten:
       min: 3
       use-first: 1
       and-others: et-al
       delimiter-precedes-last: contextual
-    delimiter: ", "
+    delimiter: ', '
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only
-    sort-separator: ", "
+    sort-separator: ', '
   dates:
     month: long
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
     range-delimiter: –
-  titles: humanities
-  punctuation-in-quote: true
   volume-pages-delimiter: comma
 citation:
   options:
     contributors:
       name-form: initials
-      initialize-with: ". "
+      initialize-with: '. '
       shorten:
         min: 3
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
   template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten:
-      min: 3
-      use-first: 1
-  - date: issued
-    form: year
-    prefix: " "
-  - variable: locator
-    prefix: ","
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 3
+        use-first: 1
+    - date: issued
+      form: year
+      prefix: ' '
+    - variable: locator
+      prefix: ','
   wrap:
     punctuation: parentheses
-  delimiter: ". "
-  multi-cite-delimiter: "; "
+  delimiter: '. '
+  multi-cite-delimiter: '; '
 bibliography:
   options:
     contributors:
       display-as-sort: all
       name-form: initials
-      initialize-with: ". "
-      delimiter: ", "
+      initialize-with: '. '
+      delimiter: ', '
       delimiter-precedes-last: always
-      sort-separator: ", "
+      sort-separator: ', '
     hanging-indent: true
     entry-suffix: .
-    separator: ", "
+    separator: ', '
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: doi
-      prefix: https://doi.org/
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: issue
-    - number: pages
+      - contributor: author
+        form: long
+        name-order: family-first
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+        prefix: ' '
+      - title: primary
+        wrap:
+          punctuation: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - variable: publisher-place
+      - variable: doi
+        prefix: https://doi.org/
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - number: issue
+      - number: pages
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: doi
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
+      - contributor: author
+        form: long
+        name-order: family-first
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+        prefix: ' '
+      - title: primary
+        wrap:
+          punctuation: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - variable: publisher-place
+      - variable: doi
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - number: pages
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: doi
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: issue
-    - number: pages
-      prefix: "pp. "
+      - contributor: author
+        form: long
+        name-order: family-first
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+        prefix: ' '
+      - title: primary
+        wrap:
+          punctuation: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - variable: publisher-place
+      - variable: doi
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - number: issue
+      - number: pages
+        prefix: 'pp. '
     paper-conference:
+      - contributor: author
+        form: long
+        name-order: family-first
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+        prefix: ' '
+      - title: primary
+        wrap:
+          punctuation: quotes
+      - title: parent-monograph
+        emph: true
+      - title: parent-serial
+        emph: true
+      - variable: publisher-place
+      - variable: doi
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - number: issue
+      - number: pages
+        prefix: 'pp. '
+  template:
     - contributor: author
       form: long
       name-order: family-first
@@ -187,7 +213,7 @@ bibliography:
       form: year
       wrap:
         punctuation: parentheses
-      prefix: " "
+      prefix: ' '
     - title: primary
       wrap:
         punctuation: quotes
@@ -201,35 +227,8 @@ bibliography:
       form: verb
       name-order: given-first
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - number: volume
     - number: issue
     - number: pages
-      prefix: "pp. "
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-  - date: issued
-    form: year
-    wrap:
-      punctuation: parentheses
-    prefix: " "
-  - title: primary
-    wrap:
-      punctuation: quotes
-  - title: parent-monograph
-    emph: true
-  - title: parent-serial
-    emph: true
-  - variable: publisher-place
-  - variable: doi
-  - contributor: editor
-    form: verb
-    name-order: given-first
-  - variable: publisher
-    prefix: ": "
-  - number: volume
-  - number: issue
-  - number: pages
   sort: author-date-title

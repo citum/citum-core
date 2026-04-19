@@ -1,364 +1,349 @@
+preset: american-chemical-society
 info:
   title: ACS Chemistry (Compound)
-  description: >
-    American Chemical Society style with compound citation support.
-    Groups related references under a shared citation number with
-    alphabetic sub-labels. Based on the ACS Guide 2022 revision.
+  description: |
+    American Chemical Society style with compound citation support. Groups related references under a shared citation number with alphabetic sub-labels. Based on the ACS Guide 2022 revision.
   fields:
-  - chemistry
+    - chemistry
   source:
     csl-id: http://www.zotero.org/styles/american-chemical-society
     adapted-by: citum-create
     license: http://creativecommons.org/licenses/by-sa/3.0/
     links:
-    - href: http://www.zotero.org/styles/american-chemical-society
-      rel: template
-    - href: https://doi.org/10.1021/acsguide.40303
-      rel: documentation
-    - href: https://doi.org/10.1021/acsguide
-      rel: documentation
-options:
-  processing: numeric
-  contributors:
-    display-as-sort: all
-    name-form: initials
-    initialize-with: ". "
-    delimiter: "; "
-    delimiter-precedes-last: always
-    demote-non-dropping-particle: sort-only
-    sort-separator: ", "
-  dates: long
-  titles: humanities
-  page-range-format: expanded
-  punctuation-in-quote: true
+      - href: http://www.zotero.org/styles/american-chemical-society
+        rel: template
+      - href: https://doi.org/10.1021/acsguide.40303
+        rel: documentation
+      - href: https://doi.org/10.1021/acsguide
+        rel: documentation
 citation:
   use-preset: numeric-citation
   wrap:
     punctuation: brackets
-  multi-cite-delimiter: ","
+  multi-cite-delimiter: ','
 bibliography:
   options:
     contributors:
       display-as-sort: all
       name-form: initials
-      initialize-with: ". "
-      delimiter: "; "
+      initialize-with: '. '
+      delimiter: '; '
       delimiter-precedes-last: always
-      sort-separator: ", "
+      sort-separator: ', '
     entry-suffix: .
-    separator: ". "
+    separator: '. '
     compound-numeric:
       collapse-subentries: true
   type-variants:
     article-journal:
-    - number: citation-number
-      wrap:
-        punctuation: parentheses
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-      suffix: "."
-    - title: parent-monograph
-      emph: true
-      prefix: " In "
-    - title: parent-serial
-      emph: true
-      prefix: " "
-    - contributor: editor
-      form: long
-      name-order: family-first
-      suffix: ", Eds."
-      prefix: ", "
-    - variable: publisher
-      prefix: "; "
-    - variable: publisher-place
-      prefix: ": "
-    - date: issued
-      form: year
-      prefix: " "
-    - prefix: ", "
-      group:
-      - number: volume
-    - number: pages
-      prefix: ", "
-    - variable: doi
-      prefix: ", DOI: "
-    - variable: url
+      - number: citation-number
+        wrap:
+          punctuation: parentheses
+        suffix: ' '
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+        prefix: ' '
+        suffix: .
+      - title: parent-monograph
+        emph: true
+        prefix: ' In '
+      - title: parent-serial
+        emph: true
+        prefix: ' '
+      - contributor: editor
+        form: long
+        name-order: family-first
+        suffix: ', Eds.'
+        prefix: ', '
+      - variable: publisher
+        prefix: '; '
+      - variable: publisher-place
+        prefix: ': '
+      - date: issued
+        form: year
+        prefix: ' '
+      - prefix: ', '
+        group:
+          - number: volume
+      - number: pages
+        prefix: ', '
+      - variable: doi
+        prefix: ', DOI: '
+      - variable: url
     article-magazine:
-    - number: citation-number
-      wrap:
-        punctuation: parentheses
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-      suffix: "."
-    - title: parent-monograph
-      emph: true
-      prefix: " In "
-    - title: parent-serial
-      emph: true
-      prefix: " "
-    - contributor: editor
-      form: long
-      name-order: family-first
-      suffix: ", Eds."
-      prefix: ", "
-    - variable: publisher
-      prefix: "; "
-    - variable: publisher-place
-      prefix: ": "
-    - date: issued
-      form: year
-      prefix: " "
-    - prefix: ", "
-      group:
-      - number: volume
-    - number: pages
-      prefix: ", "
-    - variable: doi
-      prefix: ", DOI: "
-    - variable: url
+      - number: citation-number
+        wrap:
+          punctuation: parentheses
+        suffix: ' '
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+        prefix: ' '
+        suffix: .
+      - title: parent-monograph
+        emph: true
+        prefix: ' In '
+      - title: parent-serial
+        emph: true
+        prefix: ' '
+      - contributor: editor
+        form: long
+        name-order: family-first
+        suffix: ', Eds.'
+        prefix: ', '
+      - variable: publisher
+        prefix: '; '
+      - variable: publisher-place
+        prefix: ': '
+      - date: issued
+        form: year
+        prefix: ' '
+      - prefix: ', '
+        group:
+          - number: volume
+      - number: pages
+        prefix: ', '
+      - variable: doi
+        prefix: ', DOI: '
+      - variable: url
     book:
-    - number: citation-number
-      wrap:
-        punctuation: parentheses
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-      suffix: "."
-    - title: parent-monograph
-      emph: true
-      prefix: " In "
-    - title: parent-serial
-      emph: true
-      prefix: " "
-    - contributor: editor
-      form: long
-      name-order: family-first
-      suffix: ", Eds."
-      prefix: "; "
-    - variable: publisher
-      prefix: "; "
-    - variable: publisher-place
-      prefix: ": "
-    - date: issued
-      form: year
-      prefix: ", "
-    - prefix: ", "
-      group:
-      - number: volume
-      - number: issue
-    - number: pages
-      prefix: ", "
-    - variable: doi
-      prefix: ", DOI: "
-    - variable: url
+      - number: citation-number
+        wrap:
+          punctuation: parentheses
+        suffix: ' '
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+        prefix: ' '
+        suffix: .
+      - title: parent-monograph
+        emph: true
+        prefix: ' In '
+      - title: parent-serial
+        emph: true
+        prefix: ' '
+      - contributor: editor
+        form: long
+        name-order: family-first
+        suffix: ', Eds.'
+        prefix: '; '
+      - variable: publisher
+        prefix: '; '
+      - variable: publisher-place
+        prefix: ': '
+      - date: issued
+        form: year
+        prefix: ', '
+      - prefix: ', '
+        group:
+          - number: volume
+          - number: issue
+      - number: pages
+        prefix: ', '
+      - variable: doi
+        prefix: ', DOI: '
+      - variable: url
     chapter:
-    - number: citation-number
-      wrap:
-        punctuation: parentheses
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-      suffix: "."
-    - title: parent-monograph
-      emph: true
-      prefix: " In "
-    - title: parent-serial
-      emph: true
-      prefix: " "
-    - contributor: editor
-      form: long
-      name-order: family-first
-      suffix: ", Eds."
-      prefix: ", "
-    - variable: publisher
-      prefix: "; "
-    - variable: publisher-place
-      prefix: ": "
-    - date: issued
-      form: year
-      prefix: ": "
-    - prefix: ", "
-      group:
-      - number: volume
-      - number: issue
-    - number: pages
-      prefix: ", pp "
-    - variable: doi
-      prefix: ", DOI: "
-    - variable: url
+      - number: citation-number
+        wrap:
+          punctuation: parentheses
+        suffix: ' '
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+        prefix: ' '
+        suffix: .
+      - title: parent-monograph
+        emph: true
+        prefix: ' In '
+      - title: parent-serial
+        emph: true
+        prefix: ' '
+      - contributor: editor
+        form: long
+        name-order: family-first
+        suffix: ', Eds.'
+        prefix: ', '
+      - variable: publisher
+        prefix: '; '
+      - variable: publisher-place
+        prefix: ': '
+      - date: issued
+        form: year
+        prefix: ': '
+      - prefix: ', '
+        group:
+          - number: volume
+          - number: issue
+      - number: pages
+        prefix: ', pp '
+      - variable: doi
+        prefix: ', DOI: '
+      - variable: url
     paper-conference:
-    - number: citation-number
-      wrap:
-        punctuation: parentheses
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-      suffix: "."
-    - title: parent-monograph
-      emph: true
-      prefix: " In "
-    - title: parent-serial
-      emph: true
-      prefix: " "
-    - contributor: editor
-      form: long
-      name-order: family-first
-      suffix: ", Eds."
-      prefix: ", "
-    - variable: publisher
-      prefix: "; "
-    - variable: publisher-place
-      prefix: ": "
-    - date: issued
-      form: year
-      prefix: ", "
-    - prefix: ", "
-      group:
-      - number: volume
-      - number: issue
-    - number: pages
-      prefix: ", pp "
-    - variable: doi
-      prefix: ", DOI: "
-    - variable: url
+      - number: citation-number
+        wrap:
+          punctuation: parentheses
+        suffix: ' '
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+        prefix: ' '
+        suffix: .
+      - title: parent-monograph
+        emph: true
+        prefix: ' In '
+      - title: parent-serial
+        emph: true
+        prefix: ' '
+      - contributor: editor
+        form: long
+        name-order: family-first
+        suffix: ', Eds.'
+        prefix: ', '
+      - variable: publisher
+        prefix: '; '
+      - variable: publisher-place
+        prefix: ': '
+      - date: issued
+        form: year
+        prefix: ', '
+      - prefix: ', '
+        group:
+          - number: volume
+          - number: issue
+      - number: pages
+        prefix: ', pp '
+      - variable: doi
+        prefix: ', DOI: '
+      - variable: url
     report:
-    - number: citation-number
-      wrap:
-        punctuation: parentheses
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-      suffix: "."
-    - title: parent-monograph
-      emph: true
-      prefix: " In "
-    - title: parent-serial
-      emph: true
-      prefix: " "
-    - contributor: editor
-      form: long
-      name-order: family-first
-      suffix: ", Eds."
-      prefix: ", "
-    - variable: publisher
-      prefix: "; "
-    - variable: publisher-place
-      prefix: ": "
-    - date: issued
-      form: year
-      prefix: ", "
-    - prefix: ", "
-      group:
-      - number: volume
-      - number: issue
-    - number: pages
-      prefix: ", "
-    - variable: doi
-      prefix: ", DOI: "
-    - variable: url
+      - number: citation-number
+        wrap:
+          punctuation: parentheses
+        suffix: ' '
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+        prefix: ' '
+        suffix: .
+      - title: parent-monograph
+        emph: true
+        prefix: ' In '
+      - title: parent-serial
+        emph: true
+        prefix: ' '
+      - contributor: editor
+        form: long
+        name-order: family-first
+        suffix: ', Eds.'
+        prefix: ', '
+      - variable: publisher
+        prefix: '; '
+      - variable: publisher-place
+        prefix: ': '
+      - date: issued
+        form: year
+        prefix: ', '
+      - prefix: ', '
+        group:
+          - number: volume
+          - number: issue
+      - number: pages
+        prefix: ', '
+      - variable: doi
+        prefix: ', DOI: '
+      - variable: url
     thesis:
+      - number: citation-number
+        wrap:
+          punctuation: parentheses
+        suffix: ' '
+      - contributor: author
+        form: long
+        name-order: family-first
+      - title: primary
+        prefix: ' '
+        suffix: .
+      - title: parent-monograph
+        emph: true
+        prefix: ' In '
+      - title: parent-serial
+        emph: true
+        prefix: ' '
+      - contributor: editor
+        form: long
+        name-order: family-first
+        suffix: ', Eds.'
+        prefix: ', '
+      - variable: publisher
+        prefix: '; '
+      - variable: publisher-place
+        prefix: ': '
+      - date: issued
+        form: year
+        prefix: ', '
+      - prefix: ', '
+        group:
+          - number: volume
+          - number: issue
+      - number: pages
+        prefix: ', '
+      - variable: doi
+        prefix: ', DOI: '
+      - variable: url
+    patent:
+      - number: citation-number
+        wrap:
+          punctuation: parentheses
+      - contributor: author
+        form: long
+        sort-separator: ', '
+      - title: primary
+      - date: issued
+        form: full
+  template:
     - number: citation-number
       wrap:
         punctuation: parentheses
-      suffix: " "
+      suffix: ' '
     - contributor: author
       form: long
       name-order: family-first
     - title: primary
-      prefix: " "
-      suffix: "."
+      prefix: ' '
+      suffix: .
     - title: parent-monograph
       emph: true
-      prefix: " In "
+      prefix: ' In '
     - title: parent-serial
       emph: true
-      prefix: " "
+      prefix: ' '
     - contributor: editor
       form: long
       name-order: family-first
-      suffix: ", Eds."
-      prefix: ", "
+      suffix: ', Eds.'
+      prefix: ', '
     - variable: publisher
-      prefix: "; "
+      prefix: '; '
     - variable: publisher-place
-      prefix: ": "
+      prefix: ': '
     - date: issued
       form: year
-      prefix: ", "
-    - prefix: ", "
+      prefix: ' '
+    - prefix: ', '
       group:
-      - number: volume
-      - number: issue
+        - number: volume
+        - number: issue
     - number: pages
-      prefix: ", "
+      prefix: ', '
     - variable: doi
-      prefix: ", DOI: "
+      prefix: ', DOI: '
     - variable: url
-    patent:
-    - number: citation-number
-      wrap:
-        punctuation: parentheses
-    - contributor: author
-      form: long
-      sort-separator: ", "
-    - title: primary
-    - date: issued
-      form: full
-  template:
-  - number: citation-number
-    wrap:
-      punctuation: parentheses
-    suffix: " "
-  - contributor: author
-    form: long
-    name-order: family-first
-  - title: primary
-    prefix: " "
-    suffix: "."
-  - title: parent-monograph
-    emph: true
-    prefix: " In "
-  - title: parent-serial
-    emph: true
-    prefix: " "
-  - contributor: editor
-    form: long
-    name-order: family-first
-    suffix: ", Eds."
-    prefix: ", "
-  - variable: publisher
-    prefix: "; "
-  - variable: publisher-place
-    prefix: ": "
-  - date: issued
-    form: year
-    prefix: " "
-  - prefix: ", "
-    group:
-    - number: volume
-    - number: issue
-  - number: pages
-    prefix: ", "
-  - variable: doi
-    prefix: ", DOI: "
-  - variable: url

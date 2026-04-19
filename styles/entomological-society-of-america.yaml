@@ -1,3 +1,4 @@
+preset: elsevier-harvard
 info:
   title: Entomological Society of America
   fields:
@@ -18,8 +19,6 @@ info:
 options:
   substitute: editor-translator-title-long
   contributors: numeric-medium
-  dates: numeric
-  punctuation-in-quote: true
 citation:
   options:
     contributors:

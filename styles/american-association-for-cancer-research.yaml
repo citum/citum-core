@@ -1,119 +1,178 @@
+preset: nlm-citation-sequence
 info:
   title: American Association for Cancer Research
   description: Parent style for AACR's journals
   fields:
-  - medicine
+    - medicine
   source:
     csl-id: http://www.zotero.org/styles/american-association-for-cancer-research
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Charles Parnot
-      email: charles.parnot@gmail.com
-      uri: http://twitter.com/cparnot
+      - name: Charles Parnot
+        email: charles.parnot@gmail.com
+        uri: http://twitter.com/cparnot
     links:
-    - href: http://www.zotero.org/styles/american-association-for-cancer-research
-      rel: self
-    - href: http://www.zotero.org/styles/nlm-citation-sequence
-      rel: template
-    - href: http://www.aacrjournals.org/site/InstrAuthors/ifora.xhtml#references
-      rel: documentation
-options:
-  substitute: editor-long
-  processing: numeric
-  contributors: numeric-compact
-  dates: long
-  page-range-format: minimal
-  punctuation-in-quote: true
-citation:
-  use-preset: numeric-citation
-  wrap:
-    punctuation: parentheses
-  multi-cite-delimiter: ","
+      - href: http://www.zotero.org/styles/american-association-for-cancer-research
+        rel: self
+      - href: http://www.zotero.org/styles/nlm-citation-sequence
+        rel: template
+      - href: http://www.aacrjournals.org/site/InstrAuthors/ifora.xhtml#references
+        rel: documentation
 bibliography:
   options:
     contributors:
       display-as-sort: all
       name-form: initials
-      initialize-with: ""
+      initialize-with: ''
       shorten:
         min: 7
         use-first: 6
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
       delimiter-precedes-last: always
-      sort-separator: " "
+      sort-separator: ' '
     entry-suffix: .
-    separator: ". "
+    separator: '. '
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: url
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher-place
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - number: pages
+        prefix: ':'
+      - variable: url
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: url
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher-place
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - number: pages
+        prefix: ':'
+      - variable: url
     article-newspaper:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: url
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher-place
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - number: pages
+        prefix: ':'
+      - variable: url
     chapter:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+            prefix: 'on '
+          - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher-place
+      - variable: publisher
+        prefix: ': '
+      - date: issued
+        form: year
+        prefix: '; '
+      - number: volume
+      - number: pages
+        prefix: ':'
+      - variable: url
+    dataset:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher-place
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - number: pages
+        prefix: ':'
+      - variable: url
+    webpage:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher-place
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - number: pages
+        prefix: ':'
+      - variable: url
+  template:
     - contributor: author
       form: long
       name-order: family-first
@@ -121,90 +180,20 @@ bibliography:
         min: 8
         use-first: 6
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
+        - contributor: editor
+          form: verb
+          name-order: given-first
+        - title: parent-monograph
     - title: parent-serial
     - variable: publisher-place
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - date: issued
       form: year
-      prefix: "; "
+      prefix: '; '
     - number: volume
     - number: pages
-      prefix: ":"
+      prefix: ':'
     - variable: url
-    dataset:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: url
-    webpage:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: url
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten:
-      min: 8
-      use-first: 6
-  - title: primary
-    prefix: " "
-  - group:
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - title: parent-monograph
-  - title: parent-serial
-  - variable: publisher-place
-  - variable: publisher
-    prefix: ": "
-  - date: issued
-    form: year
-    prefix: "; "
-  - number: volume
-  - number: pages
-    prefix: ":"
-  - variable: url

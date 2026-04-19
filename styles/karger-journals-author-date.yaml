@@ -1,4 +1,4 @@
-version: ''
+preset: karger-journals
 info:
   title: Karger journals (author-date)
   id: http://www.zotero.org/styles/karger-journals-author-date
@@ -7,34 +7,13 @@ options:
   substitute:
     contributor-role-form: long
     template:
-    - editor
-    - title
-  processing: !custom
+      - editor
+      - title
+  processing: !custom 
     disambiguate:
       names: false
       add-givenname: false
       year-suffix: true
-  contributors:
-    display-as-sort: all
-    initialize-with: ''
-    shorten:
-      min: 7
-      use-first: 6
-      and-others: et-al
-      delimiter-precedes-last: contextual
-    and: none
-    delimiter-precedes-last: always
-    demote-non-dropping-particle: sort-only
-    sort-separator: ' '
-    name-form: initials
-  dates:
-    month: short
-    uncertainty-marker: '?'
-    approximation-marker: 'ca. '
-    range-delimiter: –
-    show-seconds: false
-    show-timezone: false
-  punctuation-in-quote: true
 citation:
   options:
     contributors:
@@ -49,20 +28,20 @@ citation:
       sort-separator: ' '
       name-form: family-only
   template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    name-form: family-only
-    shorten:
-      min: 3
-      use-first: 1
-      and-others: et-al
-      delimiter-precedes-last: contextual
-  - date: issued
-    form: year
-    prefix: ', '
-  - variable: locator
-    prefix: ', '
+    - contributor: author
+      form: long
+      name-order: family-first
+      name-form: family-only
+      shorten:
+        min: 3
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+    - date: issued
+      form: year
+      prefix: ', '
+    - variable: locator
+      prefix: ', '
   wrap:
     punctuation: brackets
   delimiter: '. '
@@ -84,68 +63,6 @@ bibliography:
     entry-suffix: .
     separator: '. '
   template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten:
-      min: 8
-      use-first: 6
-      and-others: et-al
-      delimiter-precedes-last: contextual
-  - title: primary
-    prefix: ': '
-  - title: parent-monograph
-  - title: parent-serial
-  - number: volume
-  - variable: publisher-place
-  - variable: publisher
-    prefix: ', '
-  - date: issued
-    form: year
-    prefix: ', '
-  - number: pages
-    prefix: ', pp '
-  - variable: url
-  type-variants:
-    article-magazine:
-    - contributor: author
-      form: long
-      sort-separator: ' '
-      shorten:
-        min: 7
-        use-first: 6
-        and-others: et-al
-        delimiter-precedes-last: always
-    - title: primary
-    - title: parent-serial
-      prefix: '. '
-      strip-periods: true
-    - date: issued
-      form: year
-    - number: volume
-    - number: pages
-      prefix: ':'
-    legal_case:
-    - contributor: author
-      form: long
-      sort-separator: ' '
-      shorten:
-        min: 7
-        use-first: 6
-        and-others: et-al
-        delimiter-precedes-last: always
-    - title: primary
-    - term: edition
-      form: short
-      strip-periods: true
-    - number: edition
-    - variable: publisher-place
-    - variable: publisher
-    - date: issued
-      form: year
-      suppress: false
-    - title: parent-serial
-    patent:
     - contributor: author
       form: long
       name-order: family-first
@@ -156,13 +73,74 @@ bibliography:
         delimiter-precedes-last: contextual
     - title: primary
       prefix: ': '
+    - title: parent-monograph
+    - title: parent-serial
+    - number: volume
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ', '
     - date: issued
       form: year
       prefix: ', '
+    - number: pages
+      prefix: ', pp '
+    - variable: url
+  type-variants:
+    article-magazine:
+      - contributor: author
+        form: long
+        sort-separator: ' '
+        shorten:
+          min: 7
+          use-first: 6
+          and-others: et-al
+          delimiter-precedes-last: always
+      - title: primary
+      - title: parent-serial
+        prefix: '. '
+        strip-periods: true
+      - date: issued
+        form: year
+      - number: volume
+      - number: pages
+        prefix: ':'
+    legal_case:
+      - contributor: author
+        form: long
+        sort-separator: ' '
+        shorten:
+          min: 7
+          use-first: 6
+          and-others: et-al
+          delimiter-precedes-last: always
+      - title: primary
+      - term: edition
+        form: short
+        strip-periods: true
+      - number: edition
+      - variable: publisher-place
+      - variable: publisher
+      - date: issued
+        form: year
+        suppress: false
+      - title: parent-serial
+    patent:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+          and-others: et-al
+          delimiter-precedes-last: contextual
+      - title: primary
+        prefix: ': '
+      - date: issued
+        form: year
+        prefix: ', '
   sort:
     template:
-    - key: author
-      ascending: true
-    - key: issued
-      ascending: true
-
+      - key: author
+        ascending: true
+      - key: issued
+        ascending: true

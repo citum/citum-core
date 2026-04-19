@@ -1,3 +1,4 @@
+preset: elsevier-vancouver
 info:
   title: Elsevier - NLM/Vancouver (name-year)
   description: A style for some Elsevier journals, resembles Vancouver style, but using author-date format
@@ -6,175 +7,200 @@ info:
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Sebastian Karcher
+      - name: Sebastian Karcher
     links:
-    - href: http://www.zotero.org/styles/elsevier-vancouver-author-date
-      rel: self
-    - href: http://www.zotero.org/styles/elsevier-vancouver
-      rel: template
-    - href: https://www.elsevier.com/journals/clinical-neurophysiology/1388-2457/guide-for-authors#68000
-      rel: documentation
+      - href: http://www.zotero.org/styles/elsevier-vancouver-author-date
+        rel: self
+      - href: http://www.zotero.org/styles/elsevier-vancouver
+        rel: template
+      - href: https://www.elsevier.com/journals/clinical-neurophysiology/1388-2457/guide-for-authors#68000
+        rel: documentation
 options:
   substitute:
     contributor-role-form: long
     template:
-    - editor
-    - translator
-    - title
+      - editor
+      - translator
+      - title
   processing:
     sort:
       shorten-names: false
       render-substitutions: false
       template:
-      - key: author
-        ascending: true
-      - key: year
-        ascending: false
+        - key: author
+          ascending: true
+        - key: year
+          ascending: false
     group:
       template:
-      - author
-      - year
+        - author
+        - year
     disambiguate:
       names: false
       add-givenname: true
       year-suffix: true
   contributors: numeric-compact
   dates: long
-  page-range-format: minimal
-  punctuation-in-quote: true
 citation:
   options:
     contributors:
       name-form: initials
-      initialize-with: ". "
+      initialize-with: '. '
       shorten:
         min: 3
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
   template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten:
-      min: 3
-      use-first: 1
-  - date: issued
-    form: year
-    prefix: ", "
-  - variable: locator
-    prefix: " "
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 3
+        use-first: 1
+    - date: issued
+      form: year
+      prefix: ', '
+    - variable: locator
+      prefix: ' '
   wrap:
     punctuation: parentheses
-  delimiter: ". "
-  multi-cite-delimiter: "; "
+  delimiter: '. '
+  multi-cite-delimiter: '; '
 bibliography:
   options:
     contributors: numeric-compact
     entry-suffix: .
-    separator: ". "
+    separator: '. '
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - variable: publisher-place
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: issue
-      prefix: ":"
-    - number: pages
-      prefix: ":"
-    - variable: doi
-      prefix: https://doi.org/
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - variable: publisher-place
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - number: issue
+        prefix: ':'
+      - number: pages
+        prefix: ':'
+      - variable: doi
+        prefix: https://doi.org/
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - variable: publisher-place
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: doi
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - variable: publisher-place
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - number: pages
+        prefix: ':'
+      - variable: doi
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - variable: publisher-place
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-      prefix: ": "
-    - date: issued
-      form: year
-      prefix: "; "
-    - number: volume
-    - number: issue
-      prefix: ":"
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - variable: publisher-place
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+            prefix: 'on '
+          - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher
+        prefix: ': '
+      - date: issued
+        form: year
+        prefix: '; '
+      - number: volume
+      - number: issue
+        prefix: ':'
+      - number: pages
+        prefix: 'pp. '
+      - variable: doi
     entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - variable: publisher-place
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: issue
-      prefix: ":"
-    - number: pages
-      prefix: ":"
-    - variable: doi
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - variable: publisher-place
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher
+        prefix: ': '
+      - number: volume
+      - number: issue
+        prefix: ':'
+      - number: pages
+        prefix: ':'
+      - variable: doi
     paper-conference:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - variable: publisher-place
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+          - title: parent-monograph
+      - title: parent-serial
+      - variable: publisher
+        prefix: ': '
+      - date: issued
+        form: year
+        prefix: '; '
+      - number: volume
+      - number: issue
+        prefix: ':'
+      - number: pages
+        prefix: 'pp. '
+      - variable: doi
+  template:
     - contributor: author
       form: long
       name-order: family-first
@@ -182,55 +208,28 @@ bibliography:
         min: 8
         use-first: 6
     - title: primary
-      prefix: " "
+      prefix: ' '
     - variable: publisher-place
     - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
+        - contributor: editor
+          form: verb
+          name-order: given-first
+        - title: parent-monograph
     - title: parent-serial
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - date: issued
       form: year
-      prefix: "; "
+      prefix: '; '
     - number: volume
     - number: issue
-      prefix: ":"
+      prefix: ':'
     - number: pages
-      prefix: "pp. "
+      prefix: ':'
     - variable: doi
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten:
-      min: 8
-      use-first: 6
-  - title: primary
-    prefix: " "
-  - variable: publisher-place
-  - group:
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - title: parent-monograph
-  - title: parent-serial
-  - variable: publisher
-    prefix: ": "
-  - date: issued
-    form: year
-    prefix: "; "
-  - number: volume
-  - number: issue
-    prefix: ":"
-  - number: pages
-    prefix: ":"
-  - variable: doi
   sort:
     template:
-    - key: author
-      ascending: true
-    - key: issued
-      ascending: false
+      - key: author
+        ascending: true
+      - key: issued
+        ascending: false

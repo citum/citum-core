@@ -1,56 +1,80 @@
+preset: nlm-citation-sequence-superscript
 info:
   title: 'NLM Style Guide (Vancouver): Citing Medicine 2nd edition (citation-sequence, superscript, brackets, year-only dates)'
   description: 'Citing Medicine: The NLM Style Guide for Authors, Editors, and Publishers, 2nd edition (2015), based on ANSI/NISO Z39.29-2005 (R2010); citation-sequence system, with superscripted in-text indicators, brackets, and year-only dates.'
   fields:
-  - medicine
+    - medicine
   source:
     csl-id: http://www.zotero.org/styles/nlm-citation-sequence-superscript-brackets-year-only
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
     original-authors:
-    - name: Damodaran S E
-      email: damodaran.se@gmail.com
+      - name: Damodaran S E
+        email: damodaran.se@gmail.com
     links:
-    - href: http://www.zotero.org/styles/nlm-citation-sequence-superscript-brackets-year-only
-      rel: self
-    - href: http://www.zotero.org/styles/nlm-citation-sequence-superscript
-      rel: template
-    - href: https://www.nlm.nih.gov/citingmedicine
-      rel: documentation
-    - href: https://www.nlm.nih.gov/bsd/uniform_requirements.html
-      rel: documentation
-    - href: https://www.icmje.org/recommendations/
-      rel: documentation
+      - href: http://www.zotero.org/styles/nlm-citation-sequence-superscript-brackets-year-only
+        rel: self
+      - href: http://www.zotero.org/styles/nlm-citation-sequence-superscript
+        rel: template
+      - href: https://www.nlm.nih.gov/citingmedicine
+        rel: documentation
+      - href: https://www.nlm.nih.gov/bsd/uniform_requirements.html
+        rel: documentation
+      - href: https://www.icmje.org/recommendations/
+        rel: documentation
 options:
-  substitute: editor-long
-  processing: numeric
-  contributors: numeric-compact
   dates: short
-  page-range-format: minimal
-  punctuation-in-quote: true
 citation:
   use-preset: numeric-citation
   wrap:
     punctuation: brackets
-  multi-cite-delimiter: ","
+  multi-cite-delimiter: ','
 bibliography:
   options:
     contributors:
       display-as-sort: all
       name-form: initials
-      initialize-with: ""
+      initialize-with: ''
       shorten:
         min: 7
         use-first: 6
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
       delimiter-precedes-last: always
-      sort-separator: " "
+      sort-separator: ' '
     entry-suffix: .
-    separator: ". "
+    separator: '. '
   type-variants:
     chapter:
+      - contributor: author
+        form: long
+        name-order: family-first
+        shorten:
+          min: 8
+          use-first: 6
+      - title: primary
+        prefix: ' '
+      - group:
+          - contributor: editor
+            form: verb
+            name-order: given-first
+            prefix: 'on '
+          - title: parent-monograph
+      - title: parent-serial
+      - date: issued
+        form: year
+      - group:
+          - number: volume
+          - number: issue
+            wrap:
+              punctuation: parentheses
+      - variable: publisher-place
+      - variable: publisher
+        prefix: ': '
+      - number: pages
+      - variable: url
+  template:
     - contributor: author
       form: long
       name-order: family-first
@@ -58,50 +82,22 @@ bibliography:
         min: 8
         use-first: 6
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
+        - contributor: editor
+          form: verb
+          name-order: given-first
+        - title: parent-monograph
     - title: parent-serial
     - date: issued
       form: year
     - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
+        - number: volume
+        - number: issue
+          wrap:
+            punctuation: parentheses
     - variable: publisher-place
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - number: pages
     - variable: url
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten:
-      min: 8
-      use-first: 6
-  - title: primary
-    prefix: " "
-  - group:
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - title: parent-monograph
-  - title: parent-serial
-  - date: issued
-    form: year
-  - group:
-    - number: volume
-    - number: issue
-      wrap:
-        punctuation: parentheses
-  - variable: publisher-place
-  - variable: publisher
-    prefix: ": "
-  - number: pages
-  - variable: url
