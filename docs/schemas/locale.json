@@ -49,7 +49,7 @@
       "description": "Locator terms keyed by locator name.",
       "type": "object",
       "additionalProperties": {
-        "$ref": "#/$defs/RawTermValue"
+        "$ref": "#/$defs/RawLocatorTerm"
       },
       "default": {}
     },
@@ -316,29 +316,139 @@
           "type": "string"
         },
         {
-          "description": "Form-keyed value (for terms with long/short forms).",
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/$defs/RawTermValue"
-          }
-        },
-        {
           "description": "Singular/plural forms.",
           "type": "object",
           "properties": {
             "singular": {
-              "description": "Singular form of the term.",
-              "type": "string"
+              "$ref": "#/$defs/RawGenderedString"
             },
             "plural": {
-              "description": "Plural form of the term.",
-              "type": "string"
+              "$ref": "#/$defs/RawGenderedString"
             }
           },
           "required": [
             "singular",
             "plural"
-          ]
+          ],
+          "additionalProperties": false
+        },
+        {
+          "description": "Gender-specific values.",
+          "type": "object",
+          "properties": {
+            "masculine": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "feminine": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "neuter": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "common": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        },
+        {
+          "description": "Form-keyed value (for terms with long/short or nested forms).",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/RawTermValue"
+          }
+        }
+      ]
+    },
+    "RawLocatorTerm": {
+      "description": "Raw locator term with optional lexical gender.",
+      "type": "object",
+      "properties": {
+        "long": {
+          "description": "Long-form locator term.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawTermValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "short": {
+          "description": "Short-form locator term.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawTermValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "symbol": {
+          "description": "Symbol-form locator term.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawTermValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "gender": {
+          "description": "Lexical gender used for noun agreement.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GrammaticalGender"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      }
+    },
+    "GrammaticalGender": {
+      "description": "Grammatical gender used for locale agreement and term selection.",
+      "oneOf": [
+        {
+          "description": "Masculine grammatical gender.",
+          "type": "string",
+          "const": "masculine"
+        },
+        {
+          "description": "Feminine grammatical gender.",
+          "type": "string",
+          "const": "feminine"
+        },
+        {
+          "description": "Neuter grammatical gender.",
+          "type": "string",
+          "const": "neuter"
+        },
+        {
+          "description": "Common or shared grammatical gender.",
+          "type": "string",
+          "const": "common"
         }
       ]
     },

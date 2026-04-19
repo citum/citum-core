@@ -1342,6 +1342,7 @@ impl Renderer<'_> {
         if let Some(long) = options.locale.resolved_general_term(
             &citum_schema::locale::GeneralTerm::NoDate,
             citum_schema::locale::TermForm::Long,
+            None,
         ) {
             values.value = long;
         }

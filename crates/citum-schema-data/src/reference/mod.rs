@@ -16,8 +16,8 @@ pub mod types;
 mod tests;
 
 pub use self::contributor::{
-    Contributor, ContributorEntry, ContributorList, ContributorRole, FlatName, SimpleName,
-    StructuredName,
+    Contributor, ContributorEntry, ContributorGender, ContributorList, ContributorRole, FlatName,
+    SimpleName, StructuredName,
 };
 pub use self::date::EdtfString;
 use self::types::common::HasNumbering;
@@ -335,7 +335,20 @@ impl InputReference {
     /// Returns `None` if no contributors with the given role exist.
     /// Returns a single `Contributor` directly, or folds multiple into a `ContributorList`.
     pub fn contributor(&self, role: ContributorRole) -> Option<Contributor> {
-        let entries: &[ContributorEntry] = match self {
+        let entries = self.all_contributor_entries();
+        collect_contributors_by_role(entries, &role)
+    }
+
+    /// Return all contributor entries matching the requested role.
+    pub fn contributor_entries(&self, role: &ContributorRole) -> Vec<&ContributorEntry> {
+        self.all_contributor_entries()
+            .iter()
+            .filter(|entry| &entry.role == role)
+            .collect()
+    }
+
+    fn all_contributor_entries(&self) -> &[ContributorEntry] {
+        match self {
             InputReference::Monograph(r) => &r.contributors,
             InputReference::Collection(r) => &r.contributors,
             InputReference::CollectionComponent(r) => &r.contributors,
@@ -344,8 +357,7 @@ impl InputReference {
             InputReference::Event(r) => &r.contributors,
             InputReference::AudioVisual(r) => &r.core.contributors,
             _ => &[],
-        };
-        collect_contributors_by_role(entries, &role)
+        }
     }
 
     /// Return the title.

@@ -533,6 +533,63 @@ New chapter reset: <span class="text-emerald-400">[+@smith2010, p. 14]</span></p
                 </div>
             </div>
 
+            <div class="border-t border-slate-200 bg-white p-6">
+                <div class="flex items-center gap-2 mb-4">
+                    <span class="material-icons text-sm text-primary">record_voice_over</span>
+                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                        Gender-Aware Spanish Locale Terms
+                    </h3>
+                </div>
+                <div class="grid gap-4">
+                    <div class="border-l-4 border-primary pl-4">
+                        <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
+                            Checked-In Locale
+                        </div>
+                        <div class="font-mono text-sm text-slate-900">
+                            <code class="text-xs bg-slate-100 px-1 rounded">locales/es-ES.yaml</code>
+                            now ships gendered role labels such as
+                            <code class="text-xs bg-slate-100 px-1 rounded">editor / editora / persona editora</code>.
+                        </div>
+                    </div>
+                    <div class="border-l-4 border-emerald-500 pl-4">
+                        <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
+                            Contributor-Driven Role Label
+                        </div>
+                        <div class="font-mono text-sm text-slate-900">
+                            Ana Martinez, editora
+                        </div>
+                        <div class="text-xs text-slate-500 mt-1">
+                            A feminine contributor entry selects the feminine role label from the Spanish locale.
+                        </div>
+                    </div>
+                    <div class="border-l-4 border-indigo-500 pl-4">
+                        <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
+                            Mixed-Gender Group
+                        </div>
+                        <div class="font-mono text-sm text-slate-900">
+                            Ana Martinez y Luis Pérez, equipo editorial
+                        </div>
+                        <div class="text-xs text-slate-500 mt-1">
+                            Mixed contributor genders prefer the locale's neutral/common form instead of falling back to a masculine-specific label.
+                        </div>
+                    </div>
+                    <div class="border-l-4 border-amber-500 pl-4">
+                        <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
+                            Template Override
+                        </div>
+                        <div class="bg-slate-900 rounded p-3 overflow-x-auto mt-2">
+                            <pre class="font-mono text-xs text-slate-300"><span class="text-indigo-400">template</span>:
+  - <span class="text-primary">contributor</span>: <span class="text-emerald-400">editor</span>
+    <span class="text-primary">form</span>: <span class="text-emerald-400">long</span>
+    <span class="text-primary">gender</span>: <span class="text-emerald-400">feminine</span>
+  - <span class="text-primary">number</span>: <span class="text-emerald-400">volume</span>
+    <span class="text-primary">label-form</span>: <span class="text-emerald-400">short</span>
+    <span class="text-primary">gender</span>: <span class="text-emerald-400">masculine</span></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Try It Yourself -->
             <div class="bg-white p-6 border-t border-slate-200">
                 <div class="flex items-center gap-2 mb-4">

@@ -297,6 +297,7 @@ fn en_us_locator_terms() -> HashMap<LocatorType, LocatorTerm> {
                 plural: "pp.".into(),
             }),
             symbol: None,
+            gender: None,
         },
     );
 
@@ -312,6 +313,7 @@ fn en_us_locator_terms() -> HashMap<LocatorType, LocatorTerm> {
                 plural: "chs.".into(),
             }),
             symbol: None,
+            gender: None,
         },
     );
 
@@ -327,6 +329,7 @@ fn en_us_locator_terms() -> HashMap<LocatorType, LocatorTerm> {
                 plural: "vols.".into(),
             }),
             symbol: None,
+            gender: None,
         },
     );
 
@@ -345,6 +348,7 @@ fn en_us_locator_terms() -> HashMap<LocatorType, LocatorTerm> {
                 singular: "§".into(),
                 plural: "§§".into(),
             }),
+            gender: None,
         },
     );
 
@@ -360,6 +364,7 @@ fn en_us_locator_terms() -> HashMap<LocatorType, LocatorTerm> {
                 plural: "pts.".into(),
             }),
             symbol: None,
+            gender: None,
         },
     );
 
@@ -375,6 +380,7 @@ fn en_us_locator_terms() -> HashMap<LocatorType, LocatorTerm> {
                 plural: "suppls.".into(),
             }),
             symbol: None,
+            gender: None,
         },
     );
 
@@ -543,38 +549,132 @@ impl Locale {
     }
 
     /// Get a contributor role term.
-    pub fn role_term(&self, role: &ContributorRole, plural: bool, form: TermForm) -> Option<&str> {
+    fn resolve_gendered_value(
+        value: &MaybeGendered<String>,
+        requested_gender: Option<GrammaticalGender>,
+    ) -> Option<&str> {
+        value
+            .resolve_with_fallback(requested_gender)
+            .map(String::as_str)
+    }
+
+    fn resolve_gendered_value_neutral(value: &MaybeGendered<String>) -> Option<&str> {
+        value.resolve_neutral().map(String::as_str)
+    }
+
+    fn resolve_no_date_value(
+        value: &SimpleTerm,
+        form: TermForm,
+        requested_gender: Option<GrammaticalGender>,
+    ) -> Option<&str> {
+        match requested_gender {
+            Some(GrammaticalGender::Common) => match form {
+                TermForm::Long => value
+                    .long
+                    .resolve_strict(Some(GrammaticalGender::Common))
+                    .map(String::as_str),
+                TermForm::Short => value
+                    .short
+                    .resolve_strict(Some(GrammaticalGender::Common))
+                    .map(String::as_str)
+                    .filter(|value| !value.is_empty())
+                    .or_else(|| {
+                        value
+                            .long
+                            .resolve_strict(Some(GrammaticalGender::Common))
+                            .map(String::as_str)
+                    }),
+                _ => value
+                    .long
+                    .resolve_strict(Some(GrammaticalGender::Common))
+                    .map(String::as_str),
+            },
+            _ => match form {
+                TermForm::Long => Self::resolve_gendered_value(&value.long, requested_gender),
+                TermForm::Short => Self::resolve_gendered_value(&value.short, requested_gender)
+                    .filter(|value| !value.is_empty())
+                    .or_else(|| Self::resolve_gendered_value(&value.long, requested_gender)),
+                _ => Self::resolve_gendered_value(&value.long, requested_gender),
+            },
+        }
+    }
+
+    /// Get a contributor role term.
+    pub fn role_term(
+        &self,
+        role: &ContributorRole,
+        plural: bool,
+        form: TermForm,
+        requested_gender: Option<GrammaticalGender>,
+    ) -> Option<&str> {
         let term = self.roles.get(role)?;
         let simple = if plural { &term.plural } else { &term.singular };
         let term_text = match form {
-            TermForm::Long => &simple.long,
-            TermForm::Short => {
-                if simple.short.is_empty() {
-                    &simple.long
-                } else {
-                    &simple.short
-                }
-            }
-            TermForm::Verb => &term.verb.long,
-            TermForm::VerbShort => {
-                if term.verb.short.is_empty() {
-                    &term.verb.long
-                } else {
-                    &term.verb.short
-                }
-            }
-            _ => &simple.long,
+            TermForm::Long => Self::resolve_gendered_value(&simple.long, requested_gender),
+            TermForm::Short => Self::resolve_gendered_value(&simple.short, requested_gender)
+                .filter(|value| !value.is_empty())
+                .or_else(|| Self::resolve_gendered_value(&simple.long, requested_gender)),
+            TermForm::Verb => Self::resolve_gendered_value(&term.verb.long, None),
+            TermForm::VerbShort => Self::resolve_gendered_value(&term.verb.short, None)
+                .filter(|value| !value.is_empty())
+                .or_else(|| Self::resolve_gendered_value(&term.verb.long, None)),
+            _ => Self::resolve_gendered_value(&simple.long, requested_gender),
         };
 
-        if term_text.is_empty() {
-            None
-        } else {
-            Some(term_text.as_str())
+        match term_text {
+            Some(value) if !value.is_empty() => Some(value),
+            _ => None,
+        }
+    }
+
+    /// Resolve a contributor role term using only neutral/common values.
+    pub fn role_term_neutral(
+        &self,
+        role: &ContributorRole,
+        plural: bool,
+        form: TermForm,
+    ) -> Option<&str> {
+        let term = self.roles.get(role)?;
+        let simple = if plural { &term.plural } else { &term.singular };
+        let term_text = match form {
+            TermForm::Long => Self::resolve_gendered_value_neutral(&simple.long),
+            TermForm::Short => Self::resolve_gendered_value_neutral(&simple.short)
+                .filter(|value| !value.is_empty())
+                .or_else(|| Self::resolve_gendered_value_neutral(&simple.long)),
+            TermForm::Verb => Self::resolve_gendered_value(&term.verb.long, None),
+            TermForm::VerbShort => Self::resolve_gendered_value(&term.verb.short, None)
+                .filter(|value| !value.is_empty())
+                .or_else(|| Self::resolve_gendered_value(&term.verb.long, None)),
+            _ => Self::resolve_gendered_value_neutral(&simple.long),
+        };
+
+        match term_text {
+            Some(value) if !value.is_empty() => Some(value),
+            _ => None,
         }
     }
 
     /// Resolve a contributor role term, evaluating MF1 messages when configured.
     pub fn resolved_role_term(
+        &self,
+        role: &ContributorRole,
+        plural: bool,
+        form: TermForm,
+        requested_gender: Option<GrammaticalGender>,
+    ) -> Option<String> {
+        if let Some(message_id) = Self::role_message_id(role, form)
+            && let Some(resolved) =
+                self.resolve_message_text(message_id, Some(u64::from(plural) + 1), &[])
+        {
+            return Some(resolved);
+        }
+
+        self.role_term(role, plural, form, requested_gender)
+            .map(ToOwned::to_owned)
+    }
+
+    /// Resolve a contributor role term using only neutral/common values.
+    pub fn resolved_role_term_neutral(
         &self,
         role: &ContributorRole,
         plural: bool,
@@ -587,7 +687,8 @@ impl Locale {
             return Some(resolved);
         }
 
-        self.role_term(role, plural, form).map(ToOwned::to_owned)
+        self.role_term_neutral(role, plural, form)
+            .map(ToOwned::to_owned)
     }
 
     /// Get a locator term.
@@ -596,6 +697,7 @@ impl Locale {
         locator: &LocatorType,
         plural: bool,
         form: TermForm,
+        requested_gender: Option<GrammaticalGender>,
     ) -> Option<&str> {
         let term = self.locators.get(locator)?;
         let form_term = match form {
@@ -606,7 +708,8 @@ impl Locale {
         };
 
         if let Some(ft) = form_term {
-            Some(if plural { &ft.plural } else { &ft.singular })
+            let value = if plural { &ft.plural } else { &ft.singular };
+            Self::resolve_gendered_value(value, requested_gender)
         } else {
             None
         }
@@ -618,6 +721,7 @@ impl Locale {
         locator: &LocatorType,
         plural: bool,
         form: TermForm,
+        requested_gender: Option<GrammaticalGender>,
     ) -> Option<String> {
         if let Some(message_id) = Self::locator_message_id(locator, form)
             && let Some(resolved) =
@@ -626,11 +730,11 @@ impl Locale {
             return Some(resolved);
         }
 
-        self.locator_term(locator, plural, form)
+        self.locator_term(locator, plural, form, requested_gender)
             .map(ToOwned::to_owned)
             .or_else(|| {
                 if let LocatorType::Custom(key) = locator {
-                    self.locator_term_any_form(locator, plural)
+                    self.locator_term_any_form(locator, plural, requested_gender)
                         .map(ToOwned::to_owned)
                         .or_else(|| Some(key.clone()))
                 } else {
@@ -639,7 +743,12 @@ impl Locale {
             })
     }
 
-    fn locator_term_any_form(&self, locator: &LocatorType, plural: bool) -> Option<&str> {
+    fn locator_term_any_form(
+        &self,
+        locator: &LocatorType,
+        plural: bool,
+        requested_gender: Option<GrammaticalGender>,
+    ) -> Option<&str> {
         let term = self.locators.get(locator)?;
         [&term.long, &term.short, &term.symbol]
             .into_iter()
@@ -647,15 +756,21 @@ impl Locale {
             .next()
             .map(|forms| {
                 if plural {
-                    forms.plural.as_str()
+                    Self::resolve_gendered_value(&forms.plural, requested_gender).unwrap_or("")
                 } else {
-                    forms.singular.as_str()
+                    Self::resolve_gendered_value(&forms.singular, requested_gender).unwrap_or("")
                 }
             })
+            .filter(|value| !value.is_empty())
     }
 
     /// Get a general term by type and form.
-    pub fn general_term(&self, term: &GeneralTerm, form: TermForm) -> Option<&str> {
+    pub fn general_term(
+        &self,
+        term: &GeneralTerm,
+        form: TermForm,
+        requested_gender: Option<GrammaticalGender>,
+    ) -> Option<&str> {
         // Legacy borrowed lookup path: prefer plain v2 messages first, then
         // alias-backed messages, and finally the v1 term tables.
         let candidate_id = format!("term.{}", Self::general_term_to_message_id(term));
@@ -675,12 +790,16 @@ impl Locale {
         }
 
         // First try the flattened map
-        if let Some(simple) = self.terms.general.get(term) {
-            return Some(match form {
-                TermForm::Long => &simple.long,
-                TermForm::Short => &simple.short,
-                _ => &simple.long,
-            });
+        if *term != GeneralTerm::NoDate
+            && let Some(simple) = self.terms.general.get(term)
+        {
+            return match form {
+                TermForm::Long => Self::resolve_gendered_value(&simple.long, requested_gender),
+                TermForm::Short => Self::resolve_gendered_value(&simple.short, requested_gender)
+                    .filter(|value| !value.is_empty())
+                    .or_else(|| Self::resolve_gendered_value(&simple.long, requested_gender)),
+                _ => Self::resolve_gendered_value(&simple.long, requested_gender),
+            };
         }
 
         // Fallback to specific fields for common terms
@@ -695,11 +814,7 @@ impl Locale {
                 .terms
                 .general
                 .get(term)
-                .map(|value| match form {
-                    TermForm::Long => value.long.as_str(),
-                    TermForm::Short => value.short.as_str(),
-                    _ => value.long.as_str(),
-                })
+                .and_then(|value| Self::resolve_no_date_value(value, form, requested_gender))
                 .or(self.terms.no_date.as_deref()),
             GeneralTerm::Retrieved => self.terms.retrieved.as_deref(),
             GeneralTerm::At => self.terms.at.as_deref(),
@@ -709,43 +824,63 @@ impl Locale {
                 .terms
                 .general
                 .get(term)
-                .map(|value| value.long.as_str()),
+                .and_then(|value| Self::resolve_gendered_value(&value.long, requested_gender)),
             GeneralTerm::To => self
                 .terms
                 .general
                 .get(term)
-                .map(|value| value.long.as_str()),
-            GeneralTerm::Anonymous => Some(&self.terms.anonymous.long),
-            GeneralTerm::Circa => Some(&self.terms.circa.long),
+                .and_then(|value| Self::resolve_gendered_value(&value.long, requested_gender)),
+            GeneralTerm::Anonymous => {
+                Self::resolve_gendered_value(&self.terms.anonymous.long, requested_gender)
+            }
+            GeneralTerm::Circa => {
+                Self::resolve_gendered_value(&self.terms.circa.long, requested_gender)
+            }
             // Fallback to locators for shared terms
-            GeneralTerm::Volume => self.locator_term(&LocatorType::Volume, false, form),
-            GeneralTerm::Issue => self.locator_term(&LocatorType::Issue, false, form),
-            GeneralTerm::Page => self.locator_term(&LocatorType::Page, false, form),
-            GeneralTerm::Chapter => self.locator_term(&LocatorType::Chapter, false, form),
-            GeneralTerm::Section => self.locator_term(&LocatorType::Section, false, form),
+            GeneralTerm::Volume => {
+                self.locator_term(&LocatorType::Volume, false, form, requested_gender)
+            }
+            GeneralTerm::Issue => {
+                self.locator_term(&LocatorType::Issue, false, form, requested_gender)
+            }
+            GeneralTerm::Page => {
+                self.locator_term(&LocatorType::Page, false, form, requested_gender)
+            }
+            GeneralTerm::Chapter => {
+                self.locator_term(&LocatorType::Chapter, false, form, requested_gender)
+            }
+            GeneralTerm::Section => {
+                self.locator_term(&LocatorType::Section, false, form, requested_gender)
+            }
             GeneralTerm::Here => self
                 .terms
                 .general
                 .get(term)
-                .map(|value| value.long.as_str()),
+                .and_then(|value| Self::resolve_gendered_value(&value.long, requested_gender)),
             GeneralTerm::Deposited => self
                 .terms
                 .general
                 .get(term)
-                .map(|value| value.long.as_str()),
+                .and_then(|value| Self::resolve_gendered_value(&value.long, requested_gender)),
             _ => None,
         }
     }
 
     /// Resolve a general term, evaluating MF1 messages when configured.
-    pub fn resolved_general_term(&self, term: &GeneralTerm, form: TermForm) -> Option<String> {
+    pub fn resolved_general_term(
+        &self,
+        term: &GeneralTerm,
+        form: TermForm,
+        requested_gender: Option<GrammaticalGender>,
+    ) -> Option<String> {
         if let Some(message_id) = Self::general_message_id(term, form)
             && let Some(resolved) = self.resolve_message_text(message_id, None, &[])
         {
             return Some(resolved);
         }
 
-        self.general_term(term, form).map(ToOwned::to_owned)
+        self.general_term(term, form, requested_gender)
+            .map(ToOwned::to_owned)
     }
 
     /// Get the "and" term based on style preference.
@@ -1088,13 +1223,12 @@ impl Locale {
             .collect();
 
         for (key, value) in &raw.locators {
-            if let Some(locator_type) = Self::parse_locator_type(key)
-                && let Some(forms) = Self::get_forms(value)
-            {
+            if let Some(locator_type) = Self::parse_locator_type(key) {
                 let locator_term = LocatorTerm {
-                    long: Self::extract_singular_plural(forms.get("long").as_ref()),
-                    short: Self::extract_singular_plural(forms.get("short").as_ref()),
-                    symbol: Self::extract_singular_plural(forms.get("symbol").as_ref()),
+                    long: Self::extract_singular_plural(value.long.as_ref().as_ref()),
+                    short: Self::extract_singular_plural(value.short.as_ref().as_ref()),
+                    symbol: Self::extract_singular_plural(value.symbol.as_ref().as_ref()),
+                    gender: value.gender,
                 };
                 locale.locators.insert(locator_type, locator_term);
             }
@@ -1110,6 +1244,7 @@ impl Locale {
                     long: Self::extract_singular_plural(forms.get("long").as_ref()),
                     short: Self::extract_singular_plural(forms.get("short").as_ref()),
                     symbol: Self::extract_singular_plural(forms.get("symbol").as_ref()),
+                    gender: None,
                 };
                 locale.locators.insert(locator_type, locator_term);
                 continue;
@@ -1154,10 +1289,20 @@ impl Locale {
                         locale.terms.ibid = Some(v.to_string());
                     }
                 }
-                "no_date" | "no date" => {
+                "no date" => {
                     let simple = Self::extract_simple_term_from_raw(value);
-                    locale.terms.no_date = Some(simple.short.clone());
+                    let short_fallback = simple.short.as_default_str().to_string();
                     locale.terms.general.insert(GeneralTerm::NoDate, simple);
+                    locale.terms.no_date.get_or_insert(short_fallback);
+                }
+                "no_date" => {
+                    let simple = Self::extract_simple_term_from_raw(value);
+                    locale.terms.no_date = Some(simple.short.as_str().to_string());
+                    locale
+                        .terms
+                        .general
+                        .entry(GeneralTerm::NoDate)
+                        .or_insert(simple);
                 }
                 _ => {
                     // Try to parse as GeneralTerm
@@ -1233,20 +1378,37 @@ impl Locale {
     fn extract_singular_plural(value: Option<&&raw::RawTermValue>) -> Option<SingularPlural> {
         match value {
             Some(raw::RawTermValue::SingularPlural { singular, plural }) => Some(SingularPlural {
-                singular: singular.clone(),
-                plural: plural.clone(),
+                singular: Self::from_raw_gendered_string(singular),
+                plural: Self::from_raw_gendered_string(plural),
             }),
             Some(raw::RawTermValue::Simple(s)) => Some(SingularPlural {
-                singular: s.clone(),
-                plural: s.clone(), // Fallback if only one form provided
+                singular: MaybeGendered::Plain(s.clone()),
+                plural: MaybeGendered::Plain(s.clone()), // Fallback if only one form provided
+            }),
+            Some(raw::RawTermValue::Gendered {
+                masculine,
+                feminine,
+                neuter,
+                common,
+            }) => Some(SingularPlural {
+                singular: MaybeGendered::Gendered {
+                    masculine: masculine.clone(),
+                    feminine: feminine.clone(),
+                    neuter: neuter.clone(),
+                    common: common.clone(),
+                },
+                plural: MaybeGendered::Gendered {
+                    masculine: masculine.clone(),
+                    feminine: feminine.clone(),
+                    neuter: neuter.clone(),
+                    common: common.clone(),
+                },
             }),
             Some(raw::RawTermValue::Forms(forms)) => {
                 let singular = forms
                     .get("singular")
-                    .and_then(|v| Self::extract_term_string(v, false));
-                let plural = forms
-                    .get("plural")
-                    .and_then(|v| Self::extract_term_string(v, false));
+                    .map(Self::extract_maybe_gendered_string);
+                let plural = forms.get("plural").map(Self::extract_maybe_gendered_string);
 
                 singular.map(|s| SingularPlural {
                     plural: plural.unwrap_or_else(|| s.clone()),
@@ -1264,33 +1426,17 @@ impl Locale {
     ) -> SimpleTerm {
         let long_str = long
             .as_ref()
-            .and_then(|v| Self::extract_term_string(v, plural))
+            .map(|v| Self::extract_simple_gendered_term(v, plural))
             .unwrap_or_default();
 
         let short_str = short
             .as_ref()
-            .and_then(|v| Self::extract_term_string(v, plural))
+            .map(|v| Self::extract_simple_gendered_term(v, plural))
             .unwrap_or_default();
 
         SimpleTerm {
             long: long_str,
             short: short_str,
-        }
-    }
-
-    fn extract_term_string(value: &raw::RawTermValue, plural: bool) -> Option<String> {
-        match value {
-            raw::RawTermValue::Simple(s) => Some(s.clone()),
-            raw::RawTermValue::SingularPlural {
-                singular,
-                plural: p,
-            } => Some(if plural { p.clone() } else { singular.clone() }),
-            raw::RawTermValue::Forms(forms) => {
-                let key = if plural { "plural" } else { "singular" };
-                forms
-                    .get(key)
-                    .and_then(|v| Self::extract_term_string(v, false))
-            }
         }
     }
 
@@ -1302,13 +1448,13 @@ impl Locale {
             .as_ref()
             .and_then(|v| v.as_string())
             .unwrap_or("")
-            .to_string();
+            .into();
 
         let short_str = verb_short
             .as_ref()
             .and_then(|v| v.as_string())
             .unwrap_or("")
-            .to_string();
+            .into();
 
         SimpleTerm {
             long: long_str,
@@ -1367,26 +1513,123 @@ impl Locale {
     fn extract_simple_term_from_raw(value: &raw::RawTermValue) -> SimpleTerm {
         match value {
             raw::RawTermValue::Simple(s) => SimpleTerm {
-                long: s.clone(),
-                short: s.clone(),
+                long: s.clone().into(),
+                short: s.clone().into(),
+            },
+            raw::RawTermValue::Gendered {
+                masculine,
+                feminine,
+                neuter,
+                common,
+            } => SimpleTerm {
+                long: MaybeGendered::Gendered {
+                    masculine: masculine.clone(),
+                    feminine: feminine.clone(),
+                    neuter: neuter.clone(),
+                    common: common.clone(),
+                },
+                short: MaybeGendered::Gendered {
+                    masculine: masculine.clone(),
+                    feminine: feminine.clone(),
+                    neuter: neuter.clone(),
+                    common: common.clone(),
+                },
             },
             raw::RawTermValue::Forms(forms) => {
                 let long = forms
                     .get("long")
-                    .and_then(|v| v.as_string())
-                    .unwrap_or("")
-                    .to_string();
+                    .map(Self::extract_maybe_gendered_string)
+                    .unwrap_or_default();
                 let short = forms
                     .get("short")
-                    .and_then(|v| v.as_string())
-                    .unwrap_or(&long)
-                    .to_string();
+                    .map(Self::extract_maybe_gendered_string)
+                    .unwrap_or_else(|| long.clone());
                 SimpleTerm { long, short }
             }
             raw::RawTermValue::SingularPlural { singular, .. } => SimpleTerm {
-                long: singular.clone(),
-                short: singular.clone(),
+                long: Self::from_raw_gendered_string(singular),
+                short: Self::from_raw_gendered_string(singular),
             },
+        }
+    }
+
+    fn from_raw_gendered_string(value: &raw::RawGenderedString) -> MaybeGendered<String> {
+        match value {
+            raw::RawGenderedString::Simple(value) => MaybeGendered::Plain(value.clone()),
+            raw::RawGenderedString::Gendered {
+                masculine,
+                feminine,
+                neuter,
+                common,
+            } => MaybeGendered::Gendered {
+                masculine: masculine.clone(),
+                feminine: feminine.clone(),
+                neuter: neuter.clone(),
+                common: common.clone(),
+            },
+        }
+    }
+
+    fn extract_maybe_gendered_string(value: &raw::RawTermValue) -> MaybeGendered<String> {
+        match value {
+            raw::RawTermValue::Simple(value) => MaybeGendered::Plain(value.clone()),
+            raw::RawTermValue::Gendered {
+                masculine,
+                feminine,
+                neuter,
+                common,
+            } => MaybeGendered::Gendered {
+                masculine: masculine.clone(),
+                feminine: feminine.clone(),
+                neuter: neuter.clone(),
+                common: common.clone(),
+            },
+            raw::RawTermValue::SingularPlural { singular, .. } => {
+                Self::from_raw_gendered_string(singular)
+            }
+            raw::RawTermValue::Forms(forms) => forms
+                .get("long")
+                .or_else(|| forms.get("singular"))
+                .map(Self::extract_maybe_gendered_string)
+                .unwrap_or_default(),
+        }
+    }
+
+    fn extract_simple_gendered_term(
+        value: &raw::RawTermValue,
+        plural: bool,
+    ) -> MaybeGendered<String> {
+        match value {
+            raw::RawTermValue::Simple(value) => MaybeGendered::Plain(value.clone()),
+            raw::RawTermValue::Gendered {
+                masculine,
+                feminine,
+                neuter,
+                common,
+            } => MaybeGendered::Gendered {
+                masculine: masculine.clone(),
+                feminine: feminine.clone(),
+                neuter: neuter.clone(),
+                common: common.clone(),
+            },
+            raw::RawTermValue::SingularPlural {
+                singular,
+                plural: plural_value,
+            } => {
+                if plural {
+                    Self::from_raw_gendered_string(plural_value)
+                } else {
+                    Self::from_raw_gendered_string(singular)
+                }
+            }
+            raw::RawTermValue::Forms(forms) => {
+                let key = if plural { "plural" } else { "singular" };
+                forms
+                    .get(key)
+                    .or_else(|| forms.get("long"))
+                    .map(Self::extract_maybe_gendered_string)
+                    .unwrap_or_default()
+            }
         }
     }
 
@@ -1437,15 +1680,15 @@ mod tests {
         let locale = Locale::en_us();
 
         assert_eq!(
-            locale.role_term(&ContributorRole::Editor, false, TermForm::Short),
+            locale.role_term(&ContributorRole::Editor, false, TermForm::Short, None),
             Some("ed.")
         );
         assert_eq!(
-            locale.role_term(&ContributorRole::Editor, true, TermForm::Short),
+            locale.role_term(&ContributorRole::Editor, true, TermForm::Short, None),
             Some("eds.")
         );
         assert_eq!(
-            locale.role_term(&ContributorRole::Translator, false, TermForm::Verb),
+            locale.role_term(&ContributorRole::Translator, false, TermForm::Verb, None),
             Some("translated by")
         );
     }
@@ -1455,11 +1698,11 @@ mod tests {
         let locale = Locale::en_us();
 
         assert_eq!(
-            locale.general_term(&GeneralTerm::NoDate, TermForm::Long),
+            locale.general_term(&GeneralTerm::NoDate, TermForm::Long, None),
             Some("no date")
         );
         assert_eq!(
-            locale.general_term(&GeneralTerm::NoDate, TermForm::Short),
+            locale.general_term(&GeneralTerm::NoDate, TermForm::Short, None),
             Some("n.d.")
         );
     }
@@ -1470,11 +1713,11 @@ mod tests {
         locale.terms.no_date = Some("n.d.".to_string());
 
         assert_eq!(
-            locale.general_term(&GeneralTerm::NoDate, TermForm::Short),
+            locale.general_term(&GeneralTerm::NoDate, TermForm::Short, None),
             Some("n.d.")
         );
         assert_eq!(
-            locale.general_term(&GeneralTerm::NoDate, TermForm::Long),
+            locale.general_term(&GeneralTerm::NoDate, TermForm::Long, None),
             Some("n.d.")
         );
     }
@@ -1576,11 +1819,11 @@ terms:
 
         let locale = Locale::from_yaml_str(yaml).unwrap();
         assert_eq!(
-            locale.general_term(&GeneralTerm::NoDate, TermForm::Long),
+            locale.general_term(&GeneralTerm::NoDate, TermForm::Long, None),
             Some("no date")
         );
         assert_eq!(
-            locale.general_term(&GeneralTerm::NoDate, TermForm::Short),
+            locale.general_term(&GeneralTerm::NoDate, TermForm::Short, None),
             Some("n.d.")
         );
         assert_eq!(locale.terms.no_date.as_deref(), Some("n.d."));
@@ -1654,11 +1897,11 @@ locale: en-US
         let locale = Locale::en_us();
 
         assert_eq!(
-            locale.resolved_locator_term(&LocatorType::Page, false, TermForm::Short),
+            locale.resolved_locator_term(&LocatorType::Page, false, TermForm::Short, None),
             Some("p.".to_string())
         );
         assert_eq!(
-            locale.resolved_locator_term(&LocatorType::Page, true, TermForm::Short),
+            locale.resolved_locator_term(&LocatorType::Page, true, TermForm::Short, None),
             Some("pp.".to_string())
         );
     }
@@ -1681,7 +1924,8 @@ locators:
             locale.resolved_locator_term(
                 &LocatorType::Custom("reel".to_string()),
                 false,
-                TermForm::Short
+                TermForm::Short,
+                None,
             ),
             Some("reel".to_string())
         );
@@ -1689,7 +1933,8 @@ locators:
             locale.resolved_locator_term(
                 &LocatorType::Custom("movement".to_string()),
                 false,
-                TermForm::Short
+                TermForm::Short,
+                None,
             ),
             Some("movement".to_string())
         );
@@ -1710,7 +1955,7 @@ terms:
         .expect("legacy locator terms should parse");
 
         assert_eq!(
-            locale.resolved_locator_term(&LocatorType::Page, false, TermForm::Short),
+            locale.resolved_locator_term(&LocatorType::Page, false, TermForm::Short, None),
             Some("pg.".to_string())
         );
     }
@@ -1735,7 +1980,7 @@ locators:
         .expect("mixed locator forms should parse");
 
         assert_eq!(
-            locale.resolved_locator_term(&LocatorType::Page, false, TermForm::Short),
+            locale.resolved_locator_term(&LocatorType::Page, false, TermForm::Short, None),
             Some("p.".to_string())
         );
     }
@@ -1765,12 +2010,98 @@ terms:
         let locale = Locale::en_us();
 
         assert_eq!(
-            locale.resolved_role_term(&ContributorRole::Editor, false, TermForm::Long),
+            locale.resolved_role_term(&ContributorRole::Editor, false, TermForm::Long, None),
             Some("editor".to_string())
         );
         assert_eq!(
-            locale.resolved_role_term(&ContributorRole::Editor, true, TermForm::Long),
+            locale.resolved_role_term(&ContributorRole::Editor, true, TermForm::Long, None),
             Some("editors".to_string())
+        );
+    }
+
+    #[test]
+    fn test_role_term_prefers_common_form_for_mixed_gender_requests() {
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: es-ES
+roles:
+  editor:
+    long:
+      singular:
+        masculine: editor
+        feminine: editora
+        common: persona editora
+      plural:
+        masculine: editores
+        feminine: editoras
+        common: equipo editorial
+    short:
+      singular: ed.
+      plural: eds.
+    verb: editado por
+"#,
+        )
+        .expect("gendered locale should parse");
+
+        assert_eq!(
+            locale.role_term(
+                &ContributorRole::Editor,
+                false,
+                TermForm::Long,
+                Some(GrammaticalGender::Feminine),
+            ),
+            Some("editora")
+        );
+        assert_eq!(
+            locale.role_term(
+                &ContributorRole::Editor,
+                true,
+                TermForm::Long,
+                Some(GrammaticalGender::Common),
+            ),
+            Some("equipo editorial")
+        );
+    }
+
+    #[test]
+    fn test_no_date_term_falls_back_when_requested_gender_has_no_matching_slot() {
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: es-ES
+terms:
+  no date:
+    long:
+      masculine: sin fecha
+  no_date: s. f.
+"#,
+        )
+        .expect("locale should parse");
+
+        assert_eq!(
+            locale.general_term(
+                &GeneralTerm::NoDate,
+                TermForm::Long,
+                Some(GrammaticalGender::Common),
+            ),
+            Some("s. f.")
+        );
+    }
+
+    #[test]
+    fn test_es_es_locale_is_embedded() {
+        let bytes = crate::embedded::get_locale_bytes("es-ES").expect("es-ES should be embedded");
+        let yaml = std::str::from_utf8(bytes).expect("embedded locale should be utf-8");
+        let locale = Locale::from_yaml_str(yaml).expect("embedded es-ES should parse");
+
+        assert_eq!(locale.locale, "es-ES");
+        assert_eq!(
+            locale.resolved_role_term(
+                &ContributorRole::Editor,
+                false,
+                TermForm::Long,
+                Some(GrammaticalGender::Feminine),
+            ),
+            Some("editora".to_string())
         );
     }
 

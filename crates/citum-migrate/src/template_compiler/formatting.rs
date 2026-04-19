@@ -291,6 +291,7 @@ mod tests {
         let mut term = TemplateComponent::Term(citum_schema::template::TemplateTerm {
             term: GeneralTerm::In,
             form: None,
+            gender: None,
             rendering: Rendering::default(),
             custom: None,
         });

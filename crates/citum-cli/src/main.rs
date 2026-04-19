@@ -1158,7 +1158,7 @@ fn lint_style_against_locale(style: &Style, locale: &Locale) -> LintReport {
     for requirement in requirements {
         match requirement.kind {
             LocaleRequirementKind::General { term, form } => {
-                if locale.resolved_general_term(&term, form).is_none() {
+                if locale.resolved_general_term(&term, form, None).is_none() {
                     report.warning(
                         requirement.path,
                         format!(
@@ -1168,8 +1168,8 @@ fn lint_style_against_locale(style: &Style, locale: &Locale) -> LintReport {
                 }
             }
             LocaleRequirementKind::Role { role, form } => {
-                let singular = locale.resolved_role_term(&role, false, form);
-                let plural = locale.resolved_role_term(&role, true, form);
+                let singular = locale.resolved_role_term(&role, false, form, None);
+                let plural = locale.resolved_role_term(&role, true, form, None);
                 if singular.is_none() || plural.is_none() {
                     report.warning(
                         requirement.path,
@@ -1223,12 +1223,12 @@ fn lint_locator_term(
             })
             .map(|forms| {
                 if plural {
-                    forms.plural.clone()
+                    forms.plural.as_str().to_string()
                 } else {
-                    forms.singular.clone()
+                    forms.singular.as_str().to_string()
                 }
             }),
-        _ => locale.resolved_locator_term(locator, plural, form),
+        _ => locale.resolved_locator_term(locator, plural, form, None),
     }
 }
 

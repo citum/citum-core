@@ -235,6 +235,7 @@ fn resolve_substitute_role_labels<F: OutputFormat<Output = String>>(
                     known,
                     selected,
                     names_count,
+                    None,
                     effective_rendering,
                     options,
                     fmt,

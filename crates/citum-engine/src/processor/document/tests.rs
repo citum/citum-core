@@ -118,6 +118,7 @@ fn make_note_style() -> Style {
                 template: Some(vec![TemplateComponent::Term(TemplateTerm {
                     term: citum_schema::locale::GeneralTerm::Ibid,
                     form: None,
+                    gender: None,
                     rendering: Rendering::default(),
                     custom: None,
                 })]),

@@ -5,7 +5,7 @@
 
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
-use citum_schema::locale::TermForm;
+use citum_schema::locale::{GrammaticalGender, TermForm};
 use citum_schema::template::{NumberVariable, TemplateNumber};
 
 /// Resolve the raw value string for a number variable from a reference.
@@ -96,6 +96,7 @@ fn resolve_number_label<F: crate::render::format::OutputFormat<Output = String>>
     number: &NumberVariable,
     label_form: &citum_schema::template::LabelForm,
     value: &str,
+    requested_gender: Option<GrammaticalGender>,
     effective_rendering: &citum_schema::template::Rendering,
     options: &RenderOptions<'_>,
     fmt: &F,
@@ -112,7 +113,7 @@ fn resolve_number_label<F: crate::render::format::OutputFormat<Output = String>>
 
         options
             .locale
-            .resolved_locator_term(&locator_type, plural, term_form)
+            .resolved_locator_term(&locator_type, plural, term_form, requested_gender)
             .map(|t| {
                 let term_str = if crate::values::should_strip_periods(effective_rendering, options)
                 {
@@ -154,6 +155,7 @@ impl ComponentValues for TemplateNumber {
                     &self.number,
                     label_form,
                     &value,
+                    self.gender,
                     effective_rendering,
                     options,
                     &fmt,

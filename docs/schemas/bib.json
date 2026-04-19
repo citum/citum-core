@@ -688,6 +688,17 @@
         "contributor": {
           "description": "The contributor (name, organization, or list).",
           "$ref": "#/$defs/Contributor"
+        },
+        "gender": {
+          "description": "The grammatical gender used for role-label agreement.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContributorGender"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -721,6 +732,31 @@
         {
           "description": "An open extension point for domain-specific roles.",
           "type": "string"
+        }
+      ]
+    },
+    "ContributorGender": {
+      "description": "Grammatical gender carried on contributor records for role-label agreement.",
+      "oneOf": [
+        {
+          "description": "Masculine grammatical gender.",
+          "type": "string",
+          "const": "masculine"
+        },
+        {
+          "description": "Feminine grammatical gender.",
+          "type": "string",
+          "const": "feminine"
+        },
+        {
+          "description": "Neuter grammatical gender.",
+          "type": "string",
+          "const": "neuter"
+        },
+        {
+          "description": "Common or shared grammatical gender.",
+          "type": "string",
+          "const": "common"
         }
       ]
     },

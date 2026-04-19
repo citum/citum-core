@@ -266,6 +266,7 @@ fn test_strip_author_component_nested_list() {
                 delimiter: None,
                 sort_separator: None,
                 links: None,
+                gender: None,
                 rendering: Rendering::default(),
                 custom: None,
             }),

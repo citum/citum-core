@@ -673,9 +673,11 @@ impl ComponentValues for TemplateDate {
             }
             // For issued dates, substitute the locale's "no-date" term (e.g. "n.d.")
             if matches!(self.date, TemplateDateVar::Issued)
-                && let Some(nd) = options
-                    .locale
-                    .resolved_general_term(&GeneralTerm::NoDate, TermForm::Short)
+                && let Some(nd) = options.locale.resolved_general_term(
+                    &GeneralTerm::NoDate,
+                    TermForm::Short,
+                    None,
+                )
             {
                 return Some(ProcValues {
                     value: nd,

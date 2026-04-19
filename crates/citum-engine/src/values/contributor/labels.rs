@@ -1,16 +1,76 @@
 //! Role-label resolution for contributor rendering.
 
+use super::contributor_role_to_reference_role;
+use crate::reference::Reference;
 use crate::render::format::OutputFormat;
 use crate::values::RenderOptions;
-use citum_schema::locale::TermForm;
+use citum_schema::locale::{GrammaticalGender, TermForm};
 use citum_schema::options::RoleLabelPreset;
+use citum_schema::reference::ContributorGender;
 use citum_schema::template::{ContributorForm, ContributorRole, Rendering, TemplateContributor};
+
+fn map_contributor_gender(gender: ContributorGender) -> GrammaticalGender {
+    match gender {
+        ContributorGender::Masculine => GrammaticalGender::Masculine,
+        ContributorGender::Feminine => GrammaticalGender::Feminine,
+        ContributorGender::Neuter => GrammaticalGender::Neuter,
+        ContributorGender::Common => GrammaticalGender::Common,
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub(super) enum RoleGenderRequest {
+    Specific(GrammaticalGender),
+    NeutralOnly,
+}
+
+fn requested_role_gender(
+    component: &TemplateContributor,
+    reference: &Reference,
+) -> Option<RoleGenderRequest> {
+    if let Some(gender) = component.gender {
+        return Some(RoleGenderRequest::Specific(gender));
+    }
+
+    let data_role = contributor_role_to_reference_role(&component.contributor)?;
+
+    let entries = reference.contributor_entries(&data_role);
+    let mut genders = entries
+        .iter()
+        .filter_map(|entry| entry.gender.map(map_contributor_gender));
+    let first = genders.next()?;
+
+    if genders.all(|gender| gender == first) {
+        Some(RoleGenderRequest::Specific(first))
+    } else {
+        Some(RoleGenderRequest::NeutralOnly)
+    }
+}
+
+fn resolve_role_term_by_request(
+    locale: &citum_schema::locale::Locale,
+    role: &ContributorRole,
+    plural: bool,
+    term_form: TermForm,
+    requested_gender: Option<RoleGenderRequest>,
+) -> Option<String> {
+    match requested_gender {
+        Some(RoleGenderRequest::Specific(gender)) => {
+            locale.resolved_role_term(role, plural, term_form, Some(gender))
+        }
+        Some(RoleGenderRequest::NeutralOnly) => {
+            locale.resolved_role_term_neutral(role, plural, term_form)
+        }
+        None => locale.resolved_role_term(role, plural, term_form, None),
+    }
+}
 
 /// Resolve a configured role-label preset to `(prefix, suffix)`.
 pub(super) fn resolve_role_label_preset<F: OutputFormat<Output = String>>(
     role: &ContributorRole,
     preset: RoleLabelPreset,
     names_count: usize,
+    requested_gender: Option<RoleGenderRequest>,
     effective_rendering: &Rendering,
     options: &RenderOptions<'_>,
     fmt: &F,
@@ -21,7 +81,7 @@ pub(super) fn resolve_role_label_preset<F: OutputFormat<Output = String>>(
         RoleLabelPreset::VerbPrefix => {
             let term = options
                 .locale
-                .resolved_role_term(role, plural, TermForm::Verb);
+                .resolved_role_term(role, plural, TermForm::Verb, None);
             (
                 term.map(|t| {
                     super::format_role_term::<F>(&t, fmt, effective_rendering, options, "", " ")
@@ -32,7 +92,7 @@ pub(super) fn resolve_role_label_preset<F: OutputFormat<Output = String>>(
         RoleLabelPreset::VerbShortPrefix => {
             let term = options
                 .locale
-                .resolved_role_term(role, plural, TermForm::VerbShort);
+                .resolved_role_term(role, plural, TermForm::VerbShort, None);
             (
                 term.map(|t| {
                     super::format_role_term::<F>(&t, fmt, effective_rendering, options, "", " ")
@@ -41,9 +101,13 @@ pub(super) fn resolve_role_label_preset<F: OutputFormat<Output = String>>(
             )
         }
         RoleLabelPreset::ShortSuffix => {
-            let term = options
-                .locale
-                .resolved_role_term(role, plural, TermForm::Short);
+            let term = resolve_role_term_by_request(
+                options.locale,
+                role,
+                plural,
+                TermForm::Short,
+                requested_gender,
+            );
             (
                 None,
                 term.map(|t| {
@@ -52,9 +116,13 @@ pub(super) fn resolve_role_label_preset<F: OutputFormat<Output = String>>(
             )
         }
         RoleLabelPreset::LongSuffix => {
-            let term = options
-                .locale
-                .resolved_role_term(role, plural, TermForm::Long);
+            let term = resolve_role_term_by_request(
+                options.locale,
+                role,
+                plural,
+                TermForm::Long,
+                requested_gender,
+            );
             (
                 None,
                 term.map(|t| {
@@ -71,6 +139,7 @@ pub(super) fn resolve_role_label_preset<F: OutputFormat<Output = String>>(
 /// Precedence: explicit `label` config > configured role presets > form-based defaults.
 pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
     component: &TemplateContributor,
+    reference: &Reference,
     names_count: usize,
     effective_rendering: &Rendering,
     options: &RenderOptions<'_>,
@@ -93,7 +162,10 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
             _ => Some(component.contributor.clone()),
         };
 
-        let term_text = role.and_then(|r| options.locale.resolved_role_term(&r, plural, term_form));
+        let requested_gender = requested_role_gender(component, reference);
+        let term_text = role.and_then(|r| {
+            resolve_role_term_by_request(options.locale, &r, plural, term_form, requested_gender)
+        });
 
         return match label_config.placement {
             LabelPlacement::Prefix => (
@@ -121,10 +193,12 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
         .as_ref()
         .and_then(|contributors| contributors.effective_role_label_preset(&component.contributor))
     {
+        let requested_gender = requested_role_gender(component, reference);
         return resolve_role_label_preset(
             &component.contributor,
             preset,
             names_count,
+            requested_gender,
             effective_rendering,
             options,
             fmt,
@@ -139,7 +213,9 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
                 ContributorForm::VerbShort => TermForm::VerbShort,
                 _ => TermForm::Verb,
             };
-            let term = options.locale.resolved_role_term(role, plural, term_form);
+            let term = options
+                .locale
+                .resolved_role_term(role, plural, term_form, None);
             (
                 term.map(|t| {
                     super::format_role_term::<F>(&t, fmt, effective_rendering, options, "", " ")
@@ -158,10 +234,14 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
             | ContributorRole::Composer,
         ) => {
             let plural = names_count > 1;
-            let term =
-                options
-                    .locale
-                    .resolved_role_term(&component.contributor, plural, TermForm::Short);
+            let requested_gender = requested_role_gender(component, reference);
+            let term = resolve_role_term_by_request(
+                options.locale,
+                &component.contributor,
+                plural,
+                TermForm::Short,
+                requested_gender,
+            );
             (
                 None,
                 term.map(|t| {

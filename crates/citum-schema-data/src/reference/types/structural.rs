@@ -35,6 +35,7 @@ fn fold_contributors(
             contributors.push(ContributorEntry {
                 role: role.clone(),
                 contributor: (*c).clone(),
+                gender: None,
             });
         }
     }

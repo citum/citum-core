@@ -25,13 +25,13 @@ fn join_integral_groups(rendered_groups: Vec<String>, locale: &Locale) -> String
         1 => rendered_groups.into_iter().next().unwrap_or_default(),
         2 => {
             let conjunction = locale
-                .resolved_general_term(&GeneralTerm::And, TermForm::Long)
+                .resolved_general_term(&GeneralTerm::And, TermForm::Long, None)
                 .unwrap_or_else(|| locale.and_term(false).to_string());
             rendered_groups.join(&format!(" {} ", conjunction.trim()))
         }
         _ => {
             let conjunction = locale
-                .resolved_general_term(&GeneralTerm::And, TermForm::Long)
+                .resolved_general_term(&GeneralTerm::And, TermForm::Long, None)
                 .unwrap_or_else(|| locale.and_term(false).to_string());
             let final_delimiter = if locale.grammar_options.serial_comma {
                 format!(", {} ", conjunction.trim())
