@@ -1,7 +1,7 @@
 ---
 # csl26-vepq
 title: Add --confirm-web flag to find-alias-candidates.js
-status: todo
+status: done
 type: feature
 created_at: 2026-04-19T13:11:05Z
 updated_at: 2026-04-19T13:11:05Z
