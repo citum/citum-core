@@ -66,6 +66,7 @@ if (( body_has_content == 0 )); then
   exit 1
 fi
 
-# Schema-Bump footer enforcement
+# Schema-Bump and Version-Bump footer enforcement
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 python3 "$ROOT_DIR/scripts/schema-check.py" commit-msg "$msg_file"
+python3 "$ROOT_DIR/scripts/rust-check.py" commit-msg "$msg_file"
