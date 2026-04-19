@@ -1,223 +1,289 @@
-info:
+!custom 
+preset: springer-basic-author-date
+info: !custom 
   title: International Journal of Wildland Fire
   description: |-
     This style produces the CSIRO style used in the International Journal of Wildland Fire,
           the Australian Journal of Botany and several other Australian journals.  It has been
           validated for the journal, book, book chapter, report, and conference paper citation
           styles.  This style is in the public domain.
-  fields:
-  - science
-  source:
+  fields: !custom 
+    '0': science
+  source: !custom 
     csl-id: http://www.zotero.org/styles/international-journal-of-wildland-fire
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
-    original-authors:
-    - name: David Weise
-      email: dweise@fs.fed.us
-    links:
-    - href: http://www.zotero.org/styles/international-journal-of-wildland-fire
-      rel: self
-    - href: http://www.zotero.org/styles/springer-basic-author-date
-      rel: template
-    - href: http://www.publish.csiro.au/nid/117/aid/424.htm
-      rel: documentation
-options:
+    original-authors: !custom 
+      '0': !custom 
+        name: David Weise
+        email: dweise@fs.fed.us
+    links: !custom 
+      '0': !custom 
+        href: http://www.zotero.org/styles/international-journal-of-wildland-fire
+        rel: self
+      '1': !custom 
+        href: http://www.zotero.org/styles/springer-basic-author-date
+        rel: template
+      '2': !custom 
+        href: http://www.publish.csiro.au/nid/117/aid/424.htm
+        rel: documentation
+options: !custom 
   substitute: editor-translator-title-short
-  processing:
-    sort:
+  processing: !custom 
+    sort: !custom 
       shorten-names: false
       render-substitutions: false
-      template:
-      - key: year
-        ascending: true
-      - key: author
-        ascending: true
-    group:
-      template:
-      - year
-      - author
-    disambiguate:
+      template: !custom 
+        '0': !custom 
+          key: year
+          ascending: true
+        '1': !custom 
+          key: author
+          ascending: true
+    group: !custom 
+      template: !custom 
+        '0': year
+        '1': author
+    disambiguate: !custom 
       names: true
       add-givenname: false
       year-suffix: true
-  contributors:
+  contributors: !custom 
     display-as-sort: all
     name-form: initials
-    initialize-with: ""
-    shorten:
+    initialize-with: ''
+    shorten: !custom 
       min: 3
       use-first: 1
       and-others: et-al
       delimiter-precedes-last: contextual
-    delimiter: ", "
+    delimiter: ', '
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only
-    sort-separator: " "
+    sort-separator: ' '
   dates: long
   titles: journal-emphasis
-  punctuation-in-quote: true
-citation:
-  options:
-    contributors:
+citation: !custom 
+  options: !custom 
+    contributors: !custom 
       name-form: initials
-      initialize-with: ""
-      shorten:
+      initialize-with: ''
+      shorten: !custom 
         min: 3
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
-  template:
-  - contributor: author
-    form: short
-    name-order: family-first
-    shorten:
-      min: 3
-      use-first: 1
-      and-others: et-al
-      delimiter-precedes-last: contextual
-  - date: issued
-    form: year
-    prefix: " "
-  - variable: locator
-  wrap:
+      delimiter: ', '
+  template: !custom 
+    '0': !custom 
+      contributor: author
+      form: short
+      name-order: family-first
+      shorten: !custom 
+        min: 3
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+    '1': !custom 
+      date: issued
+      form: year
+      prefix: ' '
+    '2': !custom 
+      variable: locator
+  wrap: !custom 
     punctuation: parentheses
-  delimiter: ". "
-  multi-cite-delimiter: "; "
-bibliography:
-  options:
-    contributors:
+  delimiter: '. '
+  multi-cite-delimiter: '; '
+bibliography: !custom 
+  options: !custom 
+    contributors: !custom 
       display-as-sort: all
       name-form: initials
-      initialize-with: ""
-      delimiter: ", "
+      initialize-with: ''
+      delimiter: ', '
       delimiter-precedes-last: always
-      sort-separator: " "
+      sort-separator: ' '
     hanging-indent: true
-    separator: ". "
-  type-variants:
-    article-journal:
-    - contributor: author
+    separator: '. '
+  type-variants: !custom 
+    article-journal: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: family-first
+      '1': !custom 
+        date: issued
+        form: year
+        wrap: !custom 
+          punctuation: parentheses
+        prefix: ' '
+      '2': !custom 
+        title: primary
+        prefix: ' '
+      '3': !custom 
+        group: !custom 
+          '0': !custom 
+            contributor: editor
+            form: verb
+            name-order: given-first
+          '1': !custom 
+            title: parent-monograph
+            emph: true
+      '4': !custom 
+        title: parent-serial
+        emph: true
+      '5': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
+              punctuation: parentheses
+      '6': !custom 
+        number: pages
+        prefix: ', '
+      '7': !custom 
+        variable: publisher
+        prefix: . (
+      '8': !custom 
+        variable: publisher-place
+        prefix: ': '
+      '9': !custom 
+        variable: doi
+        prefix: https://doi.org/
+    chapter: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: family-first
+      '1': !custom 
+        date: issued
+        form: year
+        wrap: !custom 
+          punctuation: parentheses
+        prefix: ' '
+      '2': !custom 
+        title: primary
+        prefix: ' '
+      '3': !custom 
+        group: !custom 
+          '0': !custom 
+            contributor: editor
+            form: verb
+            name-order: given-first
+          '1': !custom 
+            title: parent-monograph
+            emph: true
+      '4': !custom 
+        title: parent-serial
+        emph: true
+      '5': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
+              punctuation: parentheses
+      '6': !custom 
+        number: pages
+        prefix: 'pp. '
+      '7': !custom 
+        variable: publisher
+        prefix: . (
+      '8': !custom 
+        variable: publisher-place
+        prefix: ': '
+      '9': !custom 
+        variable: doi
+    paper-conference: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: family-first
+      '1': !custom 
+        date: issued
+        form: year
+        wrap: !custom 
+          punctuation: parentheses
+        prefix: ' '
+      '2': !custom 
+        title: primary
+        prefix: ' '
+      '3': !custom 
+        group: !custom 
+          '0': !custom 
+            contributor: editor
+            form: verb
+            name-order: given-first
+          '1': !custom 
+            title: parent-monograph
+            emph: true
+      '4': !custom 
+        title: parent-serial
+        emph: true
+      '5': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
+              punctuation: parentheses
+      '6': !custom 
+        number: pages
+        prefix: 'pp. '
+      '7': !custom 
+        variable: publisher
+        prefix: . (
+      '8': !custom 
+        variable: publisher-place
+        prefix: ': '
+      '9': !custom 
+        variable: doi
+  template: !custom 
+    '0': !custom 
+      contributor: author
       form: long
       name-order: family-first
-    - date: issued
+    '1': !custom 
+      date: issued
       form: year
-      wrap:
+      wrap: !custom 
         punctuation: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
+      prefix: ' '
+    '2': !custom 
+      title: primary
+      prefix: ' '
+    '3': !custom 
+      group: !custom 
+        '0': !custom 
+          contributor: editor
+          form: verb
+          name-order: given-first
+        '1': !custom 
+          title: parent-monograph
+          emph: true
+    '4': !custom 
+      title: parent-serial
       emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - number: pages
-      prefix: ", "
-    - variable: publisher
+    '5': !custom 
+      group: !custom 
+        '0': !custom 
+          number: volume
+        '1': !custom 
+          number: issue
+          wrap: !custom 
+            punctuation: parentheses
+    '6': !custom 
+      number: pages
+      prefix: ', '
+    '7': !custom 
+      variable: publisher
       prefix: . (
-    - variable: publisher-place
-      prefix: ": "
-    - variable: doi
-      prefix: https://doi.org/
-    chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher
-      prefix: . (
-    - variable: publisher-place
-      prefix: ": "
-    - variable: doi
-    paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher
-      prefix: . (
-    - variable: publisher-place
-      prefix: ": "
-    - variable: doi
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-  - date: issued
-    form: year
-    wrap:
-      punctuation: parentheses
-    prefix: " "
-  - title: primary
-    prefix: " "
-  - group:
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - title: parent-monograph
-      emph: true
-  - title: parent-serial
-    emph: true
-  - group:
-    - number: volume
-    - number: issue
-      wrap:
-        punctuation: parentheses
-  - number: pages
-    prefix: ", "
-  - variable: publisher
-    prefix: . (
-  - variable: publisher-place
-    prefix: ": "
-  - variable: doi
+    '8': !custom 
+      variable: publisher-place
+      prefix: ': '
+    '9': !custom 
+      variable: doi

@@ -1,128 +1,150 @@
-info:
+!custom 
+preset: american-medical-association
+info: !custom 
   title: Inter-Research Science Center
-  fields:
-  - biology
-  source:
+  fields: !custom 
+    '0': biology
+  source: !custom 
     csl-id: http://www.zotero.org/styles/inter-research-science-center
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
-    original-authors:
-    - name: Stefania M Gorgopa
-      email: stefania.gorgopa@gmail.com
-    links:
-    - href: http://www.zotero.org/styles/inter-research-science-center
-      rel: self
-    - href: http://www.zotero.org/styles/american-medical-association
-      rel: template
-    - href: https://www.int-res.com/journals/guidelines-for-authors/guidelines-authors/
-      rel: documentation
-options:
-  substitute:
+    original-authors: !custom 
+      '0': !custom 
+        name: Stefania M Gorgopa
+        email: stefania.gorgopa@gmail.com
+    links: !custom 
+      '0': !custom 
+        href: http://www.zotero.org/styles/inter-research-science-center
+        rel: self
+      '1': !custom 
+        href: http://www.zotero.org/styles/american-medical-association
+        rel: template
+      '2': !custom 
+        href: https://www.int-res.com/journals/guidelines-for-authors/guidelines-authors/
+        rel: documentation
+options: !custom 
+  substitute: !custom 
     contributor-role-form: short
-    template:
-    - editor
-    - translator
-    - title
-  processing:
-    sort:
+    template: !custom 
+      '0': editor
+      '1': translator
+      '2': title
+  processing: !custom 
+    sort: !custom 
       shorten-names: false
       render-substitutions: false
-      template:
-      - key: year
-        ascending: true
-      - key: author
-        ascending: true
-    group:
-      template:
-      - year
-      - author
-    disambiguate:
+      template: !custom 
+        '0': !custom 
+          key: year
+          ascending: true
+        '1': !custom 
+          key: author
+          ascending: true
+    group: !custom 
+      template: !custom 
+        '0': year
+        '1': author
+    disambiguate: !custom 
       names: false
       add-givenname: false
       year-suffix: true
-  contributors:
+  contributors: !custom 
     display-as-sort: all
     name-form: initials
-    initialize-with: ""
-    shorten:
+    initialize-with: ''
+    shorten: !custom 
       min: 3
       use-first: 1
       and-others: et-al
       delimiter-precedes-last: contextual
-    delimiter: ", "
+    delimiter: ', '
     delimiter-precedes-last: never
     demote-non-dropping-particle: sort-only
-    sort-separator: " "
-  dates:
+    sort-separator: ' '
+  dates: !custom 
     month: long
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
     range-delimiter: –
-  titles:
-    periodical:
+  titles: !custom 
+    periodical: !custom 
       emph: true
-    serial:
+    serial: !custom 
       emph: true
-citation:
-  options:
-    contributors:
+citation: !custom 
+  options: !custom 
+    contributors: !custom 
       name-form: initials
-      initialize-with: ". "
-      shorten:
+      initialize-with: '. '
+      shorten: !custom 
         min: 3
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
       delimiter-precedes-last: never
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten:
-      min: 3
-      use-first: 1
-  - date: issued
-    form: year
-    prefix: " "
-  - variable: locator
-    prefix: " "
-  wrap:
+  template: !custom 
+    '0': !custom 
+      contributor: author
+      form: long
+      name-order: family-first
+      shorten: !custom 
+        min: 3
+        use-first: 1
+    '1': !custom 
+      date: issued
+      form: year
+      prefix: ' '
+    '2': !custom 
+      variable: locator
+      prefix: ' '
+  wrap: !custom 
     punctuation: parentheses
-  delimiter: ". "
-  multi-cite-delimiter: ", "
-bibliography:
-  options:
-    contributors:
+  delimiter: '. '
+  multi-cite-delimiter: ', '
+bibliography: !custom 
+  options: !custom 
+    contributors: !custom 
       display-as-sort: all
       name-form: initials
-      initialize-with: ""
+      initialize-with: ''
       delimiter-precedes-last: never
-      sort-separator: " "
+      sort-separator: ' '
     hanging-indent: true
     entry-suffix: .
-    separator: ". "
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-  - date: issued
-    form: year
-    wrap:
-      punctuation: parentheses
-    prefix: " "
-  - title: primary
-    prefix: " "
-  - group:
-    - contributor: editor
-      form: verb
+    separator: '. '
+  template: !custom 
+    '0': !custom 
+      contributor: author
+      form: long
       name-order: family-first
-    - title: parent-monograph
-  - title: parent-serial
-  - number: volume
-  - variable: publisher
-  - variable: publisher-place
-    prefix: ", "
-  - number: pages
-    prefix: ":"
+    '1': !custom 
+      date: issued
+      form: year
+      wrap: !custom 
+        punctuation: parentheses
+      prefix: ' '
+    '2': !custom 
+      title: primary
+      prefix: ' '
+    '3': !custom 
+      group: !custom 
+        '0': !custom 
+          contributor: editor
+          form: verb
+          name-order: family-first
+        '1': !custom 
+          title: parent-monograph
+    '4': !custom 
+      title: parent-serial
+    '5': !custom 
+      number: volume
+    '6': !custom 
+      variable: publisher
+    '7': !custom 
+      variable: publisher-place
+      prefix: ', '
+    '8': !custom 
+      number: pages
+      prefix: ':'
   sort: author-title-date

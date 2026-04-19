@@ -1,243 +1,324 @@
-info:
+!custom 
+preset: american-medical-association
+info: !custom 
   title: AMA Manual of Style 11th edition (without URLs)
   description: 'AMA Manual of Style: A Guide for Authors and Editors (11th ed.), without URLs.'
-  fields:
-  - medicine
-  source:
+  fields: !custom 
+    '0': medicine
+  source: !custom 
     csl-id: http://www.zotero.org/styles/american-medical-association-no-url
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
-    original-authors:
-    - name: Julian Onions
-      uri: https://orcid.org/0000-0001-5192-6856
-    links:
-    - href: http://www.zotero.org/styles/american-medical-association-no-url
-      rel: self
-    - href: http://www.zotero.org/styles/american-medical-association
-      rel: template
-    - href: https://academic.oup.com/amamanualofstyle
-      rel: documentation
-options:
-  locators:
-    strip-label-periods: true
-  substitute:
+    original-authors: !custom 
+      '0': !custom 
+        name: Julian Onions
+        uri: https://orcid.org/0000-0001-5192-6856
+    links: !custom 
+      '0': !custom 
+        href: http://www.zotero.org/styles/american-medical-association-no-url
+        rel: self
+      '1': !custom 
+        href: http://www.zotero.org/styles/american-medical-association
+        rel: template
+      '2': !custom 
+        href: https://academic.oup.com/amamanualofstyle
+        rel: documentation
+options: !custom 
+  substitute: !custom 
     contributor-role-form: short
-    template:
-    - editor
-  processing: numeric
-  contributors:
+    template: !custom 
+      '0': editor
+  contributors: !custom 
     name-form: initials
-    initialize-with: ""
-    shorten:
+    initialize-with: ''
+    shorten: !custom 
       min: 7
       use-first: 3
       and-others: et-al
       delimiter-precedes-last: contextual
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only
-  dates:
+  dates: !custom 
     month: long
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
     range-delimiter: –
-  titles: humanities
-  page-range-format: expanded
-  punctuation-in-quote: true
-citation:
-  template:
-  - delimiter: none
-    group:
-    - number: citation-number
-    - variable: locator
-      wrap:
-        punctuation: parentheses
-  multi-cite-delimiter: ","
-bibliography:
-  options:
-    contributors:
-      shorten:
+citation: !custom 
+  template: !custom 
+    '0': !custom 
+      delimiter: none
+      group: !custom 
+        '0': !custom 
+          number: citation-number
+        '1': !custom 
+          variable: locator
+          wrap: !custom 
+            punctuation: parentheses
+  multi-cite-delimiter: ','
+bibliography: !custom 
+  options: !custom 
+    contributors: !custom 
+      shorten: !custom 
         min: 7
         use-first: 3
         and-others: et-al
         delimiter-precedes-last: contextual
     entry-suffix: .
-    separator: ". "
-  type-variants:
-    article-journal:
-    - contributor: author
+    separator: '. '
+  type-variants: !custom 
+    article-journal: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: family-first
+        shorten: !custom 
+          min: 8
+          use-first: 3
+      '1': !custom 
+        title: primary
+        prefix: ' '
+      '2': !custom 
+        group: !custom 
+          '0': !custom 
+            contributor: editor
+            form: verb
+            name-order: given-first
+          '1': !custom 
+            title: parent-monograph
+            emph: true
+      '3': !custom 
+        title: parent-serial
+        emph: true
+      '4': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
+              punctuation: parentheses
+      '5': !custom 
+        variable: publisher
+      '6': !custom 
+        number: pages
+        prefix: '; 2006:'
+    article-magazine: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: family-first
+        shorten: !custom 
+          min: 8
+          use-first: 3
+      '1': !custom 
+        title: primary
+        prefix: ' '
+      '2': !custom 
+        group: !custom 
+          '0': !custom 
+            contributor: editor
+            form: verb
+            name-order: given-first
+          '1': !custom 
+            title: parent-monograph
+            emph: true
+      '3': !custom 
+        title: parent-serial
+        emph: true
+      '4': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
+              punctuation: parentheses
+      '5': !custom 
+        variable: publisher
+      '6': !custom 
+        number: pages
+        prefix: '; 2006:'
+    broadcast: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: family-first
+        shorten: !custom 
+          min: 8
+          use-first: 3
+      '1': !custom 
+        title: primary
+        prefix: ' '
+      '2': !custom 
+        group: !custom 
+          '0': !custom 
+            contributor: editor
+            form: verb
+            name-order: given-first
+          '1': !custom 
+            title: parent-monograph
+            emph: true
+      '3': !custom 
+        title: parent-serial
+        emph: true
+      '4': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
+              punctuation: parentheses
+      '5': !custom 
+        variable: publisher
+      '6': !custom 
+        number: pages
+        prefix: '; 2006:'
+    chapter: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: family-first
+        shorten: !custom 
+          min: 8
+          use-first: 3
+      '1': !custom 
+        title: primary
+        prefix: ' '
+      '2': !custom 
+        group: !custom 
+          '0': !custom 
+            contributor: editor
+            form: verb
+            name-order: given-first
+            prefix: 'on '
+          '1': !custom 
+            title: parent-monograph
+            emph: true
+      '3': !custom 
+        title: parent-serial
+        emph: true
+      '4': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
+              punctuation: parentheses
+      '5': !custom 
+        variable: publisher
+      '6': !custom 
+        number: pages
+        prefix: '; 2006:'
+    entry-encyclopedia: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: family-first
+        shorten: !custom 
+          min: 8
+          use-first: 3
+      '1': !custom 
+        title: primary
+        prefix: ' '
+      '2': !custom 
+        group: !custom 
+          '0': !custom 
+            contributor: editor
+            form: verb
+            name-order: given-first
+          '1': !custom 
+            title: parent-monograph
+            emph: true
+      '3': !custom 
+        title: parent-serial
+        emph: true
+      '4': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
+              punctuation: parentheses
+      '5': !custom 
+        variable: publisher
+      '6': !custom 
+        number: pages
+        prefix: '; 2006:'
+    patent: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: family-first
+        shorten: !custom 
+          min: 8
+          use-first: 3
+      '1': !custom 
+        title: primary
+        prefix: ' '
+      '2': !custom 
+        group: !custom 
+          '0': !custom 
+            contributor: editor
+            form: verb
+            name-order: given-first
+          '1': !custom 
+            title: parent-monograph
+            emph: true
+      '3': !custom 
+        title: parent-serial
+        emph: true
+      '4': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
+              punctuation: parentheses
+      '5': !custom 
+        variable: publisher
+      '6': !custom 
+        number: pages
+        prefix: '; 2006:'
+  template: !custom 
+    '0': !custom 
+      contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: !custom 
         min: 8
         use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
+    '1': !custom 
+      title: primary
+      prefix: ' '
+    '2': !custom 
+      group: !custom 
+        '0': !custom 
+          contributor: editor
+          form: verb
+          name-order: given-first
+        '1': !custom 
+          title: parent-monograph
+          emph: true
+    '3': !custom 
+      title: parent-serial
       emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "; 2006:"
-    article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "; 2006:"
-    broadcast:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "; 2006:"
-    chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "; 2006:"
-    entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "; 2006:"
-    patent:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "; 2006:"
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-    shorten:
-      min: 8
-      use-first: 3
-  - title: primary
-    prefix: " "
-  - group:
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - title: parent-monograph
-      emph: true
-  - title: parent-serial
-    emph: true
-  - date: issued
-    form: year
-  - group:
-    - number: volume
-    - number: issue
-      wrap:
-        punctuation: parentheses
-  - variable: publisher
-  - number: pages
-    prefix: "; 2006:"
+    '4': !custom 
+      date: issued
+      form: year
+    '5': !custom 
+      group: !custom 
+        '0': !custom 
+          number: volume
+        '1': !custom 
+          number: issue
+          wrap: !custom 
+            punctuation: parentheses
+    '6': !custom 
+      variable: publisher
+    '7': !custom 
+      number: pages
+      prefix: '; 2006:'

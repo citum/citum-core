@@ -1,66 +1,77 @@
-info:
+!custom 
+preset: elsevier-harvard
+info: !custom 
   title: Entomological Society of America
-  fields:
-    - biology
-  source:
+  fields: !custom 
+    '0': biology
+  source: !custom 
     csl-id: http://www.zotero.org/styles/entomological-society-of-america
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
-    original-authors:
-      - name: Sebastian Karcher
-    links:
-      - href: http://www.zotero.org/styles/entomological-society-of-america
+    original-authors: !custom 
+      '0': !custom 
+        name: Sebastian Karcher
+    links: !custom 
+      '0': !custom 
+        href: http://www.zotero.org/styles/entomological-society-of-america
         rel: self
-      - href: http://www.zotero.org/styles/elsevier-harvard
+      '1': !custom 
+        href: http://www.zotero.org/styles/elsevier-harvard
         rel: template
-      - href: http://www.entsoc.org/pubs/publish/style
+      '2': !custom 
+        href: http://www.entsoc.org/pubs/publish/style
         rel: documentation
-options:
+options: !custom 
   substitute: editor-translator-title-long
   contributors: numeric-medium
-  dates: numeric
-  punctuation-in-quote: true
-citation:
-  options:
-    contributors:
+citation: !custom 
+  options: !custom 
+    contributors: !custom 
       name-form: initials
       initialize-with: .
-      shorten:
+      shorten: !custom 
         min: 3
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
       delimiter: ', '
-  type-variants:
-    article-newspaper:
-      - contributor: author
+  type-variants: !custom 
+    article-newspaper: !custom 
+      '0': !custom 
+        contributor: author
         form: short
         name-order: family-first
-      - variable: locator
-    patent:
-      - contributor: author
+      '1': !custom 
+        variable: locator
+    patent: !custom 
+      '0': !custom 
+        contributor: author
         form: short
         name-order: family-first
-      - variable: locator
-  template:
-    - contributor: author
+      '1': !custom 
+        variable: locator
+  template: !custom 
+    '0': !custom 
+      contributor: author
       form: short
       name-order: family-first
-    - date: issued
+    '1': !custom 
+      date: issued
       form: year
       prefix: ' '
-    - variable: locator
-  wrap:
+    '2': !custom 
+      variable: locator
+  wrap: !custom 
     punctuation: parentheses
   delimiter: '. '
   multi-cite-delimiter: ', '
-bibliography:
-  options:
-    contributors:
+bibliography: !custom 
+  options: !custom 
+    contributors: !custom 
       display-as-sort: all
       name-form: initials
       initialize-with: ''
-      shorten:
+      shorten: !custom 
         min: 4
         use-first: 3
         and-others: et-al
@@ -71,213 +82,316 @@ bibliography:
     hanging-indent: false
     entry-suffix: .
     separator: '. '
-  type-variants:
-    article-journal:
-      - contributor: author
+  type-variants: !custom 
+    article-journal: !custom 
+      '0': !custom 
+        contributor: author
         form: long
         name-order: family-first
-        shorten:
+        shorten: !custom 
           min: 5
           use-first: 3
-      - date: issued
+      '1': !custom 
+        date: issued
         form: year
         prefix: ' '
-      - title: primary
-      - group:
-          - contributor: editor
+      '2': !custom 
+        title: primary
+      '3': !custom 
+        group: !custom 
+          '0': !custom 
+            contributor: editor
             form: verb
             name-order: given-first
-            shorten:
+            shorten: !custom 
               min: 4
               use-first: 3
-          - title: parent-monograph
-      - title: parent-serial
-      - group:
-          - number: volume
-          - number: issue
-            wrap:
+          '1': !custom 
+            title: parent-monograph
+      '4': !custom 
+        title: parent-serial
+      '5': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
               punctuation: parentheses
-      - variable: publisher
-      - number: pages
-      - variable: doi
+      '6': !custom 
+        variable: publisher
+      '7': !custom 
+        number: pages
+      '8': !custom 
+        variable: doi
         prefix: https://doi.org/
-      - variable: publisher-place
-      - variable: url
-    article-newspaper:
-      - contributor: author
+      '9': !custom 
+        variable: publisher-place
+      '10': !custom 
+        variable: url
+    article-newspaper: !custom 
+      '0': !custom 
+        contributor: author
         form: long
         name-order: family-first
-        shorten:
+        shorten: !custom 
           min: 5
           use-first: 3
-      - title: primary
-      - group:
-          - contributor: editor
+      '1': !custom 
+        title: primary
+      '2': !custom 
+        group: !custom 
+          '0': !custom 
+            contributor: editor
             form: verb
             name-order: given-first
-            shorten:
+            shorten: !custom 
               min: 4
               use-first: 3
-          - title: parent-monograph
-      - title: parent-serial
-      - group:
-          - number: volume
-          - number: issue
-            wrap:
+          '1': !custom 
+            title: parent-monograph
+      '3': !custom 
+        title: parent-serial
+      '4': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
               punctuation: parentheses
-      - variable: publisher
-      - number: pages
-      - variable: doi
-      - variable: publisher-place
-      - variable: url
-    chapter:
-      - contributor: author
+      '5': !custom 
+        variable: publisher
+      '6': !custom 
+        number: pages
+      '7': !custom 
+        variable: doi
+      '8': !custom 
+        variable: publisher-place
+      '9': !custom 
+        variable: url
+    chapter: !custom 
+      '0': !custom 
+        contributor: author
         form: long
         name-order: family-first
-        shorten:
+        shorten: !custom 
           min: 5
           use-first: 3
-      - date: issued
+      '1': !custom 
+        date: issued
         form: year
         prefix: ' '
-      - title: primary
-      - group:
-          - contributor: editor
+      '2': !custom 
+        title: primary
+      '3': !custom 
+        group: !custom 
+          '0': !custom 
+            contributor: editor
             form: verb
             name-order: given-first
-            shorten:
+            shorten: !custom 
               min: 4
               use-first: 3
             prefix: 'on '
-          - title: parent-monograph
-      - title: parent-serial
-      - group:
-          - number: volume
-          - number: issue
-            wrap:
+          '1': !custom 
+            title: parent-monograph
+      '4': !custom 
+        title: parent-serial
+      '5': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
               punctuation: parentheses
-      - variable: publisher
-      - number: pages
+      '6': !custom 
+        variable: publisher
+      '7': !custom 
+        number: pages
         prefix: 'pp. '
-      - variable: doi
-      - variable: publisher-place
-      - variable: url
-    entry-encyclopedia:
-      - contributor: author
+      '8': !custom 
+        variable: doi
+      '9': !custom 
+        variable: publisher-place
+      '10': !custom 
+        variable: url
+    entry-encyclopedia: !custom 
+      '0': !custom 
+        contributor: author
         form: long
         name-order: family-first
-        shorten:
+        shorten: !custom 
           min: 5
           use-first: 3
-      - date: issued
+      '1': !custom 
+        date: issued
         form: year
         prefix: ' '
-      - title: primary
-      - group:
-          - contributor: editor
+      '2': !custom 
+        title: primary
+      '3': !custom 
+        group: !custom 
+          '0': !custom 
+            contributor: editor
             form: verb
             name-order: given-first
-            shorten:
+            shorten: !custom 
               min: 4
               use-first: 3
-          - title: parent-monograph
-      - title: parent-serial
-      - group:
-          - number: volume
-          - number: issue
-            wrap:
+          '1': !custom 
+            title: parent-monograph
+      '4': !custom 
+        title: parent-serial
+      '5': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
               punctuation: parentheses
-      - variable: publisher
-      - number: pages
+      '6': !custom 
+        variable: publisher
+      '7': !custom 
+        number: pages
         prefix: 'pp. '
-      - variable: doi
-      - variable: publisher-place
-      - variable: url
-    paper-conference:
-      - contributor: author
+      '8': !custom 
+        variable: doi
+      '9': !custom 
+        variable: publisher-place
+      '10': !custom 
+        variable: url
+    paper-conference: !custom 
+      '0': !custom 
+        contributor: author
         form: long
         name-order: family-first
-        shorten:
+        shorten: !custom 
           min: 5
           use-first: 3
-      - date: issued
+      '1': !custom 
+        date: issued
         form: year
         prefix: ' '
-      - title: primary
-      - group:
-          - contributor: editor
+      '2': !custom 
+        title: primary
+      '3': !custom 
+        group: !custom 
+          '0': !custom 
+            contributor: editor
             form: verb
             name-order: given-first
-            shorten:
+            shorten: !custom 
               min: 4
               use-first: 3
-          - title: parent-monograph
-      - title: parent-serial
-      - group:
-          - number: volume
-          - number: issue
-            wrap:
+          '1': !custom 
+            title: parent-monograph
+      '4': !custom 
+        title: parent-serial
+      '5': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
               punctuation: parentheses
-      - variable: publisher
-      - number: pages
+      '6': !custom 
+        variable: publisher
+      '7': !custom 
+        number: pages
         prefix: 'pp. '
-      - variable: doi
-      - variable: publisher-place
-      - variable: url
-    patent:
-      - contributor: author
+      '8': !custom 
+        variable: doi
+      '9': !custom 
+        variable: publisher-place
+      '10': !custom 
+        variable: url
+    patent: !custom 
+      '0': !custom 
+        contributor: author
         form: long
         name-order: family-first
-        shorten:
+        shorten: !custom 
           min: 5
           use-first: 3
-      - title: primary
-      - group:
-          - contributor: editor
+      '1': !custom 
+        title: primary
+      '2': !custom 
+        group: !custom 
+          '0': !custom 
+            contributor: editor
             form: verb
             name-order: given-first
-            shorten:
+            shorten: !custom 
               min: 4
               use-first: 3
-          - title: parent-monograph
-      - title: parent-serial
-      - group:
-          - number: volume
-          - number: issue
-            wrap:
+          '1': !custom 
+            title: parent-monograph
+      '3': !custom 
+        title: parent-serial
+      '4': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
               punctuation: parentheses
-      - variable: publisher
-      - number: pages
-      - variable: doi
-      - variable: publisher-place
-      - variable: url
-  template:
-    - contributor: author
+      '5': !custom 
+        variable: publisher
+      '6': !custom 
+        number: pages
+      '7': !custom 
+        variable: doi
+      '8': !custom 
+        variable: publisher-place
+      '9': !custom 
+        variable: url
+  template: !custom 
+    '0': !custom 
+      contributor: author
       form: long
       name-order: family-first
-      shorten:
+      shorten: !custom 
         min: 5
         use-first: 3
-    - date: issued
+    '1': !custom 
+      date: issued
       form: year
       prefix: ' '
-    - title: primary
-    - group:
-        - contributor: editor
+    '2': !custom 
+      title: primary
+    '3': !custom 
+      group: !custom 
+        '0': !custom 
+          contributor: editor
           form: verb
           name-order: given-first
-          shorten:
+          shorten: !custom 
             min: 4
             use-first: 3
-        - title: parent-monograph
-    - title: parent-serial
-    - group:
-        - number: volume
-        - number: issue
-          wrap:
+        '1': !custom 
+          title: parent-monograph
+    '4': !custom 
+      title: parent-serial
+    '5': !custom 
+      group: !custom 
+        '0': !custom 
+          number: volume
+        '1': !custom 
+          number: issue
+          wrap: !custom 
             punctuation: parentheses
-    - variable: publisher
-    - number: pages
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+    '6': !custom 
+      variable: publisher
+    '7': !custom 
+      number: pages
+    '8': !custom 
+      variable: doi
+    '9': !custom 
+      variable: publisher-place
+    '10': !custom 
+      variable: url

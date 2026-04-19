@@ -1,188 +1,268 @@
-info:
+!custom 
+preset: ieee
+info: !custom 
   title: American Society of Mechanical Engineers
   description: A style for the ASME's 23 journals
-  fields:
-  - engineering
-  source:
+  fields: !custom 
+    '0': engineering
+  source: !custom 
     csl-id: http://www.zotero.org/styles/american-society-of-mechanical-engineers
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
-    original-authors:
-    - name: Richard Karnesky
-      email: karnesky+zotero@gmail.com
-      uri: http://arc.nucapt.northwestern.edu/Richard_Karnesky
-    links:
-    - href: http://www.zotero.org/styles/american-society-of-mechanical-engineers
-      rel: self
-    - href: http://www.zotero.org/styles/ieee
-      rel: template
-    - href: https://www.asme.org/publications-submissions/journals/information-for-authors/journal-guidelines/references
-      rel: documentation
-options:
-  substitute: editor-translator-short
-  processing: numeric
-  contributors:
+    original-authors: !custom 
+      '0': !custom 
+        name: Richard Karnesky
+        email: karnesky+zotero@gmail.com
+        uri: http://arc.nucapt.northwestern.edu/Richard_Karnesky
+    links: !custom 
+      '0': !custom 
+        href: http://www.zotero.org/styles/american-society-of-mechanical-engineers
+        rel: self
+      '1': !custom 
+        href: http://www.zotero.org/styles/ieee
+        rel: template
+      '2': !custom 
+        href: https://www.asme.org/publications-submissions/journals/information-for-authors/journal-guidelines/references
+        rel: documentation
+options: !custom 
+  contributors: !custom 
     display-as-sort: all
     name-form: initials
-    initialize-with: ". "
-    delimiter: ", "
+    initialize-with: '. '
+    delimiter: ', '
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only
-    sort-separator: ", "
-  dates: short
+    sort-separator: ', '
   titles: journal-emphasis
-  punctuation-in-quote: true
-citation:
+citation: !custom 
   use-preset: numeric-citation
-  wrap:
+  wrap: !custom 
     punctuation: brackets
-  multi-cite-delimiter: ","
-bibliography:
-  options:
-    contributors:
+  multi-cite-delimiter: ','
+bibliography: !custom 
+  options: !custom 
+    contributors: !custom 
       display-as-sort: all
       name-form: initials
-      initialize-with: ". "
-      delimiter: ", "
+      initialize-with: '. '
+      delimiter: ', '
       delimiter-precedes-last: always
-      sort-separator: ", "
+      sort-separator: ', '
     entry-suffix: .
-    separator: ", "
-  type-variants:
-    article-journal:
-    - contributor: author
+    separator: ', '
+  type-variants: !custom 
+    article-journal: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: family-first
+      '1': !custom 
+        date: issued
+        form: year
+      '2': !custom 
+        title: primary
+        wrap: !custom 
+          punctuation: quotes
+      '3': !custom 
+        title: parent-monograph
+      '4': !custom 
+        title: parent-serial
+      '5': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
+              punctuation: parentheses
+      '6': !custom 
+        variable: url
+      '7': !custom 
+        variable: publisher
+      '8': !custom 
+        number: pages
+        prefix: 'pp. '
+      '9': !custom 
+        variable: doi
+        prefix: https://doi.org/
+      '10': !custom 
+        variable: publisher-place
+    article-magazine: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: family-first
+      '1': !custom 
+        date: issued
+        form: year
+      '2': !custom 
+        title: primary
+        wrap: !custom 
+          punctuation: quotes
+      '3': !custom 
+        title: parent-monograph
+      '4': !custom 
+        title: parent-serial
+      '5': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
+              punctuation: parentheses
+      '6': !custom 
+        variable: url
+      '7': !custom 
+        variable: publisher
+      '8': !custom 
+        number: pages
+        prefix: 'pp. '
+      '9': !custom 
+        variable: doi
+        prefix: '. '
+      '10': !custom 
+        variable: publisher-place
+    chapter: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: family-first
+      '1': !custom 
+        date: issued
+        form: year
+      '2': !custom 
+        title: primary
+        wrap: !custom 
+          punctuation: quotes
+      '3': !custom 
+        title: parent-monograph
+      '4': !custom 
+        title: parent-serial
+      '5': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
+              punctuation: parentheses
+      '6': !custom 
+        variable: url
+      '7': !custom 
+        variable: publisher
+      '8': !custom 
+        number: pages
+        prefix: 'pp. '
+      '9': !custom 
+        variable: doi
+        prefix: '. '
+      '10': !custom 
+        variable: publisher-place
+    entry-encyclopedia: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: family-first
+      '1': !custom 
+        date: issued
+        form: year
+      '2': !custom 
+        title: primary
+        wrap: !custom 
+          punctuation: quotes
+      '3': !custom 
+        title: parent-monograph
+      '4': !custom 
+        title: parent-serial
+      '5': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
+              punctuation: parentheses
+      '6': !custom 
+        variable: url
+      '7': !custom 
+        variable: publisher
+      '8': !custom 
+        number: pages
+        prefix: 'pp. '
+      '9': !custom 
+        variable: doi
+        prefix: '. '
+      '10': !custom 
+        variable: publisher-place
+    paper-conference: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: family-first
+      '1': !custom 
+        date: issued
+        form: year
+      '2': !custom 
+        title: primary
+        wrap: !custom 
+          punctuation: quotes
+      '3': !custom 
+        title: parent-monograph
+      '4': !custom 
+        title: parent-serial
+      '5': !custom 
+        group: !custom 
+          '0': !custom 
+            number: volume
+          '1': !custom 
+            number: issue
+            wrap: !custom 
+              punctuation: parentheses
+      '6': !custom 
+        variable: url
+      '7': !custom 
+        variable: publisher
+      '8': !custom 
+        number: pages
+        prefix: 'pp. '
+      '9': !custom 
+        variable: doi
+        prefix: '. '
+      '10': !custom 
+        variable: publisher-place
+  template: !custom 
+    '0': !custom 
+      contributor: author
       form: long
       name-order: family-first
-    - date: issued
+    '1': !custom 
+      date: issued
       form: year
-    - title: primary
-      wrap:
+    '2': !custom 
+      title: primary
+      wrap: !custom 
         punctuation: quotes
-    - title: parent-monograph
-    - title: parent-serial
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: url
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-      prefix: https://doi.org/
-    - variable: publisher-place
-    article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-    - title: parent-serial
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: url
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-      prefix: ". "
-    - variable: publisher-place
-    chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-    - title: parent-serial
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: url
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-      prefix: ". "
-    - variable: publisher-place
-    entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-    - title: parent-serial
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: url
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-      prefix: ". "
-    - variable: publisher-place
-    paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-    - title: parent-serial
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: url
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-      prefix: ". "
-    - variable: publisher-place
-  template:
-  - contributor: author
-    form: long
-    name-order: family-first
-  - date: issued
-    form: year
-  - title: primary
-    wrap:
-      punctuation: quotes
-  - title: parent-monograph
-  - title: parent-serial
-  - group:
-    - number: volume
-    - number: issue
-      wrap:
-        punctuation: parentheses
-  - variable: url
-  - variable: publisher
-  - number: pages
-  - variable: doi
-    prefix: ". "
-  - variable: publisher-place
+    '3': !custom 
+      title: parent-monograph
+    '4': !custom 
+      title: parent-serial
+    '5': !custom 
+      group: !custom 
+        '0': !custom 
+          number: volume
+        '1': !custom 
+          number: issue
+          wrap: !custom 
+            punctuation: parentheses
+    '6': !custom 
+      variable: url
+    '7': !custom 
+      variable: publisher
+    '8': !custom 
+      number: pages
+    '9': !custom 
+      variable: doi
+      prefix: '. '
+    '10': !custom 
+      variable: publisher-place

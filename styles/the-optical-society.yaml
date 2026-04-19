@@ -1,119 +1,154 @@
-info:
+!custom 
+preset: ieee
+info: !custom 
   title: The Optical Society
   description: Common style use by OSA publications.
-  fields:
-  - physics
-  source:
+  fields: !custom 
+    '0': physics
+  source: !custom 
     csl-id: http://www.zotero.org/styles/the-optical-society
     adapted-by: citum-migrate
     license: http://creativecommons.org/licenses/by-sa/3.0/
-    original-authors:
-    - name: Barbara Williams
-      email: bwilli@osa.org
-    links:
-    - href: http://www.zotero.org/styles/the-optical-society
-      rel: self
-    - href: http://www.zotero.org/styles/ieee
-      rel: template
-    - href: http://www.zotero.org/styles/american-physics-society
-      rel: template
-    - href: http://www.opticsinfobase.org/author/author.cfm
-      rel: documentation
-options:
-  substitute: editor-translator-short
-  processing: numeric
+    original-authors: !custom 
+      '0': !custom 
+        name: Barbara Williams
+        email: bwilli@osa.org
+    links: !custom 
+      '0': !custom 
+        href: http://www.zotero.org/styles/the-optical-society
+        rel: self
+      '1': !custom 
+        href: http://www.zotero.org/styles/ieee
+        rel: template
+      '2': !custom 
+        href: http://www.zotero.org/styles/american-physics-society
+        rel: template
+      '3': !custom 
+        href: http://www.opticsinfobase.org/author/author.cfm
+        rel: documentation
+options: !custom 
   contributors: physics-numeric
   dates: long
-  titles: humanities
-  punctuation-in-quote: true
-citation:
+citation: !custom 
   use-preset: numeric-citation
-  prefix: " ["
-  suffix: "]"
-  multi-cite-delimiter: ","
-bibliography:
-  options:
-    contributors:
+  prefix: "\_["
+  suffix: ']'
+  multi-cite-delimiter: ','
+bibliography: !custom 
+  options: !custom 
+    contributors: !custom 
       name-form: initials
-      initialize-with: ". "
-      delimiter: ", "
+      initialize-with: '. '
+      delimiter: ', '
     entry-suffix: .
-    separator: ", "
-  type-variants:
-    chapter:
-    - contributor: author
+    separator: ', '
+  type-variants: !custom 
+    chapter: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: given-first
+      '1': !custom 
+        title: primary
+        wrap: !custom 
+          punctuation: quotes
+      '2': !custom 
+        title: parent-monograph
+      '3': !custom 
+        title: parent-serial
+      '4': !custom 
+        variable: publisher
+      '5': !custom 
+        number: pages
+        prefix: 'pp. '
+      '6': !custom 
+        date: issued
+        form: year
+        wrap: !custom 
+          punctuation: parentheses
+        prefix: ' '
+    paper-conference: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: given-first
+      '1': !custom 
+        title: primary
+        wrap: !custom 
+          punctuation: quotes
+      '2': !custom 
+        title: parent-monograph
+      '3': !custom 
+        title: parent-serial
+      '4': !custom 
+        variable: publisher
+      '5': !custom 
+        number: pages
+        prefix: 'pp. '
+      '6': !custom 
+        date: issued
+        form: year
+        wrap: !custom 
+          punctuation: parentheses
+        prefix: ' '
+    personal_communication: !custom 
+      '0': !custom 
+        contributor: author
+        form: long
+        name-order: given-first
+        prefix: 'pp. '
+      '1': !custom 
+        title: parent-monograph
+      '2': !custom 
+        title: parent-serial
+      '3': !custom 
+        variable: publisher
+      '4': !custom 
+        number: pages
+      '5': !custom 
+        date: issued
+        form: year
+        wrap: !custom 
+          punctuation: parentheses
+        prefix: ' '
+    patent: !custom 
+      '0': !custom 
+        number: citation-number
+        suffix: '. '
+      '1': !custom 
+        contributor: author
+        form: long
+        and: text
+      '2': !custom 
+        title: primary
+        prefix: '"'
+        suffix: '," '
+      '3': !custom 
+        date: issued
+        form: year
+      '4': !custom 
+        term: no-date
+        form: short
+  template: !custom 
+    '0': !custom 
+      contributor: author
       form: long
       name-order: given-first
-    - title: primary
-      wrap:
+    '1': !custom 
+      title: primary
+      wrap: !custom 
         punctuation: quotes
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - date: issued
+    '2': !custom 
+      title: parent-monograph
+    '3': !custom 
+      title: parent-serial
+    '4': !custom 
+      variable: publisher
+    '5': !custom 
+      number: pages
+    '6': !custom 
+      date: issued
       form: year
-      wrap:
+      wrap: !custom 
         punctuation: parentheses
-      prefix: " "
-    paper-conference:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    personal_communication:
-    - contributor: author
-      form: long
-      name-order: given-first
-      prefix: "pp. "
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - number: pages
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    patent:
-    - number: citation-number
-      suffix: ". "
-    - contributor: author
-      form: long
-      and: text
-    - title: primary
-      prefix: "\""
-      suffix: ",\" "
-    - date: issued
-      form: year
-    - term: no-date
-      form: short
-  template:
-  - contributor: author
-    form: long
-    name-order: given-first
-  - title: primary
-    wrap:
-      punctuation: quotes
-  - title: parent-monograph
-  - title: parent-serial
-  - variable: publisher
-  - number: pages
-  - date: issued
-    form: year
-    wrap:
-      punctuation: parentheses
-    prefix: " "
+      prefix: ' '

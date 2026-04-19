@@ -501,9 +501,9 @@ terms:
   close_quote:
     long: "»"
   open_inner_quote:
-    long: """
+    long: "“"
   close_inner_quote:
-    long: """
+    long: "“"
   page_range_delimiter:
     long: "‑"
   colon:
@@ -865,8 +865,8 @@ grammar-options:
   nbsp-before-colon: true
   open-quote: "«"
   close-quote: "»"
-  open-inner-quote: """
-  close-inner-quote: """
+  open-inner-quote: "“"
+  close-inner-quote: "”"
   serial-comma: false
   page-range-delimiter: "‑"
 
