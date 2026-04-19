@@ -58,6 +58,7 @@ function parseArgs() {
     registryPath: DEFAULT_REGISTRY,
     stylesDir: DEFAULT_STYLES_DIR,
     confirmWeb: false,
+    updateMetadata: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -70,6 +71,8 @@ function parseArgs() {
       options.limit = parseInt(args[++i], 10);
     } else if (arg === '--confirm-web') {
       options.confirmWeb = true;
+    } else if (arg === '--update-metadata') {
+      options.updateMetadata = true;
     } else if (arg === '--out') {
       options.out = args[++i];
     } else if (arg === '--refs-fixture') {
@@ -353,6 +356,27 @@ function enumerateCandidates(stylesDir, builtins, knownAliases) {
 }
 
 /**
+ * Extract documentation links from CSL XML content.
+ */
+function extractCslMetadata(content) {
+  const docLinks = [];
+  const docRegex = /<link\s+[^>]*href=["']([^"']+)["']\s+rel=["']documentation["']/g;
+  let match;
+  while ((match = docRegex.exec(content)) !== null) {
+    docLinks.push(match[1]);
+  }
+  // Also check reversed order of attributes
+  const docRegexRev = /<link\s+[^>]*rel=["']documentation["']\s+href=["']([^"']+)["']/g;
+  while ((match = docRegexRev.exec(content)) !== null) {
+    docLinks.push(match[1]);
+  }
+  return {
+    url: docLinks[0] || '',
+    note: docLinks.length > 0 ? 'found in CSL metadata' : '',
+  };
+}
+
+/**
  * Process a batch of candidates concurrently.
  */
 async function processBatch(candidates, targetFingerprints, testItems, testCitations, onProgress) {
@@ -382,17 +406,7 @@ async function processBatch(candidates, targetFingerprints, testItems, testCitat
 
       if (bestTarget) {
         // Extract documentation links from CSL
-        const docLinks = [];
-        const docRegex = /<link\s+[^>]*href=["']([^"']+)["']\s+rel=["']documentation["']/g;
-        let match;
-        while ((match = docRegex.exec(content)) !== null) {
-          docLinks.push(match[1]);
-        }
-        // Also check reversed order of attributes
-        const docRegexRev = /<link\s+[^>]*rel=["']documentation["']\s+href=["']([^"']+)["']/g;
-        while ((match = docRegexRev.exec(content)) !== null) {
-          docLinks.push(match[1]);
-        }
+        const meta = extractCslMetadata(content);
 
         results.push({
           candidate_id: candidate.id,
@@ -400,8 +414,8 @@ async function processBatch(candidates, targetFingerprints, testItems, testCitat
           similarity: bestScore.similarity,
           citation_match: bestScore.citation_match,
           bib_match: bestScore.bib_match,
-          evidence_url: docLinks[0] || '',
-          confidence_note: docLinks.length > 0 ? 'found in CSL metadata' : '',
+          evidence_url: meta.url,
+          confidence_note: meta.note,
         });
       }
     } catch (e) {
@@ -590,10 +604,67 @@ function writeTSV(results, filePath, threshold) {
   return filtered;
 }
 
+async function handleUpdateMetadata(options) {
+  if (!fs.existsSync(options.out)) {
+    throw new Error(`File not found for --update-metadata: ${options.out}`);
+  }
+
+  console.error(`Updating metadata for: ${options.out}...`);
+  const content = fs.readFileSync(options.out, 'utf8');
+  const lines = content.split('\n').filter(l => l.trim().length > 0);
+  const header = lines[0].split('\t');
+  
+  const results = [];
+  for (let i = 1; i < lines.length; i++) {
+    const cols = lines[i].split('\t');
+    const row = Object.fromEntries(header.map((h, j) => [h, cols[j]]));
+    
+    // Convert strings to floats for similarity
+    row.similarity = parseFloat(row.similarity);
+    row.citation_match = parseFloat(row.citation_match);
+    row.bib_match = parseFloat(row.bib_match);
+
+    const stylePath = path.join(options.stylesDir, `${row.candidate_id}.csl`);
+    if (fs.existsSync(stylePath)) {
+      const cslContent = fs.readFileSync(stylePath, 'utf8');
+      const meta = extractCslMetadata(cslContent);
+      row.evidence_url = meta.url;
+      row.confidence_note = meta.note;
+    }
+    results.push(row);
+  }
+
+  if (options.confirmWeb) {
+    await confirmWebCandidates(results, options.threshold);
+  }
+
+  writeTSV(results, options.out, options.threshold);
+  return results;
+}
+
 async function main() {
   const options = parseArgs();
 
   try {
+    if (options.updateMetadata) {
+      const filtered = await handleUpdateMetadata(options);
+      
+      const header = ['candidate_id', 'best_target', 'similarity', 'citation_match', 'bib_match', 'evidence_url', 'confidence_note'];
+      console.log(header.join('\t'));
+      for (const row of filtered) {
+        console.log([
+          row.candidate_id,
+          row.best_target,
+          row.similarity.toFixed(4),
+          row.citation_match.toFixed(4),
+          row.bib_match.toFixed(4),
+          row.evidence_url || '',
+          row.confidence_note || '',
+        ].join('\t'));
+      }
+      return;
+    }
+
     // Load fixtures
     const { testItems, testCitations } = loadFixtures(options.refsFixture, options.citationsFixture);
 
