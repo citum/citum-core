@@ -29,6 +29,7 @@ jobs:
     outputs:
       rust: ${{ steps.filter.outputs.rust }}
       hygiene: ${{ steps.filter.outputs.hygiene }}
+      semver: ${{ steps.filter.outputs.semver }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -50,6 +51,15 @@ jobs:
               - 'examples/**'
               - '.beans.yml'
               - '.github/workflows/ci.yml'
+            semver:
+              - 'crates/csl-legacy/**'
+              - 'crates/citum-schema-data/**'
+              - 'crates/citum-schema-style/**'
+              - 'crates/citum-schema/**'
+              - 'crates/citum-migrate/**'
+              - 'crates/citum-engine/**'
+              - 'crates/citum-cli/**'
+              - 'crates/citum-bindings/**'
 
   checks:
     name: Hygiene Checks
@@ -100,6 +110,15 @@ jobs:
             --allow-orphan-footer \
             --dry-run
 
+      - name: Enforce version bump footer contract on PRs
+        if: ${{ github.event_name == 'pull_request' }}
+        run: |
+          python3 scripts/validate-version-release.py \
+            --baseline-ref "${{ github.event.pull_request.base.sha }}" \
+            --commit-range "${{ github.event.pull_request.base.sha }}..HEAD" \
+            --allow-orphan-footer \
+            --dry-run
+
       - name: Validate production styles and structure
         run: ./scripts/validate-production-styles.sh
 
@@ -117,7 +136,8 @@ jobs:
           python3 -m unittest \
             scripts/test_validate_schema_release.py \
             scripts/test_schema_check.py \
-            scripts/test_coverage_analysis.py
+            scripts/test_coverage_analysis.py \
+            scripts/test_validate_version_release.py
 
   rust-ci:
     name: Rust CI (Lint + Test)
@@ -169,3 +189,30 @@ jobs:
           tmp_dir="$(mktemp -d)"
           cargo run --bin citum --all-features -- schema --out-dir "$tmp_dir"
           diff -ru "$tmp_dir" docs/schemas
+
+  semver-check:
+    name: API Semver Check
+    needs: changes
+    if: >-
+      ${{ github.event_name == 'pull_request' &&
+          needs.changes.outputs.semver == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: "citum-core-semver"
+          cache-workspace-crates: true
+
+      - name: Check publishable crates for semver violations
+        uses: obi1kenobi/cargo-semver-checks-action@v2
+        with:
+          rust-toolchain: stable
+          feature-group: default-features

@@ -33,6 +33,16 @@ while read -r local_ref local_sha remote_ref remote_sha; do
         printf '[ERROR] Schema release validation failed for the push range.\n' >&2
         exit 1
       }
+
+    printf '[PRE-PUSH] Validating workspace version contract against origin/main...\n'
+    python3 "$ROOT_DIR/scripts/validate-version-release.py" \
+      --baseline-ref "$schema_baseline" \
+      --commit-range "$schema_baseline..$local_sha" \
+      --allow-orphan-footer \
+      --dry-run || {
+        printf '[ERROR] Version release validation failed for the push range.\n' >&2
+        exit 1
+      }
   fi
 
   # Check commit trailers for Co-Authored-By (match line-start to avoid false
