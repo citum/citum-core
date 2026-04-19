@@ -1,10 +1,7 @@
+preset: springer-basic-author-date
 info:
   title: International Journal of Wildland Fire
-  description: |-
-    This style produces the CSIRO style used in the International Journal of Wildland Fire,
-          the Australian Journal of Botany and several other Australian journals.  It has been
-          validated for the journal, book, book chapter, report, and conference paper citation
-          styles.  This style is in the public domain.
+  description: "This style produces the CSIRO style used in the International Journal of Wildland Fire,\n      the Australian Journal of Botany and several other Australian journals.  It has been\n      validated for the journal, book, book chapter, report, and conference paper citation\n      styles.  This style is in the public domain."
   fields:
   - science
   source:
@@ -43,30 +40,29 @@ options:
   contributors:
     display-as-sort: all
     name-form: initials
-    initialize-with: ""
+    initialize-with: ''
     shorten:
       min: 3
       use-first: 1
       and-others: et-al
       delimiter-precedes-last: contextual
-    delimiter: ", "
+    delimiter: ', '
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only
-    sort-separator: " "
+    sort-separator: ' '
   dates: long
   titles: journal-emphasis
-  punctuation-in-quote: true
 citation:
   options:
     contributors:
       name-form: initials
-      initialize-with: ""
+      initialize-with: ''
       shorten:
         min: 3
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
   template:
   - contributor: author
     form: short
@@ -78,23 +74,23 @@ citation:
       delimiter-precedes-last: contextual
   - date: issued
     form: year
-    prefix: " "
+    prefix: ' '
   - variable: locator
   wrap:
     punctuation: parentheses
-  delimiter: ". "
-  multi-cite-delimiter: "; "
+  delimiter: '. '
+  multi-cite-delimiter: '; '
 bibliography:
   options:
     contributors:
       display-as-sort: all
       name-form: initials
-      initialize-with: ""
-      delimiter: ", "
+      initialize-with: ''
+      delimiter: ', '
       delimiter-precedes-last: always
-      sort-separator: " "
+      sort-separator: ' '
     hanging-indent: true
-    separator: ". "
+    separator: '. '
   type-variants:
     article-journal:
     - contributor: author
@@ -104,9 +100,9 @@ bibliography:
       form: year
       wrap:
         punctuation: parentheses
-      prefix: " "
+      prefix: ' '
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - contributor: editor
         form: verb
@@ -121,11 +117,11 @@ bibliography:
         wrap:
           punctuation: parentheses
     - number: pages
-      prefix: ", "
+      prefix: ', '
     - variable: publisher
       prefix: . (
     - variable: publisher-place
-      prefix: ": "
+      prefix: ': '
     - variable: doi
       prefix: https://doi.org/
     chapter:
@@ -136,9 +132,9 @@ bibliography:
       form: year
       wrap:
         punctuation: parentheses
-      prefix: " "
+      prefix: ' '
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - contributor: editor
         form: verb
@@ -153,11 +149,11 @@ bibliography:
         wrap:
           punctuation: parentheses
     - number: pages
-      prefix: "pp. "
+      prefix: 'pp. '
     - variable: publisher
       prefix: . (
     - variable: publisher-place
-      prefix: ": "
+      prefix: ': '
     - variable: doi
     paper-conference:
     - contributor: author
@@ -167,9 +163,9 @@ bibliography:
       form: year
       wrap:
         punctuation: parentheses
-      prefix: " "
+      prefix: ' '
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - contributor: editor
         form: verb
@@ -184,11 +180,11 @@ bibliography:
         wrap:
           punctuation: parentheses
     - number: pages
-      prefix: "pp. "
+      prefix: 'pp. '
     - variable: publisher
       prefix: . (
     - variable: publisher-place
-      prefix: ": "
+      prefix: ': '
     - variable: doi
   template:
   - contributor: author
@@ -198,9 +194,9 @@ bibliography:
     form: year
     wrap:
       punctuation: parentheses
-    prefix: " "
+    prefix: ' '
   - title: primary
-    prefix: " "
+    prefix: ' '
   - group:
     - contributor: editor
       form: verb
@@ -215,9 +211,9 @@ bibliography:
       wrap:
         punctuation: parentheses
   - number: pages
-    prefix: ", "
+    prefix: ', '
   - variable: publisher
     prefix: . (
   - variable: publisher-place
-    prefix: ": "
+    prefix: ': '
   - variable: doi

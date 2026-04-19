@@ -7,7 +7,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.33.0"
+      "default": "0.34.0"
     },
     "info": {
       "description": "Style metadata.",
@@ -5428,9 +5428,74 @@
           "const": "chicago-author-date-18th"
         },
         {
+          "description": "Chicago Manual of Style (shortened notes and bibliography).",
+          "type": "string",
+          "const": "chicago-shortened-notes-bibliography"
+        },
+        {
           "description": "APA 7th edition — author-date system.",
           "type": "string",
           "const": "apa-7th"
+        },
+        {
+          "description": "Elsevier Harvard (author-date).",
+          "type": "string",
+          "const": "elsevier-harvard"
+        },
+        {
+          "description": "Elsevier with Titles (numeric).",
+          "type": "string",
+          "const": "elsevier-with-titles"
+        },
+        {
+          "description": "Elsevier Vancouver (numeric).",
+          "type": "string",
+          "const": "elsevier-vancouver"
+        },
+        {
+          "description": "Springer Basic (author-date).",
+          "type": "string",
+          "const": "springer-basic-author-date"
+        },
+        {
+          "description": "Springer Vancouver Brackets (numeric).",
+          "type": "string",
+          "const": "springer-vancouver-brackets"
+        },
+        {
+          "description": "Springer Basic Brackets (numeric).",
+          "type": "string",
+          "const": "springer-basic-brackets"
+        },
+        {
+          "description": "American Medical Association 11th edition (numeric).",
+          "type": "string",
+          "const": "american-medical-association"
+        },
+        {
+          "description": "Institute of Electrical and Electronics Engineers (numeric).",
+          "type": "string",
+          "const": "ieee"
+        },
+        {
+          "description": "Taylor & Francis Chicago author-date.",
+          "type": "string",
+          "const": "taylor-and-francis-chicago-author-date"
+        },
+        {
+          "description": "Taylor & Francis Council of Science Editors author-date.",
+          "type": "string",
+          "const": "taylor-and-francis-council-of-science-editors-author-date"
+        },
+        {
+          "description": "Taylor & Francis National Library of Medicine.",
+          "type": "string",
+          "const": "taylor-and-francis-national-library-of-medicine"
+        },
+        {
+          "description": "Modern Language Association 9th edition (author-page).",
+          "type": "string",
+          "const": "modern-language-association"
         }
       ]
     }

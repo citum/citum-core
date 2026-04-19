@@ -13,7 +13,7 @@ info:
     - href: https://www.frontiersin.org/guidelines/author-guidelines
       rel: documentation
 options:
-  processing: !custom
+  processing:
     sort:
       template:
       - key: author

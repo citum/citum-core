@@ -23,18 +23,21 @@ Out of scope:
 ## Design
 ### Shared execution order
 1. Establish the workflow mode and target scope.
-2. Capture the smallest trustworthy evidence surface first.
-3. Use reduced-cluster evidence before broad supplemental reruns.
-4. Classify each failure using the shared policy.
-5. Apply at most one tightly scoped fix per bounded cluster pass.
-6. Re-run the reduced evidence set, then the broader oracle or report surface.
-7. Stop when the cluster is reclassified, converged, or proven out of scope.
+2. Establish source authority before reading implementation artifacts:
+   publisher guide first, then publisher house rules, then parent-style guidance.
+3. Capture the smallest trustworthy evidence surface first.
+4. Use reduced-cluster evidence before broad supplemental reruns.
+5. Classify each failure using the shared policy.
+6. Apply at most one tightly scoped fix per bounded cluster pass.
+7. Re-run the reduced evidence set, then the broader oracle or report surface.
+8. Stop when the cluster is reclassified, converged, or proven out of scope.
 
 ### Shared verification logic
 - Fidelity is the hard gate.
 - SQI or other secondary metrics are advisory unless a workflow explicitly promotes them.
 - QA must reject regressions and formatting defects.
 - Supplemental rich-input evidence is confirmation, not the first debugging surface.
+- CSL structure is verification evidence, not the source of truth for wrapper thickness.
 
 ### Shared output shape
 Every workflow should report:

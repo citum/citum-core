@@ -373,6 +373,47 @@
         }
       ]
     },
+    "RawGenderedString": {
+      "description": "A raw string that may include gender-specific variants.",
+      "anyOf": [
+        {
+          "description": "Plain string value.",
+          "type": "string"
+        },
+        {
+          "description": "Gender-specific values.",
+          "type": "object",
+          "properties": {
+            "masculine": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "feminine": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "neuter": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "common": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "minProperties": 1
+        }
+      ]
+    },
     "RawLocatorTerm": {
       "description": "Raw locator term with optional lexical gender.",
       "type": "object",

@@ -16,7 +16,7 @@ info:
     - href: https://publications.copernicus.org/for_authors/manuscript_preparation.html
       rel: documentation
 options:
-  processing: !custom
+  processing:
     sort:
       template:
       - key: author

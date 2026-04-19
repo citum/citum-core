@@ -1,3 +1,4 @@
+preset: american-medical-association
 info:
   title: AMA Manual of Style 11th edition (without URLs)
   description: 'AMA Manual of Style: A Guide for Authors and Editors (11th ed.), without URLs.'
@@ -18,16 +19,13 @@ info:
     - href: https://academic.oup.com/amamanualofstyle
       rel: documentation
 options:
-  locators:
-    strip-label-periods: true
   substitute:
     contributor-role-form: short
     template:
     - editor
-  processing: numeric
   contributors:
     name-form: initials
-    initialize-with: ""
+    initialize-with: ''
     shorten:
       min: 7
       use-first: 3
@@ -37,12 +35,9 @@ options:
     demote-non-dropping-particle: sort-only
   dates:
     month: long
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
     range-delimiter: –
-  titles: humanities
-  page-range-format: expanded
-  punctuation-in-quote: true
 citation:
   template:
   - delimiter: none
@@ -51,7 +46,7 @@ citation:
     - variable: locator
       wrap:
         punctuation: parentheses
-  multi-cite-delimiter: ","
+  multi-cite-delimiter: ','
 bibliography:
   options:
     contributors:
@@ -61,7 +56,7 @@ bibliography:
         and-others: et-al
         delimiter-precedes-last: contextual
     entry-suffix: .
-    separator: ". "
+    separator: '. '
   type-variants:
     article-journal:
     - contributor: author
@@ -71,7 +66,7 @@ bibliography:
         min: 8
         use-first: 3
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - contributor: editor
         form: verb
@@ -87,7 +82,7 @@ bibliography:
           punctuation: parentheses
     - variable: publisher
     - number: pages
-      prefix: "; 2006:"
+      prefix: '; 2006:'
     article-magazine:
     - contributor: author
       form: long
@@ -96,7 +91,7 @@ bibliography:
         min: 8
         use-first: 3
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - contributor: editor
         form: verb
@@ -112,7 +107,7 @@ bibliography:
           punctuation: parentheses
     - variable: publisher
     - number: pages
-      prefix: "; 2006:"
+      prefix: '; 2006:'
     broadcast:
     - contributor: author
       form: long
@@ -121,7 +116,7 @@ bibliography:
         min: 8
         use-first: 3
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - contributor: editor
         form: verb
@@ -137,7 +132,7 @@ bibliography:
           punctuation: parentheses
     - variable: publisher
     - number: pages
-      prefix: "; 2006:"
+      prefix: '; 2006:'
     chapter:
     - contributor: author
       form: long
@@ -146,12 +141,12 @@ bibliography:
         min: 8
         use-first: 3
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        prefix: "on "
+        prefix: 'on '
       - title: parent-monograph
         emph: true
     - title: parent-serial
@@ -163,7 +158,7 @@ bibliography:
           punctuation: parentheses
     - variable: publisher
     - number: pages
-      prefix: "; 2006:"
+      prefix: '; 2006:'
     entry-encyclopedia:
     - contributor: author
       form: long
@@ -172,7 +167,7 @@ bibliography:
         min: 8
         use-first: 3
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - contributor: editor
         form: verb
@@ -188,7 +183,7 @@ bibliography:
           punctuation: parentheses
     - variable: publisher
     - number: pages
-      prefix: "; 2006:"
+      prefix: '; 2006:'
     patent:
     - contributor: author
       form: long
@@ -197,7 +192,7 @@ bibliography:
         min: 8
         use-first: 3
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - contributor: editor
         form: verb
@@ -213,7 +208,7 @@ bibliography:
           punctuation: parentheses
     - variable: publisher
     - number: pages
-      prefix: "; 2006:"
+      prefix: '; 2006:'
   template:
   - contributor: author
     form: long
@@ -222,7 +217,7 @@ bibliography:
       min: 8
       use-first: 3
   - title: primary
-    prefix: " "
+    prefix: ' '
   - group:
     - contributor: editor
       form: verb
@@ -240,4 +235,4 @@ bibliography:
         punctuation: parentheses
   - variable: publisher
   - number: pages
-    prefix: "; 2006:"
+    prefix: '; 2006:'

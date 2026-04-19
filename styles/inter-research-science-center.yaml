@@ -1,3 +1,4 @@
+preset: american-medical-association
 info:
   title: Inter-Research Science Center
   fields:
@@ -43,20 +44,20 @@ options:
   contributors:
     display-as-sort: all
     name-form: initials
-    initialize-with: ""
+    initialize-with: ''
     shorten:
       min: 3
       use-first: 1
       and-others: et-al
       delimiter-precedes-last: contextual
-    delimiter: ", "
+    delimiter: ', '
     delimiter-precedes-last: never
     demote-non-dropping-particle: sort-only
-    sort-separator: " "
+    sort-separator: ' '
   dates:
     month: long
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
     range-delimiter: –
   titles:
     periodical:
@@ -67,13 +68,13 @@ citation:
   options:
     contributors:
       name-form: initials
-      initialize-with: ". "
+      initialize-with: '. '
       shorten:
         min: 3
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
       delimiter-precedes-last: never
   template:
   - contributor: author
@@ -84,24 +85,24 @@ citation:
       use-first: 1
   - date: issued
     form: year
-    prefix: " "
+    prefix: ' '
   - variable: locator
-    prefix: " "
+    prefix: ' '
   wrap:
     punctuation: parentheses
-  delimiter: ". "
-  multi-cite-delimiter: ", "
+  delimiter: '. '
+  multi-cite-delimiter: ', '
 bibliography:
   options:
     contributors:
       display-as-sort: all
       name-form: initials
-      initialize-with: ""
+      initialize-with: ''
       delimiter-precedes-last: never
-      sort-separator: " "
+      sort-separator: ' '
     hanging-indent: true
     entry-suffix: .
-    separator: ". "
+    separator: '. '
   template:
   - contributor: author
     form: long
@@ -110,9 +111,9 @@ bibliography:
     form: year
     wrap:
       punctuation: parentheses
-    prefix: " "
+    prefix: ' '
   - title: primary
-    prefix: " "
+    prefix: ' '
   - group:
     - contributor: editor
       form: verb
@@ -122,7 +123,7 @@ bibliography:
   - number: volume
   - variable: publisher
   - variable: publisher-place
-    prefix: ", "
+    prefix: ', '
   - number: pages
-    prefix: ":"
+    prefix: ':'
   sort: author-title-date

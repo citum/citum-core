@@ -28,14 +28,7 @@ const ModeDependentType = new yaml.Type('!mode-dependent', {
   }
 });
 
-const CustomType = new yaml.Type('!custom', {
-  kind: 'mapping',
-  construct: function (data) {
-    return { custom: data };
-  }
-});
-
-const Citum_SCHEMA = yaml.DEFAULT_SCHEMA.extend([ModeDependentType, CustomType]);
+const Citum_SCHEMA = yaml.DEFAULT_SCHEMA.extend([ModeDependentType]);
 
 function normalizeForSchema(value) {
   if (Array.isArray(value)) {
@@ -49,24 +42,6 @@ function normalizeForSchema(value) {
   const normalized = Object.fromEntries(
     Object.entries(value).map(([key, entryValue]) => [key, normalizeForSchema(entryValue)])
   );
-
-  if (
-    normalized.processing &&
-    normalized.processing &&
-    typeof normalized.processing === 'object' &&
-    !Array.isArray(normalized.processing) &&
-    !('custom' in normalized.processing) &&
-    !('label' in normalized.processing)
-  ) {
-    const processingKeys = Object.keys(normalized.processing);
-    const isBareCustomProcessing =
-      processingKeys.length > 0 &&
-      processingKeys.every(key => ['sort', 'group', 'disambiguate'].includes(key));
-
-    if (isBareCustomProcessing) {
-      normalized.processing = { custom: normalized.processing };
-    }
-  }
 
   return normalized;
 }

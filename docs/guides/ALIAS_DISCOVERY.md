@@ -3,9 +3,9 @@
 ## What It Is
 
 `scripts/find-alias-candidates.js` identifies independent CSL styles that render
-identically (or near-identically) to a Citum registry builtin. The output is a
+identically (or near-identically) to a Citum registry target. The output is a
 TSV report sorted by similarity score. Confirmed candidates become entries in
-`registry/default.yaml` under the parent's `aliases:` array.
+`registry/default.yaml` under the chosen parent's `aliases:` array.
 
 ## How It Works
 
@@ -14,13 +14,19 @@ For each independent style in `styles-legacy/`:
 1. Render the fixture scenarios (`tests/fixtures/citations-expanded.json` +
    `tests/fixtures/references-expanded.json`) through citeproc-js using `processCitationCluster`
    for position-aware rendering (enables ibid/subsequent detection).
-2. Score the output against pre-rendered fingerprints of every registry builtin:
+2. Score the output against pre-rendered fingerprints of every registry target:
    - `citation_match` / `bib_match`: exact string equality (post-normalizeText) — detects
      structural differences like bracket vs parenthesis notation.
    - `similarity`: bag-of-words textSimilarity for finer-grained token-level matching.
 3. Report the best-matching target per candidate, plus per-scenario exact-match rates.
 
 No Citum engine is involved — this is a CSL-to-CSL comparison.
+
+Registry targets are not limited to the deepest builtins such as APA or
+Chicago. They may also be publisher house-style hubs such as
+`taylor-and-francis-chicago-author-date`, where the correct modeling chain is:
+
+`journal alias` -> `publisher house style` -> `underlying builtin preset`
 
 ## Running the Script
 
@@ -53,6 +59,10 @@ node scripts/find-alias-candidates.js --help
 
 **Before aliasing**, confirm the candidate is a true clone (not a same-family variant
 with intentional differences the fixture doesn't exercise — see Known Blind Spots below).
+
+Also confirm that the chosen parent is the nearest correct hub, not merely the
+oldest common ancestor. If publisher guidance points to an intermediate house
+style, alias to that house style rather than directly to the deeper builtin.
 
 ### Web Confirmation (`--confirm-web`)
 
@@ -108,6 +118,21 @@ feat(registry): alias <N> <family> journal clones
 ```
 
 Reference the dated TSV report and note the similarity score in the commit body.
+
+### Intermediate-Hub Rule
+
+Prefer the nearest publisher or family hub already modeled in the registry when
+it matches the authority evidence. For example, AAG-family aliases should point
+to `taylor-and-francis-chicago-author-date`, not directly to
+`chicago-author-date-18th`, because the Taylor & Francis house style is itself
+the documented intermediate parent.
+
+If a likely hub exists as a production style but not as a registry target yet,
+promote it first. As of 2026-04-19 this applies to Taylor & Francis family
+styles such as:
+
+- `taylor-and-francis-council-of-science-editors-author-date`
+- `taylor-and-francis-national-library-of-medicine`
 
 ## Historical Reports
 

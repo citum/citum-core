@@ -2,17 +2,6 @@ const fs = require("fs");
 const yaml = require("js-yaml");
 const path = require("path");
 
-const CUSTOM_TAG_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
-    new yaml.Type("!custom", {
-        kind: "mapping",
-        construct(data) {
-            // Need a way to represent !custom object in js-yaml when dumping
-            // For now, we manually reconstruct it if needed
-            return data || {};
-        },
-    }),
-]);
-
 const report = require("/tmp/core-report.json");
 const needsUpgrade = report.styles.filter(s => s.fidelityScore < 0.95 || s.qualityScore < 0.90);
 
@@ -24,7 +13,7 @@ for (const s of needsUpgrade) {
     let content = fs.readFileSync(yamlPath, "utf8");
     let baseData;
     try {
-        baseData = yaml.load(content, { schema: CUSTOM_TAG_SCHEMA });
+        baseData = yaml.load(content);
     } catch(e) {
         continue;
     }
@@ -71,7 +60,7 @@ for (const s of needsUpgrade) {
         }
     }
 
-    // Since js-yaml struggles nicely re-exporting !custom tags, we'll try something safer: regex replacements on the text
+    // Apply safe text replacements rather than re-emitting the full YAML structure.
     if (modified) {
         if (options.substitute === "standard") {
             content = content.replace(/substitute:\n\s+template:\n\s+- editor\n\s+- title\n\s+- translator/g, 'substitute: standard');

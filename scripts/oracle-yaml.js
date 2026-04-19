@@ -31,15 +31,6 @@ const {
   resolveStyleData,
 } = require('./lib/style-verification');
 
-const CUSTOM_TAG_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
-  new yaml.Type('!custom', {
-    kind: 'mapping',
-    construct(data) {
-      return data || {};
-    },
-  }),
-]);
-
 function parseArgs(argv = process.argv.slice(2)) {
   const options = {
     yamlPath: null,
@@ -88,7 +79,7 @@ function parseArgs(argv = process.argv.slice(2)) {
 }
 
 function loadStyleData(yamlPath) {
-  const rawStyleData = yaml.load(fs.readFileSync(yamlPath, 'utf8'), { schema: CUSTOM_TAG_SCHEMA }) || {};
+  const rawStyleData = yaml.load(fs.readFileSync(yamlPath, 'utf8')) || {};
   return {
     rawStyleData,
     resolvedStyleData: resolveStyleData(rawStyleData),

@@ -52,15 +52,6 @@ const {
 } = require('./oracle-utils');
 const { maybeDatasetErrorForFile } = require('./lib/dataset-guard');
 
-const CUSTOM_TAG_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
-  new yaml.Type('!custom', {
-    kind: 'mapping',
-    construct(data) {
-      return data || {};
-    },
-  }),
-]);
-
 const KNOWN_DEPENDENTS = {
   'apa-7th': 783,
   'elsevier-with-titles': 672,
@@ -504,7 +495,7 @@ function discoverCoreStyles(provenanceConfig = loadReportProvenance()) {
     let styleData = null;
 
     try {
-      rawStyleData = yaml.load(fs.readFileSync(stylePath, 'utf8'), { schema: CUSTOM_TAG_SCHEMA });
+      rawStyleData = yaml.load(fs.readFileSync(stylePath, 'utf8'));
       styleData = resolveStyleData(rawStyleData);
     } catch {
       rawStyleData = null;
@@ -575,7 +566,7 @@ function inferStyleFormat(styleData) {
     ) {
       return 'numeric';
     }
-    // !custom processing objects with sort/group/disambiguate keys are author-date
+    // Processing objects with sort/group/disambiguate keys are author-date
     if (
       Object.prototype.hasOwnProperty.call(processing, 'sort') ||
       Object.prototype.hasOwnProperty.call(processing, 'group') ||
@@ -1562,7 +1553,7 @@ function loadStyleYaml(styleName, stylePathOverride = null) {
     };
   }
   try {
-    const rawStyleData = yaml.load(fs.readFileSync(stylePath, 'utf8'), { schema: CUSTOM_TAG_SCHEMA });
+    const rawStyleData = yaml.load(fs.readFileSync(stylePath, 'utf8'));
     return {
       stylePath,
       rawStyleData,

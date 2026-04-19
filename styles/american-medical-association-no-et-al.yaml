@@ -1,3 +1,4 @@
+preset: american-medical-association
 info:
   title: AMA Manual of Style 11th edition (no "et al.")
   description: 'AMA Manual of Style: A Guide for Authors and Editors (11th ed.), without et al.'
@@ -18,26 +19,20 @@ info:
     - href: https://academic.oup.com/amamanualofstyle
       rel: documentation
 options:
-  locators:
-    strip-label-periods: true
   substitute:
     contributor-role-form: short
     template:
     - editor
-  processing: numeric
   contributors:
     name-form: initials
-    initialize-with: ""
+    initialize-with: ''
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only
   dates:
     month: long
-    uncertainty-marker: "?"
-    approximation-marker: "ca. "
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
     range-delimiter: –
-  titles: humanities
-  page-range-format: expanded
-  punctuation-in-quote: true
 citation:
   template:
   - delimiter: none
@@ -46,18 +41,18 @@ citation:
     - variable: locator
       wrap:
         punctuation: parentheses
-  multi-cite-delimiter: ","
+  multi-cite-delimiter: ','
 bibliography:
   options:
     hanging-indent: false
-    separator: ". "
+    separator: '. '
   type-variants:
     article-journal:
     - contributor: author
       form: long
       name-order: family-first
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - contributor: editor
         form: verb
@@ -73,7 +68,7 @@ bibliography:
           punctuation: parentheses
     - variable: publisher
     - number: pages
-      prefix: "; 2006:"
+      prefix: '; 2006:'
     - variable: doi
     - variable: url
     article-magazine:
@@ -81,7 +76,7 @@ bibliography:
       form: long
       name-order: family-first
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - contributor: editor
         form: verb
@@ -97,7 +92,7 @@ bibliography:
           punctuation: parentheses
     - variable: publisher
     - number: pages
-      prefix: "; 2006:"
+      prefix: '; 2006:'
     - variable: doi
     - variable: url
     broadcast:
@@ -105,7 +100,7 @@ bibliography:
       form: long
       name-order: family-first
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - contributor: editor
         form: verb
@@ -121,7 +116,7 @@ bibliography:
           punctuation: parentheses
     - variable: publisher
     - number: pages
-      prefix: "; 2006:"
+      prefix: '; 2006:'
     - variable: doi
     - variable: url
     chapter:
@@ -129,12 +124,12 @@ bibliography:
       form: long
       name-order: family-first
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        prefix: "on "
+        prefix: 'on '
       - title: parent-monograph
         emph: true
     - title: parent-serial
@@ -146,7 +141,7 @@ bibliography:
           punctuation: parentheses
     - variable: publisher
     - number: pages
-      prefix: "; 2006:"
+      prefix: '; 2006:'
     - variable: doi
     - variable: url
     entry-encyclopedia:
@@ -154,7 +149,7 @@ bibliography:
       form: long
       name-order: family-first
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - contributor: editor
         form: verb
@@ -170,7 +165,7 @@ bibliography:
           punctuation: parentheses
     - variable: publisher
     - number: pages
-      prefix: "; 2006:"
+      prefix: '; 2006:'
     - variable: doi
     - variable: url
     patent:
@@ -178,7 +173,7 @@ bibliography:
       form: long
       name-order: family-first
     - title: primary
-      prefix: " "
+      prefix: ' '
     - group:
       - contributor: editor
         form: verb
@@ -194,7 +189,7 @@ bibliography:
           punctuation: parentheses
     - variable: publisher
     - number: pages
-      prefix: "; 2006:"
+      prefix: '; 2006:'
     - variable: doi
     - variable: url
   template:
@@ -202,7 +197,7 @@ bibliography:
     form: long
     name-order: family-first
   - title: primary
-    prefix: " "
+    prefix: ' '
   - group:
     - contributor: editor
       form: verb
@@ -220,6 +215,6 @@ bibliography:
         punctuation: parentheses
   - variable: publisher
   - number: pages
-    prefix: "; 2006:"
+    prefix: '; 2006:'
   - variable: doi
   - variable: url

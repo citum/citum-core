@@ -9,7 +9,7 @@ options:
     template:
     - editor
     - title
-  processing: !custom
+  processing:
     disambiguate:
       names: false
       add-givenname: false

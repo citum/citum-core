@@ -1,3 +1,4 @@
+preset: elsevier-vancouver
 info:
   title: Elsevier - NLM/Vancouver (name-year)
   description: A style for some Elsevier journals, resembles Vancouver style, but using author-date format
@@ -40,19 +41,17 @@ options:
       year-suffix: true
   contributors: numeric-compact
   dates: long
-  page-range-format: minimal
-  punctuation-in-quote: true
 citation:
   options:
     contributors:
       name-form: initials
-      initialize-with: ". "
+      initialize-with: '. '
       shorten:
         min: 3
         use-first: 1
         and-others: et-al
         delimiter-precedes-last: contextual
-      delimiter: ", "
+      delimiter: ', '
   template:
   - contributor: author
     form: long
@@ -62,18 +61,18 @@ citation:
       use-first: 1
   - date: issued
     form: year
-    prefix: ", "
+    prefix: ', '
   - variable: locator
-    prefix: " "
+    prefix: ' '
   wrap:
     punctuation: parentheses
-  delimiter: ". "
-  multi-cite-delimiter: "; "
+  delimiter: '. '
+  multi-cite-delimiter: '; '
 bibliography:
   options:
     contributors: numeric-compact
     entry-suffix: .
-    separator: ". "
+    separator: '. '
   type-variants:
     article-journal:
     - contributor: author
@@ -83,7 +82,7 @@ bibliography:
         min: 8
         use-first: 6
     - title: primary
-      prefix: " "
+      prefix: ' '
     - variable: publisher-place
     - group:
       - contributor: editor
@@ -92,12 +91,12 @@ bibliography:
       - title: parent-monograph
     - title: parent-serial
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - number: volume
     - number: issue
-      prefix: ":"
+      prefix: ':'
     - number: pages
-      prefix: ":"
+      prefix: ':'
     - variable: doi
       prefix: https://doi.org/
     article-magazine:
@@ -108,7 +107,7 @@ bibliography:
         min: 8
         use-first: 6
     - title: primary
-      prefix: " "
+      prefix: ' '
     - variable: publisher-place
     - group:
       - contributor: editor
@@ -117,10 +116,10 @@ bibliography:
       - title: parent-monograph
     - title: parent-serial
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - number: volume
     - number: pages
-      prefix: ":"
+      prefix: ':'
     - variable: doi
     chapter:
     - contributor: author
@@ -130,25 +129,25 @@ bibliography:
         min: 8
         use-first: 6
     - title: primary
-      prefix: " "
+      prefix: ' '
     - variable: publisher-place
     - group:
       - contributor: editor
         form: verb
         name-order: given-first
-        prefix: "on "
+        prefix: 'on '
       - title: parent-monograph
     - title: parent-serial
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - date: issued
       form: year
-      prefix: "; "
+      prefix: '; '
     - number: volume
     - number: issue
-      prefix: ":"
+      prefix: ':'
     - number: pages
-      prefix: "pp. "
+      prefix: 'pp. '
     - variable: doi
     entry-encyclopedia:
     - contributor: author
@@ -158,7 +157,7 @@ bibliography:
         min: 8
         use-first: 6
     - title: primary
-      prefix: " "
+      prefix: ' '
     - variable: publisher-place
     - group:
       - contributor: editor
@@ -167,12 +166,12 @@ bibliography:
       - title: parent-monograph
     - title: parent-serial
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - number: volume
     - number: issue
-      prefix: ":"
+      prefix: ':'
     - number: pages
-      prefix: ":"
+      prefix: ':'
     - variable: doi
     paper-conference:
     - contributor: author
@@ -182,7 +181,7 @@ bibliography:
         min: 8
         use-first: 6
     - title: primary
-      prefix: " "
+      prefix: ' '
     - variable: publisher-place
     - group:
       - contributor: editor
@@ -191,15 +190,15 @@ bibliography:
       - title: parent-monograph
     - title: parent-serial
     - variable: publisher
-      prefix: ": "
+      prefix: ': '
     - date: issued
       form: year
-      prefix: "; "
+      prefix: '; '
     - number: volume
     - number: issue
-      prefix: ":"
+      prefix: ':'
     - number: pages
-      prefix: "pp. "
+      prefix: 'pp. '
     - variable: doi
   template:
   - contributor: author
@@ -209,7 +208,7 @@ bibliography:
       min: 8
       use-first: 6
   - title: primary
-    prefix: " "
+    prefix: ' '
   - variable: publisher-place
   - group:
     - contributor: editor
@@ -218,15 +217,15 @@ bibliography:
     - title: parent-monograph
   - title: parent-serial
   - variable: publisher
-    prefix: ": "
+    prefix: ': '
   - date: issued
     form: year
-    prefix: "; "
+    prefix: '; '
   - number: volume
   - number: issue
-    prefix: ":"
+    prefix: ':'
   - number: pages
-    prefix: ":"
+    prefix: ':'
   - variable: doi
   sort:
     template:

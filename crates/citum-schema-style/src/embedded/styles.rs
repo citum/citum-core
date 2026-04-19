@@ -52,6 +52,12 @@ fn get_style_bytes(name: &str) -> Option<&'static [u8]> {
         "taylor-and-francis-chicago-author-date" => Some(include_bytes!(
             "../../../../styles/embedded/taylor-and-francis-chicago-author-date.yaml"
         )),
+        "taylor-and-francis-council-of-science-editors-author-date" => Some(include_bytes!(
+            "../../../../styles/embedded/taylor-and-francis-council-of-science-editors-author-date.yaml"
+        )),
+        "taylor-and-francis-national-library-of-medicine" => Some(include_bytes!(
+            "../../../../styles/embedded/taylor-and-francis-national-library-of-medicine.yaml"
+        )),
         "chicago-shortened-notes-bibliography" => Some(include_bytes!(
             "../../../../styles/embedded/chicago-shortened-notes-bibliography.yaml"
         )),
@@ -121,6 +127,8 @@ pub const EMBEDDED_STYLE_NAMES: &[&str] = &[
     "american-medical-association",
     "ieee",
     "taylor-and-francis-chicago-author-date",
+    "taylor-and-francis-council-of-science-editors-author-date",
+    "taylor-and-francis-national-library-of-medicine",
     "chicago-shortened-notes-bibliography",
     "chicago-notes-18th",
     "chicago-author-date-18th",

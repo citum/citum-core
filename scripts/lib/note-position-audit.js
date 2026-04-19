@@ -21,18 +21,10 @@ const REQUIRED_IDS = [
   'note-subsequent-with-locator',
 ];
 
-const CUSTOM_TAG_SCHEMA = yaml.DEFAULT_SCHEMA.extend([
-  new yaml.Type('!custom', {
-    kind: 'mapping',
-    construct(data) {
-      return data || {};
-    },
-  }),
-]);
 const RENDER_CACHE = new Map();
 
 function readYaml(filePath) {
-  return yaml.load(fs.readFileSync(filePath, 'utf8'), { schema: CUSTOM_TAG_SCHEMA }) || {};
+  return yaml.load(fs.readFileSync(filePath, 'utf8')) || {};
 }
 
 function normalizeText(text) {

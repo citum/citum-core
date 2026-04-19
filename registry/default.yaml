@@ -47,6 +47,14 @@ styles:
     builtin: taylor-and-francis-chicago-author-date
     description: "Taylor & Francis Chicago Author-Date"
     fields: [humanities]
+  - id: taylor-and-francis-council-of-science-editors-author-date
+    builtin: taylor-and-francis-council-of-science-editors-author-date
+    description: "Taylor & Francis Council of Science Editors Author-Date"
+    fields: [science]
+  - id: taylor-and-francis-national-library-of-medicine
+    builtin: taylor-and-francis-national-library-of-medicine
+    description: "Taylor & Francis National Library of Medicine"
+    fields: [medicine]
   - id: chicago-author-date-18th
     aliases: [chicago-author-date, taylor-and-francis-style-f]
     builtin: chicago-author-date-18th

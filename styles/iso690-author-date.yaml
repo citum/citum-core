@@ -7,7 +7,7 @@ info:
     Locale-agnostic with support for multilingual citations.
 
 options:
-  processing: !custom
+  processing:
     sort:
       template:
       - key: author
