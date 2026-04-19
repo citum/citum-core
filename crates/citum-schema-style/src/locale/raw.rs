@@ -8,6 +8,8 @@ use schemars::JsonSchema;
 use serde::de::Error as _;
 use serde::{Deserialize, Deserializer, Serialize};
 use serde_yaml::{Mapping, Value};
+#[cfg(feature = "schema")]
+use std::borrow::Cow;
 use std::collections::HashMap;
 
 /// Raw locale format for YAML parsing.
@@ -163,7 +165,6 @@ pub struct RawLocatorTerm {
 
 /// A term value that can be a simple string or have singular/plural forms.
 #[derive(Debug, Clone, Serialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum RawTermValue {
     /// Simple string value.
     Simple(String),
@@ -195,7 +196,6 @@ pub enum RawTermValue {
 
 /// A raw string that may include gender-specific variants.
 #[derive(Debug, Clone, Serialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
 pub enum RawGenderedString {
     /// Plain string value.
     Simple(String),
@@ -219,6 +219,75 @@ pub enum RawGenderedString {
 impl Default for RawTermValue {
     fn default() -> Self {
         RawTermValue::Simple(String::new())
+    }
+}
+
+#[cfg(feature = "schema")]
+impl JsonSchema for RawGenderedString {
+    fn schema_name() -> Cow<'static, str> {
+        "RawGenderedString".into()
+    }
+
+    fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "description": "A raw string that may include gender-specific variants.",
+            "anyOf": [
+                {
+                    "description": "Plain string value.",
+                    "type": "string"
+                },
+                {
+                    "description": "Gender-specific values.",
+                    "type": "object",
+                    "properties": gender_slot_schema_properties(),
+                    "additionalProperties": false,
+                    "minProperties": 1
+                }
+            ]
+        })
+    }
+}
+
+#[cfg(feature = "schema")]
+impl JsonSchema for RawTermValue {
+    fn schema_name() -> Cow<'static, str> {
+        "RawTermValue".into()
+    }
+
+    fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
+        schemars::json_schema!({
+            "description": "A term value that can be a simple string or have singular/plural forms.",
+            "anyOf": [
+                {
+                    "description": "Simple string value.",
+                    "type": "string"
+                },
+                {
+                    "description": "Singular/plural forms.",
+                    "type": "object",
+                    "properties": {
+                        "singular": { "$ref": "#/$defs/RawGenderedString" },
+                        "plural": { "$ref": "#/$defs/RawGenderedString" }
+                    },
+                    "required": ["singular", "plural"],
+                    "additionalProperties": false
+                },
+                {
+                    "description": "Gender-specific values.",
+                    "type": "object",
+                    "properties": gender_slot_schema_properties(),
+                    "additionalProperties": false,
+                    "minProperties": 1
+                },
+                {
+                    "description": "Form-keyed value (for terms with long/short or nested forms).",
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/RawTermValue"
+                    }
+                }
+            ]
+        })
     }
 }
 
@@ -346,34 +415,34 @@ type GenderSlots = (
 );
 
 fn parse_gender_slots(map: &Mapping) -> Result<Option<GenderSlots>, String> {
-    if !contains_only_keys(map, &["masculine", "feminine", "neuter", "common"])? {
+    let (has_gender_key, has_non_gender_key) = inspect_gender_keys(map)?;
+    if !has_gender_key {
         return Ok(None);
     }
-
-    if map.is_empty() {
-        return Ok(None);
+    if has_non_gender_key {
+        return Err("gendered locale terms cannot mix gender keys with other keys".to_string());
     }
 
     let masculine = map
         .get(Value::String("masculine".to_string()))
-        .map(parse_string_value)
-        .transpose()?;
+        .map(parse_optional_string_value)
+        .transpose()?
+        .flatten();
     let feminine = map
         .get(Value::String("feminine".to_string()))
-        .map(parse_string_value)
-        .transpose()?;
+        .map(parse_optional_string_value)
+        .transpose()?
+        .flatten();
     let neuter = map
         .get(Value::String("neuter".to_string()))
-        .map(parse_string_value)
-        .transpose()?;
+        .map(parse_optional_string_value)
+        .transpose()?
+        .flatten();
     let common = map
         .get(Value::String("common".to_string()))
-        .map(parse_string_value)
-        .transpose()?;
-
-    if masculine.is_none() && feminine.is_none() && neuter.is_none() && common.is_none() {
-        return Ok(None);
-    }
+        .map(parse_optional_string_value)
+        .transpose()?
+        .flatten();
 
     Ok(Some((masculine, feminine, neuter, common)))
 }
@@ -403,14 +472,43 @@ fn map_to_term_values(map: Mapping) -> Result<HashMap<String, RawTermValue>, Str
         .collect()
 }
 
-fn parse_string_value(value: &Value) -> Result<String, String> {
+fn parse_optional_string_value(value: &Value) -> Result<Option<String>, String> {
     match value {
-        Value::String(value) => Ok(value.clone()),
+        Value::Null => Ok(None),
+        Value::String(value) => Ok(Some(value.clone())),
         other => Err(format!(
             "expected string in gendered locale term, found {}",
             value_kind(other)
         )),
     }
+}
+
+fn inspect_gender_keys(map: &Mapping) -> Result<(bool, bool), String> {
+    let mut has_gender_key = false;
+    let mut has_non_gender_key = false;
+
+    for key in map.keys() {
+        let Value::String(key) = key else {
+            return Err("locale term keys must be strings".to_string());
+        };
+
+        match key.as_str() {
+            "masculine" | "feminine" | "neuter" | "common" => has_gender_key = true,
+            _ => has_non_gender_key = true,
+        }
+    }
+
+    Ok((has_gender_key, has_non_gender_key))
+}
+
+#[cfg(feature = "schema")]
+fn gender_slot_schema_properties() -> serde_json::Value {
+    serde_json::json!({
+        "masculine": { "type": ["string", "null"] },
+        "feminine": { "type": ["string", "null"] },
+        "neuter": { "type": ["string", "null"] },
+        "common": { "type": ["string", "null"] }
+    })
 }
 
 fn value_kind(value: &Value) -> &'static str {
@@ -448,5 +546,93 @@ impl From<RawLocaleOverride> for super::types::LocaleOverride {
             grammar_options: raw.grammar_options,
             legacy_term_aliases: raw.legacy_term_aliases,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{RawGenderedString, RawTermValue};
+    #[cfg(feature = "schema")]
+    use crate::locale::RawLocale;
+
+    #[test]
+    fn test_gender_slots_accept_explicit_null_values() {
+        let parsed: RawTermValue = serde_yaml::from_str(
+            r#"
+masculine: editor
+feminine: editora
+common: null
+"#,
+        )
+        .expect("gendered term with null slot should parse");
+
+        match parsed {
+            RawTermValue::Gendered {
+                masculine,
+                feminine,
+                common,
+                ..
+            } => {
+                assert_eq!(masculine.as_deref(), Some("editor"));
+                assert_eq!(feminine.as_deref(), Some("editora"));
+                assert_eq!(common, None);
+            }
+            other => panic!("expected gendered term, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn test_all_null_gender_slots_still_parse() {
+        let parsed: RawGenderedString = serde_yaml::from_str(
+            r#"
+masculine: null
+feminine: null
+common: null
+"#,
+        )
+        .expect("all-null gender map should parse");
+
+        match parsed {
+            RawGenderedString::Gendered {
+                masculine,
+                feminine,
+                common,
+                ..
+            } => {
+                assert!(masculine.is_none());
+                assert!(feminine.is_none());
+                assert!(common.is_none());
+            }
+            other => panic!("expected gendered string, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn test_malformed_gender_map_reports_targeted_error() {
+        let error = serde_yaml::from_str::<RawTermValue>(
+            r#"
+masculine: editor
+femine: editora
+"#,
+        )
+        .expect_err("mixed gender-like map should fail");
+
+        assert!(
+            error
+                .to_string()
+                .contains("gendered locale terms cannot mix gender keys")
+        );
+    }
+
+    #[cfg(feature = "schema")]
+    #[test]
+    fn test_raw_term_schema_remains_untagged() {
+        let schema = schemars::schema_for!(RawLocale);
+        let schema_text = serde_json::to_string(&schema).expect("schema should serialize");
+
+        assert!(schema_text.contains("\"RawTermValue\""));
+        assert!(schema_text.contains("\"type\":\"string\""));
+        assert!(schema_text.contains("\"$ref\":\"#/$defs/RawGenderedString\""));
+        assert!(!schema_text.contains("\"Simple\""));
     }
 }

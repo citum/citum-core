@@ -1,0 +1,217 @@
+locale-schema-version: "2"
+locale: es-ES
+
+evaluation:
+  message-syntax: mf2
+
+dates:
+  months:
+    long:
+      - enero
+      - febrero
+      - marzo
+      - abril
+      - mayo
+      - junio
+      - julio
+      - agosto
+      - septiembre
+      - octubre
+      - noviembre
+      - diciembre
+    short:
+      - ene.
+      - feb.
+      - mar.
+      - abr.
+      - may.
+      - jun.
+      - jul.
+      - ago.
+      - sept.
+      - oct.
+      - nov.
+      - dic.
+  seasons:
+    - primavera
+    - verano
+    - otoño
+    - invierno
+
+roles:
+  author:
+    long:
+  chair:
+    long:
+      singular: presidente
+      plural: presidentes
+    verb: presidido por
+  collection-editor:
+    long:
+      singular:
+        masculine: director
+        feminine: directora
+        common: persona directora
+      plural:
+        masculine: directores
+        feminine: directoras
+        common: equipo editorial
+    short:
+      singular: dir.
+      plural: dirs.
+    verb: bajo la dirección de
+    verb-short: dir. de
+  contributor:
+    long:
+      singular: colaborador
+      plural: colaboradores
+    short:
+      singular: colab.
+      plural: colabs.
+    verb: con
+  director:
+    long:
+      singular:
+        masculine: director
+        feminine: directora
+        common: persona directora
+      plural:
+        masculine: directores
+        feminine: directoras
+        common: equipo de dirección
+    short:
+      singular: dir.
+      plural: dirs.
+    verb: dirigido por
+    verb-short: dir. por
+  editor:
+    long:
+      singular:
+        masculine: editor
+        feminine: editora
+        common: persona editora
+      plural:
+        masculine: editores
+        feminine: editoras
+        common: equipo editorial
+    short:
+      singular: ed.
+      plural: eds.
+    verb: editado por
+    verb-short: ed. por
+  editorial-director:
+    long:
+      singular:
+        masculine: director editorial
+        feminine: directora editorial
+        common: dirección editorial
+      plural:
+        masculine: directores editoriales
+        feminine: directoras editoriales
+        common: dirección editorial
+    short:
+      singular: dir. ed.
+      plural: dirs. ed.
+    verb: bajo la dirección editorial de
+    verb-short: dir. ed. de
+  illustrator:
+    long:
+      singular:
+        masculine: ilustrador
+        feminine: ilustradora
+        common: persona ilustradora
+      plural:
+        masculine: ilustradores
+        feminine: ilustradoras
+        common: equipo de ilustración
+    short:
+      singular: il.
+      plural: ils.
+    verb: ilustrado por
+    verb-short: il. por
+  interviewer:
+    long:
+      singular:
+        masculine: entrevistador
+        feminine: entrevistadora
+        common: persona entrevistadora
+      plural:
+        masculine: entrevistadores
+        feminine: entrevistadoras
+        common: equipo entrevistador
+    verb: entrevistado por
+  recipient:
+    long:
+    verb: a
+  reviewed-author:
+    long:
+    verb: por
+  translator:
+    long:
+      singular:
+        masculine: traductor
+        feminine: traductora
+        common: persona traductora
+      plural:
+        masculine: traductores
+        feminine: traductoras
+        common: equipo de traducción
+    short:
+      singular: trad.
+      plural: trads.
+    verb: traducido por
+    verb-short: trad. por
+
+locators:
+  chapter:
+    long:
+      singular: capítulo
+      plural: capítulos
+    short:
+      singular: cap.
+      plural: caps.
+  issue:
+    long:
+      singular: número
+      plural: números
+    short:
+      singular: n.º
+      plural: n.os
+  page:
+    long:
+      singular: página
+      plural: páginas
+    short:
+      singular: p.
+      plural: pp.
+    gender: feminine
+  section:
+    long:
+      singular: sección
+      plural: secciones
+    short:
+      singular: §
+      plural: §§
+    symbol:
+      singular: §
+      plural: §§
+    gender: feminine
+  volume:
+    long:
+      singular: volumen
+      plural: volúmenes
+    short:
+      singular: vol.
+      plural: vols.
+    gender: masculine
+
+terms:
+  and:
+    long: y
+  anonymous:
+    long: anónimo
+    short: anón.
+  et_al:
+    long: et al.
+  "no date":
+    long: s. f.

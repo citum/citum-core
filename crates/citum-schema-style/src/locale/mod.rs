@@ -553,12 +553,49 @@ impl Locale {
         value: &MaybeGendered<String>,
         requested_gender: Option<GrammaticalGender>,
     ) -> Option<&str> {
+        value
+            .resolve_with_fallback(requested_gender)
+            .map(String::as_str)
+    }
+
+    fn resolve_gendered_value_neutral(value: &MaybeGendered<String>) -> Option<&str> {
+        value.resolve_neutral().map(String::as_str)
+    }
+
+    fn resolve_no_date_value(
+        value: &SimpleTerm,
+        form: TermForm,
+        requested_gender: Option<GrammaticalGender>,
+    ) -> Option<&str> {
         match requested_gender {
-            Some(GrammaticalGender::Common) => value.resolve_neutral().map(String::as_str),
-            Some(gender) => value
-                .resolve_with_fallback(Some(gender))
-                .map(String::as_str),
-            None => value.resolve_with_fallback(None).map(String::as_str),
+            Some(GrammaticalGender::Common) => match form {
+                TermForm::Long => value
+                    .long
+                    .resolve_strict(Some(GrammaticalGender::Common))
+                    .map(String::as_str),
+                TermForm::Short => value
+                    .short
+                    .resolve_strict(Some(GrammaticalGender::Common))
+                    .map(String::as_str)
+                    .filter(|value| !value.is_empty())
+                    .or_else(|| {
+                        value
+                            .long
+                            .resolve_strict(Some(GrammaticalGender::Common))
+                            .map(String::as_str)
+                    }),
+                _ => value
+                    .long
+                    .resolve_strict(Some(GrammaticalGender::Common))
+                    .map(String::as_str),
+            },
+            _ => match form {
+                TermForm::Long => Self::resolve_gendered_value(&value.long, requested_gender),
+                TermForm::Short => Self::resolve_gendered_value(&value.short, requested_gender)
+                    .filter(|value| !value.is_empty())
+                    .or_else(|| Self::resolve_gendered_value(&value.long, requested_gender)),
+                _ => Self::resolve_gendered_value(&value.long, requested_gender),
+            },
         }
     }
 
@@ -590,6 +627,33 @@ impl Locale {
         }
     }
 
+    /// Resolve a contributor role term using only neutral/common values.
+    pub fn role_term_neutral(
+        &self,
+        role: &ContributorRole,
+        plural: bool,
+        form: TermForm,
+    ) -> Option<&str> {
+        let term = self.roles.get(role)?;
+        let simple = if plural { &term.plural } else { &term.singular };
+        let term_text = match form {
+            TermForm::Long => Self::resolve_gendered_value_neutral(&simple.long),
+            TermForm::Short => Self::resolve_gendered_value_neutral(&simple.short)
+                .filter(|value| !value.is_empty())
+                .or_else(|| Self::resolve_gendered_value_neutral(&simple.long)),
+            TermForm::Verb => Self::resolve_gendered_value(&term.verb.long, None),
+            TermForm::VerbShort => Self::resolve_gendered_value(&term.verb.short, None)
+                .filter(|value| !value.is_empty())
+                .or_else(|| Self::resolve_gendered_value(&term.verb.long, None)),
+            _ => Self::resolve_gendered_value_neutral(&simple.long),
+        };
+
+        match term_text {
+            Some(value) if !value.is_empty() => Some(value),
+            _ => None,
+        }
+    }
+
     /// Resolve a contributor role term, evaluating MF1 messages when configured.
     pub fn resolved_role_term(
         &self,
@@ -606,6 +670,24 @@ impl Locale {
         }
 
         self.role_term(role, plural, form, requested_gender)
+            .map(ToOwned::to_owned)
+    }
+
+    /// Resolve a contributor role term using only neutral/common values.
+    pub fn resolved_role_term_neutral(
+        &self,
+        role: &ContributorRole,
+        plural: bool,
+        form: TermForm,
+    ) -> Option<String> {
+        if let Some(message_id) = Self::role_message_id(role, form)
+            && let Some(resolved) =
+                self.resolve_message_text(message_id, Some(u64::from(plural) + 1), &[])
+        {
+            return Some(resolved);
+        }
+
+        self.role_term_neutral(role, plural, form)
             .map(ToOwned::to_owned)
     }
 
@@ -708,7 +790,9 @@ impl Locale {
         }
 
         // First try the flattened map
-        if let Some(simple) = self.terms.general.get(term) {
+        if *term != GeneralTerm::NoDate
+            && let Some(simple) = self.terms.general.get(term)
+        {
             return match form {
                 TermForm::Long => Self::resolve_gendered_value(&simple.long, requested_gender),
                 TermForm::Short => Self::resolve_gendered_value(&simple.short, requested_gender)
@@ -730,16 +814,7 @@ impl Locale {
                 .terms
                 .general
                 .get(term)
-                .map(|value| match form {
-                    TermForm::Long => {
-                        Self::resolve_gendered_value(&value.long, requested_gender).unwrap_or("")
-                    }
-                    TermForm::Short => Self::resolve_gendered_value(&value.short, requested_gender)
-                        .filter(|value| !value.is_empty())
-                        .or_else(|| Self::resolve_gendered_value(&value.long, requested_gender))
-                        .unwrap_or(""),
-                    _ => Self::resolve_gendered_value(&value.long, requested_gender).unwrap_or(""),
-                })
+                .and_then(|value| Self::resolve_no_date_value(value, form, requested_gender))
                 .or(self.terms.no_date.as_deref()),
             GeneralTerm::Retrieved => self.terms.retrieved.as_deref(),
             GeneralTerm::At => self.terms.at.as_deref(),
@@ -1214,10 +1289,20 @@ impl Locale {
                         locale.terms.ibid = Some(v.to_string());
                     }
                 }
-                "no_date" | "no date" => {
+                "no date" => {
+                    let simple = Self::extract_simple_term_from_raw(value);
+                    let short_fallback = simple.short.as_default_str().to_string();
+                    locale.terms.general.insert(GeneralTerm::NoDate, simple);
+                    locale.terms.no_date.get_or_insert(short_fallback);
+                }
+                "no_date" => {
                     let simple = Self::extract_simple_term_from_raw(value);
                     locale.terms.no_date = Some(simple.short.as_str().to_string());
-                    locale.terms.general.insert(GeneralTerm::NoDate, simple);
+                    locale
+                        .terms
+                        .general
+                        .entry(GeneralTerm::NoDate)
+                        .or_insert(simple);
                 }
                 _ => {
                     // Try to parse as GeneralTerm
@@ -1975,6 +2060,48 @@ roles:
                 Some(GrammaticalGender::Common),
             ),
             Some("equipo editorial")
+        );
+    }
+
+    #[test]
+    fn test_no_date_term_falls_back_when_requested_gender_has_no_matching_slot() {
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: es-ES
+terms:
+  no date:
+    long:
+      masculine: sin fecha
+  no_date: s. f.
+"#,
+        )
+        .expect("locale should parse");
+
+        assert_eq!(
+            locale.general_term(
+                &GeneralTerm::NoDate,
+                TermForm::Long,
+                Some(GrammaticalGender::Common),
+            ),
+            Some("s. f.")
+        );
+    }
+
+    #[test]
+    fn test_es_es_locale_is_embedded() {
+        let bytes = crate::embedded::get_locale_bytes("es-ES").expect("es-ES should be embedded");
+        let yaml = std::str::from_utf8(bytes).expect("embedded locale should be utf-8");
+        let locale = Locale::from_yaml_str(yaml).expect("embedded es-ES should parse");
+
+        assert_eq!(locale.locale, "es-ES");
+        assert_eq!(
+            locale.resolved_role_term(
+                &ContributorRole::Editor,
+                false,
+                TermForm::Long,
+                Some(GrammaticalGender::Feminine),
+            ),
+            Some("editora".to_string())
         );
     }
 

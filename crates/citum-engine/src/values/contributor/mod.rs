@@ -16,6 +16,69 @@ use citum_schema::template::{ContributorForm, ContributorRole, TemplateContribut
 pub(crate) use names::{NameFormatContext, format_single_name};
 pub use names::{NamesOverrides, format_contributors_short, format_names};
 
+/// Resolve a contributor payload for a template contributor role.
+///
+/// This preserves the legacy `editor()` / `translator()` accessors for
+/// reference shapes that still store those roles outside the generic
+/// contributor-entry list.
+pub(super) fn contributor_for_role(
+    reference: &Reference,
+    role: &ContributorRole,
+) -> Option<citum_schema::reference::Contributor> {
+    match role {
+        ContributorRole::Author => reference.author(),
+        ContributorRole::Editor => reference.editor(),
+        ContributorRole::Translator => reference.translator(),
+        _ => contributor_role_to_reference_role(role).and_then(|role| reference.contributor(role)),
+    }
+}
+
+/// Map a template contributor role to the corresponding reference contributor role.
+pub(super) fn contributor_role_to_reference_role(
+    role: &ContributorRole,
+) -> Option<citum_schema::reference::ContributorRole> {
+    match role {
+        ContributorRole::Author => Some(citum_schema::reference::ContributorRole::Author),
+        ContributorRole::Editor => Some(citum_schema::reference::ContributorRole::Editor),
+        ContributorRole::Translator => Some(citum_schema::reference::ContributorRole::Translator),
+        ContributorRole::Recipient => Some(citum_schema::reference::ContributorRole::Recipient),
+        ContributorRole::Chair => Some(citum_schema::reference::ContributorRole::Custom(
+            "chair".to_string(),
+        )),
+        ContributorRole::Interviewer => Some(citum_schema::reference::ContributorRole::Interviewer),
+        ContributorRole::Guest => Some(citum_schema::reference::ContributorRole::Guest),
+        ContributorRole::Director => Some(citum_schema::reference::ContributorRole::Director),
+        ContributorRole::Composer => Some(citum_schema::reference::ContributorRole::Composer),
+        ContributorRole::Illustrator => Some(citum_schema::reference::ContributorRole::Illustrator),
+        ContributorRole::Inventor => Some(citum_schema::reference::ContributorRole::Custom(
+            "inventor".to_string(),
+        )),
+        ContributorRole::Counsel => Some(citum_schema::reference::ContributorRole::Custom(
+            "counsel".to_string(),
+        )),
+        ContributorRole::CollectionEditor => Some(
+            citum_schema::reference::ContributorRole::Custom("collection-editor".to_string()),
+        ),
+        ContributorRole::ContainerAuthor => Some(citum_schema::reference::ContributorRole::Custom(
+            "container-author".to_string(),
+        )),
+        ContributorRole::EditorialDirector => Some(
+            citum_schema::reference::ContributorRole::Custom("editorial-director".to_string()),
+        ),
+        ContributorRole::TextualEditor => Some(citum_schema::reference::ContributorRole::Custom(
+            "textual-editor".to_string(),
+        )),
+        ContributorRole::OriginalAuthor => Some(citum_schema::reference::ContributorRole::Custom(
+            "original-author".to_string(),
+        )),
+        ContributorRole::ReviewedAuthor => Some(citum_schema::reference::ContributorRole::Custom(
+            "reviewed-author".to_string(),
+        )),
+        ContributorRole::Interviewee | ContributorRole::Publisher => None,
+        _ => None,
+    }
+}
+
 /// Checks if a contributor role label should be omitted for a given reference.
 ///
 /// Returns true if the role appears in the configuration's role.omit list.
@@ -159,59 +222,10 @@ impl ComponentValues for TemplateContributor {
                 if options.suppress_author {
                     None
                 } else {
-                    reference.author()
+                    contributor_for_role(reference, &component.contributor)
                 }
             }
-            ContributorRole::Editor => reference.editor(),
-            ContributorRole::Translator => reference.translator(),
-            ContributorRole::Recipient => {
-                reference.contributor(citum_schema::reference::ContributorRole::Recipient)
-            }
-            ContributorRole::Chair => reference.contributor(
-                citum_schema::reference::ContributorRole::Custom("chair".to_string()),
-            ),
-            ContributorRole::Interviewer => {
-                reference.contributor(citum_schema::reference::ContributorRole::Interviewer)
-            }
-            ContributorRole::Guest => {
-                reference.contributor(citum_schema::reference::ContributorRole::Guest)
-            }
-            ContributorRole::Director => {
-                reference.contributor(citum_schema::reference::ContributorRole::Director)
-            }
-            ContributorRole::Composer => {
-                reference.contributor(citum_schema::reference::ContributorRole::Composer)
-            }
-            ContributorRole::Illustrator => {
-                reference.contributor(citum_schema::reference::ContributorRole::Illustrator)
-            }
-            ContributorRole::Interviewee => None, // Not a standard reference contributor role
-            ContributorRole::Publisher => None, // Publisher is a corporate entity, not a person contributor
-            ContributorRole::Inventor => reference.contributor(
-                citum_schema::reference::ContributorRole::Custom("inventor".to_string()),
-            ),
-            ContributorRole::Counsel => reference.contributor(
-                citum_schema::reference::ContributorRole::Custom("counsel".to_string()),
-            ),
-            ContributorRole::CollectionEditor => reference.contributor(
-                citum_schema::reference::ContributorRole::Custom("collection-editor".to_string()),
-            ),
-            ContributorRole::ContainerAuthor => reference.contributor(
-                citum_schema::reference::ContributorRole::Custom("container-author".to_string()),
-            ),
-            ContributorRole::EditorialDirector => reference.contributor(
-                citum_schema::reference::ContributorRole::Custom("editorial-director".to_string()),
-            ),
-            ContributorRole::TextualEditor => reference.contributor(
-                citum_schema::reference::ContributorRole::Custom("textual-editor".to_string()),
-            ),
-            ContributorRole::OriginalAuthor => reference.contributor(
-                citum_schema::reference::ContributorRole::Custom("original-author".to_string()),
-            ),
-            ContributorRole::ReviewedAuthor => reference.contributor(
-                citum_schema::reference::ContributorRole::Custom("reviewed-author".to_string()),
-            ),
-            _ => None, // Handle any future template contributor roles
+            _ => contributor_for_role(reference, &component.contributor),
         };
 
         // Resolve substitute config once for all substitute/suppression checks below.

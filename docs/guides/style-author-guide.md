@@ -128,6 +128,79 @@ Renders numeric data: volume, issue, pages, edition, etc.
   form: numeric  # numeric | ordinal | roman
 ```
 
+## [translate] Gender-Aware Locale Terms
+
+Citum locale terms can now vary by grammatical gender when the language requires it.
+
+### Reference Data
+
+Contributor-driven role labels use an explicit `gender` field on contributor entries:
+
+```yaml
+contributors:
+  - role: editor
+    contributor:
+      family: "Martinez"
+      given: "Ana"
+    gender: feminine
+```
+
+Mixed-gender contributor groups prefer a locale's neutral/common form when one exists. If a locale only provides gendered masculine/feminine variants and no neutral/common form, Citum does not silently fall back to a masculine-specific label for the mixed group.
+
+### Template Overrides
+
+Use a template-level `gender` override when a term or number label must request a specific agreement form directly:
+
+```yaml
+- contributor: editor
+  form: long
+  gender: feminine
+
+- term: volume
+  form: short
+  gender: masculine
+
+- number: volume
+  label-form: short
+  gender: feminine
+```
+
+### Locale YAML
+
+Locale terms still accept plain strings, but they can now also use gendered maps:
+
+```yaml
+roles:
+  editor:
+    long:
+      singular:
+        masculine: editor
+        feminine: editora
+        common: persona editora
+      plural:
+        masculine: editores
+        feminine: editoras
+        common: equipo editorial
+```
+
+Locator terms can also declare lexical gender metadata for noun agreement:
+
+```yaml
+locators:
+  page:
+    long:
+      singular: página
+      plural: páginas
+    short:
+      singular: p.
+      plural: pp.
+    gender: feminine
+```
+
+> [!TIP]
+> **Current scope**
+> Gender-aware rendering currently applies to locale term selection and contributor role labels. Verb-form role terms such as `edited by` remain ungendered in this release, even though they share the same underlying Rust type.
+
 ## [formatting] Rendering Options
 
 Every component can be modified with rendering options that control punctuation, formatting, and text wrapping.

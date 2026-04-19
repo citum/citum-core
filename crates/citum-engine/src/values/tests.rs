@@ -1,7 +1,7 @@
 use super::*;
 use crate::reference::Reference;
 use crate::render::plain::PlainText;
-use citum_schema::locale::{GeneralTerm, Locale, TermForm};
+use citum_schema::locale::{GeneralTerm, GrammaticalGender, Locale, TermForm};
 use citum_schema::options::contributors::NameForm;
 use citum_schema::options::*;
 use citum_schema::reference::{
@@ -46,30 +46,8 @@ fn make_reference() -> Reference {
 }
 
 fn make_spanish_gendered_locale() -> Locale {
-    Locale::from_yaml_str(
-        r#"
-locale: es-ES
-roles:
-  editor:
-    long:
-      singular:
-        masculine: editor
-        feminine: editora
-        common: persona editora
-      plural:
-        masculine: editores
-        feminine: editoras
-        common: equipo editorial
-    short:
-      singular: ed.
-      plural: eds.
-    verb: editado por
-terms:
-  and:
-    long: y
-"#,
-    )
-    .expect("spanish locale should parse")
+    Locale::from_yaml_str(include_str!("../../../../locales/es-ES.yaml"))
+        .expect("spanish locale should parse")
 }
 
 fn make_editor_reference(genders: &[ContributorGender]) -> Reference {
@@ -95,6 +73,52 @@ fn make_editor_reference(genders: &[ContributorGender]) -> Reference {
         issued: EdtfString("2024".to_string()),
         ..Default::default()
     }))
+}
+
+fn make_custom_role_reference(
+    role: citum_schema::reference::ContributorRole,
+    genders: &[ContributorGender],
+) -> Reference {
+    let contributors = genders
+        .iter()
+        .enumerate()
+        .map(|(idx, gender)| ContributorEntry {
+            role: role.clone(),
+            contributor: Contributor::StructuredName(StructuredName {
+                family: format!("Persona{idx}").into(),
+                given: format!("Nombre{idx}").into(),
+                ..Default::default()
+            }),
+            gender: Some(*gender),
+        })
+        .collect();
+
+    InputReference::Monograph(Box::new(Monograph {
+        id: Some("custom-role-ref".into()),
+        r#type: MonographType::Book,
+        title: Some(Title::Single("Obra".to_string())),
+        contributors,
+        issued: EdtfString("2024".to_string()),
+        ..Default::default()
+    }))
+}
+
+fn make_gendered_locator_locale() -> Locale {
+    Locale::from_yaml_str(
+        r#"
+locale: es-ES
+locators:
+  volume:
+    short:
+      singular:
+        masculine: tomo
+        feminine: entrega
+      plural:
+        masculine: tomos
+        feminine: entregas
+"#,
+    )
+    .expect("gendered locator locale should parse")
 }
 
 /// Helper to create `NameFormatContext` for tests.
@@ -271,6 +295,98 @@ fn test_spanish_role_label_prefers_common_form_for_mixed_group() {
         .expect("mixed editors should render");
 
     assert_eq!(values.suffix, Some(", equipo editorial".to_string()));
+}
+
+#[test]
+fn test_spanish_role_label_omits_gendered_label_for_mixed_group_without_common_form() {
+    let config = make_config();
+    let locale = Locale::from_yaml_str(
+        r#"
+locale: es-ES
+roles:
+  editor:
+    long:
+      singular:
+        masculine: editor
+        feminine: editora
+      plural:
+        masculine: editores
+        feminine: editoras
+"#,
+    )
+    .expect("locale should parse");
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let reference =
+        make_editor_reference(&[ContributorGender::Feminine, ContributorGender::Masculine]);
+    let hints = ProcHints::default();
+
+    let component = TemplateContributor {
+        contributor: ContributorRole::Editor,
+        form: ContributorForm::Long,
+        label: Some(RoleLabel {
+            term: "editor".to_string(),
+            form: RoleLabelForm::Long,
+            placement: LabelPlacement::Suffix,
+        }),
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("editors should render");
+
+    assert_eq!(values.suffix, None);
+}
+
+#[test]
+fn test_collection_editor_role_label_derives_gender_from_reference_data() {
+    let config = make_config();
+    let locale = make_spanish_gendered_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let reference = make_custom_role_reference(
+        citum_schema::reference::ContributorRole::Custom("collection-editor".to_string()),
+        &[ContributorGender::Feminine],
+    );
+    let hints = ProcHints::default();
+
+    let component = TemplateContributor {
+        contributor: ContributorRole::CollectionEditor,
+        form: ContributorForm::Long,
+        label: Some(RoleLabel {
+            term: "collection-editor".to_string(),
+            form: RoleLabelForm::Long,
+            placement: LabelPlacement::Suffix,
+        }),
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("collection editor should render");
+
+    assert_eq!(values.suffix, Some(", directora".to_string()));
 }
 
 /// Tests the behavior of `test_date_values`.
@@ -1766,6 +1882,59 @@ locators:
 
     assert_eq!(values.value, "3");
     assert_eq!(values.prefix, Some("reel ".to_string()));
+}
+
+#[test]
+fn test_template_number_gender_overrides_locator_label_resolution() {
+    let config = make_config();
+    let locale = make_gendered_locator_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "book-1".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("Libro".to_string()),
+        volume: Some(csl_legacy::csl_json::StringOrNumber::String(
+            "1".to_string(),
+        )),
+        issued: Some(DateVariable::year(2024)),
+        ..Default::default()
+    });
+
+    let masculine = TemplateNumber {
+        number: NumberVariable::Volume,
+        label_form: Some(citum_schema::template::LabelForm::Short),
+        gender: Some(GrammaticalGender::Masculine),
+        ..Default::default()
+    };
+    let feminine = TemplateNumber {
+        number: NumberVariable::Volume,
+        label_form: Some(citum_schema::template::LabelForm::Short),
+        gender: Some(GrammaticalGender::Feminine),
+        ..Default::default()
+    };
+
+    let masculine_values = masculine
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("masculine volume should render");
+    let feminine_values = feminine
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("feminine volume should render");
+
+    assert_eq!(masculine_values.prefix, Some("tomo ".to_string()));
+    assert_eq!(feminine_values.prefix, Some("entrega ".to_string()));
 }
 
 #[test]

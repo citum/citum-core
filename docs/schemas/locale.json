@@ -310,174 +310,66 @@
     },
     "RawTermValue": {
       "description": "A term value that can be a simple string or have singular/plural forms.",
-      "oneOf": [
+      "anyOf": [
         {
           "description": "Simple string value.",
-          "type": "object",
-          "properties": {
-            "Simple": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "Simple"
-          ],
-          "additionalProperties": false
+          "type": "string"
         },
         {
           "description": "Singular/plural forms.",
           "type": "object",
           "properties": {
-            "SingularPlural": {
-              "type": "object",
-              "properties": {
-                "singular": {
-                  "description": "Singular form of the term.",
-                  "$ref": "#/$defs/RawGenderedString"
-                },
-                "plural": {
-                  "description": "Plural form of the term.",
-                  "$ref": "#/$defs/RawGenderedString"
-                }
-              },
-              "required": [
-                "singular",
-                "plural"
+            "singular": {
+              "$ref": "#/$defs/RawGenderedString"
+            },
+            "plural": {
+              "$ref": "#/$defs/RawGenderedString"
+            }
+          },
+          "required": [
+            "singular",
+            "plural"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "description": "Gender-specific values.",
+          "type": "object",
+          "properties": {
+            "masculine": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "feminine": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "neuter": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "common": {
+              "type": [
+                "string",
+                "null"
               ]
             }
           },
-          "required": [
-            "SingularPlural"
-          ],
-          "additionalProperties": false
+          "additionalProperties": false,
+          "minProperties": 1
         },
         {
-          "description": "Gender-specific values.",
+          "description": "Form-keyed value (for terms with long/short or nested forms).",
           "type": "object",
-          "properties": {
-            "Gendered": {
-              "type": "object",
-              "properties": {
-                "masculine": {
-                  "description": "Masculine form.",
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "default": null
-                },
-                "feminine": {
-                  "description": "Feminine form.",
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "default": null
-                },
-                "neuter": {
-                  "description": "Neuter form.",
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "default": null
-                },
-                "common": {
-                  "description": "Common or shared form.",
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "default": null
-                }
-              }
-            }
-          },
-          "required": [
-            "Gendered"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "description": "Form-keyed value (for terms with long/short forms).",
-          "type": "object",
-          "properties": {
-            "Forms": {
-              "type": "object",
-              "additionalProperties": {
-                "$ref": "#/$defs/RawTermValue"
-              }
-            }
-          },
-          "required": [
-            "Forms"
-          ],
-          "additionalProperties": false
-        }
-      ]
-    },
-    "RawGenderedString": {
-      "description": "A raw string that may include gender-specific variants.",
-      "oneOf": [
-        {
-          "description": "Plain string value.",
-          "type": "object",
-          "properties": {
-            "Simple": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "Simple"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "description": "Gender-specific values.",
-          "type": "object",
-          "properties": {
-            "Gendered": {
-              "type": "object",
-              "properties": {
-                "masculine": {
-                  "description": "Masculine form.",
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "default": null
-                },
-                "feminine": {
-                  "description": "Feminine form.",
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "default": null
-                },
-                "neuter": {
-                  "description": "Neuter form.",
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "default": null
-                },
-                "common": {
-                  "description": "Common or shared form.",
-                  "type": [
-                    "string",
-                    "null"
-                  ],
-                  "default": null
-                }
-              }
-            }
-          },
-          "required": [
-            "Gendered"
-          ],
-          "additionalProperties": false
+          "additionalProperties": {
+            "$ref": "#/$defs/RawTermValue"
+          }
         }
       ]
     },

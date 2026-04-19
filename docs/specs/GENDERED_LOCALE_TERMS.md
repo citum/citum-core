@@ -11,13 +11,13 @@ Two concrete cases:
 
 **Contributor role terms (Romance languages).** Spanish “editor” is “editor” (masculine) or “editora” (feminine). A locale file author currently has no way to encode both forms; they must pick one and accept incorrect output for the other.
 
-**Ordinals (Arabic, Romance languages).** Arabic ordinals inflect for gender: the masculine first ordinal is “الأول” while the feminine is “الأولى”. No single string can represent both.
+**Future ordinal agreement.** Some languages also need grammatical gender for ordinals and other noun-agreement cases. This remains follow-up work, but the term model introduced here is intended to make that future work possible.
 
 Citum needs a way to:
 
 - Store gendered variants of term values where required.
 - Attach lexical gender metadata to noun-like terms for agreement.
-- Select the right variant at render time, based on an explicit agreement context.
+- Select the right variant at render time, based on an explicit agreement context where the engine currently supports it.
 
 ## Prior Art
 
@@ -43,7 +43,7 @@ Citum introduces three related but distinct pieces:
 
 1. **Gendered term values**: `MaybeGendered<T>` carries either a single value or a set of gender-specific variants.
 2. **Grammatical gender category**: `GrammaticalGender` enumerates the stable set of genders the engine recognizes for agreement.
-3. **Lexical gender metadata**: optional `gender: GrammaticalGender` on noun-like locale terms to drive agreement, especially for ordinals.
+3. **Lexical gender metadata**: optional `gender: GrammaticalGender` on locale entries that act as agreement targets. In this release, that metadata is surfaced on locator terms.
 
 The engine passes an optional **requested agreement gender** (`requested_gender: Option<GrammaticalGender>`) into term resolution. Callers that do not need gendered output pass `None` and receive existing behavior.
 
@@ -173,13 +173,15 @@ No term *must* become gendered; `Plain` is the default representation and is suf
 
 **`Default` impl and existing initializers.** The `SimpleTerm` and `SingularPlural` field-type changes are source-breaking. All existing initializers — including `Terms::en_us()`, any `Default` impl, and any test fixtures that construct these structs directly — must wrap plain string literals in `MaybeGendered::Plain(...)`. No existing locale file needs to change, but Rust construction sites must be updated in the same commit as the type change.
 
-## Lexical gender metadata on terms
+## Lexical gender metadata on locale entries
 
-In addition to gendered values, noun-like locale entries gain optional lexical gender metadata:
+In addition to gendered values, locale entries that act as agreement targets gain optional lexical gender metadata:
 
 ```rust
-pub struct NounTerm {
-    pub value: SingularPlural,
+pub struct LocatorTerm {
+    pub long: Option<SingularPlural>,
+    pub short: Option<SingularPlural>,
+    pub symbol: Option<SingularPlural>,
     pub gender: Option<GrammaticalGender>,
 }
 ```
@@ -187,22 +189,24 @@ pub struct NounTerm {
 Schema-wise, this is surfaced as a `gender` property on the term entry:
 
 ```yaml
-# In locale/fr-FR.yaml
-terms:
-  edition:
-    singular: "édition"
-    plural: "éditions"
+# In locale/es-ES.yaml
+locators:
+  page:
+    long:
+      singular: "página"
+      plural: "páginas"
     gender: feminine
 ```
 
 Constraints:
 
-- `gender` is only meaningful on **noun-like terms** that serve as agreement targets (e.g., “edition”, “volume”, possibly some locators).
+- `gender` is only meaningful on locale entries that serve as agreement targets.
+- In this release, the checked-in schema/runtime surface that metadata on locator terms.
 - `gender` MUST NOT be used on terms where grammatical gender depends on the referent (e.g., contributor roles “editor/editora”); in those cases, `MaybeGendered<String>` carries variants and the agreement context comes from reference data.
 
-The concrete Rust types composing these fields (`NounTerm` vs other term structs) are an implementation detail; the spec guarantees only:
+The concrete Rust types composing these fields are an implementation detail; the spec guarantees only:
 
-- For noun-like terms, `gender: GrammaticalGender?` is available for agreement logic.
+- For supported locale entries, `gender: GrammaticalGender?` is available for agreement logic.
 - For all terms, values are expressed via `MaybeGendered<String>` as defined above.
 
 ## YAML representation
@@ -231,23 +235,14 @@ roles:
         feminine:  "editoras"
 ```
 
-An Arabic locale for ordinals (once ordinal term support lands):
+A locator entry can also expose lexical gender metadata for future agreement work:
 
 ```yaml
-terms:
-  ordinal-01:
-    singular:
-      masculine: "الأول"
-      feminine:  "الأولى"
-```
-
-A French locale declaring the lexical gender of a noun:
-
-```yaml
-terms:
+locators:
   edition:
-    singular: "édition"
-    plural: "éditions"
+    long:
+      singular: "edición"
+      plural: "ediciones"
     gender: feminine
 ```
 
@@ -329,27 +324,24 @@ The engine derives `requested_gender` from three sources, in strictly defined pr
    - If exactly one contributor is relevant and has a `gender`, use that `GrammaticalGender`.
    - If there are multiple contributors: collect only those that have an *explicit* `gender` field (contributors with no `gender` field are skipped, not treated as a mismatch). If all collected genders are identical and at least one contributor has a gender, use that shared gender.
    - If no contributor has an explicit `gender`, do not derive a `requested_gender` from reference data.
-   - If the collected genders differ, request `Common` and prefer a plain/common locale form rather than falling through to masculine/feminine-specific slots.
+   - If the collected genders differ, use a contributor-specific neutral resolution path that prefers a plain/common locale form rather than falling through to masculine/feminine-specific slots.
 
    This avoids silently gendering plural role labels from the first name only.
 
-3. **Locale lexical gender** — a `gender` property on the term entry itself, declaring the grammatical gender of that noun. Used for ordinals and other agreement cases that must match a noun (e.g., “1re édition” because *édition* is feminine).
+3. **Locale lexical gender** — a `gender` property on the locale entry itself, declaring the grammatical gender of that noun. In this release, the schema and runtime surface this metadata on locator terms. It is available for current template-level overrides and for follow-up agreement work, but full ordinal-agreement rendering is not part of this PR.
 
    YAML (as above):
 
    ```yaml
-   terms:
+   locators:
      edition:
-       singular: "édition"
-       plural: "éditions"
+       long:
+         singular: "edición"
+         plural: "ediciones"
        gender: feminine
    ```
 
-   When a template says `number: edition, form: ordinal`, the engine:
-
-   - Looks up the “edition” term.
-   - Reads its `gender` (if any).
-   - Uses it as `requested_gender` when resolving the ordinal form.
+   The current implementation does not yet derive ordinal rendering directly from locator lexical gender. That remains follow-up work; this PR limits runtime gender-aware rendering to contributor-role labels plus explicit template overrides on the term/number components that already use locale term lookup.
 
 If none of the three sources produces a `requested_gender`, the engine passes `None` and relies entirely on the fallback behavior in `MaybeGendered::resolve_with_fallback`.
 
@@ -366,7 +358,6 @@ let value: Option<&str> = term_value
 This ensures:
 
 - Template-level override feeds directly into the gender slot selection.
-- When an ordinal is tied to a noun with lexical gender, that gender drives agreement automatically.
 - When no agreement information is known, `Plain` values still work, and `Gendered` values fall back in a deterministic order.
 
 ### Out-of-scope semantics
@@ -377,7 +368,7 @@ The following remain out of scope for this change:
 - Grammatical case, animacy, person, or full declension tables.
 - Higher-level message-format constructs that perform gender agreement across whole sentences (ICU MessageFormat-style selects).
 
-The gender feature is intentionally narrow: it only affects locale **term** values and agreement with those terms.
+The gender feature is intentionally narrow in this release: it affects locale **term** values, contributor-role label selection, and template-driven term/number lookups that already route through locale resolution.
 
 ## Raw term value and deserialization
 
@@ -444,17 +435,15 @@ Existing locale tests MUST continue to pass unchanged:
 - [ ] `GrammaticalGender` defined and used consistently for both lexical metadata and requested agreement context.
 - [ ] `SimpleTerm.long` / `.short` changed to `MaybeGendered<String>`.
 - [ ] `SingularPlural.singular` / `.plural` changed to `MaybeGendered<String>`.
-- [ ] Noun-like terms support optional lexical `gender: GrammaticalGender` in the locale schema and corresponding Rust types.
+- [ ] Supported locale entries expose optional lexical `gender: GrammaticalGender` in the locale schema and corresponding Rust types.
 - [ ] `Locale::role_term`, `locator_term`, `general_term` accept `requested_gender: Option<GrammaticalGender>`.
 - [ ] All existing locale tests pass (plain-string values round-trip correctly; behavior with `None` requested gender matches prior output).
 - [ ] New snapshot tests:
       - Spanish contributor role with gendered variants (e.g., “editor/editora”).
-      - Arabic gendered ordinal agreeing with a feminine noun.
 - [ ] New unit tests for:
       - `resolve_with_fallback` behavior with each slot populated individually.
       - Deterministic fallback when `requested_gender` is `None`.
       - Reference-data behavior for one vs multiple contributors with matching and mixed genders.
-      - Ordinal agreement derived from lexical noun gender.
 - [ ] `RawTermValue` extended with a `Gendered`-shaped variant and conversion to `MaybeGendered<String>`.
 - [ ] This spec’s `Status` set to `Active` in the same commit as the first implementation.
 
@@ -489,9 +478,9 @@ For future implementers and spec readers, these resources provide additional con
 
 - Renamed and stabilized the gender category type as `GrammaticalGender`, and documented its use both as lexical gender metadata on noun-like terms and as the requested agreement context in engine calls.
 
-- Introduced explicit lexical `gender: GrammaticalGender` metadata for noun-like locale terms (e.g., `edition`), and defined how ordinal rendering derives `requested_gender` from this metadata for gender agreement.
+- Introduced explicit lexical `gender: GrammaticalGender` metadata for supported locale entries, and narrowed the current runtime claims so full ordinal-agreement rendering remains follow-up work.
 
-- Tightened the agreement source precedence to a clear chain: template-level override → reference-data contributor gender (with defined behavior for single vs multiple contributors) → locale lexical gender, falling back to locale defaults when none apply.
+- Tightened the agreement source precedence to a clear chain: template-level override → reference-data contributor gender, falling back to locale defaults when none apply. Locale lexical gender metadata is now documented as schema/runtime surface for follow-up agreement work rather than claiming full ordinal wiring in this PR.
 
 - Specified which term kinds may safely carry lexical gender metadata vs those that should only use gendered variants (e.g., contributor roles), to avoid overloading `gender` on terms whose form depends on the referent.
 
