@@ -13,7 +13,7 @@ use citum_engine::values::{
     effective_field_language, effective_item_language, resolve_multilingual_string,
 };
 use citum_schema::{
-    BibliographySpec, CitationSpec, LocalizedTemplateSpec, Style, StyleInfo, StylePreset,
+    BibliographySpec, CitationSpec, LocalizedTemplateSpec, Style, StyleBase, StyleInfo,
     options::{
         Config, ContributorConfig, MultilingualConfig, MultilingualMode, Processing,
         RoleLabelPreset, RoleOptions, RoleRendering, TitleRendering,
@@ -1149,7 +1149,7 @@ fn chicago_german_override_localizes_editor_verb() {
             default_locale: Some("de-DE".to_string()),
             ..Default::default()
         },
-        preset: Some(StylePreset::ChicagoAuthorDate18th),
+        extends: Some(StyleBase::ChicagoAuthorDate18th),
         options: Some(Config {
             locale_override: Some("de-DE-chicago".to_string()),
             contributors: Some(ContributorConfig {

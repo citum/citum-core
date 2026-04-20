@@ -7,7 +7,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.34.0"
+      "default": "0.35.0"
     },
     "info": {
       "description": "Style metadata.",
@@ -68,11 +68,11 @@
       ],
       "additionalProperties": true
     },
-    "preset": {
-      "description": "Style-level preset reference with optional variant delta overlay.\n\nWhen present, the base [`StylePreset`] is resolved and the variant\ndelta merged before any further processing. Explicit `options`,\n`citation`, and `bibliography` keys at the same document level take\nprecedence over the resolved preset.",
+    "extends": {
+      "description": "Extends a base style, with optional local overrides.\n\nWhen present, the base [`StyleBase`] is resolved and the local\noverrides are merged before any further processing. Explicit `options`,\n`citation`, and `bibliography` keys at the same document level take\nprecedence over the resolved base.",
       "anyOf": [
         {
-          "$ref": "#/$defs/StylePreset"
+          "$ref": "#/$defs/StyleBase"
         },
         {
           "type": "null"
@@ -5414,8 +5414,8 @@
         }
       ]
     },
-    "StylePreset": {
-      "description": "A named, compiled-in style preset (Level 2 of Citum's preset hierarchy).\n\nA style file declares `preset: <key>` to inherit a complete base style.\nAny top-level fields in the file (`options`, `citation`, `bibliography`,\netc.) are merged over the preset base, with local fields taking\nultimate precedence.",
+    "StyleBase": {
+      "description": "A named, compiled-in style base that serves as an inheritance root.\n\nA style file declares `extends: <key>` to inherit a complete base style.\nAny top-level fields in the file (`options`, `citation`, `bibliography`,\netc.) are merged over the base, with local fields taking\nultimate precedence.",
       "oneOf": [
         {
           "description": "Chicago Manual of Style 18th edition — notes without bibliography.",

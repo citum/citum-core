@@ -1,4 +1,4 @@
-preset: chicago-notes-18th
+extends: chicago-notes-18th
 info:
   title: Chicago Manual of Style 18th edition (shortened notes and bibliography)
   description: Chicago-style source citations (with Bluebook for legal citations), shortened author-title notes and bibliography system

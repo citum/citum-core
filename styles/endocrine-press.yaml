@@ -1,4 +1,4 @@
-preset: american-medical-association
+extends: american-medical-association
 info:
   title: Endocrine Press
   description: The American Medical Association style  with parentheses, bold authors, and no et-al

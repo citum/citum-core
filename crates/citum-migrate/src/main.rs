@@ -2,6 +2,7 @@
 
 use citum_migrate::{
     Compressor, MacroInliner, OptionsExtractor, TemplateCompiler, Upsampler, analysis,
+    base_detector,
     debug_output::DebugOutputFormatter,
     fixups::{
         citation_template_has_citation_number, citation_template_is_author_year_only,
@@ -13,7 +14,7 @@ use citum_migrate::{
         note_citation_template_is_underfit, scrub_inferred_literal_artifacts,
         should_merge_inferred_type_template,
     },
-    passes, preset_detector,
+    passes,
     provenance::ProvenanceTracker,
     template_resolver,
 };
@@ -954,7 +955,7 @@ fn validate_and_normalize_inferred_citations(
 fn apply_author_date_bibliography_passes(
     new_bib: &mut Vec<TemplateComponent>,
     options: &mut citum_schema::options::Config,
-    style_preset: Option<preset_detector::StylePreset>,
+    style_base: Option<base_detector::StyleBase>,
 ) {
     // Detect if the style uses space prefix for volume (Elsevier pattern)
     let volume_list_has_space_prefix = new_bib.iter().any(|c| {
@@ -978,7 +979,7 @@ fn apply_author_date_bibliography_passes(
             component,
             vol_pages_delim.clone(),
             volume_list_has_space_prefix,
-            style_preset,
+            style_base,
         );
     }
 
@@ -1007,22 +1008,22 @@ fn apply_author_date_bibliography_passes(
     passes::reorder::reorder_serial_components(new_bib);
 
     // Combine volume and issue into a grouped structure: volume(issue)
-    passes::grouping::group_volume_and_issue(new_bib, options, style_preset);
+    passes::grouping::group_volume_and_issue(new_bib, options, style_base);
 
     // Move pages to after the container-title/volume List for serial types.
     passes::reorder::reorder_pages_for_serials(new_bib);
 
     // Reorder publisher-place for Chicago journal articles.
-    passes::reorder::reorder_publisher_place_for_chicago(new_bib, style_preset);
+    passes::reorder::reorder_publisher_place_for_chicago(new_bib, style_base);
 
     // Reorder chapters for APA: "In " prefix + editors before book title
-    passes::reorder::reorder_chapters_for_apa(new_bib, style_preset);
+    passes::reorder::reorder_chapters_for_apa(new_bib, style_base);
 
     // Reorder chapters for Chicago: "In" prefix + book title before editors
-    passes::reorder::reorder_chapters_for_chicago(new_bib, style_preset);
+    passes::reorder::reorder_chapters_for_chicago(new_bib, style_base);
 
     // Fix Chicago issue placement
-    passes::deduplicate::suppress_duplicate_issue_for_journals(new_bib, style_preset);
+    passes::deduplicate::suppress_duplicate_issue_for_journals(new_bib, style_base);
 }
 
 /// Run the full XML compilation pipeline for bibliography and citation templates.
@@ -1137,13 +1138,13 @@ fn compile_from_xml(
     }
 
     // Detect holistic style preset for semantic fixups
-    let style_preset = preset_detector::detect_style_preset(options);
-    if let Some(preset) = style_preset {
-        eprintln!("Detected style preset: {preset:?}");
+    let style_base = base_detector::detect_style_base(options);
+    if let Some(base) = style_base {
+        eprintln!("Detected style base: {base:?}");
     }
 
     if is_in_text_class && is_author_date_processing {
-        apply_author_date_bibliography_passes(&mut new_bib, options, style_preset);
+        apply_author_date_bibliography_passes(&mut new_bib, options, style_base);
     }
 
     let type_templates_opt = if type_templates.is_empty() {
@@ -1284,7 +1285,7 @@ fn apply_type_overrides(
     component: &mut TemplateComponent,
     volume_pages_delimiter: Option<DelimiterPunctuation>,
     volume_list_has_space_prefix: bool,
-    style_preset: Option<preset_detector::StylePreset>,
+    style_base: Option<base_detector::StyleBase>,
 ) {
     if let TemplateComponent::Group(list) = component {
         for item in &mut list.group {
@@ -1292,7 +1293,7 @@ fn apply_type_overrides(
                 item,
                 volume_pages_delimiter.clone(),
                 volume_list_has_space_prefix,
-                style_preset,
+                style_base,
             );
         }
     }
@@ -1308,19 +1309,19 @@ fn relax_inferred_bibliography_date_suppression(template: &mut [TemplateComponen
 
 fn apply_preset_extractions(options: &mut citum_schema::options::Config) {
     if let Some(contributors) = options.contributors.clone()
-        && let Some(preset) = preset_detector::detect_contributor_preset(&contributors)
+        && let Some(preset) = base_detector::detect_contributor_preset(&contributors)
     {
         options.contributors = Some(preset.config());
     }
 
     if let Some(titles) = options.titles.clone()
-        && let Some(preset) = preset_detector::detect_title_preset(&titles)
+        && let Some(preset) = base_detector::detect_title_preset(&titles)
     {
         options.titles = Some(preset.config());
     }
 
     if let Some(dates) = options.dates.clone()
-        && let Some(preset) = preset_detector::detect_date_preset(&dates)
+        && let Some(preset) = base_detector::detect_date_preset(&dates)
     {
         options.dates = Some(preset.config());
     }

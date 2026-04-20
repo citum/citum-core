@@ -5,6 +5,8 @@ use std::collections::HashMap;
 
 /// CSL 1.0 analysis utilities.
 pub mod analysis;
+/// Base detector for style classification.
+pub mod base_detector;
 /// YAML/template compressor for reducing style size.
 pub mod compressor;
 /// Debug output formatting.
@@ -18,8 +20,6 @@ mod js_runtime;
 pub mod options_extractor;
 /// Multi-pass processing pipeline.
 pub mod passes;
-/// Preset detector for style classification.
-pub mod preset_detector;
 /// Provenance tracking for style migration.
 pub mod provenance;
 /// CSL 1.0 to Citum template compilation.
@@ -29,11 +29,11 @@ pub mod template_resolver;
 /// Upsampler for style enhancement.
 pub mod upsampler;
 
+pub use base_detector::{detect_contributor_preset, detect_date_preset, detect_title_preset};
 pub use compressor::Compressor;
 pub use debug_output::DebugOutputFormatter;
 pub use info_extractor::InfoExtractor;
 pub use options_extractor::OptionsExtractor;
-pub use preset_detector::{detect_contributor_preset, detect_date_preset, detect_title_preset};
 pub use provenance::{ProvenanceTracker, SourceLocation};
 pub use template_compiler::TemplateCompiler;
 pub use upsampler::Upsampler;

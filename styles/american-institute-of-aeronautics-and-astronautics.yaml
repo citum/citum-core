@@ -1,4 +1,4 @@
-preset: ieee
+extends: ieee
 info:
   title: American Institute of Aeronautics and Astronautics
   description: A style for AIAA

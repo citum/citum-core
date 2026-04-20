@@ -65,10 +65,46 @@
             "type": "string"
           },
           "default": []
+        },
+        "kind": {
+          "description": "Tier classification (base, profile, journal, independent).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StyleKind"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
         "id"
+      ]
+    },
+    "StyleKind": {
+      "description": "Tier classification for a style in the registry.",
+      "oneOf": [
+        {
+          "description": "Complete style that serves as an inheritance root.",
+          "type": "string",
+          "const": "base"
+        },
+        {
+          "description": "Organizational adaptation of a base style (publisher, society, standards body).",
+          "type": "string",
+          "const": "profile"
+        },
+        {
+          "description": "Pure alias pointing to a profile or base style.",
+          "type": "string",
+          "const": "journal"
+        },
+        {
+          "description": "Standalone style with no aliases and no inheritance role.",
+          "type": "string",
+          "const": "independent"
+        }
       ]
     }
   }

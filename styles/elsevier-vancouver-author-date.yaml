@@ -1,4 +1,4 @@
-preset: elsevier-vancouver
+extends: elsevier-vancouver
 info:
   title: Elsevier - NLM/Vancouver (name-year)
   description: A style for some Elsevier journals, resembles Vancouver style, but using author-date format

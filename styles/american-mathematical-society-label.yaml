@@ -1,4 +1,4 @@
-preset: elsevier-with-titles
+extends: elsevier-with-titles
 info:
   title: Amercian Mathematical Society (label)
   fields:
