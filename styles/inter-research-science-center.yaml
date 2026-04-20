@@ -1,4 +1,4 @@
-preset: american-medical-association
+extends: american-medical-association
 info:
   title: Inter-Research Science Center
   fields:

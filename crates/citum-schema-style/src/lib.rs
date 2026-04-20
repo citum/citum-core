@@ -33,8 +33,8 @@ pub mod locale;
 pub mod options;
 /// Configuration presets for common styles.
 pub mod presets;
-/// Style-level preset architecture (Level 2: named compiled-in Style structs).
-pub mod style_preset;
+/// Style base-inheritance mechanism (named compiled-in Style structs).
+pub mod style_base;
 /// Citation and bibliography template components.
 #[allow(missing_docs, reason = "internal derives")]
 pub mod template;
@@ -71,7 +71,7 @@ pub use options::TextCase;
 pub use options::{BibliographyOptions, CitationOptions, Config};
 pub use presets::{ContributorPreset, DatePreset, SortPreset, SubstitutePreset, TitlePreset};
 pub use registry::{RegistryEntry, StyleRegistry};
-pub use style_preset::StylePreset;
+pub use style_base::StyleBase;
 pub use template::{
     Rendering, TemplateComponent, TemplateContributor, TemplateDate, TemplateGroup, TemplateNumber,
     TemplateTerm, TemplateTitle, TemplateVariable, TypeSelector, WrapConfig, WrapPunctuation,
@@ -81,7 +81,7 @@ pub use template::{
 pub type Template = Vec<TemplateComponent>;
 
 /// Canonical Citum style schema version used when `Style.version` is omitted.
-pub const STYLE_SCHEMA_VERSION: &str = "0.34.0";
+pub const STYLE_SCHEMA_VERSION: &str = "0.35.0";
 
 /// A non-fatal validation warning emitted by [`Style::validate`].
 #[derive(Debug, Clone, PartialEq)]
@@ -142,14 +142,14 @@ pub struct Style {
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
-    /// Style-level preset reference with optional variant delta overlay.
+    /// Extends a base style, with optional local overrides.
     ///
-    /// When present, the base [`StylePreset`] is resolved and the variant
-    /// delta merged before any further processing. Explicit `options`,
+    /// When present, the base [`StyleBase`] is resolved and the local
+    /// overrides are merged before any further processing. Explicit `options`,
     /// `citation`, and `bibliography` keys at the same document level take
-    /// precedence over the resolved preset.
+    /// precedence over the resolved base.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub preset: Option<style_preset::StylePreset>,
+    pub extends: Option<style_base::StyleBase>,
     /// Raw YAML captured when the style was loaded via [`Style::from_yaml_str`]
     /// or [`Style::from_yaml_bytes`]. Used by [`merge_style_overlay`] for
     /// null-aware overlay merging (e.g., `ibid: ~` correctly clears an
@@ -160,14 +160,13 @@ pub struct Style {
 }
 
 impl Style {
-    /// Resolve this style into its final effective form by applying presets.
+    /// Resolve this style into its final effective form by applying base inheritance.
     ///
-    /// If the `preset` field is present, the base [`StylePreset`] is loaded,
-    /// the optional `variant` delta is applied over it, and finally any
-    /// explicit `options`, `citation`, or `bibliography` keys in the current
+    /// If the `extends` field is present, the base [`StyleBase`] is loaded
+    /// and any explicit `options`, `citation`, or `bibliography` keys in the current
     /// style document are merged on top (taking ultimate precedence).
     ///
-    /// Returns the original style unchanged if no preset is specified.
+    /// Returns the original style unchanged if no base is specified.
     #[must_use]
     pub fn into_resolved(self) -> Self {
         self.into_resolved_recursive(&mut HashSet::new())
@@ -175,34 +174,34 @@ impl Style {
 
     /// Internal recursive resolver with loop protection.
     #[must_use]
-    pub fn into_resolved_recursive(self, visited: &mut HashSet<StylePreset>) -> Self {
-        let Some(preset) = self.preset.clone() else {
+    pub fn into_resolved_recursive(self, visited: &mut HashSet<StyleBase>) -> Self {
+        let Some(base) = self.extends.clone() else {
             return self;
         };
 
-        if visited.contains(&preset) {
+        if visited.contains(&base) {
             // Loop detected: return the style as-is to avoid infinite recursion.
             return self;
         }
-        visited.insert(preset.clone());
+        visited.insert(base.clone());
 
-        // 1. Load the preset base (recursively resolves if the base itself has a preset).
-        let mut effective = preset.resolve_with_visited(visited);
+        // 1. Load the base (recursively resolves if the base itself has an extends field).
+        let mut effective = base.resolve_with_visited(visited);
 
         // 2. Apply style-level overrides from the local file (self).
         merge_style_overlay(&mut effective, &self);
 
         // 3. Preserve local file metadata for round-tripping.
         effective.version = self.version;
-        effective.preset = self.preset;
+        effective.extends = self.extends;
 
         effective
     }
 
     /// Parse a Citum style from a YAML string, preserving raw YAML for
-    /// null-aware overlay merging during preset resolution.
+    /// null-aware overlay merging during base resolution.
     ///
-    /// Preferred over `serde_yaml::from_str` when the style may be preset-backed,
+    /// Preferred over `serde_yaml::from_str` when the style extends a base,
     /// so that `ibid: ~` and similar null overrides correctly clear inherited values.
     ///
     /// # Errors
@@ -1511,7 +1510,7 @@ bibliography:
     #[test]
     fn null_type_variants_override_clears_preset_type_variants() {
         let child_yaml = r#"
-preset: chicago-notes-18th
+extends: chicago-notes-18th
 citation:
   type-variants: ~
   template:

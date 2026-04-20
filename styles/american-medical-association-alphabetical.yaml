@@ -1,4 +1,4 @@
-preset: american-medical-association
+extends: american-medical-association
 info:
   title: AMA Manual of Style 11th edition (sorted alphabetically)
   description: 'AMA Manual of Style: A Guide for Authors and Editors (11th ed.), with alphabetically sorted bibliography.'

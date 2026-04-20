@@ -1,4 +1,4 @@
-preset: ieee
+extends: ieee
 info:
   title: The Optical Society
   description: Common style use by OSA publications.

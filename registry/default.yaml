@@ -3,75 +3,91 @@ styles:
   - id: apa-7th
     aliases: [apa, taylor-and-francis-style-p]
     builtin: apa-7th
+    kind: base
     description: "APA 7th edition"
     fields: [psychology, social-science]
   - id: elsevier-harvard
     aliases: [harvard, applied-clay-science, environmental-chemistry, international-biodeterioration-and-biodegradation, accident-analysis-and-prevention, entecho, handbook-of-clinical-neurology, journal-of-economic-impact]
     builtin: elsevier-harvard
+    kind: profile
     description: "Elsevier Harvard"
     fields: [science]
   - id: elsevier-with-titles
     aliases: [firephyschem, journal-of-applied-engineering-sciences-technology, biochimica-et-biophysica-acta, cancer-biomarkers, engineered-regeneration, gait-and-posture, ios-press-books, necmettin-erbakan-universitesi-fen-ve-muhendislik-bilimleri-dergisi]
     builtin: elsevier-with-titles
+    kind: profile
     description: "Elsevier with Titles"
     fields: [science]
   - id: elsevier-vancouver
     aliases: [vancouver]
     builtin: elsevier-vancouver
+    kind: profile
     description: "Elsevier Vancouver"
     fields: [medicine]
   - id: springer-basic-author-date
     builtin: springer-basic-author-date
+    kind: profile
     description: "Springer Basic Author-Date"
     fields: [science]
   - id: springer-vancouver-brackets
     builtin: springer-vancouver-brackets
+    kind: profile
     description: "Springer Vancouver Brackets"
     fields: [science]
   - id: springer-basic-brackets
     builtin: springer-basic-brackets
+    kind: profile
     description: "Springer Basic Brackets"
     fields: [science]
   - id: american-medical-association
     aliases: [ama, acta-medica-portuguesa, ophthalmic-plastic-and-reconstructive-surgery, retina]
     builtin: american-medical-association
+    kind: base
     description: "American Medical Association"
     fields: [medicine]
   - id: ieee
     aliases: [engineering-technology-and-applied-science-research, ieee-transactions-on-medical-imaging]
     builtin: ieee
+    kind: base
     description: "Institute of Electrical and Electronics Engineers"
     fields: [engineering]
   - id: taylor-and-francis-chicago-author-date
     aliases: [annals-of-the-association-of-american-geographers]
     builtin: taylor-and-francis-chicago-author-date
+    kind: profile
     description: "Taylor & Francis Chicago Author-Date"
     fields: [humanities]
   - id: taylor-and-francis-council-of-science-editors-author-date
     builtin: taylor-and-francis-council-of-science-editors-author-date
+    kind: profile
     description: "Taylor & Francis Council of Science Editors Author-Date"
     fields: [science]
   - id: taylor-and-francis-national-library-of-medicine
     builtin: taylor-and-francis-national-library-of-medicine
+    kind: profile
     description: "Taylor & Francis National Library of Medicine"
     fields: [medicine]
   - id: chicago-author-date-18th
     aliases: [chicago-author-date, taylor-and-francis-style-f]
     builtin: chicago-author-date-18th
+    kind: base
     description: "Chicago Author-Date (standard)"
     fields: [humanities]
   - id: chicago-shortened-notes-bibliography
     aliases: [chicago]
     builtin: chicago-shortened-notes-bibliography
+    kind: profile
     description: "Chicago Shortened Notes"
     fields: [humanities]
   - id: chicago-notes-18th
     aliases: [chicago-notes]
     builtin: chicago-notes-18th
+    kind: base
     description: "Chicago Notes (without bibliography)"
     fields: [humanities]
   - id: modern-language-association
     aliases: [mla, taylor-and-francis-style-e, modern-language-association-notes]
     builtin: modern-language-association
+    kind: base
     description: "Modern Language Association"
     fields: [humanities]

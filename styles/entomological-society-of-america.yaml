@@ -1,4 +1,4 @@
-preset: elsevier-harvard
+extends: elsevier-harvard
 info:
   title: Entomological Society of America
   fields:

@@ -389,7 +389,7 @@ function localStyleOverlay(styleData) {
   }
 
   const overlay = { ...styleData };
-  delete overlay.preset;
+  delete overlay.extends;
   return overlay;
 }
 
@@ -397,11 +397,11 @@ function localStyleOverlay(styleData) {
  * Resolves a style's preset reference.
  */
 function resolveStyleData(styleData, visited = new Set()) {
-  const presetSpec = styleData?.preset;
+  const presetSpec = styleData?.extends;
   let resolved = styleData;
 
   if (presetSpec) {
-    const presetKey = typeof presetSpec === 'string' ? presetSpec : presetSpec.preset;
+    const presetKey = typeof presetSpec === 'string' ? presetSpec : presetSpec.extends;
     if (presetKey && PRESET_BASES[presetKey] && !visited.has(presetKey)) {
       const basePath = PRESET_BASES[presetKey];
       if (fs.existsSync(basePath)) {

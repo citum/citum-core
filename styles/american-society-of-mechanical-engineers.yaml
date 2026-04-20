@@ -1,4 +1,4 @@
-preset: ieee
+extends: ieee
 info:
   title: American Society of Mechanical Engineers
   description: A style for the ASME's 23 journals

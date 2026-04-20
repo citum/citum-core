@@ -3,11 +3,11 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-//! Detects when extracted configuration matches known presets.
+//! Detects when extracted configuration matches known style bases.
 //!
-//! This module implements preset detection for Phase 3 of the style aliasing
+//! This module implements base detection for Phase 3 of the style aliasing
 //! design. When migrating CSL 1.0 styles, it compares extracted configuration
-//! to known preset patterns and emits preset names instead of expanded configs.
+//! to known base patterns and emits base names instead of expanded configs.
 //!
 //! ## Detection Strategy
 //!
@@ -23,19 +23,18 @@ use citum_schema::options::{
 };
 use citum_schema::presets::{ContributorPreset, DatePreset, TitlePreset};
 
-/// Holistic style presets that combine multiple configuration aspects.
+/// Holistic style bases that combine multiple configuration aspects.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum StylePreset {
+pub enum StyleBase {
     Apa,
     Chicago,
     Ieee,
-    Elsevier,
     Vancouver,
     Harvard,
 }
 
-/// Detects a holistic style preset from a full configuration.
-pub fn detect_style_preset(config: &Config) -> Option<StylePreset> {
+/// Detects the style base from a full configuration.
+pub fn detect_style_base(config: &Config) -> Option<StyleBase> {
     let cp = config
         .contributors
         .as_ref()
@@ -43,13 +42,11 @@ pub fn detect_style_preset(config: &Config) -> Option<StylePreset> {
     let tp = config.titles.as_ref().and_then(detect_title_preset);
 
     match (cp, tp) {
-        (Some(ContributorPreset::Apa), Some(TitlePreset::Apa)) => Some(StylePreset::Apa),
-        (Some(ContributorPreset::Chicago), Some(TitlePreset::Chicago)) => {
-            Some(StylePreset::Chicago)
-        }
-        (Some(ContributorPreset::Ieee), Some(TitlePreset::Chicago)) => Some(StylePreset::Ieee),
-        (Some(ContributorPreset::Vancouver), _) => Some(StylePreset::Vancouver),
-        (Some(ContributorPreset::Harvard), _) => Some(StylePreset::Harvard),
+        (Some(ContributorPreset::Apa), Some(TitlePreset::Apa)) => Some(StyleBase::Apa),
+        (Some(ContributorPreset::Chicago), Some(TitlePreset::Chicago)) => Some(StyleBase::Chicago),
+        (Some(ContributorPreset::Ieee), Some(TitlePreset::Chicago)) => Some(StyleBase::Ieee),
+        (Some(ContributorPreset::Vancouver), _) => Some(StyleBase::Vancouver),
+        (Some(ContributorPreset::Harvard), _) => Some(StyleBase::Harvard),
         _ => None,
     }
 }

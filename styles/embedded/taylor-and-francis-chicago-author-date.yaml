@@ -4,7 +4,7 @@ info:
   description: 'Taylor & Francis Journals adaptation of Chicago-style, author-date system, using style
     presets.'
 
-preset: chicago-author-date-18th
+extends: chicago-author-date-18th
 options:
   page-range-format: expanded
   contributors:

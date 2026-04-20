@@ -10,6 +10,21 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 
+/// Tier classification for a style in the registry.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum StyleKind {
+    /// Complete style that serves as an inheritance root.
+    Base,
+    /// Organizational adaptation of a base style (publisher, society, standards body).
+    Profile,
+    /// Pure alias pointing to a profile or base style.
+    Journal,
+    /// Standalone style with no aliases and no inheritance role.
+    Independent,
+}
+
 /// A single entry in a style registry.
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -31,6 +46,9 @@ pub struct RegistryEntry {
     /// Subject/domain classification tags (default empty).
     #[serde(default)]
     pub fields: Vec<String>,
+    /// Tier classification (base, profile, journal, independent).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub kind: Option<StyleKind>,
 }
 
 /// A registry of citation styles with alias resolution.
@@ -102,6 +120,7 @@ impl StyleRegistry {
                 path: None,
                 description: None,
                 fields: Vec::new(),
+                kind: None,
             });
         }
 
@@ -168,6 +187,7 @@ mod tests {
                 path: None,
                 description: Some("APA 7th edition".to_string()),
                 fields: vec!["psychology".to_string()],
+                kind: None,
             }],
         };
 
@@ -186,6 +206,7 @@ mod tests {
                 path: None,
                 description: Some("APA 7th edition".to_string()),
                 fields: vec!["psychology".to_string()],
+                kind: None,
             }],
         };
 
@@ -205,6 +226,7 @@ mod tests {
                     path: None,
                     description: None,
                     fields: vec![],
+                    kind: None,
                 },
                 RegistryEntry {
                     id: "mla".to_string(),
@@ -213,6 +235,7 @@ mod tests {
                     path: None,
                     description: None,
                     fields: vec![],
+                    kind: None,
                 },
             ],
         };
@@ -232,6 +255,7 @@ mod tests {
                 path: None,
                 description: Some("APA 7th edition".to_string()),
                 fields: vec!["psychology".to_string()],
+                kind: None,
             }],
         };
 
@@ -245,6 +269,7 @@ mod tests {
                     builtin: None,
                     description: Some("Custom style".to_string()),
                     fields: vec![],
+                    kind: None,
                 },
                 RegistryEntry {
                     id: "apa-7th".to_string(),
@@ -253,6 +278,7 @@ mod tests {
                     path: None,
                     description: Some("APA 7th edition (modified)".to_string()),
                     fields: vec!["psychology".to_string(), "custom".to_string()],
+                    kind: None,
                 },
             ],
         };
