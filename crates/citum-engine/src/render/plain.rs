@@ -47,6 +47,13 @@ impl OutputFormat for PlainText {
         content
     }
 
+    fn superscript(&self, content: Self::Output) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!("^{content}^")
+    }
+
     fn quote(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;

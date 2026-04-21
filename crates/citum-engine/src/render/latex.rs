@@ -68,6 +68,10 @@ impl OutputFormat for Latex {
         format!(r"\textsc{{{content}}}")
     }
 
+    fn superscript(&self, content: Self::Output) -> Self::Output {
+        format!(r"\textsuperscript{{{content}}}")
+    }
+
     fn quote(&self, content: Self::Output) -> Self::Output {
         format!("``{content}''")
     }

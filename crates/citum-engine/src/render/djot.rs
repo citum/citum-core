@@ -49,6 +49,13 @@ impl OutputFormat for Djot {
         format!("[{content}]{{.small-caps}}")
     }
 
+    fn superscript(&self, content: Self::Output) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!("[{content}]{{.superscript}}")
+    }
+
     fn quote(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;

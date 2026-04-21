@@ -12,6 +12,11 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use crate::Style;
 use crate::embedded::get_embedded_style;
+use crate::options::{
+    BibliographyLabelMode, CitationGroupDelimiter, DatePosition, NameListProfile,
+    ProfileAxisCapabilities, ProfileWrap, RepeatedAuthorRendering, TitleTerminator,
+    VolumePagesDelimiter,
+};
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -28,6 +33,26 @@ use std::collections::HashSet;
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
 pub enum StyleBase {
+    /// Hidden Elsevier Harvard family root.
+    ElsevierHarvardCore,
+    /// Hidden Elsevier with-titles family root.
+    ElsevierWithTitlesCore,
+    /// Hidden Elsevier Vancouver family root.
+    ElsevierVancouverCore,
+    /// Hidden Springer Basic author-date root.
+    SpringerBasicAuthorDateCore,
+    /// Hidden Springer Basic brackets root.
+    SpringerBasicBracketsCore,
+    /// Hidden Springer Vancouver root.
+    SpringerVancouverBracketsCore,
+    /// Hidden Taylor & Francis Chicago root.
+    TaylorAndFrancisChicagoAuthorDateCore,
+    /// Hidden Taylor & Francis CSE root.
+    TaylorAndFrancisCouncilOfScienceEditorsAuthorDateCore,
+    /// Hidden Taylor & Francis NLM root.
+    TaylorAndFrancisNationalLibraryOfMedicineCore,
+    /// Hidden Chicago shortened-notes root.
+    ChicagoShortenedNotesBibliographyCore,
     /// Chicago Manual of Style 18th edition — notes without bibliography.
     #[serde(rename = "chicago-notes-18th")]
     ChicagoNotes18th,
@@ -66,10 +91,107 @@ pub enum StyleBase {
     ModernLanguageAssociation,
 }
 
+const CITATION_LABEL_WRAPS: &[ProfileWrap] = &[
+    ProfileWrap::None,
+    ProfileWrap::Parentheses,
+    ProfileWrap::Brackets,
+    ProfileWrap::Superscript,
+];
+const BIBLIOGRAPHY_LABEL_WRAPS: &[ProfileWrap] = &[
+    ProfileWrap::None,
+    ProfileWrap::Parentheses,
+    ProfileWrap::Brackets,
+];
+const CITATION_GROUP_DELIMITERS: &[CitationGroupDelimiter] = &[
+    CitationGroupDelimiter::Comma,
+    CitationGroupDelimiter::Semicolon,
+    CitationGroupDelimiter::Space,
+];
+const BIBLIOGRAPHY_LABEL_MODES: &[BibliographyLabelMode] =
+    &[BibliographyLabelMode::None, BibliographyLabelMode::Numeric];
+const DATE_POSITIONS: &[DatePosition] = &[
+    DatePosition::AfterAuthor,
+    DatePosition::AfterTitle,
+    DatePosition::Terminal,
+];
+const VOLUME_PAGES_DELIMITERS: &[VolumePagesDelimiter] = &[
+    VolumePagesDelimiter::Comma,
+    VolumePagesDelimiter::Colon,
+    VolumePagesDelimiter::Space,
+];
+const TITLE_TERMINATORS: &[TitleTerminator] = &[
+    TitleTerminator::Period,
+    TitleTerminator::Comma,
+    TitleTerminator::None,
+];
+const NAME_LIST_PROFILES: &[NameListProfile] = &[
+    NameListProfile::Apa,
+    NameListProfile::Chicago,
+    NameListProfile::Harvard,
+    NameListProfile::Springer,
+    NameListProfile::Vancouver,
+];
+const REPEATED_AUTHOR_RENDERINGS: &[RepeatedAuthorRendering] = &[
+    RepeatedAuthorRendering::Full,
+    RepeatedAuthorRendering::Dash,
+    RepeatedAuthorRendering::DashWithSpace,
+];
+const AUTHOR_DATE_PROFILE_CAPABILITIES: ProfileAxisCapabilities = ProfileAxisCapabilities {
+    citation_label_wrap: &[],
+    citation_group_delimiter: CITATION_GROUP_DELIMITERS,
+    bibliography_label_mode: &[],
+    bibliography_label_wrap: &[],
+    date_position: DATE_POSITIONS,
+    volume_pages_delimiter: VOLUME_PAGES_DELIMITERS,
+    title_terminator: TITLE_TERMINATORS,
+    name_list_profile: NAME_LIST_PROFILES,
+    repeated_author_rendering: REPEATED_AUTHOR_RENDERINGS,
+};
+const NUMERIC_PROFILE_CAPABILITIES: ProfileAxisCapabilities = ProfileAxisCapabilities {
+    citation_label_wrap: CITATION_LABEL_WRAPS,
+    citation_group_delimiter: CITATION_GROUP_DELIMITERS,
+    bibliography_label_mode: BIBLIOGRAPHY_LABEL_MODES,
+    bibliography_label_wrap: BIBLIOGRAPHY_LABEL_WRAPS,
+    date_position: DATE_POSITIONS,
+    volume_pages_delimiter: VOLUME_PAGES_DELIMITERS,
+    title_terminator: TITLE_TERMINATORS,
+    name_list_profile: NAME_LIST_PROFILES,
+    repeated_author_rendering: REPEATED_AUTHOR_RENDERINGS,
+};
+const NOTE_PROFILE_CAPABILITIES: ProfileAxisCapabilities = ProfileAxisCapabilities {
+    citation_label_wrap: &[],
+    citation_group_delimiter: CITATION_GROUP_DELIMITERS,
+    bibliography_label_mode: &[],
+    bibliography_label_wrap: &[],
+    date_position: DATE_POSITIONS,
+    volume_pages_delimiter: VOLUME_PAGES_DELIMITERS,
+    title_terminator: TITLE_TERMINATORS,
+    name_list_profile: NAME_LIST_PROFILES,
+    repeated_author_rendering: REPEATED_AUTHOR_RENDERINGS,
+};
+
 impl StyleBase {
     /// Return the embedded YAML key used to look up this base.
     fn embedded_key(&self) -> &'static str {
         match self {
+            StyleBase::ElsevierHarvardCore => "elsevier-harvard-core",
+            StyleBase::ElsevierWithTitlesCore => "elsevier-with-titles-core",
+            StyleBase::ElsevierVancouverCore => "elsevier-vancouver-core",
+            StyleBase::SpringerBasicAuthorDateCore => "springer-basic-author-date-core",
+            StyleBase::SpringerBasicBracketsCore => "springer-basic-brackets-core",
+            StyleBase::SpringerVancouverBracketsCore => "springer-vancouver-brackets-core",
+            StyleBase::TaylorAndFrancisChicagoAuthorDateCore => {
+                "taylor-and-francis-chicago-author-date-core"
+            }
+            StyleBase::TaylorAndFrancisCouncilOfScienceEditorsAuthorDateCore => {
+                "taylor-and-francis-council-of-science-editors-author-date-core"
+            }
+            StyleBase::TaylorAndFrancisNationalLibraryOfMedicineCore => {
+                "taylor-and-francis-national-library-of-medicine-core"
+            }
+            StyleBase::ChicagoShortenedNotesBibliographyCore => {
+                "chicago-shortened-notes-bibliography-core"
+            }
             StyleBase::ChicagoNotes18th => "chicago-notes-18th",
             StyleBase::ChicagoAuthorDate18th => "chicago-author-date-18th",
             StyleBase::ChicagoShortenedNotesBibliography => "chicago-shortened-notes-bibliography",
@@ -110,6 +232,24 @@ impl StyleBase {
     /// Return the canonical base key string (kebab-case).
     pub fn key(&self) -> &'static str {
         match self {
+            StyleBase::ElsevierHarvardCore => "elsevier-harvard-core",
+            StyleBase::ElsevierWithTitlesCore => "elsevier-with-titles-core",
+            StyleBase::ElsevierVancouverCore => "elsevier-vancouver-core",
+            StyleBase::SpringerBasicAuthorDateCore => "springer-basic-author-date-core",
+            StyleBase::SpringerBasicBracketsCore => "springer-basic-brackets-core",
+            StyleBase::SpringerVancouverBracketsCore => "springer-vancouver-brackets-core",
+            StyleBase::TaylorAndFrancisChicagoAuthorDateCore => {
+                "taylor-and-francis-chicago-author-date-core"
+            }
+            StyleBase::TaylorAndFrancisCouncilOfScienceEditorsAuthorDateCore => {
+                "taylor-and-francis-council-of-science-editors-author-date-core"
+            }
+            StyleBase::TaylorAndFrancisNationalLibraryOfMedicineCore => {
+                "taylor-and-francis-national-library-of-medicine-core"
+            }
+            StyleBase::ChicagoShortenedNotesBibliographyCore => {
+                "chicago-shortened-notes-bibliography-core"
+            }
             StyleBase::ChicagoNotes18th => "chicago-notes-18th",
             StyleBase::ChicagoAuthorDate18th => "chicago-author-date-18th",
             StyleBase::ChicagoShortenedNotesBibliography => "chicago-shortened-notes-bibliography",
@@ -141,6 +281,16 @@ impl StyleBase {
     /// [`StyleBase`] is `#[non_exhaustive]`.
     pub fn all() -> &'static [StyleBase] {
         &[
+            StyleBase::ElsevierHarvardCore,
+            StyleBase::ElsevierWithTitlesCore,
+            StyleBase::ElsevierVancouverCore,
+            StyleBase::SpringerBasicAuthorDateCore,
+            StyleBase::SpringerBasicBracketsCore,
+            StyleBase::SpringerVancouverBracketsCore,
+            StyleBase::TaylorAndFrancisChicagoAuthorDateCore,
+            StyleBase::TaylorAndFrancisCouncilOfScienceEditorsAuthorDateCore,
+            StyleBase::TaylorAndFrancisNationalLibraryOfMedicineCore,
+            StyleBase::ChicagoShortenedNotesBibliographyCore,
             StyleBase::ChicagoNotes18th,
             StyleBase::ChicagoAuthorDate18th,
             StyleBase::ChicagoShortenedNotesBibliography,
@@ -160,13 +310,37 @@ impl StyleBase {
         ]
     }
 
-    /// Internal resolver with loop protection.
-    pub(crate) fn resolve_with_visited(&self, visited: &mut HashSet<StyleBase>) -> Style {
+    /// Internal resolver with loop protection that preserves profile errors.
+    pub(crate) fn try_resolve_with_visited(
+        &self,
+        visited: &mut HashSet<StyleBase>,
+    ) -> Result<Style, crate::ResolutionError> {
         let mut style = self.base();
         if style.extends.is_some() {
-            style = style.into_resolved_recursive(visited);
+            style = style.try_into_resolved_recursive(visited)?;
         }
-        style
+        Ok(style)
+    }
+
+    /// Capability metadata for config-only profile overrides.
+    pub fn profile_capabilities(&self) -> ProfileAxisCapabilities {
+        match self {
+            StyleBase::ElsevierHarvardCore
+            | StyleBase::SpringerBasicAuthorDateCore
+            | StyleBase::TaylorAndFrancisChicagoAuthorDateCore
+            | StyleBase::TaylorAndFrancisCouncilOfScienceEditorsAuthorDateCore => {
+                AUTHOR_DATE_PROFILE_CAPABILITIES
+            }
+            StyleBase::ElsevierWithTitlesCore
+            | StyleBase::ElsevierVancouverCore
+            | StyleBase::SpringerBasicBracketsCore
+            | StyleBase::SpringerVancouverBracketsCore
+            | StyleBase::TaylorAndFrancisNationalLibraryOfMedicineCore => {
+                NUMERIC_PROFILE_CAPABILITIES
+            }
+            StyleBase::ChicagoShortenedNotesBibliographyCore => NOTE_PROFILE_CAPABILITIES,
+            _ => ProfileAxisCapabilities::NONE,
+        }
     }
 }
 

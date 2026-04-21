@@ -77,6 +77,13 @@ impl OutputFormat for Typst {
         format!("#smallcaps[{content}]")
     }
 
+    fn superscript(&self, content: Self::Output) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!("#super[{content}]")
+    }
+
     fn quote(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;

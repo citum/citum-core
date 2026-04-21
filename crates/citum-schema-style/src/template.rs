@@ -69,6 +69,9 @@ pub struct Rendering {
     /// Render in small caps.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub small_caps: Option<bool>,
+    /// Vertical alignment to apply to rendered output.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub vertical_align: Option<crate::VerticalAlign>,
     /// Text to prepend to the rendered value (outside any wrap).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub prefix: Option<String>,
@@ -106,6 +109,7 @@ impl Rendering {
             quote,
             strong,
             small_caps,
+            vertical_align,
             prefix,
             suffix,
             wrap,

@@ -743,7 +743,9 @@ fn test_springer_locator_label_survives_sorting() {
     let cite_path = root.join("tests/fixtures/citations-expanded.json");
 
     let style_yaml = fs::read_to_string(&style_path).expect("style should read");
-    let style: Style = serde_yaml::from_str(&style_yaml).expect("style should parse");
+    let style = Style::from_yaml_str(&style_yaml)
+        .expect("style should parse")
+        .into_resolved();
     let bibliography = crate::io::load_bibliography(&bib_path).expect("bib should load");
     let citations = crate::io::load_citations(&cite_path).expect("citations should load");
 
@@ -803,7 +805,9 @@ fn test_harvard_cite_them_right_grouped_citations_render_cleanly() {
     let cite_path = root.join("tests/fixtures/citations-expanded.json");
 
     let style_yaml = fs::read_to_string(&style_path).expect("style should read");
-    let style: Style = serde_yaml::from_str(&style_yaml).expect("style should parse");
+    let style = Style::from_yaml_str(&style_yaml)
+        .expect("style should parse")
+        .into_resolved();
     let bibliography = crate::io::load_bibliography(&bib_path).expect("bib should load");
     let citations = crate::io::load_citations(&cite_path).expect("citations should load");
 
@@ -859,7 +863,9 @@ fn test_parsed_style_no_date_terms_match_expected_variants() {
     let load_style = |name: &str| -> Style {
         let style_path = root.join("styles").join(format!("{name}.yaml"));
         let style_yaml = fs::read_to_string(&style_path).expect("style should read");
-        serde_yaml::from_str(&style_yaml).expect("style should parse")
+        Style::from_yaml_str(&style_yaml)
+            .expect("style should parse")
+            .into_resolved()
     };
 
     let harvard = Processor::new(load_style("harvard-cite-them-right"), bibliography.clone());

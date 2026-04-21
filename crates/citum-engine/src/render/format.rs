@@ -51,6 +51,9 @@ pub trait OutputFormat: Default + Clone {
     /// Render content in small capitals.
     fn small_caps(&self, content: Self::Output) -> Self::Output;
 
+    /// Render content as superscript text.
+    fn superscript(&self, content: Self::Output) -> Self::Output;
+
     /// Render content enclosed in quotation marks.
     fn quote(&self, content: Self::Output) -> Self::Output;
 
@@ -157,6 +160,9 @@ mod tests {
         }
         fn small_caps(&self, content: Self::Output) -> Self::Output {
             format!("sc({content})")
+        }
+        fn superscript(&self, content: Self::Output) -> Self::Output {
+            format!("sup({content})")
         }
         fn quote(&self, content: Self::Output) -> Self::Output {
             format!("quote({content})")

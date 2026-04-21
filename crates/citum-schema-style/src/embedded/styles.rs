@@ -13,6 +13,36 @@ use crate::Style;
 /// Raw YAML bytes for an embedded style by name.
 fn get_style_bytes(name: &str) -> Option<&'static [u8]> {
     match name {
+        "elsevier-harvard-core" => Some(include_bytes!(
+            "../../../../styles/embedded/elsevier-harvard-core.yaml"
+        )),
+        "elsevier-with-titles-core" => Some(include_bytes!(
+            "../../../../styles/embedded/elsevier-with-titles-core.yaml"
+        )),
+        "elsevier-vancouver-core" => Some(include_bytes!(
+            "../../../../styles/embedded/elsevier-vancouver-core.yaml"
+        )),
+        "springer-basic-author-date-core" => Some(include_bytes!(
+            "../../../../styles/embedded/springer-basic-author-date-core.yaml"
+        )),
+        "springer-basic-brackets-core" => Some(include_bytes!(
+            "../../../../styles/embedded/springer-basic-brackets-core.yaml"
+        )),
+        "springer-vancouver-brackets-core" => Some(include_bytes!(
+            "../../../../styles/embedded/springer-vancouver-brackets-core.yaml"
+        )),
+        "taylor-and-francis-chicago-author-date-core" => Some(include_bytes!(
+            "../../../../styles/embedded/taylor-and-francis-chicago-author-date-core.yaml"
+        )),
+        "taylor-and-francis-council-of-science-editors-author-date-core" => Some(include_bytes!(
+            "../../../../styles/embedded/taylor-and-francis-council-of-science-editors-author-date-core.yaml"
+        )),
+        "taylor-and-francis-national-library-of-medicine-core" => Some(include_bytes!(
+            "../../../../styles/embedded/taylor-and-francis-national-library-of-medicine-core.yaml"
+        )),
+        "chicago-shortened-notes-bibliography-core" => Some(include_bytes!(
+            "../../../../styles/embedded/chicago-shortened-notes-bibliography-core.yaml"
+        )),
         "preset-bases/apa-7th" => Some(include_bytes!("../../../../styles/embedded/apa-7th.yaml")),
         "preset-bases/chicago-author-date-18th" => Some(include_bytes!(
             "../../../../styles/embedded/chicago-author-date-18th.yaml"
@@ -111,12 +141,22 @@ pub fn resolve_embedded_style_name(name: &str) -> Option<&'static str> {
 pub fn get_embedded_style(name: &str) -> Option<Result<Style, serde_yaml::Error>> {
     resolve_embedded_style_name(name)
         .and_then(get_style_bytes)
-        .map(serde_yaml::from_slice)
+        .map(Style::from_yaml_bytes)
 }
 
 /// All available embedded (builtin) style names, ordered by corpus impact
 /// (dependent-style count descending).
 pub const EMBEDDED_STYLE_NAMES: &[&str] = &[
+    "elsevier-harvard-core",
+    "elsevier-with-titles-core",
+    "elsevier-vancouver-core",
+    "springer-basic-author-date-core",
+    "springer-vancouver-brackets-core",
+    "springer-basic-brackets-core",
+    "taylor-and-francis-chicago-author-date-core",
+    "taylor-and-francis-council-of-science-editors-author-date-core",
+    "taylor-and-francis-national-library-of-medicine-core",
+    "chicago-shortened-notes-bibliography-core",
     "apa-7th",
     "elsevier-harvard",
     "elsevier-with-titles",

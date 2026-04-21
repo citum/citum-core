@@ -75,6 +75,13 @@ impl OutputFormat for Html {
         format!(r#"<span style="font-variant:small-caps">{content}</span>"#)
     }
 
+    fn superscript(&self, content: Self::Output) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!("<sup>{content}</sup>")
+    }
+
     fn quote(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;

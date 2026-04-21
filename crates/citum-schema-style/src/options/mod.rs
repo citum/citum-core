@@ -13,6 +13,7 @@ pub mod localization;
 pub mod locators;
 pub mod multilingual;
 pub mod processing;
+pub mod profile;
 pub mod substitute;
 
 pub use bibliography::{
@@ -38,6 +39,11 @@ pub use multilingual::{MultilingualConfig, MultilingualMode, ScriptConfig};
 pub use processing::{
     CitationSortPolicy, Disambiguation, Group, LabelConfig, LabelParams, LabelPreset, Processing,
     ProcessingCustom, Sort, SortEntry, SortKey, SortSpec,
+};
+pub use profile::{
+    BibliographyLabelMode, CitationGroupDelimiter, DatePosition, NameListProfile,
+    ProfileAxisCapabilities, ProfileConfig, ProfileWrap, RepeatedAuthorRendering, TitleTerminator,
+    VolumePagesDelimiter,
 };
 pub use substitute::{Substitute, SubstituteConfig, SubstituteKey};
 
@@ -132,6 +138,9 @@ pub struct Config {
     /// Integral citation name-memory behavior.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub integral_names: Option<IntegralNameConfig>,
+    /// Config-only profile override axes applied during profile resolution.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub profile: Option<ProfileConfig>,
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -446,6 +455,7 @@ impl Config {
             strip_periods,
             notes,
             integral_names,
+            profile,
             custom,
         );
 
@@ -501,6 +511,7 @@ impl CitationOptions {
             strip_periods: self.strip_periods,
             notes: self.notes.clone(),
             integral_names: self.integral_names.clone(),
+            profile: None,
             custom: self.custom.clone(),
         }
     }
@@ -549,6 +560,7 @@ impl BibliographyOptions {
             strip_periods: self.strip_periods,
             notes: None,
             integral_names: None,
+            profile: None,
             custom: self.custom.clone(),
         }
     }

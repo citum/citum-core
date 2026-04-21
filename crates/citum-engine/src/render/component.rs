@@ -162,6 +162,9 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
     if rendering.small_caps == Some(true) {
         output = fmt.small_caps(output);
     }
+    if rendering.vertical_align == Some(citum_schema::VerticalAlign::Superscript) {
+        output = fmt.superscript(output);
+    }
     if rendering.quote == Some(true) {
         output = fmt.quote(output);
     }
