@@ -581,9 +581,9 @@ fn validate_profile_capabilities(
     )?;
     validate_axis(
         base,
-        "name-list-profile",
-        profile.name_list_profile.as_ref(),
-        capabilities.name_list_profile,
+        "contributor-preset",
+        profile.contributor_preset.as_ref(),
+        capabilities.contributor_preset,
     )?;
     validate_axis(
         base,
@@ -2051,6 +2051,23 @@ options:
     }
 
     #[test]
+    fn profile_rejects_removed_name_list_profile_axis() {
+        let yaml = r#"
+info:
+  id: elsevier-harvard
+extends: elsevier-harvard-core
+options:
+  profile:
+    name-list-profile: springer
+"#;
+        let err = Style::from_yaml_str(yaml).expect_err("removed profile axis must fail");
+        assert!(
+            err.to_string()
+                .contains("unknown field `name-list-profile`")
+        );
+    }
+
+    #[test]
     fn profile_reports_unsupported_axis_and_value_separately() {
         let unsupported_axis = Style::from_yaml_str(
             r#"
@@ -2168,6 +2185,53 @@ options:
                 .as_deref(),
             Some("———")
         );
+    }
+
+    #[test]
+    fn profile_contributor_preset_applies_supported_slot() {
+        let resolved = Style::from_yaml_str(
+            r#"
+info:
+  id: springer-basic-author-date
+extends: springer-basic-author-date-core
+options:
+  profile:
+    contributor-preset: springer
+"#,
+        )
+        .unwrap()
+        .try_into_resolved()
+        .expect("supported profile contributor preset should resolve");
+
+        assert_eq!(
+            resolved
+                .options
+                .as_ref()
+                .and_then(|options| options.contributors.clone()),
+            Some(crate::presets::ContributorPreset::Springer.config())
+        );
+    }
+
+    #[test]
+    fn profile_contributor_preset_rejects_unsupported_value() {
+        let err = Style::from_yaml_str(
+            r#"
+info:
+  id: springer-basic-author-date
+extends: springer-basic-author-date-core
+options:
+  profile:
+    contributor-preset: ieee
+"#,
+        )
+        .unwrap()
+        .try_into_resolved()
+        .expect_err("unsupported contributor preset should be rejected");
+
+        assert!(matches!(
+            err,
+            ResolutionError::UnsupportedProfileValue { axis, .. } if axis == "contributor-preset"
+        ));
     }
 
     #[test]

@@ -1157,7 +1157,8 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                     instead of spelling out every field. At the style level,
                     <code class="text-xs bg-slate-100 px-1 rounded">extends:</code>
                     lets a thin wrapper inherit all templates from a named
-                    base style, then tune behaviour along declared axes via
+                    base style, then tune behaviour through wrapper-only
+                    behaviour axes and preset slots via
                     <code class="text-xs bg-slate-100 px-1 rounded">options.profile:</code>.
                 </p>
             </div>
@@ -1200,21 +1201,22 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 </div>
                 <div class="bg-slate-900 p-6 overflow-x-auto">
                     <pre class="font-mono text-sm text-slate-300 leading-relaxed">
-<span class="text-slate-500"># Tune declared axes on an inherited base — no templates required</span>
+<span class="text-slate-500"># Preset slot: ask the base to use a contributor preset — no templates required</span>
 <span class="text-indigo-400">extends</span>: <span class="text-emerald-400">springer-basic-author-date-core</span>
 <span class="text-indigo-400">options</span>:
   <span class="text-primary">profile</span>:
-    <span class="text-primary">name-list-profile</span>: <span class="text-emerald-400">springer</span>
+    <span class="text-primary">contributor-preset</span>: <span class="text-emerald-400">springer</span>
     <span class="text-primary">date-position</span>: <span class="text-emerald-400">after-author</span>
 
-<span class="text-slate-500"># Numeric variant: bracket labels + numeric bibliography</span>
+<span class="text-slate-500"># Behavior axes: bracket labels + numeric bibliography</span>
 <span class="text-indigo-400">extends</span>: <span class="text-emerald-400">elsevier-vancouver-core</span>
 <span class="text-indigo-400">options</span>:
   <span class="text-primary">profile</span>:
     <span class="text-primary">citation-label-wrap</span>: <span class="text-emerald-400">brackets</span>
     <span class="text-primary">bibliography-label-mode</span>: <span class="text-emerald-400">numeric</span>
 
-<span class="text-slate-500"># Supported axes: date-position | name-list-profile | citation-label-wrap | bibliography-label-mode</span>
+<span class="text-slate-500"># Profile fields fall into two categories: behavior axes and preset slots.</span>
+<span class="text-slate-500"># Supported fields here: date-position | contributor-preset | citation-label-wrap | bibliography-label-mode</span>
 <span class="text-slate-500"># Unsupported axes are rejected at load time.</span></pre>
                 </div>
             </div>

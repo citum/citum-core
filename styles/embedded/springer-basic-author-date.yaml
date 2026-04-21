@@ -4,5 +4,5 @@ info:
 extends: springer-basic-author-date-core
 options:
   profile:
-    name-list-profile: springer
+    contributor-preset: springer
     date-position: after-author

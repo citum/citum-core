@@ -13,10 +13,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use crate::Style;
 use crate::embedded::get_embedded_style;
 use crate::options::{
-    BibliographyLabelMode, CitationGroupDelimiter, DatePosition, NameListProfile,
-    ProfileAxisCapabilities, ProfileWrap, RepeatedAuthorRendering, TitleTerminator,
-    VolumePagesDelimiter,
+    BibliographyLabelMode, CitationGroupDelimiter, DatePosition, ProfileAxisCapabilities,
+    ProfileWrap, RepeatedAuthorRendering, TitleTerminator, VolumePagesDelimiter,
 };
+use crate::presets::ContributorPreset;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -124,12 +124,12 @@ const TITLE_TERMINATORS: &[TitleTerminator] = &[
     TitleTerminator::Comma,
     TitleTerminator::None,
 ];
-const NAME_LIST_PROFILES: &[NameListProfile] = &[
-    NameListProfile::Apa,
-    NameListProfile::Chicago,
-    NameListProfile::Harvard,
-    NameListProfile::Springer,
-    NameListProfile::Vancouver,
+const CONTRIBUTOR_PRESET_PROFILES: &[ContributorPreset] = &[
+    ContributorPreset::Apa,
+    ContributorPreset::Chicago,
+    ContributorPreset::Harvard,
+    ContributorPreset::Springer,
+    ContributorPreset::Vancouver,
 ];
 const REPEATED_AUTHOR_RENDERINGS: &[RepeatedAuthorRendering] = &[
     RepeatedAuthorRendering::Full,
@@ -144,7 +144,7 @@ const AUTHOR_DATE_PROFILE_CAPABILITIES: ProfileAxisCapabilities = ProfileAxisCap
     date_position: DATE_POSITIONS,
     volume_pages_delimiter: VOLUME_PAGES_DELIMITERS,
     title_terminator: TITLE_TERMINATORS,
-    name_list_profile: NAME_LIST_PROFILES,
+    contributor_preset: CONTRIBUTOR_PRESET_PROFILES,
     repeated_author_rendering: REPEATED_AUTHOR_RENDERINGS,
 };
 const NUMERIC_PROFILE_CAPABILITIES: ProfileAxisCapabilities = ProfileAxisCapabilities {
@@ -155,7 +155,7 @@ const NUMERIC_PROFILE_CAPABILITIES: ProfileAxisCapabilities = ProfileAxisCapabil
     date_position: DATE_POSITIONS,
     volume_pages_delimiter: VOLUME_PAGES_DELIMITERS,
     title_terminator: TITLE_TERMINATORS,
-    name_list_profile: NAME_LIST_PROFILES,
+    contributor_preset: CONTRIBUTOR_PRESET_PROFILES,
     repeated_author_rendering: REPEATED_AUTHOR_RENDERINGS,
 };
 const NOTE_PROFILE_CAPABILITIES: ProfileAxisCapabilities = ProfileAxisCapabilities {
@@ -166,7 +166,7 @@ const NOTE_PROFILE_CAPABILITIES: ProfileAxisCapabilities = ProfileAxisCapabiliti
     date_position: DATE_POSITIONS,
     volume_pages_delimiter: VOLUME_PAGES_DELIMITERS,
     title_terminator: TITLE_TERMINATORS,
-    name_list_profile: NAME_LIST_PROFILES,
+    contributor_preset: CONTRIBUTOR_PRESET_PROFILES,
     repeated_author_rendering: REPEATED_AUTHOR_RENDERINGS,
 };
 

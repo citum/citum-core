@@ -43,7 +43,7 @@ use std::collections::HashMap;
 /// Each preset encodes the contributor formatting conventions for a major citation
 /// style or style family. Use doc comments to describe the visual behavior so
 /// style authors can choose the right preset without knowing style guide names.
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]

@@ -6,5 +6,5 @@ info:
 extends: taylor-and-francis-council-of-science-editors-author-date-core
 options:
   profile:
-    name-list-profile: vancouver
+    contributor-preset: vancouver
     date-position: after-author

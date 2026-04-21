@@ -128,37 +128,61 @@ options:
   profile:
     citation-label-wrap: brackets
     bibliography-label-mode: numeric
+    contributor-preset: springer
     date-position: after-author
     volume-pages-delimiter: colon
 ```
 
-`options.profile` is a strongly typed struct, not a free-form map. New fields
-may be added only when all of the following are true:
+`options.profile` is a strongly typed struct, not a free-form map. It is also
+not just a bag of small formatting tweaks. It is the complete, capability-gated
+variation contract for config-only profile wrappers.
+
+Fields under `options.profile` fall into exactly two categories:
+
+- **behavior axes**: wrapper-only adjustments to inherited structure
+- **preset slots**: wrapper-only selection of an existing preset family, if the
+  chosen base explicitly exposes that slot
+
+This distinction is normative:
+
+- `options.contributors: springer` configures the style directly through the
+  normal global options surface
+- `options.profile.contributor-preset: springer` asks the selected base to
+  switch contributor behavior through a declared wrapper contract
+
+New fields may be added only when all of the following are true:
 
 - the variation has stable rendering semantics
 - the variation appears across multiple styles or a large family, not one file
 - the variation is explainable without referencing hidden template structure
-- the axis is orthogonal to existing profile axes where practical
+- the field is either a stable behavior axis or a clearly named preset slot
+- the field is orthogonal to existing profile fields where practical
 
 The initial option families for this model are:
 
-- citation label presentation
-  - `citation-label-wrap`: `none | parentheses | brackets | superscript`
-  - `citation-group-delimiter`: `comma | semicolon | space`
-- bibliography label presentation
-  - `bibliography-label-mode`: `none | numeric | author-date`
-  - `bibliography-label-wrap`: `none | parentheses | brackets`
-- entry sequencing and punctuation
-  - `date-position`: `after-author | after-title | terminal`
-  - `volume-pages-delimiter`: `comma | colon | space`
-  - `title-terminator`: `period | comma | none`
-- contributor list behavior
-  - `name-list-profile`: references existing typed contributor presets
-  - `repeated-author-rendering`: `full | dash | dash-with-space`
+- behavior axes
+  - citation label presentation
+    - `citation-label-wrap`: `none | parentheses | brackets | superscript`
+    - `citation-group-delimiter`: `comma | semicolon | space`
+  - bibliography label presentation
+    - `bibliography-label-mode`: `none | numeric | author-date`
+    - `bibliography-label-wrap`: `none | parentheses | brackets`
+  - entry sequencing and punctuation
+    - `date-position`: `after-author | after-title | terminal`
+    - `volume-pages-delimiter`: `comma | colon | space`
+    - `title-terminator`: `period | comma | none`
+  - bibliography repetition
+    - `repeated-author-rendering`: `full | dash | dash-with-space`
+- preset slots
+  - `contributor-preset`: any base-supported `ContributorPreset` value
 
 This list is intentionally bounded. If a proposed option needs to describe a
 whole template fragment rather than a stable behavior axis, it does not belong
 in `options.profile`.
+
+Misleading effect-named fields are forbidden. If a field selects a larger
+preset family, the field name must describe that full semantic scope rather
+than only one visible side effect.
 
 The default policy is conservative: the first implementation should cover only
 the small set of recurring axes already evidenced by current Springer,
@@ -174,7 +198,8 @@ This keeps profile authoring explicit:
 
 - a style cannot silently request a knob that its base ignores
 - two family bases can support different subsets of the shared profile options
-- base authors must declare which behavior axes are part of the base contract
+- base authors must declare which behavior axes and preset slots are part of
+  the base contract
 
 The capability list is runtime metadata in `StyleBase`, not user-authored YAML.
 Schema validation ensures shape; base capability validation ensures semantic
@@ -186,8 +211,8 @@ Conceptually, a base capability declaration looks like:
 profile-capabilities:
   citation-label-wrap:
     values: [none, parentheses, brackets]
-  bibliography-label-mode:
-    values: [none, numeric]
+  contributor-preset:
+    values: [apa, chicago, springer]
 ```
 
 This is illustrative only. The actual source of truth is compiled metadata, not
@@ -262,6 +287,7 @@ info:
 extends: springer-basic-core
 options:
   profile:
+    contributor-preset: springer
     bibliography-label-mode: none
     date-position: after-author
 ```
