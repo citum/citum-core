@@ -1,21 +1,8 @@
 info:
   title: Springer - Basic (author-date)
   description: Springer Author Date Style for the disciplines Medicine, Biomedicine, Life Sciences, Chemistry, Geosciences, Computer Science, Engineering, Economics. This style is based on Harvard style and recommendations of the Council of Biology Editors.
-  source:
-    csl-id: http://www.zotero.org/styles/springer-basic-author-date
-    adapted-by: citum-migrate
-    license: http://creativecommons.org/licenses/by-sa/3.0/
-    original-authors:
-    - name: Jens Allmer
-      email: jens@allmer.de
-      uri: http://jens.allmer.de
-    links:
-    - href: http://www.zotero.org/styles/springer-basic-author-date
-      rel: self
-    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/instruct-authors-e.pdf
-      rel: documentation
-    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
-      rel: documentation
-    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
-      rel: documentation
 extends: springer-basic-author-date-core
+options:
+  profile:
+    name-list-profile: springer
+    date-position: after-author
