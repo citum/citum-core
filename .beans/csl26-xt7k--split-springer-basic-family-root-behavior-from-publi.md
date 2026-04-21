@@ -9,7 +9,7 @@ tags:
     - taxonomy
     - springer
 created_at: 2026-04-21T13:32:00Z
-updated_at: 2026-04-21T14:20:00Z
+updated_at: 2026-04-21T15:35:00Z
 ---
 
 `csl26-nrkn` confirmed that `springer-basic-brackets` has real parentage to
@@ -19,6 +19,8 @@ carry almost the whole file because bibliography templates and many
 the current merge contract, objects deep-merge, but arrays and explicit `null`
 replace inherited content wholesale, so a localized child change can force
 nearly complete restatement of the inherited bibliography block.
+
+Alternative design draft: `docs/specs/CONFIG_ONLY_PROFILE_OVERRIDES.md`.
 
 ## Goal
 
