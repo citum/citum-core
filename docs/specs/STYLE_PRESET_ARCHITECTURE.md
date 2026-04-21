@@ -25,6 +25,12 @@ parent by 2–5 rules (e.g. Turabian ≈ Chicago Notes + no ibid + footnote
 punctuation tweaks). In CSL these are full standalone files. In Citum they
 become an `extends:` declaration plus a few top-level field overrides.
 
+For config-only profile wrappers, those deltas now live under
+`options.profile`. That surface is intentionally narrower than ordinary
+`options.*`: it contains wrapper-only behavior axes plus explicitly named
+profile-scoped preset slots such as `contributor-preset`, and each field is
+capability-gated by the selected base.
+
 ---
 
 ## §1 Problem Statement

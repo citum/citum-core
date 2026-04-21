@@ -4383,11 +4383,11 @@
             }
           ]
         },
-        "name-list-profile": {
-          "description": "Contributor-list preset for this profile family.",
+        "contributor-preset": {
+          "description": "Profile-scoped contributor preset slot for this family of wrappers.",
           "anyOf": [
             {
-              "$ref": "#/$defs/NameListProfile"
+              "$ref": "#/$defs/ContributorPreset"
             },
             {
               "type": "null"
@@ -4530,36 +4530,6 @@
           "description": "No terminator.",
           "type": "string",
           "const": "none"
-        }
-      ]
-    },
-    "NameListProfile": {
-      "description": "Named contributor-list presets exposed through profile config.",
-      "oneOf": [
-        {
-          "description": "APA-like inversion and symbol conjunction.",
-          "type": "string",
-          "const": "apa"
-        },
-        {
-          "description": "Chicago-style given-name rendering.",
-          "type": "string",
-          "const": "chicago"
-        },
-        {
-          "description": "Harvard family-first rendering.",
-          "type": "string",
-          "const": "harvard"
-        },
-        {
-          "description": "Springer/biology family-first numeric rendering.",
-          "type": "string",
-          "const": "springer"
-        },
-        {
-          "description": "Vancouver-style numeric contributor rendering.",
-          "type": "string",
-          "const": "vancouver"
         }
       ]
     },

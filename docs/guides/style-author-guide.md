@@ -229,22 +229,73 @@ extends: springer-basic-author-date-core
 
 ## [tune] Profile Options
 
-When a style uses `extends:`, it may tune behaviour along axes the base style
-explicitly supports via `options.profile:`. Unsupported axes are rejected at
-load time.
+When a style uses `extends:`, it may tune behaviour through
+`options.profile:`. Unsupported fields are rejected at load time.
 
-| Axis | Values | Effect |
-|---|---|---|
-| `date-position` | `after-author`, `after-title` | Where the year appears in a bibliography entry |
-| `name-list-profile` | `apa`, `chicago`, `springer`, `vancouver` | Name-list truncation and formatting rules |
-| `citation-label-wrap` | `brackets`, `parentheses` | Delimiter around in-text citation labels |
-| `bibliography-label-mode` | `numeric`, `alpha` | Label format in the bibliography |
+**Two different places to configure a style**
+
+- `options.*` configures a style directly. Use this for normal, standalone
+  styles.
+- `options.profile.*` configures a style through an inherited base. Use this
+  only when the style has `extends:`.
+
+In plain terms:
+
+- if you are authoring a full style, edit `options`
+- if you are authoring a thin wrapper over a base style, edit `options.profile`
+
+`options.profile` exists so a base style can expose a small, safe set of
+allowed changes without letting the wrapper rewrite templates.
+
+**Why not always use `options.*`?**
+
+Because a profile is not a full style. It is a constrained child of a base
+style. The base decides which knobs a profile may change. That keeps wrapper
+styles simple, keeps inheritance predictable, and makes GUI authoring possible:
+the UI can show only the controls the base supports.
+
+`options.profile` has two kinds of fields:
+
+### Behavior axes
+
+Use these for wrapper-only adjustments to inherited structure.
+
+- `date-position`
+- `citation-label-wrap`
+- `bibliography-label-mode`
+
+### Preset slots
+
+Use these when the base allows the profile to choose from an existing preset
+family.
+
+- `contributor-preset`
+
+A preset slot is not a different preset system. It is a profile-safe way for a
+wrapper to select one of the preset families the base exposes.
+
+**Allowed values for the common profile fields**
+
+| Field | Allowed values | Use when | Example value |
+|---|---|---|---|
+| `date-position` | `after-author`, `after-title`, `terminal` | the wrapper should move the year within bibliography entries | `after-author` |
+| `contributor-preset` | base-supported contributor presets such as `apa`, `chicago`, `springer`, `vancouver` | the wrapper should switch contributor formatting to a base-supported preset | `springer` |
+| `citation-label-wrap` | `none`, `parentheses`, `brackets`, `superscript` | the wrapper should change citation label punctuation | `brackets` |
+| `bibliography-label-mode` | `none`, `numeric`, `author-date` | the wrapper should change bibliography label display | `numeric` |
 
 ```yaml
+# Standalone style: configure the style directly
+options:
+  contributors: springer
+  dates: short
+```
+
+```yaml
+# Profile wrapper: configure the inherited base through its profile contract
 extends: springer-basic-author-date-core
 options:
   profile:
-    name-list-profile: springer
+    contributor-preset: springer
     date-position: after-author
 ```
 
@@ -256,9 +307,17 @@ options:
     bibliography-label-mode: numeric
 ```
 
-> [!NOTE]
-> Profile options are the only way to vary behaviour in an `extends:` style.
-> Structural template changes require a new base style or an independent style.
+> [!TIP]
+> **Beginner rule**
+>
+> Ask this first:
+>
+> - does this file use `extends:`?
+>   - no: use `options.*`
+>   - yes: use `options.profile.*`
+>
+> If you need to change templates or `type-variants`, you are no longer making
+> a profile. You need a new base style or an independent style.
 
 ## [category] Type Variants
 
@@ -495,7 +554,7 @@ info:
 extends: springer-basic-author-date-core
 options:
   profile:
-    name-list-profile: springer
+    contributor-preset: springer
     date-position: after-author
 ```
 

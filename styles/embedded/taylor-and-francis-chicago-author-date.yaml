@@ -5,5 +5,5 @@ info:
 extends: taylor-and-francis-chicago-author-date-core
 options:
   profile:
-    name-list-profile: chicago
+    contributor-preset: chicago
     date-position: after-author

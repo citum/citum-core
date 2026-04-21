@@ -41,9 +41,8 @@ pub use processing::{
     ProcessingCustom, Sort, SortEntry, SortKey, SortSpec,
 };
 pub use profile::{
-    BibliographyLabelMode, CitationGroupDelimiter, DatePosition, NameListProfile,
-    ProfileAxisCapabilities, ProfileConfig, ProfileWrap, RepeatedAuthorRendering, TitleTerminator,
-    VolumePagesDelimiter,
+    BibliographyLabelMode, CitationGroupDelimiter, DatePosition, ProfileAxisCapabilities,
+    ProfileConfig, ProfileWrap, RepeatedAuthorRendering, TitleTerminator, VolumePagesDelimiter,
 };
 pub use substitute::{Substitute, SubstituteConfig, SubstituteKey};
 

@@ -39,9 +39,9 @@ pub struct ProfileConfig {
     /// Terminator applied to primary-title bibliography components.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title_terminator: Option<TitleTerminator>,
-    /// Contributor-list preset for this profile family.
+    /// Profile-scoped contributor preset slot for this family of wrappers.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub name_list_profile: Option<NameListProfile>,
+    pub contributor_preset: Option<ContributorPreset>,
     /// Repeated-author rendering mode for bibliographies.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub repeated_author_rendering: Option<RepeatedAuthorRendering>,
@@ -60,7 +60,7 @@ impl ProfileConfig {
             date_position,
             volume_pages_delimiter,
             title_terminator,
-            name_list_profile,
+            contributor_preset,
             repeated_author_rendering,
         );
     }
@@ -98,9 +98,8 @@ impl ProfileConfig {
         if let Some(terminator) = self.title_terminator {
             apply_title_terminator(style.bibliography.as_mut(), terminator);
         }
-        if let Some(profile) = self.name_list_profile {
-            style.options.get_or_insert_default().contributors =
-                Some(profile.into_preset().config());
+        if let Some(preset) = self.contributor_preset {
+            style.options.get_or_insert_default().contributors = Some(preset.config());
         }
         if let Some(repeated) = self.repeated_author_rendering {
             let bib_opts = style
@@ -247,35 +246,6 @@ impl TitleTerminator {
             TitleTerminator::Period => Some("."),
             TitleTerminator::Comma => Some(","),
             TitleTerminator::None => None,
-        }
-    }
-}
-
-/// Named contributor-list presets exposed through profile config.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case")]
-pub enum NameListProfile {
-    /// APA-like inversion and symbol conjunction.
-    Apa,
-    /// Chicago-style given-name rendering.
-    Chicago,
-    /// Harvard family-first rendering.
-    Harvard,
-    /// Springer/biology family-first numeric rendering.
-    Springer,
-    /// Vancouver-style numeric contributor rendering.
-    Vancouver,
-}
-
-impl NameListProfile {
-    fn into_preset(self) -> ContributorPreset {
-        match self {
-            NameListProfile::Apa => ContributorPreset::Apa,
-            NameListProfile::Chicago => ContributorPreset::Chicago,
-            NameListProfile::Harvard => ContributorPreset::Harvard,
-            NameListProfile::Springer => ContributorPreset::Springer,
-            NameListProfile::Vancouver => ContributorPreset::Vancouver,
         }
     }
 }
@@ -531,8 +501,8 @@ pub struct ProfileAxisCapabilities {
     pub volume_pages_delimiter: &'static [VolumePagesDelimiter],
     /// Whether the base supports title-terminator.
     pub title_terminator: &'static [TitleTerminator],
-    /// Whether the base supports name-list-profile.
-    pub name_list_profile: &'static [NameListProfile],
+    /// Which contributor presets the base exposes through a profile slot.
+    pub contributor_preset: &'static [ContributorPreset],
     /// Whether the base supports repeated-author-rendering.
     pub repeated_author_rendering: &'static [RepeatedAuthorRendering],
 }
@@ -547,7 +517,7 @@ impl ProfileAxisCapabilities {
         date_position: &[],
         volume_pages_delimiter: &[],
         title_terminator: &[],
-        name_list_profile: &[],
+        contributor_preset: &[],
         repeated_author_rendering: &[],
     };
 }
