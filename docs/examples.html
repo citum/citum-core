@@ -178,7 +178,7 @@
                     </a>
                     <a href="#options-presets" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
                         <span class="material-icons text-lg opacity-60">tune</span>
-                        Options Presets
+                        Options &amp; Inheritance
                     </a>
                     <a href="#titles-links" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
                         <span class="material-icons text-lg opacity-60">title</span>
@@ -1148,16 +1148,17 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                         <span class="material-icons">tune</span>
                     </div>
                     <h2 class="text-2xl font-bold text-slate-900">
-                        Options-Level Presets
+                        Options Presets &amp; Style Inheritance
                     </h2>
                 </div>
                 <p class="text-slate-600 leading-relaxed mb-6">
                     Common configuration patterns for contributors, dates,
                     and titles can be expressed as a single preset name
-                    instead of spelling out every field. Mix preset
-                    shorthand with explicit overrides for maximum clarity
-                    and concision. The same idea now applies at the
-                    whole-style level through style presets.
+                    instead of spelling out every field. At the style level,
+                    <code class="text-xs bg-slate-100 px-1 rounded">extends:</code>
+                    lets a thin wrapper inherit all templates from a named
+                    base style, then tune behaviour along declared axes via
+                    <code class="text-xs bg-slate-100 px-1 rounded">options.profile:</code>.
                 </p>
             </div>
             <div class="bg-slate-900 p-6 overflow-x-auto">
@@ -1182,50 +1183,59 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
             <div class="border-t border-slate-200">
                 <div class="px-8 py-4 bg-slate-100">
                     <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                        Style Presets
+                        Style Inheritance
                     </h3>
                 </div>
                 <div class="bg-slate-900 p-6 overflow-x-auto">
                     <pre class="font-mono text-sm text-slate-300 leading-relaxed">
-<span class="text-slate-500"># Whole-style inheritance with layered overrides</span>
-<span class="text-indigo-400">preset</span>:
-  <span class="text-primary">preset</span>: <span class="text-emerald-400">chicago-notes-18th</span>
-  <span class="text-primary">variant</span>:
-    <span class="text-primary">citation</span>:
-      <span class="text-primary">ibid</span>: <span class="text-emerald-400">~</span>
-
+<span class="text-slate-500"># Inherit all templates from a named base; add only metadata</span>
+<span class="text-indigo-400">extends</span>: <span class="text-emerald-400">springer-basic-author-date-core</span></pre>
+                </div>
+            </div>
+            <div class="border-t border-slate-200">
+                <div class="px-8 py-4 bg-slate-100">
+                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                        Profile Options
+                    </h3>
+                </div>
+                <div class="bg-slate-900 p-6 overflow-x-auto">
+                    <pre class="font-mono text-sm text-slate-300 leading-relaxed">
+<span class="text-slate-500"># Tune declared axes on an inherited base — no templates required</span>
+<span class="text-indigo-400">extends</span>: <span class="text-emerald-400">springer-basic-author-date-core</span>
 <span class="text-indigo-400">options</span>:
-  <span class="text-primary">locale-override</span>: <span class="text-emerald-400">de-DE-chicago</span></pre>
+  <span class="text-primary">profile</span>:
+    <span class="text-primary">name-list-profile</span>: <span class="text-emerald-400">springer</span>
+    <span class="text-primary">date-position</span>: <span class="text-emerald-400">after-author</span>
+
+<span class="text-slate-500"># Numeric variant: bracket labels + numeric bibliography</span>
+<span class="text-indigo-400">extends</span>: <span class="text-emerald-400">elsevier-vancouver-core</span>
+<span class="text-indigo-400">options</span>:
+  <span class="text-primary">profile</span>:
+    <span class="text-primary">citation-label-wrap</span>: <span class="text-emerald-400">brackets</span>
+    <span class="text-primary">bibliography-label-mode</span>: <span class="text-emerald-400">numeric</span>
+
+<span class="text-slate-500"># Supported axes: date-position | name-list-profile | citation-label-wrap | bibliography-label-mode</span>
+<span class="text-slate-500"># Unsupported axes are rejected at load time.</span></pre>
                 </div>
             </div>
             <div class="bg-white p-6 border-t border-slate-200">
                 <div class="grid gap-4">
                     <div class="border-l-4 border-emerald-500 pl-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
-                            Minimal Base Style
+                            Author-Date Inheritance
                         </div>
                         <div class="text-sm text-slate-700">
-                            <code class="text-xs bg-slate-100 px-1 rounded">examples/preset-chicago-notes.yaml</code>
-                            shows a style file that only names the preset.
+                            <code class="text-xs bg-slate-100 px-1 rounded">styles/embedded/springer-basic-author-date.yaml</code>
+                            inherits Springer's author-date base and sets name and date axes.
                         </div>
                     </div>
                     <div class="border-l-4 border-primary pl-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
-                            Behavioral Variant
+                            Numeric Inheritance
                         </div>
                         <div class="text-sm text-slate-700">
-                            <code class="text-xs bg-slate-100 px-1 rounded">examples/preset-turabian.yaml</code>
-                            demonstrates a Chicago Notes variant that disables
-                            <code class="text-xs bg-slate-100 px-1 rounded">ibid</code>.
-                        </div>
-                    </div>
-                    <div class="border-l-4 border-indigo-500 pl-4">
-                        <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
-                            Locale + Preset
-                        </div>
-                        <div class="text-sm text-slate-700">
-                            <code class="text-xs bg-slate-100 px-1 rounded">examples/preset-chicago-de.yaml</code>
-                            combines a style preset with a locale override.
+                            <code class="text-xs bg-slate-100 px-1 rounded">styles/embedded/elsevier-vancouver.yaml</code>
+                            inherits Elsevier Vancouver and configures bracket + numeric labels.
                         </div>
                     </div>
                 </div>
