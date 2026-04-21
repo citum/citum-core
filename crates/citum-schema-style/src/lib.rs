@@ -423,7 +423,10 @@ impl Style {
         }
 
         effective.version = self.version.clone();
-        effective.extends = self.extends.clone();
+        // Clear extends so a second into_resolved() call short-circuits rather than
+        // re-running profile validation on an already-mutated style (apply_to_style
+        // writes options.contributors, which has_non_profile_options would then reject).
+        effective.extends = None;
         effective.raw_yaml = self.raw_yaml.clone();
         Ok(effective)
     }

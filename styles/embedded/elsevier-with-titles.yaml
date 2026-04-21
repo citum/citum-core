@@ -1,19 +1,8 @@
 info:
   title: Elsevier (numeric, with titles)
   description: A style for many of Elsevier's journals that includes article titles in the reference list
-  source:
-    csl-id: http://www.zotero.org/styles/elsevier-with-titles
-    adapted-by: citum-migrate
-    license: http://creativecommons.org/licenses/by-sa/3.0/
-    original-authors:
-    - name: Richard Karnesky
-      email: karnesky+zotero@gmail.com
-      uri: http://arc.nucapt.northwestern.edu/Richard_Karnesky
-    links:
-    - href: http://www.zotero.org/styles/elsevier-with-titles
-      rel: self
-    - href: http://www.zotero.org/styles/elsevier-without-titles
-      rel: template
-    - href: http://www.elsevier.com/journals/journal-of-hazardous-materials/0304-3894/guide-for-authors#68001
-      rel: documentation
 extends: elsevier-with-titles-core
+options:
+  profile:
+    citation-label-wrap: brackets
+    bibliography-label-mode: numeric

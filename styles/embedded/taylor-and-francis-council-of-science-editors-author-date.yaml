@@ -3,17 +3,8 @@ info:
   description: The Council of Science Editors style for T&F journals as per guidelines (version 2.0, 18 Jan 2018).
   fields:
   - science
-  source:
-    csl-id: http://www.zotero.org/styles/taylor-and-francis-council-of-science-editors-author-date
-    adapted-by: citum-migrate
-    license: http://creativecommons.org/licenses/by-sa/3.0/
-    original-authors:
-    - name: Sebastian Karcher
-    links:
-    - href: http://www.zotero.org/styles/taylor-and-francis-council-of-science-editors-author-date
-      rel: self
-    - href: http://www.zotero.org/styles/cse-name-year
-      rel: template
-    - href: http://www.tandf.co.uk/journals/authors/style/reference/tf_CSE.pdf
-      rel: documentation
 extends: taylor-and-francis-council-of-science-editors-author-date-core
+options:
+  profile:
+    name-list-profile: vancouver
+    date-position: after-author

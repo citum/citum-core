@@ -1,6 +1,9 @@
 info:
   title: 'Taylor & Francis Journals Standard Reference Style Guide: Chicago'
-  id: taylor-and-francis-chicago-author-date
   description: 'Taylor & Francis Journals adaptation of Chicago-style, author-date system, using style
     presets.'
 extends: taylor-and-francis-chicago-author-date-core
+options:
+  profile:
+    name-list-profile: chicago
+    date-position: after-author
