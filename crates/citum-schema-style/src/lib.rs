@@ -81,7 +81,7 @@ pub use template::{
 pub type Template = Vec<TemplateComponent>;
 
 /// Canonical Citum style schema version used when `Style.version` is omitted.
-pub const STYLE_SCHEMA_VERSION: &str = "0.35.0";
+pub const STYLE_SCHEMA_VERSION: &str = "0.36.0";
 
 /// A non-fatal validation warning emitted by [`Style::validate`].
 #[derive(Debug, Clone, PartialEq)]
@@ -97,6 +97,67 @@ pub enum SchemaWarning {
         /// Human-readable location hint (e.g., `"bibliography.type-variants"`).
         location: String,
     },
+}
+
+/// Failure modes while resolving a style with inheritance.
+#[derive(Debug, Clone, PartialEq)]
+pub enum ResolutionError {
+    /// A `profile` style attempted to override template-bearing structure.
+    InvalidProfileOverride {
+        /// Human-readable location hint.
+        location: String,
+    },
+    /// A `profile` style attempted to override non-profile options.
+    InvalidProfileOptions,
+    /// The selected base does not support the requested profile axis.
+    UnsupportedProfileAxis {
+        /// Base key used in `extends:`.
+        base: String,
+        /// Profile axis name.
+        axis: &'static str,
+    },
+    /// The selected base supports the axis but not this value.
+    UnsupportedProfileValue {
+        /// Base key used in `extends:`.
+        base: String,
+        /// Profile axis name.
+        axis: &'static str,
+        /// Unsupported serialized value.
+        value: String,
+    },
+    /// An inheritance loop was detected.
+    InheritanceLoop {
+        /// Base key that closed the cycle.
+        base: String,
+    },
+}
+
+impl std::fmt::Display for ResolutionError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ResolutionError::InvalidProfileOverride { location } => {
+                write!(
+                    f,
+                    "profile styles may not override template-bearing field `{location}`"
+                )
+            }
+            ResolutionError::InvalidProfileOptions => {
+                write!(f, "profile styles may only override `options.profile`")
+            }
+            ResolutionError::UnsupportedProfileAxis { base, axis } => {
+                write!(f, "base `{base}` does not support profile axis `{axis}`")
+            }
+            ResolutionError::UnsupportedProfileValue { base, axis, value } => {
+                write!(
+                    f,
+                    "base `{base}` does not support value `{value}` for profile axis `{axis}`"
+                )
+            }
+            ResolutionError::InheritanceLoop { base } => {
+                write!(f, "inheritance loop detected at base `{base}`")
+            }
+        }
+    }
 }
 
 impl std::fmt::Display for SchemaWarning {
@@ -167,35 +228,79 @@ impl Style {
     /// style document are merged on top (taking ultimate precedence).
     ///
     /// Returns the original style unchanged if no base is specified.
+    ///
+    /// # Panics
+    ///
+    /// Panics when style resolution fails. Use [`Style::try_into_resolved`]
+    /// to handle profile-contract and inheritance errors explicitly.
     #[must_use]
     pub fn into_resolved(self) -> Self {
-        self.into_resolved_recursive(&mut HashSet::new())
+        self.try_into_resolved()
+            .unwrap_or_else(|err| panic!("style resolution failed: {err}"))
+    }
+
+    /// Resolve this style into its final effective form, returning validation errors.
+    ///
+    /// Unlike [`Style::into_resolved`], this preserves resolution failures as
+    /// structured [`ResolutionError`] values.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when profile wrappers try to override template-bearing
+    /// structure, when profile capability validation fails, or when inheritance
+    /// loops are detected.
+    pub fn try_into_resolved(self) -> Result<Self, ResolutionError> {
+        self.try_into_resolved_recursive(&mut HashSet::new())
     }
 
     /// Internal recursive resolver with loop protection.
+    ///
+    /// # Panics
+    ///
+    /// Panics when style resolution fails. Use
+    /// [`Style::try_into_resolved_recursive`] to preserve errors.
     #[must_use]
     pub fn into_resolved_recursive(self, visited: &mut HashSet<StyleBase>) -> Self {
+        self.try_into_resolved_recursive(visited)
+            .unwrap_or_else(|err| panic!("style resolution failed: {err}"))
+    }
+
+    /// Internal recursive resolver with loop protection.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when profile wrappers violate the config-only
+    /// contract, when profile capability validation fails, or when
+    /// inheritance loops are detected.
+    pub fn try_into_resolved_recursive(
+        self,
+        visited: &mut HashSet<StyleBase>,
+    ) -> Result<Self, ResolutionError> {
         let Some(base) = self.extends.clone() else {
-            return self;
+            return Ok(self);
         };
 
         if visited.contains(&base) {
-            // Loop detected: return the style as-is to avoid infinite recursion.
-            return self;
+            return Err(ResolutionError::InheritanceLoop {
+                base: base.key().to_string(),
+            });
         }
         visited.insert(base.clone());
 
         // 1. Load the base (recursively resolves if the base itself has an extends field).
-        let mut effective = base.resolve_with_visited(visited);
+        let mut effective = base.try_resolve_with_visited(visited)?;
 
-        // 2. Apply style-level overrides from the local file (self).
-        merge_style_overlay(&mut effective, &self);
+        if self.resolves_as_profile() {
+            self.validate_profile_shape()?;
+            effective = self.resolve_profile_over(effective, &base)?;
+        } else {
+            merge_style_overlay(&mut effective, &self);
+            effective.version = self.version;
+            effective.extends = self.extends;
+            effective.raw_yaml = self.raw_yaml;
+        }
 
-        // 3. Preserve local file metadata for round-tripping.
-        effective.version = self.version;
-        effective.extends = self.extends;
-
-        effective
+        Ok(effective)
     }
 
     /// Parse a Citum style from a YAML string, preserving raw YAML for
@@ -258,6 +363,103 @@ impl Style {
             collect_citation_spec_warnings(cit, "citation", warnings);
         }
     }
+
+    fn style_kind(&self) -> Option<registry::StyleKind> {
+        let id = self.info.id.as_deref()?;
+        registry::StyleRegistry::load_default()
+            .resolve(id)
+            .and_then(|entry| entry.kind.clone())
+    }
+
+    fn resolves_as_profile(&self) -> bool {
+        self.style_kind() == Some(registry::StyleKind::Profile)
+            || self
+                .options
+                .as_ref()
+                .and_then(|options| options.profile.as_ref())
+                .is_some()
+    }
+
+    fn resolve_profile_over(
+        &self,
+        mut effective: Style,
+        base: &StyleBase,
+    ) -> Result<Style, ResolutionError> {
+        if !self.info.is_empty() {
+            effective.info = merge_serialized(effective.info.clone(), &self.info);
+        }
+
+        let local_profile = self
+            .options
+            .as_ref()
+            .and_then(|options| options.profile.clone());
+
+        if let Some(profile) = local_profile.as_ref() {
+            validate_profile_capabilities(profile, base)?;
+
+            match effective.options.as_mut() {
+                Some(options) => {
+                    if let Some(existing) = options.profile.as_mut() {
+                        existing.merge(profile);
+                    } else {
+                        options.profile = Some(profile.clone());
+                    }
+                }
+                None => {
+                    effective.options = Some(options::Config {
+                        profile: Some(profile.clone()),
+                        ..Default::default()
+                    });
+                }
+            }
+        }
+
+        if let Some(profile) = effective
+            .options
+            .as_ref()
+            .and_then(|options| options.profile.clone())
+        {
+            profile.apply_to_style(&mut effective);
+        }
+
+        effective.version = self.version.clone();
+        effective.extends = self.extends.clone();
+        effective.raw_yaml = self.raw_yaml.clone();
+        Ok(effective)
+    }
+
+    pub(crate) fn validate_profile_shape(&self) -> Result<(), ResolutionError> {
+        if self.templates.is_some() || yaml_path_present(self.raw_yaml.as_ref(), &["templates"]) {
+            return Err(ResolutionError::InvalidProfileOverride {
+                location: "templates".to_string(),
+            });
+        }
+
+        for path in [
+            ["citation", "template"].as_slice(),
+            ["citation", "type-variants"].as_slice(),
+            ["citation", "integral", "template"].as_slice(),
+            ["citation", "integral", "type-variants"].as_slice(),
+            ["citation", "non-integral", "template"].as_slice(),
+            ["citation", "non-integral", "type-variants"].as_slice(),
+            ["bibliography", "template"].as_slice(),
+            ["bibliography", "type-variants"].as_slice(),
+        ] {
+            if yaml_path_present(self.raw_yaml.as_ref(), path) {
+                return Err(ResolutionError::InvalidProfileOverride {
+                    location: path.join("."),
+                });
+            }
+        }
+
+        if let Some(options) = &self.options
+            && has_non_profile_options(options)
+        {
+            return Err(ResolutionError::InvalidProfileOptions);
+        }
+
+        Ok(())
+    }
 }
 
 /// Collect warnings from a `CitationSpec` and its sub-specs.
@@ -288,6 +490,136 @@ fn collect_citation_spec_warnings(
     {
         collect_citation_spec_warnings(sub_spec, &format!("{location}.{sub_name}"), warnings);
     }
+}
+
+fn yaml_path_present(value: Option<&serde_yaml::Value>, path: &[&str]) -> bool {
+    let Some(mut current) = value else {
+        return false;
+    };
+    for segment in path {
+        let serde_yaml::Value::Mapping(map) = current else {
+            return false;
+        };
+        let key = serde_yaml::Value::String((*segment).to_string());
+        let Some(next) = map.get(&key) else {
+            return false;
+        };
+        current = next;
+    }
+    true
+}
+
+fn has_non_profile_options(options: &options::Config) -> bool {
+    options.substitute.is_some()
+        || options.processing.is_some()
+        || options.locale_override.is_some()
+        || options.localize.is_some()
+        || options.multilingual.is_some()
+        || options.contributors.is_some()
+        || options.dates.is_some()
+        || options.titles.is_some()
+        || options.locators.is_some()
+        || options.page_range_format.is_some()
+        || options.links.is_some()
+        || options.punctuation_in_quote
+        || options.volume_pages_delimiter.is_some()
+        || options.strip_periods.is_some()
+        || options.notes.is_some()
+        || options.integral_names.is_some()
+        || options.custom.is_some()
+}
+
+fn validate_profile_capabilities(
+    profile: &options::ProfileConfig,
+    base: &StyleBase,
+) -> Result<(), ResolutionError> {
+    let capabilities = base.profile_capabilities();
+    validate_axis(
+        base,
+        "citation-label-wrap",
+        profile.citation_label_wrap.as_ref(),
+        capabilities.citation_label_wrap,
+    )?;
+    validate_axis(
+        base,
+        "citation-group-delimiter",
+        profile.citation_group_delimiter.as_ref(),
+        capabilities.citation_group_delimiter,
+    )?;
+    validate_axis(
+        base,
+        "bibliography-label-mode",
+        profile.bibliography_label_mode.as_ref(),
+        capabilities.bibliography_label_mode,
+    )?;
+    validate_axis(
+        base,
+        "bibliography-label-wrap",
+        profile.bibliography_label_wrap.as_ref(),
+        capabilities.bibliography_label_wrap,
+    )?;
+    validate_axis(
+        base,
+        "date-position",
+        profile.date_position.as_ref(),
+        capabilities.date_position,
+    )?;
+    validate_axis(
+        base,
+        "volume-pages-delimiter",
+        profile.volume_pages_delimiter.as_ref(),
+        capabilities.volume_pages_delimiter,
+    )?;
+    validate_axis(
+        base,
+        "title-terminator",
+        profile.title_terminator.as_ref(),
+        capabilities.title_terminator,
+    )?;
+    validate_axis(
+        base,
+        "name-list-profile",
+        profile.name_list_profile.as_ref(),
+        capabilities.name_list_profile,
+    )?;
+    validate_axis(
+        base,
+        "repeated-author-rendering",
+        profile.repeated_author_rendering.as_ref(),
+        capabilities.repeated_author_rendering,
+    )?;
+    Ok(())
+}
+
+fn validate_axis<T>(
+    base: &StyleBase,
+    axis: &'static str,
+    value: Option<&T>,
+    supported: &'static [T],
+) -> Result<(), ResolutionError>
+where
+    T: Serialize + PartialEq,
+{
+    let Some(value) = value else {
+        return Ok(());
+    };
+    if supported.is_empty() {
+        return Err(ResolutionError::UnsupportedProfileAxis {
+            base: base.key().to_string(),
+            axis,
+        });
+    }
+    if !supported.contains(value) {
+        return Err(ResolutionError::UnsupportedProfileValue {
+            base: base.key().to_string(),
+            axis,
+            value: serde_yaml::to_string(value)
+                .unwrap_or_else(|_| "<unserializable>".to_string())
+                .trim()
+                .to_string(),
+        });
+    }
+    Ok(())
 }
 
 pub(crate) fn merge_style_overlay(base: &mut Style, overlay: &Style) {
@@ -1600,5 +1932,304 @@ options:
 
         let err = Style::from_yaml_str(yaml).expect_err("top-level bibliography config must fail");
         assert!(err.to_string().contains("bibliography"));
+    }
+
+    #[test]
+    fn profile_rejects_top_level_templates() {
+        let yaml = r#"
+info:
+  id: elsevier-harvard
+extends: elsevier-harvard-core
+templates:
+  foo:
+    - title: primary
+"#;
+        let err = Style::from_yaml_str(yaml)
+            .unwrap()
+            .try_into_resolved()
+            .expect_err("profile template override must fail");
+        assert!(matches!(
+            err,
+            ResolutionError::InvalidProfileOverride { location } if location == "templates"
+        ));
+    }
+
+    #[test]
+    fn profile_rejects_citation_template_override() {
+        let yaml = r#"
+info:
+  id: elsevier-harvard
+extends: elsevier-harvard-core
+citation:
+  template:
+    - title: primary
+"#;
+        let err = Style::from_yaml_str(yaml)
+            .unwrap()
+            .try_into_resolved()
+            .expect_err("profile citation template override must fail");
+        assert!(matches!(
+            err,
+            ResolutionError::InvalidProfileOverride { location } if location == "citation.template"
+        ));
+    }
+
+    #[test]
+    fn profile_rejects_bibliography_type_variants_override() {
+        let yaml = r#"
+info:
+  id: elsevier-harvard
+extends: elsevier-harvard-core
+bibliography:
+  type-variants:
+    default:
+      - title: primary
+"#;
+        let err = Style::from_yaml_str(yaml)
+            .unwrap()
+            .try_into_resolved()
+            .expect_err("profile bibliography type variants must fail");
+        assert!(matches!(
+            err,
+            ResolutionError::InvalidProfileOverride { location } if location == "bibliography.type-variants"
+        ));
+    }
+
+    #[test]
+    fn profile_rejects_null_template_clear() {
+        let yaml = r#"
+info:
+  id: elsevier-harvard
+extends: elsevier-harvard-core
+bibliography:
+  template: ~
+"#;
+        let err = Style::from_yaml_str(yaml)
+            .unwrap()
+            .try_into_resolved()
+            .expect_err("profile null template clear must fail");
+        assert!(matches!(
+            err,
+            ResolutionError::InvalidProfileOverride { location } if location == "bibliography.template"
+        ));
+    }
+
+    #[test]
+    fn profile_rejects_non_profile_options() {
+        let yaml = r#"
+info:
+  id: elsevier-harvard
+extends: elsevier-harvard-core
+options:
+  page-range-format: expanded
+"#;
+        let err = Style::from_yaml_str(yaml)
+            .unwrap()
+            .try_into_resolved()
+            .expect_err("profile non-profile options must fail");
+        assert_eq!(err, ResolutionError::InvalidProfileOptions);
+    }
+
+    #[test]
+    fn profile_rejects_unknown_axis_at_parse_time() {
+        let yaml = r#"
+info:
+  id: elsevier-harvard
+extends: elsevier-harvard-core
+options:
+  profile:
+    citation-labl-wrap: brackets
+"#;
+        let err = Style::from_yaml_str(yaml).expect_err("unknown profile axis must fail");
+        assert!(
+            err.to_string()
+                .contains("unknown field `citation-labl-wrap`")
+        );
+    }
+
+    #[test]
+    fn profile_reports_unsupported_axis_and_value_separately() {
+        let unsupported_axis = Style::from_yaml_str(
+            r#"
+info:
+  id: elsevier-harvard
+extends: elsevier-harvard-core
+options:
+  profile:
+    citation-label-wrap: brackets
+"#,
+        )
+        .unwrap()
+        .try_into_resolved()
+        .expect_err("base without capabilities should reject axis");
+        assert!(matches!(
+            unsupported_axis,
+            ResolutionError::UnsupportedProfileAxis { axis, .. } if axis == "citation-label-wrap"
+        ));
+
+        let unsupported_value = Style::from_yaml_str(
+            r#"
+info:
+  id: elsevier-vancouver
+extends: elsevier-vancouver-core
+options:
+  profile:
+    bibliography-label-mode: author-date
+"#,
+        )
+        .unwrap()
+        .try_into_resolved()
+        .expect_err("unsupported value should be distinct from unsupported axis");
+        assert!(matches!(
+            unsupported_value,
+            ResolutionError::UnsupportedProfileValue { axis, .. } if axis == "bibliography-label-mode"
+        ));
+    }
+
+    #[test]
+    fn profile_resolution_leaves_hidden_core_templates_intact() {
+        let base = StyleBase::ElsevierHarvardCore.base();
+        let wrapper = Style::from_yaml_str(
+            r#"
+info:
+  id: elsevier-harvard
+extends: elsevier-harvard-core
+"#,
+        )
+        .unwrap()
+        .try_into_resolved()
+        .expect("wrapper should resolve");
+
+        assert_eq!(
+            wrapper
+                .citation
+                .as_ref()
+                .and_then(|citation| citation.resolve_template()),
+            base.citation
+                .as_ref()
+                .and_then(|citation| citation.resolve_template())
+        );
+        assert_eq!(
+            wrapper
+                .bibliography
+                .as_ref()
+                .and_then(|bib| bib.resolve_template()),
+            base.bibliography
+                .as_ref()
+                .and_then(|bib| bib.resolve_template())
+        );
+    }
+
+    #[test]
+    fn profile_config_applies_supported_axes() {
+        let resolved = Style::from_yaml_str(
+            r#"
+info:
+  id: elsevier-vancouver
+extends: elsevier-vancouver-core
+options:
+  profile:
+    citation-label-wrap: brackets
+    citation-group-delimiter: comma
+    title-terminator: comma
+    repeated-author-rendering: dash
+"#,
+        )
+        .unwrap()
+        .try_into_resolved()
+        .expect("supported profile config should resolve");
+
+        assert_eq!(
+            resolved
+                .citation
+                .as_ref()
+                .and_then(|citation| citation.wrap.clone()),
+            Some(template::WrapConfig::from(
+                template::WrapPunctuation::Brackets
+            ))
+        );
+        assert_eq!(
+            resolved
+                .citation
+                .as_ref()
+                .and_then(|citation| citation.multi_cite_delimiter.clone())
+                .as_deref(),
+            Some(", ")
+        );
+        assert_eq!(
+            resolved
+                .bibliography
+                .as_ref()
+                .and_then(|bib| bib.options.as_ref())
+                .and_then(|options| options.subsequent_author_substitute.clone())
+                .as_deref(),
+            Some("———")
+        );
+    }
+
+    #[test]
+    fn profile_superscript_wrap_applies_vertical_align() {
+        let resolved = Style::from_yaml_str(
+            r#"
+info:
+  id: elsevier-vancouver
+extends: elsevier-vancouver-core
+options:
+  profile:
+    citation-label-wrap: superscript
+"#,
+        )
+        .unwrap()
+        .try_into_resolved()
+        .expect("superscript profile wrap should resolve");
+
+        let citation_number_rendering = resolved
+            .citation
+            .as_ref()
+            .and_then(|citation| citation.resolve_template())
+            .and_then(|template| {
+                template.iter().find_map(|component| match component {
+                    template::TemplateComponent::Number(number)
+                        if matches!(
+                            number.number,
+                            template::NumberVariable::CitationNumber
+                                | template::NumberVariable::CitationLabel
+                        ) =>
+                    {
+                        Some(number.rendering.clone())
+                    }
+                    _ => None,
+                })
+            })
+            .expect("numeric citation template should include a citation label");
+
+        assert_eq!(
+            citation_number_rendering.vertical_align,
+            Some(VerticalAlign::Superscript)
+        );
+        assert_eq!(citation_number_rendering.wrap, None);
+    }
+
+    #[test]
+    fn non_registry_profile_with_profile_options_uses_profile_contract() {
+        let yaml = r#"
+info:
+  id: local-custom-profile
+extends: elsevier-vancouver-core
+options:
+  profile:
+    citation-group-delimiter: comma
+citation:
+  template:
+    - number: citation-number
+"#;
+        let err = Style::from_yaml_str(yaml)
+            .unwrap()
+            .try_into_resolved()
+            .expect_err("local profile-like wrapper must reject template overrides");
+        assert!(matches!(
+            err,
+            ResolutionError::InvalidProfileOverride { location } if location == "citation.template"
+        ));
     }
 }

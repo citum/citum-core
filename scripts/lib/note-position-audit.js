@@ -127,6 +127,9 @@ function discoverNoteStyles(stylesDir = STYLES_DIR) {
   const scan = (dir) => {
     if (!fs.existsSync(dir)) return;
     for (const entry of fs.readdirSync(dir).filter((name) => name.endsWith('.yaml')).sort()) {
+      if (path.basename(entry, '.yaml').endsWith('-core')) {
+        continue;
+      }
       const absolutePath = path.join(dir, entry);
       const style = resolveStyleData(readYaml(absolutePath));
       if (style?.options?.processing === 'note') {

@@ -78,6 +78,12 @@ test('discoverCoreStyles keeps wrapper style baseline identity while resolving p
   assert.equal(chicagoNotes.hasBibliography, false);
 });
 
+test('discoverCoreStyles skips hidden embedded core wrappers', () => {
+  const styles = discoverCoreStyles();
+
+  assert.equal(styles.some((style) => style.name.endsWith('-core')), false);
+});
+
 test('resolveSelectedStyles filters to requested style names and rejects unknown styles', () => {
   const coreStyles = discoverCoreStyles();
 

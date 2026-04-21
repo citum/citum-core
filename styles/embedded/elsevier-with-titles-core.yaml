@@ -1,0 +1,631 @@
+info:
+  title: Elsevier (numeric, with titles)
+  description: A style for many of Elsevier's journals that includes article titles in the reference list
+  source:
+    csl-id: http://www.zotero.org/styles/elsevier-with-titles
+    adapted-by: citum-migrate
+    license: http://creativecommons.org/licenses/by-sa/3.0/
+    original-authors:
+    - name: Richard Karnesky
+      email: karnesky+zotero@gmail.com
+      uri: http://arc.nucapt.northwestern.edu/Richard_Karnesky
+    links:
+    - href: http://www.zotero.org/styles/elsevier-with-titles
+      rel: self
+    - href: http://www.zotero.org/styles/elsevier-without-titles
+      rel: template
+    - href: http://www.elsevier.com/journals/journal-of-hazardous-materials/0304-3894/guide-for-authors#68001
+      rel: documentation
+options:
+  substitute:
+    contributor-role-form: short
+    template:
+    - editor
+    - translator
+  processing: numeric
+  contributors: numeric-given-dot
+  dates: long
+  titles:
+    component:
+      text-case: as-is
+    monograph:
+      text-case: as-is
+    container-monograph:
+      text-case: as-is
+    periodical: {}
+    serial:
+      text-case: as-is
+  punctuation-in-quote: true
+citation:
+  use-preset: numeric-citation
+  wrap:
+    punctuation: brackets
+  multi-cite-delimiter: ','
+bibliography:
+  options:
+    contributors:
+      shorten:
+        min: 99
+        use-first: 99
+    entry-suffix: .
+    separator: ""
+  type-variants:
+    all:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - delimiter: comma
+      group:
+      - contributor: author
+        form: long
+        name-form: initials
+        initialize-with: "."
+      - title: primary
+      - delimiter: comma
+        group:
+        - delimiter: ": "
+          group:
+          - term: in
+          - contributor: editor
+            form: long
+            initialize-with: "."
+        - title: parent-monograph
+        - delimiter: " "
+          group:
+          - title: parent-serial
+          - number: volume
+          - number: pages
+      - number: edition
+      - variable: publisher
+      - variable: publisher-place
+      - date: issued
+        form: year
+      - variable: url
+        links:
+          target: url
+          anchor: component
+      - date: accessed
+        form: month-day
+        prefix: " (accessed "
+      - date: accessed
+        form: year
+        prefix: ", "
+        suffix: ")"
+      - variable: number
+      - variable: doi
+        prefix: ". https://doi.org/"
+        links:
+          target: doi
+          anchor: component
+        suffix: "."
+    article-journal:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - delimiter: comma
+      group:
+      - contributor: author
+        form: long
+      - title: primary
+      - delimiter: comma
+        group:
+        - delimiter: ": "
+          group:
+          - term: in
+        - title: parent-monograph
+        - delimiter: " "
+          group:
+          - title: parent-serial
+          - number: volume
+          - date: issued
+            form: year
+            wrap:
+              punctuation: parentheses
+          - number: pages
+      - number: edition
+      - variable: publisher
+      - variable: publisher-place
+      - variable: url
+        links:
+          target: url
+          anchor: component
+      - date: accessed
+        form: month-day
+        prefix: " (accessed "
+      - date: accessed
+        form: year
+        prefix: ", "
+        suffix: ")"
+      - variable: number
+      - variable: doi
+        prefix: ". https://doi.org/"
+        links:
+          target: doi
+          anchor: component
+        suffix: "."
+    article-magazine:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - delimiter: comma
+      group:
+      - contributor: author
+        form: long
+      - title: primary
+      - delimiter: comma
+        group:
+        - delimiter: ": "
+          group:
+          - term: in
+          - contributor: editor
+            form: long
+        - title: parent-monograph
+        - delimiter: " "
+          group:
+          - title: parent-serial
+          - number: volume
+          - date: issued
+            form: year
+            wrap:
+              punctuation: parentheses
+          - number: pages
+      - number: edition
+      - variable: publisher
+      - variable: publisher-place
+      - variable: url
+        links:
+          target: url
+          anchor: component
+      - date: accessed
+        form: month-day
+        prefix: " (accessed "
+      - date: accessed
+        form: year
+        prefix: ", "
+        suffix: ")"
+      - variable: number
+      - variable: doi
+        prefix: ". https://doi.org/"
+        links:
+          target: doi
+          anchor: component
+        suffix: "."
+    article-newspaper:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - delimiter: comma
+      group:
+      - contributor: author
+        form: long
+      - title: primary
+      - delimiter: comma
+        group:
+        - delimiter: ": "
+          group:
+          - term: in
+          - contributor: editor
+            form: long
+        - title: parent-monograph
+        - delimiter: " "
+          group:
+          - title: parent-serial
+          - number: volume
+          - number: pages
+      - number: edition
+      - variable: publisher
+      - variable: publisher-place
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+      - variable: url
+        links:
+          target: url
+          anchor: component
+      - date: accessed
+        form: month-day
+        prefix: " (accessed "
+      - date: accessed
+        form: year
+        prefix: ", "
+        suffix: ")"
+      - variable: number
+      - variable: doi
+        prefix: ". https://doi.org/"
+        links:
+          target: doi
+          anchor: component
+        suffix: "."
+    book:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - delimiter: comma
+      group:
+      - contributor: author
+        form: long
+      - title: primary
+      - delimiter: comma
+        group:
+        - delimiter: ": "
+          group:
+          - term: in
+        - title: parent-monograph
+        - delimiter: " "
+          group:
+          - title: parent-serial
+          - number: volume
+      - number: edition
+      - variable: publisher
+      - variable: publisher-place
+      - date: issued
+        form: year
+      - variable: url
+        links:
+          target: url
+          anchor: component
+      - date: accessed
+        form: month-day
+        prefix: " (accessed "
+      - date: accessed
+        form: year
+        prefix: ", "
+        suffix: ")"
+      - variable: number
+      - variable: doi
+        prefix: ". https://doi.org/"
+        links:
+          target: doi
+          anchor: component
+        suffix: "."
+    chapter:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - contributor: author
+      form: long
+      suffix: ", "
+    - title: primary
+    - delimiter: " "
+      prefix: ", "
+      group:
+      - term: in
+        suffix: ":"
+      - contributor: editor
+        form: long
+        suffix: ", "
+      - title: parent-monograph
+    - variable: publisher
+      prefix: ", "
+    - delimiter: ""
+      prefix: ", "
+      suffix: "."
+      group:
+      - date: issued
+        form: year
+        suffix: ":"
+      - number: pages
+        prefix: " pp. "
+    dataset:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - delimiter: comma
+      group:
+      - contributor: author
+        form: long
+      - title: primary
+      - delimiter: comma
+        group:
+        - delimiter: ": "
+          group:
+          - term: in
+          - contributor: editor
+            form: long
+        - title: parent-monograph
+        - delimiter: " "
+          group:
+          - title: parent-serial
+          - number: volume
+          - number: pages
+      - number: edition
+      - variable: publisher
+      - variable: publisher-place
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+      - variable: url
+        links:
+          target: url
+          anchor: component
+        prefix: ". "
+      - date: accessed
+        form: month-day
+        prefix: " (accessed "
+      - date: accessed
+        form: year
+        prefix: ", "
+        suffix: ")"
+      - variable: number
+      - variable: doi
+        prefix: ". https://doi.org/"
+        links:
+          target: doi
+          anchor: component
+        suffix: "."
+    interview:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - contributor: author
+      form: long
+      suffix: ", "
+    - title: primary
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: ", "
+      suffix: "."
+    - variable: url
+      prefix: " "
+      links:
+        target: url
+        anchor: component
+      suffix: "."
+    legal-case:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - title: primary
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    paper-conference:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - contributor: author
+      form: long
+      suffix: ", "
+    - title: primary
+    - title: parent-monograph
+      prefix: ", in: "
+    - delimiter: ""
+      prefix: ", "
+      suffix: "."
+      group:
+      - date: issued
+        form: year
+        suffix: ":"
+      - number: pages
+        prefix: " pp. "
+    patent:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - contributor: author
+      form: long
+      suffix: ", "
+    - title: primary
+    - variable: number
+      prefix: ", "
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    report:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - contributor: author
+      form: long
+      suffix: ", "
+    - title: primary
+    - variable: publisher
+      prefix: ", "
+    - variable: publisher-place
+      prefix: ", "
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    thesis:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - contributor: author
+      form: long
+      suffix: ", "
+    - title: primary
+    - variable: genre
+      prefix: ", "
+    - variable: publisher
+      prefix: ", "
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    webpage:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - delimiter: comma
+      group:
+      - contributor: author
+        form: long
+      - title: primary
+      - delimiter: comma
+        group:
+        - delimiter: ": "
+          group:
+          - term: in
+          - contributor: editor
+            form: long
+        - title: parent-monograph
+        - delimiter: " "
+          group:
+          - title: parent-serial
+          - number: volume
+          - number: pages
+      - number: edition
+      - variable: publisher
+      - variable: publisher-place
+      - date: issued
+        form: year
+        wrap:
+          punctuation: parentheses
+      - variable: url
+        links:
+          target: url
+          anchor: component
+        prefix: ". "
+      - date: accessed
+        form: month-day
+        prefix: " (accessed "
+      - date: accessed
+        form: year
+        prefix: ", "
+        suffix: ")"
+      - variable: number
+      - variable: doi
+        prefix: ". https://doi.org/"
+        links:
+          target: doi
+          anchor: component
+        suffix: "."
+    [webpage, dataset]:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - contributor: author
+      form: long
+      suffix: ", "
+    - title: primary
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: ", "
+      suffix: "."
+    - variable: url
+      prefix: " "
+      links:
+        target: url
+        anchor: component
+    - date: accessed
+      form: month-day
+      prefix: " (accessed "
+    - date: accessed
+      form: year
+      prefix: ", "
+      suffix: ")."
+    [article-newspaper, broadcast]:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - contributor: author
+      form: long
+      suffix: ", "
+    - title: primary
+    - title: parent-serial
+      prefix: ", "
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+      suffix: "."
+    motion-picture:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - contributor: author
+      form: long
+      suffix: ", "
+    - title: primary
+    - date: issued
+      form: year
+      prefix: ", "
+      suffix: "."
+    personal-communication:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - contributor: author
+      form: long
+      suffix: ", "
+    - title: primary
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: ", "
+      suffix: "."
+  template:
+  - number: citation-number
+    wrap:
+      punctuation: brackets
+    suffix: ""
+  - delimiter: comma
+    group:
+    - contributor: author
+      form: long
+    - title: primary
+    - delimiter: comma
+      group:
+      - delimiter: ": "
+        group:
+        - term: in
+        - contributor: editor
+          form: long
+      - title: parent-monograph
+      - delimiter: " "
+        group:
+        - title: parent-serial
+        - number: volume
+        - number: pages
+    - number: edition
+    - variable: publisher
+    - variable: publisher-place
+    - date: issued
+      form: year
+    - variable: url
+      links:
+        target: url
+        anchor: component
+    - date: accessed
+      form: month-day
+      prefix: " (accessed "
+    - date: accessed
+      form: year
+      prefix: ", "
+      suffix: ")"
+    - variable: number
+    - variable: doi
+      prefix: ". https://doi.org/"
+      links:
+        target: doi
+        anchor: component
+      suffix: "."

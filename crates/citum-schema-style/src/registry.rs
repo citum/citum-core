@@ -9,6 +9,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+use std::sync::OnceLock;
+
+static DEFAULT_REGISTRY: OnceLock<StyleRegistry> = OnceLock::new();
 
 /// Tier classification for a style in the registry.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -136,8 +139,25 @@ impl StyleRegistry {
     /// Panics only if the embedded YAML is malformed (should never happen in
     /// a correctly built binary).
     pub fn load_default() -> Self {
-        let bytes = include_bytes!("../../../registry/default.yaml");
-        serde_yaml::from_slice(bytes).expect("embedded registry/default.yaml is valid YAML")
+        DEFAULT_REGISTRY
+            .get_or_init(|| {
+                let bytes = include_bytes!("../../../registry/default.yaml");
+                let registry: Self = serde_yaml::from_slice(bytes)
+                    .expect("embedded registry/default.yaml is valid YAML");
+                for entry in &registry.styles {
+                    if entry.kind == Some(StyleKind::Profile)
+                        && let Some(name) = &entry.builtin
+                        && let Some(style) = crate::embedded::get_embedded_style(name)
+                    {
+                        let style = style.expect("embedded profile style should parse");
+                        style.validate_profile_shape().unwrap_or_else(|err| {
+                            panic!("embedded profile `{name}` violates profile contract: {err}")
+                        });
+                    }
+                }
+                registry
+            })
+            .clone()
     }
 
     /// Load a registry from a YAML file on disk.
@@ -303,5 +323,14 @@ mod tests {
         assert_eq!(registry.styles.len(), 2);
         assert_eq!(registry.resolve("apa").unwrap().id, "apa-7th");
         assert_eq!(registry.resolve("mla").unwrap().id, "mla");
+    }
+
+    #[test]
+    fn test_load_default_keeps_profiles_valid() {
+        let registry = StyleRegistry::load_default();
+        let entry = registry
+            .resolve("elsevier-harvard")
+            .expect("elsevier-harvard should exist");
+        assert_eq!(entry.kind, Some(StyleKind::Profile));
     }
 }

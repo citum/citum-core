@@ -7,7 +7,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.35.0"
+      "default": "0.36.0"
     },
     "info": {
       "description": "Style metadata.",
@@ -507,6 +507,17 @@
             "null"
           ]
         },
+        "vertical-align": {
+          "description": "Vertical alignment to apply to rendered output.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VerticalAlign"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "prefix": {
           "description": "Text to prepend to the rendered value (outside any wrap).",
           "type": [
@@ -932,6 +943,14 @@
         }
       ]
     },
+    "VerticalAlign": {
+      "type": "string",
+      "enum": [
+        "baseline",
+        "superscript",
+        "subscript"
+      ]
+    },
     "WrapConfig": {
       "description": "Wrapping punctuation and optional inner affixes applied around a rendered value.\n\nCombines the wrap punctuation with optional text that appears inside the wrap\n(between the wrap character and the rendered content).",
       "type": "object",
@@ -1135,6 +1154,17 @@
             "null"
           ]
         },
+        "vertical-align": {
+          "description": "Vertical alignment to apply to rendered output.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VerticalAlign"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "prefix": {
           "description": "Text to prepend to the rendered value (outside any wrap).",
           "type": [
@@ -1302,6 +1332,17 @@
           "type": [
             "boolean",
             "null"
+          ]
+        },
+        "vertical-align": {
+          "description": "Vertical alignment to apply to rendered output.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VerticalAlign"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "prefix": {
@@ -1487,6 +1528,17 @@
             "null"
           ]
         },
+        "vertical-align": {
+          "description": "Vertical alignment to apply to rendered output.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VerticalAlign"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "prefix": {
           "description": "Text to prepend to the rendered value (outside any wrap).",
           "type": [
@@ -1646,6 +1698,17 @@
           "type": [
             "boolean",
             "null"
+          ]
+        },
+        "vertical-align": {
+          "description": "Vertical alignment to apply to rendered output.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VerticalAlign"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "prefix": {
@@ -1845,6 +1908,17 @@
             "null"
           ]
         },
+        "vertical-align": {
+          "description": "Vertical alignment to apply to rendered output.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VerticalAlign"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "prefix": {
           "description": "Text to prepend to the rendered value (outside any wrap).",
           "type": [
@@ -1986,6 +2060,17 @@
           "type": [
             "boolean",
             "null"
+          ]
+        },
+        "vertical-align": {
+          "description": "Vertical alignment to apply to rendered output.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VerticalAlign"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "prefix": {
@@ -2403,6 +2488,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/IntegralNameConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "profile": {
+          "description": "Config-only profile override axes applied during profile resolution.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProfileConfig"
             },
             {
               "type": "null"
@@ -4206,6 +4302,287 @@
         }
       ]
     },
+    "ProfileConfig": {
+      "description": "Profile-local configuration that may vary without overriding templates.",
+      "type": "object",
+      "properties": {
+        "citation-label-wrap": {
+          "description": "Citation wrapper punctuation for grouped citations.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProfileWrap"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "citation-group-delimiter": {
+          "description": "Delimiter between multiple citations in a grouped citation.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CitationGroupDelimiter"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bibliography-label-mode": {
+          "description": "Bibliography label mode for label-bearing styles.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BibliographyLabelMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bibliography-label-wrap": {
+          "description": "Bibliography label wrapper punctuation.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProfileWrap"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "date-position": {
+          "description": "Placement of issued dates within bibliography entries.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DatePosition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "volume-pages-delimiter": {
+          "description": "Delimiter between volume and pages in bibliography entries.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VolumePagesDelimiter"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "title-terminator": {
+          "description": "Terminator applied to primary-title bibliography components.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TitleTerminator"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name-list-profile": {
+          "description": "Contributor-list preset for this profile family.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NameListProfile"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "repeated-author-rendering": {
+          "description": "Repeated-author rendering mode for bibliographies.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RepeatedAuthorRendering"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "ProfileWrap": {
+      "description": "Wrapper punctuation supported by profile axes.",
+      "oneOf": [
+        {
+          "description": "No outer punctuation.",
+          "type": "string",
+          "const": "none"
+        },
+        {
+          "description": "Parentheses.",
+          "type": "string",
+          "const": "parentheses"
+        },
+        {
+          "description": "Brackets.",
+          "type": "string",
+          "const": "brackets"
+        },
+        {
+          "description": "Superscript-style numeric labels.",
+          "type": "string",
+          "const": "superscript"
+        }
+      ]
+    },
+    "CitationGroupDelimiter": {
+      "description": "Delimiters between grouped citations.",
+      "oneOf": [
+        {
+          "description": "`, `",
+          "type": "string",
+          "const": "comma"
+        },
+        {
+          "description": "`; `",
+          "type": "string",
+          "const": "semicolon"
+        },
+        {
+          "description": "` `",
+          "type": "string",
+          "const": "space"
+        }
+      ]
+    },
+    "BibliographyLabelMode": {
+      "description": "Bibliography label modes supported by profile wrappers.",
+      "oneOf": [
+        {
+          "description": "No explicit label component.",
+          "type": "string",
+          "const": "none"
+        },
+        {
+          "description": "Numeric bibliography labels.",
+          "type": "string",
+          "const": "numeric"
+        },
+        {
+          "description": "Author-date bibliography labels.",
+          "type": "string",
+          "const": "author-date"
+        }
+      ]
+    },
+    "DatePosition": {
+      "description": "Placement of issued dates inside bibliography entries.",
+      "oneOf": [
+        {
+          "description": "Immediately after the contributor component.",
+          "type": "string",
+          "const": "after-author"
+        },
+        {
+          "description": "Immediately after the title component.",
+          "type": "string",
+          "const": "after-title"
+        },
+        {
+          "description": "At the end of the entry.",
+          "type": "string",
+          "const": "terminal"
+        }
+      ]
+    },
+    "VolumePagesDelimiter": {
+      "description": "Volume/pages delimiters used by profile wrappers.",
+      "oneOf": [
+        {
+          "description": "Comma.",
+          "type": "string",
+          "const": "comma"
+        },
+        {
+          "description": "Colon.",
+          "type": "string",
+          "const": "colon"
+        },
+        {
+          "description": "Space.",
+          "type": "string",
+          "const": "space"
+        }
+      ]
+    },
+    "TitleTerminator": {
+      "description": "Terminator punctuation for bibliography titles.",
+      "oneOf": [
+        {
+          "description": "Period.",
+          "type": "string",
+          "const": "period"
+        },
+        {
+          "description": "Comma.",
+          "type": "string",
+          "const": "comma"
+        },
+        {
+          "description": "No terminator.",
+          "type": "string",
+          "const": "none"
+        }
+      ]
+    },
+    "NameListProfile": {
+      "description": "Named contributor-list presets exposed through profile config.",
+      "oneOf": [
+        {
+          "description": "APA-like inversion and symbol conjunction.",
+          "type": "string",
+          "const": "apa"
+        },
+        {
+          "description": "Chicago-style given-name rendering.",
+          "type": "string",
+          "const": "chicago"
+        },
+        {
+          "description": "Harvard family-first rendering.",
+          "type": "string",
+          "const": "harvard"
+        },
+        {
+          "description": "Springer/biology family-first numeric rendering.",
+          "type": "string",
+          "const": "springer"
+        },
+        {
+          "description": "Vancouver-style numeric contributor rendering.",
+          "type": "string",
+          "const": "vancouver"
+        }
+      ]
+    },
+    "RepeatedAuthorRendering": {
+      "description": "Repeated-author rendering policies for bibliographies.",
+      "oneOf": [
+        {
+          "description": "Always render full contributor names.",
+          "type": "string",
+          "const": "full"
+        },
+        {
+          "description": "Replace repeated authors with an em dash.",
+          "type": "string",
+          "const": "dash"
+        },
+        {
+          "description": "Replace repeated authors with an em dash followed by a space.",
+          "type": "string",
+          "const": "dash-with-space"
+        }
+      ]
+    },
     "CitationSpec": {
       "description": "Citation specification.",
       "type": "object",
@@ -5417,6 +5794,56 @@
     "StyleBase": {
       "description": "A named, compiled-in style base that serves as an inheritance root.\n\nA style file declares `extends: <key>` to inherit a complete base style.\nAny top-level fields in the file (`options`, `citation`, `bibliography`,\netc.) are merged over the base, with local fields taking\nultimate precedence.",
       "oneOf": [
+        {
+          "description": "Hidden Elsevier Harvard family root.",
+          "type": "string",
+          "const": "elsevier-harvard-core"
+        },
+        {
+          "description": "Hidden Elsevier with-titles family root.",
+          "type": "string",
+          "const": "elsevier-with-titles-core"
+        },
+        {
+          "description": "Hidden Elsevier Vancouver family root.",
+          "type": "string",
+          "const": "elsevier-vancouver-core"
+        },
+        {
+          "description": "Hidden Springer Basic author-date root.",
+          "type": "string",
+          "const": "springer-basic-author-date-core"
+        },
+        {
+          "description": "Hidden Springer Basic brackets root.",
+          "type": "string",
+          "const": "springer-basic-brackets-core"
+        },
+        {
+          "description": "Hidden Springer Vancouver root.",
+          "type": "string",
+          "const": "springer-vancouver-brackets-core"
+        },
+        {
+          "description": "Hidden Taylor & Francis Chicago root.",
+          "type": "string",
+          "const": "taylor-and-francis-chicago-author-date-core"
+        },
+        {
+          "description": "Hidden Taylor & Francis CSE root.",
+          "type": "string",
+          "const": "taylor-and-francis-council-of-science-editors-author-date-core"
+        },
+        {
+          "description": "Hidden Taylor & Francis NLM root.",
+          "type": "string",
+          "const": "taylor-and-francis-national-library-of-medicine-core"
+        },
+        {
+          "description": "Hidden Chicago shortened-notes root.",
+          "type": "string",
+          "const": "chicago-shortened-notes-bibliography-core"
+        },
         {
           "description": "Chicago Manual of Style 18th edition — notes without bibliography.",
           "type": "string",

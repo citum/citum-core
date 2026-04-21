@@ -1,8 +1,8 @@
 # Config-Only Profile Overrides Specification
 
-**Status:** Draft
+**Status:** Active
 **Date:** 2026-04-21
-**Related:** `TEMPLATE_V2.md`, `STYLE_PRESET_ARCHITECTURE.md`, `STYLE_TAXONOMY.md`, bean `csl26-xt7k`, bean `csl26-nrkn`
+**Related:** `TEMPLATE_V2.md`, `STYLE_PRESET_ARCHITECTURE.md`, `STYLE_TAXONOMY.md`, bean `csl26-xt7k`, bean `csl26-nrkn`, bean `csl26-rwgi`
 
 ## Purpose
 
@@ -343,3 +343,4 @@ rather than inside a single template tree.
 ## Changelog
 
 - 2026-04-21: Initial draft.
+- 2026-04-21: Activated with the first resolver/schema implementation.

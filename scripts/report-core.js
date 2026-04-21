@@ -477,7 +477,8 @@ function discoverCoreStyles(provenanceConfig = loadReportProvenance()) {
         filename,
         stylePath: path.join(dir, filename),
         name: path.basename(filename, '.yaml'),
-      }));
+      }))
+      .filter((style) => !style.name.endsWith('-core'));
   };
 
   const allStyles = [

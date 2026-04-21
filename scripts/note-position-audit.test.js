@@ -1,7 +1,11 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 const {
+  discoverNoteStyles,
   evaluateConformanceLayer,
   evaluateNotePositionRender,
   evaluateRegressionLayer,
@@ -208,6 +212,30 @@ test('validateExpectationCoverage finds missing and extra style declarations', (
     missing: ['missing-style'],
     extra: ['example-fallback', 'example-oscola'],
   });
+});
+
+test('discoverNoteStyles skips hidden embedded core wrappers', () => {
+  const fixtureRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'note-style-discovery-'));
+  const embeddedDir = path.join(fixtureRoot, 'embedded');
+  fs.mkdirSync(embeddedDir, { recursive: true });
+
+  fs.writeFileSync(
+    path.join(embeddedDir, 'public-note.yaml'),
+    'options:\n  processing: note\n',
+    'utf8'
+  );
+  fs.writeFileSync(
+    path.join(embeddedDir, 'public-note-core.yaml'),
+    'options:\n  processing: note\n',
+    'utf8'
+  );
+
+  assert.deepEqual(
+    discoverNoteStyles(fixtureRoot).map((style) => style.name),
+    ['public-note']
+  );
+
+  fs.rmSync(fixtureRoot, { recursive: true, force: true });
 });
 
 test('summarizeAuditResults counts each layer separately', () => {

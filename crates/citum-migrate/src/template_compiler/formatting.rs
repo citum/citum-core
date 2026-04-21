@@ -62,6 +62,7 @@ impl TemplateCompiler {
                 .font_variant
                 .as_ref()
                 .map(|v| matches!(v, citum_schema::FontVariant::SmallCaps)),
+            vertical_align: fmt.vertical_align.clone(),
             quote: fmt.quotes,
             prefix,
             suffix,

@@ -1,0 +1,352 @@
+info:
+  title: Springer - Basic (author-date)
+  description: Springer Author Date Style for the disciplines Medicine, Biomedicine, Life Sciences, Chemistry, Geosciences, Computer Science, Engineering, Economics. This style is based on Harvard style and recommendations of the Council of Biology Editors.
+  source:
+    csl-id: http://www.zotero.org/styles/springer-basic-author-date
+    adapted-by: citum-migrate
+    license: http://creativecommons.org/licenses/by-sa/3.0/
+    original-authors:
+    - name: Jens Allmer
+      email: jens@allmer.de
+      uri: http://jens.allmer.de
+    links:
+    - href: http://www.zotero.org/styles/springer-basic-author-date
+      rel: self
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/instruct-authors-e.pdf
+      rel: documentation
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/manuscript-guidelines-1.0.pdf
+      rel: documentation
+    - href: http://www.springer.com/cda/content/document/cda_downloaddocument/Key_Style_Points_1.0.pdf
+      rel: documentation
+options:
+  processing:
+    sort:
+      template:
+      - key: author
+      - key: year
+    group:
+      template: [author, year]
+    disambiguate:
+      names: false
+      add-givenname: false
+      year-suffix: true
+  strip-periods: true
+  substitute: editor-translator-short
+  contributors: numeric-all-authors
+  dates: short
+  punctuation-in-quote: true
+citation:
+  options:
+    contributors:
+      shorten:
+        min: 3
+        use-first: 1
+  template:
+  - delimiter: space
+    group:
+    - contributor: author
+      form: short
+      shorten:
+        min: 3
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: text
+    - date: issued
+      form: year
+  - variable: locator
+  wrap:
+    punctuation: parentheses
+  delimiter: ", "
+  multi-cite-delimiter: "; "
+bibliography:
+  options:
+    hanging-indent: true
+    entry-suffix: ""
+    separator: ". "
+  type-variants:
+    article-journal:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 5
+        use-first: 3
+        and-others: text
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      prefix: " "
+    - delimiter: " "
+      group:
+      - prefix: "In: "
+        contributor: editor
+        form: long
+        name-order: family-first
+      - title: parent-monograph
+    - title: parent-serial
+    - delimiter: ", "
+      group:
+      - variable: publisher
+      - variable: publisher-place
+    - delimiter: none
+      prefix: " "
+      group:
+      - number: volume
+        prefix: " "
+        suffix: ":"
+      - number: pages
+        prefix: ""
+    - variable: doi
+      prefix: ". https://doi.org/"
+    article-magazine:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 5
+        use-first: 3
+        and-others: text
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      prefix: " "
+    - title: parent-serial
+      prefix: ". "
+    - delimiter: ":"
+      prefix: " "
+      group:
+      - number: volume
+      - number: pages
+        prefix: ""
+    book:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 5
+        use-first: 3
+        and-others: text
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - delimiter: ", "
+      prefix: " "
+      group:
+      - title: primary
+      - number: edition
+    - delimiter: ", "
+      prefix: ". "
+      group:
+      - variable: publisher
+      - variable: publisher-place
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 5
+        use-first: 3
+        and-others: text
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      prefix: " "
+    - delimiter: " "
+      group:
+      - prefix: "In: "
+        contributor: editor
+        form: long
+        name-order: family-first
+      - title: parent-monograph
+    - title: parent-serial
+    - delimiter: ", "
+      group:
+      - variable: publisher
+      - variable: publisher-place
+      - number: pages
+        prefix: "pp "
+    - delimiter: none
+      prefix: " "
+      group:
+      - number: volume
+      - number: issue
+    - variable: doi
+    thesis:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 5
+        use-first: 3
+        and-others: text
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      prefix: " "
+    - delimiter: ", "
+      prefix: ". "
+      group:
+      - variable: genre
+        text-case: capitalize-first
+      - variable: publisher
+    webpage:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 5
+        use-first: 3
+        and-others: text
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      prefix: " "
+    - variable: url
+      prefix: ". "
+    - date: accessed
+      form: month-day
+      prefix: ". Accessed "
+    - date: accessed
+      form: year
+      prefix: " "
+    entry-encyclopedia:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 5
+        use-first: 3
+        and-others: text
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      prefix: " "
+    - title: parent-serial
+      prefix: ". "
+    - delimiter: ":"
+      prefix: " "
+      group:
+      - number: volume
+      - number: pages
+        prefix: ""
+    dataset:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 5
+        use-first: 3
+        and-others: text
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      prefix: " "
+    report:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 5
+        use-first: 3
+        and-others: text
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      prefix: " "
+    - delimiter: ", "
+      prefix: ". "
+      group:
+      - variable: publisher
+      - variable: publisher-place
+    paper-conference:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 5
+        use-first: 3
+        and-others: text
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      prefix: " "
+    - title: parent-monograph
+      prefix: ". In: "
+    - number: pages
+      prefix: ". pp "
+    legal-case:
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+    - title: primary
+      prefix: " "
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten:
+      min: 5
+      use-first: 3
+      and-others: text
+  - contributor: editor
+    form: long
+    name-order: family-first
+  - date: issued
+    form: year
+    wrap:
+      punctuation: parentheses
+    prefix: " "
+  - title: primary
+    prefix: " "
+  - delimiter: " "
+    group:
+    - prefix: "In: "
+      contributor: editor
+      form: long
+      name-order: family-first
+    - title: parent-monograph
+  - title: parent-serial
+  - delimiter: ", "
+    group:
+    - variable: publisher
+    - variable: publisher-place
+    - number: pages
+      prefix: "pp "
+  - delimiter: none
+    prefix: " "
+    group:
+    - number: volume
+    - number: issue
+    - number: pages
+  - variable: doi

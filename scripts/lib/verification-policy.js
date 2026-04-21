@@ -301,6 +301,27 @@ const PRESET_BASES = {
   'chicago-author-date-18th': path.join(PROJECT_ROOT, 'styles', 'embedded', 'chicago-author-date-18th.yaml'),
 };
 
+function resolveBaseStylePath(presetKey) {
+  if (!presetKey || typeof presetKey !== 'string') {
+    return null;
+  }
+
+  if (PRESET_BASES[presetKey]) {
+    return PRESET_BASES[presetKey];
+  }
+
+  for (const candidate of [
+    path.join(PROJECT_ROOT, 'styles', `${presetKey}.yaml`),
+    path.join(PROJECT_ROOT, 'styles', 'embedded', `${presetKey}.yaml`),
+  ]) {
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
 const TEMPLATE_PRESETS = {
   apa: {
     citation: [
@@ -402,8 +423,8 @@ function resolveStyleData(styleData, visited = new Set()) {
 
   if (presetSpec) {
     const presetKey = typeof presetSpec === 'string' ? presetSpec : presetSpec.extends;
-    if (presetKey && PRESET_BASES[presetKey] && !visited.has(presetKey)) {
-      const basePath = PRESET_BASES[presetKey];
+    const basePath = resolveBaseStylePath(presetKey);
+    if (presetKey && basePath && !visited.has(presetKey)) {
       if (fs.existsSync(basePath)) {
         try {
           const baseContent = fs.readFileSync(basePath, 'utf8');

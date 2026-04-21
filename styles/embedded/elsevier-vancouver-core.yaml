@@ -1,0 +1,318 @@
+info:
+  title: Elsevier - NLM/Vancouver (citation-sequence)
+  description: A style for some Elsevier journals, resembles Vancouver style
+  source:
+    csl-id: http://www.zotero.org/styles/elsevier-vancouver
+    adapted-by: citum-migrate
+    license: http://creativecommons.org/licenses/by-sa/3.0/
+    original-authors:
+    - name: Richard Karnesky
+      email: karnesky+zotero@gmail.com
+      uri: http://arc.nucapt.northwestern.edu/Richard_Karnesky
+    links:
+    - href: http://www.zotero.org/styles/elsevier-vancouver
+      rel: self
+    - href: http://www.elsevier.com/journals/energy/0360-5442/guide-for-authors#68000
+      rel: documentation
+  short-name: "Vancouver"
+options:
+  substitute:
+    contributor-role-form: long
+    template:
+    - translator
+  processing: numeric
+  contributors:
+    display-as-sort: all
+    name-form: initials
+    initialize-with: ''
+    delimiter: ', '
+    delimiter-precedes-last: always
+    demote-non-dropping-particle: sort-only
+    sort-separator: ' '
+    role:
+      omit:
+      - editor
+  dates:
+    month: long
+  page-range-format: minimal
+  punctuation-in-quote: true
+
+citation:
+  use-preset: numeric-citation
+  wrap:
+    punctuation: brackets
+  multi-cite-delimiter: ','
+  delimiter: ''
+bibliography:
+  options:
+    entry-suffix: .
+    separator: ''
+  type-variants:
+    article-journal:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+      shorten:
+        min: 7
+        use-first: 6
+        and-others: et-al
+        delimiter-precedes-last: always
+    - title: primary
+      suffix: '. '
+    - group:
+      - title: parent-serial
+      - date: issued
+        form: year
+        prefix: ' '
+        suffix: ';'
+      - number: volume
+      - number: pages
+        prefix: ':'
+      delimiter: none
+    - variable: doi
+      prefix: '. https://doi.org/'
+      suffix: '.'
+      links:
+        target: doi
+        anchor: component
+    article-magazine:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - group:
+      - title: parent-serial
+      - date: issued
+        form: year
+        prefix: ' '
+        suffix: ';'
+      - number: volume
+      - number: pages
+        prefix: ':'
+      delimiter: none
+    article-newspaper:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - group:
+      - title: parent-serial
+      - date: issued
+        form: year
+        prefix: ' '
+      delimiter: none
+    book:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - contributor: editor
+      form: long
+      suffix: ', editors. '
+    - title: primary
+      suffix: '. '
+    - number: edition
+      suffix: '. '
+    - variable: publisher-place
+      suffix: ': '
+    - variable: publisher
+      suffix: '; '
+    - date: issued
+      form: year
+    broadcast:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - title: parent-serial
+      suffix: ' '
+    - date: issued
+      form: year
+    chapter:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - contributor: editor
+      form: long
+      prefix: 'In: '
+      suffix: ', editors. '
+    - title: parent-monograph
+      suffix: ', '
+    - variable: publisher
+      suffix: '; '
+    - date: issued
+      form: year
+    - number: pages
+      prefix: ', p. '
+    dataset:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: ' '
+    - date: issued
+      form: year
+    entry-encyclopedia:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - group:
+      - title: parent-serial
+      - date: issued
+        form: year
+        prefix: ' '
+        suffix: ';'
+      - number: volume
+      - number: pages
+        prefix: ':'
+      delimiter: none
+    interview:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: ' '
+    - date: issued
+      form: year
+    paper-conference:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - title: parent-monograph
+      suffix: ', '
+    - date: issued
+      form: year
+      suffix: ', '
+    - number: pages
+      prefix: 'p. '
+    personal-communication:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: ' '
+    - date: issued
+      form: year
+    report:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - variable: publisher-place
+      suffix: ': '
+    - variable: publisher
+      suffix: '; '
+    - date: issued
+      form: year
+    legal-case:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - title: primary
+      suffix: '. '
+    - number: volume
+      prefix: 'vol. '
+      suffix: '. '
+    - date: issued
+      form: year
+    webpage:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: ' '
+    - date: issued
+      form: year
+      suffix: '. '
+    - variable: url
+    - date: accessed
+      form: full
+      prefix: ' (accessed '
+      suffix: ')'
+    patent:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - variable: number
+      suffix: ', '
+    - date: issued
+      form: year
+    thesis:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      suffix: '. '
+    - title: primary
+      suffix: '. '
+    - variable: genre
+      suffix: '. '
+    - variable: publisher
+      suffix: ', '
+    - date: issued
+      form: year
+  template:
+  - number: citation-number
+    wrap:
+      punctuation: brackets
+  - contributor: author
+    form: long
+    suffix: '. '
+  - title: primary
+    suffix: '. '
+  - date: issued
+    form: year
