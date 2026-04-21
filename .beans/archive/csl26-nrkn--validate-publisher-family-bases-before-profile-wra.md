@@ -1,7 +1,7 @@
 ---
 # csl26-nrkn
 title: Validate publisher-family bases before profile-wrapper conversion
-status: todo
+status: completed
 type: task
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
     - taxonomy
     - verification
 created_at: 2026-04-21T12:14:46Z
-updated_at: 2026-04-21T12:14:46Z
+updated_at: 2026-04-21T13:40:00Z
 ---
 
 Evaluate the embedded publisher/profile styles that were tentatively remapped to
@@ -63,13 +63,13 @@ Classify each style as exactly one of:
 - independent/self-contained style
 
 ## Tasks
-- [ ] Build a per-style evidence table using the authority order above.
-- [ ] Record the current publisher-guide relationship, if any, for each candidate profile.
-- [ ] Record the CSL template-link or named-parent evidence for each candidate profile.
-- [ ] Re-run reduced citation/bibliography fixture comparisons for each style against its candidate base or family base.
-- [ ] Decide the classification for each candidate style.
-- [ ] Update the taxonomy wording so `profile` means guide-backed parent-plus-deltas, not output-similar-to-an-existing-base.
-- [ ] Split any required implementation into narrower beans if new bases or converter work are needed.
+- [x] Build a per-style evidence table using the authority order above.
+- [x] Record the current publisher-guide relationship, if any, for each candidate profile.
+- [x] Record the CSL template-link or named-parent evidence for each candidate profile.
+- [x] Re-run reduced citation/bibliography fixture comparisons for each style against its candidate base or family base.
+- [x] Decide the classification for each candidate style.
+- [x] Update the taxonomy wording so `profile` means guide-backed parent-plus-deltas, not output-similar-to-an-existing-base.
+- [x] Split any required implementation into narrower beans if new bases or converter work are needed.
 
 ## Acceptance
 - there is a per-style evidence table covering all candidate profiles
@@ -77,6 +77,17 @@ Classify each style as exactly one of:
 - no style is converted to a thin wrapper unless reduced YAML reproduces current
   accepted behavior on the chosen verification surface
 - taxonomy language is tightened to prevent future output-similarity shortcuts
+
+## Result
+
+Completed in `docs/architecture/2026-04-21_PROFILE_WRAPPER_VALIDATION_PASS.md`.
+
+- All candidate styles remain taxonomy `profile`.
+- No new wrapper conversion was landed in this pass.
+- Follow-up beans created:
+  `csl26-u1tq`,
+  `csl26-r4dm`,
+  `csl26-xt7k`.
 
 ## Stop-Loss Rule
 - do not reland the reverted branch-local `extends:` mappings just because they

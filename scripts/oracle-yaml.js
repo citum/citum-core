@@ -28,8 +28,8 @@ const { toCiteprocItem } = require('./lib/citeproc-locators');
 const {
   PROJECT_ROOT,
   resolveYamlVerificationPlan,
-  resolveStyleData,
 } = require('./lib/style-verification');
+const { resolveStyleData } = require('./lib/verification-policy');
 
 function parseArgs(argv = process.argv.slice(2)) {
   const options = {
