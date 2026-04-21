@@ -87,7 +87,7 @@ style is Tier 1 `base`.
 | `chicago-shortened-notes-bibliography` | chicago-notes-18th | Proven shortened-notes wrapper |
 | `elsevier-harvard` | pending dedicated Elsevier author-date base | Public profile handle currently carries family-root behavior |
 | `elsevier-vancouver` | pending dedicated Elsevier numeric/NLM base | Public profile handle currently carries family-root behavior |
-| `elsevier-with-titles` | pending dedicated Elsevier numeric-with-titles base | Public profile handle currently carries family-root behavior |
+| `elsevier-with-titles` | — | Self-contained publisher profile |
 | `springer-basic-author-date` | pending dedicated Springer Basic family base | Public profile handle currently carries family-root behavior |
 | `springer-basic-brackets` | springer-basic-author-date | Evidence-backed child of the Springer Basic author-date profile; still bulky because current merge rules force large bibliography/type-variant restatement |
 | `springer-vancouver-brackets` | pending dedicated Springer Vancouver/NLM family base | Public profile handle currently carries family-root behavior |

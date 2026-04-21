@@ -39,7 +39,7 @@ Two outcomes matter:
   [Springer Nature manuscript guidelines](https://www.springernature.com/gp/authors/publish-a-book/manuscript-guidelines),
   [Taylor & Francis CSE guide](https://www.tandf.co.uk/journals/authors/style/reference/tf_CSE.pdf),
   [Taylor & Francis NLM guide](https://files.taylorandfrancis.com/tf_NLM.pdf),
-  [Chicago/Turabian notes and bibliography quick guide](https://www.chicagomanualofstyle.org/turabian/turabian-notes-and-bibliography-citation-quick-guide.html%26nbsp).
+  [Chicago/Turabian notes and bibliography quick guide](https://www.chicagomanualofstyle.org/turabian/turabian-notes-and-bibliography-citation-quick-guide.html).
 - Oracle verification used `node scripts/oracle-yaml.js styles/embedded/<style>.yaml --json`
   after repairing the broken `resolveStyleData` import in this PR.
 - Parent/base comparison used direct Citum output diffs on the shared fixture:
