@@ -44,8 +44,23 @@ ideally suggest.
 That can happen for two reasons:
 
 - the correct family root is not yet authored as a distinct Citum base
-- current merge semantics still require large bibliography or type-variant
-  replacements even when the parent relationship is real
+- the current `extends:` merge contract makes some child deltas expensive to
+  express even when the parent relationship is real
+
+This second point is a real limitation of the current authoring model, not just
+an observation about file size. As documented in `STYLE_PRESET_ARCHITECTURE.md`,
+objects deep-merge, but arrays and explicit `null` values replace inherited
+content wholesale. In practice, bibliography templates and many
+`type-variants` contain nested arrays or replace-whole structures, so changing
+one child-specific component can force the child style to restate most of the
+inherited block.
+
+That is why taxonomy `profile` and “thin wrapper in YAML” can diverge. A style
+can have valid evidence-backed parentage and still remain bulky because the
+current inheritance model cannot express the delta compactly enough. This does
+not mean the current merge behavior is wrong; it means wrapper compression may
+require follow-up design work when the project wants more compact
+parent-plus-delta authoring.
 
 For that reason, a style may remain `kind: profile` in `registry/default.yaml`
 while still carrying self-contained YAML today. Conversely, the presence of a
@@ -74,7 +89,7 @@ style is Tier 1 `base`.
 | `elsevier-vancouver` | pending dedicated Elsevier numeric/NLM base | Public profile handle currently carries family-root behavior |
 | `elsevier-with-titles` | pending dedicated Elsevier numeric-with-titles base | Public profile handle currently carries family-root behavior |
 | `springer-basic-author-date` | pending dedicated Springer Basic family base | Public profile handle currently carries family-root behavior |
-| `springer-basic-brackets` | springer-basic-author-date | Evidence-backed child of the Springer Basic author-date profile; still bulky under current merge semantics |
+| `springer-basic-brackets` | springer-basic-author-date | Evidence-backed child of the Springer Basic author-date profile; still bulky because current merge rules force large bibliography/type-variant restatement |
 | `springer-vancouver-brackets` | pending dedicated Springer Vancouver/NLM family base | Public profile handle currently carries family-root behavior |
 | `taylor-and-francis-chicago-author-date` | chicago-author-date-18th | Guide-backed Chicago derivative; uses `extends:` |
 | `taylor-and-francis-council-of-science-editors-author-date` | pending dedicated CSE family base | Standards-backed public profile still carried as self-contained YAML |
