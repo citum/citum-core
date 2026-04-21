@@ -129,6 +129,10 @@ boundary for all callers (CLI, tests, FFI, and embedded integrations).
 arrays, and explicit `null` values replace inherited values. Arrays replace
 wholesale — there is no per-element merging.
 
+This preserves a simple and predictable contract, but it also means some
+evidence-backed child styles remain bulky until more granular override
+mechanisms exist for bibliography/template structures.
+
 ---
 
 ## §4 Registry Location
