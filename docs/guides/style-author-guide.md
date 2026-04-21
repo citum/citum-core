@@ -12,7 +12,7 @@ Citum introduces a modern, declarative approach to citation styling compared to 
 | Logic | `choose`/`if`/`else` conditionals | Type variants + inheritance |
 | Name Formatting | Inline XML attributes | Global presets + options |
 | Dates | Object with year/month/day | EDTF string format |
-| Inheritance | Parent style aliasing | Presets + type variants |
+| Inheritance | Parent style aliasing | Extends + profile options |
 | Readability | Verbose and nested | Concise and explicit |
 
 > [!TIP]
@@ -217,13 +217,48 @@ Every component can be modified with rendering options that control punctuation,
 | `emph` | `true`, `false` | Render in italics |
 | `strong` | `true`, `false` | Render in bold |
 
-## [auto_awesome] Style Presets
+## [auto_awesome] Style Inheritance
 
-Reference named, compiled-in styles at the top of your YAML.
+Inherit from a named base style using `extends:`. The base style supplies all
+templates; the inheriting style can only set metadata and profile options (see
+below).
 
 ```yaml
-preset: chicago-notes-18th
+extends: springer-basic-author-date-core
 ```
+
+## [tune] Profile Options
+
+When a style uses `extends:`, it may tune behaviour along axes the base style
+explicitly supports via `options.profile:`. Unsupported axes are rejected at
+load time.
+
+| Axis | Values | Effect |
+|---|---|---|
+| `date-position` | `after-author`, `after-title` | Where the year appears in a bibliography entry |
+| `name-list-profile` | `apa`, `chicago`, `springer`, `vancouver` | Name-list truncation and formatting rules |
+| `citation-label-wrap` | `brackets`, `parentheses` | Delimiter around in-text citation labels |
+| `bibliography-label-mode` | `numeric`, `alpha` | Label format in the bibliography |
+
+```yaml
+extends: springer-basic-author-date-core
+options:
+  profile:
+    name-list-profile: springer
+    date-position: after-author
+```
+
+```yaml
+extends: elsevier-vancouver-core
+options:
+  profile:
+    citation-label-wrap: brackets
+    bibliography-label-mode: numeric
+```
+
+> [!NOTE]
+> Profile options are the only way to vary behaviour in an `extends:` style.
+> Structural template changes require a new base style or an independent style.
 
 ## [category] Type Variants
 
@@ -443,6 +478,37 @@ bibliography:
     - contributor: author
     - title: primary
       prefix: " "
+```
+
+### Example 3: Style Inheritance with Profile Options
+
+Inherit from a shared base and tune it via `options.profile:`. No templates
+needed — the base supplies them.
+
+```yaml
+info:
+  title: Springer - Basic (author-date)
+  description: >-
+    Springer Author Date Style for Medicine, Life Sciences,
+    Chemistry, Geosciences, Computer Science, and Engineering.
+
+extends: springer-basic-author-date-core
+options:
+  profile:
+    name-list-profile: springer
+    date-position: after-author
+```
+
+```yaml
+info:
+  title: Elsevier - NLM/Vancouver (citation-sequence)
+  description: A style for some Elsevier journals, resembles Vancouver style.
+
+extends: elsevier-vancouver-core
+options:
+  profile:
+    citation-label-wrap: brackets
+    bibliography-label-mode: numeric
 ```
 
 ## [lightbulb] Workflow & Tips
