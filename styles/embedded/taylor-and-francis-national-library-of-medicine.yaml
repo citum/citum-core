@@ -4,7 +4,9 @@ info:
   fields:
   - medicine
 extends: taylor-and-francis-national-library-of-medicine-core
-options:
-  profile:
-    citation-label-wrap: brackets
-    bibliography-label-mode: numeric
+citation:
+  options:
+    label-wrap: brackets
+bibliography:
+  options:
+    label-mode: numeric

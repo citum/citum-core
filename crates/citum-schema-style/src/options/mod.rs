@@ -13,7 +13,7 @@ pub mod localization;
 pub mod locators;
 pub mod multilingual;
 pub mod processing;
-pub mod profile;
+pub mod scoped;
 pub mod substitute;
 
 pub use bibliography::{
@@ -40,9 +40,9 @@ pub use processing::{
     CitationSortPolicy, Disambiguation, Group, LabelConfig, LabelParams, LabelPreset, Processing,
     ProcessingCustom, Sort, SortEntry, SortKey, SortSpec,
 };
-pub use profile::{
-    BibliographyLabelMode, CitationGroupDelimiter, DatePosition, ProfileAxisCapabilities,
-    ProfileConfig, ProfileWrap, RepeatedAuthorRendering, TitleTerminator, VolumePagesDelimiter,
+pub use scoped::{
+    BibliographyLabelMode, BibliographyLabelWrap, CitationGroupDelimiter, DatePosition, LabelWrap,
+    RepeatedAuthorRendering, TitleTerminator,
 };
 pub use substitute::{Substitute, SubstituteConfig, SubstituteKey};
 
@@ -53,7 +53,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Top-level style configuration.
-#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
+#[derive(Debug, Default, PartialEq, Clone, Serialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct Config {
@@ -137,9 +137,6 @@ pub struct Config {
     /// Integral citation name-memory behavior.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub integral_names: Option<IntegralNameConfig>,
-    /// Config-only profile override axes applied during profile resolution.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub profile: Option<ProfileConfig>,
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -215,6 +212,12 @@ pub struct CitationOptions {
     /// Integral citation name-memory behavior.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub integral_names: Option<IntegralNameConfig>,
+    /// Label wrap policy applied to citation labels.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub label_wrap: Option<LabelWrap>,
+    /// Delimiter between grouped citation items.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub group_delimiter: Option<CitationGroupDelimiter>,
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -297,6 +300,21 @@ pub struct BibliographyOptions {
     /// Delimiter between volume/issue and pages for serial sources.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub volume_pages_delimiter: Option<DelimiterPunctuation>,
+    /// Bibliography label mode for label-bearing styles.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub label_mode: Option<BibliographyLabelMode>,
+    /// Label wrap policy applied to bibliography labels.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub label_wrap: Option<BibliographyLabelWrap>,
+    /// Placement of issued dates within bibliography entries.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub date_position: Option<DatePosition>,
+    /// Terminator applied to primary-title bibliography components.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub title_terminator: Option<TitleTerminator>,
+    /// Repeated-author rendering mode for bibliography entries.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub repeated_author_rendering: Option<RepeatedAuthorRendering>,
     /// Strip trailing periods from terms, labels, and abbreviated dates.
     #[serde(skip_serializing_if = "Option::is_none", rename = "strip-periods")]
     pub strip_periods: Option<bool>,
@@ -454,7 +472,6 @@ impl Config {
             strip_periods,
             notes,
             integral_names,
-            profile,
             custom,
         );
 
@@ -510,7 +527,6 @@ impl CitationOptions {
             strip_periods: self.strip_periods,
             notes: self.notes.clone(),
             integral_names: self.integral_names.clone(),
-            profile: None,
             custom: self.custom.clone(),
         }
     }
@@ -559,7 +575,6 @@ impl BibliographyOptions {
             strip_periods: self.strip_periods,
             notes: None,
             integral_names: None,
-            profile: None,
             custom: self.custom.clone(),
         }
     }
@@ -610,6 +625,97 @@ where
 {
     let value: Option<LocatorConfigEntry> = Option::deserialize(deserializer)?;
     Ok(value.map(|entry| entry.resolve()))
+}
+
+impl<'de> Deserialize<'de> for Config {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(rename_all = "kebab-case", deny_unknown_fields)]
+        struct ConfigWire {
+            #[serde(skip_serializing_if = "Option::is_none")]
+            substitute: Option<SubstituteConfig>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            processing: Option<Processing>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            locale_override: Option<String>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            localize: Option<Localize>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            multilingual: Option<MultilingualConfig>,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                deserialize_with = "deserialize_contributor_config",
+                default
+            )]
+            contributors: Option<ContributorConfig>,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                deserialize_with = "deserialize_date_config",
+                default
+            )]
+            dates: Option<DateConfig>,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                deserialize_with = "deserialize_titles_config",
+                default
+            )]
+            titles: Option<crate::options::titles::TitlesConfig>,
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                deserialize_with = "deserialize_locator_config",
+                default
+            )]
+            locators: Option<LocatorConfig>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            page_range_format: Option<PageRangeFormat>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            links: Option<LinksConfig>,
+            #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+            punctuation_in_quote: bool,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            volume_pages_delimiter: Option<DelimiterPunctuation>,
+            #[serde(skip_serializing_if = "Option::is_none", rename = "strip-periods")]
+            strip_periods: Option<bool>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            notes: Option<NoteConfig>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            integral_names: Option<IntegralNameConfig>,
+            #[serde(default)]
+            profile: Option<serde_yaml::Value>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            custom: Option<HashMap<String, serde_json::Value>>,
+        }
+
+        let wire = ConfigWire::deserialize(deserializer)?;
+        if wire.profile.is_some() {
+            return Err(serde::de::Error::custom(
+                "`options.profile` was removed; use `options.contributors`, `citation.options.label-wrap`, `citation.options.group-delimiter`, `bibliography.options.label-mode`, `bibliography.options.label-wrap`, `bibliography.options.date-position`, `bibliography.options.title-terminator`, `bibliography.options.repeated-author-rendering`, or `bibliography.options.volume-pages-delimiter`",
+            ));
+        }
+
+        Ok(Self {
+            substitute: wire.substitute,
+            processing: wire.processing,
+            locale_override: wire.locale_override,
+            localize: wire.localize,
+            multilingual: wire.multilingual,
+            contributors: wire.contributors,
+            dates: wire.dates,
+            titles: wire.titles,
+            locators: wire.locators,
+            page_range_format: wire.page_range_format,
+            links: wire.links,
+            punctuation_in_quote: wire.punctuation_in_quote,
+            volume_pages_delimiter: wire.volume_pages_delimiter,
+            strip_periods: wire.strip_periods,
+            notes: wire.notes,
+            integral_names: wire.integral_names,
+            custom: wire.custom,
+        })
+    }
 }
 
 #[cfg(test)]

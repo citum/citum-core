@@ -2494,17 +2494,6 @@
             }
           ]
         },
-        "profile": {
-          "description": "Config-only profile override axes applied during profile resolution.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ProfileConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "custom": {
           "description": "Custom user-defined fields for extensions.",
           "type": [
@@ -4302,257 +4291,6 @@
         }
       ]
     },
-    "ProfileConfig": {
-      "description": "Profile-local configuration that may vary without overriding templates.",
-      "type": "object",
-      "properties": {
-        "citation-label-wrap": {
-          "description": "Citation wrapper punctuation for grouped citations.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ProfileWrap"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "citation-group-delimiter": {
-          "description": "Delimiter between multiple citations in a grouped citation.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/CitationGroupDelimiter"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "bibliography-label-mode": {
-          "description": "Bibliography label mode for label-bearing styles.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/BibliographyLabelMode"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "bibliography-label-wrap": {
-          "description": "Bibliography label wrapper punctuation.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ProfileWrap"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "date-position": {
-          "description": "Placement of issued dates within bibliography entries.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/DatePosition"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "volume-pages-delimiter": {
-          "description": "Delimiter between volume and pages in bibliography entries.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/VolumePagesDelimiter"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "title-terminator": {
-          "description": "Terminator applied to primary-title bibliography components.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/TitleTerminator"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "contributor-preset": {
-          "description": "Profile-scoped contributor preset slot for this family of wrappers.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ContributorPreset"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "repeated-author-rendering": {
-          "description": "Repeated-author rendering mode for bibliographies.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/RepeatedAuthorRendering"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        }
-      },
-      "additionalProperties": false
-    },
-    "ProfileWrap": {
-      "description": "Wrapper punctuation supported by profile axes.",
-      "oneOf": [
-        {
-          "description": "No outer punctuation.",
-          "type": "string",
-          "const": "none"
-        },
-        {
-          "description": "Parentheses.",
-          "type": "string",
-          "const": "parentheses"
-        },
-        {
-          "description": "Brackets.",
-          "type": "string",
-          "const": "brackets"
-        },
-        {
-          "description": "Superscript-style numeric labels.",
-          "type": "string",
-          "const": "superscript"
-        }
-      ]
-    },
-    "CitationGroupDelimiter": {
-      "description": "Delimiters between grouped citations.",
-      "oneOf": [
-        {
-          "description": "`, `",
-          "type": "string",
-          "const": "comma"
-        },
-        {
-          "description": "`; `",
-          "type": "string",
-          "const": "semicolon"
-        },
-        {
-          "description": "` `",
-          "type": "string",
-          "const": "space"
-        }
-      ]
-    },
-    "BibliographyLabelMode": {
-      "description": "Bibliography label modes supported by profile wrappers.",
-      "oneOf": [
-        {
-          "description": "No explicit label component.",
-          "type": "string",
-          "const": "none"
-        },
-        {
-          "description": "Numeric bibliography labels.",
-          "type": "string",
-          "const": "numeric"
-        },
-        {
-          "description": "Author-date bibliography labels.",
-          "type": "string",
-          "const": "author-date"
-        }
-      ]
-    },
-    "DatePosition": {
-      "description": "Placement of issued dates inside bibliography entries.",
-      "oneOf": [
-        {
-          "description": "Immediately after the contributor component.",
-          "type": "string",
-          "const": "after-author"
-        },
-        {
-          "description": "Immediately after the title component.",
-          "type": "string",
-          "const": "after-title"
-        },
-        {
-          "description": "At the end of the entry.",
-          "type": "string",
-          "const": "terminal"
-        }
-      ]
-    },
-    "VolumePagesDelimiter": {
-      "description": "Volume/pages delimiters used by profile wrappers.",
-      "oneOf": [
-        {
-          "description": "Comma.",
-          "type": "string",
-          "const": "comma"
-        },
-        {
-          "description": "Colon.",
-          "type": "string",
-          "const": "colon"
-        },
-        {
-          "description": "Space.",
-          "type": "string",
-          "const": "space"
-        }
-      ]
-    },
-    "TitleTerminator": {
-      "description": "Terminator punctuation for bibliography titles.",
-      "oneOf": [
-        {
-          "description": "Period.",
-          "type": "string",
-          "const": "period"
-        },
-        {
-          "description": "Comma.",
-          "type": "string",
-          "const": "comma"
-        },
-        {
-          "description": "No terminator.",
-          "type": "string",
-          "const": "none"
-        }
-      ]
-    },
-    "RepeatedAuthorRendering": {
-      "description": "Repeated-author rendering policies for bibliographies.",
-      "oneOf": [
-        {
-          "description": "Always render full contributor names.",
-          "type": "string",
-          "const": "full"
-        },
-        {
-          "description": "Replace repeated authors with an em dash.",
-          "type": "string",
-          "const": "dash"
-        },
-        {
-          "description": "Replace repeated authors with an em dash followed by a space.",
-          "type": "string",
-          "const": "dash-with-space"
-        }
-      ]
-    },
     "CitationSpec": {
       "description": "Citation specification.",
       "type": "object",
@@ -4897,6 +4635,28 @@
             }
           ]
         },
+        "label-wrap": {
+          "description": "Label wrap policy applied to citation labels.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LabelWrap"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "group-delimiter": {
+          "description": "Delimiter between grouped citation items.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CitationGroupDelimiter"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "custom": {
           "description": "Custom user-defined fields for extensions.",
           "type": [
@@ -4907,6 +4667,51 @@
         }
       },
       "additionalProperties": false
+    },
+    "LabelWrap": {
+      "description": "Wrapper punctuation supported by citation and bibliography label options.",
+      "oneOf": [
+        {
+          "description": "No outer punctuation.",
+          "type": "string",
+          "const": "none"
+        },
+        {
+          "description": "Parentheses.",
+          "type": "string",
+          "const": "parentheses"
+        },
+        {
+          "description": "Brackets.",
+          "type": "string",
+          "const": "brackets"
+        },
+        {
+          "description": "Superscript-style numeric labels.",
+          "type": "string",
+          "const": "superscript"
+        }
+      ]
+    },
+    "CitationGroupDelimiter": {
+      "description": "Delimiters between grouped citations.",
+      "oneOf": [
+        {
+          "description": "`, `",
+          "type": "string",
+          "const": "comma"
+        },
+        {
+          "description": "`; `",
+          "type": "string",
+          "const": "semicolon"
+        },
+        {
+          "description": "` `",
+          "type": "string",
+          "const": "space"
+        }
+      ]
     },
     "TemplatePreset": {
       "description": "Available embedded template presets.\n\nThese reference battle-tested templates for common citation styles.\nSee `citum_schema::embedded` for the actual template implementations.",
@@ -5397,6 +5202,61 @@
             }
           ]
         },
+        "label-mode": {
+          "description": "Bibliography label mode for label-bearing styles.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BibliographyLabelMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "label-wrap": {
+          "description": "Label wrap policy applied to bibliography labels.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BibliographyLabelWrap"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "date-position": {
+          "description": "Placement of issued dates within bibliography entries.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DatePosition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "title-terminator": {
+          "description": "Terminator applied to primary-title bibliography components.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TitleTerminator"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "repeated-author-rendering": {
+          "description": "Repeated-author rendering mode for bibliography entries.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RepeatedAuthorRendering"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "strip-periods": {
           "description": "Strip trailing periods from terms, labels, and abbreviated dates.",
           "type": [
@@ -5512,6 +5372,106 @@
           "description": "Numeric sub-labels: 1, 2, 3, ...",
           "type": "string",
           "const": "numeric"
+        }
+      ]
+    },
+    "BibliographyLabelMode": {
+      "description": "Bibliography label modes supported by scoped bibliography options.",
+      "oneOf": [
+        {
+          "description": "No explicit label component.",
+          "type": "string",
+          "const": "none"
+        },
+        {
+          "description": "Numeric bibliography labels.",
+          "type": "string",
+          "const": "numeric"
+        },
+        {
+          "description": "Author-date bibliography labels.",
+          "type": "string",
+          "const": "author-date"
+        }
+      ]
+    },
+    "BibliographyLabelWrap": {
+      "description": "Wrapper punctuation supported by bibliography label options.",
+      "oneOf": [
+        {
+          "description": "No outer punctuation.",
+          "type": "string",
+          "const": "none"
+        },
+        {
+          "description": "Parentheses.",
+          "type": "string",
+          "const": "parentheses"
+        },
+        {
+          "description": "Brackets.",
+          "type": "string",
+          "const": "brackets"
+        }
+      ]
+    },
+    "DatePosition": {
+      "description": "Placement of issued dates inside bibliography entries.",
+      "oneOf": [
+        {
+          "description": "Immediately after the contributor component.",
+          "type": "string",
+          "const": "after-author"
+        },
+        {
+          "description": "Immediately after the title component.",
+          "type": "string",
+          "const": "after-title"
+        },
+        {
+          "description": "At the end of the entry.",
+          "type": "string",
+          "const": "terminal"
+        }
+      ]
+    },
+    "TitleTerminator": {
+      "description": "Terminator punctuation for bibliography titles.",
+      "oneOf": [
+        {
+          "description": "Period.",
+          "type": "string",
+          "const": "period"
+        },
+        {
+          "description": "Comma.",
+          "type": "string",
+          "const": "comma"
+        },
+        {
+          "description": "No terminator.",
+          "type": "string",
+          "const": "none"
+        }
+      ]
+    },
+    "RepeatedAuthorRendering": {
+      "description": "Repeated-author rendering policies for bibliographies.",
+      "oneOf": [
+        {
+          "description": "Always render full contributor names.",
+          "type": "string",
+          "const": "full"
+        },
+        {
+          "description": "Replace repeated authors with an em dash.",
+          "type": "string",
+          "const": "dash"
+        },
+        {
+          "description": "Replace repeated authors with an em dash followed by a space.",
+          "type": "string",
+          "const": "dash-with-space"
         }
       ]
     },

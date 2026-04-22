@@ -3,7 +3,9 @@ info:
   description: A style for some Elsevier journals, resembles Vancouver style
   short-name: "Vancouver"
 extends: elsevier-vancouver-core
-options:
-  profile:
-    citation-label-wrap: brackets
-    bibliography-label-mode: numeric
+citation:
+  options:
+    label-wrap: brackets
+bibliography:
+  options:
+    label-mode: numeric
