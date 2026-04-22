@@ -285,19 +285,23 @@ fn apply_author_date_bibliography_passes(
     passes::deduplicate::suppress_duplicate_issue_for_journals(new_bib, style_base);
 }
 
+#[allow(
+    clippy::only_used_in_recursion,
+    reason = "params propagated for future type-override logic"
+)]
 fn apply_type_overrides(
     component: &mut TemplateComponent,
-    _volume_pages_delimiter: Option<citum_schema::template::DelimiterPunctuation>,
-    _volume_list_has_space_prefix: bool,
-    _style_base: Option<base_detector::StyleBase>,
+    volume_pages_delimiter: Option<citum_schema::template::DelimiterPunctuation>,
+    volume_list_has_space_prefix: bool,
+    style_base: Option<base_detector::StyleBase>,
 ) {
     if let TemplateComponent::Group(list) = component {
         for item in &mut list.group {
             apply_type_overrides(
                 item,
-                _volume_pages_delimiter.clone(),
-                _volume_list_has_space_prefix,
-                _style_base,
+                volume_pages_delimiter.clone(),
+                volume_list_has_space_prefix,
+                style_base,
             );
         }
     }
