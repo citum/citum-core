@@ -1,8 +1,7 @@
 #![allow(missing_docs, reason = "bin")]
 
 use citum_migrate::{
-    OptionsExtractor,
-    analysis,
+    OptionsExtractor, analysis,
     compilation::{self, XmlCompilationOutput as XmlFallback},
     debug_output::DebugOutputFormatter,
     fixups::{
@@ -21,9 +20,7 @@ use citum_migrate::{
 };
 use citum_schema::{
     BibliographySpec, CitationCollapse, CitationSpec, Style, StyleInfo,
-    template::{
-        TemplateComponent, TypeSelector, WrapPunctuation,
-    },
+    template::{TemplateComponent, TypeSelector, WrapPunctuation},
 };
 use csl_legacy::parser::parse_style;
 use roxmltree::Document;
@@ -353,6 +350,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         enable_provenance,
         &tracker,
     ));
+
+    if let Some(ref fallback) = xml_fallback
+        && fallback.unsupported_mixed_conditions
+    {
+        eprintln!(
+            "Warning: citation position branches could not be migrated cleanly for style {}. Falling back to base citation template only.",
+            legacy_style.info.id
+        );
+    }
 
     log_template_sources(&resolved);
 
@@ -1405,7 +1411,8 @@ mod tests {
             "fallback content from sibling chooses should remain in the base citation template"
         );
 
-        let subsequent_template = out.citation_overrides
+        let subsequent_template = out
+            .citation_overrides
             .subsequent
             .expect("subsequent branch should be migrated");
         assert!(
@@ -1421,7 +1428,8 @@ mod tests {
             "sibling choose fallback content should remain in the subsequent override"
         );
 
-        let ibid_template = out.citation_overrides
+        let ibid_template = out
+            .citation_overrides
             .ibid
             .expect("ibid branch should be migrated");
         assert!(

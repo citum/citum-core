@@ -612,7 +612,7 @@ pub struct TemplateDate {
 }
 
 /// Date variables.
-#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum DateVariable {
@@ -664,7 +664,7 @@ pub struct TemplateTitle {
 }
 
 /// Types of titles.
-#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
@@ -919,7 +919,7 @@ pub struct TemplateVariable {
 /// also present in [`NumberVariable`]. For example, `variable: volume` keeps the
 /// source value as plain text, while `number: volume` opts into numeric
 /// formatting behavior.
-#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 #[non_exhaustive]
