@@ -1159,7 +1159,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                     lets a thin wrapper inherit all templates from a named
                     base style, then tune behaviour through wrapper-only
                     behaviour axes and preset slots via
-                    <code class="text-xs bg-slate-100 px-1 rounded">options.profile:</code>.
+                    <code class="text-xs bg-slate-100 px-1 rounded">citation.options:</code> and <code class="text-xs bg-slate-100 px-1 rounded">bibliography.options:</code>.
                 </p>
             </div>
             <div class="bg-slate-900 p-6 overflow-x-auto">
@@ -1196,28 +1196,30 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
             <div class="border-t border-slate-200">
                 <div class="px-8 py-4 bg-slate-100">
                     <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
-                        Profile Options
+                        Scoped Options
                     </h3>
                 </div>
                 <div class="bg-slate-900 p-6 overflow-x-auto">
                     <pre class="font-mono text-sm text-slate-300 leading-relaxed">
-<span class="text-slate-500"># Preset slot: ask the base to use a contributor preset — no templates required</span>
+<span class="text-slate-500"># Style-wide option: choose a contributor preset without touching templates</span>
 <span class="text-indigo-400">extends</span>: <span class="text-emerald-400">springer-basic-author-date-core</span>
 <span class="text-indigo-400">options</span>:
-  <span class="text-primary">profile</span>:
-    <span class="text-primary">contributor-preset</span>: <span class="text-emerald-400">springer</span>
+  <span class="text-primary">contributors</span>: <span class="text-emerald-400">springer</span>
+<span class="text-indigo-400">bibliography</span>:
+  <span class="text-primary">options</span>:
     <span class="text-primary">date-position</span>: <span class="text-emerald-400">after-author</span>
 
-<span class="text-slate-500"># Behavior axes: bracket labels + numeric bibliography</span>
+<span class="text-slate-500"># Citation-scoped and bibliography-scoped options</span>
 <span class="text-indigo-400">extends</span>: <span class="text-emerald-400">elsevier-vancouver-core</span>
-<span class="text-indigo-400">options</span>:
-  <span class="text-primary">profile</span>:
-    <span class="text-primary">citation-label-wrap</span>: <span class="text-emerald-400">brackets</span>
-    <span class="text-primary">bibliography-label-mode</span>: <span class="text-emerald-400">numeric</span>
+<span class="text-indigo-400">citation</span>:
+  <span class="text-primary">options</span>:
+    <span class="text-primary">label-wrap</span>: <span class="text-emerald-400">brackets</span>
+<span class="text-indigo-400">bibliography</span>:
+  <span class="text-primary">options</span>:
+    <span class="text-primary">label-mode</span>: <span class="text-emerald-400">numeric</span>
 
-<span class="text-slate-500"># Profile fields fall into two categories: behavior axes and preset slots.</span>
-<span class="text-slate-500"># Supported fields here: date-position | contributor-preset | citation-label-wrap | bibliography-label-mode</span>
-<span class="text-slate-500"># Unsupported axes are rejected at load time.</span></pre>
+<span class="text-slate-500"># Use `options.*` for style-wide settings and nested `*.options.*` for scoped settings.</span>
+<span class="text-slate-500"># Supported fields here include: contributors | label-wrap | label-mode | date-position</span></pre>
                 </div>
             </div>
             <div class="bg-white p-6 border-t border-slate-200">

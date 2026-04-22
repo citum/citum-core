@@ -1,7 +1,8 @@
 # Config-Only Profile Overrides Specification
 
-**Status:** Active
+**Status:** Superseded
 **Date:** 2026-04-21
+**Superseded By:** `UNIFIED_SCOPED_OPTIONS.md`
 **Related:** `TEMPLATE_V2.md`, `STYLE_PRESET_ARCHITECTURE.md`, `STYLE_TAXONOMY.md`, bean `csl26-xt7k`, bean `csl26-nrkn`, bean `csl26-rwgi`
 
 ## Purpose

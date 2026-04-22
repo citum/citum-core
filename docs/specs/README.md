@@ -59,4 +59,5 @@ to make sure the document should be a spec rather than architecture or policy.
 | [`LOCALE_MESSAGES.md`](./LOCALE_MESSAGES.md) | ICU MF1 parameterized message system replacing flat YAML term files |
 | [`ORIGINAL_PUBLICATION_RELATION_SUPPORT.md`](./ORIGINAL_PUBLICATION_RELATION_SUPPORT.md) | Universal original publication metadata support across all types |
 | [`EMBEDDED_JS_TEMPLATE_INFERENCE.md`](./EMBEDDED_JS_TEMPLATE_INFERENCE.md) | Embedded `deno_core` live inference backend for `citum-migrate` |
-| [`CONFIG_ONLY_PROFILE_OVERRIDES.md`](./CONFIG_ONLY_PROFILE_OVERRIDES.md) | Draft alternative where `extends:` profiles are config-only and never merge templates |
+| [`CONFIG_ONLY_PROFILE_OVERRIDES.md`](./CONFIG_ONLY_PROFILE_OVERRIDES.md) | Superseded profile-specific wrapper contract |
+| [`UNIFIED_SCOPED_OPTIONS.md`](./UNIFIED_SCOPED_OPTIONS.md) | Breaking replacement for `options.profile` using normal scoped options |

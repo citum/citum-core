@@ -39,9 +39,9 @@ Output similarity by itself is not enough.
 
 Profile styles now use config-only wrappers over hidden compiled roots.
 
-- public `kind: profile` styles may keep local identity and `options.profile`
-- `options.profile` is the full wrapper contract and may contain both behavior
-  axes and explicitly named preset slots
+- public `kind: profile` styles may keep local identity and use the normal
+  typed options surface
+- profile-only schema namespaces are forbidden
 - public `kind: profile` styles may not keep local templates, `type-variants`,
   or template-clearing `null` values
 - hidden compiled roots are an implementation detail and do not appear in the
@@ -93,8 +93,7 @@ Only Tier 1 (base) and Tier 2 (profile) styles are embedded in the binary. Tier
 
 ## Changelog
 
-- v1.3 (2026-04-21): Clarified that `options.profile` may contain both
-  behavior axes and profile-scoped preset slots.
+- v1.4 (2026-04-22): Replaced `options.profile` with normal scoped options.
 - v1.2 (2026-04-21): Enforced config-only profile wrappers over hidden compiled
   roots.
 - v1.1 (2026-04-21): Clarified that `profile` means evidence-backed parentage,

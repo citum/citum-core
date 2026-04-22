@@ -4,6 +4,7 @@ info:
     presets.'
 extends: taylor-and-francis-chicago-author-date-core
 options:
-  profile:
-    contributor-preset: chicago
+  contributors: chicago
+bibliography:
+  options:
     date-position: after-author

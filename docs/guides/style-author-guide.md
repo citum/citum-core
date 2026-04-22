@@ -220,68 +220,32 @@ Every component can be modified with rendering options that control punctuation,
 ## [auto_awesome] Style Inheritance
 
 Inherit from a named base style using `extends:`. The base style supplies all
-templates; the inheriting style can only set metadata and profile options (see
-below).
+templates; the inheriting style can only set metadata and normal typed options
+(see below).
 
 ```yaml
 extends: springer-basic-author-date-core
 ```
 
-## [tune] Profile Options
+## [tune] Scoped Options
 
-When a style uses `extends:`, it may tune behaviour through
-`options.profile:`. Unsupported fields are rejected at load time.
+When a style uses `extends:`, it tunes behaviour through the same scoped option
+blocks used by standalone styles.
 
-**Two different places to configure a style**
+Use the option block that matches the scope of the behavior:
 
-- `options.*` configures a style directly. Use this for normal, standalone
-  styles.
-- `options.profile.*` configures a style through an inherited base. Use this
-  only when the style has `extends:`.
+- `options.*` for style-wide configuration such as contributor presets
+- `citation.options.*` for citation-only behavior
+- `bibliography.options.*` for bibliography-only behavior
 
-In plain terms:
-
-- if you are authoring a full style, edit `options`
-- if you are authoring a thin wrapper over a base style, edit `options.profile`
-
-`options.profile` exists so a base style can expose a small, safe set of
-allowed changes without letting the wrapper rewrite templates.
-
-**Why not always use `options.*`?**
-
-Because a profile is not a full style. It is a constrained child of a base
-style. The base decides which knobs a profile may change. That keeps wrapper
-styles simple, keeps inheritance predictable, and makes GUI authoring possible:
-the UI can show only the controls the base supports.
-
-`options.profile` has two kinds of fields:
-
-### Behavior axes
-
-Use these for wrapper-only adjustments to inherited structure.
-
-- `date-position`
-- `citation-label-wrap`
-- `bibliography-label-mode`
-
-### Preset slots
-
-Use these when the base allows the profile to choose from an existing preset
-family.
-
-- `contributor-preset`
-
-A preset slot is not a different preset system. It is a profile-safe way for a
-wrapper to select one of the preset families the base exposes.
-
-**Allowed values for the common profile fields**
+**Allowed values for the common scoped fields**
 
 | Field | Allowed values | Use when | Example value |
 |---|---|---|---|
-| `date-position` | `after-author`, `after-title`, `terminal` | the wrapper should move the year within bibliography entries | `after-author` |
-| `contributor-preset` | base-supported contributor presets such as `apa`, `chicago`, `springer`, `vancouver` | the wrapper should switch contributor formatting to a base-supported preset | `springer` |
-| `citation-label-wrap` | `none`, `parentheses`, `brackets`, `superscript` | the wrapper should change citation label punctuation | `brackets` |
-| `bibliography-label-mode` | `none`, `numeric`, `author-date` | the wrapper should change bibliography label display | `numeric` |
+| `bibliography.options.date-position` | `after-author`, `after-title`, `terminal` | the style should move the year within bibliography entries | `after-author` |
+| `options.contributors` | contributor presets such as `apa`, `chicago`, `springer`, `vancouver` | the style should switch contributor formatting | `springer` |
+| `citation.options.label-wrap` | `none`, `parentheses`, `brackets`, `superscript` | the style should change citation label punctuation | `brackets` |
+| `bibliography.options.label-mode` | `none`, `numeric`, `author-date` | the style should change bibliography label display | `numeric` |
 
 ```yaml
 # Standalone style: configure the style directly
@@ -291,20 +255,23 @@ options:
 ```
 
 ```yaml
-# Profile wrapper: configure the inherited base through its profile contract
+# Wrapper style: configure the inherited base through normal scoped options
 extends: springer-basic-author-date-core
 options:
-  profile:
-    contributor-preset: springer
+  contributors: springer
+bibliography:
+  options:
     date-position: after-author
 ```
 
 ```yaml
 extends: elsevier-vancouver-core
-options:
-  profile:
-    citation-label-wrap: brackets
-    bibliography-label-mode: numeric
+citation:
+  options:
+    label-wrap: brackets
+bibliography:
+  options:
+    label-mode: numeric
 ```
 
 > [!TIP]
@@ -313,8 +280,8 @@ options:
 > Ask this first:
 >
 > - does this file use `extends:`?
->   - no: use `options.*`
->   - yes: use `options.profile.*`
+>   - yes: use the same `options.*`, `citation.options.*`, and `bibliography.options.*` blocks you would use anywhere else
+>   - no: use those same blocks directly
 >
 > If you need to change templates or `type-variants`, you are no longer making
 > a profile. You need a new base style or an independent style.
@@ -541,7 +508,7 @@ bibliography:
 
 ### Example 3: Style Inheritance with Profile Options
 
-Inherit from a shared base and tune it via `options.profile:`. No templates
+Inherit from a shared base and tune it via normal scoped options. No templates
 needed — the base supplies them.
 
 ```yaml
@@ -553,8 +520,9 @@ info:
 
 extends: springer-basic-author-date-core
 options:
-  profile:
-    contributor-preset: springer
+  contributors: springer
+bibliography:
+  options:
     date-position: after-author
 ```
 
@@ -564,10 +532,12 @@ info:
   description: A style for some Elsevier journals, resembles Vancouver style.
 
 extends: elsevier-vancouver-core
-options:
-  profile:
-    citation-label-wrap: brackets
-    bibliography-label-mode: numeric
+citation:
+  options:
+    label-wrap: brackets
+bibliography:
+  options:
+    label-mode: numeric
 ```
 
 ## [lightbulb] Workflow & Tips

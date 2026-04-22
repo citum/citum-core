@@ -12,11 +12,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use crate::Style;
 use crate::embedded::get_embedded_style;
-use crate::options::{
-    BibliographyLabelMode, CitationGroupDelimiter, DatePosition, ProfileAxisCapabilities,
-    ProfileWrap, RepeatedAuthorRendering, TitleTerminator, VolumePagesDelimiter,
-};
-use crate::presets::ContributorPreset;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -90,85 +85,6 @@ pub enum StyleBase {
     /// Modern Language Association 9th edition (author-page).
     ModernLanguageAssociation,
 }
-
-const CITATION_LABEL_WRAPS: &[ProfileWrap] = &[
-    ProfileWrap::None,
-    ProfileWrap::Parentheses,
-    ProfileWrap::Brackets,
-    ProfileWrap::Superscript,
-];
-const BIBLIOGRAPHY_LABEL_WRAPS: &[ProfileWrap] = &[
-    ProfileWrap::None,
-    ProfileWrap::Parentheses,
-    ProfileWrap::Brackets,
-];
-const CITATION_GROUP_DELIMITERS: &[CitationGroupDelimiter] = &[
-    CitationGroupDelimiter::Comma,
-    CitationGroupDelimiter::Semicolon,
-    CitationGroupDelimiter::Space,
-];
-const BIBLIOGRAPHY_LABEL_MODES: &[BibliographyLabelMode] =
-    &[BibliographyLabelMode::None, BibliographyLabelMode::Numeric];
-const DATE_POSITIONS: &[DatePosition] = &[
-    DatePosition::AfterAuthor,
-    DatePosition::AfterTitle,
-    DatePosition::Terminal,
-];
-const VOLUME_PAGES_DELIMITERS: &[VolumePagesDelimiter] = &[
-    VolumePagesDelimiter::Comma,
-    VolumePagesDelimiter::Colon,
-    VolumePagesDelimiter::Space,
-];
-const TITLE_TERMINATORS: &[TitleTerminator] = &[
-    TitleTerminator::Period,
-    TitleTerminator::Comma,
-    TitleTerminator::None,
-];
-const CONTRIBUTOR_PRESET_PROFILES: &[ContributorPreset] = &[
-    ContributorPreset::Apa,
-    ContributorPreset::Chicago,
-    ContributorPreset::Harvard,
-    ContributorPreset::Springer,
-    ContributorPreset::Vancouver,
-];
-const REPEATED_AUTHOR_RENDERINGS: &[RepeatedAuthorRendering] = &[
-    RepeatedAuthorRendering::Full,
-    RepeatedAuthorRendering::Dash,
-    RepeatedAuthorRendering::DashWithSpace,
-];
-const AUTHOR_DATE_PROFILE_CAPABILITIES: ProfileAxisCapabilities = ProfileAxisCapabilities {
-    citation_label_wrap: &[],
-    citation_group_delimiter: CITATION_GROUP_DELIMITERS,
-    bibliography_label_mode: &[],
-    bibliography_label_wrap: &[],
-    date_position: DATE_POSITIONS,
-    volume_pages_delimiter: VOLUME_PAGES_DELIMITERS,
-    title_terminator: TITLE_TERMINATORS,
-    contributor_preset: CONTRIBUTOR_PRESET_PROFILES,
-    repeated_author_rendering: REPEATED_AUTHOR_RENDERINGS,
-};
-const NUMERIC_PROFILE_CAPABILITIES: ProfileAxisCapabilities = ProfileAxisCapabilities {
-    citation_label_wrap: CITATION_LABEL_WRAPS,
-    citation_group_delimiter: CITATION_GROUP_DELIMITERS,
-    bibliography_label_mode: BIBLIOGRAPHY_LABEL_MODES,
-    bibliography_label_wrap: BIBLIOGRAPHY_LABEL_WRAPS,
-    date_position: DATE_POSITIONS,
-    volume_pages_delimiter: VOLUME_PAGES_DELIMITERS,
-    title_terminator: TITLE_TERMINATORS,
-    contributor_preset: CONTRIBUTOR_PRESET_PROFILES,
-    repeated_author_rendering: REPEATED_AUTHOR_RENDERINGS,
-};
-const NOTE_PROFILE_CAPABILITIES: ProfileAxisCapabilities = ProfileAxisCapabilities {
-    citation_label_wrap: &[],
-    citation_group_delimiter: CITATION_GROUP_DELIMITERS,
-    bibliography_label_mode: &[],
-    bibliography_label_wrap: &[],
-    date_position: DATE_POSITIONS,
-    volume_pages_delimiter: VOLUME_PAGES_DELIMITERS,
-    title_terminator: TITLE_TERMINATORS,
-    contributor_preset: CONTRIBUTOR_PRESET_PROFILES,
-    repeated_author_rendering: REPEATED_AUTHOR_RENDERINGS,
-};
 
 impl StyleBase {
     /// Return the embedded YAML key used to look up this base.
@@ -320,27 +236,6 @@ impl StyleBase {
             style = style.try_into_resolved_recursive(visited)?;
         }
         Ok(style)
-    }
-
-    /// Capability metadata for config-only profile overrides.
-    pub fn profile_capabilities(&self) -> ProfileAxisCapabilities {
-        match self {
-            StyleBase::ElsevierHarvardCore
-            | StyleBase::SpringerBasicAuthorDateCore
-            | StyleBase::TaylorAndFrancisChicagoAuthorDateCore
-            | StyleBase::TaylorAndFrancisCouncilOfScienceEditorsAuthorDateCore => {
-                AUTHOR_DATE_PROFILE_CAPABILITIES
-            }
-            StyleBase::ElsevierWithTitlesCore
-            | StyleBase::ElsevierVancouverCore
-            | StyleBase::SpringerBasicBracketsCore
-            | StyleBase::SpringerVancouverBracketsCore
-            | StyleBase::TaylorAndFrancisNationalLibraryOfMedicineCore => {
-                NUMERIC_PROFILE_CAPABILITIES
-            }
-            StyleBase::ChicagoShortenedNotesBibliographyCore => NOTE_PROFILE_CAPABILITIES,
-            _ => ProfileAxisCapabilities::NONE,
-        }
     }
 }
 
