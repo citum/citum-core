@@ -2006,6 +2006,58 @@ citation:
     }
 
     #[test]
+    fn citation_bracket_wrap_does_not_double_wrap_root_numeric_labels() {
+        let resolved = Style::from_yaml_str(
+            r#"
+info:
+  id: springer-vancouver-brackets
+extends: springer-vancouver-brackets-core
+citation:
+  options:
+    label-wrap: brackets
+"#,
+        )
+        .unwrap()
+        .try_into_resolved()
+        .expect("bracket citation wrap should resolve");
+
+        let citation_number_rendering = resolved
+            .citation
+            .as_ref()
+            .and_then(|citation| citation.resolve_template())
+            .and_then(|template| {
+                template.iter().find_map(|component| match component {
+                    template::TemplateComponent::Number(number)
+                        if matches!(
+                            number.number,
+                            template::NumberVariable::CitationNumber
+                                | template::NumberVariable::CitationLabel
+                        ) =>
+                    {
+                        Some(number.rendering.clone())
+                    }
+                    _ => None,
+                })
+            })
+            .expect("numeric citation template should include a citation label");
+
+        assert_eq!(
+            resolved
+                .citation
+                .as_ref()
+                .and_then(|citation| citation.wrap.clone()),
+            Some(template::WrapConfig::from(
+                template::WrapPunctuation::Brackets
+            ))
+        );
+        assert_eq!(
+            citation_number_rendering.wrap, None,
+            "root numeric labels should rely on citation-level wrapping"
+        );
+        assert_eq!(citation_number_rendering.vertical_align, None);
+    }
+
+    #[test]
     fn bibliography_rejects_superscript_label_wrap_at_parse_time() {
         let yaml = r#"
 bibliography:

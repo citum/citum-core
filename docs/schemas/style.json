@@ -3883,6 +3883,11 @@
             "null"
           ]
         },
+        "label-value-delimiter": {
+          "description": "Delimiter inserted between locator labels and values (default: single space).",
+          "type": "string",
+          "default": " "
+        },
         "kinds": {
           "description": "Per-kind configuration overrides.",
           "type": "object",
@@ -3992,6 +3997,13 @@
           "description": "Strip trailing periods from labels (e.g., \"p.\" → \"p\").",
           "type": [
             "boolean",
+            "null"
+          ]
+        },
+        "label-value-delimiter": {
+          "description": "Override the delimiter inserted between the label and value.",
+          "type": [
+            "string",
             "null"
           ]
         }

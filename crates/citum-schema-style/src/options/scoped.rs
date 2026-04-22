@@ -222,13 +222,7 @@ fn apply_bibliography_options(bibliography: &mut BibliographySpec) {
 }
 
 fn set_citation_wrap(citation: &mut CitationSpec, wrap: LabelWrap) {
-    if wrap == LabelWrap::Superscript {
-        citation.wrap = None;
-        apply_citation_wrap_recursive(citation, wrap);
-        return;
-    }
-    citation.wrap = wrap.as_wrap_config();
-    apply_citation_wrap_recursive(citation, wrap);
+    apply_citation_wrap_recursive(citation, wrap, false);
 }
 
 fn apply_bibliography_label_mode(bibliography: &mut BibliographySpec, mode: BibliographyLabelMode) {
@@ -365,7 +359,11 @@ where
     }
 }
 
-fn apply_citation_superscript(template: Option<&mut Template>) {
+fn update_citation_label_rendering(
+    template: Option<&mut Template>,
+    wrap: Option<WrapConfig>,
+    vertical_align: Option<crate::VerticalAlign>,
+) {
     let Some(template) = template else {
         return;
     };
@@ -377,35 +375,59 @@ fn apply_citation_superscript(template: Option<&mut Template>) {
                     | crate::template::NumberVariable::CitationLabel
             )
         {
-            number.rendering.vertical_align = Some(crate::VerticalAlign::Superscript);
-            number.rendering.wrap = None;
+            number.rendering.vertical_align = vertical_align.clone();
+            number.rendering.wrap = wrap.clone();
         }
     }
 }
 
-fn apply_citation_wrap_recursive(citation: &mut CitationSpec, wrap: LabelWrap) {
-    if wrap == LabelWrap::Superscript && citation.template.is_none() {
+fn apply_citation_wrap_recursive(
+    citation: &mut CitationSpec,
+    wrap: LabelWrap,
+    component_wrap_mode: bool,
+) {
+    if citation.template.is_none() && citation.use_preset.is_some() {
         citation.template = citation.resolve_template();
     }
 
     if wrap == LabelWrap::Superscript {
-        apply_citation_superscript(citation.template.as_mut());
+        citation.wrap = None;
+        update_citation_label_rendering(
+            citation.template.as_mut(),
+            None,
+            Some(crate::VerticalAlign::Superscript),
+        );
         if let Some(variants) = citation.type_variants.as_mut() {
             for template in variants.values_mut() {
-                apply_citation_superscript(Some(template));
+                update_citation_label_rendering(
+                    Some(template),
+                    None,
+                    Some(crate::VerticalAlign::Superscript),
+                );
+            }
+        }
+    } else if component_wrap_mode {
+        citation.wrap = None;
+        update_citation_label_rendering(citation.template.as_mut(), wrap.as_wrap_config(), None);
+        if let Some(variants) = citation.type_variants.as_mut() {
+            for template in variants.values_mut() {
+                update_citation_label_rendering(Some(template), wrap.as_wrap_config(), None);
             }
         }
     } else {
-        update_label_wrap(citation.template.as_mut(), wrap);
+        citation.wrap = wrap.as_wrap_config();
+        update_citation_label_rendering(citation.template.as_mut(), None, None);
         if let Some(variants) = citation.type_variants.as_mut() {
             for template in variants.values_mut() {
-                update_label_wrap(Some(template), wrap);
+                update_citation_label_rendering(Some(template), None, None);
             }
         }
     }
 
+    if let Some(child) = citation.integral.as_deref_mut() {
+        apply_citation_wrap_recursive(child, wrap, true);
+    }
     for child in [
-        citation.integral.as_deref_mut(),
         citation.non_integral.as_deref_mut(),
         citation.subsequent.as_deref_mut(),
         citation.ibid.as_deref_mut(),
@@ -413,12 +435,7 @@ fn apply_citation_wrap_recursive(citation: &mut CitationSpec, wrap: LabelWrap) {
     .into_iter()
     .flatten()
     {
-        child.wrap = if wrap == LabelWrap::Superscript {
-            None
-        } else {
-            wrap.as_wrap_config()
-        };
-        apply_citation_wrap_recursive(child, wrap);
+        apply_citation_wrap_recursive(child, wrap, component_wrap_mode);
     }
 }
 

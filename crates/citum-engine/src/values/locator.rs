@@ -81,7 +81,14 @@ fn render_with_pattern(
                 let form = kind_cfg
                     .and_then(|cfg| cfg.label_form)
                     .unwrap_or(config.default_label_form);
-                render_segment_with_label(seg, kind_cfg, form, config.strip_label_periods, locale)
+                render_segment_with_label(
+                    seg,
+                    kind_cfg,
+                    form,
+                    config.strip_label_periods,
+                    &config.label_value_delimiter,
+                    locale,
+                )
             } else {
                 let kind_range_fmt = kind_cfg
                     .and_then(|k| k.range_format.clone())
@@ -113,6 +120,7 @@ fn render_with_pattern(
                 form,
                 &value_str,
                 config.strip_label_periods,
+                &config.label_value_delimiter,
                 locale,
             )
         };
@@ -138,7 +146,14 @@ fn render_default(segments: &[LocatorSegment], config: &LocatorConfig, locale: &
                 .unwrap_or_else(|| config.range_format.clone());
             apply_range_format(seg.value.value_str(), kind_range_fmt)
         } else {
-            render_segment_with_label(seg, kind_cfg, form, config.strip_label_periods, locale)
+            render_segment_with_label(
+                seg,
+                kind_cfg,
+                form,
+                config.strip_label_periods,
+                &config.label_value_delimiter,
+                locale,
+            )
         };
 
         rendered.push(rendered_segment);
@@ -153,13 +168,22 @@ fn render_segment_with_label(
     kind_cfg: Option<&citum_schema::options::LocatorKindConfig>,
     form: LabelForm,
     global_strip: Option<bool>,
+    global_label_value_delimiter: &str,
     locale: &Locale,
 ) -> String {
     let kind_range_fmt = kind_cfg
         .and_then(|k| k.range_format.clone())
         .unwrap_or(PageRangeFormat::Expanded);
     let value_str = apply_range_format(seg.value.value_str(), kind_range_fmt);
-    render_segment_with_label_str(seg, kind_cfg, form, &value_str, global_strip, locale)
+    render_segment_with_label_str(
+        seg,
+        kind_cfg,
+        form,
+        &value_str,
+        global_strip,
+        global_label_value_delimiter,
+        locale,
+    )
 }
 
 /// Render a single segment with label, given a pre-computed value string.
@@ -169,6 +193,7 @@ fn render_segment_with_label_str(
     form: LabelForm,
     value_str: &str,
     global_strip: Option<bool>,
+    global_label_value_delimiter: &str,
     locale: &Locale,
 ) -> String {
     let plural = seg.value.is_plural();
@@ -185,13 +210,16 @@ fn render_segment_with_label_str(
             .and_then(|k| k.strip_label_periods)
             .or(global_strip)
             == Some(true);
+        let label_value_delimiter = kind_cfg
+            .and_then(|k| k.label_value_delimiter.as_deref())
+            .unwrap_or(global_label_value_delimiter);
         if strip_periods {
             // Stripping the trailing period removes the natural separator,
             // so no additional space is added (e.g. "p." → "p23" not "p 23").
             let term_str = crate::values::strip_trailing_periods(&term);
             format!("{term_str}{value_str}")
         } else {
-            format!("{term} {value_str}")
+            format!("{term}{label_value_delimiter}{value_str}")
         }
     } else {
         value_str.to_string()
@@ -380,6 +408,37 @@ mod tests {
             !result.contains("p."),
             "label period should be stripped: {result}"
         );
+    }
+
+    #[test]
+    fn test_render_custom_label_value_delimiter() {
+        // given a config that removes the space between the label and value
+        let config = LocatorConfig {
+            default_label_form: LabelForm::Short,
+            label_value_delimiter: String::new(),
+            ..Default::default()
+        };
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: en-US
+locators:
+  page:
+    short:
+      singular: "p."
+      plural: "pp."
+"#,
+        )
+        .expect("page locator locale should parse");
+        let locator = CitationLocator::Single(LocatorSegment {
+            label: LocatorType::Page,
+            value: LocatorValue::Text("42".to_string()),
+        });
+
+        // when rendered with an explicit page locator term
+        let result = render_locator(&locator, "book", &config, &locale);
+
+        // then the label and value are concatenated without an extra space
+        assert_eq!(result, "p.42");
     }
 
     #[test]

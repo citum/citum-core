@@ -732,6 +732,58 @@ fn test_citation_locator_can_strip_label_periods() {
     assert_eq!(rendered, "(Kuhn, 1962, p23)");
 }
 
+/// Tests that locator label/value spacing is configurable via style options.
+#[test]
+fn test_citation_locator_can_omit_label_value_space() {
+    let mut style = make_style();
+    if let Some(opts) = style.options.as_mut() {
+        opts.locators = Some(citum_schema::options::LocatorConfig {
+            label_value_delimiter: String::new(),
+            ..Default::default()
+        });
+    }
+    style.citation = Some(citum_schema::CitationSpec {
+        template: Some(vec![
+            citum_schema::TemplateComponent::Contributor(
+                citum_schema::template::TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    form: ContributorForm::Short,
+                    ..Default::default()
+                },
+            ),
+            citum_schema::TemplateComponent::Date(citum_schema::template::TemplateDate {
+                date: TDateVar::Issued,
+                form: DateForm::Year,
+                ..Default::default()
+            }),
+            citum_schema::TemplateComponent::Variable(citum_schema::template::TemplateVariable {
+                variable: citum_schema::template::SimpleVariable::Locator,
+                ..Default::default()
+            }),
+        ]),
+        wrap: Some(WrapPunctuation::Parentheses.into()),
+        delimiter: Some(", ".to_string()),
+        ..Default::default()
+    });
+
+    let bib = make_bibliography();
+    let processor = Processor::new(style, bib);
+    let citation = Citation {
+        items: vec![crate::reference::CitationItem {
+            id: "kuhn1962".to_string(),
+            locator: Some(citum_schema::citation::CitationLocator::single(
+                citum_schema::citation::LocatorType::Page,
+                "23",
+            )),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let rendered = processor.process_citation(&citation).unwrap();
+    assert_eq!(rendered, "(Kuhn, 1962, p.23)");
+}
+
 /// Tests the behavior of `test_springer_locator_label_survives_sorting`.
 #[test]
 fn test_springer_locator_label_survives_sorting() {

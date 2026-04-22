@@ -21,6 +21,8 @@ options:
   processing: numeric
   contributors: numeric-medium
   dates: long
+  locators:
+    label-value-delimiter: ""
   page-range-format: expanded
   punctuation-in-quote: true
 citation:
@@ -30,6 +32,7 @@ citation:
     prefix: ","
   wrap:
     punctuation: brackets
+  delimiter: ""
   multi-cite-delimiter: ","
 bibliography:
   options:

@@ -74,6 +74,9 @@ pub struct LocatorKindConfig {
     /// Strip trailing periods from labels (e.g., "p." → "p").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub strip_label_periods: Option<bool>,
+    /// Override the delimiter inserted between the label and value.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub label_value_delimiter: Option<String>,
 }
 
 /// A pattern matching a specific combination of LocatorType values.
@@ -112,6 +115,9 @@ pub struct LocatorConfig {
     /// Strip trailing periods from labels globally (e.g., "p." → "p").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub strip_label_periods: Option<bool>,
+    /// Delimiter inserted between locator labels and values (default: single space).
+    #[serde(default = "default_label_value_delimiter")]
+    pub label_value_delimiter: String,
     /// Per-kind configuration overrides.
     #[serde(default)]
     pub kinds: HashMap<LocatorType, LocatorKindConfig>,
@@ -129,6 +135,7 @@ impl Default for LocatorConfig {
             default_label_form: LabelForm::Short,
             range_format: PageRangeFormat::Expanded,
             strip_label_periods: None,
+            label_value_delimiter: default_label_value_delimiter(),
             kinds: HashMap::new(),
             patterns: Vec::new(),
             fallback_delimiter: ", ".to_string(),
@@ -165,17 +172,20 @@ impl LocatorPreset {
                             label_form: Some(LabelForm::None),
                             range_format: None,
                             strip_label_periods: None,
+                            label_value_delimiter: None,
                         },
                     );
                     m
                 },
                 patterns: Vec::new(),
+                label_value_delimiter: default_label_value_delimiter(),
                 fallback_delimiter: ", ".to_string(),
             },
             LocatorPreset::AuthorDate => LocatorConfig {
                 default_label_form: LabelForm::Short,
                 range_format: PageRangeFormat::Expanded,
                 strip_label_periods: None,
+                label_value_delimiter: default_label_value_delimiter(),
                 kinds: HashMap::new(),
                 patterns: Vec::new(),
                 fallback_delimiter: ", ".to_string(),
@@ -214,6 +224,11 @@ fn default_label_form() -> LabelForm {
 /// Default delimiter string.
 fn default_delimiter() -> String {
     ", ".to_string()
+}
+
+/// Default delimiter between a locator label and value.
+fn default_label_value_delimiter() -> String {
+    " ".to_string()
 }
 
 #[cfg(test)]

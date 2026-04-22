@@ -314,3 +314,70 @@ fn test_taylor_and_francis_author_date_wrapper_preserves_media_and_translation_d
         "translated books should retain translator detail"
     );
 }
+
+#[test]
+fn test_springer_vancouver_brackets_wrapper_renders_bracketed_numeric_citations() {
+    let root = project_root();
+    let style = load_style(&root.join("styles/embedded/springer-vancouver-brackets.yaml"));
+    let bibliography = load_bibliography(&root.join("tests/fixtures/references-expanded.json"))
+        .expect("expanded fixture should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let single = processor
+        .process_citation(&single_item_citation("ITEM-1"))
+        .expect("single numeric citation should render");
+    let multi = processor
+        .process_citation(&Citation {
+            items: vec![
+                CitationItem {
+                    id: "ITEM-1".to_string(),
+                    ..Default::default()
+                },
+                CitationItem {
+                    id: "ITEM-2".to_string(),
+                    prefix: Some("see also ".to_string()),
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        })
+        .expect("multi numeric citation should render");
+
+    assert_eq!(single, "[1]", "single citation should use bracketed labels");
+    assert_eq!(
+        multi, "[1,see also 2]",
+        "grouped numeric citations should keep bracket wrapping and inline prefixes"
+    );
+}
+
+#[test]
+fn test_taylor_and_francis_nlm_wrapper_renders_labeled_numeric_bibliography() {
+    let root = project_root();
+    let style = load_style(
+        &root.join("styles/embedded/taylor-and-francis-national-library-of-medicine.yaml"),
+    );
+    let bibliography = load_bibliography(&root.join("tests/fixtures/references-expanded.json"))
+        .expect("expanded fixture should parse");
+
+    let processor = Processor::new(style, bibliography);
+    let citation = processor
+        .process_citation(&single_item_citation("ITEM-1"))
+        .expect("single numeric citation should render");
+    let with_locator = processor
+        .process_citation(&single_item_citation_with_locator("ITEM-1", "23"))
+        .expect("locator citation should render");
+    let rendered_bib = processor.render_bibliography();
+
+    assert_eq!(
+        citation, "[1]",
+        "single citation should use the wrapper's bracketed numeric label"
+    );
+    assert_eq!(
+        with_locator, "[1,p.23]",
+        "locator citations should preserve the wrapper's compact NLM punctuation"
+    );
+    assert!(
+        rendered_bib.contains("[1]. Kuhn TS"),
+        "bibliography should preserve the wrapper's bracketed numeric labels"
+    );
+}
