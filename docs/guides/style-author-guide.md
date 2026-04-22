@@ -254,23 +254,33 @@ options:
   dates: short
 ```
 
+When a style uses `extends:`, treat the file as an override layer. Any option you
+do not restate continues to come from the base style, so the wrapper usually
+shows only the behavior it wants to change.
+
 ```yaml
 # Wrapper style: configure the inherited base through normal scoped options
+# Omitted options still come from `springer-basic-author-date-core`
 extends: springer-basic-author-date-core
 options:
+  # Override only contributor formatting; other top-level options are inherited
   contributors: springer
 bibliography:
   options:
+    # Override only bibliography date placement; labels/templates still come from the base
     date-position: after-author
 ```
 
 ```yaml
+# Omitted citation/bibliography options still come from `elsevier-vancouver-core`
 extends: elsevier-vancouver-core
 citation:
   options:
+    # Override citation label punctuation only
     label-wrap: brackets
 bibliography:
   options:
+    # Override bibliography label mode only
     label-mode: numeric
 ```
 
@@ -506,7 +516,7 @@ bibliography:
       prefix: " "
 ```
 
-### Example 3: Style Inheritance with Profile Options
+### Example 3: Style Inheritance with Scoped Options
 
 Inherit from a shared base and tune it via normal scoped options. No templates
 needed — the base supplies them.
