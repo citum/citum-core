@@ -16,6 +16,8 @@ pub mod fixups;
 /// Style metadata extraction.
 pub mod info_extractor;
 mod js_runtime;
+/// Unified compilation pipeline.
+pub mod compilation;
 /// Options extraction from CSL 1.0.
 pub mod options_extractor;
 /// Multi-pass processing pipeline.

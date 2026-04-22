@@ -502,6 +502,7 @@ dependencies = [
 name = "citum-analyze"
 version = "0.24.0"
 dependencies = [
+ "citum-migrate",
  "citum-schema",
  "csl-legacy",
  "roxmltree",

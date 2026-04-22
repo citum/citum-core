@@ -16,6 +16,7 @@ path = "src/batch_test.rs"
 [dependencies]
 csl_legacy = { package = "csl-legacy", path = "../csl-legacy" }
 citum_schema = { package = "citum-schema", path = "../citum-schema" }
+citum_migrate = { package = "citum-migrate", path = "../citum-migrate" }
 roxmltree = "0.20"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
