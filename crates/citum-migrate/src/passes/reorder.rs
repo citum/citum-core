@@ -312,7 +312,6 @@ pub fn add_volume_prefix_after_serial(components: &mut [TemplateComponent]) {
             && let Some(TemplateComponent::Number(num)) = components.get_mut(i)
             && num.number == NumberVariable::Volume
         {
-            eprintln!("DEBUG: Adding space prefix to volume after parent-serial");
             // Add space prefix if not already present
             if num.rendering.prefix.is_none() {
                 num.rendering.prefix = Some(" ".to_string());

@@ -79,9 +79,22 @@ Profile styles now use config-only wrappers over hidden compiled roots.
 
 Journal aliases are listed in `registry/default.yaml` under each entry's `aliases:` key. Each is a zero-config pointer to a profile or base style.
 
-### Independent Styles (Tier 4)
+Like Tier 2 styles, Tier 3 styles can use `extends:` to inherit a base structure while applying journal-specific config-only overrides (e.g., localized delimiters or specific locator labels).
 
-Styles in `styles/*.yaml` that have no journal aliases and are not used as bases. Includes OSCOLA, MHRA variants, GOST, and similar discipline-specific styles.
+### Profile Candidates (Backlog)
+
+The following styles have been identified via automated semantic skeleton analysis as high-probability candidates for `extends:` conversion:
+
+| Legacy Style | Target Base | Semantic Similarity |
+|--------------|-------------|---------------------|
+| `pharmacoepidemiology-and-drug-safety` | `elsevier-with-titles` | 0.84 |
+| `disability-and-rehabilitation` | `elsevier-with-titles` | 0.83 |
+| `zoological-journal-of-the-linnean-society` | `springer-basic-author-date` | 0.83 |
+| `the-lichenologist` | `springer-basic-author-date` | 0.83 |
+| `memorias-do-instituto-oswaldo-cruz` | `springer-basic-author-date` | 0.83 |
+| `techniques-et-culture` | `taylor-and-francis-cse` | 0.87 |
+| `hawaii-int-conf-system-sciences` | `taylor-and-francis-nlm` | 0.86 |
+| `cell-numeric` | `elsevier-with-titles` | 0.83 |
 
 ## Embedding Policy
 
