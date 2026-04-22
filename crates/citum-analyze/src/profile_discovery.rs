@@ -41,7 +41,7 @@ fn to_semantic_items(component: &TemplateComponent, items: &mut Vec<SemanticItem
         TemplateComponent::Date(d) => items.push(SemanticItem::Date(d.date.clone())),
         TemplateComponent::Contributor(c) => items.push(SemanticItem::Contributor(c.contributor.clone())),
         TemplateComponent::Title(t) => items.push(SemanticItem::Title(t.title.clone())),
-        TemplateComponent::Term(t) => items.push(SemanticItem::Term(t.term.clone())),
+        TemplateComponent::Term(t) => items.push(SemanticItem::Term(t.term)),
         TemplateComponent::Group(g) => {
             for child in &g.group {
                 to_semantic_items(child, items);
@@ -78,15 +78,13 @@ pub fn run_profile_discovery(styles_dir: &str, _json_output: bool) {
                 if let Some(t) = &cit.template {
                     cit_sets.push(template_to_set(t));
                 }
-                if let Some(i) = &cit.integral {
-                    if let Some(t) = &i.template {
+                if let Some(i) = &cit.integral
+                    && let Some(t) = &i.template {
                         cit_sets.push(template_to_set(t));
-                    }
                 }
-                if let Some(ni) = &cit.non_integral {
-                    if let Some(t) = &ni.template {
+                if let Some(ni) = &cit.non_integral
+                    && let Some(t) = &ni.template {
                         cit_sets.push(template_to_set(t));
-                    }
                 }
             }
             
@@ -99,7 +97,7 @@ pub fn run_profile_discovery(styles_dir: &str, _json_output: bool) {
 
     for entry in WalkDir::new(styles_dir)
         .into_iter()
-        .filter_entry(|e| !e.file_name().to_str().is_some_and(|s| s == "dependent"))
+        .filter_entry(|e| e.file_name().to_str().is_none_or(|s| s != "dependent"))
         .filter_map(Result::ok)
         .filter(|e| e.path().extension().is_some_and(|ext| ext == "csl"))
     {
