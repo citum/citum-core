@@ -43,8 +43,8 @@ impl OptionsExtractor {
         Self::apply_preset_extractions(&mut options);
 
         let bibliography_options =
-            self::bibliography::extract_bibliography_config(style)
-                .map(|config| citum_schema::BibliographyOptions {
+            self::bibliography::extract_bibliography_config(style).map(|config| {
+                citum_schema::BibliographyOptions {
                     article_journal: config.article_journal,
                     subsequent_author_substitute: config.subsequent_author_substitute,
                     subsequent_author_substitute_rule: config.subsequent_author_substitute_rule,
@@ -54,13 +54,14 @@ impl OptionsExtractor {
                     suppress_period_after_url: config.suppress_period_after_url,
                     compound_numeric: config.compound_numeric,
                     ..Default::default()
-                });
+                }
+            });
 
         let citation_contributor_overrides =
             self::contributors::extract_citation_contributor_overrides(style);
         let bibliography_contributor_overrides =
             self::contributors::extract_bibliography_contributor_overrides(style);
-        
+
         let citation_has_scope_shorten = citation_contributor_overrides
             .as_ref()
             .and_then(|contributors| contributors.shorten.as_ref())

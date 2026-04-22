@@ -38,7 +38,7 @@ fn main() {
         .map(std::string::String::as_str);
 
     if identify_profiles {
-        profile_discovery::run_profile_discovery(styles_dir, json_output);
+        profile_discovery::run_profile_discovery(styles_dir);
     } else if quantify_savings {
         savings::run_savings_report(styles_dir, json_output);
     } else if rank_parents {

@@ -5,12 +5,11 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 //! Unified compilation pipeline from CSL 1.0 to Citum templates.
 
-use citum_schema::template::{TemplateComponent, TypeSelector};
 use crate::{
-    Compressor, MacroInliner, TemplateCompiler, Upsampler,
-    analysis, base_detector, passes,
+    Compressor, MacroInliner, TemplateCompiler, Upsampler, analysis, base_detector, passes,
     provenance::ProvenanceTracker,
 };
+use citum_schema::template::{TemplateComponent, TypeSelector};
 
 /// Shorthand for the per-type template map used throughout the migration pipeline.
 pub type TypeTemplateMap = indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>;
@@ -26,6 +25,8 @@ pub struct XmlCompilationOutput {
     pub citation: Vec<TemplateComponent>,
     /// Position-specific citation overrides.
     pub citation_overrides: CitationPositionOverrides,
+    /// Whether citation position branches could not be migrated cleanly.
+    pub unsupported_mixed_conditions: bool,
 }
 
 /// Position-specific citation overrides.
@@ -77,10 +78,11 @@ pub fn compile_from_xml(
     upsampler.et_al_min = legacy_style.citation.et_al_min;
     upsampler.et_al_use_first = legacy_style.citation.et_al_use_first;
     let citation_position_nodes = upsampler.extract_citation_position_templates(&flattened_cit);
-    
-    // We don't print to stderr here to keep the library quiet, 
+    let unsupported_mixed_conditions = citation_position_nodes.unsupported_mixed_conditions;
+
+    // We don't print to stderr here to keep the library quiet,
     // but the flag is available if the caller wants it.
-    
+
     let raw_cit = citation_position_nodes
         .first
         .clone()
@@ -110,7 +112,7 @@ pub fn compile_from_xml(
     let (mut new_bib, type_templates) =
         template_compiler.compile_bibliography_with_types(&csln_bib, is_numeric);
     let new_cit = template_compiler.compile_citation(&csln_cit);
-    
+
     let citation_position_overrides = CitationPositionOverrides {
         subsequent: compile_citation_position_override(
             &template_compiler,
@@ -125,24 +127,23 @@ pub fn compile_from_xml(
     };
 
     record_template_placements_if_enabled(&new_bib, enable_provenance, tracker);
-// Apply author suffix extracted from original CSL (lost during macro inlining)
-analysis::bibliography::apply_author_suffix(&mut new_bib, author_suffix);
+    // Apply author suffix extracted from original CSL (lost during macro inlining)
+    analysis::bibliography::apply_author_suffix(&mut new_bib, author_suffix);
 
-// Apply bibliography-specific 'and' setting (may differ from citation)
-analysis::bibliography::apply_bibliography_and(&mut new_bib, bib_and);
+    // Apply bibliography-specific 'and' setting (may differ from citation)
+    analysis::bibliography::apply_bibliography_and(&mut new_bib, bib_and);
 
-// For author-date styles with in-text class, apply standard formatting.
-let is_in_text_class = legacy_style.class == "in-text";
-let is_author_date_processing = matches!(
-    options.processing,
-    Some(citum_schema::options::Processing::AuthorDate)
-);
+    // For author-date styles with in-text class, apply standard formatting.
+    let is_in_text_class = legacy_style.class == "in-text";
+    let is_author_date_processing = matches!(
+        options.processing,
+        Some(citum_schema::options::Processing::AuthorDate)
+    );
 
-// Apply to all in-text styles (both author-date and numeric)
-if is_in_text_class {
-    passes::reorder::add_volume_prefix_after_serial(&mut new_bib);
-}
-
+    // Apply to all in-text styles (both author-date and numeric)
+    if is_in_text_class {
+        passes::reorder::add_volume_prefix_after_serial(&mut new_bib);
+    }
 
     // Detect holistic style preset for semantic fixups
     let style_base = base_detector::detect_style_base(options);
@@ -162,6 +163,7 @@ if is_in_text_class {
         type_templates: type_templates_opt,
         citation: new_cit,
         citation_overrides: citation_position_overrides,
+        unsupported_mixed_conditions,
     }
 }
 

@@ -16,7 +16,7 @@ Define a four-tier classification for all Citum styles. The taxonomy drives regi
 |------|------|------------|-----------------|--------------|
 | 1 | `base` | Complete style with full templates; serves as inheritance root | No | CSL oracle (citeproc-js) for CSL-derived; biblatex snapshot for biblatex-derived |
 | 2 | `profile` | Evidence-backed parent-plus-deltas style for a publisher, society, or standards body | Optional | Delta from its parent when a meaningful wrapper exists; otherwise direct oracle plus parent-diff evidence |
-| 3 | `journal` | Pure alias in the registry; no YAML file | N/A | Inherits from parent |
+| 3 | `journal` | Alias or config-only wrapper for a specific journal | Optional | Inherits from parent |
 | 4 | `independent` | Complete style; no aliases; no inheritance role | No | Own oracle |
 
 ## Profile Rule
