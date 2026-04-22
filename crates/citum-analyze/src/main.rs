@@ -38,7 +38,7 @@ fn main() {
         .map(std::string::String::as_str);
 
     if identify_profiles {
-        profile_discovery::run_profile_discovery(styles_dir);
+        profile_discovery::run_profile_discovery(styles_dir, json_output);
     } else if quantify_savings {
         savings::run_savings_report(styles_dir, json_output);
     } else if rank_parents {
@@ -64,13 +64,15 @@ fn print_usage() {
     eprintln!("  citum_analyze <styles_dir> --quantify-savings [--json]");
     eprintln!("      Estimate how many CSL styles presets and locale overrides can replace.");
     eprintln!();
-    eprintln!("  citum_analyze <styles_dir> --identify-profiles");
-    eprintln!("      Identify styles that could be converted to config-only profiles.");
+    eprintln!("  citum_analyze <styles_dir> --identify-profiles [--json]");
+    eprintln!(
+        "      Audit the current journal-profile candidate shortlist with normalized IDs and repo evidence."
+    );
     eprintln!();
     eprintln!("Examples:");
     eprintln!("  citum_analyze styles-legacy/");
     eprintln!("  citum_analyze styles-legacy/ --rank-parents");
     eprintln!("  citum_analyze styles-legacy/ --rank-parents --format author-date --json");
     eprintln!("  citum_analyze styles-legacy/ --quantify-savings --json");
-    eprintln!("  citum_analyze styles-legacy/ --identify-profiles");
+    eprintln!("  citum_analyze styles-legacy/ --identify-profiles --json");
 }

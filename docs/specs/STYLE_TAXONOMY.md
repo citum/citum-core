@@ -1,115 +1,174 @@
 # Style Taxonomy
 
 **Status:** Active
-**Version:** 1.1
-**Date:** 2026-04-21
+**Version:** 1.5
+**Date:** 2026-04-22
 **Bean:** `csl26-v961`, `csl26-nrkn`
-**Related:** `STYLE_PRESET_ARCHITECTURE.md`, `../architecture/2026-04-21_PROFILE_WRAPPER_VALIDATION_PASS.md`
+**Related:** `STYLE_PRESET_ARCHITECTURE.md`, `UNIFIED_SCOPED_OPTIONS.md`, `JOURNAL_PROFILE_TAXONOMY_AUDIT.md`, `../architecture/2026-04-22_JOURNAL_PROFILE_CANDIDATE_AUDIT.md`
 
 ## Purpose
 
-Define a four-tier classification for all Citum styles. The taxonomy drives registry `kind` annotations, embedding decisions, and verification strategies.
+Define Citum style taxonomy on two separate axes:
 
-## Tiers
+1. semantic class: what kind of style relationship the entry represents
+2. implementation form: how that relationship is currently expressed in the repo
 
-| Tier | Kind | Definition | `extends:` field | Verification |
-|------|------|------------|-----------------|--------------|
-| 1 | `base` | Complete style with full templates; serves as inheritance root | No | CSL oracle (citeproc-js) for CSL-derived; biblatex snapshot for biblatex-derived |
-| 2 | `profile` | Evidence-backed parent-plus-deltas style for a publisher, society, or standards body | Optional | Delta from its parent when a meaningful wrapper exists; otherwise direct oracle plus parent-diff evidence |
-| 3 | `journal` | Alias or config-only wrapper for a specific journal | Optional | Inherits from parent |
-| 4 | `independent` | Complete style; no aliases; no inheritance role | No | Own oracle |
+This replaces the older single mixed tier table, which overloaded aliases,
+config-only wrappers, and structural journal descendants into one journal tier.
 
-## Profile Rule
+This document is the public taxonomy. It does **not** change the runtime
+`RegistryEntry.kind` enum in this pass.
 
-`profile` is both a semantic taxonomy and an implementation contract.
+## Semantic Class
 
-A style is a `profile` only when the authority chain shows that it follows a
-known publisher, society, or standards parent with bounded house deltas, and
-its local YAML remains config-only. The authority order is:
+| Class | Definition | Authority requirement | Verification default |
+|------|------------|-----------------------|----------------------|
+| `base` | Inheritance root with its own complete rendering structure | none beyond normal style authority | own oracle |
+| `profile` | Reusable publisher, society, or standards house style | guide-backed parent-plus-deltas relationship | own oracle plus parent-diff evidence |
+| `journal` | Journal-specific descendant of a base or profile | journal or publisher guidance ties it to a parent family | delta from selected parent plus own oracle evidence |
+| `independent` | Self-contained style with no evidenced parent relationship | no reusable parent proven | own oracle |
 
-1. publisher or journal guide
-2. publisher house rules
+## Implementation Form
+
+| Form | Definition | `extends:` | Local template-bearing fields | Typical use |
+|------|------------|------------|-------------------------------|-------------|
+| `alias` | Registry pointer only | no | no | exact journal clone |
+| `config-wrapper` | Parent selected via `extends:` and tuned only with scoped options / metadata | yes | no | thin publisher or journal wrapper |
+| `structural-wrapper` | Inherits a parent but still carries local template-bearing structure | yes | yes | journal descendant with real family match but unresolved structural delta |
+| `standalone` | Complete self-contained style | optional but typically no | yes | independent or not-yet-factored style |
+
+## Authority Rules
+
+Authority order remains:
+
+1. current publisher or journal guide
+2. current publisher house rules or submission instructions
 3. named parent-style manual or standards reference
-4. CSL/template-link evidence
+4. CSL metadata and template links
 5. current Citum YAML structure
 
 Output similarity by itself is not enough.
 
-## Implementation Note
+### Profile Rule
 
-Profile styles now use config-only wrappers over hidden compiled roots.
+A style is a `profile` only when both statements are true:
 
-- public `kind: profile` styles may keep local identity and use the normal
-  typed options surface
-- profile-only schema namespaces are forbidden
-- public `kind: profile` styles may not keep local templates, `type-variants`,
-  or template-clearing `null` values
-- hidden compiled roots are an implementation detail and do not appear in the
-  public registry
+- semantically, it is a reusable publisher, society, or standards house style
+- operationally, the public wrapper is `config-wrapper` only
+
+Public `profile` styles may keep local identity and scoped options, but they may
+not keep local templates, `type-variants`, or template-clearing `null` values.
+
+### Journal Rule
+
+`journal` is now semantic only. A journal style may be implemented as:
+
+- an `alias`
+- a `config-wrapper`
+- a `structural-wrapper`
+
+This is the key correction from the earlier mixed tier model.
 
 ## Current Classification
 
-### Base Styles (Tier 1)
+### Base + Standalone
 
-| Style | Origin |
-|-------|--------|
-| `apa-7th` | CSL-derived |
-| `chicago-notes-18th` | CSL-derived |
-| `chicago-author-date-18th` | CSL-derived |
-| `ieee` | CSL-derived |
-| `american-medical-association` | CSL-derived |
-| `modern-language-association` | CSL-derived |
+| Style | Notes |
+|------|-------|
+| `apa-7th` | CSL-derived inheritance root |
+| `chicago-notes-18th` | CSL-derived inheritance root |
+| `chicago-author-date-18th` | CSL-derived inheritance root |
+| `ieee` | CSL-derived inheritance root |
+| `american-medical-association` | CSL-derived inheritance root |
+| `modern-language-association` | CSL-derived inheritance root |
 
-### Profile Styles (Tier 2)
+### Profile + Config-Wrapper
 
-| Style | Base | Notes |
-|-------|------|-------|
-| `chicago-shortened-notes-bibliography` | hidden Chicago shortened-notes root | Public shortened-notes wrapper |
-| `elsevier-harvard` | hidden Elsevier Harvard root | Public profile handle is config-only |
-| `elsevier-vancouver` | hidden Elsevier Vancouver root | Public profile handle is config-only |
-| `elsevier-with-titles` | hidden Elsevier with-titles root | Public profile handle is config-only |
-| `springer-basic-author-date` | hidden Springer Basic author-date root | Public profile handle is config-only |
-| `springer-basic-brackets` | hidden Springer Basic brackets root | Public profile handle is config-only |
-| `springer-vancouver-brackets` | hidden Springer Vancouver root | Public profile handle is config-only |
-| `taylor-and-francis-chicago-author-date` | hidden Taylor & Francis Chicago root | Public profile handle is config-only |
-| `taylor-and-francis-council-of-science-editors-author-date` | hidden Taylor & Francis CSE root | Public profile handle is config-only |
-| `taylor-and-francis-national-library-of-medicine` | hidden Taylor & Francis NLM root | Public profile handle is config-only |
+| Style | Notes |
+|------|-------|
+| `chicago-shortened-notes-bibliography` | public shortened-notes wrapper |
+| `elsevier-harvard` | public profile handle over hidden family root |
+| `elsevier-vancouver` | public profile handle over hidden family root |
+| `elsevier-with-titles` | public profile handle over hidden family root |
+| `springer-basic-author-date` | public profile handle over hidden family root |
+| `springer-basic-brackets` | public profile handle over hidden family root |
+| `springer-vancouver-brackets` | public profile handle over hidden family root |
+| `taylor-and-francis-chicago-author-date` | public profile handle over hidden family root |
+| `taylor-and-francis-council-of-science-editors-author-date` | public profile handle over hidden family root |
+| `taylor-and-francis-national-library-of-medicine` | public profile handle over hidden family root |
 
-### Journal / Alias Styles (Tier 3)
+### Journal + Alias
 
-Journal aliases are listed in `registry/default.yaml` under each entry's `aliases:` key. Each is a zero-config pointer to a profile or base style.
+Journal aliases live in `registry/default.yaml` under `aliases:` and remain
+zero-config pointers.
 
-Like Tier 2 styles, Tier 3 styles can use `extends:` to inherit a base structure while applying journal-specific config-only overrides (e.g., localized delimiters or specific locator labels).
+Representative examples:
 
-### Profile Candidates (Backlog)
+| Journal Alias | Parent |
+|--------------|--------|
+| `acta-medica-portuguesa` | `american-medical-association` |
+| `annals-of-the-association-of-american-geographers` | `taylor-and-francis-chicago-author-date` |
+| `biochimica-et-biophysica-acta` | `elsevier-with-titles` |
 
-The following styles have been identified via automated semantic skeleton analysis as high-probability candidates for `extends:` conversion:
+### Journal + Structural-Wrapper
 
-| Legacy Style | Target Base | Semantic Similarity |
-|--------------|-------------|---------------------|
-| `pharmacoepidemiology-and-drug-safety` | `elsevier-with-titles` | 0.84 |
-| `disability-and-rehabilitation` | `elsevier-with-titles` | 0.83 |
-| `zoological-journal-of-the-linnean-society` | `springer-basic-author-date` | 0.83 |
-| `the-lichenologist` | `springer-basic-author-date` | 0.83 |
-| `memorias-do-instituto-oswaldo-cruz` | `springer-basic-author-date` | 0.83 |
-| `techniques-et-culture` | `taylor-and-francis-cse` | 0.87 |
-| `hawaii-int-conf-system-sciences` | `taylor-and-francis-nlm` | 0.86 |
-| `cell-numeric` | `elsevier-with-titles` | 0.83 |
+Representative existing journal descendants that already prove a journal style
+is not necessarily an alias or thin wrapper:
 
-## Embedding Policy
+| Style | Parent | Why structural |
+|------|--------|----------------|
+| `american-society-of-mechanical-engineers` | `ieee` | local bibliography templates and type variants |
+| `american-mathematical-society-label` | `elsevier-with-titles` | local citation and bibliography templates |
+| `entomological-society-of-america` | `elsevier-harvard` | local citation template and type variants |
+| `international-journal-of-wildland-fire` | `springer-basic-author-date` | local citation template and bibliography structure |
+| `elsevier-vancouver-author-date` | `elsevier-vancouver` | local author-date citation and bibliography structure |
 
-Only Tier 1 (base) and Tier 2 (profile) styles are embedded in the binary. Tier
-3 (journal) styles resolve at runtime through the registry alias table. Tier 4
-(independent) styles are loaded from disk or bundled separately.
+### Audited Journal Descendants (2026-04-22)
 
----
+The `9e13a17b` backlog was re-audited with normalized IDs, CSL metadata, the
+alias TSV, current guide evidence, and the new `citum-analyze --identify-profiles`
+audit mode. The reduction pass kept only the deltas justified by guide-backed or
+converging evidence.
+
+| Legacy Style | Proposed Parent in `9e13a17b` | Corrected Parent | Outcome |
+|-------------|--------------------------------|------------------|---------|
+| `pharmacoepidemiology-and-drug-safety` | `elsevier-with-titles` | `american-medical-association` | `journal + config-wrapper` |
+| `disability-and-rehabilitation` | `elsevier-with-titles` | `elsevier-with-titles` | `journal + config-wrapper` |
+| `zoological-journal-of-the-linnean-society` | `springer-basic-author-date` | — | `false-positive` |
+| `the-lichenologist` | `springer-basic-author-date` | — | `false-positive` |
+| `memorias-do-instituto-oswaldo-cruz` | `springer-basic-author-date` | — | `independent + standalone` |
+| `techniques-et-culture` | `taylor-and-francis-council-of-science-editors-author-date` | — | `false-positive` |
+| `hawaii-international-conference-on-system-sciences-proceedings` | `taylor-and-francis-national-library-of-medicine` | — | `false-positive; temporary structural hold` |
+| `cell-numeric` | `elsevier-with-titles` | `elsevier-with-titles` | `journal + config-wrapper` |
+
+This pass promoted three candidates to `journal + config-wrapper`, retained no
+new aliases, dropped one unsupported parent link outright, and left one
+temporary structural hold where inherited IEEE behavior still covers legacy CSL
+surface that the current guide no longer justifies semantically.
+
+## Embedding And Runtime Note
+
+This pass deliberately keeps the runtime `kind` enum unchanged.
+
+- current embedded base/profile styles remain the same
+- registry aliases still resolve through `registry/default.yaml`
+- journal wrappers remain ordinary style files unless separately promoted
+
+If machine-readable implementation-form metadata becomes necessary later, add a
+new field rather than overloading `kind` again.
 
 ## Changelog
 
+- v1.5 (2026-04-22): Reframed taxonomy on two axes: semantic class and
+  implementation form. Recorded the 2026-04-22 journal-candidate audit,
+  reduced three audited descendants to `journal + config-wrapper`, dropped one
+  unsupported parent link to a standalone style, and explicitly separated
+  aliases, config-only journal wrappers, and structural journal wrappers.
+  Confirmed that runtime `kind` is unchanged in this pass.
 - v1.4 (2026-04-22): Replaced `options.profile` with normal scoped options.
 - v1.2 (2026-04-21): Enforced config-only profile wrappers over hidden compiled
   roots.
 - v1.1 (2026-04-21): Clarified that `profile` means evidence-backed parentage,
   not output similarity or already-small YAML.
-- v1.0 (2026-04-20): Initial spec. Defines four-tier model (base, profile, journal, independent).
-  Classifies all 16 embedded styles. Documents embedding policy.
+- v1.0 (2026-04-20): Initial spec. Defined the four-tier model (base, profile,
+  journal, independent).

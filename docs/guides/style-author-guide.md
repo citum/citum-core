@@ -12,7 +12,7 @@ Citum introduces a modern, declarative approach to citation styling compared to 
 | Logic | `choose`/`if`/`else` conditionals | Type variants + inheritance |
 | Name Formatting | Inline XML attributes | Global presets + options |
 | Dates | Object with year/month/day | EDTF string format |
-| Inheritance | Parent style aliasing | Extends + profile options |
+| Inheritance | Parent style aliasing | Extends + scoped options |
 | Readability | Verbose and nested | Concise and explicit |
 
 > [!TIP]

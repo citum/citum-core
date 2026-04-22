@@ -1,0 +1,248 @@
+extends: ieee
+info:
+  title: Hawaii International Conference on System Sciences Proceedings
+  id: http://www.zotero.org/styles/hawaii-international-conference-on-system-sciences-proceedings
+  default-locale: en-US
+options:
+  substitute:
+    contributor-role-form: short
+    template:
+    - editor
+  processing: numeric
+  contributors:
+    display-as-sort: first
+    initialize-with: .
+    shorten:
+      min: 7
+      use-first: 3
+      and-others: et-al
+      delimiter-precedes-last: contextual
+    delimiter: null
+    delimiter-precedes-last: always
+    delimiter-precedes-et-al: always
+    demote-non-dropping-particle: sort-only
+    name-form: initials
+  dates:
+    month: long
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
+    range-delimiter: –
+    show-seconds: false
+    show-timezone: false
+    era-labels: default
+    negative-unspecified-years: range
+  titles:
+    component: {}
+    monograph:
+      emph: true
+    periodical:
+      emph: true
+    serial:
+      emph: true
+  punctuation-in-quote: true
+citation:
+  template:
+  - number: citation-number
+  - variable: locator
+  wrap:
+    punctuation: brackets
+  multi-cite-delimiter: ', '
+bibliography:
+  options:
+    contributors:
+      display-as-sort: first
+      initialize-with: .
+      shorten:
+        min: 7
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      delimiter: null
+      delimiter-precedes-last: always
+      delimiter-precedes-et-al: always
+      name-form: initials
+    separator: ' '
+  template:
+  - date: issued
+    form: year
+    suppress: true
+  - number: citation-number
+    wrap:
+      punctuation: brackets
+      inner-suffix: ' '
+    suppress: false
+  - contributor: author
+    form: long
+    name-order: family-first-only
+    shorten:
+      min: 7
+      use-first: 3
+      and-others: et-al
+      delimiter-precedes-last: always
+    and: text
+    suppress: false
+  - title: primary
+    quote: true
+    wrap:
+      punctuation: quotes
+    suppress: false
+  - group:
+    - variable: publisher
+    - variable: publisher-place
+    - date: issued
+      form: year
+    delimiter: comma
+    suppress: true
+  - group:
+    - group:
+      - title: parent-serial
+        emph: true
+      - group:
+        - variable: publisher
+        - date: issued
+          form: year
+        delimiter: space
+      delimiter: comma
+    - number: pages
+    delimiter: comma
+    suffix: .
+    suppress: true
+  - term: in
+    form: long
+    suffix: ' '
+    suppress: true
+  - contributor: editor
+    form: long
+    shorten:
+      min: 7
+      use-first: 3
+      and-others: et-al
+      delimiter-precedes-last: never
+    and: text
+    suppress: true
+  - title: parent-serial
+    emph: true
+    suffix: '. '
+    suppress: true
+  - group:
+    - group:
+      - variable: publisher
+      - variable: publisher-place
+      - date: issued
+        form: year
+      delimiter: comma
+    - number: pages
+    delimiter: comma
+    suffix: .
+    suppress: true
+  - number: volume
+    emph: true
+    quote: false
+    prefix: ' '
+    suppress: true
+  - number: issue
+    emph: false
+    wrap:
+      punctuation: parentheses
+    suppress: true
+  - number: pages
+    prefix: 'pp. '
+    suppress: true
+  - group:
+    - group:
+      - title: parent-serial
+      - number: volume
+      delimiter: space
+      emph: true
+    - date: issued
+      form: year
+    - number: pages
+    delimiter: comma
+    suffix: .
+    suppress: false
+  - variable: url
+    prefix: ' '
+    suppress: false
+  type-variants:
+    bill:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+        inner-suffix: ' '
+    - contributor: author
+      form: long
+      name-order: family-first-only
+      shorten:
+        min: 7
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: always
+      and: text
+    - title: primary
+      quote: true
+      wrap:
+        punctuation: quotes
+    - variable: publisher
+    - variable: publisher-place
+    - date: issued
+      form: year
+    book:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+        inner-suffix: ' '
+    - contributor: author
+      form: long
+      name-order: family-first-only
+      shorten:
+        min: 7
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: always
+      and: text
+    - title: primary
+      quote: true
+      wrap:
+        punctuation: quotes
+    - variable: publisher
+    - variable: publisher-place
+    - date: issued
+      form: year
+    chapter:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+        inner-suffix: ' '
+    - contributor: author
+      form: long
+      name-order: family-first-only
+      shorten:
+        min: 7
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: always
+      and: text
+    - title: primary
+      quote: true
+      wrap:
+        punctuation: quotes
+    - term: in
+      form: long
+    - contributor: editor
+      form: long
+      shorten:
+        min: 7
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: never
+      and: text
+    - title: parent-serial
+      emph: true
+    - group:
+      - variable: publisher
+      - variable: publisher-place
+      - date: issued
+        form: year
+      delimiter: comma
+    - number: pages
+      prefix: 'pp. '
