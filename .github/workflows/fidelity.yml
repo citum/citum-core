@@ -53,7 +53,7 @@ jobs:
         with:
           shared-key: "citum-core-rust"
           cache-workspace-crates: true
-          additional-cache-directories: /home/runner/.cache/sccache
+          cache-directories: /home/runner/.cache/sccache
 
       - name: Configure environment
         run: |
