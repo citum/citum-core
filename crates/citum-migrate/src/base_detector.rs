@@ -3,11 +3,10 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-//! Detects when extracted configuration matches known style bases.
+//! Detects narrow formatting families for migration fixups.
 //!
-//! This module implements base detection for Phase 3 of the style aliasing
-//! design. When migrating CSL 1.0 styles, it compares extracted configuration
-//! to known base patterns and emits base names instead of expanded configs.
+//! This module does not determine style taxonomy or wrapper lineage. It only
+//! detects narrow formatting families used by migration-time fixups.
 //!
 //! ## Detection Strategy
 //!
@@ -23,9 +22,9 @@ use citum_schema::options::{
 };
 use citum_schema::presets::{ContributorPreset, DatePreset, TitlePreset};
 
-/// Holistic style bases that combine multiple configuration aspects.
+/// Narrow formatting families used only by migration fixups.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum StyleBase {
+pub enum FixupFamily {
     Apa,
     Chicago,
     Ieee,
@@ -33,8 +32,8 @@ pub enum StyleBase {
     Harvard,
 }
 
-/// Detects the style base from a full configuration.
-pub fn detect_style_base(config: &Config) -> Option<StyleBase> {
+/// Detect the formatting family used by migration fixups from a full config.
+pub fn detect_fixup_family(config: &Config) -> Option<FixupFamily> {
     let cp = config
         .contributors
         .as_ref()
@@ -42,13 +41,29 @@ pub fn detect_style_base(config: &Config) -> Option<StyleBase> {
     let tp = config.titles.as_ref().and_then(detect_title_preset);
 
     match (cp, tp) {
-        (Some(ContributorPreset::Apa), Some(TitlePreset::Apa)) => Some(StyleBase::Apa),
-        (Some(ContributorPreset::Chicago), Some(TitlePreset::Chicago)) => Some(StyleBase::Chicago),
-        (Some(ContributorPreset::Ieee), Some(TitlePreset::Chicago)) => Some(StyleBase::Ieee),
-        (Some(ContributorPreset::Vancouver), _) => Some(StyleBase::Vancouver),
-        (Some(ContributorPreset::Harvard), _) => Some(StyleBase::Harvard),
+        (Some(ContributorPreset::Apa), Some(TitlePreset::Apa)) => Some(FixupFamily::Apa),
+        (Some(ContributorPreset::Chicago), Some(TitlePreset::Chicago)) => {
+            Some(FixupFamily::Chicago)
+        }
+        (Some(ContributorPreset::Ieee), Some(TitlePreset::Chicago)) => Some(FixupFamily::Ieee),
+        (Some(ContributorPreset::Vancouver), _) => Some(FixupFamily::Vancouver),
+        (Some(ContributorPreset::Harvard), _) => Some(FixupFamily::Harvard),
         _ => None,
     }
+}
+
+/// Backward-compatible alias for the historical fixup family name.
+#[deprecated(note = "use FixupFamily instead; this type models fixup families, not taxonomy")]
+pub type StyleBase = FixupFamily;
+
+/// Backward-compatible wrapper for the historical fixup family detector.
+#[deprecated(note = "use detect_fixup_family instead")]
+#[allow(
+    deprecated,
+    reason = "compatibility shim must preserve the historical signature"
+)]
+pub fn detect_style_base(config: &Config) -> Option<StyleBase> {
+    detect_fixup_family(config)
 }
 
 /// Detects if a `ContributorConfig` matches a known preset.

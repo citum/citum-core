@@ -145,11 +145,11 @@ pub fn compile_from_xml(
         passes::reorder::add_volume_prefix_after_serial(&mut new_bib);
     }
 
-    // Detect holistic style preset for semantic fixups
-    let style_base = base_detector::detect_style_base(options);
+    // Detect the narrow formatting family needed by migration fixups.
+    let fixup_family = base_detector::detect_fixup_family(options);
 
     if is_in_text_class && is_author_date_processing {
-        apply_author_date_bibliography_passes(&mut new_bib, options, style_base);
+        apply_author_date_bibliography_passes(&mut new_bib, options, fixup_family);
     }
 
     let type_templates_opt = if type_templates.is_empty() {
@@ -244,7 +244,7 @@ fn record_template_placements_if_enabled(
 fn apply_author_date_bibliography_passes(
     new_bib: &mut Vec<TemplateComponent>,
     options: &mut citum_schema::options::Config,
-    style_base: Option<base_detector::StyleBase>,
+    fixup_family: Option<base_detector::FixupFamily>,
 ) {
     // Detect if the style uses space prefix for volume (Elsevier pattern)
     let volume_list_has_space_prefix = new_bib.iter().any(|c| {
@@ -265,7 +265,7 @@ fn apply_author_date_bibliography_passes(
             component,
             vol_pages_delim.clone(),
             volume_list_has_space_prefix,
-            style_base,
+            fixup_family,
         );
     }
 
@@ -279,12 +279,12 @@ fn apply_author_date_bibliography_passes(
     passes::reorder::propagate_list_overrides(new_bib);
     passes::deduplicate::deduplicate_nested_lists(new_bib);
     passes::reorder::reorder_serial_components(new_bib);
-    passes::grouping::group_volume_and_issue(new_bib, options, style_base);
+    passes::grouping::group_volume_and_issue(new_bib, options, fixup_family);
     passes::reorder::reorder_pages_for_serials(new_bib);
-    passes::reorder::reorder_publisher_place_for_chicago(new_bib, style_base);
-    passes::reorder::reorder_chapters_for_apa(new_bib, style_base);
-    passes::reorder::reorder_chapters_for_chicago(new_bib, style_base);
-    passes::deduplicate::suppress_duplicate_issue_for_journals(new_bib, style_base);
+    passes::reorder::reorder_publisher_place_for_chicago(new_bib, fixup_family);
+    passes::reorder::reorder_chapters_for_apa(new_bib, fixup_family);
+    passes::reorder::reorder_chapters_for_chicago(new_bib, fixup_family);
+    passes::deduplicate::suppress_duplicate_issue_for_journals(new_bib, fixup_family);
 }
 
 #[allow(
@@ -295,7 +295,7 @@ fn apply_type_overrides(
     component: &mut TemplateComponent,
     volume_pages_delimiter: Option<citum_schema::template::DelimiterPunctuation>,
     volume_list_has_space_prefix: bool,
-    style_base: Option<base_detector::StyleBase>,
+    fixup_family: Option<base_detector::FixupFamily>,
 ) {
     if let TemplateComponent::Group(list) = component {
         for item in &mut list.group {
@@ -303,7 +303,7 @@ fn apply_type_overrides(
                 item,
                 volume_pages_delimiter.clone(),
                 volume_list_has_space_prefix,
-                style_base,
+                fixup_family,
             );
         }
     }

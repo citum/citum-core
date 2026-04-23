@@ -134,13 +134,13 @@ pub fn reorder_pages_for_serials(components: &mut Vec<TemplateComponent>) {
 /// Reorder publisher-place for Chicago journal articles.
 pub fn reorder_publisher_place_for_chicago(
     components: &mut Vec<TemplateComponent>,
-    style_base: Option<crate::base_detector::StyleBase>,
+    fixup_family: Option<crate::base_detector::FixupFamily>,
 ) {
-    use crate::base_detector::StyleBase;
+    use crate::base_detector::FixupFamily;
     use citum_schema::template::{SimpleVariable, TitleType};
 
     // Only apply to Chicago styles
-    if !matches!(style_base, Some(StyleBase::Chicago)) {
+    if !matches!(fixup_family, Some(FixupFamily::Chicago)) {
         return;
     }
 
@@ -187,13 +187,13 @@ pub fn reorder_publisher_place_for_chicago(
 /// Reorder chapter components for APA style.
 pub fn reorder_chapters_for_apa(
     components: &mut Vec<TemplateComponent>,
-    style_base: Option<crate::base_detector::StyleBase>,
+    fixup_family: Option<crate::base_detector::FixupFamily>,
 ) {
-    use crate::base_detector::StyleBase;
+    use crate::base_detector::FixupFamily;
     use citum_schema::template::{ContributorRole, TitleType};
 
     // Only apply to APA styles
-    if !matches!(style_base, Some(StyleBase::Apa)) {
+    if !matches!(fixup_family, Some(FixupFamily::Apa)) {
         return;
     }
 
@@ -226,13 +226,13 @@ pub fn reorder_chapters_for_apa(
 /// Reorder chapter components for Chicago style.
 pub fn reorder_chapters_for_chicago(
     components: &mut Vec<TemplateComponent>,
-    style_base: Option<crate::base_detector::StyleBase>,
+    fixup_family: Option<crate::base_detector::FixupFamily>,
 ) {
-    use crate::base_detector::StyleBase;
+    use crate::base_detector::FixupFamily;
     use citum_schema::template::{ContributorRole, TitleType};
 
     // Only apply to Chicago styles
-    if !matches!(style_base, Some(StyleBase::Chicago)) {
+    if !matches!(fixup_family, Some(FixupFamily::Chicago)) {
         return;
     }
 

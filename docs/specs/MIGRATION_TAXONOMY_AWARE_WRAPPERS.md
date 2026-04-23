@@ -1,6 +1,6 @@
 # Migration Taxonomy-Aware Wrappers Specification
 
-**Status:** Draft
+**Status:** Active
 **Date:** 2026-04-23
 **Related:** `docs/specs/STYLE_TAXONOMY.md`, `docs/specs/MIGRATE_RESEARCH_RICH_INPUTS.md`, `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`
 
@@ -118,4 +118,5 @@ For `journal + structural-wrapper` targets:
 
 ## Changelog
 
+- 2026-04-23: Activated with implementation in `citum-migrate` and taxonomy-aware `migrate-research` routing.
 - 2026-04-23: Initial version.

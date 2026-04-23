@@ -72,7 +72,7 @@ fn group_vol_issue_and_date_top_level(
 fn group_vol_issue_issue_at_top(
     components: &mut Vec<TemplateComponent>,
     issue_idx: usize,
-    style_base: Option<crate::base_detector::StyleBase>,
+    fixup_family: Option<crate::base_detector::FixupFamily>,
     vol_issue_delimiter: DelimiterPunctuation,
 ) {
     let list_idx = components.iter().enumerate().find_map(|(idx, c)| {
@@ -113,7 +113,7 @@ fn group_vol_issue_issue_at_top(
                 issue_with_parens,
                 vol_issue_delimiter.clone(),
             )
-            && matches!(style_base, Some(crate::base_detector::StyleBase::Apa))
+            && matches!(fixup_family, Some(crate::base_detector::FixupFamily::Apa))
             && !list_contains_title(list)
         {
             list.delimiter = Some(DelimiterPunctuation::Comma);
@@ -168,7 +168,7 @@ fn group_vol_issue_both_nested(
 pub fn group_volume_and_issue(
     components: &mut Vec<TemplateComponent>,
     options: &citum_schema::options::Config,
-    style_base: Option<crate::base_detector::StyleBase>,
+    fixup_family: Option<crate::base_detector::FixupFamily>,
 ) {
     // Volume-issue spacing varies by style:
     // - APA (comma delimiter): no space, e.g., "2(2)"
@@ -213,7 +213,7 @@ pub fn group_volume_and_issue(
     }
 
     if let Some(issue_idx) = issue_pos {
-        group_vol_issue_issue_at_top(components, issue_idx, style_base, vol_issue_delimiter);
+        group_vol_issue_issue_at_top(components, issue_idx, fixup_family, vol_issue_delimiter);
     } else if vol_pos.is_none() {
         group_vol_issue_both_nested(components, vol_issue_delimiter);
     }
