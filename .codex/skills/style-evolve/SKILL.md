@@ -30,6 +30,12 @@ Read first:
 
 - Keep fidelity as the hard gate.
 - Treat SQI as secondary optimization only.
+- Before editing a style, classify it by semantic class and implementation
+  form using `docs/specs/STYLE_TAXONOMY.md` and the shared workflow docs.
+- Profile-family work may require a `create` pass for a hidden family root
+  followed by `upgrade` reduction of the public handles.
+- Journal/profile reductions must choose parents from guide-backed authority,
+  not nearest CSL or template similarity.
+- Keep waves bounded to one family or one clearly related cohort per PR.
 - Do not duplicate the shared decision rules or evidence ladder here.
 - Keep this skill focused on routing and host-facing behavior.
-
