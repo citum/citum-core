@@ -23,14 +23,18 @@ Out of scope:
 ## Design
 ### Shared execution order
 1. Establish the workflow mode and target scope.
-2. Establish source authority before reading implementation artifacts:
+2. Classify the target on two axes before editing:
+   semantic class (`base`, `profile`, `journal`, `independent`) and
+   implementation form (`alias`, `config-wrapper`, `structural-wrapper`,
+   `standalone`).
+3. Establish source authority before reading implementation artifacts:
    publisher guide first, then publisher house rules, then parent-style guidance.
-3. Capture the smallest trustworthy evidence surface first.
-4. Use reduced-cluster evidence before broad supplemental reruns.
-5. Classify each failure using the shared policy.
-6. Apply at most one tightly scoped fix per bounded cluster pass.
-7. Re-run the reduced evidence set, then the broader oracle or report surface.
-8. Stop when the cluster is reclassified, converged, or proven out of scope.
+4. Capture the smallest trustworthy evidence surface first.
+5. Use reduced-cluster evidence before broad supplemental reruns.
+6. Classify each failure using the shared policy.
+7. Apply at most one tightly scoped fix per bounded cluster pass.
+8. Re-run the reduced evidence set, then the broader oracle or report surface.
+9. Stop when the cluster is reclassified, converged, or proven out of scope.
 
 ### Shared verification logic
 - Fidelity is the hard gate.
@@ -38,10 +42,17 @@ Out of scope:
 - QA must reject regressions and formatting defects.
 - Supplemental rich-input evidence is confirmation, not the first debugging surface.
 - CSL structure is verification evidence, not the source of truth for wrapper thickness.
+- For `profile` targets, verify that the file still satisfies the config-wrapper
+  contract: no local templates, no local `type-variants`, and no
+  template-clearing `null`.
+- For `journal` targets, accept `structural-wrapper` as a legitimate endpoint
+  when guide-backed deltas or current merge mechanics prevent a meaningful thin
+  reduction.
 
 ### Shared output shape
 Every workflow should report:
 - target or cluster chosen
+- semantic class and implementation form
 - classification and rationale
 - before/after evidence
 - exact change made, if any
@@ -52,6 +63,20 @@ Every workflow should report:
 - `style-defect` routes to style-local YAML repair.
 - `processor-defect` routes to processor or engine follow-up.
 - `intentional divergence` is recorded and excluded from fix counts.
+- If parentage is guide-backed but current merge semantics still force a bulky
+  wrapper, escalate as an infrastructure constraint rather than preserving or
+  reintroducing duplicated structure as if it were authority.
+
+## Waves
+
+A style wave is a bounded cohort executed through repeated `upgrade`,
+`migrate`, or `create` passes under this same execution flow.
+
+- Keep one wave to one family or one clearly related cohort per PR.
+- For profile-family work, it is valid to use `create` to author a hidden family
+  root first and then `upgrade` to reduce the public handles.
+- Do not add a separate public "wave" command surface; waves are an execution
+  pattern, not a new mode.
 
 ## Implementation Notes
 - Use this guide as the canonical place for the evidence ladder and convergence language currently repeated across style workflows.
@@ -63,4 +88,7 @@ Every workflow should report:
 - [x] The shared output contract is expressed here in host-neutral terms.
 
 ## Changelog
+- 2026-04-23: Added explicit semantic-class vs implementation-form
+  classification, profile-contract verification, journal structural-wrapper
+  acceptance, and bounded-wave guidance.
 - 2026-04-04: Initial version.

@@ -44,6 +44,32 @@ targeting.
 - Every iteration must assess both:
   - style-level edits
   - processor/preset/feature opportunities
+- Before editing YAML, classify the target using the shared two-axis taxonomy:
+  semantic class (`base`, `profile`, `journal`, `independent`) and
+  implementation form (`alias`, `config-wrapper`, `structural-wrapper`,
+  `standalone`).
+- Profile work must preserve the config-wrapper contract: scoped options and
+  metadata only, with no local templates, no local `type-variants`, and no
+  template-clearing `null`.
+- Journal descendants may legitimately remain structural wrappers when
+  guide-backed deltas or current merge mechanics prevent a meaningful thin
+  reduction.
+- Choose parent styles from current guide-backed authority first, not nearest
+  CSL/template similarity.
+- If guide-backed parentage is real but the current merge model still forces a
+  bulky child file, record the infrastructure constraint and stop forcing
+  compression.
+
+## Wave Guidance
+
+A style wave is a bounded cohort executed through repeated `upgrade`,
+`migrate`, or `create` passes under the shared workflow docs.
+
+- Keep one wave to one family or one clearly related cohort per PR.
+- Profile-family work may require a `create` pass for a hidden family root,
+  followed by `upgrade` passes to reduce the public handles.
+- `style-evolve` remains a three-mode public entrypoint. A wave is execution
+  scope, not a fourth mode.
 
 ## Internal Pipeline (For Maintainers)
 `/style-evolve` routes internally to:
