@@ -38,7 +38,7 @@ targeting.
 ```
 
 ## Quality Policy
-- Fidelity is the hard gate.
+- Fidelity to the declared primary authority is the hard gate.
 - SQI is a secondary optimization metric.
 - For styles with configured `benchmark_runs`, official rich-input evidence is auto-run as supplemental advisory output.
 - Every iteration must assess both:
@@ -59,6 +59,8 @@ targeting.
 - If guide-backed parentage is real but the current merge model still forces a
   bulky child file, record the infrastructure constraint and stop forcing
   compression.
+- True profiles may use documentary-primary verification when the verification
+  policy says so.
 
 ## Wave Guidance
 

@@ -61,3 +61,4 @@ to make sure the document should be a spec rather than architecture or policy.
 | [`EMBEDDED_JS_TEMPLATE_INFERENCE.md`](./EMBEDDED_JS_TEMPLATE_INFERENCE.md) | Embedded `deno_core` live inference backend for `citum-migrate` |
 | [`CONFIG_ONLY_PROFILE_OVERRIDES.md`](./CONFIG_ONLY_PROFILE_OVERRIDES.md) | Superseded profile-specific wrapper contract |
 | [`UNIFIED_SCOPED_OPTIONS.md`](./UNIFIED_SCOPED_OPTIONS.md) | Breaking replacement for `options.profile` using normal scoped options |
+| [`PROFILE_DOCUMENTARY_VERIFICATION.md`](./PROFILE_DOCUMENTARY_VERIFICATION.md) | Documentary-primary verification model for true profile wrappers |

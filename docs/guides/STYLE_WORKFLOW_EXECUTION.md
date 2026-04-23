@@ -37,7 +37,7 @@ Out of scope:
 9. Stop when the cluster is reclassified, converged, or proven out of scope.
 
 ### Shared verification logic
-- Fidelity is the hard gate.
+- Fidelity to the declared primary authority is the hard gate.
 - SQI or other secondary metrics are advisory unless a workflow explicitly promotes them.
 - QA must reject regressions and formatting defects.
 - Supplemental rich-input evidence is confirmation, not the first debugging surface.
