@@ -11,6 +11,9 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   report:
     name: Generate and Deploy Docs
@@ -27,7 +30,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
 
@@ -46,7 +49,7 @@ jobs:
           tool: cargo-nextest
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "22"
 
@@ -55,7 +58,7 @@ jobs:
         with:
           shared-key: "citum-core-rust"
           cache-workspace-crates: true
-          additional-cache-directories: /home/runner/.cache/sccache
+          cache-directories: /home/runner/.cache/sccache
 
       - name: Configure environment
         run: |
@@ -64,9 +67,6 @@ jobs:
 
       - name: Install Node dependencies
         run: npm install --prefix scripts
-
-      - name: Build Rust workspace
-        run: cargo build --all-features
 
       - name: Generate compatibility report
         run: node scripts/report-core.js --all-features --output-html docs/compat.html > /tmp/core-report.json
@@ -82,7 +82,7 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: ./docs
 
