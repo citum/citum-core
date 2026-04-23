@@ -20,6 +20,9 @@ concurrency:
   group: "pages"
   cancel-in-progress: false
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   deploy:
     environment:
@@ -33,7 +36,7 @@ jobs:
       SCCACHE_DIR: /home/runner/.cache/sccache
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Restore published compatibility report
         if: ${{ !inputs.refresh_compat }}
@@ -59,7 +62,7 @@ jobs:
           tool: cargo-nextest
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "22"
 
@@ -68,7 +71,7 @@ jobs:
         with:
           shared-key: "citum-core-rust"
           cache-workspace-crates: true
-          additional-cache-directories: /home/runner/.cache/sccache
+          cache-directories: /home/runner/.cache/sccache
 
       - name: Configure environment
         run: |
@@ -77,10 +80,6 @@ jobs:
 
       - name: Install Node dependencies
         run: npm install --prefix scripts
-
-      - name: Build Rust workspace
-        if: ${{ inputs.refresh_compat }}
-        run: cargo build --all-features
 
       - name: Build documentation guides
         run: npm run build:docs --prefix scripts
@@ -100,7 +99,7 @@ jobs:
         uses: actions/configure-pages@v5
       
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: './docs'
       
