@@ -22,6 +22,8 @@ use citum_store::{StoreConfig, StoreResolver, platform_data_dir};
 use clap::builder::styling::{AnsiColor, Effects, Styles};
 use clap::{ArgAction, Args, CommandFactory, Parser, Subcommand, ValueEnum};
 use clap_complete::{Shell, generate};
+use comfy_table::presets::UTF8_FULL;
+use comfy_table::{Cell, Color, ContentArrangement, Table};
 #[cfg(feature = "schema")]
 use schemars::schema_for;
 use serde::Serialize;
@@ -810,8 +812,16 @@ fn run_bindings(args: BindingsArgs) -> Result<(), Box<dyn Error>> {
 fn run_styles_list() -> Result<(), Box<dyn Error>> {
     println!("Embedded (builtin) citation styles:");
     println!();
-    println!("  {:<10} {:<40} {:<30}", "Alias", "Title", "Full Name");
-    println!("  {}", "-".repeat(82));
+
+    let mut table = Table::new();
+    table
+        .load_preset(UTF8_FULL)
+        .set_content_arrangement(ContentArrangement::Dynamic)
+        .set_header(vec![
+            Cell::new("Alias").fg(Color::Cyan),
+            Cell::new("Title").fg(Color::Cyan),
+            Cell::new("Full Name").fg(Color::Cyan),
+        ]);
 
     for name in citum_schema::embedded::EMBEDDED_STYLE_NAMES {
         let style = citum_schema::embedded::get_embedded_style(name)
@@ -824,26 +834,16 @@ fn run_styles_list() -> Result<(), Box<dyn Error>> {
 
         let title = style.info.title.as_deref().unwrap_or("-");
 
-        println!("  {:<10} {:<40} {:<30}", alias, truncate(title, 38), name);
+        table.add_row(vec![Cell::new(alias), Cell::new(title), Cell::new(name)]);
     }
+
+    println!("{table}");
 
     println!();
     println!("Usage:");
     println!("  citum render refs -s <alias|name> -b refs.json");
     println!("  citum render doc <doc.dj> -s <alias|name> -b refs.json");
     Ok(())
-}
-
-/// Truncate `s` to at most `max_len` characters.
-///
-/// If `s` is longer than `max_len`, the returned string ends with `"..."`
-/// and has a total length of exactly `max_len`.
-fn truncate(s: &str, max_len: usize) -> String {
-    if s.len() <= max_len {
-        s.to_string()
-    } else {
-        format!("{}...", &s[..max_len - 3])
-    }
 }
 
 /// List all styles in the registry.
@@ -854,11 +854,18 @@ fn run_registry_list(format: &str) -> Result<(), Box<dyn Error>> {
         let json = serde_json::to_string_pretty(&registry)?;
         println!("{}", json);
     } else {
-        // Table format (default)
         println!("Style Registry:");
         println!();
-        println!("  {:<35} {:<30} {:<40}", "ID", "Aliases", "Description");
-        println!("  {}", "-".repeat(110));
+
+        let mut table = Table::new();
+        table
+            .load_preset(UTF8_FULL)
+            .set_content_arrangement(ContentArrangement::Dynamic)
+            .set_header(vec![
+                Cell::new("ID").fg(Color::Cyan),
+                Cell::new("Aliases").fg(Color::Cyan),
+                Cell::new("Description").fg(Color::Cyan),
+            ]);
 
         for entry in &registry.styles {
             let aliases = if entry.aliases.is_empty() {
@@ -868,13 +875,14 @@ fn run_registry_list(format: &str) -> Result<(), Box<dyn Error>> {
             };
             let description = entry.description.as_deref().unwrap_or("-");
 
-            println!(
-                "  {:<35} {:<30} {:<40}",
-                entry.id,
-                truncate(&aliases, 28),
-                truncate(description, 38)
-            );
+            table.add_row(vec![
+                Cell::new(&entry.id),
+                Cell::new(aliases),
+                Cell::new(description),
+            ]);
         }
+
+        println!("{table}");
         println!();
     }
 
@@ -3318,32 +3326,6 @@ mod tests {
     };
     use std::collections::HashMap;
     use std::time::{SystemTime, UNIX_EPOCH};
-
-    // ------------------------------------------------------------------
-    // truncate
-    // ------------------------------------------------------------------
-
-    #[test]
-    fn test_truncate_short_string_unchanged() {
-        assert_eq!(truncate("hello", 10), "hello");
-    }
-
-    #[test]
-    fn test_truncate_exact_length_unchanged() {
-        assert_eq!(truncate("hello", 5), "hello");
-    }
-
-    #[test]
-    fn test_truncate_long_string_ends_with_ellipsis() {
-        let result = truncate("hello world", 8);
-        assert_eq!(result, "hello...");
-        assert_eq!(result.len(), 8);
-    }
-
-    #[test]
-    fn test_truncate_empty_string() {
-        assert_eq!(truncate("", 5), "");
-    }
 
     // ------------------------------------------------------------------
     // OutputFormat Display
