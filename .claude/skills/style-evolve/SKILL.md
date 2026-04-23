@@ -47,6 +47,13 @@ Use `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md` for failure classification 
 
 - Compatibility fidelity regression is never allowed unless the task explicitly chooses a documented semantic divergence from legacy CSL behavior.
 - SQI is optimization-only after fidelity is stable.
+- Before editing a style, classify it by semantic class and implementation form
+  using the shared workflow docs and `docs/specs/STYLE_TAXONOMY.md`.
+- Profile-family work may require a `create` pass for a hidden family root
+  followed by `upgrade` reduction of the public handles.
+- Journal/profile reductions must choose parents from guide-backed authority,
+  not nearest CSL or template similarity.
+- Keep waves bounded to one family or one clearly related cohort per PR.
 - For styles with configured `benchmark_runs`, run `node scripts/report-core.js --style <name>` after the primary oracle pass and treat the rich-input results as official supplemental evidence.
 - All modes must pass `../style-qa/SKILL.md` before completion.
 - If docs or beans are changed: `./scripts/check-docs-beans-hygiene.sh` must pass.
