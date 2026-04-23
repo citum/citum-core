@@ -60,6 +60,7 @@ function parseArgs() {
     citationsFixture: null,
     forceMigrate: false,
     caseSensitive: true,
+    allFeatures: false,
     scope: 'both',
     migrate: {
       templateSource: null,
@@ -78,6 +79,8 @@ function parseArgs() {
       options.caseSensitive = true;
     } else if (arg === '--case-insensitive') {
       options.caseSensitive = false;
+    } else if (arg === '--all-features') {
+      options.allFeatures = true;
     } else if (arg === '--force-migrate') {
       options.forceMigrate = true;
     } else if (arg === '--refs-fixture') {
@@ -354,9 +357,9 @@ function renderWithCiteprocJs(stylePath, testItems, testCitations, options = {})
   return { citations, bibliography };
 }
 
-function buildMigrateCommand(absStylePath, migrateOptions = {}) {
+function buildMigrateCommand(absStylePath, migrateOptions = {}, allFeatures = false) {
   const parts = [
-    'cargo run -q --bin citum-migrate --',
+    'cargo run -q --bin citum-migrate' + (allFeatures ? ' --all-features' : '') + ' --',
     `"${absStylePath}"`,
   ];
 
@@ -505,7 +508,7 @@ function renderWithCitumProcessor(stylePath, refsData, testItems, testCitations,
       const absStylePath = path.resolve(stylePath);
       let migratedYaml;
       try {
-        const migrateCmd = buildMigrateCommand(absStylePath, migrateOptions);
+        const migrateCmd = buildMigrateCommand(absStylePath, migrateOptions, cliOptions.allFeatures);
         migratedYaml = execSync(
           migrateCmd,
           { cwd: projectRoot, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] }
@@ -521,7 +524,7 @@ function renderWithCitumProcessor(stylePath, refsData, testItems, testCitations,
     let output;
     try {
       const renderParts = [
-        'cargo run -q --bin citum -- render refs',
+        'cargo run -q --bin citum' + (cliOptions.allFeatures ? ' --all-features' : '') + ' -- render refs',
         `-b "${workspace.refsFile}"`,
         `-s "${citumStylePath}"`,
       ];
@@ -967,6 +970,7 @@ module.exports = {
   createOracleTempWorkspace,
   loadFixtures,
   normalizeFixtureItems,
+  parseArgs,
   parseCitumRenderOutput,
   refsDataForProcessor,
   renderWithCitumProcessor,

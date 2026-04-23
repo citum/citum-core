@@ -138,6 +138,7 @@ function parseArgs() {
     cacheDir: DEFAULT_REPORT_CACHE_DIR,
     citumBin: process.env.CITUM_BIN || null,
     caseSensitive: true,
+    allFeatures: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -184,6 +185,8 @@ function parseArgs() {
       options.caseSensitive = true;
     } else if (args[i] === '--case-insensitive') {
       options.caseSensitive = false;
+    } else if (args[i] === '--all-features') {
+      options.allFeatures = true;
     }
   }
 
@@ -256,7 +259,7 @@ function fixtureHash(refsFixture, citationsFixture) {
   return hash.digest('hex').slice(0, 16);
 }
 
-function resolveCitumBinary(explicitPath = null) {
+function resolveCitumBinary(explicitPath = null, allFeatures = false) {
   const cargoTargetDir = process.env.CARGO_TARGET_DIR
     ? path.resolve(process.env.CARGO_TARGET_DIR)
     : null;
@@ -275,7 +278,12 @@ function resolveCitumBinary(explicitPath = null) {
     }
   }
 
-  execFileSync('cargo', ['build', '-q', '--bin', 'citum'], {
+  const buildArgs = ['build', '-q', '--bin', 'citum', '--bin', 'citum-migrate'];
+  if (allFeatures) {
+    buildArgs.push('--all-features');
+  }
+
+  execFileSync('cargo', buildArgs, {
     cwd: PROJECT_ROOT,
     encoding: 'utf8',
     stdio: ['pipe', 'pipe', 'pipe'],
@@ -300,11 +308,12 @@ function createReportRuntime(options = {}) {
 
   return {
     allowLiveFallback: Boolean(options.allowLiveFallback),
+    allFeatures: Boolean(options.allFeatures),
     cacheDir,
     caseSensitive: options.caseSensitive !== false,
     timings: new Map(),
     stylesDir: options.stylesDir ? path.resolve(options.stylesDir) : null,
-    citumBin: resolveCitumBinary(options.citumBin),
+    citumBin: resolveCitumBinary(options.citumBin, options.allFeatures),
     recordTiming(kind, durationMs, cacheHit = false) {
       const bucket = this.timings.get(kind) || createTimerBucket();
       bucket.count += 1;
@@ -830,6 +839,9 @@ async function runCiteprocSnapshotOracle(runtime, stylePath, styleName, styleFor
         resolvedCitationsFixture,
         runtime.caseSensitive ? '--case-sensitive' : '--case-insensitive',
       ];
+      if (runtime.allFeatures) {
+        fastArgs.push('--all-features');
+      }
 
       if (snapshotStatus.ok) {
         const fast = await runNodeOracleScript(fastScript, fastArgs);
@@ -967,6 +979,9 @@ async function runCiteprocBenchmarkOracle(runtime, stylePath, styleName, benchma
         '--refs-fixture', resolvedRun.refsFixture,
         runtime.caseSensitive ? '--case-sensitive' : '--case-insensitive',
       ];
+      if (runtime.allFeatures) {
+        args.push('--all-features');
+      }
       if (resolvedRun.citationsFixture && resolvedRun.scope !== 'bibliography') {
         args.push('--citations-fixture', resolvedRun.citationsFixture);
       }
@@ -1187,13 +1202,17 @@ async function runFamilyFixtureOracle(runtime, stylePath, styleName, fixtureSetN
       caseSensitive: runtime.caseSensitive,
     },
     async compute() {
-      const result = await runNodeOracleScript(liveScript, [
+      const args = [
         stylePath,
         '--json',
         '--refs-fixture', refsFixture,
         '--citations-fixture', citationsFixture,
         runtime.caseSensitive ? '--case-sensitive' : '--case-insensitive',
-      ]);
+      ];
+      if (runtime.allFeatures) {
+        args.push('--all-features');
+      }
+      const result = await runNodeOracleScript(liveScript, args);
       if ((result.code === 0 || result.code === 1) && result.stdout.trim()) {
         try {
           return JSON.parse(result.stdout);

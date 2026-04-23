@@ -60,6 +60,7 @@ function parseArgs() {
     jsonOutput: false,
     verbose: false,
     caseSensitive: true,
+    allFeatures: false,
     refsFixture: DEFAULT_REFS_FIXTURE,
     citationsFixture: DEFAULT_CITATIONS_FIXTURE,
   };
@@ -69,6 +70,7 @@ function parseArgs() {
     else if (a === '--verbose') opts.verbose = true;
     else if (a === '--case-sensitive') opts.caseSensitive = true;
     else if (a === '--case-insensitive') opts.caseSensitive = false;
+    else if (a === '--all-features') opts.allFeatures = true;
     else if (a === '--refs-fixture') opts.refsFixture = path.resolve(args[++i]);
     else if (a === '--citations-fixture') opts.citationsFixture = path.resolve(args[++i]);
     else if (!a.startsWith('--') && !opts.stylePath) opts.stylePath = path.resolve(a);
@@ -242,7 +244,7 @@ function run() {
   const testCitations = JSON.parse(fs.readFileSync(opts.citationsFixture, 'utf8'));
 
   // 3. Render with Citum
-  const citum = renderWithCitumProcessor(opts.stylePath, refsData, testItems, testCitations);
+  const citum = renderWithCitumProcessor(opts.stylePath, refsData, testItems, testCitations, opts);
   if (!citum || citum.error) {
     const reason = citum?.error ?? 'Processor execution error';
     if (opts.jsonOutput) {
@@ -395,4 +397,11 @@ function run() {
   process.exitCode = results.citations.failed === 0 && results.bibliography.failed === 0 ? 0 : 1;
 }
 
-run();
+if (require.main === module) {
+  run();
+}
+
+module.exports = {
+  parseArgs,
+  run,
+};
