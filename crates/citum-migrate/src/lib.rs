@@ -18,6 +18,8 @@ pub mod fixups;
 /// Style metadata extraction.
 pub mod info_extractor;
 mod js_runtime;
+/// Migration-time lineage and wrapper classification.
+pub mod lineage;
 /// Options extraction from CSL 1.0.
 pub mod options_extractor;
 /// Multi-pass processing pipeline.

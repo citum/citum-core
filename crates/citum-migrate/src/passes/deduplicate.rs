@@ -184,7 +184,7 @@ pub fn list_signature(list: &citum_schema::template::TemplateGroup) -> String {
 /// Suppress duplicate issue in parent-monograph lists for article-journal types.
 pub fn suppress_duplicate_issue_for_journals(
     _components: &mut [TemplateComponent],
-    _style_preset: Option<crate::base_detector::StyleBase>,
+    _fixup_family: Option<crate::base_detector::FixupFamily>,
 ) {
     // Overrides-based suppression removed as component-level overrides are deprecated.
 }

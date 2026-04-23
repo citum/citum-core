@@ -14,6 +14,7 @@ use citum_migrate::{
         note_citation_template_is_underfit, scrub_inferred_literal_artifacts,
         should_merge_inferred_type_template,
     },
+    lineage::StyleLineage,
     options_extractor::MigrationOptions,
     provenance::ProvenanceTracker,
     template_resolver,
@@ -25,7 +26,7 @@ use citum_schema::{
 use csl_legacy::parser::parse_style;
 use roxmltree::Document;
 use std::fs;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Shorthand for the per-type template map used throughout the migration pipeline.
 type TypeTemplateMap = indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>;
@@ -191,18 +192,7 @@ fn resolve_style_name_and_templates(
         .unwrap_or("unknown")
         .to_string();
 
-    let workspace_root = {
-        let style_path = std::path::Path::new(path);
-        if style_path.is_absolute() {
-            style_path
-                .ancestors()
-                .find(|p| p.join("Cargo.toml").exists())
-                .unwrap_or(style_path.parent().unwrap_or(std::path::Path::new(".")))
-                .to_path_buf()
-        } else {
-            std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
-        }
-    };
+    let workspace_root = workspace_root_for_style_path(path);
 
     let resolved = template_resolver::resolve_templates(
         path,
@@ -215,6 +205,19 @@ fn resolve_style_name_and_templates(
     );
 
     (style_name, resolved)
+}
+
+fn workspace_root_for_style_path(path: &str) -> PathBuf {
+    let style_path = Path::new(path);
+    if style_path.is_absolute() {
+        style_path
+            .ancestors()
+            .find(|p| p.join("Cargo.toml").exists())
+            .unwrap_or(style_path.parent().unwrap_or(Path::new(".")))
+            .to_path_buf()
+    } else {
+        std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
+    }
 }
 
 fn extract_citation_collapse(citation: &csl_legacy::model::Citation) -> Option<CitationCollapse> {
@@ -316,8 +319,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize provenance tracking if debug variable is specified
     let enable_provenance = cli.debug_variable.is_some();
     let tracker = ProvenanceTracker::new(enable_provenance);
+    let workspace_root = workspace_root_for_style_path(path);
+    let lineage = StyleLineage::resolve(path, &workspace_root)?;
 
     eprintln!("Migrating {path} to Citum...");
+    eprintln!(
+        "Resolved lineage: semantic={:?}, form={:?}, parent={}",
+        lineage.semantic_class,
+        lineage.implementation_form,
+        lineage.parent_style_id.as_deref().unwrap_or("none")
+    );
 
     let text = fs::read_to_string(path)?;
     let doc = Document::parse(&text)?;
@@ -380,7 +391,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         resolve_citation_metadata(&resolved, &legacy_style, &options, &mut new_cit);
 
     // 5. Build Style in correct format for citum_engine
-    let style = build_final_style(
+    let standalone_style = build_final_style(
         &legacy_style,
         CompiledOutput {
             options,
@@ -398,6 +409,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             citation_ibid_override,
         },
     );
+    let style = lineage.apply_to_migrated_style(standalone_style)?;
 
     output_style_and_debug(&style, cli.debug_variable.as_deref(), &tracker)?;
     Ok(())

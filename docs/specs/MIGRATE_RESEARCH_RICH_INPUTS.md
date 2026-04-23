@@ -15,6 +15,9 @@ Required pass fields:
 - target style
 - target cluster
 - cluster selector
+- semantic class
+- implementation form
+- selected parent, if any
 - primary oracle before and after
 - official supplemental before and after
 - cluster before and after
@@ -40,12 +43,29 @@ Every pass must classify the chosen cluster before edits:
 - `processor-defect`
 - `intentional divergence`
 
+Every pass must also classify the target style on the taxonomy axes before edits:
+
+- semantic class: `base`, `profile`, `journal`, `independent`, or `unknown`
+- implementation form: `alias`, `config-wrapper`, `structural-wrapper`, `standalone`, or `unknown`
+
+Use `unknown` when the target cannot yet be resolved safely on that taxonomy
+axis; do not force an unresolved target into an incorrect bucket.
+
 Action routing:
 
 - `migration-artifact` stays in `migrate-research`
 - `style-defect` routes to `style-evolve upgrade`
 - `processor-defect` routes to engine follow-up
 - `intentional divergence` routes to adjudication
+
+Wrapper guardrails:
+
+- `profile + config-wrapper` work must preserve the config-wrapper contract
+- if a proposed migration fix would require local templates or local
+  `type-variants` in a profile target, reroute or escalate instead of breaking
+  the profile contract
+- `journal + structural-wrapper` is a valid endpoint and must not be
+  force-reduced to a thin wrapper
 
 If a migration-side change produces no delta in the reduced cluster and no delta
 in `report-core --style-file`, stop treating the cluster as migration-owned and

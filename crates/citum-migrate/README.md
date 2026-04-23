@@ -12,6 +12,12 @@ The migration pipeline is now output-driven first:
 
 This keeps option extraction deterministic while scaling template migration to large style corpora.
 
+When the target style is already known in the repo as a profile or journal
+wrapper, `citum-migrate` now derives that lineage from current repo truth and
+may emit `extends:`-based wrapper output instead of flattening everything into a
+standalone style. Unknown or unresolved styles still fall back to standalone
+output.
+
 ## CLI Usage
 
 ```bash
