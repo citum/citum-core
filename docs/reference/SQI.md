@@ -6,7 +6,7 @@ Use SQI to improve style maintainability only after fidelity is correct.
 
 ## Priority Order
 
-1. Fidelity (hard gate): output must match the citeproc-js oracle.
+1. Fidelity (hard gate): output must match the style's declared primary authority.
 2. SQI (secondary): choose cleaner, more robust style definitions when fidelity is comparable.
 
 Never accept an SQI gain that causes a fidelity regression.

@@ -17,6 +17,10 @@ The intended question was simple:
 
 The answer is yes on all three counts.
 
+The key qualification is that current citeproc parity is corroborating evidence,
+not the reason these styles qualify as profiles. Their validity comes from
+guide-backed family authority plus the `profile + config-wrapper` contract.
+
 ## Current Elsevier Family Shape
 
 The repo already contains dedicated hidden family roots and public thin wrappers
@@ -47,8 +51,9 @@ Authority basis:
 
 1. current Elsevier guide links embedded in the style metadata
 2. current family-root and wrapper YAML structure
-3. style-oracle and style-scoped report verification on the public handles
-4. shared-fixture parent-vs-wrapper diffs
+3. guide-backed `profile + config-wrapper` classification
+4. style-oracle and style-scoped report verification on the public handles
+5. shared-fixture parent-vs-wrapper diffs
 
 Operational classification:
 
@@ -71,9 +76,19 @@ Verification summary:
   while `elsevier-vancouver` changes label rendering relative to the family
   root
 
+These results show that the wrappers do not currently conflict with the legacy
+CSL comparison surface. They are supporting evidence only. The styles would
+still remain valid profiles if a future guide-backed scoped-option delta
+diverged from CSL, provided the wrapper contract and authority basis still
+held.
+
 ## Decision
 
 Keep the existing Elsevier family-root and wrapper YAML unchanged.
+
+Elsevier profiles are valid because they are guide-backed
+`profile + config-wrapper` wrappers over real family roots. Current citeproc
+parity supports that conclusion, but does not define it.
 
 The real repo gap was not missing Elsevier roots. It was that the shared
 workflow and host wrappers did not explicitly tell agents how to:
@@ -94,3 +109,15 @@ If a future family re-check shows that an Elsevier public handle needs more than
 scoped options and metadata, the correct action is to record the infrastructure
 constraint or author a different family base. It is not to silently treat copied
 structural YAML as authoritative.
+
+If a future guide-backed scoped-option delta diverges from CSL, that should
+trigger verification-policy follow-up rather than profile reclassification.
+
+## Follow-Up Spec
+
+The normative follow-up contract for documentary-primary profile verification
+now lives in [`docs/specs/PROFILE_DOCUMENTARY_VERIFICATION.md`](../specs/PROFILE_DOCUMENTARY_VERIFICATION.md).
+
+This PR does not yet implement documentary-primary comparator support in the
+verification tooling. It only corrects the branch framing so profile validity is
+not defined by citeproc parity.
