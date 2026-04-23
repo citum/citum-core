@@ -278,7 +278,7 @@ function resolveCitumBinary(explicitPath = null, allFeatures = false) {
     }
   }
 
-  const buildArgs = ['build', '-q', '--bin', 'citum', '--bin', 'citum-migrate'];
+  const buildArgs = ['build', '-q', '--bin', 'citum'];
   if (allFeatures) {
     buildArgs.push('--all-features');
   }
