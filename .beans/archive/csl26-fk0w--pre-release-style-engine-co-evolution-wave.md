@@ -1,11 +1,11 @@
 ---
 # csl26-fk0w
 title: Pre-release style + engine co-evolution wave
-status: done
+status: completed
 type: epic
 priority: normal
 created_at: 2026-03-16T10:34:43Z
-updated_at: 2026-03-27T20:14:04Z
+updated_at: 2026-04-24T12:13:54Z
 ---
 
 Track A: engine fixes for cross-portfolio gaps (volume-pages, DOI suppression, editor name-order). Track B: upgrade outlier styles (springer-physics-brackets, royal-society-of-chemistry, MLA). Track C: promote chicago-author-date from experimental. PR branch: style-evolve-pre-release-wave.

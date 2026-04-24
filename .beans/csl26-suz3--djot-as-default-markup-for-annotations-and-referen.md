@@ -5,7 +5,8 @@ status: in-progress
 type: feature
 priority: normal
 created_at: 2026-03-02T20:10:22Z
-updated_at: 2026-03-09T20:25:41Z
+updated_at: 2026-04-24T12:14:10Z
+parent: csl26-li63
 ---
 
 Implement djot inline markup support for annotation rendering and reference fields (note, abstract). Document math policy (Unicode-only) and title markup cases. See dplan output for full architecture.

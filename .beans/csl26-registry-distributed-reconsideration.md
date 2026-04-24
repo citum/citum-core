@@ -1,9 +1,14 @@
 ---
+# csl26
 title: Reconsider distributed registry architecture
-status: todo
+status: draft
+type: task
 priority: low
-tags: [registry, architecture]
+tags:
+    - registry
+    - architecture
 created_at: 2026-04-23T00:00:00Z
+updated_at: 2026-04-24T12:14:01Z
 ---
 
 # Objective
