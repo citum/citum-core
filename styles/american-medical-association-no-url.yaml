@@ -184,6 +184,31 @@ bibliography:
     - variable: publisher
     - number: pages
       prefix: '; 2006:'
+    dataset:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 3
+    - title: primary
+      prefix: ' '
+    - term: online
+      prefix: 'Published '
+      suffix: ' '
+    - date: issued
+      form: year
+    webpage:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 3
+    - title: primary
+      prefix: ' '
+    - date: issued
+      form: year
     patent:
     - contributor: author
       form: long
@@ -193,22 +218,18 @@ bibliography:
         use-first: 3
     - title: primary
       prefix: ' '
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: '; 2006:'
+    - delimiter: none
+      group:
+      - term: online
+        prefix: 'Published '
+        suffix: ' '
+      - date: issued
+        form: month-day
+      - date: issued
+        form: year
+        prefix: ', '
+    - variable: patent-number
+      prefix: ':'
   template:
   - contributor: author
     form: long

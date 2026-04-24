@@ -421,6 +421,27 @@
       "notes": "Diagnostic supplemental APA benchmark kept visible in reporting without contributing to the headline fidelity total."
     },
     {
+      "fixture": "tests/fixtures/test-items-library/ama-11th.json",
+      "domain": "scientific",
+      "kind": "references",
+      "reference_types": [
+        "broad Zotero AMA 11 bibliography corpus"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "AMA supplemental bibliography coverage",
+        "large-corpus ordering and missing-entry drift",
+        "style-evolve reduced-cluster targeting"
+      ],
+      "used_by": [
+        "scripts/report-core.js",
+        "scripts/extract-rich-benchmark-cluster.js",
+        "scripts/oracle.js"
+      ],
+      "ci_status": "required",
+      "notes": "Official supplemental AMA bibliography benchmark used by `american-medical-association` rich-input reporting."
+    },
+    {
       "fixture": "tests/fixtures/references-physics-numeric.json",
       "domain": "core",
       "kind": "references",
