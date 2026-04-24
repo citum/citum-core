@@ -5,7 +5,8 @@ status: todo
 type: feature
 priority: deferred
 created_at: 2026-03-05T15:22:41Z
-updated_at: 2026-03-05T15:24:42Z
+updated_at: 2026-04-24T12:14:10Z
+parent: csl26-li63
 ---
 
 Tentative conclusion from PR #285 analysis:

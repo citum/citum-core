@@ -1,11 +1,11 @@
 ---
 # csl26-zt6c
 title: 'Improve /beans next: dependency-aware ranking'
-status: done
+status: completed
 type: task
 priority: high
 created_at: 2026-03-06T13:47:09Z
-updated_at: 2026-03-06T13:50:10Z
+updated_at: 2026-04-24T12:13:54Z
 ---
 
 Improve the citum-bean next script and beans SKILL.md so /beans next can be trusted without manual override.

@@ -1,11 +1,11 @@
 ---
 # csl26-date
-title: 'Evaluate created vs issued dates for unpublished documents'
-status: todo
+title: Evaluate created vs issued dates for unpublished documents
+status: completed
 type: task
 priority: medium
 created_at: 2026-04-08T12:00:00Z
-updated_at: 2026-04-08T12:00:00Z
+updated_at: 2026-04-24T12:13:58Z
 ---
 
 # Evaluate `created` vs `issued` dates for unpublished documents
@@ -29,3 +29,5 @@ Adapters could decide: “when exporting Citum → CSL, map `created` or `publis
 
 ## Next Steps
 Evaluate whether `created` plus a small set of more specific date roles (`published`, `recorded`, etc.) fit cleanly into the rest of the current Citum date model, and consider proposing a schema migration to support these new date fields.
+
+## Summary of Changes\n\nEvaluation was completed and implemented: `created` + `issued` date fields added to all reference types with `csl_issued_date()` compat accessor. See date model implementation on main.
