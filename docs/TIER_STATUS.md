@@ -32,15 +32,17 @@
 **Strict 100% bibliography match (top 10):** 10/10 styles
 
 Current maintained portfolio status:
-- `node scripts/report-core.js` reports `147` styles at fidelity `1.0`.
+- `node scripts/report-core.js` reports `154` styles at fidelity `1.0`.
 - Case-aware scoring is now the default oracle mode.
 - `report-core` exposes `caseMismatchesOverall` and per-style `caseMismatches`.
 - `report-core` also exposes supplemental rich benchmark evidence for configured styles.
+- `american-medical-association` now publishes supplemental AMA 11 rich
+  bibliography evidence (`71/71`).
 - Title/text-case regressions across shipped core styles are reduced to `0`.
 - One remaining case-only mismatch (`american-mathematical-society-label`) is a
   citation-label acronym issue, not a title-rendering delta.
 - `node scripts/check-core-quality.js` passes against
-  `scripts/report-data/core-quality-baseline.json` with `warnings=0`.
+  `scripts/report-data/core-quality-baseline.json` with `warnings=5`.
 
 ## Style Family Breakdown
 

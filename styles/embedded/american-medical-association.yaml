@@ -66,6 +66,7 @@ bibliography:
         and-others: et-al
     - title: primary
     - title: parent-serial
+      form: short
     - delimiter: none
       group:
       - date: issued
@@ -75,6 +76,9 @@ bibliography:
       - number: issue
         wrap:
           punctuation: parentheses
+      - number: supplement-number
+        prefix: "(suppl "
+        suffix: ")"
       - number: pages
         prefix: ":"
     - variable: doi
@@ -138,6 +142,14 @@ bibliography:
     - date: issued
       form: year
       prefix: ", "
+    - date: accessed
+      form: month-day
+      prefix: "Accessed "
+    - date: accessed
+      form: year
+      prefix: ", "
+      suffix: ". "
+    - variable: url
     entry-encyclopedia:
     - contributor: author
       form: long
@@ -214,8 +226,19 @@ bibliography:
       form: long
       name-order: family-first
     - title: primary
+      text-case: title
+    - variable: publisher
+      suffix: "; "
     - date: issued
       form: year
+    - date: accessed
+      form: month-day
+      prefix: "Accessed "
+    - date: accessed
+      form: year
+      prefix: ", "
+      suffix: ". "
+    - variable: url
     broadcast:
     - contributor: author
       form: long
@@ -234,6 +257,14 @@ bibliography:
         prefix: ", "
       - variable: number
         prefix: ":"
+    - date: accessed
+      form: month-day
+      prefix: "Accessed "
+    - date: accessed
+      form: year
+      prefix: ", "
+      suffix: ". "
+    - variable: url
     [interview, personal-communication]:
     - contributor: author
       form: long

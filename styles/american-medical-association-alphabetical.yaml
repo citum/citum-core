@@ -202,24 +202,18 @@ bibliography:
         use-first: 3
     - title: primary
       prefix: ' '
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher
-    - number: pages
-      prefix: '. 2013:'
-    - variable: doi
-    - variable: url
+    - delimiter: none
+      group:
+      - term: online
+        prefix: 'Published '
+        suffix: ' '
+      - date: issued
+        form: month-day
+      - date: issued
+        form: year
+        prefix: ', '
+    - variable: patent-number
+      prefix: ':'
   template:
   - contributor: author
     form: long

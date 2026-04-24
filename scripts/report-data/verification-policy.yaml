@@ -131,6 +131,16 @@ styles:
         refs_fixture: tests/fixtures/test-items-library/apa-test.json
         scope: bibliography
         count_toward_fidelity: false
+  american-medical-association:
+    secondary:
+      - biblatex
+    benchmark_runs:
+      - id: ama-zotero-bibliography
+        label: AMA Zotero bibliography
+        runner: citeproc-oracle
+        refs_fixture: tests/fixtures/test-items-library/ama-11th.json
+        scope: bibliography
+        count_toward_fidelity: false
   ieee:
     secondary:
       - biblatex
