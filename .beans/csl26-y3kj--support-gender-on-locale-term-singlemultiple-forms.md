@@ -1,11 +1,11 @@
 ---
 # csl26-y3kj
 title: Add MaybeGendered<T> to locale term model
-status: todo
+status: in-progress
 type: feature
 priority: low
 created_at: 2026-03-09T22:28:26Z
-updated_at: 2026-04-24T12:14:09Z
+updated_at: 2026-04-25T00:00:00Z
 parent: csl26-li63
 ---
 
@@ -31,10 +31,17 @@ See `docs/specs/GENDERED_LOCALE_TERMS.md`
 ## Todos
 
 - [x] Create spec doc (docs/specs/GENDERED_LOCALE_TERMS.md)
-- [ ] Add `MaybeGendered<T>` and `TermGender` to citum-schema locale types
-- [ ] Change `SimpleTerm.long/short` to `MaybeGendered<String>`
-- [ ] Change `SingularPlural.singular/plural` to `MaybeGendered<String>`
-- [ ] Add `Gendered` variant to `RawTermValue` for YAML deserialization
-- [ ] Update `Locale::role_term`, `locator_term`, `general_term` to accept `Option<TermGender>`
-- [ ] Pass gender context through engine term rendering
+- [x] Add `MaybeGendered<T>` and `GrammaticalGender` to citum-schema locale types
+- [x] Change `SimpleTerm.long/short` to `MaybeGendered<String>`
+- [x] Change `SingularPlural.singular/plural` to `MaybeGendered<String>`
+- [x] Add gendered raw term parsing for YAML deserialization
+- [x] Update `Locale::role_term`, `locator_term`, `general_term` to accept `Option<GrammaticalGender>`
+- [x] Pass gender context through engine term rendering for legacy term-map lookup
 - [ ] Snapshot tests: French gendered editor, Arabic gendered ordinal
+
+## Notes
+
+The `MaybeGendered<T>` term-map model is live. This bean no longer tracks
+MessageFormat 2 role-label migration; that is split to `csl26-vm2g`, which must
+add `$gender` plumbing and multi-selector `.match` support before gendered role
+labels can move from `roles:` to `messages:`.

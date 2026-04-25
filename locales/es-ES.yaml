@@ -215,3 +215,97 @@ terms:
     long: et al.
   "no date":
     long: s. f.
+
+messages:
+  # Locator labels
+  term.page-label: |
+    .match {$count :plural}
+    when one {p.}
+    when * {pp.}
+  term.page-label-long: |
+    .match {$count :plural}
+    when one {página}
+    when * {páginas}
+  term.chapter-label: |
+    .match {$count :plural}
+    when one {cap.}
+    when * {caps.}
+  term.chapter-label-long: |
+    .match {$count :plural}
+    when one {capítulo}
+    when * {capítulos}
+  term.volume-label: |
+    .match {$count :plural}
+    when one {vol.}
+    when * {vols.}
+  term.volume-label-long: |
+    .match {$count :plural}
+    when one {volumen}
+    when * {volúmenes}
+  term.section-label: |
+    .match {$count :plural}
+    when one {§}
+    when * {§§}
+  term.section-label-long: |
+    .match {$count :plural}
+    when one {sección}
+    when * {secciones}
+  # Issue locator labels (n.º / n.os, número / números) live in the
+  # `locators:` map above — Locale::locator_message_id does not yet route
+  # LocatorType::Issue through MF2.
+  # Conjunctions and connectors
+  term.and: "y"
+  term.and-symbol: "&"
+  term.et-al: "et al."
+  term.and-others: "y otros"
+  # Date and access terms
+  term.accessed: "consultado"
+  term.retrieved: "recuperado"
+  term.no-date: "s. f."
+  term.no-date-long: "sin fecha"
+  term.forthcoming: "en prensa"
+  term.circa: "ca."
+  term.circa-long: "hacia"
+  # Role labels: omitted intentionally for Spanish in this branch.
+  #
+  # MaybeGendered<T> is live in the `roles:` map above, but the current MF2
+  # dispatch path passes `$count` only and the custom evaluator supports one
+  # selector per `.match`. Adding `role.editor.label` / `role.translator.label`
+  # here would bypass the gender-aware `roles:` fallback before MF2 can express
+  # the full gender x plural matrix.
+  #
+  # Revisit when the gender-aware MF2 follow-up adds `$gender` plumbing and
+  # multi-selector `.match` support.
+  # Compositional patterns
+  pattern.page-range: "{$start}–{$end}"
+  pattern.retrieved-from: "recuperado de {$url}"
+  pattern.available-at: "disponible en {$url}"
+  date.open-ended: "presente"
+
+date-formats:
+  numeric-short: "d/M/yyyy"
+  textual-long: "MMMM yyyy"
+  textual-full: "d 'de' MMMM 'de' yyyy"
+  bib-default: "d 'de' MMMM 'de' yyyy"
+  year-only: "yyyy"
+  iso: "yyyy-MM-dd"
+
+grammar-options:
+  punctuation-in-quote: false
+  nbsp-before-colon: false
+  open-quote: "«"
+  close-quote: "»"
+  open-inner-quote: "“"
+  close-inner-quote: "”"
+  serial-comma: false
+  page-range-delimiter: "–"
+
+legacy-term-aliases:
+  page: term.page-label
+  pages: term.page-label
+  et_al: term.et-al
+  and: term.and
+  accessed: term.accessed
+  retrieved: term.retrieved
+  no_date: term.no-date
+  "no date": term.no-date
