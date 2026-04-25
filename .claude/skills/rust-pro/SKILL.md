@@ -98,6 +98,22 @@ Expert Rust developer mastering Rust 1.75+ features, advanced type system usage,
 - Include performance deltas in commit messages for optimization work
 - See CLAUDE.md "Verification Requirements" for full policy
 
+**Project-Specific String Ownership Review:**
+- Raw `.to_string()` counts are not quality metrics. Review categorized
+  production and hot-path findings instead.
+- Prefer borrowed `&str` values for lookups, comparisons, parser decisions, and
+  short-lived branching.
+- Allocate `String` values at real ownership boundaries: serde/schema data,
+  FFI, stored model fields, and returned rendered output.
+- Do not allocate short strings only to satisfy a comparison API, especially in
+  citation rendering, bibliography processing, name/date formatting, locale
+  lookup, or substitution logic.
+- Use `python3 scripts/audit-rust-review-smells.py --changed` during Rust PR
+  work and treat findings as advisory prompts for review, not automatic rewrite
+  instructions.
+- Do not perform broad hot-path allocation cleanup without before/after
+  benchmarks and a clear behavioral no-op argument.
+
 ### Unsafe Code & FFI
 - Safe abstractions over unsafe code
 - Foreign Function Interface (FFI) with C libraries

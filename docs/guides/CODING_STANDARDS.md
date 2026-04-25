@@ -34,6 +34,59 @@ fn given_a_multilingual_author_when_rendering_a_citation_then_family_name_is_use
 ) { … }
 ```
 
+## Test Independence
+
+Tests must prove the behavior from an independent source, not mirror the current
+implementation output.
+
+- For behavior fixes, the test should fail against the old behavior unless the
+  PR documents why the old behavior cannot be reproduced locally.
+- Prefer expected values from literals, fixtures, oracle output, specs, or
+  registered divergence decisions. Do not derive `expected` from `actual`,
+  `result`, `rendered`, or other values produced by the code under test.
+- Avoid weakening exact output checks to substring checks just to make a test
+  pass. Use `contains` assertions only when the behavior is intentionally
+  partial, order-insensitive, or format-agnostic, and make that scope clear in
+  the test name or setup.
+- Fixture changes must explain the missing shape they add. When fixture data
+  changes expected behavior, pair it with the smallest Rust or oracle check that
+  exercises the new shape.
+- Ignored tests need a reason and a tracking path. Do not leave `#[ignore]`
+  as an unreviewed way to keep the suite green.
+
+Use the advisory review-smell audit before opening PRs that touch Rust tests:
+
+```bash
+python3 scripts/audit-rust-review-smells.py --changed
+```
+
+## String Ownership
+
+Owned strings are normal at data model, serialization, FFI, and output
+boundaries. They are suspicious when allocated only for lookup, comparison, or
+short-lived formatting inside production paths.
+
+- Prefer borrowed `&str` values for lookups, comparisons, and parser decisions.
+  For example, avoid allocating a short `String` only to call `contains`.
+- Allocate when constructing owned schema/data values, crossing FFI or serde
+  boundaries, returning owned rendered output, or storing values beyond the
+  borrowed input lifetime.
+- Treat raw `.to_string()` counts as a triage signal only. Review categorized
+  findings by path kind, especially `hot-path` production findings.
+- Do not enable broad noisy Clippy restriction lints as hard failures without a
+  baseline pass. Use them to inform targeted review.
+- Hot-path allocation reductions are performance work: run before/after
+  benchmarks and report the deltas when changing citation rendering,
+  bibliography processing, style parsing, name formatting, date formatting, or
+  substitution logic.
+
+Use the advisory audit to find suspicious patterns:
+
+```bash
+python3 scripts/audit-rust-review-smells.py --all
+python3 scripts/audit-rust-review-smells.py --all --json
+```
+
 ## Serde Attributes Checklist
 
 - Use `#[serde(rename_all = "kebab-case")]` for YAML/JSON compatibility

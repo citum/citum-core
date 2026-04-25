@@ -24,6 +24,22 @@ always one of two things:
 
 Use the audit script and this checklist before declaring something tested.
 
+## Anti-overfitting rule
+
+Passing tests are not enough. A new or changed test must make an independent
+claim about behavior:
+
+- Prefer expected values from a fixture, citeproc oracle output, a spec, a
+  registered divergence, or a literal behavior contract.
+- Do not derive `expected` from `actual`, `result`, `rendered`, or other output
+  produced by the code under test.
+- For behavior fixes, confirm the test would fail on the old behavior when
+  practical. If that is not practical, say why in the PR or final report.
+- Avoid changing exact assertions into `contains` assertions unless the behavior
+  is intentionally partial, order-insensitive, or format-agnostic.
+- If a fixture changes, state which missing shape it adds and which scenario
+  exercises that shape.
+
 ## Test Style
 
 Before writing a test, pick the right style (full rule in
@@ -44,6 +60,7 @@ single-scenario integration tests.
 ```bash
 python scripts/audit-coverage.py          # text report
 python scripts/audit-coverage.py --json   # machine-readable
+python3 scripts/audit-rust-review-smells.py --changed
 ```
 
 ## Pre-test checklist
@@ -56,15 +73,22 @@ Before implementing or claiming a feature is tested, answer these questions:
 - [ ] Does the fixture have an item with those fields populated?
 - [ ] If testing citation rendering: does `citations-expanded.json` reference
       an item of the relevant type?
+- [ ] What independent source defines the expected result: fixture, oracle,
+      spec, divergence register, or literal behavior contract?
 - [ ] Run `cargo nextest run` — do the tests actually exercise the path?
 
 ## Post-test checklist
 
 After writing tests:
 
+- [ ] Would the test fail against the old behavior, or is the exception
+      documented?
+- [ ] Are expected values independent of the actual output under test?
 - [ ] Did you add fixture items if shapes were missing?
 - [ ] Did you add citation scenarios if types were missing from
       `citations-expanded.json`?
+- [ ] Did `python3 scripts/audit-rust-review-smells.py --changed` produce only
+      reviewed advisory findings?
 - [ ] Does `cargo nextest run` pass cleanly?
 - [ ] If the feature touches oracle-level behavior: run
       `./scripts/workflow-test.sh styles-legacy/apa.csl` to sanity-check
