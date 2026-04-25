@@ -13,37 +13,31 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use std::collections::HashMap;
 use std::env;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 use walkdir::WalkDir;
 
-#[allow(
-    clippy::too_many_lines,
-    reason = "test functions naturally exceed 100 lines"
-)]
-fn main() {
-    let args: Vec<String> = env::args().collect();
+struct CliArgs {
+    styles_dir: String,
+    verbose: bool,
+    json_output: bool,
+    sample_size: Option<usize>,
+}
 
-    if args.len() < 2 {
-        eprintln!("Usage: citum_batch_test <styles_dir> [--verbose] [--sample N]");
-        eprintln!();
-        eprintln!("Options:");
-        eprintln!("  --verbose    Show individual style results");
-        eprintln!("  --sample N   Only test N random styles");
-        eprintln!("  --json       Output as JSON");
-        std::process::exit(1);
+fn parse_cli(args: &[String]) -> CliArgs {
+    CliArgs {
+        styles_dir: args[1].clone(),
+        verbose: args.iter().any(|a| a == "--verbose"),
+        json_output: args.iter().any(|a| a == "--json"),
+        sample_size: args
+            .iter()
+            .position(|a| a == "--sample")
+            .and_then(|i| args.get(i + 1))
+            .and_then(|s| s.parse().ok()),
     }
+}
 
-    let styles_dir = &args[1];
-    let verbose = args.contains(&"--verbose".to_string());
-    let json_output = args.contains(&"--json".to_string());
-    let sample_size: Option<usize> = args
-        .iter()
-        .position(|a| a == "--sample")
-        .and_then(|i| args.get(i + 1))
-        .and_then(|s| s.parse().ok());
-
-    // Collect all .csl files
+fn collect_styles(styles_dir: &str, sample_size: Option<usize>) -> Vec<PathBuf> {
     let mut styles: Vec<_> = WalkDir::new(styles_dir)
         .into_iter()
         .filter_map(std::result::Result::ok)
@@ -51,12 +45,9 @@ fn main() {
         .map(|e| e.path().to_path_buf())
         .collect();
 
-    // Sample if requested
     if let Some(n) = sample_size {
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
-
-        // Deterministic shuffle based on filename hash
         styles.sort_by(|a, b| {
             let mut ha = DefaultHasher::new();
             let mut hb = DefaultHasher::new();
@@ -67,6 +58,11 @@ fn main() {
         styles.truncate(n);
     }
 
+    styles
+}
+
+fn run_batch(cli: CliArgs) {
+    let styles = collect_styles(&cli.styles_dir, cli.sample_size);
     let total = styles.len();
     let mut results = BatchResults::default();
 
@@ -79,7 +75,7 @@ fn main() {
         match &result {
             TestResult::Success => {
                 results.migration_success += 1;
-                if verbose {
+                if cli.verbose {
                     eprintln!("[{}/{}] ✅ {}", i + 1, total, name);
                 }
             }
@@ -89,7 +85,7 @@ fn main() {
                     .migration_errors
                     .entry(categorize_error(err))
                     .or_insert(0) += 1;
-                if verbose {
+                if cli.verbose {
                     eprintln!(
                         "[{}/{}] ❌ {} - Migration: {}",
                         i + 1,
@@ -105,7 +101,7 @@ fn main() {
                     .processor_errors
                     .entry(categorize_error(err))
                     .or_insert(0) += 1;
-                if verbose {
+                if cli.verbose {
                     eprintln!(
                         "[{}/{}] ⚠️  {} - Processor: {}",
                         i + 1,
@@ -121,7 +117,7 @@ fn main() {
                     .yaml_errors
                     .entry(categorize_error(err))
                     .or_insert(0) += 1;
-                if verbose {
+                if cli.verbose {
                     eprintln!(
                         "[{}/{}] ❌ {} - Invalid YAML: {}",
                         i + 1,
@@ -133,19 +129,32 @@ fn main() {
             }
         }
 
-        // Progress indicator every 100 styles
-        if !verbose && (i + 1) % 100 == 0 {
+        if !cli.verbose && (i + 1) % 100 == 0 {
             eprintln!("  Processed {}/{}", i + 1, total);
         }
     }
 
     results.total = total;
 
-    if json_output {
+    if cli.json_output {
         println!("{}", serde_json::to_string_pretty(&results).unwrap());
     } else {
         print_results(&results);
     }
+}
+
+fn main() {
+    let args: Vec<String> = env::args().collect();
+    if args.len() < 2 {
+        eprintln!("Usage: citum_batch_test <styles_dir> [--verbose] [--sample N]");
+        eprintln!();
+        eprintln!("Options:");
+        eprintln!("  --verbose    Show individual style results");
+        eprintln!("  --sample N   Only test N random styles");
+        eprintln!("  --json       Output as JSON");
+        std::process::exit(1);
+    }
+    run_batch(parse_cli(&args));
 }
 
 #[derive(Default, serde::Serialize)]
