@@ -4,8 +4,11 @@ title: wire Style.version to schema validation in citum check
 status: todo
 type: feature
 priority: normal
+tags:
+    - schema
+    - cli
 created_at: 2026-02-24T17:28:12Z
-updated_at: 2026-04-24T12:14:43Z
+updated_at: 2026-04-25T20:20:06Z
 parent: csl26-li63
 ---
 

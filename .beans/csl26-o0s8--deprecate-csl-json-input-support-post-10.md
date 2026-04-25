@@ -4,8 +4,11 @@ title: Deprecate CSL-JSON input support (post-1.0)
 status: todo
 type: task
 priority: deferred
+tags:
+    - migrate
+    - cli
 created_at: 2026-03-28T14:40:08Z
-updated_at: 2026-03-28T14:40:08Z
+updated_at: 2026-04-25T20:20:07Z
 ---
 
 Post-1.0 cleanup: remove CSL-JSON as a first-class input format.

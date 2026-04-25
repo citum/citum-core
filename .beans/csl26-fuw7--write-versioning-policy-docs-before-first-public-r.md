@@ -4,8 +4,11 @@ title: write versioning policy docs before first public release
 status: todo
 type: task
 priority: deferred
+tags:
+    - policy
+    - dx
 created_at: 2026-02-24T17:28:17Z
-updated_at: 2026-04-24T12:14:43Z
+updated_at: 2026-04-25T20:20:08Z
 parent: csl26-li63
 blocked_by:
     - csl26-yipx

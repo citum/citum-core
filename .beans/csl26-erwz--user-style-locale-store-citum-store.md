@@ -4,8 +4,10 @@ title: User style & locale store (citum_store)
 status: todo
 type: epic
 priority: normal
+tags:
+    - cli
 created_at: 2026-03-04T18:11:14Z
-updated_at: 2026-03-04T18:20:34Z
+updated_at: 2026-04-25T20:20:07Z
 parent: csl26-li63
 ---
 

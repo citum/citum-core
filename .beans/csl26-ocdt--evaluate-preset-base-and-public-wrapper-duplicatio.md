@@ -4,8 +4,11 @@ title: evaluate preset-base and public-wrapper duplication across embedded style
 status: todo
 type: task
 priority: normal
+tags:
+    - style
+    - research
 created_at: 2026-04-10T17:36:49Z
-updated_at: 2026-04-10T17:37:00Z
+updated_at: 2026-04-25T20:20:07Z
 ---
 
 Evaluate whether Citum's current split between:

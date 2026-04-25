@@ -7,8 +7,10 @@ priority: low
 tags:
     - registry
     - architecture
+    - style
+    - research
 created_at: 2026-04-23T00:00:00Z
-updated_at: 2026-04-24T12:14:01Z
+updated_at: 2026-04-25T20:20:08Z
 ---
 
 # Objective

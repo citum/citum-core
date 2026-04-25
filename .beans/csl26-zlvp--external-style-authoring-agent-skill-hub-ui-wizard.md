@@ -4,8 +4,11 @@ title: 'External style authoring: agent skill + hub UI wizard'
 status: todo
 type: feature
 priority: deferred
+tags:
+    - style
+    - dx
 created_at: 2026-03-16T20:11:54Z
-updated_at: 2026-03-16T20:13:01Z
+updated_at: 2026-04-25T20:20:07Z
 blocked_by:
     - csl26-fuw7
 ---

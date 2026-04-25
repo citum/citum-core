@@ -5,43 +5,39 @@ status: todo
 type: milestone
 priority: normal
 created_at: 2026-02-07T07:40:14Z
-updated_at: 2026-04-25T10:57:30Z
+updated_at: 2026-04-25T20:24:48Z
 ---
 
-Tooling, testing infrastructure, documentation, and performance
-optimization for the first public release.
+Tracks remaining blockers for citum-core 1.0. Excludes web-platform
+work (citum-hub) and bindings (citum-labs).
 
-## Acceptance criteria
+## Acceptance Criteria
 
-The release goes out when each line below is checked. This list is the
-working definition of "production ready" for citum-core; it intentionally
-excludes web-platform work (citum-hub) and bindings (citum-labs).
+### Schema (land in sequence — freeze after all checked)
+
+- [ ] `RichText` type for `note`/`abstract` (csl26-suz3, in-progress) — step 1
+- [ ] Gender-aware MF2 role labels + multi-selector `.match` (csl26-vm2g) — step 2, with mlc2
+- [ ] Locale-backed archive hierarchy labels (csl26-mlc2) — step 2, blocked by csl26-y3kj
+- [ ] Dedicated part/supplement/printing-number fields (csl26-7edf) — step 3
+- [ ] `Style.version` wired to schema validation (csl26-yipx) — step 4, co-land with csl26-fuw7
+- [ ] `Place` type unification: archive vs publisher (csl26-iphj) — deferred, candidate for 1.1
+
+### Other blockers
+
+- [ ] Versioning policy doc (csl26-fuw7) — co-land with csl26-yipx
+- [ ] MaybeGendered snapshot tests (csl26-y3kj) — core model live; tests only
+- [ ] User style + locale store format config (csl26-erwz)
+- [ ] Style-structure lint hard-fail rollout (csl26-egzd)
+
+### Done
 
 - [x] JSON schema generation for references, citations, locales (csl26-n79w)
 - [x] Core vs. Community Style Split (csl26-tb4i)
 - [x] Server mode evaluation (csl26-kpv4)
-- [ ] Versioning policy doc committed before first public release (csl26-fuw7)
-- [ ] Style.version wired to schema validation in `citum check` (csl26-yipx)
-- [ ] Style-structure lint hard-fail rollout (csl26-egzd)
-- [ ] Dedicated part / supplement / printing number fields (csl26-7edf)
-- [ ] User style + locale store (citum_store) — csl26-erwz
-- [ ] Djot as default markup for annotations / reference fields (csl26-suz3, in-progress)
-- [ ] MaybeGendered<T> on locale terms (csl26-y3kj) — core model is live;
-      gender-aware MF2 role-label migration remains follow-up work
-- [ ] Gender-aware MF2 role labels with multi-selector `.match` support
-      (csl26-vm2g)
-- [ ] Locale-backed archive hierarchy labels (csl26-mlc2)
 
-## Strategic pointers
+## Strategic Pointers
 
 - Roadmap and phase sequencing: [docs/architecture/ROADMAP.md](../docs/architecture/ROADMAP.md)
 - Live style fidelity: [docs/TIER_STATUS.md](../docs/TIER_STATUS.md)
 - Portfolio gate: `scripts/report-data/core-quality-baseline.json`
 - Locale authoring (MF2): [docs/guides/AUTHORING_LOCALES.md](../docs/guides/AUTHORING_LOCALES.md)
-
-## Notes
-
-- The bean body was refreshed 2026-04-25 from a one-liner to the structured
-  status above. Children list is authoritative — this body summarises but
-  doesn't add new scope. Update the checkboxes when child beans land,
-  not the prose.

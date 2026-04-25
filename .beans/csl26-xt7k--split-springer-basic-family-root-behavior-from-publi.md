@@ -8,8 +8,9 @@ tags:
     - styles
     - taxonomy
     - springer
+    - style
 created_at: 2026-04-21T13:32:00Z
-updated_at: 2026-04-21T15:35:00Z
+updated_at: 2026-04-25T20:20:07Z
 ---
 
 `csl26-nrkn` confirmed that `springer-basic-brackets` has real parentage to

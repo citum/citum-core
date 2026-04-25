@@ -4,8 +4,10 @@ title: Typst Citation Interactivity Follow-up
 status: todo
 type: research
 priority: normal
+tags:
+    - research
 created_at: 2026-03-01T15:12:10Z
-updated_at: 2026-03-01T15:12:10Z
+updated_at: 2026-04-25T20:20:07Z
 blocking:
     - csl26-93yh
 ---

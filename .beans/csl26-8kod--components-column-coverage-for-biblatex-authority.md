@@ -3,8 +3,12 @@
 title: Components column coverage for biblatex-authority styles
 status: todo
 type: task
+priority: normal
+tags:
+    - testing
+    - migrate
 created_at: 2026-03-07T19:25:01Z
-updated_at: 2026-03-07T19:25:01Z
+updated_at: 2026-04-25T20:20:07Z
 ---
 
 The five compound-numeric styles (numeric-comp, chem-acs, angewandte-chemie, chem-rsc, chem-biochem) use biblatex as their benchmark authority. The biblatex oracle in report-core.js builds entries as { expected, actual, match } with no component-level breakdown, so computeComponentMatchRate() always returns null and the Components column in compat.html is empty for these styles.
