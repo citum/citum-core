@@ -4,8 +4,11 @@ title: Rename style files to short-name + edition convention
 status: todo
 type: task
 priority: normal
+tags:
+    - style
+    - infra
 created_at: 2026-03-17T11:11:49Z
-updated_at: 2026-03-17T11:12:12Z
+updated_at: 2026-04-25T20:20:07Z
 blocked_by:
     - csl26-fsjy
 ---

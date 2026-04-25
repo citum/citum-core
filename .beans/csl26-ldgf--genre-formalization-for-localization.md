@@ -4,8 +4,10 @@ title: Genre formalization for localization
 status: draft
 type: feature
 priority: normal
+tags:
+    - policy
 created_at: 2026-03-29T10:41:12Z
-updated_at: 2026-03-29T17:32:00Z
+updated_at: 2026-04-25T20:20:08Z
 ---
 
 The genre field is currently Option<String>, which cannot be localized. Formalize genre as an enum with locale-keyed labels so styles can render material-type descriptors (letter, photograph, etc.) in the target locale. Cross-cutting: affects all reference types. Triggered by archival spec review (csl26-jgt4).

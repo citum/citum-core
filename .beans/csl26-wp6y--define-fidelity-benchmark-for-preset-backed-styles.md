@@ -4,8 +4,11 @@ title: Define policy and guardrails for preset-backed styles with local override
 status: todo
 type: task
 priority: normal
+tags:
+    - policy
+    - style
 created_at: 2026-03-18T19:57:26Z
-updated_at: 2026-03-18T23:05:00Z
+updated_at: 2026-04-25T20:20:07Z
 ---
 
 We need a follow-up policy decision for how preset-backed styles should be authored, interpreted, and benchmarked once a style file references a style preset and then overrides some fields locally.

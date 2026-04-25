@@ -4,8 +4,10 @@ title: Swap mf2_parser for ICU4X icu_message_format when stable
 status: todo
 type: task
 priority: deferred
+tags:
+    - locale
 created_at: 2026-03-22T12:45:31Z
-updated_at: 2026-04-25T00:00:00Z
+updated_at: 2026-04-25T20:20:06Z
 ---
 
 The current Mf2MessageEvaluator in crates/citum-schema-style/src/locale/message.rs is a

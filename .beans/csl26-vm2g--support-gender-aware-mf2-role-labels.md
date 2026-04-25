@@ -4,8 +4,11 @@ title: Support gender-aware MF2 role labels
 status: todo
 type: feature
 priority: normal
+tags:
+    - schema
+    - locale
 created_at: 2026-04-25T00:00:00Z
-updated_at: 2026-04-25T00:00:00Z
+updated_at: 2026-04-25T20:20:06Z
 parent: csl26-li63
 ---
 

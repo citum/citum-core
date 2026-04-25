@@ -8,8 +8,10 @@ tags:
     - styles
     - performance
     - build
+    - infra
+    - research
 created_at: 2026-04-21T17:10:10Z
-updated_at: 2026-04-21T17:10:10Z
+updated_at: 2026-04-25T20:20:07Z
 ---
 
 Assess converting embedded builtin style assets from YAML source files to build-generated CBOR blobs for runtime embedding.

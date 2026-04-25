@@ -4,8 +4,10 @@ title: Document template inferrer in RENDERING_WORKFLOW.md
 status: todo
 type: task
 priority: low
+tags:
+    - dx
 created_at: 2026-02-08T06:29:15Z
-updated_at: 2026-02-08T06:29:15Z
+updated_at: 2026-04-25T20:20:08Z
 ---
 
 Add usage docs for scripts/infer-template.js and scripts/lib/template-inferrer.js to docs/guides/RENDERING_WORKFLOW.md. Cover CLI flags (--section, --json, --verbose), example commands, and how it fits into the hybrid migration strategy.

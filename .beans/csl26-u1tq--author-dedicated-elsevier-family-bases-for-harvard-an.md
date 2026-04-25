@@ -5,11 +5,12 @@ status: todo
 type: task
 priority: normal
 tags:
+    - bases
+    - style
     - styles
     - taxonomy
-    - bases
 created_at: 2026-04-21T13:30:00Z
-updated_at: 2026-04-21T13:30:00Z
+updated_at: 2026-04-25T20:20:07Z
 ---
 
 `csl26-nrkn` confirmed that `elsevier-harvard` and `elsevier-vancouver` are

@@ -4,8 +4,11 @@ title: Design locale-backed archive hierarchy labels
 status: todo
 type: feature
 priority: normal
+tags:
+    - schema
+    - locale
 created_at: 2026-04-23T15:08:48Z
-updated_at: 2026-04-24T12:14:13Z
+updated_at: 2026-04-25T20:20:06Z
 parent: csl26-li63
 blocked_by:
     - csl26-y3kj

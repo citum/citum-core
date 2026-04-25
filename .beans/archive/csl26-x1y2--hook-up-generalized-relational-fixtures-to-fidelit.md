@@ -4,8 +4,10 @@ title: Hook up generalized relational fixtures to fidelity reporting
 status: todo
 type: task
 priority: normal
+tags:
+    - testing
 created_at: 2026-04-01T15:00:00Z
-updated_at: 2026-04-02T00:23:32Z
+updated_at: 2026-04-25T20:20:07Z
 ---
 
 Following the implementation of the generalized relational container model (PR #485 / v0.20.0) and the numbering cleanup, the fidelity pipeline now needs richer benchmark inputs that exercise the new relational model instead of relying only on the older flat fixtures.

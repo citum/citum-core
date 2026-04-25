@@ -4,8 +4,10 @@ title: 'Route CSL bill type to class: hearing'
 status: todo
 type: feature
 priority: normal
+tags:
+    - migrate
 created_at: 2026-04-04T14:00:22Z
-updated_at: 2026-04-10T19:04:55Z
+updated_at: 2026-04-25T20:20:07Z
 ---
 
 Congressional hearing items in Zotero export as CSL type `bill` but should

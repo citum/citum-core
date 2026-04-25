@@ -4,8 +4,10 @@ title: apa year-suffix disambiguation cleanup
 status: todo
 type: task
 priority: normal
+tags:
+    - engine
 created_at: 2026-04-09T15:40:00Z
-updated_at: 2026-04-10T19:10:00Z
+updated_at: 2026-04-25T20:20:06Z
 ---
 
 Own any residual APA year-letter or anonymous-ordering mismatches that remain

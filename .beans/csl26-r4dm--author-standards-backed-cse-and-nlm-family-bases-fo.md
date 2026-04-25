@@ -5,11 +5,12 @@ status: todo
 type: task
 priority: normal
 tags:
+    - standards
+    - style
     - styles
     - taxonomy
-    - standards
 created_at: 2026-04-21T13:31:00Z
-updated_at: 2026-04-21T13:31:00Z
+updated_at: 2026-04-25T20:20:07Z
 ---
 
 `csl26-nrkn` confirmed that the Taylor & Francis and Springer CSE/NLM variants

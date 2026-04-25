@@ -4,8 +4,10 @@ title: Add gen block iterator refactoring once stable
 status: todo
 type: feature
 priority: low
+tags:
+    - engine
 created_at: 2026-02-21T01:11:20Z
-updated_at: 2026-02-21T01:11:20Z
+updated_at: 2026-04-25T20:20:06Z
 ---
 
 Rust `gen {}` blocks (lazy zero-allocation iterators) are experimental as of Rust 1.85

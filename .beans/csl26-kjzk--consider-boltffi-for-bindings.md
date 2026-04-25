@@ -4,8 +4,11 @@ title: Consider boltffi for bindings
 status: todo
 type: task
 priority: normal
+tags:
+    - bindings
+    - research
 created_at: 2026-02-17T22:02:32Z
-updated_at: 2026-02-18T15:00:00Z
+updated_at: 2026-04-25T20:20:07Z
 ---
 
 BoltFFI looks promising as a unifying path for multi-language bindings, especially for TypeScript/WASM plus native targets (Swift/Kotlin). This bean defines a forward-looking plan that keeps current velocity while reducing long-term binding complexity.

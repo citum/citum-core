@@ -4,8 +4,11 @@ title: Add dedicated part/supplement/printing number fields
 status: todo
 type: feature
 priority: deferred
+tags:
+    - schema
+    - engine
 created_at: 2026-03-05T15:22:41Z
-updated_at: 2026-04-24T12:14:10Z
+updated_at: 2026-04-25T20:20:06Z
 parent: csl26-li63
 ---
 
