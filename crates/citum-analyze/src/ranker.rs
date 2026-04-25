@@ -8,6 +8,8 @@ use std::fs;
 use std::path::Path;
 use walkdir::WalkDir;
 
+use crate::util::truncate;
+
 /// Statistics for parent style ranking.
 #[derive(Default, serde::Serialize)]
 pub struct ParentRankerStats {
@@ -357,13 +359,5 @@ fn print_parent_rankings(stats: &ParentRankerStats) {
         if stats.parse_errors.len() > 5 {
             println!("  ... and {} more", stats.parse_errors.len() - 5);
         }
-    }
-}
-
-fn truncate(s: &str, max_len: usize) -> String {
-    if s.len() <= max_len {
-        s.to_string()
-    } else {
-        format!("{}...", &s[..max_len - 3])
     }
 }

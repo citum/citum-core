@@ -13,6 +13,7 @@ mod analyzer;
 mod profile_discovery;
 mod ranker;
 mod savings;
+mod util;
 
 use std::env;
 
@@ -25,10 +26,10 @@ fn main() {
     }
 
     let styles_dir = &args[1];
-    let json_output = args.contains(&"--json".to_string());
-    let rank_parents = args.contains(&"--rank-parents".to_string());
-    let quantify_savings = args.contains(&"--quantify-savings".to_string());
-    let identify_profiles = args.contains(&"--identify-profiles".to_string());
+    let json_output = args.iter().any(|arg| arg == "--json");
+    let rank_parents = args.iter().any(|arg| arg == "--rank-parents");
+    let quantify_savings = args.iter().any(|arg| arg == "--quantify-savings");
+    let identify_profiles = args.iter().any(|arg| arg == "--identify-profiles");
 
     // Check for format filter (--format author-date, --format numeric, etc.)
     let format_filter = args

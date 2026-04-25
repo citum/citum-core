@@ -9,6 +9,8 @@ use std::path::Path;
 
 use walkdir::WalkDir;
 
+use crate::util::{short_name_from_identifier, truncate};
+
 /// Runs the corpus-savings report for preset and locale-override opportunities.
 pub fn run_savings_report(styles_dir: &str, json_output: bool) {
     match analyze_savings(Path::new(styles_dir)) {
@@ -315,13 +317,6 @@ fn citation_formats_compatible(left: Option<&str>, right: Option<&str>) -> bool 
     left.is_none() || right.is_none() || left == right
 }
 
-fn short_name_from_identifier(identifier: &str) -> std::borrow::Cow<'_, str> {
-    identifier.rsplit('/').next().map_or_else(
-        || std::borrow::Cow::Borrowed(identifier),
-        std::borrow::Cow::Borrowed,
-    )
-}
-
 fn locale_base_slug(slug: &str, locale: &str) -> Option<String> {
     let locale_suffix = locale_suffix_from_locale(locale)?;
     let explicit_suffix = format!("-{locale_suffix}");
@@ -405,14 +400,6 @@ fn print_savings_report(report: &SavingsReport) {
             family.preset_wrapper_count,
             family.combined_opportunity_count
         );
-    }
-}
-
-fn truncate(value: &str, max_len: usize) -> String {
-    if value.len() <= max_len {
-        value.to_string()
-    } else {
-        format!("{}...", &value[..max_len - 3])
     }
 }
 

@@ -9,6 +9,8 @@ use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use crate::util::short_name_from_identifier;
+
 use citum_migrate::{OptionsExtractor, compilation, fixups, provenance::ProvenanceTracker};
 use citum_schema::StyleBase;
 use citum_schema::locale::GeneralTerm;
@@ -573,6 +575,7 @@ fn jaccard_similarity(left: &HashSet<SemanticItem>, right: &HashSet<SemanticItem
     }
 }
 
+/// Maps a template component to semantic items; structural wrappers (Conditional, Substitute, etc.) are intentionally skipped.
 fn to_semantic_items(component: &TemplateComponent, items: &mut Vec<SemanticItem>) {
     match component {
         TemplateComponent::Variable(v) => items.push(SemanticItem::Variable(v.variable.clone())),
@@ -600,18 +603,12 @@ fn template_to_set(template: &[TemplateComponent]) -> HashSet<SemanticItem> {
     items.into_iter().collect()
 }
 
-fn short_name_from_identifier(identifier: &str) -> std::borrow::Cow<'_, str> {
-    identifier.rsplit('/').next().map_or_else(
-        || std::borrow::Cow::Borrowed(identifier),
-        std::borrow::Cow::Borrowed,
-    )
-}
-
 fn sanitize_url(url: &str) -> String {
-    url.strip_prefix('h')
-        .filter(|_| url.starts_with("hhttps://"))
-        .unwrap_or(url)
-        .to_string()
+    if url.starts_with("hhttps://") {
+        url[1..].to_string()
+    } else {
+        url.to_string()
+    }
 }
 
 fn non_empty(value: &str) -> Option<String> {
