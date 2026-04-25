@@ -18,6 +18,8 @@ verification:
   - Run repo-required Rust verification for `.rs`, `Cargo.toml`, or `Cargo.lock` changes.
   - If `crates/citum-cli/` or `crates/citum-schema*/` changed, regenerate schemas as required by the repo.
   - Add or update targeted tests when the change affects behavior.
+  - For behavior fixes, confirm the new or changed test would fail against the old behavior, or state why that cannot be reproduced.
+  - Run `python3 scripts/audit-rust-review-smells.py --changed` for Rust changes and review any advisory findings before closing.
 output_contract:
   - Summarize the root change in a few lines.
   - Report exact verification performed and whether it passed.
