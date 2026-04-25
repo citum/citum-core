@@ -510,6 +510,10 @@ struct RenderRefsArgs {
     #[arg(short, long, required = true)]
     style: String,
 
+    /// Locale ID (e.g. "es-ES", "fr-FR") to override the style's default locale
+    #[arg(short = 'L', long)]
+    locale: Option<String>,
+
     /// Path(s) to citations input files (repeat for multiple)
     #[arg(short = 'c', long, action = ArgAction::Append)]
     citations: Vec<PathBuf>,
@@ -1692,7 +1696,13 @@ fn run_render_doc(args: RenderDocArgs) -> Result<(), Box<dyn Error>> {
         );
     }
 
-    let processor = create_processor(style_obj, bibliography, &args.style, args.no_semantics)?;
+    let processor = create_processor(
+        style_obj,
+        bibliography,
+        &args.style,
+        args.no_semantics,
+        None,
+    )?;
 
     let doc_content = fs::read_to_string(&args.input)?;
     let output = match args.input_format {
@@ -1758,7 +1768,13 @@ fn run_render_refs(args: RenderRefsArgs) -> Result<(), Box<dyn Error>> {
         format: AnnotationFormat::Djot,
     };
 
-    let processor = create_processor(style_obj, bibliography, &args.style, args.no_semantics)?;
+    let processor = create_processor(
+        style_obj,
+        bibliography,
+        &args.style,
+        args.no_semantics,
+        args.locale.as_deref(),
+    )?;
 
     let style_name = {
         let path = Path::new(&args.style);
@@ -1796,18 +1812,23 @@ fn run_render_refs(args: RenderRefsArgs) -> Result<(), Box<dyn Error>> {
 
 /// Construct a [`Processor`] from a style, bibliography, and optional locale.
 ///
-/// When the style declares a `default_locale`, the locale is resolved first
-/// from disk (for file-based styles) and then from embedded data, falling back
-/// to the hardcoded `en-US` defaults.
+/// When `locale_override` is supplied it takes precedence over the style's
+/// `default_locale`. Otherwise the locale is resolved first from disk (for
+/// file-based styles) and then from embedded data, falling back to the
+/// hardcoded `en-US` defaults.
 fn create_processor(
     style: Style,
     loaded: LoadedBibliography,
     style_input: &str,
     no_semantics: bool,
+    locale_override: Option<&str>,
 ) -> Result<Processor, Box<dyn Error>> {
     let LoadedBibliography { references, sets } = loaded;
     let compound_sets = sets.unwrap_or_default();
-    if let Some(ref locale_id) = style.info.default_locale {
+    let effective_locale = locale_override
+        .map(str::to_owned)
+        .or_else(|| style.info.default_locale.clone());
+    if let Some(ref locale_id) = effective_locale {
         let path = Path::new(style_input);
         let mut locale = if path.exists() && path.is_file() {
             // File-based style: search for locale on disk, fall back to embedded.
@@ -1822,10 +1843,22 @@ fn create_processor(
             // Builtin style: use embedded locale directly.
             load_locale_builtin(locale_id)
         };
-        if let Some(override_id) = style
-            .options
-            .as_ref()
-            .and_then(|options| options.locale_override.as_deref())
+        if locale_override.is_some() && locale.locale != *locale_id {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                format!("locale not found: '{locale_id}'"),
+            )
+            .into());
+        }
+        if let Some(override_id) = locale_override
+            .is_none()
+            .then(|| {
+                style
+                    .options
+                    .as_ref()
+                    .and_then(|options| options.locale_override.as_deref())
+            })
+            .flatten()
         {
             let locale_override = if path.exists() && path.is_file() {
                 load_locale_override_for_file_style(override_id, style_input)?
@@ -3617,6 +3650,7 @@ grammar-options:
             loaded,
             style_path.to_str().expect("utf-8 path"),
             false,
+            None,
         )
         .expect("processor should apply locale override");
 
@@ -3638,7 +3672,7 @@ grammar-options:
         };
 
         let processor =
-            create_processor(style, loaded, "chicago", false).expect("processor should load");
+            create_processor(style, loaded, "chicago", false, None).expect("processor should load");
 
         assert_eq!(processor.locale.locale, "en-US");
         assert_eq!(
@@ -3652,6 +3686,59 @@ grammar-options:
         assert_eq!(
             processor.locale.grammar_options.page_range_delimiter,
             "\u{2013}"
+        );
+    }
+
+    #[test]
+    fn test_create_processor_locale_arg_overrides_style_default() {
+        let style = citum_schema::embedded::get_embedded_style("apa")
+            .expect("embedded style should exist")
+            .expect("embedded style should parse");
+        let loaded = LoadedBibliography {
+            references: Bibliography::new(),
+            sets: None,
+        };
+
+        let processor = create_processor(style, loaded, "apa", false, Some("es-ES"))
+            .expect("processor should load with locale override");
+
+        assert_eq!(processor.locale.locale, "es-ES");
+    }
+
+    #[test]
+    fn test_create_processor_locale_arg_skips_style_locale_override() {
+        let style = citum_schema::embedded::get_embedded_style("chicago")
+            .expect("embedded style should exist")
+            .expect("embedded style should parse");
+        let loaded = LoadedBibliography {
+            references: Bibliography::new(),
+            sets: None,
+        };
+
+        let processor = create_processor(style, loaded, "chicago", false, Some("es-ES"))
+            .expect("processor should load requested locale");
+
+        assert_eq!(processor.locale.locale, "es-ES");
+        assert!(!processor.locale.grammar_options.serial_comma);
+        assert_eq!(processor.locale.grammar_options.open_quote, "«");
+    }
+
+    #[test]
+    fn test_create_processor_locale_arg_rejects_unknown_locale() {
+        let style = citum_schema::embedded::get_embedded_style("apa")
+            .expect("embedded style should exist")
+            .expect("embedded style should parse");
+        let loaded = LoadedBibliography {
+            references: Bibliography::new(),
+            sets: None,
+        };
+
+        let err = create_processor(style, loaded, "apa", false, Some("zz-ZZ"))
+            .expect_err("unknown explicit locale should error");
+
+        assert!(
+            err.to_string().contains("locale not found: 'zz-ZZ'"),
+            "unexpected error: {err}"
         );
     }
 
