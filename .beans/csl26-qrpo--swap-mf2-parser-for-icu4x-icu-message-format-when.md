@@ -5,7 +5,7 @@ status: todo
 type: task
 priority: deferred
 created_at: 2026-03-22T12:45:31Z
-updated_at: 2026-03-22T13:27:25Z
+updated_at: 2026-04-25T00:00:00Z
 ---
 
 The current Mf2MessageEvaluator in crates/citum-schema-style/src/locale/message.rs is a
@@ -19,3 +19,7 @@ No locale files or call sites change. MF2 syntax is identical between implementa
 
 Blocked by: ICU4X icu_message_format reaching stable release.
 Tracking issue: https://github.com/unicode-org/icu4x/issues/3028
+
+As of 2026-04-25, unicode-org/icu4x#7884 is an open in-progress MF2
+implementation PR. Treat it as useful upstream signal, not an available
+dependency for Citum branch work.

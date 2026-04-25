@@ -139,6 +139,21 @@ Hybrid: XML pipeline for options extraction + LLM-authored templates for top par
 Use `./scripts/prep-migration.sh` + `/style-evolve migrate` for hand-authoring. See
 `docs/TIER_STATUS.md` for live fidelity metrics.
 
+## Authoring Locales
+
+Locale files in `locales/` use schema v2 with MessageFormat 2 (MF2)
+parameterized messages. The MF2 path is **live in the engine** —
+`resolved_locator_term` and `resolved_role_term` consult `messages:` first and
+fall back to the legacy `terms:` / `roles:` / `locators:` maps.
+
+When editing or creating a locale, see
+[docs/guides/AUTHORING_LOCALES.md](./docs/guides/AUTHORING_LOCALES.md). Key
+gotcha: `MaybeGendered<T>` is live in the legacy locale maps, but MF2 role and
+locator lookup currently passes `$count` only and the custom evaluator supports
+one selector per `.match`. Keep gendered role labels in `roles:` until the
+gender-aware MF2 follow-up adds `$gender` plumbing and multi-selector support.
+Spec: [docs/specs/LOCALE_MESSAGES.md](./docs/specs/LOCALE_MESSAGES.md).
+
 ## Design Principles
 
 [docs/architecture/DESIGN_PRINCIPLES.md](./docs/architecture/DESIGN_PRINCIPLES.md)
