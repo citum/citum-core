@@ -1,6 +1,6 @@
 # Migrate-Research Rich-Input Pass Contract
 
-**Status:** Draft
+**Status:** Active
 **Date:** 2026-04-02
 **Related:** [FIDELITY_RICH_INPUTS.md](./FIDELITY_RICH_INPUTS.md), [DIVERGENCE_REGISTER.md](../adjudication/DIVERGENCE_REGISTER.md)
 

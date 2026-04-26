@@ -1,6 +1,6 @@
 # Title Text-Case Semantics Specification
 
-**Status:** Draft
+**Status:** Active
 **Version:** 1.0
 **Date:** 2026-03-11
 **Supersedes:** none

@@ -1,6 +1,6 @@
 # Original Publication Relation Support Specification
 
-**Status:** Draft
+**Status:** Active
 **Date:** 2026-04-17
 **Related:** csl26-1nsh
 
