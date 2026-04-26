@@ -1,6 +1,6 @@
 # Journal-Profile Taxonomy Audit
 
-**Status:** Draft
+**Status:** Completed
 **Date:** 2026-04-22
 **Related:** `STYLE_TAXONOMY.md`, `UNIFIED_SCOPED_OPTIONS.md`, `../architecture/2026-04-22_JOURNAL_PROFILE_CANDIDATE_AUDIT.md`, commit `9e13a17b`
 

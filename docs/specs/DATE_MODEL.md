@@ -2,7 +2,7 @@
 
 ## Status
 - **Date**: 2026-04-08
-- **Status**: Draft / Evaluation
+- **Status**: Active
 
 ## Objective
 Refine the Citum date model to distinguish between content creation/origination (`created`) and formal publication/issue events (`issued`). This addresses the publication-centric bias of existing citation schemas (like CSL) which poorly represent all major resource types, including archival, unpublished, and born-digital material.

@@ -6,15 +6,10 @@ on:
   pull_request:
     branches: [ "main" ]
     paths-ignore:
-      - '*.md'
-      - '**.md'
-      - 'docs/**'
-      - '.beans/**'
       - '.beans.yml'
       - '.release-plz.toml'
       - 'cliff.toml'
       - 'LICENSE'
-      - 'CONTRIBUTING.md'
       - '.gitignore'
       - '.gitattributes'
       - '.gitmodules'
@@ -51,6 +46,10 @@ jobs:
               - 'examples/**'
               - '.beans.yml'
               - '.github/workflows/ci.yml'
+              - '**.md'
+              - 'docs/**'
+              - 'CONTRIBUTING.md'
+              - '.beans/**'
             semver:
               - 'crates/csl-legacy/**'
               - 'crates/citum-schema-data/**'
