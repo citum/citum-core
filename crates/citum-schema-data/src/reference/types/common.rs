@@ -116,6 +116,43 @@ impl PartialEq<RefID> for String {
     }
 }
 
+/// Inline markup for freeform text fields (note, abstract).
+///
+/// Serializes from a plain string or a `{ djot: "..." }` object.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(untagged)]
+pub enum RichText {
+    /// Plain text with no inline markup.
+    Plain(String),
+    /// Djot inline markup.
+    Djot {
+        /// Djot inline markup source.
+        djot: String,
+    },
+}
+
+impl Default for RichText {
+    fn default() -> Self {
+        RichText::Plain(String::new())
+    }
+}
+
+impl RichText {
+    /// Return the raw source string regardless of format.
+    pub fn raw(&self) -> &str {
+        match self {
+            RichText::Plain(s) | RichText::Djot { djot: s } => s,
+        }
+    }
+
+    /// Return true when the content is empty.
+    pub fn is_empty(&self) -> bool {
+        self.raw().is_empty()
+    }
+}
+
 /// A numbering identifier for a work (e.g., volume, issue, number).
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]

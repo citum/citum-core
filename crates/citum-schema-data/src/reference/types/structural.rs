@@ -2,7 +2,7 @@
 
 use super::common::{
     ArchiveInfo, EprintInfo, FieldLanguageMap, HasNumbering, LangID, NormalizeNumbering, NumOrStr,
-    Numbering, Publisher, RefID, Title,
+    Numbering, Publisher, RefID, RichText, Title,
 };
 use crate::reference::WorkRelation;
 use crate::reference::contributor::{
@@ -121,7 +121,10 @@ pub struct Monograph {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
+    /// Abstract or summary of the work.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub abstract_text: Option<RichText>,
     /// ISBN identifier.
     #[serde(alias = "ISBN", skip_serializing_if = "Option::is_none")]
     pub isbn: Option<String>,
@@ -224,7 +227,8 @@ struct MonographDeser {
     language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
-    note: Option<String>,
+    note: Option<RichText>,
+    abstract_text: Option<RichText>,
     #[serde(alias = "ISBN")]
     isbn: Option<String>,
     #[serde(alias = "DOI")]
@@ -289,6 +293,7 @@ impl From<MonographDeser> for Monograph {
             language: raw.language,
             field_languages: raw.field_languages,
             note: raw.note,
+            abstract_text: raw.abstract_text,
             isbn: raw.isbn,
             doi: raw.doi,
             ads_bibcode: raw.ads_bibcode,
@@ -426,7 +431,7 @@ pub struct Collection {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
     /// ISBN identifier.
     #[serde(alias = "ISBN", skip_serializing_if = "Option::is_none")]
     pub isbn: Option<String>,
@@ -476,7 +481,7 @@ struct CollectionDeser {
     language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
-    note: Option<String>,
+    note: Option<RichText>,
     #[serde(alias = "ISBN")]
     isbn: Option<String>,
     event: Option<WorkRelation>,
@@ -613,7 +618,10 @@ pub struct CollectionComponent {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
+    /// Abstract or summary of the component.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub abstract_text: Option<RichText>,
     /// DOI identifier.
     #[serde(alias = "DOI", skip_serializing_if = "Option::is_none")]
     pub doi: Option<String>,
@@ -677,7 +685,8 @@ struct CollectionComponentDeser {
     language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
-    note: Option<String>,
+    note: Option<RichText>,
+    abstract_text: Option<RichText>,
     #[serde(alias = "DOI")]
     doi: Option<String>,
     genre: Option<String>,
@@ -721,6 +730,7 @@ impl From<CollectionComponentDeser> for CollectionComponent {
             language: raw.language,
             field_languages: raw.field_languages,
             note: raw.note,
+            abstract_text: raw.abstract_text,
             doi: raw.doi,
             genre: raw.genre,
             medium: raw.medium,
@@ -817,7 +827,10 @@ pub struct SerialComponent {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
+    /// Abstract or summary of the component.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub abstract_text: Option<RichText>,
     /// DOI identifier.
     #[serde(alias = "DOI", skip_serializing_if = "Option::is_none")]
     pub doi: Option<String>,
@@ -896,7 +909,8 @@ struct SerialComponentDeser {
     language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
-    note: Option<String>,
+    note: Option<RichText>,
+    abstract_text: Option<RichText>,
     #[serde(alias = "DOI")]
     doi: Option<String>,
     ads_bibcode: Option<String>,
@@ -945,6 +959,7 @@ impl From<SerialComponentDeser> for SerialComponent {
             language: raw.language,
             field_languages: raw.field_languages,
             note: raw.note,
+            abstract_text: raw.abstract_text,
             doi: raw.doi,
             ads_bibcode: raw.ads_bibcode,
             pages: raw.pages,
@@ -1024,7 +1039,7 @@ pub struct Serial {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
     /// ISSN identifier.
     #[serde(alias = "ISSN", skip_serializing_if = "Option::is_none")]
     pub issn: Option<String>,
@@ -1051,7 +1066,7 @@ struct SerialDeser {
     language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
-    note: Option<String>,
+    note: Option<RichText>,
     #[serde(alias = "ISSN")]
     issn: Option<String>,
 }

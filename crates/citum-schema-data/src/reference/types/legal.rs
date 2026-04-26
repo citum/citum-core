@@ -1,6 +1,6 @@
 //! Legal document types: cases, statutes, treaties, hearings, regulations, and briefs.
 
-use super::common::{FieldLanguageMap, LangID, RefID, Title};
+use super::common::{FieldLanguageMap, LangID, RefID, RichText, Title};
 use crate::reference::WorkRelation;
 use crate::reference::contributor::Contributor;
 use crate::reference::date::EdtfString;
@@ -63,7 +63,7 @@ pub struct LegalCase {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
     /// DOI identifier.
     #[serde(alias = "DOI", skip_serializing_if = "Option::is_none")]
     pub doi: Option<String>,
@@ -132,7 +132,7 @@ pub struct Statute {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
@@ -189,7 +189,7 @@ pub struct Treaty {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
@@ -240,7 +240,7 @@ pub struct Hearing {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
@@ -297,7 +297,7 @@ pub struct Regulation {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
@@ -351,7 +351,7 @@ pub struct Brief {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,

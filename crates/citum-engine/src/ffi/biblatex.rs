@@ -10,7 +10,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use biblatex;
 use citum_schema::reference::{
-    InputReference, LangID, Numbering, NumberingType, Publisher, RefID, WorkRelation,
+    InputReference, LangID, Numbering, NumberingType, Publisher, RefID, RichText, WorkRelation,
     contributor::{Contributor, ContributorList, StructuredName},
     date::EdtfString,
     types::{
@@ -76,7 +76,7 @@ fn build_inbook_reference(ctx: BibRefContext<'_>) -> InputReference {
         accessed: field_str("urldate").map(EdtfString),
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: field_str("note"),
+        note: field_str("note").map(RichText::Plain),
         doi: field_str("doi"),
         genre: field_str("type"),
         ..Default::default()
@@ -135,7 +135,7 @@ fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
         accessed: field_str("urldate").map(EdtfString),
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: field_str("note"),
+        note: field_str("note").map(RichText::Plain),
         doi: field_str("doi"),
         ads_bibcode: field_str("bibcode"),
         pages: field_str("pages"),
@@ -264,7 +264,7 @@ fn biblatex_monograph(
         accessed: field_str("urldate").map(EdtfString),
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: field_str("note"),
+        note: field_str("note").map(RichText::Plain),
         isbn: field_str("isbn"),
         doi: field_str("doi"),
         ads_bibcode: field_str("bibcode"),

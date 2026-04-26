@@ -210,6 +210,11 @@ Track schema changes separately from code changes.
 Historical note: entries below may predate the automation baseline and are the
 authoritative record when matching tags were not created at the time.
 
+#### schema-v0.37.0 (2026-04-26)
+- Schema version bumped from 0.36.0 to 0.37.0
+- Added `abstract_text` field to Monograph, CollectionComponent, and SerialComponent
+- Djot inline markup now applies to Note and Abstract variables at render time
+
 #### schema-v0.34.0 (2026-04-19)
 - Schema version bumped from 0.33.0 to 0.34.0
 

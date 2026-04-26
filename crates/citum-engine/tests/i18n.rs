@@ -729,7 +729,9 @@ fn given_localized_citation_templates_when_the_item_language_matches_then_the_lo
             accessed: None,
             language: Some("de-AT".into()),
             field_languages: HashMap::new(),
-            note: Some("fallback".to_string()),
+            note: Some(citum_schema::reference::RichText::Plain(
+                "fallback".to_string(),
+            )),
             isbn: None,
             doi: None,
             numbering: Default::default(),
@@ -765,7 +767,9 @@ fn given_localized_citation_templates_when_the_item_language_matches_then_the_lo
             accessed: None,
             language: Some("fr".into()),
             field_languages: HashMap::new(),
-            note: Some("fallback".to_string()),
+            note: Some(citum_schema::reference::RichText::Plain(
+                "fallback".to_string(),
+            )),
             isbn: None,
             doi: None,
             numbering: Default::default(),
@@ -846,7 +850,9 @@ fn given_localized_bibliography_templates_when_only_the_multilingual_title_has_a
             accessed: None,
             language: None,
             field_languages: HashMap::new(),
-            note: Some("fallback".to_string()),
+            note: Some(citum_schema::reference::RichText::Plain(
+                "fallback".to_string(),
+            )),
             isbn: None,
             doi: None,
             numbering: Default::default(),
@@ -1267,5 +1273,96 @@ fn german_override_localizes_translator_verb_when_role_preset_requests_it() {
         output.contains("übers. von Ubersetzer Name"),
         "Output should contain localized translator verb: {}",
         output
+    );
+}
+
+#[test]
+fn djot_note_preserves_italic_markup_in_html_bibliography() {
+    use citum_engine::render::html::Html;
+    use citum_schema::template::{SimpleVariable, TemplateVariable};
+
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Note Djot Test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![citum_schema::template::TemplateComponent::Variable(
+                TemplateVariable {
+                    variable: SimpleVariable::Note,
+                    ..Default::default()
+                },
+            )]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "ref1".to_string(),
+        InputReference::Monograph(Box::new(Monograph {
+            id: Some("ref1".into()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single("Test Book".to_string())),
+            issued: EdtfString("2024".to_string()),
+            note: Some(citum_schema::reference::RichText::Djot {
+                djot: "_italic_".to_string(),
+            }),
+            ..Default::default()
+        })),
+    );
+
+    let output = Processor::new(style, bib).render_bibliography_with_format::<Html>();
+    assert!(
+        output.contains("<i>italic</i>"),
+        "Djot _italic_ in note should render as <i>italic</i> in HTML, got: {output}"
+    );
+}
+
+#[test]
+fn djot_note_sentence_case_does_not_restart_across_markup_boundaries() {
+    use citum_engine::render::html::Html;
+    use citum_schema::options::titles::TextCase;
+    use citum_schema::template::{Rendering, SimpleVariable, TemplateComponent, TemplateVariable};
+
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Note Djot Sentence Case Test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Note,
+                rendering: Rendering {
+                    text_case: Some(TextCase::Sentence),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "ref1".to_string(),
+        InputReference::Monograph(Box::new(Monograph {
+            id: Some("ref1".into()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single("Test Book".to_string())),
+            issued: EdtfString("2024".to_string()),
+            note: Some(citum_schema::reference::RichText::Djot {
+                djot: "foo _BAR_ baz".to_string(),
+            }),
+            ..Default::default()
+        })),
+    );
+
+    let output = Processor::new(style, bib).render_bibliography_with_format::<Html>();
+    assert!(
+        output.contains("Foo <i>bar</i> baz"),
+        "Djot sentence case should not restart inside markup, got: {output}"
     );
 }

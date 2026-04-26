@@ -90,7 +90,10 @@ impl<'a> SelectorEvaluator<'a> {
                 Self::matches_field_value(&lang, matcher)
             }
             "note" => {
-                let note = reference.note().unwrap_or_default();
+                let note = reference
+                    .note()
+                    .map(|rt| rt.raw().to_string())
+                    .unwrap_or_default();
                 Self::matches_field_value(&note, matcher)
             }
             // Future: support for keywords, custom metadata

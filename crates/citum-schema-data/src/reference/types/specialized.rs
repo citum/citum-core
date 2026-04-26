@@ -2,7 +2,7 @@
 
 use super::common::{
     FieldLanguageMap, HasNumbering, LangID, NormalizeNumbering, Numbering, NumberingType,
-    Publisher, RefID, Title,
+    Publisher, RefID, RichText, Title,
 };
 use crate::reference::WorkRelation;
 use crate::reference::contributor::{Contributor, ContributorEntry};
@@ -70,7 +70,7 @@ pub struct Event {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
 }
 
 /// A classic work (Aristotle, Bible, etc.) with standard citation forms.
@@ -144,7 +144,7 @@ pub struct Classic {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
@@ -186,7 +186,7 @@ struct ClassicDeser {
     language: Option<LangID>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
-    note: Option<String>,
+    note: Option<RichText>,
     keywords: Option<Vec<String>>,
 }
 
@@ -308,7 +308,7 @@ pub struct Patent {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
@@ -375,7 +375,7 @@ pub struct Dataset {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
@@ -432,7 +432,7 @@ pub struct Standard {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
@@ -499,7 +499,7 @@ pub struct Software {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
@@ -604,7 +604,7 @@ pub struct AudioVisualWork {
     pub field_languages: FieldLanguageMap,
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub note: Option<String>,
+    pub note: Option<RichText>,
 }
 
 /// Deserialization shim for `AudioVisualWork`.
@@ -648,7 +648,7 @@ struct AudioVisualDeser {
     accessed: Option<EdtfString>,
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
-    note: Option<String>,
+    note: Option<RichText>,
 }
 
 impl HasNumbering for AudioVisualWork {

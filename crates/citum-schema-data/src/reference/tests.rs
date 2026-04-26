@@ -548,7 +548,9 @@ fn conversion_promotes_genre_and_preserves_free_text() {
     assert_eq!(reference.genre(), Some("h.r.".to_string()));
     assert_eq!(
         reference.note(),
-        Some("Referenced via legacy note field".to_string())
+        Some(super::RichText::Plain(
+            "Referenced via legacy note field".to_string()
+        ))
     );
 }
 
