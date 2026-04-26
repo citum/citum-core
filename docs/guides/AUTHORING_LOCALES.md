@@ -12,7 +12,7 @@ Citum locale file in `locales/`. It is the practical companion to
   and consult the `messages:` map first, falling back to the legacy `terms:` /
   `roles:` / `locators:` maps.
 - Gendered term values: live through `MaybeGendered<T>` in the legacy locale
-  maps. This is separate from MF2 selector support.
+  maps and through the scoped `$gender` x `$count` MF2 role-label pattern.
 - Coverage as of writing: `en-US`, `de-DE`, `fr-FR`, `tr-TR`, `es-ES` carry
   v2 `messages:` blocks. Adding new locales should follow the same shape.
 
@@ -33,7 +33,7 @@ Author a v2 `messages:` entry whenever the rendered text depends on a
 | Compositional pattern | `{$start}–{$end}` for page ranges | **Yes** |
 | URL-bearing message | "retrieved from {$url}" | **Yes** |
 | Static label | `term.and: "and"` | Optional — works either way |
-| Gender-dependent label | Spanish `editor / editora`, French `éditeur / éditrice` | **Not yet** — see "Gender" below |
+| Gender-dependent label | Spanish `editor / editora`, French `éditeur / éditrice` | **Yes**, after test coverage — see "Gender" below |
 
 The rule of thumb: if the message body would contain `{` (variable
 substitution or `.match` block), MF2 is the correct home. If it's a bare
@@ -83,8 +83,8 @@ limitation applies to other gendered locales, including French and Arabic.
 | `term.note-label`, `term.note-label-long` | `$count` | |
 | `term.and`, `term.and-symbol`, `term.et-al`, `term.and-others` | none | Conjunctions |
 | `term.accessed`, `term.retrieved`, `term.no-date`, `term.no-date-long`, `term.forthcoming`, `term.circa`, `term.circa-long` | none | Date and access labels |
-| `role.editor.label`, `role.editor.label-long`, `role.editor.verb` | `$count` (label only today) | Avoid for gender-aware locales until multi-selector MF2 lands |
-| `role.translator.label`, `role.translator.label-long`, `role.translator.verb` | `$count` (label only today) | Avoid for gender-aware locales until multi-selector MF2 lands |
+| `role.editor.label`, `role.editor.label-long`, `role.editor.verb` | `$count`, optional `$gender` for labels | Use the two-selector pattern for gender-aware label nouns |
+| `role.translator.label`, `role.translator.label-long`, `role.translator.verb` | `$count`, optional `$gender` for labels | Use the two-selector pattern for gender-aware label nouns |
 | `role.guest.label`, `role.guest.label-long`, `role.guest.verb` | `$count` | |
 | `pattern.page-range` | `$start`, `$end` | Spec'd; not yet consumed by the engine |
 | `pattern.retrieved-from`, `pattern.available-at` | `$url` | Spec'd; not yet consumed by the engine |
@@ -100,7 +100,7 @@ The `legacy-term-aliases:` map bridges single-word legacy keys (e.g. `page`,
 `et_al`, `editor`) to message IDs so styles authored against the v1 vocabulary
 keep rendering. Mirror the en-US shape.
 
-## Gender — interim limitation
+## Gender
 
 `MaybeGendered<T>` is already live for locale term maps. The `roles:`,
 `locators:`, and `terms:` fallback paths can store and resolve gendered values
@@ -108,26 +108,20 @@ for locales that need them, such as Spanish role nouns, French role nouns, and
 Arabic gendered ordinals, using the requested gender from contributor data or
 an explicit template override.
 
-The MF2 path is not equivalent yet. `resolved_role_term` and
-`resolved_locator_term` currently pass `$count` into MF2 evaluation, but they do
-not pass `$gender`. The custom evaluator also supports only one selector per
-`.match`, so a full `$gender` x `$count` role-label matrix cannot be authored
-reliably today.
+The MF2 path supports the scoped gender-aware role-label pattern:
+`.match {$gender :select} {$count :plural}`. Use stable selector keys
+`masculine`, `feminine`, `neuter`, and `common`, and include a full wildcard
+fallback such as `when * *`.
 
-For this branch:
+For new or migrated locales:
 
-- Locale files for languages with role-label gender variants keep those labels
-  in `roles:`. Do not add `role.editor.label`,
-  `role.editor.label-long`, `role.translator.label`, or
-  `role.translator.label-long` MF2 entries for those locales yet.
-- This is an implementation gap, not the desired final architecture. MF2 should
-  become the home for gender x plural role labels after multi-selector support
-  lands.
+- `messages:` is the preferred home for tested gender x plural role labels.
+- Keep equivalent `roles:` values as fallback until deprecating that fallback is
+  intentional and covered by tests.
+- `resolved_role_term_neutral` passes `common` so mixed-gender contributor lists
+  can resolve common MF2 variants.
 - Gender-invariant role messages are safe in `messages:`.
 - Gender-invariant locator and general terms are safe in `messages:`.
-
-The follow-up is to pass gender into `MessageArgs`, support multi-selector
-`.match`, and then migrate gendered role labels from `roles:` to MF2 with tests.
 
 ## Runtime locale selection
 
@@ -153,18 +147,31 @@ term.page-label: |
   when one {p.}
   when * {pp.}
 
-# Select dispatch (arbitrary keys, one selector only today)
+# Select dispatch (arbitrary keys)
 some.gendered: |
   .match {$gender :select}
   when masculine {él}
   when feminine {ella}
   when * {elle}
+
+# Gender-aware role labels
+role.editor.label-long: |
+  .match {$gender :select} {$count :plural}
+  when masculine one {editor}
+  when masculine * {editores}
+  when feminine one {editora}
+  when feminine * {editoras}
+  when common one {persona editora}
+  when common * {equipo editorial}
+  when * * {equipo editorial}
 ```
 
 The current evaluator supports only `one` and `*` plural categories. Full
-CLDR categories (`zero`, `two`, `few`, `many`) and multi-selector `.match`
-blocks require follow-up evaluator work. ICU4X MF2 support is tracked, but not
-treated as available in this branch.
+CLDR categories (`zero`, `two`, `few`, `many`) still require follow-up evaluator
+work. The scoped multi-selector form for gender-aware role labels is active:
+each `when` block must provide one key per selector, and two-selector messages
+must include a full wildcard fallback such as `when * *`. ICU4X MF2 support is
+tracked, but not treated as available in this branch.
 
 ## Verification
 
@@ -186,12 +193,12 @@ cargo run --bin citum -- render refs \
   -s styles/apa-7th.yaml --locale <your-locale>
 ```
 
-A future `citum locale lint <file>` (spec §8) will short-circuit the first
-two — not yet shipped.
+`citum locale lint <file>` validates MF2 message structure before the render
+path needs to evaluate a locale.
 
 ## Related
 
 - Spec: [docs/specs/LOCALE_MESSAGES.md](../specs/LOCALE_MESSAGES.md)
 - Gender model: [docs/specs/GENDERED_LOCALE_TERMS.md](../specs/GENDERED_LOCALE_TERMS.md)
 - ICU4X migration: bean `csl26-qrpo`
-- Gender-aware MF2 role labels: follow-up bean for multi-selector `.match`
+- Gender-aware MF2 role labels: bean `csl26-vm2g`

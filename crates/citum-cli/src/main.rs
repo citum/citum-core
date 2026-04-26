@@ -1590,7 +1590,9 @@ fn number_variable_to_locator(
 ///
 /// Checks that:
 /// - `{…}` placeholders use `$variable` syntax (not bare MF1 identifiers)
-/// - `.match` blocks have a `$`-prefixed selector and at least one `when *` fallback
+/// - `.match` blocks have one or more `$`-prefixed selectors and a full-arity
+///   wildcard fallback arm whose key count equals the number of selectors
+///   (e.g. `when *` for a single selector, `when * *` for two selectors)
 ///
 /// Returns `Err(description)` on the first structural violation.
 fn lint_mf2_message(message: &str) -> Result<(), String> {
@@ -1629,30 +1631,83 @@ fn lint_mf2_pattern(pattern: &str) -> Result<(), String> {
 
 /// Validate an MF2 `.match` block.
 fn lint_mf2_match(message: &str) -> Result<(), String> {
-    let after_match = message[".match".len()..].trim_start();
-    let open = after_match
-        .find('{')
-        .ok_or("missing selector after .match")?;
-    let close = find_matching_brace(after_match, open).ok_or("unmatched '{' in .match selector")?;
-    let selector = after_match
-        .get(open + 1..close)
-        .ok_or("invalid selector range")?
-        .trim();
-    if !selector.starts_with('$') {
-        return Err(format!(
-            "selector '{selector}' must start with $ (e.g. {{$count :plural}})"
-        ));
+    let (selector_count, variants) = lint_mf2_selectors(message)?;
+    lint_mf2_variants(variants, selector_count)?;
+    Ok(())
+}
+
+fn lint_mf2_selectors(message: &str) -> Result<(usize, &str), String> {
+    let mut rest = message[".match".len()..].trim_start();
+    let mut selector_count = 0usize;
+
+    while rest.starts_with('{') {
+        let close = find_matching_brace(rest, 0).ok_or("unmatched '{' in .match selector")?;
+        let selector = rest.get(1..close).ok_or("invalid selector range")?.trim();
+        if !selector.starts_with('$') {
+            return Err(format!(
+                "selector '{selector}' must start with $ (e.g. {{$count :plural}})"
+            ));
+        }
+        selector_count += 1;
+        rest = rest
+            .get(close + 1..)
+            .ok_or("missing when blocks after .match selector")?
+            .trim_start();
     }
-    let variants = after_match
-        .get(close + 1..)
-        .ok_or("missing when blocks after .match selector")?
-        .trim();
-    if !variants.contains("when") {
+
+    if selector_count == 0 {
+        return Err("missing selector after .match".to_string());
+    }
+
+    Ok((selector_count, rest))
+}
+
+fn lint_mf2_variants(variants: &str, selector_count: usize) -> Result<(), String> {
+    let mut rest = variants.trim();
+    let mut saw_when = false;
+    let mut saw_wildcard = false;
+
+    while !rest.is_empty() {
+        if !rest.starts_with("when") {
+            return Err(format!("expected 'when' block, found '{rest}'"));
+        }
+
+        saw_when = true;
+        let after_when = rest["when".len()..].trim_start();
+        let brace_pos = after_when
+            .find('{')
+            .ok_or("missing pattern body in when block")?;
+        let key_text = after_when[..brace_pos].trim();
+        let keys: Vec<&str> = key_text.split_whitespace().collect();
+        if keys.len() != selector_count {
+            return Err(format!(
+                "when block has {} selector keys but .match has {selector_count} selectors",
+                keys.len()
+            ));
+        }
+        if keys.iter().all(|key| *key == "*") {
+            saw_wildcard = true;
+        }
+
+        let open_brace_index = rest.len() - after_when.len() + brace_pos;
+        let close_brace_index = find_matching_brace(rest, open_brace_index)
+            .ok_or("unmatched '{' in when block pattern")?;
+        rest = rest
+            .get(close_brace_index + 1..)
+            .ok_or("invalid when block range")?
+            .trim_start();
+    }
+
+    if !saw_when {
         return Err("no 'when' blocks found in .match".to_string());
     }
-    if !variants.contains("when *") {
-        return Err("missing wildcard 'when *' fallback in .match".to_string());
+    if !saw_wildcard {
+        let wildcard = vec!["*"; selector_count].join(" ");
+        return Err(format!(
+            "missing wildcard 'when {wildcard}' fallback in .match"
+        ));
     }
+
     Ok(())
 }
 
@@ -3784,6 +3839,71 @@ grammar-options:
         assert!(report.findings.iter().any(|finding| {
             finding.path == "messages.term.page-label"
                 && finding.message.contains("invalid MF2 message")
+        }));
+    }
+
+    #[test]
+    fn test_lint_raw_locale_accepts_multi_selector_mf2() {
+        let raw = RawLocale {
+            locale: "es-ES".into(),
+            evaluation: Some(EvaluationConfig {
+                message_syntax: MessageSyntax::Mf2,
+            }),
+            messages: HashMap::from([(
+                "role.editor.label-long".into(),
+                ".match {$gender :select} {$count :plural}\nwhen feminine one {editora}\nwhen feminine * {editoras}\nwhen * * {equipo editorial}".into(),
+            )]),
+            ..Default::default()
+        };
+
+        let report = lint_raw_locale(&raw);
+
+        assert!(!report.has_errors());
+    }
+
+    #[test]
+    fn test_lint_raw_locale_rejects_multi_selector_arity_mismatch() {
+        let raw = RawLocale {
+            locale: "es-ES".into(),
+            evaluation: Some(EvaluationConfig {
+                message_syntax: MessageSyntax::Mf2,
+            }),
+            messages: HashMap::from([(
+                "role.editor.label-long".into(),
+                ".match {$gender :select} {$count :plural}\nwhen feminine {editora}\nwhen * * {equipo editorial}".into(),
+            )]),
+            ..Default::default()
+        };
+
+        let report = lint_raw_locale(&raw);
+
+        assert!(report.has_errors());
+        assert!(report.findings.iter().any(|finding| {
+            finding.path == "messages.role.editor.label-long"
+                && finding.message.contains("selector keys")
+        }));
+    }
+
+    #[test]
+    fn test_lint_raw_locale_rejects_missing_multi_selector_wildcard() {
+        let raw = RawLocale {
+            locale: "es-ES".into(),
+            evaluation: Some(EvaluationConfig {
+                message_syntax: MessageSyntax::Mf2,
+            }),
+            messages: HashMap::from([(
+                "role.editor.label-long".into(),
+                ".match {$gender :select} {$count :plural}\nwhen feminine one {editora}\nwhen feminine * {editoras}".into(),
+            )]),
+            ..Default::default()
+        };
+
+        let report = lint_raw_locale(&raw);
+
+        assert!(report.has_errors());
+        assert!(report.findings.iter().any(|finding| {
+            finding.path == "messages.role.editor.label-long"
+                && finding.message.contains("when * *")
         }));
     }
 

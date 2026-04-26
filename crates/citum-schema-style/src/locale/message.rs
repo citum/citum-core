@@ -129,25 +129,40 @@ fn resolve_var<'a>(var_name: &str, args: &'a MessageArgs<'a>) -> Option<&'a str>
     }
 }
 
-/// Evaluate a `.match` statement with selector and variants.
+/// Evaluate a `.match` statement with selectors and variants.
 fn evaluate_mf2_matcher(message: &str, args: &MessageArgs<'_>) -> Option<String> {
     let trimmed = message.trim();
     if !trimmed.starts_with(".match") {
         return None;
     }
 
-    let after_match = trimmed[".match".len()..].trim_start();
-    let open_brace = after_match.find('{')?;
-    let close_brace = find_matching_brace(after_match, open_brace)?;
-    let selector_text = after_match.get(open_brace + 1..close_brace)?.trim();
-
-    let variants_start = after_match.get(close_brace + 1..)?.trim_start();
-
-    let (var_name, function) = parse_mf2_selector(selector_text)?;
-    let match_key = determine_match_key(var_name, function, args)?;
-    let matched_pattern = find_mf2_variant(variants_start, &match_key)?;
+    let (selectors, variants_start) = parse_mf2_selectors(trimmed)?;
+    let match_keys = selectors
+        .iter()
+        .map(|(var_name, function)| determine_match_key(var_name, *function, args))
+        .collect::<Option<Vec<_>>>()?;
+    let matched_pattern = find_mf2_variant(variants_start, &match_keys)?;
 
     substitute_mf2_vars(&matched_pattern, args)
+}
+
+/// Parse selector expressions after `.match`.
+fn parse_mf2_selectors(message: &str) -> Option<(Vec<(&str, Option<&str>)>, &str)> {
+    let mut rest = message[".match".len()..].trim_start();
+    let mut selectors = Vec::new();
+
+    while rest.starts_with('{') {
+        let close_brace = find_matching_brace(rest, 0)?;
+        let selector_text = rest.get(1..close_brace)?.trim();
+        selectors.push(parse_mf2_selector(selector_text)?);
+        rest = rest.get(close_brace + 1..)?.trim_start();
+    }
+
+    if selectors.is_empty() {
+        return None;
+    }
+
+    Some((selectors, rest))
 }
 
 /// Parse an MF2 selector like `$count :plural` or `$gender :select`.
@@ -208,10 +223,10 @@ fn determine_match_key(
 
 /// Find the matched variant in MF2 when-blocks and return its pattern.
 ///
-/// Scans for `when <key> { pattern }` lines. Returns the first exact match,
-/// or falls back to `when * { pattern }`.
-fn find_mf2_variant(variants_text: &str, match_key: &str) -> Option<String> {
-    let mut wildcard_pattern: Option<String> = None;
+/// Scans for `when <keys...> { pattern }` lines. Returns the most specific
+/// wildcard-compatible variant.
+fn find_mf2_variant(variants_text: &str, match_keys: &[String]) -> Option<String> {
+    let mut best_match: Option<(usize, String)> = None;
     let mut rest = variants_text;
 
     loop {
@@ -227,6 +242,7 @@ fn find_mf2_variant(variants_text: &str, match_key: &str) -> Option<String> {
         let after_when = trimmed["when".len()..].trim_start();
         let brace_pos = after_when.find('{')?;
         let key_str = after_when[..brace_pos].trim();
+        let variant_keys: Vec<&str> = key_str.split_whitespace().collect();
 
         let open_brace_index = rest.len() - after_when.len() + brace_pos;
         let close_brace_index = find_matching_brace(rest, open_brace_index)?;
@@ -234,16 +250,39 @@ fn find_mf2_variant(variants_text: &str, match_key: &str) -> Option<String> {
             .get(open_brace_index + 1..close_brace_index)?
             .to_string();
 
-        if key_str == match_key {
-            return Some(pattern);
-        } else if key_str == "*" && wildcard_pattern.is_none() {
-            wildcard_pattern = Some(pattern);
+        if let Some(score) = variant_match_score(&variant_keys, match_keys)
+            && match best_match.as_ref() {
+                Some((best_score, _)) => score > *best_score,
+                None => true,
+            }
+        {
+            best_match = Some((score, pattern));
         }
 
         rest = rest.get(close_brace_index + 1..)?;
     }
 
-    wildcard_pattern
+    best_match.map(|(_, pattern)| pattern)
+}
+
+/// Score a variant key tuple against the resolved selector keys.
+fn variant_match_score(variant_keys: &[&str], match_keys: &[String]) -> Option<usize> {
+    if variant_keys.len() != match_keys.len() {
+        return None;
+    }
+
+    let mut score = 0usize;
+    for (variant_key, match_key) in variant_keys.iter().zip(match_keys) {
+        if *variant_key == "*" {
+            continue;
+        }
+        if *variant_key != match_key {
+            return None;
+        }
+        score += 1;
+    }
+
+    Some(score)
 }
 
 /// Find the matching closing brace for an opening brace at a given index.
@@ -369,5 +408,65 @@ mod tests {
         let result = evaluator.evaluate(message, &args);
         // Should return None when count is missing
         assert_eq!(result, None);
+    }
+
+    #[test]
+    fn test_multi_selector_exact_match() {
+        let evaluator = Mf2MessageEvaluator;
+        let args = MessageArgs {
+            count: Some(1),
+            gender: Some("feminine"),
+            ..Default::default()
+        };
+        let message = ".match {$gender :select} {$count :plural}\nwhen feminine one {editora}\nwhen feminine * {editoras}\nwhen * * {equipo editorial}";
+
+        assert_eq!(
+            evaluator.evaluate(message, &args),
+            Some("editora".to_string())
+        );
+    }
+
+    #[test]
+    fn test_multi_selector_partial_wildcard_match() {
+        let evaluator = Mf2MessageEvaluator;
+        let args = MessageArgs {
+            count: Some(3),
+            gender: Some("feminine"),
+            ..Default::default()
+        };
+        let message = ".match {$gender :select} {$count :plural}\nwhen feminine one {editora}\nwhen feminine * {editoras}\nwhen * * {equipo editorial}";
+
+        assert_eq!(
+            evaluator.evaluate(message, &args),
+            Some("editoras".to_string())
+        );
+    }
+
+    #[test]
+    fn test_multi_selector_full_wildcard_match() {
+        let evaluator = Mf2MessageEvaluator;
+        let args = MessageArgs {
+            count: Some(2),
+            gender: Some("common"),
+            ..Default::default()
+        };
+        let message = ".match {$gender :select} {$count :plural}\nwhen feminine one {editora}\nwhen feminine * {editoras}\nwhen * * {equipo editorial}";
+
+        assert_eq!(
+            evaluator.evaluate(message, &args),
+            Some("equipo editorial".to_string())
+        );
+    }
+
+    #[test]
+    fn test_multi_selector_missing_gender() {
+        let evaluator = Mf2MessageEvaluator;
+        let args = MessageArgs {
+            count: Some(1),
+            ..Default::default()
+        };
+        let message = ".match {$gender :select} {$count :plural}\nwhen feminine one {editora}\nwhen * * {equipo editorial}";
+
+        assert_eq!(evaluator.evaluate(message, &args), None);
     }
 }

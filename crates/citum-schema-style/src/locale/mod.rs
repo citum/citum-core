@@ -654,7 +654,7 @@ impl Locale {
         }
     }
 
-    /// Resolve a contributor role term, evaluating MF1 messages when configured.
+    /// Resolve a contributor role term, evaluating MF2 messages when configured.
     pub fn resolved_role_term(
         &self,
         role: &ContributorRole,
@@ -664,7 +664,7 @@ impl Locale {
     ) -> Option<String> {
         if let Some(message_id) = Self::role_message_id(role, form)
             && let Some(resolved) =
-                self.resolve_message_text(message_id, Some(u64::from(plural) + 1), &[])
+                self.resolve_message_text(message_id, Some(u64::from(plural) + 1), requested_gender)
         {
             return Some(resolved);
         }
@@ -681,8 +681,11 @@ impl Locale {
         form: TermForm,
     ) -> Option<String> {
         if let Some(message_id) = Self::role_message_id(role, form)
-            && let Some(resolved) =
-                self.resolve_message_text(message_id, Some(u64::from(plural) + 1), &[])
+            && let Some(resolved) = self.resolve_message_text(
+                message_id,
+                Some(u64::from(plural) + 1),
+                Some(GrammaticalGender::Common),
+            )
         {
             return Some(resolved);
         }
@@ -715,7 +718,7 @@ impl Locale {
         }
     }
 
-    /// Resolve a locator term, evaluating MF1 messages when configured.
+    /// Resolve a locator term, evaluating MF2 messages when configured.
     pub fn resolved_locator_term(
         &self,
         locator: &LocatorType,
@@ -725,7 +728,7 @@ impl Locale {
     ) -> Option<String> {
         if let Some(message_id) = Self::locator_message_id(locator, form)
             && let Some(resolved) =
-                self.resolve_message_text(message_id, Some(u64::from(plural) + 1), &[])
+                self.resolve_message_text(message_id, Some(u64::from(plural) + 1), requested_gender)
         {
             return Some(resolved);
         }
@@ -866,7 +869,7 @@ impl Locale {
         }
     }
 
-    /// Resolve a general term, evaluating MF1 messages when configured.
+    /// Resolve a general term, evaluating MF2 messages when configured.
     pub fn resolved_general_term(
         &self,
         term: &GeneralTerm,
@@ -874,7 +877,7 @@ impl Locale {
         requested_gender: Option<GrammaticalGender>,
     ) -> Option<String> {
         if let Some(message_id) = Self::general_message_id(term, form)
-            && let Some(resolved) = self.resolve_message_text(message_id, None, &[])
+            && let Some(resolved) = self.resolve_message_text(message_id, None, requested_gender)
         {
             return Some(resolved);
         }
@@ -1035,17 +1038,27 @@ impl Locale {
         }
     }
 
+    fn gender_selector_key(gender: GrammaticalGender) -> &'static str {
+        match gender {
+            GrammaticalGender::Masculine => "masculine",
+            GrammaticalGender::Feminine => "feminine",
+            GrammaticalGender::Neuter => "neuter",
+            GrammaticalGender::Common => "common",
+        }
+    }
+
     fn resolve_message_text(
         &self,
         message_id: &str,
         count: Option<u64>,
-        _variables: &[(&str, &str)],
+        gender: Option<GrammaticalGender>,
     ) -> Option<String> {
         let message = self.messages.get(message_id)?;
 
         // Build MessageArgs for the evaluator
         let args = MessageArgs {
             count,
+            gender: gender.map(Self::gender_selector_key),
             ..MessageArgs::default()
         };
 
@@ -2102,6 +2115,69 @@ terms:
                 Some(GrammaticalGender::Feminine),
             ),
             Some("editora".to_string())
+        );
+    }
+
+    #[test]
+    fn test_es_es_role_term_resolves_gendered_mf2_message() {
+        let bytes = crate::embedded::get_locale_bytes("es-ES").expect("es-ES should be embedded");
+        let yaml = std::str::from_utf8(bytes).expect("embedded locale should be utf-8");
+        let locale = Locale::from_yaml_str(yaml).expect("embedded es-ES should parse");
+
+        assert_eq!(
+            locale.resolved_role_term(
+                &ContributorRole::Editor,
+                true,
+                TermForm::Long,
+                Some(GrammaticalGender::Masculine),
+            ),
+            Some("editores".to_string())
+        );
+        assert_eq!(
+            locale.resolved_role_term(
+                &ContributorRole::Translator,
+                true,
+                TermForm::Long,
+                Some(GrammaticalGender::Feminine),
+            ),
+            Some("traductoras".to_string())
+        );
+        assert_eq!(
+            locale.resolved_role_term_neutral(&ContributorRole::Editor, true, TermForm::Long),
+            Some("equipo editorial".to_string())
+        );
+    }
+
+    #[test]
+    fn test_role_term_falls_back_when_mf2_message_cannot_evaluate() {
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: es-ES
+evaluation:
+  message-syntax: mf2
+messages:
+  role.editor.label-long: |
+    .match {$gender :unknown} {$count :plural}
+    when feminine one {editora}
+roles:
+  editor:
+    long:
+      singular:
+        feminine: editora heredada
+      plural:
+        feminine: editoras heredadas
+"#,
+        )
+        .expect("locale should parse");
+
+        assert_eq!(
+            locale.resolved_role_term(
+                &ContributorRole::Editor,
+                false,
+                TermForm::Long,
+                Some(GrammaticalGender::Feminine),
+            ),
+            Some("editora heredada".to_string())
         );
     }
 
