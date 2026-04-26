@@ -50,6 +50,16 @@ fn make_spanish_gendered_locale() -> Locale {
         .expect("spanish locale should parse")
 }
 
+fn make_french_gendered_locale() -> Locale {
+    Locale::from_yaml_str(include_str!("../../../../locales/fr-FR.yaml"))
+        .expect("french locale should parse")
+}
+
+fn make_arabic_gendered_locale() -> Locale {
+    Locale::from_yaml_str(include_str!("../../../../locales/ar-AR.yaml"))
+        .expect("arabic locale should parse")
+}
+
 fn make_editor_reference(genders: &[ContributorGender]) -> Reference {
     let contributors = genders
         .iter()
@@ -347,6 +357,214 @@ roles:
         .expect("editors should render");
 
     assert_eq!(values.suffix, None);
+}
+
+#[test]
+fn test_french_role_label_uses_feminine_form_for_single_contributor() {
+    let config = make_config();
+    let locale = make_french_gendered_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let reference = make_editor_reference(&[ContributorGender::Feminine]);
+    let hints = ProcHints::default();
+
+    let component = TemplateContributor {
+        contributor: ContributorRole::Editor,
+        form: ContributorForm::Long,
+        label: Some(RoleLabel {
+            term: "editor".to_string(),
+            form: RoleLabelForm::Long,
+            placement: LabelPlacement::Suffix,
+        }),
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("editor should render");
+
+    assert_eq!(values.suffix, Some(", éditrice".to_string()));
+}
+
+#[test]
+fn test_arabic_role_label_uses_feminine_form_for_single_contributor() {
+    let config = make_config();
+    let locale = make_arabic_gendered_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let reference = make_editor_reference(&[ContributorGender::Feminine]);
+    let hints = ProcHints::default();
+
+    let component = TemplateContributor {
+        contributor: ContributorRole::Editor,
+        form: ContributorForm::Long,
+        label: Some(RoleLabel {
+            term: "editor".to_string(),
+            form: RoleLabelForm::Long,
+            placement: LabelPlacement::Suffix,
+        }),
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("editor should render");
+
+    assert_eq!(values.suffix, Some(", مُحَرِّرَة".to_string()));
+}
+
+#[test]
+fn test_french_role_label_falls_back_to_masculine_plural_for_mixed_group() {
+    let config = make_config();
+    let locale = make_french_gendered_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let reference =
+        make_editor_reference(&[ContributorGender::Feminine, ContributorGender::Masculine]);
+    let hints = ProcHints::default();
+
+    let component = TemplateContributor {
+        contributor: ContributorRole::Editor,
+        form: ContributorForm::Long,
+        label: Some(RoleLabel {
+            term: "editor".to_string(),
+            form: RoleLabelForm::Long,
+            placement: LabelPlacement::Suffix,
+        }),
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("mixed editors should render");
+
+    assert_eq!(values.suffix, Some(", éditeurs".to_string()));
+}
+
+#[test]
+fn test_arabic_role_label_falls_back_to_verbal_noun_for_mixed_group() {
+    let config = make_config();
+    let locale = make_arabic_gendered_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+    let reference =
+        make_editor_reference(&[ContributorGender::Feminine, ContributorGender::Masculine]);
+    let hints = ProcHints::default();
+
+    let component = TemplateContributor {
+        contributor: ContributorRole::Editor,
+        form: ContributorForm::Long,
+        label: Some(RoleLabel {
+            term: "editor".to_string(),
+            form: RoleLabelForm::Long,
+            placement: LabelPlacement::Suffix,
+        }),
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("mixed editors should render");
+
+    assert_eq!(values.suffix, Some(", تحقيق".to_string()));
+}
+
+#[test]
+fn test_arabic_role_label_falls_back_to_roles_common_when_gender_missing() {
+    let config = make_config();
+    let locale = make_arabic_gendered_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+    };
+
+    // Reference with no gender info
+    let contributors = vec![ContributorEntry {
+        role: citum_schema::reference::ContributorRole::Editor,
+        contributor: Contributor::StructuredName(StructuredName {
+            family: "Editor".into(),
+            given: "Name".into(),
+            ..Default::default()
+        }),
+        gender: None,
+    }];
+
+    let reference = InputReference::Monograph(Box::new(Monograph {
+        id: Some("no-gender-ref".into()),
+        r#type: MonographType::Book,
+        title: Some(Title::Single("Obra".to_string())),
+        contributors,
+        issued: EdtfString("2024".to_string()),
+        ..Default::default()
+    }));
+
+    let hints = ProcHints::default();
+
+    let component = TemplateContributor {
+        contributor: ContributorRole::Editor,
+        form: ContributorForm::Long,
+        label: Some(RoleLabel {
+            term: "editor".to_string(),
+            form: RoleLabelForm::Long,
+            placement: LabelPlacement::Suffix,
+        }),
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("editor should render");
+
+    // MF2 will return None because $gender is missing, should fall back to roles.editor.long.singular.common
+    assert_eq!(values.suffix, Some(", تحقيق".to_string()));
 }
 
 #[test]

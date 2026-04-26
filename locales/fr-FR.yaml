@@ -825,17 +825,29 @@ messages:
   term.circa: "v."
   term.circa-long: "vers"
   # Role labels
+  # NOTE: Feminine forms (éditrice, traductrice) added via MF2.
+  # Fallback to masculine forms for mixed groups (common/* *) as per standard French grammar.
   role.editor.label: "éd."
   role.editor.label-long: |
-    .match {$count :plural}
-    when one {éditeur}
-    when * {éditeurs}
+    .match {$gender :select} {$count :plural}
+    when masculine one {éditeur}
+    when masculine * {éditeurs}
+    when feminine one {éditrice}
+    when feminine * {éditrices}
+    when common one {éditeur}
+    when common * {éditeurs}
+    when * * {éditeurs}
   role.editor.verb: "édité par"
   role.translator.label: "trad."
   role.translator.label-long: |
-    .match {$count :plural}
-    when one {traducteur}
-    when * {traducteurs}
+    .match {$gender :select} {$count :plural}
+    when masculine one {traducteur}
+    when masculine * {traducteurs}
+    when feminine one {traductrice}
+    when feminine * {traductrices}
+    when common one {traducteur}
+    when common * {traducteurs}
+    when * * {traducteurs}
   role.translator.verb: "traduit par"
   role.guest.label: |
     .match {$count :plural}
