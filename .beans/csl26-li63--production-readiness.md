@@ -41,3 +41,4 @@ work (citum-hub) and bindings (citum-labs).
 - Live style fidelity: [docs/TIER_STATUS.md](../docs/TIER_STATUS.md)
 - Portfolio gate: `scripts/report-data/core-quality-baseline.json`
 - Locale authoring (MF2): [docs/guides/AUTHORING_LOCALES.md](../docs/guides/AUTHORING_LOCALES.md)
+- PR trust scaling (future): [mitchellh/vouch](https://github.com/mitchellh/vouch)
