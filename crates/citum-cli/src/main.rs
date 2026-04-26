@@ -1590,7 +1590,9 @@ fn number_variable_to_locator(
 ///
 /// Checks that:
 /// - `{…}` placeholders use `$variable` syntax (not bare MF1 identifiers)
-/// - `.match` blocks have a `$`-prefixed selector and at least one `when *` fallback
+/// - `.match` blocks have one or more `$`-prefixed selectors and a full-arity
+///   wildcard fallback arm whose key count equals the number of selectors
+///   (e.g. `when *` for a single selector, `when * *` for two selectors)
 ///
 /// Returns `Err(description)` on the first structural violation.
 fn lint_mf2_message(message: &str) -> Result<(), String> {
