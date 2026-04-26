@@ -950,6 +950,103 @@ fn djot_parsing_handles_multiple_citations() {
     assert_eq!(parsed.citations[1].citation.items[0].id, "jones2021");
 }
 
+fn djot_note_preserves_italic_markup_in_html_bibliography() {
+    use citum_engine::render::html::Html;
+    use citum_schema::template::{SimpleVariable, TemplateVariable};
+
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Note Djot Test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![citum_schema::template::TemplateComponent::Variable(
+                TemplateVariable {
+                    variable: SimpleVariable::Note,
+                    ..Default::default()
+                },
+            )]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "ref1".to_string(),
+        citum_schema::reference::InputReference::Monograph(Box::new(
+            citum_schema::reference::Monograph {
+                id: Some("ref1".into()),
+                r#type: citum_schema::reference::MonographType::Book,
+                title: Some(citum_schema::reference::Title::Single(
+                    "Test Book".to_string(),
+                )),
+                issued: citum_schema::reference::EdtfString("2024".to_string()),
+                note: Some(citum_schema::reference::RichText::Djot {
+                    djot: "_italic_".to_string(),
+                }),
+                ..Default::default()
+            },
+        )),
+    );
+
+    let output = Processor::new(style, bib).render_bibliography_with_format::<Html>();
+    assert!(
+        output.contains("<i>italic</i>"),
+        "Djot _italic_ in note should render as <i>italic</i> in HTML, got: {output}"
+    );
+}
+
+fn djot_note_sentence_case_does_not_restart_across_markup_boundaries() {
+    use citum_engine::render::html::Html;
+    use citum_schema::options::titles::TextCase;
+    use citum_schema::template::{Rendering, SimpleVariable, TemplateComponent, TemplateVariable};
+
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Note Djot Sentence Case Test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Note,
+                rendering: Rendering {
+                    text_case: Some(TextCase::Sentence),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "ref1".to_string(),
+        citum_schema::reference::InputReference::Monograph(Box::new(
+            citum_schema::reference::Monograph {
+                id: Some("ref1".into()),
+                r#type: citum_schema::reference::MonographType::Book,
+                title: Some(citum_schema::reference::Title::Single(
+                    "Test Book".to_string(),
+                )),
+                issued: citum_schema::reference::EdtfString("2024".to_string()),
+                note: Some(citum_schema::reference::RichText::Djot {
+                    djot: "foo _BAR_ baz".to_string(),
+                }),
+                ..Default::default()
+            },
+        )),
+    );
+
+    let output = Processor::new(style, bib).render_bibliography_with_format::<Html>();
+    assert!(
+        output.contains("Foo <i>bar</i> baz"),
+        "Djot sentence case should not restart inside markup, got: {output}"
+    );
+}
+
 mod djot_adapter {
     use super::announce_behavior;
 
@@ -975,6 +1072,18 @@ mod djot_adapter {
             "The Djot parser should extract multiple citations from a single document.",
         );
         super::djot_parsing_handles_multiple_citations();
+    }
+
+    #[test]
+    fn note_preserves_italic_markup_in_html_bibliography() {
+        announce_behavior("Djot note preserves italic markup in HTML bibliography.");
+        super::djot_note_preserves_italic_markup_in_html_bibliography();
+    }
+
+    #[test]
+    fn note_sentence_case_does_not_restart_across_markup_boundaries() {
+        announce_behavior("Djot note sentence case does not restart across markup boundaries.");
+        super::djot_note_sentence_case_does_not_restart_across_markup_boundaries();
     }
 }
 
