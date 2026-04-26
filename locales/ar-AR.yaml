@@ -1,0 +1,76 @@
+locale-schema-version: "2"
+locale: ar-AR
+
+evaluation:
+  message-syntax: mf2
+
+dates:
+  months:
+    long:
+      - يناير
+      - فبراير
+      - مارس
+      - أبريل
+      - مايو
+      - يونيو
+      - يوليو
+      - أغسطس
+      - سبتمبر
+      - أكتوبر
+      - نوفمبر
+      - ديسمبر
+  seasons:
+    - الربيع
+    - الصيف
+    - الخريف
+    - الشتاء
+
+roles:
+  editor:
+    long:
+      singular:
+        masculine: مُحَرِّر
+        feminine: مُحَرِّرَة
+        common: تحقيق
+      plural:
+        masculine: مُحَرِّرون
+        feminine: مُحَرِّرات
+        common: تحقيق
+    short:
+      singular: تح.
+    verb: تحقيق
+  translator:
+    long:
+      singular:
+        masculine: مُتَرْجِم
+        feminine: مُتَرْجِمَة
+        common: ترجمة
+      plural:
+        masculine: مُتَرْجِمون
+        feminine: مُتَرْجِمات
+        common: ترجمة
+    short:
+      singular: تر.
+    verb: ترجمة
+
+messages:
+  # NOTE: Using personal nouns (مُحَرِّر/مُتَرْجِم) for gendered forms.
+  # Fallback to verbal nouns (تحقيق/ترجمة) for neutral or unknown groups, consistent with standard Arabic CSL.
+  role.editor.label: "تح."
+  role.editor.label-long: |
+    .match {$gender :select} {$count :plural}
+    when masculine one {مُحَرِّر}
+    when masculine * {مُحَرِّرون}
+    when feminine one {مُحَرِّرَة}
+    when feminine * {مُحَرِّرات}
+    when * * {تحقيق}
+  role.editor.verb: "تحقيق"
+  role.translator.label: "تر."
+  role.translator.label-long: |
+    .match {$gender :select} {$count :plural}
+    when masculine one {مُتَرْجِم}
+    when masculine * {مُتَرْجِمون}
+    when feminine one {مُتَرْجِمَة}
+    when feminine * {مُتَرْجِمات}
+    when * * {ترجمة}
+  role.translator.verb: "ترجمة"
