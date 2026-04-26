@@ -266,16 +266,25 @@ messages:
   term.forthcoming: "en prensa"
   term.circa: "ca."
   term.circa-long: "hacia"
-  # Role labels: omitted intentionally for Spanish in this branch.
-  #
-  # MaybeGendered<T> is live in the `roles:` map above, but the current MF2
-  # dispatch path passes `$count` only and the custom evaluator supports one
-  # selector per `.match`. Adding `role.editor.label` / `role.translator.label`
-  # here would bypass the gender-aware `roles:` fallback before MF2 can express
-  # the full gender x plural matrix.
-  #
-  # Revisit when the gender-aware MF2 follow-up adds `$gender` plumbing and
-  # multi-selector `.match` support.
+  # Role labels
+  role.editor.label-long: |
+    .match {$gender :select} {$count :plural}
+    when masculine one {editor}
+    when masculine * {editores}
+    when feminine one {editora}
+    when feminine * {editoras}
+    when common one {persona editora}
+    when common * {equipo editorial}
+    when * * {equipo editorial}
+  role.translator.label-long: |
+    .match {$gender :select} {$count :plural}
+    when masculine one {traductor}
+    when masculine * {traductores}
+    when feminine one {traductora}
+    when feminine * {traductoras}
+    when common one {persona traductora}
+    when common * {equipo de traducción}
+    when * * {equipo de traducción}
   # Compositional patterns
   pattern.page-range: "{$start}–{$end}"
   pattern.retrieved-from: "recuperado de {$url}"

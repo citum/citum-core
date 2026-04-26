@@ -67,13 +67,15 @@ Rationale for MF2 over Fluent or MF1:
 | Plain text | `"retrieved"` | No variables. |
 | Variable substitution | `{$names}` | Named string substitution. |
 | Plural | `.match {$count :plural}`<br>`when one {p.} when * {pp.}` | Two-value dispatch: `one` and `*` (wildcard). Full CLDR categories deferred to ICU4X. |
-| Select | `.match {$gender :select}`<br>`when masc {él} when * {elle}` | Arbitrary string-keyed dispatch with wildcard fallback. |
+| Select | `.match {$gender :select}`<br>`when masculine {él} when * {elle}` | Arbitrary string-keyed dispatch with wildcard fallback. |
+| Multi-selector role labels | `.match {$gender :select} {$count :plural}`<br>`when feminine one {editora} when * * {equipo editorial}` | Active scoped support for gender-aware role labels. Variant key count must match selector count. |
 
 **Out of scope in current evaluator:**
 - Full CLDR plural categories (`zero`, `two`, `few`, `many`) — only `one`/`*` supported.
 - MF2 custom function annotations (`:citum-date`, `:citum-names`) — see §1.5.
 - MF2 markup elements (`{#b}…{/b}`).
-- Multi-selector `.match` (matching on two variables simultaneously).
+- General-purpose multi-selector `.match` beyond Citum's gender-aware role-label
+  subset.
 
 **Date formatting is not done inside MF2 messages.** The engine formats dates
 using the `dateFormats` map and passes the result as a plain `{$date}` variable.
@@ -158,9 +160,12 @@ implementation at locale-load time:
 message. No structural change to `MessageArgs` is needed when swapping to the
 ICU4X evaluator.
 
-MF2 multi-selector patterns (matching on two variables simultaneously) are
-accommodated by `MessageArgs` having multiple fields — the added expressiveness
-is in the message syntax, not in the Rust argument type.
+MF2 multi-selector patterns for gender-aware role labels are accommodated by
+`MessageArgs` having both `$gender` and `$count` fields — the added
+expressiveness is in the message syntax, not in the Rust argument type. The
+custom evaluator supports the scoped pattern used by locales:
+`.match {$gender :select} {$count :plural}` with variants such as
+`when feminine one {...}`, `when feminine * {...}`, and `when * * {...}`.
 
 #### Custom formatters (deferred)
 
