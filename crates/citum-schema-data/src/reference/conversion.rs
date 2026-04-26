@@ -4,9 +4,9 @@ use crate::reference::contributor::{
 use crate::reference::date::EdtfString;
 use crate::reference::types::{
     ArchiveInfo, Collection, CollectionComponent, CollectionType, Dataset, LegalCase, Monograph,
-    MonographComponentType, MonographType, NumOrStr, Patent, Publisher, Regulation, Serial,
-    SerialComponent, SerialComponentType, SerialType, Software, Standard, Statute, StructuredTitle,
-    Subtitle, Title, Treaty,
+    MonographComponentType, MonographType, NumOrStr, Patent, Publisher, Regulation, RichText,
+    Serial, SerialComponent, SerialComponentType, SerialType, Software, Standard, Statute,
+    StructuredTitle, Subtitle, Title, Treaty,
 };
 use crate::reference::{
     AudioVisualType, AudioVisualWork, Event, InputReference, LangID, Numbering, NumberingType,
@@ -287,7 +287,7 @@ fn from_software_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         accessed: ctx.accessed,
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: ctx.note,
+        note: ctx.note.map(RichText::Plain),
         keywords: None,
     }))
 }
@@ -513,7 +513,8 @@ fn from_monograph_ref(
         accessed: ctx.accessed,
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: ctx.note,
+        note: ctx.note.map(RichText::Plain),
+        abstract_text: None,
         isbn: ctx.isbn,
         doi: ctx.doi,
         ads_bibcode: None,
@@ -695,7 +696,7 @@ fn from_collection_component_ref(
         accessed: ctx.accessed,
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: ctx.note,
+        note: ctx.note.map(RichText::Plain),
         doi: ctx.doi,
         genre,
         medium: legacy.medium,
@@ -775,11 +776,12 @@ pub fn input_reference_from_legacy_edited_book(
         url,
         accessed,
         language,
-        note,
+        note: raw_note,
         isbn,
         extra,
         ..
     } = legacy;
+    let note = raw_note.map(RichText::Plain);
 
     let editor_value = editor.clone().map(Contributor::from);
     let translator_value = translator.clone().map(Contributor::from);
@@ -962,7 +964,7 @@ fn from_serial_component_ref(
         accessed: ctx.accessed,
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: ctx.note,
+        note: ctx.note.map(RichText::Plain),
         doi: ctx.doi,
         ads_bibcode: None,
         pages: legacy.page,
@@ -1084,7 +1086,7 @@ fn from_audio_visual_ref(
         url: ctx.url,
         accessed: ctx.accessed,
         field_languages: HashMap::new(),
-        note: ctx.note,
+        note: ctx.note.map(RichText::Plain),
     }))
 }
 
@@ -1104,7 +1106,7 @@ fn from_legal_case_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext)
         accessed: ctx.accessed,
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: ctx.note,
+        note: ctx.note.map(RichText::Plain),
         doi: ctx.doi,
         keywords: None,
     }))
@@ -1129,7 +1131,7 @@ fn from_statute_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) ->
         accessed: ctx.accessed,
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: ctx.note,
+        note: ctx.note.map(RichText::Plain),
         keywords: None,
     }))
 }
@@ -1150,7 +1152,7 @@ fn from_regulation_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext)
         accessed: ctx.accessed,
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: ctx.note,
+        note: ctx.note.map(RichText::Plain),
         keywords: None,
     }))
 }
@@ -1171,7 +1173,7 @@ fn from_treaty_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> 
         accessed: ctx.accessed,
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: ctx.note,
+        note: ctx.note.map(RichText::Plain),
         keywords: None,
     }))
 }
@@ -1195,7 +1197,7 @@ fn from_standard_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         accessed: ctx.accessed,
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: ctx.note,
+        note: ctx.note.map(RichText::Plain),
         keywords: None,
     }))
 }
@@ -1219,7 +1221,7 @@ fn from_patent_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> 
         accessed: ctx.accessed,
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: ctx.note,
+        note: ctx.note.map(RichText::Plain),
         keywords: None,
     }))
 }
@@ -1260,7 +1262,7 @@ fn from_dataset_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) ->
         accessed: ctx.accessed,
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: ctx.note,
+        note: ctx.note.map(RichText::Plain),
         keywords: None,
     }))
 }
@@ -1322,7 +1324,7 @@ fn from_bill_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> In
         accessed: ctx.accessed,
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: ctx.note,
+        note: ctx.note.map(RichText::Plain),
         isbn: ctx.isbn,
         doi: ctx.doi,
         ads_bibcode: None,
@@ -1394,7 +1396,7 @@ fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         accessed: ctx.accessed,
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: ctx.note,
+        note: ctx.note.map(RichText::Plain),
         isbn: ctx.isbn,
         doi: ctx.doi,
         ads_bibcode: None,
@@ -1470,7 +1472,7 @@ fn from_preprint_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         accessed: ctx.accessed,
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: ctx.note,
+        note: ctx.note.map(RichText::Plain),
         doi: ctx.doi,
         isbn: ctx.isbn,
         numbering,
@@ -1550,7 +1552,7 @@ fn from_event_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> I
         accessed: ctx.accessed,
         language: ctx.language,
         field_languages: HashMap::new(),
-        note: ctx.note,
+        note: ctx.note.map(RichText::Plain),
     }))
 }
 

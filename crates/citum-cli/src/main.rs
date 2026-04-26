@@ -2356,7 +2356,7 @@ fn input_reference_to_csl_json(reference: &InputReference) -> csl_legacy::csl_js
 
     r.title = reference.title().map(|t| t.to_string());
     r.language = reference.language().map(|lang| lang.to_string());
-    r.note = reference.note();
+    r.note = reference.note().map(|rt| rt.raw().to_string());
     r.doi = reference.doi();
     r.issued = reference.csl_issued_date().and_then(|d| {
         let s = d.0;

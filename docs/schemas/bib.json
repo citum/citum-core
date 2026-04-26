@@ -795,6 +795,28 @@
         }
       ]
     },
+    "RichText": {
+      "description": "Inline markup for freeform text fields (note, abstract).\n\nSerializes from a plain string or a `{ djot: \"...\" }` object.",
+      "anyOf": [
+        {
+          "description": "Plain text with no inline markup.",
+          "type": "string"
+        },
+        {
+          "description": "Djot inline markup.",
+          "type": "object",
+          "properties": {
+            "djot": {
+              "description": "Djot inline markup source.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "djot"
+          ]
+        }
+      ]
+    },
     "Numbering": {
       "description": "A numbering identifier for a work (e.g., volume, issue, number).",
       "type": "object",
@@ -1054,9 +1076,23 @@
           }
         },
         "note": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "abstract-text": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "isbn": {
@@ -1389,9 +1425,23 @@
           }
         },
         "note": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "abstract-text": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "doi": {
@@ -1617,9 +1667,23 @@
           }
         },
         "note": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "abstract-text": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "doi": {
@@ -1904,9 +1968,13 @@
           }
         },
         "note": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "isbn": {
@@ -2087,9 +2155,13 @@
           }
         },
         "note": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "issn": {
@@ -2215,9 +2287,13 @@
         },
         "note": {
           "description": "Freeform note.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "doi": {
@@ -2372,9 +2448,13 @@
         },
         "note": {
           "description": "Freeform note.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "keywords": {
@@ -2505,9 +2585,13 @@
         },
         "note": {
           "description": "Freeform note.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "keywords": {
@@ -2620,9 +2704,13 @@
         },
         "note": {
           "description": "Freeform note.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "keywords": {
@@ -2749,9 +2837,13 @@
         },
         "note": {
           "description": "Freeform note.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "keywords": {
@@ -2875,9 +2967,13 @@
         },
         "note": {
           "description": "Freeform note.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "keywords": {
@@ -3048,9 +3144,13 @@
           }
         },
         "note": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "keywords": {
@@ -3206,9 +3306,13 @@
         },
         "note": {
           "description": "Freeform note.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "keywords": {
@@ -3367,9 +3471,13 @@
         },
         "note": {
           "description": "Freeform note.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "keywords": {
@@ -3497,9 +3605,13 @@
         },
         "note": {
           "description": "Freeform note.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "keywords": {
@@ -3658,9 +3770,13 @@
         },
         "note": {
           "description": "Freeform note.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "keywords": {
@@ -3823,9 +3939,13 @@
         },
         "note": {
           "description": "Freeform note.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         }
       }
@@ -3998,9 +4118,13 @@
           }
         },
         "note": {
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RichText"
+            },
+            {
+              "type": "null"
+            }
           ]
         }
       }

@@ -23,7 +23,7 @@ pub use self::date::EdtfString;
 use self::types::common::HasNumbering;
 pub use self::types::common::{
     FieldLanguageMap, LangID, MultilingualString, NumOrStr, Numbering, NumberingType, Publisher,
-    RefID, Title,
+    RefID, RichText, Title,
 };
 pub use self::types::legal::{Brief, Hearing, LegalCase, Regulation, Statute, Treaty};
 pub use self::types::specialized::{
@@ -486,7 +486,7 @@ impl InputReference {
     }
 
     /// Return the note.
-    pub fn note(&self) -> Option<String> {
+    pub fn note(&self) -> Option<RichText> {
         match self {
             InputReference::Monograph(r) => r.note.clone(),
             InputReference::CollectionComponent(r) => r.note.clone(),
@@ -876,8 +876,13 @@ impl InputReference {
     }
 
     /// Return the abstract.
-    pub fn abstract_text(&self) -> Option<String> {
-        None
+    pub fn abstract_text(&self) -> Option<RichText> {
+        match self {
+            InputReference::Monograph(r) => r.abstract_text.clone(),
+            InputReference::CollectionComponent(r) => r.abstract_text.clone(),
+            InputReference::SerialComponent(r) => r.abstract_text.clone(),
+            _ => None,
+        }
     }
 
     /// Return the container-style title for parent works, reporters, or codes.

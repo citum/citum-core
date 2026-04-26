@@ -5,6 +5,8 @@
 
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
+use citum_schema::options::titles::TextCase;
+use citum_schema::reference::RichText;
 use citum_schema::template::{SimpleVariable, TemplateVariable};
 
 /// Extracts the short title from a parent reference if available.
@@ -33,6 +35,25 @@ fn resolve_archive_name(reference: &Reference, options: &RenderOptions<'_>) -> O
     ))
 }
 
+fn make_rich_text_case_transform(case: TextCase) -> impl FnMut(&str) -> String {
+    let mut seen_alpha = false;
+    move |text: &str| match case {
+        TextCase::Sentence | TextCase::SentenceApa | TextCase::SentenceNlm => {
+            let lowered = text.to_lowercase();
+            if seen_alpha {
+                lowered
+            } else {
+                let result = crate::values::text_case::capitalize_first_word(&lowered);
+                if result.chars().any(char::is_alphabetic) {
+                    seen_alpha = true;
+                }
+                result
+            }
+        }
+        _ => crate::values::text_case::apply_text_case(text, case),
+    }
+}
+
 /// Resolve the raw value string for a simple variable from a reference.
 fn resolve_variable_value(
     variable: &SimpleVariable,
@@ -55,8 +76,7 @@ fn resolve_variable_value(
         SimpleVariable::Genre => reference.genre().map(|k| options.locale.lookup_genre(&k)),
         SimpleVariable::Medium => reference.medium().map(|k| options.locale.lookup_medium(&k)),
         SimpleVariable::Status => reference.status(),
-        SimpleVariable::Abstract => reference.abstract_text(),
-        SimpleVariable::Note => reference.note(),
+        SimpleVariable::Abstract | SimpleVariable::Note => None,
         SimpleVariable::Archive => reference.archive(),
         SimpleVariable::ArchiveLocation => reference.archive_location(),
         SimpleVariable::ArchiveName => resolve_archive_name(reference, options),
@@ -125,6 +145,47 @@ impl ComponentValues for TemplateVariable {
         _hints: &ProcHints,
         options: &RenderOptions<'_>,
     ) -> Option<ProcValues<F::Output>> {
+        // Rich-text variables carry format metadata — handle before the plain-string path.
+        let rich_text: Option<RichText> = match self.variable {
+            SimpleVariable::Note => reference.note(),
+            SimpleVariable::Abstract => reference.abstract_text(),
+            _ => None,
+        };
+
+        if let Some(rt) = rich_text {
+            if rt.is_empty() {
+                return None;
+            }
+            let fmt = F::default();
+            let (value, pre_formatted) = match (rt, self.rendering.text_case) {
+                (RichText::Plain(s), Some(tc)) => {
+                    (crate::values::text_case::apply_text_case(&s, tc), false)
+                }
+                (RichText::Plain(s), None) => (s, false),
+                (RichText::Djot { djot }, Some(tc)) => (
+                    crate::render::rich_text::render_djot_inline_with_transform(
+                        &djot,
+                        &fmt,
+                        make_rich_text_case_transform(tc),
+                    )
+                    .0,
+                    true,
+                ),
+                (RichText::Djot { djot }, None) => {
+                    (crate::render::render_djot_inline(&djot, &fmt), true)
+                }
+            };
+            return Some(ProcValues {
+                value,
+                prefix: None,
+                suffix: None,
+                url: None,
+                substituted_key: None,
+                pre_formatted,
+            });
+        }
+
+        // Plain-string path for all other variables.
         let value = resolve_variable_value(&self.variable, reference, options);
 
         value.filter(|s: &String| !s.is_empty()).map(|value| {

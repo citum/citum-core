@@ -1,14 +1,14 @@
 ---
 # csl26-suz3
 title: Djot as default markup for annotations and reference fields
-status: in-progress
+status: completed
 type: feature
 priority: normal
 tags:
     - schema
     - engine
 created_at: 2026-03-02T20:10:22Z
-updated_at: 2026-04-25T20:20:06Z
+updated_at: 2026-04-26T23:45:00Z
 parent: csl26-li63
 ---
 
@@ -25,7 +25,7 @@ Phase 1 (annotations) complete — commit `df059ae` on `feat/djot-rich-text`.
 - [x] CLI default updated
 - [x] Architecture doc at `docs/architecture/DJOT_RICH_TEXT.md`
 - [x] Fix link rendering (URL preserved through Djot inline rendering)
-- [ ] Phase 2: `RichText` type for `note`/`abstract` fields
+- [x] Phase 2: `RichText` type for `note`/`abstract` fields
 - [x] Phase 3: `title` field under the current rendering model
 
 2026-03-09 residual gap: this bean remains open only for `note`/`abstract`
@@ -64,7 +64,18 @@ title/sentence-case subsystem.
 - Explicit inline title links take precedence over whole-title auto-linking.
 - General title/text-case semantics are tracked separately in `csl26-wv5o`.
 
-## Summary of Changes
+## Phase 2 Summary (2026-04-26)
+
+Phase 2 implementation complete:
+- Added `abstract_text` field to `Monograph`, `CollectionComponent`, and `SerialComponent` structs
+- Implemented `InputReference::abstract_text()` dispatch to the three types above
+- Applied `render_djot_inline` in `TemplateVariable::values()` for `Note` and `Abstract` variables
+- Set `pre_formatted: true` for these variables to prevent double-encoding
+- Created spec at `docs/specs/DJOT_RICH_TEXT.md` (Active)
+- Schema regenerated and staged
+- All tests pass (1093/1093)
+
+## Summary of Changes (All Phases)
 
 - refactored Djot inline rendering to preserve nested formatted child output and
   use frame-local span metadata
@@ -73,3 +84,4 @@ title/sentence-case subsystem.
   inline link
 - added regressions for title value pre-formatting, inline-link precedence, and
   title preset wrapping around Djot markup
+- Phase 2: added abstract_text field and applied djot rendering for note/abstract
