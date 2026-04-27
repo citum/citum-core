@@ -81,6 +81,11 @@ limitation applies to other gendered locales, including French and Arabic.
 | `term.section-label`, `term.section-label-long` | `$count` | |
 | `term.figure-label` | `$count` | |
 | `term.note-label`, `term.note-label-long` | `$count` | |
+| `term.archive-collection-label` | none | Archive hierarchy: collection name |
+| `term.archive-series-label` | none | Archive hierarchy: series name |
+| `term.archive-box-label` | `$count` | Archive hierarchy: box/container (plural-dispatched) |
+| `term.archive-folder-label` | `$count` | Archive hierarchy: folder/dossier (plural-dispatched) |
+| `term.archive-item-label` | `$count` | Archive hierarchy: item/piece (plural-dispatched) |
 | `term.and`, `term.and-symbol`, `term.et-al`, `term.and-others` | none | Conjunctions |
 | `term.accessed`, `term.retrieved`, `term.no-date`, `term.no-date-long`, `term.forthcoming`, `term.circa`, `term.circa-long` | none | Date and access labels |
 | `role.editor.label`, `role.editor.label-long`, `role.editor.verb` | `$count`, optional `$gender` for labels | Use the two-selector pattern for gender-aware label nouns |

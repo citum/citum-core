@@ -886,6 +886,21 @@ messages:
     .match {$count :plural}
     when one {with guest}
     when * {with guests}
+  # Archive hierarchy labels
+  term.archive-collection-label: "collection"
+  term.archive-series-label: "series"
+  term.archive-box-label: |
+    .match {$count :plural}
+    when one {box}
+    when * {boxes}
+  term.archive-folder-label: |
+    .match {$count :plural}
+    when one {folder}
+    when * {folders}
+  term.archive-item-label: |
+    .match {$count :plural}
+    when one {item}
+    when * {items}
   # Compositional patterns
   pattern.page-range: "{$start}–{$end}"
   pattern.retrieved-from: "retrieved from {$url}"

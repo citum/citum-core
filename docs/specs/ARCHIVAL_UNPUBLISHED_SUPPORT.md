@@ -489,12 +489,26 @@ reference types, not just archival material. Genre formalization is tracked
 as a separate follow-up (see bean `csl26-ldgf`); archival material-type
 rendering will depend on that work for proper localization.
 
+## Assembly Default
+
+When a reference has structured archive hierarchy fields but no `location` value,
+the engine assembles a default display string via the `archive-location` variable:
+
+- **Order:** collection → series → box → folder → item
+- **Labels:** Locale-backed labels are prepended to each present field (singular,
+  long form). E.g., "collection Foo Papers" in en-US, "fonds Foo Papers" in fr-FR.
+- **Collection ID:** When both `collection` and `collection_id` are present, the ID
+  is appended in parentheses after the collection name: "collection Foo Papers (MS-123)".
+- **Joining:** Components are joined with ", ".
+- **Bypass:** If `location` is already present, it is returned unchanged (assembly
+  is not performed).
+- **Deferred:** Short-form labels (abbreviations) and per-style delimiter customization
+  are deferred to bean csl26-9oee.
+
 ## Deferred Design
 
 The following are intentionally not decided in this revision:
 
-- engine assembly rules for composing a display string from structured
-  hierarchy fields when `location` is absent
 - virtual grouping variables such as `archive-source` or `archive-shelfmark`
 - heuristic migration from legacy `archive_location` to `archive.place`
 - `EprintInfo.display_prefix`
