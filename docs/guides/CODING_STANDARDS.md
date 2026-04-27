@@ -44,10 +44,13 @@ implementation output.
 - Prefer expected values from literals, fixtures, oracle output, specs, or
   registered divergence decisions. Do not derive `expected` from `actual`,
   `result`, `rendered`, or other values produced by the code under test.
-- Avoid weakening exact output checks to substring checks just to make a test
-  pass. Use `contains` assertions only when the behavior is intentionally
-  partial, order-insensitive, or format-agnostic, and make that scope clear in
-  the test name or setup.
+- **Never use `contains()` in assertions on rendered output.** Use `assert_eq!`
+  with the full expected string. If a partial match is genuinely needed (e.g.,
+  format-agnostic URL presence or locale-variable text), the substring must be
+  ≥ 30 characters and the test name must signal it (`_contains_` or
+  `_partial_`). Short `contains()` checks — anything under 30 chars — verify
+  almost nothing and mask real regressions. Enforced by
+  `audit-rust-review-smells.py` (`render-output-contains-assertion`).
 - Fixture changes must explain the missing shape they add. When fixture data
   changes expected behavior, pair it with the smallest Rust or oracle check that
   exercises the new shape.

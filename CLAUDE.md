@@ -223,7 +223,10 @@ node scripts/report-core.js > /tmp/core-report.json && \
 cargo run --bin citum -- render refs -b tests/fixtures/references-expanded.json -s styles/apa-7th.yaml
 cargo run --bin citum -- schema > citum.schema.json
 cargo bench --bench rendering                            # Hot path benchmarks
+python3 scripts/audit-rust-review-smells.py --changed    # Run before committing test changes
 ```
+
+**Test assertion rule:** Never use `contains()` with a substring under 30 chars to verify rendered output. Use `assert_eq!` with the full expected string. See `docs/guides/CODING_STANDARDS.md` for the full rule and escape hatch.
 
 ## Git Workflow
 
