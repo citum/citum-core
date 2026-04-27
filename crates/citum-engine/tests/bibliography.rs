@@ -1759,11 +1759,7 @@ fn article_journal_with_pages_keeps_standard_detail_block() {
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography();
 
-    assert!(result.contains("Journal of Fallbacks"));
-    assert!(result.contains("2024"));
-    assert!(result.contains("12"));
-    assert!(result.contains("101"));
-    assert!(!result.contains("DOI:10.1234/fallback"));
+    assert_eq!(result, "Journal of Fallbacks, 2024, 12, (3), pp. 101–109");
 }
 
 fn page_less_article_journal_swaps_detail_block_for_doi() {
@@ -1783,10 +1779,7 @@ fn page_less_article_journal_swaps_detail_block_for_doi() {
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography();
 
-    assert!(result.contains("Journal of Fallbacks"));
-    assert!(result.contains("DOI:10.1234/fallback"));
-    assert!(!result.contains("2024"));
-    assert!(!result.contains("pp."));
+    assert_eq!(result, "Journal of Fallbacks, DOI:10.1234/fallback");
 }
 
 fn type_variant_article_journal_fallback_preserves_variant_precedence() {
@@ -1924,30 +1917,10 @@ fn anonymous_entry_type_variants_reorder_online_entries_and_drop_print_fallback_
         "authorful-encyclopedia".to_string(),
     ]);
 
-    let rendered_lines: Vec<&str> = rendered
-        .lines()
-        .map(str::trim)
-        .filter(|line| !line.is_empty())
-        .collect();
-
     assert_eq!(
-        rendered_lines.len(),
-        2,
-        "anonymous print-like dictionary and encyclopedia rows should be suppressed: {rendered}"
-    );
-    assert!(
-        rendered.contains(
-            "Wikipedia. 2025. Stevie Nicks. https://en.wikipedia.org/w/index.php?title=Stevie_Nicks&oldid=1279222290"
-        ),
-        "online anonymous encyclopedia entries should be container-led and URL-backed: {rendered}"
-    );
-    assert!(
-        !rendered.contains("1976") && !rendered.contains("Johnson's Universal Cyclopaedia"),
-        "print-like anonymous dictionary and encyclopedia rows should be dropped: {rendered}"
-    );
-    assert!(
-        rendered.contains("Marcello Piras"),
-        "authorful encyclopedia entries should still render instead of being suppressed: {rendered}"
+        rendered,
+        "Marcello Piras. Ellington, Duke. Grove Music Online. 2013. https://doi.org/10.1093/gmo/9781561592630.article.A2249397\n\nWikipedia. 2025. Stevie Nicks. https://en.wikipedia.org/w/index.php?title=Stevie_Nicks&oldid=1279222290",
+        "anonymous print-like rows should be suppressed; authorful and online entries should render"
     );
 }
 
@@ -2137,16 +2110,14 @@ fn apa_magazine_and_newspaper_entries_keep_special_format_translators_and_direct
         .collect::<Vec<_>>();
 
     assert_eq!(lines.len(), 2);
-    assert!(lines[0].contains("Author, F. A. (2018a, "));
-    assert!(lines[0].contains("15 Magazine article (T. A. Translator, Trans.)"));
-    assert!(lines[0].contains("[Type; Special format]"));
-    assert!(lines[0].contains("1–100. http://example.com/"));
-    assert!(lines[1].contains("Author, F. A. (2018b, "));
-    assert!(lines[1].contains("17 Newspaper article (T. A. Translator, Trans.)"));
-    assert!(lines[1].contains("[Type; Special format]"));
-    assert!(lines[1].contains("Newspaper Title"));
-    assert!(lines[1].contains("1–100"));
-    assert!(lines[1].contains("http://example.com/"));
+    assert_eq!(
+        lines[0],
+        "Author, F. A. (2018a, July 14). 15 Magazine article (T. A. Translator, Trans.) [Type; Special format]. _Journal Title_, _32_(5), 1–100. http://example.com/"
+    );
+    assert_eq!(
+        lines[1],
+        "Author, F. A. (2018b, July 14). 17 Newspaper article (T. A. Translator, Trans.) [Type; Special format]. _Newspaper Title_, 1–100. http://example.com/"
+    );
     assert!(!rendered.contains("Retrieved "));
 }
 
@@ -2272,19 +2243,10 @@ fn apa_containerless_translated_chapter_avoids_rendering_an_empty_in_group() {
 
     let rendered = render_structural_bibliography_case(legacy);
 
-    assert!(rendered.contains("27a Book chapter"), "{rendered}");
-    assert!(rendered.contains("(S. S. Editor, Trans.)"), "{rendered}");
-    assert!(rendered.contains("Vol. 2"), "{rendered}");
-    assert!(rendered.contains("pp. 123–128"), "{rendered}");
-    assert!(
-        rendered.contains("https://doi.org/10.1234/5678"),
-        "{rendered}"
+    assert_eq!(
+        rendered,
+        "Author, F. A. (2013). 27a Book chapter (S. S. Editor, Trans.). In S. S. Editor (ed.) (2 ed., Vol. 2, pp. 123–128). Publisher. https://doi.org/10.1234/5678 http://example.com/"
     );
-    assert!(!rendered.contains(". In ."), "{rendered}");
-    assert!(!rendered.contains(". In ("), "{rendered}");
-    if rendered.contains(". In ") {
-        assert!(rendered.contains(". In S. S. Editor"), "{rendered}");
-    }
 }
 
 struct StructuralBibliographyCase {
@@ -2522,13 +2484,9 @@ fn bibliography_local_numeric_processing_assigns_bibliography_numbers() {
     let processor = Processor::new(style, bib);
     let rendered = processor.render_bibliography();
 
-    assert!(
-        rendered.contains("1. John Smith"),
-        "bibliography-local numeric processing should assign bibliography numbers: {rendered}"
-    );
-    assert!(
-        rendered.contains("2. Beth Brown"),
-        "bibliography-local numeric processing should assign bibliography numbers: {rendered}"
+    assert_eq!(
+        rendered, "1. John Smith\n\n2. Beth Brown",
+        "bibliography-local numeric processing should assign bibliography numbers"
     );
 }
 
@@ -3107,18 +3065,7 @@ fn original_published_date_variable_renders_when_reference_has_original_date() {
         .trim()
         .to_string();
 
-    assert!(
-        rendered.contains("(1925)"),
-        "expected original-published year '(1925)' in output: {rendered}"
-    );
-    assert!(
-        rendered.contains("1992"),
-        "expected issued year '1992' in output: {rendered}"
-    );
-    assert!(
-        rendered.contains("The Great Gatsby"),
-        "expected title in output: {rendered}"
-    );
+    assert_eq!(rendered, "(1925) 1992. The Great Gatsby");
 }
 
 #[test]
@@ -3180,18 +3127,7 @@ fn original_published_date_variable_renders_for_patent_references() {
         .trim()
         .to_string();
 
-    assert!(
-        rendered.contains("(1901)"),
-        "expected original-published year '(1901)' in output: {rendered}"
-    );
-    assert!(
-        rendered.contains("1992"),
-        "expected issued year '1992' in output: {rendered}"
-    );
-    assert!(
-        rendered.contains("Improved Widget"),
-        "expected title in output: {rendered}"
-    );
+    assert_eq!(rendered, "(1901) 1992. Improved Widget");
 }
 
 mod annotated_html_preview {
