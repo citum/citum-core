@@ -1275,3 +1275,104 @@ fn german_override_localizes_translator_verb_when_role_preset_requests_it() {
         output
     );
 }
+
+#[test]
+fn archive_hierarchy_labels_resolved_from_locales() {
+    use citum_schema::locale::{ArchiveHierarchyField, Locale};
+
+    // Test en-US
+    let en_us_bytes =
+        citum_schema::embedded::get_locale_bytes("en-US").expect("en-US locale bytes not found");
+    let en_us = Locale::from_yaml_str(std::str::from_utf8(en_us_bytes).expect("invalid UTF-8"))
+        .expect("failed to parse en-US locale");
+
+    assert_eq!(
+        en_us.resolved_archive_term(ArchiveHierarchyField::Collection),
+        Some("collection".to_string()),
+        "en-US collection label"
+    );
+    assert_eq!(
+        en_us.resolved_archive_term(ArchiveHierarchyField::Series),
+        Some("series".to_string()),
+        "en-US series label"
+    );
+    assert_eq!(
+        en_us.resolved_archive_term(ArchiveHierarchyField::Box),
+        Some("box".to_string()),
+        "en-US box label (singular)"
+    );
+    assert_eq!(
+        en_us.resolved_archive_term(ArchiveHierarchyField::Folder),
+        Some("folder".to_string()),
+        "en-US folder label (singular)"
+    );
+    assert_eq!(
+        en_us.resolved_archive_term(ArchiveHierarchyField::Item),
+        Some("item".to_string()),
+        "en-US item label (singular)"
+    );
+
+    // Test fr-FR
+    let fr_fr_bytes =
+        citum_schema::embedded::get_locale_bytes("fr-FR").expect("fr-FR locale bytes not found");
+    let fr_fr = Locale::from_yaml_str(std::str::from_utf8(fr_fr_bytes).expect("invalid UTF-8"))
+        .expect("failed to parse fr-FR locale");
+
+    assert_eq!(
+        fr_fr.resolved_archive_term(ArchiveHierarchyField::Collection),
+        Some("fonds".to_string()),
+        "fr-FR collection label"
+    );
+    assert_eq!(
+        fr_fr.resolved_archive_term(ArchiveHierarchyField::Series),
+        Some("série".to_string()),
+        "fr-FR series label"
+    );
+    assert_eq!(
+        fr_fr.resolved_archive_term(ArchiveHierarchyField::Box),
+        Some("Boîte".to_string()),
+        "fr-FR box label (singular)"
+    );
+    assert_eq!(
+        fr_fr.resolved_archive_term(ArchiveHierarchyField::Folder),
+        Some("Dossier".to_string()),
+        "fr-FR folder label (singular)"
+    );
+    assert_eq!(
+        fr_fr.resolved_archive_term(ArchiveHierarchyField::Item),
+        Some("Pièce".to_string()),
+        "fr-FR item label (singular)"
+    );
+
+    // Test de-DE
+    let de_de_bytes =
+        citum_schema::embedded::get_locale_bytes("de-DE").expect("de-DE locale bytes not found");
+    let de_de = Locale::from_yaml_str(std::str::from_utf8(de_de_bytes).expect("invalid UTF-8"))
+        .expect("failed to parse de-DE locale");
+
+    assert_eq!(
+        de_de.resolved_archive_term(ArchiveHierarchyField::Collection),
+        Some("Sammlung".to_string()),
+        "de-DE collection label"
+    );
+    assert_eq!(
+        de_de.resolved_archive_term(ArchiveHierarchyField::Series),
+        Some("Serie".to_string()),
+        "de-DE series label"
+    );
+    assert_eq!(
+        de_de.resolved_archive_term(ArchiveHierarchyField::Box),
+        Some("Mappe".to_string()),
+        "de-DE box label (singular)"
+    );
+    assert_eq!(
+        de_de.resolved_archive_term(ArchiveHierarchyField::Folder),
+        Some("Akte".to_string()),
+        "de-DE folder label (singular)"
+    );
+    assert_eq!(
+        de_de.resolved_archive_term(ArchiveHierarchyField::Item),
+        Some("Dokument".to_string()),
+        "de-DE item label (singular)"
+    );
+}

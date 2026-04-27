@@ -5,6 +5,7 @@
 
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
+use citum_schema::locale::ArchiveHierarchyField;
 use citum_schema::options::titles::TextCase;
 use citum_schema::reference::RichText;
 use citum_schema::template::{SimpleVariable, TemplateVariable};
@@ -33,6 +34,69 @@ fn resolve_archive_name(reference: &Reference, options: &RenderOptions<'_>) -> O
         multilingual.and_then(|ml| ml.preferred_script.as_ref()),
         options.locale.locale.as_str(),
     ))
+}
+
+fn assemble_archive_hierarchy(
+    reference: &Reference,
+    options: &RenderOptions<'_>,
+) -> Option<String> {
+    let locale = options.locale;
+    let mut parts: Vec<String> = Vec::new();
+
+    // collection (with optional collection_id in parens)
+    if let Some(collection) = reference.archive_collection() {
+        let label = locale
+            .resolved_archive_term(ArchiveHierarchyField::Collection)
+            .map(|l| format!("{l} "))
+            .unwrap_or_default();
+        if let Some(cid) = reference.archive_collection_id() {
+            parts.push(format!("{label}{collection} ({cid})"));
+        } else {
+            parts.push(format!("{label}{collection}"));
+        }
+    }
+
+    // series
+    if let Some(series) = reference.archive_series() {
+        let label = locale
+            .resolved_archive_term(ArchiveHierarchyField::Series)
+            .map(|l| format!("{l} "))
+            .unwrap_or_default();
+        parts.push(format!("{label}{series}"));
+    }
+
+    // box
+    if let Some(b) = reference.archive_box() {
+        let label = locale
+            .resolved_archive_term(ArchiveHierarchyField::Box)
+            .map(|l| format!("{l} "))
+            .unwrap_or_default();
+        parts.push(format!("{label}{b}"));
+    }
+
+    // folder
+    if let Some(folder) = reference.archive_folder() {
+        let label = locale
+            .resolved_archive_term(ArchiveHierarchyField::Folder)
+            .map(|l| format!("{l} "))
+            .unwrap_or_default();
+        parts.push(format!("{label}{folder}"));
+    }
+
+    // item
+    if let Some(item) = reference.archive_item() {
+        let label = locale
+            .resolved_archive_term(ArchiveHierarchyField::Item)
+            .map(|l| format!("{l} "))
+            .unwrap_or_default();
+        parts.push(format!("{label}{item}"));
+    }
+
+    if parts.is_empty() {
+        None
+    } else {
+        Some(parts.join(", "))
+    }
 }
 
 fn make_rich_text_case_transform(case: TextCase) -> impl FnMut(&str) -> String {
@@ -78,7 +142,9 @@ fn resolve_variable_value(
         SimpleVariable::Status => reference.status(),
         SimpleVariable::Abstract | SimpleVariable::Note => None,
         SimpleVariable::Archive => reference.archive(),
-        SimpleVariable::ArchiveLocation => reference.archive_location(),
+        SimpleVariable::ArchiveLocation => reference
+            .archive_location()
+            .or_else(|| assemble_archive_hierarchy(reference, options)),
         SimpleVariable::ArchiveName => resolve_archive_name(reference, options),
         SimpleVariable::ArchivePlace => reference.archive_place(),
         SimpleVariable::ArchiveCollection => reference.archive_collection(),

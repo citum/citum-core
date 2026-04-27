@@ -756,6 +756,21 @@ messages:
     .match {$count :plural}
     when one {mit Gast}
     when * {mit Gästen}
+  # Archive hierarchy labels
+  term.archive-collection-label: "Sammlung"
+  term.archive-series-label: "Serie"
+  term.archive-box-label: |
+    .match {$count :plural}
+    when one {Mappe}
+    when * {Mappen}
+  term.archive-folder-label: |
+    .match {$count :plural}
+    when one {Akte}
+    when * {Akten}
+  term.archive-item-label: |
+    .match {$count :plural}
+    when one {Dokument}
+    when * {Dokumente}
   pattern.retrieved-from: "abgerufen von {$url}"
   date.open-ended: "heute"
 

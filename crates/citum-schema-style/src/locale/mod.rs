@@ -32,6 +32,34 @@ pub use types::*;
 /// A list of month names (12 elements for Jan-Dec).
 pub type MonthList = Vec<String>;
 
+/// Identifies a field in the archive hierarchy for locale term lookup.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ArchiveHierarchyField {
+    /// Named collection or record group.
+    Collection,
+    /// Named series or sub-collection.
+    Series,
+    /// Box or container designation.
+    Box,
+    /// Folder designation.
+    Folder,
+    /// Item, file, or reference-code designation.
+    Item,
+}
+
+impl ArchiveHierarchyField {
+    /// Returns the MF2 message ID for this field's locale label.
+    fn message_id(self) -> &'static str {
+        match self {
+            Self::Collection => "term.archive-collection-label",
+            Self::Series => "term.archive-series-label",
+            Self::Box => "term.archive-box-label",
+            Self::Folder => "term.archive-folder-label",
+            Self::Item => "term.archive-item-label",
+        }
+    }
+}
+
 /// A locale definition containing language-specific terms and formatting rules.
 ///
 /// The `evaluator` field holds the message evaluation engine, selected based on
@@ -137,6 +165,31 @@ fn extract_top_level_yaml_section(yaml: &str, key: &str) -> Option<String> {
     } else {
         Some(collected.join("\n"))
     }
+}
+
+/// Archive hierarchy label messages for the hardcoded en-US locale.
+///
+/// Only the archive terms are pre-seeded here; all other message lookups fall
+/// through to the legacy typed term maps so that the hardcoded `en_us()`
+/// constructor stays consistent with the pre-existing test baseline.
+fn en_us_archive_messages() -> HashMap<String, String> {
+    [
+        ("term.archive-collection-label".into(), "collection".into()),
+        ("term.archive-series-label".into(), "series".into()),
+        (
+            "term.archive-box-label".into(),
+            ".match {$count :plural}\nwhen one {box}\nwhen * {boxes}".into(),
+        ),
+        (
+            "term.archive-folder-label".into(),
+            ".match {$count :plural}\nwhen one {folder}\nwhen * {folders}".into(),
+        ),
+        (
+            "term.archive-item-label".into(),
+            ".match {$count :plural}\nwhen one {item}\nwhen * {items}".into(),
+        ),
+    ]
+    .into()
 }
 
 /// Curated en-US genre and medium labels from the embedded locale asset.
@@ -419,8 +472,10 @@ impl Locale {
             punctuation_in_quote: true,
             sort_articles: vec!["the".into(), "a".into(), "an".into()],
             locale_schema_version: None,
-            evaluation: EvaluationConfig::default(),
-            messages: HashMap::new(),
+            evaluation: EvaluationConfig {
+                message_syntax: MessageSyntax::Mf2,
+            },
+            messages: en_us_archive_messages(),
             date_formats: HashMap::new(),
             number_formats: NumberFormats {
                 decimal_separator: ".".into(),
@@ -884,6 +939,12 @@ impl Locale {
 
         self.general_term(term, form, requested_gender)
             .map(ToOwned::to_owned)
+    }
+
+    /// Resolve an archive hierarchy label, using MF2 messages.
+    /// Returns singular form (count=1) by default.
+    pub fn resolved_archive_term(&self, field: ArchiveHierarchyField) -> Option<String> {
+        self.resolve_message_text(field.message_id(), Some(1), None)
     }
 
     /// Get the "and" term based on style preference.

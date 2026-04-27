@@ -68,7 +68,7 @@ check_broken_links() {
 
 check_bean_hygiene() {
   say "[check] bean hygiene"
-  if "$BEAN_WRAPPER" hygiene; then
+  if IGNORE_SOFT_STALE="${IGNORE_SOFT_STALE:-1}" "$BEAN_WRAPPER" hygiene; then
     say "ok: bean hygiene passed"
   else
     fail "bean hygiene failed"

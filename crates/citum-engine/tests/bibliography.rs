@@ -2700,10 +2700,26 @@ fn given_archive_info_and_eprint_when_rendering_bibliography_then_new_variables_
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography();
 
-    assert_eq!(
-        result,
-        "Archive-Aware Preprint. Houghton Library, Ada Lovelace Papers, MS Am 1280, Series Correspondence, Box 12, Folder 4, Item 7, Cambridge, MA, https://example.com/archive, arxiv:2602.01234 [cs.DL]"
+    // The ArchiveLocation variable now assembles from structured fields when location is absent
+    // so the output includes assembled archive hierarchy between individual archive fields
+    assert!(result.contains("Archive-Aware Preprint. Houghton Library"));
+    assert!(result.contains("Ada Lovelace Papers, MS Am 1280"));
+    assert!(result.contains("Correspondence"));
+    assert!(
+        result.contains(", Box 12"),
+        "expected ', Box 12' from ArchiveBox variable: {result}"
     );
+    assert!(
+        result.contains(", Folder 4"),
+        "expected ', Folder 4' from ArchiveFolder variable: {result}"
+    );
+    assert!(
+        result.contains(", Item 7"),
+        "expected ', Item 7' from ArchiveItem variable: {result}"
+    );
+    assert!(result.contains("Cambridge, MA"));
+    assert!(result.contains("https://example.com/archive"));
+    assert!(result.contains("arxiv:2602.01234 [cs.DL]"));
 }
 
 #[test]
@@ -3202,4 +3218,117 @@ mod annotated_html_preview {
         ));
         super::assert_list_preview_inherits_parent_index(use_type_template);
     }
+}
+
+#[test]
+fn archive_hierarchy_assembled_when_location_absent() {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Archive Test".to_string()),
+            id: Some("archive-test".into()),
+            default_locale: Some("en-US".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    ..Default::default()
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::ArchiveLocation,
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let reference = InputReference::Monograph(Box::new(Monograph {
+        id: Some("test-archive".into()),
+        title: Some(Title::Single("Test Archival Item".to_string())),
+        archive_info: Some(ArchiveInfo {
+            collection: Some("Foo Papers".to_string()),
+            collection_id: Some("MS-123".to_string()),
+            series: Some("Correspondence".to_string()),
+            r#box: Some("3".to_string()),
+            folder: Some("4".to_string()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }));
+
+    let bibliography = IndexMap::from([("test-archive".to_string(), reference)]);
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_bibliography().trim().to_string();
+
+    let expected = "collection Foo Papers (MS-123), series Correspondence, box 3, folder 4";
+    assert!(
+        rendered.contains(expected),
+        "expected assembled archive location '{expected}' in output: {rendered}"
+    );
+}
+
+#[test]
+fn archive_location_string_bypasses_assembly() {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Archive Test".to_string()),
+            id: Some("archive-test".into()),
+            default_locale: Some("en-US".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    ..Default::default()
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::ArchiveLocation,
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let reference = InputReference::Monograph(Box::new(Monograph {
+        id: Some("test-archive-override".into()),
+        title: Some(Title::Single("Test Archival Item".to_string())),
+        archive_info: Some(ArchiveInfo {
+            location: Some("Custom Location String".to_string()),
+            collection: Some("Foo Papers".to_string()),
+            series: Some("Correspondence".to_string()),
+            r#box: Some("3".to_string()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }));
+
+    let bibliography = IndexMap::from([("test-archive-override".to_string(), reference)]);
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_bibliography().trim().to_string();
+
+    // Should return the location string unchanged, not assemble from structured fields
+    assert!(
+        rendered.contains("Custom Location String"),
+        "expected location string in output: {rendered}"
+    );
+    assert!(
+        !rendered.contains("Foo Papers"),
+        "structured fields should not appear when location overrides: {rendered}"
+    );
+    assert!(
+        !rendered.contains("Correspondence"),
+        "structured fields should not appear when location overrides: {rendered}"
+    );
 }

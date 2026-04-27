@@ -858,6 +858,21 @@ messages:
     when one {invité}
     when * {invités}
   role.guest.verb: "avec pour invité"
+  # Archive hierarchy labels
+  term.archive-collection-label: "fonds"
+  term.archive-series-label: "série"
+  term.archive-box-label: |
+    .match {$count :plural}
+    when one {Boîte}
+    when * {Boîtes}
+  term.archive-folder-label: |
+    .match {$count :plural}
+    when one {Dossier}
+    when * {Dossiers}
+  term.archive-item-label: |
+    .match {$count :plural}
+    when one {Pièce}
+    when * {Pièces}
   # Compositional patterns
   pattern.page-range: "{$start}–{$end}"
   pattern.retrieved-from: "consulté à l'adresse {$url}"

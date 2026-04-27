@@ -1,14 +1,14 @@
 ---
 # csl26-mlc2
 title: Design locale-backed archive hierarchy labels
-status: todo
+status: completed
 type: feature
 priority: normal
 tags:
     - schema
     - locale
 created_at: 2026-04-23T15:08:48Z
-updated_at: 2026-04-27T11:34:33Z
+updated_at: 2026-04-27T12:07:57Z
 parent: csl26-li63
 ---
 
@@ -26,3 +26,7 @@ Expected outcome:
 - decision on locale term family placement
 - explicit singular/plural and abbreviation rules
 - engine-backed rendering plan and acceptance tests for localized archival labels
+
+## Summary of Changes
+
+Added archive hierarchy locale terms (collection, series, box, folder, item) to en-US, fr-FR, and de-DE locales in messages: block with plural-aware rendering for container fields. Implemented resolved_archive_term() method in Locale to look up these terms. Modified ArchiveLocation variable resolution in the engine to fall back to assemble_archive_hierarchy() when location is absent, joining structured fields with locale-backed labels and comma separation. Documented assembly defaults in archival spec. Added archive term IDs to authoring guide catalog. Created locale tests in i18n.rs and integration tests in bibliography.rs. All 1112 tests passing.
