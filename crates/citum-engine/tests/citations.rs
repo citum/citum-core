@@ -645,9 +645,9 @@ fn citation_scoped_contributor_shorten_applies_without_component_override() {
         })
         .expect("citation should render");
 
-    assert!(
-        rendered.contains("Doe et al"),
-        "citation-scoped shorten should apply without component override, got: {rendered}"
+    assert_eq!(
+        rendered, "John Doe et al",
+        "citation-scoped shorten should apply without component override"
     );
 }
 
@@ -875,10 +875,7 @@ fn chicago_notes_immediate_repeat_renders_compact_ibid() {
     let first_result = processor
         .process_citation(&first_citation)
         .expect("Failed to process first citation");
-    assert!(
-        first_result.contains("Smith"),
-        "First citation should contain author name"
-    );
+    assert_eq!(first_result, "John Smith, _A Great Book_ (1995).");
 
     // Second citation with Ibid position (should render "Ibid.")
     let ibid_citation = citum_schema::Citation {
@@ -893,16 +890,7 @@ fn chicago_notes_immediate_repeat_renders_compact_ibid() {
     let ibid_result = processor
         .process_citation(&ibid_citation)
         .expect("Failed to process ibid citation");
-    assert!(
-        ibid_result.contains("Ibid."),
-        "Ibid citation should contain lexical ibid: got {ibid_result}"
-    );
-    // The ibid position is being respected - the citation should be shorter
-    // than the full first citation because it uses the ibid spec
-    assert!(
-        ibid_result.len() < first_result.len(),
-        "Ibid citation should be shorter than full first citation"
-    );
+    assert_eq!(ibid_result, "Ibid.");
 }
 
 fn chicago_notes_prefixed_ibid_remains_mid_sentence() {
@@ -1024,14 +1012,7 @@ fn chicago_notes_non_immediate_repeat_uses_the_subsequent_short_form() {
     let result = processor
         .process_citation(&subsequent_citation)
         .expect("Failed to process subsequent citation");
-    assert!(
-        result.contains("Smith"),
-        "Subsequent citation should contain shortened author"
-    );
-    assert!(
-        result.contains("Great Book"),
-        "Subsequent citation should contain shortened title"
-    );
+    assert_eq!(result, "Smith, _A Great Book_.");
 }
 
 fn chicago_notes_reprint_full_note_renders_original_publisher_metadata() {
@@ -1077,13 +1058,9 @@ fn chicago_notes_reprint_full_note_renders_original_publisher_metadata() {
     let rendered = processor
         .process_citation(&first_citation)
         .expect("Failed to process reprint citation");
-    assert!(
-        rendered.contains("(1901) Old Press, Boston"),
-        "reprint note should include original publisher metadata: {rendered}"
-    );
-    assert!(
-        rendered.contains("Vintage Books"),
-        "reprint note should still include current publisher metadata: {rendered}"
+    assert_eq!(
+        rendered,
+        "Edward W. Said, _Orientalism_ (1901) Old Press, Boston (Vintage Books, 1994)."
     );
 }
 
@@ -1237,26 +1214,16 @@ fn oscola_position_overrides_control_ibid_and_subsequent_forms() {
         .process_citation(&ibid_with_locator)
         .expect("ibid-with-locator cite should render");
 
-    assert!(
-        first_rendered.contains("1995"),
-        "first OSCOLA citation should keep the full-form year: {first_rendered}"
+    assert_eq!(
+        first_rendered,
+        "John Smith, \u{201C}_A Great Book_\u{201D}(1995)."
     );
-    assert!(
-        !subsequent_rendered.contains("1995"),
-        "subsequent OSCOLA citation should use the short repeated-note form: {subsequent_rendered}"
+    assert_eq!(
+        subsequent_rendered,
+        "Smith, \u{201C}_A Great Book_\u{201D}."
     );
-    assert!(
-        ibid_rendered.starts_with("ibid"),
-        "OSCOLA ibid citation should keep the note-start marker lowercase: {ibid_rendered}"
-    );
-    assert!(
-        ibid_with_locator_rendered.contains("45"),
-        "OSCOLA ibid-with-locator citation should keep the locator: {ibid_with_locator_rendered}"
-    );
-    assert!(
-        ibid_with_locator_rendered.starts_with("ibid"),
-        "OSCOLA ibid-with-locator citation should keep the note-start marker lowercase: {ibid_with_locator_rendered}"
-    );
+    assert_eq!(ibid_rendered, "ibid.");
+    assert_eq!(ibid_with_locator_rendered, "ibid p45.");
 }
 
 fn oscola_without_ibid_reuses_the_subsequent_form_for_immediate_repeats() {
@@ -1362,17 +1329,10 @@ fn thomson_reuters_subsequent_short_form_keeps_the_locator() {
         .process_citation(&subsequent)
         .expect("subsequent cite should render");
 
-    assert!(
-        first_rendered.contains("1995"),
-        "first Thomson Reuters citation should keep the full-form year: {first_rendered}"
-    );
-    assert!(
-        subsequent_rendered.contains("23"),
-        "subsequent Thomson Reuters citation should render the locator: {subsequent_rendered}"
-    );
-    assert!(
-        !subsequent_rendered.contains("1995"),
-        "subsequent Thomson Reuters citation should use the shortened repeated-note form: {subsequent_rendered}"
+    assert_eq!(first_rendered, "Smith, \u{201C}A Great Book\u{201D}(1995).");
+    assert_eq!(
+        subsequent_rendered,
+        "Smith, \u{201C}_A Great Book_\u{201D} at 23."
     );
 }
 
