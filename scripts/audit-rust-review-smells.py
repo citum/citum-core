@@ -110,14 +110,15 @@ RULES = (
     Rule(
         name="render-output-contains-assertion",
         category="test-independence",
-        severity="medium",
+        severity="high",
         pattern=re.compile(
-            r"assert!\([^;]*(?:rendered|result|output|actual|entry|content)"
-            r"\.contains\("
+            r'assert!\([^;]*\.contains\(\s*"[^"]{0,29}"\s*\)'
         ),
         message=(
-            "Substring assertions on rendered output are weak. Prefer exact output, "
-            "component-level assertions, or document why the test is intentionally partial."
+            "Short contains() assertions (< 30 chars) on rendered output are banned. "
+            "Use assert_eq! with the full expected string instead. If a partial match "
+            "is genuinely needed, the substring must be >= 30 chars and the test name "
+            "must include '_contains_' or '_partial_'. See CODING_STANDARDS.md."
         ),
         include_kinds=("test",),
     ),
