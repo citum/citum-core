@@ -25,9 +25,8 @@ fn test_verify_comprehensive_examples() {
                 // Verify specific fields for Foucault example
                 if id == "foucault_discipline" {
                     let keywords = reference.keywords().expect("Should have keywords");
-                    assert!(keywords.contains(&"humanities".to_string()));
-                    assert!(keywords.contains(&"translation".to_string()));
-
+                    assert!(keywords.iter().any(|k| k == "humanities"));
+                    assert!(keywords.iter().any(|k| k == "translation"));
                     let orig_date = reference
                         .original_date()
                         .expect("Should have original date");
