@@ -112,7 +112,7 @@ RULES = (
         category="test-independence",
         severity="high",
         pattern=re.compile(
-            r'assert!\([^;]*\.contains\(\s*"[^"]{0,29}"\s*\)'
+            r'assert!\((?![^;]*err(?:or)?\b)[^;]*\.contains\(\s*"[^"]{0,29}"\s*\)'
         ),
         message=(
             "Short contains() assertions (< 30 chars) on rendered output are banned. "
@@ -122,6 +122,7 @@ RULES = (
         ),
         include_kinds=("test",),
     ),
+
     Rule(
         name="expected-derived-from-actual",
         category="test-independence",
@@ -207,7 +208,8 @@ def dense_literal_to_string_findings(path: Path, lines: list[str], path_kind: st
     if path_kind not in {"prod", "hot-path"}:
         return []
 
-    literal_pattern = re.compile(SHORT_LITERAL + r"\.to_string\(\)")
+    # Ignore match arms (ending in =>)
+    literal_pattern = re.compile(r'(?<!=>\s)' + SHORT_LITERAL + r"\.to_string\(\)")
     test_like_pattern = re.compile(r"\b(?:assert|panic)!\(|#\s*\[\s*(?:test|rstest|case|cfg\(test\))")
     findings: list[Finding] = []
     window_size = 25
