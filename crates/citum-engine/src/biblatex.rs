@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! Provides functions to convert biblatex entries and contributor
 //! information into Citum's `InputReference` and Contributor types.
 
-use biblatex;
+use ::biblatex as biblatex_crate;
 use citum_schema::reference::{
     InputReference, LangID, Numbering, NumberingType, Publisher, RefID, RichText, WorkRelation,
     contributor::{Contributor, ContributorList, StructuredName},
@@ -149,13 +149,15 @@ fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
 /// Maps biblatex entry types (book, article, inproceedings, etc.) to
 /// appropriate Citum reference types. Extracts all relevant fields
 /// including contributors, dates, and metadata.
-pub(super) fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputReference {
+pub(crate) fn input_reference_from_biblatex(entry: &biblatex_crate::Entry) -> InputReference {
     let id = Some(entry.key.clone().into());
     let field_str = |key: &str| {
         entry.fields.get(key).map(|f| {
             f.iter()
                 .map(|c| match &c.v {
-                    biblatex::Chunk::Normal(s) | biblatex::Chunk::Verbatim(s) => s.as_str(),
+                    biblatex_crate::Chunk::Normal(s) | biblatex_crate::Chunk::Verbatim(s) => {
+                        s.as_str()
+                    }
                     _ => "",
                 })
                 .collect::<String>()
@@ -174,7 +176,7 @@ pub(super) fn input_reference_from_biblatex(entry: &biblatex::Entry) -> InputRef
         .ok()
         .map(|p| contributors_from_biblatex_persons(&p));
     let editor = entry.editors().ok().map(|e| {
-        let all_persons: Vec<biblatex::Person> =
+        let all_persons: Vec<biblatex_crate::Person> =
             e.into_iter().flat_map(|(persons, _)| persons).collect();
         contributors_from_biblatex_persons(&all_persons)
     });
@@ -278,7 +280,9 @@ fn biblatex_monograph(
 ///
 /// Maps biblatex Person data (given name, family name, prefix, suffix)
 /// to Citum's `StructuredName` contributors wrapped in a `ContributorList`.
-pub(super) fn contributors_from_biblatex_persons(persons: &[biblatex::Person]) -> Contributor {
+pub(crate) fn contributors_from_biblatex_persons(
+    persons: &[biblatex_crate::Person],
+) -> Contributor {
     let contributors: Vec<Contributor> = persons
         .iter()
         .map(|p| {
@@ -306,8 +310,9 @@ pub(super) fn contributors_from_biblatex_persons(persons: &[biblatex::Person]) -
 mod tests {
     use super::*;
 
-    fn parse_single_entry(source: &str) -> biblatex::Entry {
-        let bibliography = biblatex::Bibliography::parse(source).expect("biblatex should parse");
+    fn parse_single_entry(source: &str) -> biblatex_crate::Entry {
+        let bibliography =
+            biblatex_crate::Bibliography::parse(source).expect("biblatex should parse");
         bibliography
             .into_iter()
             .next()
