@@ -9,6 +9,11 @@ fn minimal_style_yaml() -> &'static [u8] {
     include_bytes!("../../../styles/alpha.yaml")
 }
 
+/// Returns a minimal installed locale fixture as YAML bytes.
+fn en_us_locale_yaml() -> &'static [u8] {
+    b"locale: en-US\n"
+}
+
 /// Creates a temporary store directory and a resolver pointing at it.
 fn make_resolver(format: StoreFormat) -> (TempDir, StoreResolver) {
     let dir = TempDir::new().expect("tempdir");
@@ -132,4 +137,30 @@ fn resolver_fallback_finds_any_format() {
         resolved.info.title.as_deref(),
         Some("Alpha (biblatex-alpha)")
     );
+}
+
+#[test]
+fn resolve_installed_yaml_locale() {
+    let (dir, resolver) = make_resolver(StoreFormat::Yaml);
+    let locales_dir = dir.path().join("locales");
+    fs::create_dir_all(&locales_dir).unwrap();
+    fs::write(locales_dir.join("en-US.yaml"), en_us_locale_yaml()).unwrap();
+
+    let locale = resolver.resolve_locale("en-US").expect("resolve_locale");
+
+    assert_eq!(locale.locale, "en-US");
+}
+
+#[test]
+fn list_styles_ignores_unsupported_files_and_deduplicates_formats() {
+    let (dir, resolver) = make_resolver(StoreFormat::Yaml);
+    let styles_dir = dir.path().join("styles");
+    fs::create_dir_all(&styles_dir).unwrap();
+    fs::write(styles_dir.join("alpha.yaml"), minimal_style_yaml()).unwrap();
+    fs::write(styles_dir.join("alpha.json"), "{}").unwrap();
+    fs::write(styles_dir.join("notes.txt"), "not a style").unwrap();
+
+    let styles = resolver.list_styles().expect("list_styles");
+
+    assert_eq!(styles, vec!["alpha"]);
 }

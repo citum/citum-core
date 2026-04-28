@@ -96,17 +96,10 @@ fn render_bibliography_returns_entries() {
         "expected at least one bibliography entry"
     );
     let entry = entries[0].as_str().unwrap();
-    assert!(
-        entry.contains("Hawking"),
-        "entry should contain author name"
-    );
-    assert!(entry.contains("1988"), "entry should contain year");
-    assert!(
-        result["result"]["content"]
-            .as_str()
-            .expect("content should be string")
-            .contains("Hawking"),
-        "content should contain author name"
+    assert_eq!(entry, "Hawking, S. (1988). _A Brief History of Time_");
+    assert_eq!(
+        result["result"]["content"].as_str().unwrap(),
+        "Hawking, S. (1988). _A Brief History of Time_"
     );
 }
 
@@ -258,15 +251,15 @@ fn render_citation_typst_returns_internal_link_markup() {
 #[test]
 fn unknown_method_returns_error() {
     let req = make_request(5, "frobnicate", json!({}));
-    let err = dispatch(req).expect_err("unknown method should error");
-    assert!(err.1.contains("unknown method"));
+    let err = dispatch(req).expect_err("should error");
+    assert_eq!(err.1, "unknown method: frobnicate");
 }
 
 #[test]
 fn missing_style_path_returns_error() {
     let req = make_request(6, "render_bibliography", json!({ "refs": hawking_refs() }));
-    let err = dispatch(req).expect_err("missing style_path should error");
-    assert!(err.1.contains("style_path"));
+    let err = dispatch(req).expect_err("should error");
+    assert_eq!(err.1, "missing required field: style_path");
 }
 
 #[test]
@@ -276,8 +269,8 @@ fn missing_refs_returns_error() {
         "render_bibliography",
         json!({ "style_path": apa_style_path() }),
     );
-    let err = dispatch(req).expect_err("missing refs should error");
-    assert!(err.1.contains("refs"));
+    let err = dispatch(req).expect_err("should error");
+    assert_eq!(err.1, "missing required field: refs");
 }
 
 #[test]
@@ -315,5 +308,8 @@ fn render_bibliography_typst_returns_labeled_markup() {
     let content = result["result"]["content"]
         .as_str()
         .expect("content should be a string");
-    assert!(content.contains("<ref-ITEM-2>"));
+    assert_eq!(
+        content,
+        "Hawking, S. (1988). _A Brief History of Time_ <ref-ITEM-2>"
+    );
 }

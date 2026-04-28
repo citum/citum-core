@@ -43,6 +43,16 @@ impl std::fmt::Display for StoreFormat {
 }
 
 impl StoreFormat {
+    /// All supported formats.
+    pub fn all() -> &'static [StoreFormat] {
+        &[StoreFormat::Yaml, StoreFormat::Json, StoreFormat::Cbor]
+    }
+
+    /// Detect format from path.
+    pub fn detect(path: &Path) -> Option<StoreFormat> {
+        Self::detect_from_extension(path)
+    }
+
     /// Detect format from file extension.
     #[must_use]
     pub fn detect_from_extension(path: &Path) -> Option<StoreFormat> {

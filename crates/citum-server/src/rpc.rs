@@ -41,7 +41,7 @@ impl OutputFormat {
     fn parse(params: &Value) -> Result<Self, ServerError> {
         match params.get("output_format") {
             Some(value) => serde_json::from_value(value.clone())
-                .map_err(|_| ServerError::UnsupportedOutputFormat(value.to_string())),
+                .map_err(|_| ServerError::UnsupportedOutputFormat(value.to_string().into())),
             None => Ok(Self::default()),
         }
     }
@@ -94,15 +94,15 @@ fn render_citation(params: &Value, id: Value) -> Result<Value, ServerError> {
     let style_path = params
         .get("style_path")
         .and_then(|v| v.as_str())
-        .ok_or_else(|| ServerError::MissingField("style_path".to_string()))?;
+        .ok_or_else(|| ServerError::MissingField("style_path".into()))?;
 
     let refs = params
         .get("refs")
-        .ok_or_else(|| ServerError::MissingField("refs".to_string()))?;
+        .ok_or_else(|| ServerError::MissingField("refs".into()))?;
 
     let citation_obj = params
         .get("citation")
-        .ok_or_else(|| ServerError::MissingField("citation".to_string()))?;
+        .ok_or_else(|| ServerError::MissingField("citation".into()))?;
     let output_format = OutputFormat::parse(params)?;
     let inject_ast_indices = parse_inject_ast_indices(params);
 
@@ -134,11 +134,11 @@ fn render_bibliography(params: &Value, id: Value) -> Result<Value, ServerError> 
     let style_path = params
         .get("style_path")
         .and_then(|v| v.as_str())
-        .ok_or_else(|| ServerError::MissingField("style_path".to_string()))?;
+        .ok_or_else(|| ServerError::MissingField("style_path".into()))?;
 
     let refs = params
         .get("refs")
-        .ok_or_else(|| ServerError::MissingField("refs".to_string()))?;
+        .ok_or_else(|| ServerError::MissingField("refs".into()))?;
     let output_format = OutputFormat::parse(params)?;
     let inject_ast_indices = parse_inject_ast_indices(params);
 
@@ -205,7 +205,7 @@ fn validate_style(params: &Value, id: Value) -> Result<Value, ServerError> {
     let style_path = params
         .get("style_path")
         .and_then(|v| v.as_str())
-        .ok_or_else(|| ServerError::MissingField("style_path".to_string()))?;
+        .ok_or_else(|| ServerError::MissingField("style_path".into()))?;
 
     match load_style(style_path) {
         Ok(_) => Ok(json!({
