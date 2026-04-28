@@ -4,6 +4,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
 use citum_engine::ProcessorError;
+use std::borrow::Cow;
 use std::io;
 use thiserror::Error;
 
@@ -44,9 +45,9 @@ pub enum ServerError {
 
     /// A required JSON-RPC parameter was missing from the request.
     #[error("missing required field: {0}")]
-    MissingField(String),
+    MissingField(Cow<'static, str>),
 
     /// The request asked for an unsupported output format.
     #[error("unsupported output format: {0}")]
-    UnsupportedOutputFormat(String),
+    UnsupportedOutputFormat(Cow<'static, str>),
 }

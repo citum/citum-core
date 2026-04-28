@@ -1,8 +1,17 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Store resolver for locating and managing user styles and locales.
 
 use crate::format::StoreFormat;
-use citum_schema::Style;
+use citum_schema::{Locale, Style};
+use serde::de::DeserializeOwned;
+use std::borrow::Cow;
+use std::collections::BTreeSet;
 use std::fs;
+use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
@@ -12,11 +21,11 @@ pub enum ResolverError {
     #[error("io error: {0}")]
     Io(#[from] std::io::Error),
     #[error("invalid style: {0}")]
-    InvalidStyle(String),
+    InvalidStyle(Cow<'static, str>),
     #[error("style not found: {0}")]
-    StyleNotFound(String),
+    StyleNotFound(Cow<'static, str>),
     #[error("locale not found: {0}")]
-    LocaleNotFound(String),
+    LocaleNotFound(Cow<'static, str>),
     #[error("yaml error: {0}")]
     YamlError(String),
     #[error("json error: {0}")]
@@ -38,155 +47,136 @@ impl StoreResolver {
         StoreResolver { data_dir, format }
     }
 
-    /// Resolve a style by name from the store.
-    ///
-    /// Searches for `data_dir/styles/<name>.{yaml,json,cbor}` and deserializes it.
+    /// Resolve a style by ID.
     ///
     /// # Errors
-    ///
-    /// Returns an error when the style cannot be found, read, or deserialized.
-    pub fn resolve_style(&self, name: &str) -> Result<Style, ResolverError> {
-        self.resolve_item("styles", name)
+    /// Returns an error if the style cannot be found or loaded.
+    pub fn resolve_style(&self, id: &str) -> Result<Style, ResolverError> {
+        self.resolve_item(id, "styles")
     }
 
-    /// List all installed style names (stems, no extension).
+    /// Resolve a locale by ID.
     ///
     /// # Errors
+    /// Returns an error if the locale cannot be found or loaded.
+    pub fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
+        self.resolve_item(id, "locales")
+    }
+
+    /// List all installed styles.
     ///
-    /// Returns an error when the styles directory cannot be read.
+    /// # Errors
+    /// Returns an error if the styles directory cannot be read.
     pub fn list_styles(&self) -> Result<Vec<String>, ResolverError> {
         self.list_items("styles")
     }
 
-    /// List all installed locale names (stems, no extension).
+    /// List all installed locales.
     ///
     /// # Errors
-    ///
-    /// Returns an error when the locales directory cannot be read.
+    /// Returns an error if the locales directory cannot be read.
     pub fn list_locales(&self) -> Result<Vec<String>, ResolverError> {
         self.list_items("locales")
     }
 
     /// Install a style from a source file.
     ///
-    /// Copies the file into `data_dir/styles/` using its stem as the name.
-    /// Returns the installed style name.
-    ///
     /// # Errors
-    ///
-    /// Returns an error when the source cannot be read or the destination
-    /// cannot be created or written.
+    /// Returns an error if the source file cannot be read or the destination cannot be written.
     pub fn install_style(&self, source: &Path) -> Result<String, ResolverError> {
         self.install_item(source, "styles")
     }
 
-    /// Remove an installed style by name.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error when the installed style cannot be removed.
-    pub fn remove_style(&self, name: &str) -> Result<(), ResolverError> {
-        self.remove_item(name, "styles")
-    }
-
     /// Install a locale from a source file.
     ///
-    /// Copies the file into `data_dir/locales/` using its stem as the name.
-    /// Returns the installed locale name.
-    ///
     /// # Errors
-    ///
-    /// Returns an error when the source cannot be read or the destination
-    /// cannot be created or written.
+    /// Returns an error if the source file cannot be read or the destination cannot be written.
     pub fn install_locale(&self, source: &Path) -> Result<String, ResolverError> {
         self.install_item(source, "locales")
     }
 
-    /// Remove an installed locale by name.
+    /// Remove an installed style by ID.
     ///
     /// # Errors
-    ///
-    /// Returns an error when the installed locale cannot be removed.
-    pub fn remove_locale(&self, name: &str) -> Result<(), ResolverError> {
-        self.remove_item(name, "locales")
+    /// Returns an error if the style cannot be found or removed.
+    pub fn remove_style(&self, id: &str) -> Result<(), ResolverError> {
+        self.remove_item(id, "styles")
     }
 
-    // Helper: resolve an item (style or locale) by name from a category.
-    fn resolve_item<T: serde::de::DeserializeOwned>(
+    /// Remove an installed locale by ID.
+    ///
+    /// # Errors
+    /// Returns an error if the locale cannot be found or removed.
+    pub fn remove_locale(&self, id: &str) -> Result<(), ResolverError> {
+        self.remove_item(id, "locales")
+    }
+
+    // --- Internal Helpers ---
+
+    fn resolve_item<T: DeserializeOwned>(
         &self,
+        id: &str,
         category: &str,
-        name: &str,
     ) -> Result<T, ResolverError> {
-        let category_dir = self.data_dir.join(category);
+        let items_dir = self.data_dir.join(category);
+        if !items_dir.exists() {
+            return Err(match category {
+                "styles" => ResolverError::StyleNotFound(id.to_string().into()),
+                _ => ResolverError::LocaleNotFound(id.to_string().into()),
+            });
+        }
 
-        // Try exact format first, then fallback to other formats
-        let formats_to_try = [
-            self.format,
-            StoreFormat::Json,
-            StoreFormat::Yaml,
-            StoreFormat::Cbor,
-        ];
+        // Try exact match with current format extension first
+        let path = items_dir.join(format!("{}.{}", id, self.format.extension()));
+        if path.is_file() {
+            return self.load_item_at(&path);
+        }
 
-        for fmt in &formats_to_try {
-            let ext = fmt.extension();
-            let path = category_dir.join(format!("{name}.{ext}"));
-
-            if path.exists() && path.is_file() {
-                return self.deserialize_item(&path, *fmt);
+        // Fallback: search all supported formats
+        for format in StoreFormat::all() {
+            let path = items_dir.join(format!("{}.{}", id, format.extension()));
+            if path.is_file() {
+                return self.load_item_at(&path);
             }
         }
 
-        // If we got here, file wasn't found in any format
-        let error = if category == "locales" {
-            ResolverError::LocaleNotFound(name.to_string())
-        } else {
-            ResolverError::StyleNotFound(name.to_string())
-        };
-        Err(error)
+        Err(match category {
+            "styles" => ResolverError::StyleNotFound(id.to_string().into()),
+            _ => ResolverError::LocaleNotFound(id.to_string().into()),
+        })
     }
 
-    // Helper: deserialize an item from file based on format.
-    fn deserialize_item<T: serde::de::DeserializeOwned>(
-        &self,
-        path: &Path,
-        format: StoreFormat,
-    ) -> Result<T, ResolverError> {
+    fn load_item_at<T: DeserializeOwned>(&self, path: &Path) -> Result<T, ResolverError> {
         let content = fs::read(path)?;
+        let format = StoreFormat::detect(path).unwrap_or(self.format);
 
         match format {
             StoreFormat::Yaml => serde_yaml::from_slice(&content)
                 .map_err(|e| ResolverError::YamlError(e.to_string())),
             StoreFormat::Json => serde_json::from_slice(&content).map_err(ResolverError::JsonError),
-            StoreFormat::Cbor => ciborium::de::from_reader(content.as_slice())
+            StoreFormat::Cbor => ciborium::de::from_reader(Cursor::new(&content))
                 .map_err(|e| ResolverError::CborError(e.to_string())),
         }
     }
 
-    // Helper: list items in a category directory.
     fn list_items(&self, category: &str) -> Result<Vec<String>, ResolverError> {
-        let category_dir = self.data_dir.join(category);
-
-        if !category_dir.exists() {
+        let items_dir = self.data_dir.join(category);
+        if !items_dir.exists() {
             return Ok(Vec::new());
         }
 
-        let mut names = Vec::new();
-
-        for entry in fs::read_dir(&category_dir)? {
+        let mut names = BTreeSet::new();
+        for entry in fs::read_dir(items_dir)? {
             let entry = entry?;
             let path = entry.path();
-
             if path.is_file()
+                && StoreFormat::detect(&path).is_some()
                 && let Some(name) = path.file_stem().and_then(|s| s.to_str())
-                && let Some(ext) = path.extension().and_then(|e| e.to_str())
-                && matches!(ext, "yaml" | "yml" | "json" | "cbor")
             {
-                names.push(name.to_string());
+                names.insert(name.to_string());
             }
         }
-
-        names.sort();
-        Ok(names)
+        Ok(names.into_iter().collect())
     }
 
     // Helper: install an item from a source file.
@@ -194,38 +184,45 @@ impl StoreResolver {
         let name = source
             .file_stem()
             .and_then(|s| s.to_str())
-            .ok_or_else(|| ResolverError::InvalidStyle("no filename".to_string()))?
-            .to_string();
+            .ok_or_else(|| ResolverError::InvalidStyle("no filename".into()))?;
 
         let category_dir = self.data_dir.join(category);
         fs::create_dir_all(&category_dir)?;
 
         // Detect format from source, or use configured default
-        let format = StoreFormat::detect_from_extension(source).unwrap_or(self.format);
-        let ext = format.extension();
-        let dest = category_dir.join(format!("{name}.{ext}"));
+        let source_format = StoreFormat::detect(source).unwrap_or(self.format);
+        let dest_path = category_dir.join(format!("{}.{}", name, source_format.extension()));
 
-        fs::copy(source, &dest)?;
-        Ok(name)
+        fs::copy(source, dest_path)?;
+        Ok(name.to_string())
     }
 
-    // Helper: remove an item by name from a category.
-    fn remove_item(&self, name: &str, category: &str) -> Result<(), ResolverError> {
-        let category_dir = self.data_dir.join(category);
+    fn remove_item(&self, id: &str, category: &str) -> Result<(), ResolverError> {
+        let items_dir = self.data_dir.join(category);
+        if !items_dir.exists() {
+            return Err(match category {
+                "styles" => ResolverError::StyleNotFound(id.to_string().into()),
+                _ => ResolverError::LocaleNotFound(id.to_string().into()),
+            });
+        }
 
-        // Try all possible formats
-        for fmt in &[StoreFormat::Yaml, StoreFormat::Json, StoreFormat::Cbor] {
-            let path = category_dir.join(format!("{}.{}", name, fmt.extension()));
+        // Search and remove all matching files for this ID
+        let mut found = false;
+        for format in StoreFormat::all() {
+            let path = items_dir.join(format!("{}.{}", id, format.extension()));
             if path.exists() {
                 fs::remove_file(path)?;
-                return Ok(());
+                found = true;
             }
         }
 
-        if category == "locales" {
-            Err(ResolverError::LocaleNotFound(name.to_string()))
-        } else {
-            Err(ResolverError::StyleNotFound(name.to_string()))
+        if !found {
+            return Err(match category {
+                "styles" => ResolverError::StyleNotFound(id.to_string().into()),
+                _ => ResolverError::LocaleNotFound(id.to_string().into()),
+            });
         }
+
+        Ok(())
     }
 }
