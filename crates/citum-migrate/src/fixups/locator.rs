@@ -159,8 +159,7 @@ pub(super) fn normalize_author_date_locator_citation_component(
             let mut visited = HashSet::new();
             infer_locator_prefix_from_nodes(&layout.children, macros, &mut visited)
         })
-        .unwrap_or(" ".to_string());
-
+        .unwrap_or_else(|| " ".into());
     if apply_author_date_locator_formatting(template, &locator_prefix) {
         return;
     }
