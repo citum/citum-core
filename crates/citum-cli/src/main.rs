@@ -1981,7 +1981,8 @@ fn load_any_style(style_input: &str, no_semantics: bool) -> Result<Style, Box<dy
     } else {
         msg.push_str("\n\nDid you mean one of these?");
         for s in suggestions {
-            msg.push_str(&format!("\n  - {s}"));
+            msg.push_str("\n  - ");
+            msg.push_str(s);
         }
     }
 
