@@ -4,11 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Citum | Interactive HTML Demo</title>
-  <link rel="stylesheet" href="assets/citum-interactive.css">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
   <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap"
+      href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap"
       rel="stylesheet" />
   <script>
       tailwind.config = {
@@ -21,7 +20,7 @@
                       "accent-cream": "#f5f2eb",
                   },
                   fontFamily: {
-                      "display": ["Inter", "sans-serif"],
+                      "display": ["Libre Franklin", "sans-serif"],
                       "mono": ["JetBrains Mono", "monospace"]
                   },
                   borderRadius: {
@@ -41,10 +40,10 @@
         border-bottom: 1px solid rgba(42, 148, 214, 0.1);
     }
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Libre Franklin', sans-serif;
       line-height: 1.6;
-      color: #333;
-      background: #fdfbf7;
+      color: var(--citum-ink);
+      background: var(--citum-paper);
     }
     .font-mono {
         font-family: 'JetBrains Mono', monospace;
@@ -55,7 +54,7 @@
       padding: 2rem;
     }
     header {
-      border-bottom: 2px solid #eee;
+      border-bottom: 1px solid var(--citum-border);
       margin-bottom: 3rem;
       padding-bottom: 1rem;
     }
@@ -63,20 +62,20 @@
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      color: #666;
+      color: var(--citum-muted);
       text-decoration: none;
       font-size: 0.9rem;
       padding: 0.4rem 0.8rem;
       border-radius: 4px;
-      background: #eee;
+      background: var(--citum-blue-soft);
       transition: all 0.2s;
     }
     .config-link:hover {
-      background: #e2e2e2;
-      color: #333;
+      background: var(--citum-paper-deep);
+      color: var(--citum-ink-strong);
     }
     .controls {
-      background: #f5f2eb;
+      background: var(--citum-paper-deep);
       padding: 1rem;
       border-radius: 8px;
       margin-bottom: 2rem;
@@ -93,17 +92,19 @@
     /* Layout toggles */
     .btn {
       padding: 0.5rem 1rem;
-      border: 1px solid #ddd;
-      background: white;
+      border: 1px solid var(--citum-border);
+      background: var(--citum-surface);
       border-radius: 4px;
       cursor: pointer;
     }
     .btn.active {
-      background: #0066cc;
-      color: white;
-      border-color: #0066cc;
+      background: var(--citum-blue);
+      color: oklch(0.985 0.008 238);
+      border-color: var(--citum-blue);
     }
   </style>
+    <link rel="stylesheet" href="assets/citum-theme.css">
+  <link rel="stylesheet" href="assets/citum-interactive.css">
 </head>
 <body class="bg-background-light text-slate-700">
 
@@ -135,7 +136,7 @@
                   href="https://github.com/citum/citum-core">GitHub</a>
           </div>
           <button type="button"
-              class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-slate-700"
+              class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-[var(--citum-surface)]/80 px-3 py-2 text-slate-700"
               data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
               <span class="material-icons text-[20px]">menu</span>
           </button>

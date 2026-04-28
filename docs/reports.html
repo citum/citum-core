@@ -8,7 +8,7 @@
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap"
+        href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap"
         rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
@@ -23,7 +23,7 @@
                         "accent-cream": "#f5f2eb",
                     },
                     fontFamily: {
-                        display: ["Inter", "sans-serif"],
+                        display: ["Libre Franklin", "sans-serif"],
                         mono: ["JetBrains Mono", "monospace"],
                     },
                     borderRadius: {
@@ -38,7 +38,7 @@
     </script>
     <style type="text/tailwindcss">
         body {
-            font-family: "Inter", sans-serif;
+            font-family: "Libre Franklin", sans-serif;
             color: #374151;
         }
         .font-mono {
@@ -50,7 +50,7 @@
             border-bottom: 1px solid rgba(42, 148, 214, 0.1);
         }
         .report-card {
-            background: #ffffff;
+            background: var(--citum-surface);
             transition: all 0.25s ease;
         }
         .report-card:hover {
@@ -59,6 +59,7 @@
             box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
         }
     </style>
+    <link rel="stylesheet" href="assets/citum-theme.css">
 </head>
 
 <body class="bg-background-light text-slate-700 selection:bg-primary/20">
@@ -82,7 +83,7 @@
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600" href="https://github.com/citum/citum-core">GitHub</a>
             </div>
             <button type="button"
-                class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-slate-700"
+                class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-[var(--citum-surface)]/80 px-3 py-2 text-slate-700"
                 data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
                 <span class="material-icons text-[20px]">menu</span>
             </button>
@@ -102,7 +103,7 @@
 
     <header class="pt-32 pb-16 px-6 border-b border-slate-200">
         <div class="max-w-5xl mx-auto">
-            <h1 class="text-4xl md:text-5xl font-mono font-bold tracking-tight text-slate-900 mb-6">Reports</h1>
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-6">Reports</h1>
             <p class="text-xl text-slate-500 max-w-3xl leading-relaxed">
                 Current generated reports for compatibility, engine behavior coverage, migration behavior coverage, and release-facing verification snapshots.
             </p>
@@ -152,7 +153,7 @@
         </div>
     </main>
 
-    <footer class="py-12 px-6 border-t border-slate-200 bg-white">
+    <footer class="py-12 px-6 border-t border-slate-200 bg-[var(--citum-surface)]">
         <div class="max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-center gap-8">
                 <div class="flex items-center gap-2">

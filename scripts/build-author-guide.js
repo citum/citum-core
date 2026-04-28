@@ -91,7 +91,7 @@ renderer.blockquote = function(arg1) {
 
     if (text.includes('[!TIP]')) {
         return `
-            <div class="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-5 not-prose">
+            <div class="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-5 not-prose citum-callout">
                 <div class="flex items-start gap-3">
                     <span class="material-icons text-blue-600 mt-0.5">tips_and_updates</span>
                     <div class="flex-1 text-blue-800 text-sm">
@@ -103,7 +103,7 @@ renderer.blockquote = function(arg1) {
     }
     if (text.includes('[!WARNING]')) {
         return `
-            <div class="border-l-4 border-amber-500 bg-amber-50 p-4 rounded mb-6 not-prose">
+            <div class="border border-amber-500/30 bg-amber-50 p-4 rounded-lg mb-6 not-prose">
                 <div class="flex gap-3">
                     <span class="material-icons text-amber-600 flex-shrink-0">warning</span>
                     <div class="text-amber-800 text-sm">
@@ -131,7 +131,7 @@ renderer.code = function(arg1, arg2) {
         : code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
     return `
-        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose">
+        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose workshop-block">
             <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-${lang}">${highlighted}</code></pre>
         </div>
     `;
@@ -155,7 +155,7 @@ renderer.table = function(token) {
     }
 
     return `
-        <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8 not-prose">
+        <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8 not-prose citum-table-shell">
             <table class="w-full text-sm">
                 <thead class="bg-slate-50">
                     <tr>${header}</tr>

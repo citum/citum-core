@@ -5,12 +5,12 @@
 
 :root {
   /* Colors */
-  --citum-citation-color: #0066cc;
-  --citum-citation-hover-bg: rgba(0, 102, 204, 0.1);
-  --citum-highlight-bg: #fff9c4;
-  --citum-highlight-border: #fbc02d;
-  --citum-tooltip-bg: #333;
-  --citum-tooltip-color: #fff;
+  --citum-citation-color: var(--citum-blue-dark, oklch(0.47 0.12 238));
+  --citum-citation-hover-bg: var(--citum-blue-soft, oklch(0.94 0.025 238));
+  --citum-highlight-bg: oklch(0.94 0.07 86);
+  --citum-highlight-border: var(--citum-warning, oklch(0.66 0.13 74));
+  --citum-tooltip-bg: var(--citum-ink-strong, oklch(0.19 0.025 255));
+  --citum-tooltip-color: oklch(0.985 0.008 238);
   
   /* Sidebar */
   --citum-sidebar-width: 300px;
@@ -42,7 +42,7 @@
 .citum-citation.is-highlighted {
   background-color: var(--citum-highlight-bg);
   box-shadow: 0 0 0 2px var(--citum-highlight-bg);
-  color: #000;
+  color: var(--citum-ink-strong, oklch(0.19 0.025 255));
 }
 
 /* Bibliography */
@@ -56,19 +56,19 @@
 .citum-entry {
   margin-bottom: var(--citum-entry-spacing);
   padding: 0.5rem 1rem;
-  border-left: 4px solid transparent;
-  border-radius: 0 6px 6px 0;
+  border: 1px solid transparent;
+  border-radius: 8px;
   transition: all var(--citum-transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .citum-entry:hover {
-  background-color: #fcfcfc;
+  background-color: var(--citum-surface, oklch(0.995 0.006 86));
 }
 
 .citum-entry:target,
 .citum-entry.is-highlighted {
   background-color: var(--citum-highlight-bg);
-  border-left-color: var(--citum-highlight-border);
+  border-color: var(--citum-highlight-border);
   transform: translateX(4px);
 }
 
@@ -90,7 +90,8 @@
     max-height: calc(100vh - 4rem);
     overflow-y: auto;
     padding-right: 1.5rem;
-    border-left: 1px solid #f0f0f0;
+    border: 1px solid var(--citum-border, oklch(0.88 0.024 238));
+    border-radius: 12px;
     border-top: none;
     padding-top: 0;
     padding-left: 2rem;
@@ -141,8 +142,8 @@
 /* High Contrast / Print */
 @media (prefers-contrast: more) {
   :root {
-    --citum-citation-color: #0000ff;
-    --citum-highlight-bg: #ffff00;
+    --citum-citation-color: oklch(0.43 0.24 264);
+    --citum-highlight-bg: oklch(0.96 0.16 103);
   }
 }
 

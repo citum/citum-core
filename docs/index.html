@@ -10,7 +10,7 @@
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap"
+        href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap"
         rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link
@@ -28,7 +28,7 @@
                         "accent-cream": "#f5f2eb",
                     },
                     fontFamily: {
-                        "display": ["Inter", "sans-serif"],
+                        "display": ["Libre Franklin", "sans-serif"],
                         "mono": ["JetBrains Mono", "monospace"]
                     },
                     borderRadius: {
@@ -43,7 +43,7 @@
     </script>
     <style type="text/tailwindcss">
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Libre Franklin', sans-serif;
             color: #374151;
         }
         .font-mono {
@@ -57,11 +57,11 @@
         .code-gradient {
             background: linear-gradient(135deg, rgba(42, 148, 214, 0.05) 0%, rgba(253, 251, 247, 0) 100%);
         }
-        .feature-card {
-            background: #ffffff;
+        .citum-panel {
+            background: var(--citum-surface);
             transition: all 0.3s ease;
         }
-        .feature-card:hover {
+        .citum-panel:hover {
             border-color: #2a94d6;
             transform: translateY(-2px);
             box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
@@ -76,6 +76,7 @@
             opacity: 1;
         }
     </style>
+    <link rel="stylesheet" href="assets/citum-theme.css">
 </head>
 
 <body class="bg-background-light text-slate-700 selection:bg-primary/20">
@@ -117,7 +118,7 @@
                 </a>
             </div>
             <button type="button"
-                class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-slate-700"
+                class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-[var(--citum-surface)]/80 px-3 py-2 text-slate-700"
                 data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
                 <span class="material-icons text-[20px]">menu</span>
             </button>
@@ -142,27 +143,28 @@
                 class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px]">
             </div>
         </div>
-        <div class="max-w-4xl mx-auto text-center relative z-10">
-            <div class="mb-8 flex flex-wrap items-center justify-center gap-2 text-sm">
-                <span class="text-xs font-semibold uppercase tracking-[0.2em] text-slate-400">On this page</span>
-                <a class="rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-slate-700 hover:border-primary/40 hover:text-primary transition-colors"
+        <div class="max-w-7xl mx-auto relative z-10 grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
+            <div>
+            <div class="mb-8 flex flex-wrap items-center gap-2 text-sm">
+                <span class="citum-kicker">Docs workshop</span>
+                <a class="rounded-full border border-slate-200 bg-[var(--citum-surface)]/80 px-4 py-2 text-slate-700 hover:border-primary/40 hover:text-primary transition-colors"
                     href="#features">Features</a>
-                <a class="rounded-full border border-slate-200 bg-white/80 px-4 py-2 text-slate-700 hover:border-primary/40 hover:text-primary transition-colors"
+                <a class="rounded-full border border-slate-200 bg-[var(--citum-surface)]/80 px-4 py-2 text-slate-700 hover:border-primary/40 hover:text-primary transition-colors"
                     href="#roadmap">Current Status</a>
             </div>
-            <h1 class="text-6xl md:text-8xl font-mono font-bold tracking-tight text-slate-900 mb-6">
-                Citum
+            <h1 class="text-6xl md:text-8xl font-bold tracking-tight text-slate-900 mb-6 max-w-[9ch]">
+                Citum docs
             </h1>
-            <p class="text-xl md:text-2xl text-slate-500 mb-10 max-w-2xl mx-auto font-display leading-relaxed">
+            <p class="text-xl md:text-2xl text-slate-500 mb-10 max-w-2xl leading-relaxed">
                 A Rust citation engine and YAML style system for
                 rendering documents, styling references, and validating
                 bibliographic data.
             </p>
 
             <!-- Getting Started Command -->
-            <div class="max-w-md mx-auto mb-10">
+            <div class="max-w-xl mb-10">
                 <div
-                    class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group cursor-text border border-slate-700 shadow-lg text-left">
+                    class="workshop-block bg-slate-900 rounded-lg p-4 flex items-center justify-between group cursor-text border border-slate-700 shadow-lg text-left">
                     <code
                         class="font-mono text-emerald-400 text-sm">$ cargo install --git https://github.com/citum/citum-core --bin citum</code>
                     <button class="text-slate-500 hover:text-white transition-colors"
@@ -174,17 +176,31 @@
                 <p class="text-slate-400 text-xs mt-2 font-mono">Requires Rust toolchain</p>
             </div>
 
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a class="w-full sm:w-auto px-8 py-4 bg-primary text-white font-semibold rounded-lg hover:brightness-105 transition-all flex items-center justify-center gap-2"
+            <div class="flex flex-col sm:flex-row items-start gap-4">
+                <a class="w-full sm:w-auto citum-button-primary"
                     href="#features">
                     Explore Features
                     <span class="material-icons text-sm">arrow_downward</span>
                 </a>
-                <a class="w-full sm:w-auto px-8 py-4 bg-slate-200/50 text-slate-700 font-semibold rounded-lg hover:bg-slate-200 transition-all flex items-center justify-center gap-2"
+                <a class="w-full sm:w-auto citum-button-secondary"
                     href="https://github.com/citum/citum-core/tree/main/docs">
                     View Documentation
                 </a>
             </div>
+            </div>
+            <aside class="workshop-block p-6 rotate-1">
+                <div class="workshop-label">Rendering trace</div>
+                <pre class="text-sm leading-relaxed"><span class="text-slate-400"># Input</span>
+[@kuhn1962, pp. 10-12]
+
+<span class="text-slate-400"># Resolver</span>
+style: chicago-author-date
+position: first
+locale: en-US
+
+<span class="text-slate-400"># Output</span>
+<span class="text-primary">(Kuhn 1962, 10-12)</span></pre>
+            </aside>
         </div>
     </header>
 
@@ -229,7 +245,7 @@
 
                 <!-- Document Processing -->
                 <a href="examples.html#document-processing"
-                    class="feature-card p-8 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons">description</span>
@@ -242,7 +258,7 @@
 
                 <!-- Advanced Citations -->
                 <a href="examples.html#advanced-citations"
-                    class="feature-card p-8 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons">auto_awesome</span>
@@ -255,7 +271,7 @@
 
                 <!-- Bibliography Grouping -->
                 <a href="examples.html#bibliography-grouping"
-                    class="feature-card p-8 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons">library_books</span>
@@ -269,7 +285,7 @@
 
                 <!-- Compound Numeric Sets -->
                 <a href="examples.html#compound-numeric-sets"
-                    class="feature-card p-8 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons">view_agenda</span>
@@ -283,7 +299,7 @@
 
                 <!-- Multilingual Support -->
                 <a href="examples.html#multilingual-support"
-                    class="feature-card p-8 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons">translate</span>
@@ -299,7 +315,7 @@
 
                 <!-- Advanced Dates -->
                 <a href="examples.html#advanced-dates"
-                    class="feature-card p-8 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons">event</span>
@@ -313,7 +329,7 @@
 
                 <!-- Smart Presets -->
                 <a href="examples.html#options-presets"
-                    class="feature-card p-8 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons">tune</span>
@@ -329,7 +345,7 @@
 
                 <!-- Title Formatting -->
                 <a href="examples.html#titles-links"
-                    class="feature-card p-8 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons">title</span>
@@ -343,7 +359,7 @@
 
                 <!-- Type-Specific Overrides -->
                 <a href="examples.html#overrides"
-                    class="feature-card p-8 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons">sync_alt</span>
@@ -357,7 +373,7 @@
 
                 <!-- Pluggable Output Formats -->
                 <a href="examples.html#output-formats"
-                    class="feature-card p-8 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons">html</span>
@@ -370,7 +386,7 @@
 
                 <!-- Universal C-FFI -->
                 <a href="examples.html#lualatex-integration"
-                    class="feature-card p-8 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons">settings_input_component</span>
@@ -383,7 +399,7 @@
 
                 <!-- Performance -->
                 <a href="examples.html#binary-performance"
-                    class="feature-card p-8 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons">speed</span>
@@ -396,7 +412,7 @@
 
                 <!-- JSON Server Mode -->
                 <a href="https://github.com/citum/citum-core/tree/main/crates/citum-server"
-                    class="feature-card p-8 rounded-xl border border-slate-200 transition-all group block"
+                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block"
                     target="_blank">
                     <div
                         class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
@@ -410,7 +426,7 @@
 
                 <!-- Web Interactivity -->
                 <a href="examples.html#web-interactivity"
-                    class="feature-card p-8 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons">mouse</span>
@@ -424,7 +440,7 @@
 
                 <!-- Annotated Bibliographies -->
                 <a href="examples.html#annotated-bibliography"
-                    class="feature-card p-8 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons">comment</span>
@@ -594,7 +610,7 @@
                         class="aspect-square md:aspect-video lg:aspect-square bg-slate-800 rounded-xl overflow-hidden shadow-2xl relative flex items-center justify-center p-8">
                         <div class="text-slate-400 font-mono text-sm">
                             <div class="mb-4 text-emerald-400"># Output Preview</div>
-                            <div class="pl-4 border-l-2 border-slate-700">
+                            <div class="pl-4 border border-slate-700/30 rounded-lg">
                                 <p class="mb-2">Smith, J. A. (2023). <span class="italic">The Future of
                                         Citations</span>. Academic Press.</p>
                                 <p class="mb-2">Doe, A., & Lee, B. (2024). Rust in Publishing. <span
@@ -620,7 +636,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
 
                 <!-- Compatibility Report -->
-                <a href="https://docs.citum.org/compat.html" class="p-6 rounded-xl border border-slate-100 bg-white block hover:border-primary/40 transition-colors">
+                <a href="https://docs.citum.org/compat.html" class="p-6 rounded-xl border border-slate-100 bg-[var(--citum-surface)] block hover:border-primary/40 transition-colors">
                     <div class="flex items-center gap-3 mb-4">
                         <span
                             class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
@@ -635,7 +651,7 @@
                 </a>
 
                 <!-- Behavior Coverage -->
-                <a href="https://docs.citum.org/behavior-report.html" class="p-6 rounded-xl border border-slate-100 bg-white block hover:border-primary/40 transition-colors">
+                <a href="https://docs.citum.org/behavior-report.html" class="p-6 rounded-xl border border-slate-100 bg-[var(--citum-surface)] block hover:border-primary/40 transition-colors">
                     <div class="flex items-center gap-3 mb-4">
                         <span
                             class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
@@ -650,7 +666,7 @@
                 </a>
 
                 <!-- Migration Behavior Coverage -->
-                <a href="https://docs.citum.org/migration-behavior-report.html" class="p-6 rounded-xl border border-slate-100 bg-white block hover:border-primary/40 transition-colors">
+                <a href="https://docs.citum.org/migration-behavior-report.html" class="p-6 rounded-xl border border-slate-100 bg-[var(--citum-surface)] block hover:border-primary/40 transition-colors">
                     <div class="flex items-center gap-3 mb-4">
                         <span
                             class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
@@ -665,7 +681,7 @@
                 </a>
 
                 <!-- Tier Tracking -->
-                <a href="TIER_STATUS.md" class="p-6 rounded-xl border border-slate-100 bg-white block hover:border-primary/40 transition-colors">
+                <a href="TIER_STATUS.md" class="p-6 rounded-xl border border-slate-100 bg-[var(--citum-surface)] block hover:border-primary/40 transition-colors">
                     <div class="flex items-center gap-3 mb-4">
                         <span
                             class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
@@ -681,7 +697,7 @@
 
                 <!-- Quality Gates -->
                 <a href="https://github.com/citum/citum-core/blob/main/docs/architecture/SQI_REFINEMENT_PLAN.md"
-                    class="p-6 rounded-xl border border-slate-100 bg-white block hover:border-primary/40 transition-colors">
+                    class="p-6 rounded-xl border border-slate-100 bg-[var(--citum-surface)] block hover:border-primary/40 transition-colors">
                     <div class="flex items-center gap-3 mb-4">
                         <span
                             class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
@@ -706,8 +722,8 @@
                     </div>
                     <p class="text-sm text-slate-500 mb-4">
                         Install and manage your own styles and locales locally in YAML, JSON, or CBOR formats.
-                        <code class="text-xs bg-white px-1 rounded border border-slate-200">citum store install</code>
-                        <code class="text-xs bg-white px-1 rounded border border-slate-200">citum store list</code>
+                        <code class="text-xs bg-[var(--citum-surface)] px-1 rounded border border-slate-200">citum store install</code>
+                        <code class="text-xs bg-[var(--citum-surface)] px-1 rounded border border-slate-200">citum store list</code>
                     </p>
                     <p class="text-[10px] font-mono text-slate-400">Works across CLI, desktop, web, and mobile</p>
                 </div>
@@ -734,7 +750,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                 <!-- Style Schema -->
                 <a href="schemas/style.json"
-                    class="feature-card p-6 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-6 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons text-sm">architecture</span>
@@ -744,7 +760,7 @@
                 </a>
                 <!-- Bib Schema -->
                 <a href="schemas/bib.json"
-                    class="feature-card p-6 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-6 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons text-sm">inventory_2</span>
@@ -754,7 +770,7 @@
                 </a>
                 <!-- Locale Schema -->
                 <a href="schemas/locale.json"
-                    class="feature-card p-6 rounded-xl border border-slate-200 transition-all group block">
+                    class="citum-panel p-6 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons text-sm">language</span>
@@ -764,7 +780,7 @@
                 </a>
                 <!-- Citations Schema -->
                     <a href="schemas/citation.json"
-                        class="feature-card p-6 rounded-xl border border-slate-200 transition-all group block">
+                        class="citum-panel p-6 rounded-xl border border-slate-200 transition-all group block">
                     <div
                         class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
                         <span class="material-icons text-sm">format_quote</span>
@@ -828,7 +844,7 @@
     </section>
 
     <!-- Footer -->
-    <footer class="py-12 px-6 border-t border-slate-200 bg-white">
+    <footer class="py-12 px-6 border-t border-slate-200 bg-[var(--citum-surface)]">
         <div class="max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-center gap-8">
                 <div class="flex items-center gap-2">

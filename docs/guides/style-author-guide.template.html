@@ -7,7 +7,7 @@
 
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
         <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap"
+            href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap"
             rel="stylesheet"
         />
         <link
@@ -30,7 +30,7 @@
                             "accent-cream": "#f5f2eb",
                         },
                         fontFamily: {
-                            display: ["Inter", "sans-serif"],
+                            display: ["Libre Franklin", "sans-serif"],
                             mono: ["JetBrains Mono", "monospace"],
                         },
                         borderRadius: {
@@ -45,7 +45,7 @@
         </script>
         <style type="text/tailwindcss">
             body {
-                font-family: "Inter", sans-serif;
+                font-family: "Libre Franklin", sans-serif;
                 color: #374151;
             }
             .font-mono {
@@ -69,7 +69,8 @@
                 @apply text-xs font-semibold uppercase tracking-widest text-slate-500 mb-2;
             }
         </style>
-    </head>
+        <link rel="stylesheet" href="../assets/citum-theme.css">
+</head>
 
     <body class="bg-background-light text-slate-700 selection:bg-primary/20">
         <!-- Navigation -->
@@ -146,7 +147,7 @@
                 </div>
                 <button
                     type="button"
-                    class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-slate-700"
+                    class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-[var(--citum-surface)]/80 px-3 py-2 text-slate-700"
                     data-nav-toggle
                     aria-expanded="false"
                     aria-controls="mobile-nav"
@@ -175,7 +176,7 @@
         <header class="pt-32 pb-16 px-6 border-b border-slate-200">
             <div class="max-w-7xl mx-auto">
                 <h1
-                    class="text-4xl md:text-5xl font-mono font-bold tracking-tight text-slate-900 mb-6"
+                    class="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-6"
                 >
                     Style Author Guide
                 </h1>
@@ -275,7 +276,7 @@
         </div>
 
         <!-- Footer -->
-        <footer class="py-12 px-6 border-t border-slate-200 bg-white">
+        <footer class="py-12 px-6 border-t border-slate-200 bg-[var(--citum-surface)]">
             <div class="max-w-7xl mx-auto">
                 <div
                     class="flex flex-col md:flex-row justify-between items-center gap-8"

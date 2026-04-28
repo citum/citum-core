@@ -8,7 +8,7 @@
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap"
+        href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap"
         rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     <link
@@ -26,7 +26,7 @@
                         "accent-cream": "#f5f2eb",
                     },
                     fontFamily: {
-                        display: ["Inter", "sans-serif"],
+                        display: ["Libre Franklin", "sans-serif"],
                         mono: ["JetBrains Mono", "monospace"],
                     },
                     borderRadius: {
@@ -41,7 +41,7 @@
     </script>
     <style type="text/tailwindcss">
         body {
-                font-family: "Inter", sans-serif;
+                font-family: "Libre Franklin", sans-serif;
                 color: #374151;
             }
             .font-mono {
@@ -53,7 +53,7 @@
                 border-bottom: 1px solid rgba(42, 148, 214, 0.1);
             }
             .example-card {
-                background: #ffffff;
+                background: var(--citum-surface);
                 border: 1px solid #e2e8f0;
                 transition: all 0.3s ease;
             }
@@ -64,6 +64,7 @@
                     0 2px 4px -1px rgba(0, 0, 0, 0.06);
             }
         </style>
+    <link rel="stylesheet" href="assets/citum-theme.css">
 </head>
 
 <body class="bg-background-light text-slate-700 selection:bg-primary/20">
@@ -104,7 +105,7 @@
                 </a>
             </div>
             <button type="button"
-                class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-slate-700"
+                class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-[var(--citum-surface)]/80 px-3 py-2 text-slate-700"
                 data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
                 <span class="material-icons text-[20px]">menu</span>
             </button>
@@ -125,7 +126,7 @@
     <!-- Header -->
     <header class="pt-32 pb-16 px-6">
         <div class="max-w-4xl mx-auto text-center">
-            <h1 class="text-4xl md:text-5xl font-mono font-bold tracking-tight text-slate-900 mb-6">
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-6">
                 Feature Examples
             </h1>
             <p class="text-xl text-slate-500 max-w-2xl mx-auto leading-relaxed">
@@ -241,10 +242,10 @@
                 </p>
             </div>
 
-            <div class="p-6 bg-white">
+            <div class="p-6 bg-[var(--citum-surface)]">
                 <div class="grid gap-6">
                     <!-- Djot Input -->
-                    <div class="border-l-4 border-slate-300 pl-4">
+                    <div class="border border-slate-300/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                             Djot Input (paper.djot)
                         </div>
@@ -258,7 +259,7 @@ Suppress author with locator: [-@kuhn1962, p. 10].</pre>
                     </div>
 
                     <!-- Rendered Output -->
-                    <div class="border-l-4 border-emerald-500 pl-4">
+                    <div class="border border-emerald-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                             Rendered Output (Plain Text)
                         </div>
@@ -369,29 +370,29 @@ New chapter reset: <span class="text-emerald-400">[+@smith2010, p. 14]</span></p
                         Rendered Examples (Current Djot Input)
                     </h3>
                 </div>
-                <div class="p-6 bg-white">
+                <div class="p-6 bg-[var(--citum-surface)]">
                     <div class="grid gap-4">
-                        <div class="border-l-4 border-primary pl-4">
+                        <div class="border border-primary/30 rounded-lg p-4">
                             <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Multi-Cite with Locator</div>
                             <div class="font-mono text-xs text-slate-400 mb-1">Source: [@kuhn1962; @watson1953, ch. 2]</div>
                             <div class="font-mono text-sm text-slate-900">(Kuhn; Watson and Crick, ch. 2)</div>
                         </div>
-                        <div class="border-l-4 border-emerald-500 pl-4">
+                        <div class="border border-emerald-500/30 rounded-lg p-4">
                             <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Structured Locator</div>
                             <div class="font-mono text-xs text-slate-400 mb-1">Source: [@kuhn1962, section: 5]</div>
                             <div class="font-mono text-sm text-slate-900">(Kuhn, sec. 5)</div>
                         </div>
-                        <div class="border-l-4 border-amber-500 pl-4">
+                        <div class="border border-amber-500/30 rounded-lg p-4">
                             <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Narrative Name Memory</div>
                             <div class="font-mono text-xs text-slate-400 mb-1">Source: [+@smith2010, p. 10] ... later [+@smith2010, p. 12] ... then in Chapter 2 [+@smith2010, p. 14]</div>
                             <div class="font-mono text-sm text-slate-900">John Smith (10) ... later Smith (12) ... then John Smith (14) again</div>
                         </div>
-                        <div class="border-l-4 border-indigo-500 pl-4">
+                        <div class="border border-indigo-500/30 rounded-lg p-4">
                             <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Integral Citation</div>
                             <div class="font-mono text-xs text-slate-400 mb-1">Source: [+@kuhn1962, p. 10]</div>
                             <div class="font-mono text-sm text-slate-900">Thomas S. Kuhn (10)</div>
                         </div>
-                        <div class="border-l-4 border-rose-500 pl-4">
+                        <div class="border border-rose-500/30 rounded-lg p-4">
                             <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Visibility Modifier</div>
                             <div class="font-mono text-xs text-slate-400 mb-1">Source: [-@kuhn1962, p. 10]</div>
                             <div class="font-mono text-sm text-slate-900">(10)</div>
@@ -418,10 +419,10 @@ New chapter reset: <span class="text-emerald-400">[+@smith2010, p. 14]</span></p
                 </p>
             </div>
 
-            <div class="p-6 bg-white">
+            <div class="p-6 bg-[var(--citum-surface)]">
                 <div class="grid gap-6">
                     <!-- Legal Hierarchy Example -->
-                    <div class="border-l-4 border-indigo-500 pl-4">
+                    <div class="border border-indigo-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-2">
                             Legal Hierarchy (Type-Based Grouping)
                         </div>
@@ -445,7 +446,7 @@ New chapter reset: <span class="text-emerald-400">[+@smith2010, p. 14]</span></p
                     </div>
 
                     <!-- Multilingual Example -->
-                    <div class="border-l-4 border-purple-500 pl-4">
+                    <div class="border border-purple-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-2">
                             Multilingual (Per-Group Name Ordering)
                         </div>
@@ -490,7 +491,7 @@ New chapter reset: <span class="text-emerald-400">[+@smith2010, p. 14]</span></p
                     </div>
 
                     <!-- Localized Disambiguation Example -->
-                    <div class="border-l-4 border-amber-500 pl-4">
+                    <div class="border border-amber-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-2">
                             Localized Disambiguation (Per-Group Year Suffixes)
                         </div>
@@ -533,7 +534,7 @@ New chapter reset: <span class="text-emerald-400">[+@smith2010, p. 14]</span></p
                 </div>
             </div>
 
-            <div class="border-t border-slate-200 bg-white p-6">
+            <div class="border-t border-slate-200 bg-[var(--citum-surface)] p-6">
                 <div class="flex items-center gap-2 mb-4">
                     <span class="material-icons text-sm text-primary">record_voice_over</span>
                     <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
@@ -541,7 +542,7 @@ New chapter reset: <span class="text-emerald-400">[+@smith2010, p. 14]</span></p
                     </h3>
                 </div>
                 <div class="grid gap-4">
-                    <div class="border-l-4 border-primary pl-4">
+                    <div class="border border-primary/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                             Checked-In Locale
                         </div>
@@ -551,7 +552,7 @@ New chapter reset: <span class="text-emerald-400">[+@smith2010, p. 14]</span></p
                             <code class="text-xs bg-slate-100 px-1 rounded">editor / editora / persona editora</code>.
                         </div>
                     </div>
-                    <div class="border-l-4 border-emerald-500 pl-4">
+                    <div class="border border-emerald-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                             Contributor-Driven Role Label
                         </div>
@@ -562,7 +563,7 @@ New chapter reset: <span class="text-emerald-400">[+@smith2010, p. 14]</span></p
                             A feminine contributor entry selects the feminine role label from the Spanish locale.
                         </div>
                     </div>
-                    <div class="border-l-4 border-indigo-500 pl-4">
+                    <div class="border border-indigo-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                             Mixed-Gender Group
                         </div>
@@ -573,7 +574,7 @@ New chapter reset: <span class="text-emerald-400">[+@smith2010, p. 14]</span></p
                             Mixed contributor genders prefer the locale's neutral/common form instead of falling back to a masculine-specific label.
                         </div>
                     </div>
-                    <div class="border-l-4 border-amber-500 pl-4">
+                    <div class="border border-amber-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                             Template Override
                         </div>
@@ -591,7 +592,7 @@ New chapter reset: <span class="text-emerald-400">[+@smith2010, p. 14]</span></p
             </div>
 
             <!-- Try It Yourself -->
-            <div class="bg-white p-6 border-t border-slate-200">
+            <div class="bg-[var(--citum-surface)] p-6 border-t border-slate-200">
                 <div class="flex items-center gap-2 mb-4">
                     <span class="material-icons text-sm text-emerald-600">terminal</span>
                     <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
@@ -600,7 +601,7 @@ New chapter reset: <span class="text-emerald-400">[+@smith2010, p. 14]</span></p
                 </div>
 
                 <!-- English Grouping Example -->
-                <div class="border-l-4 border-emerald-500 pl-4 mb-6">
+                <div class="border border-emerald-500/30 rounded-lg p-4 mb-6">
                     <p class="text-xs text-slate-600 mb-2">
                         Render a grouped bibliography with primary, archival, and secondary sources in English:
                     </p>
@@ -634,7 +635,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 </div>
 
                 <!-- German Grouping Example -->
-                <div class="border-l-4 border-emerald-500 pl-4">
+                <div class="border border-emerald-500/30 rounded-lg p-4">
                     <p class="text-xs text-slate-600 mb-2">
                         Render the multilingual grouping example shipped in the repo:
                     </p>
@@ -724,9 +725,9 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 </div>
             </div>
 
-            <div class="p-6 bg-white border-b border-slate-200">
+            <div class="p-6 bg-[var(--citum-surface)] border-b border-slate-200">
                 <div class="grid gap-4">
-                    <div class="border-l-4 border-primary pl-4">
+                    <div class="border border-primary/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                             Historical Manuscript Demo Output
                         </div>
@@ -741,7 +742,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                             renders as <code class="text-xs bg-slate-100 px-1 rounded">100 BC</code>.
                         </div>
                     </div>
-                    <div class="border-l-4 border-emerald-500 pl-4">
+                    <div class="border border-emerald-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                             Archive + Eprint Demo Output
                         </div>
@@ -759,14 +760,14 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 </div>
             </div>
 
-            <div class="bg-white p-6">
+            <div class="bg-[var(--citum-surface)] p-6">
                 <div class="flex items-center gap-2 mb-4">
                     <span class="material-icons text-sm text-emerald-600">terminal</span>
                     <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
                         Try It Yourself
                     </h3>
                 </div>
-                <div class="border-l-4 border-emerald-500 pl-4 mb-6">
+                <div class="border border-emerald-500/30 rounded-lg p-4 mb-6">
                     <p class="text-xs text-slate-600 mb-2">
                         Render the archival manuscript with the current Chicago notes style:
                     </p>
@@ -777,7 +778,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
   -k dead-sea-scrolls</pre>
                     </div>
                 </div>
-                <div class="border-l-4 border-indigo-500 pl-4">
+                <div class="border border-indigo-500/30 rounded-lg p-4">
                     <p class="text-xs text-slate-600 mb-2">
                         Render the structured <code class="text-xs bg-slate-100 px-1 rounded">archive-info</code> +
                         <code class="text-xs bg-slate-100 px-1 rounded">eprint</code> example with the demo style:
@@ -854,17 +855,17 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 </div>
             </div>
 
-            <div class="p-6 bg-white">
+            <div class="p-6 bg-[var(--citum-surface)]">
                 <div class="grid gap-4">
-                    <div class="border-l-4 border-indigo-500 pl-4">
+                    <div class="border border-indigo-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Citation Behavior</div>
                         <div class="font-mono text-sm text-slate-900">subentry=true: [2a]/[2b], subentry=false: [2]</div>
                     </div>
-                    <div class="border-l-4 border-emerald-500 pl-4">
+                    <div class="border border-emerald-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Loader Validation</div>
                         <div class="text-sm text-slate-700">Unknown IDs and duplicate membership across sets are rejected.</div>
                     </div>
-                    <div class="border-l-4 border-amber-500 pl-4">
+                    <div class="border border-amber-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">Design Note</div>
                         <div class="text-sm text-slate-700">No per-reference <code class="text-xs bg-slate-100 px-1 rounded">group-key</code> is required or supported.</div>
                     </div>
@@ -961,9 +962,9 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                         Rendered with MLA
                     </h3>
                 </div>
-                <div class="p-6 bg-white">
+                <div class="p-6 bg-[var(--citum-surface)]">
                     <div class="grid gap-4">
-                        <div class="border-l-4 border-primary pl-4">
+                        <div class="border border-primary/30 rounded-lg p-4">
                             <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                                 Non-Integral Citation
                             </div>
@@ -974,7 +975,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                                 Current MLA rendering for the checked-in multilingual record
                             </div>
                         </div>
-                        <div class="border-l-4 border-emerald-500 pl-4">
+                        <div class="border border-emerald-500/30 rounded-lg p-4">
                             <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                                 Integral Citation
                             </div>
@@ -985,7 +986,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                                 Integral rendering uses the same checked-in data
                             </div>
                         </div>
-                        <div class="border-l-4 border-indigo-500 pl-4">
+                        <div class="border border-indigo-500/30 rounded-lg p-4">
                             <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                                 Bibliography Entry
                             </div>
@@ -996,7 +997,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                                 Verified with <code class="text-xs bg-slate-100 px-1 rounded">citum render refs -b examples/multilingual-refs.yaml -s mla -k genji_tale</code>
                             </div>
                         </div>
-                        <div class="border-l-4 border-amber-500 pl-4">
+                        <div class="border border-amber-500/30 rounded-lg p-4">
                             <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                                 Mixed Corpus
                             </div>
@@ -1012,14 +1013,14 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
             </div>
 
             <!-- Try It Yourself -->
-            <div class="bg-white p-6 border-t border-slate-200">
+            <div class="bg-[var(--citum-surface)] p-6 border-t border-slate-200">
                 <div class="flex items-center gap-2 mb-4">
                     <span class="material-icons text-sm text-emerald-600">terminal</span>
                     <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
                         Try It Yourself
                     </h3>
                 </div>
-                <div class="border-l-4 border-emerald-500 pl-4 mb-3">
+                <div class="border border-emerald-500/30 rounded-lg p-4 mb-3">
                     <p class="text-xs text-slate-600 mb-2">
                         Render the checked-in multilingual bibliography with a builtin style:
                     </p>
@@ -1033,7 +1034,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                         <code class="text-xs bg-slate-200 px-1 rounded">options.multilingual</code> values.
                     </p>
                 </div>
-                <div class="border-l-4 border-primary pl-4">
+                <div class="border border-primary/30 rounded-lg p-4">
                     <p class="text-xs text-slate-600 mb-2">
                         Render the shipped German Chicago locale-override example:
                     </p>
@@ -1073,10 +1074,10 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 </p>
             </div>
 
-            <div class="p-6 bg-white">
+            <div class="p-6 bg-[var(--citum-surface)]">
                 <div class="grid gap-8">
                     <!-- Date Ranges -->
-                    <div class="border-l-4 border-primary pl-4">
+                    <div class="border border-primary/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-2">Date Intervals (Level 0)</div>
                         <div class="bg-slate-900 rounded p-4 overflow-x-auto mt-1">
                             <pre
@@ -1087,7 +1088,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                     </div>
 
                     <!-- Uncertain & Approximate -->
-                    <div class="border-l-4 border-emerald-500 pl-4">
+                    <div class="border border-emerald-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-2">Uncertain & Approximate (Level
                             1)</div>
                         <div class="bg-slate-900 rounded p-4 overflow-x-auto mt-1">
@@ -1100,7 +1101,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                     </div>
 
                     <!-- Seasons -->
-                    <div class="border-l-4 border-indigo-500 pl-4">
+                    <div class="border border-indigo-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-2">Seasons (Level 1)</div>
                         <div class="bg-slate-900 rounded p-4 overflow-x-auto mt-1">
                             <pre
@@ -1112,7 +1113,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                     </div>
 
                     <!-- Unspecified Digits -->
-                    <div class="border-l-4 border-rose-500 pl-4">
+                    <div class="border border-rose-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-2">Unspecified Digits (Level 1)
                         </div>
                         <div class="bg-slate-900 rounded p-4 overflow-x-auto mt-1">
@@ -1225,9 +1226,9 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
 <span class="text-slate-500"># Supported fields here include: contributors | label-wrap | label-mode | date-position</span></pre>
                 </div>
             </div>
-            <div class="bg-white p-6 border-t border-slate-200">
+            <div class="bg-[var(--citum-surface)] p-6 border-t border-slate-200">
                 <div class="grid gap-4">
-                    <div class="border-l-4 border-emerald-500 pl-4">
+                    <div class="border border-emerald-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                             Author-Date Inheritance
                         </div>
@@ -1236,7 +1237,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                             inherits Springer's author-date base and sets name and date axes.
                         </div>
                     </div>
-                    <div class="border-l-4 border-primary pl-4">
+                    <div class="border border-primary/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                             Numeric Inheritance
                         </div>
@@ -1368,10 +1369,10 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 </p>
             </div>
 
-            <div class="p-6 bg-white">
+            <div class="p-6 bg-[var(--citum-surface)]">
                 <div class="grid gap-6">
                     <!-- Plain Text -->
-                    <div class="border-l-4 border-slate-300 pl-4">
+                    <div class="border border-slate-300/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                             Plain Text (-f plain)
                         </div>
@@ -1382,7 +1383,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                     </div>
 
                     <!-- LaTeX -->
-                    <div class="border-l-4 border-indigo-500 pl-4">
+                    <div class="border border-indigo-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                             Native LaTeX (-f latex)
                         </div>
@@ -1393,7 +1394,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                     </div>
 
                     <!-- HTML -->
-                    <div class="border-l-4 border-primary pl-4">
+                    <div class="border border-primary/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                             Semantic HTML (-f html)
                         </div>
@@ -1407,7 +1408,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                     </div>
 
                     <!-- Djot -->
-                    <div class="border-l-4 border-emerald-500 pl-4">
+                    <div class="border border-emerald-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                             Djot (-f djot)
                         </div>
@@ -1418,7 +1419,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                     </div>
 
                     <!-- Typst -->
-                    <div class="border-l-4 border-sky-500 pl-4">
+                    <div class="border border-sky-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
                             Typst Markup (-f typst)
                         </div>
@@ -1496,7 +1497,7 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                         What This Gives You
                     </h3>
                 </div>
-                <div class="p-8 bg-white">
+                <div class="p-8 bg-[var(--citum-surface)]">
                     <div class="grid md:grid-cols-2 gap-6 text-sm text-slate-600 leading-relaxed">
                         <div class="rounded-lg border border-slate-200 bg-slate-50 p-5">
                             <h4 class="font-bold text-slate-900 mb-2">Citum remains the citation formatter</h4>
@@ -1633,7 +1634,7 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                     Binary Object Representation) for near-instant loading.
                 </p>
             </div>
-            <div class="p-8 bg-white">
+            <div class="p-8 bg-[var(--citum-surface)]">
                 <div class="grid md:grid-cols-2 gap-8">
                     <div>
                         <h4 class="font-bold text-slate-900 mb-3 text-sm uppercase tracking-wider">
@@ -1680,7 +1681,7 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                     rich IDE support, validation, and auto-completion in editors like VS Code.
                 </p>
             </div>
-            <div class="p-8 bg-white">
+            <div class="p-8 bg-[var(--citum-surface)]">
                 <div class="p-4 bg-slate-50 border border-slate-200 rounded-lg">
                     <h4 class="font-bold text-slate-900 mb-2 text-sm uppercase tracking-wider">
                         Generation Command (Optional Feature)
@@ -1719,24 +1720,24 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                     <span class="material-icons text-sm">auto_fix_high</span>
                 </a>
             </div>
-            <div class="p-6 bg-white">
+            <div class="p-6 bg-[var(--citum-surface)]">
                 <div class="grid md:grid-cols-2 gap-6">
-                    <div class="border-l-4 border-indigo-500 pl-4">
+                    <div class="border border-indigo-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-2">Bidirectional Navigation</div>
                         <p class="text-sm text-slate-600">Click a citation to scroll to its bibliography entry. Hover an
                             entry to highlight all its citations in the document.</p>
                     </div>
-                    <div class="border-l-4 border-emerald-500 pl-4">
+                    <div class="border border-emerald-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-2">Hover Tooltips</div>
                         <p class="text-sm text-slate-600">Instant reference previews on citation hover, utilizing
                             metadata attributes stored directly in the entry container.</p>
                     </div>
-                    <div class="border-l-4 border-amber-500 pl-4">
+                    <div class="border border-amber-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-2">Sidebar Layouts</div>
                         <p class="text-sm text-slate-600">Optimized for note-style documents. Bibliographies can be
                             pulled into a sticky sidebar on large screens.</p>
                     </div>
-                    <div class="border-l-4 border-rose-500 pl-4">
+                    <div class="border border-rose-500/30 rounded-lg p-4">
                         <div class="text-xs font-semibold text-slate-500 uppercase mb-2">Theming</div>
                         <p class="text-sm text-slate-600">Fully customizable via CSS variables. Includes high-contrast
                             support and clean print styles.</p>
@@ -1770,7 +1771,7 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                 </div>
 
                 <div class="mt-8 grid md:grid-cols-2 gap-6">
-                    <div class="bg-white p-4 rounded-lg border border-slate-200">
+                    <div class="bg-[var(--citum-surface)] p-4 rounded-lg border border-slate-200">
                         <h4 class="font-bold text-slate-900 text-sm mb-2 flex items-center gap-2">
                             <span class="material-icons text-primary text-base">auto_fix_high</span>
                             Requirements
@@ -1779,7 +1780,7 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                             (including v0.6.0+), which includes the semantic classes and data attributes used by the
                             interactive layer.</p>
                     </div>
-                    <div class="bg-white p-4 rounded-lg border border-slate-200">
+                    <div class="bg-[var(--citum-surface)] p-4 rounded-lg border border-slate-200">
                         <h4 class="font-bold text-slate-900 text-sm mb-2 flex items-center gap-2">
                             <span class="material-icons text-primary text-base">view_sidebar</span>
                             Sidebar Layout
@@ -1809,7 +1810,7 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                     respecting formatting options for italic, indentation, and paragraph spacing.
                 </p>
             </div>
-            <div class="p-6 bg-white">
+            <div class="p-6 bg-[var(--citum-surface)]">
                 <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Render with Annotations</div>
                 <div class="bg-slate-900 rounded p-3 overflow-x-auto mb-6">
                     <pre class="font-mono text-xs text-emerald-400">citum render refs \
@@ -1868,7 +1869,7 @@ jones2021: >
                     </div>
                 </div>
 
-                <div class="mt-8 bg-white p-4 rounded-lg border border-slate-200">
+                <div class="mt-8 bg-[var(--citum-surface)] p-4 rounded-lg border border-slate-200">
                     <h4 class="font-bold text-slate-900 text-sm mb-2 flex items-center gap-2">
                         <span class="material-icons text-primary text-base">format_bold</span>
                         Djot Inline Markup
@@ -1884,7 +1885,7 @@ jones2021: >
                     <p class="text-xs text-slate-400 mt-2">To opt out, set <code class="bg-slate-100 px-1 rounded">format: plain</code> in the annotation style options.</p>
                 </div>
 
-                <div class="mt-4 bg-white p-4 rounded-lg border border-slate-200">
+                <div class="mt-4 bg-[var(--citum-surface)] p-4 rounded-lg border border-slate-200">
                     <h4 class="font-bold text-slate-900 text-sm mb-2 flex items-center gap-2">
                         <span class="material-icons text-primary text-base">description</span>
                         Why Separate from References?
@@ -1900,7 +1901,7 @@ jones2021: >
 </div>
 
     <!-- Footer -->
-    <footer class="py-12 px-6 border-t border-slate-200 bg-white">
+    <footer class="py-12 px-6 border-t border-slate-200 bg-[var(--citum-surface)]">
         <div class="max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-center gap-8">
                 <div class="flex items-center gap-2">

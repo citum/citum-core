@@ -2590,7 +2590,7 @@ function generateHtmlHeader(report) {
 
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
     <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap"
+        href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap"
         rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
 
@@ -2605,7 +2605,7 @@ function generateHtmlHeader(report) {
                         "accent-cream": "#f5f2eb",
                     },
                     fontFamily: {
-                        "display": ["Inter", "sans-serif"],
+                        "display": ["Libre Franklin", "sans-serif"],
                         "mono": ["JetBrains Mono", "monospace"]
                     },
                     borderRadius: {
@@ -2620,7 +2620,7 @@ function generateHtmlHeader(report) {
     </script>
     <style type="text/tailwindcss">
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Libre Franklin', sans-serif;
             color: #374151;
         }
         .font-mono {
@@ -2658,6 +2658,7 @@ function generateHtmlHeader(report) {
             color: #475569;
         }
     </style>
+    <link rel="stylesheet" href="assets/citum-theme.css">
 </head>
 
 <body class="bg-background-light text-slate-700 selection:bg-primary/20">
@@ -2690,7 +2691,7 @@ function generateHtmlHeader(report) {
                     href="https://github.com/citum/citum-core">GitHub</a>
             </div>
             <button type="button"
-                class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white/80 px-3 py-2 text-slate-700"
+                class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-[var(--citum-surface)]/80 px-3 py-2 text-slate-700"
                 data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
                 <span class="material-icons text-[20px]">menu</span>
             </button>
@@ -2713,7 +2714,7 @@ function generateHtmlHeader(report) {
         <div class="max-w-7xl mx-auto">
             <div class="flex items-center justify-between mb-6">
                 <div>
-                    <h1 class="text-4xl md:text-5xl font-mono font-bold tracking-tight text-slate-900 mb-2">
+                    <h1 class="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 mb-2">
                         Style Compatibility Report
                     </h1>
                     <p class="text-slate-500">Compatibility metrics for styles in <code>styles/</code></p>
@@ -2753,28 +2754,28 @@ function generateHtmlStats(report) {
         <div class="max-w-7xl mx-auto">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <!-- Core Styles -->
-                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                <div class="bg-[var(--citum-surface)] rounded-xl border border-slate-200 p-6">
                     <div class="text-sm font-medium text-slate-500 mb-2">Core Styles</div>
                     <div class="text-3xl font-bold text-slate-900">${report.totalStyles}</div>
                     <div class="text-xs text-slate-400 mt-2">${report.totalImpact}% known CSL dependent coverage</div>
                 </div>
 
                 <!-- Citations Overall -->
-                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                <div class="bg-[var(--citum-surface)] rounded-xl border border-slate-200 p-6">
                     <div class="text-sm font-medium text-slate-500 mb-2">Citations</div>
                     <div class="text-3xl font-bold text-slate-900">${report.citationsOverall.passed}/${report.citationsOverall.total}</div>
                     <div class="text-xs text-slate-400 mt-2">${citationsPct}% pass rate</div>
                 </div>
 
                 <!-- Bibliography Overall -->
-                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                <div class="bg-[var(--citum-surface)] rounded-xl border border-slate-200 p-6">
                     <div class="text-sm font-medium text-slate-500 mb-2">Bibliography</div>
                     <div class="text-3xl font-bold text-slate-900">${report.bibliographyOverall.passed}/${report.bibliographyOverall.total}</div>
                     <div class="text-xs text-slate-400 mt-2">${biblioPct}% pass rate</div>
                 </div>
 
                 <!-- Quality Overall -->
-                <div class="bg-white rounded-xl border border-slate-200 p-6">
+                <div class="bg-[var(--citum-surface)] rounded-xl border border-slate-200 p-6">
                     <div class="text-sm font-medium text-slate-500 mb-2">Quality (SQI)</div>
                     <div class="text-3xl font-bold text-slate-900">${qualityPct}%</div>
                     <div class="text-xs text-slate-400 mt-2">Type coverage, fallback, concision, presets</div>
@@ -2790,7 +2791,7 @@ function generateHtmlSqiExplainer() {
     <!-- SQI Explainer -->
     <section class="py-8 px-6">
         <div class="max-w-7xl mx-auto">
-            <div class="bg-white rounded-xl border border-slate-200 p-6">
+            <div class="bg-[var(--citum-surface)] rounded-xl border border-slate-200 p-6">
                 <h2 class="text-lg font-semibold text-slate-900 mb-2">How To Read This Report</h2>
                 <p class="text-sm text-slate-600 mb-3">
                     <strong>Fidelity</strong> is the hard gate: rendered output should match citeproc-js.
@@ -3040,7 +3041,7 @@ function generateDetailContent(style) {
   const cslReachText = style.cslReach != null ? String(style.cslReach) : '—';
 
   html += `
-                            <div class="mb-4 p-3 rounded border border-slate-200 bg-white">
+                            <div class="mb-4 p-3 rounded border border-slate-200 bg-[var(--citum-surface)]">
                                 <div class="text-xs font-semibold text-slate-900 mb-2">Verification Context</div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
                                     <div><span class="font-semibold text-slate-700">Lineage:</span> <span class="font-mono text-slate-600">${escapeHtml(style.originLabel || '—')}</span></div>
@@ -3073,7 +3074,7 @@ function generateDetailContent(style) {
     const presets = qb.subscores?.presetUsage?.score ?? 0;
     const concisionDetail = qb.subscores?.concision || {};
     html += `
-                            <div class="mb-4 p-3 rounded border border-slate-200 bg-white">
+                            <div class="mb-4 p-3 rounded border border-slate-200 bg-[var(--citum-surface)]">
                                 <div class="text-xs font-semibold text-slate-900 mb-2">Quality (SQI): ${overall}%</div>
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs font-mono">
                                     <div class="px-2 py-1 rounded bg-slate-100 text-slate-700">type ${typeCoverage.toFixed(1)}%</div>
@@ -3121,7 +3122,7 @@ function generateDetailContent(style) {
       ? `<div class="text-xs text-slate-500">Unresolved: ${escapeHtml(conformance.unresolved.join(', '))}</div>`
       : '<span class="text-xs text-slate-500">No unresolved conformance dimensions recorded.</span>';
     html += `
-                            <div class="mb-4 p-3 rounded border border-slate-200 bg-white">
+                            <div class="mb-4 p-3 rounded border border-slate-200 bg-[var(--citum-surface)]">
                                 <div class="text-xs font-semibold text-slate-900 mb-3">Repeated-Note Audit</div>
                                 <div class="mb-3">
                                     <div class="flex items-center justify-between gap-3 mb-2">
@@ -3158,7 +3159,7 @@ function generateDetailContent(style) {
 
   if (Array.isArray(style.benchmarkRunResults) && style.benchmarkRunResults.length > 0) {
     html += `
-                            <div class="mb-4 p-3 rounded border border-slate-200 bg-white">
+                            <div class="mb-4 p-3 rounded border border-slate-200 bg-[var(--citum-surface)]">
                                 <div class="text-xs font-semibold text-slate-900 mb-1">Official Supplemental Rich Benchmark Evidence</div>
                                 <div class="text-xs text-slate-500 mb-3">Baseline fidelity remains the gate. Rich benchmark runs extend the official evidence for configured styles.</div>
                                 <div class="space-y-3">
@@ -3389,7 +3390,7 @@ function generateHtmlFooter() {
   return `
 
     <!-- Footer -->
-    <footer class="py-12 px-6 border-t border-slate-200 bg-white">
+    <footer class="py-12 px-6 border-t border-slate-200 bg-[var(--citum-surface)]">
         <div class="max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-center gap-8">
                 <div class="flex items-center gap-2">
