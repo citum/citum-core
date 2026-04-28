@@ -52,30 +52,9 @@ fn test_apa_interview_fidelity_regression() {
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography();
 
-    println!("Rendered output:\n{}", result);
-
-    // APA expected output for interview (simplified check for now)
-    // Arendt, H. (1975). Thinking in Public (E. Young-Bruehl, Interviewer). Schocken Books.
-
-    assert!(result.contains("Arendt, H."), "Author output incorrect");
-    assert!(
-        result.contains("(1975)"),
-        "Date output missing or incorrect"
-    );
-    assert!(
-        result.contains("Thinking in Public"),
-        "Title output missing or incorrect"
-    );
-    assert!(
-        result.contains("E. Young-Bruehl"),
-        "Interviewer output missing or incorrect"
-    );
-    assert!(
-        result.contains("Interviewer"),
-        "Interviewer role label missing"
-    );
-    assert!(
-        result.contains("Schocken Books"),
-        "Publisher output missing or incorrect"
+    // APA expected output for interview
+    assert_eq!(
+        result,
+        "Arendt, H. (1975). Thinking in Public (E. Young-Bruehl, Interviewer) Schocken Books."
     );
 }

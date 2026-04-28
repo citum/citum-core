@@ -194,15 +194,10 @@ fn given_example_mla_document_when_rendered_as_plain_text_then_integral_name_mem
         DocumentFormat::Plain,
     );
 
-    assert!(output.contains("First narrative mention: Anthony D. Smith (10)"));
-    assert!(output.contains("Later in the same chapter: Smith (12) narrows"));
-    assert!(output.contains("Integral with locator: Thomas S. Kuhn (10) argues"));
-    assert!(output.contains(
-        "[^narrative-note]: Before the prose introduces him, Anthony D. Smith (3) already appears in a note."
-    ));
-    assert!(output.contains("Suppress author with locator: (10)."));
-    assert!(output.contains("# Chapter Two"));
-    assert!(output.contains("so Anthony D. Smith (14)"));
+    assert_eq!(
+        output,
+        "# Chapter One\n\nThis is a test document using the proposed Djot citation syntax.\nThis example overrides the MLA default `document` scope to `chapter`\nso the narrative-name reset is visible in one short sample.\n\n## Parenthetical Citations\n\nMulti-cite with locator: (Kuhn; Watson and Crick, ch. 2).\n\nStructured locator: (Kuhn, sec. 5).\n\nSimple parenthetical: (Watson and Crick).\n\n## Integral Citations\n\nIntroductory note[^narrative-note].\n\nFirst narrative mention: Anthony D. Smith (10) surveys the broader literature.\n\nLater in the same chapter: Smith (12) narrows the argument.\n\nIntegral with locator: Thomas S. Kuhn (10) argues...\n\n## Visibility Modifiers\n\nSuppress author with locator: (10).\n\n[^narrative-note]: Before the prose introduces him, Anthony D. Smith (3) already appears in a note.\n\n# Chapter Two\n\nThe chapter boundary resets the narrative name memory, so Anthony D. Smith (14)\nappears in full again here.\n\n## In-Document Bibliography Grouping\n\nCitum supports `::: bibliography :::` fenced divs to place and filter\nbibliography sections inline. Each block renders independently; the\ndefault appended bibliography is suppressed when any block is present.\n\n### Unfiltered (all references)\n\nBird, Arthur. _Ornithology_. Nature Press, 1987.\n\nBrown, Dorothy. _Methods of Surveying and Measuring Vegetation_. Commonwealth Agricultural Bureaux, 1954.\n\nDoe, Jane. “Silent Paper.” _Journal of Silence_, 2020.\n\nKuhn, Thomas S. “The Structure of Scientific Revolutions.” _International Encyclopedia of Unified Science_. 2, no. 2. University of Chicago Press, 1962. https://doi.org/10.1234/example\n\nSmith, Anthony D. _Nationalism: Theory, Ideology, History_. Polity, 2010.\n\nWatson, James D., and Francis H. C. Crick. “Molecular Structure of Nucleic Acids: A Structure for Deoxyribose Nucleic Acid.” _Nature_. 171, no. 4356, 25 Apr. 1953. pp. 737–38.\n\n### Filtered by type\n\n## Journal Articles\n\nDoe, Jane. “Silent Paper.” _Journal of Silence_, 2020.\n\nKuhn, Thomas S. “The Structure of Scientific Revolutions.” _International Encyclopedia of Unified Science_. 2, no. 2. University of Chicago Press, 1962. https://doi.org/10.1234/example\n\nWatson, James D., and Francis H. C. Crick. “Molecular Structure of Nucleic Acids: A Structure for Deoxyribose Nucleic Acid.” _Nature_. 171, no. 4356, 25 Apr. 1953. pp. 737–38.\n\n## Books\n\nBird, Arthur. _Ornithology_. Nature Press, 1987.\n\nBrown, Dorothy. _Methods of Surveying and Measuring Vegetation_. Commonwealth Agricultural Bureaux, 1954.\n\nSmith, Anthony D. _Nationalism: Theory, Ideology, History_. Polity, 2010.\n"
+    );
 }
 
 fn given_example_apa_document_when_rendered_as_plain_text_then_integral_citations_include_locators()
