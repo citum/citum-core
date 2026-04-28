@@ -895,10 +895,10 @@ fn test_render_bibliography() {
 
     let result = processor.render_bibliography();
 
-    // Check it contains the key parts
-    assert!(result.contains("Kuhn"));
-    assert!(result.contains("(1962)"));
-    assert!(result.contains("_The Structure of Scientific Revolutions_"));
+    assert_eq!(
+        result,
+        "Kuhn, Thomas S. (1962). _The Structure of Scientific Revolutions_"
+    );
 }
 
 /// Tests the behavior of `test_disambiguation_hints`.
@@ -1023,10 +1023,8 @@ fn test_disambiguation_givenname() {
             ..Default::default()
         })
         .unwrap();
-
-    // Should expand to "J. Smith" and "A. Smith" (because initialized)
-    assert!(cit_a.contains("J. Smith"));
-    assert!(cit_b.contains("A. Smith"));
+    assert_eq!(cit_a, "(J. Smith, 2020)");
+    assert_eq!(cit_b, "(A. Smith, 2020)");
 }
 
 /// Tests the behavior of `test_disambiguation_add_names`.
@@ -1137,10 +1135,8 @@ fn test_disambiguation_add_names() {
             ..Default::default()
         })
         .unwrap();
-
-    // Should expand to "Smith, Jones" and "Smith, Brown" (no et al. because only 2 names)
-    assert!(cit_1.contains("Smith") && cit_1.contains("Jones"));
-    assert!(cit_2.contains("Smith") && cit_2.contains("Brown"));
+    assert_eq!(cit_1, "(Smith, Jones, 2020)");
+    assert_eq!(cit_2, "(Smith, Brown, 2020)");
 }
 
 /// Tests the behavior of `test_disambiguation_combined_expansion`.
@@ -1779,10 +1775,10 @@ fn test_whole_entry_linking_html() {
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography_with_format::<Html>();
 
-    // The whole entry content should be wrapped in an <a> tag inside the entry div
-    assert!(result.contains(r#"id="ref-link1""#));
-    assert!(result.contains(r#"<a href="https://example.com/">"#));
-    assert!(result.contains("Linked Page"));
+    assert_eq!(
+        result,
+        "<div class=\"csln-bibliography\">\n<div class=\"csln-entry\" id=\"ref-link1\" data-year=\"2023\" data-title=\"Linked Page\"><a href=\"https://example.com/\"><span class=\"csln-author\"><a href=\"https://example.com/\">Linked Page</a></span> <span class=\"csln-issued\">(<a href=\"https://example.com/\">2023</a>)</span></a></div>\n</div>"
+    );
 }
 
 /// Tests the behavior of `test_global_title_linking_html`.
@@ -1814,14 +1810,12 @@ fn test_global_title_linking_html() {
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography_with_format::<Html>();
 
-    println!("Result: {result}");
-
     // The title should be automatically hyperlinked because of global config.
     // Note: In this test, title substitutes for author, so it gets csln-author class.
-    assert!(
-        result.contains(r#"<span class="csln-author"><a href="https://doi.org/10.1001/test">"#)
+    assert_eq!(
+        result,
+        "<div class=\"csln-bibliography\">\n<div class=\"csln-entry\" id=\"ref-doi1\" data-year=\"2023\" data-title=\"Linked Title\"><span class=\"csln-author\"><a href=\"https://doi.org/10.1001/test\">Linked Title</a></span> <span class=\"csln-issued\">(2023)</span></div>\n</div>"
     );
-    assert!(result.contains("Linked Title"));
 }
 
 /// Tests that inline Djot title links take precedence over whole-title autolinks.
@@ -1865,8 +1859,10 @@ fn test_inline_title_link_takes_precedence_over_global_title_link_html() {
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography_with_format::<Html>();
 
-    assert!(result.contains(r#"<a href="https://example.com">Linked title</a>"#));
-    assert!(!result.contains("https://doi.org/10.1001/test"));
+    assert_eq!(
+        result,
+        "<div class=\"csln-bibliography\">\n<div class=\"csln-entry\" id=\"ref-doi-inline\" data-year=\"2023\" data-title=\"[Linked title](https://example.com)\"><span class=\"csln-title\"><a href=\"https://example.com\">Linked title</a></span></div>\n</div>"
+    );
 }
 
 /// Tests that title preset rendering still wraps Djot-marked title content correctly.
@@ -1942,9 +1938,10 @@ fn test_whole_entry_linking_typst() {
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography_with_format::<Typst>();
 
-    assert!(result.contains(r#"#link("https://example.com/")["#));
-    assert!(result.contains("<ref-link1>"));
-    assert!(result.contains("Linked Page"));
+    assert_eq!(
+        result,
+        "#link(\"https://example.com/\")[#link(\"https://example.com/\")[Linked Page] (#link(\"https://example.com/\")[2023])] <ref-link1>"
+    );
 }
 
 /// Tests the behavior of `test_typst_single_item_citation_links_to_bibliography_entry`.
@@ -1966,7 +1963,8 @@ fn test_typst_single_item_citation_links_to_bibliography_entry() {
     let result = processor
         .process_citation_with_format::<Typst>(&citation)
         .unwrap();
-    assert!(result.contains("#link(<ref-kuhn1962>)"));
+
+    assert_eq!(result, "(#link(<ref-kuhn1962>)[Kuhn, 1962])");
 }
 
 /// Tests the behavior of `test_numeric_integral_citation_author_year`.
@@ -2312,9 +2310,8 @@ fn test_numeric_integral_with_multiple_items() {
     };
 
     let result = processor.process_citation(&citation).unwrap();
-    // Should render both as author + citation number
-    assert!(result.contains("Kuhn [1]"));
-    assert!(result.contains("Smith [2]"));
+
+    assert_eq!(result, "Kuhn [1] and Smith [2]");
 }
 
 /// Tests the behavior of `test_label_integral_citation_uses_author_text`.
@@ -2645,12 +2642,9 @@ fn test_bibliography_per_group_disambiguation() {
     let result =
         processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
 
-    assert!(result.contains("Group 2"));
-    // Group 2 should have its own 1962a and 1962b
-    let count_a = result.matches("1962a").count();
     assert_eq!(
-        count_a, 2,
-        "1962a should appear in both groups if disambiguated locally. Output: {result}"
+        result,
+        "# Group 1\n\nKuhn, Thomas (1962b). _B title_\n\nKuhn, Thomas (1962a). _A title_\n\n# Group 2\n\nKuhn, Thomas (1962a). _C title_\n\nKuhn, Thomas (1962b). _D title_"
     );
 }
 
@@ -2797,7 +2791,10 @@ fn test_group_heading_localized_uses_processor_locale() {
     let output =
         processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
 
-    assert!(output.contains("# Tài liệu tiếng Việt"));
+    assert_eq!(
+        output,
+        "# Tài liệu tiếng Việt\n\nKuhn, Thomas S. (1962). _The Structure of Scientific Revolutions_"
+    );
 }
 
 /// Tests the behavior of `test_group_heading_term_resolves_from_locale`.
@@ -2823,7 +2820,10 @@ fn test_group_heading_term_resolves_from_locale() {
     let output =
         processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
 
-    assert!(output.contains("# and"));
+    assert_eq!(
+        output,
+        "# and\n\nKuhn, Thomas S. (1962). _The Structure of Scientific Revolutions_"
+    );
 }
 
 #[test]
@@ -3464,8 +3464,8 @@ fn test_compound_numeric_number_assignment() {
         "compound_groups should track group 1"
     );
     let group1 = &groups[&1];
-    assert!(group1.contains(&"ref-a".to_string()));
-    assert!(group1.contains(&"ref-b".to_string()));
+    assert!(group1.iter().any(|s| s == "ref-a"));
+    assert!(group1.iter().any(|s| s == "ref-b"));
 }
 
 /// Verifies compound numeric bibliography rendering merges grouped entries.

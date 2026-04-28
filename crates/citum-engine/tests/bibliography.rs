@@ -2031,25 +2031,10 @@ fn apa_web_native_entries_render_without_retrieved_fallbacks() {
         "6188419/HCFRWJZR".to_string(),
     ]);
 
-    let lines = rendered
-        .lines()
-        .filter(|line| !line.trim().is_empty())
-        .collect::<Vec<_>>();
-
-    assert_eq!(lines.len(), 3);
     assert_eq!(
-        lines[0],
-        "Author, A. A. (2018a). 58 Web page: Pt. 1. Part title (A. A. Editor, ed.; A. A. Translator, Trans.) [Page type]. Website Title. https://example.com/"
+        rendered,
+        "Author, A. A. (2018a). 58 Web page: Pt. 1. Part title (A. A. Editor, ed.; A. A. Translator, Trans.) [Page type]. Website Title. https://example.com/\n\nAuthor, A. A. (2018b). 59 Blog post [Type]. Website Title. https://example.com/\n\nAuthor, A. A. (2018c). 60 Forum post [Type]. Website title. https://example.com/"
     );
-    assert_eq!(
-        lines[1],
-        "Author, A. A. (2018b). 59 Blog post [Type]. Website Title. https://example.com/"
-    );
-    assert_eq!(
-        lines[2],
-        "Author, A. A. (2018c). 60 Forum post [Type]. Website title. https://example.com/"
-    );
-    assert!(!rendered.contains("Retrieved "));
 }
 
 #[test]
@@ -2104,21 +2089,10 @@ fn apa_magazine_and_newspaper_entries_keep_special_format_translators_and_direct
         "6188419/389M98AT".to_string(),
     ]);
 
-    let lines = rendered
-        .lines()
-        .filter(|line| !line.trim().is_empty())
-        .collect::<Vec<_>>();
-
-    assert_eq!(lines.len(), 2);
     assert_eq!(
-        lines[0],
-        "Author, F. A. (2018a, July 14). 15 Magazine article (T. A. Translator, Trans.) [Type; Special format]. _Journal Title_, _32_(5), 1–100. http://example.com/"
+        rendered,
+        "Author, F. A. (2018a, July 14). 15 Magazine article (T. A. Translator, Trans.) [Type; Special format]. _Journal Title_, _32_(5), 1–100. http://example.com/\n\nAuthor, F. A. (2018b, July 14). 17 Newspaper article (T. A. Translator, Trans.) [Type; Special format]. _Newspaper Title_, 1–100. http://example.com/"
     );
-    assert_eq!(
-        lines[1],
-        "Author, F. A. (2018b, July 14). 17 Newspaper article (T. A. Translator, Trans.) [Type; Special format]. _Newspaper Title_, 1–100. http://example.com/"
-    );
-    assert!(!rendered.contains("Retrieved "));
 }
 
 #[test]
@@ -2196,26 +2170,10 @@ fn apa_structural_entries_use_component_packaging_instead_of_generic_fallbacks()
         "6188419/2G36L2LR".to_string(),
     ]);
 
-    let lines = rendered
-        .lines()
-        .filter(|line| !line.trim().is_empty())
-        .collect::<Vec<_>>();
-
-    assert_eq!(lines.len(), 3);
     assert_eq!(
-        lines[0],
-        "Author, F. A. (2013a). 45 Encyclopedia entry (S. S. Editor, Trans.). In S. S. Editor, ed., _Title of book: a subtitle_ (2 ed., Vol. 2, pp. 123–128). Publisher. https://doi.org/10.1234/5678 http://example.com/"
+        rendered,
+        "Author, F. A. (2013a). 45 Encyclopedia entry (S. S. Editor, Trans.). In S. S. Editor, ed., _Title of book: a subtitle_ (2 ed., Vol. 2, pp. 123–128). Publisher. https://doi.org/10.1234/5678 http://example.com/\n\nAuthor, F. A. (2013b). 56 Conference paper (S. S. Editor, Trans.). In S. S. Editor, ed., _Proceedings_ (Vol. 2, pp. 123–128). Publisher. https://doi.org/10.1234/5678 http://example.com/\n\nChapter, A. M. J. (2016). 24 Chapter in a report. In F. A. Editor & S. Editor (eds.), _Report title_ (pp. 126–145). Publisher. https://example.com/"
     );
-    assert_eq!(
-        lines[1],
-        "Author, F. A. (2013b). 56 Conference paper (S. S. Editor, Trans.). In S. S. Editor, ed., _Proceedings_ (Vol. 2, pp. 123–128). Publisher. https://doi.org/10.1234/5678 http://example.com/"
-    );
-    assert_eq!(
-        lines[2],
-        "Chapter, A. M. J. (2016). 24 Chapter in a report. In F. A. Editor & S. Editor (eds.), _Report title_ (pp. 126–145). Publisher. https://example.com/"
-    );
-    assert!(!rendered.contains("Retrieved "));
-    assert!(!rendered.contains("[Technical report]"));
 }
 
 #[test]
@@ -2575,8 +2533,10 @@ fn royal_society_of_chemistry_restores_legacy_page_less_doi_behavior() {
             vec!["ITEM-1".to_string()],
         );
 
-    assert!(result.contains("DOI:10.1234/example"));
-    assert!(!result.contains("pp."));
+    assert_eq!(
+        result,
+        "T. S. Kuhn, _International Encyclopedia of Unified Science_, DOI:10.1234/example."
+    );
 }
 
 #[test]
@@ -2658,26 +2618,10 @@ fn given_archive_info_and_eprint_when_rendering_bibliography_then_new_variables_
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography();
 
-    // The ArchiveLocation variable now assembles from structured fields when location is absent
-    // so the output includes assembled archive hierarchy between individual archive fields
-    assert!(result.contains("Archive-Aware Preprint. Houghton Library"));
-    assert!(result.contains("Ada Lovelace Papers, MS Am 1280"));
-    assert!(result.contains("Correspondence"));
-    assert!(
-        result.contains(", Box 12"),
-        "expected ', Box 12' from ArchiveBox variable: {result}"
+    assert_eq!(
+        result,
+        "Archive-Aware Preprint. Houghton Library, Ada Lovelace Papers, MS Am 1280, Series Correspondence, Box 12, Folder 4, Item 7, collection Ada Lovelace Papers (MS Am 1280), series Correspondence, box 12, folder 4, item 7, Cambridge, MA, https://example.com/archive, arxiv:2602.01234 [cs.DL]"
     );
-    assert!(
-        result.contains(", Folder 4"),
-        "expected ', Folder 4' from ArchiveFolder variable: {result}"
-    );
-    assert!(
-        result.contains(", Item 7"),
-        "expected ', Item 7' from ArchiveItem variable: {result}"
-    );
-    assert!(result.contains("Cambridge, MA"));
-    assert!(result.contains("https://example.com/archive"));
-    assert!(result.contains("arxiv:2602.01234 [cs.DL]"));
 }
 
 #[test]

@@ -230,9 +230,10 @@ fn test_author_date_documents_still_render_inline() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Visible citation: (Doe, 2020)."));
-    assert!(!result.contains("citum-auto-"));
-    assert!(result.contains("# Bibliography"));
+    assert_eq!(
+        result,
+        "Visible citation: (Doe, 2020).\n\n# Bibliography\n\nJohn Doe (2020)"
+    );
 }
 
 #[test]
@@ -245,10 +246,10 @@ fn test_note_style_prose_citation_generates_footnote() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Text.[^citum-auto-1]"));
-    assert!(result.contains("[^citum-auto-1]:"));
-    assert!(result.contains("Book One"));
-    assert!(result.contains("# Bibliography"));
+    assert_eq!(
+        result,
+        "Text.[^citum-auto-1]\n\n[^citum-auto-1]: Book One, Book One.\n\n\n# Bibliography\n\nJohn Doe. Book One"
+    );
 }
 
 #[test]
@@ -261,10 +262,10 @@ fn test_manual_footnote_citations_render_in_place() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Text[^m1]."));
-    assert!(result.contains("[^m1]: See"));
-    assert!(result.contains("Book One"));
-    assert!(!result.contains("citum-auto-"));
+    assert_eq!(
+        result,
+        "Text[^m1].\n\n[^m1]: See Book One, Book One.\n\n# Bibliography\n\nJohn Doe. Book One"
+    );
 }
 
 #[test]
@@ -278,13 +279,8 @@ fn test_manual_footnote_definition_is_not_duplicated() {
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
     assert_eq!(
-        result.matches("[^m1]:").count(),
-        1,
-        "manual note duplicated: {result}"
-    );
-    assert!(
-        !result.contains("[@item1]"),
-        "raw citation leaked: {result}"
+        result,
+        "Text[^m1].\n\n[^m1]: See Book One, Book One.\n\n# Bibliography\n\nJohn Doe. Book One"
     );
 }
 
@@ -298,11 +294,10 @@ fn test_mixed_manual_and_auto_notes_share_sequence() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Auto.[^citum-auto-2]"));
-    assert!(result.contains("[^m1]: First"));
-    assert!(result.contains("[^m2]: Second"));
-    assert!(result.contains("[^citum-auto-2]:"));
-    assert!(result.contains("Ibid"));
+    assert_eq!(
+        result,
+        "Manual[^m1]. Auto.[^citum-auto-2] Later[^m2].\n\n[^m1]: First Book One, Book One.\n\n[^m2]: Second Ibid..\n\n[^citum-auto-2]: Book Two, Book Two.\n\n\n# Bibliography\n\nJohn Doe. Book One\n\nJane Smith. Book Two"
+    );
 }
 
 #[test]
@@ -315,11 +310,10 @@ fn test_multiple_citations_in_manual_footnote_are_preserved() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("[^m1]: See"));
-    assert!(result.contains("Compare"));
-    assert!(result.contains("Book One"));
-    assert!(result.contains("Book Two"));
-    assert!(!result.contains("citum-auto-"));
+    assert_eq!(
+        result,
+        "Text[^m1].\n\n[^m1]: See Book One, Book One. Compare Book Two, Book Two.\n\n# Bibliography\n\nJohn Doe. Book One\n\nJane Smith. Book Two"
+    );
 }
 
 #[test]
@@ -332,8 +326,10 @@ fn test_multi_cite_prose_marker_produces_one_generated_note() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Text.[^citum-auto-1]"));
-    assert_eq!(result.matches("[^citum-auto-1]:").count(), 1);
+    assert_eq!(
+        result,
+        "Text.[^citum-auto-1]\n\n[^citum-auto-1]: Book One, Book One; Book Two, Book Two.\n\n\n# Bibliography\n\nJohn Doe. Book One\n\nJane Smith. Book Two"
+    );
 }
 
 #[test]
@@ -346,8 +342,10 @@ fn test_note_style_preserves_surrounding_punctuation() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Sentence.[^citum-auto-1]"));
-    assert!(result.contains("Next,[^citum-auto-2] (see[^citum-auto-3])."));
+    assert_eq!(
+        result,
+        "Sentence.[^citum-auto-1] Next,[^citum-auto-2] (see[^citum-auto-3]).\n\n[^citum-auto-1]: Book One, Book One.\n[^citum-auto-2]: Book Two, Book Two.\n[^citum-auto-3]: Book Onesub: Book One.\n\n\n# Bibliography\n\nJohn Doe. Book One\n\nJane Smith. Book Two"
+    );
 }
 
 #[test]
@@ -360,7 +358,10 @@ fn test_note_style_default_rule_places_marker_after_period() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Sentence.[^citum-auto-1]"));
+    assert_eq!(
+        result,
+        "Sentence.[^citum-auto-1]\n\n[^citum-auto-1]: Book One, Book One.\n\n\n# Bibliography\n\nJohn Doe. Book One"
+    );
 }
 
 #[test]
@@ -380,8 +381,10 @@ fn test_note_style_config_can_place_marker_before_period() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Sentence[^citum-auto-1]."));
-    assert!(!result.contains("Sentence.[^citum-auto-1]"));
+    assert_eq!(
+        result,
+        "Sentence[^citum-auto-1].\n\n[^citum-auto-1]: Book One, Book One.\n\n\n# Bibliography\n\nJohn Doe. Book One"
+    );
 }
 
 #[test]
@@ -401,7 +404,10 @@ fn test_note_style_config_moves_marker_inside_quotes() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("\"Quoted[^citum-auto-1]\"."));
+    assert_eq!(
+        result,
+        "\"Quoted[^citum-auto-1]\".\n\n[^citum-auto-1]: Book One, Book One.\n\n\n# Bibliography\n\nJohn Doe. Book One"
+    );
 }
 
 #[test]
@@ -414,9 +420,10 @@ fn test_note_order_uses_manual_reference_order_not_definition_order() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("[^m1]: See"));
-    assert!(result.contains("[^citum-auto-2]:"));
-    assert!(result.contains("Ibid"));
+    assert_eq!(
+        result,
+        "Manual[^m1]. Later.[^citum-auto-2]\n\n[^m1]: See Book One, Book One.\n\n[^citum-auto-2]: Ibid..\n\n\n# Bibliography\n\nJohn Doe. Book One"
+    );
 }
 
 #[test]
@@ -432,8 +439,10 @@ fn test_note_style_html_output_contains_footnotes() {
         DocumentFormat::Html,
     );
 
-    assert!(result.contains("role=\"doc-noteref\""));
-    assert!(result.contains("role=\"doc-endnotes\""));
+    assert_eq!(
+        result,
+        "<p>Text.<a id=\"fnref1\" href=\"#fn1\" role=\"doc-noteref\"><sup>1</sup></a></p>\n<section id=\"Bibliography\">\n<h1>Bibliography</h1>\n<div class=\"csln-bibliography\">\n<div class=\"csln-entry\" id=\"ref-item1\" data-author=\"Doe\" data-year=\"2020\" data-title=\"Book One\"><span class=\"csln-author\">John Doe</span><span class=\"csln-title\">. Book One</span></div>\n</div>\n</section>\n<section role=\"doc-endnotes\">\n<hr>\n<ol>\n<li id=\"fn1\">\n<p><span class=\"csln-citation\" data-ref=\"item1\">Book One, <span class=\"csln-title\">Book One</span></span>.<a href=\"#fnref1\" role=\"doc-backlink\">↩\u{fe0e}</a></p>\n</li>\n</ol>\n</section>\n"
+    );
 }
 
 #[test]
@@ -450,9 +459,10 @@ fn test_note_style_integral_citation_keeps_prose_anchor() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Narrative Doe[^citum-auto-1] continues."));
-    assert!(result.contains("[^citum-auto-1]: Doe,"));
-    assert!(result.contains("Book One"));
+    assert_eq!(
+        result,
+        "Narrative Doe[^citum-auto-1] continues.\n\n[^citum-auto-1]: Doe, _Book One_.\n\n\n# Bibliography\n\nDoe, John, _Book One_, 2020."
+    );
 }
 
 #[test]
@@ -526,8 +536,7 @@ fn test_repro_djot_rendering() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Integral: Doe (2020)."));
-    assert!(result.contains("SuppressAuthor: (2020)."));
+    assert_eq!(result, "Integral: Doe (2020). SuppressAuthor: (2020).");
 }
 
 #[test]
@@ -544,8 +553,10 @@ fn test_real_chicago_note_style_generates_djot_footnotes() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Text.[^citum-auto-1]"));
-    assert!(result.contains("[^citum-auto-1]:"));
+    assert_eq!(
+        result,
+        "Text.[^citum-auto-1]\n\n[^citum-auto-1]: Doe, _Book One_.\n\n\n# Bibliography\n\nDoe, John, _Book One_, 2020."
+    );
 }
 
 #[test]
@@ -573,10 +584,10 @@ Some text [@item1]."#;
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
     // Should have the frontmatter heading and bibliography groups rendered
-    assert!(result.contains("Primary Sources"));
-    assert!(result.contains("Secondary Sources"));
-    assert!(result.contains("Doe"));
-    assert!(result.contains("Smith"));
+    assert_eq!(
+        result,
+        "Some text (Doe, 2020).\n\n# Bibliography\n\n# Primary Sources\n\nJohn Doe (2020)\n\n# Secondary Sources\n\nJane Smith (2010)"
+    );
 }
 
 #[test]
@@ -590,8 +601,10 @@ fn test_document_without_bibliography_blocks_uses_default() {
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
     // Should have default bibliography heading
-    assert!(result.contains("# Bibliography"));
-    assert!(result.contains("Doe"));
+    assert_eq!(
+        result,
+        "Text (Doe, 2020).\n\n# Bibliography\n\nJohn Doe (2020)"
+    );
 }
 
 #[test]
@@ -603,9 +616,10 @@ fn test_document_without_bibliography_blocks_uses_typst_heading() {
     let content = "Text [@item1].";
     let result = processor.process_document::<_, Typst>(content, &parser, DocumentFormat::Typst);
 
-    assert!(result.contains("= Bibliography"));
-    assert!(!result.contains("# Bibliography"));
-    assert!(result.contains("#link(<ref-item1>)"));
+    assert_eq!(
+        result,
+        "Text (#link(<ref-item1>)[Doe, 2020]).\n\n= Bibliography\n\nJohn Doe (2020) <ref-item1>"
+    );
 }
 
 #[test]
@@ -621,8 +635,10 @@ fn test_document_with_inline_bibliography_block() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("Doe"));
-    assert!(result.contains("# Bibliography"));
+    assert_eq!(
+        result,
+        "Text (Doe, 2020).\n\n# Bibliography\n\nJohn Doe (2020)"
+    );
 }
 
 #[test]
@@ -648,9 +664,10 @@ Some text [@item1]."#;
 
     let result = processor.process_document::<_, Typst>(content, &parser, DocumentFormat::Typst);
 
-    assert!(result.contains("== Primary Sources"));
-    assert!(result.contains("== Secondary Sources"));
-    assert!(!result.contains("## Primary Sources"));
+    assert_eq!(
+        result,
+        "Some text (#link(<ref-item1>)[Doe, 2020]).\n\n= Bibliography\n\n== Primary Sources\n\nJohn Doe (2020) <ref-item1>\n\n== Secondary Sources\n\nJane Smith (2010) <ref-item2>"
+    );
 }
 
 #[test]
@@ -669,7 +686,10 @@ fn test_integral_name_memory_full_then_short_in_one_document() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("First John Doe. Later Doe."));
+    assert_eq!(
+        result,
+        "First John Doe. Later Doe.\n\n# Bibliography\n\nJohn Doe (2020)"
+    );
 }
 
 #[test]
@@ -688,8 +708,10 @@ fn test_integral_name_memory_chapter_reset_uses_full_name_again() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("John Doe. Doe."));
-    assert!(result.contains("# Two\n\nJohn Doe."));
+    assert_eq!(
+        result,
+        "# One\n\nJohn Doe. Doe.\n\n# Two\n\nJohn Doe.\n\n# Bibliography\n\nJohn Doe (2020)"
+    );
 }
 
 #[test]
@@ -708,8 +730,10 @@ fn test_integral_name_memory_section_reset_uses_full_name_again() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("John Doe. Doe."));
-    assert!(result.contains("## Two\n\nJohn Doe."));
+    assert_eq!(
+        result,
+        "## One\n\nJohn Doe. Doe.\n\n## Two\n\nJohn Doe.\n\n# Bibliography\n\nJohn Doe (2020)"
+    );
 }
 
 #[test]
@@ -726,8 +750,10 @@ fn test_integral_name_memory_body_only_ignores_note_mentions() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("[^n1]: Note John Doe."));
-    assert!(result.contains("First body John Doe. Later body Doe."));
+    assert_eq!(
+        result,
+        "Lead[^n1]. First body John Doe. Later body Doe.\n\n[^n1]: Note John Doe.\n\n# Bibliography\n\nJohn Doe (2020)"
+    );
 }
 
 #[test]
@@ -746,8 +772,10 @@ fn test_integral_name_memory_body_and_notes_keeps_body_first_after_note_first() 
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("[^n1]: First note John Doe."));
-    assert!(result.contains("First body John Doe."));
+    assert_eq!(
+        result,
+        "Lead[^n1]. First body John Doe.\n\n[^n1]: First note John Doe.\n\n# Bibliography\n\nJohn Doe (2020)"
+    );
 }
 
 #[test]
@@ -766,10 +794,10 @@ fn test_integral_name_memory_repeated_note_then_body_transitions_correctly() {
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("[^n1]: One John Doe."));
-    assert!(result.contains("[^n2]: Two Doe."));
-    assert!(result.contains("First body John Doe."));
-    assert!(result.contains("[^n3]: Three Doe."));
+    assert_eq!(
+        result,
+        "Lead[^n1] and again[^n2]. First body John Doe. Later[^n3].\n\n[^n1]: One John Doe.\n\n[^n2]: Two Doe.\n\n[^n3]: Three Doe.\n\n# Bibliography\n\nJohn Doe (2020)"
+    );
 }
 
 #[test]
@@ -793,7 +821,10 @@ First [+@item1]. Later [+@item1].";
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("First John Doe. Later John Doe."));
+    assert_eq!(
+        result,
+        "First John Doe. Later John Doe.\n\n# Bibliography\n\nJohn Doe (2020)"
+    );
 }
 
 #[test]
@@ -823,8 +854,10 @@ integral-names:
 [+@item1].";
     let result = processor.process_document::<_, Typst>(content, &parser, DocumentFormat::Typst);
 
-    assert!(result.contains("#link(<ref-item1>)[John Doe]. #link(<ref-item1>)[Doe]."));
-    assert!(result.contains("= Two\n\n#link(<ref-item1>)[John Doe]."));
+    assert_eq!(
+        result,
+        "= One\n\n#link(<ref-item1>)[John Doe]. #link(<ref-item1>)[Doe].\n\n= Two\n\n#link(<ref-item1>)[John Doe].\n\n= Bibliography\n\nJohn Doe (2020) <ref-item1>"
+    );
 }
 
 #[test]
@@ -858,7 +891,8 @@ First [+@item1]. Later [+@item1]."#;
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
-    assert!(result.contains("First John Doe. Later Doe."));
-    assert!(result.contains("# Bibliography"));
-    assert!(result.contains("Cited Works"));
+    assert_eq!(
+        result,
+        "First John Doe. Later Doe.\n\n# Bibliography\n\n# Cited Works\n\nJohn Doe (2020)\n\nJane Smith (2010)"
+    );
 }

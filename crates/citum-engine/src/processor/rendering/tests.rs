@@ -837,25 +837,8 @@ fn test_bibliography_type_specific_rendering() {
         metadata: crate::render::format::ProcEntryMetadata::default(),
     });
 
-    assert!(
-        result.contains("Arendt, Hannah"),
-        "Author missing: {}",
-        result
-    );
-    assert!(result.contains("(1975)"), "Date missing: {}", result);
-    assert!(
-        result.contains("_Thinking in Public_"),
-        "Title missing: {}",
-        result
-    );
-    assert!(
-        result.contains("Young-Bruehl, Elisabeth"),
-        "Interviewer missing: {}",
-        result
-    );
-    assert!(
-        result.contains("Schocken Books"),
-        "Publisher missing: {}",
-        result
+    assert_eq!(
+        result,
+        "Arendt, Hannah (1975) _Thinking in Public_ (Young-Bruehl, Elisabeth). Schocken Books."
     );
 }
