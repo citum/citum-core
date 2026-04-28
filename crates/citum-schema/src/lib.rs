@@ -5,6 +5,9 @@
 
 pub use citum_schema_style::*;
 
+/// Lint helpers for raw locales and style-to-locale compatibility.
+pub mod lint;
+
 /// Canonical Citum style schema version for external consumers.
 pub const SCHEMA_VERSION: &str = citum_schema_style::STYLE_SCHEMA_VERSION;
 

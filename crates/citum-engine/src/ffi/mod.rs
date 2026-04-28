@@ -10,8 +10,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! This module provides a C-compatible interface for other languages
 //! (like Lua, Python, or JavaScript) to use the processor.
 
-mod biblatex;
-
 use crate::processor::Processor;
 use crate::reference::{Bibliography, Citation, Reference};
 use crate::render::djot::Djot;
@@ -272,7 +270,7 @@ pub unsafe extern "C" fn citum_processor_new_from_bib(
     let mut bib: Bibliography = indexmap::IndexMap::new();
     for entry in bibliography_parsed.iter() {
         let key = entry.key.clone();
-        let reference = self::biblatex::input_reference_from_biblatex(entry);
+        let reference = crate::biblatex::input_reference_from_biblatex(entry);
         bib.insert(key, reference);
     }
 

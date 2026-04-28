@@ -4,8 +4,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
 use std::collections::HashMap;
+use std::fmt::Write as _;
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 use citum_schema::InputBibliography;
 use citum_schema::reference::InputReference;
@@ -17,6 +18,23 @@ use indexmap::IndexMap;
 use crate::render::format::OutputFormat;
 use crate::render::rich_text::render_djot_inline;
 use crate::{Bibliography, Citation, ProcessorError, Reference};
+
+/// Bibliography formats supported by reusable reference conversion helpers.
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum RefsFormat {
+    /// Native Citum bibliography encoded as YAML.
+    CitumYaml,
+    /// Native Citum bibliography encoded as JSON.
+    CitumJson,
+    /// Native Citum bibliography encoded as CBOR.
+    CitumCbor,
+    /// Legacy CSL-JSON bibliography.
+    CslJson,
+    /// BibLaTeX `.bib` bibliography.
+    Biblatex,
+    /// RIS bibliography.
+    Ris,
+}
 
 /// Bibliography data loaded from input, including optional compound sets.
 #[derive(Debug, Clone, Default)]
@@ -542,11 +560,630 @@ pub fn load_bibliography(path: &Path) -> Result<Bibliography, ProcessorError> {
     Ok(load_bibliography_with_sets(path)?.references)
 }
 
+/// Load and merge one or more bibliography files, preserving compound set metadata.
+///
+/// Entries from later files replace entries with the same ID from earlier files.
+/// Compound set IDs must be unique across input files, and final membership is
+/// validated against the merged bibliography.
+///
+/// # Errors
+///
+/// Returns an error when no paths are supplied, any file cannot be loaded, or
+/// merged compound sets are invalid.
+pub fn load_merged_bibliography(paths: &[PathBuf]) -> Result<LoadedBibliography, ProcessorError> {
+    if paths.is_empty() {
+        return Err(ProcessorError::ParseError(
+            "BIBLIOGRAPHY".to_string(),
+            "At least one bibliography path is required.".to_string(),
+        ));
+    }
+
+    let mut merged = Bibliography::new();
+    let mut merged_sets = IndexMap::<String, Vec<String>>::new();
+    for path in paths {
+        let loaded = load_bibliography_with_sets(path)?;
+        for (id, reference) in loaded.references {
+            merged.insert(id, reference);
+        }
+        if let Some(sets) = loaded.sets {
+            for (set_id, members) in sets {
+                if merged_sets.insert(set_id.clone(), members).is_some() {
+                    return Err(ProcessorError::ParseError(
+                        "BIBLIOGRAPHY".to_string(),
+                        format!("Duplicate compound set id while merging: {set_id}"),
+                    ));
+                }
+            }
+        }
+    }
+
+    let validated_sets = validate_compound_sets(
+        if merged_sets.is_empty() {
+            None
+        } else {
+            Some(merged_sets)
+        },
+        &merged,
+    )?;
+
+    Ok(LoadedBibliography {
+        references: merged,
+        sets: validated_sets,
+    })
+}
+
+/// Load and concatenate one or more citation files.
+///
+/// # Errors
+///
+/// Returns an error when any citation file cannot be read or parsed.
+pub fn load_merged_citations(paths: &[PathBuf]) -> Result<Vec<Citation>, ProcessorError> {
+    let mut merged = Vec::new();
+    for path in paths {
+        let loaded = load_citations(path)?;
+        merged.extend(loaded);
+    }
+    Ok(merged)
+}
+
+/// Infer a bibliography input format from a path.
+///
+/// JSON inputs are content-sniffed to distinguish native Citum JSON from
+/// CSL-JSON.
+///
+/// # Errors
+///
+/// Returns an error when a JSON input cannot be read or parsed for detection.
+pub fn infer_refs_input_format(path: &Path) -> Result<RefsFormat, ProcessorError> {
+    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+    let fmt = match ext.to_ascii_lowercase().as_str() {
+        "yaml" | "yml" => RefsFormat::CitumYaml,
+        "cbor" => RefsFormat::CitumCbor,
+        "bib" => RefsFormat::Biblatex,
+        "ris" => RefsFormat::Ris,
+        "json" => detect_json_refs_format(path)?,
+        _ => RefsFormat::CitumYaml,
+    };
+    Ok(fmt)
+}
+
+/// Infer a bibliography output format from a path.
+///
+/// Unknown extensions default to native Citum YAML.
+#[must_use]
+pub fn infer_refs_output_format(path: &Path) -> RefsFormat {
+    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+    match ext.to_ascii_lowercase().as_str() {
+        "yaml" | "yml" => RefsFormat::CitumYaml,
+        "cbor" => RefsFormat::CitumCbor,
+        "bib" => RefsFormat::Biblatex,
+        "ris" => RefsFormat::Ris,
+        "json" => RefsFormat::CitumJson,
+        _ => RefsFormat::CitumYaml,
+    }
+}
+
+fn detect_json_refs_format(path: &Path) -> Result<RefsFormat, ProcessorError> {
+    let bytes = fs::read(path)?;
+    let value: serde_json::Value = serde_json::from_slice(&bytes)
+        .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+    let array = value.as_array();
+    let is_citum_array = array.is_some_and(|items| items.iter().any(|v| v.get("class").is_some()));
+    let is_csl_array = array.is_some_and(|items| {
+        items.iter().any(|v| {
+            v.get("id").is_some()
+                && v.get("type").is_some()
+                && (v.get("title").is_some() || v.get("author").is_some())
+        })
+    });
+    let is_citum_object = value.get("references").is_some();
+    if is_csl_array && !is_citum_array && !is_citum_object {
+        Ok(RefsFormat::CslJson)
+    } else {
+        Ok(RefsFormat::CitumJson)
+    }
+}
+
+/// Load bibliography input in a specified native or legacy reference format.
+///
+/// # Errors
+///
+/// Returns an error when the file cannot be read or parsed as `format`.
+pub fn load_input_bibliography(
+    path: &Path,
+    format: RefsFormat,
+) -> Result<InputBibliography, ProcessorError> {
+    match format {
+        RefsFormat::CitumYaml => {
+            let bytes = fs::read(path)?;
+            deserialize_any(&bytes, "yaml")
+        }
+        RefsFormat::CitumJson => {
+            let bytes = fs::read(path)?;
+            load_citum_json_bibliography(&bytes)
+        }
+        RefsFormat::CitumCbor => {
+            let bytes = fs::read(path)?;
+            deserialize_any(&bytes, "cbor")
+        }
+        RefsFormat::CslJson => load_csl_json_bibliography(path),
+        RefsFormat::Biblatex => load_biblatex_bibliography(path),
+        RefsFormat::Ris => load_ris_bibliography(path),
+    }
+}
+
+fn deserialize_any<T: serde::de::DeserializeOwned>(
+    bytes: &[u8],
+    ext: &str,
+) -> Result<T, ProcessorError> {
+    match ext {
+        "yaml" | "yml" => serde_yaml::from_slice(bytes)
+            .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string())),
+        "json" => serde_json::from_slice(bytes)
+            .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string())),
+        "cbor" => ciborium::de::from_reader(std::io::Cursor::new(bytes))
+            .map_err(|e| ProcessorError::ParseError("CBOR".to_string(), e.to_string())),
+        _ => serde_yaml::from_slice(bytes)
+            .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string())),
+    }
+}
+
+fn serialize_any<T: serde::Serialize>(obj: &T, ext: &str) -> Result<Vec<u8>, ProcessorError> {
+    match ext {
+        "yaml" | "yml" => serde_yaml::to_string(obj)
+            .map(String::into_bytes)
+            .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string())),
+        "json" => serde_json::to_string_pretty(obj)
+            .map(String::into_bytes)
+            .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string())),
+        "cbor" => {
+            let mut buf = Vec::new();
+            ciborium::ser::into_writer(obj, &mut buf)
+                .map_err(|e| ProcessorError::ParseError("CBOR".to_string(), e.to_string()))?;
+            Ok(buf)
+        }
+        _ => serde_yaml::to_string(obj)
+            .map(String::into_bytes)
+            .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string())),
+    }
+}
+
+fn load_citum_json_bibliography(bytes: &[u8]) -> Result<InputBibliography, ProcessorError> {
+    let value: serde_json::Value = serde_json::from_slice(bytes)
+        .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+
+    if let Ok(input) = serde_json::from_value::<InputBibliography>(value.clone()) {
+        return Ok(input);
+    }
+
+    if let Some(references) = value.as_array() {
+        return Ok(InputBibliography {
+            references: load_hybrid_json_references(references)?,
+            ..Default::default()
+        });
+    }
+
+    if let Some(object) = value.as_object()
+        && let Some(references) = object
+            .get("references")
+            .and_then(serde_json::Value::as_array)
+    {
+        return Ok(InputBibliography {
+            references: load_hybrid_json_references(references)?,
+            sets: object
+                .get("sets")
+                .filter(|value| !value.is_null())
+                .cloned()
+                .map(serde_json::from_value)
+                .transpose()
+                .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?
+                .unwrap_or_default(),
+            ..Default::default()
+        });
+    }
+
+    deserialize_any(bytes, "json")
+}
+
+fn load_hybrid_json_references(
+    references: &[serde_json::Value],
+) -> Result<Vec<InputReference>, ProcessorError> {
+    references
+        .iter()
+        .cloned()
+        .map(load_hybrid_json_reference)
+        .collect()
+}
+
+fn load_hybrid_json_reference(value: serde_json::Value) -> Result<InputReference, ProcessorError> {
+    if let Ok(reference) = serde_json::from_value::<InputReference>(value.clone()) {
+        return Ok(reference);
+    }
+
+    let class = value
+        .get("class")
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or_default()
+        .to_string();
+    let ref_type = value
+        .get("type")
+        .and_then(serde_json::Value::as_str)
+        .unwrap_or_default()
+        .to_string();
+    let legacy = serde_json::from_value::<LegacyReference>(value)
+        .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+
+    if class == "collection" && ref_type == "edited-book" {
+        return Ok(input_reference_from_legacy_edited_book(legacy));
+    }
+
+    Ok(InputReference::from(legacy))
+}
+
+/// Write bibliography input to a specified native or legacy reference format.
+///
+/// # Errors
+///
+/// Returns an error when serialization fails or the output file cannot be
+/// written.
+pub fn write_output_bibliography(
+    input: &InputBibliography,
+    path: &Path,
+    format: RefsFormat,
+) -> Result<(), ProcessorError> {
+    match format {
+        RefsFormat::CitumYaml => fs::write(path, serialize_any(input, "yaml")?)?,
+        RefsFormat::CitumJson => fs::write(path, serialize_any(input, "json")?)?,
+        RefsFormat::CitumCbor => fs::write(path, serialize_any(input, "cbor")?)?,
+        RefsFormat::CslJson => {
+            let refs: Vec<LegacyReference> = input
+                .references
+                .iter()
+                .map(input_reference_to_csl_json)
+                .collect();
+            let json = serde_json::to_string_pretty(&refs)
+                .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+            fs::write(path, json)?;
+        }
+        RefsFormat::Biblatex => {
+            fs::write(path, render_biblatex(input))?;
+        }
+        RefsFormat::Ris => {
+            fs::write(path, render_ris(input))?;
+        }
+    }
+    Ok(())
+}
+
+fn load_csl_json_bibliography(path: &Path) -> Result<InputBibliography, ProcessorError> {
+    let bytes = fs::read(path)?;
+    let refs: Vec<LegacyReference> = serde_json::from_slice(&bytes)
+        .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+    let references = refs.into_iter().map(InputReference::from).collect();
+    Ok(InputBibliography {
+        references,
+        ..Default::default()
+    })
+}
+
+fn load_biblatex_bibliography(path: &Path) -> Result<InputBibliography, ProcessorError> {
+    let src = fs::read_to_string(path)?;
+    let bibliography = biblatex::Bibliography::parse(&src)
+        .map_err(|e| ProcessorError::ParseError("BibLaTeX".to_string(), e.to_string()))?;
+    let references = bibliography
+        .iter()
+        .map(crate::biblatex::input_reference_from_biblatex)
+        .collect();
+    Ok(InputBibliography {
+        references,
+        ..Default::default()
+    })
+}
+
+fn load_ris_bibliography(path: &Path) -> Result<InputBibliography, ProcessorError> {
+    let src = fs::read_to_string(path)?;
+    parse_ris(&src)
+}
+
+fn input_reference_to_csl_json(reference: &InputReference) -> LegacyReference {
+    use csl_legacy::csl_json::{DateVariable, StringOrNumber};
+
+    let id = reference.id().unwrap_or_else(|| "item".into());
+    let mut r = LegacyReference {
+        id: id.to_string(),
+        ..Default::default()
+    };
+
+    r.title = reference.title().map(|t| t.to_string());
+    r.language = reference.language().map(|lang| lang.to_string());
+    r.note = reference.note().map(|rt| rt.raw().to_string());
+    r.doi = reference.doi();
+    r.issued = reference.csl_issued_date().and_then(|d| {
+        let s = d.0;
+        let year = s.get(0..4)?.parse::<i32>().ok()?;
+        Some(DateVariable::year(year))
+    });
+    r.author = reference.author().map(contributor_to_csl_names);
+    r.editor = reference.editor().map(contributor_to_csl_names);
+    r.translator = reference.translator().map(contributor_to_csl_names);
+    r.publisher = reference.publisher().map(|p| p.name.to_string());
+
+    match reference {
+        InputReference::Monograph(m) => {
+            r.ref_type = "book".to_string();
+            r.isbn.clone_from(&m.isbn);
+            r.url = m.url.as_ref().map(std::string::ToString::to_string);
+            r.edition = reference.edition().map(StringOrNumber::String);
+        }
+        InputReference::SerialComponent(s) => {
+            r.ref_type = "article-journal".to_string();
+            r.container_title = reference.container_title().map(|t| t.to_string());
+            r.page.clone_from(&s.pages);
+            r.volume = reference
+                .volume()
+                .map(|v| StringOrNumber::String(v.to_string()));
+            r.issue = reference
+                .issue()
+                .map(|v| StringOrNumber::String(v.to_string()));
+            r.url = s.url.as_ref().map(std::string::ToString::to_string);
+        }
+        InputReference::CollectionComponent(c) => {
+            r.ref_type = "chapter".to_string();
+            r.container_title = reference.container_title().map(|t| t.to_string());
+            r.page = c.pages.as_ref().map(std::string::ToString::to_string);
+        }
+        _ => {
+            r.ref_type = "book".to_string();
+        }
+    }
+
+    r
+}
+
+fn contributor_to_csl_names(
+    contributor: citum_schema::reference::Contributor,
+) -> Vec<csl_legacy::csl_json::Name> {
+    let mut names = Vec::new();
+    match contributor {
+        citum_schema::reference::Contributor::SimpleName(n) => {
+            names.push(csl_legacy::csl_json::Name::literal(&n.name.to_string()));
+        }
+        citum_schema::reference::Contributor::StructuredName(n) => {
+            names.push(csl_legacy::csl_json::Name {
+                family: Some(n.family.to_string()),
+                given: Some(n.given.to_string()),
+                suffix: n.suffix,
+                dropping_particle: n.dropping_particle,
+                non_dropping_particle: n.non_dropping_particle,
+                literal: None,
+            });
+        }
+        citum_schema::reference::Contributor::Multilingual(n) => {
+            names.push(csl_legacy::csl_json::Name {
+                family: Some(n.original.family.to_string()),
+                given: Some(n.original.given.to_string()),
+                suffix: n.original.suffix,
+                dropping_particle: n.original.dropping_particle,
+                non_dropping_particle: n.original.non_dropping_particle,
+                literal: None,
+            });
+        }
+        citum_schema::reference::Contributor::ContributorList(list) => {
+            for member in list.0 {
+                names.extend(contributor_to_csl_names(member));
+            }
+        }
+    }
+    names
+}
+
+fn render_biblatex(input: &InputBibliography) -> String {
+    let mut out = String::new();
+    for reference in &input.references {
+        let id = reference.id().unwrap_or_else(|| "item".into());
+        let entry_type = match reference {
+            InputReference::SerialComponent(_) => "article",
+            InputReference::CollectionComponent(_) => "incollection",
+            _ => "book",
+        };
+        let _ = writeln!(&mut out, "@{entry_type}{{{id},");
+        if let Some(title) = reference.title() {
+            let _ = writeln!(&mut out, "  title = {{{title}}},");
+        }
+        if let Some(contributor) = reference.author() {
+            let names: Vec<String> = contributor_to_biblatex_names(contributor);
+            if !names.is_empty() {
+                let _ = writeln!(&mut out, "  author = {{{}}},", names.join(" and "));
+            }
+        }
+        if let Some(issued) = reference.csl_issued_date()
+            && let Some(year) = issued.0.get(0..4)
+        {
+            let _ = writeln!(&mut out, "  year = {{{year}}},");
+        }
+        if let Some(doi) = reference.doi() {
+            let _ = writeln!(&mut out, "  doi = {{{doi}}},");
+        }
+        let _ = writeln!(&mut out, "}}\n");
+    }
+    out
+}
+
+fn contributor_to_biblatex_names(contributor: citum_schema::reference::Contributor) -> Vec<String> {
+    match contributor {
+        citum_schema::reference::Contributor::SimpleName(n) => vec![n.name.to_string()],
+        citum_schema::reference::Contributor::StructuredName(n) => {
+            vec![format!("{}, {}", n.family, n.given)]
+        }
+        citum_schema::reference::Contributor::Multilingual(n) => {
+            vec![format!("{}, {}", n.original.family, n.original.given)]
+        }
+        citum_schema::reference::Contributor::ContributorList(list) => list
+            .0
+            .into_iter()
+            .flat_map(contributor_to_biblatex_names)
+            .collect(),
+    }
+}
+
+fn parse_ris(input: &str) -> Result<InputBibliography, ProcessorError> {
+    let mut references = Vec::<InputReference>::new();
+    let mut current = Vec::<(String, String)>::new();
+
+    for line in input.lines() {
+        let line = line.strip_prefix('\u{feff}').unwrap_or(line);
+        let Some((tag, value)) = line.split_once("  - ") else {
+            continue;
+        };
+        let tag = tag.trim();
+        if tag.len() != 2 || !tag.is_ascii() {
+            continue;
+        }
+        let tag = tag.to_string();
+        let value = value.trim().to_string();
+        if tag == "ER" {
+            if !current.is_empty() {
+                references.push(InputReference::from(ris_record_to_reference(&current)));
+            }
+            current.clear();
+            continue;
+        }
+        current.push((tag, value));
+    }
+
+    if !current.is_empty() {
+        references.push(InputReference::from(ris_record_to_reference(&current)));
+    }
+
+    Ok(InputBibliography {
+        references,
+        ..Default::default()
+    })
+}
+
+fn ris_record_to_reference(fields: &[(String, String)]) -> LegacyReference {
+    use csl_legacy::csl_json::{DateVariable, Name, StringOrNumber};
+
+    let get = |tag: &str| -> Option<String> {
+        fields
+            .iter()
+            .find_map(|(k, v)| (k == tag).then(|| v.clone()))
+    };
+    let get_all = |tag: &str| -> Vec<String> {
+        fields
+            .iter()
+            .filter(|(k, _)| k == tag)
+            .map(|(_, v)| v.clone())
+            .collect()
+    };
+
+    let id = get("ID")
+        .or_else(|| get("L1"))
+        .or_else(|| get("M1"))
+        .unwrap_or_else(|| "item".to_string());
+    let title = get("TI").or_else(|| get("T1"));
+    let ty = get("TY").unwrap_or_else(|| "BOOK".to_string());
+    let author = {
+        let authors = get_all("AU")
+            .into_iter()
+            .map(|n| {
+                let parts: Vec<_> = n.split(',').map(str::trim).collect();
+                if parts.len() >= 2 {
+                    Name::new(parts[0], parts[1])
+                } else {
+                    Name::literal(parts.first().copied().unwrap_or(""))
+                }
+            })
+            .collect::<Vec<_>>();
+        (!authors.is_empty()).then_some(authors)
+    };
+    let issued = get("PY").or_else(|| get("Y1")).and_then(|s| {
+        let year = s.chars().take(4).collect::<String>().parse::<i32>().ok()?;
+        Some(DateVariable::year(year))
+    });
+    let doi = get("DO");
+    let note = get("N1");
+    let page = match (get("SP"), get("EP")) {
+        (Some(sp), Some(ep)) => Some(format!("{sp}-{ep}")),
+        (Some(sp), None) => Some(sp),
+        _ => None,
+    };
+    let ref_type = if ty == "JOUR" || ty == "JFULL" {
+        "article-journal".to_string()
+    } else if ty == "CHAP" {
+        "chapter".to_string()
+    } else {
+        "book".to_string()
+    };
+
+    LegacyReference {
+        id,
+        ref_type,
+        author,
+        title,
+        container_title: get("JO").or_else(|| get("JF")),
+        issued,
+        volume: get("VL").map(StringOrNumber::String),
+        issue: get("IS").map(StringOrNumber::String),
+        page,
+        doi,
+        url: get("UR"),
+        isbn: get("SN"),
+        publisher: get("PB"),
+        publisher_place: get("CY"),
+        language: get("LA"),
+        note,
+        ..Default::default()
+    }
+}
+
+fn render_ris(input: &InputBibliography) -> String {
+    let mut out = String::new();
+    for reference in &input.references {
+        let ty = match reference {
+            InputReference::SerialComponent(_) => "JOUR",
+            InputReference::CollectionComponent(_) => "CHAP",
+            _ => "BOOK",
+        };
+        let _ = writeln!(&mut out, "TY  - {ty}");
+        if let Some(id) = reference.id() {
+            let _ = writeln!(&mut out, "ID  - {id}");
+        }
+        if let Some(title) = reference.title() {
+            let _ = writeln!(&mut out, "TI  - {title}");
+        }
+        if let Some(contributor) = reference.author() {
+            for name in contributor_to_biblatex_names(contributor) {
+                let _ = writeln!(&mut out, "AU  - {name}");
+            }
+        }
+        if let Some(issued) = reference.csl_issued_date()
+            && let Some(year) = issued.0.get(0..4)
+        {
+            let _ = writeln!(&mut out, "PY  - {year}");
+        }
+        if let Some(doi) = reference.doi() {
+            let _ = writeln!(&mut out, "DO  - {doi}");
+        }
+        let _ = writeln!(&mut out, "ER  -\n");
+    }
+    out
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::render::plain::PlainText;
     use indexmap::IndexMap;
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    fn temp_path(stem: &str, ext: &str) -> PathBuf {
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock should be after epoch")
+            .as_nanos();
+        std::env::temp_dir().join(format!("{stem}-{now}.{ext}"))
+    }
 
     #[test]
     fn render_rich_text_field_with_bold() {
@@ -580,6 +1217,139 @@ mod tests {
                 "23",
             ))
         );
+    }
+
+    #[test]
+    fn infer_refs_output_format_uses_supported_extensions() {
+        assert!(matches!(
+            infer_refs_output_format(Path::new("refs.yaml")),
+            RefsFormat::CitumYaml
+        ));
+        assert!(matches!(
+            infer_refs_output_format(Path::new("refs.bib")),
+            RefsFormat::Biblatex
+        ));
+        assert!(matches!(
+            infer_refs_output_format(Path::new("refs.ris")),
+            RefsFormat::Ris
+        ));
+    }
+
+    #[test]
+    fn load_merged_bibliography_rejects_cross_file_duplicate_membership() {
+        let base = temp_path("citum-merged-bib", "dir");
+        std::fs::create_dir_all(&base).expect("temp dir should be created");
+        let bib_a = base.join("a.yaml");
+        let bib_b = base.join("b.yaml");
+
+        std::fs::write(
+            &bib_a,
+            r#"
+references:
+  - class: monograph
+    id: ref-a
+    type: book
+    title: Book A
+    issued: "2020"
+sets:
+  group-1: [ref-a]
+"#,
+        )
+        .expect("first fixture should write");
+        std::fs::write(
+            &bib_b,
+            r#"
+references:
+  - class: monograph
+    id: ref-a
+    type: book
+    title: Book A
+    issued: "2020"
+sets:
+  group-2: [ref-a]
+"#,
+        )
+        .expect("second fixture should write");
+
+        let err = load_merged_bibliography(&[bib_a.clone(), bib_b.clone()])
+            .expect_err("must reject cross-file duplicate membership");
+
+        assert!(
+            err.to_string()
+                .contains("appears in both compound sets 'group-1' and 'group-2'"),
+            "unexpected error: {err}"
+        );
+
+        let _ = std::fs::remove_dir_all(base);
+    }
+
+    #[test]
+    fn load_input_bibliography_accepts_biblatex() {
+        let path = temp_path("citum-biblatex", "bib");
+        std::fs::write(
+            &path,
+            "@article{smith2020,\n  title = {Article},\n  author = {Smith, Jane},\n  date = {2020},\n  journaltitle = {Journal}\n}",
+        )
+        .expect("biblatex fixture should write");
+
+        let bibliography =
+            load_input_bibliography(&path, RefsFormat::Biblatex).expect("BibLaTeX should parse");
+
+        let reference = bibliography
+            .references
+            .iter()
+            .find(|reference| reference.id().as_deref() == Some("smith2020"))
+            .expect("reference should be loaded");
+        assert_eq!(reference.ref_type(), "article-journal");
+
+        let _ = std::fs::remove_file(path);
+    }
+
+    #[test]
+    fn load_and_write_ris_bibliography() {
+        let input = temp_path("citum-ris-in", "ris");
+        let output = temp_path("citum-ris-out", "ris");
+        std::fs::write(
+            &input,
+            "TY  - JOUR\nID  - smith2020\nTI  - Article\nAU  - Smith, Jane\nPY  - 2020\nDO  - 10.1000/example\nER  -\n",
+        )
+        .expect("RIS fixture should write");
+
+        let bibliography =
+            load_input_bibliography(&input, RefsFormat::Ris).expect("RIS should parse");
+        write_output_bibliography(&bibliography, &output, RefsFormat::Ris)
+            .expect("RIS should serialize");
+        let rendered = std::fs::read_to_string(&output).expect("RIS output should read");
+
+        assert_eq!(
+            rendered,
+            "TY  - JOUR\nID  - smith2020\nTI  - Article\nAU  - Smith, Jane\nPY  - 2020\nDO  - 10.1000/example\nER  -\n\n"
+        );
+
+        let _ = std::fs::remove_file(input);
+        let _ = std::fs::remove_file(output);
+    }
+
+    #[test]
+    fn load_ris_bibliography_accepts_utf8_bom() {
+        let input = temp_path("citum-ris-bom", "ris");
+        std::fs::write(
+            &input,
+            "\u{feff}TY  - JOUR\nID  - smith2020\nTI  - Article\nER  -\n",
+        )
+        .expect("RIS fixture should write");
+
+        let bibliography =
+            load_input_bibliography(&input, RefsFormat::Ris).expect("RIS with BOM should parse");
+
+        let reference = bibliography
+            .references
+            .iter()
+            .find(|reference| reference.id().as_deref() == Some("smith2020"))
+            .expect("reference should be loaded");
+        assert_eq!(reference.ref_type(), "article-journal");
+
+        let _ = std::fs::remove_file(input);
     }
 
     #[test]
