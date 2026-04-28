@@ -1,0 +1,339 @@
+:root {
+  --citum-blue: oklch(0.64 0.13 238);
+  --citum-blue-dark: oklch(0.47 0.12 238);
+  --citum-blue-soft: oklch(0.94 0.025 238);
+  --citum-paper: oklch(0.985 0.012 86);
+  --citum-paper-deep: oklch(0.955 0.018 86);
+  --citum-surface: oklch(0.995 0.006 86);
+  --citum-surface-cool: oklch(0.965 0.013 247);
+  --citum-ink: oklch(0.29 0.025 255);
+  --citum-ink-strong: oklch(0.19 0.025 255);
+  --citum-muted: oklch(0.47 0.025 255);
+  --citum-faint: oklch(0.64 0.018 255);
+  --citum-border: oklch(0.88 0.024 238);
+  --citum-border-strong: oklch(0.79 0.05 238);
+  --citum-success: oklch(0.55 0.12 158);
+  --citum-warning: oklch(0.66 0.13 74);
+  --citum-danger: oklch(0.54 0.15 28);
+  --citum-shadow: 0 2px 12px oklch(0.21 0.025 255 / 0.06);
+  --citum-shadow-lift: 0 16px 36px oklch(0.21 0.025 255 / 0.08);
+  --citum-radius-sm: 8px;
+  --citum-radius-md: 12px;
+  --citum-radius-lg: 18px;
+  --citum-font-serif: "Newsreader", serif;
+  --citum-font-sans: "Libre Franklin", sans-serif;
+  --citum-font-mono: "JetBrains Mono", monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--citum-paper);
+}
+
+body {
+  font-family: var(--citum-font-sans);
+  background:
+    radial-gradient(circle at 14% -10%, oklch(0.93 0.04 238 / 0.72), transparent 30rem),
+    linear-gradient(180deg, var(--citum-paper) 0%, oklch(0.975 0.011 86) 52%, var(--citum-paper-deep) 100%);
+  color: var(--citum-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--citum-ink-strong);
+  font-family: var(--citum-font-serif);
+  letter-spacing: -0.012em;
+}
+
+code,
+pre,
+.font-mono {
+  font-family: var(--citum-font-mono);
+}
+
+a {
+  color: inherit;
+}
+
+.glass-nav,
+.citum-nav {
+  background: oklch(0.985 0.012 86 / 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--citum-border);
+}
+
+.citum-brand-mark,
+.bg-primary {
+  background: var(--citum-blue);
+}
+
+.text-primary {
+  color: var(--citum-blue-dark);
+}
+
+.border-primary {
+  border-color: var(--citum-blue);
+}
+
+.bg-background-light {
+  background-color: var(--citum-paper);
+}
+
+.bg-accent-cream {
+  background-color: var(--citum-paper-deep);
+}
+
+.bg-white {
+  background-color: var(--citum-surface);
+}
+
+.text-white {
+  color: oklch(0.985 0.008 238);
+}
+
+.text-slate-900,
+.text-gray-900 {
+  color: var(--citum-ink-strong);
+}
+
+.text-slate-700,
+.text-gray-700 {
+  color: var(--citum-ink);
+}
+
+.text-slate-600,
+.text-gray-600,
+.text-slate-500,
+.text-gray-500 {
+  color: var(--citum-muted);
+}
+
+.text-slate-400,
+.text-gray-400 {
+  color: var(--citum-faint);
+}
+
+.border-slate-100,
+.border-slate-200,
+.border-gray-100 {
+  border-color: var(--citum-border);
+}
+
+.nav-link,
+.citum-doc-link {
+  color: var(--citum-muted);
+  font-size: 0.92rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.nav-link:hover,
+.nav-link[aria-current="page"],
+.citum-doc-link:hover,
+.citum-doc-link[aria-current="page"] {
+  background: var(--citum-blue-soft);
+  color: var(--citum-ink-strong);
+}
+
+.btn-primary,
+.citum-button-primary {
+  align-items: center;
+  background: var(--citum-blue);
+  border-radius: var(--citum-radius-sm);
+  box-shadow: 0 4px 14px oklch(0.64 0.13 238 / 0.26);
+  color: oklch(0.985 0.008 238);
+  display: inline-flex;
+  font-size: 0.94rem;
+  font-weight: 700;
+  gap: 0.45rem;
+  padding: 10px 20px;
+  text-decoration: none;
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.2s ease;
+}
+
+.btn-primary:hover,
+.citum-button-primary:hover {
+  box-shadow: 0 8px 22px oklch(0.64 0.13 238 / 0.32);
+  transform: translateY(-1px);
+}
+
+.btn-secondary,
+.citum-button-secondary {
+  align-items: center;
+  background: var(--citum-surface);
+  border: 1px solid var(--citum-border-strong);
+  border-radius: var(--citum-radius-sm);
+  color: var(--citum-ink);
+  display: inline-flex;
+  font-size: 0.94rem;
+  font-weight: 700;
+  gap: 0.45rem;
+  padding: 10px 20px;
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-secondary:hover,
+.citum-button-secondary:hover {
+  background: var(--citum-blue-soft);
+  border-color: var(--citum-blue);
+}
+
+.kicker,
+.citum-kicker {
+  background: var(--citum-blue-soft);
+  border: 1px solid var(--citum-border-strong);
+  border-radius: 999px;
+  color: var(--citum-blue-dark);
+  display: inline-block;
+  font-size: 0.78rem;
+  font-variant-caps: small-caps;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 4px 12px;
+}
+
+.asymmetric-grid,
+.citum-asymmetric {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  grid-template-columns: minmax(0, 1.18fr) minmax(280px, 0.82fr);
+}
+
+.citum-section {
+  padding-block: clamp(3rem, 8vw, 6rem);
+}
+
+.citum-panel,
+.panel,
+.card,
+.report-card,
+.example-card {
+  background: var(--citum-surface);
+  border: 1px solid var(--citum-border);
+  border-radius: var(--citum-radius-md);
+  box-shadow: var(--citum-shadow);
+}
+
+.report-card,
+.example-card {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.report-card:hover,
+.example-card:hover {
+  border-color: var(--citum-border-strong);
+  box-shadow: var(--citum-shadow-lift);
+  transform: translateY(-1px);
+}
+
+.workshop-block,
+.citum-workshop,
+.code-block {
+  background: var(--citum-surface-cool);
+  border: 1px solid oklch(0.86 0.018 247);
+  border-radius: var(--citum-radius-sm);
+  color: var(--citum-ink);
+  font-family: var(--citum-font-mono);
+  overflow-x: auto;
+}
+
+.workshop-label,
+.citum-label {
+  color: var(--citum-muted);
+  font-family: var(--citum-font-sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.citum-table-shell {
+  background: var(--citum-surface);
+  border: 1px solid var(--citum-border);
+  border-radius: var(--citum-radius-md);
+  box-shadow: var(--citum-shadow);
+  overflow-x: auto;
+}
+
+.citum-callout {
+  background: var(--citum-blue-soft);
+  border: 1px solid var(--citum-border-strong);
+  border-radius: var(--citum-radius-md);
+  padding: 1.25rem 1.5rem;
+}
+
+.citum-status-row {
+  align-items: start;
+  background: var(--citum-surface);
+  border: 1px solid var(--citum-border);
+  border-radius: var(--citum-radius-md);
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: auto 1fr;
+  padding: 1rem;
+}
+
+.citum-leading-number {
+  background: var(--citum-blue);
+  border-radius: 999px;
+  color: oklch(0.985 0.008 238);
+  display: grid;
+  font-family: var(--citum-font-mono);
+  font-size: 0.78rem;
+  font-weight: 800;
+  height: 2rem;
+  place-items: center;
+  width: 2rem;
+}
+
+.citum-no-side-stripe {
+  border-left-width: 1px;
+}
+
+@keyframes citum-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in,
+.citum-animate-in {
+  animation: citum-fade-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.delay-1 {
+  animation-delay: 0.1s;
+}
+
+.delay-2 {
+  animation-delay: 0.2s;
+}
+
+@media (max-width: 768px) {
+  .asymmetric-grid,
+  .citum-asymmetric {
+    grid-template-columns: 1fr;
+  }
+
+  .citum-doc-link,
+  .nav-link {
+    padding-inline: 10px;
+  }
+}

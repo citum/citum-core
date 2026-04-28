@@ -528,23 +528,24 @@ def build_html_report(
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{html.escape(report_title)}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap" rel="stylesheet">
   <style>
     :root {{
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --text: #0f172a;
-      --muted: #475569;
-      --border: #dbe3ef;
-      --accent: #0f766e;
-      --accent-soft: #ccfbf1;
-      --fail: #b91c1c;
-      --skip: #92400e;
+      --bg: oklch(0.985 0.012 86);
+      --card: oklch(0.995 0.006 86);
+      --text: oklch(0.19 0.025 255);
+      --muted: oklch(0.47 0.025 255);
+      --border: oklch(0.88 0.024 238);
+      --accent: oklch(0.47 0.12 238);
+      --accent-soft: oklch(0.94 0.025 238);
+      --fail: oklch(0.54 0.15 28);
+      --skip: oklch(0.66 0.13 74);
     }}
     * {{ box-sizing: border-box; }}
     body {{
       margin: 0;
-      font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: linear-gradient(180deg, #f8fafc 0%, #eef6f7 100%);
+      font-family: "Libre Franklin", sans-serif;
+      background: linear-gradient(180deg, var(--bg) 0%, oklch(0.955 0.018 86) 100%);
       color: var(--text);
       line-height: 1.6;
     }}
@@ -558,11 +559,13 @@ def build_html_report(
     }}
     h1 {{
       font-size: 2.4rem;
+      font-family: "Newsreader", serif;
       line-height: 1.1;
       margin: 0 0 12px;
     }}
     h2 {{
       font-size: 1.35rem;
+      font-family: "Newsreader", serif;
       margin: 0 0 12px;
     }}
     p, li {{
@@ -574,7 +577,8 @@ def build_html_report(
     }}
     .timestamp {{
       font-size: 0.9rem;
-      color: #64748b;
+      color: var(--muted);
+      font-family: "JetBrains Mono", monospace;
     }}
     .overview, .domain-section, .failure-section {{
       background: var(--card);
@@ -582,7 +586,7 @@ def build_html_report(
       border-radius: 18px;
       padding: 24px;
       margin-bottom: 20px;
-      box-shadow: 0 12px 30px rgba(15, 23, 42, 0.05);
+      box-shadow: 0 2px 12px oklch(0.21 0.025 255 / 0.06);
     }}
     .overview ul, .scenario-list {{
       margin: 0;
@@ -607,10 +611,10 @@ def build_html_report(
     }}
     .section-summary, .section-note {{
       margin: 0 0 14px;
-      color: #64748b;
+      color: var(--muted);
     }}
     .meta {{
-      color: #64748b;
+      color: var(--muted);
       font-size: 0.92rem;
     }}
     .status {{
