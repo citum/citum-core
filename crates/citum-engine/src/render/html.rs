@@ -34,7 +34,11 @@ impl Html {
     }
 
     fn escape_attribute_value(value: &str) -> String {
-        value.replace('&', "&amp;").replace('"', "&quot;")
+        value
+            .replace('&', "&amp;")
+            .replace('"', "&quot;")
+            .replace('<', "&lt;")
+            .replace('>', "&gt;")
     }
 }
 
@@ -176,15 +180,24 @@ impl OutputFormat for Html {
             content
         };
 
-        let mut attrs = format!(r#"id="{}""#, self.format_id(id));
+        let mut attrs = format!(
+            r#"id="{}""#,
+            Self::escape_attribute_value(&self.format_id(id))
+        );
         if let Some(author) = &metadata.author {
-            attrs.push_str(&format!(r#" data-author="{author}""#));
+            attrs.push_str(r#" data-author=""#);
+            attrs.push_str(&Self::escape_attribute_value(author));
+            attrs.push('"');
         }
         if let Some(year) = &metadata.year {
-            attrs.push_str(&format!(r#" data-year="{year}""#));
+            attrs.push_str(r#" data-year=""#);
+            attrs.push_str(&Self::escape_attribute_value(year));
+            attrs.push('"');
         }
         if let Some(title) = &metadata.title {
-            attrs.push_str(&format!(r#" data-title="{title}""#));
+            attrs.push_str(r#" data-title=""#);
+            attrs.push_str(&Self::escape_attribute_value(title));
+            attrs.push('"');
         }
 
         format!(r#"<div class="csln-entry" {attrs}>{content}</div>"#)

@@ -6,8 +6,9 @@ use super::super::{
 use super::BibliographyBlock;
 use crate::{Citation, CitationItem};
 use citum_schema::citation::{CitationMode, normalize_locator_text};
-use citum_schema::grouping::BibliographyGroup;
+use citum_schema::grouping::{BibliographyGroup, GroupHeading, GroupSelector};
 use citum_schema::locale::Locale;
+use citum_schema::template::TypeSelector;
 use jotdown::{Attributes, Container, Event, Parser};
 use serde::Deserialize;
 use std::collections::HashSet;
@@ -371,7 +372,7 @@ pub(crate) fn parse_frontmatter(content: &str) -> (Option<DocumentFrontmatter>, 
 /// and extract their metadata from attributes.
 pub(crate) fn scan_bibliography_blocks(content: &str) -> Vec<BibliographyBlock> {
     let mut blocks = Vec::new();
-    let mut div_stack: Vec<(usize, String)> = Vec::new();
+    let mut div_stack: Vec<(usize, BibliographyGroup)> = Vec::new();
 
     for (event, range) in Parser::new(content).into_offset_iter() {
         match event {
@@ -381,12 +382,11 @@ pub(crate) fn scan_bibliography_blocks(content: &str) -> Vec<BibliographyBlock> 
             Event::End(Container::Div { class }) => {
                 if class.contains("bibliography")
                     && let Some((start, group_id)) = div_stack.pop()
-                    && let Ok(group) = serde_yaml::from_str::<BibliographyGroup>(&group_id)
                 {
                     blocks.push(BibliographyBlock {
                         start,
                         end: range.end,
-                        group,
+                        group: group_id,
                     });
                 }
             }
@@ -398,7 +398,7 @@ pub(crate) fn scan_bibliography_blocks(content: &str) -> Vec<BibliographyBlock> 
 }
 
 /// Extract bibliography group definition from div attributes.
-fn extract_group_from_attrs(_class: &str, attrs: Attributes) -> String {
+fn extract_group_from_attrs(_class: &str, attrs: Attributes) -> BibliographyGroup {
     let mut title: Option<String> = None;
     let mut ref_type: Option<String> = None;
 
@@ -412,18 +412,13 @@ fn extract_group_from_attrs(_class: &str, attrs: Attributes) -> String {
         }
     }
 
-    let mut yaml = String::from("id: default\n");
-
-    if let Some(t) = title {
-        yaml.push_str(&format!("heading:\n  literal: \"{t}\"\n"));
+    BibliographyGroup {
+        id: "default".to_string(),
+        heading: title.map(|literal| GroupHeading::Literal { literal }),
+        selector: GroupSelector {
+            ref_type: ref_type.map(TypeSelector::Single),
+            ..Default::default()
+        },
+        ..Default::default()
     }
-
-    yaml.push_str("selector:");
-    if let Some(t) = ref_type {
-        yaml.push_str(&format!("\n  type: {t}\n"));
-    } else {
-        yaml.push_str(" {}\n");
-    }
-
-    yaml
 }

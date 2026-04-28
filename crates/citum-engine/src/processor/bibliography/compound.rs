@@ -101,7 +101,7 @@ impl Processor {
                     format!(
                         "{}{}",
                         crate::values::int_to_letter((index + 1) as u32)
-                            .unwrap_or_else(|| "a".to_string()),
+                            .unwrap_or_else(|| "a".into()),
                         compound_config.sub_label_suffix
                     )
                 }

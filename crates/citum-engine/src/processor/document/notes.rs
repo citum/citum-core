@@ -381,7 +381,7 @@ impl Processor {
                     None,
                 )
             })
-            .unwrap_or_else(|| "ibid.".to_string());
+            .unwrap_or_else(|| "ibid.".into());
 
         if matches!(
             citation.position,
