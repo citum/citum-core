@@ -3,8 +3,11 @@
 title: Archive hierarchy assembly configurability
 status: draft
 type: feature
+priority: normal
+tags:
+    - schema
 created_at: 2026-04-27T11:57:36Z
-updated_at: 2026-04-27T11:57:36Z
+updated_at: 2026-04-29T15:36:45Z
 parent: csl26-li63
 ---
 
