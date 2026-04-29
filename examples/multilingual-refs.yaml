@@ -90,7 +90,33 @@ references:
       name: "Cambridge University Press"
     language: "en"
 
-  # 5. Chinese book with Pinyin transliteration
+  # 5. Vietnamese monograph for grouped-bibliography sorting
+  - id: nguyen_digital_scholarship
+    class: monograph
+    type: book
+    title: "Học thuật số và thực hành trích dẫn"
+    author:
+      - family: "Nguyễn"
+        given: "Văn An"
+    issued: "2019"
+    publisher:
+      name: "Nhà xuất bản Khoa học Xã hội"
+    language: "vi"
+
+  # 6. Second Vietnamese monograph to exercise given-family ordering
+  - id: tran_citation_workflows
+    class: monograph
+    type: book
+    title: "Quy trình trích dẫn cho xuất bản hiện đại"
+    author:
+      - family: "Trần"
+        given: "Thị Bình"
+    issued: "2021"
+    publisher:
+      name: "Nhà xuất bản Giáo dục Việt Nam"
+    language: "vi"
+
+  # 7. Chinese book with Pinyin transliteration
   - id: confucius_analects
     class: monograph
     type: book
@@ -119,7 +145,7 @@ references:
       name: "人民文学出版社"
     language: "zh"
 
-  # 6. Korean monograph with Hangul and romanization
+  # 8. Korean monograph with Hangul and romanization
   - id: korean_literature
     class: monograph
     type: book
@@ -148,7 +174,7 @@ references:
       name: "서울대학교 출판부"
     language: "ko"
 
-  # 7. Latin-script record with accented surname for Unicode-aware sorting
+  # 9. Latin-script record with accented surname for Unicode-aware sorting
   - id: celik_public_space
     class: monograph
     type: book
@@ -161,7 +187,7 @@ references:
       name: "University of California Press"
     language: "en"
 
-  # 8. Irish name with acute accent to verify collation near other O surnames
+  # 10. Irish name with acute accent to verify collation near other O surnames
   - id: o_tuathail_geopolitics
     class: monograph
     type: book

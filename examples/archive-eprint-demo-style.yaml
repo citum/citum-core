@@ -38,3 +38,34 @@ bibliography:
     - variable: eprint-class
       prefix: " ["
       suffix: "]"
+  type-variants:
+    preprint:
+      - title: primary
+        suffix: ". "
+      - date: issued
+        form: year-month
+        suffix: ", "
+      - variable: archive-name
+      - variable: archive-collection
+        prefix: ", "
+      - variable: archive-collection-id
+        prefix: ", "
+      - variable: archive-series
+        prefix: ", Series "
+      - variable: archive-box
+        prefix: ", Box "
+      - variable: archive-folder
+        prefix: ", Folder "
+      - variable: archive-item
+        prefix: ", Item "
+      - variable: archive-place
+        prefix: ", "
+      - variable: archive-url
+        prefix: ", "
+      - variable: eprint-server
+        prefix: ", "
+      - variable: eprint-id
+        prefix: ":"
+      - variable: eprint-class
+        prefix: " ["
+        suffix: "]"
