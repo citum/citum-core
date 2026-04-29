@@ -572,12 +572,18 @@
       "type": "object",
       "properties": {
         "name": {
+          "description": "Institutional or organization name.",
           "$ref": "#/$defs/MultilingualString"
         },
         "location": {
-          "type": [
-            "string",
-            "null"
+          "description": "Geographic place associated with the name.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Place"
+            },
+            {
+              "type": "null"
+            }
           ]
         }
       },
@@ -597,6 +603,10 @@
           "$ref": "#/$defs/MultilingualComplex"
         }
       ]
+    },
+    "Place": {
+      "description": "Geographic place name used for publication and archive locations.",
+      "type": "string"
     },
     "StructuredName": {
       "description": "A structured name is a name broken down into its constituent parts.",
@@ -774,9 +784,13 @@
               "$ref": "#/$defs/MultilingualString"
             },
             "place": {
-              "type": [
-                "string",
-                "null"
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Place"
+                },
+                {
+                  "type": "null"
+                }
               ]
             }
           },
@@ -856,9 +870,13 @@
         },
         "place": {
           "description": "Geographic location (city/country) of the archive.\n\nParallel to `SimpleName.location`; both carry geographic-place semantics.",
-          "type": [
-            "string",
-            "null"
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Place"
+            },
+            {
+              "type": "null"
+            }
           ]
         },
         "collection": {

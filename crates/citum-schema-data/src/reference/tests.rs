@@ -1229,7 +1229,7 @@ fn conversion_maps_original_publisher_metadata_into_original_relation() {
             .publisher
             .as_ref()
             .and_then(|publisher| publisher.place.clone()),
-        Some("Boston".to_string())
+        Some(Place::from("Boston"))
     );
 }
 
@@ -1269,7 +1269,7 @@ fn conversion_preserves_place_only_original_publication_metadata() {
             .publisher
             .as_ref()
             .and_then(|publisher| publisher.place.clone()),
-        Some("Boston".to_string())
+        Some(Place::from("Boston"))
     );
 }
 
@@ -1462,6 +1462,6 @@ fn conversion_maps_original_relation_for_legal_case_references() {
             .publisher
             .as_ref()
             .and_then(|publisher| publisher.place.clone()),
-        Some("Boston".to_string())
+        Some(Place::from("Boston"))
     );
 }

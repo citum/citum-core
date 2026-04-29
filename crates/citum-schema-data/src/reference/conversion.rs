@@ -109,11 +109,11 @@ fn relation_monograph(
     let publisher = match (publisher, publisher_place) {
         (Some(name), place) => Some(Publisher {
             name: name.into(),
-            place,
+            place: place.map(Into::into),
         }),
         (None, Some(place)) => Some(Publisher {
             name: String::new().into(),
-            place: Some(place),
+            place: Some(place.into()),
         }),
         (None, None) => None,
     };
@@ -229,7 +229,7 @@ fn archive_info_from_legacy_flat(legacy: &csl_legacy::csl_json::Reference) -> Op
     Some(ArchiveInfo {
         name: legacy.archive.clone().map(Into::into),
         location: legacy.archive_location.clone(),
-        place,
+        place: place.map(Into::into),
         collection,
         ..Default::default()
     })
@@ -276,7 +276,7 @@ fn from_software_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         issued: ctx.issued,
         publisher: legacy.publisher.map(|n| Publisher {
             name: n.into(),
-            place: legacy.publisher_place,
+            place: legacy.publisher_place.map(Into::into),
         }),
         version: None,
         repository: None,
@@ -507,7 +507,7 @@ fn from_monograph_ref(
         issued: ctx.issued,
         publisher: legacy.publisher.map(|n| Publisher {
             name: n.into(),
-            place: legacy.publisher_place,
+            place: legacy.publisher_place.map(Into::into),
         }),
         url: ctx.url,
         accessed: ctx.accessed,
@@ -616,7 +616,7 @@ fn from_collection_component_ref(
                 contributors: container_contributors,
                 publisher: legacy.publisher.map(|n| Publisher {
                     name: n.into(),
-                    place: legacy.publisher_place,
+                    place: legacy.publisher_place.map(Into::into),
                 }),
                 edition: parent_edition.clone(),
                 numbering: legacy
@@ -662,7 +662,7 @@ fn from_collection_component_ref(
                 issued: EdtfString(String::new()),
                 publisher: legacy.publisher.map(|n| Publisher {
                     name: n.into(),
-                    place: legacy.publisher_place,
+                    place: legacy.publisher_place.map(Into::into),
                 }),
                 edition: parent_edition,
                 numbering: parent_volume
@@ -810,7 +810,7 @@ pub fn input_reference_from_legacy_edited_book(
             .unwrap_or(EdtfString(String::new())),
         publisher: publisher.map(|name| Publisher {
             name: name.into(),
-            place: publisher_place.clone(),
+            place: publisher_place.clone().map(Into::into),
         }),
         numbering,
         url: url.as_deref().and_then(|value| Url::parse(value).ok()),
@@ -944,7 +944,7 @@ fn from_serial_component_ref(
                 contributors: serial_contributors,
                 publisher: legacy.publisher.clone().map(|n| Publisher {
                     name: n.into(),
-                    place: legacy.publisher_place.clone(),
+                    place: legacy.publisher_place.clone().map(Into::into),
                 }),
                 url: None,
                 accessed: None,
@@ -1085,7 +1085,7 @@ fn from_audio_visual_ref(
         numbering,
         publisher: legacy.publisher.map(|name| Publisher {
             name: name.into(),
-            place: legacy.publisher_place,
+            place: legacy.publisher_place.map(Into::into),
         }),
         medium: legacy.medium,
         platform: None,
@@ -1197,7 +1197,7 @@ fn from_standard_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         status: None,
         publisher: legacy.publisher.map(|n| Publisher {
             name: n.into(),
-            place: legacy.publisher_place,
+            place: legacy.publisher_place.map(Into::into),
         }),
         url: ctx.url,
         accessed: ctx.accessed,
@@ -1257,7 +1257,7 @@ fn from_dataset_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) ->
         issued: ctx.issued,
         publisher: legacy.publisher.map(|n| Publisher {
             name: n.into(),
-            place: legacy.publisher_place,
+            place: legacy.publisher_place.map(Into::into),
         }),
         version,
         format: legacy.medium,
@@ -1396,7 +1396,7 @@ fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         issued: ctx.issued,
         publisher: legacy.publisher.map(|n| Publisher {
             name: n.into(),
-            place: legacy.publisher_place,
+            place: legacy.publisher_place.map(Into::into),
         }),
         url: ctx.url,
         accessed: ctx.accessed,
@@ -1472,7 +1472,7 @@ fn from_preprint_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         issued: ctx.issued,
         publisher: legacy.publisher.map(|name| Publisher {
             name: name.into(),
-            place: legacy.publisher_place,
+            place: legacy.publisher_place.map(Into::into),
         }),
         url: ctx.url,
         accessed: ctx.accessed,

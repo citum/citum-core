@@ -275,10 +275,10 @@ because:
 - Nesting a `Contributor` inside `ArchiveInfo` for just name + place would add
   YAML depth without benefit.
 
-The geographic-place concept (`place` on `ArchiveInfo`, `location` on
-`SimpleName`) could be unified into a shared type in a future cross-cutting
-refactor, but extracting a newtype for what is currently `Option<String>` in
-both cases is premature.
+The geographic-place concept is now unified through the shared `Place` newtype
+on `ArchiveInfo.place`, `SimpleName.location`, and publisher places. The wire
+format remains a string, while Rust code can distinguish geographic places from
+shelfmarks, call numbers, and event locations.
 
 ### EprintInfo Struct
 

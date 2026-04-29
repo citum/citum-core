@@ -168,7 +168,7 @@ pub(crate) fn input_reference_from_biblatex(entry: &biblatex_crate::Entry) -> In
     let issued = field_str("date").map_or(EdtfString(String::new()), EdtfString);
     let publisher = field_str("publisher").map(|p| Publisher {
         name: p.into(),
-        place: field_str("location"),
+        place: field_str("location").map(Into::into),
     });
 
     let author = entry

@@ -22,8 +22,8 @@ pub use self::contributor::{
 pub use self::date::EdtfString;
 use self::types::common::HasNumbering;
 pub use self::types::common::{
-    FieldLanguageMap, LangID, MultilingualString, NumOrStr, Numbering, NumberingType, Publisher,
-    RefID, RichText, Title,
+    FieldLanguageMap, LangID, MultilingualString, NumOrStr, Numbering, NumberingType, Place,
+    Publisher, RefID, RichText, Title,
 };
 pub use self::types::legal::{Brief, Hearing, LegalCase, Regulation, Statute, Treaty};
 pub use self::types::specialized::{
@@ -533,7 +533,7 @@ impl InputReference {
             InputReference::Monograph(r) => r
                 .publisher
                 .as_ref()
-                .and_then(|p| p.place.clone())
+                .and_then(|p| p.place.clone().map(Into::into))
                 .or_else(|| {
                     r.container.as_ref().and_then(|c| match c {
                         WorkRelation::Embedded(p) => p.publisher_place(),
@@ -551,7 +551,7 @@ impl InputReference {
             InputReference::Collection(r) => r
                 .publisher
                 .as_ref()
-                .and_then(|p| p.place.clone())
+                .and_then(|p| p.place.clone().map(Into::into))
                 .or_else(|| {
                     r.container.as_ref().and_then(|c| match c {
                         WorkRelation::Embedded(p) => p.publisher_place(),
@@ -559,12 +559,27 @@ impl InputReference {
                     })
                 }),
             InputReference::Serial(_) => None,
-            InputReference::Classic(r) => r.publisher.as_ref().and_then(|p| p.place.clone()),
-            InputReference::Dataset(r) => r.publisher.as_ref().and_then(|p| p.place.clone()),
-            InputReference::Standard(r) => r.publisher.as_ref().and_then(|p| p.place.clone()),
-            InputReference::Software(r) => r.publisher.as_ref().and_then(|p| p.place.clone()),
+            InputReference::Classic(r) => r
+                .publisher
+                .as_ref()
+                .and_then(|p| p.place.clone().map(Into::into)),
+            InputReference::Dataset(r) => r
+                .publisher
+                .as_ref()
+                .and_then(|p| p.place.clone().map(Into::into)),
+            InputReference::Standard(r) => r
+                .publisher
+                .as_ref()
+                .and_then(|p| p.place.clone().map(Into::into)),
+            InputReference::Software(r) => r
+                .publisher
+                .as_ref()
+                .and_then(|p| p.place.clone().map(Into::into)),
             InputReference::Event(r) => r.location.clone(),
-            InputReference::AudioVisual(r) => r.publisher.as_ref().and_then(|p| p.place.clone()),
+            InputReference::AudioVisual(r) => r
+                .publisher
+                .as_ref()
+                .and_then(|p| p.place.clone().map(Into::into)),
             _ => None,
         }
     }
@@ -688,13 +703,18 @@ impl InputReference {
     /// Return the archive geographic place from structured ArchiveInfo.
     pub fn archive_place(&self) -> Option<String> {
         match self {
-            InputReference::Monograph(r) => r.archive_info.as_ref().and_then(|i| i.place.clone()),
-            InputReference::CollectionComponent(r) => {
-                r.archive_info.as_ref().and_then(|i| i.place.clone())
-            }
-            InputReference::SerialComponent(r) => {
-                r.archive_info.as_ref().and_then(|i| i.place.clone())
-            }
+            InputReference::Monograph(r) => r
+                .archive_info
+                .as_ref()
+                .and_then(|i| i.place.clone().map(Into::into)),
+            InputReference::CollectionComponent(r) => r
+                .archive_info
+                .as_ref()
+                .and_then(|i| i.place.clone().map(Into::into)),
+            InputReference::SerialComponent(r) => r
+                .archive_info
+                .as_ref()
+                .and_then(|i| i.place.clone().map(Into::into)),
             _ => None,
         }
     }
