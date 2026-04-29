@@ -73,7 +73,7 @@ pub trait OutputFormat: Default + Clone {
     /// Apply a semantic identifier (class) to the content.
     ///
     /// This is used for machine readability or fine-grained CSS styling.
-    /// Examples include "csln-title", "csln-author", "csln-doi".
+    /// Examples include "citum-title", "citum-author", "citum-doi".
     fn semantic(&self, class: &str, content: Self::Output) -> Self::Output;
 
     /// Apply a semantic identifier plus optional attributes to the content.

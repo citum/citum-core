@@ -20,7 +20,10 @@ mod tests {
         };
 
         let result = render_component_with_format::<Html>(&component);
-        assert_eq!(result, r#"<span class="csln-title"><i>My Title</i></span>"#);
+        assert_eq!(
+            result,
+            r#"<span class="citum-title"><i>My Title</i></span>"#
+        );
     }
 
     #[test]
@@ -34,7 +37,7 @@ mod tests {
         let result = render_component_with_format::<Html>(&component);
         assert_eq!(
             result,
-            r#"<span class="csln-author"><span style="font-variant:small-caps">Smith</span></span>"#
+            r#"<span class="citum-author"><span style="font-variant:small-caps">Smith</span></span>"#
         );
     }
 
@@ -50,7 +53,7 @@ mod tests {
         let result = render_component_with_format::<Html>(&component);
         assert_eq!(
             result,
-            r#"<span class="csln-title" data-index="2"><i>My Title</i></span>"#
+            r#"<span class="citum-title" data-index="2"><i>My Title</i></span>"#
         );
     }
 
@@ -63,7 +66,7 @@ mod tests {
         };
 
         let result = render_component_with_format::<Djot>(&component);
-        assert_eq!(result, "[_My Title_]{.csln-title}");
+        assert_eq!(result, "[_My Title_]{.citum-title}");
     }
 
     #[test]
@@ -75,7 +78,7 @@ mod tests {
         };
 
         let result = render_component_with_format::<Djot>(&component);
-        assert_eq!(result, "[[Smith]{.small-caps}]{.csln-author}");
+        assert_eq!(result, "[[Smith]{.small-caps}]{.citum-author}");
     }
 
     #[test]
@@ -90,7 +93,7 @@ mod tests {
         let result = render_component_with_format::<Html>(&component);
         assert_eq!(
             result,
-            r#"<span class="csln-url"><a href="https://example.com">https://example.com</a></span>"#
+            r#"<span class="citum-url"><a href="https://example.com">https://example.com</a></span>"#
         );
     }
 
@@ -106,7 +109,7 @@ mod tests {
         let result = render_component_with_format::<Html>(&component);
         assert_eq!(
             result,
-            r#"<span class="csln-url"><a href="%22%20onmouseover=%22alert(1)">label</a></span>"#
+            r#"<span class="citum-url"><a href="%22%20onmouseover=%22alert(1)">label</a></span>"#
         );
     }
 
@@ -134,7 +137,7 @@ mod tests {
         let result = render_component_with_format::<Html>(&component);
         assert_eq!(
             result,
-            r#"<span class="csln-title"><a href="https://doi.org/10.1001/test">My Title</a></span>"#
+            r#"<span class="citum-title"><a href="https://doi.org/10.1001/test">My Title</a></span>"#
         );
     }
 

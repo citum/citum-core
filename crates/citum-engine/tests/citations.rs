@@ -1416,11 +1416,11 @@ citation:
         .expect("citation should render");
 
     assert!(
-        rendered.contains(r#"class="csln-title" data-index="0""#),
+        rendered.contains(r#"class="citum-title" data-index="0""#),
         "title wrapper should carry the first template index: {rendered}"
     );
     assert!(
-        rendered.contains(r#"class="csln-url" data-index="2""#),
+        rendered.contains(r#"class="citum-url" data-index="2""#),
         "url wrapper should carry the sparse third template index: {rendered}"
     );
     assert!(

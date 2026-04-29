@@ -166,11 +166,11 @@ fn given_example_mla_document_when_rendered_as_html_then_citation_markup_is_not_
     );
 
     assert!(
-        html_output.contains(r#"<span class="csln-citation" data-ref="smith2010">"#),
+        html_output.contains(r#"<span class="citum-citation" data-ref="smith2010">"#),
         "citation markup should be real HTML: {html_output}"
     );
     assert!(
-        html_output.contains(r#"<div class="csln-bibliography">"#),
+        html_output.contains(r#"<div class="citum-bibliography">"#),
         "bibliography markup should be real HTML: {html_output}"
     );
     assert!(

@@ -1777,7 +1777,7 @@ fn test_whole_entry_linking_html() {
 
     assert_eq!(
         result,
-        "<div class=\"csln-bibliography\">\n<div class=\"csln-entry\" id=\"ref-link1\" data-year=\"2023\" data-title=\"Linked Page\"><a href=\"https://example.com/\"><span class=\"csln-author\"><a href=\"https://example.com/\">Linked Page</a></span> <span class=\"csln-issued\">(<a href=\"https://example.com/\">2023</a>)</span></a></div>\n</div>"
+        "<div class=\"citum-bibliography\">\n<div class=\"citum-entry\" id=\"ref-link1\" data-year=\"2023\" data-title=\"Linked Page\"><a href=\"https://example.com/\"><span class=\"citum-author\"><a href=\"https://example.com/\">Linked Page</a></span> <span class=\"citum-issued\">(<a href=\"https://example.com/\">2023</a>)</span></a></div>\n</div>"
     );
 }
 
@@ -1811,10 +1811,10 @@ fn test_global_title_linking_html() {
     let result = processor.render_bibliography_with_format::<Html>();
 
     // The title should be automatically hyperlinked because of global config.
-    // Note: In this test, title substitutes for author, so it gets csln-author class.
+    // Note: In this test, title substitutes for author, so it gets citum-author class.
     assert_eq!(
         result,
-        "<div class=\"csln-bibliography\">\n<div class=\"csln-entry\" id=\"ref-doi1\" data-year=\"2023\" data-title=\"Linked Title\"><span class=\"csln-author\"><a href=\"https://doi.org/10.1001/test\">Linked Title</a></span> <span class=\"csln-issued\">(2023)</span></div>\n</div>"
+        "<div class=\"citum-bibliography\">\n<div class=\"citum-entry\" id=\"ref-doi1\" data-year=\"2023\" data-title=\"Linked Title\"><span class=\"citum-author\"><a href=\"https://doi.org/10.1001/test\">Linked Title</a></span> <span class=\"citum-issued\">(2023)</span></div>\n</div>"
     );
 }
 
@@ -1861,7 +1861,7 @@ fn test_inline_title_link_takes_precedence_over_global_title_link_html() {
 
     assert_eq!(
         result,
-        "<div class=\"csln-bibliography\">\n<div class=\"csln-entry\" id=\"ref-doi-inline\" data-year=\"2023\" data-title=\"[Linked title](https://example.com)\"><span class=\"csln-title\"><a href=\"https://example.com\">Linked title</a></span></div>\n</div>"
+        "<div class=\"citum-bibliography\">\n<div class=\"citum-entry\" id=\"ref-doi-inline\" data-year=\"2023\" data-title=\"[Linked title](https://example.com)\"><span class=\"citum-title\"><a href=\"https://example.com\">Linked title</a></span></div>\n</div>"
     );
 }
 
@@ -1903,7 +1903,7 @@ fn test_chicago_title_preset_preserves_djot_markup_html() {
 
     assert!(
         result.contains(
-            r#"<span class="csln-title">“<i>Homo sapiens</i> and <b>modern</b> world”</span>"#
+            r#"<span class="citum-title">“<i>Homo sapiens</i> and <b>modern</b> world”</span>"#
         ),
         "Result: {result}"
     );
@@ -3987,12 +3987,12 @@ bibliography:
     let result = processor.render_bibliography_with_format::<Html>();
 
     assert_eq!(
-        result.matches("csln-bibliography").count(),
+        result.matches("citum-bibliography").count(),
         1,
         "merged HTML should have exactly one bibliography wrapper: {result}"
     );
     assert_eq!(
-        result.matches("csln-entry").count(),
+        result.matches("citum-entry").count(),
         1,
         "merged HTML should have exactly one entry wrapper: {result}"
     );

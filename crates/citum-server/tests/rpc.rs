@@ -122,7 +122,7 @@ fn render_bibliography_html_returns_wrapped_markup() {
         .as_str()
         .expect("content should be a string");
     assert!(
-        content.contains("csln-bibliography"),
+        content.contains("citum-bibliography"),
         "html bibliography should include wrapper markup"
     );
 }
@@ -193,7 +193,7 @@ fn render_citation_html_returns_markup() {
     assert_eq!(result["id"], 9);
     let citation = result["result"].as_str().expect("result should be string");
     assert!(
-        citation.contains("csln-citation"),
+        citation.contains("citum-citation"),
         "html citation should contain citation wrapper: {citation}"
     );
 }
@@ -217,7 +217,7 @@ fn render_citation_html_injects_template_indices_when_requested() {
     let result = dispatch(req).expect("dispatch should succeed");
     let citation = result["result"].as_str().expect("result should be string");
     assert!(
-        citation.contains(r#"class="csln-issued" data-index="0""#),
+        citation.contains(r#"class="citum-issued" data-index="0""#),
         "html citation should annotate the rendered citation component when requested: {citation}"
     );
 }
