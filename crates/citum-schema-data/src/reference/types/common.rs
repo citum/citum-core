@@ -116,6 +116,106 @@ impl PartialEq<RefID> for String {
     }
 }
 
+/// Geographic place name used for publication and archive locations.
+#[derive(Debug, Deserialize, Serialize, Clone, Default, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(transparent)]
+pub struct Place(
+    /// The rendered place string, such as a city or city-country label.
+    pub String,
+);
+
+impl Place {
+    /// Borrow the place name as a string slice.
+    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
+
+impl Display for Place {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(&self.0)
+    }
+}
+
+impl AsRef<str> for Place {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl Borrow<str> for Place {
+    fn borrow(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl Deref for Place {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        self.as_str()
+    }
+}
+
+impl From<String> for Place {
+    fn from(value: String) -> Self {
+        Self(value)
+    }
+}
+
+impl From<&str> for Place {
+    fn from(value: &str) -> Self {
+        Self(value.to_string())
+    }
+}
+
+impl From<Place> for String {
+    fn from(value: Place) -> Self {
+        value.0
+    }
+}
+
+impl FromStr for Place {
+    type Err = std::convert::Infallible;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        Ok(Self::from(value))
+    }
+}
+
+impl PartialEq<&str> for Place {
+    fn eq(&self, other: &&str) -> bool {
+        self.as_str() == *other
+    }
+}
+
+impl PartialEq<str> for Place {
+    fn eq(&self, other: &str) -> bool {
+        self.as_str() == other
+    }
+}
+
+impl PartialEq<String> for Place {
+    fn eq(&self, other: &String) -> bool {
+        self.as_str() == other
+    }
+}
+
+impl PartialEq<Place> for &str {
+    fn eq(&self, other: &Place) -> bool {
+        *self == other.as_str()
+    }
+}
+
+impl PartialEq<Place> for String {
+    fn eq(&self, other: &Place) -> bool {
+        self.as_str() == other.as_str()
+    }
+}
+
 /// Inline markup for freeform text fields (note, abstract).
 ///
 /// Serializes from a plain string or a `{ djot: "..." }` object.
@@ -599,7 +699,7 @@ pub struct ArchiveInfo {
     ///
     /// Parallel to `SimpleName.location`; both carry geographic-place semantics.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub place: Option<String>,
+    pub place: Option<Place>,
     /// Name of the collection within the archive.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub collection: Option<String>,
@@ -667,7 +767,7 @@ pub struct Publisher {
     pub name: MultilingualString,
     /// Geographic place of publication (city, country).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub place: Option<String>,
+    pub place: Option<Place>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -677,7 +777,7 @@ pub struct Publisher {
 enum PublisherCompat {
     PublisherObject {
         name: MultilingualString,
-        place: Option<String>,
+        place: Option<Place>,
     },
     Contributor(Box<Contributor>),
     Name(MultilingualString),
@@ -828,8 +928,10 @@ mod tests {
     fn newtypes_stay_string_shaped_in_json_schema() {
         let ref_schema = schema_for!(RefID);
         let lang_schema = schema_for!(LangID);
+        let place_schema = schema_for!(super::Place);
 
         assert_eq!(ref_schema.to_value()["type"], "string");
         assert_eq!(lang_schema.to_value()["type"], "string");
+        assert_eq!(place_schema.to_value()["type"], "string");
     }
 }

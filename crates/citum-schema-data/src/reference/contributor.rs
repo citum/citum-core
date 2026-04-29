@@ -1,4 +1,4 @@
-use crate::reference::types::MultilingualString;
+use crate::reference::types::{MultilingualString, Place};
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -58,9 +58,11 @@ pub struct MultilingualName {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
 pub struct SimpleName {
+    /// Institutional or organization name.
     pub name: MultilingualString,
+    /// Geographic place associated with the name.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub location: Option<String>,
+    pub location: Option<Place>,
 }
 
 /// A structured name is a name broken down into its constituent parts.
@@ -124,7 +126,7 @@ impl Contributor {
 
     pub fn location(&self) -> Option<String> {
         match self {
-            Contributor::SimpleName(n) => n.location.clone(),
+            Contributor::SimpleName(n) => n.location.clone().map(Into::into),
             _ => None,
         }
     }

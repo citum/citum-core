@@ -634,7 +634,7 @@ fn make_archive_eprint_reference() -> InputReference {
         archive_location: None,
         archive_info: Some(ArchiveInfo {
             name: Some(MultilingualString::Simple("Houghton Library".to_string())),
-            place: Some("Cambridge, MA".to_string()),
+            place: Some("Cambridge, MA".into()),
             collection: Some("Ada Lovelace Papers".to_string()),
             collection_id: Some("MS Am 1280".to_string()),
             series: Some("Correspondence".to_string()),
@@ -729,7 +729,7 @@ fn make_historical_archive_reference() -> InputReference {
                 "Israel Antiquities Authority".to_string(),
             )),
             location: Some("Shrine of the Book".to_string()),
-            place: Some("Jerusalem".to_string()),
+            place: Some("Jerusalem".into()),
             ..Default::default()
         }),
         eprint: None,
@@ -2636,7 +2636,7 @@ fn given_archive_location_override_when_rendering_bibliography_then_legacy_fallb
     monograph.id = Some("archive-eprint-location-ref".into());
     monograph.archive_info = Some(ArchiveInfo {
         name: Some(MultilingualString::Simple("Houghton Library".to_string())),
-        place: Some("Cambridge, MA".to_string()),
+        place: Some("Cambridge, MA".into()),
         collection: Some("Ada Lovelace Papers".to_string()),
         location: Some("MS Am 1280, Box 12, Folder 4".to_string()),
         url: Some(Url::parse("https://example.com/archive").expect("url should parse")),

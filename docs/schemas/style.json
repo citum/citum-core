@@ -7,7 +7,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.37.1"
+      "default": "0.38.0"
     },
     "info": {
       "description": "Style metadata.",

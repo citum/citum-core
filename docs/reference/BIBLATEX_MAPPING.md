@@ -215,7 +215,7 @@ pub struct Collection {
 
 2. **Name Parsing**: The `biblatex` crate parses names into `Person` structs with family/given/prefix/suffix parts.
 
-3. **Location Field**: BibLaTeX's `location` (publisher location) is distinct from `SimpleName.location` (organization location). Consider renaming one.
+3. **Location Field**: BibLaTeX's `location` is a publisher place and maps to the shared `Place` newtype. `SimpleName.location` uses the same type for organization places, while event locations and archive shelfmarks remain plain strings.
 
 4. **Crossref Resolution**: BibLaTeX `crossref` and `xref` fields reference parent entries. The converter should resolve these to inline parent structures.
 
