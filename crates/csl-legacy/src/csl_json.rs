@@ -119,6 +119,9 @@ pub struct Reference {
     /// Chapter or session identifier used by some legal and legislative sources.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub chapter_number: Option<String>,
+    /// Printing number (printing run identifier).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub printing_number: Option<String>,
     /// Genre
     #[serde(skip_serializing_if = "Option::is_none")]
     pub genre: Option<String>,

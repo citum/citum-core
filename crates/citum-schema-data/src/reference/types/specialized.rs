@@ -113,6 +113,15 @@ pub struct Classic {
     /// Generic document number (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub number: Option<String>,
+    /// Part number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub part_number: Option<String>,
+    /// Supplement number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supplement_number: Option<String>,
+    /// Printing number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub printing_number: Option<String>,
     /// Numbering identifiers (e.g., volume, section, number, chapter in standard reference system).
     /// Flat shorthand fields are accepted on input for authoring ergonomics and normalized
     /// into canonical `numbering` entries during deserialization.
@@ -170,6 +179,12 @@ struct ClassicDeser {
     edition: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    part_number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    supplement_number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    printing_number: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     numbering: Vec<Numbering>,
     #[cfg_attr(feature = "bindings", specta(type = String))]
@@ -204,6 +219,9 @@ impl From<ClassicDeser> for Classic {
             issue: raw.issue,
             edition: raw.edition,
             number: raw.number,
+            part_number: raw.part_number,
+            supplement_number: raw.supplement_number,
+            printing_number: raw.printing_number,
             numbering: raw.numbering,
             created: raw.created,
             issued: raw.issued,
@@ -245,6 +263,18 @@ impl NormalizeNumbering for Classic {
 
     fn number_mut(&mut self) -> &mut Option<String> {
         &mut self.number
+    }
+
+    fn part_number_mut(&mut self) -> &mut Option<String> {
+        &mut self.part_number
+    }
+
+    fn supplement_number_mut(&mut self) -> &mut Option<String> {
+        &mut self.supplement_number
+    }
+
+    fn printing_number_mut(&mut self) -> &mut Option<String> {
+        &mut self.printing_number
     }
 }
 

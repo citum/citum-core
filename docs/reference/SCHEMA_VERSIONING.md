@@ -210,6 +210,12 @@ Track schema changes separately from code changes.
 Historical note: entries below may predate the automation baseline and are the
 authoritative record when matching tags were not created at the time.
 
+#### schema-v0.37.1 (2026-04-28)
+- Schema version bumped from 0.37.0 to 0.37.1
+- Added `part_number`, `supplement_number`, `printing_number` shorthand fields to Monograph, Collection, CollectionComponent, SerialComponent, and Classic
+- Added `NumberingType::Printing` for printing run identifiers
+- Engine now resolves `PartNumber`, `SupplementNumber`, `PrintingNumber` variables via numbering values
+
 #### schema-v0.37.0 (2026-04-26)
 - Schema version bumped from 0.36.0 to 0.37.0
 - Added `abstract_text` field to Monograph, CollectionComponent, and SerialComponent

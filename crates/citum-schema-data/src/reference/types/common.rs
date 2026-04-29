@@ -181,6 +181,8 @@ pub enum NumberingType {
     Part,
     /// A supplement number.
     Supplement,
+    /// A printing run identifier.
+    Printing,
     /// A chapter number.
     Chapter,
     /// A section identifier.
@@ -206,6 +208,7 @@ impl NumberingType {
             Self::Report => Cow::Borrowed("report"),
             Self::Part => Cow::Borrowed("part"),
             Self::Supplement => Cow::Borrowed("supplement"),
+            Self::Printing => Cow::Borrowed("printing"),
             Self::Chapter => Cow::Borrowed("chapter"),
             Self::Section => Cow::Borrowed("section"),
             Self::Edition => Cow::Borrowed("edition"),
@@ -232,6 +235,7 @@ impl NumberingType {
             "report" => Self::Report,
             "part" => Self::Part,
             "supplement" => Self::Supplement,
+            "printing" => Self::Printing,
             "chapter" => Self::Chapter,
             "section" => Self::Section,
             "edition" => Self::Edition,
@@ -306,19 +310,28 @@ pub(crate) trait NormalizeNumbering {
     fn issue_mut(&mut self) -> &mut Option<String>;
     fn edition_mut(&mut self) -> &mut Option<String>;
     fn number_mut(&mut self) -> &mut Option<String>;
+    fn part_number_mut(&mut self) -> &mut Option<String>;
+    fn supplement_number_mut(&mut self) -> &mut Option<String>;
+    fn printing_number_mut(&mut self) -> &mut Option<String>;
 
     fn normalize_numbering(&mut self) {
         let volume = self.volume_mut().take();
         let issue = self.issue_mut().take();
         let edition = self.edition_mut().take();
         let number = self.number_mut().take();
+        let part_number = self.part_number_mut().take();
+        let supplement_number = self.supplement_number_mut().take();
+        let printing_number = self.printing_number_mut().take();
         let has_volume = volume.is_some();
         let has_issue = issue.is_some();
         let has_edition = edition.is_some();
         let has_number = number.is_some();
+        let has_part = part_number.is_some();
+        let has_supplement = supplement_number.is_some();
+        let has_printing = printing_number.is_some();
         let existing = std::mem::take(self.numbering_mut());
 
-        let mut normalized = Vec::with_capacity(existing.len() + 4);
+        let mut normalized = Vec::with_capacity(existing.len() + 7);
         let mut push_shorthand = |r#type, value: Option<String>| {
             if let Some(value) = value {
                 normalized.push(Numbering { r#type, value });
@@ -329,12 +342,18 @@ pub(crate) trait NormalizeNumbering {
         push_shorthand(NumberingType::Issue, issue);
         push_shorthand(NumberingType::Edition, edition);
         push_shorthand(NumberingType::Number, number);
+        push_shorthand(NumberingType::Part, part_number);
+        push_shorthand(NumberingType::Supplement, supplement_number);
+        push_shorthand(NumberingType::Printing, printing_number);
 
         normalized.extend(existing.into_iter().filter(|entry| match entry.r#type {
             NumberingType::Volume => !has_volume,
             NumberingType::Issue => !has_issue,
             NumberingType::Edition => !has_edition,
             NumberingType::Number => !has_number,
+            NumberingType::Part => !has_part,
+            NumberingType::Supplement => !has_supplement,
+            NumberingType::Printing => !has_printing,
             _ => true,
         }));
 

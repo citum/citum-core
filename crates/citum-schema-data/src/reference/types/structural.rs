@@ -146,6 +146,15 @@ pub struct Monograph {
     /// Generic document number (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub number: Option<String>,
+    /// Part number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub part_number: Option<String>,
+    /// Supplement number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supplement_number: Option<String>,
+    /// Printing number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub printing_number: Option<String>,
     /// Numbering identifiers (e.g., volume, issue, edition).
     /// Flat shorthand fields are accepted on input for authoring ergonomics and normalized
     /// into canonical `numbering` entries during deserialization.
@@ -242,6 +251,12 @@ struct MonographDeser {
     edition: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    part_number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    supplement_number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    printing_number: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     numbering: Vec<Numbering>,
     genre: Option<String>,
@@ -301,6 +316,9 @@ impl From<MonographDeser> for Monograph {
             issue: raw.issue,
             edition: raw.edition,
             number: raw.number,
+            part_number: raw.part_number,
+            supplement_number: raw.supplement_number,
+            printing_number: raw.printing_number,
             numbering: raw.numbering,
             genre: raw.genre,
             medium: raw.medium,
@@ -411,6 +429,15 @@ pub struct Collection {
     /// Generic document number (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub number: Option<String>,
+    /// Part number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub part_number: Option<String>,
+    /// Supplement number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supplement_number: Option<String>,
+    /// Printing number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub printing_number: Option<String>,
     /// Numbering identifiers (e.g., volume, collection number).
     /// Flat shorthand fields are accepted on input for authoring ergonomics and normalized
     /// into canonical `numbering` entries during deserialization.
@@ -472,6 +499,12 @@ struct CollectionDeser {
     edition: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    part_number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    supplement_number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    printing_number: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     numbering: Vec<Numbering>,
     #[serde(alias = "URL")]
@@ -515,6 +548,9 @@ impl From<CollectionDeser> for Collection {
             issue: raw.issue,
             edition: raw.edition,
             number: raw.number,
+            part_number: raw.part_number,
+            supplement_number: raw.supplement_number,
+            printing_number: raw.printing_number,
             numbering: raw.numbering,
             url: raw.url,
             accessed: raw.accessed,
@@ -595,6 +631,15 @@ pub struct CollectionComponent {
     /// Generic document number (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub number: Option<String>,
+    /// Part number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub part_number: Option<String>,
+    /// Supplement number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supplement_number: Option<String>,
+    /// Printing number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub printing_number: Option<String>,
     /// Numbering identifiers (e.g., chapter number, part number).
     /// Flat shorthand fields are accepted on input for authoring ergonomics and normalized
     /// into canonical `numbering` entries during deserialization.
@@ -675,6 +720,12 @@ struct CollectionComponentDeser {
     edition: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    part_number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    supplement_number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    printing_number: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     numbering: Vec<Numbering>,
     pages: Option<NumOrStr>,
@@ -723,6 +774,9 @@ impl From<CollectionComponentDeser> for CollectionComponent {
             issue: raw.issue,
             edition: raw.edition,
             number: raw.number,
+            part_number: raw.part_number,
+            supplement_number: raw.supplement_number,
+            printing_number: raw.printing_number,
             numbering: raw.numbering,
             pages: raw.pages,
             url: raw.url,
@@ -807,6 +861,15 @@ pub struct SerialComponent {
     /// Generic document number (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub number: Option<String>,
+    /// Part number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub part_number: Option<String>,
+    /// Supplement number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub supplement_number: Option<String>,
+    /// Printing number (shorthand for numbering).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub printing_number: Option<String>,
     /// Numbering identifiers (e.g., volume, issue, number).
     /// Flat shorthand fields are accepted on input for authoring ergonomics and normalized
     /// into canonical `numbering` entries during deserialization.
@@ -900,6 +963,12 @@ struct SerialComponentDeser {
     edition: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    part_number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    supplement_number: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    printing_number: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     numbering: Vec<Numbering>,
     #[serde(alias = "URL")]
@@ -953,6 +1022,9 @@ impl From<SerialComponentDeser> for SerialComponent {
             issue: raw.issue,
             edition: raw.edition,
             number: raw.number,
+            part_number: raw.part_number,
+            supplement_number: raw.supplement_number,
+            printing_number: raw.printing_number,
             numbering: raw.numbering,
             url: raw.url,
             accessed: raw.accessed,
@@ -1124,6 +1196,18 @@ impl NormalizeNumbering for Monograph {
     fn number_mut(&mut self) -> &mut Option<String> {
         &mut self.number
     }
+
+    fn part_number_mut(&mut self) -> &mut Option<String> {
+        &mut self.part_number
+    }
+
+    fn supplement_number_mut(&mut self) -> &mut Option<String> {
+        &mut self.supplement_number
+    }
+
+    fn printing_number_mut(&mut self) -> &mut Option<String> {
+        &mut self.printing_number
+    }
 }
 
 impl HasNumbering for Collection {
@@ -1151,6 +1235,18 @@ impl NormalizeNumbering for Collection {
 
     fn number_mut(&mut self) -> &mut Option<String> {
         &mut self.number
+    }
+
+    fn part_number_mut(&mut self) -> &mut Option<String> {
+        &mut self.part_number
+    }
+
+    fn supplement_number_mut(&mut self) -> &mut Option<String> {
+        &mut self.supplement_number
+    }
+
+    fn printing_number_mut(&mut self) -> &mut Option<String> {
+        &mut self.printing_number
     }
 }
 
@@ -1180,6 +1276,18 @@ impl NormalizeNumbering for CollectionComponent {
     fn number_mut(&mut self) -> &mut Option<String> {
         &mut self.number
     }
+
+    fn part_number_mut(&mut self) -> &mut Option<String> {
+        &mut self.part_number
+    }
+
+    fn supplement_number_mut(&mut self) -> &mut Option<String> {
+        &mut self.supplement_number
+    }
+
+    fn printing_number_mut(&mut self) -> &mut Option<String> {
+        &mut self.printing_number
+    }
 }
 
 impl HasNumbering for SerialComponent {
@@ -1208,6 +1316,18 @@ impl NormalizeNumbering for SerialComponent {
     fn number_mut(&mut self) -> &mut Option<String> {
         &mut self.number
     }
+
+    fn part_number_mut(&mut self) -> &mut Option<String> {
+        &mut self.part_number
+    }
+
+    fn supplement_number_mut(&mut self) -> &mut Option<String> {
+        &mut self.supplement_number
+    }
+
+    fn printing_number_mut(&mut self) -> &mut Option<String> {
+        &mut self.printing_number
+    }
 }
 
 /// Types of serial publications.
@@ -1234,4 +1354,82 @@ pub enum SerialType {
     Podcast,
     /// A broadcast program (radio, television).
     BroadcastProgram,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::reference::types::common::NumberingType;
+
+    #[test]
+    fn monograph_part_number_normalizes_to_numbering() {
+        let json = r#"{
+            "type": "book",
+            "title": "Test Book",
+            "part-number": "II"
+        }"#;
+        let monograph: Monograph =
+            serde_json::from_str(json).expect("monograph should deserialize");
+        assert!(monograph.part_number.is_none());
+        assert!(
+            monograph
+                .numbering
+                .iter()
+                .any(|n| n.r#type == NumberingType::Part && n.value == "II")
+        );
+    }
+
+    #[test]
+    fn serial_component_supplement_number_normalizes_to_numbering() {
+        let json = r#"{
+            "type": "article",
+            "title": "Test Article",
+            "supplement-number": "S1"
+        }"#;
+        let component: SerialComponent =
+            serde_json::from_str(json).expect("serial component should deserialize");
+        assert!(component.supplement_number.is_none());
+        assert!(
+            component
+                .numbering
+                .iter()
+                .any(|n| n.r#type == NumberingType::Supplement && n.value == "S1")
+        );
+    }
+
+    #[test]
+    fn monograph_printing_number_normalizes_to_numbering() {
+        let json = r#"{
+            "type": "book",
+            "title": "Test Book",
+            "printing-number": "3rd printing"
+        }"#;
+        let monograph: Monograph =
+            serde_json::from_str(json).expect("monograph should deserialize");
+        assert!(monograph.printing_number.is_none());
+        assert!(
+            monograph
+                .numbering
+                .iter()
+                .any(|n| n.r#type == NumberingType::Printing && n.value == "3rd printing")
+        );
+    }
+
+    #[test]
+    fn collection_component_printing_number_normalizes_to_numbering() {
+        let json = r#"{
+            "type": "chapter",
+            "title": "Test Chapter",
+            "printing-number": "2"
+        }"#;
+        let component: CollectionComponent =
+            serde_json::from_str(json).expect("collection component should deserialize");
+        assert!(component.printing_number.is_none());
+        assert!(
+            component
+                .numbering
+                .iter()
+                .any(|n| n.r#type == NumberingType::Printing && n.value == "2")
+        );
+    }
 }

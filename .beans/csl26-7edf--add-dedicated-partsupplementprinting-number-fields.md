@@ -8,7 +8,7 @@ tags:
     - schema
     - engine
 created_at: 2026-03-05T15:22:41Z
-updated_at: 2026-04-25T20:20:06Z
+updated_at: 2026-04-28T20:33:00Z
 parent: csl26-li63
 ---
 
@@ -28,6 +28,8 @@ Recommended implementation scope:
   biblatex fields where available).
 - Wire TemplateNumber resolution directly to the new fields and add focused
   tests for each variable.
+
+Spec: docs/specs/NUMBERING_SEMANTICS.md (part/supplement/printing section added 2026-04-28)
 
 Definition of done (tentative):
 
