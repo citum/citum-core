@@ -441,7 +441,7 @@ fn test_note_style_html_output_contains_footnotes() {
 
     assert_eq!(
         result,
-        "<p>Text.<a id=\"fnref1\" href=\"#fn1\" role=\"doc-noteref\"><sup>1</sup></a></p>\n<section id=\"Bibliography\">\n<h1>Bibliography</h1>\n<div class=\"csln-bibliography\">\n<div class=\"csln-entry\" id=\"ref-item1\" data-author=\"Doe\" data-year=\"2020\" data-title=\"Book One\"><span class=\"csln-author\">John Doe</span><span class=\"csln-title\">. Book One</span></div>\n</div>\n</section>\n<section role=\"doc-endnotes\">\n<hr>\n<ol>\n<li id=\"fn1\">\n<p><span class=\"csln-citation\" data-ref=\"item1\">Book One, <span class=\"csln-title\">Book One</span></span>.<a href=\"#fnref1\" role=\"doc-backlink\">↩\u{fe0e}</a></p>\n</li>\n</ol>\n</section>\n"
+        "<p>Text.<a id=\"fnref1\" href=\"#fn1\" role=\"doc-noteref\"><sup>1</sup></a></p>\n<section id=\"Bibliography\">\n<h1>Bibliography</h1>\n<div class=\"citum-bibliography\">\n<div class=\"citum-entry\" id=\"ref-item1\" data-author=\"Doe\" data-year=\"2020\" data-title=\"Book One\"><span class=\"citum-author\">John Doe</span><span class=\"citum-title\">. Book One</span></div>\n</div>\n</section>\n<section role=\"doc-endnotes\">\n<hr>\n<ol>\n<li id=\"fn1\">\n<p><span class=\"citum-citation\" data-ref=\"item1\">Book One, <span class=\"citum-title\">Book One</span></span>.<a href=\"#fnref1\" role=\"doc-backlink\">↩\u{fe0e}</a></p>\n</li>\n</ol>\n</section>\n"
     );
 }
 

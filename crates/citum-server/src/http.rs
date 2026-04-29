@@ -134,7 +134,7 @@ mod tests {
             .as_str()
             .expect("content should be a string");
         assert!(
-            content.contains("csln-bibliography"),
+            content.contains("citum-bibliography"),
             "html bibliography should include wrapper markup"
         );
     }

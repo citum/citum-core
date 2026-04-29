@@ -57,15 +57,15 @@ fn resolve_semantic_class(component: &ProcTemplateComponent) -> Option<String> {
     use citum_schema::template::{DateVariable, SimpleVariable};
     match &component.template_component {
         TemplateComponent::Title(t) => match t.title {
-            TitleType::Primary => Some("csln-title".to_string()),
+            TitleType::Primary => Some("citum-title".to_string()),
             TitleType::ParentMonograph | TitleType::ParentSerial => {
-                Some("csln-container-title".to_string())
+                Some("citum-container-title".to_string())
             }
-            _ => Some("csln-title".to_string()),
+            _ => Some("citum-title".to_string()),
         },
-        TemplateComponent::Contributor(c) => Some(format!("csln-{}", c.contributor.as_str())),
+        TemplateComponent::Contributor(c) => Some(format!("citum-{}", c.contributor.as_str())),
         TemplateComponent::Date(d) => Some(format!(
-            "csln-{}",
+            "citum-{}",
             match d.date {
                 DateVariable::Issued => "issued",
                 DateVariable::Accessed => "accessed",
@@ -74,9 +74,9 @@ fn resolve_semantic_class(component: &ProcTemplateComponent) -> Option<String> {
                 DateVariable::EventDate => "event-date",
             }
         )),
-        TemplateComponent::Number(n) => Some(format!("csln-{}", n.number.as_key())),
+        TemplateComponent::Number(n) => Some(format!("citum-{}", n.number.as_key())),
         TemplateComponent::Variable(v) => Some(format!(
-            "csln-{}",
+            "citum-{}",
             match v.variable {
                 SimpleVariable::Doi => "doi",
                 SimpleVariable::Url => "url",

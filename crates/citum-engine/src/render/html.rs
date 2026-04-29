@@ -144,7 +144,7 @@ impl OutputFormat for Html {
             return content;
         }
         let ids_str = ids.join(" ");
-        format!(r#"<span class="csln-citation" data-ref="{ids_str}">{content}</span>"#)
+        format!(r#"<span class="citum-citation" data-ref="{ids_str}">{content}</span>"#)
     }
 
     fn link(&self, url: &str, content: Self::Output) -> Self::Output {
@@ -160,7 +160,7 @@ impl OutputFormat for Html {
 
     fn bibliography(&self, entries: Vec<Self::Output>) -> Self::Output {
         format!(
-            r#"<div class="csln-bibliography">
+            r#"<div class="citum-bibliography">
 {}
 </div>"#,
             self.join(entries, "\n")
@@ -200,6 +200,6 @@ impl OutputFormat for Html {
             attrs.push('"');
         }
 
-        format!(r#"<div class="csln-entry" {attrs}>{content}</div>"#)
+        format!(r#"<div class="citum-entry" {attrs}>{content}</div>"#)
     }
 }

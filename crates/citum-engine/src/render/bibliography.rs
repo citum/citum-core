@@ -574,8 +574,8 @@ mod tests {
         let result = refs_to_string_with_format::<Html>(entries, None, None);
         assert_eq!(
             result,
-            r#"<div class="csln-bibliography">
-<div class="csln-entry" id="ref-ref-1">Reference Content</div>
+            r#"<div class="citum-bibliography">
+<div class="citum-entry" id="ref-ref-1">Reference Content</div>
 </div>"#
         );
     }
@@ -809,19 +809,19 @@ mod tests {
         );
 
         assert!(
-            !result.contains("322(10)</i></span>. <span class=\"csln-pages\">, 891–921."),
+            !result.contains("322(10)</i></span>. <span class=\"citum-pages\">, 891–921."),
             "separator should not inject a period before pages: {result}"
         );
         assert!(
-            !result.contains("891–921.</span>. <span class=\"csln-doi\">"),
+            !result.contains("891–921.</span>. <span class=\"citum-doi\">"),
             "separator should not inject a period before DOI: {result}"
         );
         assert!(
-            result
-                .contains("<span class=\"csln-pages\">, 891–921.</span><span class=\"csln-doi\">")
-                || result.contains(
-                    "<span class=\"csln-pages\">, 891–921.</span> <span class=\"csln-doi\">"
-                ),
+            result.contains(
+                "<span class=\"citum-pages\">, 891–921.</span><span class=\"citum-doi\">"
+            ) || result.contains(
+                "<span class=\"citum-pages\">, 891–921.</span> <span class=\"citum-doi\">"
+            ),
             "HTML output should preserve pages punctuation without duplicate separators: {result}"
         );
     }

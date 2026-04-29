@@ -772,11 +772,11 @@ bibliography:
     let rendered = processor.render_bibliography_with_format::<Html>();
 
     assert!(
-        rendered.contains(r#"class="csln-author" data-index="0""#),
+        rendered.contains(r#"class="citum-author" data-index="0""#),
         "author wrapper should carry the first type-template index: {rendered}"
     );
     assert!(
-        rendered.contains(r#"class="csln-title" data-index="2""#),
+        rendered.contains(r#"class="citum-title" data-index="2""#),
         "title wrapper should carry the sparse third type-template index: {rendered}"
     );
     assert!(
@@ -873,11 +873,11 @@ fn assert_list_preview_inherits_parent_index(use_type_template: bool) {
     let rendered = processor.render_bibliography_with_format::<Html>();
 
     assert!(
-        rendered.contains(r#"class="csln-author" data-index="0""#),
+        rendered.contains(r#"class="citum-author" data-index="0""#),
         "list-rendered author should inherit the parent top-level index: {rendered}"
     );
     assert!(
-        rendered.contains(r#"class="csln-title" data-index="0""#),
+        rendered.contains(r#"class="citum-title" data-index="0""#),
         "list-rendered title should inherit the parent top-level index: {rendered}"
     );
 }
