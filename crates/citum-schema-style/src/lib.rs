@@ -48,6 +48,9 @@ pub mod registry;
 /// Declarative macros for AST and configurations.
 pub mod macros;
 
+/// Lint helpers for raw locales and styles.
+pub mod lint;
+
 #[cfg(test)]
 mod reference_multilingual_tests;
 
@@ -81,7 +84,7 @@ pub use template::{
 pub type Template = Vec<TemplateComponent>;
 
 /// Canonical Citum style schema version used when `Style.version` is omitted.
-pub const STYLE_SCHEMA_VERSION: &str = "0.37.0";
+pub const STYLE_SCHEMA_VERSION: &str = "0.37.1";
 
 /// A non-fatal validation warning emitted by [`Style::validate`].
 #[derive(Debug, Clone, PartialEq)]
