@@ -522,6 +522,9 @@ fn from_monograph_ref(
         issue: None,
         edition,
         number,
+        part_number: None,
+        supplement_number: None,
+        printing_number: legacy.printing_number,
         numbering,
         genre: legacy.genre,
         medium: legacy.medium,
@@ -821,6 +824,9 @@ pub fn input_reference_from_legacy_edited_book(
         issue: None,
         edition: None,
         number: None,
+        part_number: None,
+        supplement_number: None,
+        printing_number: None,
         keywords: None,
     }))
 }

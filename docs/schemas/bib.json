@@ -1137,6 +1137,24 @@
             "null"
           ]
         },
+        "part-number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplement-number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "printing-number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "numbering": {
           "type": "array",
           "items": {
@@ -1370,6 +1388,24 @@
           ]
         },
         "number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "part-number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplement-number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "printing-number": {
           "type": [
             "string",
             "null"
@@ -1622,6 +1658,24 @@
           ]
         },
         "number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "part-number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplement-number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "printing-number": {
           "type": [
             "string",
             "null"
@@ -1923,6 +1977,24 @@
           ]
         },
         "number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "part-number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplement-number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "printing-number": {
           "type": [
             "string",
             "null"
@@ -3081,6 +3153,24 @@
           ]
         },
         "number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "part-number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplement-number": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "printing-number": {
           "type": [
             "string",
             "null"

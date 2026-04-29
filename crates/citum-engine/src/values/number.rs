@@ -58,9 +58,15 @@ fn resolve_number_value(
             _ => None,
         },
         NumberVariable::ReportNumber => reference.report_number(),
-        NumberVariable::PartNumber
-        | NumberVariable::SupplementNumber
-        | NumberVariable::PrintingNumber => None,
+        NumberVariable::PartNumber => {
+            reference.numbering_value(&citum_schema::reference::NumberingType::Part)
+        }
+        NumberVariable::SupplementNumber => {
+            reference.numbering_value(&citum_schema::reference::NumberingType::Supplement)
+        }
+        NumberVariable::PrintingNumber => {
+            reference.numbering_value(&citum_schema::reference::NumberingType::Printing)
+        }
         NumberVariable::CitationNumber => hints.citation_number.map(|n| {
             if options.context == crate::values::RenderContext::Citation
                 && let Some(sub_label) = &hints.citation_sub_label
@@ -404,5 +410,29 @@ mod tests {
                 expected
             );
         }
+    }
+
+    #[test]
+    fn number_var_to_locator_type_maps_printing_number() {
+        assert_eq!(
+            number_var_to_locator_type(&NumberVariable::PrintingNumber),
+            Some(citum_schema::citation::LocatorType::Number)
+        );
+    }
+
+    #[test]
+    fn number_var_to_locator_type_maps_part_number() {
+        assert_eq!(
+            number_var_to_locator_type(&NumberVariable::PartNumber),
+            Some(citum_schema::citation::LocatorType::Part)
+        );
+    }
+
+    #[test]
+    fn number_var_to_locator_type_maps_supplement_number() {
+        assert_eq!(
+            number_var_to_locator_type(&NumberVariable::SupplementNumber),
+            Some(citum_schema::citation::LocatorType::Supplement)
+        );
     }
 }
