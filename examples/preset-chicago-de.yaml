@@ -2,9 +2,9 @@
 info:
   title: "Chicago Author-Date (German Override)"
   id: "chicago-author-date-de"
+  default-locale: de-DE
 
-preset: chicago-author-date-18th
+extends: chicago-author-date-18th
 
 options:
   locale-override: de-DE-chicago
-  default-locale: de-DE
