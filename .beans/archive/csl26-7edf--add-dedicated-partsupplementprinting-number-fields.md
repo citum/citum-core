@@ -1,14 +1,14 @@
 ---
 # csl26-7edf
 title: Add dedicated part/supplement/printing number fields
-status: todo
+status: completed
 type: feature
 priority: deferred
 tags:
     - schema
     - engine
 created_at: 2026-03-05T15:22:41Z
-updated_at: 2026-04-28T20:33:00Z
+updated_at: 2026-04-29T11:54:23Z
 parent: csl26-li63
 ---
 
@@ -37,3 +37,13 @@ Definition of done (tentative):
   own fields only.
 - No regression in existing `number` variable behavior.
 - Schema docs and examples include the new fields.
+
+## Summary of Changes
+
+Added part-number, supplement-number, and printing-number as shorthand
+input fields on all structural reference types, normalizing to
+NumberingType entries on deserialization. Added NumberingType::Printing.
+Wired engine resolution for PartNumber, SupplementNumber, PrintingNumber.
+Ingested CSL JSON printing-number variable. Extended NUMBERING_SEMANTICS.md
+spec. Also fixed pre-existing facade crate violation (lint.rs moved to
+citum-schema-style). Landed in PR #583.
