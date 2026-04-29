@@ -97,7 +97,7 @@ roles:
     short:
       singular: ed.
       plural: eds.
-    verb: editado por
+    verb: role.editor.verb
     verb-short: ed. por
   editorial-director:
     long:
@@ -267,6 +267,12 @@ messages:
   term.circa: "ca."
   term.circa-long: "hacia"
   # Role labels
+  role.editor.verb: |
+    .match {$gender :select}
+    when masculine {editado por}
+    when feminine {editada por}
+    when common {persona editora}
+    when * {editado por}
   role.editor.label-long: |
     .match {$gender :select} {$count :plural}
     when masculine one {editor}

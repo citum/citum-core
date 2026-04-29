@@ -169,6 +169,10 @@ references:
     author:
       - family: "Ó Tuathail"
         given: "Gearóid"
+    editor:
+      - family: "Martinez"
+        given: "Ana"
+        gender: feminine
     issued: "1998"
     publisher:
       name: "Routledge"
