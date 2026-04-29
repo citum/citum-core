@@ -1,14 +1,15 @@
 ---
 # csl26-y3kj
 title: Add MaybeGendered<T> to locale term model
-status: in-progress
+status: completed
 type: feature
 priority: low
 tags:
     - locale
     - testing
+    - schema
 created_at: 2026-03-09T22:28:26Z
-updated_at: 2026-04-25T20:20:06Z
+updated_at: 2026-04-29T15:44:22Z
 parent: csl26-li63
 ---
 
@@ -40,7 +41,7 @@ See `docs/specs/GENDERED_LOCALE_TERMS.md`
 - [x] Add gendered raw term parsing for YAML deserialization
 - [x] Update `Locale::role_term`, `locator_term`, `general_term` to accept `Option<GrammaticalGender>`
 - [x] Pass gender context through engine term rendering for legacy term-map lookup
-- [ ] Snapshot tests: French gendered editor, Arabic gendered ordinal
+- [x] Snapshot coverage split to successor bean csl26-oyl4
 
 ## Notes
 
@@ -48,3 +49,8 @@ The `MaybeGendered<T>` term-map model is live. This bean no longer tracks
 MessageFormat 2 role-label migration; that is split to `csl26-vm2g`, which must
 add `$gender` plumbing and multi-selector `.match` support before gendered role
 labels can move from `roles:` to `messages:`.
+
+
+## Summary of Changes
+
+The core gendered locale term model landed on main in 5af327d5 (`feat(locale): add gender-aware term resolution`) with regenerated schemas and runtime support for `MaybeGendered<T>` / `GrammaticalGender`. The only remaining work is focused snapshot coverage, now tracked by csl26-oyl4.
