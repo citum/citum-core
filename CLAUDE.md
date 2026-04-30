@@ -76,6 +76,15 @@ gh run view <run-id> --log-failed
 ```
 Do not consider the task done until CI passes.
 
+### Optional jj AI Change Stack
+
+This repo may use jj as a local, optional change-stack layer for AI-assisted
+work when `.jj` is present. Git and GitHub remain the public collaboration
+interface. Follow [docs/guides/JJ_AI_CHANGE_STACK.md](./docs/guides/JJ_AI_CHANGE_STACK.md)
+for intent capture, agent coordination, and stack curation. Intent files may
+live inside an evolving jj change, but must be deleted before the final
+Git-visible commit is published unless explicitly requested.
+
 ### Confirmations Required
 
 - `Cargo.toml` / `Cargo.lock` changes
@@ -233,6 +242,8 @@ python3 scripts/audit-rust-review-smells.py --changed    # Run before committing
 Direct commits to `main` allowed (rapid development mode). Pre-commit checks required for Rust; docs/styles skip.
 
 **When the user says "PR"**: Create a branch, implement, then `gh pr create`. Never push directly to main for that task.
+For PR work, jj may be used locally to curate the change stack, but the final
+published work must be on a Git branch and submitted through GitHub.
 **Never create a branch unless the user asked for a PR or explicitly asked for a branch.**
 **Never make content decisions unilaterally** (e.g. what text to put in a title field) — confirm with the user first.
 

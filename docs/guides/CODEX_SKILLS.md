@@ -42,5 +42,8 @@ The script is idempotent and fails if a target path is already a non-symlink.
 
 - Keep workflow logic in `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md` and
   `docs/guides/STYLE_WORKFLOW_EXECUTION.md`.
+- When `.jj` is present, Codex skills may use
+  `docs/guides/JJ_AI_CHANGE_STACK.md` for local change isolation, intent
+  capture, and stack curation. Keep Git/GitHub as the published interface.
 - Keep Codex skills thin and host-focused.
 - Keep `./scripts/codex <role> <target...>` as a fallback for direct role execution.

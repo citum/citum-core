@@ -8,6 +8,9 @@ description: One-file-at-a-time Rust quality pass for Citum, using jcodemunch to
 Use this skill for bounded Rust cleanup work in the Citum workspace when the task is to
 improve code quality rather than fix a specific bug.
 
+When `.jj` is present, use `docs/guides/JJ_AI_CHANGE_STACK.md` for optional
+local change isolation and intent capture before publishing through Git/GitHub.
+
 Read first:
 - `docs/guides/CODING_STANDARDS.md`
 - `docs/guides/CODEX_SKILLS.md`
