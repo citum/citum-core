@@ -57,10 +57,12 @@ fn collect_independent_formats(styles_dir: &Path) -> (u32, HashMap<String, Strin
         if let Ok(info) = extract_style_info(entry.path()) {
             total_independent += 1;
             if let Some(format) = info.citation_format {
-                let style_url = format!(
-                    "http://www.zotero.org/styles/{}",
-                    entry.path().file_stem().unwrap().to_string_lossy()
-                );
+                let stem = entry
+                    .path()
+                    .file_stem()
+                    .map(|s| s.to_string_lossy())
+                    .unwrap_or_default();
+                let style_url = format!("http://www.zotero.org/styles/{stem}");
                 independent_formats.insert(style_url, format);
             }
         }
@@ -176,7 +178,10 @@ pub fn run_parent_ranker(styles_dir: &str, json_output: bool, format_filter: Opt
     stats.parent_rankings = build_rankings(parent_counts, stats.total_dependent);
 
     if json_output {
-        println!("{}", serde_json::to_string_pretty(&stats).unwrap());
+        match serde_json::to_string_pretty(&stats) {
+            Ok(json) => println!("{json}"),
+            Err(err) => eprintln!("Error: Failed to serialize parent rankings to JSON: {err}"),
+        }
     } else {
         print_parent_rankings(&stats);
     }

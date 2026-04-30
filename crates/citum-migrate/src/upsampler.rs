@@ -358,6 +358,7 @@ impl Upsampler {
         let mut i = 0;
 
         while i < legacy_nodes.len() {
+            #[allow(clippy::indexing_slicing, reason = "i < legacy_nodes.len()")]
             let node = &legacy_nodes[i];
 
             if let LNode::Group(group) = node
@@ -862,6 +863,7 @@ impl Upsampler {
             return None;
         }
 
+        #[allow(clippy::indexing_slicing, reason = "vars is not empty")]
         let variable = self.map_variable(vars[0])?;
 
         let mut options = csln::NamesOptions {
@@ -1236,7 +1238,9 @@ impl Upsampler {
 
     fn try_collapse_label_variable(&self, group: &legacy::Group) -> Option<csln::CslnNode> {
         if group.children.len() == 2 {
+            #[allow(clippy::indexing_slicing, reason = "group.children.len() == 2")]
             let first = &group.children[0];
+            #[allow(clippy::indexing_slicing, reason = "group.children.len() == 2")]
             let second = &group.children[1];
 
             if let (LNode::Label(l), LNode::Text(t)) = (first, second)
@@ -1426,6 +1430,17 @@ impl Upsampler {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
     use csl_legacy::model::{Choose, ChooseBranch, CslNode, Formatting, Group, Text};

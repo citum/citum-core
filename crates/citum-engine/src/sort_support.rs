@@ -25,6 +25,7 @@ impl TextCollator {
     pub(crate) fn new(locale: &Locale) -> Self {
         let mut options = CollatorOptions::default();
         options.strength = Some(Strength::Secondary);
+        #[allow(clippy::expect_used, reason = "ICU bootstrap failure is fatal")]
         let collator = CollatorBorrowed::try_new(collator_preferences(locale), options)
             .expect("ICU4X compiled collation data should be available");
         Self { collator }
@@ -99,12 +100,24 @@ fn parse_icu_locale(locale_id: &str) -> Option<IcuLocale> {
 }
 
 fn default_icu_locale() -> IcuLocale {
+    #[allow(clippy::expect_used, reason = "ICU bootstrap failure is fatal")]
     "en-US"
         .parse::<IcuLocale>()
         .expect("en-US should always be a valid ICU locale")
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
 

@@ -111,13 +111,14 @@ impl MacroInliner {
         for node in nodes {
             match node {
                 CslNode::Text(text) if text.macro_name.is_some() => {
-                    let name = text.macro_name.as_ref().unwrap();
-                    if let Some(macro_children) = self.macros.get(name) {
-                        // Recursively expand nested macros without incrementing
-                        let expanded_children = self.expand_macros_no_increment(macro_children);
-                        expanded.extend(expanded_children);
-                    } else {
-                        expanded.push(node.clone());
+                    if let Some(name) = &text.macro_name {
+                        if let Some(macro_children) = self.macros.get(name) {
+                            // Recursively expand nested macros without incrementing
+                            let expanded_children = self.expand_macros_no_increment(macro_children);
+                            expanded.extend(expanded_children);
+                        } else {
+                            expanded.push(node.clone());
+                        }
                     }
                 }
                 CslNode::Group(group) => {
@@ -167,45 +168,46 @@ impl MacroInliner {
         for node in nodes {
             match node {
                 CslNode::Text(text) if text.macro_name.is_some() => {
-                    let name = text.macro_name.as_ref().unwrap();
-                    if let Some(macro_children) = self.macros.get(name) {
-                        // Check if this macro call has a pre-assigned order from the layout
-                        let is_layout_macro = text.macro_call_order.is_some();
+                    if let Some(name) = &text.macro_name {
+                        if let Some(macro_children) = self.macros.get(name) {
+                            // Check if this macro call has a pre-assigned order from the layout
+                            let is_layout_macro = text.macro_call_order.is_some();
 
-                        let current_order = if is_layout_macro {
-                            // This is a layout-level macro call - use its pre-assigned order
-                            text.macro_call_order.unwrap()
+                            let current_order = if let Some(order) = text.macro_call_order {
+                                // This is a layout-level macro call - use its pre-assigned order
+                                order
+                            } else {
+                                // This is a nested macro - assign it the current counter value
+                                let order = *order_counter;
+                                *order_counter += 1;
+                                order
+                            };
+
+                            // If this is a layout-level macro, expand its children WITH order tracking
+                            // so that nested macro calls get their own order numbers.
+                            // Otherwise, expand without tracking to inherit the parent's order.
+                            let expanded_children = if is_layout_macro {
+                                self.expand_nodes_with_order(macro_children, order_counter)
+                            } else {
+                                let children = self.expand_macros_no_increment(macro_children);
+                                // For non-layout macros, assign the parent's order only to nodes that don't already have one
+                                // This preserves orders from nested macros while filling in orders for non-macro nodes
+                                children
+                                    .into_iter()
+                                    .map(|mut child| {
+                                        Self::assign_macro_order_if_none(&mut child, current_order);
+                                        child
+                                    })
+                                    .collect()
+                            };
+
+                            // For layout macros, children already have their orders from nested expansion
+                            // For non-layout macros, children have been assigned the parent's order above
+                            expanded.extend(expanded_children);
                         } else {
-                            // This is a nested macro - assign it the current counter value
-                            let order = *order_counter;
-                            *order_counter += 1;
-                            order
-                        };
-
-                        // If this is a layout-level macro, expand its children WITH order tracking
-                        // so that nested macro calls get their own order numbers.
-                        // Otherwise, expand without tracking to inherit the parent's order.
-                        let expanded_children = if is_layout_macro {
-                            self.expand_nodes_with_order(macro_children, order_counter)
-                        } else {
-                            let children = self.expand_macros_no_increment(macro_children);
-                            // For non-layout macros, assign the parent's order only to nodes that don't already have one
-                            // This preserves orders from nested macros while filling in orders for non-macro nodes
-                            children
-                                .into_iter()
-                                .map(|mut child| {
-                                    Self::assign_macro_order_if_none(&mut child, current_order);
-                                    child
-                                })
-                                .collect()
-                        };
-
-                        // For layout macros, children already have their orders from nested expansion
-                        // For non-layout macros, children have been assigned the parent's order above
-                        expanded.extend(expanded_children);
-                    } else {
-                        // If macro not found, keep the original node (might be an error in the style)
-                        expanded.push(node.clone());
+                            // If macro not found, keep the original node (might be an error in the style)
+                            expanded.push(node.clone());
+                        }
                     }
                 }
                 // For other nodes that have children, we must recurse into them
@@ -231,8 +233,12 @@ impl MacroInliner {
                     new_choose.if_branch.children =
                         self.expand_nodes_with_order(&choose.if_branch.children, order_counter);
 
-                    for (idx, branch) in choose.else_if_branches.iter().enumerate() {
-                        new_choose.else_if_branches[idx].children =
+                    for (branch, new_branch) in choose
+                        .else_if_branches
+                        .iter()
+                        .zip(new_choose.else_if_branches.iter_mut())
+                    {
+                        new_branch.children =
                             self.expand_nodes_with_order(&branch.children, order_counter);
                     }
 

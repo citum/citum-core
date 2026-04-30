@@ -13,6 +13,17 @@ pub mod date;
 pub mod types;
 
 #[cfg(all(test, feature = "legacy-convert"))]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests;
 
 pub use self::contributor::{
@@ -1704,7 +1715,11 @@ fn collect_contributors_by_role(
         .collect();
     match matching.len() {
         0 => None,
-        1 => Some(matching[0].clone()),
+        1 =>
+        {
+            #[allow(clippy::indexing_slicing, reason = "matching.len() == 1")]
+            Some(matching[0].clone())
+        }
         _ => Some(Contributor::ContributorList(ContributorList(
             matching.into_iter().cloned().collect(),
         ))),
@@ -1712,6 +1727,17 @@ fn collect_contributors_by_role(
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod normalize_tests {
     use super::InputReference;
 
@@ -1731,6 +1757,17 @@ mod normalize_tests {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod numbering_tests {
     use super::{InputReference, NumOrStr, NumberingType};
 

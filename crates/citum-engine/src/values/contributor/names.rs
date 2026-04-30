@@ -142,6 +142,7 @@ fn join_names_with_conjunction(
                 false
             };
 
+            #[allow(clippy::indexing_slicing, reason = "length checked")]
             if use_delimiter {
                 format!(
                     "{}{}{} {}",
@@ -155,30 +156,32 @@ fn join_names_with_conjunction(
             }
         }
         Some(conjunction) => {
-            let last = formatted_first.last().unwrap();
-            let rest = &formatted_first[..formatted_first.len() - 1];
-            // Check if delimiter should precede "and" (Oxford comma)
-            let use_delimiter = match delimiter_precedes_last {
-                Some(DelimiterPrecedesLast::Always) => true,
-                Some(DelimiterPrecedesLast::Never) => false,
-                Some(DelimiterPrecedesLast::Contextual) | None => true, // Default: comma for 3+ names
-                Some(DelimiterPrecedesLast::AfterInvertedName) => {
-                    ctx.display_as_sort.as_ref().is_some_and(|das| {
-                        matches!(das, DisplayAsSort::All)
-                            || (matches!(das, DisplayAsSort::First) && first_names_len == 1)
-                    })
+            if let Some((last, rest)) = formatted_first.split_last() {
+                // Check if delimiter should precede "and" (Oxford comma)
+                let use_delimiter = match delimiter_precedes_last {
+                    Some(DelimiterPrecedesLast::Always) => true,
+                    Some(DelimiterPrecedesLast::Never) => false,
+                    Some(DelimiterPrecedesLast::Contextual) | None => true, // Default: comma for 3+ names
+                    Some(DelimiterPrecedesLast::AfterInvertedName) => {
+                        ctx.display_as_sort.as_ref().is_some_and(|das| {
+                            matches!(das, DisplayAsSort::All)
+                                || (matches!(das, DisplayAsSort::First) && first_names_len == 1)
+                        })
+                    }
+                };
+                if use_delimiter {
+                    format!(
+                        "{}{}{} {}",
+                        rest.join(delimiter),
+                        delimiter,
+                        conjunction,
+                        last
+                    )
+                } else {
+                    format!("{} {} {}", rest.join(delimiter), conjunction, last)
                 }
-            };
-            if use_delimiter {
-                format!(
-                    "{}{}{} {}",
-                    rest.join(delimiter),
-                    delimiter,
-                    conjunction,
-                    last
-                )
             } else {
-                format!("{} {} {}", rest.join(delimiter), conjunction, last)
+                String::new()
             }
         }
     }
@@ -330,11 +333,12 @@ pub fn format_names(
     let delimiter_precedes_last = config.and_then(|c| c.delimiter_precedes_last.as_ref());
 
     let result = if formatted_first.len() == 1 {
-        formatted_first[0].clone()
+        #[allow(clippy::unwrap_used, reason = "length checked")]
+        formatted_first.first().unwrap().clone()
     } else {
         join_names_with_conjunction(
             &formatted_first,
-            and_str.as_ref().map(|s| &s[..]),
+            and_str,
             delimiter,
             delimiter_precedes_last,
             first_names.len(),

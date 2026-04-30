@@ -85,7 +85,8 @@ fn main() {
             if total % 100 == 0 {
                 print!(".");
                 use std::io::Write;
-                std::io::stdout().flush().unwrap();
+                #[allow(clippy::expect_used, reason = "fatal bootstrap error")]
+                std::io::stdout().flush().expect("failed to flush stdout");
             }
         }
     }

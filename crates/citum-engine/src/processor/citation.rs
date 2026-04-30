@@ -148,7 +148,9 @@ impl Processor {
             return;
         }
 
+        #[allow(clippy::indexing_slicing, reason = "citation.items.len() >= 2")]
         let head_id = &citation.items[0].id;
+        #[allow(clippy::indexing_slicing, reason = "citation.items.len() >= 2")]
         let tail_ids: Vec<String> = citation.items[1..].iter().map(|i| i.id.clone()).collect();
 
         // Static sets take precedence — skip if head or any tail is in a static set.

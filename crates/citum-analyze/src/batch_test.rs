@@ -26,7 +26,7 @@ struct CliArgs {
 
 fn parse_cli(args: &[String]) -> CliArgs {
     CliArgs {
-        styles_dir: args[1].clone(),
+        styles_dir: args.get(1).cloned().unwrap_or_default(),
         verbose: args.iter().any(|a| a == "--verbose"),
         json_output: args.iter().any(|a| a == "--json"),
         sample_size: args
@@ -70,7 +70,10 @@ fn run_batch(cli: CliArgs) {
 
     for (i, path) in styles.iter().enumerate() {
         let result = test_style(path);
-        let name = path.file_stem().unwrap().to_string_lossy().to_string();
+        let name = path
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| "unknown".to_string());
 
         match &result {
             TestResult::Success => {
@@ -137,7 +140,10 @@ fn run_batch(cli: CliArgs) {
     results.total = total;
 
     if cli.json_output {
-        println!("{}", serde_json::to_string_pretty(&results).unwrap());
+        match serde_json::to_string_pretty(&results) {
+            Ok(json) => println!("{json}"),
+            Err(err) => eprintln!("Error: Failed to serialize batch test results to JSON: {err}"),
+        }
     } else {
         print_results(&results);
     }
@@ -267,8 +273,8 @@ fn categorize_error(err: &str) -> String {
 
 fn truncate(s: &str, max: usize) -> String {
     let first_line = s.lines().next().unwrap_or(s);
-    if first_line.len() > max {
-        format!("{}...", &first_line[..max])
+    if first_line.chars().count() > max {
+        format!("{}...", first_line.chars().take(max).collect::<String>())
     } else {
         first_line.to_string()
     }

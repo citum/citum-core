@@ -25,7 +25,10 @@ fn main() {
         std::process::exit(1);
     }
 
-    let styles_dir = &args[1];
+    #[allow(clippy::expect_used, reason = "fatal bootstrap error")]
+    let styles_dir = args
+        .get(1)
+        .expect("Error: styles directory path required as first argument");
     let json_output = args.iter().any(|arg| arg == "--json");
     let rank_parents = args.iter().any(|arg| arg == "--rank-parents");
     let quantify_savings = args.iter().any(|arg| arg == "--quantify-savings");

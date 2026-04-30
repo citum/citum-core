@@ -377,11 +377,11 @@ pub fn extract_bibliography_separator_from_layout(
             match node {
                 CslNode::Group(g) => {
                     // If this group has a delimiter and multiple variables, it's a candidate
-                    if g.delimiter.is_some()
+                    if let Some(delimiter) = &g.delimiter
                         && has_multiple_variables(&g.children)
-                        && (best.is_none() || 1 > best.as_ref().unwrap().1)
+                        && best.as_ref().is_none_or(|(_, d)| 1 > *d)
                     {
-                        best = Some((g.delimiter.clone().unwrap(), 1));
+                        best = Some((delimiter.clone(), 1));
                     }
 
                     // Recurse into children to find even deeper delimiters
@@ -389,7 +389,7 @@ pub fn extract_bibliography_separator_from_layout(
                         find_deepest_group_delimiter(&g.children, macros)
                     {
                         let new_depth = depth + 1;
-                        if best.is_none() || new_depth > best.as_ref().unwrap().1 {
+                        if best.as_ref().is_none_or(|(_, d)| new_depth > *d) {
                             best = Some((child_delim, new_depth));
                         }
                     }
@@ -398,20 +398,20 @@ pub fn extract_bibliography_separator_from_layout(
                     // Search all branches of choose blocks
                     if let Some(result) =
                         find_deepest_group_delimiter(&c.if_branch.children, macros)
-                        && (best.is_none() || result.1 > best.as_ref().unwrap().1)
+                        && best.as_ref().is_none_or(|(_, d)| result.1 > *d)
                     {
                         best = Some(result);
                     }
                     for branch in &c.else_if_branches {
                         if let Some(result) = find_deepest_group_delimiter(&branch.children, macros)
-                            && (best.is_none() || result.1 > best.as_ref().unwrap().1)
+                            && best.as_ref().is_none_or(|(_, d)| result.1 > *d)
                         {
                             best = Some(result);
                         }
                     }
                     if let Some(else_branch) = &c.else_branch
                         && let Some(result) = find_deepest_group_delimiter(else_branch, macros)
-                        && (best.is_none() || result.1 > best.as_ref().unwrap().1)
+                        && best.as_ref().is_none_or(|(_, d)| result.1 > *d)
                     {
                         best = Some(result);
                     }
@@ -424,7 +424,7 @@ pub fn extract_bibliography_separator_from_layout(
                             find_deepest_group_delimiter(&macro_def.children, macros)
                     {
                         let new_depth = depth + 1;
-                        if best.is_none() || new_depth > best.as_ref().unwrap().1 {
+                        if best.as_ref().is_none_or(|(_, d)| new_depth > *d) {
                             best = Some((delim, new_depth));
                         }
                     }

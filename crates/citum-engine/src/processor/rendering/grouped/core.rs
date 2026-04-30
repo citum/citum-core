@@ -86,6 +86,7 @@ impl Renderer<'_> {
             return value;
         }
 
+        #[allow(clippy::string_slice, reason = "delimiter found at start")]
         trimmed[delimiter_char.len_utf8()..].trim_start()
     }
 
@@ -484,7 +485,9 @@ impl Renderer<'_> {
 
         let is_curly = author_part.ends_with('\u{201D}');
         let quote_char = if is_curly { '\u{201D}' } else { '"' };
+        #[allow(clippy::string_slice, reason = "quote found at end")]
         let trimmed = &author_part[..author_part.len() - quote_char.len_utf8()];
+        #[allow(clippy::string_slice, reason = "delimiter checked to start with ','")]
         Some(format!(
             "{trimmed},{quote_char}{}",
             &author_item_delimiter[1..]
@@ -541,6 +544,7 @@ impl Renderer<'_> {
         group: &'b [&'b crate::reference::CitationItem],
         spec: &'b citum_schema::CitationSpec,
     ) -> Result<GroupRenderState<'b>, ProcessorError> {
+        #[allow(clippy::indexing_slicing, reason = "groups are non-empty")]
         let first_item = group[0];
         let first_ref = self
             .bibliography
@@ -712,6 +716,10 @@ impl Renderer<'_> {
         let mut rendered_groups = Vec::new();
         let fmt = F::default();
         for (_author_key, group) in groups {
+            #[allow(
+                clippy::indexing_slicing,
+                reason = "group is non-empty by construction"
+            )]
             let first_item = group[0];
             let reference = self
                 .bibliography
@@ -1025,15 +1033,14 @@ impl Renderer<'_> {
                     crate::values::text_case::resolve_text_case(TextCase::CapitalizeFirst, locale);
                 component.value = crate::values::text_case::apply_text_case(&component.value, case);
             }
-            TemplateComponent::Term(_)
-                if note_start_text_case.is_some()
-                    && self.is_note_start_term_component(component) =>
-            {
-                component.value = crate::values::text_case::apply_note_start_text_case(
-                    &component.value,
-                    note_start_text_case.expect("checked above"),
-                    locale,
-                );
+            TemplateComponent::Term(_) if self.is_note_start_term_component(component) => {
+                if let Some(case) = note_start_text_case {
+                    component.value = crate::values::text_case::apply_note_start_text_case(
+                        &component.value,
+                        case,
+                        locale,
+                    );
+                }
             }
             _ => {}
         }

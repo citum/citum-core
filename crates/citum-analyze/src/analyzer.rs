@@ -25,7 +25,10 @@ pub fn run_style_analyzer(styles_dir: &str, json_output: bool) {
     }
 
     if json_output {
-        println!("{}", serde_json::to_string_pretty(&stats).unwrap());
+        match serde_json::to_string_pretty(&stats) {
+            Ok(json) => println!("{json}"),
+            Err(err) => eprintln!("Error: Failed to serialize style analysis stats to JSON: {err}"),
+        }
     } else {
         print_stats(&stats);
     }

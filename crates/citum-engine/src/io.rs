@@ -434,6 +434,7 @@ fn parse_json_bibliography(bytes: &[u8]) -> Result<LoadedBibliography, Processor
 
     // If all failed, return the error from the most likely format (Citum JSON)
     match serde_json::from_slice::<InputBibliography>(bytes) {
+        #[allow(clippy::unreachable, reason = "Primary format must have failed")]
         Ok(_) => unreachable!(),
         Err(e) => Err(ProcessorError::ParseError(
             "JSON".to_string(),
@@ -510,6 +511,7 @@ fn parse_yaml_bibliography(content: &str) -> Result<LoadedBibliography, Processo
 
     // If all failed, return error from Citum YAML
     match serde_yaml::from_str::<InputBibliography>(content) {
+        #[allow(clippy::unreachable, reason = "Primary format must have failed")]
         Ok(_) => unreachable!(),
         Err(e) => Err(ProcessorError::ParseError(
             "YAML".to_string(),
@@ -1089,6 +1091,7 @@ fn ris_record_to_reference(fields: &[(String, String)]) -> LegacyReference {
             .map(|n| {
                 let parts: Vec<_> = n.split(',').map(str::trim).collect();
                 if parts.len() >= 2 {
+                    #[allow(clippy::indexing_slicing, reason = "parts.len() >= 2")]
                     Name::new(parts[0], parts[1])
                 } else {
                     Name::literal(parts.first().copied().unwrap_or(""))
@@ -1171,6 +1174,17 @@ fn render_ris(input: &InputBibliography) -> String {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
     use crate::render::plain::PlainText;

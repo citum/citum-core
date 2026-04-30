@@ -561,7 +561,7 @@ fn lint_mf2_message(message: &str) -> Result<(), String> {
 /// Validate variable placeholders in a plain MF2 pattern string.
 fn lint_mf2_pattern(pattern: &str) -> Result<(), String> {
     let mut cursor = 0usize;
-    while let Some(offset) = pattern[cursor..].find('{') {
+    while let Some(offset) = pattern.get(cursor..).and_then(|s| s.find('{')) {
         let open = cursor + offset;
         let close = find_matching_brace(pattern, open)
             .ok_or_else(|| format!("unmatched '{{' at byte offset {open}"))?;
@@ -591,6 +591,7 @@ fn lint_mf2_match(message: &str) -> Result<(), String> {
 }
 
 fn lint_mf2_selectors(message: &str) -> Result<(usize, &str), String> {
+    #[allow(clippy::string_slice, reason = "'.match' is 1-byte ASCII")]
     let mut rest = message[".match".len()..].trim_start();
     let mut selector_count = 0usize;
 
@@ -627,10 +628,12 @@ fn lint_mf2_variants(variants: &str, selector_count: usize) -> Result<(), String
         }
 
         saw_when = true;
+        #[allow(clippy::string_slice, reason = "'when' is 1-byte ASCII")]
         let after_when = rest["when".len()..].trim_start();
         let brace_pos = after_when
             .find('{')
             .ok_or("missing pattern body in when block")?;
+        #[allow(clippy::string_slice, reason = "brace_pos is found via find('{')")]
         let key_text = after_when[..brace_pos].trim();
         let keys: Vec<&str> = key_text.split_whitespace().collect();
         if keys.len() != selector_count {
@@ -688,6 +691,17 @@ fn find_matching_brace(input: &str, open_index: usize) -> Option<usize> {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
     use crate::locale::types::{EvaluationConfig, MessageSyntax};

@@ -52,20 +52,29 @@ impl TemplateCompiler {
         let mut i = 0;
 
         while i < nodes.len() {
+            #[allow(clippy::indexing_slicing, reason = "i < nodes.len()")]
             let node = &nodes[i];
 
             // Lookahead merge for Text nodes
             if let CslnNode::Text { value } = node
                 && i + 1 < nodes.len()
-                && let Some((component, source_order)) =
-                    self.merge_text_lookahead(value, &nodes[i + 1], inherited_wrap)
+                && {
+                    #[allow(clippy::indexing_slicing, reason = "i + 1 < nodes.len()")]
+                    let next = &nodes[i + 1];
+                    let merged = self.merge_text_lookahead(value, next, inherited_wrap);
+                    if let Some((component, source_order)) = merged {
+                        occurrences.push(ComponentOccurrence {
+                            component,
+                            context: context.clone(),
+                            source_order,
+                        });
+                        i += 2;
+                        true
+                    } else {
+                        false
+                    }
+                }
             {
-                occurrences.push(ComponentOccurrence {
-                    component,
-                    context: context.clone(),
-                    source_order,
-                });
-                i += 2;
                 continue;
             }
 
@@ -261,6 +270,7 @@ impl TemplateCompiler {
                 .any(|occ| matches!(occ.context, BranchContext::Default));
 
             // Start with the first component as the base
+            #[allow(clippy::indexing_slicing, reason = "group is not empty")]
             let mut merged = group[0].component.clone();
 
             if has_default {

@@ -1136,6 +1136,10 @@ where
 ///
 /// Returns a pretty-printed JSON object with `style`, `items`, and optionally
 /// `citations` and `bibliography` keys.
+#[allow(
+    clippy::too_many_lines,
+    reason = "JSON output construction is vertically long"
+)]
 fn print_json_with_format<F>(
     ctx: &RenderContext<'_>,
     show_cite: bool,
@@ -1164,7 +1168,10 @@ where
                     })
                 })
                 .collect();
-            result["citations"] = json!(rendered);
+            #[allow(clippy::indexing_slicing, reason = "JSON object insertion")]
+            {
+                result["citations"] = json!(rendered);
+            }
         } else {
             let non_integral: Vec<_> = ctx
                 .item_ids
@@ -1210,10 +1217,13 @@ where
                 })
                 .collect();
 
-            result["citations"] = json!({
-                "non-integral": non_integral,
-                "integral": integral
-            });
+            #[allow(clippy::indexing_slicing, reason = "JSON object insertion")]
+            {
+                result["citations"] = json!({
+                    "non-integral": non_integral,
+                    "integral": integral
+                });
+            }
         }
     }
 
@@ -1241,7 +1251,10 @@ where
             })
             .collect();
 
-        result["bibliography"] = json!({ "entries": entries });
+        #[allow(clippy::indexing_slicing, reason = "JSON object insertion")]
+        {
+            result["bibliography"] = json!({ "entries": entries });
+        }
     }
 
     Ok(serde_json::to_string_pretty(&result)?)
@@ -1252,6 +1265,17 @@ where
 // ---------------------------------------------------------------------------
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
     use crate::style_resolver::parse_locale_override_bytes;

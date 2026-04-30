@@ -9,6 +9,7 @@ use super::Renderer;
 use crate::values::range::{ConsecutiveSegment, consecutive_segments};
 
 impl Renderer<'_> {
+    #[allow(clippy::indexing_slicing, reason = "loop-guaranteed indices")]
     pub(super) fn collapse_numeric_citation_chunks(
         &self,
         chunks: Vec<(Vec<String>, String)>,
@@ -78,6 +79,7 @@ impl Renderer<'_> {
         collapsed
     }
 
+    #[allow(clippy::indexing_slicing, reason = "loop-guaranteed indices")]
     pub(super) fn collapse_compound_citation_chunks(
         &self,
         chunks: Vec<(Vec<String>, String)>,
@@ -182,6 +184,17 @@ impl Renderer<'_> {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
     use crate::reference::Bibliography;

@@ -16,6 +16,10 @@ use crate::processor::Processor;
 
 impl Processor {
     /// Process citations in a document and append a bibliography.
+    #[allow(
+        clippy::string_slice,
+        reason = "parser-guaranteed boundaries and indices"
+    )]
     pub fn process_document<P, F>(
         &self,
         content: &str,
@@ -167,13 +171,17 @@ impl Processor {
         }
     }
 
+    #[allow(
+        clippy::string_slice,
+        reason = "parser-guaranteed boundaries and indices"
+    )]
     fn process_inline_document<F>(&self, content: &str, parsed: ParsedDocument) -> String
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let mut result = String::new();
         let mut last_idx = 0;
-        let normalized = self.normalize_inline_document_citations(&parsed);
+        let normalized = self.normalize_integral_name_citations(&parsed);
 
         for (parsed, citation) in parsed.citations.iter().zip(normalized) {
             result.push_str(&content[last_idx..parsed.start]);
@@ -188,6 +196,10 @@ impl Processor {
         result
     }
 
+    #[allow(
+        clippy::string_slice,
+        reason = "parser-guaranteed boundaries and indices"
+    )]
     fn process_inline_document_html(
         &self,
         content: &str,
@@ -196,7 +208,7 @@ impl Processor {
     ) -> String {
         let mut result = String::new();
         let mut last_idx = 0;
-        let normalized = self.normalize_inline_document_citations(&parsed);
+        let normalized = self.normalize_integral_name_citations(&parsed);
 
         for (parsed, citation) in parsed.citations.iter().zip(normalized) {
             result.push_str(&content[last_idx..parsed.start]);

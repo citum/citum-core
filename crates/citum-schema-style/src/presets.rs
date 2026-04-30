@@ -187,6 +187,7 @@ impl ContributorPreset {
                 }),
                 ..Default::default()
             },
+            #[allow(clippy::unreachable, reason = "Subset of variants handled here")]
             _ => unreachable!(),
         }
     }
@@ -279,6 +280,7 @@ impl ContributorPreset {
                 demote_non_dropping_particle: Some(DemoteNonDroppingParticle::SortOnly),
                 ..Default::default()
             },
+            #[allow(clippy::unreachable, reason = "Subset of variants handled here")]
             _ => unreachable!(),
         }
     }
@@ -333,6 +335,7 @@ impl ContributorPreset {
                 demote_non_dropping_particle: Some(DemoteNonDroppingParticle::SortOnly),
                 ..Default::default()
             },
+            #[allow(clippy::unreachable, reason = "Subset of variants handled here")]
             _ => unreachable!(),
         }
     }
@@ -750,6 +753,17 @@ impl SubstitutePreset {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
 

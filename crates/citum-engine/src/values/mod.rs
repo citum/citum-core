@@ -30,6 +30,17 @@ pub mod title;
 pub mod variable;
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests;
 
 use crate::reference::Reference;
@@ -356,11 +367,19 @@ pub fn resolve_url(
         LinkTarget::Pubmed => reference
             .id()
             .filter(|id| id.starts_with("pmid:"))
-            .map(|id| format!("https://pubmed.ncbi.nlm.nih.gov/{}/", &id[5..])),
+            .map(|id| {
+                #[allow(clippy::string_slice, reason = "known ASCII prefix")]
+                let result = format!("https://pubmed.ncbi.nlm.nih.gov/{}/", &id[5..]);
+                result
+            }),
         LinkTarget::Pmcid => reference
             .id()
             .filter(|id| id.starts_with("pmc:"))
-            .map(|id| format!("https://www.ncbi.nlm.nih.gov/pmc/articles/{}/", &id[4..])),
+            .map(|id| {
+                #[allow(clippy::string_slice, reason = "known ASCII prefix")]
+                let result = format!("https://www.ncbi.nlm.nih.gov/pmc/articles/{}/", &id[4..]);
+                result
+            }),
     }
 }
 

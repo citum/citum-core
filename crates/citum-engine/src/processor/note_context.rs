@@ -55,15 +55,18 @@ impl Processor {
             }
 
             if citation.items.len() == 1 {
+                #[allow(clippy::indexing_slicing, reason = "citation.items.len() == 1")]
                 let current_id = &citation.items[0].id;
+                #[allow(clippy::indexing_slicing, reason = "citation.items.len() == 1")]
                 let current_locator = effective_locator_string(&citation.items[0]);
 
                 if let Some(previous) = previous_items.as_ref()
                     && previous.len() == 1
-                    && previous[0].0 == *current_id
+                    && let Some(prev_item) = previous.first()
+                    && prev_item.0 == *current_id
                 {
-                    let previous_locator = &previous[0].1;
-                    citation.position = Some(if *previous_locator == current_locator {
+                    let previous_locator = &prev_item.1;
+                    citation.position = Some(if previous_locator == &current_locator {
                         Position::Ibid
                     } else {
                         Position::IbidWithLocator

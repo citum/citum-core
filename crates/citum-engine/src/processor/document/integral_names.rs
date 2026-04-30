@@ -26,7 +26,11 @@ enum SeenIntegralNameState {
 }
 
 impl Processor {
-    pub(super) fn normalize_inline_document_citations(
+    #[allow(
+        clippy::indexing_slicing,
+        reason = "indices are verified within bounds"
+    )]
+    pub(super) fn normalize_integral_name_citations(
         &self,
         parsed: &ParsedDocument,
     ) -> Vec<Citation> {
@@ -36,10 +40,18 @@ impl Processor {
             .map(|parsed| parsed.citation.clone())
             .collect();
         let ordered_indices = build_integral_name_order_indices(parsed);
+        #[allow(
+            clippy::indexing_slicing,
+            reason = "index derived from citations collection"
+        )]
         let mut ordered_citations: Vec<Citation> = ordered_indices
             .iter()
             .map(|index| normalized[*index].clone())
             .collect();
+        #[allow(
+            clippy::indexing_slicing,
+            reason = "index derived from citations collection"
+        )]
         let ordered_contexts: Vec<_> = ordered_indices
             .iter()
             .map(|index| IntegralNameContext {
@@ -48,6 +60,10 @@ impl Processor {
             })
             .collect();
         self.annotate_integral_name_states(&mut ordered_citations, &ordered_contexts);
+        #[allow(
+            clippy::indexing_slicing,
+            reason = "index derived from citations collection"
+        )]
         for (citation, index) in ordered_citations.into_iter().zip(ordered_indices) {
             normalized[index] = citation;
         }
@@ -195,6 +211,10 @@ pub(super) fn build_integral_name_order_indices(parsed: &ParsedDocument) -> Vec<
     }
 
     for indices in manual_citations.values_mut() {
+        #[allow(
+            clippy::indexing_slicing,
+            reason = "index derived from citations collection"
+        )]
         indices.sort_by_key(|index| parsed.citations[*index].start);
     }
 

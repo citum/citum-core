@@ -96,6 +96,7 @@ static APA_CITATION: LazyLock<Vec<TemplateComponent>> = LazyLock::new(|| {
 });
 
 static APA_BIBLIOGRAPHY: LazyLock<Vec<TemplateComponent>> = LazyLock::new(|| {
+    #[allow(clippy::expect_used, reason = "Embedded APA template must parse")]
     serde_yaml::from_str(APA_BIBLIOGRAPHY_TEMPLATE_YAML)
         .expect("embedded APA bibliography template should parse")
 });

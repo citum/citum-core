@@ -279,9 +279,14 @@ fn extract_selected_group_body(output: &str) -> String {
     let start = output
         .find(heading)
         .unwrap_or_else(|| panic!("missing selected heading in output: {output}"));
+
+    #[allow(clippy::string_slice, reason = "indices from find and ASCII heading")]
     let body = &output[start + heading.len()..];
     let end = body.find("\n\n[").unwrap_or(body.len());
-    body[..end].trim().to_string()
+
+    #[allow(clippy::string_slice, reason = "index from find or length")]
+    let result = body[..end].trim().to_string();
+    result
 }
 
 fn render_integral_multi_cite(

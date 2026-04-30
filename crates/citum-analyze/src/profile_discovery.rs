@@ -120,7 +120,12 @@ pub fn run_profile_discovery(styles_dir: &str, json_output: bool) {
     };
 
     if json_output {
-        println!("{}", serde_json::to_string_pretty(&report).unwrap());
+        match serde_json::to_string_pretty(&report) {
+            Ok(json) => println!("{json}"),
+            Err(err) => {
+                eprintln!("Error: Failed to serialize profile discovery report to JSON: {err}");
+            }
+        }
     } else {
         print_profile_discovery_report(&report);
     }
@@ -467,22 +472,29 @@ fn load_alias_report(workspace_root: &Path) -> Option<HashMap<String, AliasEvide
 
     for line in content.lines().skip(1) {
         let columns: Vec<_> = line.split('\t').collect();
-        if columns.len() < 7 {
-            continue;
+        if let [
+            id,
+            target,
+            similarity,
+            citation,
+            bibliography,
+            evidence,
+            confidence,
+            ..,
+        ] = columns.as_slice()
+        {
+            rows.insert(
+                id.to_string(),
+                AliasEvidence {
+                    best_target: target.to_string(),
+                    similarity: similarity.parse().unwrap_or_default(),
+                    citation_match: citation.parse().unwrap_or_default(),
+                    bibliography_match: bibliography.parse().unwrap_or_default(),
+                    evidence_url: non_empty(evidence),
+                    confidence_note: non_empty(confidence),
+                },
+            );
         }
-
-        let candidate_id = columns[0].to_string();
-        rows.insert(
-            candidate_id,
-            AliasEvidence {
-                best_target: columns[1].to_string(),
-                similarity: columns[2].parse().unwrap_or_default(),
-                citation_match: columns[3].parse().unwrap_or_default(),
-                bibliography_match: columns[4].parse().unwrap_or_default(),
-                evidence_url: non_empty(columns[5]),
-                confidence_note: non_empty(columns[6]),
-            },
-        );
     }
 
     Some(rows)
@@ -605,7 +617,7 @@ fn template_to_set(template: &[TemplateComponent]) -> HashSet<SemanticItem> {
 
 fn sanitize_url(url: &str) -> String {
     if url.starts_with("hhttps://") {
-        url[1..].to_string()
+        url.chars().skip(1).collect()
     } else {
         url.to_string()
     }
@@ -690,6 +702,17 @@ impl AuditedProfileCandidate {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
 

@@ -187,6 +187,7 @@ impl Processor {
                 }
 
                 if first_present_by_group.get(&group_number) == Some(&entry.id) {
+                    #[allow(clippy::indexing_slicing, reason = "group_number is verified present")]
                     result.push(self.build_merged_compound_entry(
                         entry,
                         &compound_groups[&group_number],

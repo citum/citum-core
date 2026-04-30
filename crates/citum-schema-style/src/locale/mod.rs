@@ -514,6 +514,10 @@ impl Locale {
             for article in DEFAULT_ARTICLES {
                 let prefix = format!("{} ", article);
                 if s.to_lowercase().starts_with(&prefix) {
+                    #[allow(
+                        clippy::string_slice,
+                        reason = "prefix is derived from ASCII article"
+                    )]
                     return &s[prefix.len()..];
                 }
             }
@@ -522,6 +526,10 @@ impl Locale {
             for article in &self.sort_articles {
                 let prefix = format!("{} ", article);
                 if s.to_lowercase().starts_with(&prefix) {
+                    #[allow(
+                        clippy::string_slice,
+                        reason = "prefix is derived from a defined article"
+                    )]
                     return &s[prefix.len()..];
                 }
             }
@@ -554,6 +562,7 @@ impl Locale {
     /// Get default articles for a locale based on language code.
     fn default_articles_for_locale(locale_id: &str) -> Vec<String> {
         // Extract language code (first 2 chars)
+        #[allow(clippy::string_slice, reason = "locale_id is expected to be ASCII")]
         let lang = &locale_id[..2.min(locale_id.len())];
         match lang {
             "en" => vec!["the".into(), "a".into(), "an".into()],
@@ -1729,6 +1738,17 @@ impl Locale {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
 

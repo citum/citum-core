@@ -1,7 +1,7 @@
 use citum_schema::template::{DateVariable, SimpleVariable, TemplateComponent, TitleType};
 
 pub(super) fn note_citation_template_is_underfit(template: &[TemplateComponent]) -> bool {
-    template.len() == 1 && component_is_contributor_only(&template[0])
+    template.len() == 1 && template.first().is_some_and(component_is_contributor_only)
 }
 
 fn component_is_contributor_only(component: &TemplateComponent) -> bool {
@@ -298,6 +298,17 @@ fn component_has_volume(component: &TemplateComponent) -> bool {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::should_merge_inferred_type_template;
     use citum_schema::template::{TemplateComponent, TemplateTitle, TitleType};

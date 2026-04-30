@@ -451,6 +451,10 @@ fn parse_key_value(line: &str) -> Option<(&str, &str)> {
     }
 
     let colon_pos = line.find(':')?;
+    #[allow(
+        clippy::string_slice,
+        reason = "colon_pos is found via find(':'), which is a valid 1-byte ASCII boundary"
+    )]
     let key = &line[..colon_pos];
 
     // Validate key: must start with an ASCII letter (upper or lower)
@@ -468,6 +472,10 @@ fn parse_key_value(line: &str) -> Option<(&str, &str)> {
         return None;
     }
 
+    #[allow(
+        clippy::string_slice,
+        reason = "colon_pos + 1 is a valid boundary after ':' (1-byte ASCII)"
+    )]
     let value = line[colon_pos + 1..].trim();
     Some((key, value))
 }
@@ -508,9 +516,25 @@ fn parse_date_variable(value: &str) -> DateVariable {
     let trimmed = value.trim();
 
     // Check for range: YYYY/YYYY or YYYY–YYYY
-    if let Some(sep_pos) = trimmed.find('/').or_else(|| trimmed.find('–')) {
-        let start_str = trimmed[..sep_pos].trim();
-        let end_str = trimmed[sep_pos + 1..].trim();
+    let (sep_pos, sep_len) = if let Some(pos) = trimmed.find('/') {
+        (Some(pos), 1)
+    } else if let Some(pos) = trimmed.find('–') {
+        (Some(pos), '–'.len_utf8())
+    } else {
+        (None, 0)
+    };
+
+    if let Some(pos) = sep_pos {
+        #[allow(
+            clippy::string_slice,
+            reason = "pos is a valid byte boundary found via .find()"
+        )]
+        let start_str = trimmed[..pos].trim();
+        #[allow(
+            clippy::string_slice,
+            reason = "pos + sep_len is a valid byte boundary for '/' or '–'"
+        )]
+        let end_str = trimmed[pos + sep_len..].trim();
 
         if let (Some(start_parts), Some(end_parts)) =
             (parse_date_parts(start_str), parse_date_parts(end_str))
@@ -619,7 +643,15 @@ fn parse_name_variable(value: &str) -> Name {
     let trimmed = value.trim();
 
     if let Some(sep_pos) = trimmed.find("||") {
+        #[allow(
+            clippy::string_slice,
+            reason = "sep_pos is a valid byte boundary for '||'"
+        )]
         let family = trimmed[..sep_pos].trim().to_string();
+        #[allow(
+            clippy::string_slice,
+            reason = "sep_pos + 2 is a valid boundary after '||' (2-byte ASCII)"
+        )]
         let given = trimmed[sep_pos + 2..].trim().to_string();
 
         Name {
@@ -810,6 +842,17 @@ fn handle_string_variable(ref_obj: &mut Reference, key: &str, value: &str) {
 pub type Bibliography = indexmap::IndexMap<String, Reference>;
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
 

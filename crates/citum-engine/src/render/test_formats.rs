@@ -4,6 +4,17 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use crate::render::component::{ProcTemplateComponent, render_component_with_format};
     use crate::render::djot::Djot;

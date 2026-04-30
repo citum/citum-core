@@ -318,8 +318,7 @@ impl<'de> Deserialize<'de> for TypeSelector {
             where
                 E: serde::de::Error,
             {
-                Ok(v.parse()
-                    .expect("TypeSelector: single-element parse is infallible"))
+                v.parse().map_err(E::custom)
             }
 
             fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
@@ -1095,6 +1094,17 @@ impl DelimiterPunctuation {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
 
