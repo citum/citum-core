@@ -1,13 +1,13 @@
 ---
 # csl26-tr2m
 title: 'Route CSL bill type to class: hearing'
-status: todo
+status: completed
 type: feature
 priority: normal
 tags:
     - migrate
 created_at: 2026-04-04T14:00:22Z
-updated_at: 2026-04-25T20:20:07Z
+updated_at: 2026-04-30T19:18:49Z
 ---
 
 Congressional hearing items in Zotero export as CSL type `bill` but should

@@ -3,10 +3,10 @@ use crate::reference::contributor::{
 };
 use crate::reference::date::EdtfString;
 use crate::reference::types::{
-    ArchiveInfo, Collection, CollectionComponent, CollectionType, Dataset, LegalCase, Monograph,
-    MonographComponentType, MonographType, NumOrStr, Patent, Publisher, Regulation, RichText,
-    Serial, SerialComponent, SerialComponentType, SerialType, Software, Standard, Statute,
-    StructuredTitle, Subtitle, Title, Treaty,
+    ArchiveInfo, Collection, CollectionComponent, CollectionType, Dataset, Hearing, LegalCase,
+    Monograph, MonographComponentType, MonographType, NumOrStr, Patent, Publisher, Regulation,
+    RichText, Serial, SerialComponent, SerialComponentType, SerialType, Software, Standard,
+    Statute, StructuredTitle, Subtitle, Title, Treaty,
 };
 use crate::reference::{
     AudioVisualType, AudioVisualWork, Event, InputReference, LangID, Numbering, NumberingType,
@@ -1282,6 +1282,11 @@ fn from_dataset_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) ->
 }
 
 fn from_bill_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
+    // CSL bills with both title and authority are congressional hearings (Zotero export pattern)
+    if legacy.title.is_some() && legacy.authority.is_some() {
+        return from_hearing_ref(legacy, ctx);
+    }
+
     let titleless_proceeding =
         legacy.title.is_none() && (legacy.authority.is_some() || legacy.chapter_number.is_some());
     let titleless_record = legacy.title.is_none()
@@ -1425,6 +1430,26 @@ fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         keywords: None,
         original,
         ..Default::default()
+    }))
+}
+
+fn from_hearing_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> InputReference {
+    let original = legacy_original_relation(&legacy);
+    InputReference::Hearing(Box::new(Hearing {
+        id: ctx.id,
+        title: build_title(ctx.title, ctx.short_title),
+        original,
+        authority: legacy.authority,
+        // CSL chapter-number doubles as session/congress identifier for legislative sources
+        session_number: legacy.chapter_number,
+        created: ctx.created,
+        issued: ctx.issued,
+        url: ctx.url,
+        accessed: ctx.accessed,
+        language: ctx.language,
+        field_languages: HashMap::new(),
+        note: ctx.note.map(RichText::Plain),
+        keywords: None,
     }))
 }
 
