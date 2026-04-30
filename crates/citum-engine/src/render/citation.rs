@@ -91,6 +91,10 @@ pub fn citation_to_string_with_format<F: OutputFormat<Output = String>>(
         .is_some_and(|cfg| cfg.punctuation_in_quote);
 
     let mut content = String::new();
+    #[allow(
+        clippy::string_slice,
+        reason = "UTF-8 safe slicing based on char boundary checks"
+    )]
     for (i, part) in parts.iter().enumerate() {
         if i > 0 {
             let delim_first = delim.chars().next();
@@ -130,6 +134,17 @@ pub fn citation_to_string_with_format<F: OutputFormat<Output = String>>(
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
     use crate::render::component::ProcTemplateComponent;
@@ -391,7 +406,14 @@ ENDING IN COMMA
                     ..Default::default()
                 }),
                 template_index: None,
-                value: heading["ENDING IN ".len()..].to_ascii_lowercase(),
+                value: {
+                    #[allow(
+                        clippy::string_slice,
+                        reason = "heading is guaranteed to start with prefix"
+                    )]
+                    let val = heading["ENDING IN ".len()..].to_ascii_lowercase();
+                    val
+                },
                 prefix: None,
                 suffix: None,
                 ref_type: None,

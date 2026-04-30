@@ -50,6 +50,11 @@ impl CitationParser for MarkdownParser {
     }
 }
 
+#[allow(
+    clippy::string_slice,
+    clippy::unreachable,
+    reason = "Markdown scanning logic"
+)]
 fn find_citations(content: &str, locale: &Locale) -> Vec<(usize, usize, Citation)> {
     let mut results = Vec::new();
     let mut offset = 0;
@@ -95,6 +100,7 @@ enum ScanKind {
     Textual,
 }
 
+#[allow(clippy::string_slice, reason = "Brackets and @ are 1-byte ASCII")]
 fn parse_bracketed_citation(input: &str, locale: &Locale) -> Option<(usize, Citation)> {
     if !input.starts_with('[') {
         return None;
@@ -131,6 +137,11 @@ fn parse_bracketed_citation(input: &str, locale: &Locale) -> Option<(usize, Cita
     ))
 }
 
+#[allow(
+    clippy::string_slice,
+    clippy::indexing_slicing,
+    reason = "Citations are ASCII-heavy; indices from find() are on char boundaries"
+)]
 fn parse_bracketed_item(segment: &str, locale: &Locale) -> Option<(CitationItem, bool)> {
     let segment = segment.trim();
     let at_pos = segment.find('@')?;
@@ -169,6 +180,7 @@ fn parse_bracketed_item(segment: &str, locale: &Locale) -> Option<(CitationItem,
     Some((item, suppress_author))
 }
 
+#[allow(clippy::string_slice, reason = "@ and indices from find() are safe")]
 fn parse_textual_citation(
     content: &str,
     start: usize,
@@ -204,6 +216,7 @@ fn parse_textual_citation(
     ))
 }
 
+#[allow(clippy::string_slice, reason = "Brackets and @ are 1-byte ASCII")]
 fn parse_textual_locator_suffix(
     input: &str,
     locale: &Locale,
@@ -246,12 +259,24 @@ fn normalize_prefix(prefix: &str) -> Option<String> {
     }
 }
 
+#[allow(clippy::string_slice, reason = "start index from find() is safe")]
 fn is_valid_textual_start(content: &str, start: usize) -> bool {
     let prev = content[..start].chars().next_back();
     !matches!(prev, Some(ch) if ch.is_alphanumeric() || matches!(ch, '_' | '-' | '.' | '/' | '@'))
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
     use citum_schema::citation::{CitationLocator, LocatorType};

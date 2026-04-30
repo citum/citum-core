@@ -436,6 +436,7 @@ fn preview_text(text: &str, limit: usize) -> &str {
     while !text.is_char_boundary(end) {
         end -= 1;
     }
+    #[allow(clippy::string_slice, reason = "end is verified as char boundary")]
     &text[..end]
 }
 
@@ -577,6 +578,17 @@ fn style_xml<'a>(ctx: &'a mut ResolveContext<'_>) -> Option<&'a str> {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
 

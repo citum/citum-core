@@ -106,22 +106,20 @@ fn parse_cli_args(args: &[String]) -> CliArgs {
     let mut template_dir: Option<PathBuf> = None;
     let mut min_template_confidence = 0.70_f64;
 
-    let mut i = 1;
-    while i < args.len() {
-        match args[i].as_str() {
+    let mut iter = args.iter().skip(1).peekable();
+    while let Some(arg) = iter.next() {
+        match arg.as_str() {
             "--debug-variable" => {
-                if i + 1 < args.len() {
-                    debug_variable = Some(args[i + 1].clone());
-                    i += 2;
+                if let Some(val) = iter.next() {
+                    debug_variable = Some(val.clone());
                 } else {
                     eprintln!("Error: --debug-variable requires an argument");
                     std::process::exit(1);
                 }
             }
             "--template-source" => {
-                if i + 1 < args.len() {
-                    template_mode = parse_template_mode_arg(&args[i + 1]);
-                    i += 2;
+                if let Some(val) = iter.next() {
+                    template_mode = parse_template_mode_arg(val);
                 } else {
                     eprintln!(
                         "Error: --template-source requires an argument (auto|hand|inferred|xml)"
@@ -130,9 +128,8 @@ fn parse_cli_args(args: &[String]) -> CliArgs {
                 }
             }
             "--live-infer-backend" => {
-                if i + 1 < args.len() {
-                    live_infer_backend = parse_live_infer_backend_arg(&args[i + 1]);
-                    i += 2;
+                if let Some(val) = iter.next() {
+                    live_infer_backend = parse_live_infer_backend_arg(val);
                 } else {
                     eprintln!(
                         "Error: --live-infer-backend requires an argument (auto|embedded|node)"
@@ -141,29 +138,26 @@ fn parse_cli_args(args: &[String]) -> CliArgs {
                 }
             }
             "--min-template-confidence" => {
-                if i + 1 < args.len() {
-                    min_template_confidence = parse_min_template_confidence_arg(&args[i + 1]);
-                    i += 2;
+                if let Some(val) = iter.next() {
+                    min_template_confidence = parse_min_template_confidence_arg(val);
                 } else {
                     eprintln!("Error: --min-template-confidence requires a numeric argument");
                     std::process::exit(1);
                 }
             }
             "--template-dir" => {
-                if i + 1 < args.len() {
-                    template_dir = Some(PathBuf::from(&args[i + 1]));
-                    i += 2;
+                if let Some(val) = iter.next() {
+                    template_dir = Some(PathBuf::from(val));
                 } else {
                     eprintln!("Error: --template-dir requires a path argument");
                     std::process::exit(1);
                 }
             }
             arg if !arg.starts_with('-') => {
-                path = args[i].clone();
-                i += 1;
+                path = arg.to_string();
             }
             _ => {
-                eprintln!("Error: unknown argument '{}'", args[i]);
+                eprintln!("Error: unknown argument '{}'", arg);
                 eprintln!();
                 print_help(program_name);
                 std::process::exit(1);
@@ -546,6 +540,7 @@ fn select_and_process_bibliography_template(
                 inferred_bib,
             )
         } else {
+            #[allow(clippy::expect_used, reason = "fatal bootstrap error")]
             let out = xml_fallback
                 .as_ref()
                 .expect("XML fallback must exist when bibliography is unresolved");
@@ -575,6 +570,7 @@ fn select_citation_template(
     let new_cit = if let Some(ref resolved_cit) = resolved.citation {
         resolved_cit.template.clone()
     } else {
+        #[allow(clippy::expect_used, reason = "fatal bootstrap error")]
         let out = xml_fallback
             .as_ref()
             .expect("XML fallback must exist when citation is unresolved");
@@ -957,6 +953,17 @@ impl TypeSelectorNames for TypeSelector {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
     use citum_schema::locale::GeneralTerm;

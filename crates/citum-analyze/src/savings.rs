@@ -16,7 +16,13 @@ pub fn run_savings_report(styles_dir: &str, json_output: bool) {
     match analyze_savings(Path::new(styles_dir)) {
         Ok(report) => {
             if json_output {
-                println!("{}", serde_json::to_string_pretty(&report).unwrap());
+                match serde_json::to_string_pretty(&report) {
+                    Ok(json) => println!("{json}"),
+                    Err(error) => {
+                        eprintln!("Failed to serialize report to JSON: {error}");
+                        std::process::exit(1);
+                    }
+                }
             } else {
                 print_savings_report(&report);
             }
@@ -325,8 +331,10 @@ fn locale_base_slug(slug: &str, locale: &str) -> Option<String> {
     }
 
     let locale_parts: Vec<_> = locale.split('-').collect();
-    if locale_parts.len() > 1 {
-        let language_suffix = format!("-{}", locale_parts[0].to_lowercase());
+    if locale_parts.len() > 1
+        && let Some(first_part) = locale_parts.first()
+    {
+        let language_suffix = format!("-{}", first_part.to_lowercase());
         if let Some(base) = slug.strip_suffix(&language_suffix) {
             return Some(base.to_string());
         }
@@ -404,6 +412,17 @@ fn print_savings_report(report: &SavingsReport) {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::{
         ParentSavings, SavingsReport, analyze_savings, locale_base_slug, locale_suffix_from_locale,

@@ -200,12 +200,12 @@ fn find_deepest_delimiter(nodes: &[CslNode], macros: &[Macro]) -> Option<(String
                     if let Some((delim, depth)) = find_deepest_delimiter(&g.children, macros) {
                         // Found a deeper group
                         let new_depth = depth + 1;
-                        if best.is_none() || new_depth > best.as_ref().unwrap().1 {
+                        if best.as_ref().is_none_or(|(_, d)| new_depth > *d) {
                             best = Some((delim, new_depth));
                         }
                     } else if let Some(delimiter) = &g.delimiter {
                         // No deeper group found, use this group's delimiter
-                        if best.is_none() || 1 > best.as_ref().unwrap().1 {
+                        if best.as_ref().is_none_or(|(_, d)| 1 > *d) {
                             best = Some((delimiter.clone(), 1));
                         }
                     }
@@ -214,20 +214,20 @@ fn find_deepest_delimiter(nodes: &[CslNode], macros: &[Macro]) -> Option<(String
             CslNode::Choose(c) => {
                 // Recurse into Choose branches to find groups inside
                 if let Some(result) = find_deepest_delimiter(&c.if_branch.children, macros)
-                    && (best.is_none() || result.1 > best.as_ref().unwrap().1)
+                    && best.as_ref().is_none_or(|(_, d)| result.1 > *d)
                 {
                     best = Some(result);
                 }
                 for branch in &c.else_if_branches {
                     if let Some(result) = find_deepest_delimiter(&branch.children, macros)
-                        && (best.is_none() || result.1 > best.as_ref().unwrap().1)
+                        && best.as_ref().is_none_or(|(_, d)| result.1 > *d)
                     {
                         best = Some(result);
                     }
                 }
                 if let Some(else_branch) = &c.else_branch
                     && let Some(result) = find_deepest_delimiter(else_branch, macros)
-                    && (best.is_none() || result.1 > best.as_ref().unwrap().1)
+                    && best.as_ref().is_none_or(|(_, d)| result.1 > *d)
                 {
                     best = Some(result);
                 }
@@ -246,7 +246,7 @@ fn find_deepest_delimiter(nodes: &[CslNode], macros: &[Macro]) -> Option<(String
                         // Found a delimiter in the macro
                         // Add depth for the macro boundary
                         let new_depth = result.1 + 1;
-                        if best.is_none() || new_depth > best.as_ref().unwrap().1 {
+                        if best.as_ref().is_none_or(|(_, d)| new_depth > *d) {
                             best = Some((result.0, new_depth));
                         }
                     }

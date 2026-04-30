@@ -627,9 +627,10 @@ pub fn normalize_locator_text(
 
     match segments.len() {
         0 => None,
-        1 => Some(CitationLocator::Single(
-            segments.into_iter().next().unwrap(),
-        )),
+        1 => {
+            let mut it = segments.into_iter();
+            Some(CitationLocator::Single(it.next()?))
+        }
         _ => CitationLocator::compound(segments).ok(),
     }
 }
@@ -643,13 +644,22 @@ fn split_locator_segments<'a>(locator: &'a str, aliases: &[(String, LocatorType)
             continue;
         }
 
+        #[allow(
+            clippy::string_slice,
+            reason = "idx is a valid char boundary from char_indices()"
+        )]
         let candidate = locator[idx + ch.len_utf8()..].trim_start();
         if begins_with_locator_label(candidate, aliases) {
+            #[allow(
+                clippy::string_slice,
+                reason = "start and idx are valid char boundaries"
+            )]
             parts.push(locator[start..idx].trim());
             start = idx + ch.len_utf8();
         }
     }
 
+    #[allow(clippy::string_slice, reason = "start is a valid char boundary")]
     parts.push(locator[start..].trim());
     parts
 }
@@ -699,7 +709,10 @@ fn strip_locator_label<'a>(
         }
     }
 
-    best.map(|(label, alias_len)| (label, segment[alias_len..].trim_start()))
+    best.map(|(label, alias_len)| {
+        #[allow(clippy::string_slice, reason = "alias_len is the length of a prefix")]
+        (label, segment[alias_len..].trim_start())
+    })
 }
 
 fn alias_boundary(remainder: &str) -> bool {
@@ -710,6 +723,17 @@ fn alias_boundary(remainder: &str) -> bool {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
 

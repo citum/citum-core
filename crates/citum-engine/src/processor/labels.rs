@@ -48,6 +48,7 @@ fn generate_name_part(reference: &Reference, params: &LabelParams) -> String {
 
     if count == 1 {
         // Single author: up to single_author_chars from family name
+        #[allow(clippy::indexing_slicing, reason = "count checked")]
         let family = names[0].family_or_literal();
         family
             .chars()
@@ -90,6 +91,7 @@ fn generate_year_part(reference: &Reference, year_digits: u8) -> String {
         .map(|y| {
             let y_str = y.to_string();
             if year_digits == 2 && y_str.len() >= 2 {
+                #[allow(clippy::string_slice, reason = "length checked")]
                 y_str[y_str.len() - 2..].to_string()
             } else {
                 y_str
@@ -99,6 +101,17 @@ fn generate_year_part(reference: &Reference, year_digits: u8) -> String {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
     use citum_schema::options::{LabelConfig, LabelPreset};

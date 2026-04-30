@@ -99,7 +99,8 @@ fn main() {
             if total % 50 == 0 {
                 print!(".");
                 use std::io::Write;
-                std::io::stdout().flush().unwrap();
+                #[allow(clippy::expect_used, reason = "fatal bootstrap error")]
+                std::io::stdout().flush().expect("failed to flush stdout");
             }
         }
     }
@@ -129,10 +130,10 @@ fn inject_info_block(yaml_text: &str, style_info: &citum_schema::StyleInfo) -> S
     for (i, line) in lines.iter().enumerate() {
         if line.starts_with("info:") {
             // Find the next non-indented line (end of info block)
-            for j in (i + 1)..lines.len() {
-                if !lines[j].is_empty()
-                    && !lines[j].starts_with("  ")
-                    && !lines[j].starts_with('\t')
+            for (j, inner_line) in lines.iter().enumerate().skip(i + 1) {
+                if !inner_line.is_empty()
+                    && !inner_line.starts_with("  ")
+                    && !inner_line.starts_with('\t')
                 {
                     info_end = j;
                     break;
@@ -152,7 +153,10 @@ fn inject_info_block(yaml_text: &str, style_info: &citum_schema::StyleInfo) -> S
     }
 
     // Replace the info block
-    let after: String = lines[info_end..].join("\n");
+    let after: String = lines
+        .get(info_end..)
+        .map(|s| s.join("\n"))
+        .unwrap_or_default();
 
     let indented_info = indent_yaml(&info_yaml);
     format!("info:\n{indented_info}\n{after}")

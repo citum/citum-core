@@ -24,15 +24,16 @@ pub enum ConsecutiveSegment {
 /// Duplicate values are coalesced, and descending steps start a new segment.
 #[must_use]
 pub fn consecutive_segments(values: &[u32]) -> Vec<ConsecutiveSegment> {
-    if values.is_empty() {
+    let mut iter = values.iter();
+    let Some(&first) = iter.next() else {
         return Vec::new();
-    }
+    };
 
     let mut segments = Vec::new();
-    let mut start = values[0];
-    let mut prev = values[0];
+    let mut start = first;
+    let mut prev = first;
 
-    for &value in &values[1..] {
+    for &value in iter {
         if value == prev {
             continue;
         }
@@ -60,6 +61,17 @@ fn push_segment(segments: &mut Vec<ConsecutiveSegment>, start: u32, end: u32) {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
 

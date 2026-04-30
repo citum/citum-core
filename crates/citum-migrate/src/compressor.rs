@@ -73,7 +73,9 @@ impl Compressor {
                 return None;
             }
 
+            #[allow(clippy::indexing_slicing, reason = "then_nodes.len() == 1")]
             let then_node = &then_nodes[0];
+            #[allow(clippy::indexing_slicing, reason = "else_nodes.len() == 1")]
             let else_node = &else_nodes[0];
 
             if let (CslnNode::Variable(v1), CslnNode::Variable(v2)) = (then_node, else_node)

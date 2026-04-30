@@ -297,9 +297,12 @@ impl<'a> Disambiguator<'a> {
             return false;
         }
 
+        #[allow(clippy::indexing_slicing, reason = "context.group.len() == 1")]
+        let head = context.group[0];
+
         self.insert_hint(
             hints,
-            context.group[0],
+            head,
             context.author_group_lengths,
             context.cache,
             ProcHints::default(),
@@ -840,6 +843,10 @@ impl<'a> Disambiguator<'a> {
     }
 
     /// Retrieves cached metadata for a specific reference.
+    #[allow(
+        clippy::expect_used,
+        reason = "Internal cache hydration guarantees presence"
+    )]
     fn reference_data<'b>(
         &self,
         reference: &Reference,
@@ -852,6 +859,17 @@ impl<'a> Disambiguator<'a> {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
     use crate::Processor;

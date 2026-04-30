@@ -14,8 +14,8 @@ use citum_schema::template::{DateForm, DateVariable as TemplateDateVar, Template
 fn month_to_string(month: u32, months: &[String]) -> String {
     if month > 0 {
         let index = month - 1;
-        if index < months.len() as u32 {
-            months[index as usize].clone()
+        if let Some(month_name) = months.get(index as usize) {
+            month_name.clone()
         } else {
             String::new()
         }
@@ -500,13 +500,15 @@ fn inline_disamb_suffix(formatted: &str, form: &DateForm, year: &str, suffix: &s
     };
 
     let year_end = index + year.len();
-    format!(
+    #[allow(clippy::string_slice, reason = "indices derived from find/rfind")]
+    let result = format!(
         "{}{}{}{}",
         &formatted[..index],
         year,
         suffix,
         &formatted[year_end..]
-    )
+    );
+    result
 }
 
 /// Format a single date (non-range) according to the given form.
@@ -662,7 +664,7 @@ impl ComponentValues for TemplateDate {
             _ => None,
         };
 
-        if date_opt.is_none() || date_opt.as_ref().unwrap().0.is_empty() {
+        let Some(date) = date_opt.filter(|d| !d.0.is_empty()) else {
             // Handle fallback if date is missing
             if let Some(fallbacks) = &self.fallback {
                 for component in fallbacks {
@@ -689,9 +691,8 @@ impl ComponentValues for TemplateDate {
                 });
             }
             return None;
-        }
+        };
 
-        let date = date_opt.unwrap();
         let locale = options.locale;
         let date_config = options.config.dates.as_ref();
         let effective_form = self.form.clone();
@@ -760,6 +761,17 @@ pub fn int_to_letter(n: u32) -> Option<String> {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
 
@@ -781,6 +793,17 @@ mod tests {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod time_tests {
     use super::*;
     use citum_edtf::{Time, Timezone};
@@ -859,6 +882,17 @@ mod time_tests {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod era_tests {
     use super::*;
     use citum_edtf::{UnspecifiedYear, Year};

@@ -159,6 +159,11 @@ pub(super) fn rewrite_group_headings_for_document(
     }
 }
 
+#[allow(
+    clippy::string_slice,
+    clippy::indexing_slicing,
+    reason = "parser-guaranteed boundaries and indices"
+)]
 pub(super) fn rewrite_document_markup_for_typst(
     rendered: String,
     format: DocumentFormat,

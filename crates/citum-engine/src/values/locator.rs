@@ -205,12 +205,15 @@ fn apply_range_format(value: &str, format: PageRangeFormat) -> String {
     let Some(pos) = sep_pos else {
         return value.to_string();
     };
+    #[allow(clippy::string_slice, reason = "index from find()")]
     let start = &value[..pos];
     // Find end of separator (handle multi-byte em/en-dash)
+    #[allow(clippy::string_slice, reason = "index from find()")]
     let sep_end = value[pos..]
         .chars()
         .next()
         .map_or(pos + 1, |c| pos + c.len_utf8());
+    #[allow(clippy::string_slice, reason = "index from find() + char len")]
     let end = value[sep_end..].trim_start();
     match format {
         PageRangeFormat::Expanded => {
@@ -241,6 +244,7 @@ fn expand_range_end(start: &str, end: &str) -> String {
     if end.len() >= start.len() {
         return end.to_string();
     }
+    #[allow(clippy::string_slice, reason = "length checked")]
     let prefix = &start[..start.len() - end.len()];
     format!("{prefix}{end}")
 }
@@ -256,7 +260,9 @@ fn minimal_range_end(start: &str, end: &str) -> String {
         .zip(end.chars())
         .take_while(|(a, b)| a == b)
         .count();
-    end[shared..].to_string()
+    #[allow(clippy::string_slice, reason = "shared is a character boundary")]
+    let result = end[shared..].to_string();
+    result
 }
 
 /// Check if a reference type matches a TypeClass.
@@ -284,6 +290,17 @@ fn type_class_matches(ref_type: &str, type_class: citum_schema::options::TypeCla
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
     use citum_schema::citation::LocatorValue;

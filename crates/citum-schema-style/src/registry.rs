@@ -90,6 +90,7 @@ impl StyleRegistry {
     /// has the same ID as one in `base`, the entry from `self` replaces it.
     /// New entries from `self` are appended.
     #[must_use]
+    #[allow(clippy::indexing_slicing, reason = "pos is found via .position()")]
     pub fn merge_over(&self, base: &StyleRegistry) -> StyleRegistry {
         let mut result = base.clone();
         for entry in &self.styles {
@@ -138,6 +139,11 @@ impl StyleRegistry {
     /// # Panics
     /// Panics only if the embedded YAML is malformed (should never happen in
     /// a correctly built binary).
+    #[allow(
+        clippy::expect_used,
+        clippy::panic,
+        reason = "Embedded registry must be valid at runtime"
+    )]
     pub fn load_default() -> Self {
         DEFAULT_REGISTRY
             .get_or_init(|| {
@@ -193,6 +199,17 @@ impl StyleRegistry {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
 

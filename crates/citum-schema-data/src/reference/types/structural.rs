@@ -55,7 +55,11 @@ fn collect_contributors_by_role(
 
     match matching.len() {
         0 => None,
-        1 => Some(matching[0].clone()),
+        1 =>
+        {
+            #[allow(clippy::indexing_slicing, reason = "matching.len() == 1")]
+            Some(matching[0].clone())
+        }
         _ => Some(Contributor::ContributorList(ContributorList(
             matching.into_iter().cloned().collect(),
         ))),
@@ -1357,6 +1361,17 @@ pub enum SerialType {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
     use crate::reference::types::common::NumberingType;

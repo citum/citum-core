@@ -193,6 +193,7 @@ pub(crate) fn find_citations(content: &str, locale: &Locale) -> Vec<(usize, usiz
             break;
         };
 
+        #[allow(clippy::string_slice, reason = "start_pos is found via find('[')")]
         let potential = &input[start_pos..];
         let mut p_input = potential;
 
@@ -202,11 +203,18 @@ pub(crate) fn find_citations(content: &str, locale: &Locale) -> Vec<(usize, usiz
             results.push((offset + start_pos, offset + end_pos, citation));
 
             let shift = end_pos;
-            input = &input[shift..];
+            #[allow(clippy::string_slice, reason = "shift is a valid boundary")]
+            let next_input = &input[shift..];
+            input = next_input;
             offset += shift;
         } else {
             let shift = start_pos + 1;
-            input = &input[shift..];
+            #[allow(
+                clippy::string_slice,
+                reason = "shift is valid (start_pos + '[' length)"
+            )]
+            let next_input = &input[shift..];
+            input = next_input;
             offset += shift;
         }
     }
@@ -281,6 +289,7 @@ fn parse_citation_item_no_integral(
     let after_key: &str = take_while(0.., |c: char| c != ';' && c != ']').parse_next(input)?;
 
     if let Some(comma_pos) = after_key.find(',') {
+        #[allow(clippy::string_slice, reason = "comma_pos is found via find(',')")]
         let locator_part = after_key[comma_pos + 1..].trim();
         item.locator = normalize_locator_text(locator_part, locale);
     } else {
@@ -348,6 +357,7 @@ impl ScopeTracker {
 
 /// Parse YAML frontmatter from content.
 /// Returns (frontmatter, `remaining_content`).
+#[allow(clippy::string_slice, reason = "'---' is 1-byte ASCII")]
 pub(crate) fn parse_frontmatter(content: &str) -> (Option<DocumentFrontmatter>, &str) {
     let trimmed = content.trim_start();
     if !trimmed.starts_with("---") {

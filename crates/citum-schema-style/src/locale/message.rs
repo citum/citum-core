@@ -93,8 +93,12 @@ fn substitute_mf2_vars(pattern: &str, args: &MessageArgs<'_>) -> Option<String> 
     let mut result = String::new();
     let mut cursor = 0usize;
 
-    while let Some(offset) = pattern[cursor..].find('{') {
+    while let Some(offset) = pattern.get(cursor..).and_then(|s| s.find('{')) {
         let open = cursor + offset;
+        #[allow(
+            clippy::string_slice,
+            reason = "cursor and open are valid char boundaries"
+        )]
         result.push_str(&pattern[cursor..open]);
 
         let close = find_matching_brace(pattern, open)?;
@@ -104,12 +108,14 @@ fn substitute_mf2_vars(pattern: &str, args: &MessageArgs<'_>) -> Option<String> 
             return None;
         }
 
+        #[allow(clippy::string_slice, reason = "inner starts with '$' (1-byte ASCII)")]
         let var_name = &inner[1..];
         let var_value = resolve_var(var_name, args)?;
         result.push_str(var_value);
         cursor = close + 1;
     }
 
+    #[allow(clippy::string_slice, reason = "cursor is a valid char boundary")]
     result.push_str(&pattern[cursor..]);
     Some(result)
 }
@@ -148,6 +154,7 @@ fn evaluate_mf2_matcher(message: &str, args: &MessageArgs<'_>) -> Option<String>
 
 /// Parse selector expressions after `.match`.
 fn parse_mf2_selectors(message: &str) -> Option<(Vec<(&str, Option<&str>)>, &str)> {
+    #[allow(clippy::string_slice, reason = "'.match' is 1-byte ASCII")]
     let mut rest = message[".match".len()..].trim_start();
     let mut selectors = Vec::new();
 
@@ -170,11 +177,7 @@ fn parse_mf2_selectors(message: &str) -> Option<(Vec<(&str, Option<&str>)>, &str
 /// Returns `(variable_name, optional_function)`.
 fn parse_mf2_selector(selector: &str) -> Option<(&str, Option<&str>)> {
     let parts: Vec<&str> = selector.split_whitespace().collect();
-    if parts.is_empty() {
-        return None;
-    }
-
-    let var_name = parts[0].strip_prefix('$')?;
+    let var_name = parts.first()?.strip_prefix('$')?;
 
     let function = parts
         .get(1)
@@ -239,8 +242,10 @@ fn find_mf2_variant(variants_text: &str, match_keys: &[String]) -> Option<String
             break;
         }
 
+        #[allow(clippy::string_slice, reason = "'when' is 1-byte ASCII")]
         let after_when = trimmed["when".len()..].trim_start();
         let brace_pos = after_when.find('{')?;
+        #[allow(clippy::string_slice, reason = "brace_pos is found via find('{')")]
         let key_str = after_when[..brace_pos].trim();
         let variant_keys: Vec<&str> = key_str.split_whitespace().collect();
 
@@ -309,6 +314,17 @@ fn find_matching_brace(input: &str, open_index: usize) -> Option<usize> {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
 

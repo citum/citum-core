@@ -114,6 +114,10 @@ pub(super) fn collect_note_occurrences(
     }
 
     for indices in manual_citations.values_mut() {
+        #[allow(
+            clippy::indexing_slicing,
+            reason = "index derived from citations collection"
+        )]
         indices.sort_by_key(|index| parsed.citations[*index].start);
     }
     note_occurrences.sort_by_key(NoteOccurrence::start);
@@ -165,7 +169,13 @@ fn assign_note_occurrence_numbers(
             }
             NoteOccurrence::Generated { citation_index, .. } => {
                 let note_number = take_next_note_number(next_note);
-                parsed.citations[*citation_index].citation.note_number = Some(note_number);
+                #[allow(
+                    clippy::indexing_slicing,
+                    reason = "index derived from citations collection"
+                )]
+                {
+                    parsed.citations[*citation_index].citation.note_number = Some(note_number);
+                }
                 generated_notes.push(GeneratedNote {
                     citation_index: *citation_index,
                     label: next_generated_note_label(used_labels, note_number),
@@ -193,7 +203,14 @@ fn assign_orphan_manual_note_numbers(
         manual_citations
             .get(label)
             .and_then(|indices| indices.first())
-            .map_or(usize::MAX, |index| parsed.citations[*index].start)
+            .map_or(usize::MAX, |index| {
+                #[allow(
+                    clippy::indexing_slicing,
+                    reason = "index derived from citations collection"
+                )]
+                let start = parsed.citations[*index].start;
+                start
+            })
     });
 
     for label in orphan_labels {
@@ -208,6 +225,10 @@ fn apply_manual_note_numbers(
 ) {
     for (label, indices) in manual_citations {
         if let Some(note_number) = manual_numbers.get(label).copied() {
+            #[allow(
+                clippy::indexing_slicing,
+                reason = "index derived from citations collection"
+            )]
             for index in indices {
                 parsed.citations[*index].citation.note_number = Some(note_number);
             }
@@ -219,10 +240,18 @@ pub(super) fn ordered_note_citations_and_contexts(
     parsed: &ParsedDocument,
     ordered_indices: &[usize],
 ) -> (Vec<Citation>, Vec<IntegralNameContext>) {
+    #[allow(
+        clippy::indexing_slicing,
+        reason = "index derived from citations collection"
+    )]
     let citations = ordered_indices
         .iter()
         .map(|index| parsed.citations[*index].citation.clone())
         .collect();
+    #[allow(
+        clippy::indexing_slicing,
+        reason = "index derived from citations collection"
+    )]
     let contexts = ordered_indices
         .iter()
         .map(|index| IntegralNameContext {
@@ -492,27 +521,57 @@ pub(super) fn adjust_manual_note_citation_rendering(rendered: &str, right: &str)
 
 fn trim_visible_terminal_period(rendered: &str) -> String {
     let mut cut = rendered.len();
-    loop {
-        cut = rendered[..cut].trim_end().len();
+    while let Some(slice) = rendered.get(..cut) {
+        cut = slice.trim_end().len();
 
-        if !rendered[..cut].ends_with('>') {
+        let Some(trimmed) = rendered.get(..cut) else {
+            break;
+        };
+        if !trimmed.ends_with('>') {
             break;
         }
 
-        let Some(tag_start) = rendered[..cut].rfind("</") else {
+        let Some(tag_start) = trimmed.rfind("</") else {
             break;
         };
-        let tag = &rendered[tag_start..cut];
-        if tag.ends_with('>') && !tag[2..tag.len() - 1].contains('<') {
+        #[allow(
+            clippy::string_slice,
+            reason = "indices come from valid char boundaries"
+        )]
+        let tag = &trimmed[tag_start..];
+        if let Some(inner) = tag.strip_prefix("</").and_then(|s| s.strip_suffix('>'))
+            && !inner.contains('<')
+        {
             cut = tag_start;
             continue;
         }
         break;
     }
 
-    let Some((period_idx, '.')) = rendered[..cut].char_indices().next_back() else {
+    let Some(slice) = rendered.get(..cut) else {
+        return rendered.to_string();
+    };
+    let Some((period_idx, '.')) = slice.char_indices().next_back() else {
         return rendered.to_string();
     };
 
-    format!("{}{}", &rendered[..period_idx], &rendered[cut..])
+    format!(
+        "{}{}",
+        {
+            #[allow(
+                clippy::string_slice,
+                reason = "indices come from valid char boundaries"
+            )]
+            let prefix = &rendered[..period_idx];
+            prefix
+        },
+        {
+            #[allow(
+                clippy::string_slice,
+                reason = "indices come from valid char boundaries"
+            )]
+            let suffix = &rendered[cut..];
+            suffix
+        }
+    )
 }

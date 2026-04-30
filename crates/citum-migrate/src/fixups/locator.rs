@@ -5,6 +5,7 @@ use citum_schema::template::{
 use csl_legacy::model::{CslNode, Layout, Macro};
 use std::collections::HashSet;
 
+#[allow(clippy::indexing_slicing, reason = "idx is found via position()")]
 pub(super) fn ensure_numeric_locator_citation_component(
     layout: &Layout,
     template: &mut [TemplateComponent],

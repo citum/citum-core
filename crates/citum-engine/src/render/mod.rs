@@ -32,6 +32,17 @@ pub mod rich_text;
 pub mod typst;
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod test_formats;
 
 pub use bibliography::{refs_to_string, refs_to_string_with_format};

@@ -253,7 +253,9 @@ pub fn format_page_range(
         return pages; // Not a simple range
     }
 
+    #[allow(clippy::indexing_slicing, reason = "length checked")]
     let start = parts[0].trim();
+    #[allow(clippy::indexing_slicing, reason = "length checked")]
     let end = parts[1].trim();
 
     // Parse as numbers
@@ -296,7 +298,11 @@ pub fn format_minimal(start: &str, end: &str, min_digits: usize) -> String {
 
     // Keep at least min_digits from the end
     let keep_from = first_diff.min(end_chars.len().saturating_sub(min_digits));
-    end_chars[keep_from..].iter().collect()
+    end_chars
+        .get(keep_from..)
+        .unwrap_or_default()
+        .iter()
+        .collect()
 }
 
 /// Chicago Manual of Style page range format
@@ -331,6 +337,17 @@ pub fn format_chicago(start: u32, end: u32) -> String {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
     use citum_schema::options::PageRangeFormat;

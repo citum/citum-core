@@ -187,11 +187,19 @@ fn build_title(title: Option<String>, short_title: Option<String>) -> Option<Tit
     match (title, short_title) {
         (Some(full_title), Some(short)) => {
             if let Some(colon_pos) = full_title.find(':') {
+                #[allow(
+                    clippy::string_slice,
+                    reason = "colon_pos is found via find(':'), which is a 1-byte ASCII boundary"
+                )]
                 let potential_main = full_title[..colon_pos].trim();
                 // Check if short title matches pre-colon portion
                 if potential_main.eq_ignore_ascii_case(short.as_str())
                     || potential_main.contains(&short)
                 {
+                    #[allow(
+                        clippy::string_slice,
+                        reason = "colon_pos + 1 is a valid boundary after ':' (1-byte ASCII)"
+                    )]
                     let post_colon = full_title[colon_pos + 1..].trim();
                     return Some(Title::Structured(StructuredTitle {
                         full: None,
@@ -1711,6 +1719,17 @@ impl From<Vec<csl_legacy::csl_json::Name>> for Contributor {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
     use serde_json::json;

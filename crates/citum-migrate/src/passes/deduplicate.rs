@@ -50,7 +50,9 @@ where
     let mut seen = Vec::new();
     let mut i = 0;
     while i < list.group.len() {
-        if let Some(key) = extract(&list.group[i]) {
+        #[allow(clippy::indexing_slicing, reason = "i < list.group.len()")]
+        let item = &list.group[i];
+        if let Some(key) = extract(item) {
             if seen.contains(&key) {
                 list.group.remove(i);
                 continue;
@@ -151,8 +153,10 @@ pub fn deduplicate_lists_in_items(items: &mut Vec<TemplateComponent>) {
     while i < items.len() {
         let mut j = i + 1;
         while j < items.len() {
-            if let (TemplateComponent::Group(l1), TemplateComponent::Group(l2)) =
-                (&items[i], &items[j])
+            #[allow(clippy::indexing_slicing, reason = "i and j are within bounds")]
+            let item_pair = (&items[i], &items[j]);
+
+            if let (TemplateComponent::Group(l1), TemplateComponent::Group(l2)) = item_pair
                 && list_signature(l1) == list_signature(l2)
             {
                 items.remove(j);
@@ -202,6 +206,7 @@ pub fn deduplicate_variables_cross_lists(components: &mut Vec<TemplateComponent>
 fn remove_duplicate_variables(items: &mut Vec<TemplateComponent>, seen_vars: &mut HashSet<String>) {
     let mut i = 0;
     while i < items.len() {
+        #[allow(clippy::indexing_slicing, reason = "i < items.len()")]
         match &mut items[i] {
             TemplateComponent::Group(list) => {
                 remove_duplicate_variables(&mut list.group, seen_vars);

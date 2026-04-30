@@ -52,6 +52,17 @@ pub mod macros;
 pub mod lint;
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod reference_multilingual_tests;
 
 pub use citation::{
@@ -207,6 +218,10 @@ impl Style {
     /// Panics when style resolution fails. Use [`Style::try_into_resolved`]
     /// to handle profile-contract and inheritance errors explicitly.
     #[must_use]
+    #[allow(
+        clippy::panic,
+        reason = "Convenience API for infallible resolution contexts"
+    )]
     pub fn into_resolved(self) -> Self {
         self.try_into_resolved()
             .unwrap_or_else(|err| panic!("style resolution failed: {err}"))
@@ -233,6 +248,10 @@ impl Style {
     /// Panics when style resolution fails. Use
     /// [`Style::try_into_resolved_recursive`] to preserve errors.
     #[must_use]
+    #[allow(
+        clippy::panic,
+        reason = "Convenience API for infallible resolution contexts"
+    )]
     pub fn into_resolved_recursive(self, visited: &mut HashSet<StyleBase>) -> Self {
         self.try_into_resolved_recursive(visited)
             .unwrap_or_else(|err| panic!("style resolution failed: {err}"))
@@ -427,6 +446,11 @@ fn yaml_path_present(value: Option<&serde_yaml::Value>, path: &[&str]) -> bool {
     true
 }
 
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    reason = "Internal merging logic ensures presence of re-parsed values"
+)]
 pub(crate) fn merge_style_overlay(base: &mut Style, overlay: &Style) {
     if !overlay.info.is_empty() {
         base.info = merge_serialized(base.info.clone(), &overlay.info);
@@ -481,6 +505,7 @@ pub(crate) fn merge_style_overlay(base: &mut Style, overlay: &Style) {
     }
 }
 
+#[allow(clippy::expect_used, reason = "T must be serializable to YAML")]
 pub(crate) fn merge_serialized<T>(base: T, overlay: &T) -> T
 where
     T: Clone + DeserializeOwned + Serialize,
@@ -489,6 +514,10 @@ where
     merge_serialized_value(base, &overlay_value)
 }
 
+#[allow(
+    clippy::expect_used,
+    reason = "T must be serializable and merged values must match schema"
+)]
 pub(crate) fn merge_serialized_value<T>(base: T, overlay: &serde_yaml::Value) -> T
 where
     T: Clone + DeserializeOwned + Serialize,
@@ -1139,6 +1168,17 @@ impl StyleInfo {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
     use super::*;
 

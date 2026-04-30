@@ -10,9 +10,11 @@ pub(crate) fn short_name_from_identifier(identifier: &str) -> Cow<'_, str> {
 
 /// Truncates `s` to `max_len` chars, appending `...` if clipped.
 pub(crate) fn truncate(s: &str, max_len: usize) -> String {
-    if s.len() <= max_len {
+    if s.chars().count() <= max_len {
         s.to_string()
     } else {
-        format!("{}...", &s[..max_len - 3])
+        let mut truncated: String = s.chars().take(max_len.saturating_sub(3)).collect();
+        truncated.push_str("...");
+        truncated
     }
 }

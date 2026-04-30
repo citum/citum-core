@@ -18,6 +18,11 @@ use crate::processor::rendering::{CompoundRenderData, Renderer, RendererResource
 use std::collections::HashMap;
 
 impl Processor {
+    #[allow(
+        clippy::string_slice,
+        clippy::indexing_slicing,
+        reason = "parser-guaranteed boundaries and indices"
+    )]
     pub(super) fn process_note_document<F>(
         &self,
         content: &str,
@@ -89,6 +94,11 @@ impl Processor {
         result
     }
 
+    #[allow(
+        clippy::string_slice,
+        clippy::indexing_slicing,
+        reason = "parser-guaranteed boundaries and indices"
+    )]
     pub(super) fn process_note_document_html(
         &self,
         content: &str,
@@ -170,6 +180,10 @@ impl Processor {
         (generated_notes, manual_citations)
     }
 
+    #[allow(
+        clippy::indexing_slicing,
+        reason = "index derived from citations collection"
+    )]
     fn apply_note_citation_annotations(
         &self,
         parsed: &mut ParsedDocument,
@@ -188,6 +202,11 @@ impl Processor {
         }
     }
 
+    #[allow(
+        clippy::string_slice,
+        clippy::indexing_slicing,
+        reason = "parser-guaranteed boundaries and indices"
+    )]
     fn prepare_note_citations<F>(
         &self,
         content: &str,
@@ -236,6 +255,11 @@ impl Processor {
         (generated_notes, rendered_notes)
     }
 
+    #[allow(
+        clippy::string_slice,
+        clippy::indexing_slicing,
+        reason = "parser-guaranteed boundaries and indices"
+    )]
     fn prepare_note_citations_html(
         &self,
         content: &str,

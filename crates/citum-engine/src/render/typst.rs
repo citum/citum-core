@@ -116,7 +116,9 @@ impl OutputFormat for Typst {
             return content;
         }
 
-        format!("#link(<{}>)[{}]", self.format_id(&ids[0]), content)
+        #[allow(clippy::unwrap_used, reason = "length checked")]
+        let id = ids.first().unwrap();
+        format!("#link(<{}>)[{}]", self.format_id(id), content)
     }
 
     fn link(&self, url: &str, content: Self::Output) -> Self::Output {
