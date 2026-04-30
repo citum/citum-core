@@ -521,6 +521,35 @@ fn test_parse_csl_bill_proceeding_uses_number_as_surrogate_title() {
 }
 
 #[test]
+fn test_parse_csl_bill_with_title_and_authority_routes_to_hearing() {
+    let json = r#"{
+        "id": "hearing-1",
+        "type": "bill",
+        "title": "Homeland Security Act of 2002: Hearings on H.R. 5005",
+        "authority": "U.S. Senate Committee on the Judiciary",
+        "chapter-number": "107th Cong., 2d Sess.",
+        "issued": {"date-parts": [[2002]]}
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    match reference {
+        InputReference::Hearing(hearing) => {
+            assert_eq!(
+                hearing.authority.as_deref(),
+                Some("U.S. Senate Committee on the Judiciary")
+            );
+            assert_eq!(
+                hearing.session_number.as_deref(),
+                Some("107th Cong., 2d Sess.")
+            );
+        }
+        other => panic!("expected hearing, got {:?}", other),
+    }
+}
+
+#[test]
 fn conversion_applies_note_type_override() {
     let json = r#"{
         "id": "note-type-override",
