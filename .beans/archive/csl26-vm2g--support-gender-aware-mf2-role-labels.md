@@ -1,14 +1,14 @@
 ---
 # csl26-vm2g
 title: Support gender-aware MF2 role labels
-status: done
+status: completed
 type: feature
 priority: normal
 tags:
     - schema
     - locale
 created_at: 2026-04-25T00:00:00Z
-updated_at: 2026-04-26T12:00:00Z
+updated_at: 2026-04-30T20:30:00Z
 parent: csl26-li63
 ---
 
@@ -48,3 +48,12 @@ term maps.
 Do not depend on ICU4X MF2 support for this task. The ICU4X implementation is
 tracked separately and can replace the evaluator later through the existing
 `MessageEvaluator` trait.
+
+## Summary of Changes
+
+All tasks completed as part of csl26-vm2g implementation (~2026-04-26, commits 5994096c and 52d6c8ba):
+- MF2 evaluator extended for multi-selector .match with $count and $gender
+- GrammaticalGender mapped to stable MF2 selector keys
+- French (fr-FR) and Arabic (ar-AR) role labels migrated
+- Unit and engine tests added in crates/citum-engine/src/values/tests.rs
+Bean had status 'done' (invalid) — corrected to completed.
