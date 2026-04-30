@@ -1,5 +1,5 @@
 ---
-# csl26
+# csl26-dxr4
 title: Reconsider distributed registry architecture
 status: draft
 type: task
