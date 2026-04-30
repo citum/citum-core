@@ -92,6 +92,27 @@ git status --short --branch
 If jj is unavailable, use the existing Git workflow. Do not block Citum work just
 because jj is missing.
 
+## Hook Gap
+
+jj does not run git hooks. `commit-msg`, `pre-commit`, and `pre-push` are all
+silently skipped. Run the equivalent checks manually before every push:
+
+```bash
+# 1. Validate commit message (subject format, 50-char limit, body presence)
+jj log -r @ --no-graph --template 'description' > /tmp/jj-msg.txt \
+  && bash .githooks/commit-msg /tmp/jj-msg.txt
+
+# 2. For Rust changes — pre-commit gate
+cargo fmt --check \
+  && cargo clippy --all-targets --all-features -- -D warnings \
+  && cargo nextest run
+
+# 3. For any push — pre-push gate (schema regen, quality baseline)
+bash .githooks/pre-push
+```
+
+Skipping step 1 is the most common CI failure when using jj. Always run it.
+
 ## Citum Adapter
 
 The jj workflow is subordinate to Citum's repo rules:
@@ -129,6 +150,7 @@ Before push or PR creation:
   published diff.
 - Confirm `.ai-intents/` paths are absent from the final jj change and from
   `git status --short --branch`.
+- Run the manual hook checks from the **Hook Gap** section above.
 - Run the verification gate for the touched change type.
 - Push the Git branch and check CI for PR branches.
 
