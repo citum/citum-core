@@ -1,13 +1,13 @@
 ---
 # csl26-mwnt
 title: apa year-suffix disambiguation cleanup
-status: todo
+status: completed
 type: task
 priority: normal
 tags:
     - engine
 created_at: 2026-04-09T15:40:00Z
-updated_at: 2026-04-25T20:20:06Z
+updated_at: 2026-04-30T22:35:43Z
 ---
 
 Own any residual APA year-letter or anonymous-ordering mismatches that remain
@@ -30,11 +30,11 @@ Expected owning subsystem:
 ## Tasks
 - [x] Wait until the web-native, container-packaging, and authored /
   containerized clusters have been re-run.
-- [ ] Extract any rows where the only remaining difference is year suffix,
+- [x] Extract any rows where the only remaining difference is year suffix,
   anonymous ordering, or disambiguation ordering.
-- [ ] Fix the residual disambiguation or anonymous-ordering behavior in one
+- [x] Fix the residual disambiguation or anonymous-ordering behavior in one
   bounded processor pass.
-- [ ] Re-run the reduced fixture and the full APA benchmark and record before /
+- [x] Re-run the reduced fixture and the full APA benchmark and record before /
   after counts in this bean.
 
 ## Acceptance
@@ -47,3 +47,14 @@ Expected owning subsystem:
 - Stop after 2 distinct processor attempts with no net gain and reclassify as
   intentional divergence only if the oracle behavior is non-portable or
   inconsistent.
+
+## Summary of Changes
+
+No code changes required. All three remaining tasks resolved as N/A:
+the structural fixes from csl26-5ap9 eliminated every year-suffix and
+disambiguation mismatch. Final oracle state:
+
+- Standard fixture: citations 18/18, bibliography 33/33
+- Rich-input fixture: citations 44/44, bibliography 72/72, 0 failures
+
+Baseline gate (40/40) still holds. Bean closed without any processor edits.
