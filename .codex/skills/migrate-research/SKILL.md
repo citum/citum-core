@@ -13,6 +13,8 @@ Read first:
 - `docs/guides/STYLE_WORKFLOW_EXECUTION.md`
 - `docs/specs/MIGRATE_RESEARCH_RICH_INPUTS.md`
 - `docs/guides/CODEX_SKILLS.md`
+- `docs/guides/JJ_AI_CHANGE_STACK.md` when `.jj` is present and the research
+  pass needs an isolated local change
 
 ## Use When
 

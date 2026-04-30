@@ -12,6 +12,8 @@ Read first:
 - `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`
 - `docs/guides/STYLE_WORKFLOW_EXECUTION.md`
 - `docs/guides/CODEX_SKILLS.md`
+- `docs/guides/JJ_AI_CHANGE_STACK.md` when `.jj` is present and local stack
+  curation would help isolate the work
 
 ## Public Modes
 

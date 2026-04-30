@@ -23,6 +23,8 @@ Do not ask users to call internal skills directly.
 Before doing anything else, read:
 - `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md` — failure classification and stop conditions
 - `docs/guides/STYLE_WORKFLOW_EXECUTION.md` — decision flow, evidence ladder, shared gates
+- `docs/guides/JJ_AI_CHANGE_STACK.md` when `.jj` is present and local change-stack
+  curation would help isolate a style pass
 
 ## Autonomous Operation
 

@@ -20,6 +20,8 @@ description: >
 - Branch prefix: `codex/`.
 - Name pattern: `codex/<scope>-<short-goal>`.
 - Keep PR scope narrow and mergeable.
+- When `.jj` is present, `docs/guides/JJ_AI_CHANGE_STACK.md` may be used for
+  local change-stack curation before pushing the Git branch.
 
 ## Change-Type Gates
 1. Docs/styles only (`.md`, `styles/*.yaml`):
