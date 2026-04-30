@@ -1,4 +1,3 @@
-extends: springer-basic-author-date
 info:
   title: Springer - Basic (numeric, brackets, no "et al.")
   description: Springer Numbered Style for the disciplines Medicine, Biomedicine, Life Sciences, Chemistry, Geosciences, Computer Science, Engineering, Economics. This style is based on Harvard style and recommendations of the Council of Biology Editors.
@@ -27,6 +26,8 @@ options:
     - editor
     - translator
   processing: numeric
+  strip-periods: true
+  punctuation-in-quote: true
   contributors:
     display-as-sort: all
     name-form: initials
@@ -55,6 +56,8 @@ bibliography:
       delimiter: ', '
       delimiter-precedes-last: always
       sort-separator: ' '
+    hanging-indent: true
+    entry-suffix: ""
     separator: '. '
   type-variants:
     article-journal:
@@ -135,6 +138,32 @@ bibliography:
     - variable: doi
     - variable: publisher-place
       prefix: ', '
+    webpage:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: ' '
+    - title: primary
+      prefix: ' '
+    - variable: url
+      prefix: '. '
+    - date: accessed
+      form: month-day
+      prefix: '. Accessed '
+    - date: accessed
+      form: year
+      prefix: ' '
+    legal-case:
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+    - title: primary
+      prefix: ' '
   template:
   - contributor: author
     form: long

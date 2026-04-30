@@ -1,7 +1,7 @@
 ---
 # csl26-xt7k
 title: Split Springer Basic family-root behavior from public wrappers
-status: todo
+status: completed
 type: task
 priority: normal
 tags:
@@ -10,7 +10,7 @@ tags:
     - springer
     - style
 created_at: 2026-04-21T13:32:00Z
-updated_at: 2026-04-25T20:20:07Z
+updated_at: 2026-04-30T21:03:19Z
 ---
 
 `csl26-nrkn` confirmed that `springer-basic-brackets` has real parentage to
@@ -31,17 +31,17 @@ explicitly scope the inheritance-model follow-up needed to make that possible.
 
 ## Tasks
 
-- [ ] Decide whether the project needs a dedicated hidden Springer Basic family
+- [x] Decide whether the project needs a dedicated hidden Springer Basic family
       root instead of reusing the public `springer-basic-author-date` handle.
-- [ ] Define the minimum bibliography/type-variant delta required by
+- [x] Define the minimum bibliography/type-variant delta required by
       `springer-basic-brackets`.
-- [ ] Decide whether the project should add finer-grained inheritance/override
+- [x] Decide whether the project should add finer-grained inheritance/override
       mechanics for bibliography/type-variant structures, or keep the current
       merge semantics and accept larger wrapper YAML for this family.
-- [ ] If the current merge model remains in place, scope the smallest
+- [x] If the current merge model remains in place, scope the smallest
       infrastructure follow-up bean that would change the merge/override model
       enough to make the wrapper materially smaller.
-- [ ] Land the wrapper conversion only when the reduced YAML is materially
+- [x] Land the wrapper conversion only when the reduced YAML is materially
       smaller and preserves current accepted output.
 
 ## Acceptance
@@ -56,3 +56,26 @@ explicitly scope the inheritance-model follow-up needed to make that possible.
 - csl26-nrkn
 - csl26-ocdt
 - csl26-wp6y
+
+## Summary of Changes
+
+**Decision 1 — No hidden family root.** The two cores differ in processing
+mode, citation template, and bibliography coverage. A shared root would only
+save scalar options — not worth the indirection.
+
+**Decision 2 — Minimum delta already achieved.** The embedded layer already
+has the thinnest possible wrappers (2 option fields each). The no-et-al
+variants cannot meaningfully thin-wrap the full cores.
+
+**Decision 3 — Accept current merge semantics.** Arrays replace wholesale;
+objects deep-merge. No change to merge mechanics in this PR.
+
+**Decision 4 — Follow-up bean created** for finer-grained array/map override
+mechanics (low priority, not blocking).
+
+**Decision 5 — Fix landed.** Removed `extends: springer-basic-author-date`
+from `styles/springer-basic-brackets-no-et-al.yaml` (wrong base: numeric
+style must not extend an author-date root). Made standalone by adding
+`strip-periods`, `punctuation-in-quote`, `hanging-indent`, `entry-suffix`,
+plus explicit `webpage` and `legal-case` type-variants previously inherited.
+Oracle: 18/18 citations, 34/34 bibliography.
