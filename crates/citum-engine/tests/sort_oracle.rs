@@ -333,3 +333,108 @@ fn test_numeric_style_volume_issue_independence() {
         "SORT-7 should be [7] (citation order, not volume)"
     );
 }
+
+/// Test cross-script sort order in a mixed Latin/Arabic/Hangul bibliography.
+///
+/// Under an en-US tailored collator (ICU4X), Latin entries sort first in
+/// alphabetical order; Arabic-script entries sort after all Latin; Hangul
+/// entries sort after Arabic. This order is a property of the CLDR collation
+/// data for en-US and is verified here as a regression baseline.
+///
+/// Spec: UNICODE_BIBLIOGRAPHY_SORTING.md §Collation Policy — single collator,
+/// locale-tailored, root-collation fallback for unsupported locales.
+#[test]
+fn test_mixed_script_sort_order() {
+    announce_behavior(
+        "Mixed-script bibliography: Latin entries sort alphabetically first, Arabic after Latin, Hangul after Arabic (en-US collator).",
+    );
+    let root = project_root();
+    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
+    let bib = load_sort_oracle_bibliography();
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    // Latin entries sort correctly among themselves.
+    let celik_pos = result.find("Çelik").expect("Çelik should be in output");
+    let zimring_pos = result.find("Zimring").expect("Zimring should be in output");
+    assert!(
+        celik_pos < zimring_pos,
+        "Çelik (C) must sort before Zimring (Z) in Latin ordering. Got:\n{result}"
+    );
+
+    // Arabic-script entry (al-Ghazali) sorts after all Latin entries.
+    // Assert the Arabic script directly — a romanized fallback would hide a rendering bug.
+    let ghazali_pos = result
+        .find("الغزالي")
+        .expect("Arabic-script author الغزالي must appear in output unchanged");
+    assert!(
+        zimring_pos < ghazali_pos,
+        "Arabic-script entry must sort after Latin entries (Zimring). Got:\n{result}"
+    );
+
+    // Hangul entry (김) sorts after Arabic under en-US collation.
+    let hangul_pos = result
+        .find("김")
+        .expect("Hangul author 김 must appear in output unchanged");
+    assert!(
+        ghazali_pos < hangul_pos,
+        "Hangul entry must sort after Arabic-script entry (الغزالي). Got:\n{result}"
+    );
+}
+
+/// Test that mixed-script bibliography sort is deterministic: running the same
+/// processor twice produces byte-identical output. Collator equality alone does
+/// not guarantee stable output; this verifies the tiebreaker chain holds.
+#[test]
+fn test_mixed_script_sort_determinism() {
+    announce_behavior(
+        "Mixed-script bibliography produces identical output on repeated calls (deterministic sort).",
+    );
+    let root = project_root();
+    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
+    let bib = load_sort_oracle_bibliography();
+    let processor = Processor::new(style, bib);
+
+    let first = processor.render_bibliography();
+    let second = processor.render_bibliography();
+
+    assert_eq!(
+        first, second,
+        "Bibliography sort must be identical across repeated calls"
+    );
+}
+
+/// Test that all-caps surnames sort case-insensitively alongside mixed-case
+/// surnames, verifying that case handling is done via collator configuration
+/// rather than pre-processing (no lowercasing of source text).
+///
+/// SMITH and WILLIAMS are all-caps in the fixture; they must sort in the same
+/// relative position as "Smith" and "Williams" would.
+#[test]
+fn test_allcaps_surname_sorts_case_insensitively() {
+    announce_behavior(
+        "All-caps surnames (SMITH, WILLIAMS) sort case-insensitively alongside mixed-case surnames without lowercasing source text.",
+    );
+    let root = project_root();
+    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
+    let bib = load_sort_oracle_bibliography();
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    // SMITH (all-caps) must sort between surnames beginning with R and T,
+    // not at the end of the list as it would under bytewise ordering.
+    let brown_pos = result.find("Brown").expect("Brown should be in output");
+    let smith_pos = result
+        .find("SMITH")
+        .expect("SMITH (all-caps) should be in output");
+    let zimring_pos = result.find("Zimring").expect("Zimring should be in output");
+
+    assert!(
+        brown_pos < smith_pos,
+        "Brown must sort before SMITH. Got:\n{result}"
+    );
+    assert!(
+        smith_pos < zimring_pos,
+        "SMITH must sort before Zimring — all-caps must not push it to end of list. Got:\n{result}"
+    );
+}

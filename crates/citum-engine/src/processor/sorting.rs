@@ -127,7 +127,15 @@ impl<'a> Sorter<'a> {
                         return cmp;
                     }
                 }
-                std::cmp::Ordering::Equal
+
+                // Deterministic tiebreaker: compare entry IDs as &str when all sort keys are equal.
+                // None IDs sort last (missing ID > any present ID).
+                match (a.id(), b.id()) {
+                    (Some(a_id), Some(b_id)) => a_id.0.as_str().cmp(b_id.0.as_str()),
+                    (Some(_), None) => std::cmp::Ordering::Less,
+                    (None, Some(_)) => std::cmp::Ordering::Greater,
+                    (None, None) => std::cmp::Ordering::Equal,
+                }
             });
         }
 
