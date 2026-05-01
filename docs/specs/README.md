@@ -53,7 +53,6 @@ to make sure the document should be a spec rather than architecture or policy.
 
 | File | Feature |
 |------|---------|
-| [`MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](./MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md) | Sort and section multilingual bibliographies by script or language |
 | [`PROFILE_DOCUMENTARY_VERIFICATION.md`](./PROFILE_DOCUMENTARY_VERIFICATION.md) | Verification model for profile styles using external authority |
 
 ### Active
@@ -81,6 +80,7 @@ to make sure the document should be a spec rather than architecture or policy.
 | [`LOCALE_MESSAGES.md`](./LOCALE_MESSAGES.md) | ICU MF2 parameterized message system replacing flat YAML terms |
 | [`LOCATOR_RENDERING.md`](./LOCATOR_RENDERING.md) | Style-level LocatorConfig replacing per-template locator fields |
 | [`MIGRATION_TAXONOMY_AWARE_WRAPPERS.md`](./MIGRATION_TAXONOMY_AWARE_WRAPPERS.md) | Taxonomy-aware wrapper derivation during style migration |
+| [`MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](./MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md) | Sort and section multilingual bibliographies by script or language |
 | [`MIGRATE_RESEARCH_RICH_INPUTS.md`](./MIGRATE_RESEARCH_RICH_INPUTS.md) | Bounded rich-input workflow for migrate-research passes |
 | [`MIXED_CONDITION_NOTE_POSITION_TREES.md`](./MIXED_CONDITION_NOTE_POSITION_TREES.md) | Migration of legacy choose trees with mixed position predicates |
 | [`NON_STANDARD_NUMBERING_AND_LOCATOR_KINDS.md`](./NON_STANDARD_NUMBERING_AND_LOCATOR_KINDS.md) | Representation of domain-specific numbering and locator labels |

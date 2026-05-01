@@ -7,7 +7,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.39.0"
+      "default": "0.39.1"
     },
     "info": {
       "description": "Style metadata.",
@@ -5185,6 +5185,17 @@
             }
           ]
         },
+        "sort-partitioning": {
+          "description": "Partitioning policy for multilingual bibliography sorting and sections.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BibliographySortPartitioning"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "links": {
           "description": "Hyperlink configuration.",
           "anyOf": [
@@ -5381,6 +5392,132 @@
           "description": "Numeric sub-labels: 1, 2, 3, ...",
           "type": "string",
           "const": "numeric"
+        }
+      ]
+    },
+    "BibliographySortPartitioning": {
+      "description": "Bibliography partitioning policy for multilingual sort order and sections.",
+      "type": "object",
+      "properties": {
+        "by": {
+          "description": "Source used to derive each reference's partition key.",
+          "$ref": "#/$defs/BibliographyPartitionKind"
+        },
+        "mode": {
+          "description": "Whether partitioning affects flat sorting, visible sections, or both.",
+          "$ref": "#/$defs/BibliographyPartitionMode",
+          "default": "sort-only"
+        },
+        "order": {
+          "description": "Preferred partition order. Unlisted partitions sort after listed ones.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "headings": {
+          "description": "Optional headings for visible partition sections.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/BibliographyPartitionHeading"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "by"
+      ]
+    },
+    "BibliographyPartitionKind": {
+      "description": "Partition key source for bibliography partitioning.",
+      "oneOf": [
+        {
+          "description": "Partition by Unicode script detected from author/editor/title sort text.",
+          "type": "string",
+          "const": "script"
+        },
+        {
+          "description": "Partition by the reference's effective item language.",
+          "type": "string",
+          "const": "language"
+        }
+      ]
+    },
+    "BibliographyPartitionMode": {
+      "description": "Rendering mode for bibliography partitioning.",
+      "oneOf": [
+        {
+          "description": "Sort a flat bibliography by partition before normal sort keys.",
+          "type": "string",
+          "const": "sort-only"
+        },
+        {
+          "description": "Render visible sections for grouped bibliography output only.",
+          "type": "string",
+          "const": "sections"
+        },
+        {
+          "description": "Sort flat output by partition and render visible sections for grouped output.",
+          "type": "string",
+          "const": "sort-and-sections"
+        }
+      ]
+    },
+    "BibliographyPartitionHeading": {
+      "description": "Localizable heading source for automatic bibliography partition sections.",
+      "anyOf": [
+        {
+          "description": "Fixed literal heading text.",
+          "type": "object",
+          "properties": {
+            "literal": {
+              "description": "Literal heading value.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "literal"
+          ]
+        },
+        {
+          "description": "Locale general term key resolved at render time.",
+          "type": "object",
+          "properties": {
+            "term": {
+              "description": "Locale general term key.",
+              "$ref": "#/$defs/GeneralTerm"
+            },
+            "form": {
+              "description": "Optional term form (defaults to long).",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/TermForm"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "term"
+          ]
+        },
+        {
+          "description": "Locale-indexed heading map.",
+          "type": "object",
+          "properties": {
+            "localized": {
+              "description": "Map keyed by BCP 47 locale identifiers or language tags.",
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "localized"
+          ]
         }
       ]
     },

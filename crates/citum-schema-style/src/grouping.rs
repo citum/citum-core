@@ -64,7 +64,7 @@ pub struct BibliographyGroup {
 }
 
 /// Localizable heading source for bibliography groups.
-#[derive(Debug, Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case", untagged)]
 pub enum GroupHeading {

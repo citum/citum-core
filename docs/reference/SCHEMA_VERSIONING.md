@@ -210,6 +210,10 @@ Track schema changes separately from code changes.
 Historical note: entries below may predate the automation baseline and are the
 authoritative record when matching tags were not created at the time.
 
+#### schema-v0.39.1 (2026-05-01)
+- Schema version bumped from 0.39.0 to 0.39.1
+- Added `bibliography.options.sort-partitioning` and related schema definitions
+
 #### schema-v0.39.0 (2026-04-30)
 - Schema version bumped from 0.38.0 to 0.39.0
 - Added `MonthAbbrDayYear` date form (abbreviated month + day + year in US order)

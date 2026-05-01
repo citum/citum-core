@@ -1,6 +1,6 @@
 # Multilingual Bibliography Partitioning Specification
 
-**Status:** Draft
+**Status:** Active
 **Date:** 2026-05-01
 **Related:** `csl26-al0f`, `csl26-xz2t`, [`UNICODE_BIBLIOGRAPHY_SORTING.md`](./UNICODE_BIBLIOGRAPHY_SORTING.md)
 
@@ -61,3 +61,4 @@ Script detection should use Unicode Script properties through a direct engine de
 ## Changelog
 
 - 2026-05-01: Initial draft.
+- 2026-05-01: Marked Active for initial implementation.
