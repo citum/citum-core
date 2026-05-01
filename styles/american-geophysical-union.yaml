@@ -342,7 +342,7 @@ bibliography:
         wrap:
           punctuation: parentheses
         prefix: ' '
-      - number: number
+      - number: patent-number
         prefix: '. '
     personal_communication:
       - contributor: author

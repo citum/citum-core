@@ -61,6 +61,7 @@ citation:
     form: year
     prefix: " "
   - variable: locator
+    prefix: ", "
   wrap:
     punctuation: parentheses
   delimiter: ". "
@@ -82,6 +83,40 @@ bibliography:
     entry-suffix: .
     separator: ". "
   type-variants:
+    webpage:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      prefix: " "
+    - group:
+      - term: retrieved
+        form: long
+        text-case: capitalize-first
+      - date: accessed
+        form: month-abbr-day-year
+        wrap:
+          punctuation: parentheses
+        prefix: " "
+      suffix: ", "
+      prefix: ". "
+    - variable: url
+    legal_case:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    - title: primary
+      prefix: " "
     chapter:
     - contributor: author
       form: long
