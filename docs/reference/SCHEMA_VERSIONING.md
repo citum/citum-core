@@ -210,6 +210,10 @@ Track schema changes separately from code changes.
 Historical note: entries below may predate the automation baseline and are the
 authoritative record when matching tags were not created at the time.
 
+#### schema-v0.39.0 (2026-04-30)
+- Schema version bumped from 0.38.0 to 0.39.0
+- Added `MonthAbbrDayYear` date form (abbreviated month + day + year in US order)
+
 #### schema-v0.38.0 (2026-04-29)
 - Schema version bumped from 0.37.1 to 0.38.0
 - Breaking: geographic place fields now use the transparent `Place` newtype while preserving string wire compatibility

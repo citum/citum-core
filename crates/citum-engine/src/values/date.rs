@@ -384,6 +384,16 @@ fn format_range_start(
                 (false, Some(d)) => format!("{d} {month} {year}"),
             }
         }
+        DateForm::MonthAbbrDayYear => {
+            let year = extract_year(date);
+            let month = extract_month(date, &locale.dates.months.short);
+            let day = date.day();
+            match (month.is_empty(), day) {
+                (true, _) => year,
+                (false, None) => format!("{month} {year}"),
+                (false, Some(d)) => format!("{month} {d}, {year}"),
+            }
+        }
     }
 }
 
@@ -491,7 +501,10 @@ fn inline_disamb_suffix(formatted: &str, form: &DateForm, year: &str, suffix: &s
 
     let year_index = match form {
         DateForm::Year | DateForm::YearMonthDay => formatted.find(year),
-        DateForm::YearMonth | DateForm::Full | DateForm::DayMonthAbbrYear => formatted.rfind(year),
+        DateForm::YearMonth
+        | DateForm::Full
+        | DateForm::DayMonthAbbrYear
+        | DateForm::MonthAbbrDayYear => formatted.rfind(year),
         DateForm::MonthDay => None,
     };
 
@@ -644,6 +657,19 @@ fn format_single_date(
                 (true, _) => Some(year),
                 (false, None) => Some(format!("{month} {year}")),
                 (false, Some(d)) => Some(format!("{d} {month} {year}")),
+            }
+        }
+        DateForm::MonthAbbrDayYear => {
+            let year = extract_year(date);
+            if year.is_empty() {
+                return None;
+            }
+            let month = extract_month(date, &locale.dates.months.short);
+            let day = date.day();
+            match (month.is_empty(), day) {
+                (true, _) => Some(year),
+                (false, None) => Some(format!("{month} {year}")),
+                (false, Some(d)) => Some(format!("{month} {d}, {year}")),
             }
         }
     }

@@ -7,7 +7,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.38.0"
+      "default": "0.39.0"
     },
     "info": {
       "description": "Style metadata.",
@@ -1261,14 +1261,23 @@
     },
     "DateForm": {
       "description": "Date rendering forms.",
-      "type": "string",
-      "enum": [
-        "year",
-        "year-month",
-        "full",
-        "month-day",
-        "year-month-day",
-        "day-month-abbr-year"
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "year",
+            "year-month",
+            "full",
+            "month-day",
+            "year-month-day",
+            "day-month-abbr-year"
+          ]
+        },
+        {
+          "description": "Abbreviated month + day + year in US order: \"Jan 15, 2024\".",
+          "type": "string",
+          "const": "month-abbr-day-year"
+        }
       ]
     },
     "TemplateTitle": {

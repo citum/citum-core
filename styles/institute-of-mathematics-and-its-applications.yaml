@@ -61,7 +61,6 @@ citation:
   - date: issued
     form: year
     prefix: ", "
-  - variable: locator
   wrap:
     punctuation: parentheses
   delimiter: ". "
@@ -72,6 +71,10 @@ bibliography:
       display-as-sort: all
       name-form: initials
       initialize-with: .
+      shorten:
+        min: 99
+        use-first: 99
+        and-others: et-al
     hanging-indent: true
     entry-suffix: .
     separator: ", "
