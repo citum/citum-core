@@ -159,7 +159,11 @@ fn script_code_for_char(ch: char) -> Option<String> {
         return None;
     }
 
-    Some(script.short_name().to_string())
+    let code = script.short_name();
+    match code {
+        "Hant" | "Hans" | "Jpan" | "Kore" => Some("Hani".to_string()),
+        _ => Some(code.to_string()),
+    }
 }
 
 fn non_empty_key(key: String) -> Option<String> {
@@ -210,6 +214,10 @@ mod tests {
     }
 
     #[test]
+    #[allow(
+        clippy::too_many_lines,
+        reason = "Comprehensive script detection test cases."
+    )]
     fn detects_common_script_partition_keys() {
         let locale = Locale::en_us();
         let script = partitioning(BibliographyPartitionKind::Script);
@@ -271,6 +279,44 @@ mod tests {
         assert_eq!(
             partition_key(
                 &reference("hang", Some("김"), "Title", None),
+                &locale,
+                &script
+            )
+            .as_deref(),
+            Some("Hang")
+        );
+
+        // Normalized CJK scripts should all map to "Hani"
+        assert_eq!(
+            partition_key(
+                &reference("hans", Some("张"), "Title", None),
+                &locale,
+                &script
+            )
+            .as_deref(),
+            Some("Hani")
+        );
+        assert_eq!(
+            partition_key(
+                &reference("hant", Some("張"), "Title", None),
+                &locale,
+                &script
+            )
+            .as_deref(),
+            Some("Hani")
+        );
+        assert_eq!(
+            partition_key(
+                &reference("jpan", Some("佐藤"), "Title", None),
+                &locale,
+                &script
+            )
+            .as_deref(),
+            Some("Hani")
+        );
+        assert_eq!(
+            partition_key(
+                &reference("kore", Some("김"), "Title", None),
                 &locale,
                 &script
             )

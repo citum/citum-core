@@ -987,76 +987,39 @@ fn render_bibliography_section<F>(ctx: &RenderContext<'_>, show_keys: bool, outp
 where
     F: citum_engine::render::format::OutputFormat<Output = String>,
 {
-    // Check if the style has bibliography groups defined
-    if ctx
-        .processor
-        .style
-        .bibliography
-        .as_ref()
-        .and_then(|b| b.groups.as_ref())
-        .is_some()
-    {
-        let _ = writeln!(output, "BIBLIOGRAPHY:");
-        if show_keys {
-            // When show_keys is requested, render each entry with its ID prefix so the
-            // oracle parser can match entries by key. Group headings are omitted in this
-            // mode because the oracle only looks for `[id] text` patterns.
-            let filter: HashSet<&str> = ctx
-                .item_ids
-                .iter()
-                .map(std::string::String::as_str)
-                .collect();
-            let processed = ctx.processor.process_references();
-            for entry in processed.bibliography {
-                if filter.contains(entry.id.as_str()) {
-                    let text = citum_engine::render::refs_to_string_with_format::<F>(
-                        vec![entry.clone()],
-                        ctx.annotations,
-                        Some(ctx.annotation_style),
-                    );
-                    let trimmed = text.trim();
-                    if !trimmed.is_empty() {
-                        let _ = writeln!(output, "  [{}] {}", entry.id, trimmed);
-                    }
+    let _ = writeln!(output, "BIBLIOGRAPHY:");
+    if show_keys {
+        // When show_keys is requested, render each entry with its ID prefix so the
+        // oracle parser can match entries by key. Group headings are omitted in this
+        // mode because the oracle only looks for `[id] text` patterns.
+        let filter: HashSet<&str> = ctx
+            .item_ids
+            .iter()
+            .map(std::string::String::as_str)
+            .collect();
+        let processed = ctx.processor.process_references();
+        for entry in processed.bibliography {
+            if filter.contains(entry.id.as_str()) {
+                let text = citum_engine::render::refs_to_string_with_format::<F>(
+                    vec![entry.clone()],
+                    ctx.annotations,
+                    Some(ctx.annotation_style),
+                );
+                let trimmed = text.trim();
+                if !trimmed.is_empty() {
+                    let _ = writeln!(output, "  [{}] {}", entry.id, trimmed);
                 }
             }
-        } else {
-            // Use grouped renderer for human-readable output (preserves group headings)
-            let grouped = ctx.processor.render_grouped_bibliography_with_format::<F>();
-            output.push_str(&grouped);
         }
     } else {
-        let _ = writeln!(output, "BIBLIOGRAPHY:");
-        if show_keys {
-            // Oracle/show_keys path: render each entry individually so entries
-            // can be matched by reference ID. Compound merging is skipped here
-            // because the oracle addresses each ref independently.
-            let filter: HashSet<&str> = ctx
-                .item_ids
-                .iter()
-                .map(std::string::String::as_str)
-                .collect();
-            let processed = ctx.processor.process_references();
-            for entry in processed.bibliography {
-                if filter.contains(entry.id.as_str()) {
-                    let text = citum_engine::render::refs_to_string_with_format::<F>(
-                        vec![entry.clone()],
-                        ctx.annotations,
-                        Some(ctx.annotation_style),
-                    );
-                    let trimmed = text.trim();
-                    if !trimmed.is_empty() {
-                        let _ = writeln!(output, "  [{}] {}", entry.id, trimmed);
-                    }
-                }
-            }
-        } else {
-            // Human-readable path: use the engine bibliography renderer so
-            // compound numeric groups are merged while still honoring keys.
-            let bib = ctx
-                .processor
-                .render_selected_bibliography_with_format::<F, _>(ctx.item_ids.to_vec());
-            let _ = writeln!(output, "{bib}");
+        // Use engine's built-in bibliography renderer which handles grouping/partitioning.
+        // We use render_selected_bibliography_with_format to respect the CLI's item_ids filter.
+        let rendered = ctx
+            .processor
+            .render_selected_bibliography_with_format::<F, _>(ctx.item_ids.to_vec());
+        output.push_str(&rendered);
+        if !rendered.is_empty() && !rendered.ends_with('\n') {
+            output.push('\n');
         }
     }
 }

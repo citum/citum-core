@@ -1,0 +1,27 @@
+# Minimal style to demonstrate automatic script partitioning
+version: "0.10.0"
+info:
+  title: Multilingual Script Partitioning Demo
+  id: multilingual-partitioned-demo
+extends: modern-language-association
+
+options:
+  multilingual:
+    title-mode: combined
+    name-mode: primary
+
+bibliography:
+  options:
+    sort-partitioning:
+      by: script
+      mode: sort-and-sections
+      order: [Latn, Arab, Hani, Hang]
+      headings:
+        Latn:
+          literal: "Western Sources"
+        Arab:
+          literal: "Arabic Sources"
+        Hani:
+          literal: "CJK Sources"
+        Hang:
+          literal: "Korean Sources"
