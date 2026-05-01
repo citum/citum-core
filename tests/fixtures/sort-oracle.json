@@ -127,5 +127,22 @@
     "title": "Rethinking geopolitics",
     "author": [{ "family": "Ó Tuathail", "given": "Gearóid" }],
     "issued": { "date-parts": [[1998]] }
+  },
+  "SORT-14": {
+    "id": "SORT-14",
+    "class": "monograph",
+    "type": "book",
+    "title": "The Incoherence of the Philosophers",
+    "author": [{ "family": "الغزالي", "given": "أبو حامد" }],
+    "issued": { "date-parts": [[1095]] }
+  },
+  "SORT-15": {
+    "id": "SORT-15",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "한국 현대 문학의 이해",
+    "author": [{ "family": "김", "given": "민준" }],
+    "issued": { "date-parts": [[2018]] },
+    "container-title": "한국문학연구"
   }
 }
