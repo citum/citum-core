@@ -288,7 +288,7 @@ impl Processor {
         ));
     }
 
-    fn render_with_partition_sections<F>(
+    pub(super) fn render_with_partition_sections<F>(
         &self,
         sorted_refs: Vec<&Reference>,
         partitioning: &BibliographySortPartitioning,
@@ -317,39 +317,23 @@ impl Processor {
         fmt.finish(result)
     }
 
-    fn append_unassigned_entries<F>(
-        &self,
-        result: &mut String,
-        bibliography: &[ProcEntry],
-        assigned: &HashSet<String>,
-    ) where
-        F: OutputFormat<Output = String>,
-    {
-        let unassigned = self.merge_compound_entries::<F>(
-            bibliography
-                .iter()
-                .filter(|entry| !assigned.contains(&entry.id))
-                .cloned()
-                .collect(),
-        );
-
-        if unassigned.is_empty() {
-            return;
-        }
-
-        if !result.is_empty() {
-            result.push_str("\n\n");
-        }
-
-        result.push_str(&crate::render::refs_to_string_with_format::<F>(
-            unassigned, None, None,
-        ));
-    }
-
     pub(super) fn render_with_custom_groups<F>(
         &self,
-        bibliography: &[ProcEntry],
+        all_entries: &[ProcEntry],
         groups: &[BibliographyGroup],
+    ) -> String
+    where
+        F: OutputFormat<Output = String>,
+    {
+        let selected: HashSet<String> = all_entries.iter().map(|e| e.id.clone()).collect();
+        self.render_with_custom_groups_filtered::<F>(all_entries, groups, &selected)
+    }
+
+    pub(super) fn render_with_custom_groups_filtered<F>(
+        &self,
+        all_entries: &[ProcEntry],
+        groups: &[BibliographyGroup],
+        selected: &HashSet<String>,
     ) -> String
     where
         F: OutputFormat<Output = String>,
@@ -364,7 +348,13 @@ impl Processor {
 
         for group in groups {
             let matching_refs =
-                self.collect_matching_group_refs(bibliography, &assigned, &evaluator, group);
+                self.collect_matching_group_refs(all_entries, &assigned, &evaluator, group);
+
+            let matching_refs: Vec<&Reference> = matching_refs
+                .into_iter()
+                .filter(|r| r.id().as_deref().is_some_and(|id| selected.contains(id)))
+                .collect();
+
             if matching_refs.is_empty() {
                 continue;
             }
@@ -378,7 +368,7 @@ impl Processor {
             };
             let local_hints = self.build_group_local_hints(&sorted_refs, group);
             let entries = self.merge_compound_entries::<F>(self.render_group_entries::<F>(
-                bibliography,
+                all_entries,
                 sorted_refs,
                 group,
                 local_hints.as_ref(),
@@ -387,8 +377,45 @@ impl Processor {
             self.append_rendered_group::<F>(&mut result, group, entries);
         }
 
-        self.append_unassigned_entries::<F>(&mut result, bibliography, &assigned);
+        self.append_unassigned_entries_filtered::<F>(&mut result, all_entries, &assigned, selected);
         fmt.finish(result)
+    }
+
+    fn append_unassigned_entries_filtered<F>(
+        &self,
+        result: &mut String,
+        bibliography: &[ProcEntry],
+        assigned: &HashSet<String>,
+        selected: &HashSet<String>,
+    ) where
+        F: OutputFormat<Output = String>,
+    {
+        let unassigned_refs: Vec<&Reference> = bibliography
+            .iter()
+            .filter(|entry| !assigned.contains(&entry.id) && selected.contains(&entry.id))
+            .filter_map(|entry| self.bibliography.get(&entry.id))
+            .collect();
+
+        if unassigned_refs.is_empty() {
+            return;
+        }
+
+        // Re-process references to ensure correct author substitution and disambiguation
+        // within the unassigned subset.
+        let unassigned = self.merge_compound_entries::<F>(self.process_sorted_refs::<_, F>(
+            unassigned_refs.into_iter(),
+            |reference, entry_number| {
+                self.process_bibliography_entry_with_format::<F>(reference, entry_number)
+            },
+        ));
+
+        if !result.is_empty() {
+            result.push_str("\n\n");
+        }
+
+        result.push_str(&crate::render::refs_to_string_with_format::<F>(
+            unassigned, None, None,
+        ));
     }
 
     fn render_with_legacy_grouping<F>(&self, bibliography: &[ProcEntry]) -> String
@@ -463,14 +490,16 @@ impl Processor {
     where
         F: OutputFormat<Output = String>,
     {
+        let processed = self.process_references();
+        let all_entries = processed.bibliography;
+
         if let Some(groups) = self
             .style
             .bibliography
             .as_ref()
             .and_then(|bibliography| bibliography.groups.as_ref())
         {
-            let processed = self.process_references();
-            return self.render_with_custom_groups::<F>(&processed.bibliography, groups);
+            return self.render_with_custom_groups::<F>(&all_entries, groups);
         }
 
         let bibliography_options = self.get_bibliography_options();
@@ -482,10 +511,7 @@ impl Processor {
             return self.render_with_partition_sections::<F>(sorted_refs, partitioning);
         }
 
-        let processed = self.process_references();
-        self.render_with_legacy_grouping::<F>(
-            &self.merge_compound_entries::<F>(processed.bibliography),
-        )
+        self.render_with_legacy_grouping::<F>(&self.merge_compound_entries::<F>(all_entries))
     }
 
     /// Render frontmatter-defined bibliography groups for document output.
@@ -499,7 +525,8 @@ impl Processor {
     where
         F: OutputFormat<Output = String>,
     {
-        self.render_with_custom_groups::<F>(&self.process_references().bibliography, groups)
+        let all_entries = self.process_references().bibliography;
+        self.render_with_custom_groups::<F>(&all_entries, groups)
     }
 
     /// Render one bibliography block for document output.

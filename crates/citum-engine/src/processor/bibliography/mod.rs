@@ -184,8 +184,35 @@ impl Processor {
         F: OutputFormat<Output = String>,
         I: IntoIterator<Item = String>,
     {
-        self.initialize_numeric_bibliography_numbers();
         let selected: HashSet<String> = item_ids.into_iter().collect();
+
+        // 1. Check for custom bibliography groups
+        if let Some(groups) = self
+            .style
+            .bibliography
+            .as_ref()
+            .and_then(|bibliography| bibliography.groups.as_ref())
+        {
+            let all_entries = self.process_references().bibliography;
+            return self.render_with_custom_groups_filtered::<F>(&all_entries, groups, &selected);
+        }
+
+        // 2. Check for automatic sort partitioning with sections
+        let bibliography_options = self.get_bibliography_options();
+        if let Some(partitioning) = bibliography_options.sort_partitioning.as_ref()
+            && crate::sort_partitioning::should_render_sections(partitioning)
+        {
+            self.initialize_numeric_bibliography_numbers();
+            let all_sorted = self.sort_references(self.bibliography.values().collect());
+            let selected_sorted: Vec<&Reference> = all_sorted
+                .into_iter()
+                .filter(|r| r.id().as_deref().is_some_and(|id| selected.contains(id)))
+                .collect();
+            return self.render_with_partition_sections::<F>(selected_sorted, partitioning);
+        }
+
+        // 3. Fallback to flat rendering
+        self.initialize_numeric_bibliography_numbers();
         let sorted_refs = self.sort_references(self.bibliography.values().collect());
 
         let bibliography = self.process_sorted_refs::<_, F>(
