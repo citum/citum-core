@@ -161,7 +161,7 @@ fn script_code_for_char(ch: char) -> Option<String> {
 
     let code = script.short_name();
     match code {
-        "Hant" | "Hans" | "Jpan" | "Kore" => Some("Hani".to_string()),
+        "Hant" | "Hans" | "Jpan" | "Kore" | "Hira" | "Kana" => Some("Hani".to_string()),
         _ => Some(code.to_string()),
     }
 }
@@ -265,7 +265,7 @@ mod tests {
                 &script
             )
             .as_deref(),
-            Some("Hira")
+            Some("Hani")
         );
         assert_eq!(
             partition_key(
@@ -274,7 +274,7 @@ mod tests {
                 &script
             )
             .as_deref(),
-            Some("Kana")
+            Some("Hani")
         );
         assert_eq!(
             partition_key(
