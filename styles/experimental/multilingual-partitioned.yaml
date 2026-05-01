@@ -22,6 +22,6 @@ bibliography:
         Arab:
           literal: "Arabic Sources"
         Hani:
-          literal: "CJK Sources"
+          literal: "Chinese & Japanese Sources"
         Hang:
           literal: "Korean Sources"
