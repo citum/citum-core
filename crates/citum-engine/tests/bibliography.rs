@@ -24,10 +24,11 @@ use citum_schema::{
     BibliographySpec, CitationSpec, Style, StyleInfo,
     options::{
         AndOptions, ArticleJournalBibliographyConfig, ArticleJournalNoPageFallback,
-        BibliographyOptions, Config, ContributorConfig, DelimiterPrecedesLast,
-        DemoteNonDroppingParticle, DisplayAsSort, LinkAnchor, LinkTarget, LinksConfig,
-        MultilingualConfig, MultilingualMode, Processing, ProcessingCustom, Sort, SortKey,
-        SortSpec,
+        BibliographyOptions, BibliographyPartitionHeading, BibliographyPartitionKind,
+        BibliographyPartitionMode, BibliographySortPartitioning, Config, ContributorConfig,
+        DelimiterPrecedesLast, DemoteNonDroppingParticle, DisplayAsSort, LinkAnchor, LinkTarget,
+        LinksConfig, MultilingualConfig, MultilingualMode, Processing, ProcessingCustom, Sort,
+        SortKey, SortSpec,
     },
     reference::{
         Contributor, EdtfString, InputReference, Monograph, MonographType, Numbering,
@@ -138,6 +139,297 @@ fn build_title_year_sorted_style(sort: Vec<SortSpec>) -> Style {
         }),
         ..Default::default()
     }
+}
+
+fn build_partition_style(partition_yaml: &str, groups_yaml: &str) -> Style {
+    fn indent_block(block: &str) -> String {
+        block
+            .trim_matches('\n')
+            .lines()
+            .map(|line| {
+                if line.is_empty() {
+                    String::new()
+                } else {
+                    format!("  {line}")
+                }
+            })
+            .collect::<Vec<_>>()
+            .join("\n")
+    }
+
+    let partition_yaml = indent_block(partition_yaml);
+    let groups_yaml = indent_block(groups_yaml);
+    let yaml = format!(
+        r#"
+info:
+  id: partition-test
+  title: Partition Test
+  default-locale: en-US
+bibliography:
+{partition_yaml}
+{groups_yaml}
+  sort:
+    template:
+      - key: title
+  template:
+    - title: primary
+"#
+    );
+
+    serde_yaml::from_str(&yaml).expect("partition style should parse")
+}
+
+fn partition_reference(id: &str, title: &str, language: Option<&str>) -> InputReference {
+    let mut fixture = serde_json::json!({
+        "id": id,
+        "type": "book",
+        "title": title
+    });
+    if let Some(language) = language {
+        fixture["language"] = serde_json::json!(language);
+    }
+
+    let legacy: csl_legacy::csl_json::Reference =
+        serde_json::from_value(fixture).expect("partition fixture should parse");
+    legacy.into()
+}
+
+fn script_partition_bibliography() -> IndexMap<String, InputReference> {
+    IndexMap::from([
+        (
+            "latin".to_string(),
+            partition_reference("latin", "Alpha", Some("en")),
+        ),
+        (
+            "cyrl".to_string(),
+            partition_reference("cyrl", "Бета", Some("ru")),
+        ),
+        (
+            "hani".to_string(),
+            partition_reference("hani", "東京", Some("ja")),
+        ),
+    ])
+}
+
+fn language_partition_bibliography() -> IndexMap<String, InputReference> {
+    IndexMap::from([
+        (
+            "en".to_string(),
+            partition_reference("en", "Alpha", Some("en")),
+        ),
+        (
+            "ru".to_string(),
+            partition_reference("ru", "Beta", Some("ru")),
+        ),
+        (
+            "ja".to_string(),
+            partition_reference("ja", "Gamma", Some("ja")),
+        ),
+    ])
+}
+
+fn language_partition_reference(
+    id: &str,
+    family: &str,
+    given: &str,
+    title: &str,
+    language: &str,
+) -> InputReference {
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
+        "id": id,
+        "type": "book",
+        "title": title,
+        "language": language,
+        "author": [{
+            "family": family,
+            "given": given
+        }]
+    }))
+    .expect("language partition fixture should parse");
+    legacy.into()
+}
+
+fn language_partition_substitute_style() -> Style {
+    let mut style = make_style_with_substitute(Some("———".to_string()));
+    style.info.title = Some("Partition Substitute Test".to_string());
+    style.info.id = Some("partition-substitute-test".into());
+    style
+        .bibliography
+        .as_mut()
+        .expect("partition substitute style should have bibliography")
+        .options
+        .get_or_insert_with(BibliographyOptions::default)
+        .sort_partitioning = Some(BibliographySortPartitioning {
+        by: BibliographyPartitionKind::Language,
+        mode: BibliographyPartitionMode::Sections,
+        order: vec!["ru".to_string(), "en".to_string()],
+        headings: HashMap::from([
+            (
+                "ru".to_string(),
+                BibliographyPartitionHeading::Literal {
+                    literal: "Russian".to_string(),
+                },
+            ),
+            (
+                "en".to_string(),
+                BibliographyPartitionHeading::Literal {
+                    literal: "English".to_string(),
+                },
+            ),
+        ]),
+    });
+    style
+        .bibliography
+        .as_mut()
+        .expect("partition substitute style should have bibliography")
+        .template = Some(vec![
+        citum_schema::tc_contributor!(Author, Long),
+        citum_schema::tc_title!(Primary, prefix = ". "),
+    ]);
+    style
+}
+
+#[test]
+fn given_no_partitioning_when_rendering_mixed_script_bibliography_then_single_collator_order_is_preserved()
+ {
+    announce_behavior(
+        "Mixed-script bibliographies preserve the existing single-collator order unless partitioning is enabled.",
+    );
+    let style = build_partition_style("", "");
+    let processor = Processor::new(style, script_partition_bibliography());
+
+    assert_eq!(processor.render_bibliography(), "Alpha\n\nБета\n\n東京");
+}
+
+#[test]
+fn given_script_sort_only_partitioning_when_rendering_flat_bibliography_then_partition_order_precedes_title_sort()
+ {
+    announce_behavior(
+        "Script partitioning in sort-only mode renders one flat bibliography ordered by configured script blocks.",
+    );
+    let style = build_partition_style(
+        r#"
+options:
+  sort-partitioning:
+    by: script
+    mode: sort-only
+    order: [Cyrl, Latn, Hani]
+"#,
+        "",
+    );
+    let processor = Processor::new(style, script_partition_bibliography());
+
+    assert_eq!(processor.render_bibliography(), "Бета\n\nAlpha\n\n東京");
+}
+
+#[test]
+fn given_language_sort_only_partitioning_when_rendering_flat_bibliography_then_effective_language_order_is_used()
+ {
+    announce_behavior(
+        "Language partitioning uses reference language before the normal bibliography sort chain.",
+    );
+    let style = build_partition_style(
+        r#"
+options:
+  sort-partitioning:
+    by: language
+    mode: sort-only
+    order: [ru, en, ja]
+"#,
+        "",
+    );
+    let processor = Processor::new(style, language_partition_bibliography());
+
+    assert_eq!(processor.render_bibliography(), "Beta\n\nAlpha\n\nGamma");
+}
+
+#[test]
+fn given_script_section_partitioning_when_rendering_grouped_bibliography_then_configured_headings_are_used()
+ {
+    announce_behavior(
+        "Script partitioning in sections mode renders automatic grouped bibliography sections with configured headings.",
+    );
+    let style = build_partition_style(
+        r#"
+options:
+  sort-partitioning:
+    by: script
+    mode: sections
+    order: [Cyrl, Latn, Hani]
+    headings:
+      Cyrl: { literal: "Cyrillic" }
+      Latn: { literal: "Latin" }
+      Hani: { literal: "Han" }
+"#,
+        "",
+    );
+    let processor = Processor::new(style, script_partition_bibliography());
+
+    assert_eq!(
+        processor.render_grouped_bibliography_with_format::<PlainText>(),
+        "# Cyrillic\n\nБета\n\n# Latin\n\nAlpha\n\n# Han\n\n東京"
+    );
+}
+
+#[test]
+fn given_explicit_groups_when_partition_sections_are_enabled_then_manual_groups_remain_authoritative()
+ {
+    announce_behavior(
+        "Explicit bibliography groups disable automatic partition sections while retaining partition-aware order inside unsorted groups.",
+    );
+    let style = build_partition_style(
+        r#"
+options:
+  sort-partitioning:
+    by: script
+    mode: sort-and-sections
+    order: [Cyrl, Latn, Hani]
+    headings:
+      Cyrl: { literal: "Cyrillic" }
+      Latn: { literal: "Latin" }
+      Hani: { literal: "Han" }
+"#,
+        r#"
+groups:
+  - id: manual
+    heading: { literal: "Manual Group" }
+    selector: {}
+"#,
+    );
+    let processor = Processor::new(style, script_partition_bibliography());
+
+    assert_eq!(
+        processor.render_grouped_bibliography_with_format::<PlainText>(),
+        "# Manual Group\n\nБета\n\nAlpha\n\n東京"
+    );
+}
+
+#[test]
+fn language_partition_sections_reset_subsequent_author_substitution_per_section() {
+    announce_behavior(
+        "Partition sections render subsequent-author substitution within a section only, resetting the chain at each new partition.",
+    );
+    let style = language_partition_substitute_style();
+    let bibliography = IndexMap::from([
+        (
+            "ru-first".to_string(),
+            language_partition_reference("ru-first", "Smith", "John", "Alpha", "ru"),
+        ),
+        (
+            "ru-second".to_string(),
+            language_partition_reference("ru-second", "Smith", "John", "Beta", "ru"),
+        ),
+        (
+            "en-only".to_string(),
+            language_partition_reference("en-only", "Smith", "John", "Gamma", "en"),
+        ),
+    ]);
+    let processor = Processor::new(style, bibliography);
+
+    assert_eq!(
+        processor.render_grouped_bibliography_with_format::<PlainText>(),
+        "# Russian\n\nSmith, John. Alpha.\n\n———. Beta.\n\n# English\n\nSmith, John. Gamma."
+    );
 }
 
 fn build_container_title_short_style(title_type: TitleType) -> Style {

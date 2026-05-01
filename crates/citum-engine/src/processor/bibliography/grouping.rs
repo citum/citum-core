@@ -15,6 +15,7 @@ use crate::render::ProcEntry;
 use crate::render::format::{OutputFormat, ProcEntryMetadata};
 use crate::values::{ProcHints, RenderContext, RenderOptions, format_contributors_short};
 use citum_schema::grouping::{BibliographyGroup, DisambiguationScope, GroupHeading};
+use citum_schema::options::{BibliographyPartitionHeading, BibliographySortPartitioning};
 use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 
@@ -65,6 +66,20 @@ impl Processor {
             .iter()
             .min_by(|left, right| left.0.cmp(right.0))
             .map(|(_locale, value)| value.clone())
+    }
+
+    fn resolve_partition_heading(&self, heading: &BibliographyPartitionHeading) -> Option<String> {
+        match heading {
+            BibliographyPartitionHeading::Literal { literal } => Some(literal.clone()),
+            BibliographyPartitionHeading::Term { term, form } => self.locale.resolved_general_term(
+                term,
+                form.unwrap_or(citum_schema::locale::TermForm::Long),
+                None,
+            ),
+            BibliographyPartitionHeading::Localized { localized } => {
+                self.resolve_localized_heading(localized)
+            }
+        }
     }
 
     fn collect_matching_group_refs<'a>(
@@ -250,6 +265,58 @@ impl Processor {
         ));
     }
 
+    fn append_rendered_partition<F>(
+        &self,
+        result: &mut String,
+        heading: Option<&BibliographyPartitionHeading>,
+        entries: Vec<ProcEntry>,
+    ) where
+        F: OutputFormat<Output = String>,
+    {
+        if !result.is_empty() {
+            result.push_str("\n\n");
+        }
+
+        if let Some(heading) =
+            heading.and_then(|group_heading| self.resolve_partition_heading(group_heading))
+        {
+            result.push_str(&self.render_group_heading::<F>(&heading));
+        }
+
+        result.push_str(&crate::render::refs_to_string_with_format::<F>(
+            entries, None, None,
+        ));
+    }
+
+    fn render_with_partition_sections<F>(
+        &self,
+        sorted_refs: Vec<&Reference>,
+        partitioning: &BibliographySortPartitioning,
+    ) -> String
+    where
+        F: OutputFormat<Output = String>,
+    {
+        let fmt = F::default();
+        let mut result = String::new();
+
+        for (partition_key, references) in
+            crate::sort_partitioning::partition_references(sorted_refs, &self.locale, partitioning)
+        {
+            let heading = partition_key
+                .as_ref()
+                .and_then(|key| partitioning.headings.get(key));
+            let entries = self.merge_compound_entries::<F>(self.process_sorted_refs::<_, F>(
+                references.into_iter(),
+                |reference, entry_number| {
+                    self.process_bibliography_entry_with_format::<F>(reference, entry_number)
+                },
+            ));
+            self.append_rendered_partition::<F>(&mut result, heading, entries);
+        }
+
+        fmt.finish(result)
+    }
+
     fn append_unassigned_entries<F>(
         &self,
         result: &mut String,
@@ -396,17 +463,26 @@ impl Processor {
     where
         F: OutputFormat<Output = String>,
     {
-        let processed = self.process_references();
-
         if let Some(groups) = self
             .style
             .bibliography
             .as_ref()
             .and_then(|bibliography| bibliography.groups.as_ref())
         {
+            let processed = self.process_references();
             return self.render_with_custom_groups::<F>(&processed.bibliography, groups);
         }
 
+        let bibliography_options = self.get_bibliography_options();
+        if let Some(partitioning) = bibliography_options.sort_partitioning.as_ref()
+            && crate::sort_partitioning::should_render_sections(partitioning)
+        {
+            self.initialize_numeric_bibliography_numbers();
+            let sorted_refs = self.sort_references(self.bibliography.values().collect());
+            return self.render_with_partition_sections::<F>(sorted_refs, partitioning);
+        }
+
+        let processed = self.process_references();
         self.render_with_legacy_grouping::<F>(
             &self.merge_compound_entries::<F>(processed.bibliography),
         )

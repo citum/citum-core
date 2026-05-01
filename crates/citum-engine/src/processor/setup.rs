@@ -205,24 +205,7 @@ impl Processor {
     }
 
     fn sort_citation_number_order(&self) -> Vec<String> {
-        if let Some(sort_spec) = self
-            .style
-            .bibliography
-            .as_ref()
-            .and_then(|bibliography| bibliography.sort.as_ref())
-        {
-            let sorter = crate::grouping::GroupSorter::new(&self.locale);
-            return sorter
-                .sort_references(self.bibliography.values().collect(), &sort_spec.resolve())
-                .into_iter()
-                .filter_map(citum_schema::reference::InputReference::id)
-                .map(String::from)
-                .collect();
-        }
-
-        let bibliography_config = self.get_bibliography_config();
-        Sorter::new(&bibliography_config, &self.locale)
-            .sort_references(self.bibliography.values().collect())
+        self.sort_references(self.bibliography.values().collect())
             .into_iter()
             .filter_map(citum_schema::reference::InputReference::id)
             .map(String::from)
@@ -457,14 +440,27 @@ impl Processor {
     ///
     /// Uses style-specified sort keys (author, title, issued, etc.) and sort order.
     pub fn sort_references<'a>(&self, references: Vec<&'a Reference>) -> Vec<&'a Reference> {
-        if let Some(sort_spec) = self.resolved_bibliography_sort() {
+        let mut sorted_refs = if let Some(sort_spec) = self.resolved_bibliography_sort() {
             let sorter = crate::grouping::GroupSorter::new(&self.locale);
-            return sorter.sort_references(references, &sort_spec);
+            sorter.sort_references(references, &sort_spec)
+        } else {
+            let bibliography_config = self.get_bibliography_config();
+            let sorter = Sorter::new(&bibliography_config, &self.locale);
+            sorter.sort_references(references)
+        };
+
+        let bibliography_options = self.get_bibliography_options();
+        if let Some(partitioning) = bibliography_options.sort_partitioning.as_ref()
+            && crate::sort_partitioning::should_sort_flat(partitioning)
+        {
+            crate::sort_partitioning::sort_by_partition(
+                sorted_refs.as_mut_slice(),
+                &self.locale,
+                partitioning,
+            );
         }
 
-        let bibliography_config = self.get_bibliography_config();
-        let sorter = Sorter::new(&bibliography_config, &self.locale);
-        sorter.sort_references(references)
+        sorted_refs
     }
 
     /// Sort citation items according to the style's citation sort specification.

@@ -8,6 +8,8 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use crate::locale::{GeneralTerm, TermForm};
+
 /// Bibliography-specific configuration.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -50,6 +52,9 @@ pub struct BibliographyConfig {
     /// When present, enables grouping of references by input bibliography `sets`.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub compound_numeric: Option<CompoundNumericConfig>,
+    /// Partitioning policy for multilingual bibliography sorting and sections.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sort_partitioning: Option<BibliographySortPartitioning>,
 }
 
 /// Article-journal-specific bibliography configuration.
@@ -69,6 +74,74 @@ pub struct ArticleJournalBibliographyConfig {
 pub enum ArticleJournalNoPageFallback {
     /// Replace the standard article detail block with the DOI component.
     Doi,
+}
+
+/// Bibliography partitioning policy for multilingual sort order and sections.
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct BibliographySortPartitioning {
+    /// Source used to derive each reference's partition key.
+    pub by: BibliographyPartitionKind,
+    /// Whether partitioning affects flat sorting, visible sections, or both.
+    #[serde(default)]
+    pub mode: BibliographyPartitionMode,
+    /// Preferred partition order. Unlisted partitions sort after listed ones.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub order: Vec<String>,
+    /// Optional headings for visible partition sections.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub headings: HashMap<String, BibliographyPartitionHeading>,
+}
+
+/// Localizable heading source for automatic bibliography partition sections.
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", untagged)]
+pub enum BibliographyPartitionHeading {
+    /// Fixed literal heading text.
+    Literal {
+        /// Literal heading value.
+        literal: String,
+    },
+    /// Locale general term key resolved at render time.
+    Term {
+        /// Locale general term key.
+        term: GeneralTerm,
+        /// Optional term form (defaults to long).
+        #[serde(skip_serializing_if = "Option::is_none")]
+        form: Option<TermForm>,
+    },
+    /// Locale-indexed heading map.
+    Localized {
+        /// Map keyed by BCP 47 locale identifiers or language tags.
+        localized: HashMap<String, String>,
+    },
+}
+
+/// Partition key source for bibliography partitioning.
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum BibliographyPartitionKind {
+    /// Partition by Unicode script detected from author/editor/title sort text.
+    Script,
+    /// Partition by the reference's effective item language.
+    Language,
+}
+
+/// Rendering mode for bibliography partitioning.
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum BibliographyPartitionMode {
+    /// Sort a flat bibliography by partition before normal sort keys.
+    #[default]
+    SortOnly,
+    /// Render visible sections for grouped bibliography output only.
+    Sections,
+    /// Sort flat output by partition and render visible sections for grouped output.
+    SortAndSections,
 }
 
 /// Rules for subsequent author substitution.
@@ -171,6 +244,7 @@ impl Default for BibliographyConfig {
             suppress_period_after_url: false,
             custom: None,
             compound_numeric: None,
+            sort_partitioning: None,
         }
     }
 }
@@ -259,5 +333,87 @@ mod tests {
         let json = serde_json::to_string(&config).unwrap();
         let deserialized: BibliographyConfig = serde_json::from_str(&json).unwrap();
         assert_eq!(config, deserialized);
+    }
+
+    #[test]
+    fn test_sort_partitioning_deserializes_script_sort_only() {
+        let json = r#"{
+            "sort-partitioning": {
+                "by": "script",
+                "mode": "sort-only",
+                "order": ["Cyrl", "Latn"],
+                "headings": {
+                    "Cyrl": {"literal": "Cyrillic"}
+                }
+            }
+        }"#;
+        let config: BibliographyConfig = serde_json::from_str(json).unwrap();
+        let partitioning = config
+            .sort_partitioning
+            .expect("partitioning should deserialize");
+
+        assert_eq!(partitioning.by, BibliographyPartitionKind::Script);
+        assert_eq!(partitioning.mode, BibliographyPartitionMode::SortOnly);
+        assert_eq!(
+            partitioning.order,
+            vec!["Cyrl".to_string(), "Latn".to_string()]
+        );
+        assert_eq!(
+            partitioning.headings.get("Cyrl"),
+            Some(&BibliographyPartitionHeading::Literal {
+                literal: "Cyrillic".to_string()
+            })
+        );
+    }
+
+    #[test]
+    fn test_sort_partitioning_defaults_to_sort_only() {
+        let json = r#"{"sort-partitioning": {"by": "language"}}"#;
+        let config: BibliographyConfig = serde_json::from_str(json).unwrap();
+        let partitioning = config
+            .sort_partitioning
+            .expect("partitioning should deserialize");
+
+        assert_eq!(partitioning.by, BibliographyPartitionKind::Language);
+        assert_eq!(partitioning.mode, BibliographyPartitionMode::SortOnly);
+        assert!(partitioning.order.is_empty());
+        assert!(partitioning.headings.is_empty());
+    }
+
+    #[test]
+    fn test_sort_partitioning_roundtrip() {
+        let mut headings = HashMap::new();
+        headings.insert(
+            "Latn".to_string(),
+            BibliographyPartitionHeading::Literal {
+                literal: "Latin".to_string(),
+            },
+        );
+        let config = BibliographyConfig {
+            sort_partitioning: Some(BibliographySortPartitioning {
+                by: BibliographyPartitionKind::Script,
+                mode: BibliographyPartitionMode::SortAndSections,
+                order: vec!["Latn".to_string()],
+                headings,
+            }),
+            ..Default::default()
+        };
+
+        let json = serde_json::to_string(&config).unwrap();
+        let deserialized: BibliographyConfig = serde_json::from_str(&json).unwrap();
+
+        assert_eq!(config, deserialized);
+    }
+
+    #[test]
+    fn test_sort_partitioning_rejects_unknown_fields() {
+        let json = r#"{"sort-partitioning": {"by": "script", "unknown": true}}"#;
+        let error = serde_json::from_str::<BibliographyConfig>(json)
+            .expect_err("unknown partitioning fields should be rejected");
+
+        assert!(
+            error.to_string().contains("unknown field"),
+            "unexpected error: {error}"
+        );
     }
 }

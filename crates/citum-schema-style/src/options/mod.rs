@@ -18,7 +18,8 @@ pub mod substitute;
 
 pub use bibliography::{
     ArticleJournalBibliographyConfig, ArticleJournalNoPageFallback, BibliographyConfig,
-    SubsequentAuthorSubstituteRule,
+    BibliographyPartitionHeading, BibliographyPartitionKind, BibliographyPartitionMode,
+    BibliographySortPartitioning, SubsequentAuthorSubstituteRule,
 };
 pub use contributors::{
     AndOptions, AndOtherOptions, ContributorConfig, ContributorConfigEntry, DelimiterPrecedesLast,
@@ -291,6 +292,9 @@ pub struct BibliographyOptions {
     /// Configuration for compound numeric bibliography entries.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub compound_numeric: Option<bibliography::CompoundNumericConfig>,
+    /// Partitioning policy for multilingual bibliography sorting and sections.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sort_partitioning: Option<bibliography::BibliographySortPartitioning>,
     /// Hyperlink configuration.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub links: Option<LinksConfig>,
@@ -552,6 +556,7 @@ impl BibliographyOptions {
             suppress_period_after_url: self.suppress_period_after_url,
             custom: None,
             compound_numeric: self.compound_numeric.clone(),
+            sort_partitioning: self.sort_partitioning.clone(),
         }
     }
 

@@ -99,6 +99,7 @@ pub mod processor;
 pub mod reference;
 /// Output-format renderers and string conversion helpers.
 pub mod render;
+mod sort_partitioning;
 mod sort_support;
 /// Template value resolution and formatting helpers.
 pub mod values;
