@@ -927,6 +927,56 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
             <div class="border-b border-slate-200">
                 <div class="px-8 py-4 bg-slate-100">
                     <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                        Automatic Script &amp; Language Partitioning
+                    </h3>
+                </div>
+                <div class="p-8 bg-slate-50">
+                    <p class="text-sm text-slate-600 mb-6">
+                        Bibliographies can be automatically partitioned by script or language. This ensures that
+                        references in different scripts (e.g., Latin and Arabic) are grouped together, and that
+                        subsequent-author substitutions correctly reset for each new partition section.
+                    </p>
+                    <div class="grid lg:grid-cols-2 gap-8">
+                        <!-- Config -->
+                        <div class="space-y-4">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Style Configuration</div>
+                            <div class="bg-slate-900 rounded p-4 overflow-x-auto">
+                                <pre class="font-mono text-xs text-slate-300 leading-relaxed"><span class="text-indigo-400">bibliography</span>:
+  <span class="text-primary">options</span>:
+    <span class="text-primary">sort-partitioning</span>:
+      <span class="text-primary">by</span>: <span class="text-emerald-400">script</span>
+      <span class="text-primary">mode</span>: <span class="text-emerald-400">sort-and-sections</span>
+      <span class="text-primary">headings</span>:
+        <span class="text-primary">Latn</span>:
+          <span class="text-primary">literal</span>: <span class="text-emerald-400">"Western Sources"</span>
+        <span class="text-primary">Arab</span>:
+          <span class="text-primary">literal</span>: <span class="text-emerald-400">"Arabic Sources"</span></pre>
+                            </div>
+                        </div>
+                        <!-- Mock Output -->
+                        <div class="space-y-4">
+                            <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Partitioned Output</div>
+                            <div class="bg-white border border-slate-200 rounded p-4 text-xs font-mono text-slate-700 shadow-inner overflow-x-auto h-[220px]">
+                                <div class="font-bold text-slate-400 mb-2"># Western Sources</div>
+                                <div class="mb-2">Smith, John. 2024. _First Book_.</div>
+                                <div class="mb-4">———. 2025. _Second Book_.</div>
+
+                                <div class="font-bold text-slate-400 mb-2"># Arabic Sources</div>
+                                <div class="mb-2">محمود, علي. 2023. _الكتاب الأول_.</div>
+                                <div class="mb-2">———. 2024. _الكتاب الثاني_.</div>
+                            </div>
+                            <p class="text-[11px] text-slate-500 italic">
+                                Subsequent author dashes (———) are automatically reset when entering a new script partition.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reference Data -->
+            <div class="border-b border-slate-200">
+                <div class="px-8 py-4 bg-slate-100">
+                    <h3 class="text-sm font-semibold text-slate-700 uppercase tracking-wide">
                         Reference Data (YAML)
                     </h3>
                 </div>
@@ -1034,6 +1084,20 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                     <p class="text-xs text-slate-500 mt-2">
                         For style-authoring work, compare this data with a style that sets different
                         <code class="text-xs bg-slate-200 px-1 rounded">options.multilingual</code> values.
+                    </p>
+                </div>
+                <div class="border border-indigo-500/30 rounded-lg p-4 mb-3">
+                    <p class="text-xs text-slate-600 mb-2">
+                        Render the script-partitioned bibliography example:
+                    </p>
+                    <div class="bg-slate-900 rounded p-3 overflow-x-auto">
+                        <pre class="font-mono text-xs text-slate-300"><span class="text-emerald-400">citum</span> render refs \
+  -b examples/multilingual-refs.yaml \
+  -s styles/experimental/multilingual-partitioned.yaml</pre>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">
+                        This style demonstrates <code class="text-xs bg-slate-200 px-1 rounded">sort-partitioning</code>
+                        by script, which separates Latin and Non-Latin records into distinct sections with reset subsequent-author substitutions.
                     </p>
                 </div>
                 <div class="border border-primary/30 rounded-lg p-4">
