@@ -87,6 +87,20 @@ impl OutputFormat for OrgOutputFormat {
         content
     }
 
+    fn annotation(
+        &self,
+        _paragraph_break: &crate::io::ParagraphBreak,
+        content: Self::Output,
+    ) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!(
+            "\n\n#+begin_citum_annotation\n{}\n#+end_citum_annotation",
+            content
+        )
+    }
+
     /// Render a hyperlink in org-mode format: `[[url][text]]`
     fn link(&self, url: &str, content: Self::Output) -> Self::Output {
         format!("[[{url}][{content}]]")

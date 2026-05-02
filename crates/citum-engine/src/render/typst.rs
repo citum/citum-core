@@ -111,6 +111,17 @@ impl OutputFormat for Typst {
         content
     }
 
+    fn annotation(
+        &self,
+        _paragraph_break: &crate::io::ParagraphBreak,
+        content: Self::Output,
+    ) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!("\n#block(class: \"citum-annotation\")[{}]", content)
+    }
+
     fn citation(&self, ids: Vec<String>, content: Self::Output) -> Self::Output {
         if content.is_empty() || ids.len() != 1 {
             return content;

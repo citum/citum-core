@@ -86,6 +86,17 @@ impl OutputFormat for Djot {
         format!("[{content}]{{.{class}}}")
     }
 
+    fn annotation(
+        &self,
+        _paragraph_break: &crate::io::ParagraphBreak,
+        content: Self::Output,
+    ) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!("\n\n::: citum-annotation\n{content}\n:::")
+    }
+
     fn link(&self, url: &str, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;

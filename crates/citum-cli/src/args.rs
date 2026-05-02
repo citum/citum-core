@@ -527,10 +527,6 @@ pub(crate) struct RenderRefsArgs {
     #[arg(long)]
     pub(crate) annotation_italic: bool,
 
-    /// Indent annotation paragraphs (default: true)
-    #[arg(long, default_value_t = true)]
-    pub(crate) annotation_indent: bool,
-
     /// Line break before annotation paragraph
     #[arg(long, value_enum, default_value_t = ParagraphBreakArg::BlankLine)]
     pub(crate) annotation_break: ParagraphBreakArg,

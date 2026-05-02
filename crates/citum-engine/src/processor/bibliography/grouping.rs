@@ -7,6 +7,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use super::RenderedBibliographyGroup;
 use crate::grouping::{GroupSorter, SelectorEvaluator};
+use crate::io::AnnotationStyle;
 use crate::processor::Processor;
 use crate::processor::disambiguation::Disambiguator;
 use crate::processor::rendering::{CompoundRenderData, Renderer, RendererResources};
@@ -245,6 +246,8 @@ impl Processor {
         result: &mut String,
         group: &BibliographyGroup,
         entries: Vec<ProcEntry>,
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
     ) where
         F: OutputFormat<Output = String>,
     {
@@ -261,7 +264,9 @@ impl Processor {
         }
 
         result.push_str(&crate::render::refs_to_string_with_format::<F>(
-            entries, None, None,
+            entries,
+            annotations,
+            annotation_style,
         ));
     }
 
@@ -270,6 +275,8 @@ impl Processor {
         result: &mut String,
         heading: Option<&BibliographyPartitionHeading>,
         entries: Vec<ProcEntry>,
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
     ) where
         F: OutputFormat<Output = String>,
     {
@@ -284,7 +291,9 @@ impl Processor {
         }
 
         result.push_str(&crate::render::refs_to_string_with_format::<F>(
-            entries, None, None,
+            entries,
+            annotations,
+            annotation_style,
         ));
     }
 
@@ -292,6 +301,8 @@ impl Processor {
         &self,
         sorted_refs: Vec<&Reference>,
         partitioning: &BibliographySortPartitioning,
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
     ) -> String
     where
         F: OutputFormat<Output = String>,
@@ -311,7 +322,13 @@ impl Processor {
                     self.process_bibliography_entry_with_format::<F>(reference, entry_number)
                 },
             ));
-            self.append_rendered_partition::<F>(&mut result, heading, entries);
+            self.append_rendered_partition::<F>(
+                &mut result,
+                heading,
+                entries,
+                annotations,
+                annotation_style,
+            );
         }
 
         fmt.finish(result)
@@ -326,7 +343,7 @@ impl Processor {
         F: OutputFormat<Output = String>,
     {
         let selected: HashSet<String> = all_entries.iter().map(|e| e.id.clone()).collect();
-        self.render_with_custom_groups_filtered::<F>(all_entries, groups, &selected)
+        self.render_with_custom_groups_filtered::<F>(all_entries, groups, &selected, None, None)
     }
 
     pub(super) fn render_with_custom_groups_filtered<F>(
@@ -334,6 +351,8 @@ impl Processor {
         all_entries: &[ProcEntry],
         groups: &[BibliographyGroup],
         selected: &HashSet<String>,
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
     ) -> String
     where
         F: OutputFormat<Output = String>,
@@ -374,10 +393,23 @@ impl Processor {
                 local_hints.as_ref(),
             ));
 
-            self.append_rendered_group::<F>(&mut result, group, entries);
+            self.append_rendered_group::<F>(
+                &mut result,
+                group,
+                entries,
+                annotations,
+                annotation_style,
+            );
         }
 
-        self.append_unassigned_entries_filtered::<F>(&mut result, all_entries, &assigned, selected);
+        self.append_unassigned_entries_filtered::<F>(
+            &mut result,
+            all_entries,
+            &assigned,
+            selected,
+            annotations,
+            annotation_style,
+        );
         fmt.finish(result)
     }
 
@@ -387,6 +419,8 @@ impl Processor {
         bibliography: &[ProcEntry],
         assigned: &HashSet<String>,
         selected: &HashSet<String>,
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
     ) where
         F: OutputFormat<Output = String>,
     {
@@ -414,11 +448,18 @@ impl Processor {
         }
 
         result.push_str(&crate::render::refs_to_string_with_format::<F>(
-            unassigned, None, None,
+            unassigned,
+            annotations,
+            annotation_style,
         ));
     }
 
-    fn render_with_legacy_grouping<F>(&self, bibliography: &[ProcEntry]) -> String
+    fn render_with_legacy_grouping<F>(
+        &self,
+        bibliography: &[ProcEntry],
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
+    ) -> String
     where
         F: OutputFormat<Output = String>,
     {
@@ -434,15 +475,20 @@ impl Processor {
         if !cited_entries.is_empty() {
             result.push_str(&crate::render::refs_to_string_with_format::<F>(
                 cited_entries,
-                None,
-                None,
+                annotations,
+                annotation_style,
             ));
         }
 
         fmt.finish(result)
     }
 
-    fn render_bibliography_for_group<F>(&self, group: &BibliographyGroup) -> String
+    fn render_bibliography_for_group<F>(
+        &self,
+        group: &BibliographyGroup,
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
+    ) -> String
     where
         F: OutputFormat<Output = String>,
     {
@@ -475,7 +521,9 @@ impl Processor {
         ));
 
         fmt.finish(crate::render::refs_to_string_with_format::<F>(
-            entries, None, None,
+            entries,
+            annotations,
+            annotation_style,
         ))
     }
 
@@ -490,6 +538,18 @@ impl Processor {
     where
         F: OutputFormat<Output = String>,
     {
+        self.render_grouped_bibliography_with_format_and_annotations::<F>(None, None)
+    }
+
+    /// Render the bibliography with grouping and annotations.
+    pub fn render_grouped_bibliography_with_format_and_annotations<F>(
+        &self,
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
+    ) -> String
+    where
+        F: OutputFormat<Output = String>,
+    {
         let processed = self.process_references();
         let all_entries = processed.bibliography;
 
@@ -499,7 +559,16 @@ impl Processor {
             .as_ref()
             .and_then(|bibliography| bibliography.groups.as_ref())
         {
-            return self.render_with_custom_groups::<F>(&all_entries, groups);
+            return self.render_with_custom_groups_filtered::<F>(
+                &all_entries,
+                groups,
+                &all_entries
+                    .iter()
+                    .map(|e| e.id.clone())
+                    .collect::<HashSet<_>>(),
+                annotations,
+                annotation_style,
+            );
         }
 
         let bibliography_options = self.get_bibliography_options();
@@ -508,10 +577,19 @@ impl Processor {
         {
             self.initialize_numeric_bibliography_numbers();
             let sorted_refs = self.sort_references(self.bibliography.values().collect());
-            return self.render_with_partition_sections::<F>(sorted_refs, partitioning);
+            return self.render_with_partition_sections::<F>(
+                sorted_refs,
+                partitioning,
+                annotations,
+                annotation_style,
+            );
         }
 
-        self.render_with_legacy_grouping::<F>(&self.merge_compound_entries::<F>(all_entries))
+        self.render_with_legacy_grouping::<F>(
+            &self.merge_compound_entries::<F>(all_entries),
+            annotations,
+            annotation_style,
+        )
     }
 
     /// Render frontmatter-defined bibliography groups for document output.
@@ -545,7 +623,7 @@ impl Processor {
             .heading
             .take()
             .and_then(|group_heading| self.resolve_group_heading(&group_heading));
-        let body = self.render_bibliography_for_group::<F>(&headingless);
+        let body = self.render_bibliography_for_group::<F>(&headingless, None, None);
 
         RenderedBibliographyGroup { heading, body }
     }

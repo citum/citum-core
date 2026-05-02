@@ -15,10 +15,11 @@ mod grouping;
 use super::matching::Matcher;
 use super::rendering::{CompoundRenderData, Renderer, RendererResources};
 use super::{ProcessedReferences, Processor};
+use crate::io::AnnotationStyle;
 use crate::reference::Reference;
 use crate::render::format::OutputFormat;
 use crate::render::{ProcEntry, ProcTemplate};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 /// Rendered bibliography block data for document integration.
 #[derive(Debug, Clone, Default)]
@@ -173,13 +174,41 @@ impl Processor {
     where
         F: OutputFormat<Output = String>,
     {
-        self.render_selected_bibliography_with_format::<F, _>(
+        self.render_bibliography_with_format_and_annotations::<F>(None, None)
+    }
+
+    /// Render the bibliography to a string with annotations.
+    pub fn render_bibliography_with_format_and_annotations<F>(
+        &self,
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
+    ) -> String
+    where
+        F: OutputFormat<Output = String>,
+    {
+        self.render_selected_bibliography_with_format_and_annotations::<F, _>(
             self.bibliography.keys().cloned().collect::<Vec<_>>(),
+            annotations,
+            annotation_style,
         )
     }
 
     /// Render a selected bibliography subset to a string using a specific format.
     pub fn render_selected_bibliography_with_format<F, I>(&self, item_ids: I) -> String
+    where
+        F: OutputFormat<Output = String>,
+        I: IntoIterator<Item = String>,
+    {
+        self.render_selected_bibliography_with_format_and_annotations::<F, _>(item_ids, None, None)
+    }
+
+    /// Render a selected bibliography subset to a string with annotations.
+    pub fn render_selected_bibliography_with_format_and_annotations<F, I>(
+        &self,
+        item_ids: I,
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
+    ) -> String
     where
         F: OutputFormat<Output = String>,
         I: IntoIterator<Item = String>,
@@ -194,7 +223,13 @@ impl Processor {
             .and_then(|bibliography| bibliography.groups.as_ref())
         {
             let all_entries = self.process_references().bibliography;
-            return self.render_with_custom_groups_filtered::<F>(&all_entries, groups, &selected);
+            return self.render_with_custom_groups_filtered::<F>(
+                &all_entries,
+                groups,
+                &selected,
+                annotations,
+                annotation_style,
+            );
         }
 
         // 2. Check for automatic sort partitioning with sections
@@ -208,7 +243,12 @@ impl Processor {
                 .into_iter()
                 .filter(|r| r.id().as_deref().is_some_and(|id| selected.contains(id)))
                 .collect();
-            return self.render_with_partition_sections::<F>(selected_sorted, partitioning);
+            return self.render_with_partition_sections::<F>(
+                selected_sorted,
+                partitioning,
+                annotations,
+                annotation_style,
+            );
         }
 
         // 3. Fallback to flat rendering
@@ -226,7 +266,7 @@ impl Processor {
         );
 
         let bibliography = self.merge_compound_entries::<F>(bibliography);
-        crate::render::refs_to_string_with_format::<F>(bibliography, None, None)
+        crate::render::refs_to_string_with_format::<F>(bibliography, annotations, annotation_style)
     }
 
     /// Render the entire bibliography to a formatted string.

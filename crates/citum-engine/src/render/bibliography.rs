@@ -6,7 +6,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use std::collections::HashMap;
 use std::fmt::Write;
 
-use crate::io::{AnnotationFormat, AnnotationStyle, ParagraphBreak};
+use crate::io::{AnnotationFormat, AnnotationStyle};
 use crate::render::component::{ProcEntry, ProcTemplateComponent, render_component_with_format};
 use crate::render::format::OutputFormat;
 use crate::render::plain::PlainText;
@@ -270,11 +270,6 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
             && let Some(annotation_text) = annotations.get(&entry.id)
         {
             let style = annotation_style.cloned().unwrap_or_default();
-            let separator = match style.paragraph_break {
-                ParagraphBreak::BlankLine => "\n\n",
-                ParagraphBreak::SingleLine => "\n",
-            };
-            let indent_prefix = if style.indent { "    " } else { "" };
 
             // Render annotation text through markup format if enabled
             let rendered = match style.format {
@@ -283,26 +278,15 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
                 AnnotationFormat::Org => render_org_inline(annotation_text, &fmt),
             };
 
-            // Apply indentation to each line (preserving blank lines for paragraph breaks)
-            let indented_text = rendered
-                .lines()
-                .map(|line| {
-                    if line.trim().is_empty() {
-                        line.to_string()
-                    } else {
-                        let indented_line = format!("{indent_prefix}{line}");
-                        if style.italic {
-                            fmt.finish(fmt.emph(fmt.text(&indented_line)))
-                        } else {
-                            indented_line
-                        }
-                    }
-                })
-                .collect::<Vec<_>>()
-                .join("\n");
+            let rendered = rendered.trim();
 
-            entry_output.push_str(separator);
-            entry_output.push_str(&indented_text);
+            if !rendered.is_empty() {
+                let mut annotation_output = fmt.text(rendered);
+                if style.italic {
+                    annotation_output = fmt.emph(annotation_output);
+                }
+                entry_output.push_str(&fmt.annotation(&style.paragraph_break, annotation_output));
+            }
         }
 
         if visible_text(&entry_output).trim().is_empty() {
@@ -400,6 +384,7 @@ fn cleanup_dangling_punctuation(output: &mut String) {
 )]
 mod tests {
     use super::*;
+    use crate::io::ParagraphBreak;
     use crate::render::component::ProcTemplateComponent;
     use citum_schema::template::{Rendering, TemplateComponent, WrapConfig, WrapPunctuation};
 
@@ -872,7 +857,7 @@ mod tests {
             "A useful overview of the topic.".to_string(),
         );
 
-        let style = AnnotationStyle::default(); // indent=true, no italic, blank line
+        let style = AnnotationStyle::default(); // no italic, blank line
 
         let result = refs_to_string_with_format::<PlainText>(
             vec![make_entry("ref1", "Some Publisher")],
@@ -888,10 +873,10 @@ mod tests {
             result.contains("A useful overview of the topic."),
             "annotation should appear: {result}"
         );
-        // Blank line separator: entry text followed by \n\n then indent
+        // Blank line separator: entry text followed by \n\n
         assert!(
-            result.contains("\n\n    A useful overview"),
-            "annotation should be separated by blank line and indented: {result}"
+            result.contains("\n\nA useful overview"),
+            "annotation should be separated by blank line: {result}"
         );
     }
 
@@ -924,7 +909,6 @@ mod tests {
 
         let style = AnnotationStyle {
             italic: false,
-            indent: false,
             paragraph_break: ParagraphBreak::SingleLine,
             format: AnnotationFormat::Plain,
         };
