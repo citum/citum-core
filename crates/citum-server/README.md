@@ -55,6 +55,18 @@ curl -s http://localhost:8080/rpc \
 > **Note:** `refs` uses native Citum schema format. `issued` is an EDTF string
 > (`"1988"`), not a CSL-JSON `{"date-parts": [[1988]]}` object.
 
+## Performance
+
+A simulation script is available to benchmark the server under a simulated word processor workflow (large bibliography, sequential citation insertion, and periodic bibliography refreshes).
+
+```sh
+# Ensure the server is built in release mode first
+cargo build --release -p citum-server
+
+# Run the simulation
+node scripts/benchmark-rpc-workflow.js
+```
+
 ## Methods
 
 | Method | Params | Result |
