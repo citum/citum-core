@@ -82,7 +82,9 @@ jobs:
         run: npm install --prefix scripts
 
       - name: Build documentation guides
-        run: npm run build:docs --prefix scripts
+        run: |
+          npm run build:layout --prefix scripts
+          npm run build:docs --prefix scripts
 
       - name: Generate compatibility report
         if: ${{ inputs.refresh_compat }}
