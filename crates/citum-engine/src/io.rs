@@ -58,9 +58,6 @@ pub struct AnnotationStyle {
     /// Render annotation text in italics. Default: false.
     #[serde(default)]
     pub italic: bool,
-    /// Indent the annotation paragraph. Default: true.
-    #[serde(default = "default_true")]
-    pub indent: bool,
     /// Line break style before annotation. Default: `BlankLine`.
     #[serde(default)]
     pub paragraph_break: ParagraphBreak,
@@ -69,15 +66,10 @@ pub struct AnnotationStyle {
     pub format: AnnotationFormat,
 }
 
-fn default_true() -> bool {
-    true
-}
-
 impl Default for AnnotationStyle {
     fn default() -> Self {
         Self {
             italic: false,
-            indent: true,
             paragraph_break: ParagraphBreak::BlankLine,
             format: AnnotationFormat::Djot,
         }

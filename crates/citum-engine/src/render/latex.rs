@@ -98,6 +98,20 @@ impl OutputFormat for Latex {
         content
     }
 
+    fn annotation(
+        &self,
+        _paragraph_break: &crate::io::ParagraphBreak,
+        content: Self::Output,
+    ) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!(
+            "\n\\begin{{citumannotation}}\n{}\n\\end{{citumannotation}}",
+            content
+        )
+    }
+
     fn link(&self, url: &str, content: Self::Output) -> Self::Output {
         format!(r"\href{{{url}}}{{{content}}}")
     }

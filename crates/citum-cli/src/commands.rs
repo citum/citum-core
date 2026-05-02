@@ -491,7 +491,6 @@ fn run_render_refs(args: RenderRefsArgs) -> Result<(), Box<dyn Error>> {
 
     let annotation_style = AnnotationStyle {
         italic: args.annotation_italic,
-        indent: args.annotation_indent,
         paragraph_break: match args.annotation_break {
             ParagraphBreakArg::BlankLine => ParagraphBreak::BlankLine,
             ParagraphBreakArg::SingleLine => ParagraphBreak::SingleLine,
@@ -1013,10 +1012,14 @@ where
         }
     } else {
         // Use engine's built-in bibliography renderer which handles grouping/partitioning.
-        // We use render_selected_bibliography_with_format to respect the CLI's item_ids filter.
+        // We use render_selected_bibliography_with_format_and_annotations to respect the CLI's item_ids filter and propagate annotations.
         let rendered = ctx
             .processor
-            .render_selected_bibliography_with_format::<F, _>(ctx.item_ids.to_vec());
+            .render_selected_bibliography_with_format_and_annotations::<F, _>(
+                ctx.item_ids.to_vec(),
+                ctx.annotations,
+                Some(ctx.annotation_style),
+            );
         output.push_str(&rendered);
         if !rendered.is_empty() && !rendered.ends_with('\n') {
             output.push('\n');

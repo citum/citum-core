@@ -18,7 +18,7 @@ schema. All styles support annotations by default with no opt-in required.
 - Annotation data model (`AnnotationStyle`, `ParagraphBreak`)
 - Rendering pipeline — how annotations attach to bibliography entries
 - Input formats (YAML, JSON annotation maps)
-- CLI interface (`--annotations`, `--annotation-italic`, `--no-annotation-indent`)
+- CLI interface (`--annotations`, `--annotation-italic`, `--annotation-indent`)
 - Optional per-style `annotation_style` defaults
 
 **Out of scope:**
@@ -64,7 +64,7 @@ If no annotation map is supplied, output is identical to a standard bibliography
 
 Default rendering (no `AnnotationStyle` supplied):
 - Blank line before annotation
-- Indented paragraph
+- Flush left paragraph (no indentation)
 - Plain text
 
 ### Style Formatting Defaults (Optional)
@@ -113,7 +113,7 @@ citum render refs \
   -s styles/apa-7th.yaml \
   --annotations annotations.yaml \
   --annotation-italic \
-  --no-annotation-indent
+  --annotation-indent
 ```
 
 ## Implementation Notes
@@ -121,7 +121,7 @@ citum render refs \
 - Annotation rendering is a post-render step in the engine — not a template
   concern — so no style changes are needed to support it.
 - The overlay map is keyed by the same reference IDs used in `RenderInput`.
-- `AnnotationStyle` defaults: `italic: false`, `indent: true`,
+- `AnnotationStyle` defaults: `italic: false`, `indent: false`,
   `paragraph_break: BlankLine`.
 
 ## Acceptance Criteria

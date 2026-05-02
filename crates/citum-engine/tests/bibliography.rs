@@ -3515,3 +3515,62 @@ fn archive_location_string_bypasses_assembly() {
         "structured fields should not appear when location overrides: {rendered}"
     );
 }
+
+#[test]
+fn processor_renders_bibliography_annotations() {
+    use citum_engine::{Processor, io::AnnotationStyle, render::plain::PlainText};
+    use citum_schema::reference::{InputReference, Monograph, MonographType, RefID, Title};
+    use indexmap::IndexMap;
+    use std::collections::HashMap;
+
+    let mut bib = IndexMap::new();
+    bib.insert(
+        "ref1".to_string(),
+        InputReference::Monograph(Box::new(Monograph {
+            id: Some(RefID("ref1".to_string())),
+            r#type: MonographType::Book,
+            title: Some(Title::Single("Test Book".to_string())),
+            ..Default::default()
+        })),
+    );
+
+    let style = citum_schema::Style {
+        info: citum_schema::StyleInfo {
+            title: Some("Test Style".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(citum_schema::BibliographySpec {
+            template: Some(vec![citum_schema::tc_title!(Primary)]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let processor = Processor::new(style, bib);
+
+    let mut annotations = HashMap::new();
+    annotations.insert("ref1".to_string(), "This is an annotation.".to_string());
+
+    let annotation_style = AnnotationStyle::default();
+
+    let rendered = processor.render_bibliography_with_format_and_annotations::<PlainText>(
+        Some(&annotations),
+        Some(&annotation_style),
+    );
+
+    assert!(rendered.contains("Test Book"));
+    assert!(rendered.contains("This is an annotation."));
+    // Default is now flush left
+    assert!(rendered.contains("\n\nThis is an annotation."));
+
+    // Verify italics when explicitly enabled
+    let italic_style = AnnotationStyle {
+        italic: true,
+        ..AnnotationStyle::default()
+    };
+    let rendered_italic = processor.render_bibliography_with_format_and_annotations::<PlainText>(
+        Some(&annotations),
+        Some(&italic_style),
+    );
+    assert!(rendered_italic.contains("\n\n_This is an annotation._"));
+}

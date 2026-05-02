@@ -76,6 +76,16 @@ pub trait OutputFormat: Default + Clone {
     /// Examples include "citum-title", "citum-author", "citum-doi".
     fn semantic(&self, class: &str, content: Self::Output) -> Self::Output;
 
+    /// Render an annotation block.
+    ///
+    /// This is typically called at the end of a bibliography entry to render
+    /// reader-supplied notes.
+    fn annotation(
+        &self,
+        paragraph_break: &crate::io::ParagraphBreak,
+        content: Self::Output,
+    ) -> Self::Output;
+
     /// Apply a semantic identifier plus optional attributes to the content.
     ///
     /// Formats that do not support extra attributes can ignore them and reuse
@@ -189,6 +199,13 @@ mod tests {
         }
         fn semantic(&self, class: &str, content: Self::Output) -> Self::Output {
             format!("sem[{class}]({content})")
+        }
+        fn annotation(
+            &self,
+            _paragraph_break: &crate::io::ParagraphBreak,
+            content: Self::Output,
+        ) -> Self::Output {
+            format!("annot({content})")
         }
         fn link(&self, url: &str, content: Self::Output) -> Self::Output {
             format!("link[{url}]({content})")
