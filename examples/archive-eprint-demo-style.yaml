@@ -3,6 +3,10 @@ info:
   title: "Archival and Eprint Demo Style"
   id: "archive-eprint-demo"
 
+citation:
+  template:
+    - title: primary
+
 bibliography:
   template:
     - title: primary
