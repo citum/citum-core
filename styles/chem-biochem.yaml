@@ -27,7 +27,7 @@ options:
     delimiter-precedes-last: always
     demote-non-dropping-particle: sort-only
 citation:
-  use-preset: numeric-citation
+  extends: numeric-citation
   wrap:
     punctuation: parentheses
   multi-cite-delimiter: ","

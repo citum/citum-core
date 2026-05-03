@@ -32,7 +32,7 @@ options:
   dates: numeric
   punctuation-in-quote: true
 citation:
-  use-preset: numeric-citation
+  extends: numeric-citation
   multi-cite-delimiter: ","
 bibliography:
   options:

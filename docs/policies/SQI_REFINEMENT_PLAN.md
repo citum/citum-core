@@ -157,7 +157,7 @@ For each style in a wave:
 Improve SQI so it rewards real maintainability changes:
 
 1. Preset detection:
-   - count template-level `use-preset` and `preset` entries.
+   - count template-level `extends` and `preset` entries.
    - count options-level preset strings plus object-form preset references.
    - weight by impact (template preset > options preset).
 2. Concision:

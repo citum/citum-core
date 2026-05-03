@@ -234,9 +234,9 @@ impl<'a> Renderer<'a> {
     /// Whether the style provides an explicit integral (narrative) template.
     fn has_explicit_integral_template(&self) -> bool {
         self.style.citation.as_ref().is_some_and(|c| {
-            c.integral.as_ref().is_some_and(|i| {
-                i.template.is_some() || i.use_preset.is_some() || i.locales.is_some()
-            })
+            c.integral
+                .as_ref()
+                .is_some_and(|i| i.template.is_some() || i.extends.is_some() || i.locales.is_some())
         })
     }
 

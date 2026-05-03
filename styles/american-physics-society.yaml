@@ -27,7 +27,7 @@ options:
   titles: humanities
   punctuation-in-quote: true
 citation:
-  use-preset: numeric-citation
+  extends: numeric-citation
   prefix: " ["
   suffix: "]"
   collapse: citation-number

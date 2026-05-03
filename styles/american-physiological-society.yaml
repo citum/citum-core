@@ -25,7 +25,7 @@ options:
   titles: humanities
   punctuation-in-quote: true
 citation:
-  use-preset: numeric-citation
+  extends: numeric-citation
   wrap:
     punctuation: parentheses
   multi-cite-delimiter: ", "

@@ -50,7 +50,7 @@ This keeps styles maintainable and discourages overfit templates.
 
 ### 4) Preset Usage (15%)
 
-Rewards explicit preset reuse via `use-preset`.
+Rewards explicit preset reuse via `extends`.
 
 - higher score for meaningful preset usage
 - lower score when no presets are used and template complexity is high

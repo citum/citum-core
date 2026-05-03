@@ -7,7 +7,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.39.1"
+      "default": "0.40.0"
     },
     "info": {
       "description": "Style metadata.",
@@ -4315,8 +4315,8 @@
             }
           ]
         },
-        "use-preset": {
-          "description": "Reference to an embedded template preset.\nIf both `use_preset` and `template` are present, `template` takes precedence.",
+        "extends": {
+          "description": "Reference to an embedded template preset.\nIf both `extends` and `template` are present, `template` takes precedence.",
           "anyOf": [
             {
               "$ref": "#/$defs/TemplatePreset"
@@ -4952,8 +4952,8 @@
             }
           ]
         },
-        "use-preset": {
-          "description": "Reference to an embedded template preset.\nIf both `use_preset` and `template` are present, `template` takes precedence.",
+        "extends": {
+          "description": "Reference to an embedded template preset.\nIf both `extends` and `template` are present, `template` takes precedence.",
           "anyOf": [
             {
               "$ref": "#/$defs/TemplatePreset"

@@ -10,8 +10,8 @@
 Replace the hardcoded `EMBEDDED_STYLE_ALIASES` and `EMBEDDED_STYLE_NAMES`
 slices in `citum-schema-style` with a serde-driven `StyleRegistry` type backed
 by a YAML data file. The registry is the discovery and alias-resolution layer
-that sits in front of the embedded style loader — it does not replace `StylePreset`
-(the inheritance/composition mechanism).
+that sits in front of the embedded style loader — it does not replace `StyleBase`
+(the inheritance/composition mechanism behind `extends`).
 
 ## Scope
 
@@ -24,7 +24,7 @@ that sits in front of the embedded style loader — it does not replace `StylePr
 
 **Out of scope:**
 - Remote/URL-based style fetching (citum-hub concern)
-- `StylePreset` preset-inheritance mechanism (unchanged)
+- `StyleBase` inheritance mechanism (unchanged)
 - Per-style metadata beyond what is needed for resolution and display
 - Bulk registration of CSL 1.0 dependent styles (citum-hub concern)
 

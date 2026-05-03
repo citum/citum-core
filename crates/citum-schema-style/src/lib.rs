@@ -95,7 +95,7 @@ pub use template::{
 pub type Template = Vec<TemplateComponent>;
 
 /// Canonical Citum style schema version used when `Style.version` is omitted.
-pub const STYLE_SCHEMA_VERSION: &str = "0.39.1";
+pub const STYLE_SCHEMA_VERSION: &str = "0.40.0";
 
 /// A non-fatal validation warning emitted by [`Style::validate`].
 #[derive(Debug, Clone, PartialEq)]
@@ -648,9 +648,9 @@ pub struct CitationSpec {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub options: Option<CitationOptions>,
     /// Reference to an embedded template preset.
-    /// If both `use_preset` and `template` are present, `template` takes precedence.
+    /// If both `extends` and `template` are present, `template` takes precedence.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub use_preset: Option<TemplatePreset>,
+    pub extends: Option<TemplatePreset>,
     /// Default template when no localized override is selected.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub template: Option<Template>,
@@ -722,12 +722,12 @@ pub struct CitationSpec {
 impl CitationSpec {
     /// Resolve the effective template for this citation.
     ///
-    /// Returns the explicit `template` if present, otherwise resolves `use_preset`.
+    /// Returns the explicit `template` if present, otherwise resolves `extends`.
     /// Returns `None` if neither is specified.
     pub fn resolve_template(&self) -> Option<Template> {
         self.template
             .clone()
-            .or_else(|| self.use_preset.as_ref().map(|p| p.citation_template()))
+            .or_else(|| self.extends.as_ref().map(|p| p.citation_template()))
     }
 
     /// Resolve the template for a language by checking localized overrides,
@@ -800,8 +800,8 @@ impl CitationSpec {
                 if spec.options.is_some() {
                     merged.options = spec.options.clone();
                 }
-                if spec.use_preset.is_some() {
-                    merged.use_preset = spec.use_preset.clone();
+                if spec.extends.is_some() {
+                    merged.extends = spec.extends.clone();
                 }
                 if spec.template.is_some() {
                     merged.template = spec.template.clone();
@@ -875,8 +875,8 @@ impl CitationSpec {
                 if spec.options.is_some() {
                     merged.options = spec.options.clone();
                 }
-                if spec.use_preset.is_some() {
-                    merged.use_preset = spec.use_preset.clone();
+                if spec.extends.is_some() {
+                    merged.extends = spec.extends.clone();
                 }
                 if spec.template.is_some() {
                     merged.template = spec.template.clone();
@@ -935,9 +935,9 @@ pub struct BibliographySpec {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub options: Option<BibliographyOptions>,
     /// Reference to an embedded template preset.
-    /// If both `use_preset` and `template` are present, `template` takes precedence.
+    /// If both `extends` and `template` are present, `template` takes precedence.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub use_preset: Option<TemplatePreset>,
+    pub extends: Option<TemplatePreset>,
     /// The default template for bibliography entries.
     /// Default template for entries when no localized override is selected.
     #[serde(skip_serializing_if = "Option::is_none", default)]
@@ -973,12 +973,12 @@ pub struct BibliographySpec {
 impl BibliographySpec {
     /// Resolve the effective template for this bibliography.
     ///
-    /// Returns the explicit `template` if present, otherwise resolves `use_preset`.
+    /// Returns the explicit `template` if present, otherwise resolves `extends`.
     /// Returns `None` if neither is specified.
     pub fn resolve_template(&self) -> Option<Template> {
         self.template
             .clone()
-            .or_else(|| self.use_preset.as_ref().map(|p| p.bibliography_template()))
+            .or_else(|| self.extends.as_ref().map(|p| p.bibliography_template()))
     }
 
     /// Resolve the template for a language by checking localized overrides,
@@ -1413,20 +1413,20 @@ custom:
     }
 
     #[test]
-    fn test_style_with_preset() {
+    fn test_style_with_template_extends() {
         let yaml = r#"
 info:
   title: Preset Test
 citation:
-  use-preset: apa
+  extends: apa
 bibliography:
-  use-preset: vancouver
+  extends: vancouver
 "#;
         let style: Style = serde_yaml::from_str(yaml).unwrap();
 
-        // Test Citation Preset (APA)
+        // Test Citation template extension (APA)
         let citation = style.citation.unwrap();
-        assert!(citation.use_preset.is_some());
+        assert!(citation.extends.is_some());
         assert!(citation.template.is_none());
 
         let citation_template = citation.resolve_template().unwrap();
@@ -1440,7 +1440,7 @@ bibliography:
             _ => panic!("Expected Contributor"),
         }
 
-        // Test Bibliography Preset (Vancouver)
+        // Test Bibliography template extension (Vancouver)
         let bib = style.bibliography.unwrap();
         let bib_template = bib.resolve_template().unwrap();
         // Vancouver bib has roughly 8 components
@@ -1456,12 +1456,12 @@ bibliography:
     }
 
     #[test]
-    fn test_preset_override_precedence() {
+    fn test_template_overrides_extends_precedence() {
         let yaml = r#"
 info:
   title: Override Test
 citation:
-  use-preset: apa
+  extends: apa
   template:
     - variable: doi
 "#;
@@ -1469,7 +1469,7 @@ citation:
         let citation = style.citation.unwrap();
 
         // Should have both
-        assert!(citation.use_preset.is_some());
+        assert!(citation.extends.is_some());
         assert!(citation.template.is_some());
 
         // Template should win
@@ -1481,6 +1481,19 @@ citation:
             }
             _ => panic!("Expected Variable"),
         }
+    }
+
+    #[test]
+    fn old_use_preset_key_is_rejected() {
+        let yaml = r#"
+info:
+  title: Old Template Reuse Key
+citation:
+  use-preset: apa
+"#;
+        let err = serde_yaml::from_str::<Style>(yaml)
+            .expect_err("use-preset should no longer be accepted");
+        assert!(err.to_string().contains("use-preset"));
     }
 
     #[test]
@@ -2064,12 +2077,12 @@ bibliography:
         let resolved = Style::from_yaml_str(
             r#"
 citation:
-  use-preset: numeric-citation
+  extends: numeric-citation
   options:
     label-wrap: superscript
     group-delimiter: comma
 bibliography:
-  use-preset: vancouver
+  extends: vancouver
   options:
     label-mode: numeric
     title-terminator: comma

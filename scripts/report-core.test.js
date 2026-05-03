@@ -206,11 +206,11 @@ test('computeConcisionScore penalizes duplicate-heavy type-variant structures', 
 test('computeConcisionScore rewards preset-backed compact structures', () => {
   const compactStyle = {
     citation: {
-      'use-preset': 'apa',
+      'extends': 'apa',
       template: [{ contributor: 'author' }, { date: 'issued', form: 'year' }],
     },
     bibliography: {
-      'use-preset': 'apa',
+      'extends': 'apa',
       template: [
         { contributor: 'author', form: 'long' },
         { date: 'issued', form: 'year' },

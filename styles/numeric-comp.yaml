@@ -22,7 +22,7 @@ options:
       use-first: 1
   titles: scientific
 citation:
-  use-preset: numeric-citation
+  extends: numeric-citation
   wrap:
     punctuation: brackets
   multi-cite-delimiter: ","

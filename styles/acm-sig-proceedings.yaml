@@ -40,7 +40,7 @@ options:
   dates: short
   titles: humanities
 citation:
-  use-preset: numeric-citation
+  extends: numeric-citation
   collapse: citation-number
   multi-cite-delimiter: ", "
 bibliography:
