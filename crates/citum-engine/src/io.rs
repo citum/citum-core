@@ -55,12 +55,6 @@ struct LegacyBibliographyWrapper {
 /// Controls how annotation text is rendered in an annotated bibliography.
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct AnnotationStyle {
-    /// Render annotation text in italics. Default: false.
-    #[serde(default)]
-    pub italic: bool,
-    /// Line break style before annotation. Default: `BlankLine`.
-    #[serde(default)]
-    pub paragraph_break: ParagraphBreak,
     /// Markup format for annotation text. Default: Djot.
     #[serde(default)]
     pub format: AnnotationFormat,
@@ -69,21 +63,9 @@ pub struct AnnotationStyle {
 impl Default for AnnotationStyle {
     fn default() -> Self {
         Self {
-            italic: false,
-            paragraph_break: ParagraphBreak::BlankLine,
             format: AnnotationFormat::Djot,
         }
     }
-}
-
-/// Line break style preceding an annotation block.
-#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
-pub enum ParagraphBreak {
-    /// Single newline before annotation.
-    SingleLine,
-    /// Blank line before annotation (default).
-    #[default]
-    BlankLine,
 }
 
 /// Markup format for annotation text.

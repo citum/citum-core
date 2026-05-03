@@ -1,7 +1,7 @@
 ---
 # csl26-wz7v
 title: Remove legacy annotation styling options
-status: draft
+status: completed
 type: cleanup
 priority: normal
 tags:

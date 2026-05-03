@@ -111,11 +111,7 @@ impl OutputFormat for Typst {
         content
     }
 
-    fn annotation(
-        &self,
-        _paragraph_break: &crate::io::ParagraphBreak,
-        content: Self::Output,
-    ) -> Self::Output {
+    fn annotation(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;
         }

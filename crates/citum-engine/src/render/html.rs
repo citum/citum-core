@@ -116,15 +116,11 @@ impl OutputFormat for Html {
         format!(r#"<span class="{class}">{content}</span>"#)
     }
 
-    fn annotation(
-        &self,
-        _paragraph_break: &crate::io::ParagraphBreak,
-        content: Self::Output,
-    ) -> Self::Output {
+    fn annotation(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;
         }
-        format!(r#"<div class="citum-annotation">{content}</div>"#)
+        format!("<div class=\"citum-annotation\">{content}</div>")
     }
 
     fn semantic_with_attributes(

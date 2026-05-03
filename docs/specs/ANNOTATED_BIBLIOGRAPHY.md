@@ -15,10 +15,10 @@ schema. All styles support annotations by default with no opt-in required.
 ## Scope
 
 **In scope:**
-- Annotation data model (`AnnotationStyle`, `ParagraphBreak`)
+- Annotation data model (`AnnotationStyle`)
 - Rendering pipeline — how annotations attach to bibliography entries
 - Input formats (YAML, JSON annotation maps)
-- CLI interface (`--annotations`, `--annotation-italic`, `--annotation-indent`)
+- CLI interface (`--annotations`)
 - Optional per-style `annotation_style` defaults
 
 **Out of scope:**
@@ -44,14 +44,8 @@ Rendering options:
 
 ```rust
 pub struct AnnotationStyle {
-    pub italic: bool,
-    pub indent: bool,
-    pub paragraph_break: ParagraphBreak,
-}
-
-pub enum ParagraphBreak {
-    SingleLine,
-    BlankLine,  // default
+    /// Markup format for annotation text. Default: Djot.
+    pub format: AnnotationFormat,
 }
 ```
 
@@ -64,8 +58,41 @@ If no annotation map is supplied, output is identical to a standard bibliography
 
 Default rendering (no `AnnotationStyle` supplied):
 - Blank line before annotation
-- Flush left paragraph (no indentation)
-- Plain text
+- Parsed as Djot inline markup
+
+### Styling
+
+Presentation concerns (italics, indentation, margins) are handled via the
+structural formatting features of each output format.
+
+#### HTML
+Target the `.citum-annotation` class in your CSS:
+```css
+.citum-annotation {
+  font-style: italic;
+  margin-left: 2em;
+  margin-top: 1em;
+}
+```
+
+#### Typst
+Use a `block` show rule targeting the `citum-annotation` class:
+```typst
+#show block.where(class: "citum-annotation"): set text(style: "italic")
+#show block.where(class: "citum-annotation"): set pad(left: 2em)
+```
+
+#### LaTeX
+Redefine the `citumannotation` environment in your preamble:
+```latex
+\newenvironment{citumannotation}
+  {\par\vspace{1ex}\itshape\leftskip=2em}
+  {\par}
+```
+
+#### Djot
+Djot output wraps annotations in a div with the `.citum-annotation` class,
+which maps to HTML or LaTeX classes when processed by standard converters.
 
 ### Style Formatting Defaults (Optional)
 
@@ -111,9 +138,7 @@ citum render refs \
 citum render refs \
   -b references.json \
   -s styles/apa-7th.yaml \
-  --annotations annotations.yaml \
-  --annotation-italic \
-  --annotation-indent
+  --annotations annotations.yaml
 ```
 
 ## Implementation Notes
@@ -121,17 +146,14 @@ citum render refs \
 - Annotation rendering is a post-render step in the engine — not a template
   concern — so no style changes are needed to support it.
 - The overlay map is keyed by the same reference IDs used in `RenderInput`.
-- `AnnotationStyle` defaults: `italic: false`, `indent: false`,
-  `paragraph_break: BlankLine`.
 
 ## Acceptance Criteria
 
-- [ ] `citum render refs --annotations <file>` appends annotation text after each entry
-- [ ] Missing annotation for a reference ID produces no output (not an error)
-- [ ] Omitting `--annotations` produces output identical to a standard bibliography
-- [ ] `--annotation-italic` and `--no-annotation-indent` flags work independently
-- [ ] YAML and JSON annotation files both parse correctly
-- [ ] No style file modification is required to enable annotation output
+- [x] `citum render refs --annotations <file>` appends annotation text after each entry
+- [x] Missing annotation for a reference ID produces no output (not an error)
+- [x] Omitting `--annotations` produces output identical to a standard bibliography
+- [x] YAML and JSON annotation files both parse correctly
+- [x] No style file modification is required to enable annotation output
 
 ## Changelog
 

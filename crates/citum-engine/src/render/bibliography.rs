@@ -281,11 +281,8 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
             let rendered = rendered.trim();
 
             if !rendered.is_empty() {
-                let mut annotation_output = fmt.text(rendered);
-                if style.italic {
-                    annotation_output = fmt.emph(annotation_output);
-                }
-                entry_output.push_str(&fmt.annotation(&style.paragraph_break, annotation_output));
+                let annotation_output = fmt.text(rendered);
+                entry_output.push_str(&fmt.annotation(annotation_output));
             }
         }
 
@@ -384,7 +381,6 @@ fn cleanup_dangling_punctuation(output: &mut String) {
 )]
 mod tests {
     use super::*;
-    use crate::io::ParagraphBreak;
     use crate::render::component::ProcTemplateComponent;
     use citum_schema::template::{Rendering, TemplateComponent, WrapConfig, WrapPunctuation};
 
@@ -857,7 +853,7 @@ mod tests {
             "A useful overview of the topic.".to_string(),
         );
 
-        let style = AnnotationStyle::default(); // no italic, blank line
+        let style = AnnotationStyle::default();
 
         let result = refs_to_string_with_format::<PlainText>(
             vec![make_entry("ref1", "Some Publisher")],
@@ -899,33 +895,6 @@ mod tests {
         assert!(
             !result.contains("Annotation for someone else."),
             "annotation for a different ref should not appear: {result}"
-        );
-    }
-
-    #[test]
-    fn test_annotation_single_line_break() {
-        let mut annotations = HashMap::new();
-        annotations.insert("ref1".to_string(), "Short note.".to_string());
-
-        let style = AnnotationStyle {
-            italic: false,
-            paragraph_break: ParagraphBreak::SingleLine,
-            format: AnnotationFormat::Plain,
-        };
-
-        let result = refs_to_string_with_format::<PlainText>(
-            vec![make_entry("ref1", "Publisher")],
-            Some(&annotations),
-            Some(&style),
-        );
-
-        assert!(
-            result.contains("\nShort note."),
-            "single line break should precede annotation: {result}"
-        );
-        assert!(
-            !result.contains("\n\n"),
-            "should not have blank line with SingleLine break: {result}"
         );
     }
 
