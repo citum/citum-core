@@ -3562,15 +3562,4 @@ fn processor_renders_bibliography_annotations() {
     assert!(rendered.contains("This is an annotation."));
     // Default is now flush left
     assert!(rendered.contains("\n\nThis is an annotation."));
-
-    // Verify italics when explicitly enabled
-    let italic_style = AnnotationStyle {
-        italic: true,
-        ..AnnotationStyle::default()
-    };
-    let rendered_italic = processor.render_bibliography_with_format_and_annotations::<PlainText>(
-        Some(&annotations),
-        Some(&italic_style),
-    );
-    assert!(rendered_italic.contains("\n\n_This is an annotation._"));
 }

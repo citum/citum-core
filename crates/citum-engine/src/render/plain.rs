@@ -82,21 +82,12 @@ impl OutputFormat for PlainText {
         content
     }
 
-    fn annotation(
-        &self,
-        paragraph_break: &crate::io::ParagraphBreak,
-        content: Self::Output,
-    ) -> Self::Output {
+    fn annotation(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;
         }
 
-        let prefix = match paragraph_break {
-            crate::io::ParagraphBreak::BlankLine => "\n\n",
-            crate::io::ParagraphBreak::SingleLine => "\n",
-        };
-
-        format!("{prefix}{content}")
+        format!("\n\n{content}")
     }
 
     fn link(&self, _url: &str, content: Self::Output) -> Self::Output {

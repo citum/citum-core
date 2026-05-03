@@ -460,14 +460,6 @@ pub(crate) struct RenderDocArgs {
     pub(crate) no_semantics: bool,
 }
 
-/// Line break style for annotation paragraphs.
-#[derive(Clone, Debug, Default, clap::ValueEnum)]
-pub(crate) enum ParagraphBreakArg {
-    #[default]
-    BlankLine,
-    SingleLine,
-}
-
 #[derive(Args, Debug)]
 pub(crate) struct RenderRefsArgs {
     /// Path(s) to bibliography input files (repeat for multiple)
@@ -522,14 +514,6 @@ pub(crate) struct RenderRefsArgs {
     /// Path to annotations file (JSON or YAML mapping ref IDs to annotation text)
     #[arg(long, value_name = "FILE")]
     pub(crate) annotations: Option<PathBuf>,
-
-    /// Render annotation text in italics
-    #[arg(long)]
-    pub(crate) annotation_italic: bool,
-
-    /// Line break before annotation paragraph
-    #[arg(long, value_enum, default_value_t = ParagraphBreakArg::BlankLine)]
-    pub(crate) annotation_break: ParagraphBreakArg,
 }
 
 #[derive(Args, Debug)]

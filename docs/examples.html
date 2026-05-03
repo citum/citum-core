@@ -1920,19 +1920,19 @@ jones2021: >
   empirical analysis.</pre>
                         </div>
                     </div>
-                    <div>
-                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Formatting Options</div>
-                        <div class="space-y-2 text-sm text-slate-600">
-                            <div class="flex items-center gap-2">
-                                <code class="bg-slate-100 px-2 py-1 rounded text-xs">--annotation-italic</code>
-                                <span>Render annotations in italics</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <code class="bg-slate-100 px-2 py-1 rounded text-xs">--annotation-break</code>
-                                <span>single-line or blank-line</span>
-                            </div>
-                        </div>
-                    </div>
+                </div>
+
+                <!-- Documentation of annotation styling -->
+                <div class="mt-4 p-4 bg-slate-50 rounded border border-slate-200">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Styling Annotations</div>
+                    <p class="text-xs text-slate-600 mb-3">Annotation presentation is handled via CSS or document-level show rules. To style HTML output:</p>
+                    <pre class="bg-slate-800 text-slate-200 p-3 rounded text-[10px] font-mono">
+.citum-annotation {
+    font-style: italic;
+    padding-left: 1.5rem;
+    margin-top: 0.5rem;
+    color: #475569; /* slate-600 */
+}</pre>
                 </div>
 
                 <div class="mt-8 bg-[var(--citum-surface)] p-4 rounded-lg border border-slate-200">

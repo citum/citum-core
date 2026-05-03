@@ -80,11 +80,7 @@ pub trait OutputFormat: Default + Clone {
     ///
     /// This is typically called at the end of a bibliography entry to render
     /// reader-supplied notes.
-    fn annotation(
-        &self,
-        paragraph_break: &crate::io::ParagraphBreak,
-        content: Self::Output,
-    ) -> Self::Output;
+    fn annotation(&self, content: Self::Output) -> Self::Output;
 
     /// Apply a semantic identifier plus optional attributes to the content.
     ///
@@ -200,11 +196,7 @@ mod tests {
         fn semantic(&self, class: &str, content: Self::Output) -> Self::Output {
             format!("sem[{class}]({content})")
         }
-        fn annotation(
-            &self,
-            _paragraph_break: &crate::io::ParagraphBreak,
-            content: Self::Output,
-        ) -> Self::Output {
+        fn annotation(&self, content: Self::Output) -> Self::Output {
             format!("annot({content})")
         }
         fn link(&self, url: &str, content: Self::Output) -> Self::Output {

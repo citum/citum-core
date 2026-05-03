@@ -2,9 +2,9 @@
 use crate::args::BindingsArgs;
 use crate::args::{
     CheckArgs, CheckItem, Cli, Commands, ConvertCommands, ConvertRefsArgs, ConvertTypedArgs,
-    DataType, InputFormat, LintLocaleArgs, LintStyleArgs, LocaleCommands, OutputFormat,
-    ParagraphBreakArg, RefsFormat, RegistryCommands, RenderCommands, RenderDocArgs, RenderMode,
-    RenderRefsArgs, StoreCommands, StyleCommands, StylesCommands,
+    DataType, InputFormat, LintLocaleArgs, LintStyleArgs, LocaleCommands, OutputFormat, RefsFormat,
+    RegistryCommands, RenderCommands, RenderDocArgs, RenderMode, RenderRefsArgs, StoreCommands,
+    StyleCommands, StylesCommands,
 };
 #[cfg(feature = "schema")]
 use crate::args::{SchemaArgs, SchemaType};
@@ -14,7 +14,7 @@ use crate::typst_pdf;
 use citum_engine::{
     Citation, CitationItem, DocumentFormat, Processor,
     io::{
-        AnnotationFormat, AnnotationStyle, ParagraphBreak, RefsFormat as EngineRefsFormat,
+        AnnotationFormat, AnnotationStyle, RefsFormat as EngineRefsFormat,
         infer_refs_input_format as infer_engine_refs_input_format,
         infer_refs_output_format as infer_engine_refs_output_format, load_annotations,
         load_bibliography, load_citations, load_input_bibliography, load_merged_bibliography,
@@ -490,11 +490,6 @@ fn run_render_refs(args: RenderRefsArgs) -> Result<(), Box<dyn Error>> {
     };
 
     let annotation_style = AnnotationStyle {
-        italic: args.annotation_italic,
-        paragraph_break: match args.annotation_break {
-            ParagraphBreakArg::BlankLine => ParagraphBreak::BlankLine,
-            ParagraphBreakArg::SingleLine => ParagraphBreak::SingleLine,
-        },
         format: AnnotationFormat::Djot,
     };
 
