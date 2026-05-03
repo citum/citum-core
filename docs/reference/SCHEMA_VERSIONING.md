@@ -210,6 +210,11 @@ Track schema changes separately from code changes.
 Historical note: entries below may predate the automation baseline and are the
 authoritative record when matching tags were not created at the time.
 
+#### schema-v0.41.0 (2026-05-03)
+- Schema version bumped from 0.40.0 to 0.41.0
+- Generalized `extends` to support URIs via `StyleReference` and `TemplateReference`
+- Phase 1 of Distributed Resolver Architecture implementation
+
 #### schema-v0.40.0 (2026-05-03)
 - Schema version bumped from 0.39.1 to 0.40.0
 - Renamed citation and bibliography template reuse from `use-preset` to `extends`

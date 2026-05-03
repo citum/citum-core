@@ -95,7 +95,7 @@ pub use template::{
 pub type Template = Vec<TemplateComponent>;
 
 /// Canonical Citum style schema version used when `Style.version` is omitted.
-pub const STYLE_SCHEMA_VERSION: &str = "0.40.0";
+pub const STYLE_SCHEMA_VERSION: &str = "0.41.0";
 
 /// A non-fatal validation warning emitted by [`Style::validate`].
 #[derive(Debug, Clone, PartialEq)]
@@ -189,12 +189,12 @@ pub struct Style {
     pub custom: Option<HashMap<String, serde_json::Value>>,
     /// Extends a base style, with optional local overrides.
     ///
-    /// When present, the base [`StyleBase`] is resolved and the local
+    /// When present, the base [`StyleReference`](style_base::StyleReference) is resolved and the local
     /// overrides are merged before any further processing. Explicit `options`,
     /// `citation`, and `bibliography` keys at the same document level take
     /// precedence over the resolved base.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extends: Option<style_base::StyleBase>,
+    pub extends: Option<style_base::StyleReference>,
     /// Raw YAML captured when the style was loaded via [`Style::from_yaml_str`]
     /// or [`Style::from_yaml_bytes`]. Used by [`merge_style_overlay`] for
     /// null-aware overlay merging (e.g., `ibid: ~` correctly clears an
@@ -252,7 +252,7 @@ impl Style {
         clippy::panic,
         reason = "Convenience API for infallible resolution contexts"
     )]
-    pub fn into_resolved_recursive(self, visited: &mut HashSet<StyleBase>) -> Self {
+    pub fn into_resolved_recursive(self, visited: &mut HashSet<String>) -> Self {
         self.try_into_resolved_recursive(visited)
             .unwrap_or_else(|err| panic!("style resolution failed: {err}"))
     }
@@ -265,24 +265,32 @@ impl Style {
     /// contract, when profile capability validation fails, or when
     /// inheritance loops are detected.
     pub fn try_into_resolved_recursive(
-        self,
-        visited: &mut HashSet<StyleBase>,
+        mut self,
+        visited: &mut HashSet<String>,
     ) -> Result<Self, ResolutionError> {
-        let Some(base) = self.extends.clone() else {
+        let Some(base_ref) = self.extends.clone() else {
             let mut style = self;
             options::scoped::apply_scoped_style_options(&mut style);
             return Ok(style);
         };
 
-        if visited.contains(&base) {
-            return Err(ResolutionError::InheritanceLoop {
-                base: base.key().to_string(),
-            });
+        let key = base_ref.key().to_string();
+        if visited.contains(&key) {
+            return Err(ResolutionError::InheritanceLoop { base: key });
         }
-        visited.insert(base.clone());
+        visited.insert(key);
 
         let is_profile = self.resolves_as_profile();
-        let mut effective = base.try_resolve_with_visited(visited)?;
+        let mut effective = match base_ref {
+            style_base::StyleReference::Base(base) => base.try_resolve_with_visited(visited)?,
+            style_base::StyleReference::Uri(_) => {
+                // Phase 2: Resolve URI via StyleResolver trait.
+                // For now, apply scoped options and return self to avoid
+                // breaking non-URI flows.
+                options::scoped::apply_scoped_style_options(&mut self);
+                return Ok(self);
+            }
+        };
         if is_profile {
             self.validate_profile_shape()?;
         }
@@ -570,6 +578,24 @@ pub enum TemplatePreset {
     NumericCitation,
 }
 
+/// A reference to a template, which can be either a named builtin preset
+/// or a URI (e.g., `file://...`, `@hub/...`, `https://...`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(untagged)]
+pub enum TemplateReference {
+    /// A named builtin template preset.
+    Preset(TemplatePreset),
+    /// A URI reference to a remote or local template.
+    Uri(String),
+}
+
+impl From<TemplatePreset> for TemplateReference {
+    fn from(preset: TemplatePreset) -> Self {
+        TemplateReference::Preset(preset)
+    }
+}
+
 impl TemplatePreset {
     /// Resolve this preset to a citation template.
     pub fn citation_template(&self) -> Template {
@@ -650,7 +676,7 @@ pub struct CitationSpec {
     /// Reference to an embedded template preset.
     /// If both `extends` and `template` are present, `template` takes precedence.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extends: Option<TemplatePreset>,
+    pub extends: Option<TemplateReference>,
     /// Default template when no localized override is selected.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub template: Option<Template>,
@@ -725,9 +751,15 @@ impl CitationSpec {
     /// Returns the explicit `template` if present, otherwise resolves `extends`.
     /// Returns `None` if neither is specified.
     pub fn resolve_template(&self) -> Option<Template> {
-        self.template
-            .clone()
-            .or_else(|| self.extends.as_ref().map(|p| p.citation_template()))
+        self.template.clone().or_else(|| {
+            self.extends.as_ref().and_then(|r| match r {
+                TemplateReference::Preset(p) => Some(p.citation_template()),
+                TemplateReference::Uri(_) => {
+                    // TODO (Phase 2): Emit validation warning for unresolved URIs
+                    None
+                }
+            })
+        })
     }
 
     /// Resolve the template for a language by checking localized overrides,
@@ -937,7 +969,7 @@ pub struct BibliographySpec {
     /// Reference to an embedded template preset.
     /// If both `extends` and `template` are present, `template` takes precedence.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub extends: Option<TemplatePreset>,
+    pub extends: Option<TemplateReference>,
     /// The default template for bibliography entries.
     /// Default template for entries when no localized override is selected.
     #[serde(skip_serializing_if = "Option::is_none", default)]
@@ -976,9 +1008,15 @@ impl BibliographySpec {
     /// Returns the explicit `template` if present, otherwise resolves `extends`.
     /// Returns `None` if neither is specified.
     pub fn resolve_template(&self) -> Option<Template> {
-        self.template
-            .clone()
-            .or_else(|| self.extends.as_ref().map(|p| p.bibliography_template()))
+        self.template.clone().or_else(|| {
+            self.extends.as_ref().and_then(|r| match r {
+                TemplateReference::Preset(p) => Some(p.bibliography_template()),
+                TemplateReference::Uri(_) => {
+                    // TODO (Phase 2): Emit validation warning for unresolved URIs
+                    None
+                }
+            })
+        })
     }
 
     /// Resolve the template for a language by checking localized overrides,

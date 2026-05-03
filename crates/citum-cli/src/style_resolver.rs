@@ -90,51 +90,55 @@ pub(crate) fn create_processor(
 /// Load a style from a file path, user store, or fallback to builtin name/alias.
 pub(crate) fn load_any_style(
     style_input: &str,
-    no_semantics: bool,
+    _no_semantics: bool,
 ) -> Result<Style, Box<dyn Error>> {
-    let path = Path::new(style_input);
-    if path.exists() && path.is_file() {
-        return load_style(path, no_semantics);
-    }
+    use citum_store::resolver::{ChainResolver, EmbeddedResolver, FileResolver, StyleResolver};
 
-    // Try user store first
+    let mut resolvers: Vec<Box<dyn StyleResolver>> = vec![Box::new(FileResolver)];
+
+    // Try user store if it exists
     if let Some(data_dir) = platform_data_dir()
         && data_dir.exists()
     {
         let config = StoreConfig::load().unwrap_or_default();
-        let resolver = StoreResolver::new(data_dir, config.store_format());
-        if let Ok(style) = resolver.resolve_style(style_input) {
-            return Ok(style);
-        }
+        resolvers.push(Box::new(StoreResolver::new(
+            data_dir,
+            config.store_format(),
+        )));
     }
 
-    if let Some(res) = citum_schema::embedded::get_embedded_style(style_input) {
-        return res.map_err(std::convert::Into::into);
-    }
+    resolvers.push(Box::new(EmbeddedResolver));
 
-    // Fuzzy matching suggestion
-    let suggestions: Vec<_> = citum_schema::embedded::EMBEDDED_STYLE_NAMES
-        .iter()
-        .chain(
-            citum_schema::embedded::EMBEDDED_STYLE_ALIASES
+    let chain = ChainResolver::new(resolvers);
+
+    match chain.resolve_style(style_input) {
+        Ok(style) => Ok(style),
+        Err(citum_store::resolver::ResolverError::StyleNotFound(_)) => {
+            // Fuzzy matching suggestion for builtin styles
+            let suggestions: Vec<_> = citum_schema::embedded::EMBEDDED_STYLE_NAMES
                 .iter()
-                .map(|(a, _)| a),
-        )
-        .filter(|&&name| strsim::jaro_winkler(style_input, name) > 0.8)
-        .collect();
+                .chain(
+                    citum_schema::embedded::EMBEDDED_STYLE_ALIASES
+                        .iter()
+                        .map(|(a, _)| a),
+                )
+                .filter(|&&name| strsim::jaro_winkler(style_input, name) > 0.8)
+                .collect();
 
-    let mut msg = format!("style not found: '{style_input}'");
-    if suggestions.is_empty() {
-        msg.push_str("\n\nUse `citum styles list` to see all available builtin styles.");
-    } else {
-        msg.push_str("\n\nDid you mean one of these?");
-        for s in suggestions {
-            msg.push_str("\n  - ");
-            msg.push_str(s);
+            let mut msg = format!("style not found: '{style_input}'");
+            if suggestions.is_empty() {
+                msg.push_str("\n\nUse `citum styles list` to see all available builtin styles.");
+            } else {
+                msg.push_str("\n\nDid you mean one of these?");
+                for s in suggestions {
+                    msg.push_str("\n  - ");
+                    msg.push_str(s);
+                }
+            }
+            Err(msg.into())
         }
+        Err(err) => Err(err.into()),
     }
-
-    Err(msg.into())
 }
 
 /// Heuristically locate the `locales/` directory relative to a style file.
@@ -166,23 +170,6 @@ pub(crate) fn load_locale_override_for_file_style(
 ) -> Result<Option<LocaleOverride>, Box<dyn Error>> {
     let overrides_dir = find_locales_dir(style_path).join("overrides");
     load_locale_override_from_dir(override_id, &overrides_dir)
-}
-
-/// Load a Citum style from a file path.
-///
-/// Selects the deserialiser based on the file extension (`cbor`, `json`, or YAML
-/// for anything else).
-pub(crate) fn load_style(path: &Path, _no_semantics: bool) -> Result<Style, Box<dyn Error>> {
-    let bytes = fs::read(path)?;
-    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
-
-    let style_obj: Style = match ext {
-        "cbor" => ciborium::de::from_reader(std::io::Cursor::new(&bytes))?,
-        "json" => serde_json::from_slice(&bytes)?,
-        _ => Style::from_yaml_bytes(&bytes)?,
-    };
-
-    Ok(style_obj)
 }
 
 /// Load a locale from embedded bytes, falling back to en-US.

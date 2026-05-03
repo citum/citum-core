@@ -25,12 +25,26 @@ Currently, Citum relies on a centralized builtin registry and a local user store
 To support over 1M+ users while enabling institutional autonomy, Citum needs a federated, GitOps-friendly resolution model inspired by modern package managers (Cargo, npm) and decentralized protocols (AT Protocol).
 
 # Proposal
-Evolve `citum-core`'s resolution logic to support a truly distributed ecosystem:
+Evolve `citum-core`'s resolution logic to support a truly distributed ecosystem via a phased approach:
 
-1. **Universal Resource Identifiers (URIs):** Transition `extends` references to a URI-based system (e.g., `@hub/apa`, `did:web:university.edu/styles/thesis`).
-2. **Pluggable Resolvers:** Implement a resolver trait that allows the engine to fetch style parents from multiple backends (local file system, Hub API, Git).
-3. **Immutability and Content Addressing:** Integrate content-addressable hashes (CIDs) or strict semantic versioning to prevent "left-pad" style breakages.
-4. **Caching Layer:** Design a robust local caching mechanism for remote styles to ensure resilient, offline-first rendering.
+## Phase 1: Trait Boundary & URI Foundation (Current Focus)
+Establish a flexible, trait-based resolution boundary and generalize the `extends` mechanism to support URIs, without adding network dependencies yet.
+- **StyleReference Enum:** Update `extends` to support both `StyleBase` enums and URI strings (e.g., `file://...`, `@hub/...`, `https://...`).
+- **StyleResolver Trait:** Introduce a trait in `citum_store` for resolving styles and locales.
+- **Resolver Chain:** Implement concrete resolvers (`FileResolver`, `StoreResolver`, `EmbeddedResolver`) and a `ChainResolver` for sequential fallback.
+- **CLI Refactor:** Transition `citum-cli` to use the `ChainResolver` for all style loading.
+
+## Phase 2: Remote Fetching & Caching
+Add networking capabilities and a local caching layer to ensure offline-first resilience.
+- **Remote Resolvers:** Implement `HttpResolver` and `GitResolver` to fetch styles from standard endpoints.
+- **Caching Middleware:** Wrap remote resolvers in a local cache that stores fetched styles in the user data directory.
+- **Institutional Autonomy:** Enable organizations to host their own style registries via static HTTP or Git.
+
+## Phase 3: Content Addressing & Hub Federation
+Scale the architecture for massive distribution and trust.
+- **CIDs:** Integrate content-addressable hashes (CIDs) for immutable style references.
+- **Verification:** Implement hashing middleware to verify remote style integrity against URIs.
+- **Hub Protocol:** Design and implement decentralized registry protocols for Citum Hub federation.
 
 # Key Considerations
 - **Trust & Security:** Evaluating the implications of fetching and executing remote style/locale definitions.

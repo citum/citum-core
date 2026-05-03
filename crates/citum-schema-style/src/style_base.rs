@@ -132,8 +132,37 @@ impl StyleBase {
             StyleBase::ModernLanguageAssociation => "modern-language-association",
         }
     }
+}
 
-    /// Return the base [`Style`] for this base.
+/// A reference to a base style, which can be either a named builtin base
+/// or a URI (e.g., `file://...`, `@hub/...`, `https://...`).
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(untagged)]
+pub enum StyleReference {
+    /// A named builtin style base.
+    Base(StyleBase),
+    /// A URI reference to a remote or local style.
+    Uri(String),
+}
+
+impl StyleReference {
+    /// Returns a string key identifying this reference.
+    pub fn key(&self) -> &str {
+        match self {
+            StyleReference::Base(base) => base.key(),
+            StyleReference::Uri(uri) => uri,
+        }
+    }
+}
+
+impl From<StyleBase> for StyleReference {
+    fn from(base: StyleBase) -> Self {
+        StyleReference::Base(base)
+    }
+}
+
+impl StyleBase {
     ///
     /// # Panics
     ///
@@ -233,7 +262,7 @@ impl StyleBase {
     /// Internal resolver with loop protection that preserves profile errors.
     pub(crate) fn try_resolve_with_visited(
         &self,
-        visited: &mut HashSet<StyleBase>,
+        visited: &mut HashSet<String>,
     ) -> Result<Style, crate::ResolutionError> {
         let mut style = self.base();
         if style.extends.is_some() {
@@ -378,7 +407,7 @@ citation:
                 id: Some("tf-test".into()),
                 ..Default::default()
             },
-            extends: Some(StyleBase::ChicagoAuthorDate18th),
+            extends: Some(StyleBase::ChicagoAuthorDate18th.into()),
             options: Some(Config {
                 page_range_format: Some(PageRangeFormat::Expanded),
                 ..Default::default()
@@ -404,7 +433,7 @@ citation:
     #[test]
     fn style_base_circular_dependency_is_handled() {
         let mut base = StyleBase::ChicagoNotes18th.base();
-        base.extends = Some(StyleBase::ChicagoNotes18th);
+        base.extends = Some(StyleBase::ChicagoNotes18th.into());
 
         let resolved = base.into_resolved();
         assert!(resolved.extends.is_some());
