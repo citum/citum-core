@@ -5,10 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # 1. Schema checks
 python3 "$ROOT_DIR/scripts/schema-check.py" pre-commit
 
-# 2. Workspace version auto-bump (runs after schema check so schema re-gen is staged first)
-python3 "$ROOT_DIR/scripts/rust-check.py" pre-commit
-
-# 3. Bean hygiene check (same as CI and pre-push)
+# 2. Bean hygiene check (same as CI and pre-push)
 BEAN_WRAPPER="$ROOT_DIR/.claude/skills/beans/bin/citum-bean"
 if [[ -x "$BEAN_WRAPPER" ]]; then
   printf '[PRE-COMMIT] Running bean hygiene check...\n'
@@ -18,7 +15,7 @@ if [[ -x "$BEAN_WRAPPER" ]]; then
   fi
 fi
 
-# 4. Docs/Beans hygiene check (CI script)
+# 3. Docs/Beans hygiene check (CI script)
 if [[ -x "$ROOT_DIR/scripts/check-docs-beans-hygiene.sh" ]]; then
   printf '[PRE-COMMIT] Running docs and beans hygiene script...\n'
   if ! "$ROOT_DIR/scripts/check-docs-beans-hygiene.sh"; then

@@ -135,7 +135,7 @@ def bump_version(current: str, bump_type: str) -> str:
         patch = 0
     elif bump_type == "major":
         if major == 0:
-            # Pre-1.0: treat breaking changes as minor bumps (mirrors release-plz behaviour).
+            # Pre-1.0: treat breaking changes as minor bumps (mirrors cargo-release behaviour).
             # A 1.0 promotion requires an explicit manual release.
             minor += 1
         else:
