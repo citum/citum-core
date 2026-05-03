@@ -16,11 +16,17 @@ const { performance } = require('node:perf_hooks');
 const path = require('node:path');
 const fs = require('node:fs');
 
-// --- Configuration ---
-const REFS_COUNT = 500;
-const CITATIONS_COUNT = 100;
-const REFRESH_INTERVAL = 20;
-const STYLE_PATH = 'styles/embedded/apa-7th.yaml';
+// --- Configuration (with CLI overrides) ---
+const args = process.argv.slice(2);
+const getArg = (name, defaultValue) => {
+  const index = args.findIndex(arg => arg === name);
+  return (index !== -1 && args[index + 1]) ? args[index + 1] : defaultValue;
+};
+
+const REFS_COUNT = parseInt(getArg('--refs', '500'), 10);
+const CITATIONS_COUNT = parseInt(getArg('--cites', '100'), 10);
+const REFRESH_INTERVAL = parseInt(getArg('--interval', '20'), 10);
+const STYLE_PATH = getArg('--style', 'styles/embedded/apa-7th.yaml');
 const SERVER_BIN = path.resolve(__dirname, '../target/release/citum-server');
 
 // --- State ---
