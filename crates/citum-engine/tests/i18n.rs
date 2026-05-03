@@ -1166,7 +1166,7 @@ fn chicago_german_override_localizes_editor_verb() {
             default_locale: Some("de-DE".to_string()),
             ..Default::default()
         },
-        extends: Some(StyleBase::ChicagoAuthorDate18th),
+        extends: Some(StyleBase::ChicagoAuthorDate18th.into()),
         options: Some(Config {
             locale_override: Some("de-DE-chicago".to_string()),
             contributors: Some(ContributorConfig {

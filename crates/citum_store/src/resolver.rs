@@ -34,10 +34,132 @@ pub enum ResolverError {
     CborError(String),
 }
 
+/// A trait for resolving Citum styles and locales from various sources.
+pub trait StyleResolver {
+    /// Resolve a style by URI or ID.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ResolverError::StyleNotFound`] if the style cannot be located.
+    fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError>;
+
+    /// Resolve a locale by ID.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ResolverError::LocaleNotFound`] if the locale cannot be located.
+    fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError>;
+}
+
 /// Resolves user-installed styles and locales from platform-specific data directories.
 pub struct StoreResolver {
     data_dir: PathBuf,
     format: StoreFormat,
+}
+
+impl StyleResolver for StoreResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
+        StoreResolver::resolve_style(self, uri)
+    }
+
+    fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
+        StoreResolver::resolve_locale(self, id)
+    }
+}
+
+/// A resolver that checks for embedded styles and locales.
+pub struct EmbeddedResolver;
+
+impl StyleResolver for EmbeddedResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
+        citum_schema::embedded::get_embedded_style(uri)
+            .ok_or_else(|| ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))?
+            .map_err(|e| ResolverError::YamlError(ToString::to_string(&e)))
+    }
+
+    fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
+        if let Some(bytes) = citum_schema::embedded::get_locale_bytes(id) {
+            let content = String::from_utf8_lossy(bytes);
+            Locale::from_yaml_str(&content)
+                .map_err(|e| ResolverError::YamlError(ToString::to_string(&e)))
+        } else {
+            Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
+        }
+    }
+}
+
+/// A resolver that handles local file paths.
+pub struct FileResolver;
+
+impl StyleResolver for FileResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
+        // Normalize file:// URIs to plain filesystem paths.
+        let raw_path = uri.strip_prefix("file://").unwrap_or(uri);
+        let path = Path::new(raw_path);
+        if path.exists() && path.is_file() {
+            let bytes = fs::read(path).map_err(ResolverError::Io)?;
+            let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
+
+            let style: Style = match ext {
+                "cbor" => ciborium::de::from_reader(Cursor::new(&bytes))
+                    .map_err(|e| ResolverError::CborError(e.to_string()))?,
+                "json" => serde_json::from_slice(&bytes)?,
+                _ => Style::from_yaml_bytes(&bytes)
+                    .map_err(|e| ResolverError::YamlError(ToString::to_string(&e)))?,
+            };
+            Ok(style)
+        } else {
+            Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))
+        }
+    }
+
+    fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
+        let locales_dir = Path::new("locales");
+        for ext in ["yaml", "yml", "json", "cbor"] {
+            let path = locales_dir.join(format!("{id}.{ext}"));
+            if path.exists() {
+                return Locale::from_file(&path)
+                    .map_err(|e| ResolverError::YamlError(ToString::to_string(&e)));
+            }
+        }
+        Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
+    }
+}
+
+/// A composite resolver that attempts resolution through a chain of resolvers.
+pub struct ChainResolver {
+    resolvers: Vec<Box<dyn StyleResolver>>,
+}
+
+impl ChainResolver {
+    /// Create a new chain resolver with the given list of resolvers.
+    pub fn new(resolvers: Vec<Box<dyn StyleResolver>>) -> Self {
+        ChainResolver { resolvers }
+    }
+}
+
+impl StyleResolver for ChainResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
+        for resolver in &self.resolvers {
+            match resolver.resolve_style(uri) {
+                Ok(style) => return Ok(style),
+                Err(ResolverError::StyleNotFound(_)) => {}
+                Err(err) => return Err(err),
+            }
+        }
+        Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))
+    }
+
+    fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
+        for resolver in &self.resolvers {
+            match resolver.resolve_locale(id) {
+                Ok(locale) => return Ok(locale),
+                Err(ResolverError::LocaleNotFound(_)) => {}
+                Err(err) => return Err(err),
+            }
+        }
+        Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
+    }
 }
 
 impl StoreResolver {
@@ -152,7 +274,7 @@ impl StoreResolver {
 
         match format {
             StoreFormat::Yaml => serde_yaml::from_slice(&content)
-                .map_err(|e| ResolverError::YamlError(e.to_string())),
+                .map_err(|e| ResolverError::YamlError(ToString::to_string(&e))),
             StoreFormat::Json => serde_json::from_slice(&content).map_err(ResolverError::JsonError),
             StoreFormat::Cbor => ciborium::de::from_reader(Cursor::new(&content))
                 .map_err(|e| ResolverError::CborError(e.to_string())),

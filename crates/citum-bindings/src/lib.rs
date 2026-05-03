@@ -125,7 +125,7 @@ fn parse_references(refs_json: &str) -> Result<IndexMap<String, Reference>, Stri
 pub fn ensure_style_has_templates(style: &mut Style) {
     if style.citation.is_none() {
         style.citation = Some(CitationSpec {
-            extends: Some(TemplatePreset::Apa),
+            extends: Some(TemplatePreset::Apa.into()),
             ..Default::default()
         });
     }
@@ -154,7 +154,7 @@ pub fn ensure_style_has_templates(style: &mut Style) {
 
     if style.bibliography.is_none() {
         style.bibliography = Some(citum_schema::BibliographySpec {
-            extends: Some(TemplatePreset::Apa),
+            extends: Some(TemplatePreset::Apa.into()),
             ..Default::default()
         });
     }

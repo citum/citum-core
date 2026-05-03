@@ -7,7 +7,7 @@
     "version": {
       "description": "Style schema version.",
       "type": "string",
-      "default": "0.40.0"
+      "default": "0.41.0"
     },
     "info": {
       "description": "Style metadata.",
@@ -69,10 +69,10 @@
       "additionalProperties": true
     },
     "extends": {
-      "description": "Extends a base style, with optional local overrides.\n\nWhen present, the base [`StyleBase`] is resolved and the local\noverrides are merged before any further processing. Explicit `options`,\n`citation`, and `bibliography` keys at the same document level take\nprecedence over the resolved base.",
+      "description": "Extends a base style, with optional local overrides.\n\nWhen present, the base [`StyleReference`](style_base::StyleReference) is resolved and the local\noverrides are merged before any further processing. Explicit `options`,\n`citation`, and `bibliography` keys at the same document level take\nprecedence over the resolved base.",
       "anyOf": [
         {
-          "$ref": "#/$defs/StyleBase"
+          "$ref": "#/$defs/StyleReference"
         },
         {
           "type": "null"
@@ -4319,7 +4319,7 @@
           "description": "Reference to an embedded template preset.\nIf both `extends` and `template` are present, `template` takes precedence.",
           "anyOf": [
             {
-              "$ref": "#/$defs/TemplatePreset"
+              "$ref": "#/$defs/TemplateReference"
             },
             {
               "type": "null"
@@ -4722,6 +4722,19 @@
         }
       ]
     },
+    "TemplateReference": {
+      "description": "A reference to a template, which can be either a named builtin preset\nor a URI (e.g., `file://...`, `@hub/...`, `https://...`).",
+      "anyOf": [
+        {
+          "description": "A named builtin template preset.",
+          "$ref": "#/$defs/TemplatePreset"
+        },
+        {
+          "description": "A URI reference to a remote or local template.",
+          "type": "string"
+        }
+      ]
+    },
     "TemplatePreset": {
       "description": "Available embedded template presets.\n\nThese reference battle-tested templates for common citation styles.\nSee `citum_schema::embedded` for the actual template implementations.",
       "oneOf": [
@@ -4956,7 +4969,7 @@
           "description": "Reference to an embedded template preset.\nIf both `extends` and `template` are present, `template` takes precedence.",
           "anyOf": [
             {
-              "$ref": "#/$defs/TemplatePreset"
+              "$ref": "#/$defs/TemplateReference"
             },
             {
               "type": "null"
@@ -5864,6 +5877,19 @@
           "description": "Disambiguate only within the current group.",
           "type": "string",
           "const": "locally"
+        }
+      ]
+    },
+    "StyleReference": {
+      "description": "A reference to a base style, which can be either a named builtin base\nor a URI (e.g., `file://...`, `@hub/...`, `https://...`).",
+      "anyOf": [
+        {
+          "description": "A named builtin style base.",
+          "$ref": "#/$defs/StyleBase"
+        },
+        {
+          "description": "A URI reference to a remote or local style.",
+          "type": "string"
         }
       ]
     },
