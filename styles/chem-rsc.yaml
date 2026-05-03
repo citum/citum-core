@@ -39,7 +39,7 @@ options:
     serial:
       text-case: as-is
 citation:
-  use-preset: numeric-citation
+  extends: numeric-citation
   wrap:
     punctuation: brackets
   multi-cite-delimiter: ","

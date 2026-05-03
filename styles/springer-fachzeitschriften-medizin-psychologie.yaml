@@ -41,7 +41,7 @@ options:
     sort-separator: " "
   dates: long
 citation:
-  use-preset: numeric-citation
+  extends: numeric-citation
   wrap:
     punctuation: brackets
   multi-cite-delimiter: ", "

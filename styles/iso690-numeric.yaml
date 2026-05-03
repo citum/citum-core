@@ -21,7 +21,7 @@ options:
     preferred-script: Latn
   page-range-format: minimal
 citation:
-  use-preset: numeric-citation
+  extends: numeric-citation
   wrap:
     punctuation: brackets
   multi-cite-delimiter: ','

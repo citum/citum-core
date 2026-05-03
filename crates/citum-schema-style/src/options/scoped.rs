@@ -170,7 +170,7 @@ fn apply_citation_options_recursive(citation: &mut CitationSpec) {
             citation.multi_cite_delimiter = Some(delimiter.as_str().to_string());
         }
         if let Some(wrap) = options.label_wrap {
-            if citation.template.is_none() && citation.use_preset.is_some() {
+            if citation.template.is_none() && citation.extends.is_some() {
                 citation.template = citation.resolve_template();
             }
             set_citation_wrap(citation, wrap);
@@ -200,7 +200,7 @@ fn apply_bibliography_options(bibliography: &mut BibliographySpec) {
         || options.label_wrap.is_some()
         || options.date_position.is_some()
         || options.title_terminator.is_some();
-    if needs_template && bibliography.template.is_none() && bibliography.use_preset.is_some() {
+    if needs_template && bibliography.template.is_none() && bibliography.extends.is_some() {
         bibliography.template = bibliography.resolve_template();
     }
 

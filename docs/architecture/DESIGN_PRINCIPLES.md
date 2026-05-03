@@ -99,7 +99,7 @@ bibliography:
 design the base template so it handles ~90% of reference types, reserving `type-variants`
 only for types that need a structurally different component set. Use option presets
 (`options.contributors`, `options.dates`, `options.titles`) and template presets
-(`citation.use-preset`) to share configuration without per-type duplication.
+(`citation.extends`) to share configuration without per-type duplication.
 
 ## 8. Structured Name Input
 

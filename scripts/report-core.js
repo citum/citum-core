@@ -620,7 +620,7 @@ function hasBibliographyTemplate(styleData) {
   }
 
   const hasTemplate = Array.isArray(bibliography.template) && bibliography.template.length > 0;
-  const hasPreset = typeof bibliography['use-preset'] === 'string' && bibliography['use-preset'].trim().length > 0;
+  const hasPreset = typeof bibliography['extends'] === 'string' && bibliography['extends'].trim().length > 0;
   const typeTemplates = bibliography['type-templates'];
   const hasTypeTemplates = Boolean(typeTemplates && Object.keys(typeTemplates).length > 0);
   const typeVariants = bibliography['type-variants'];
@@ -1810,7 +1810,7 @@ function countTemplatePresetUses(node) {
       return;
     }
     for (const [key, child] of Object.entries(value)) {
-      if (key === 'use-preset') count += 1;
+      if (key === 'extends') count += 1;
       if (key === 'preset' && typeof child === 'string' && child.trim()) count += 1;
       visit(child);
     }
@@ -1840,7 +1840,7 @@ function countOptionsPresetUses(styleData) {
         if (typeof value.preset === 'string' && value.preset.trim()) {
           uses += 1;
           fields.push(key);
-        } else if (typeof value['use-preset'] === 'string' && value['use-preset'].trim()) {
+        } else if (typeof value['extends'] === 'string' && value['extends'].trim()) {
           uses += 1;
           fields.push(key);
         }
@@ -1883,12 +1883,12 @@ function computeFallbackRobustness(styleData) {
   const typeTemplates = bibliography['type-templates'] || {};
   const typeTemplateSet = new Set(Object.keys(typeTemplates));
   const assessedTypes = CORE_FALLBACK_TYPES.filter((type) => !typeTemplateSet.has(type));
-  if (typeof bibliography['use-preset'] === 'string' && bibliography['use-preset'].trim()) {
+  if (typeof bibliography['extends'] === 'string' && bibliography['extends'].trim()) {
     return {
       score: 100,
       assessedTypes: assessedTypes.length,
       passingTypes: assessedTypes.length,
-      note: `embedded bibliography preset: ${bibliography['use-preset']} (assumed robust)`,
+      note: `embedded bibliography preset: ${bibliography['extends']} (assumed robust)`,
     };
   }
   const flattenedBase = flattenTemplateComponents(Array.isArray(bibliography.template) ? bibliography.template : []);

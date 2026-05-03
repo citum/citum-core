@@ -24,7 +24,7 @@ options:
   contributors: physics-numeric
   dates: long
 citation:
-  use-preset: numeric-citation
+  extends: numeric-citation
   prefix:  [
   suffix: ']'
   multi-cite-delimiter: ','

@@ -36,8 +36,8 @@ function applyNumericCitationFallback(baseData) {
     // An explicit empty template blocks preset resolution in citum_schema.
     // Remove it and fall back to the numeric citation preset instead.
     delete baseData.citation.template;
-    if (!baseData.citation['use-preset']) {
-        baseData.citation['use-preset'] = 'numeric-citation';
+    if (!baseData.citation['extends']) {
+        baseData.citation['extends'] = 'numeric-citation';
     }
     return true;
 }

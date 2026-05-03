@@ -41,7 +41,7 @@ options:
   page-range-format: expanded
   punctuation-in-quote: true
 citation:
-  use-preset: numeric-citation
+  extends: numeric-citation
   multi-cite-delimiter: ","
 bibliography:
   options:

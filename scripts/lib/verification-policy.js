@@ -294,25 +294,25 @@ function deepMerge(target, source) {
   return result;
 }
 
-const PRESET_BASES = {
+const STYLE_BASES = {
   'apa': path.join(PROJECT_ROOT, 'styles', 'embedded', 'apa-7th.yaml'),
   'apa-7th': path.join(PROJECT_ROOT, 'styles', 'embedded', 'apa-7th.yaml'),
   'chicago-notes-18th': path.join(PROJECT_ROOT, 'styles', 'embedded', 'chicago-notes-18th.yaml'),
   'chicago-author-date-18th': path.join(PROJECT_ROOT, 'styles', 'embedded', 'chicago-author-date-18th.yaml'),
 };
 
-function resolveBaseStylePath(presetKey) {
-  if (!presetKey || typeof presetKey !== 'string') {
+function resolveBaseStylePath(baseKey) {
+  if (!baseKey || typeof baseKey !== 'string') {
     return null;
   }
 
-  if (PRESET_BASES[presetKey]) {
-    return PRESET_BASES[presetKey];
+  if (STYLE_BASES[baseKey]) {
+    return STYLE_BASES[baseKey];
   }
 
   for (const candidate of [
-    path.join(PROJECT_ROOT, 'styles', `${presetKey}.yaml`),
-    path.join(PROJECT_ROOT, 'styles', 'embedded', `${presetKey}.yaml`),
+    path.join(PROJECT_ROOT, 'styles', `${baseKey}.yaml`),
+    path.join(PROJECT_ROOT, 'styles', 'embedded', `${baseKey}.yaml`),
   ]) {
     if (fs.existsSync(candidate)) {
       return candidate;
@@ -388,8 +388,8 @@ const TEMPLATE_PRESETS = {
 function resolveTemplatePresets(section, styleData = null) {
   if (!section || typeof section !== 'object') return section;
   const result = { ...section };
-  if (typeof result['use-preset'] === 'string' && TEMPLATE_PRESETS[result['use-preset']]) {
-    const preset = TEMPLATE_PRESETS[result['use-preset']];
+  if (typeof result['extends'] === 'string' && TEMPLATE_PRESETS[result['extends']]) {
+    const preset = TEMPLATE_PRESETS[result['extends']];
     const kind = result.integral || result.non_integral ? 'citation' : 'bibliography';
     if (!result.template && preset[kind]) {
       result.template = preset[kind];
@@ -415,29 +415,29 @@ function localStyleOverlay(styleData) {
 }
 
 /**
- * Resolves a style's preset reference.
+ * Resolves a style's base inheritance reference.
  */
 function resolveStyleData(styleData, visited = new Set()) {
-  const presetSpec = styleData?.extends;
+  const baseSpec = styleData?.extends;
   let resolved = styleData;
 
-  if (presetSpec) {
-    const presetKey = typeof presetSpec === 'string' ? presetSpec : presetSpec.extends;
-    const basePath = resolveBaseStylePath(presetKey);
-    if (presetKey && basePath && !visited.has(presetKey)) {
+  if (baseSpec) {
+    const baseKey = typeof baseSpec === 'string' ? baseSpec : baseSpec.extends;
+    const basePath = resolveBaseStylePath(baseKey);
+    if (baseKey && basePath && !visited.has(baseKey)) {
       if (fs.existsSync(basePath)) {
         try {
           const baseContent = fs.readFileSync(basePath, 'utf8');
           let baseData = yaml.load(baseContent);
 
-          visited.add(presetKey);
+          visited.add(baseKey);
           baseData = resolveStyleData(baseData, visited);
 
-          const delta = typeof presetSpec === 'object' ? presetSpec.variant : null;
-          const mergedPreset = deepMerge(baseData, delta || {});
-          resolved = deepMerge(mergedPreset, localStyleOverlay(styleData));
+          const delta = typeof baseSpec === 'object' ? baseSpec.variant : null;
+          const mergedBase = deepMerge(baseData, delta || {});
+          resolved = deepMerge(mergedBase, localStyleOverlay(styleData));
         } catch (err) {
-          console.error(`Error resolving preset ${presetKey}: ${err.message}`);
+          console.error(`Error resolving style base ${baseKey}: ${err.message}`);
         }
       }
     }

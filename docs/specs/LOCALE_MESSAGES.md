@@ -12,7 +12,7 @@ Replace Citum's flat key-to-static-string locale model with a parameterized
 message system based on Unicode MessageFormat 2 (MF2). This separates language
 realization (words, inflection, punctuation, date and number formats) from
 style structure (field order, conditions, what to omit), and enables
-composition of `StylePreset × LocalePreset × LocaleOverride` instead of
+composition of `StyleBase × LocalePreset × LocaleOverride` instead of
 duplicating styles per language.
 
 ## Scope
@@ -514,7 +514,7 @@ options:
 
 ---
 
-### 5. StylePreset Interaction
+### 5. Style Base Interaction
 
 Styles reference **message IDs**, not raw strings.
 

@@ -23,7 +23,7 @@ options:
   dates: long
   page-range-format: minimal
 citation:
-  use-preset: numeric-citation
+  extends: numeric-citation
   multi-cite-delimiter: ","
 bibliography:
   options:
