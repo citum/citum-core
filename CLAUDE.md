@@ -30,6 +30,9 @@ Then add a `Schema-Bump: patch|minor|major` footer to the commit. Use `patch` fo
 new optional fields, `major` for removals or type changes. The pre-commit hook
 handles this automatically if `scripts/install-hooks.sh` has been run.
 
+Workspace crate versioning is handled automatically by the release workflow
+(`cargo-release`). Do not manually bump `[workspace.package].version`.
+
 ### Manifest Frontmatter Preflight
 
 Before relying on local skills/commands in Claude, Codex, or Copilot, run:
@@ -239,13 +242,31 @@ python3 scripts/audit-rust-review-smells.py --changed    # Run before committing
 
 ## Git Workflow
 
-Direct commits to `main` allowed (rapid development mode). Pre-commit checks required for Rust; docs/styles skip.
+Branch protection is enabled on `main` — all changes go through PRs. Pre-commit checks required for Rust; docs/styles skip.
 
-**When the user says "PR"**: Create a branch, implement, then `gh pr create`. Never push directly to main for that task.
-For PR work, jj may be used locally to curate the change stack, but the final
-published work must be on a Git branch and submitted through GitHub.
-**Never create a branch unless the user asked for a PR or explicitly asked for a branch.**
+Create a branch, implement, then `gh pr create`. jj may be used locally to
+curate the change stack, but the final published work must be on a Git branch
+and submitted through GitHub.
 **Never make content decisions unilaterally** (e.g. what text to put in a title field) — confirm with the user first.
+
+Code versioning is automated: the release workflow detects path changes,
+infers bump level from conventional commits, and opens a release PR via
+`cargo-release`. Schema versioning uses `Schema-Bump:` footers enforced by hooks.
+
+#### Versioning Signals (Conventional Commits)
+
+Agents MUST use the following prefixes to signal the intended release impact:
+
+| Commit Prefix | Release Impact | Note |
+| :--- | :--- | :--- |
+| `feat!:` / `fix!:` | **Major** (Breaking) | Capped at **Minor** during pre-1.0 |
+| `feat:` | **Minor** (Feature) | Triggers a new feature release |
+| `fix:` / `perf:` | **Patch** (Fix) | Triggers a maintenance release |
+| `chore:` / `docs:` | **None** | Does not trigger a release PR |
+
+*   **Breaking Changes**: Append a `!` after the type (e.g., `feat!:`) OR include `BREAKING CHANGE:` in the footer.
+*   **Schema Bumps**: Include `Schema-Bump: patch|minor|major` in the footer if schema files changed.
+
 
 ```bash
 # Rust change

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Schema bump workflow for Citum with release-plz-aware guidance."""
+"""Schema bump workflow for Citum."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ from typing import Sequence
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCHEMA_STYLE_LIB = REPO_ROOT / "crates/citum-schema-style/src/lib.rs"
 SCHEMA_DOC = REPO_ROOT / "docs/reference/SCHEMA_VERSIONING.md"
-RELEASE_PLZ_WORKFLOW = REPO_ROOT / ".github/workflows/release-plz.yml"
+RELEASE_WORKFLOW = REPO_ROOT / ".github/workflows/release.yml"
 TRACK_CHOICES = ("schema", "code", "engine", "all")
 BUMP_CHOICES = ("patch", "minor", "major")
 
@@ -144,7 +144,7 @@ def resolve_plan(track: str, bump_type: str, release_name: str) -> ReleasePlan:
     else:
         raise BumpError(
             "Local code bumps are disabled in this repository. "
-            "Code releases are managed by release-plz; use this command only for schema bumps."
+            "Code releases are managed by the release workflow (cargo-release); use this command only for schema bumps."
         )
 
     return ReleasePlan(
@@ -399,9 +399,9 @@ def main(argv: Sequence[str]) -> int:
         args = parse_args(argv)
         if args.no_commit and not args.no_tag:
             raise BumpError("--no-commit requires --no-tag")
-        if args.track != "schema" and RELEASE_PLZ_WORKFLOW.exists():
+        if args.track != "schema" and RELEASE_WORKFLOW.exists():
             raise BumpError(
-                "Code releases are managed by release-plz in this repository. "
+                "Code releases are managed by the release workflow (cargo-release) in this repository. "
                 "Use `./scripts/bump.sh schema <patch|minor|major>` for schema-only bumps. "
                 "Do not use this command to bump Cargo versions or create `v*` tags."
             )

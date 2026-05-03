@@ -1,7 +1,7 @@
 # Workspace Version Bumping Policy
 
 This document describes how the Citum workspace version (`[workspace.package].version`
-in root `Cargo.toml`) is detected, bumped, and validated across commits.
+in root `Cargo.toml`) is managed.
 
 ## Two-Track Versioning
 
@@ -9,54 +9,44 @@ Citum keeps code and schema versioning separate:
 
 | Track | What | Source of truth | Automation |
 |-------|------|-----------------|------------|
-| **Code** | Rust workspace crates | `[workspace.package].version` in `Cargo.toml` | pre-commit auto-bump + `Version-Bump:` footer |
-| **Schema** | Citum schema format | `STYLE_SCHEMA_VERSION` in `crates/citum-schema-style/src/lib.rs` | pre-commit auto-bump + `Schema-Bump:` footer |
+| **Code** | Rust workspace crates | `[workspace.package].version` in `Cargo.toml` | `cargo-release` via GitHub Actions release workflow |
+| **Schema** | Citum schema format | `STYLE_SCHEMA_VERSION` | automated release workflow + `Schema-Bump:` footer |
 
 ## How It Works
 
-### pre-commit hook
+### Automated release workflow (`.github/workflows/release.yml`)
 
-When you stage `.rs` files in a publishable crate, `scripts/rust-check.py pre-commit` runs
-automatically and:
+When code merges to `main`, the release workflow:
 
-1. Tries `cargo-semver-checks --baseline-rev HEAD --workspace` to detect API-breaking changes.
-2. Falls back to a diff heuristic if `cargo-semver-checks` is not installed:
-   - Removed `pub` items → `major`
-   - Added `pub` items → `minor`
-   - No public surface change → `patch`
-3. Bumps `[workspace.package].version` in `Cargo.toml` and stages it.
-4. Also updates `Cargo.lock` if the `cargo update` invocation succeeds.
-5. Writes a `.git/VERSION_BUMP` handoff file with the inferred bump level.
+1. **Detects which tracks changed** using path filters:
+   - Schema crates (`citum-schema*`, `citum-cli`) → schema track
+   - Other publishable crates → code track
+2. **Infers bump level** from conventional commit messages since the last tag:
+   - `fix:`, `perf:`, `refactor:` → patch
+   - `feat:` → minor
+   - `feat!:` or `BREAKING CHANGE:` → major (capped at minor for pre-1.0)
+3. **Runs `cargo-semver-checks`** as a safety net — if it detects breaking API changes
+   but the commits only say `fix:`, the level is escalated.
+4. **Opens a release PR** (only for minor+ bumps; patches accumulate silently):
+   - Runs `cargo release <level> --workspace` to bump `Cargo.toml`
+   - Runs `git-cliff` to generate the changelog
+   - If schema paths changed, also bumps `STYLE_SCHEMA_VERSION`
+5. **Auto-tags** when the release PR is merged to `main`.
 
-### commit-msg hook
+### Schema-Bump footers (development-time)
 
-`scripts/rust-check.py commit-msg` reads the handoff file and appends a footer to the
-commit message:
+Individual commits that change schema crate code still require a `Schema-Bump:` footer,
+enforced by the pre-commit and commit-msg hooks. This catches schema changes during
+development. The release workflow handles the actual version bump.
 
-```
-Version-Bump: patch
-```
+### No Version-Bump footers
 
-Valid values: `patch`, `minor`, `major`.
-
-### pre-push hook
-
-`scripts/validate-version-release.py` validates the full push range:
-
-- Collects all `Version-Bump:` footers from commits in the range.
-- Resolves the highest bump level (`major > minor > patch`).
-- Verifies that `Cargo.toml` version at HEAD equals `bump_version(baseline, level)`.
-
-### CI (PR check)
-
-The `checks` job runs `validate-version-release.py` on the PR commit range.
-
-The `semver-check` job runs `cargo-semver-checks-action` for a definitive API surface
-comparison, posting results as a PR check.
+Workspace code versioning no longer uses commit footers. Do not add `Version-Bump:`
+footers to commits. The release workflow infers the bump level automatically.
 
 ## Publishable Crates
 
-These crates contribute to the `Version-Bump` contract:
+These crates contribute to the release workflow's path detection:
 
 - `crates/csl-legacy`
 - `crates/citum-schema-data`
@@ -83,26 +73,18 @@ Excluded (internal tooling, experimental, or not yet published):
 | New public item added | `minor` |
 | Bug fix, internal refactor, test, docs | `patch` |
 
-Before 1.0, `major` bumps are folded into `minor` to stay in the `0.x.y` range, matching
-release-plz behaviour. A 1.0 promotion requires a manual release.
+Before 1.0, `major` bumps are folded into `minor` to stay in the `0.x.y` range.
+A 1.0 promotion requires a manual release.
 
-## Override / Rescue
+## Configuration
 
-If the auto-bump inferred the wrong level, override manually:
-
-1. Edit `Cargo.toml` `[workspace.package].version` to the correct value.
-2. Stage `Cargo.toml` (and `Cargo.lock` if it changed).
-3. Add `Version-Bump: <correct-level>` to the commit message body.
-
-The commit-msg hook validates that the staged version matches the declared footer.
-
-## Skipping
-
-Set `SKIP_VERSION_CHECK=1` to bypass the pre-commit and commit-msg checks for a single
-commit (use sparingly — CI will still validate on PRs).
+The release tool is configured in `release.toml`:
+- `shared-version = true` — all workspace crates share one version
+- `consolidate-commits = true` — one version-bump commit per release
+- `dependent-version = "upgrade"` — intra-workspace deps are auto-updated
 
 ## Related
 
 - [SCHEMA_VERSIONING.md](SCHEMA_VERSIONING.md) — schema track
-- `scripts/rust-check.py` — pre-commit and commit-msg implementation
-- `scripts/validate-version-release.py` — pre-push and CI validation
+- `.github/workflows/release.yml` — release workflow
+- `release.toml` — cargo-release configuration

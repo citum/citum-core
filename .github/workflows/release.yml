@@ -1,0 +1,205 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "crates/**/*.rs"
+      - "Cargo.toml"
+      - "Cargo.lock"
+  pull_request:
+    types: [closed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      command:
+        description: "Action to perform"
+        required: true
+        default: release-pr
+        type: choice
+        options:
+          - release-pr
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  # ── Step 1: Detect what changed and infer bump level ──────────────
+  detect:
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' &&
+       github.event.inputs.command == 'release-pr')
+    runs-on: ubuntu-latest
+    outputs:
+      code-changed: ${{ steps.filter.outputs.code }}
+      schema-changed: ${{ steps.filter.outputs.schema }}
+      bump-level: ${{ steps.infer.outputs.level }}
+      should-release: ${{ steps.infer.outputs.should-release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            schema:
+              - "crates/citum-schema-data/**/*.rs"
+              - "crates/citum-schema-style/**/*.rs"
+              - "crates/citum-schema/**/*.rs"
+              - "crates/citum-cli/**/*.rs"
+            code:
+              - "crates/csl-legacy/**/*.rs"
+              - "crates/citum-migrate/**/*.rs"
+              - "crates/citum-engine/**/*.rs"
+              - "crates/citum-bindings/**/*.rs"
+
+      - name: Infer bump level from commits
+        id: infer
+        if: steps.filter.outputs.code == 'true' || steps.filter.outputs.schema == 'true'
+        run: |
+          LAST_TAG=$(git tag --sort=-version:refname -l 'v*' | head -1)
+          if [ -z "$LAST_TAG" ]; then RANGE="HEAD"; else RANGE="${LAST_TAG}..HEAD"; fi
+
+          LEVEL="patch"
+          SHOULD_RELEASE="false"
+
+          if git log --format="%s%n%b" "$RANGE" | grep -qE '^(feat|fix|refactor|perf)(\(.+\))?!:'; then
+            LEVEL="major"
+            SHOULD_RELEASE="true"
+          elif git log --format="%s%n%b" "$RANGE" | grep -qE '^BREAKING CHANGE:'; then
+            LEVEL="major"
+            SHOULD_RELEASE="true"
+          elif git log --format="%s" "$RANGE" | grep -qE '^feat(\(.+\))?:'; then
+            LEVEL="minor"
+            SHOULD_RELEASE="true"
+          fi
+
+          # Pre-1.0: cap major at minor
+          CURRENT=$(grep -oP 'version = "\K[^"]+' Cargo.toml | head -1)
+          MAJOR=$(echo "$CURRENT" | cut -d. -f1)
+          if [ "$MAJOR" = "0" ] && [ "$LEVEL" = "major" ]; then
+            LEVEL="minor"
+          fi
+
+          echo "level=$LEVEL" >> "$GITHUB_OUTPUT"
+          echo "should-release=$SHOULD_RELEASE" >> "$GITHUB_OUTPUT"
+
+  # ── Step 2: Create/update the release PR ──────────────────────────
+  release-pr:
+    needs: detect
+    if: needs.detect.outputs.should-release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-release,cargo-semver-checks,git-cliff
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Semver safety check
+        if: needs.detect.outputs.code-changed == 'true'
+        continue-on-error: true
+        id: semver
+        run: |
+          LAST_TAG=$(git tag --sort=-version:refname -l 'v*' | head -1)
+          if [ -z "$LAST_TAG" ]; then
+            echo "breaking=false" >> "$GITHUB_OUTPUT"
+          elif cargo semver-checks --workspace --baseline-rev "$LAST_TAG" 2>&1; then
+            echo "breaking=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "breaking=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Resolve final bump level
+        id: resolve
+        run: |
+          LEVEL="${{ needs.detect.outputs.bump-level }}"
+          # If semver-checks found breaking changes, escalate
+          if [ "${{ steps.semver.outputs.breaking }}" = "true" ]; then
+            CURRENT=$(grep -oP 'version = "\K[^"]+' Cargo.toml | head -1)
+            MAJOR=$(echo "$CURRENT" | cut -d. -f1)
+            if [ "$MAJOR" = "0" ]; then LEVEL="minor"; else LEVEL="major"; fi
+          fi
+          echo "level=$LEVEL" >> "$GITHUB_OUTPUT"
+
+      - name: Bump schema version (if schema changed)
+        if: needs.detect.outputs.schema-changed == 'true'
+        run: |
+          python3 scripts/bump.py schema "${{ steps.resolve.outputs.level }}" \
+            --yes --no-commit --no-tag --no-validate
+
+      - name: Create release branch and bump workspace version
+        run: |
+          BRANCH="release/next"
+          git checkout -B "$BRANCH"
+          cargo release "${{ steps.resolve.outputs.level }}" \
+            --workspace --no-publish --no-push --no-tag --no-confirm --execute
+          git push -f origin "$BRANCH"
+
+      - name: Create or update release PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          NEW_VERSION=$(grep -oP 'version = "\K[^"]+' Cargo.toml | head -1)
+          BODY="Automated release PR for **v${NEW_VERSION}**.
+
+          | Detail | Value |
+          |--------|-------|
+          | Bump level | \`${{ steps.resolve.outputs.level }}\` |
+          | Schema changed | ${{ needs.detect.outputs.schema-changed }} |
+          | Code changed | ${{ needs.detect.outputs.code-changed }} |"
+
+          EXISTING=$(gh pr list --head "release/next" --json number --jq '.[0].number' || true)
+          if [ -n "$EXISTING" ]; then
+            gh pr edit "$EXISTING" --title "chore: release v${NEW_VERSION}" --body "$BODY"
+          else
+            gh pr create --head "release/next" --base main \
+              --title "chore: release v${NEW_VERSION}" --body "$BODY" \
+              --label "release"
+          fi
+
+  # ── Step 3: Auto-tag when release PR merges ───────────────────────
+  auto-tag:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.merged == true &&
+      github.event.pull_request.head.ref == 'release/next'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-release
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-release
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Finalize release (tag and optionally publish)
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        run: |
+          # We use --no-confirm --execute.
+          # It will create the tag and publish based on release.toml settings.
+          cargo release --workspace --no-confirm --execute
