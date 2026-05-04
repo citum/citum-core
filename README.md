@@ -19,11 +19,16 @@ Do not treat hard-coded README percentages as canonical.
 ## What Citum Includes
 
 - `csl-legacy`: CSL 1.0 XML parser
-- `citum_schema`: schema/types and shared models
+- `citum_schema`: schema/types and shared models (includes `citum-schema-data`, `citum-schema-style`)
 - `citum_engine`: citation and bibliography rendering engine
 - `citum_migrate`: CSL 1.0 -> Citum migration pipeline (hybrid)
-- `citum`: main CLI (`render`, `check`, `convert`)
+- `citum-cli`: main binary (`citum`) and subcommands
 - `citum_analyze`: corpus analysis tooling
+- `citum-bindings`: FFI and language bindings (JS/WASM)
+- `citum-edtf`: native EDTF date processing
+- `citum-pdf`: PDF generation via Typst
+- `citum-server`: stateless JSON-RPC server
+- `citum_store`: user-level persistent registry and store
 
 ## Quick Start
 
@@ -92,8 +97,12 @@ when parseable or `literal` otherwise to avoid dropping date semantics.
 
 - `render` (subcommands: `doc`, `refs`)
 - `check`
-- `convert`
-  - subcommands: `refs`, `style`, `citations`, `locale`
+- `convert` (subcommands: `refs`, `style`, `citations`, `locale`)
+- `styles` (subcommands: `list`)
+- `registry` (subcommands: `list`, `resolve`)
+- `store` (subcommands: `list`, `install`, `remove`)
+- `style` (subcommand: `lint`)
+- `locale` (subcommand: `lint`)
 
 Schema generation is available with the feature-enabled build:
 
@@ -104,17 +113,31 @@ cargo run --bin citum --features schema -- schema --out-dir ./schemas
 
 ## Migration Workflow (Hybrid)
 
-Citum migration combines three approaches:
+Citum migration combines output-driven template inference with XML extraction:
 
-1. XML options extraction for global behavior.
-2. Output-driven template inference for structure.
-3. Hand-authored high-impact styles for top parent fidelity.
+1. Extract global options from CSL XML.
+2. Resolve citation and bibliography templates from inferred output artifacts (cache first, then live inference).
+3. Fall back to XML template compilation only when template artifacts are missing or rejected.
+4. Emit `extends:`-based wrapper styles when the target lineage matches a known profile or journal.
 
-Run migration:
+Run a single-style migration (uses embedded Deno-based JS runtime for live inference):
 
 ```bash
 ./scripts/bootstrap.sh full
 ./scripts/dev-env.sh cargo run --bin citum-migrate -- styles-legacy/apa.csl
+```
+
+Prepare a batch inference cache (requires Node.js; allows subsequent Rust migrations without live JS):
+
+```bash
+./scripts/bootstrap.sh full
+./scripts/batch-infer.sh
+```
+
+Migrate using the cache-only inferred mode:
+
+```bash
+cargo run --bin citum-migrate -- styles-legacy/apa.csl --template-source inferred
 ```
 
 Prepare high-fidelity authoring context:
@@ -174,12 +197,16 @@ crates/
   csl-legacy/
   citum-schema-data/
   citum-schema-style/
-  citum-cli/
-  citum-analyze/
   citum-schema/
-  csln-edtf/
   citum-migrate/
   citum-engine/
+  citum-analyze/
+  citum-cli/
+  citum-pdf/
+  citum-server/
+  citum-edtf/
+  citum_store/
+  citum-bindings/
 
 docs/
 styles/
