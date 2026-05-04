@@ -115,6 +115,7 @@ pub enum SchemaWarning {
 
 /// Failure modes while resolving a style with inheritance.
 #[derive(Debug, Clone, PartialEq)]
+#[non_exhaustive]
 pub enum ResolutionError {
     /// A `profile` style attempted to override template-bearing structure.
     InvalidProfileOverride {
@@ -125,6 +126,13 @@ pub enum ResolutionError {
     InheritanceLoop {
         /// Base key that closed the cycle.
         base: String,
+    },
+    /// A `file://` URI could not be resolved.
+    UriResolutionFailed {
+        /// The URI that failed to resolve.
+        uri: String,
+        /// Reason for failure.
+        reason: String,
     },
 }
 
@@ -139,6 +147,9 @@ impl std::fmt::Display for ResolutionError {
             }
             ResolutionError::InheritanceLoop { base } => {
                 write!(f, "inheritance loop detected at base `{base}`")
+            }
+            ResolutionError::UriResolutionFailed { uri, reason } => {
+                write!(f, "failed to resolve URI `{uri}`: {reason}")
             }
         }
     }
@@ -265,7 +276,7 @@ impl Style {
     /// contract, when profile capability validation fails, or when
     /// inheritance loops are detected.
     pub fn try_into_resolved_recursive(
-        mut self,
+        self,
         visited: &mut HashSet<String>,
     ) -> Result<Self, ResolutionError> {
         let Some(base_ref) = self.extends.clone() else {
@@ -283,12 +294,42 @@ impl Style {
         let is_profile = self.resolves_as_profile();
         let mut effective = match base_ref {
             style_base::StyleReference::Base(base) => base.try_resolve_with_visited(visited)?,
-            style_base::StyleReference::Uri(_) => {
-                // Phase 2: Resolve URI via StyleResolver trait.
-                // For now, apply scoped options and return self to avoid
-                // breaking non-URI flows.
-                options::scoped::apply_scoped_style_options(&mut self);
-                return Ok(self);
+            style_base::StyleReference::Uri(ref uri) => {
+                let Some(raw_path) = uri.strip_prefix("file://") else {
+                    return Err(ResolutionError::UriResolutionFailed {
+                        uri: uri.clone(),
+                        reason: "unsupported scheme; only file:// URIs are supported".to_string(),
+                    });
+                };
+                let path = std::path::Path::new(raw_path);
+                let bytes =
+                    std::fs::read(path).map_err(|e| ResolutionError::UriResolutionFailed {
+                        uri: uri.clone(),
+                        reason: e.to_string(),
+                    })?;
+                let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
+                let base_style: Style =
+                    match ext {
+                        "cbor" => ciborium::de::from_reader(std::io::Cursor::new(&bytes)).map_err(
+                            |e| ResolutionError::UriResolutionFailed {
+                                uri: uri.clone(),
+                                reason: e.to_string(),
+                            },
+                        )?,
+                        "json" => serde_json::from_slice(&bytes).map_err(|e| {
+                            ResolutionError::UriResolutionFailed {
+                                uri: uri.clone(),
+                                reason: e.to_string(),
+                            }
+                        })?,
+                        _ => Style::from_yaml_bytes(&bytes).map_err(|e| {
+                            ResolutionError::UriResolutionFailed {
+                                uri: uri.clone(),
+                                reason: e.to_string(),
+                            }
+                        })?,
+                    };
+                base_style.try_into_resolved_recursive(visited)?
             }
         };
         if is_profile {
@@ -2184,5 +2225,66 @@ citation:
             .try_into_resolved()
             .expect("non-registry extends styles should retain merge semantics");
         assert!(resolved.citation.is_some());
+    }
+
+    #[test]
+    fn uri_extends_file_resolves_yaml() {
+        use std::io::Write;
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .subsec_nanos();
+        let dir = std::env::temp_dir().join(format!("citum_test_{nanos}"));
+        std::fs::create_dir_all(&dir).unwrap();
+        let parent_path = dir.join("parent.yaml");
+        let mut f = std::fs::File::create(&parent_path).unwrap();
+        f.write_all(b"info:\n  title: Parent\ncitation:\n  template: []\n")
+            .unwrap();
+        let child_yaml = format!(
+            "info:\n  title: Child\nextends: \"file://{}\"\n",
+            parent_path.display()
+        );
+        let child = Style::from_yaml_str(&child_yaml).unwrap();
+        let resolved = child.try_into_resolved().unwrap();
+        std::fs::remove_dir_all(&dir).ok();
+        assert!(
+            resolved.citation.is_some(),
+            "should inherit citation from file-backed parent"
+        );
+    }
+
+    #[test]
+    fn uri_extends_missing_file_returns_error() {
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .subsec_nanos();
+        let dir = std::env::temp_dir().join(format!("citum_test_{nanos}_missing"));
+        std::fs::create_dir_all(&dir).unwrap();
+        let missing = dir.join("does_not_exist.yaml");
+        let yaml = format!(
+            "info:\n  title: Child\nextends: \"file://{}\"\n",
+            missing.display()
+        );
+        let child = Style::from_yaml_str(&yaml).unwrap();
+        let err = child.try_into_resolved().unwrap_err();
+        std::fs::remove_dir_all(&dir).ok();
+        assert!(
+            matches!(err, ResolutionError::UriResolutionFailed { .. }),
+            "expected UriResolutionFailed, got {err:?}"
+        );
+    }
+
+    #[test]
+    fn uri_extends_unsupported_scheme_returns_error() {
+        let yaml = "info:\n  title: Child\nextends: \"https://example.com/style.yaml\"\n";
+        let child = Style::from_yaml_str(yaml).unwrap();
+        let err = child.try_into_resolved().unwrap_err();
+        assert!(
+            matches!(err, ResolutionError::UriResolutionFailed { .. }),
+            "expected UriResolutionFailed for unsupported scheme, got {err:?}"
+        );
     }
 }

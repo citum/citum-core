@@ -56,3 +56,21 @@ Scale the architecture for massive distribution and trust.
 - Eliminate the single-point-of-failure bottleneck for style publication.
 - Enable institutional privacy and institutional "ownership" of style variants.
 - Maintain the "Zero-Config" advantage for standard users through a strong primary Hub default.
+
+## Stage 1 Implementation (completed)
+
+Implemented `file://` URI resolution in `try_into_resolved_recursive`:
+- Added `UriResolutionFailed { uri, reason }` to `ResolutionError`
+- Handles `.yaml`/`.yml`, `.json`, and `.cbor` format detection by file extension
+- Loop protection via existing `visited` set
+- Only `file://` URIs accepted; other schemes and bare paths return `UriResolutionFailed`
+
+## Remaining Work (Stage 2+)
+
+Phase 2 (remote fetching, caching) and Phase 3 (content addressing, hub federation)
+remain. The `StyleResolver` trait and resolver chain in `citum_store` are already
+in place for when HTTP/Git resolution is added.
+
+Key decision deferred: whether to thread a `&dyn StyleResolver` into
+`try_into_resolved_recursive` — enables pluggable resolution at the schema
+level and is required before Phase 2 can handle non-file URIs.

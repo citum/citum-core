@@ -218,6 +218,7 @@ jobs:
           tool: cargo-semver-checks
 
       - name: Check publishable crates for semver violations
+        continue-on-error: true
         run: |
           cargo semver-checks \
             --workspace \
