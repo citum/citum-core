@@ -21,7 +21,7 @@ The current server API renders citations one at a time (`render_citation`) witho
 
 **Out of scope:**
 - Streaming/incremental progress events (Tier 3) — deferred, requires SSE or chunked HTTP
-- Replacement or removal of existing `render_citation`, `render_bibliography`, `validate_style` methods
+- Replacement or removal of existing `render_citation`, `render_bibliography`, `validate_style` methods (these remain the idiomatic paths for context-free tasks like CV generation, isolated UI previews, and static style analysis)
 - Changes to `Processor` internals (thread-safety refactor is a separate concern)
 - `validate_document` validation-only endpoint — useful future work, not in this spec
 
@@ -57,7 +57,7 @@ citum-bindings (WASM adapter)
   └── DocumentSession exposed as a wasm-bindgen class
         (all methods take/return JSON strings; JS holds the object reference)
 
-citum-server (RPC adapter)
+citum-server (Daemon / Network adapter)
   ├── format_document dispatch arm (works in stdio + HTTP)
   └── session lifecycle methods (HTTP + `session` feature only)
         (session store: Arc<Mutex<HashMap<String, DocumentSession>>>)
@@ -90,7 +90,11 @@ Controls rendering behaviour that belongs to the document rather than the style.
 
 | Field | Type | Default | Notes |
 |-------|------|---------|-------|
-| `bibliography_groups` | `BibliographyGroup[]` | — | Override or replace style-defined grouping. Reuses `BibliographyGroup` from `citum-schema-style` (has `id`, `heading`, `selector`, `sort`, `template` — see csl26-extg, commit `86dca5f`). Takes precedence over style-defined groups. |
+| `bibliography_groups` | `BibliographyGroup[]` | — | Override or replace style-defined grouping. Reuses `BibliographyGroup` from `citum-schema-style` (has `id`, `heading`, `selector`, `sort`, `template`, `disambiguate`). Takes precedence over style-defined groups. |
+| `sort_partitioning` | `SortPartitioning` | — | Automatic bibliography partitioning by Script or Language. Maps to `BibliographySortPartitioning` in engine. |
+| `integral_names` | `IntegralNameOverride` | — | Document-level narrative citation rules. Maps to `DocumentIntegralNameOverride`. |
+| `show_semantics` | boolean | true | Whether to output semantic markup (HTML spans, Djot attributes). |
+| `inject_ast_indices` | boolean | false | Whether to annotate semantic wrappers with source template indices (traceability). |
 | `annotations` | `Record<string, string>` | — | Ref ID → annotation text map. When present, the processor appends each entry's annotation after its bibliography entry. Annotation text is parsed as Djot inline markup by default. |
 | `annotation_format` | `"djot"` \| `"plain"` \| `"org"` | `"djot"` | Controls how annotation text is interpreted. Maps to `AnnotationFormat` in `citum-engine/src/io.rs`. |
 | `suppress_bibliography` | boolean | false | *Pandoc precedent — not yet in engine. TBD whether to add.* |
@@ -102,13 +106,21 @@ Controls rendering behaviour that belongs to the document rather than the style.
 
 `render_bibliography_with_format_and_annotations` accepts `annotations: Option<&HashMap<String, String>>` and `annotation_style: Option<&AnnotationStyle>` explicitly — the caller supplies the annotation map; the engine does not auto-extract from any reference field. The CLI exposes this via `--annotations <path>` (JSON/YAML file). The API surface here needs to mirror that contract.
 
-**`bibliography_groups` shape** (abbreviated — see `citum-schema-style/src/grouping.rs` for full definition):
+**`bibliography_groups` shape** (see `citum-schema-style/src/grouping.rs` for full definition):
 ```json
 {
   "id": "cases",
   "heading": {"literal": "Table of Cases"},
   "selector": {"type": ["legal-case"]},
-  "sort": null
+  "sort": {
+    "template": [
+      {
+        "key": "type",
+        "order": ["legal-case", "statute", "treaty"]
+      }
+    ]
+  },
+  "disambiguate": "globally"
 }
 ```
 
@@ -160,6 +172,69 @@ For compound locators (e.g. chapter + page), use the compound form:
 ```
 
 Standard `label` values (kebab-case): `page`, `chapter`, `section`, `paragraph`, `volume`, `issue`, `note`, `figure`, `line`, `verse`, `column`, and others per `LocatorType`.
+
+**`SortPartitioning`** shape (maps to `BibliographySortPartitioning`):
+
+```json
+{
+  "by": "script",
+  "mode": "sort-and-sections",
+  "order": ["latin", "cyrillic", "han"],
+  "headings": {
+    "latin": {"literal": "Western Sources"},
+    "cyrillic": {"term": "no-date"}
+  }
+}
+```
+`by`: `"script"` | `"language"`. `mode`: `"sort-only"` | `"sections"` | `"sort-and-sections"`.
+
+**`IntegralNameOverride`** shape (maps to `DocumentIntegralNameOverride`):
+
+```json
+{
+  "enabled": true,
+  "rule": "first-full-then-short",
+  "scope": "section",
+  "contexts": ["prose", "notes"],
+  "subsequent_form": "short"
+}
+```
+
+### `FormattedCitation` and `FormattedBibliography`
+
+These types capture the rendered output along with metadata provided by the engine's `ProcEntry` and `ProcEntryMetadata`.
+
+**`FormattedCitation` fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Citation occurrence identifier |
+| `text` | string | Formatted citation string (plain text or markup) |
+| `ref_ids` | string[] | IDs of references included in this citation |
+
+**`FormattedBibliography` fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `format` | string | Output format used (`plain`, `html`, etc.) |
+| `content` | string | Complete formatted bibliography block (including headings) |
+| `entries` | `BibliographyEntry[]` | List of individual formatted entries with metadata |
+
+**`BibliographyEntry` fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Reference ID |
+| `text` | string | Formatted entry string |
+| `metadata` | `EntryMetadata` | Structured metadata for interactivity (tooltips, UI sorting) |
+
+**`EntryMetadata` fields** (maps to `ProcEntryMetadata`):
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `author` | string | Rendered primary author(s) string |
+| `year` | string | Rendered year string |
+| `title` | string | Rendered title string |
 
 ### `Warning` — structured diagnostic
 
@@ -228,10 +303,14 @@ Modelled on Pandoc citeproc: one call, all inputs, all outputs. Works in stdio, 
     }
   ],
   "document_options": {
+    "show_semantics": true,
+    "sort_partitioning": {
+      "by": "language",
+      "mode": "sections"
+    },
     "annotations": {
       "smith2020": "A foundational text for the field."
-    },
-    "annotation_format": "djot"
+    }
   }
 }
 ```
@@ -240,13 +319,31 @@ Modelled on Pandoc citeproc: one call, all inputs, all outputs. Works in stdio, 
 ```json
 {
   "formatted_citations": [
-    {"id": "cite1", "text": "(Smith, 2020, p. 23)"},
-    {"id": "cite2", "text": "Smith (2020)"}
+    {
+      "id": "cite1",
+      "text": "(Smith, 2020, p. 23)",
+      "ref_ids": ["smith2020"]
+    },
+    {
+      "id": "cite2",
+      "text": "Smith (2020)",
+      "ref_ids": ["smith2020"]
+    }
   ],
   "bibliography": {
     "format": "plain",
-    "content": "Smith, J. (2020). Example Book.",
-    "entries": ["Smith, J. (2020). Example Book."]
+    "content": "# Bibliography\n\nSmith, J. (2020). Example Book.",
+    "entries": [
+      {
+        "id": "smith2020",
+        "text": "Smith, J. (2020). Example Book.",
+        "metadata": {
+          "author": "Smith, J.",
+          "year": "2020",
+          "title": "Example Book"
+        }
+      }
+    ]
   },
   "warnings": []
 }
@@ -267,8 +364,18 @@ For word processors with large bibliographies where re-sending the full `refs` l
 ```json
 {
   "version": 5,
-  "affected_citations": [{"id": "c14", "text": "..."}],
-  "bibliography": {"format": "plain", "content": "...", "entries": [...]},
+  "affected_citations": [
+    {
+      "id": "c14",
+      "text": "(Doe, 2021, p. 45)",
+      "ref_ids": ["doe2021"]
+    }
+  ],
+  "bibliography": {
+    "format": "plain",
+    "content": "...",
+    "entries": [...]
+  },
   "renumbering_occurred": false,
   "warnings": []
 }
