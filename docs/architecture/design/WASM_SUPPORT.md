@@ -328,8 +328,8 @@ WASM support should be implemented when **any** of these conditions are met:
 - [ ] Automated publishing via GitHub Actions
 
 **Tier 5 (Verification):**
-- [ ] APA 7th oracle tests pass in WASM
-- [ ] Performance benchmark report (native vs WASM)
+- [x] APA 7th oracle tests pass in WASM
+- [x] Performance benchmark report (native vs WASM) — see [WASM_BENCHMARK_REPORT.md](./WASM_BENCHMARK_REPORT.md)
 - [ ] STYLE_EDITOR_VISION.md updated with implementation status
 
 ## Conclusion
