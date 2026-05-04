@@ -1,57 +1,39 @@
 # Citum Server Mode: Architecture Plan
 
-**Status:** Approved for Phase 2 implementation
-**Last updated:** 2026-02-23
+**Status:** Implemented
+**Last updated:** 2026-05-03
 **Related:** [CITUM_MODULARIZATION.md](./CITUM_MODULARIZATION.md)
 
 ## Problem Statement
 
-The Citum engine needs a server mode to support real-time citation formatting
+The Citum engine provides a server mode to support real-time citation formatting
 in word processors (Word, LibreOffice) and live preview in the citum-hub web
-app. The batch CLI (`citum`) is synchronous and stdin/stdout-driven; adding
-an HTTP server there conflates two fundamentally different runtime models.
+app. The batch CLI (`citum`) is synchronous and stdin/stdout-driven; the
+dedicated server provides a persistent runtime model for low-latency updates.
 
 ---
 
 ## Decision: Dedicated `citum-server` Binary Crate (In `citum-core`)
 
-The server mode belongs in a dedicated `citum-server` binary crate in the
-`citum-core` workspace. It should not be a subcommand on `citum`, and it
-should not live in `citum-hub` (`style-hub`).
+The server mode is implemented as a dedicated `citum-server` binary crate in the
+`citum-core` workspace. It is not a subcommand on `citum`.
 
 **Rationale:**
-- CLI is a batch tool with synchronous I/O; a server has a different lifecycle
+- CLI is a batch tool with synchronous I/O; the server has a different lifecycle
   (long-running process, connection management, graceful shutdown)
 - A dedicated crate keeps boundaries clear while iteration is still fast in one repo
-- Maps directly to the `citum-bindings` layer planned in Phase 2 of the
-  modularization plan — server and bindings both depend only on `citum-engine`
-- Async (tokio) can be an opt-in feature flag; sync builds remain possible for
+- Maps directly to the `citum-bindings` layer — server and bindings both depend only on `citum-engine`
+- Async (tokio) is an opt-in feature flag; sync builds remain possible for
   embedding contexts that don't want a runtime
 
-### Updated Dependency Graph
+### Implementation Status
 
-```
-citum-schema    (no legacy deps)
-
-citum-engine    -> citum-schema
-citum-server    -> citum-engine, citum-schema   [new in citum-core]
-citum-migrate   -> citum-schema, csl-legacy
-citum          -> citum-engine, citum-migrate   [binary from `citum-cli` crate]
-citum-bindings  -> citum-engine                 [cdylib/wasm, Phase 2]
-```
-
-### Crate Map Update
-
-| Crate            | Published? | Notes                                      |
-|-----------------|------------|--------------------------------------------|
-| `citum-schema`   | Yes        | Schema source of truth                     |
-| `citum-engine`   | Yes        | Rendering engine                           |
-| `citum-server`   | Yes (bin)  | In `citum-core` workspace (Phase 2)        |
-| `citum-migrate`  | No         | Internal tooling                           |
-| `csl-legacy`     | No         | Internal tooling                           |
-| `csln-edtf`      | Yes        | Potentially standalone                     |
-| `citum-analyze`  | No         | Internal tooling                           |
-| `citum`          | Yes (bin)  | CLI binary (from `citum-cli` crate)       |
+| Component | Status | Purpose |
+|-----------|--------|---------|
+| `crates/citum-server/Cargo.toml` | DONE | Crate manifest; deps on engine + schema only; optional async/http features |
+| `crates/citum-server/src/main.rs` | DONE | Entry point; arg parsing (mode flag: `--http`, `--port`) |
+| `crates/citum-server/src/rpc.rs` | DONE | JSON-RPC stdin/stdout handler |
+| `crates/citum-server/src/http.rs` | DONE | HTTP handler (feature-gated behind `http`) |
 
 ---
 
@@ -65,7 +47,7 @@ the same pattern as citeproc-rs and Haskell citeproc. This transport:
 - Is trivially testable with `echo '...' | citum-server`
 - Has established prior art in the citation processing ecosystem
 
-HTTP/REST is available behind an opt-in `http` feature flag (see below).
+HTTP/REST is available behind an opt-in `http` feature flag.
 
 ### Request/Response Envelope
 
@@ -82,7 +64,7 @@ HTTP/REST is available behind an opt-in `http` feature flag (see below).
 { "id": 4, "error": "style not found: apa-7th" }
 ```
 
-Three methods, matching the planned `citum-bindings` public API surface
+Methods match the `citum-bindings` public API surface
 (`render_citation`, `render_bibliography`, `validate_style`). No internal
 types leak through.
 
@@ -104,39 +86,25 @@ Exposes the same three methods over HTTP/REST using `axum`. Useful for:
 - Browser-based style editors requiring a local engine proxy
 
 Enabling `http` automatically enables `async`. The HTTP handler reuses the
-same dispatcher logic as the stdin/stdout handler — no duplication.
+same dispatcher logic as the stdin/stdout handler.
 
 ---
 
-## Files to Create/Modify
+## Scalability and Performance
 
-| Operation | Path | Purpose |
-|-----------|------|---------|
-| CREATE | `crates/citum-server/Cargo.toml` | Crate manifest; deps on engine + schema only; optional async/http features |
-| CREATE | `crates/citum-server/src/main.rs` | Entry point; arg parsing (mode flag: `--http`, `--port`) |
-| CREATE | `crates/citum-server/src/rpc.rs` | JSON-RPC stdin/stdout handler |
-| CREATE | `crates/citum-server/src/http.rs` | HTTP handler (feature-gated behind `http`) |
-| MODIFY | `Cargo.toml` | Add `crates/citum-server` to workspace members |
-| MODIFY | `docs/architecture/CITUM_MODULARIZATION.md` | Keep crate map and dependency graph aligned |
+As of Phase 2, the server operates in a **stateless** mode. On every request, the
+client must provide the full reference library and style path. 
 
----
+Benchmarking (May 2026) confirmed:
+- **500 Refs:** ~21ms latency for full bibliography refresh (Interval=1)
+- **5000 Refs:** ~210ms latency for full bibliography refresh (Interval=1)
 
-## Implementation Notes for @builder
-
-- Use `serde_json` for request/response types (already a workspace dep)
-- Protocol: newline-delimited JSON on stdin/stdout (same as citeproc-rs)
-- No `clap` in library modules; minimal arg parsing in `main.rs` only
-- The `Processor` from `citum_engine` (future: `citum-engine`) is sync;
-  the `async` feature wraps it in `tokio::task::spawn_blocking`
-- Error responses use `{ "id": N, "error": "message" }` envelope
-- HTTP feature uses `axum`; add to workspace deps only when feature is enabled
-- No authentication or multi-tenant isolation in this iteration
-- The server crate sits *above* `citum-bindings` in the stack — both call the
-  same engine functions independently; they do not depend on each other
+While the stateless model is highly robust, research is ongoing into an optional
+stateful mode for sub-millisecond updates in massive documents (see `csl26-stat`).
 
 ---
 
-## Relationship to citum-bindings (Phase 2)
+## Relationship to citum-bindings
 
 `citum-server` and `citum-bindings` share the same public API surface
 (`render_citation`, `render_bibliography`, `validate_style`) but serve
@@ -148,10 +116,6 @@ different deployment targets:
 | Callers | Word processors, hub app | Web apps, WASM runtimes |
 | Transport | JSON-RPC / HTTP | Rust FFI / wasm-bindgen |
 | Async | Opt-in feature | Opt-in feature |
-
-Implement `citum-server` first (simpler, no FFI complexity). Use it to
-validate the API surface before stabilizing `citum-bindings`. Revisit extraction
-to a separate repo only after API/protocol stabilize and release cadence diverges.
 
 ---
 
@@ -173,3 +137,5 @@ to a separate repo only after API/protocol stabilize and release cadence diverge
 | `csl26-srvr`  | citum-server mode (epic)                           | 2     |
 | `csl26-srpc`  | Implement JSON-RPC stdin/stdout handler            | 2     |
 | `csl26-shtp`  | Implement HTTP feature (axum, feature-gated)       | 2     |
+| `csl26-stat`  | Consider optional stateful mode for citum-server   | 3     |
+
