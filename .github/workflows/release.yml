@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "crates/**/*.rs"
+      - "docs/schemas/**"
       - "Cargo.toml"
       - "Cargo.lock"
   pull_request:
@@ -28,13 +29,14 @@ jobs:
   # ── Step 1: Detect what changed and infer bump level ──────────────
   detect:
     if: >-
-      github.event_name == 'push' ||
+      (github.event_name == 'push' &&
+       !contains(github.event.head_commit.message, 'release v')) ||
       (github.event_name == 'workflow_dispatch' &&
        github.event.inputs.command == 'release-pr')
     runs-on: ubuntu-latest
     outputs:
-      code-changed: ${{ steps.filter.outputs.code }}
-      schema-changed: ${{ steps.filter.outputs.schema }}
+      code-changed: ${{ steps.infer.outputs.code-changed }}
+      schema-changed: ${{ steps.infer.outputs.schema-changed }}
       bump-level: ${{ steps.infer.outputs.level }}
       should-release: ${{ steps.infer.outputs.should-release }}
     steps:
@@ -42,51 +44,33 @@ jobs:
         with:
           fetch-depth: 0
 
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            schema:
-              - "crates/citum-schema-data/**/*.rs"
-              - "crates/citum-schema-style/**/*.rs"
-              - "crates/citum-schema/**/*.rs"
-              - "crates/citum-cli/**/*.rs"
-            code:
-              - "crates/csl-legacy/**/*.rs"
-              - "crates/citum-migrate/**/*.rs"
-              - "crates/citum-engine/**/*.rs"
-              - "crates/citum-bindings/**/*.rs"
-
       - name: Infer bump level from commits
         id: infer
-        if: steps.filter.outputs.code == 'true' || steps.filter.outputs.schema == 'true'
         run: |
           LAST_TAG=$(git tag --sort=-version:refname -l 'v*' | head -1)
-          if [ -z "$LAST_TAG" ]; then RANGE="HEAD"; else RANGE="${LAST_TAG}..HEAD"; fi
-
-          LEVEL="patch"
-          SHOULD_RELEASE="false"
-
-          if git log --format="%s%n%b" "$RANGE" | grep -qE '^(feat|fix|refactor|perf)(\(.+\))?!:'; then
-            LEVEL="major"
-            SHOULD_RELEASE="true"
-          elif git log --format="%s%n%b" "$RANGE" | grep -qE '^BREAKING CHANGE:'; then
-            LEVEL="major"
-            SHOULD_RELEASE="true"
-          elif git log --format="%s" "$RANGE" | grep -qE '^feat(\(.+\))?:'; then
-            LEVEL="minor"
-            SHOULD_RELEASE="true"
+          if [ -z "$LAST_TAG" ]; then
+            ROOT=$(git rev-list --max-parents=0 HEAD | tail -1)
+            if [ "$ROOT" = "$(git rev-parse HEAD)" ]; then
+              RANGE="HEAD"
+            else
+              RANGE="${ROOT}..HEAD"
+            fi
+          else
+            RANGE="${LAST_TAG}..HEAD"
           fi
-
-          # Pre-1.0: cap major at minor
-          CURRENT=$(grep -oP 'version = "\K[^"]+' Cargo.toml | head -1)
-          MAJOR=$(echo "$CURRENT" | cut -d. -f1)
-          if [ "$MAJOR" = "0" ] && [ "$LEVEL" = "major" ]; then
-            LEVEL="minor"
-          fi
-
-          echo "level=$LEVEL" >> "$GITHUB_OUTPUT"
-          echo "should-release=$SHOULD_RELEASE" >> "$GITHUB_OUTPUT"
+          CURRENT=$(python3 - <<'PY'
+          from pathlib import Path
+          import re
+          match = re.search(r'^\[workspace\.package\]\s*?\n(?:.*\n)*?version = "([^"]+)"', Path("Cargo.toml").read_text(), re.M)
+          if match is None:
+              raise SystemExit("workspace package version not found")
+          print(match.group(1))
+          PY
+          )
+          python3 scripts/infer-release-bump.py \
+            --range "$RANGE" \
+            --current-version "$CURRENT" \
+            --github-output "$GITHUB_OUTPUT"
 
   # ── Step 2: Create/update the release PR ──────────────────────────
   release-pr:
@@ -136,16 +120,27 @@ jobs:
           fi
           echo "level=$LEVEL" >> "$GITHUB_OUTPUT"
 
+      - name: Create release branch
+        run: git checkout -B release/next
+
       - name: Bump schema version (if schema changed)
         if: needs.detect.outputs.schema-changed == 'true'
         run: |
           python3 scripts/bump.py schema "${{ steps.resolve.outputs.level }}" \
             --yes --no-commit --no-tag --no-validate
+          cargo run --bin citum --features schema -- schema --out-dir docs/schemas
+          git add crates/citum-schema-style/src/lib.rs \
+            docs/reference/SCHEMA_VERSIONING.md \
+            docs/schemas
+          if ! git diff --cached --quiet; then
+            git commit \
+              -m "chore(schema): bump schema version" \
+              -m "Update the published schema version and generated schemas for the release."
+          fi
 
-      - name: Create release branch and bump workspace version
+      - name: Bump workspace version
         run: |
           BRANCH="release/next"
-          git checkout -B "$BRANCH"
           cargo release "${{ steps.resolve.outputs.level }}" \
             --workspace --no-publish --no-push --no-tag --no-confirm --execute
           git push -f origin "$BRANCH"
@@ -203,3 +198,26 @@ jobs:
           # We use --no-confirm --execute.
           # It will create the tag and publish based on release.toml settings.
           cargo release --workspace --no-confirm --execute
+
+      - name: Tag schema release when schema changed
+        run: |
+          if git diff --name-only "${{ github.event.pull_request.base.sha }}" HEAD \
+            | grep -qE '^(crates/citum-schema-style/src/lib.rs|docs/schemas/)'; then
+            SCHEMA_VERSION=$(python3 - <<'PY'
+            from pathlib import Path
+            import re
+            content = Path("crates/citum-schema-style/src/lib.rs").read_text()
+            match = re.search(r'pub const STYLE_SCHEMA_VERSION: &str = "([^"]+)";', content)
+            if match is None:
+                raise SystemExit("STYLE_SCHEMA_VERSION not found")
+            print(match.group(1))
+            PY
+            )
+            TAG="schema-v${SCHEMA_VERSION}"
+            if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+              echo "Schema tag ${TAG} already exists."
+            else
+              git tag -a "$TAG" -m "Schema ${TAG}"
+              git push origin "$TAG"
+            fi
+          fi
