@@ -112,15 +112,6 @@ jobs:
       - name: Validate repo frontmatter manifests
         run: ./scripts/validate-frontmatter.sh --repo-only --copilot-strict
 
-      - name: Enforce schema bump footer contract on PRs
-        if: ${{ github.event_name == 'pull_request' }}
-        run: |
-          python3 scripts/validate-schema-release.py \
-            --baseline-ref "${{ github.event.pull_request.base.sha }}" \
-            --commit-range "${{ github.event.pull_request.base.sha }}..HEAD" \
-            --allow-orphan-footer \
-            --dry-run
-
       - name: Validate production styles and structure
         run: ./scripts/validate-production-styles.sh
 
@@ -133,11 +124,10 @@ jobs:
       - name: Run script regression tests
         run: node --test scripts/*.test.js
 
-      - name: Run schema release validation regression tests
+      - name: Run Python script regression tests
         run: |
           python3 -m unittest \
-            scripts/test_validate_schema_release.py \
-            scripts/test_schema_check.py \
+            scripts/test_infer_release_bump.py \
             scripts/test_coverage_analysis.py
 
   rust-ci:

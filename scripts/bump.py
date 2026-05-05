@@ -111,8 +111,11 @@ def bump_version(current: str, bump_type: str) -> str:
         minor += 1
         patch = 0
     elif bump_type == "major":
-        major += 1
-        minor = 0
+        if major == 0:
+            minor += 1
+        else:
+            major += 1
+            minor = 0
         patch = 0
     else:
         raise BumpError(f"Unsupported bump type: {bump_type}")
@@ -216,7 +219,7 @@ def print_preview(plan: ReleasePlan) -> None:
 
     if plan.track == "schema":
         header(f"Schema release bump: {plan.old_version} -> {plan.new_version}")
-        print("  Scope        : bump the default style schema version without changing code release versions")
+        print("  Scope        : bump the default style schema version")
         print(f"  Bump type    : {plan.bump_type}")
         print(
             "  Schema lib   : update STYLE_SCHEMA_VERSION in "

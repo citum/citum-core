@@ -2,13 +2,19 @@
 
 ## Workspace versioning
 
-Do **not** flag workspace version bumps in feature or fix PRs as a workflow violation.
+Do flag manual workspace or schema version bumps in feature or fix PRs.
 
-This repo uses a pre-commit hook (`scripts/rust-check.py`) that automatically bumps the `[workspace.package].version` field in `Cargo.toml` whenever a publishable Rust crate is modified. The hook also adds a `Version-Bump: patch|minor|major` footer to the commit and stages the updated `Cargo.toml` and `Cargo.lock`. This is intentional: the version on the branch reflects the semver impact of that branch's changes.
+This repo uses the release workflow to infer patch, minor, or major impact from
+conventional commits after changes merge to `main`. The workflow opens a
+release PR that updates `[workspace.package].version`, schema versions, generated
+schemas, and release notes together.
 
-`release-plz` reads this version on merge and uses it to drive the release PR and changelog. The two mechanisms are designed to work together — release-plz does not re-calculate semver; it publishes the version the hook committed.
+Feature PRs should not edit `[workspace.package].version`,
+`STYLE_SCHEMA_VERSION`, or add release tags. Schema-affecting PRs should commit
+regenerated `docs/schemas/*` output when it changes.
 
-**Consequence:** Every PR that modifies a Rust source file will contain a workspace version bump. This is correct behaviour, not a workflow violation.
+**Consequence:** A normal feature or fix PR can modify Rust code and generated
+schemas without carrying version bump commits or schema bump footers.
 
 ## Bean files
 
@@ -18,8 +24,6 @@ Archived beans move to `.beans/archive/` when completed. Both paths are expected
 
 ## Commit footer conventions
 
-Commits may include non-standard footers alongside the conventional `Co-Authored-By` line:
+Commits may include:
 
-- `Version-Bump: patch|minor|major` — set by the pre-commit hook; documents semver impact
-- `Schema-Bump: patch|minor|major` — set when `docs/schemas/` is regenerated
 - `Refs: <bean-id>` — links the commit to a bean tracking entry

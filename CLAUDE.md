@@ -26,9 +26,9 @@ cargo run --bin citum --features schema -- schema --out-dir docs/schemas
 git add docs/schemas/
 ```
 
-Then add a `Schema-Bump: patch|minor|major` footer to the commit. Use `patch` for
-new optional fields, `major` for removals or type changes. The pre-commit hook
-handles this automatically if `scripts/install-hooks.sh` has been run.
+Do not bump `STYLE_SCHEMA_VERSION` or add `Schema-Bump:` footers in feature
+commits. Schema and workspace version bumps are handled by the release workflow,
+which infers patch/minor/major from conventional commits.
 
 Workspace crate versioning is handled automatically by the release workflow
 (`cargo-release`). Do not manually bump `[workspace.package].version`.
@@ -249,9 +249,10 @@ curate the change stack, but the final published work must be on a Git branch
 and submitted through GitHub.
 **Never make content decisions unilaterally** (e.g. what text to put in a title field) — confirm with the user first.
 
-Code versioning is automated: the release workflow detects path changes,
-infers bump level from conventional commits, and opens a release PR via
-`cargo-release`. Schema versioning uses `Schema-Bump:` footers enforced by hooks.
+Code and schema versioning are automated: the release workflow detects path
+changes, infers bump level from conventional commits, and opens a release PR via
+`cargo-release`. Do not manually bump workspace crate versions or schema
+versions in feature PRs.
 
 #### Versioning Signals (Conventional Commits)
 
@@ -265,7 +266,7 @@ Agents MUST use the following prefixes to signal the intended release impact:
 | `chore:` / `docs:` | **None** | Does not trigger a release PR |
 
 *   **Breaking Changes**: Append a `!` after the type (e.g., `feat!:`) OR include `BREAKING CHANGE:` in the footer.
-*   **Schema Bumps**: Include `Schema-Bump: patch|minor|major` in the footer if schema files changed.
+*   **Schema Bumps**: Do not add a footer. Commit regenerated schemas when they change; the release workflow bumps schema versions.
 
 
 ```bash
