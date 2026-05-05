@@ -79,39 +79,37 @@ bibliography:
         target: doi
         anchor: component
     article-magazine:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      suffix: '. '
-    - title: primary
-      suffix: '. '
-    - group:
-      - title: parent-serial
-      - date: issued
-        form: year
-        prefix: ' '
-        suffix: ';'
-      - number: volume
-      - number: pages
-        prefix: ':'
-      delimiter: none
+      remove:
+        - match:
+            date: issued
+      add:
+        - component:
+            group:
+              - title: parent-serial
+              - date: issued
+                form: year
+                prefix: ' '
+                suffix: ;
+              - number: volume
+              - number: pages
+                prefix: ':'
+            delimiter: none
+          after:
+            title: primary
     article-newspaper:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      suffix: '. '
-    - title: primary
-      suffix: '. '
-    - group:
-      - title: parent-serial
-      - date: issued
-        form: year
-        prefix: ' '
-      delimiter: none
+      remove:
+        - match:
+            date: issued
+      add:
+        - component:
+            group:
+              - title: parent-serial
+              - date: issued
+                form: year
+                prefix: ' '
+            delimiter: none
+          after:
+            title: primary
     book:
     - number: citation-number
       wrap:
@@ -133,18 +131,12 @@ bibliography:
     - date: issued
       form: year
     broadcast:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      suffix: '. '
-    - title: primary
-      suffix: '. '
-    - title: parent-serial
-      suffix: ' '
-    - date: issued
-      form: year
+      add:
+        - component:
+            title: parent-serial
+            suffix: ' '
+          before:
+            date: issued
     chapter:
     - number: citation-number
       wrap:
@@ -167,99 +159,77 @@ bibliography:
     - number: pages
       prefix: ', p. '
     dataset:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      suffix: '. '
-    - title: primary
-      suffix: ' '
-    - date: issued
-      form: year
+      modify:
+        - match:
+            title: primary
+          suffix: ' '
     entry-encyclopedia:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      suffix: '. '
-    - title: primary
-      suffix: '. '
-    - group:
-      - title: parent-serial
-      - date: issued
-        form: year
-        prefix: ' '
-        suffix: ';'
-      - number: volume
-      - number: pages
-        prefix: ':'
-      delimiter: none
+      remove:
+        - match:
+            date: issued
+      add:
+        - component:
+            group:
+              - title: parent-serial
+              - date: issued
+                form: year
+                prefix: ' '
+                suffix: ;
+              - number: volume
+              - number: pages
+                prefix: ':'
+            delimiter: none
+          after:
+            title: primary
     interview:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      suffix: '. '
-    - title: primary
-      suffix: ' '
-    - date: issued
-      form: year
+      modify:
+        - match:
+            title: primary
+          suffix: ' '
     paper-conference:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      suffix: '. '
-    - title: primary
-      suffix: '. '
-    - title: parent-monograph
-      suffix: ', '
-    - date: issued
-      form: year
-      suffix: ', '
-    - number: pages
-      prefix: 'p. '
+      modify:
+        - match:
+            date: issued
+          suffix: ', '
+      add:
+        - component:
+            title: parent-monograph
+            suffix: ', '
+          before:
+            date: issued
+        - component:
+            number: pages
+            prefix: 'p. '
+          after:
+            date: issued
     personal-communication:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      suffix: '. '
-    - title: primary
-      suffix: ' '
-    - date: issued
-      form: year
+      modify:
+        - match:
+            title: primary
+          suffix: ' '
     report:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      suffix: '. '
-    - title: primary
-      suffix: '. '
-    - variable: publisher-place
-      suffix: ': '
-    - variable: publisher
-      suffix: '; '
-    - date: issued
-      form: year
+      add:
+        - component:
+            variable: publisher-place
+            suffix: ': '
+          before:
+            date: issued
+        - component:
+            variable: publisher
+            suffix: '; '
+          before:
+            date: issued
     legal-case:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - title: primary
-      suffix: '. '
-    - number: volume
-      prefix: 'vol. '
-      suffix: '. '
-    - date: issued
-      form: year
+      remove:
+        - match:
+            contributor: author
+      add:
+        - component:
+            number: volume
+            prefix: 'vol. '
+            suffix: '. '
+          before:
+            date: issued
     webpage:
     - number: citation-number
       wrap:
@@ -278,33 +248,24 @@ bibliography:
       prefix: ' (accessed '
       suffix: ')'
     patent:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      suffix: '. '
-    - title: primary
-      suffix: '. '
-    - variable: number
-      suffix: ', '
-    - date: issued
-      form: year
+      add:
+        - component:
+            variable: number
+            suffix: ', '
+          before:
+            date: issued
     thesis:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      suffix: '. '
-    - title: primary
-      suffix: '. '
-    - variable: genre
-      suffix: '. '
-    - variable: publisher
-      suffix: ', '
-    - date: issued
-      form: year
+      add:
+        - component:
+            variable: genre
+            suffix: '. '
+          before:
+            date: issued
+        - component:
+            variable: publisher
+            suffix: ', '
+          before:
+            date: issued
   template:
   - number: citation-number
     wrap:

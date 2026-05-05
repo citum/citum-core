@@ -55,136 +55,70 @@ bibliography:
     separator: ". "
   type-variants:
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 5
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - group:
-      - number: volume
-    - variable: publisher-place
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
+      remove:
+        - match:
+            group:
+              - number: volume
+              - number: issue
+                wrap:
+                  punctuation: parentheses
+      add:
+        - component:
+            group:
+              - number: volume
+          before:
+            variable: publisher-place
     book:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 5
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher-place
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: pages
-    - variable: publisher
+      remove:
+        - match:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+              - title: parent-monograph
+                emph: true
+      add:
+        - component:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+                prefix: 'on '
+              - title: parent-monograph
+                emph: true
+          before:
+            title: parent-serial
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 5
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher-place
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     film:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 5
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher-place
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - number: pages
-    - variable: publisher
+      remove:
+        - match:
+            title: parent-serial
     legal-case:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 5
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - group:
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher-place
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher
+      remove:
+        - match:
+            group:
+              - number: volume
+              - number: issue
+                wrap:
+                  punctuation: parentheses
+        - match:
+            number: pages
+      add:
+        - component:
+            group:
+              - number: issue
+                wrap:
+                  punctuation: parentheses
+          before:
+            variable: publisher-place
     patent:
     - number: citation-number
       suffix: ". "

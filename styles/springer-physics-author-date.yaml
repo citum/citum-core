@@ -101,167 +101,61 @@ bibliography:
     separator: ", "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - number: volume
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: pages
-      prefix: ", "
+      remove:
+        - match:
+            title: primary
+        - match:
+            variable: publisher
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - number: volume
-    - variable: publisher
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: pages
-      prefix: ", "
+      remove:
+        - match:
+            title: primary
     article-newspaper:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - number: volume
-    - variable: publisher
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: pages
-      prefix: ", "
+      remove:
+        - match:
+            title: primary
     broadcast:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - number: volume
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: pages
-      prefix: ", "
+      extends: article-magazine
+      remove:
+        - match:
+            variable: publisher
     chapter:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - number: volume
-    - variable: publisher
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: pages
-      prefix: ", pp. "
+      extends: article-magazine
+      modify:
+        - match:
+            number: pages
+          prefix: ', pp. '
     dataset:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - number: volume
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: pages
-      prefix: ", "
+      extends: article-magazine
+      remove:
+        - match:
+            variable: publisher
     entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - number: volume
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: pages
-      prefix: ", "
+      extends: article-magazine
+      remove:
+        - match:
+            variable: publisher
     interview:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - number: volume
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: pages
-      prefix: ", "
+      extends: article-magazine
+      remove:
+        - match:
+            variable: publisher
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-      prefix: "in "
-    - title: parent-serial
-    - variable: publisher-place
-    - number: volume
-    - variable: publisher
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: pages
-      prefix: ", pp. "
+      extends: chapter
+      modify:
+        - match:
+            title: parent-monograph
+          prefix: 'in '
     personal_communication:
-    - contributor: author
-      form: long
-      name-order: given-first
-      prefix: "pp. "
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - number: volume
-    - variable: publisher
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: pages
-      prefix: ", "
+      extends: article-magazine
+      modify:
+        - match:
+            contributor: author
+          prefix: 'pp. '
     webpage:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - number: volume
-    - variable: publisher
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: pages
-      prefix: ", "
+      remove:
+        - match:
+            title: primary
     legal_case:
     - contributor: author
       form: long

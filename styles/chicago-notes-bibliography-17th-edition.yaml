@@ -76,11 +76,9 @@ citation:
         name-form: family-only
     type-variants:
       default:
-      - contributor: author
-        form: short
-      - title: primary
-        form: short
-        prefix: ", "
+        remove:
+          - match:
+              variable: locator
     template:
     - contributor: author
       form: short
@@ -91,88 +89,14 @@ citation:
       prefix: ", "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: given-first
-      shorten:
-        min: 4
-        use-first: 1
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten:
-        min: 4
-        use-first: 1
-    - number: pages
-    - variable: url
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - variable: doi
-      prefix: https://doi.org/
-    - number: number
-      prefix: ", Patent "
-    - delimiter: none
-      group:
-      - date: issued
-        form: month-day
-        prefix: ", issued "
-      - date: issued
-        form: year
-        prefix: ", "
+      modify:
+        - match:
+            variable: doi
+          prefix: https://doi.org/
     default:
-    - contributor: author
-      form: long
-      name-order: given-first
-      shorten:
-        min: 4
-        use-first: 1
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten:
-        min: 4
-        use-first: 1
-    - number: pages
-    - variable: url
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - variable: doi
-    - delimiter: none
-      group:
-      - date: issued
-        form: month-day
-        prefix: ", issued "
-      - date: issued
-        form: year
-        prefix: ", "
+      remove:
+        - match:
+            number: number
   template:
   - contributor: author
     form: long
@@ -232,30 +156,10 @@ bibliography:
     separator: ", "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first-only
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - number: volume
-    - date: issued
-      form: year
-      prefix: " "
-    - number: pages
-      prefix: ": "
-    - variable: publisher
-      prefix: ": "
-    - variable: doi
-      prefix: https://doi.org/
-    - variable: url
+      modify:
+        - match:
+            variable: doi
+          prefix: https://doi.org/
   template:
   - contributor: author
     form: long

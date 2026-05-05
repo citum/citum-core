@@ -1,7 +1,7 @@
 ---
 # csl26-t3v1
 title: TEMPLATE_V3 Implementation & Ecosystem Transition (jj Stack)
-status: draft
+status: completed
 type: task
 priority: high
 tags:
@@ -12,7 +12,7 @@ tags:
     - migrate
     - jj
 created_at: 2026-05-05T00:00:00Z
-updated_at: 2026-05-05T00:00:00Z
+updated_at: 2026-05-05T22:56:33Z
 ---
 
 # csl26-t3v1
@@ -44,3 +44,12 @@ Using `jj` allows us to maintain a live stack of these changes. We can refine th
 - Enable surgical style overrides that persist across upstream updates.
 - Reduce the average line count of complex styles by 30-50%.
 - Maintain bit-for-bit fidelity with existing oracle baselines.
+
+## Summary of Changes
+
+Delivered as a two-PR jj stack:
+
+- **PR #623** (engine): Added schema-level Template V3 variant resolution — `TemplateVariant::Diff` support in `try_into_resolved`, LCS-based diff application, and `extends` chain resolution in `citum-schema-style`.
+- **PR #624** (ecosystem): Updated `citum-migrate` to emit diff-form type variants, added `scripts/convert-template-v3.js` for post-hoc surgical conversion of existing styles, and converted the `styles/` portfolio.
+
+Post-review fix (session 2026-05-05): replaced full-file `yaml.dump` round-trip with surgical line-range replacement and added a size guard (diff only accepted when shorter than the full template YAML). Final LOC result in `styles/`: **+3,639 / -13,056 = net -9,417 lines** — genuine semantic compression with no formatting noise.

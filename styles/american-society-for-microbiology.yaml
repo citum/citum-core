@@ -47,45 +47,18 @@ bibliography:
     separator: ". "
   type-variants:
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - title: parent-monograph
-    - title: parent-serial
-    - number: volume
-    - number: pages
-      prefix: "pp. "
-    - contributor: editor
-      form: verb
-      name-order: family-first
-      prefix: "In "
-    - variable: publisher
-    - variable: publisher-place
-      prefix: ", "
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
+        - match:
+            contributor: editor
+          prefix: 'In '
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - title: parent-monograph
-    - title: parent-serial
-    - number: volume
-    - number: pages
-      prefix: "pp. "
-    - contributor: editor
-      form: verb
-      name-order: family-first
-      prefix: ". In "
-    - variable: publisher
-    - variable: publisher-place
-      prefix: ", "
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     patent:
     - number: citation-number
       suffix: ". "
@@ -109,32 +82,22 @@ bibliography:
     - variable: publisher
     - variable: publisher-place
     webpage:
-    - number: citation-number
-      suffix: ". "
-    - contributor: author
-      form: long
-      sort-separator: " "
-    - date: issued
-      form: year
-    - title: primary
-    - variable: version
-      wrap:
-        punctuation: parentheses
-    - number: number
-      prefix: ". "
-    - title: parent-serial
-      prefix: ". "
-    - number: edition
-    - term: edition
-      form: short
-    - variable: genre
-    - variable: publisher
-    - variable: publisher-place
-    - variable: url
-    - term: retrieved
-      form: long
-    - date: accessed
-      form: year
+      extends: patent
+      add:
+        - component:
+            variable: url
+          after:
+            variable: publisher-place
+        - component:
+            term: retrieved
+            form: long
+          after:
+            variable: url
+        - component:
+            date: accessed
+            form: year
+          after:
+            term: retrieved
   template:
   - contributor: author
     form: long

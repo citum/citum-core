@@ -73,71 +73,20 @@ bibliography:
     separator: " : "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: ": "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - variable: publisher
-    - date: issued
-      form: year
-      prefix: ", "
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher-place
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: ": "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - variable: publisher
-    - date: issued
-      form: year
-      prefix: ", "
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher-place
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: ": "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - variable: publisher
-    - date: issued
-      form: year
-      prefix: ", "
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher-place
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
   template:
   - contributor: author
     form: long

@@ -102,26 +102,10 @@ bibliography:
     separator: ", "
   type-variants:
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-    - title: primary
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher-place
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
   template:
   - contributor: author
     form: long

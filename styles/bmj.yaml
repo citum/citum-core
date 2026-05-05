@@ -83,32 +83,11 @@ bibliography:
       prefix: " (accessed "
       suffix: ")"
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: doi
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
+      remove:
+        - match:
+            date: issued
+        - match:
+            number: issue
     chapter:
     - contributor: author
       form: long
@@ -140,34 +119,9 @@ bibliography:
     - variable: publisher
       prefix: ": "
     entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ":"
-    - number: pages
-      prefix: ":"
-    - variable: doi
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
+      remove:
+        - match:
+            date: issued
   template:
   - contributor: author
     form: long

@@ -39,31 +39,23 @@ bibliography:
     separator: ". "
   type-variants:
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
-    - variable: publisher-place
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
-    - title: parent-serial
-    - number: volume
-    - number: issue
-      prefix: ":"
-    - variable: publisher
-    - number: pages
-      prefix: ", pp "
-    - variable: doi
+      remove:
+        - match:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+              - title: parent-monograph
+      add:
+        - component:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+                prefix: 'on '
+              - title: parent-monograph
+          before:
+            title: parent-serial
     patent:
     - contributor: author
       form: long

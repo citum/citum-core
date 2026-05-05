@@ -76,57 +76,13 @@ bibliography:
     separator: ". "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
+      remove:
+        - match:
+            date: issued
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
+      remove:
+        - match:
+            date: issued
     chapter:
     - contributor: author
       form: long
@@ -157,31 +113,9 @@ bibliography:
     - variable: publisher
       prefix: ": "
     entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
+      remove:
+        - match:
+            date: issued
   template:
   - contributor: author
     form: long

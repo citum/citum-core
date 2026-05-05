@@ -43,51 +43,15 @@ bibliography:
     separator: ", "
   type-variants:
     chapter:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - variable: publisher-place
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - number: pages
-      prefix: "pp. "
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - variable: publisher-place
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - number: pages
-      prefix: "pp. "
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     patent:
     - number: citation-number
     - contributor: author
@@ -98,28 +62,10 @@ bibliography:
     - term: no-date
       form: short
     personal_communication:
-    - contributor: author
-      form: long
-      name-order: given-first
-      prefix: "pp. "
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - variable: publisher-place
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - number: pages
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
+      modify:
+        - match:
+            contributor: author
+          prefix: 'pp. '
   template:
   - contributor: author
     form: long

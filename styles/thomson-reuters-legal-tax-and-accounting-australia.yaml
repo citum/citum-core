@@ -46,35 +46,13 @@ citation:
       delimiter-precedes-last: never
   type-variants:
     entry-encyclopedia:
-    - contributor: author
-      form: short
-      name-order: family-first
-    - title: primary
-      prefix: ", "
-      wrap:
-        punctuation: quotes
-    - number: volume
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - variable: publisher-place
-      prefix: ", "
-    - variable: url
+      remove:
+        - match:
+            date: issued
     patent:
-    - contributor: author
-      form: short
-      name-order: family-first
-    - title: primary
-      prefix: ", "
-      wrap:
-        punctuation: quotes
-    - number: volume
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - variable: publisher-place
-      prefix: ", "
-    - variable: url
+      remove:
+        - match:
+            date: issued
   template:
   - contributor: author
     form: short
@@ -100,83 +78,59 @@ citation:
   subsequent:
     type-variants:
       book:
-      - contributor: author
-        form: short
-        name-order: family-first
-      - title: primary
-        form: short
-        prefix: ", "
-        wrap:
-          punctuation: quotes
-        emph: true
-        quote: false
-      - variable: locator
-        prefix: " at "
+        modify:
+          - match:
+              title: primary
+            emph: true
+            quote: false
+            prefix: ', '
+            wrap:
+              punctuation: quotes
       legislation:
-      - contributor: author
-        form: short
-        name-order: family-first
-      - title: primary
-        form: short
-        prefix: ", "
-        wrap:
-          punctuation: quotes
-        emph: true
-        quote: false
-      - variable: locator
-        prefix: " at "
+        modify:
+          - match:
+              title: primary
+            emph: true
+            quote: false
+            prefix: ', '
+            wrap:
+              punctuation: quotes
       manuscript:
-      - contributor: author
-        form: short
-        name-order: family-first
-      - title: primary
-        form: short
-        prefix: ", "
-        wrap:
-          punctuation: quotes
-        emph: true
-        quote: false
-      - variable: locator
-        prefix: " at "
+        modify:
+          - match:
+              title: primary
+            emph: true
+            quote: false
+            prefix: ', '
+            wrap:
+              punctuation: quotes
       motion-picture:
-      - contributor: author
-        form: short
-        name-order: family-first
-      - title: primary
-        form: short
-        prefix: ", "
-        wrap:
-          punctuation: quotes
-        emph: true
-        quote: false
-      - variable: locator
-        prefix: " at "
+        modify:
+          - match:
+              title: primary
+            emph: true
+            quote: false
+            prefix: ', '
+            wrap:
+              punctuation: quotes
       thesis:
-      - contributor: author
-        form: short
-        name-order: family-first
-      - title: primary
-        form: short
-        prefix: ", "
-        wrap:
-          punctuation: quotes
-        emph: true
-        quote: false
-      - variable: locator
-        prefix: " at "
+        modify:
+          - match:
+              title: primary
+            emph: true
+            quote: false
+            prefix: ', '
+            wrap:
+              punctuation: quotes
       webpage:
-      - contributor: author
-        form: short
-        name-order: family-first
-      - title: primary
-        form: short
-        prefix: ", "
-        wrap:
-          punctuation: quotes
-        emph: true
-        quote: false
-      - variable: locator
-        prefix: " at "
+        modify:
+          - match:
+              title: primary
+            emph: true
+            quote: false
+            prefix: ', '
+            wrap:
+              punctuation: quotes
     template:
     - contributor: author
       form: short

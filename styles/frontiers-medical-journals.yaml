@@ -56,91 +56,38 @@ bibliography:
     separator: ". "
   type-variants:
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: volume
-      prefix: " "
-    - number: pages
-      prefix: ":"
-    - variable: doi
-    - variable: url
+      remove:
+        - match:
+            number: issue
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: volume
-      prefix: " "
-    - number: issue
-      prefix: ":"
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
+      remove:
+        - match:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+              - title: parent-monograph
+                emph: true
+      add:
+        - component:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+                prefix: 'on '
+              - title: parent-monograph
+                emph: true
+          before:
+            title: parent-serial
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-    - number: volume
-      prefix: " "
-    - number: issue
-      prefix: ":"
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
   template:
   - contributor: author
     form: long

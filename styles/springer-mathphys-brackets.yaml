@@ -50,65 +50,20 @@ bibliography:
     separator: ". "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: ": "
-    - title: parent-monograph
-    - title: parent-serial
-    - number: pages
-    - variable: publisher
-    - variable: publisher-place
-      prefix: ", "
-    - variable: url
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - variable: doi
-      prefix: https://doi.org/
+      modify:
+        - match:
+            variable: doi
+          prefix: https://doi.org/
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: ": "
-    - title: parent-monograph
-    - title: parent-serial
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher
-    - variable: publisher-place
-      prefix: ", "
-    - variable: url
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - variable: doi
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: ": "
-    - title: parent-monograph
-    - title: parent-serial
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher
-    - variable: publisher-place
-      prefix: ", "
-    - variable: url
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - variable: doi
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     entry-encyclopedia:
     - number: citation-number
       suffix: ". "

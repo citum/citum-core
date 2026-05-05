@@ -42,24 +42,9 @@ bibliography:
     separator: ". "
   type-variants:
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: ": "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: family-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher
-    - number: volume
-      prefix: ", "
-    - number: pages
-      prefix: ":"
+      remove:
+        - match:
+            date: issued
   template:
   - contributor: author
     form: long

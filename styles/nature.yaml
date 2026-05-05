@@ -54,45 +54,11 @@ bibliography:
     separator: ". "
   type-variants:
     report:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 1
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: family-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: pages
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: ", "
-    article-journal+arxiv:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 1
-    - title: primary
-      prefix: " "
-    - title: parent-serial
-    - variable: doi
-      prefix: " https://doi.org/"
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: ", "
+      remove:
+        - match:
+            variable: publisher
+        - match:
+            variable: publisher-place
   template:
   - contributor: author
     form: long

@@ -171,24 +171,18 @@ bibliography:
       - number: pages
         prefix: ":"
     dataset:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-    - term: online
-      prefix: "Published "
-      suffix: " "
-    - date: issued
-      form: year
-      suffix: ". "
-    - date: accessed
-      form: month-day
-      prefix: "Accessed "
-    - date: accessed
-      form: year
-      prefix: ", "
-      suffix: ". "
-    - variable: url
+      extends: webpage
+      modify:
+        - match:
+            date: issued
+          suffix: '. '
+      add:
+        - component:
+            term: online
+            prefix: 'Published '
+            suffix: ' '
+          before:
+            date: issued
     legal-case:
     - title: primary
     - delimiter: " "
@@ -222,23 +216,17 @@ bibliography:
     - variable: patent-number
       prefix: ":"
     motion-picture:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      text-case: title
-    - variable: publisher
-      suffix: "; "
-    - date: issued
-      form: year
-    - date: accessed
-      form: month-day
-      prefix: "Accessed "
-    - date: accessed
-      form: year
-      prefix: ", "
-      suffix: ". "
-    - variable: url
+      extends: webpage
+      modify:
+        - match:
+            title: primary
+          text-case: title
+      add:
+        - component:
+            variable: publisher
+            suffix: '; '
+          before:
+            date: issued
     broadcast:
     - contributor: author
       form: long

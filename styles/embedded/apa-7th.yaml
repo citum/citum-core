@@ -757,47 +757,34 @@ bibliography:
     - variable: url
       prefix: " "
     webpage:
-    - contributor: author
-      form: long
-      suffix: "."
-      name-order: family-first
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      emph: false
-    - delimiter: "; "
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-      group:
-      - contributor: editor
-        form: long
-        name-order: given-first
-        label: {term: editor, form: short, placement: suffix}
-      - contributor: translator
-        form: long
-        name-order: given-first
-        label: {term: translator, form: short, placement: suffix}
-    - group:
-      - variable: genre
-        text-case: capitalize-first
-      - variable: medium
-        text-case: capitalize-first
-      delimiter: "; "
-      wrap:
-        punctuation: brackets
-      prefix: " "
-      suffix: "."
-    - title: parent-monograph
-      emph: false
-      text-case: title
-      prefix: " "
-      suffix: "."
-    - variable: url
-      prefix: " "
+      extends: post
+      add:
+        - component:
+            delimiter: '; '
+            wrap:
+              punctuation: parentheses
+            prefix: ' '
+            group:
+              - contributor: editor
+                form: long
+                name-order: given-first
+                label:
+                  term: editor
+                  form: short
+                  placement: suffix
+              - contributor: translator
+                form: long
+                name-order: given-first
+                label:
+                  term: translator
+                  form: short
+                  placement: suffix
+          before:
+            group:
+              - variable: genre
+                text-case: capitalize-first
+              - variable: medium
+                text-case: capitalize-first
   template:
   - contributor: author
     form: long

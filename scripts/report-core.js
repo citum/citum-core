@@ -244,6 +244,10 @@ function hashContent(value) {
   return crypto.createHash('sha256').update(value).digest('hex');
 }
 
+function cloneJson(value) {
+  return value == null ? value : JSON.parse(JSON.stringify(value));
+}
+
 function hashFile(filePath) {
   return hashContent(fs.readFileSync(filePath));
 }
@@ -506,7 +510,7 @@ function discoverCoreStyles(provenanceConfig = loadReportProvenance()) {
 
     try {
       rawStyleData = yaml.load(fs.readFileSync(stylePath, 'utf8'));
-      styleData = resolveStyleData(rawStyleData);
+      styleData = resolveStyleData(cloneJson(rawStyleData));
     } catch {
       rawStyleData = null;
       styleData = null;
@@ -1577,7 +1581,7 @@ function loadStyleYaml(styleName, stylePathOverride = null) {
     return {
       stylePath,
       rawStyleData,
-      resolvedStyleData: resolveStyleData(rawStyleData),
+      resolvedStyleData: resolveStyleData(cloneJson(rawStyleData)),
       error: null,
     };
   } catch (error) {
@@ -1641,10 +1645,11 @@ function collectTemplateScopes(styleData) {
 
   function addVariantScopes(prefix, variants, kind) {
     for (const [rawKey, template] of Object.entries(variants || {})) {
-      if (!Array.isArray(template)) continue;
+      const components = Array.isArray(template) ? template : templateVariantAuthoredComponents(template);
+      if (!Array.isArray(components)) continue;
       const typeSelectors = parseOverrideKey(rawKey).filter((key) => key !== 'default');
       variantSelectorCount += typeSelectors.length || 1;
-      addScope(`${prefix}.${rawKey}`, template, {
+      addScope(`${prefix}.${rawKey}`, components, {
         kind,
         typeSelectors,
         typeSelectorCount: typeSelectors.length || 1,
@@ -1672,6 +1677,25 @@ function collectTemplateScopes(styleData) {
   }
 
   return { scopes, variantSelectorCount };
+}
+
+function templateVariantAuthoredComponents(variant) {
+  if (!variant || typeof variant !== 'object' || Array.isArray(variant)) return null;
+  const components = [];
+  for (const operation of variant.modify || []) {
+    const component = { ...(operation.match || {}) };
+    for (const [key, value] of Object.entries(operation)) {
+      if (key !== 'match') component[key] = value;
+    }
+    components.push(component);
+  }
+  for (const operation of variant.remove || []) {
+    components.push({ ...(operation.match || {}), suppress: true });
+  }
+  for (const operation of variant.add || []) {
+    if (operation.component) components.push(operation.component);
+  }
+  return components.length > 0 ? components : null;
 }
 
 function parseOverrideKey(rawKey) {
@@ -2102,6 +2126,14 @@ function computePresetUsageScore(styleData, concisionScore) {
   };
 }
 
+function selectQualityAuthorshipData(authoredStyleData, effectiveStyleData) {
+  const authoredScopes = collectTemplateScopes(authoredStyleData).scopes;
+  if (authoredScopes.length === 0 && effectiveStyleData) {
+    return effectiveStyleData;
+  }
+  return authoredStyleData || effectiveStyleData;
+}
+
 function computeQualityMetrics(styleSpec, oracleResult, styleYamlPath = null) {
   const loaded = loadStyleYaml(styleSpec.name, styleYamlPath);
   if (!loaded.resolvedStyleData) {
@@ -2119,10 +2151,11 @@ function computeQualityMetrics(styleSpec, oracleResult, styleYamlPath = null) {
 
   const authoredStyleData = loaded.rawStyleData || loaded.resolvedStyleData;
   const effectiveStyleData = loaded.resolvedStyleData;
+  const qualityAuthorshipData = selectQualityAuthorshipData(authoredStyleData, effectiveStyleData);
   const typeCoverage = computeTypeCoverageScore(oracleResult.citationsByType || {});
   let fallbackRobustness = computeFallbackRobustness(effectiveStyleData);
-  const concision = computeConcisionScore(effectiveStyleData, styleSpec.format);
-  const presetUsage = computePresetUsageScore(authoredStyleData, concision.score);
+  const concision = computeConcisionScore(qualityAuthorshipData, styleSpec.format);
+  const presetUsage = computePresetUsageScore(qualityAuthorshipData, concision.score);
   const weights = {
     typeCoverage: 0.35,
     fallbackRobustness: 0.25,
@@ -3658,6 +3691,7 @@ module.exports = {
   mergeOracleResults,
   toPublishedBenchmarkRunRecord,
   determineBenchmarkStatus,
+  selectQualityAuthorshipData,
   selectPrimaryComparator,
   serializeTimingSummary,
   textSimilarity,

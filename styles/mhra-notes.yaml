@@ -79,25 +79,10 @@ citation:
       - variable: doi
         prefix: ", doi:"
     article-magazine:
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: primary
-        wrap:
-          punctuation: quotes
-      - title: parent-serial
-        emph: true
-      - number: volume
-      - date: issued
-        form: year
-        wrap:
-          punctuation: parentheses
-        prefix: " "
-      - number: pages
-        prefix: ", pp. "
-        show-with-locator: true
-      - variable: doi
-        prefix: ", doi:"
+      extends: article-journal
+      remove:
+        - match:
+            variable: locator
     chapter:
       - contributor: author
         form: long
@@ -126,26 +111,9 @@ citation:
         prefix: " "
       - variable: doi
     dataset:
-      - contributor: author
-        form: long
-        name-order: given-first
-      - title: primary
-        wrap:
-          punctuation: quotes
-      - title: parent-monograph
-        emph: true
-      - title: parent-serial
-        emph: true
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - variable: publisher
-        prefix: " ("
-      - number: pages
-        show-with-locator: true
-      - number: volume
-      - variable: url
-      - variable: doi
+      remove:
+        - match:
+            date: issued
     entry-encyclopedia:
       - contributor: author
         form: long
@@ -264,137 +232,64 @@ bibliography:
         and-others: text
   type-variants:
     article-journal:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-        wrap:
-          punctuation: quotes
-      - title: parent-serial
-        emph: true
-      - number: volume
-      - date: issued
-        form: year
-        prefix: " "
-      - number: pages
-        prefix: "pp. "
-      - variable: doi
-      - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
+      remove:
+        - match:
+            title: parent-monograph
+        - match:
+            contributor: editor
+        - match:
+            variable: publisher
     article-magazine:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-        wrap:
-          punctuation: quotes
-      - title: parent-serial
-        emph: true
-      - number: volume
-      - date: issued
-        form: year
-        prefix: " "
-      - number: pages
-        prefix: "pp. "
-      - variable: doi
-      - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
+      remove:
+        - match:
+            title: parent-monograph
+        - match:
+            contributor: editor
+        - match:
+            variable: publisher
     article-newspaper:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-        wrap:
-          punctuation: quotes
-      - title: parent-serial
-        emph: true
-      - number: volume
-      - number: pages
-      - variable: doi
-      - variable: url
+      remove:
+        - match:
+            title: parent-monograph
+        - match:
+            contributor: editor
+        - match:
+            variable: publisher
+        - match:
+            date: issued
     chapter:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-        wrap:
-          punctuation: quotes
-      - title: parent-monograph
-        emph: true
-      - title: parent-serial
-        emph: true
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - variable: publisher
-        prefix: " ("
-      - number: volume
-      - date: issued
-        form: year
-        prefix: " "
-      - number: pages
-        prefix: "pp. "
-      - variable: doi
-      - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     dataset:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-        wrap:
-          punctuation: quotes
-      - title: parent-monograph
-        emph: true
-      - title: parent-serial
-        emph: true
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - variable: publisher
-        prefix: " ("
-      - number: volume
-      - number: pages
-      - variable: doi
-      - variable: url
+      remove:
+        - match:
+            date: issued
     entry-encyclopedia:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-        wrap:
-          punctuation: quotes
-      - title: parent-monograph
-        emph: true
-      - title: parent-serial
-        emph: true
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - variable: publisher
-        prefix: " ("
-      - number: volume
-      - date: issued
-        form: year
-        prefix: " "
-      - number: pages
-        prefix: "pp. "
-      - variable: doi
-      - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     paper-conference:
-      - contributor: author
-        form: long
-        name-order: family-first
-      - title: primary
-        wrap:
-          punctuation: quotes
-      - title: parent-monograph
-        emph: true
-      - number: volume
-      - date: issued
-        form: year
-        prefix: " "
-      - number: pages
-        prefix: "pp. "
-      - variable: doi
-      - variable: url
+      extends: article-journal
+      remove:
+        - match:
+            title: parent-serial
+      add:
+        - component:
+            title: parent-monograph
+            emph: true
+          before:
+            number: volume
     patent:
       - contributor: author
         form: long

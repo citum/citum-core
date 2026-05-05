@@ -86,82 +86,37 @@ bibliography:
     separator: ". "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "; "
-    - variable: doi
-      prefix: https://doi.org/
-    - variable: publisher-place
-    - variable: url
+      modify:
+        - match:
+            variable: doi
+          prefix: https://doi.org/
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
-    - title: parent-serial
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
+      remove:
+        - match:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+              - title: parent-monograph
+      add:
+        - component:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+                prefix: 'on '
+              - title: parent-monograph
+          before:
+            title: parent-serial
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
   template:
   - contributor: author
     form: long

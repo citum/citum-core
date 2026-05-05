@@ -118,35 +118,25 @@ bibliography:
     - title: primary
       prefix: " "
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - variable: publisher-place
-      prefix: ", "
-    - number: pages
-      prefix: ":"
+      remove:
+        - match:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+              - title: parent-monograph
+                emph: true
+      add:
+        - component:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+                prefix: 'on '
+              - title: parent-monograph
+                emph: true
+          before:
+            title: parent-serial
   template:
   - contributor: author
     form: long

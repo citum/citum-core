@@ -64,14 +64,9 @@ citation:
         delimiter-precedes-last: contextual
   type-variants:
     personal_communication:
-    - contributor: author
-      form: long
-      name-order: given-first
-      shorten:
-        min: 3
-        use-first: 1
-    - variable: locator
-      prefix: " "
+      remove:
+        - match:
+            date: issued
   template:
   - contributor: author
     form: long
@@ -102,63 +97,23 @@ bibliography:
     separator: ". "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - date: issued
-      form: year
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - prefix: ") "
-      group:
-      - number: volume
-      - number: issue
-    - number: pages
-      prefix: ": "
-    - variable: publisher
-      prefix: ": "
-    - variable: doi
-      prefix: https://doi.org/
-    - variable: url
+      modify:
+        - match:
+            variable: doi
+          prefix: https://doi.org/
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - date: issued
-      form: year
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - prefix: ") "
-      group:
-      - number: volume
-    - number: pages
-      prefix: ": "
-    - variable: publisher
-      prefix: ": "
-    - variable: doi
-    - variable: url
+      remove:
+        - match:
+            group:
+              - number: volume
+              - number: issue
+      add:
+        - component:
+            prefix: ') '
+            group:
+              - number: volume
+          before:
+            number: pages
     legal_case:
     - title: primary
     - variable: authority

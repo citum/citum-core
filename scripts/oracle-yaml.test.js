@@ -10,7 +10,7 @@ const {
   shouldUseStructuredOracle,
 } = require('./oracle-yaml');
 const { resolveYamlVerificationPlan } = require('./lib/style-verification');
-const { resolveStyleData } = require('./lib/verification-policy');
+const { deepMerge, resolveStyleData } = require('./lib/verification-policy');
 
 function planFor(styleFile, overrides = {}) {
   const isEmbedded = [
@@ -121,6 +121,166 @@ test('resolveStyleData deep-merges preset wrappers with local overrides', () => 
     resolved.bibliography['type-variants']['motion-picture'][4].prefix,
     'Directed by '
   );
+});
+
+test('resolveStyleData resolves Template V3 diff type variants', () => {
+  const resolved = resolveStyleData({
+    bibliography: {
+      template: [
+        { contributor: 'author' },
+        { title: 'primary' },
+        { variable: 'publisher' },
+      ],
+      'type-variants': {
+        book: {
+          modify: [
+            { match: { title: 'primary' }, prefix: 'In ' },
+          ],
+          remove: [
+            { match: { variable: 'publisher' } },
+          ],
+          add: [
+            { after: { title: 'primary' }, component: { date: 'issued', form: 'year' } },
+          ],
+        },
+      },
+    },
+  });
+
+  assert.deepEqual(resolved.bibliography['type-variants'].book, [
+    { contributor: 'author' },
+    { title: 'primary', prefix: 'In ' },
+    { date: 'issued', form: 'year' },
+  ]);
+});
+
+test('resolveStyleData matches Template V3 grouped selectors recursively', () => {
+  const group = [
+    { number: 'citation-number', wrap: { punctuation: 'brackets' } },
+    { contributor: 'author', form: 'long' },
+  ];
+  const resolved = resolveStyleData({
+    bibliography: {
+      template: [
+        { delimiter: '', group },
+        { title: 'primary' },
+      ],
+      'type-variants': {
+        book: {
+          modify: [
+            { match: { group }, suffix: '.' },
+          ],
+        },
+      },
+    },
+  });
+
+  assert.deepEqual(resolved.bibliography['type-variants'].book, [
+    { delimiter: '', group, suffix: '.' },
+    { title: 'primary' },
+  ]);
+});
+
+test('resolveStyleData lets child diff variants inherit same-key parent variants', () => {
+  const merged = deepMerge(
+    {
+      bibliography: {
+        template: [
+          { contributor: 'author' },
+          { title: 'primary' },
+        ],
+        'type-variants': {
+          book: [
+            { contributor: 'editor' },
+            { title: 'primary' },
+          ],
+        },
+      },
+    },
+    {
+      bibliography: {
+        'type-variants': {
+          book: {
+            modify: [
+              { match: { title: 'primary' }, suffix: '.' },
+            ],
+          },
+        },
+      },
+    }
+  );
+
+  const resolved = resolveStyleData(merged);
+
+  assert.deepEqual(resolved.bibliography['type-variants'].book, [
+    { contributor: 'editor' },
+    { title: 'primary', suffix: '.' },
+  ]);
+});
+
+test('resolveStyleData lets child diff variants inherit same-key parent diffs', () => {
+  const merged = deepMerge(
+    {
+      bibliography: {
+        template: [
+          { contributor: 'author' },
+          { title: 'primary' },
+          { variable: 'publisher' },
+        ],
+        'type-variants': {
+          book: {
+            remove: [
+              { match: { variable: 'publisher' } },
+            ],
+          },
+        },
+      },
+    },
+    {
+      bibliography: {
+        'type-variants': {
+          book: {
+            modify: [
+              { match: { title: 'primary' }, suffix: '.' },
+            ],
+          },
+        },
+      },
+    }
+  );
+
+  const resolved = resolveStyleData(merged);
+
+  assert.deepEqual(resolved.bibliography['type-variants'].book, [
+    { contributor: 'author' },
+    { title: 'primary', suffix: '.' },
+  ]);
+});
+
+test('resolveStyleData does not mutate authored type variant diffs', () => {
+  const style = {
+    bibliography: {
+      template: [
+        { contributor: 'author' },
+        { title: 'primary' },
+      ],
+      'type-variants': {
+        book: {
+          modify: [
+            { match: { title: 'primary' }, suffix: '.' },
+          ],
+        },
+      },
+    },
+  };
+
+  resolveStyleData(style);
+
+  assert.deepEqual(style.bibliography['type-variants'].book, {
+    modify: [
+      { match: { title: 'primary' }, suffix: '.' },
+    ],
+  });
 });
 
 test('oracle-yaml sums component summary counts across structured family runs', () => {
