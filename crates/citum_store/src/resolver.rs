@@ -6,7 +6,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! Store resolver for locating and managing user styles and locales.
 
 use crate::format::StoreFormat;
-use citum_schema::{Locale, Style};
+use citum_schema::{Locale, Style, StyleRegistry};
 use serde::de::DeserializeOwned;
 use std::borrow::Cow;
 use std::collections::BTreeSet;
@@ -14,6 +14,9 @@ use std::fs;
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
+
+#[cfg(feature = "http")]
+use sha2::{Digest, Sha256};
 
 /// Error type for store resolution operations.
 #[derive(Error, Debug)]
@@ -32,6 +35,9 @@ pub enum ResolverError {
     JsonError(#[from] serde_json::Error),
     #[error("cbor error: {0}")]
     CborError(String),
+    #[cfg(feature = "http")]
+    #[error("http error: {0}")]
+    HttpError(String),
 }
 
 /// A trait for resolving Citum styles and locales from various sources.
@@ -88,6 +94,88 @@ impl StyleResolver for EmbeddedResolver {
     }
 }
 
+/// A resolver that looks up styles in a registry and delegates to the matching source.
+pub struct RegistryResolver {
+    registry: StyleRegistry,
+    base_dir: Option<PathBuf>,
+    #[cfg(feature = "http")]
+    http: Option<HttpResolver>,
+}
+
+impl RegistryResolver {
+    /// Create a registry resolver for the given registry.
+    #[must_use]
+    pub fn new(registry: StyleRegistry) -> Self {
+        Self {
+            registry,
+            base_dir: None,
+            #[cfg(feature = "http")]
+            http: None,
+        }
+    }
+
+    /// Set the base directory used for relative path-backed registry entries.
+    #[must_use]
+    pub fn with_base_dir(mut self, base_dir: PathBuf) -> Self {
+        self.base_dir = Some(base_dir);
+        self
+    }
+
+    /// Set the HTTP resolver used for URL-backed registry entries.
+    #[cfg(feature = "http")]
+    #[must_use]
+    pub fn with_http(mut self, http: HttpResolver) -> Self {
+        self.http = Some(http);
+        self
+    }
+}
+
+impl StyleResolver for RegistryResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
+        let entry = self
+            .registry
+            .resolve(uri)
+            .ok_or_else(|| ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))?;
+
+        if let Some(builtin) = &entry.builtin {
+            return EmbeddedResolver.resolve_style(builtin);
+        }
+
+        if let Some(path) = &entry.path {
+            let path = self
+                .base_dir
+                .as_ref()
+                .map_or_else(|| path.clone(), |base| base.join(path));
+            let path = path
+                .to_str()
+                .ok_or_else(|| ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))?;
+            return FileResolver.resolve_style(path);
+        }
+
+        if let Some(url) = &entry.url {
+            #[cfg(feature = "http")]
+            {
+                let http = self
+                    .http
+                    .as_ref()
+                    .ok_or_else(|| ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))?;
+                return http.resolve_style(url);
+            }
+
+            #[cfg(not(feature = "http"))]
+            {
+                return Err(ResolverError::StyleNotFound(Cow::Owned(url.clone())));
+            }
+        }
+
+        Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))
+    }
+
+    fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
+        Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
+    }
+}
+
 /// A resolver that handles local file paths.
 pub struct FileResolver;
 
@@ -122,6 +210,106 @@ impl StyleResolver for FileResolver {
                     .map_err(|e| ResolverError::YamlError(ToString::to_string(&e)));
             }
         }
+        Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
+    }
+}
+
+/// A resolver that fetches HTTP(S) style URLs and caches them on disk.
+#[cfg(feature = "http")]
+pub struct HttpResolver {
+    cache_dir: PathBuf,
+    client: reqwest::blocking::Client,
+}
+
+#[cfg(feature = "http")]
+impl HttpResolver {
+    /// Create a resolver using the provided cache directory.
+    #[must_use]
+    pub fn new(cache_dir: PathBuf) -> Self {
+        Self {
+            cache_dir,
+            client: reqwest::blocking::Client::new(),
+        }
+    }
+
+    /// Create a resolver using the platform cache directory.
+    #[must_use]
+    pub fn from_platform_cache_dir() -> Option<Self> {
+        dirs::cache_dir().map(|dir| Self::new(dir.join("citum")))
+    }
+
+    fn cache_path(&self, uri: &str) -> PathBuf {
+        let mut hasher = Sha256::new();
+        hasher.update(uri.as_bytes());
+        let hash = hasher.finalize();
+        let mut hex = String::with_capacity(hash.len() * 2);
+        for byte in hash {
+            hex.push(hex_digit(byte >> 4));
+            hex.push(hex_digit(byte & 0x0f));
+        }
+        self.cache_dir
+            .join("styles")
+            .join("http")
+            .join(format!("{hex}.yaml"))
+    }
+
+    fn parse_style(uri: &str, bytes: &[u8]) -> Result<Style, ResolverError> {
+        Style::from_yaml_bytes(bytes).map_err(|err| {
+            ResolverError::YamlError(format!("failed to parse style fetched from {uri}: {err}"))
+        })
+    }
+}
+
+#[cfg(feature = "http")]
+fn hex_digit(nibble: u8) -> char {
+    match nibble {
+        0..=9 => char::from(b'0' + nibble),
+        10..=15 => char::from(b'a' + (nibble - 10)),
+        _ => '?',
+    }
+}
+
+#[cfg(feature = "http")]
+impl StyleResolver for HttpResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
+        if !uri.starts_with("http://") && !uri.starts_with("https://") {
+            return Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())));
+        }
+
+        let cache_path = self.cache_path(uri);
+        if cache_path.is_file() {
+            let bytes = fs::read(&cache_path)?;
+            return Self::parse_style(uri, &bytes);
+        }
+
+        let response = self
+            .client
+            .get(uri)
+            .send()
+            .map_err(|err| ResolverError::HttpError(format!("failed to fetch {uri}: {err}")))?;
+
+        if response.status() == reqwest::StatusCode::NOT_FOUND {
+            return Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())));
+        }
+
+        if !response.status().is_success() {
+            return Err(ResolverError::HttpError(format!(
+                "failed to fetch {uri}: HTTP {}",
+                response.status()
+            )));
+        }
+
+        let bytes = response
+            .bytes()
+            .map_err(|err| ResolverError::HttpError(format!("failed to read {uri}: {err}")))?;
+        if let Some(parent) = cache_path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        fs::write(&cache_path, &bytes)?;
+        Self::parse_style(uri, &bytes)
+    }
+
+    fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
         Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
     }
 }

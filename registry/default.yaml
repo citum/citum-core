@@ -1,93 +1,1298 @@
-version: "1"
+version: '1'
 styles:
-  - id: apa-7th
-    aliases: [apa, taylor-and-francis-style-p]
-    builtin: apa-7th
-    kind: base
-    description: "APA 7th edition"
-    fields: [psychology, social-science]
-  - id: elsevier-harvard
-    aliases: [harvard, applied-clay-science, environmental-chemistry, international-biodeterioration-and-biodegradation, accident-analysis-and-prevention, entecho, handbook-of-clinical-neurology, journal-of-economic-impact]
-    builtin: elsevier-harvard
-    kind: profile
-    description: "Elsevier Harvard"
-    fields: [science]
-  - id: elsevier-with-titles
-    aliases: [firephyschem, journal-of-applied-engineering-sciences-technology, biochimica-et-biophysica-acta, cancer-biomarkers, engineered-regeneration, gait-and-posture, ios-press-books, necmettin-erbakan-universitesi-fen-ve-muhendislik-bilimleri-dergisi]
-    builtin: elsevier-with-titles
-    kind: profile
-    description: "Elsevier with Titles"
-    fields: [science]
-  - id: elsevier-vancouver
-    aliases: [vancouver]
-    builtin: elsevier-vancouver
-    kind: profile
-    description: "Elsevier Vancouver"
-    fields: [medicine]
-  - id: springer-basic-author-date
-    builtin: springer-basic-author-date
-    kind: profile
-    description: "Springer Basic Author-Date"
-    fields: [science]
-  - id: springer-vancouver-brackets
-    builtin: springer-vancouver-brackets
-    kind: profile
-    description: "Springer Vancouver Brackets"
-    fields: [science]
-  - id: springer-basic-brackets
-    builtin: springer-basic-brackets
-    kind: profile
-    description: "Springer Basic Brackets"
-    fields: [science]
-  - id: american-medical-association
-    aliases: [ama, acta-medica-portuguesa, ophthalmic-plastic-and-reconstructive-surgery, retina]
-    builtin: american-medical-association
-    kind: base
-    description: "American Medical Association"
-    fields: [medicine]
-  - id: ieee
-    aliases: [engineering-technology-and-applied-science-research, ieee-transactions-on-medical-imaging]
-    builtin: ieee
-    kind: base
-    description: "Institute of Electrical and Electronics Engineers"
-    fields: [engineering]
-  - id: taylor-and-francis-chicago-author-date
-    aliases: [annals-of-the-association-of-american-geographers]
-    builtin: taylor-and-francis-chicago-author-date
-    kind: profile
-    description: "Taylor & Francis Chicago Author-Date"
-    fields: [humanities]
-  - id: taylor-and-francis-council-of-science-editors-author-date
-    builtin: taylor-and-francis-council-of-science-editors-author-date
-    kind: profile
-    description: "Taylor & Francis Council of Science Editors Author-Date"
-    fields: [science]
-  - id: taylor-and-francis-national-library-of-medicine
-    builtin: taylor-and-francis-national-library-of-medicine
-    kind: profile
-    description: "Taylor & Francis National Library of Medicine"
-    fields: [medicine]
-  - id: chicago-author-date-18th
-    aliases: [chicago-author-date, taylor-and-francis-style-f]
-    builtin: chicago-author-date-18th
-    kind: base
-    description: "Chicago Author-Date (standard)"
-    fields: [humanities]
-  - id: chicago-shortened-notes-bibliography
-    aliases: [chicago]
-    builtin: chicago-shortened-notes-bibliography
-    kind: profile
-    description: "Chicago Shortened Notes"
-    fields: [humanities]
-  - id: chicago-notes-18th
-    aliases: [chicago-notes]
-    builtin: chicago-notes-18th
-    kind: base
-    description: "Chicago Notes (without bibliography)"
-    fields: [humanities]
-  - id: modern-language-association
-    aliases: [mla, taylor-and-francis-style-e, modern-language-association-notes]
-    builtin: modern-language-association
-    kind: base
-    description: "Modern Language Association"
-    fields: [humanities]
+- id: apa-7th
+  aliases:
+  - apa
+  - taylor-and-francis-style-p
+  builtin: apa-7th
+  kind: base
+  description: APA 7th edition
+  fields:
+  - psychology
+  - social-science
+- id: elsevier-harvard
+  aliases:
+  - harvard
+  - applied-clay-science
+  - environmental-chemistry
+  - international-biodeterioration-and-biodegradation
+  - accident-analysis-and-prevention
+  - entecho
+  - handbook-of-clinical-neurology
+  - journal-of-economic-impact
+  builtin: elsevier-harvard
+  kind: profile
+  description: Elsevier Harvard
+  fields:
+  - science
+- id: elsevier-with-titles
+  aliases:
+  - firephyschem
+  - journal-of-applied-engineering-sciences-technology
+  - biochimica-et-biophysica-acta
+  - cancer-biomarkers
+  - engineered-regeneration
+  - gait-and-posture
+  - ios-press-books
+  - necmettin-erbakan-universitesi-fen-ve-muhendislik-bilimleri-dergisi
+  builtin: elsevier-with-titles
+  kind: profile
+  description: Elsevier with Titles
+  fields:
+  - science
+- id: elsevier-vancouver
+  aliases:
+  - vancouver
+  builtin: elsevier-vancouver
+  kind: profile
+  description: Elsevier Vancouver
+  fields:
+  - medicine
+- id: springer-basic-author-date
+  builtin: springer-basic-author-date
+  kind: profile
+  description: Springer Basic Author-Date
+  fields:
+  - science
+- id: springer-vancouver-brackets
+  builtin: springer-vancouver-brackets
+  kind: profile
+  description: Springer Vancouver Brackets
+  fields:
+  - science
+- id: springer-basic-brackets
+  builtin: springer-basic-brackets
+  kind: profile
+  description: Springer Basic Brackets
+  fields:
+  - science
+- id: american-medical-association
+  aliases:
+  - ama
+  - acta-medica-portuguesa
+  - ophthalmic-plastic-and-reconstructive-surgery
+  - retina
+  builtin: american-medical-association
+  kind: base
+  description: American Medical Association
+  fields:
+  - medicine
+- id: ieee
+  aliases:
+  - engineering-technology-and-applied-science-research
+  - ieee-transactions-on-medical-imaging
+  builtin: ieee
+  kind: base
+  description: Institute of Electrical and Electronics Engineers
+  fields:
+  - engineering
+- id: taylor-and-francis-chicago-author-date
+  aliases:
+  - annals-of-the-association-of-american-geographers
+  builtin: taylor-and-francis-chicago-author-date
+  kind: profile
+  description: Taylor & Francis Chicago Author-Date
+  fields:
+  - humanities
+- id: taylor-and-francis-council-of-science-editors-author-date
+  builtin: taylor-and-francis-council-of-science-editors-author-date
+  kind: profile
+  description: Taylor & Francis Council of Science Editors Author-Date
+  fields:
+  - science
+- id: taylor-and-francis-national-library-of-medicine
+  builtin: taylor-and-francis-national-library-of-medicine
+  kind: profile
+  description: Taylor & Francis National Library of Medicine
+  fields:
+  - medicine
+- id: chicago-author-date-18th
+  aliases:
+  - chicago-author-date
+  - taylor-and-francis-style-f
+  builtin: chicago-author-date-18th
+  kind: base
+  description: Chicago Author-Date (standard)
+  fields:
+  - humanities
+- id: chicago-shortened-notes-bibliography
+  aliases:
+  - chicago
+  builtin: chicago-shortened-notes-bibliography
+  kind: profile
+  description: Chicago Shortened Notes
+  fields:
+  - humanities
+- id: chicago-notes-18th
+  aliases:
+  - chicago-notes
+  builtin: chicago-notes-18th
+  kind: base
+  description: Chicago Notes (without bibliography)
+  fields:
+  - humanities
+- id: modern-language-association
+  aliases:
+  - mla
+  - taylor-and-francis-style-e
+  - modern-language-association-notes
+  builtin: modern-language-association
+  kind: base
+  description: Modern Language Association
+  fields:
+  - humanities
+- id: acm-sig-proceedings
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/acm-sig-proceedings.yaml
+  kind: independent
+  title: ACM SIG Proceedings ("et al." for 3+ authors)
+  description: Used by ACM SIG conferences. Numeric style with et al. for 3 or more authors.
+  fields:
+  - science
+  - engineering
+- id: african-online-scientific-information-systems-harvard
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/african-online-scientific-information-systems-harvard.yaml
+  kind: independent
+  title: African Online Scientific Information Systems (author-date/Harvard)
+  description: Style for AOSIS Publishing's Harvard style as per 13 April 2017.
+- id: african-online-scientific-information-systems-vancouver
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/african-online-scientific-information-systems-vancouver.yaml
+  kind: independent
+  title: African Online Scientific Information Systems - NLM/Vancouver
+  description: Vancouver-like style for AOSIS Publishing as per 13 April 2017.
+- id: aims-press
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/aims-press.yaml
+  kind: independent
+  title: AIMS Press
+  fields:
+  - science
+- id: alpha
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/alpha.yaml
+  kind: independent
+  title: Alpha (biblatex-alpha)
+- id: american-association-for-cancer-research
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-association-for-cancer-research.yaml
+  kind: independent
+  title: American Association for Cancer Research
+  description: Parent style for AACR's journals
+  fields:
+  - medicine
+- id: american-chemical-society
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-chemical-society.yaml
+  kind: independent
+  title: ACS Guide 2022 revision
+  description: The American Chemical Society style
+  fields:
+  - chemistry
+- id: american-fisheries-society
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-fisheries-society.yaml
+  kind: independent
+  title: American Fisheries Society
+  fields:
+  - biology
+- id: american-geophysical-union
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-geophysical-union.yaml
+  kind: independent
+  title: American Geophysical Union
+  description: The American Geophysical Union generic style
+  fields:
+  - geology
+- id: american-institute-of-aeronautics-and-astronautics
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-institute-of-aeronautics-and-astronautics.yaml
+  kind: journal
+  title: American Institute of Aeronautics and Astronautics
+  description: A style for AIAA
+  fields:
+  - engineering
+- id: american-institute-of-physics
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-institute-of-physics.yaml
+  kind: independent
+  title: AIP Style Manual 4th edition
+  description: Common style used by AIP publications.
+  fields:
+  - physics
+- id: american-marketing-association
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-marketing-association.yaml
+  kind: independent
+  title: American Marketing Association
+  description: AMA Reference List Style published by the American Marketing Association
+  fields:
+  - communications
+- id: american-mathematical-society-label
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-mathematical-society-label.yaml
+  kind: journal
+  title: Amercian Mathematical Society (label)
+  fields:
+  - math
+- id: american-medical-association-alphabetical
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-medical-association-alphabetical.yaml
+  kind: journal
+  title: AMA Manual of Style 11th edition (sorted alphabetically)
+  description: 'AMA Manual of Style: A Guide for Authors and Editors (11th ed.), with alphabetically sorted bibliography.'
+  fields:
+  - medicine
+- id: american-medical-association-no-et-al
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-medical-association-no-et-al.yaml
+  kind: journal
+  title: AMA Manual of Style 11th edition (no "et al.")
+  description: 'AMA Manual of Style: A Guide for Authors and Editors (11th ed.), without et al.'
+  fields:
+  - medicine
+- id: american-medical-association-no-url
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-medical-association-no-url.yaml
+  kind: journal
+  title: AMA Manual of Style 11th edition (without URLs)
+  description: 'AMA Manual of Style: A Guide for Authors and Editors (11th ed.), without URLs.'
+  fields:
+  - medicine
+- id: american-meteorological-society
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-meteorological-society.yaml
+  kind: independent
+  title: American Meteorological Society
+  description: A style for all journals by the American Meteorological Society
+  fields:
+  - geography
+- id: american-physics-society
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-physics-society.yaml
+  kind: independent
+  title: American Physical Society
+  description: Common style use by APS publications.
+  fields:
+  - physics
+- id: american-physiological-society
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-physiological-society.yaml
+  kind: independent
+  title: American Physiological Society
+  description: A style for many APS journals
+  fields:
+  - medicine
+- id: american-society-for-microbiology
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-society-for-microbiology.yaml
+  kind: independent
+  title: American Society for Microbiology
+  description: Style for all American Society for Microbiology journals.
+  fields:
+  - biology
+- id: american-society-of-civil-engineers
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-society-of-civil-engineers.yaml
+  kind: independent
+  title: American Society of Civil Engineers
+  description: A style for American Society of Civil Engineers publications
+  fields:
+  - engineering
+- id: american-society-of-mechanical-engineers
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-society-of-mechanical-engineers.yaml
+  kind: journal
+  title: American Society of Mechanical Engineers
+  description: A style for the ASME's 23 journals
+  fields:
+  - engineering
+- id: american-sociological-association
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-sociological-association.yaml
+  kind: independent
+  title: ASA Style Guide 6th/7th edition
+  description: The ASA style following the 6th/7th edition of the Style Guide (reference formatting is the same for both editions).
+  fields:
+  - sociology
+- id: american-statistical-association
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-statistical-association.yaml
+  kind: independent
+  title: American Statistical Association
+  description: A style for the American Statistical Association used for all their journals.
+  fields:
+  - math
+- id: angewandte-chemie
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/angewandte-chemie.yaml
+  kind: independent
+  title: Angewandte Chemie International Edition
+- id: annual-reviews-alphabetical
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/annual-reviews-alphabetical.yaml
+  kind: independent
+  title: Annual Reviews (sorted alphabetically)
+- id: annual-reviews-author-date
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/annual-reviews-author-date.yaml
+  kind: independent
+  title: Annual Reviews (author-date)
+- id: annual-reviews
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/annual-reviews.yaml
+  kind: independent
+  title: Annual Reviews (sorted by order of appearance)
+- id: association-for-computing-machinery
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/association-for-computing-machinery.yaml
+  kind: independent
+  title: Association for Computing Machinery
+- id: baishideng-publishing-group
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/baishideng-publishing-group.yaml
+  kind: independent
+  title: Baishideng Publishing Group
+- id: begell-house-chicago-author-date
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/begell-house-chicago-author-date.yaml
+  kind: independent
+  title: Begell House - Chicago Manual of Style
+  description: The author-date variant of the Begell House Chicago style
+- id: biomed-central
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/biomed-central.yaml
+  kind: independent
+  title: BioMed Central
+  fields:
+  - medicine
+  - biology
+- id: bmj
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/bmj.yaml
+  kind: independent
+  title: BMJ
+  description: Vancouver style adapted for BMJ journals
+  fields:
+  - medicine
+- id: bristol-university-press
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/bristol-university-press.yaml
+  kind: independent
+  title: Bristol University Press
+  fields:
+  - humanities
+- id: canadian-journal-of-fisheries-and-aquatic-sciences
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/canadian-journal-of-fisheries-and-aquatic-sciences.yaml
+  kind: independent
+  title: Canadian Journal of Fisheries and Aquatic Sciences
+  fields:
+  - biology
+- id: cell-numeric
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/cell-numeric.yaml
+  kind: journal
+  title: Cell journals (numeric)
+- id: cell
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/cell.yaml
+  kind: independent
+  title: Cell
+  description: The Cell journal style, switched to numeric superscript as per the Cell editorial office in Sept. 2022
+  fields:
+  - biology
+- id: chem-acs
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/chem-acs.yaml
+  kind: independent
+  title: ACS Chemistry (Compound)
+  description: 'American Chemical Society style with compound citation support. Groups related references under a shared citation
+    number with alphabetic sub-labels. Based on the ACS Guide 2022 revision.
+
+    '
+  fields:
+  - chemistry
+- id: chem-biochem
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/chem-biochem.yaml
+  kind: independent
+  title: ACS Biochemistry (Compound)
+  description: 'Style for the ACS journal Biochemistry with compound citation support. Distinctive from base ACS: year appears
+    in parentheses immediately after author list, before the title. Superscript citation numbers without brackets.
+
+    '
+  fields:
+  - chemistry
+  - biology
+- id: chem-rsc
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/chem-rsc.yaml
+  kind: independent
+  title: Royal Society of Chemistry (Compound)
+  description: 'Royal Society of Chemistry journal style with compound citation support. Groups related references under a
+    shared citation number with alphabetic sub-labels. Based on the standard RSC style.
+
+    '
+  fields:
+  - chemistry
+- id: chicago-author-date-classic
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/chicago-author-date-classic.yaml
+  kind: independent
+  title: Chicago Manual of Style 18th edition (author-date, classic variants)
+  description: 'Chicago-style source citations (with Bluebook for legal citations), author-date system, with classic variants:
+    3-em dash for repeated names (CMOS18 13.113), chapter page numbers (CMOS18 14.8), and place of publication (CMOS18 14.30)'
+  fields:
+  - anthropology
+  - communications
+  - geography
+  - history
+  - humanities
+  - law
+  - linguistics
+  - literature
+  - philosophy
+  - science
+  - sociology
+  - theology
+- id: chicago-notes-bibliography-17th-edition
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/chicago-notes-bibliography-17th-edition.yaml
+  kind: independent
+  title: Chicago Manual of Style 17th edition (notes and bibliography)
+  description: Chicago-style source citations (with Bluebook for legal citations), notes and bibliography system, 17th edition
+  fields:
+  - anthropology
+  - communications
+  - geography
+  - history
+  - humanities
+  - law
+  - linguistics
+  - literature
+  - philosophy
+  - science
+  - sociology
+  - theology
+- id: chicago-notes-bibliography-classic-archive-place-first-no-url
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/chicago-notes-bibliography-classic-archive-place-first-no-url.yaml
+  kind: independent
+  title: Chicago Manual of Style 18th edition (notes and bibliography, classic variants, archival references with place first,
+    without URLs)
+  description: 'Chicago-style source citations (with Bluebook for legal citations), notes and bibliography system, with classic
+    variants: 3-em dash for repeated names (CMOS18 13.113), chapter page numbers (CMOS18 14.8), and place of publication (CMOS18
+    14.30); archival references with place first (CMOS18 14.205), without URLs (CMOS18 13.6)'
+  fields:
+  - anthropology
+  - communications
+  - geography
+  - history
+  - humanities
+  - law
+  - linguistics
+  - literature
+  - philosophy
+  - science
+  - sociology
+  - theology
+- id: chicago-notes-classic-archive-place-first
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/chicago-notes-classic-archive-place-first.yaml
+  kind: independent
+  title: Chicago Manual of Style 18th edition (notes without bibliography, classic variants, archival references with place
+    first)
+  description: 'Chicago-style source citations (with Bluebook for legal citations), notes system without bibliography, listing
+    up to six authors in a full citation (CMOS18 13.23), displaying number of volumes (CMOS18 14.20); classic variants: chapter
+    page numbers (CMOS18 14.8), place of publication (CMOS18 14.30); archival references with place first (CMOS18 14.205)'
+  fields:
+  - anthropology
+  - communications
+  - geography
+  - history
+  - humanities
+  - law
+  - linguistics
+  - literature
+  - philosophy
+  - science
+  - sociology
+  - theology
+- id: chicago-notes-classic-no-url
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/chicago-notes-classic-no-url.yaml
+  kind: independent
+  title: Chicago Manual of Style 18th edition (notes without bibliography, classic variants, without URLs)
+  description: 'Chicago-style source citations (with Bluebook for legal citations), notes system without bibliography, listing
+    up to six authors in a full citation (CMOS18 13.23), displaying number of volumes (CMOS18 14.20), classic variants: chapter
+    page numbers (CMOS18 14.8), place of publication (CMOS18 14.30); without URLs (CMOS18 13.6)'
+  fields:
+  - anthropology
+  - communications
+  - geography
+  - history
+  - humanities
+  - law
+  - linguistics
+  - literature
+  - philosophy
+  - science
+  - sociology
+  - theology
+- id: chicago-notes-classic
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/chicago-notes-classic.yaml
+  kind: independent
+  title: Chicago Manual of Style 18th edition (notes without bibliography, classic variants)
+  description: 'Chicago-style source citations (with Bluebook for legal citations), notes system without bibliography, listing
+    up to six authors in a full citation (CMOS18 13.23), displaying number of volumes (CMOS18 14.20), classic variants: chapter
+    page numbers (CMOS18 14.8), place of publication (CMOS18 14.30)'
+  fields:
+  - anthropology
+  - communications
+  - geography
+  - history
+  - humanities
+  - law
+  - linguistics
+  - literature
+  - philosophy
+  - science
+  - sociology
+  - theology
+- id: chicago-notes-publisher-place-archive-place-first-no-url
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/chicago-notes-publisher-place-archive-place-first-no-url.yaml
+  kind: independent
+  title: Chicago Manual of Style 18th edition (notes without bibliography, place of publication substituted for publisher,
+    archival references with place first, without URLs)
+  description: Chicago-style source citations (with Bluebook for legal citations), notes system without bibliography, listing
+    up to six authors in a full citation (CMOS18 13.23), chapter page numbers (CMOS18 14.8), displaying number of volumes
+    (CMOS18 14.20), substituting place of publication for publisher name (CMOS18 14.31), archival references with place first
+    (CMOS18 14.205), without URLs (CMOS18 13.6)
+  fields:
+  - anthropology
+  - communications
+  - geography
+  - history
+  - humanities
+  - law
+  - linguistics
+  - literature
+  - philosophy
+  - science
+  - sociology
+  - theology
+- id: chicago-shortened-notes-bibliography-classic-archive-place-first
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/chicago-shortened-notes-bibliography-classic-archive-place-first.yaml
+  kind: independent
+  title: Chicago Manual of Style 18th edition (shortened notes and bibliography, classic variants, archival references with
+    place first)
+  description: 'Chicago-style source citations (with Bluebook for legal citations), shortened author-title notes and bibliography
+    system, with classic variants: 3-em dash for repeated names (CMOS18 13.113), chapter page numbers (CMOS18 14.8), and place
+    of publication (CMOS18 14.30); archival references with place first (CMOS18 14.205)'
+  fields:
+  - anthropology
+  - communications
+  - geography
+  - history
+  - humanities
+  - law
+  - linguistics
+  - literature
+  - philosophy
+  - science
+  - sociology
+  - theology
+- id: copernicus-publications
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/copernicus-publications.yaml
+  kind: independent
+  title: Copernicus Publications
+  description: The Copernicus generic style
+  fields:
+  - science
+- id: cse-name-year
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/cse-name-year.yaml
+  kind: independent
+  title: 'CSE Manual: Scientific Style and Format 9th edition (name-year)'
+  description: 'Council of Science Editors style, 9th edition, name-year system: author-date in text, sorted alphabetically.'
+  fields:
+  - biology
+  - botany
+  - chemistry
+  - geology
+  - medicine
+  - science
+  - zoology
+- id: current-opinion
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/current-opinion.yaml
+  kind: independent
+  title: Current Opinion journals
+- id: din-1505-2-alphanumeric
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/din-1505-2-alphanumeric.yaml
+  kind: independent
+  title: DIN 1505-2 (alphanumeric, Deutsch) - standard superseded by ISO-690
+  description: "Style following DIN 1505-2, using the alphanumeric citation keys, for other media types on additional standards\
+    \ \n      Hinweise zur Benutzung: \n      * Zitieren von Gesetzen: \n        - hier m\xFCssen manuell \xA7, Abs und S.\
+    \ zur Seitenangabe beim Zitieren eingetragen werden \n        - im Kurzbeleg wird der Kurztitel verwendet, daf\xFCr keine\
+    \ Autoren eintragen! \n        - als Jahresangabe wird 'Datum des Inkrafttretens' herangezogen, Verwenden nur bei Verweis\
+    \ auf nicht z.Z. g\xFCltige Gesetze, z.B. (idF. v. 12.12.1972) \n       * Zitieren von Normen und Standards - nicht vollst\xE4\
+    ndig nach DIN 1505\n        - Nutzen Sie den Typ 'Bericht' - als Abhilfe, da es keinen Typ 'Standard' gibt.\n        -\
+    \ als Autor die Kurzbezeichnung inkl. Nummer und Jahr eingeben (z.B. VDI 2222-1997), Vorname leer, Jahr leer\n       \
+    \ - als Titel den ausf\xFChrlichen Titel bei Bedarf (z.B. VDI Richtlinie 2222 Blatt 1 - Konstruktionsmethodik - Methodisches\
+    \ Entwickeln von L\xF6sungsprinzipien)"
+- id: disability-and-rehabilitation
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/disability-and-rehabilitation.yaml
+  kind: journal
+  title: Disability and Rehabilitation
+- id: elsevier-vancouver-author-date
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/elsevier-vancouver-author-date.yaml
+  kind: journal
+  title: Elsevier - NLM/Vancouver (name-year)
+  description: A style for some Elsevier journals, resembles Vancouver style, but using author-date format
+- id: elsevier-without-titles
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/elsevier-without-titles.yaml
+  kind: independent
+  title: Elsevier (numeric, without titles)
+  description: A style for many of Elsevier's journals that does not include article titles in the reference list
+- id: endocrine-press
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/endocrine-press.yaml
+  kind: journal
+  title: Endocrine Press
+  description: The American Medical Association style  with parentheses, bold authors, and no et-al
+  fields:
+  - medicine
+- id: entomological-society-of-america
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/entomological-society-of-america.yaml
+  kind: journal
+  title: Entomological Society of America
+  fields:
+  - biology
+- id: experimental/bluebook-legal
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/experimental/bluebook-legal.yaml
+  kind: independent
+  title: Bluebook Legal Citation (Simplified)
+  description: 'Demonstrates bibliography grouping with legal type hierarchy following Bluebook conventions. Primary sources
+    (cases, statutes, treaties) are grouped separately with type-based ordering.
+
+    '
+- id: experimental/chicago-author-date
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/experimental/chicago-author-date.yaml
+  kind: independent
+  title: Chicago Manual of Style 18th edition (author-date)
+- id: experimental/jm-chicago-legal
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/experimental/jm-chicago-legal.yaml
+  kind: independent
+  title: Juris-M Chicago Legal (Experimental)
+  description: 'Demonstrates legal sectional bibliography groups aligned to Juris-M and Bluebook-oriented workflows.
+
+    '
+- id: experimental/jm-turabian-multilingual
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/experimental/jm-turabian-multilingual.yaml
+  kind: independent
+  title: Turabian Notes (Multilingual)
+  description: 'Experimental multilingual variant of Chicago/Turabian notes style. Supports CJK and other complex scripts
+    with original name ordering and transliterations.
+
+    '
+- id: experimental/locale-specific-bibliography-layouts
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/experimental/locale-specific-bibliography-layouts.yaml
+  kind: independent
+  title: Locale-Specific Bibliography Layouts
+  description: 'Demonstrates bibliography.locales[] selecting a different full-entry layout for CJK items than for the default
+    Latin-script branch.
+
+    '
+- id: experimental/multilingual-academic
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/experimental/multilingual-academic.yaml
+  kind: independent
+  title: Multilingual Academic Citation (Juris-M Style)
+  description: 'Demonstrates per-group sorting for multilingual bibliographies. Vietnamese references use given-family ordering,
+    Western references use family-given ordering.
+
+    '
+- id: experimental/multilingual-partitioned
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/experimental/multilingual-partitioned.yaml
+  kind: journal
+  title: Multilingual Script Partitioning Demo
+- id: frontiers-medical-journals
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/frontiers-medical-journals.yaml
+  kind: independent
+  title: Frontiers medical journals
+  description: Style for the Open Access Frontiers in ... Journals
+  fields:
+  - medicine
+- id: frontiers
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/frontiers.yaml
+  kind: independent
+  title: Frontiers journals
+  description: Style for the Open Access Frontiers in ... Journals
+- id: future-medicine
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/future-medicine.yaml
+  kind: independent
+  title: Future Medicine journals
+  fields:
+  - medicine
+  - biology
+- id: future-science-group
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/future-science-group.yaml
+  kind: independent
+  title: Future Science Group
+  description: Style used by the journals of the Future Science Group, as per Oct-2018 guidelines.
+  fields:
+  - medicine
+- id: gost-r-7-0-5-2008-author-date
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/gost-r-7-0-5-2008-author-date.yaml
+  kind: independent
+  title: GOST R 7.0.5-2008 (Author-Date)
+  description: 'Russian bibliography standard GOST R 7.0.5-2008 demonstrating bibliography grouping by reference type with
+    localized Russian headings.
+
+    '
+- id: gost-r-7-0-5-2008-numeric
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/gost-r-7-0-5-2008-numeric.yaml
+  kind: independent
+  title: Russian GOST R 7.0.5-2008 (numeric)
+  description: "This style is independent from style \"GOST-R-7.0.5-2008\", and the main difference is that this is numeric,\
+    \ contrary to author-date. The structure of these two styles is also very different. !!! IMPORTANT !!! Citations are numeric,\
+    \ order of bibliography is in order of citations, default locale is \"ru-RU\".\n\n    \u0421\u0442\u0438\u043B\u044C \u043E\
+    \u0441\u043D\u043E\u0432\u0430\u043D \u043D\u0430 \u0413\u041E\u0421\u0422 \u0420 7.0.5-2008 \u0438 \u0413\u041E\u0421\
+    \u0422 7.1.2003. \u041E\u0441\u043D\u043E\u0432\u043D\u0430\u044F \u043F\u0440\u043E\u0431\u043B\u0435\u043C\u0430 \u0441\
+    \u0435\u0439\u0447\u0430\u0441 \u2014 \u044D\u0442\u043E \u043B\u043E\u043A\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u044F\
+    \ \u0442\u0435\u0440\u043C\u0438\u043D\u043E\u0432 (\u0421., \u0422., \u043F\u043E\u0434 \u0440\u0435\u0434., \u0438 \u0434\
+    \u0440. ... \u0438\u043B\u0438 \u0441\u043E\u043E\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043D\u043D\u043E P.,\
+    \ Vol., ed., et al.). \u0412 \u043F\u0440\u0438\u043D\u0446\u0438\u043F\u0435 \u044D\u0442\u043E \u0440\u0430\u0431\u043E\
+    \u0442\u0430\u0435\u0442 \u0438 \u043A\u043E\u043D\u0442\u0440\u043E\u043B\u0438\u0440\u0443\u0435\u0442\u0441\u044F \u043F\
+    \u043E\u043B\u0435\u043C  default-locale (\u0432\u044B\u0448\u0435, \u0432\u043E \u0432\u0442\u043E\u0440\u043E\u0439\
+    \ \u0441\u0442\u0440\u043E\u0447\u043A\u0435). \u0414\u043B\u044F \u0440\u0443\u0441\u0441\u043A\u043E\u0433\u043E \u043D\
+    \u0430\u0434\u043E \u0437\u0430\u043C\u0435\u043D\u0438\u0442\u044C \u043D\u0430 \"ru-RU\". \u042D\u0442\u043E \u043E\u043F\
+    \u0440\u0435\u0434\u0435\u043B\u044F\u0435\u0442 \u043E\u0434\u043D\u0438 \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\
+    \u0438 \u0434\u043B\u044F \u0432\u0441\u0435\u0439 \u0431\u0438\u0431\u043B\u0438\u043E\u0433\u0440\u0430\u0444\u0438\u0438\
+    . \u041E\u0434\u043D\u0430\u043A\u043E, \u0438\u0434\u0435\u0430\u043B\u044C\u043D\u043E\u0435 \u0440\u0435\u0448\u0435\
+    \u043D\u0438\u0435 \u2014 \u044D\u0442\u043E \u0432\u044B\u0431\u0438\u0440\u0430\u0442\u044C \u044F\u0437\u044B\u043A\
+    \ \u043B\u043E\u043A\u0430\u043B\u0438\u0437\u0430\u0446\u0438\u0438 \u0442\u0435\u0440\u043C\u0438\u043D\u043E\u0432\
+    \ \u0432 \u0437\u0430\u0432\u0438\u0441\u0438\u043C\u043E\u0441\u0442\u0438 \u043E\u0442 \u044F\u0437\u044B\u043A\u0430\
+    \ \u0437\u0430\u043F\u0438\u0441\u0438 (\u043A\u0430\u043A \u0438 \u043F\u0440\u0435\u0434\u043F\u0438\u0441\u044B\u0432\
+    \u0430\u0435\u0442 \u0413\u041E\u0421\u0422). \u042D\u0442\u043E \u043D\u0435\u0432\u043E\u0437\u043C\u043E\u0436\u043D\
+    \u043E \u0441\u0434\u0435\u043B\u0430\u0442\u044C \u0432 \u0440\u0430\u043C\u043A\u0430\u0445 Zotero 4.0 \u0438 CSL 1.0,\
+    \ \u043D\u043E \u0443\u0436\u0435 \u0441\u0435\u0439\u0447\u0430\u0441 \u0447\u0442\u043E-\u0442\u043E \u043C\u043E\u0436\
+    \u043D\u043E \u0441\u0434\u0435\u043B\u0430\u0442\u044C \u0432 \u0440\u0430\u043C\u043A\u0430\u0445 MultiLingual Zotero\
+    \ \u2014 \u0441\u043C. \u043D\u0430\u043F\u0440\u0438\u043C\u0435\u0440 http://forums.zotero.org/discussion/18482/multilingual-zotero-fields-and-csl-variables.\
+    \ Typst \u043F\u043E\u0437\u0432\u043E\u043B\u044F\u0435\u0442 \u0438\u0437\u043C\u0435\u043D\u044F\u0442\u044C \u043B\
+    \u043E\u043A\u0430\u043B\u044C \u0431\u0438\u0431\u043B\u0438\u043E\u0433\u0440\u0430\u0444\u0438\u0438 \u0438 \u0446\u0438\
+    \u0442\u0430\u0442, \u0438\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u044F \u043F\u043E\u043B\u0435 lang \u044D\u043B\u0435\
+    \u043C\u0435\u043D\u0442\u0430 text.\n\n    \u0418 \u043F\u043E\u0441\u043B\u0435\u0434\u043D\u0435\u0435, \u043F\u0430\
+    \u0442\u0435\u043D\u0442\u044B \u043F\u043E \u0443\u043C\u043E\u043B\u0447\u0430\u043D\u0438\u044E \u043F\u0440\u0435\u0434\
+    \u0441\u0442\u0430\u0432\u043B\u0435\u043D\u044B \u043A\u0430\u043A USA, \u043F\u043E\u0441\u043A\u043E\u043B\u044C\u043A\
+    \u0443 \u0432 CSL 1.0 \u043D\u0435\u0442 \u043F\u0435\u0440\u0435\u043C\u0435\u043D\u043D\u043E\u0439, \u0441\u043E\u043E\
+    \u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0443\u044E\u0449\u0435\u0439 \u043F\u043E\u043B\u044E country \u0432 \u0431\
+    \u0430\u0437\u0435 Zotero 4.0+. \u041D\u0430\u0434\u0435\u044E\u0441\u044C, \u044D\u0442\u043E \u0431\u0443\u0434\u0435\
+    \u0442 \u0438\u0441\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u0432 \u0431\u0443\u0434\u0443\u0449\u0438\u0445\
+    \ \u0432\u0435\u0440\u0441\u0438\u044F\u0445."
+- id: hainan-medical-university-journal-publisher
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/hainan-medical-university-journal-publisher.yaml
+  kind: independent
+  title: Hainan Medical University Journal Publisher
+  fields:
+  - medicine
+  - biology
+- id: harvard-cite-them-right
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/harvard-cite-them-right.yaml
+  kind: independent
+  title: Cite Them Right 12th edition (author-date/Harvard)
+  description: Harvard according to Cite Them Right, 11th edition.
+- id: hawaii-international-conference-on-system-sciences-proceedings
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/hawaii-international-conference-on-system-sciences-proceedings.yaml
+  kind: journal
+  title: Hawaii International Conference on System Sciences Proceedings
+- id: institute-for-operations-research-and-the-management-sciences
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/institute-for-operations-research-and-the-management-sciences.yaml
+  kind: independent
+  title: Institute for Operations Research and the Management Sciences
+  fields:
+  - engineering
+- id: institute-of-mathematics-and-its-applications
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/institute-of-mathematics-and-its-applications.yaml
+  kind: independent
+  title: Institute of Mathematics and its Applications
+  fields:
+  - math
+- id: institute-of-physics-numeric
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/institute-of-physics-numeric.yaml
+  kind: independent
+  title: Institute of Physics (numeric)
+- id: integrated-science-publishing-journals
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/integrated-science-publishing-journals.yaml
+  kind: independent
+  title: Integrated Science Publishing journals
+  fields:
+  - science
+- id: inter-research-science-center
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/inter-research-science-center.yaml
+  kind: journal
+  title: Inter-Research Science Center
+  fields:
+  - biology
+- id: international-journal-of-wildland-fire
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/international-journal-of-wildland-fire.yaml
+  kind: journal
+  title: International Journal of Wildland Fire
+  description: "This style produces the CSIRO style used in the International Journal of Wildland Fire,\n      the Australian\
+    \ Journal of Botany and several other Australian journals.  It has been\n      validated for the journal, book, book chapter,\
+    \ report, and conference paper citation\n      styles.  This style is in the public domain."
+  fields:
+  - science
+- id: international-union-of-crystallography
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/international-union-of-crystallography.yaml
+  kind: independent
+  title: International Union of Crystallography journals
+  fields:
+  - chemistry
+- id: iso690-author-date
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/iso690-author-date.yaml
+  kind: independent
+  title: ISO 690 (author-date)
+  description: 'ISO 690 author-date style for international bibliography standards. Locale-agnostic with support for multilingual
+    citations.
+
+    '
+- id: iso690-numeric
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/iso690-numeric.yaml
+  kind: independent
+  title: ISO 690 (numeric)
+  description: 'ISO 690 numeric citation-sequence style for international bibliography standards. Locale-agnostic with support
+    for multilingual citations.
+
+    '
+- id: karger-journals-author-date
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/karger-journals-author-date.yaml
+  kind: independent
+  title: Karger journals (author-date)
+- id: karger-journals
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/karger-journals.yaml
+  kind: independent
+  title: Karger journals
+- id: landes-bioscience-journals
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/landes-bioscience-journals.yaml
+  kind: independent
+  title: Landes Bioscience Journals
+  description: Vancouver style adapted for Landes Bioscience Journals (et al for 10+ authors, only year, space after semicolon
+  fields:
+  - medicine
+- id: mary-ann-liebert-harvard
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/mary-ann-liebert-harvard.yaml
+  kind: independent
+  title: Mary Ann Liebert (author-date/Harvard)
+- id: mary-ann-liebert-vancouver
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/mary-ann-liebert-vancouver.yaml
+  kind: independent
+  title: Mary Ann Liebert - NLM/Vancouver
+- id: medicina-clinica
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/medicina-clinica.yaml
+  kind: independent
+  title: "Medicina Cl\xEDnica (Espa\xF1ol)"
+  description: Style for Medicina Clinica (and most Spanish Elsevier journals that follow an adapted Vancouver style)
+  fields:
+  - medicine
+- id: medicine-publishing
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/medicine-publishing.yaml
+  kind: independent
+  title: Medicine Publishing
+  description: Vancouver style for all journals of The Medicine Publishing Collection.
+  fields:
+  - medicine
+- id: memorias-do-instituto-oswaldo-cruz
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/memorias-do-instituto-oswaldo-cruz.yaml
+  kind: independent
+  title: "Mem\xF3rias do Instituto Oswaldo Cruz"
+- id: mhra-author-date-publisher-place
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/mhra-author-date-publisher-place.yaml
+  kind: independent
+  title: MHRA Style Guide 4th edition (author-date, place of publication)
+  description: MHRA source citations, author-date system, with place of publication (MHRA 7.3)
+  fields:
+  - history
+  - humanities
+  - linguistics
+  - literature
+  - philosophy
+  - theology
+- id: mhra-notes-publisher-place-no-url
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/mhra-notes-publisher-place-no-url.yaml
+  kind: independent
+  title: MHRA Style Guide 4th edition (notes, place of publication, without URLs)
+  description: MHRA source citations, notes system, with place of publication (MHRA 7.3), without URLs
+  fields:
+  - history
+  - humanities
+  - linguistics
+  - literature
+  - philosophy
+  - theology
+- id: mhra-notes-publisher-place
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/mhra-notes-publisher-place.yaml
+  kind: independent
+  title: MHRA Style Guide 4th edition (notes, place of publication)
+  description: MHRA source citations, notes system, with place of publication (MHRA 7.3)
+  fields:
+  - history
+  - humanities
+  - linguistics
+  - literature
+  - philosophy
+  - theology
+- id: mhra-notes
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/mhra-notes.yaml
+  kind: independent
+  title: MHRA Style Guide 4th edition (notes)
+- id: mhra-shortened-notes-publisher-place
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/mhra-shortened-notes-publisher-place.yaml
+  kind: independent
+  title: MHRA Style Guide 4th edition (shortened notes, place of publication)
+- id: microbiology-society
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/microbiology-society.yaml
+  kind: independent
+  title: Microbiology Society
+  fields:
+  - biology
+- id: multidisciplinary-digital-publishing-institute
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/multidisciplinary-digital-publishing-institute.yaml
+  kind: independent
+  title: Multidisciplinary Digital Publishing Institute
+- id: museum-national-dhistoire-naturelle
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/museum-national-dhistoire-naturelle.yaml
+  kind: independent
+  title: "Mus\xE9um national d'Histoire naturelle"
+  fields:
+  - biology
+  - botany
+  - anthropology
+  - geology
+  - zoology
+- id: nature-publishing-group-vancouver
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/nature-publishing-group-vancouver.yaml
+  kind: independent
+  title: Nature Publishing Group - NLM/Vancouver
+  description: Superscript Vancouver style for some NPG journals, with et-al-min="7" and et-al-use-first="6"
+  fields:
+  - science
+- id: nature
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/nature.yaml
+  kind: independent
+  title: Nature
+  fields:
+  - science
+- id: new-harts-rules-author-date-space-publisher
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/new-harts-rules-author-date-space-publisher.yaml
+  kind: independent
+  title: 'New Hart''s Rules: The Oxford Style Guide 2nd edition (author-date, bracketed date with space, publisher)'
+- id: new-harts-rules-notes-label-page-no-url
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/new-harts-rules-notes-label-page-no-url.yaml
+  kind: independent
+  title: 'New Hart''s Rules: The Oxford Style Guide 2nd edition (notes, page abbreviations, without URLs)'
+  description: Oxford source citations, notes system, page abbreviations with locator (NHR 17.2.5), without URLs
+  fields:
+  - anthropology
+  - communications
+  - geography
+  - history
+  - humanities
+  - linguistics
+  - literature
+  - philosophy
+  - psychology
+  - science
+  - sociology
+  - theology
+- id: new-harts-rules-notes-label-page
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/new-harts-rules-notes-label-page.yaml
+  kind: independent
+  title: 'New Hart''s Rules: The Oxford Style Guide 2nd edition (notes, page abbreviations)'
+  description: Oxford source citations, notes system, page abbreviations with locator (NHR 17.2.5)
+  fields:
+  - anthropology
+  - communications
+  - geography
+  - history
+  - humanities
+  - linguistics
+  - literature
+  - philosophy
+  - psychology
+  - science
+  - sociology
+  - theology
+- id: new-harts-rules-notes
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/new-harts-rules-notes.yaml
+  kind: independent
+  title: 'New Hart''s Rules: The Oxford Style Guide 2nd edition (notes)'
+  description: Oxford source citations, notes system
+  fields:
+  - anthropology
+  - communications
+  - geography
+  - history
+  - humanities
+  - linguistics
+  - literature
+  - philosophy
+  - psychology
+  - science
+  - sociology
+  - theology
+- id: nlm-citation-sequence-brackets-no-et-al
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/nlm-citation-sequence-brackets-no-et-al.yaml
+  kind: independent
+  title: 'NLM Style Guide (Vancouver): Citing Medicine 2nd edition (citation-sequence, brackets, no "et al.")'
+  description: 'Citing Medicine: The NLM Style Guide for Authors, Editors, and Publishers, 2nd edition (2015), based on ANSI/NISO
+    Z39.29-2005 (R2010); citation-sequence system, with in-text indicators in brackets, no "et al."'
+  fields:
+  - medicine
+- id: nlm-citation-sequence-brackets-year-only-no-issue
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/nlm-citation-sequence-brackets-year-only-no-issue.yaml
+  kind: independent
+  title: 'NLM Style Guide (Vancouver): Citing Medicine 2nd edition (citation-sequence, brackets, year-only dates, no issue
+    numbers)'
+  description: 'Citing Medicine: The NLM Style Guide for Authors, Editors, and Publishers, 2nd edition (2015), based on ANSI/NISO
+    Z39.29-2005 (R2010); citation-sequence system, with in-text indicators in brackets, year-only dates, and no issue numbers.'
+  fields:
+  - medicine
+- id: nlm-citation-sequence-brackets
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/nlm-citation-sequence-brackets.yaml
+  kind: independent
+  title: 'NLM Style Guide (Vancouver): Citing Medicine 2nd edition (citation-sequence, brackets)'
+  description: 'Citing Medicine: The NLM Style Guide for Authors, Editors, and Publishers, 2nd edition (2015), based on ANSI/NISO
+    Z39.29-2005 (R2010); citation-sequence system, with in-text indicators in brackets.'
+  fields:
+  - medicine
+- id: nlm-citation-sequence-superscript-brackets-year-only
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/nlm-citation-sequence-superscript-brackets-year-only.yaml
+  kind: independent
+  title: 'NLM Style Guide (Vancouver): Citing Medicine 2nd edition (citation-sequence, superscript, brackets, year-only dates)'
+  description: 'Citing Medicine: The NLM Style Guide for Authors, Editors, and Publishers, 2nd edition (2015), based on ANSI/NISO
+    Z39.29-2005 (R2010); citation-sequence system, with superscripted in-text indicators, brackets, and year-only dates.'
+  fields:
+  - medicine
+- id: nlm-citation-sequence-superscript-year-only-no-issue
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/nlm-citation-sequence-superscript-year-only-no-issue.yaml
+  kind: independent
+  title: 'NLM Style Guide (Vancouver): Citing Medicine 2nd edition (citation-sequence, superscript, year-only dates, no issue
+    numbers)'
+  description: 'Citing Medicine: The NLM Style Guide for Authors, Editors, and Publishers, 2nd edition (2015), based on ANSI/NISO
+    Z39.29-2005 (R2010); citation-sequence system, with superscripted in-text indicators, year-only dates, and no issue numbers.'
+  fields:
+  - medicine
+- id: nlm-citation-sequence-superscript
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/nlm-citation-sequence-superscript.yaml
+  kind: independent
+  title: 'NLM Style Guide (Vancouver): Citing Medicine 2nd edition (citation-sequence, superscript)'
+  description: 'Citing Medicine: The NLM Style Guide for Authors, Editors, and Publishers, 2nd edition (2015), based on ANSI/NISO
+    Z39.29-2005 (R2010); citation-sequence system, with superscripted in-text indicators.'
+  fields:
+  - medicine
+- id: nlm-citation-sequence
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/nlm-citation-sequence.yaml
+  kind: independent
+  title: 'NLM Style Guide (Vancouver): Citing Medicine 2nd edition (citation-sequence)'
+  description: 'Citing Medicine: The NLM Style Guide for Authors, Editors, and Publishers, 2nd edition (2015), based on ANSI/NISO
+    Z39.29-2005 (R2010); citation-sequence system.'
+  fields:
+  - medicine
+- id: nlm-name-year
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/nlm-name-year.yaml
+  kind: independent
+  title: 'NLM Style Guide (Vancouver): Citing Medicine 2nd edition (name-year)'
+  description: 'Citing Medicine: The NLM Style Guide for Authors, Editors, and Publishers, 2nd edition (2015), based on ANSI/NISO
+    Z39.29-2005 (R2010); name-year system.'
+  fields:
+  - medicine
+- id: numeric-comp
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/numeric-comp.yaml
+  kind: independent
+  title: Numeric Compound
+  description: 'A generic numeric style with compound citation support. Groups related references under a shared citation
+    number with alphabetic sub-labels (a, b, c). Analog of the biblatex numeric-comp style.
+
+    '
+- id: oscola-no-ibid
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/oscola-no-ibid.yaml
+  kind: independent
+  title: OSCOLA 4th edition (no ibid.)
+  description: 'Oxford University Standard for Citation of Legal Authorities, notes system, no ibid. For a Zotero group showing
+    data entry: https://zotero.org/groups/2205533/collections/AC7ETLN4'
+  fields:
+  - law
+- id: oscola
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/oscola.yaml
+  kind: independent
+  title: Oxford University Standard for Citation of Legal Authorities 4th edition
+  description: 'Oxford University Standard for Citation of Legal Authorities, notes system. For a Zotero group showing data
+    entry: https://zotero.org/groups/2205533/collections/AC7ETLN4'
+  fields:
+  - law
+- id: oxford-journals-scimed-author-date
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/oxford-journals-scimed-author-date.yaml
+  kind: independent
+  title: Oxford Journals Sciences and Medicine (author-date)
+  fields:
+  - medicine
+  - science
+- id: oxford-journals-scimed-numeric
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/oxford-journals-scimed-numeric.yaml
+  kind: independent
+  title: Oxford Journals Sciences and Medicine (numeric)
+  fields:
+  - medicine
+  - science
+- id: pensoft-journals
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/pensoft-journals.yaml
+  kind: independent
+  title: Pensoft Journals
+  description: The Pensoft Journals style
+- id: pharmacoepidemiology-and-drug-safety
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/pharmacoepidemiology-and-drug-safety.yaml
+  kind: journal
+  title: Pharmacoepidemiology and Drug Safety
+- id: plos
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/plos.yaml
+  kind: independent
+  title: Public Library of Science
+  description: Vancouver for PLoS Journals as of January 2015
+  fields:
+  - science
+- id: proceedings-of-the-royal-society-b
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/proceedings-of-the-royal-society-b.yaml
+  kind: independent
+  title: Proceedings of the Royal Society B
+  fields:
+  - biology
+- id: royal-society-of-chemistry
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/royal-society-of-chemistry.yaml
+  kind: independent
+  title: Royal Society of Chemistry
+  description: The Royal Society of Chemistry journal style.
+  fields:
+  - chemistry
+- id: sage-harvard
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/sage-harvard.yaml
+  kind: independent
+  title: SAGE (author-date/Harvard)
+  description: The SAGE Harvard author-date style
+- id: sage-vancouver
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/sage-vancouver.yaml
+  kind: independent
+  title: SAGE - NLM/Vancouver
+  description: Vancouver superscript style modified to italicize journal names strip periods for use in SAGE journals
+  fields:
+  - medicine
+- id: spandidos-publications
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/spandidos-publications.yaml
+  kind: independent
+  title: Spandidos Publications
+  fields:
+  - medicine
+- id: spie-journals
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/spie-journals.yaml
+  kind: independent
+  title: SPIE journals
+  description: "Designed for SPIE journals, based on information at http://spie.org/x85036.xml and sample .docx manuscript\
+    \ given there (http://spie.org/Documents/Publications/Journals/journal%20Word%20template.doc). The latter probably originated\
+    \ from the style for e-journals (which was previously available at http://spie.org/x3658.xml), and thus slightly contradicts\
+    \ former requirements. The differences are:\n    1) style on the web page requires using et al., when there are more than\
+    \ three authors - we follow this rule.\n    2) style in the sample manuscript asks to add DOI if available, while the\
+    \ style on the web page says nothing about it - we do include DOI (this should not harm in all cases).\n    Also previous\
+    \ versions of this style were based on more detailed instructions for SPIE e-journals (including larger number of document\
+    \ types). Those details are present in the current version as well, but no more supported by a documented style."
+  fields:
+  - physics
+  - engineering
+- id: springer-basic-author-date-no-et-al
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/springer-basic-author-date-no-et-al.yaml
+  kind: independent
+  title: Springer - Basic (author-date, no "et al.")
+  description: Springer Author Date Style for the disciplines Medicine, Biomedicine, Life Sciences, Chemistry, Geosciences,
+    Computer Science, Engineering, Economics. This style is based on Harvard style and recommendations of the Council of Biology
+    Editors.
+- id: springer-basic-brackets-no-et-al-alphabetical
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/springer-basic-brackets-no-et-al-alphabetical.yaml
+  kind: independent
+  title: Springer - Basic (numeric, brackets, no "et al.", alphabetical)
+- id: springer-basic-brackets-no-et-al
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/springer-basic-brackets-no-et-al.yaml
+  kind: independent
+  title: Springer - Basic (numeric, brackets, no "et al.")
+  description: Springer Numbered Style for the disciplines Medicine, Biomedicine, Life Sciences, Chemistry, Geosciences, Computer
+    Science, Engineering, Economics. This style is based on Harvard style and recommendations of the Council of Biology Editors.
+- id: springer-fachzeitschriften-medizin-psychologie
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/springer-fachzeitschriften-medizin-psychologie.yaml
+  kind: independent
+  title: Springer - Fachzeitschriften Medizin Psychologie (Deutsch)
+  description: Springer Basic style (German, numeric, brackets, alphabetical) for Springer journals in medicine and psychology.
+  fields:
+  - medicine
+  - psychology
+- id: springer-humanities-author-date
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/springer-humanities-author-date.yaml
+  kind: independent
+  title: Springer - Humanities (author-date)
+  description: Style for Springer's humanities journals - the journals do look slightly different from each other, but this
+    should work quite closely
+  fields:
+  - humanities
+- id: springer-humanities-brackets
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/springer-humanities-brackets.yaml
+  kind: independent
+  title: Springer - Humanities (numeric, brackets)
+  description: Style for Springer's humanities journals - the journals do look slightly different from each other, but this
+    should work quite closely
+  fields:
+  - humanities
+- id: springer-mathphys-author-date
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/springer-mathphys-author-date.yaml
+  kind: independent
+  title: Springer - MathPhys (author-date)
+  description: This style is used by a number of Springer publications.
+  fields:
+  - science
+- id: springer-mathphys-brackets
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/springer-mathphys-brackets.yaml
+  kind: independent
+  title: Springer - MathPhys (numeric, brackets)
+  description: This style is used by a number of Springer publications.
+  fields:
+  - science
+- id: springer-physics-author-date
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/springer-physics-author-date.yaml
+  kind: independent
+  title: Springer - Physics (author-date)
+  description: This style is similar to American Physical Society (APS) and is used by a number of Springer publications.
+  fields:
+  - physics
+- id: springer-physics-brackets
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/springer-physics-brackets.yaml
+  kind: independent
+  title: Springer - Physics (numeric, brackets)
+  description: This style is similar to American Physical Society (APS) and is used by a number of Springer publications.
+  fields:
+  - physics
+- id: springer-socpsych-author-date
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/springer-socpsych-author-date.yaml
+  kind: independent
+  title: Springer - SocPsych (author-date)
+  description: This style corresponds to 'Springer SocPsych' in the pdf document 'Key Style Points' at this url
+  fields:
+  - psychology
+- id: springer-socpsych-brackets
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/springer-socpsych-brackets.yaml
+  kind: independent
+  title: Springer - SocPsych (numeric, brackets)
+  fields:
+  - psychology
+- id: springer-vancouver-author-date
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/springer-vancouver-author-date.yaml
+  kind: independent
+  title: Springer - NLM/Vancouver (name-year)
+  description: This style based on the NLM guidelines Citing Medicine is very similar to Vancouver and is used by a number
+    of Springer publications.
+- id: the-company-of-biologists
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/the-company-of-biologists.yaml
+  kind: independent
+  title: The Company of Biologists
+  description: Style used by the journals published by The Company of Biologists.
+  fields:
+  - biology
+- id: the-geological-society-of-london
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/the-geological-society-of-london.yaml
+  kind: independent
+  title: The Geological Society of London
+  description: Parent style for the Journals and Books published by The Geological Society (London); details provided by publisher
+  fields:
+  - geology
+- id: the-institution-of-engineering-and-technology
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/the-institution-of-engineering-and-technology.yaml
+  kind: independent
+  title: The Institution of Engineering and Technology
+  description: Style for all IET Journals
+  fields:
+  - engineering
+- id: the-optical-society
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/the-optical-society.yaml
+  kind: journal
+  title: The Optical Society
+  description: Common style use by OSA publications.
+  fields:
+  - physics
+- id: thieme-german
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/thieme-german.yaml
+  kind: independent
+  title: Thieme-German (Deutsch)
+- id: thomson-reuters-legal-tax-and-accounting-australia
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/thomson-reuters-legal-tax-and-accounting-australia.yaml
+  kind: independent
+  title: Thomson Reuters - Legal, Tax & Accounting Australia
+  description: Style for a series of Thomson Reuters law publications for Australia
+  fields:
+  - law
+- id: trends-journals
+  url: https://raw.githubusercontent.com/citum/citum-core/main/styles/trends-journals.yaml
+  kind: independent
+  title: Trends journals
+  description: Style for the "Trends" journals by Cell Press
+  fields:
+  - biology
+  - medicine

@@ -43,6 +43,12 @@ pub struct RegistryEntry {
     /// Relative path to a YAML file (used in local registries).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub path: Option<PathBuf>,
+    /// HTTP URL to a YAML style file.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
+    /// Human-readable title from the style metadata.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
     /// Human-readable description.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
@@ -122,6 +128,8 @@ impl StyleRegistry {
                 aliases: style_aliases,
                 builtin: Some((*name).to_string()),
                 path: None,
+                url: None,
+                title: None,
                 description: None,
                 fields: Vec::new(),
                 kind: None,
@@ -150,6 +158,9 @@ impl StyleRegistry {
                 let bytes = include_bytes!("../../../registry/default.yaml");
                 let registry: Self = serde_yaml::from_slice(bytes)
                     .expect("embedded registry/default.yaml is valid YAML");
+                registry
+                    .validate_sources()
+                    .expect("embedded registry/default.yaml has valid style sources");
                 for entry in &registry.styles {
                     if entry.kind == Some(StyleKind::Profile)
                         && let Some(name) = &entry.builtin
@@ -170,31 +181,33 @@ impl StyleRegistry {
     ///
     /// # Errors
     /// Returns an error if the file cannot be read or if the YAML cannot be parsed.
-    /// Also returns an error if any entry does not have exactly one of `builtin` or `path`.
+    /// Also returns an error if any entry does not have exactly one of
+    /// `builtin`, `path`, or `url`.
     pub fn load_from_file(path: &std::path::Path) -> Result<Self, Box<dyn std::error::Error>> {
         let content = std::fs::read(path)?;
         let registry: Self = serde_yaml::from_slice(&content)?;
-        // Validate: each entry must have exactly one of builtin or path.
-        for entry in &registry.styles {
-            match (&entry.builtin, &entry.path) {
-                (None, None) => {
-                    return Err(format!(
-                        "Registry entry '{}' must have either 'builtin' or 'path'",
-                        entry.id
-                    )
-                    .into());
-                }
-                (Some(_), Some(_)) => {
-                    return Err(format!(
-                        "Registry entry '{}' cannot have both 'builtin' and 'path'",
-                        entry.id
-                    )
-                    .into());
-                }
-                _ => {}
+        registry.validate_sources()?;
+        Ok(registry)
+    }
+
+    /// Validate that each entry declares exactly one loadable style source.
+    ///
+    /// # Errors
+    /// Returns an error if any entry has no source or multiple sources.
+    pub fn validate_sources(&self) -> Result<(), Box<dyn std::error::Error>> {
+        for entry in &self.styles {
+            let source_count = usize::from(entry.builtin.is_some())
+                + usize::from(entry.path.is_some())
+                + usize::from(entry.url.is_some());
+            if source_count != 1 {
+                return Err(format!(
+                    "Registry entry '{}' must have exactly one of 'builtin', 'path', or 'url'",
+                    entry.id
+                )
+                .into());
             }
         }
-        Ok(registry)
+        Ok(())
     }
 }
 
@@ -222,6 +235,8 @@ mod tests {
                 aliases: vec!["apa".to_string()],
                 builtin: Some("apa-7th".to_string()),
                 path: None,
+                url: None,
+                title: None,
                 description: Some("APA 7th edition".to_string()),
                 fields: vec!["psychology".to_string()],
                 kind: None,
@@ -241,6 +256,8 @@ mod tests {
                 aliases: vec!["apa".to_string()],
                 builtin: Some("apa-7th".to_string()),
                 path: None,
+                url: None,
+                title: None,
                 description: Some("APA 7th edition".to_string()),
                 fields: vec!["psychology".to_string()],
                 kind: None,
@@ -261,6 +278,8 @@ mod tests {
                     aliases: vec!["apa".to_string()],
                     builtin: Some("apa-7th".to_string()),
                     path: None,
+                    url: None,
+                    title: None,
                     description: None,
                     fields: vec![],
                     kind: None,
@@ -270,6 +289,8 @@ mod tests {
                     aliases: vec![],
                     builtin: Some("mla".to_string()),
                     path: None,
+                    url: None,
+                    title: None,
                     description: None,
                     fields: vec![],
                     kind: None,
@@ -290,6 +311,8 @@ mod tests {
                 aliases: vec!["apa".to_string()],
                 builtin: Some("apa-7th".to_string()),
                 path: None,
+                url: None,
+                title: None,
                 description: Some("APA 7th edition".to_string()),
                 fields: vec!["psychology".to_string()],
                 kind: None,
@@ -304,6 +327,8 @@ mod tests {
                     aliases: vec!["custom".to_string()],
                     path: Some(PathBuf::from("custom.yaml")),
                     builtin: None,
+                    url: None,
+                    title: None,
                     description: Some("Custom style".to_string()),
                     fields: vec![],
                     kind: None,
@@ -313,6 +338,8 @@ mod tests {
                     aliases: vec!["apa".to_string()],
                     builtin: Some("apa-7th".to_string()),
                     path: None,
+                    url: None,
+                    title: None,
                     description: Some("APA 7th edition (modified)".to_string()),
                     fields: vec!["psychology".to_string(), "custom".to_string()],
                     kind: None,
@@ -349,5 +376,18 @@ mod tests {
             .resolve("elsevier-harvard")
             .expect("elsevier-harvard should exist");
         assert_eq!(entry.kind, Some(StyleKind::Profile));
+    }
+
+    #[test]
+    fn test_load_default_contains_embedded_and_core_http_entries() {
+        let registry = StyleRegistry::load_default();
+        let embedded = registry.resolve("apa-7th").expect("apa-7th should exist");
+        assert_eq!(embedded.builtin.as_deref(), Some("apa-7th"));
+
+        let core_http = registry.resolve("alpha").expect("alpha should exist");
+        assert_eq!(
+            core_http.url.as_deref(),
+            Some("https://raw.githubusercontent.com/citum/citum-core/main/styles/alpha.yaml")
+        );
     }
 }

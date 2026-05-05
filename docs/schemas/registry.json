@@ -51,6 +51,20 @@
             "null"
           ]
         },
+        "url": {
+          "description": "HTTP URL to a YAML style file.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "description": "Human-readable title from the style metadata.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "description": {
           "description": "Human-readable description.",
           "type": [
