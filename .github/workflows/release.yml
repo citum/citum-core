@@ -24,6 +24,7 @@ on:
 permissions:
   pull-requests: write
   contents: write
+  issues: write
 
 jobs:
   # ── Step 1: Detect what changed and infer bump level ──────────────
@@ -162,6 +163,11 @@ jobs:
           if [ -n "$EXISTING" ]; then
             gh pr edit "$EXISTING" --title "chore: release v${NEW_VERSION}" --body "$BODY"
           else
+            if ! gh label list --json name --jq '.[].name' | grep -qx "release"; then
+              gh label create "release" \
+                --color "0E8A16" \
+                --description "Automated release pull requests"
+            fi
             gh pr create --head "release/next" --base main \
               --title "chore: release v${NEW_VERSION}" --body "$BODY" \
               --label "release"
