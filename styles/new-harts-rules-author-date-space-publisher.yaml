@@ -33,11 +33,9 @@ options:
 citation:
   type-variants:
     personal_communication:
-      - contributor: author
-        form: short
-        name-order: family-first
-      - variable: locator
-        prefix: ': '
+      remove:
+        - match:
+            date: issued
   template:
     - contributor: author
       form: short
@@ -64,84 +62,37 @@ bibliography:
     separator: ', '
   type-variants:
     article-journal:
-      - contributor: author
-        form: long
-        name-order: family-first
-        shorten:
-          min: 5
-          use-first: 1
-      - date: issued
-        form: year
-        wrap:
-          punctuation: parentheses
-        prefix: ' '
-      - title: primary
-        wrap:
-          punctuation: quotes
-        prefix: ' '
-      - prefix: ', in '
-        group:
-          - contributor: editor
-            form: verb
-            name-order: given-first
-            shorten:
-              min: 4
-              use-first: 1
-          - title: parent-monograph
-            emph: true
-      - title: parent-serial
-        emph: true
-      - variable: publisher
-      - number: pages
-        prefix: '), '
-      - variable: publisher-place
-      - number: volume
-        prefix: '), '
-      - number: issue
-        prefix: /
-      - variable: doi
-        prefix: https://doi.org/
-      - variable: url
+      modify:
+        - match:
+            variable: doi
+          prefix: https://doi.org/
     chapter:
-      - contributor: author
-        form: long
-        name-order: family-first
-        shorten:
-          min: 5
-          use-first: 1
-      - date: issued
-        form: year
-        wrap:
-          punctuation: parentheses
-        prefix: ' '
-      - title: primary
-        wrap:
-          punctuation: quotes
-        prefix: ' '
-      - prefix: ', in '
-        group:
-          - contributor: editor
-            form: verb
-            name-order: given-first
-            shorten:
-              min: 4
-              use-first: 1
-            prefix: 'in '
-          - title: parent-monograph
-            emph: true
-      - title: parent-serial
-        emph: true
-      - variable: publisher
-      - number: pages
-        prefix: '), '
-      - variable: publisher-place
-      - number: volume
-        prefix: '), '
-      - number: issue
-        prefix: /
-      - variable: doi
-        prefix: '/2, '
-      - variable: url
+      remove:
+        - match:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+                shorten:
+                  min: 4
+                  use-first: 1
+              - title: parent-monograph
+                emph: true
+      add:
+        - component:
+            prefix: ', in '
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+                shorten:
+                  min: 4
+                  use-first: 1
+                prefix: 'in '
+              - title: parent-monograph
+                emph: true
+          before:
+            title: parent-serial
     patent:
       - contributor: author
         form: long
@@ -162,51 +113,45 @@ bibliography:
           punctuation: quotes
       - number: number
     interview:
-      - contributor: author
-        form: long
-        name-order: family-first
-        shorten:
-          min: 5
-          use-first: 1
-          and-others: et-al
-          delimiter-precedes-last: contextual
-      - date: issued
-        form: year
-        prefix: ' '
-        wrap:
-          punctuation: parentheses
-      - title: primary
-        prefix: ' '
-        wrap:
-          punctuation: quotes
-      - contributor: interviewer
-        form: long
-      - variable: medium
-      - variable: url
+      extends: patent
+      remove:
+        - match:
+            number: number
+      add:
+        - component:
+            contributor: interviewer
+            form: long
+          after:
+            title: primary
+        - component:
+            variable: medium
+          after:
+            contributor: interviewer
+        - component:
+            variable: url
+          after:
+            variable: medium
     personal-communication: []
     motion_picture:
-      - contributor: author
-        form: long
-        name-order: family-first
-        shorten:
-          min: 5
-          use-first: 1
-          and-others: et-al
-          delimiter-precedes-last: contextual
-      - date: issued
-        form: year
-        prefix: ' '
-        wrap:
-          punctuation: parentheses
-      - title: primary
-        prefix: ' '
-        wrap:
-          punctuation: quotes
-      - variable: genre
-      - variable: medium
-      - contributor: director
-        form: long
-        prefix: 'Directed by '
+      extends: patent
+      remove:
+        - match:
+            number: number
+      add:
+        - component:
+            variable: genre
+          after:
+            title: primary
+        - component:
+            variable: medium
+          after:
+            variable: genre
+        - component:
+            contributor: director
+            form: long
+            prefix: 'Directed by '
+          after:
+            variable: medium
     personal_communication: []
   template:
     - contributor: author

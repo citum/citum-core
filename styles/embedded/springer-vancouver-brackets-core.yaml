@@ -201,22 +201,13 @@ bibliography:
       prefix: '. p. '
 
     dataset:
-    - contributor: author
-      form: long
-    - title: primary
-    - variable: publisher
-      suffix: '; '
-    - date: issued
-      form: year
-    - date: accessed
-      form: year-month-day
-      prefix: '[cited '
-      suffix: ']. '
-    - variable: url
-    - date: accessed
-      form: year-month-day
-      prefix: '. Accessed '
-
+      extends: webpage
+      add:
+        - component:
+            variable: publisher
+            suffix: '; '
+          before:
+            date: issued
     legal-case:
     - title: primary
     - variable: reporter

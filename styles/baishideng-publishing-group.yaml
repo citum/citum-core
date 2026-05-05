@@ -57,154 +57,47 @@ bibliography:
     separator: ". "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ": "
-    - number: pages
-      prefix: ": "
-    - variable: doi
-      prefix: . [
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - variable: url
+      remove:
+        - match:
+            date: issued
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: pages
-      prefix: ": "
-    - variable: doi
-      prefix: . [
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - variable: url
+      extends: article-journal
+      remove:
+        - match:
+            number: issue
     book:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ": "
-    - number: pages
-      prefix: ": "
-    - variable: doi
-      prefix: . [
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - variable: url
+      remove:
+        - match:
+            date: issued
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ": "
-    - number: pages
-      prefix: ": "
-    - variable: doi
-      prefix: . [
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - variable: url
+      extends: article-journal
+      remove:
+        - match:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+              - title: parent-monograph
+                emph: true
+      add:
+        - component:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+                prefix: 'on '
+              - title: parent-monograph
+                emph: true
+          before:
+            title: parent-serial
     entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ": "
-    - number: pages
-      prefix: ": "
-    - variable: doi
-      prefix: . [
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - variable: url
+      remove:
+        - match:
+            date: issued
     motion_picture:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ": "
-    - number: pages
-      prefix: ": "
-    - variable: doi
-      prefix: . [
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - variable: url
+      remove:
+        - match:
+            date: issued
   template:
   - contributor: author
     form: long

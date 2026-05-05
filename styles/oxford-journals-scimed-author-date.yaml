@@ -95,57 +95,13 @@ bibliography:
     separator: ". "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
-      prefix: ":"
+      remove:
+        - match:
+            date: issued
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
-      prefix: ":"
+      remove:
+        - match:
+            date: issued
     chapter:
     - contributor: author
       form: long
@@ -177,31 +133,9 @@ bibliography:
     - number: pages
       prefix: ":"
     entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
-      prefix: ":"
+      remove:
+        - match:
+            date: issued
   template:
   - contributor: author
     form: long

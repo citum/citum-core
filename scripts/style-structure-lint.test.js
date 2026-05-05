@@ -150,6 +150,41 @@ bibliography:
   assert.equal(violations.some((violation) => violation.ruleId === 'STYLE004'), true);
 });
 
+test('STYLE004 skips Template V3 diff variants', () => {
+  const content = `version: ""
+bibliography:
+  template:
+    - contributor: author
+    - title: primary
+  type-variants:
+    article-journal:
+      modify:
+        - match:
+            title: primary
+          suffix: "."
+`;
+  const data = {
+    version: '',
+    bibliography: {
+      template: [
+        { contributor: 'author' },
+        { title: 'primary' },
+      ],
+      'type-variants': {
+        'article-journal': {
+          modify: [
+            { match: { title: 'primary' }, suffix: '.' },
+          ],
+        },
+      },
+    },
+  };
+
+  const violations = lintParsedStyle('styles/fixture.yaml', content, data);
+
+  assert.equal(violations.some((violation) => violation.ruleId === 'STYLE004'), false);
+});
+
 test('applyFixes removes inert substitute overrides, hoists shorten config, and drops duplicate variants', () => {
   const style = {
     version: '',

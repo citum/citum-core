@@ -96,57 +96,15 @@ bibliography:
     separator: ". "
   type-variants:
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher-place
-      prefix: ", "
-    - variable: doi
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher-place
-      prefix: ", "
-    - variable: doi
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
   template:
   - contributor: author
     form: long

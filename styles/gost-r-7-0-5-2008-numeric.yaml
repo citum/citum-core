@@ -107,149 +107,35 @@ bibliography:
 
   type-variants:
     article-journal:
-    - number: citation-number
-      prefix: "["
-      suffix: "] "
-    - contributor: author
-      form: long
-      name-order: family-first
-      name-form: initials
-      initialize-with: ". "
-    - title: primary
-      suffix: " //"
-    - title: parent-serial
-    - title: parent-monograph
-    - variable: publisher-place
-      suffix: ":"
-    - variable: publisher
-    - date: issued
-      form: year
-    - number: volume
-      prefix: "Vol. "
-    - number: issue
-      prefix: "№ "
-    - number: pages
-      prefix: "P. "
+      modify:
+        - match:
+            title: primary
+          suffix: ' //'
     article-magazine:
-    - number: citation-number
-      prefix: "["
-      suffix: "] "
-    - contributor: author
-      form: long
-      name-order: family-first
-      name-form: initials
-      initialize-with: ". "
-    - title: primary
-      suffix: " //"
-    - title: parent-serial
-    - title: parent-monograph
-    - variable: publisher-place
-      suffix: ":"
-    - variable: publisher
-    - date: issued
-      form: year
-    - number: volume
-      prefix: "Vol. "
-    - number: issue
-      prefix: "№ "
-    - number: pages
-      prefix: "P. "
+      modify:
+        - match:
+            title: primary
+          suffix: ' //'
     article-newspaper:
-    - number: citation-number
-      prefix: "["
-      suffix: "] "
-    - contributor: author
-      form: long
-      name-order: family-first
-      name-form: initials
-      initialize-with: ". "
-    - title: primary
-      suffix: " //"
-    - title: parent-serial
-    - title: parent-monograph
-    - variable: publisher-place
-      suffix: ":"
-    - variable: publisher
-    - date: issued
-      form: year
-    - number: volume
-      prefix: "Vol. "
-    - number: issue
-      prefix: "№ "
-    - number: pages
-      prefix: "P. "
+      modify:
+        - match:
+            title: primary
+          suffix: ' //'
     chapter:
-    - number: citation-number
-      prefix: "["
-      suffix: "] "
-    - contributor: author
-      form: long
-      name-order: family-first
-      name-form: initials
-      initialize-with: ". "
-    - title: primary
-      suffix: " //"
-    - title: parent-serial
-    - title: parent-monograph
-    - variable: publisher-place
-      suffix: ":"
-    - variable: publisher
-    - date: issued
-      form: year
-    - number: volume
-      prefix: "Vol. "
-    - number: issue
-      prefix: "№ "
-    - number: pages
-      prefix: "P. "
+      modify:
+        - match:
+            title: primary
+          suffix: ' //'
     legal-case:
-    - number: citation-number
-      prefix: "["
-      suffix: "] "
-    - contributor: author
-      form: long
-      name-order: family-first
-      name-form: initials
-      initialize-with: ". "
-    - title: primary
-      suffix: " //"
-    - title: parent-serial
-    - title: parent-monograph
-    - variable: publisher-place
-      suffix: ":"
-    - variable: publisher
-    - date: issued
-      form: year
-    - number: volume
-      prefix: "Vol. "
-    - number: issue
-      prefix: "№ "
-    - number: pages
-      prefix: "P. "
+      modify:
+        - match:
+            title: primary
+          suffix: ' //'
     reference-entry:
-    - number: citation-number
-      prefix: "["
-      suffix: "] "
-    - contributor: author
-      form: long
-      name-order: family-first
-      name-form: initials
-      initialize-with: ". "
-    - title: primary
-      suffix: " //"
-    - title: parent-serial
-    - title: parent-monograph
-    - variable: publisher-place
-      suffix: ":"
-    - variable: publisher
-    - date: issued
-      form: year
-    - number: volume
-      prefix: "Vol. "
-    - number: issue
-      prefix: "№ "
-    - number: pages
-      prefix: "P. "
+      modify:
+        - match:
+            title: primary
+          suffix: ' //'
   template:
   - number: citation-number
     prefix: "["

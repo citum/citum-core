@@ -98,28 +98,10 @@ bibliography:
     separator: ". "
   type-variants:
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      prefix: " "
-    - title: primary
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - number: pages
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      prefix: "in "
-    - variable: publisher
-      prefix: ", editor. "
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
+      modify:
+        - match:
+            contributor: editor
+          prefix: 'in '
     legal_case:
     - contributor: author
       form: long
@@ -150,22 +132,18 @@ bibliography:
     - variable: publisher
     - variable: publisher-place
     entry-encyclopedia:
-    - contributor: author
-      form: long
-      sort-separator: ", "
-      and: text
-    - date: issued
-      form: year
-    - term: no-date
-      form: short
-      wrap:
-        punctuation: parentheses
-        inner-prefix: " "
-        inner-suffix: .
-    - title: primary
-    - variable: genre
-    - variable: publisher
-    - variable: publisher-place
+      extends: legal_case
+      remove:
+        - match:
+            variable: authority
+        - match:
+            contributor: editor
+        - match:
+            title: parent-serial
+        - match:
+            number: edition
+        - match:
+            term: edition
   template:
   - contributor: author
     form: long

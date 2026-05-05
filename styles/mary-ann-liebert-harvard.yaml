@@ -81,155 +81,29 @@ bibliography:
     separator: ". "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: family-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-    - title: parent-serial
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "; 2006; "
-    - variable: publisher-place
-      prefix: ": "
-    - variable: doi
-      prefix: "; "
+      remove:
+        - match:
+            date: issued
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: family-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-    - title: parent-serial
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "; 2006; "
-    - variable: publisher-place
-      prefix: ": "
-    - variable: doi
-      prefix: "; "
+      remove:
+        - match:
+            date: issued
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: family-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-    - title: parent-serial
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher-place
-      prefix: ": "
-    - variable: doi
-      prefix: "; "
+      extends: article-journal
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: family-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-    - title: parent-serial
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "; 2006; "
-    - variable: publisher-place
-      prefix: ": "
-    - variable: doi
-      prefix: "; "
+      remove:
+        - match:
+            date: issued
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: family-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-    - title: parent-serial
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher-place
-      prefix: ": "
-    - variable: doi
-      prefix: "; "
+      extends: article-journal
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
   template:
   - contributor: author
     form: long

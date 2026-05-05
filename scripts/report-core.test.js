@@ -7,6 +7,7 @@ const path = require('node:path');
 const {
   validateVerificationPolicy,
   resolveRegisteredDivergence,
+  resolveStyleData,
   loadVerificationPolicy,
   resolveVerificationPolicy,
   resolveScopeAuthority,
@@ -40,6 +41,7 @@ const {
   resolveSelectedStyles,
   runCachedJsonJob,
   selectPrimaryComparator,
+  selectQualityAuthorshipData,
   toPublishedBenchmarkRunRecord,
   determineBenchmarkStatus,
 } = require('./report-core');
@@ -168,6 +170,63 @@ test('collectTemplateScopes includes type-variants and type-templates', () => {
   assert.equal(variantSelectorCount, 4);
 });
 
+test('collectTemplateScopes includes resolved Template V3 diff variants', () => {
+  const { scopes, variantSelectorCount } = collectTemplateScopes(
+    resolveStyleData({
+      bibliography: {
+        template: [
+          { contributor: 'author' },
+          { title: 'primary' },
+        ],
+        'type-variants': {
+          book: {
+            modify: [
+              { match: { title: 'primary' }, suffix: '.' },
+            ],
+          },
+        },
+      },
+    })
+  );
+
+  assert.equal(scopes.some((scope) => scope.name === 'bibliography.type-variants.book'), true);
+  assert.equal(variantSelectorCount, 1);
+});
+
+test('collectTemplateScopes scores authored Template V3 diff components', () => {
+  const { scopes, variantSelectorCount } = collectTemplateScopes({
+    bibliography: {
+      template: [
+        { contributor: 'author' },
+        { title: 'primary' },
+      ],
+      'type-variants': {
+        book: {
+          modify: [
+            { match: { title: 'primary' }, suffix: '.' },
+          ],
+          remove: [
+            { match: { contributor: 'author' } },
+          ],
+          add: [
+            { after: { title: 'primary' }, component: { date: 'issued', form: 'year' } },
+          ],
+        },
+      },
+    },
+  });
+
+  const scope = scopes.find((candidate) => candidate.name === 'bibliography.type-variants.book');
+
+  assert.equal(Boolean(scope), true);
+  assert.deepEqual(scope.components, [
+    { title: 'primary', suffix: '.' },
+    { contributor: 'author', suppress: true },
+    { date: 'issued', form: 'year' },
+  ]);
+  assert.equal(variantSelectorCount, 1);
+});
+
 test('computeConcisionScore penalizes duplicate-heavy type-variant structures', () => {
   const duplicatedStyle = {
     citation: {
@@ -225,6 +284,43 @@ test('computeConcisionScore rewards preset-backed compact structures', () => {
   assert.equal(score.variantSelectors, 0);
   assert.equal(score.exactDuplicateScopes, 0);
   assert.ok(score.score >= 90, `expected concision >= 90, got ${score.score}`);
+});
+
+test('selectQualityAuthorshipData falls back for inherited wrapper styles', () => {
+  const authored = {
+    extends: 'apa-7th',
+  };
+  const resolved = {
+    bibliography: {
+      template: [
+        { contributor: 'author' },
+        { title: 'primary' },
+      ],
+    },
+  };
+
+  assert.equal(selectQualityAuthorshipData(authored, resolved), resolved);
+});
+
+test('selectQualityAuthorshipData keeps authored Template V3 diff scopes', () => {
+  const authored = {
+    bibliography: {
+      template: [
+        { contributor: 'author' },
+        { title: 'primary' },
+      ],
+      'type-variants': {
+        book: {
+          modify: [
+            { match: { title: 'primary' }, suffix: '.' },
+          ],
+        },
+      },
+    },
+  };
+  const resolved = resolveStyleData(authored);
+
+  assert.equal(selectQualityAuthorshipData(authored, resolved), authored);
 });
 
 test('apa-7th concision regression reflects preset-first success', () => {

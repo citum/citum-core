@@ -194,35 +194,33 @@ bibliography:
     - number: pages
       prefix: " pp. "
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      prefix: ", "
-      suffix: "."
-    - title: primary
-    - title: parent-monograph
-      prefix: ", in: "
-      suffix: "."
-    - number: pages
-      prefix: "pp. "
-      suffix: "."
+      add:
+        - component:
+            title: parent-monograph
+            prefix: ', in: '
+            suffix: .
+          after:
+            title: primary
+        - component:
+            number: pages
+            prefix: 'pp. '
+            suffix: .
+          after:
+            title: parent-monograph
     thesis:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      prefix: ", "
-      suffix: "."
-    - title: primary
-    - variable: genre
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-      suffix: "."
-    - variable: publisher
+      add:
+        - component:
+            variable: genre
+            wrap:
+              punctuation: parentheses
+            prefix: ' '
+            suffix: .
+          after:
+            title: primary
+        - component:
+            variable: publisher
+          after:
+            variable: genre
     webpage:
     - contributor: author
       form: long
@@ -255,17 +253,16 @@ bibliography:
     - title: parent-serial
       suffix: "."
     entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      prefix: ", "
-      suffix: "."
-    - title: primary
-      suffix: "."
-    - title: parent-monograph
-      suffix: "."
+      modify:
+        - match:
+            title: primary
+          suffix: .
+      add:
+        - component:
+            title: parent-monograph
+            suffix: .
+          after:
+            title: primary
     legal-case:
     - title: primary
     - date: issued
@@ -288,17 +285,13 @@ bibliography:
     - title: primary
       suffix: "."
     patent:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      prefix: ", "
-      suffix: "."
-    - title: primary
-      suffix: "."
-    - variable: number
-      suffix: "."
+      extends: dataset,motion-picture,interview,personal-communication
+      add:
+        - component:
+            variable: number
+            suffix: .
+          after:
+            title: primary
     report:
     - contributor: author
       form: long

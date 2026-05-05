@@ -96,33 +96,10 @@ bibliography:
     separator: ", "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first-only
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - number: volume
-    - date: issued
-      form: year
-      prefix: " "
-    - number: pages
-      prefix: ": "
-    - variable: publisher
-      prefix: ": "
-    - variable: doi
-      prefix: https://doi.org/
-    - variable: url
+      modify:
+        - match:
+            variable: doi
+          prefix: https://doi.org/
   template:
   - contributor: author
     form: long

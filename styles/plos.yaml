@@ -44,133 +44,46 @@ bibliography:
     separator: ". "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - number: volume
-    - number: issue
-      prefix: ": "
-    - number: pages
-      prefix: ": "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+      remove:
+        - match:
+            date: issued
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - number: volume
-    - number: pages
-      prefix: ": "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+      extends: article-journal
+      remove:
+        - match:
+            number: issue
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - date: issued
-      form: year
-      prefix: "; "
-    - number: volume
-    - number: issue
-      prefix: ": "
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
+      remove:
+        - match:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+              - title: parent-monograph
+      add:
+        - component:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+                prefix: 'on '
+              - title: parent-monograph
+          before:
+            title: parent-serial
     entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - date: issued
-      form: year
-      prefix: "; "
-    - number: volume
-    - number: issue
-      prefix: ": "
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - date: issued
-      form: year
-      prefix: "; "
-    - number: volume
-    - number: issue
-      prefix: ": "
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
   template:
   - contributor: author
     form: long

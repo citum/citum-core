@@ -81,33 +81,9 @@ bibliography:
     separator: ". "
   type-variants:
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - variable: publisher
-    - number: pages
-      prefix: "), "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+      remove:
+        - match:
+            number: issue
   template:
   - contributor: author
     form: long

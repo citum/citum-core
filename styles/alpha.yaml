@@ -73,39 +73,18 @@ bibliography:
     - number: pages
       prefix: ' '
     chapter:
-    - number: citation-label
-      wrap:
-        punctuation: brackets
-      suffix: ' '
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - variable: publisher-place
-    - number: volume
-    - number: pages
-      prefix: 'pp. '
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
+      remove:
+        - match:
+            date: issued
     paper-conference:
-    - number: citation-label
-      wrap:
-        punctuation: brackets
-      suffix: ' '
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - variable: publisher-place
-    - number: volume
-    - date: issued
-      form: year
-    - number: pages
-      prefix: 'pp. '
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
   template:
   - number: citation-label
     wrap:

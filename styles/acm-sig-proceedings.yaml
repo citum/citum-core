@@ -181,24 +181,17 @@ bibliography:
       suffix: ". "
     - variable: publisher
     report:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: family-first
-      suffix: " "
-    - date: issued
-      form: year
-      suffix: ". "
-    - title: primary
-      emph: true
-      suffix: ". "
-    - variable: number
-      prefix: "Technical Report #"
-      suffix: ". "
-    - variable: publisher
+      extends: thesis
+      remove:
+        - match:
+            variable: archive-location
+      add:
+        - component:
+            variable: number
+            prefix: 'Technical Report #'
+            suffix: '. '
+          before:
+            variable: publisher
     webpage:
     - number: citation-number
       wrap:
@@ -241,18 +234,7 @@ bibliography:
       suffix: ". "
     - number: pages
     book:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: family-first
-      suffix: " "
-    - date: issued
-      form: year
-      suffix: ". "
-    - title: primary
-      emph: true
-      suffix: ". "
-    - variable: publisher
+      extends: thesis
+      remove:
+        - match:
+            variable: archive-location

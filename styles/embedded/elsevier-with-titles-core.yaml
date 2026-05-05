@@ -414,20 +414,19 @@ bibliography:
       - number: pages
         prefix: " pp. "
     patent:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-      suffix: ""
-    - contributor: author
-      form: long
-      suffix: ", "
-    - title: primary
-    - variable: number
-      prefix: ", "
-    - date: issued
-      form: year
-      prefix: ", "
-      suffix: "."
+      extends: legal-case
+      add:
+        - component:
+            contributor: author
+            form: long
+            suffix: ', '
+          before:
+            title: primary
+        - component:
+            variable: number
+            prefix: ', '
+          before:
+            date: issued
     report:
     - number: citation-number
       wrap:
@@ -446,22 +445,16 @@ bibliography:
       prefix: ", "
       suffix: "."
     thesis:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-      suffix: ""
-    - contributor: author
-      form: long
-      suffix: ", "
-    - title: primary
-    - variable: genre
-      prefix: ", "
-    - variable: publisher
-      prefix: ", "
-    - date: issued
-      form: year
-      prefix: ", "
-      suffix: "."
+      extends: report
+      remove:
+        - match:
+            variable: publisher-place
+      add:
+        - component:
+            variable: genre
+            prefix: ', '
+          before:
+            variable: publisher
     webpage:
     - number: citation-number
       wrap:
@@ -556,33 +549,19 @@ bibliography:
       prefix: " "
       suffix: "."
     motion-picture:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-      suffix: ""
-    - contributor: author
-      form: long
-      suffix: ", "
-    - title: primary
-    - date: issued
-      form: year
-      prefix: ", "
-      suffix: "."
+      extends: legal-case
+      add:
+        - component:
+            contributor: author
+            form: long
+            suffix: ', '
+          before:
+            title: primary
     personal-communication:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-      suffix: ""
-    - contributor: author
-      form: long
-      suffix: ", "
-    - title: primary
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: ", "
-      suffix: "."
+      extends: interview
+      remove:
+        - match:
+            variable: url
   template:
   - number: citation-number
     wrap:

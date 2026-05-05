@@ -164,63 +164,24 @@ bibliography:
           - archival
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - date: issued
-      form: year
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        prefix: " ("
-        suffix: ")"
-    - number: pages
-      prefix: ": "
-    - variable: publisher
-    - variable: doi
-      prefix: https://doi.org/
-    - variable: url
+      modify:
+        - match:
+            variable: doi
+          prefix: https://doi.org/
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - date: issued
-      form: year
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-    - number: pages
-      prefix: ": "
-    - variable: publisher
-    - variable: doi
-    - variable: url
+      remove:
+        - match:
+            group:
+              - number: volume
+              - number: issue
+                prefix: ' ('
+                suffix: )
+      add:
+        - component:
+            group:
+              - number: volume
+          before:
+            number: pages
     bill-proceeding:
     - title: primary
     - variable: publisher
@@ -334,33 +295,9 @@ bibliography:
         punctuation: quotes
     - variable: url
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - date: issued
-      form: year
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        prefix: " ("
-        suffix: ")"
-    - variable: publisher
-    - variable: doi
-    - variable: url
+      remove:
+        - match:
+            number: pages
     entry-dictionary:
     - title: parent-monograph
       emph: true
@@ -379,34 +316,20 @@ bibliography:
     - variable: doi
       prefix: "https://doi.org/"
     legal-case:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - date: issued
-      form: year
-    - title: primary
-      emph: true
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        prefix: " ("
-        suffix: ")"
-    - number: pages
-      prefix: ": "
-    - variable: publisher
-    - variable: doi
-    - variable: url
+      extends: book
+      modify:
+        - match:
+            title: primary
+          emph: true
+      remove:
+        - match:
+            contributor: translator
+      add:
+        - component:
+            number: pages
+            prefix: ': '
+          before:
+            variable: publisher
     motion-picture:
     - contributor: author
       form: long
@@ -440,78 +363,15 @@ bibliography:
         form: full
         prefix: ", issued "
     report:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - date: issued
-      form: year
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        prefix: " ("
-        suffix: ")"
-    - variable: publisher
-    - variable: doi
-    - variable: url
-    statute, legislation:
-    - group:
-      - title: primary
-        text-case: title
-      - variable: number
-        prefix: "Pub. L. No. "
-      - group:
-        - number: volume
-        - variable: code
-        - variable: section
-          prefix: " § "
-        - variable: page
-          prefix: " "
-        delimiter: " "
-      delimiter: ", "
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - variable: url
+      extends: book
+      remove:
+        - match:
+            contributor: translator
     thesis:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - date: issued
-      form: year
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        prefix: " ("
-        suffix: ")"
-    - variable: publisher
-    - variable: doi
-    - variable: url
+      extends: book
+      remove:
+        - match:
+            contributor: translator
     personal-communication: []
   template:
   - contributor: author

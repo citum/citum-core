@@ -52,40 +52,26 @@ bibliography:
     separator: '. '
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 3
-        and-others: et-al
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
-    - delimiter: " "
-      group:
-      - prefix: "In: "
-        contributor: editor
-        form: long
-        name-order: family-first
-      - title: parent-monograph
-    - title: parent-serial
-    - delimiter: ", "
-      group:
-      - variable: publisher
-      - variable: publisher-place
-    - delimiter: ":"
-      prefix: " "
-      group:
-      - number: volume
-      - number: pages
-        prefix: ""
-    - variable: doi
-      prefix: ". https://doi.org/"
+      remove:
+        - match:
+            contributor: editor
+        - match:
+            group:
+              - variable: publisher
+              - variable: publisher-place
+              - number: pages
+                prefix: 'pp '
+      add:
+        - component:
+            delimiter: ', '
+            group:
+              - variable: publisher
+              - variable: publisher-place
+          before:
+            group:
+              - number: volume
+              - number: pages
+                prefix: ''
     book:
     - contributor: author
       form: long
@@ -106,80 +92,13 @@ bibliography:
       - variable: publisher
       - variable: publisher-place
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 3
-        and-others: et-al
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
-    - delimiter: " "
-      group:
-      - prefix: "In: "
-        contributor: editor
-        form: long
-        name-order: family-first
-      - title: parent-monograph
-    - title: parent-serial
-    - delimiter: ", "
-      group:
-      - variable: publisher
-      - variable: publisher-place
-      - number: pages
-        prefix: "pp "
-    - delimiter: ":"
-      prefix: " "
-      group:
-      - number: volume
-      - number: pages
-        prefix: ""
-    - variable: doi
-      prefix: ". https://doi.org/"
+      remove:
+        - match:
+            contributor: editor
     default:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 3
-        and-others: et-al
-    - contributor: editor
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
-    - delimiter: " "
-      group:
-      - prefix: "In: "
-        contributor: editor
-        form: long
-        name-order: family-first
-      - title: parent-monograph
-    - title: parent-serial
-    - delimiter: ", "
-      group:
-      - variable: publisher
-      - variable: publisher-place
-      - number: pages
-        prefix: "pp "
-    - delimiter: ":"
-      prefix: " "
-      group:
-      - number: volume
-      - number: pages
-        prefix: ""
+      remove:
+        - match:
+            variable: doi
     thesis:
     - contributor: author
       form: long
@@ -254,47 +173,36 @@ bibliography:
       - number: pages
         prefix: ""
     dataset:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
+      extends: thesis
+      remove:
+        - match:
+            group:
+              - variable: genre
+              - variable: publisher
     report:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
-    - delimiter: ", "
-      prefix: ". "
-      group:
-      - variable: publisher
-      - variable: publisher-place
+      extends: dataset
+      add:
+        - component:
+            delimiter: ', '
+            prefix: '. '
+            group:
+              - variable: publisher
+              - variable: publisher-place
+          after:
+            title: primary
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
-    - title: parent-monograph
-      prefix: ". In: "
-    - number: pages
-      prefix: ". pp "
+      extends: dataset
+      add:
+        - component:
+            title: parent-monograph
+            prefix: '. In: '
+          after:
+            title: primary
+        - component:
+            number: pages
+            prefix: '. pp '
+          after:
+            title: parent-monograph
     legal-case:
     - date: issued
       form: year

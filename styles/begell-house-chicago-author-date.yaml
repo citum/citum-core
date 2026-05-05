@@ -89,78 +89,24 @@ bibliography:
     separator: ", "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ", no. "
-    - variable: doi
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher-place
-    - date: issued
-      form: year
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - variable: doi
-    - variable: publisher
-    - number: pages
-    - variable: publisher-place
-    - date: issued
-      form: year
+      remove:
+        - match:
+            number: issue
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ", no. "
-    - variable: doi
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher-place
-    - date: issued
-      form: year
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ", no. "
-    - variable: doi
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher-place
-    - date: issued
-      form: year
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     legal_case:
     - contributor: author
       form: long
@@ -218,32 +164,17 @@ bibliography:
     - term: no-date
       form: short
     personal_communication:
-    - contributor: author
-      form: long
-      sort-separator: ", "
-      shorten:
-        min: 11
-        use-first: 7
-        and-others: et-al
-        delimiter-precedes-last: always
-      and: text
-    - variable: genre
-    - contributor: recipient
-      form: long
-      delimiter: ", "
-      shorten:
-        min: 11
-        use-first: 7
-        and-others: et-al
-        delimiter-precedes-last: contextual
-      and: text
-    - title: primary
-    - title: parent-serial
-      emph: true
-    - date: issued
-      form: full
-    - term: no-date
-      form: short
+      extends: patent
+      remove:
+        - match:
+            number: number
+        - match:
+            term: and
+      add:
+        - component:
+            variable: genre
+          before:
+            contributor: recipient
   template:
   - contributor: author
     form: long

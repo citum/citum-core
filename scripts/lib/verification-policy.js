@@ -282,9 +282,14 @@ module.exports = {
 function deepMerge(target, source) {
   if (!source || typeof source !== 'object') return target;
   if (!target || typeof target !== 'object') return source;
+  if (Array.isArray(target) || Array.isArray(source)) return source;
 
   const result = { ...target };
   for (const [key, value] of Object.entries(source)) {
+    if (key === 'type-variants') {
+      result[key] = mergeTypeVariants(result[key], value);
+      continue;
+    }
     if (value && typeof value === 'object' && !Array.isArray(value)) {
       result[key] = deepMerge(result[key], value);
     } else {
@@ -292,6 +297,175 @@ function deepMerge(target, source) {
     }
   }
   return result;
+}
+
+function cloneJson(value) {
+  return value == null ? value : JSON.parse(JSON.stringify(value));
+}
+
+function isPlainObject(value) {
+  return Boolean(value && typeof value === 'object' && !Array.isArray(value));
+}
+
+function isTemplateVariantDiff(value) {
+  return isPlainObject(value)
+    && (
+      Object.prototype.hasOwnProperty.call(value, 'extends')
+      || Object.prototype.hasOwnProperty.call(value, 'modify')
+      || Object.prototype.hasOwnProperty.call(value, 'remove')
+      || Object.prototype.hasOwnProperty.call(value, 'add')
+    );
+}
+
+function mergeTypeVariants(target, source) {
+  if (!isPlainObject(source)) return source;
+  if (!isPlainObject(target)) return source;
+
+  const result = { ...target };
+  for (const [variantName, value] of Object.entries(source)) {
+    if (isTemplateVariantDiff(value) && target[variantName] != null && value.extends == null) {
+      result[variantName] = { ...value };
+      Object.defineProperty(result[variantName], '__baseVariant', {
+        value: cloneJson(target[variantName]),
+        enumerable: true,
+      });
+    } else {
+      result[variantName] = value;
+    }
+  }
+  return result;
+}
+
+function selectorValueMatches(expected, actual) {
+  if (Array.isArray(expected)) {
+    return Array.isArray(actual)
+      && expected.length === actual.length
+      && expected.every((item, index) => selectorValueMatches(item, actual[index]));
+  }
+  if (isPlainObject(expected)) {
+    return isPlainObject(actual)
+      && Object.entries(expected).every(([key, value]) => selectorValueMatches(value, actual[key]));
+  }
+  return JSON.stringify(actual) === JSON.stringify(expected);
+}
+
+function componentMatchesSelector(component, selector) {
+  if (!isPlainObject(component) || !isPlainObject(selector)) return false;
+  return Object.entries(selector).every(([key, expected]) => (
+    Object.prototype.hasOwnProperty.call(component, key)
+    && selectorValueMatches(expected, component[key])
+  ));
+}
+
+function findTemplateIndex(template, selector, context) {
+  const matches = [];
+  for (let index = 0; index < template.length; index += 1) {
+    if (componentMatchesSelector(template[index], selector)) {
+      matches.push(index);
+    }
+  }
+  if (matches.length !== 1) {
+    throw new Error(`${context} matched ${matches.length} template components`);
+  }
+  return matches[0];
+}
+
+function resolveTemplateVariant(variants, variantName, baseTemplate, stack = [], cache = new Map()) {
+  if (cache.has(variantName)) return cloneJson(cache.get(variantName));
+  const variant = variants[variantName];
+  if (Array.isArray(variant)) {
+    cache.set(variantName, cloneJson(variant));
+    return cloneJson(variant);
+  }
+  if (!isTemplateVariantDiff(variant)) return variant;
+  if (stack.includes(variantName)) {
+    throw new Error(`Template variant cycle: ${stack.concat(variantName).join(' -> ')}`);
+  }
+
+  let template;
+  if (variant.extends != null) {
+    const parentName = String(variant.extends);
+    if (!Object.prototype.hasOwnProperty.call(variants, parentName)) {
+      throw new Error(`Template variant ${variantName} extends missing variant ${parentName}`);
+    }
+    template = resolveTemplateVariant(
+      variants,
+      parentName,
+      baseTemplate,
+      stack.concat(variantName),
+      cache
+    );
+  } else if (variant.__baseVariant != null) {
+    template = resolveTemplateVariant(
+      { __base: variant.__baseVariant },
+      '__base',
+      baseTemplate,
+      stack.concat(variantName),
+      new Map()
+    );
+  } else {
+    template = cloneJson(baseTemplate);
+  }
+
+  for (const operation of variant.modify || []) {
+    const index = findTemplateIndex(template, operation.match, `${variantName}.modify`);
+    const rendering = { ...operation };
+    delete rendering.match;
+    template[index] = { ...template[index], ...rendering };
+  }
+
+  for (const operation of variant.remove || []) {
+    const index = findTemplateIndex(template, operation.match, `${variantName}.remove`);
+    template.splice(index, 1);
+  }
+
+  for (const operation of variant.add || []) {
+    if (!isPlainObject(operation.component)) {
+      throw new Error(`${variantName}.add requires a component`);
+    }
+    const hasBefore = isPlainObject(operation.before);
+    const hasAfter = isPlainObject(operation.after);
+    if (hasBefore === hasAfter) {
+      throw new Error(`${variantName}.add must specify exactly one of before or after`);
+    }
+    const anchor = hasBefore ? operation.before : operation.after;
+    const index = findTemplateIndex(template, anchor, `${variantName}.add`);
+    template.splice(hasBefore ? index : index + 1, 0, cloneJson(operation.component));
+  }
+
+  cache.set(variantName, cloneJson(template));
+  return cloneJson(template);
+}
+
+function resolveSectionTemplateVariants(section) {
+  if (!isPlainObject(section)) return;
+  const variants = section['type-variants'];
+  if (isPlainObject(variants)) {
+    const baseTemplate = Array.isArray(section.template) ? section.template : [];
+    const resolvedVariants = {};
+    const cache = new Map();
+    for (const variantName of Object.keys(variants)) {
+      resolvedVariants[variantName] = resolveTemplateVariant(
+        variants,
+        variantName,
+        baseTemplate,
+        [],
+        cache
+      );
+    }
+    section['type-variants'] = resolvedVariants;
+  }
+
+  for (const childKey of ['integral', 'non-integral', 'subsequent', 'ibid']) {
+    resolveSectionTemplateVariants(section[childKey]);
+  }
+}
+
+function resolveTemplateVariantDiffs(styleData) {
+  if (!isPlainObject(styleData)) return styleData;
+  resolveSectionTemplateVariants(styleData.citation);
+  resolveSectionTemplateVariants(styleData.bibliography);
+  return styleData;
 }
 
 const STYLE_BASES = {
@@ -419,7 +593,7 @@ function localStyleOverlay(styleData) {
  */
 function resolveStyleData(styleData, visited = new Set()) {
   const baseSpec = styleData?.extends;
-  let resolved = styleData;
+  let resolved = cloneJson(styleData);
 
   if (baseSpec) {
     const baseKey = typeof baseSpec === 'string' ? baseSpec : baseSpec.extends;
@@ -447,6 +621,7 @@ function resolveStyleData(styleData, visited = new Set()) {
   if (resolved.bibliography) {
     resolved.bibliography = resolveTemplatePresets(resolved.bibliography, resolved);
   }
+  resolveTemplateVariantDiffs(resolved);
 
   return resolved;
 }

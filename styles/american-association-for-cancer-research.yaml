@@ -48,141 +48,43 @@ bibliography:
     separator: ". "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: url
+      remove:
+        - match:
+            date: issued
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: url
+      remove:
+        - match:
+            date: issued
     article-newspaper:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: url
+      remove:
+        - match:
+            date: issued
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - date: issued
-      form: year
-      prefix: "; "
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: url
+      remove:
+        - match:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+              - title: parent-monograph
+      add:
+        - component:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+                prefix: 'on '
+              - title: parent-monograph
+          before:
+            title: parent-serial
     dataset:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: url
+      remove:
+        - match:
+            date: issued
     webpage:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 6
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
-      prefix: ":"
-    - variable: url
+      remove:
+        - match:
+            date: issued
   template:
   - contributor: author
     form: long

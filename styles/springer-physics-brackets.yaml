@@ -42,34 +42,18 @@ bibliography:
     separator: ", "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-    - title: parent-serial
-    - number: volume
-    - number: pages
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
+      remove:
+        - match:
+            variable: publisher
+        - match:
+            variable: publisher-place
     book:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-    - title: parent-serial
-    - title: primary
-      emph: true
-    - number: volume
-    - number: pages
-    - variable: publisher
-      prefix: " ("
-    - variable: publisher-place
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
+      add:
+        - component:
+            title: primary
+            emph: true
+          before:
+            number: volume
     chapter:
     - contributor: author
       form: long
@@ -84,38 +68,17 @@ bibliography:
     - number: pages
       prefix: "pp. "
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-    - title: parent-serial
-    - title: primary
-      emph: true
-    - number: volume
-    - number: pages
-    - variable: publisher
-      prefix: " ("
-    - variable: publisher-place
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
+      add:
+        - component:
+            title: primary
+            emph: true
+          before:
+            number: volume
     personal_communication:
-    - contributor: author
-      form: long
-      name-order: given-first
-      prefix: "pp. "
-    - title: parent-monograph
-    - title: parent-serial
-    - number: volume
-    - number: pages
-    - variable: publisher
-      prefix: " ("
-    - variable: publisher-place
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
+      modify:
+        - match:
+            contributor: author
+          prefix: 'pp. '
     report:
     - contributor: author
       form: long
@@ -154,23 +117,22 @@ bibliography:
       wrap:
         punctuation: parentheses
     motion-picture:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: primary
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
+      extends: report
+      remove:
+        - match:
+            variable: publisher
+        - match:
+            variable: publisher-place
     broadcast:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-serial
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
+      extends: patent
+      remove:
+        - match:
+            number: patent-number
+      add:
+        - component:
+            title: parent-serial
+          before:
+            date: issued
   template:
   - contributor: author
     form: long
