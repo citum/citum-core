@@ -297,7 +297,12 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOut
             options: bibliography_scope_options,
             extends: None,
             template: Some(c.new_bib),
-            type_variants: c.type_templates,
+            type_variants: c.type_templates.map(|type_templates| {
+                type_templates
+                    .into_iter()
+                    .map(|(selector, template)| (selector, template.into()))
+                    .collect()
+            }),
             sort: bibliography_sort,
             ..Default::default()
         }),

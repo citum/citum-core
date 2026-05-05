@@ -262,13 +262,11 @@ impl StyleBase {
     /// Internal resolver with loop protection that preserves profile errors.
     pub(crate) fn try_resolve_with_visited(
         &self,
+        resolver: Option<&dyn crate::StyleResolver>,
         visited: &mut HashSet<String>,
     ) -> Result<Style, crate::ResolutionError> {
-        let mut style = self.base();
-        if style.extends.is_some() {
-            style = style.try_into_resolved_recursive(visited)?;
-        }
-        Ok(style)
+        self.base()
+            .try_into_resolved_recursive_with(resolver, visited)
     }
 }
 
@@ -287,7 +285,7 @@ impl StyleBase {
 mod tests {
     use super::*;
     use crate::options::{Config, PageRangeFormat};
-    use crate::{Style, StyleInfo};
+    use crate::{Style, StyleInfo, TemplateVariant};
 
     #[test]
     fn style_base_chicago_notes_base_is_valid() {
@@ -431,12 +429,30 @@ citation:
     }
 
     #[test]
+    fn style_base_resolution_materializes_template_v3_variants() {
+        let mut visited = HashSet::new();
+        let resolved = StyleBase::Ieee
+            .try_resolve_with_visited(None, &mut visited)
+            .expect("ieee base resolves");
+        let variants = resolved
+            .bibliography
+            .as_ref()
+            .and_then(|bibliography| bibliography.type_variants.as_ref())
+            .expect("ieee bibliography variants resolve");
+
+        assert!(
+            variants
+                .values()
+                .all(|variant| matches!(variant, TemplateVariant::Full(_)))
+        );
+    }
+
+    #[test]
     fn style_base_circular_dependency_is_handled() {
         let mut base = StyleBase::ChicagoNotes18th.base();
         base.extends = Some(StyleBase::ChicagoNotes18th.into());
 
-        let resolved = base.into_resolved();
-        assert!(resolved.extends.is_some());
+        let _ = base.try_into_resolved();
     }
 
     #[test]

@@ -493,7 +493,8 @@ fn build_type_variant_bench_style() -> Style {
                         },
                         ..Default::default()
                     }),
-                ],
+                ]
+                .into(),
             )])),
             ..Default::default()
         }),

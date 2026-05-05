@@ -58,16 +58,20 @@ struct GroupItemRenderRequest<'a> {
 /// or `None` if there are no variants or none match.
 fn resolve_type_variant<'a>(
     type_variants: Option<
-        &'a indexmap::IndexMap<citum_schema::template::TypeSelector, citum_schema::Template>,
+        &'a indexmap::IndexMap<citum_schema::template::TypeSelector, citum_schema::TemplateVariant>,
     >,
     ref_type: &str,
 ) -> Option<&'a [TemplateComponent]> {
     let selector_candidates = aliased_type_selector_candidates(ref_type);
-    type_variants?.iter().find_map(|(selector, template)| {
-        selector_candidates
+    type_variants?.iter().find_map(|(selector, variant)| {
+        if selector_candidates
             .iter()
             .any(|candidate| selector.matches(candidate))
-            .then_some(template.as_slice())
+        {
+            variant.as_template()
+        } else {
+            None
+        }
     })
 }
 

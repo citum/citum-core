@@ -87,12 +87,27 @@ pub use presets::{ContributorPreset, DatePreset, SortPreset, SubstitutePreset, T
 pub use registry::{RegistryEntry, StyleRegistry};
 pub use style_base::StyleBase;
 pub use template::{
-    Rendering, TemplateComponent, TemplateContributor, TemplateDate, TemplateGroup, TemplateNumber,
-    TemplateTerm, TemplateTitle, TemplateVariable, TypeSelector, WrapConfig, WrapPunctuation,
+    Rendering, TemplateAddOperation, TemplateComponent, TemplateComponentSelector,
+    TemplateContributor, TemplateDate, TemplateGroup, TemplateModifyOperation, TemplateNumber,
+    TemplateRemoveOperation, TemplateTerm, TemplateTitle, TemplateVariable, TemplateVariant,
+    TemplateVariantDiff, TypeSelector, WrapConfig, WrapPunctuation,
 };
 
 /// A named template (reusable sequence of components).
 pub type Template = Vec<TemplateComponent>;
+
+/// Type-specific template variants keyed by reference-type selector.
+pub type TemplateVariants = IndexMap<TypeSelector, TemplateVariant>;
+
+/// Resolver interface used by schema-layer style inheritance.
+pub trait StyleResolver {
+    /// Resolve a style by URI, registry ID, or implementation-specific key.
+    ///
+    /// # Errors
+    ///
+    /// Returns a [`ResolutionError`] when the style cannot be loaded or parsed.
+    fn resolve_style(&self, uri: &str) -> Result<Style, ResolutionError>;
+}
 
 /// Canonical Citum style schema version used when `Style.version` is omitted.
 pub const STYLE_SCHEMA_VERSION: &str = "0.41.0";
@@ -134,6 +149,35 @@ pub enum ResolutionError {
         /// Reason for failure.
         reason: String,
     },
+    /// A Template V3 variant references a missing parent variant.
+    MissingTemplateVariantParent {
+        /// Human-readable location hint.
+        location: String,
+        /// Parent selector that could not be found.
+        selector: String,
+    },
+    /// A Template V3 variant parent chain contains a cycle.
+    TemplateVariantCycle {
+        /// Human-readable location hint.
+        location: String,
+        /// Selector that closed the cycle.
+        selector: String,
+    },
+    /// A Template V3 operation matched no components.
+    TemplateVariantAnchorNotFound {
+        /// Human-readable location hint.
+        location: String,
+    },
+    /// A Template V3 operation matched more than one component.
+    TemplateVariantAmbiguousAnchor {
+        /// Human-readable location hint.
+        location: String,
+    },
+    /// A Template V3 add operation does not define exactly one anchor.
+    InvalidTemplateVariantAdd {
+        /// Human-readable location hint.
+        location: String,
+    },
 }
 
 impl std::fmt::Display for ResolutionError {
@@ -151,9 +195,41 @@ impl std::fmt::Display for ResolutionError {
             ResolutionError::UriResolutionFailed { uri, reason } => {
                 write!(f, "failed to resolve URI `{uri}`: {reason}")
             }
+            ResolutionError::MissingTemplateVariantParent { location, selector } => {
+                write!(
+                    f,
+                    "template variant `{location}` extends missing variant `{selector}`"
+                )
+            }
+            ResolutionError::TemplateVariantCycle { location, selector } => {
+                write!(
+                    f,
+                    "template variant inheritance loop at `{location}` through `{selector}`"
+                )
+            }
+            ResolutionError::TemplateVariantAnchorNotFound { location } => {
+                write!(
+                    f,
+                    "template variant operation in `{location}` matched no component"
+                )
+            }
+            ResolutionError::TemplateVariantAmbiguousAnchor { location } => {
+                write!(
+                    f,
+                    "template variant operation in `{location}` matched multiple components"
+                )
+            }
+            ResolutionError::InvalidTemplateVariantAdd { location } => {
+                write!(
+                    f,
+                    "template variant add operation in `{location}` must specify exactly one of before/after"
+                )
+            }
         }
     }
 }
+
+impl std::error::Error for ResolutionError {}
 
 impl std::fmt::Display for SchemaWarning {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -222,7 +298,8 @@ impl Style {
     /// and any explicit `options`, `citation`, or `bibliography` keys in the current
     /// style document are merged on top (taking ultimate precedence).
     ///
-    /// Returns the original style unchanged if no base is specified.
+    /// Styles without a base still resolve Template V3 variants and scoped
+    /// options, but do not merge any inherited style data.
     ///
     /// # Panics
     ///
@@ -249,7 +326,23 @@ impl Style {
     /// structure, when profile capability validation fails, or when inheritance
     /// loops are detected.
     pub fn try_into_resolved(self) -> Result<Self, ResolutionError> {
-        self.try_into_resolved_recursive(&mut HashSet::new())
+        self.try_into_resolved_with(None)
+    }
+
+    /// Resolve this style into its final effective form using an optional style resolver.
+    ///
+    /// The resolver is used for URI, registry, and remote `extends` references
+    /// that cannot be satisfied by embedded bases alone.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when style inheritance or Template V3 variant
+    /// resolution fails.
+    pub fn try_into_resolved_with(
+        self,
+        resolver: Option<&dyn StyleResolver>,
+    ) -> Result<Self, ResolutionError> {
+        self.try_into_resolved_recursive_with(resolver, &mut HashSet::new())
     }
 
     /// Internal recursive resolver with loop protection.
@@ -279,8 +372,23 @@ impl Style {
         self,
         visited: &mut HashSet<String>,
     ) -> Result<Self, ResolutionError> {
+        self.try_into_resolved_recursive_with(None, visited)
+    }
+
+    /// Internal recursive resolver with loop protection and optional external resolver.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when style inheritance or Template V3 variant
+    /// resolution fails.
+    pub fn try_into_resolved_recursive_with(
+        self,
+        resolver: Option<&dyn StyleResolver>,
+        visited: &mut HashSet<String>,
+    ) -> Result<Self, ResolutionError> {
         let Some(base_ref) = self.extends.clone() else {
             let mut style = self;
+            resolve_style_template_variants(&mut style, None)?;
             options::scoped::apply_scoped_style_options(&mut style);
             return Ok(style);
         };
@@ -293,53 +401,24 @@ impl Style {
 
         let is_profile = self.resolves_as_profile();
         let mut effective = match base_ref {
-            style_base::StyleReference::Base(base) => base.try_resolve_with_visited(visited)?,
+            style_base::StyleReference::Base(base) => {
+                base.try_resolve_with_visited(resolver, visited)?
+            }
             style_base::StyleReference::Uri(ref uri) => {
-                let Some(raw_path) = uri.strip_prefix("file://") else {
-                    return Err(ResolutionError::UriResolutionFailed {
-                        uri: uri.clone(),
-                        reason: "unsupported scheme; only file:// URIs are supported".to_string(),
-                    });
-                };
-                let path = std::path::Path::new(raw_path);
-                let bytes =
-                    std::fs::read(path).map_err(|e| ResolutionError::UriResolutionFailed {
-                        uri: uri.clone(),
-                        reason: e.to_string(),
-                    })?;
-                let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
-                let base_style: Style =
-                    match ext {
-                        "cbor" => ciborium::de::from_reader(std::io::Cursor::new(&bytes)).map_err(
-                            |e| ResolutionError::UriResolutionFailed {
-                                uri: uri.clone(),
-                                reason: e.to_string(),
-                            },
-                        )?,
-                        "json" => serde_json::from_slice(&bytes).map_err(|e| {
-                            ResolutionError::UriResolutionFailed {
-                                uri: uri.clone(),
-                                reason: e.to_string(),
-                            }
-                        })?,
-                        _ => Style::from_yaml_bytes(&bytes).map_err(|e| {
-                            ResolutionError::UriResolutionFailed {
-                                uri: uri.clone(),
-                                reason: e.to_string(),
-                            }
-                        })?,
-                    };
-                base_style.try_into_resolved_recursive(visited)?
+                let base_style = resolve_style_reference_uri(uri, resolver)?;
+                base_style.try_into_resolved_recursive_with(resolver, visited)?
             }
         };
         if is_profile {
             self.validate_profile_shape()?;
         }
 
+        let inherited_variants = inherited_variant_context(&effective);
         merge_style_overlay(&mut effective, &self);
         effective.version = self.version;
         effective.extends = self.extends;
         effective.raw_yaml = self.raw_yaml;
+        resolve_style_template_variants(&mut effective, inherited_variants.as_ref())?;
         options::scoped::apply_scoped_style_options(&mut effective);
         if is_profile {
             effective.extends = None;
@@ -493,6 +572,379 @@ fn yaml_path_present(value: Option<&serde_yaml::Value>, path: &[&str]) -> bool {
         current = next;
     }
     true
+}
+
+fn resolve_style_reference_uri(
+    uri: &str,
+    resolver: Option<&dyn StyleResolver>,
+) -> Result<Style, ResolutionError> {
+    if let Some(resolver) = resolver {
+        return resolver.resolve_style(uri);
+    }
+
+    let Some(raw_path) = uri.strip_prefix("file://") else {
+        return Err(ResolutionError::UriResolutionFailed {
+            uri: uri.to_string(),
+            reason: "unsupported scheme; an external style resolver is required".to_string(),
+        });
+    };
+    let path = std::path::Path::new(raw_path);
+    let bytes = std::fs::read(path).map_err(|e| ResolutionError::UriResolutionFailed {
+        uri: uri.to_string(),
+        reason: e.to_string(),
+    })?;
+    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
+    match ext {
+        "cbor" => ciborium::de::from_reader(std::io::Cursor::new(&bytes)).map_err(|e| {
+            ResolutionError::UriResolutionFailed {
+                uri: uri.to_string(),
+                reason: e.to_string(),
+            }
+        }),
+        "json" => {
+            serde_json::from_slice(&bytes).map_err(|e| ResolutionError::UriResolutionFailed {
+                uri: uri.to_string(),
+                reason: e.to_string(),
+            })
+        }
+        _ => Style::from_yaml_bytes(&bytes).map_err(|e| ResolutionError::UriResolutionFailed {
+            uri: uri.to_string(),
+            reason: e.to_string(),
+        }),
+    }
+}
+
+#[derive(Clone, Default)]
+struct StyleVariantContext {
+    citation: Option<CitationVariantContext>,
+    bibliography: Option<TemplateVariants>,
+}
+
+#[derive(Clone, Default)]
+struct CitationVariantContext {
+    type_variants: Option<TemplateVariants>,
+    integral: Option<Box<CitationVariantContext>>,
+    non_integral: Option<Box<CitationVariantContext>>,
+    subsequent: Option<Box<CitationVariantContext>>,
+    ibid: Option<Box<CitationVariantContext>>,
+}
+
+fn inherited_variant_context(style: &Style) -> Option<StyleVariantContext> {
+    let context = StyleVariantContext {
+        citation: style.citation.as_ref().map(citation_variant_context),
+        bibliography: style
+            .bibliography
+            .as_ref()
+            .and_then(|bib| bib.type_variants.clone()),
+    };
+    (context.citation.is_some() || context.bibliography.is_some()).then_some(context)
+}
+
+fn citation_variant_context(spec: &CitationSpec) -> CitationVariantContext {
+    CitationVariantContext {
+        type_variants: spec.type_variants.clone(),
+        integral: spec
+            .integral
+            .as_deref()
+            .map(citation_variant_context)
+            .map(Box::new),
+        non_integral: spec
+            .non_integral
+            .as_deref()
+            .map(citation_variant_context)
+            .map(Box::new),
+        subsequent: spec
+            .subsequent
+            .as_deref()
+            .map(citation_variant_context)
+            .map(Box::new),
+        ibid: spec
+            .ibid
+            .as_deref()
+            .map(citation_variant_context)
+            .map(Box::new),
+    }
+}
+
+fn resolve_style_template_variants(
+    style: &mut Style,
+    inherited: Option<&StyleVariantContext>,
+) -> Result<(), ResolutionError> {
+    if let Some(citation) = style.citation.as_mut() {
+        resolve_citation_template_variants(
+            citation,
+            inherited.and_then(|context| context.citation.as_ref()),
+            "citation",
+            None,
+        )?;
+    }
+    if let Some(bibliography) = style.bibliography.as_mut() {
+        let section_template = bibliography.resolve_template();
+        resolve_template_variant_map(
+            bibliography.type_variants.as_mut(),
+            section_template.as_deref(),
+            inherited.and_then(|context| context.bibliography.as_ref()),
+            "bibliography.type-variants",
+        )?;
+    }
+    Ok(())
+}
+
+fn resolve_citation_template_variants(
+    spec: &mut CitationSpec,
+    inherited: Option<&CitationVariantContext>,
+    location: &str,
+    fallback_template: Option<&[TemplateComponent]>,
+) -> Result<(), ResolutionError> {
+    let section_template = spec.resolve_template();
+    let effective_section_template = section_template.as_deref().or(fallback_template);
+    resolve_template_variant_map(
+        spec.type_variants.as_mut(),
+        effective_section_template,
+        inherited.and_then(|context| context.type_variants.as_ref()),
+        &format!("{location}.type-variants"),
+    )?;
+
+    for (name, child, inherited_child) in [
+        (
+            "integral",
+            spec.integral.as_deref_mut(),
+            inherited.and_then(|context| context.integral.as_deref()),
+        ),
+        (
+            "non-integral",
+            spec.non_integral.as_deref_mut(),
+            inherited.and_then(|context| context.non_integral.as_deref()),
+        ),
+        (
+            "subsequent",
+            spec.subsequent.as_deref_mut(),
+            inherited.and_then(|context| context.subsequent.as_deref()),
+        ),
+        (
+            "ibid",
+            spec.ibid.as_deref_mut(),
+            inherited.and_then(|context| context.ibid.as_deref()),
+        ),
+    ] {
+        if let Some(child) = child {
+            resolve_citation_template_variants(
+                child,
+                inherited_child,
+                &format!("{location}.{name}"),
+                effective_section_template,
+            )?;
+        }
+    }
+    Ok(())
+}
+
+fn resolve_template_variant_map(
+    variants: Option<&mut TemplateVariants>,
+    section_template: Option<&[TemplateComponent]>,
+    inherited: Option<&TemplateVariants>,
+    location: &str,
+) -> Result<(), ResolutionError> {
+    let Some(variants) = variants else {
+        return Ok(());
+    };
+    let original = variants.clone();
+    let mut resolved = TemplateVariants::new();
+    let mut visiting = HashSet::new();
+
+    for selector in original.keys() {
+        let template = resolve_template_variant(
+            selector,
+            &original,
+            &mut resolved,
+            inherited,
+            section_template,
+            location,
+            &mut visiting,
+        )?;
+        resolved.insert(selector.clone(), TemplateVariant::Full(template));
+    }
+
+    *variants = resolved;
+    Ok(())
+}
+
+fn resolve_template_variant(
+    selector: &TypeSelector,
+    original: &TemplateVariants,
+    resolved: &mut TemplateVariants,
+    inherited: Option<&TemplateVariants>,
+    section_template: Option<&[TemplateComponent]>,
+    location: &str,
+    visiting: &mut HashSet<TypeSelector>,
+) -> Result<Template, ResolutionError> {
+    let variant_location = format!("{location}[{selector}]");
+    if let Some(template) = resolved
+        .get(selector)
+        .and_then(TemplateVariant::as_template)
+        .map(<[TemplateComponent]>::to_vec)
+    {
+        return Ok(template);
+    }
+
+    if !visiting.insert(selector.clone()) {
+        return Err(ResolutionError::TemplateVariantCycle {
+            location: variant_location,
+            selector: selector.to_string(),
+        });
+    }
+
+    let variant =
+        original
+            .get(selector)
+            .ok_or_else(|| ResolutionError::MissingTemplateVariantParent {
+                location: variant_location.clone(),
+                selector: selector.to_string(),
+            })?;
+
+    let template = match variant {
+        TemplateVariant::Full(template) => template.clone(),
+        TemplateVariant::Diff(diff) => {
+            let mut parent = resolve_variant_parent_template(
+                selector,
+                diff,
+                original,
+                resolved,
+                inherited,
+                section_template,
+                &variant_location,
+                visiting,
+            )?;
+            apply_template_variant_diff(&mut parent, diff, &variant_location)?;
+            parent
+        }
+    };
+
+    visiting.remove(selector);
+    Ok(template)
+}
+
+#[allow(
+    clippy::too_many_arguments,
+    reason = "Template variant resolution needs explicit inherited and local context."
+)]
+fn resolve_variant_parent_template(
+    selector: &TypeSelector,
+    diff: &TemplateVariantDiff,
+    original: &TemplateVariants,
+    resolved: &mut TemplateVariants,
+    inherited: Option<&TemplateVariants>,
+    section_template: Option<&[TemplateComponent]>,
+    location: &str,
+    visiting: &mut HashSet<TypeSelector>,
+) -> Result<Template, ResolutionError> {
+    if let Some(parent_selector) = &diff.extends {
+        if original.contains_key(parent_selector) {
+            return resolve_template_variant(
+                parent_selector,
+                original,
+                resolved,
+                inherited,
+                section_template,
+                location,
+                visiting,
+            );
+        }
+        return inherited
+            .and_then(|variants| variants.get(parent_selector))
+            .and_then(TemplateVariant::as_template)
+            .map(<[TemplateComponent]>::to_vec)
+            .ok_or_else(|| ResolutionError::MissingTemplateVariantParent {
+                location: location.to_string(),
+                selector: parent_selector.to_string(),
+            });
+    }
+
+    inherited
+        .and_then(|variants| variants.get(selector))
+        .and_then(TemplateVariant::as_template)
+        .map(<[TemplateComponent]>::to_vec)
+        .or_else(|| section_template.map(<[TemplateComponent]>::to_vec))
+        .ok_or_else(|| ResolutionError::MissingTemplateVariantParent {
+            location: location.to_string(),
+            selector: selector.to_string(),
+        })
+}
+
+fn apply_template_variant_diff(
+    template: &mut Template,
+    diff: &TemplateVariantDiff,
+    location: &str,
+) -> Result<(), ResolutionError> {
+    for op in &diff.modify {
+        let index = find_required_anchor(template, &op.match_selector, location)?;
+        if let Some(component) = template.get_mut(index) {
+            component.rendering_mut().merge(&op.rendering);
+        }
+    }
+    for op in &diff.remove {
+        let index = find_required_anchor(template, &op.match_selector, location)?;
+        template.remove(index);
+    }
+    for op in &diff.add {
+        let anchor = match (&op.before, &op.after) {
+            (Some(selector), None) => Some((selector, false)),
+            (None, Some(selector)) => Some((selector, true)),
+            _ => {
+                return Err(ResolutionError::InvalidTemplateVariantAdd {
+                    location: location.to_string(),
+                });
+            }
+        };
+        let Some((selector, insert_after)) = anchor else {
+            return Err(ResolutionError::InvalidTemplateVariantAdd {
+                location: location.to_string(),
+            });
+        };
+        let anchor_index = find_required_anchor(template, selector, location)?;
+        let insert_at = if insert_after {
+            anchor_index.saturating_add(1)
+        } else {
+            anchor_index
+        };
+        template.insert(insert_at, op.component.clone());
+    }
+    Ok(())
+}
+
+fn find_required_anchor(
+    template: &[TemplateComponent],
+    selector: &TemplateComponentSelector,
+    location: &str,
+) -> Result<usize, ResolutionError> {
+    find_optional_anchor(template, selector, location)?.ok_or_else(|| {
+        ResolutionError::TemplateVariantAnchorNotFound {
+            location: location.to_string(),
+        }
+    })
+}
+
+fn find_optional_anchor(
+    template: &[TemplateComponent],
+    selector: &TemplateComponentSelector,
+    location: &str,
+) -> Result<Option<usize>, ResolutionError> {
+    if selector.is_empty() {
+        return Err(ResolutionError::TemplateVariantAmbiguousAnchor {
+            location: location.to_string(),
+        });
+    }
+    let mut matches = template
+        .iter()
+        .enumerate()
+        .filter_map(|(index, component)| selector.matches(component).then_some(index));
+    let first = matches.next();
+    if matches.next().is_some() {
+        return Err(ResolutionError::TemplateVariantAmbiguousAnchor {
+            location: location.to_string(),
+        });
+    }
+    Ok(first)
 }
 
 #[allow(
@@ -730,7 +1182,7 @@ pub struct CitationSpec {
     /// If both the main spec and the active mode sub-spec have a `type-variants`
     /// entry for the same type, the mode-specific one wins.
     #[serde(skip_serializing_if = "Option::is_none", rename = "type-variants")]
-    pub type_variants: Option<IndexMap<template::TypeSelector, Template>>,
+    pub type_variants: Option<TemplateVariants>,
     /// Wrap the entire citation in punctuation. Preferred over prefix/suffix.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub wrap: Option<template::WrapConfig>,
@@ -839,9 +1291,9 @@ impl CitationSpec {
         language: Option<&str>,
     ) -> Option<Template> {
         if let Some(type_variants) = &self.type_variants {
-            for (selector, template) in type_variants {
+            for (selector, variant) in type_variants {
                 if selector.matches(ref_type) {
-                    return Some(template.clone());
+                    return variant.clone().into_template();
                 }
             }
         }
@@ -1022,7 +1474,7 @@ pub struct BibliographySpec {
     /// template for entries of the specified types. Keys are reference type
     /// names (e.g., "chapter", "article-journal").
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub type_variants: Option<IndexMap<template::TypeSelector, Template>>,
+    pub type_variants: Option<TemplateVariants>,
     /// Optional global bibliography sorting specification.
     ///
     /// When present, used for sorting the flat bibliography or as default
@@ -1735,7 +2187,7 @@ bibliography:
         let mut type_variants = IndexMap::new();
         type_variants.insert(
             template::TypeSelector::Single("typo-type".to_string()),
-            vec![],
+            TemplateVariant::Full(vec![]),
         );
 
         let style = Style {
@@ -1761,7 +2213,7 @@ bibliography:
         let mut type_variants = IndexMap::new();
         type_variants.insert(
             template::TypeSelector::Single("legal-case".to_string()),
-            vec![],
+            TemplateVariant::Full(vec![]),
         );
 
         let style = Style {
@@ -1794,6 +2246,200 @@ citation:
             "type_variants should be None after null override, got: {:?}",
             citation.type_variants.as_ref().map(|tv| tv.keys().count())
         );
+    }
+
+    #[test]
+    fn template_v3_diff_resolves_to_full_type_variant() {
+        let yaml = r#"
+bibliography:
+  template:
+  - contributor: author
+    form: long
+  - title: primary
+  - variable: publisher
+  - variable: url
+  type-variants:
+    article-journal:
+      modify:
+      - match: { variable: publisher }
+        suppress: true
+      remove:
+      - match: { variable: url }
+      add:
+      - after: { title: primary }
+        component: { title: parent-serial, emph: true }
+"#;
+        let resolved = Style::from_yaml_str(yaml)
+            .expect("style should parse")
+            .try_into_resolved()
+            .expect("diff should resolve");
+        let variants = resolved
+            .bibliography
+            .expect("bibliography should exist")
+            .type_variants
+            .expect("variants should exist");
+        let template = variants
+            .get(&TypeSelector::Single("article-journal".to_string()))
+            .and_then(TemplateVariant::as_template)
+            .expect("variant should resolve to a full template");
+
+        assert_eq!(template.len(), 4);
+        assert!(matches!(
+            &template[2],
+            TemplateComponent::Title(title)
+                if title.title == template::TitleType::ParentSerial
+                    && title.rendering.emph == Some(true)
+        ));
+        assert!(template.iter().any(|component| matches!(
+            component,
+            TemplateComponent::Variable(variable)
+                if variable.variable == template::SimpleVariable::Publisher
+                    && variable.rendering.suppress == Some(true)
+        )));
+    }
+
+    #[test]
+    fn template_v3_add_with_missing_anchor_returns_resolution_error() {
+        let yaml = r#"
+bibliography:
+  template:
+  - title: primary
+  type-variants:
+    book:
+      add:
+      - after: { variable: publisher }
+        component: { date: issued, form: year }
+"#;
+        let err = Style::from_yaml_str(yaml)
+            .expect("style should parse")
+            .try_into_resolved()
+            .expect_err("missing add anchor should reject the diff");
+
+        assert!(matches!(
+            err,
+            ResolutionError::TemplateVariantAnchorNotFound { location }
+                if location == "bibliography.type-variants[book]"
+        ));
+    }
+
+    #[test]
+    fn template_v3_nested_citation_diff_can_use_outer_template() {
+        let style = Style {
+            citation: Some(CitationSpec {
+                template: Some(vec![
+                    TemplateComponent::Contributor(template::TemplateContributor {
+                        contributor: template::ContributorRole::Author,
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Title(template::TemplateTitle {
+                        title: template::TitleType::Primary,
+                        ..Default::default()
+                    }),
+                ]),
+                integral: Some(Box::new(CitationSpec {
+                    type_variants: Some(indexmap::IndexMap::from([(
+                        TypeSelector::Single("personal_communication".to_string()),
+                        TemplateVariant::Diff(TemplateVariantDiff {
+                            remove: vec![TemplateRemoveOperation {
+                                match_selector: TemplateComponentSelector {
+                                    fields: std::collections::BTreeMap::from([(
+                                        "title".to_string(),
+                                        serde_json::json!("primary"),
+                                    )]),
+                                },
+                            }],
+                            ..Default::default()
+                        }),
+                    )])),
+                    ..Default::default()
+                })),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let resolved = style
+            .try_into_resolved()
+            .expect("nested diff should resolve against outer citation template");
+        let variants = resolved
+            .citation
+            .expect("citation should exist")
+            .integral
+            .expect("integral citation should exist")
+            .type_variants
+            .expect("variants should exist");
+        let template = variants
+            .get(&TypeSelector::Single("personal_communication".to_string()))
+            .and_then(TemplateVariant::as_template)
+            .expect("variant should resolve");
+
+        assert_eq!(template.len(), 1);
+        assert!(matches!(template[0], TemplateComponent::Contributor(_)));
+    }
+
+    #[test]
+    fn template_v3_overlay_variant_defaults_to_inherited_variant() {
+        #[derive(Clone)]
+        struct FakeResolver {
+            style: Style,
+        }
+
+        impl StyleResolver for FakeResolver {
+            fn resolve_style(&self, uri: &str) -> Result<Style, ResolutionError> {
+                if uri == "parent-style" {
+                    Ok(self.style.clone())
+                } else {
+                    Err(ResolutionError::UriResolutionFailed {
+                        uri: uri.to_string(),
+                        reason: "missing test style".to_string(),
+                    })
+                }
+            }
+        }
+
+        let parent = Style::from_yaml_str(
+            r#"
+bibliography:
+  template:
+  - title: primary
+  type-variants:
+    book:
+    - title: primary
+      emph: true
+"#,
+        )
+        .expect("parent should parse");
+        let child = Style::from_yaml_str(
+            r#"
+extends: parent-style
+bibliography:
+  type-variants:
+    book:
+      modify:
+      - match: { title: primary }
+        quote: true
+"#,
+        )
+        .expect("child should parse");
+
+        let resolved = child
+            .try_into_resolved_with(Some(&FakeResolver { style: parent }))
+            .expect("child diff should resolve");
+        let template = resolved
+            .bibliography
+            .expect("bibliography should exist")
+            .type_variants
+            .expect("variants should exist")
+            .get(&TypeSelector::Single("book".to_string()))
+            .and_then(TemplateVariant::as_template)
+            .expect("book variant should resolve")
+            .to_vec();
+
+        assert!(matches!(
+            &template[0],
+            TemplateComponent::Title(title)
+                if title.rendering.emph == Some(true)
+                    && title.rendering.quote == Some(true)
+        ));
     }
 
     #[test]

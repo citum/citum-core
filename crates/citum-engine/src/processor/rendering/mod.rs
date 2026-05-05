@@ -542,7 +542,7 @@ impl<'a> Renderer<'a> {
                     let mut matched_template = None;
                     for (selector, template) in type_variants {
                         if selector.matches(&ref_type) {
-                            matched_template = Some(template.clone());
+                            matched_template = template.clone().into_template();
                             break;
                         }
                     }
