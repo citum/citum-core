@@ -1,4 +1,5 @@
 ---
+# csl26-r8d2
 title: Reconsider Distributed Registry and Resolver Architecture
 status: draft
 type: task
@@ -9,7 +10,7 @@ tags:
     - style
     - research
 created_at: 2026-05-03T00:00:00Z
-updated_at: 2026-05-03T00:00:00Z
+updated_at: 2026-05-05T10:14:15Z
 ---
 
 # csl26-r8d2
@@ -65,6 +66,15 @@ Implemented `file://` URI resolution in `try_into_resolved_recursive`:
 - Loop protection via existing `visited` set
 - Only `file://` URIs accepted; other schemes and bare paths return `UriResolutionFailed`
 
+## Core Registry
+
+All styles in `styles/` ship as a bundled core registry (embedded via `include_bytes!`
+in `registry/default.yaml`), expanding `EmbeddedResolver` beyond the current short
+builtin slice. Serves as a CI-tested, zero-network default. Styles may migrate to
+the Hub registry as things stabilize; chain order makes this non-breaking.
+
+See spec for full design.
+
 ## Remaining Work (Stage 2+)
 
 Phase 2 (remote fetching, caching) and Phase 3 (content addressing, hub federation)
@@ -74,3 +84,7 @@ in place for when HTTP/Git resolution is added.
 Key decision deferred: whether to thread a `&dyn StyleResolver` into
 `try_into_resolved_recursive` — enables pluggable resolution at the schema
 level and is required before Phase 2 can handle non-file URIs.
+
+## Spec
+
+[docs/specs/DISTRIBUTED_RESOLVER.md](../docs/specs/DISTRIBUTED_RESOLVER.md) — Status: Draft
