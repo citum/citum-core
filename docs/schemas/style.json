@@ -4353,10 +4353,7 @@
             "null"
           ],
           "additionalProperties": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/TemplateComponent"
-            }
+            "$ref": "#/$defs/TemplateVariant"
           }
         },
         "wrap": {
@@ -4804,6 +4801,269 @@
         "template"
       ]
     },
+    "TemplateVariant": {
+      "description": "Type-specific template override, either as a complete legacy template or a V3 diff.",
+      "anyOf": [
+        {
+          "description": "Complete replacement template used by Template V1/V2 styles.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TemplateComponent"
+          }
+        },
+        {
+          "description": "Structural diff applied to a parent template during style resolution.",
+          "$ref": "#/$defs/TemplateVariantDiff"
+        }
+      ]
+    },
+    "TemplateVariantDiff": {
+      "description": "Structural diff that derives a type-specific template from a parent template.",
+      "type": "object",
+      "properties": {
+        "extends": {
+          "description": "Optional parent type variant selector within the same section.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypeSelector"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "modify": {
+          "description": "Rendering-only modifications applied in authored order.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TemplateModifyOperation"
+          }
+        },
+        "remove": {
+          "description": "Component removals applied in authored order.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TemplateRemoveOperation"
+          }
+        },
+        "add": {
+          "description": "Component additions applied in authored order.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TemplateAddOperation"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "TypeSelector": {
+      "description": "Selector for reference types in overrides.\nCan be a single type string or a list of types.",
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "Single": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "Single"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "Multiple": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "Multiple"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "TemplateModifyOperation": {
+      "description": "Rendering-only modification for the component matched by `match`.",
+      "type": "object",
+      "properties": {
+        "match": {
+          "description": "Selector identifying exactly one component to modify.",
+          "$ref": "#/$defs/TemplateComponentSelector"
+        },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "emph": {
+          "description": "Render in italics/emphasis.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "quote": {
+          "description": "Render in quotes.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "strong": {
+          "description": "Render in bold/strong.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "small-caps": {
+          "description": "Render in small caps.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "vertical-align": {
+          "description": "Vertical alignment to apply to rendered output.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VerticalAlign"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "prefix": {
+          "description": "Text to prepend to the rendered value (outside any wrap).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suffix": {
+          "description": "Text to append to the rendered value (outside any wrap).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "wrap": {
+          "description": "Wrapping punctuation and optional inner affixes (text inside the wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WrapConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "suppress": {
+          "description": "If true, suppress this component entirely (render as empty string).\nUseful for type-specific overrides like suppressing publisher for journals.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "initialize-with": {
+          "description": "Override name initialization (e.g., \". \" or \"\").",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name-form": {
+          "description": "Override name form (e.g., initials, full, family-only).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NameForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "strip-periods": {
+          "description": "Strip trailing periods from rendered value.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "match"
+      ]
+    },
+    "TemplateComponentSelector": {
+      "description": "Partial component selector used to locate anchors in a template.",
+      "type": "object",
+      "additionalProperties": true
+    },
+    "TemplateRemoveOperation": {
+      "description": "Removal operation for the component matched by `match`.",
+      "type": "object",
+      "properties": {
+        "match": {
+          "description": "Selector identifying exactly one component to remove.",
+          "$ref": "#/$defs/TemplateComponentSelector"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "match"
+      ]
+    },
+    "TemplateAddOperation": {
+      "description": "Addition operation that inserts a component before or after an anchor.",
+      "type": "object",
+      "properties": {
+        "before": {
+          "description": "Anchor selector before which the component should be inserted.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TemplateComponentSelector"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "after": {
+          "description": "Anchor selector after which the component should be inserted.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TemplateComponentSelector"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "component": {
+          "description": "Component to insert.",
+          "$ref": "#/$defs/TemplateComponent"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "component"
+      ]
+    },
     "CitationCollapse": {
       "description": "Citation collapse behavior for multi-item citations.",
       "oneOf": [
@@ -5003,10 +5263,7 @@
             "null"
           ],
           "additionalProperties": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/TemplateComponent"
-            }
+            "$ref": "#/$defs/TemplateVariant"
           }
         },
         "sort": {
@@ -5801,38 +6058,6 @@
           ]
         }
       }
-    },
-    "TypeSelector": {
-      "description": "Selector for reference types in overrides.\nCan be a single type string or a list of types.",
-      "oneOf": [
-        {
-          "type": "object",
-          "properties": {
-            "Single": {
-              "type": "string"
-            }
-          },
-          "required": [
-            "Single"
-          ],
-          "additionalProperties": false
-        },
-        {
-          "type": "object",
-          "properties": {
-            "Multiple": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "required": [
-            "Multiple"
-          ],
-          "additionalProperties": false
-        }
-      ]
     },
     "CitedStatus": {
       "description": "Citation status filter.",

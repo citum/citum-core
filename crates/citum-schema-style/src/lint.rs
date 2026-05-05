@@ -7,7 +7,7 @@ use crate::template::{
     ContributorForm, ContributorRole, LabelForm as TemplateLabelForm, NumberVariable,
     RoleLabelForm, TemplateComponent, TemplateContributor,
 };
-use crate::{CitationSpec, Style, Template};
+use crate::{CitationSpec, Style, TemplateVariant};
 
 /// A single lint finding produced by locale or style validation.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -326,13 +326,28 @@ fn collect_bibliography_spec_requirements(
         }
     }
     if let Some(type_variants) = &spec.type_variants {
-        for (selector, template) in type_variants {
-            collect_template_requirements(
-                template,
-                &format!("{path}.type-variants[{selector:?}]"),
-                &effective_config,
-                requirements,
-            );
+        for (selector, variant) in type_variants {
+            let variant_path = format!("{path}.type-variants[{selector:?}]");
+            match variant {
+                TemplateVariant::Full(template) => {
+                    collect_template_requirements(
+                        template,
+                        &variant_path,
+                        &effective_config,
+                        requirements,
+                    );
+                }
+                TemplateVariant::Diff(diff) => {
+                    for (index, operation) in diff.add.iter().enumerate() {
+                        collect_template_requirements(
+                            std::slice::from_ref(&operation.component),
+                            &format!("{variant_path}.add[{index}].component"),
+                            &effective_config,
+                            requirements,
+                        );
+                    }
+                }
+            }
         }
     }
     if let Some(groups) = &spec.groups {
@@ -361,7 +376,7 @@ fn collect_bibliography_spec_requirements(
 }
 
 fn collect_template_requirements(
-    template: &Template,
+    template: &[TemplateComponent],
     path: &str,
     config: &Config,
     requirements: &mut Vec<LocaleRequirement>,

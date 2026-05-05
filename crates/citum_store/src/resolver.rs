@@ -75,6 +75,13 @@ impl StyleResolver for StoreResolver {
     }
 }
 
+impl citum_schema::StyleResolver for StoreResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
+        StyleResolver::resolve_style(self, uri)
+            .map_err(|err| resolution_error_from_store_error(uri, err))
+    }
+}
+
 /// A resolver that checks for embedded styles and locales.
 pub struct EmbeddedResolver;
 
@@ -93,6 +100,13 @@ impl StyleResolver for EmbeddedResolver {
         } else {
             Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
         }
+    }
+}
+
+impl citum_schema::StyleResolver for EmbeddedResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
+        StyleResolver::resolve_style(self, uri)
+            .map_err(|err| resolution_error_from_store_error(uri, err))
     }
 }
 
@@ -178,6 +192,13 @@ impl StyleResolver for RegistryResolver {
     }
 }
 
+impl citum_schema::StyleResolver for RegistryResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
+        StyleResolver::resolve_style(self, uri)
+            .map_err(|err| resolution_error_from_store_error(uri, err))
+    }
+}
+
 /// A resolver that handles local file paths.
 pub struct FileResolver;
 
@@ -213,6 +234,13 @@ impl StyleResolver for FileResolver {
             }
         }
         Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
+    }
+}
+
+impl citum_schema::StyleResolver for FileResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
+        StyleResolver::resolve_style(self, uri)
+            .map_err(|err| resolution_error_from_store_error(uri, err))
     }
 }
 
@@ -342,6 +370,14 @@ impl StyleResolver for HttpResolver {
     }
 }
 
+#[cfg(feature = "http")]
+impl citum_schema::StyleResolver for HttpResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
+        StyleResolver::resolve_style(self, uri)
+            .map_err(|err| resolution_error_from_store_error(uri, err))
+    }
+}
+
 /// A composite resolver that attempts resolution through a chain of resolvers.
 pub struct ChainResolver {
     resolvers: Vec<Box<dyn StyleResolver>>,
@@ -375,6 +411,23 @@ impl StyleResolver for ChainResolver {
             }
         }
         Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
+    }
+}
+
+impl citum_schema::StyleResolver for ChainResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
+        StyleResolver::resolve_style(self, uri)
+            .map_err(|err| resolution_error_from_store_error(uri, err))
+    }
+}
+
+fn resolution_error_from_store_error(
+    uri: &str,
+    err: ResolverError,
+) -> citum_schema::ResolutionError {
+    citum_schema::ResolutionError::UriResolutionFailed {
+        uri: uri.to_string(),
+        reason: err.to_string(),
     }
 }
 

@@ -128,7 +128,11 @@ pub(crate) fn load_any_style(
     let chain = ChainResolver::new(resolvers);
 
     match chain.resolve_style(style_input) {
-        Ok(style) => Ok(style),
+        Ok(style) => {
+            let mut resolved = style.try_into_resolved_with(Some(&chain))?;
+            resolved.extends = None;
+            Ok(resolved)
+        }
         Err(citum_store::resolver::ResolverError::StyleNotFound(_)) => {
             let registry = citum_schema::embedded::default_registry();
             let candidates: Vec<_> = registry

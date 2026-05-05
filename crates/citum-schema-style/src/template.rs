@@ -38,7 +38,7 @@ use crate::locale::{GeneralTerm, GrammaticalGender, TermForm};
 use schemars::JsonSchema;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::borrow::Cow;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::hash::{Hash, Hasher};
 
 /// Rendering instructions applied to template components.
@@ -450,6 +450,161 @@ impl TemplateComponent {
     pub fn rendering_mut(&mut self) -> &mut Rendering {
         crate::dispatch_component!(self, |inner| &mut inner.rendering)
     }
+}
+
+/// Type-specific template override, either as a complete legacy template or a V3 diff.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(untagged)]
+pub enum TemplateVariant {
+    /// Complete replacement template used by Template V1/V2 styles.
+    Full(Vec<TemplateComponent>),
+    /// Structural diff applied to a parent template during style resolution.
+    Diff(TemplateVariantDiff),
+}
+
+impl TemplateVariant {
+    /// Return this variant as a concrete template if it has already been resolved.
+    #[must_use]
+    pub fn as_template(&self) -> Option<&[TemplateComponent]> {
+        match self {
+            Self::Full(template) => Some(template.as_slice()),
+            Self::Diff(_) => None,
+        }
+    }
+
+    /// Return this variant as a mutable concrete template if it has already been resolved.
+    pub fn as_template_mut(&mut self) -> Option<&mut Vec<TemplateComponent>> {
+        match self {
+            Self::Full(template) => Some(template),
+            Self::Diff(_) => None,
+        }
+    }
+
+    /// Convert this variant into its concrete template if it has already been resolved.
+    #[must_use]
+    pub fn into_template(self) -> Option<Vec<TemplateComponent>> {
+        match self {
+            Self::Full(template) => Some(template),
+            Self::Diff(_) => None,
+        }
+    }
+}
+
+impl From<Vec<TemplateComponent>> for TemplateVariant {
+    fn from(template: Vec<TemplateComponent>) -> Self {
+        Self::Full(template)
+    }
+}
+
+/// Structural diff that derives a type-specific template from a parent template.
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct TemplateVariantDiff {
+    /// Optional parent type variant selector within the same section.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub extends: Option<TypeSelector>,
+    /// Rendering-only modifications applied in authored order.
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub modify: Vec<TemplateModifyOperation>,
+    /// Component removals applied in authored order.
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub remove: Vec<TemplateRemoveOperation>,
+    /// Component additions applied in authored order.
+    #[serde(skip_serializing_if = "Vec::is_empty", default)]
+    pub add: Vec<TemplateAddOperation>,
+}
+
+/// Partial component selector used to locate anchors in a template.
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(transparent)]
+pub struct TemplateComponentSelector {
+    /// Component fields that must be present with equal values on the target component.
+    pub fields: BTreeMap<String, serde_json::Value>,
+}
+
+impl TemplateComponentSelector {
+    /// Returns `true` when this selector has no fields.
+    #[must_use]
+    pub fn is_empty(&self) -> bool {
+        self.fields.is_empty()
+    }
+
+    /// Returns `true` when every selector field is present with the same value.
+    #[must_use]
+    pub fn matches(&self, component: &TemplateComponent) -> bool {
+        let Ok(serde_json::Value::Object(component_fields)) = serde_json::to_value(component)
+        else {
+            return false;
+        };
+
+        self.fields.iter().all(|(key, expected)| {
+            component_fields
+                .get(key)
+                .is_some_and(|actual| selector_value_matches(expected, actual))
+        })
+    }
+}
+
+fn selector_value_matches(expected: &serde_json::Value, actual: &serde_json::Value) -> bool {
+    match (expected, actual) {
+        (serde_json::Value::Object(expected_fields), serde_json::Value::Object(actual_fields)) => {
+            expected_fields.iter().all(|(key, expected_value)| {
+                actual_fields.get(key).is_some_and(|actual_value| {
+                    selector_value_matches(expected_value, actual_value)
+                })
+            })
+        }
+        (serde_json::Value::Array(expected_items), serde_json::Value::Array(actual_items)) => {
+            expected_items.len() == actual_items.len()
+                && expected_items.iter().zip(actual_items.iter()).all(
+                    |(expected_item, actual_item)| {
+                        selector_value_matches(expected_item, actual_item)
+                    },
+                )
+        }
+        _ => expected == actual,
+    }
+}
+
+/// Rendering-only modification for the component matched by `match`.
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct TemplateModifyOperation {
+    /// Selector identifying exactly one component to modify.
+    #[serde(rename = "match")]
+    pub match_selector: TemplateComponentSelector,
+    /// Rendering fields to merge onto the matched component.
+    #[serde(flatten, default)]
+    pub rendering: Rendering,
+}
+
+/// Removal operation for the component matched by `match`.
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct TemplateRemoveOperation {
+    /// Selector identifying exactly one component to remove.
+    #[serde(rename = "match")]
+    pub match_selector: TemplateComponentSelector,
+}
+
+/// Addition operation that inserts a component before or after an anchor.
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct TemplateAddOperation {
+    /// Anchor selector before which the component should be inserted.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub before: Option<TemplateComponentSelector>,
+    /// Anchor selector after which the component should be inserted.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub after: Option<TemplateComponentSelector>,
+    /// Component to insert.
+    pub component: TemplateComponent,
 }
 
 /// Configuration for role labels (e.g., "eds.", "trans.").
@@ -1262,6 +1417,33 @@ wrap: parentheses
         assert!(mixed.matches("default"));
         assert!(mixed.matches("chapter"));
         assert!(!mixed.matches("book"));
+    }
+
+    #[test]
+    fn test_template_component_selector_matches_nested_partial_group() {
+        let component: TemplateComponent = serde_yaml::from_str(
+            r#"
+delimiter: ""
+group:
+- number: citation-number
+  wrap:
+    punctuation: brackets
+- contributor: author
+  form: long
+"#,
+        )
+        .unwrap();
+        let selector = TemplateComponentSelector {
+            fields: BTreeMap::from([(
+                "group".to_string(),
+                serde_json::json!([
+                    { "number": "citation-number" },
+                    { "contributor": "author" }
+                ]),
+            )]),
+        };
+
+        assert!(selector.matches(&component));
     }
 
     #[test]

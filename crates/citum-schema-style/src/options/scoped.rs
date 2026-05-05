@@ -234,8 +234,8 @@ fn set_citation_wrap(citation: &mut CitationSpec, wrap: LabelWrap) {
 fn apply_bibliography_label_mode(bibliography: &mut BibliographySpec, mode: BibliographyLabelMode) {
     update_label_mode(bibliography.template.as_mut(), mode);
     if let Some(variants) = bibliography.type_variants.as_mut() {
-        for template in variants.values_mut() {
-            update_label_mode(Some(template), mode);
+        for variant in variants.values_mut() {
+            update_label_mode(variant.as_template_mut(), mode);
         }
     }
 }
@@ -243,8 +243,8 @@ fn apply_bibliography_label_mode(bibliography: &mut BibliographySpec, mode: Bibl
 fn apply_bibliography_label_wrap(bibliography: &mut BibliographySpec, wrap: BibliographyLabelWrap) {
     update_label_wrap(bibliography.template.as_mut(), wrap);
     if let Some(variants) = bibliography.type_variants.as_mut() {
-        for template in variants.values_mut() {
-            update_label_wrap(Some(template), wrap);
+        for variant in variants.values_mut() {
+            update_label_wrap(variant.as_template_mut(), wrap);
         }
     }
 }
@@ -252,8 +252,8 @@ fn apply_bibliography_label_wrap(bibliography: &mut BibliographySpec, wrap: Bibl
 fn apply_date_position(bibliography: &mut BibliographySpec, position: DatePosition) {
     reposition_date(bibliography.template.as_mut(), position);
     if let Some(variants) = bibliography.type_variants.as_mut() {
-        for template in variants.values_mut() {
-            reposition_date(Some(template), position);
+        for variant in variants.values_mut() {
+            reposition_date(variant.as_template_mut(), position);
         }
     }
 }
@@ -261,8 +261,8 @@ fn apply_date_position(bibliography: &mut BibliographySpec, position: DatePositi
 fn apply_title_terminator(bibliography: &mut BibliographySpec, terminator: TitleTerminator) {
     update_title_terminator(bibliography.template.as_mut(), terminator);
     if let Some(variants) = bibliography.type_variants.as_mut() {
-        for template in variants.values_mut() {
-            update_title_terminator(Some(template), terminator);
+        for variant in variants.values_mut() {
+            update_title_terminator(variant.as_template_mut(), terminator);
         }
     }
 }
@@ -391,15 +391,15 @@ fn apply_citation_wrap_recursive(citation: &mut CitationSpec, wrap: LabelWrap) {
     if wrap == LabelWrap::Superscript {
         apply_citation_superscript(citation.template.as_mut());
         if let Some(variants) = citation.type_variants.as_mut() {
-            for template in variants.values_mut() {
-                apply_citation_superscript(Some(template));
+            for variant in variants.values_mut() {
+                apply_citation_superscript(variant.as_template_mut());
             }
         }
     } else {
         update_label_wrap(citation.template.as_mut(), wrap);
         if let Some(variants) = citation.type_variants.as_mut() {
-            for template in variants.values_mut() {
-                update_label_wrap(Some(template), wrap);
+            for variant in variants.values_mut() {
+                update_label_wrap(variant.as_template_mut(), wrap);
             }
         }
     }

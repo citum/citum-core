@@ -627,7 +627,8 @@ fn test_type_specific_rendering() {
                 },
                 ..Default::default()
             }),
-        ],
+        ]
+        .into(),
     );
     // Book variant: Author (Short), Title (Primary), Year
     type_variants.insert(
@@ -658,7 +659,8 @@ fn test_type_specific_rendering() {
                 },
                 ..Default::default()
             }),
-        ],
+        ]
+        .into(),
     );
 
     let style = Style {
@@ -781,7 +783,8 @@ fn test_bibliography_type_specific_rendering() {
                 },
                 ..Default::default()
             }),
-        ],
+        ]
+        .into(),
     );
 
     let style = Style {
