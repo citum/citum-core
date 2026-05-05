@@ -53,6 +53,7 @@ to make sure the document should be a spec rather than architecture or policy.
 
 | File | Feature |
 |------|---------|
+| [`DISTRIBUTED_RESOLVER.md`](./DISTRIBUTED_RESOLVER.md) | Federated registry and distributed resolver architecture (Phases 2–3) |
 | [`PROFILE_DOCUMENTARY_VERIFICATION.md`](./PROFILE_DOCUMENTARY_VERIFICATION.md) | Verification model for profile styles using external authority |
 | [`SERVER_INTERACTIVE_API.md`](./SERVER_INTERACTIVE_API.md) | Document-batch and session APIs for server and WASM |
 
