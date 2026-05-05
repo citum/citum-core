@@ -410,8 +410,14 @@ pub(crate) enum StyleCommands {
         #[arg(long, value_enum, default_value_t = StyleCatalogSource::All)]
         source: StyleCatalogSource,
         /// Output format
-        #[arg(long, value_enum, default_value_t = StyleCatalogFormat::Table)]
+        #[arg(long, value_enum, default_value_t = StyleCatalogFormat::Text)]
         format: StyleCatalogFormat,
+        /// Maximum number of rows to print
+        #[arg(long)]
+        limit: Option<usize>,
+        /// Number of matching rows to skip
+        #[arg(long, default_value_t = 0)]
+        offset: usize,
     },
     /// Search styles in the unified catalog
     Search {
@@ -421,15 +427,21 @@ pub(crate) enum StyleCommands {
         #[arg(long, value_enum, default_value_t = StyleCatalogSource::All)]
         source: StyleCatalogSource,
         /// Output format
-        #[arg(long, value_enum, default_value_t = StyleCatalogFormat::Table)]
+        #[arg(long, value_enum, default_value_t = StyleCatalogFormat::Text)]
         format: StyleCatalogFormat,
+        /// Maximum number of rows to print
+        #[arg(long)]
+        limit: Option<usize>,
+        /// Number of matching rows to skip
+        #[arg(long, default_value_t = 0)]
+        offset: usize,
     },
     /// Show details for a style in the unified catalog
     Info {
         /// Style ID or alias
         name: String,
         /// Output format
-        #[arg(long, value_enum, default_value_t = StyleCatalogFormat::Table)]
+        #[arg(long, value_enum, default_value_t = StyleCatalogFormat::Text)]
         format: StyleCatalogFormat,
     },
     /// Validate that a style's locale-driven features resolve against a locale file
@@ -456,14 +468,14 @@ impl std::fmt::Display for StyleCatalogSource {
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
 pub(crate) enum StyleCatalogFormat {
-    Table,
+    Text,
     Json,
 }
 
 impl std::fmt::Display for StyleCatalogFormat {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            StyleCatalogFormat::Table => write!(f, "table"),
+            StyleCatalogFormat::Text => write!(f, "text"),
             StyleCatalogFormat::Json => write!(f, "json"),
         }
     }

@@ -146,7 +146,10 @@ pub(crate) fn load_any_style(
 
             let mut msg = format!("style not found: '{style_input}'");
             if suggestions.is_empty() {
-                msg.push_str("\n\nUse `citum style list` to see all available styles.");
+                msg.push_str(
+                    "\n\nUse `citum style list` to browse catalog styles, \
+                     or pass a local path/direct URL.",
+                );
             } else {
                 msg.push_str("\n\nDid you mean one of these?");
                 for s in suggestions {

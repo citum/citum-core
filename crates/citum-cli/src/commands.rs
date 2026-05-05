@@ -85,12 +85,19 @@ pub(crate) fn run() -> Result<(), Box<dyn Error>> {
             StoreCommands::Remove { name } => run_store_remove(&name),
         },
         Commands::Style { command } => match command {
-            StyleCommands::List { source, format } => run_style_list(source, format),
+            StyleCommands::List {
+                source,
+                format,
+                limit,
+                offset,
+            } => run_style_list(source, format, limit, offset),
             StyleCommands::Search {
                 query,
                 source,
                 format,
-            } => run_style_search(&query, source, format),
+                limit,
+                offset,
+            } => run_style_search(&query, source, format, limit, offset),
             StyleCommands::Info { name, format } => run_style_info(&name, format),
             StyleCommands::Lint(args) => run_lint_style(args),
         },
@@ -315,19 +322,50 @@ fn style_entry_matches_source(entry: &RegistryEntry, source: StyleCatalogSource)
 }
 
 fn style_catalog_row(entry: &RegistryEntry) -> StyleCatalogRow {
+    let title = entry.title.clone().or_else(|| {
+        entry.builtin.as_ref().and_then(|builtin| {
+            citum_schema::embedded::get_embedded_style(builtin)
+                .and_then(Result::ok)
+                .and_then(|style| style.info.title)
+        })
+    });
+
     StyleCatalogRow {
         source: style_entry_source(entry).to_string(),
         id: entry.id.clone(),
         aliases: entry.aliases.clone(),
-        title: entry.title.clone(),
+        title,
         description: entry.description.clone(),
         fields: entry.fields.clone(),
         url: entry.url.clone(),
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+struct StyleCatalogPage {
+    limit: Option<usize>,
+    offset: usize,
+}
+
+fn paginate_style_catalog_rows(
+    mut rows: Vec<StyleCatalogRow>,
+    page: StyleCatalogPage,
+) -> (usize, Vec<StyleCatalogRow>) {
+    let total = rows.len();
+    if page.offset >= total {
+        return (total, Vec::new());
+    }
+    rows.drain(..page.offset);
+    if let Some(limit) = page.limit {
+        rows.truncate(limit);
+    }
+    (total, rows)
+}
+
 fn print_style_catalog_rows(
     rows: &[StyleCatalogRow],
+    total: usize,
+    source: StyleCatalogSource,
     format: StyleCatalogFormat,
 ) -> Result<(), Box<dyn Error>> {
     if format == StyleCatalogFormat::Json {
@@ -335,44 +373,32 @@ fn print_style_catalog_rows(
         return Ok(());
     }
 
-    let mut table = Table::new();
-    table
-        .load_preset(UTF8_FULL)
-        .set_content_arrangement(ContentArrangement::Dynamic)
-        .set_header(vec![
-            Cell::new("Source").fg(Color::Cyan),
-            Cell::new("ID").fg(Color::Cyan),
-            Cell::new("Aliases").fg(Color::Cyan),
-            Cell::new("Title").fg(Color::Cyan),
-            Cell::new("Description").fg(Color::Cyan),
-            Cell::new("Fields").fg(Color::Cyan),
-            Cell::new("URL").fg(Color::Cyan),
-        ]);
+    print!("{}", format_style_catalog_text(rows, total, source));
+    Ok(())
+}
+
+fn format_style_catalog_text(
+    rows: &[StyleCatalogRow],
+    total: usize,
+    source: StyleCatalogSource,
+) -> String {
+    let mut output = String::new();
+    let _ = writeln!(output, "{total} {source} styles");
+    if rows.len() != total {
+        let _ = writeln!(output, "showing {}", rows.len());
+    }
+    output.push('\n');
 
     for row in rows {
-        let aliases = if row.aliases.is_empty() {
-            "-".to_string()
-        } else {
-            row.aliases.join(", ")
-        };
-        let fields = if row.fields.is_empty() {
-            "-".to_string()
-        } else {
-            row.fields.join(", ")
-        };
-        table.add_row(vec![
-            Cell::new(&row.source),
-            Cell::new(&row.id),
-            Cell::new(aliases),
-            Cell::new(row.title.as_deref().unwrap_or("-")),
-            Cell::new(row.description.as_deref().unwrap_or("-")),
-            Cell::new(fields),
-            Cell::new(row.url.as_deref().unwrap_or("-")),
-        ]);
+        let _ = writeln!(
+            output,
+            "{:<10}  {:<42}  {}",
+            row.source,
+            row.id,
+            row.title.as_deref().unwrap_or("-")
+        );
     }
-
-    println!("{table}");
-    Ok(())
+    output
 }
 
 fn style_catalog_entries(source: StyleCatalogSource) -> Vec<StyleCatalogRow> {
@@ -387,27 +413,30 @@ fn style_catalog_entries(source: StyleCatalogSource) -> Vec<StyleCatalogRow> {
 fn run_style_list(
     source: StyleCatalogSource,
     format: StyleCatalogFormat,
+    limit: Option<usize>,
+    offset: usize,
 ) -> Result<(), Box<dyn Error>> {
     let rows = style_catalog_entries(source);
-    print_style_catalog_rows(&rows, format)
+    let (total, rows) = paginate_style_catalog_rows(rows, StyleCatalogPage { limit, offset });
+    print_style_catalog_rows(&rows, total, source, format)
 }
 
-fn style_entry_matches_query(entry: &RegistryEntry, query: &str) -> bool {
+fn style_row_matches_query(row: &StyleCatalogRow, query: &str) -> bool {
     let query = query.to_lowercase();
-    entry.id.to_lowercase().contains(&query)
-        || entry
+    row.id.to_lowercase().contains(&query)
+        || row
             .aliases
             .iter()
             .any(|alias| alias.to_lowercase().contains(&query))
-        || entry
+        || row
             .title
             .as_ref()
             .is_some_and(|title| title.to_lowercase().contains(&query))
-        || entry
+        || row
             .description
             .as_ref()
             .is_some_and(|description| description.to_lowercase().contains(&query))
-        || entry
+        || row
             .fields
             .iter()
             .any(|field| field.to_lowercase().contains(&query))
@@ -417,16 +446,19 @@ fn run_style_search(
     query: &str,
     source: StyleCatalogSource,
     format: StyleCatalogFormat,
+    limit: Option<usize>,
+    offset: usize,
 ) -> Result<(), Box<dyn Error>> {
     let registry = citum_schema::embedded::default_registry();
     let rows: Vec<_> = registry
         .styles
         .iter()
         .filter(|entry| style_entry_matches_source(entry, source))
-        .filter(|entry| style_entry_matches_query(entry, query))
         .map(style_catalog_row)
+        .filter(|row| style_row_matches_query(row, query))
         .collect();
-    print_style_catalog_rows(&rows, format)
+    let (total, rows) = paginate_style_catalog_rows(rows, StyleCatalogPage { limit, offset });
+    print_style_catalog_rows(&rows, total, source, format)
 }
 
 fn run_style_info(name: &str, format: StyleCatalogFormat) -> Result<(), Box<dyn Error>> {
@@ -435,7 +467,7 @@ fn run_style_info(name: &str, format: StyleCatalogFormat) -> Result<(), Box<dyn 
         .resolve(name)
         .ok_or_else(|| format!("style not found: {name}"))?;
     let row = style_catalog_row(entry);
-    print_style_catalog_rows(&[row], format)
+    print_style_catalog_rows(&[row], 1, StyleCatalogSource::All, format)
 }
 
 /// List all installed user styles and locales.
@@ -1425,6 +1457,68 @@ mod tests {
         assert_eq!(OutputFormat::Djot.to_string(), "djot");
         assert_eq!(OutputFormat::Latex.to_string(), "latex");
         assert_eq!(OutputFormat::Typst.to_string(), "typst");
+    }
+
+    #[test]
+    fn test_style_catalog_embedded_title_falls_back_to_style_metadata() {
+        let registry = citum_schema::embedded::default_registry();
+        let entry = registry.resolve("apa").expect("APA alias should resolve");
+
+        let row = style_catalog_row(entry);
+
+        assert_eq!(
+            row.title.as_deref(),
+            Some("American Psychological Association 7th edition")
+        );
+    }
+
+    #[test]
+    fn test_style_catalog_source_filter_and_pagination() {
+        let rows = style_catalog_entries(StyleCatalogSource::CoreHttp);
+        let (total, page) = paginate_style_catalog_rows(
+            rows,
+            StyleCatalogPage {
+                limit: Some(2),
+                offset: 1,
+            },
+        );
+
+        assert!(total > 2);
+        assert_eq!(page.len(), 2);
+        assert!(page.iter().all(|row| row.source == "core-http"));
+    }
+
+    #[test]
+    fn test_style_catalog_search_matches_embedded_title() {
+        let registry = citum_schema::embedded::default_registry();
+        let rows: Vec<_> = registry
+            .styles
+            .iter()
+            .map(style_catalog_row)
+            .filter(|row| style_row_matches_query(row, "Psychological Association"))
+            .collect();
+
+        assert!(rows.iter().any(|row| row.id == "apa-7th"));
+    }
+
+    #[test]
+    fn test_style_catalog_text_output_is_not_table() {
+        let rows = vec![StyleCatalogRow {
+            source: "core-http".to_string(),
+            id: "alpha".to_string(),
+            aliases: Vec::new(),
+            title: Some("Alpha (biblatex-alpha)".to_string()),
+            description: None,
+            fields: Vec::new(),
+            url: None,
+        }];
+
+        let output = format_style_catalog_text(&rows, 3, StyleCatalogSource::CoreHttp);
+
+        assert_eq!(
+            output,
+            "3 core-http styles\nshowing 1\n\ncore-http   alpha                                       Alpha (biblatex-alpha)\n"
+        );
     }
 
     // ------------------------------------------------------------------

@@ -194,6 +194,11 @@ fn test_http_resolver_reports_malformed_yaml() {
         Err(ResolverError::YamlError(_)) => {}
         err => panic!("expected YamlError, got {err:?}"),
     }
+    let cache_dir = temp.path().join("styles").join("http");
+    let cache_entries = fs::read_dir(cache_dir)
+        .map(|entries| entries.count())
+        .unwrap_or_default();
+    assert_eq!(cache_entries, 0);
     drop(handle);
 }
 
