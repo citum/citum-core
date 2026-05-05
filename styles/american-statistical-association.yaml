@@ -101,111 +101,24 @@ bibliography:
     separator: ", "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: doi
-      prefix: https://doi.org/
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: issue
-    - number: pages
+      modify:
+        - match:
+            variable: doi
+          prefix: https://doi.org/
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: doi
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: pages
+      remove:
+        - match:
+            number: issue
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: doi
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: issue
-    - number: pages
-      prefix: "pp. "
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: doi
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - number: issue
-    - number: pages
-      prefix: "pp. "
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
   template:
   - contributor: author
     form: long

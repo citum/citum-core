@@ -42,81 +42,19 @@ bibliography:
     separator: ". "
   type-variants:
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: family-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - variable: publisher
-    - number: pages
-      prefix: ": "
-    - date: issued
-      form: year
-      prefix: ", "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+      remove:
+        - match:
+            number: issue
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: family-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ": "
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - date: issued
-      form: year
-      prefix: ", "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: family-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ": "
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - date: issued
-      form: year
-      prefix: ", "
-    - variable: doi
-    - variable: publisher-place
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
   template:
   - contributor: author
     form: long

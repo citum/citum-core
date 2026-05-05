@@ -21,15 +21,311 @@ use citum_migrate::{
 };
 use citum_schema::{
     BibliographySpec, CitationCollapse, CitationSpec, Style, StyleInfo,
-    template::{TemplateComponent, TypeSelector, WrapPunctuation},
+    template::{
+        Rendering, TemplateAddOperation, TemplateComponent, TemplateComponentSelector,
+        TemplateModifyOperation, TemplateRemoveOperation, TemplateVariant, TemplateVariantDiff,
+        TypeSelector, WrapPunctuation,
+    },
 };
 use csl_legacy::parser::parse_style;
 use roxmltree::Document;
+use std::collections::BTreeMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
 /// Shorthand for the per-type template map used throughout the migration pipeline.
 type TypeTemplateMap = indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>;
+
+type TypeVariantMap = indexmap::IndexMap<TypeSelector, TemplateVariant>;
+
+fn build_type_variants(
+    default_template: &[TemplateComponent],
+    type_templates: TypeTemplateMap,
+) -> TypeVariantMap {
+    let mut variants = TypeVariantMap::new();
+    let mut candidate_parents: Vec<(TypeSelector, Vec<TemplateComponent>)> = Vec::new();
+
+    for (selector, template) in type_templates {
+        let variant = template_variant_from_full_template(
+            default_template,
+            &candidate_parents,
+            &selector,
+            template.clone(),
+        );
+        variants.insert(selector.clone(), variant);
+        candidate_parents.push((selector, template));
+    }
+
+    variants
+}
+
+fn template_variant_from_full_template(
+    default_template: &[TemplateComponent],
+    candidate_parents: &[(TypeSelector, Vec<TemplateComponent>)],
+    selector: &TypeSelector,
+    target_template: Vec<TemplateComponent>,
+) -> TemplateVariant {
+    let Some(diff) =
+        derive_best_template_variant_diff(default_template, candidate_parents, &target_template)
+    else {
+        return TemplateVariant::Full(target_template);
+    };
+
+    if diff_resolves_to_template(
+        default_template,
+        candidate_parents,
+        selector,
+        &diff,
+        &target_template,
+    ) {
+        TemplateVariant::Diff(diff)
+    } else {
+        TemplateVariant::Full(target_template)
+    }
+}
+
+fn derive_best_template_variant_diff(
+    default_template: &[TemplateComponent],
+    candidate_parents: &[(TypeSelector, Vec<TemplateComponent>)],
+    target_template: &[TemplateComponent],
+) -> Option<TemplateVariantDiff> {
+    let mut best_diff = derive_template_variant_diff(default_template, target_template);
+    let mut best_weight = best_diff
+        .as_ref()
+        .map(diff_operation_weight)
+        .unwrap_or(usize::MAX);
+
+    for (parent_selector, parent_template) in candidate_parents {
+        let Some(mut parent_diff) = derive_template_variant_diff(parent_template, target_template)
+        else {
+            continue;
+        };
+        let weight = diff_operation_weight(&parent_diff);
+        if weight >= best_weight {
+            continue;
+        }
+        parent_diff.extends = Some(parent_selector.clone());
+        best_diff = Some(parent_diff);
+        best_weight = weight;
+    }
+
+    best_diff
+}
+
+fn diff_operation_weight(diff: &TemplateVariantDiff) -> usize {
+    diff.modify.len() + diff.remove.len() + diff.add.len()
+}
+
+fn diff_resolves_to_template(
+    default_template: &[TemplateComponent],
+    candidate_parents: &[(TypeSelector, Vec<TemplateComponent>)],
+    selector: &TypeSelector,
+    diff: &TemplateVariantDiff,
+    expected_template: &[TemplateComponent],
+) -> bool {
+    let mut variants = TypeVariantMap::new();
+    for (parent_selector, parent_template) in candidate_parents {
+        variants.insert(
+            parent_selector.clone(),
+            TemplateVariant::Full(parent_template.clone()),
+        );
+    }
+    variants.insert(selector.clone(), TemplateVariant::Diff(diff.clone()));
+    let style = Style {
+        bibliography: Some(BibliographySpec {
+            template: Some(default_template.to_vec()),
+            type_variants: Some(variants),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    style
+        .try_into_resolved()
+        .ok()
+        .and_then(|style| style.bibliography)
+        .and_then(|bibliography| bibliography.type_variants)
+        .and_then(|variants| variants.get(selector).cloned())
+        .and_then(TemplateVariant::into_template)
+        .is_some_and(|resolved| resolved == expected_template)
+}
+
+fn derive_template_variant_diff(
+    default_template: &[TemplateComponent],
+    target_template: &[TemplateComponent],
+) -> Option<TemplateVariantDiff> {
+    if default_template.is_empty() {
+        return None;
+    }
+
+    let default_keys = component_keys(default_template)?;
+    let target_keys = component_keys(target_template)?;
+    let common_pairs = lcs_pairs(&default_keys, &target_keys);
+    let mut diff = TemplateVariantDiff::default();
+
+    for (index, component) in default_template.iter().enumerate() {
+        if !common_pairs
+            .iter()
+            .any(|(base_index, _)| *base_index == index)
+        {
+            diff.remove.push(TemplateRemoveOperation {
+                match_selector: component_selector(component)?,
+            });
+        }
+    }
+
+    for (base_index, target_index) in &common_pairs {
+        let base_component = default_template.get(*base_index)?;
+        let target_component = target_template.get(*target_index)?;
+        if base_component != target_component {
+            if !is_rendering_only_change(base_component, target_component) {
+                return None;
+            }
+            diff.modify.push(TemplateModifyOperation {
+                match_selector: component_selector(base_component)?,
+                rendering: target_component.rendering().clone(),
+            });
+        }
+    }
+
+    let mut last_anchor: Option<TemplateComponentSelector> = None;
+    for (target_index, component) in target_template.iter().enumerate() {
+        if let Some((base_index, _)) = common_pairs
+            .iter()
+            .find(|(_, common_target_index)| *common_target_index == target_index)
+        {
+            last_anchor = default_template
+                .get(*base_index)
+                .and_then(component_selector);
+            continue;
+        }
+
+        let next_anchor = common_pairs
+            .iter()
+            .find(|(_, common_target_index)| *common_target_index > target_index)
+            .and_then(|(base_index, _)| default_template.get(*base_index))
+            .and_then(component_selector);
+
+        let component_selector = component_selector(component)?;
+        let add = if let Some(before) = next_anchor {
+            TemplateAddOperation {
+                before: Some(before),
+                after: None,
+                component: component.clone(),
+            }
+        } else if let Some(after) = last_anchor.clone() {
+            TemplateAddOperation {
+                before: None,
+                after: Some(after),
+                component: component.clone(),
+            }
+        } else {
+            return None;
+        };
+        diff.add.push(add);
+        last_anchor = Some(component_selector);
+    }
+
+    Some(diff)
+}
+
+fn component_keys(template: &[TemplateComponent]) -> Option<Vec<String>> {
+    template
+        .iter()
+        .map(|component| serde_json::to_string(&component_selector(component)?.fields).ok())
+        .collect()
+}
+
+fn component_selector(component: &TemplateComponent) -> Option<TemplateComponentSelector> {
+    let serde_json::Value::Object(fields) = serde_json::to_value(component).ok()? else {
+        return None;
+    };
+    for key in [
+        "contributor",
+        "date",
+        "title",
+        "number",
+        "variable",
+        "term",
+        "group",
+    ] {
+        if let Some(value) = fields.get(key) {
+            let mut selector = BTreeMap::new();
+            selector.insert(key.to_string(), value.clone());
+            return Some(TemplateComponentSelector { fields: selector });
+        }
+    }
+    None
+}
+
+fn is_rendering_only_change(base: &TemplateComponent, target: &TemplateComponent) -> bool {
+    let mut normalized_base = base.clone();
+    let mut normalized_target = target.clone();
+    *normalized_base.rendering_mut() = Rendering::default();
+    *normalized_target.rendering_mut() = Rendering::default();
+    normalized_base == normalized_target
+}
+
+fn lcs_pairs(left: &[String], right: &[String]) -> Vec<(usize, usize)> {
+    let mut lengths = vec![vec![0usize; right.len() + 1]; left.len() + 1];
+
+    for i in (0..left.len()).rev() {
+        for j in (0..right.len()).rev() {
+            let diagonal = lengths
+                .get(i + 1)
+                .and_then(|row| row.get(j + 1))
+                .copied()
+                .unwrap_or(0);
+            let down = lengths
+                .get(i + 1)
+                .and_then(|row| row.get(j))
+                .copied()
+                .unwrap_or(0);
+            let right_value = lengths
+                .get(i)
+                .and_then(|row| row.get(j + 1))
+                .copied()
+                .unwrap_or(0);
+            let value = if left.get(i) == right.get(j) {
+                diagonal + 1
+            } else {
+                down.max(right_value)
+            };
+            if let Some(cell) = lengths.get_mut(i).and_then(|row| row.get_mut(j)) {
+                *cell = value;
+            }
+        }
+    }
+
+    let mut pairs = Vec::new();
+    let mut i = 0;
+    let mut j = 0;
+    while i < left.len() && j < right.len() {
+        if left.get(i) == right.get(j) {
+            pairs.push((i, j));
+            i += 1;
+            j += 1;
+            continue;
+        }
+
+        let down = lengths
+            .get(i + 1)
+            .and_then(|row| row.get(j))
+            .copied()
+            .unwrap_or(0);
+        let right_value = lengths
+            .get(i)
+            .and_then(|row| row.get(j + 1))
+            .copied()
+            .unwrap_or(0);
+        if down >= right_value {
+            i += 1;
+        } else {
+            j += 1;
+        }
+    }
+    pairs
+}
 
 struct CliArgs {
     path: String,
@@ -248,6 +544,10 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOut
     if let Some(type_templates) = c.type_templates.as_mut() {
         type_templates.retain(|_, template| template != &c.new_bib);
     }
+    let type_variants = c
+        .type_templates
+        .take()
+        .map(|type_templates| build_type_variants(&c.new_bib, type_templates));
 
     // [PRUNING] Prune redundant citation modes (e.g. ibid/subsequent if they match base).
     let subsequent = c
@@ -297,12 +597,7 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOut
             options: bibliography_scope_options,
             extends: None,
             template: Some(c.new_bib),
-            type_variants: c.type_templates.map(|type_templates| {
-                type_templates
-                    .into_iter()
-                    .map(|(selector, template)| (selector, template.into()))
-                    .collect()
-            }),
+            type_variants,
             sort: bibliography_sort,
             ..Default::default()
         }),
@@ -993,6 +1288,178 @@ mod tests {
                 })
                 .collect(),
         }
+    }
+
+    #[test]
+    fn template_v3_diff_generator_emits_rendering_modify() {
+        let default_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            }),
+        ];
+        let target_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                rendering: Rendering {
+                    suffix: Some(".".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ];
+
+        let variant = template_variant_from_full_template(
+            &default_template,
+            &[],
+            &TypeSelector::Single("book".to_string()),
+            target_template,
+        );
+
+        let TemplateVariant::Diff(diff) = variant else {
+            panic!("rendering-only template changes should emit Template V3 diffs");
+        };
+        assert_eq!(diff.modify.len(), 1);
+        assert!(diff.remove.is_empty());
+        assert!(diff.add.is_empty());
+    }
+
+    #[test]
+    fn template_v3_diff_generator_emits_structural_remove_and_add() {
+        let default_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            }),
+            TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Publisher,
+                ..Default::default()
+            }),
+        ];
+        let target_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            TemplateComponent::Date(TemplateDate {
+                date: DateVariable::Issued,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            }),
+        ];
+
+        let variant = template_variant_from_full_template(
+            &default_template,
+            &[],
+            &TypeSelector::Single("book".to_string()),
+            target_template,
+        );
+
+        let TemplateVariant::Diff(diff) = variant else {
+            panic!("safe structural template changes should emit Template V3 diffs");
+        };
+        assert!(diff.modify.is_empty());
+        assert_eq!(diff.remove.len(), 1);
+        assert_eq!(diff.add.len(), 1);
+    }
+
+    #[test]
+    fn template_v3_diff_generator_falls_back_for_non_rendering_changes() {
+        let default_template = vec![TemplateComponent::Title(TemplateTitle {
+            title: TitleType::Primary,
+            ..Default::default()
+        })];
+        let target_template = vec![TemplateComponent::Title(TemplateTitle {
+            title: TitleType::Primary,
+            form: Some(citum_schema::template::TitleForm::Short),
+            ..Default::default()
+        })];
+
+        let variant = template_variant_from_full_template(
+            &default_template,
+            &[],
+            &TypeSelector::Single("book".to_string()),
+            target_template,
+        );
+
+        assert!(matches!(variant, TemplateVariant::Full(_)));
+    }
+
+    #[test]
+    fn template_v3_diff_generator_can_extend_prior_variant() {
+        let default_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            }),
+            TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Publisher,
+                ..Default::default()
+            }),
+        ];
+        let book_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                rendering: Rendering {
+                    suffix: Some(".".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ];
+        let chapter_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                rendering: Rendering {
+                    suffix: Some("!".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ];
+        let parent_selector = TypeSelector::Single("book".to_string());
+        let parents = vec![(parent_selector.clone(), book_template)];
+
+        let variant = template_variant_from_full_template(
+            &default_template,
+            &parents,
+            &TypeSelector::Single("chapter".to_string()),
+            chapter_template,
+        );
+
+        let TemplateVariant::Diff(diff) = variant else {
+            panic!("variant should extend prior variant when it is more concise");
+        };
+        assert_eq!(diff.extends, Some(parent_selector));
+        assert_eq!(diff.modify.len(), 1);
+        assert!(diff.remove.is_empty());
     }
 
     #[test]

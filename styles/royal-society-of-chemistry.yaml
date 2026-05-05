@@ -70,65 +70,34 @@ bibliography:
     - variable: doi
       prefix: "DOI:"
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher
-    - date: issued
-      form: year
-    - number: volume
-    - number: pages
-    - variable: publisher-place
+      remove:
+        - match:
+            title: primary
     article-newspaper:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher
-    - date: issued
-      form: year
-    - number: volume
-    - number: pages
-    - variable: publisher-place
+      remove:
+        - match:
+            title: primary
     broadcast:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher
-    - date: issued
-      form: year
-    - number: volume
-    - number: pages
-    - variable: publisher-place
+      remove:
+        - match:
+            title: primary
     chapter:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - date: issued
-      form: year
-    - number: volume
-    - number: pages
-      prefix: "pp. "
-    - contributor: editor
-      form: short
-      name-order: given-first
-      prefix: ", editors. "
-    - variable: publisher-place
+      extends: article-magazine
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
+      remove:
+        - match:
+            variable: publisher
+      add:
+        - component:
+            contributor: editor
+            form: short
+            name-order: given-first
+            prefix: ', editors. '
+          before:
+            variable: publisher-place
     dataset:
     - delimiter: none
       group:
@@ -140,60 +109,23 @@ bibliography:
     - date: issued
       form: year
     entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - date: issued
-      form: year
-    - number: volume
-    - number: pages
-    - variable: publisher-place
+      extends: article-magazine
+      remove:
+        - match:
+            variable: publisher
     interview:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher
-    - date: issued
-      form: year
-    - number: volume
-    - number: pages
-    - variable: publisher-place
+      remove:
+        - match:
+            title: primary
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - date: issued
-      form: year
-    - number: volume
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher-place
+      extends: chapter
+      remove:
+        - match:
+            contributor: editor
     personal_communication:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher
-    - date: issued
-      form: year
-    - number: volume
-    - number: pages
-    - variable: publisher-place
+      remove:
+        - match:
+            title: primary
     standard:
     - delimiter: none
       group:

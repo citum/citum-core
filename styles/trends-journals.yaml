@@ -57,61 +57,15 @@ bibliography:
     separator: ", "
   type-variants:
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 3
-        use-first: 1
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: family-first
-      shorten:
-        min: 4
-        use-first: 1
-    - number: volume
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 3
-        use-first: 1
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: family-first
-      shorten:
-        min: 4
-        use-first: 1
-    - number: volume
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     patent:
     - number: citation-number
       suffix: .

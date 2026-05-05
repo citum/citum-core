@@ -65,21 +65,9 @@ citation:
       delimiter-precedes-last: never
   type-variants:
     patent:
-    - contributor: author
-      form: long
-      name-order: given-first
-      and: text
-      shorten:
-        min: 8
-        use-first: 1
-    - title: primary
-      wrap:
-        punctuation: quotes
-      prefix: ", "
-    - number: volume
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: url
+      remove:
+        - match:
+            date: issued
   template:
   - contributor: author
     form: long
@@ -142,39 +130,13 @@ bibliography:
     separator: " "
   type-variants:
     dataset:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 1
-    - title: primary
-      wrap:
-        punctuation: quotes
-      prefix: ", "
-    - variable: publisher
-      prefix: " ("
-    - number: volume
-    - variable: url
-    - title: parent-monograph
-    - title: parent-serial
+      remove:
+        - match:
+            date: issued
     patent:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 1
-    - title: primary
-      wrap:
-        punctuation: quotes
-      prefix: ", "
-    - variable: publisher
-      prefix: " ("
-    - number: volume
-    - variable: url
-    - title: parent-monograph
-    - title: parent-serial
+      remove:
+        - match:
+            date: issued
     interview:
     - variable: note
     - contributor: author

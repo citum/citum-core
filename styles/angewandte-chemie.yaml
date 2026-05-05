@@ -67,18 +67,14 @@ bibliography:
     - number: pages
       prefix: "pp. "
     paper-conference:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-      prefix: " in "
-    - date: issued
-      form: year
-    - number: pages
-      prefix: "pp. "
+      extends: chapter
+      remove:
+        - match:
+            contributor: editor
+        - match:
+            variable: publisher
+        - match:
+            variable: publisher-place
     article-journal:
     - number: citation-number
       wrap:
@@ -95,46 +91,30 @@ bibliography:
     - variable: doi
       prefix: "DOI "
     article-newspaper:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-serial
-    - date: issued
-      form: year
-      prefix: " "
+      extends: article-journal
+      remove:
+        - match:
+            number: volume
+        - match:
+            number: pages
+        - match:
+            variable: doi
     article-magazine:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-serial
-    - date: issued
-      form: year
-      prefix: " "
-    - number: volume
-    - number: pages
+      extends: article-journal
+      remove:
+        - match:
+            variable: doi
     entry-encyclopedia:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: parent-monograph
-      prefix: " in "
-    - number: volume
-      prefix: "Vol. "
-    - variable: publisher
-    - variable: publisher-place
-    - date: issued
-      form: year
-    - number: pages
-      prefix: "pp. "
+      extends: chapter
+      remove:
+        - match:
+            contributor: editor
+      add:
+        - component:
+            number: volume
+            prefix: 'Vol. '
+          before:
+            variable: publisher
     thesis:
     - number: citation-number
       wrap:
@@ -161,25 +141,25 @@ bibliography:
     - date: issued
       form: year
     personal_communication:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: primary
-    - date: issued
-      form: year
+      extends: thesis
+      remove:
+        - match:
+            variable: genre
+      add:
+        - component:
+            title: primary
+          before:
+            date: issued
     personal-communication:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-    - contributor: author
-      form: long
-      name-order: given-first
-    - title: primary
-    - date: issued
-      form: year
+      extends: thesis
+      remove:
+        - match:
+            variable: genre
+      add:
+        - component:
+            title: primary
+          before:
+            date: issued
     webpage:
     - number: citation-number
       wrap:

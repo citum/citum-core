@@ -45,75 +45,15 @@ bibliography:
     separator: ", "
   type-variants:
     article-journal:
-    - delimiter: ""
-      group:
-      - number: citation-number
-        wrap:
-          punctuation: brackets
-      - contributor: author
-        form: long
-        and: text
-        name-order: given-first
-        shorten:
-          min: 8
-          use-first: 1
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - number: edition
-    - number: volume
-      prefix: ", vol. "
-    - number: issue
-      prefix: ", no. "
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: pages
-      prefix: "pp. "
-    - date: issued
-      form: year
-    - variable: doi
-      prefix: ", doi: "
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     article-magazine:
-    - delimiter: ""
-      group:
-      - number: citation-number
-        wrap:
-          punctuation: brackets
-      - contributor: author
-        form: long
-        and: text
-        name-order: given-first
-        shorten:
-          min: 8
-          use-first: 1
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - number: edition
-    - number: volume
-      prefix: ", vol. "
-    - number: issue
-      prefix: ", no. "
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: pages
-      prefix: "pp. "
-    - date: issued
-      form: year
-    - variable: doi
-      prefix: ", doi: "
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     book:
     - delimiter: ""
       group:
@@ -180,40 +120,10 @@ bibliography:
       prefix: ", doi: "
     - variable: url
     chapter:
-    - delimiter: ""
-      group:
-      - number: citation-number
-        wrap:
-          punctuation: brackets
-      - contributor: author
-        form: long
-        and: text
-        name-order: given-first
-        shorten:
-          min: 8
-          use-first: 1
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - number: edition
-    - number: volume
-      prefix: ", vol. "
-    - number: issue
-      prefix: ", no. "
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: pages
-      prefix: "pp. "
-    - date: issued
-      form: year
-    - variable: doi
-      prefix: ", doi: "
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     dataset:
     - delimiter: ""
       group:
@@ -247,38 +157,11 @@ bibliography:
       prefix: ", doi: "
     - variable: url
     entry-encyclopedia:
-    - delimiter: ""
-      group:
-      - number: citation-number
-        wrap:
-          punctuation: brackets
-      - contributor: author
-        form: long
-        and: text
-        name-order: given-first
-        shorten:
-          min: 8
-          use-first: 1
-    - title: primary
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - number: edition
-    - number: volume
-      prefix: ", vol. "
-    - number: issue
-      prefix: ", no. "
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: pages
-      prefix: "pp. "
-    - date: issued
-      form: year
-    - variable: doi
-      prefix: ", doi: "
-    - variable: url
+      extends: broadcast
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     motion-picture:
     - delimiter: ""
       group:
@@ -312,40 +195,10 @@ bibliography:
       prefix: ", doi: "
     - variable: url
     paper-conference:
-    - delimiter: ""
-      group:
-      - number: citation-number
-        wrap:
-          punctuation: brackets
-      - contributor: author
-        form: long
-        and: text
-        name-order: given-first
-        shorten:
-          min: 8
-          use-first: 1
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - number: edition
-    - number: volume
-      prefix: ", vol. "
-    - number: issue
-      prefix: ", no. "
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - number: pages
-      prefix: "pp. "
-    - date: issued
-      form: year
-    - variable: doi
-      prefix: ", doi: "
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     patent:
     - number: citation-number
       wrap:
@@ -432,39 +285,11 @@ bibliography:
       prefix: ", doi: "
     - variable: url
     thesis:
-    - delimiter: ""
-      group:
-      - number: citation-number
-        wrap:
-          punctuation: brackets
-      - contributor: author
-        form: long
-        and: text
-        name-order: given-first
-        shorten:
-          min: 8
-          use-first: 1
-    - title: primary
-      emph: true
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - number: edition
-    - number: volume
-      prefix: ", vol. "
-    - number: issue
-      prefix: ", no. "
-    - variable: publisher-place
-      prefix: ". "
-    - variable: publisher
-      prefix: ": "
-    - number: pages
-    - date: issued
-      form: year
-    - variable: doi
-      prefix: ", doi: "
-    - variable: url
+      extends: book
+      modify:
+        - match:
+            title: primary
+          emph: true
   template:
   - delimiter: ""
     group:

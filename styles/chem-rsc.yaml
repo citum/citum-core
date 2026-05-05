@@ -56,193 +56,55 @@ bibliography:
       collapse-subentries: true
   type-variants:
     article-journal:
-    - number: citation-number
-      wrap:
-        punctuation: parentheses
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: given-first
-      and: text
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      prefix: ", "
-    - title: parent-serial
-      prefix: ", "
-    - contributor: editor
-      form: long
-      name-order: given-first
-      and: text
-      prefix: ", ed. "
-    - variable: genre
-      prefix: ", "
-    - date: issued
-      form: year
-      prefix: ", "
-    - number: volume
-      prefix: ", "
-    - number: pages
+      remove:
+        - match:
+            variable: publisher
+        - match:
+            variable: doi
+        - match:
+            variable: publisher-place
     article-magazine:
-    - number: citation-number
-      wrap:
-        punctuation: parentheses
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: given-first
-      and: text
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      prefix: ", "
-    - title: parent-serial
-      prefix: ", "
-    - contributor: editor
-      form: long
-      name-order: given-first
-      and: text
-      prefix: ", ed. "
-    - variable: genre
-      prefix: ", "
-    - date: issued
-      form: year
-      prefix: ", "
-    - number: volume
-      prefix: ", "
-    - number: pages
+      remove:
+        - match:
+            variable: publisher
+        - match:
+            variable: doi
+        - match:
+            variable: publisher-place
     article-newspaper:
-    - number: citation-number
-      wrap:
-        punctuation: parentheses
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: given-first
-      and: text
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      prefix: ", "
-    - title: parent-serial
-      prefix: ", "
-    - contributor: editor
-      form: long
-      name-order: given-first
-      and: text
-      prefix: ", ed. "
-    - variable: genre
-      prefix: ", "
-    - date: issued
-      form: year
-      prefix: ", "
-    - number: volume
-      prefix: ", "
-    - number: pages
+      remove:
+        - match:
+            variable: publisher
+        - match:
+            variable: doi
+        - match:
+            variable: publisher-place
     book:
-    - number: citation-number
-      wrap:
-        punctuation: parentheses
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: given-first
-      and: text
-    - title: primary
-      wrap:
-        punctuation: quotes
-      quote: false
-    - title: parent-monograph
-      prefix: ", "
-    - title: parent-serial
-      prefix: ", "
-    - contributor: editor
-      form: long
-      name-order: given-first
-      and: text
-      prefix: ", ed. "
-    - variable: genre
-      prefix: ", "
-    - date: issued
-      form: year
-      prefix: ", "
-    - variable: publisher
-      prefix: ", "
-    - number: volume
-      prefix: ", "
-    - number: pages
-    - variable: doi
-      prefix: ", DOI: "
-    - variable: publisher-place
-      prefix: ", "
+      modify:
+        - match:
+            title: primary
+          quote: false
+          wrap:
+            punctuation: quotes
     chapter:
-    - number: citation-number
-      wrap:
-        punctuation: parentheses
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: given-first
-      and: text
-    - title: parent-monograph
-      prefix: "in "
-    - title: parent-serial
-      prefix: ", "
-    - contributor: editor
-      form: long
-      name-order: given-first
-      and: text
-      prefix: ", ed. "
-    - variable: genre
-      prefix: ", "
-    - date: issued
-      form: year
-      prefix: ", "
-    - variable: publisher
-      prefix: ", "
-    - number: volume
-      prefix: ", "
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-      prefix: ", DOI: "
-    - variable: publisher-place
-      prefix: ", "
+      modify:
+        - match:
+            title: parent-monograph
+          prefix: 'in '
+        - match:
+            number: pages
+          prefix: 'pp. '
+      remove:
+        - match:
+            title: primary
     entry-encyclopedia:
-    - number: citation-number
-      wrap:
-        punctuation: parentheses
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: given-first
-      and: text
-    - title: parent-monograph
-      prefix: "in "
-    - title: parent-serial
-      prefix: ", "
-    - contributor: editor
-      form: long
-      name-order: given-first
-      and: text
-      prefix: ", ed. "
-    - variable: genre
-      prefix: ", "
-    - date: issued
-      form: year
-      prefix: ", "
-    - variable: publisher
-      prefix: ", "
-    - number: volume
-      prefix: ", "
-    - number: pages
-    - variable: doi
-      prefix: ", DOI: "
-    - variable: publisher-place
-      prefix: ", "
+      modify:
+        - match:
+            title: parent-monograph
+          prefix: 'in '
+      remove:
+        - match:
+            title: primary
     legal_case:
     - number: citation-number
       wrap:
@@ -259,108 +121,23 @@ bibliography:
     - date: issued
       form: year
     motion_picture:
-    - number: citation-number
-      wrap:
-        punctuation: parentheses
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: given-first
-      and: text
-    - title: primary
-      wrap:
-        punctuation: quotes
-      quote: false
-    - title: parent-monograph
-      prefix: ", "
-    - title: parent-serial
-      prefix: ", "
-    - contributor: editor
-      form: long
-      name-order: given-first
-      and: text
-      prefix: ", ed. "
-    - variable: genre
-      prefix: ", "
-    - date: issued
-      form: year
-      prefix: ", "
-    - variable: publisher
-      prefix: ", "
-    - number: volume
-      prefix: ", "
-    - number: pages
-    - variable: doi
-      prefix: ", DOI: "
-    - variable: publisher-place
-      prefix: ", "
+      modify:
+        - match:
+            title: primary
+          quote: false
+          wrap:
+            punctuation: quotes
     paper-conference:
-    - number: citation-number
-      wrap:
-        punctuation: parentheses
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: given-first
-      and: text
-    - title: parent-monograph
-      prefix: ", "
-    - title: parent-serial
-      prefix: ", "
-    - contributor: editor
-      form: long
-      name-order: given-first
-      and: text
-      prefix: ", ed. "
-    - variable: genre
-      prefix: ", "
-    - date: issued
-      form: year
-      prefix: ", "
-    - variable: publisher
-      prefix: ", "
-    - number: volume
-      prefix: ", "
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-      prefix: ", DOI: "
-    - variable: publisher-place
-      prefix: ", "
+      extends: chapter
+      modify:
+        - match:
+            title: parent-monograph
+          prefix: ', '
     report:
-    - number: citation-number
-      wrap:
-        punctuation: parentheses
-      suffix: " "
-    - contributor: author
-      form: long
-      name-order: given-first
-      and: text
-    - title: primary
-      wrap:
-        punctuation: quotes
-      quote: false
-    - title: parent-monograph
-      prefix: ", "
-    - title: parent-serial
-      prefix: ", "
-    - contributor: editor
-      form: long
-      name-order: given-first
-      and: text
-      prefix: ", ed. "
-    - variable: genre
-      prefix: ", "
-    - date: issued
-      form: year
-      prefix: ", "
-    - number: volume
-      prefix: ", "
-    - number: pages
-    - variable: doi
-      prefix: ", DOI: "
-    - variable: publisher-place
-      prefix: ", "
+      extends: book
+      remove:
+        - match:
+            variable: publisher
     thesis:
     - number: citation-number
       wrap:

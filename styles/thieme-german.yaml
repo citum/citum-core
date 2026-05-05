@@ -136,33 +136,25 @@ bibliography:
       suppress: false
     - title: parent-serial
     webpage:
-    - number: citation-number
-      quote: false
-      wrap:
-        punctuation: brackets
-      strip-periods: false
-    - contributor: author
-      form: long
-      sort-separator: ' '
-      shorten:
-        min: 4
-        use-first: 3
-        and-others: et-al
-        delimiter-precedes-last: always
-    - title: primary
-    - title: parent-serial
-      strip-periods: true
-    - date: issued
-      form: year
-      suffix: ;
-    - number: volume
-    - number: pages
-      prefix: ': '
-    - variable: url
-    - term: accessed
-      form: long
-    - date: accessed
-      form: full
+      extends: article-journal
+      remove:
+        - match:
+            variable: doi
+      add:
+        - component:
+            variable: url
+          after:
+            number: pages
+        - component:
+            term: accessed
+            form: long
+          after:
+            variable: url
+        - component:
+            date: accessed
+            form: full
+          after:
+            term: accessed
     patent:
     - contributor: author
       form: long

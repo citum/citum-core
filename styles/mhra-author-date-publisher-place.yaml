@@ -54,11 +54,9 @@ citation:
         use-first: 1
   type-variants:
     personal_communication:
-      - contributor: author
-        form: long
-        name-order: given-first
-      - variable: locator
-        prefix: ' '
+      remove:
+        - match:
+            date: issued
   template:
     - contributor: author
       form: long

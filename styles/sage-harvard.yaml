@@ -112,108 +112,54 @@ bibliography:
     separator: ". "
   type-variants:
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 3
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-    - variable: publisher
-    - number: pages
-      prefix: ", "
-    - variable: publisher-place
-    - variable: url
+      remove:
+        - match:
+            group:
+              - number: volume
+              - number: issue
+                wrap:
+                  punctuation: parentheses
+      add:
+        - component:
+            group:
+              - number: volume
+          before:
+            variable: publisher
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 3
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-        prefix: "on "
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher-place
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
+      remove:
+        - match:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+                shorten:
+                  min: 4
+                  use-first: 3
+              - title: parent-monograph
+                emph: true
+      add:
+        - component:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+                shorten:
+                  min: 4
+                  use-first: 3
+                prefix: 'on '
+              - title: parent-monograph
+                emph: true
+          before:
+            title: parent-serial
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 3
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      prefix: " "
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 3
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - variable: publisher
-    - number: pages
-      prefix: "pp. "
-    - variable: publisher-place
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     legal_case:
     - contributor: author
       form: long

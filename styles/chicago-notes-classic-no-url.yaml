@@ -70,11 +70,9 @@ citation:
         name-form: family-only
     type-variants:
       default:
-      - contributor: author
-        form: short
-      - title: primary
-        form: short
-        prefix: ", "
+        remove:
+          - match:
+              variable: locator
     template:
     - contributor: author
       form: short
@@ -85,50 +83,13 @@ citation:
       prefix: ", "
   type-variants:
     default:
-    - contributor: author
-      form: long
-      name-order: given-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      wrap:
-        punctuation: quotes
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: given-first
-    - variable: publisher-place
-      prefix: " ("
-    - variable: publisher
-      prefix: ": "
-    - number: volume
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - number: pages
-      prefix: ": "
-    - delimiter: none
-      group:
-      - date: issued
-        form: month-day
-        prefix: ", issued "
-      - date: issued
-        form: year
-        prefix: ", "
-    - delimiter: none
-      prefix: ", "
-      group:
-      - date: issued
-        form: month-day
-      - date: issued
-        form: year
-        prefix: ", "
+      remove:
+        - match:
+            number: number
+        - match:
+            variable: medium
+        - match:
+            contributor: interviewer
   template:
   - contributor: author
     form: long

@@ -103,164 +103,67 @@ bibliography:
     separator: ", "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 1
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      wrap:
-        punctuation: quotes
-      prefix: " "
-    - prefix: ", in "
-      group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 1
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-      prefix: https://doi.org/
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
+        - match:
+            variable: doi
+          prefix: https://doi.org/
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 1
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      wrap:
-        punctuation: quotes
-      prefix: " "
-    - prefix: ", in "
-      group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 1
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - group:
-      - number: volume
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
+      remove:
+        - match:
+            group:
+              - number: volume
+              - number: issue
+                wrap:
+                  punctuation: parentheses
+      add:
+        - component:
+            group:
+              - number: volume
+          before:
+            number: pages
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 1
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      wrap:
-        punctuation: quotes
-      prefix: " "
-    - prefix: ", in "
-      group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 1
-        prefix: "in "
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
+      remove:
+        - match:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+                shorten:
+                  min: 4
+                  use-first: 1
+              - title: parent-monograph
+                emph: true
+      add:
+        - component:
+            prefix: ', in '
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+                shorten:
+                  min: 4
+                  use-first: 1
+                prefix: 'in '
+              - title: parent-monograph
+                emph: true
+          before:
+            title: parent-serial
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 5
-        use-first: 1
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - title: primary
-      wrap:
-        punctuation: quotes
-      prefix: " "
-    - prefix: ", in "
-      group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 1
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
   template:
   - contributor: author
     form: long

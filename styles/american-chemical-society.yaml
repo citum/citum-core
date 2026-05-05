@@ -48,136 +48,35 @@ bibliography:
     separator: ". "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: family-first
-    - variable: publisher
-      prefix: "; "
-    - variable: publisher-place
-      prefix: ": "
-    - date: issued
-      form: year
-      prefix: ", "
-    - prefix: ", "
-      group:
-      - number: volume
-      - number: issue
-    - number: pages
-      prefix: ", "
-    - variable: doi
-      prefix: https://doi.org/
-    - variable: url
+      modify:
+        - match:
+            variable: doi
+          prefix: https://doi.org/
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: family-first
-    - variable: publisher
-      prefix: "; "
-    - variable: publisher-place
-      prefix: ": "
-    - date: issued
-      form: year
-      prefix: ", "
-    - prefix: ", "
-      group:
-      - number: volume
-    - number: pages
-      prefix: ", "
-    - variable: doi
-    - variable: url
+      remove:
+        - match:
+            group:
+              - number: volume
+              - number: issue
+      add:
+        - component:
+            prefix: ', '
+            group:
+              - number: volume
+          before:
+            number: pages
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: family-first
-    - variable: publisher
-      prefix: "; "
-    - variable: publisher-place
-      prefix: ": "
-    - prefix: ", "
-      group:
-      - number: volume
-      - number: issue
-    - number: pages
-      prefix: ", "
-    - variable: doi
-    - variable: url
+      remove:
+        - match:
+            date: issued
     entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: family-first
-    - variable: publisher
-      prefix: "; "
-    - variable: publisher-place
-      prefix: ": "
-    - prefix: ", "
-      group:
-      - number: volume
-      - number: issue
-    - number: pages
-      prefix: ", "
-    - variable: doi
-    - variable: url
+      remove:
+        - match:
+            date: issued
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: " "
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: family-first
-    - variable: publisher
-      prefix: "; "
-    - variable: publisher-place
-      prefix: ": "
-    - prefix: ", "
-      group:
-      - number: volume
-      - number: issue
-    - number: pages
-      prefix: ", "
-    - variable: doi
-    - variable: url
+      remove:
+        - match:
+            date: issued
     patent:
     - number: citation-number
       wrap:

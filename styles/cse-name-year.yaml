@@ -52,13 +52,13 @@ citation:
       delimiter: ', '
   type-variants:
     article-newspaper:
-      - contributor: author
-        form: long
-        name-order: family-first
+      remove:
+        - match:
+            date: issued
     patent:
-      - contributor: author
-        form: long
-        name-order: family-first
+      remove:
+        - match:
+            date: issued
   template:
     - contributor: author
       form: long
@@ -87,87 +87,32 @@ bibliography:
     separator: '. '
   type-variants:
     article-journal:
-      - contributor: author
-        form: long
-        name-order: family-first
-        shorten:
-          min: 5
-          use-first: 1
-      - date: issued
-        form: year
-        prefix: ' '
-      - title: primary
-      - group:
-          - contributor: editor
-            form: verb
-            name-order: given-first
-          - title: parent-monograph
-      - title: parent-serial
-      - group:
-          - number: volume
-          - number: issue
-            wrap:
-              punctuation: parentheses
-      - variable: publisher
-      - number: pages
-        prefix: '; p '
-      - variable: doi
-        prefix: https://doi.org/
-      - variable: url
+      modify:
+        - match:
+            variable: doi
+          prefix: https://doi.org/
     chapter:
-      - contributor: author
-        form: long
-        name-order: family-first
-        shorten:
-          min: 5
-          use-first: 1
-      - date: issued
-        form: year
-        prefix: ' '
-      - title: primary
-      - group:
-          - contributor: editor
-            form: verb
-            name-order: given-first
-            prefix: 'on '
-          - title: parent-monograph
-      - title: parent-serial
-      - group:
-          - number: volume
-          - number: issue
-            wrap:
-              punctuation: parentheses
-      - variable: publisher
-      - number: pages
-        prefix: '; p '
-      - variable: doi
-      - variable: url
+      remove:
+        - match:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+              - title: parent-monograph
+      add:
+        - component:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+                prefix: 'on '
+              - title: parent-monograph
+          before:
+            title: parent-serial
     webpage:
-      - contributor: author
-        form: long
-        name-order: family-first
-        shorten:
-          min: 5
-          use-first: 1
-      - date: issued
-        form: year
-        prefix: ' '
-      - group:
-          - contributor: editor
-            form: verb
-            name-order: given-first
-          - title: parent-monograph
-      - title: parent-serial
-      - group:
-          - number: volume
-          - number: issue
-            wrap:
-              punctuation: parentheses
-      - variable: publisher
-      - number: pages
-        prefix: '; p '
-      - variable: doi
-      - variable: url
+      remove:
+        - match:
+            title: primary
   template:
     - contributor: author
       form: long

@@ -36,53 +36,30 @@ bibliography:
     separator: ". "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - date: issued
-      form: year
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher
-    - number: pages
-      prefix: ", "
-    - variable: doi
-      prefix: https://doi.org/
-    - variable: publisher-place
-      prefix: ", "
-    - number: volume
-    - variable: url
+      modify:
+        - match:
+            variable: doi
+          prefix: https://doi.org/
     book:
-    - contributor: author
-      form: long
-      name-order: given-first
-    - date: issued
-      form: year
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: "on "
-      - title: parent-monograph
-        emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher
-    - number: pages
-      prefix: ", "
-    - variable: doi
-    - variable: publisher-place
-      prefix: ", "
-    - number: volume
-    - variable: url
+      remove:
+        - match:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+              - title: parent-monograph
+                emph: true
+      add:
+        - component:
+            group:
+              - contributor: editor
+                form: verb
+                name-order: given-first
+                prefix: 'on '
+              - title: parent-monograph
+                emph: true
+          before:
+            title: parent-serial
     patent:
     - contributor: author
       form: long

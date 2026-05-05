@@ -72,32 +72,19 @@ bibliography:
     separator: ". "
   type-variants:
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-      prefix: " "
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher
-    - variable: publisher-place
-      prefix: ", "
-    - group:
-      - number: volume
-    - contributor: editor
-      form: verb
-      name-order: family-first
-    - number: pages
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
+      remove:
+        - match:
+            group:
+              - number: volume
+              - number: issue
+                wrap:
+                  punctuation: parentheses
+      add:
+        - component:
+            group:
+              - number: volume
+          before:
+            contributor: editor
     patent:
     - number: citation-number
     - contributor: author
@@ -114,50 +101,27 @@ bibliography:
       wrap:
         punctuation: parentheses
     thesis:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - variable: publisher
-    - variable: publisher-place
-      prefix: ", "
-    - group:
-      - number: volume
-      - number: issue
-        wrap:
-          punctuation: parentheses
-    - contributor: editor
-      form: verb
-      name-order: family-first
-    - number: pages
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
-      prefix: " "
+      remove:
+        - match:
+            title: primary
     entry-encyclopedia:
-    - number: citation-number
-    - contributor: author
-      form: long
-      sort-separator: " "
-      shorten:
-        min: 7
-        use-first: 3
-        and-others: et-al
-        delimiter-precedes-last: contextual
-    - title: primary
-    - variable: publisher
-    - variable: publisher-place
-    - date: issued
-      form: year
-      wrap:
-        punctuation: parentheses
+      extends: patent
+      remove:
+        - match:
+            number: number
+      add:
+        - component:
+            title: primary
+          before:
+            date: issued
+        - component:
+            variable: publisher
+          before:
+            date: issued
+        - component:
+            variable: publisher-place
+          before:
+            date: issued
   template:
   - contributor: author
     form: long

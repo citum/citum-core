@@ -78,37 +78,14 @@ bibliography:
     separator: ", "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: ": "
-    - title: parent-monograph
-    - title: parent-serial
-    - number: volume
-    - number: issue
-    - variable: doi
-      prefix: https://doi.org/
-    - variable: publisher-place
-    - variable: publisher
-    - number: pages
-    - date: issued
-      form: year
+      modify:
+        - match:
+            variable: doi
+          prefix: https://doi.org/
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-      prefix: ": "
-    - title: parent-monograph
-    - title: parent-serial
-    - number: volume
-    - variable: doi
-    - variable: publisher-place
-    - variable: publisher
-    - number: pages
-    - date: issued
-      form: year
+      remove:
+        - match:
+            number: issue
   template:
   - contributor: author
     form: long

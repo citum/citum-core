@@ -48,131 +48,35 @@ bibliography:
     separator: ". "
   type-variants:
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: given-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: family-first
-    - variable: publisher
-      prefix: "; "
-    - date: issued
-      form: year
-      prefix: ", "
-    - prefix: ", "
-      group:
-      - number: volume
-    - variable: publisher-place
-      prefix: ", "
-    - number: pages
+      remove:
+        - match:
+            group:
+              - number: volume
+              - number: issue
+      add:
+        - component:
+            prefix: ', '
+            group:
+              - number: volume
+          before:
+            variable: publisher-place
     chapter:
-    - contributor: author
-      form: long
-      name-order: given-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: family-first
-    - variable: publisher
-      prefix: "; "
-    - prefix: ", "
-      group:
-      - number: volume
-      - number: issue
-    - variable: publisher-place
-      prefix: ", "
-    - number: pages
+      remove:
+        - match:
+            date: issued
     entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: given-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: family-first
-    - variable: publisher
-      prefix: "; "
-    - prefix: ", "
-      group:
-      - number: volume
-      - number: issue
-    - variable: publisher-place
-      prefix: ", "
-    - number: pages
+      remove:
+        - match:
+            date: issued
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: given-first
-      shorten:
-        min: 8
-        use-first: 3
-    - title: primary
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: family-first
-    - variable: publisher
-      prefix: "; "
-    - prefix: ", "
-      group:
-      - number: volume
-      - number: issue
-    - variable: publisher-place
-      prefix: ", "
-    - number: pages
+      remove:
+        - match:
+            date: issued
     personal_communication:
-    - contributor: author
-      form: long
-      name-order: given-first
-      shorten:
-        min: 8
-        use-first: 3
-      prefix: "pp. "
-    - title: primary
-    - title: parent-monograph
-      emph: true
-    - title: parent-serial
-      emph: true
-    - contributor: editor
-      form: verb
-      name-order: family-first
-    - variable: publisher
-      prefix: "; "
-    - date: issued
-      form: year
-      prefix: ", "
-    - prefix: ", "
-      group:
-      - number: volume
-      - number: issue
-    - variable: publisher-place
-      prefix: ", "
-    - number: pages
+      modify:
+        - match:
+            contributor: author
+          prefix: 'pp. '
     webpage:
     - number: citation-number
       suffix: ". "
@@ -190,18 +94,18 @@ bibliography:
       prefix: "(accessed "
       suffix: )
     patent:
-    - number: citation-number
-      suffix: ". "
-    - contributor: author
-      form: long
-      shorten:
-        min: 6
-        use-first: 3
-        and-others: et-al
-        delimiter-precedes-last: always
-    - title: primary
-    - date: issued
-      form: full
+      extends: webpage
+      remove:
+        - match:
+            variable: url
+        - match:
+            date: accessed
+      add:
+        - component:
+            date: issued
+            form: full
+          after:
+            title: primary
   template:
   - contributor: author
     form: long

@@ -59,29 +59,26 @@ citation:
         name-form: family-only
     type-variants:
       article-journal:
-      - contributor: author
-        form: short
-      - title: primary
-        form: short
-        prefix: ", "
-      - variable: locator
-        prefix: ", "
+        add:
+          - component:
+              variable: locator
+              prefix: ', '
+            after:
+              title: primary
       book:
-      - contributor: author
-        form: short
-      - title: primary
-        form: short
-        prefix: ", "
-      - variable: locator
-        prefix: ", "
+        add:
+          - component:
+              variable: locator
+              prefix: ', '
+            after:
+              title: primary
       chapter:
-      - contributor: author
-        form: short
-      - title: primary
-        form: short
-        prefix: ", "
-      - variable: locator
-        prefix: ", "
+        add:
+          - component:
+              variable: locator
+              prefix: ', '
+            after:
+              title: primary
     template:
     - contributor: author
       form: short
@@ -403,55 +400,13 @@ citation:
     - variable: medium
       prefix: ", "
     paper-conference:
-    - contributor: author
-      form: long
-      shorten: *id001
-    - title: primary
-      prefix: ", "
-    - group:
-      - title: parent-serial
-        prefix: ", "
-      - variable: publisher-place
-        wrap:
-          punctuation: parentheses
-        prefix: " "
-      - number: volume
-        prefix: " "
-      - number: issue
-        prefix: ", no. "
-      - date: issued
-        form: year
-        wrap:
-          punctuation: parentheses
-        prefix: " "
-      - number: pages
-        prefix: ": "
-      delimiter: ""
-    - group:
-      - title: parent-monograph
-        prefix: ", in "
-      - title: parent-serial
-        prefix: ", in "
-      - number: volume
-        prefix: ", vol. "
-      - contributor: editor
-        form: long
-        prefix: ", ed. "
-      - group: *id002
-        delimiter: ", "
-        wrap:
-          punctuation: parentheses
-        prefix: " "
-      delimiter: ""
-    - group:
-      - title: parent-serial
-      - date: issued
-        form: year
-      - number: pages
-      delimiter: ", "
-      prefix: ", "
-    - variable: doi
-      prefix: ", https://doi.org/"
+      remove:
+        - match:
+            group:
+              - variable: genre
+              - variable: publisher
+              - date: issued
+                form: year
     patent:
     - contributor: author
       form: long
@@ -492,52 +447,24 @@ citation:
       form: year
       prefix: ", "
     report:
-    - contributor: author
-      form: long
-      shorten: *id001
-    - title: primary
-      prefix: ", "
-    - group:
-      - variable: genre
-      - variable: publisher
-      - date: issued
-        form: year
-      delimiter: ", "
-      wrap:
-        punctuation: parentheses
-      prefix: " "
+      extends: dataset
+      remove:
+        - match:
+            variable: publisher
+        - match:
+            variable: url
     thesis:
-    - contributor: author
-      form: long
-      shorten: *id001
-    - title: primary
-      prefix: ", "
-    - group:
-      - variable: genre
-      - variable: publisher
-      - date: issued
-        form: year
-      delimiter: ", "
-      wrap:
-        punctuation: parentheses
-      prefix: " "
+      extends: dataset
+      remove:
+        - match:
+            variable: publisher
+        - match:
+            variable: url
     webpage:
-    - contributor: author
-      form: long
-      shorten: *id001
-    - title: primary
-      prefix: ", "
-    - group:
-      - variable: genre
-      - variable: publisher
-      - date: issued
-        form: year
-      delimiter: ", "
-      wrap:
-        punctuation: parentheses
-      prefix: " "
-    - variable: url
-      prefix: ", "
+      extends: dataset
+      remove:
+        - match:
+            variable: publisher
   template:
   - contributor: author
     form: long

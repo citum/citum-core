@@ -87,180 +87,33 @@ bibliography:
     separator: ". "
   type-variants:
     article-journal:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 3
-        use-first: 1
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 1
-      - title: parent-monograph
-        emph: true
-    - contributor: translator
-      form: verb
-      name-order: given-first
-      prefix: ". "
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ", no. "
-    - variable: publisher
-    - date: issued
-      form: day-month-abbr-year
-      prefix: ", "
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-      prefix: https://doi.org/
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
+        - match:
+            variable: doi
+          prefix: https://doi.org/
     article-magazine:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 3
-        use-first: 1
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 1
-      - title: parent-monograph
-        emph: true
-    - contributor: translator
-      form: verb
-      name-order: given-first
-      prefix: ". "
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ", no. "
-    - variable: publisher
-    - date: issued
-      form: day-month-abbr-year
-      prefix: ", "
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-      prefix: ", "
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     chapter:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 3
-        use-first: 1
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 1
-      - title: parent-monograph
-        emph: true
-    - contributor: translator
-      form: verb
-      name-order: given-first
-      prefix: ". "
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ", no. "
-    - variable: publisher
-    - date: issued
-      form: day-month-abbr-year
-      prefix: ", "
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-      prefix: ", "
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     entry-encyclopedia:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 3
-        use-first: 1
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 1
-      - title: parent-monograph
-        emph: true
-    - contributor: translator
-      form: verb
-      name-order: given-first
-      prefix: ". "
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ", no. "
-    - variable: publisher
-    - date: issued
-      form: day-month-abbr-year
-      prefix: ", "
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-      prefix: ", "
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     paper-conference:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 3
-        use-first: 1
-    - title: primary
-    - group:
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        shorten:
-          min: 4
-          use-first: 1
-      - title: parent-monograph
-        emph: true
-    - contributor: translator
-      form: verb
-      name-order: given-first
-      prefix: ". "
-    - title: parent-serial
-      emph: true
-    - number: volume
-    - number: issue
-      prefix: ", no. "
-    - variable: publisher
-    - date: issued
-      form: day-month-abbr-year
-      prefix: ", "
-    - number: pages
-      prefix: "pp. "
-    - variable: doi
-      prefix: ", "
-    - variable: url
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
     manuscript:
     - contributor: author
       form: long
@@ -280,21 +133,10 @@ bibliography:
     - variable: archive-location
       prefix: ", "
     personal_communication:
-    - contributor: author
-      form: long
-      name-order: family-first
-      shorten:
-        min: 3
-        use-first: 1
-    - title: primary
-      quote: true
-    - variable: genre
-      prefix: ". "
-    - date: issued
-      form: day-month-abbr-year
-      prefix: ". "
-    - variable: archive-name
-      prefix: ", "
+      extends: manuscript
+      remove:
+        - match:
+            variable: archive-location
     interview:
     - contributor: author
       form: long
