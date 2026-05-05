@@ -4,7 +4,7 @@ use crate::args::{
     CheckArgs, CheckItem, Cli, Commands, ConvertCommands, ConvertRefsArgs, ConvertTypedArgs,
     DataType, InputFormat, LintLocaleArgs, LintStyleArgs, LocaleCommands, OutputFormat, RefsFormat,
     RegistryCommands, RenderCommands, RenderDocArgs, RenderMode, RenderRefsArgs, StoreCommands,
-    StyleCommands, StylesCommands,
+    StyleCatalogFormat, StyleCatalogSource, StyleCommands, StylesCommands,
 };
 #[cfg(feature = "schema")]
 use crate::args::{SchemaArgs, SchemaType};
@@ -25,10 +25,10 @@ use citum_engine::{
 };
 #[cfg(feature = "schema")]
 use citum_schema::InputBibliography;
-use citum_schema::Style;
 use citum_schema::lint::{lint_raw_locale, lint_style_against_locale};
 use citum_schema::locale::RawLocale;
 use citum_schema::options::Processing;
+use citum_schema::{RegistryEntry, Style};
 use citum_store::{StoreConfig, StoreResolver, platform_data_dir};
 use clap::{CommandFactory, Parser};
 use clap_complete::generate;
@@ -85,6 +85,13 @@ pub(crate) fn run() -> Result<(), Box<dyn Error>> {
             StoreCommands::Remove { name } => run_store_remove(&name),
         },
         Commands::Style { command } => match command {
+            StyleCommands::List { source, format } => run_style_list(source, format),
+            StyleCommands::Search {
+                query,
+                source,
+                format,
+            } => run_style_search(&query, source, format),
+            StyleCommands::Info { name, format } => run_style_info(&name, format),
             StyleCommands::Lint(args) => run_lint_style(args),
         },
         Commands::Locale { command } => match command {
@@ -261,6 +268,8 @@ fn run_registry_resolve(name: &str) -> Result<(), Box<dyn Error>> {
     if let Some(entry) = registry.resolve(name) {
         let source = if entry.builtin.is_some() {
             "builtin"
+        } else if entry.url.is_some() {
+            "url"
         } else if entry.path.is_some() {
             "path"
         } else {
@@ -272,6 +281,161 @@ fn run_registry_resolve(name: &str) -> Result<(), Box<dyn Error>> {
         eprintln!("Error: style not found: {name}");
         std::process::exit(1);
     }
+}
+
+#[derive(Serialize)]
+struct StyleCatalogRow {
+    source: String,
+    id: String,
+    aliases: Vec<String>,
+    title: Option<String>,
+    description: Option<String>,
+    fields: Vec<String>,
+    url: Option<String>,
+}
+
+fn style_entry_source(entry: &RegistryEntry) -> &'static str {
+    if entry.builtin.is_some() {
+        "embedded"
+    } else if entry.url.is_some() {
+        "core-http"
+    } else if entry.path.is_some() {
+        "path"
+    } else {
+        "unknown"
+    }
+}
+
+fn style_entry_matches_source(entry: &RegistryEntry, source: StyleCatalogSource) -> bool {
+    match source {
+        StyleCatalogSource::All => true,
+        StyleCatalogSource::Embedded => entry.builtin.is_some(),
+        StyleCatalogSource::CoreHttp => entry.url.is_some(),
+    }
+}
+
+fn style_catalog_row(entry: &RegistryEntry) -> StyleCatalogRow {
+    StyleCatalogRow {
+        source: style_entry_source(entry).to_string(),
+        id: entry.id.clone(),
+        aliases: entry.aliases.clone(),
+        title: entry.title.clone(),
+        description: entry.description.clone(),
+        fields: entry.fields.clone(),
+        url: entry.url.clone(),
+    }
+}
+
+fn print_style_catalog_rows(
+    rows: &[StyleCatalogRow],
+    format: StyleCatalogFormat,
+) -> Result<(), Box<dyn Error>> {
+    if format == StyleCatalogFormat::Json {
+        println!("{}", serde_json::to_string_pretty(rows)?);
+        return Ok(());
+    }
+
+    let mut table = Table::new();
+    table
+        .load_preset(UTF8_FULL)
+        .set_content_arrangement(ContentArrangement::Dynamic)
+        .set_header(vec![
+            Cell::new("Source").fg(Color::Cyan),
+            Cell::new("ID").fg(Color::Cyan),
+            Cell::new("Aliases").fg(Color::Cyan),
+            Cell::new("Title").fg(Color::Cyan),
+            Cell::new("Description").fg(Color::Cyan),
+            Cell::new("Fields").fg(Color::Cyan),
+            Cell::new("URL").fg(Color::Cyan),
+        ]);
+
+    for row in rows {
+        let aliases = if row.aliases.is_empty() {
+            "-".to_string()
+        } else {
+            row.aliases.join(", ")
+        };
+        let fields = if row.fields.is_empty() {
+            "-".to_string()
+        } else {
+            row.fields.join(", ")
+        };
+        table.add_row(vec![
+            Cell::new(&row.source),
+            Cell::new(&row.id),
+            Cell::new(aliases),
+            Cell::new(row.title.as_deref().unwrap_or("-")),
+            Cell::new(row.description.as_deref().unwrap_or("-")),
+            Cell::new(fields),
+            Cell::new(row.url.as_deref().unwrap_or("-")),
+        ]);
+    }
+
+    println!("{table}");
+    Ok(())
+}
+
+fn style_catalog_entries(source: StyleCatalogSource) -> Vec<StyleCatalogRow> {
+    citum_schema::embedded::default_registry()
+        .styles
+        .iter()
+        .filter(|entry| style_entry_matches_source(entry, source))
+        .map(style_catalog_row)
+        .collect()
+}
+
+fn run_style_list(
+    source: StyleCatalogSource,
+    format: StyleCatalogFormat,
+) -> Result<(), Box<dyn Error>> {
+    let rows = style_catalog_entries(source);
+    print_style_catalog_rows(&rows, format)
+}
+
+fn style_entry_matches_query(entry: &RegistryEntry, query: &str) -> bool {
+    let query = query.to_lowercase();
+    entry.id.to_lowercase().contains(&query)
+        || entry
+            .aliases
+            .iter()
+            .any(|alias| alias.to_lowercase().contains(&query))
+        || entry
+            .title
+            .as_ref()
+            .is_some_and(|title| title.to_lowercase().contains(&query))
+        || entry
+            .description
+            .as_ref()
+            .is_some_and(|description| description.to_lowercase().contains(&query))
+        || entry
+            .fields
+            .iter()
+            .any(|field| field.to_lowercase().contains(&query))
+}
+
+fn run_style_search(
+    query: &str,
+    source: StyleCatalogSource,
+    format: StyleCatalogFormat,
+) -> Result<(), Box<dyn Error>> {
+    let registry = citum_schema::embedded::default_registry();
+    let rows: Vec<_> = registry
+        .styles
+        .iter()
+        .filter(|entry| style_entry_matches_source(entry, source))
+        .filter(|entry| style_entry_matches_query(entry, query))
+        .map(style_catalog_row)
+        .collect();
+    print_style_catalog_rows(&rows, format)
+}
+
+fn run_style_info(name: &str, format: StyleCatalogFormat) -> Result<(), Box<dyn Error>> {
+    let registry = citum_schema::embedded::default_registry();
+    let entry = registry
+        .resolve(name)
+        .ok_or_else(|| format!("style not found: {name}"))?;
+    let row = style_catalog_row(entry);
+    print_style_catalog_rows(&[row], format)
 }
 
 /// List all installed user styles and locales.

@@ -404,8 +404,69 @@ pub(crate) enum StoreCommands {
 
 #[derive(Subcommand)]
 pub(crate) enum StyleCommands {
+    /// List styles in the unified catalog
+    List {
+        /// Catalog source to include
+        #[arg(long, value_enum, default_value_t = StyleCatalogSource::All)]
+        source: StyleCatalogSource,
+        /// Output format
+        #[arg(long, value_enum, default_value_t = StyleCatalogFormat::Table)]
+        format: StyleCatalogFormat,
+    },
+    /// Search styles in the unified catalog
+    Search {
+        /// Search query matched against IDs, aliases, titles, descriptions, and fields
+        query: String,
+        /// Catalog source to include
+        #[arg(long, value_enum, default_value_t = StyleCatalogSource::All)]
+        source: StyleCatalogSource,
+        /// Output format
+        #[arg(long, value_enum, default_value_t = StyleCatalogFormat::Table)]
+        format: StyleCatalogFormat,
+    },
+    /// Show details for a style in the unified catalog
+    Info {
+        /// Style ID or alias
+        name: String,
+        /// Output format
+        #[arg(long, value_enum, default_value_t = StyleCatalogFormat::Table)]
+        format: StyleCatalogFormat,
+    },
     /// Validate that a style's locale-driven features resolve against a locale file
     Lint(LintStyleArgs),
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
+pub(crate) enum StyleCatalogSource {
+    All,
+    Embedded,
+    #[value(name = "core-http")]
+    CoreHttp,
+}
+
+impl std::fmt::Display for StyleCatalogSource {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            StyleCatalogSource::All => write!(f, "all"),
+            StyleCatalogSource::Embedded => write!(f, "embedded"),
+            StyleCatalogSource::CoreHttp => write!(f, "core-http"),
+        }
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
+pub(crate) enum StyleCatalogFormat {
+    Table,
+    Json,
+}
+
+impl std::fmt::Display for StyleCatalogFormat {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            StyleCatalogFormat::Table => write!(f, "table"),
+            StyleCatalogFormat::Json => write!(f, "json"),
+        }
+    }
 }
 
 #[derive(Subcommand)]

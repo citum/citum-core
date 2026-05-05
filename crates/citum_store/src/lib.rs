@@ -25,7 +25,9 @@ mod resolver_tests;
 
 pub use config::StoreConfig;
 pub use format::StoreFormat;
-pub use resolver::StoreResolver;
+#[cfg(feature = "http")]
+pub use resolver::HttpResolver;
+pub use resolver::{RegistryResolver, StoreResolver};
 
 use std::path::PathBuf;
 

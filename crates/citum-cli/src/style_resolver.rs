@@ -92,7 +92,10 @@ pub(crate) fn load_any_style(
     style_input: &str,
     _no_semantics: bool,
 ) -> Result<Style, Box<dyn Error>> {
-    use citum_store::resolver::{ChainResolver, EmbeddedResolver, FileResolver, StyleResolver};
+    use citum_store::resolver::{
+        ChainResolver, EmbeddedResolver, FileResolver, HttpResolver, RegistryResolver,
+        StyleResolver,
+    };
 
     let mut resolvers: Vec<Box<dyn StyleResolver>> = vec![Box::new(FileResolver)];
 
@@ -107,6 +110,19 @@ pub(crate) fn load_any_style(
         )));
     }
 
+    if let Some(http) = HttpResolver::from_platform_cache_dir() {
+        resolvers.push(Box::new(http));
+    }
+
+    let registry_resolver = RegistryResolver::new(citum_schema::embedded::default_registry())
+        .with_base_dir(std::env::current_dir()?);
+    let registry_resolver = if let Some(http) = HttpResolver::from_platform_cache_dir() {
+        registry_resolver.with_http(http)
+    } else {
+        registry_resolver
+    };
+    resolvers.push(Box::new(registry_resolver));
+
     resolvers.push(Box::new(EmbeddedResolver));
 
     let chain = ChainResolver::new(resolvers);
@@ -114,20 +130,23 @@ pub(crate) fn load_any_style(
     match chain.resolve_style(style_input) {
         Ok(style) => Ok(style),
         Err(citum_store::resolver::ResolverError::StyleNotFound(_)) => {
-            // Fuzzy matching suggestion for builtin styles
-            let suggestions: Vec<_> = citum_schema::embedded::EMBEDDED_STYLE_NAMES
+            let registry = citum_schema::embedded::default_registry();
+            let candidates: Vec<_> = registry
+                .styles
                 .iter()
-                .chain(
-                    citum_schema::embedded::EMBEDDED_STYLE_ALIASES
-                        .iter()
-                        .map(|(a, _)| a),
-                )
+                .flat_map(|entry| {
+                    std::iter::once(entry.id.as_str())
+                        .chain(entry.aliases.iter().map(String::as_str))
+                })
+                .collect();
+            let suggestions: Vec<_> = candidates
+                .iter()
                 .filter(|&&name| strsim::jaro_winkler(style_input, name) > 0.8)
                 .collect();
 
             let mut msg = format!("style not found: '{style_input}'");
             if suggestions.is_empty() {
-                msg.push_str("\n\nUse `citum styles list` to see all available builtin styles.");
+                msg.push_str("\n\nUse `citum style list` to see all available styles.");
             } else {
                 msg.push_str("\n\nDid you mean one of these?");
                 for s in suggestions {
