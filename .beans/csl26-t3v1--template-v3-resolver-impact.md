@@ -1,6 +1,6 @@
 ---
 # csl26-t3v1
-title: TEMPLATE_V3 Merging Logic for Distributed Resolvers
+title: TEMPLATE_V3 Implementation & Ecosystem Transition (jj Stack)
 status: draft
 type: task
 priority: high
@@ -9,6 +9,8 @@ tags:
     - resolution
     - distributed-resolver
     - template
+    - migrate
+    - jj
 created_at: 2026-05-05T00:00:00Z
 updated_at: 2026-05-05T00:00:00Z
 ---
@@ -16,26 +18,29 @@ updated_at: 2026-05-05T00:00:00Z
 # csl26-t3v1
 
 # Objective
-Update Citum's style resolution logic to support the TEMPLATE_V3 deep-merge model, ensuring that templates can inherit and surgically modify components across distributed network boundaries.
+Implement the TEMPLATE_V3 "Structural Diff" model in the Citum engine and transition the core style ecosystem (including authoring tools and `styles/`) to utilize it. This work will be delivered as a **Stacked PR sequence using `jj` (Jujutsu)** for seamless change management.
 
 # Context
-With the introduction of `DISTRIBUTED_RESOLVER.md` and `TEMPLATE_V3.md`, Citum is moving from a monolithic repository to a decentralized web of styles. The current "First Match Wins" field replacement in the engine's `try_into_resolved_with` function is insufficient for V3 templates. 
+With the introduction of `DISTRIBUTED_RESOLVER.md` and `TEMPLATE_V3.md`, Citum is moving to a decentralized web of styles. The engine needs deep-merge capabilities to support surgical diffs (`modify`, `add`, `remove`) across network boundaries. 
 
-If a style inherits from a remote URI, it needs to be able to apply "diffs" (modify/add/remove) to the components of the parent's templates rather than just replacing them entirely. This prevents the "cascading hard-fork" problem where downstream styles stop receiving upstream fixes.
+Using `jj` allows us to maintain a live stack of these changes. We can refine the engine logic (base of the stack) and have those changes automatically propagate to the migration logic (top of the stack), ensuring consistent end-to-end testing throughout development.
 
-# Proposal
-Evolve the `citum-schema-style` resolution logic:
+# Proposal: Stacked Delivery with `jj`
 
-1.  **Deep Merge Trait:** Implement a merging trait for template-bearing structures (`CitationSpec`, `BibliographySpec`, `TemplateGroup`).
-2.  **Recursive Diff Application:** Update `try_into_resolved_with` to apply local `type-variants` diffs to the fully resolved templates of the parent style.
-3.  **Expanded Options Configuration:** Move contributor and date formatting policies from positional template attributes into the `options` hierarchy, ensuring consistent formatting without macros.
+### Revision 1: Engine Resolution Logic
+*   **PR 1 (Target: `main`):** Implements the `DeepMerge` traits and updates `try_into_resolved_with` to apply diffs.
+*   **Key Files:** `crates/citum-schema-style/src/lib.rs`, `crates/citum-schema-style/src/template.rs`.
 
-# Key Considerations
-- **Order of Operations:** Resolving the parent URI must happen before applying the child's diffs.
-- **Cycle Detection:** Maintain existing loop protection while traversing complex macro/extends chains.
-- **Performance:** Ensure deep-merging doesn't significantly slow down style resolution, especially in the browser (WASM).
+### Revision 2: Ecosystem Transition
+*   **PR 2 (Target: PR 1):** Updates `citum-migrate` to emit V3 diffs and performs the bulk refactor of `styles/`.
+*   **Key Files:** `crates/citum-migrate/src/template_compiler/*`, `styles/*.yaml`.
+
+# `jj` Workflow for Reviewers
+1.  **Review PR 1:** This is the base of the stack.
+2.  **Review PR 2:** This is the top of the stack. Because it's a `jj` stack, the PR in GitHub will only show the delta between the engine changes and the ecosystem refactor.
+3.  **Refinements:** If review feedback requires changes to the engine, I will use `jj edit` on Revision 1. `jj` will automatically rebase Revision 2 on top of the fix, keeping the whole stack healthy.
 
 # Goals
 - Enable surgical style overrides that persist across upstream updates.
-- Support institutional style branding (e.g., "Add this logo to all Harvard-derived styles").
-- Simplify GUI editing by maintaining a "Link" to parent styles.
+- Reduce the average line count of complex styles by 30-50%.
+- Maintain bit-for-bit fidelity with existing oracle baselines.
