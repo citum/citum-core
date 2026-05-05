@@ -220,7 +220,7 @@ styles:
 - id: american-mathematical-society-label
   url: https://raw.githubusercontent.com/citum/citum-core/main/styles/american-mathematical-society-label.yaml
   kind: journal
-  title: Amercian Mathematical Society (label)
+  title: American Mathematical Society (label)
   fields:
   - math
 - id: american-medical-association-alphabetical

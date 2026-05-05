@@ -13,6 +13,8 @@ use std::collections::BTreeSet;
 use std::fs;
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
+#[cfg(feature = "http")]
+use std::time::{Duration, SystemTime};
 use thiserror::Error;
 
 #[cfg(feature = "http")]
@@ -222,14 +224,21 @@ pub struct HttpResolver {
 }
 
 #[cfg(feature = "http")]
+const HTTP_TIMEOUT: Duration = Duration::from_secs(15);
+
+#[cfg(feature = "http")]
+const HTTP_CACHE_MAX_AGE: Duration = Duration::from_hours(24);
+
+#[cfg(feature = "http")]
 impl HttpResolver {
     /// Create a resolver using the provided cache directory.
     #[must_use]
     pub fn new(cache_dir: PathBuf) -> Self {
-        Self {
-            cache_dir,
-            client: reqwest::blocking::Client::new(),
-        }
+        let client = reqwest::blocking::Client::builder()
+            .timeout(HTTP_TIMEOUT)
+            .build()
+            .unwrap_or_else(|_| reqwest::blocking::Client::new());
+        Self { cache_dir, client }
     }
 
     /// Create a resolver using the platform cache directory.
@@ -258,6 +267,27 @@ impl HttpResolver {
             ResolverError::YamlError(format!("failed to parse style fetched from {uri}: {err}"))
         })
     }
+
+    fn cache_is_fresh(path: &Path) -> bool {
+        path.metadata()
+            .and_then(|metadata| metadata.modified())
+            .and_then(|modified| {
+                SystemTime::now()
+                    .duration_since(modified)
+                    .map_err(std::io::Error::other)
+            })
+            .is_ok_and(|age| age < HTTP_CACHE_MAX_AGE)
+    }
+
+    fn write_cache(path: &Path, bytes: &[u8]) -> Result<(), ResolverError> {
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let temp_path = path.with_extension(format!("yaml.tmp.{}", std::process::id()));
+        fs::write(&temp_path, bytes)?;
+        fs::rename(&temp_path, path)?;
+        Ok(())
+    }
 }
 
 #[cfg(feature = "http")]
@@ -277,7 +307,7 @@ impl StyleResolver for HttpResolver {
         }
 
         let cache_path = self.cache_path(uri);
-        if cache_path.is_file() {
+        if cache_path.is_file() && Self::cache_is_fresh(&cache_path) {
             let bytes = fs::read(&cache_path)?;
             return Self::parse_style(uri, &bytes);
         }
@@ -302,11 +332,9 @@ impl StyleResolver for HttpResolver {
         let bytes = response
             .bytes()
             .map_err(|err| ResolverError::HttpError(format!("failed to read {uri}: {err}")))?;
-        if let Some(parent) = cache_path.parent() {
-            fs::create_dir_all(parent)?;
-        }
-        fs::write(&cache_path, &bytes)?;
-        Self::parse_style(uri, &bytes)
+        let style = Self::parse_style(uri, &bytes)?;
+        Self::write_cache(&cache_path, &bytes)?;
+        Ok(style)
     }
 
     fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {

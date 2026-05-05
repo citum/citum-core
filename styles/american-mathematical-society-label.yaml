@@ -1,6 +1,6 @@
 extends: elsevier-with-titles
 info:
-  title: Amercian Mathematical Society (label)
+  title: American Mathematical Society (label)
   fields:
   - math
   source:
