@@ -1,4 +1,3 @@
-[workspace]
 shared-version = true
 consolidate-commits = true
 dependent-version = "upgrade"
