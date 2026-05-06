@@ -312,7 +312,8 @@ bibliography:
         form: year
         suffix: ":"
       - number: pages
-        prefix: " pp. "
+        prefix: " "
+        label-form: short
     dataset:
     - number: citation-number
       wrap:
@@ -412,7 +413,8 @@ bibliography:
         form: year
         suffix: ":"
       - number: pages
-        prefix: " pp. "
+        prefix: " "
+        label-form: short
     patent:
       extends: legal-case
       add:

@@ -72,11 +72,6 @@ bibliography:
       remove:
         - match:
             date: issued
-    personal_communication:
-      modify:
-        - match:
-            contributor: author
-          prefix: 'pp. '
     webpage:
     - number: citation-number
       suffix: ". "

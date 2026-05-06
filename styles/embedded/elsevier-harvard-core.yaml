@@ -192,7 +192,8 @@ bibliography:
     - variable: publisher
       suffix: ","
     - number: pages
-      prefix: " pp. "
+      prefix: " "
+      label-form: short
     paper-conference:
       add:
         - component:
@@ -203,7 +204,7 @@ bibliography:
             title: primary
         - component:
             number: pages
-            prefix: 'pp. '
+            label-form: short
             suffix: .
           after:
             title: parent-monograph

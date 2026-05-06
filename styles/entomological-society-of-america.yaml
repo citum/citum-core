@@ -157,7 +157,7 @@ bibliography:
           punctuation: parentheses
     - variable: publisher
     - number: pages
-      prefix: 'pp. '
+      label-form: short
     - variable: doi
     - variable: publisher-place
     - variable: url
@@ -188,7 +188,7 @@ bibliography:
           punctuation: parentheses
     - variable: publisher
     - number: pages
-      prefix: 'pp. '
+      label-form: short
     - variable: doi
     - variable: publisher-place
     - variable: url
@@ -219,7 +219,7 @@ bibliography:
           punctuation: parentheses
     - variable: publisher
     - number: pages
-      prefix: 'pp. '
+      label-form: short
     - variable: doi
     - variable: publisher-place
     - variable: url

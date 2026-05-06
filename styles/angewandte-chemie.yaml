@@ -65,7 +65,7 @@ bibliography:
     - date: issued
       form: year
     - number: pages
-      prefix: "pp. "
+      label-form: short
     paper-conference:
       extends: chapter
       remove:

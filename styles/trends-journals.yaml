@@ -60,12 +60,12 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     paper-conference:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     patent:
     - number: citation-number
       suffix: .

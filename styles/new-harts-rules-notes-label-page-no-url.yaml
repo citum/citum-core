@@ -70,7 +70,7 @@ citation:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
       remove:
         - match:
             number: number
@@ -78,7 +78,7 @@ citation:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
       remove:
         - match:
             number: number
@@ -102,7 +102,7 @@ citation:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     legal_case:
       - title: primary
         wrap:
@@ -180,12 +180,12 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     article-magazine:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     chapter:
       - contributor: author
         form: long
@@ -216,7 +216,7 @@ bibliography:
         form: year
         prefix: ' '
       - number: pages
-        prefix: 'pp. '
+        label-form: short
     interview:
       remove:
         - match:
@@ -225,7 +225,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     legal_case:
       - title: primary
         wrap:

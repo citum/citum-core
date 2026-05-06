@@ -879,6 +879,11 @@ fn apply_template_variant_diff(
     for op in &diff.modify {
         let index = find_required_anchor(template, &op.match_selector, location)?;
         if let Some(component) = template.get_mut(index) {
+            if let Some(label_form) = op.label_form.clone()
+                && let TemplateComponent::Number(number) = component
+            {
+                number.label_form = Some(label_form);
+            }
             component.rendering_mut().merge(&op.rendering);
         }
     }
@@ -2298,6 +2303,40 @@ bibliography:
                 if variable.variable == template::SimpleVariable::Publisher
                     && variable.rendering.suppress == Some(true)
         )));
+    }
+
+    #[test]
+    fn template_v3_modify_can_set_number_label_form() {
+        let yaml = r#"
+bibliography:
+  template:
+  - number: pages
+  type-variants:
+    chapter:
+      modify:
+      - match: { number: pages }
+        label-form: short
+"#;
+        let resolved = Style::from_yaml_str(yaml)
+            .expect("style should parse")
+            .try_into_resolved()
+            .expect("diff should resolve");
+        let variants = resolved
+            .bibliography
+            .expect("bibliography should exist")
+            .type_variants
+            .expect("variants should exist");
+        let template = variants
+            .get(&TypeSelector::Single("chapter".to_string()))
+            .and_then(TemplateVariant::as_template)
+            .expect("variant should resolve to a full template");
+
+        assert!(matches!(
+            &template[0],
+            TemplateComponent::Number(number)
+                if number.number == template::NumberVariable::Pages
+                    && number.label_form == Some(template::LabelForm::Short)
+        ));
     }
 
     #[test]

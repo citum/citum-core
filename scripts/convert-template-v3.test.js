@@ -78,6 +78,38 @@ test('deriveTemplateVariantDiff can select grouped components', () => {
   });
 });
 
+test('deriveTemplateVariantDiff rewrites literal page labels to label-form', () => {
+  const base = [
+    { contributor: 'author' },
+    { number: 'pages' },
+  ];
+  const target = [
+    { contributor: 'author' },
+    { number: 'pages', prefix: 'pp. ' },
+  ];
+
+  const diff = deriveTemplateVariantDiff(base, target);
+
+  assert.deepEqual(diff, {
+    modify: [
+      { match: { number: 'pages' }, 'label-form': 'short' },
+    ],
+  });
+});
+
+test('deriveTemplateVariantDiff preserves delimiters when rewriting page labels', () => {
+  const diff = deriveTemplateVariantDiff(
+    [{ number: 'pages' }],
+    [{ number: 'pages', prefix: ', pp. ' }]
+  );
+
+  assert.deepEqual(diff, {
+    modify: [
+      { match: { number: 'pages' }, prefix: ', ', 'label-form': 'short' },
+    ],
+  });
+});
+
 test('convertStyle rewrites only exact diff-compatible variants', () => {
   const base = [
     { contributor: 'author' },

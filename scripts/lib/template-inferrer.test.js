@@ -3,6 +3,8 @@ const {
   detectNameOrder,
   detectSuppressions,
   findConsensusOrdering,
+  generateYaml,
+  normalizeLocalizedPageLabelPrefix,
 } = require('./template-inferrer');
 const { strict: assert } = require('assert');
 
@@ -107,6 +109,24 @@ assert.deepEqual(
     ordering.consensusOrdering,
     ['contributors', 'title', 'year'],
     'findConsensusOrdering should use the provided refByEntry mapping directly',
+);
+
+console.log('Running localized page label inference tests...');
+
+const normalizedPagePrefix = normalizeLocalizedPageLabelPrefix({ number: 'pages' }, ', pp. ');
+assert.deepEqual(
+    normalizedPagePrefix,
+    { prefix: ', ', localized: true },
+    'literal page label prefixes should be normalized to localized label semantics',
+);
+
+const pageYaml = generateYaml([
+    { number: 'pages', prefix: ', ', 'label-form': 'short' },
+]);
+assert.equal(
+    pageYaml,
+    'template:\n  - number: pages\n    prefix: ", "\n    label-form: short\n',
+    'generateYaml should emit label-form for localized page labels',
 );
 
 console.log('All template inferrer core tests passed!');

@@ -15,6 +15,7 @@ const RENDERING_KEYS = new Set([
   'vertical-align',
   'prefix',
   'suffix',
+  'label-form',
   'wrap',
   'suppress',
   'initialize-with',
@@ -98,6 +99,39 @@ function componentSelector(component) {
 function componentKey(component) {
   const selector = componentSelector(component);
   return selector ? JSON.stringify(selector) : null;
+}
+
+function normalizeLocalizedPageLabel(component) {
+  if (!component || typeof component !== 'object' || Array.isArray(component)) {
+    return component;
+  }
+
+  const normalized = Object.fromEntries(
+    Object.entries(component).map(([key, value]) => {
+      if (Array.isArray(value)) {
+        return [key, value.map((item) => normalizeLocalizedPageLabel(item))];
+      }
+      if (value && typeof value === 'object') {
+        return [key, normalizeLocalizedPageLabel(value)];
+      }
+      return [key, value];
+    })
+  );
+  const pageLabelPrefixes = new Map([
+    ['pp. ', null],
+    [', pp. ', ', '],
+    [' pp. ', ' '],
+  ]);
+  if (normalized.number === 'pages' && pageLabelPrefixes.has(normalized.prefix)) {
+    const replacementPrefix = pageLabelPrefixes.get(normalized.prefix);
+    if (replacementPrefix == null) {
+      delete normalized.prefix;
+    } else {
+      normalized.prefix = replacementPrefix;
+    }
+    normalized['label-form'] = 'short';
+  }
+  return normalized;
 }
 
 function lcsPairs(left, right) {
@@ -200,6 +234,9 @@ function deriveTemplateVariantDiff(baseTemplate, targetTemplate) {
   if (!Array.isArray(baseTemplate) || !Array.isArray(targetTemplate) || baseTemplate.length === 0) {
     return null;
   }
+
+  baseTemplate = baseTemplate.map(normalizeLocalizedPageLabel);
+  targetTemplate = targetTemplate.map(normalizeLocalizedPageLabel);
 
   const baseKeys = baseTemplate.map(componentKey);
   const targetKeys = targetTemplate.map(componentKey);

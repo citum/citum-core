@@ -92,7 +92,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     article-magazine:
       remove:
         - match:
@@ -101,12 +101,12 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     paper-conference:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     legal_case:
     - contributor: author
       form: long

@@ -13,6 +13,7 @@ const RULES = {
   STYLE003: 'Duplicate component-level shorten config should be hoisted to the narrowest safe option scope.',
   STYLE004: 'Type variants identical to the base template should be removed.',
   STYLE005: 'Legacy items blocks should be authored as group blocks.',
+  STYLE006: 'Page labels must use localized label-form settings instead of raw locale strings.',
 };
 
 function parseArgs(argv = process.argv.slice(2)) {
@@ -319,11 +320,44 @@ function collectTemplateDuplicateViolations(filePath, content, data) {
   return violations;
 }
 
+function collectRawPageLabelPrefixViolations(filePath, content, data) {
+  const violations = [];
+
+  function visit(node) {
+    if (Array.isArray(node)) {
+      node.forEach(visit);
+      return;
+    }
+    if (!node || typeof node !== 'object') {
+      return;
+    }
+
+    const isPageComponent = node.number === 'pages';
+    const isPageModify = node.match?.number === 'pages';
+    const isPageAdd = node.component?.number === 'pages';
+    if (typeof node.prefix === 'string' && /\bpp\.\s*$/.test(node.prefix) && (isPageComponent || isPageModify || isPageAdd)) {
+      violations.push({
+        ruleId: 'STYLE006',
+        file: repoRelative(filePath),
+        line: null,
+        message: `${RULES.STYLE006} Use label-form: short on number: pages.`,
+        fixable: false,
+      });
+    }
+
+    Object.values(node).forEach(visit);
+  }
+
+  visit(data);
+  return violations;
+}
+
 function lintParsedStyle(filePath, content, data) {
   return [
     ...collectSubstituteViolations(filePath, content, data),
     ...collectShortenViolations(filePath, content, data),
     ...collectTemplateDuplicateViolations(filePath, content, data),
+    ...collectRawPageLabelPrefixViolations(filePath, content, data),
   ];
 }
 
@@ -713,6 +747,7 @@ module.exports = {
   collectShortenViolations,
   collectSubstituteViolations,
   collectTemplateDuplicateViolations,
+  collectRawPageLabelPrefixViolations,
   convertItemsAliasInText,
   expandAnonymousAnchorsInText,
   lintAnonymousAnchors,

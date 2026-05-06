@@ -146,7 +146,7 @@ bibliography:
       punctuation: parentheses
     suppress: true
   - number: pages
-    prefix: 'pp. '
+    label-form: short
     suppress: true
   - group:
     - group:
@@ -245,4 +245,4 @@ bibliography:
         form: year
       delimiter: comma
     - number: pages
-      prefix: 'pp. '
+      label-form: short

@@ -76,17 +76,17 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     chapter:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     paper-conference:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
   template:
   - contributor: author
     form: long

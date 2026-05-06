@@ -63,7 +63,7 @@ bibliography:
     - date: issued
       form: year
     - number: pages
-      prefix: 'pp. '
+      label-form: short
     - variable: doi
       prefix: https://doi.org/
     - variable: publisher-place
@@ -83,7 +83,7 @@ bibliography:
     - number: issue
       prefix: ', No. '
     - number: pages
-      prefix: 'pp. '
+      label-form: short
     - variable: doi
       prefix: '. '
     - variable: publisher-place
@@ -105,7 +105,7 @@ bibliography:
     - date: issued
       form: year
     - number: pages
-      prefix: 'pp. '
+      label-form: short
     - variable: doi
       prefix: '. '
     - variable: publisher-place
@@ -127,7 +127,7 @@ bibliography:
     - date: issued
       form: year
     - number: pages
-      prefix: 'pp. '
+      label-form: short
     - variable: doi
       prefix: '. '
     - variable: publisher-place

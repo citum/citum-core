@@ -63,7 +63,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     entry-encyclopedia:
       remove:
         - match:
@@ -73,7 +73,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     legal-case:
     - title: primary
       prefix: "Anonymous. "

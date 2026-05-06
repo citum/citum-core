@@ -183,6 +183,7 @@ fn derive_template_variant_diff(
             }
             diff.modify.push(TemplateModifyOperation {
                 match_selector: component_selector(base_component)?,
+                label_form: modified_number_label_form(base_component, target_component),
                 rendering: target_component.rendering().clone(),
             });
         }
@@ -258,11 +259,39 @@ fn component_selector(component: &TemplateComponent) -> Option<TemplateComponent
     None
 }
 
+fn modified_number_label_form(
+    base: &TemplateComponent,
+    target: &TemplateComponent,
+) -> Option<citum_schema::template::LabelForm> {
+    match (base, target) {
+        (TemplateComponent::Number(base_number), TemplateComponent::Number(target_number))
+            if base_number.label_form != target_number.label_form =>
+        {
+            target_number.label_form.clone()
+        }
+        _ => None,
+    }
+}
+
 fn is_rendering_only_change(base: &TemplateComponent, target: &TemplateComponent) -> bool {
     let mut normalized_base = base.clone();
     let mut normalized_target = target.clone();
     *normalized_base.rendering_mut() = Rendering::default();
     *normalized_target.rendering_mut() = Rendering::default();
+
+    match (&mut normalized_base, &mut normalized_target) {
+        (TemplateComponent::Number(base_number), TemplateComponent::Number(target_number))
+            if base_number.label_form != target_number.label_form =>
+        {
+            if target_number.label_form.is_none() {
+                return false;
+            }
+            base_number.label_form = None;
+            target_number.label_form = None;
+        }
+        _ => {}
+    }
+
     normalized_base == normalized_target
 }
 

@@ -124,7 +124,8 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: ', pp. '
+          prefix: ", "
+          label-form: short
     dataset:
       extends: article-magazine
       remove:
@@ -148,10 +149,6 @@ bibliography:
           prefix: 'in '
     personal_communication:
       extends: article-magazine
-      modify:
-        - match:
-            contributor: author
-          prefix: 'pp. '
     webpage:
       remove:
         - match:

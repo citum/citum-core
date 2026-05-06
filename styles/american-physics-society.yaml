@@ -45,7 +45,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     dataset:
       remove:
         - match:
@@ -54,7 +54,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     interview:
       remove:
         - match:
@@ -63,13 +63,9 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     personal_communication:
       extends: dataset
-      modify:
-        - match:
-            contributor: author
-          prefix: 'pp. '
     software:
     - number: citation-number
       wrap:

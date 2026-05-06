@@ -56,11 +56,6 @@ citation:
         delimiter-precedes-last: contextual
       delimiter: ', '
   type-variants:
-    personal_communication:
-      modify:
-        - match:
-            contributor: author
-          prefix: 'pp. '
   template:
     - contributor: author
       form: short
@@ -111,7 +106,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
           wrap:
             punctuation: parentheses
       remove:
@@ -138,7 +133,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     interview:
       - contributor: author
         form: long
@@ -160,7 +155,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
           wrap:
             punctuation: parentheses
     patent:

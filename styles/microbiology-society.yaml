@@ -76,7 +76,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     broadcast:
       remove:
         - match:
@@ -110,7 +110,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     personal_communication:
       remove:
         - match:

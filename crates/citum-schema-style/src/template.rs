@@ -28,7 +28,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!   overrides:
 //!     chapter:
 //!       wrap: parentheses
-//!       prefix: "pp. "  # Show as "(pp. 1-10)" for chapters
+//!       label-form: short  # Show as "(pp. 1-10)" for English chapters
 //! ```
 //!
 //! This keeps all conditional logic in the style, making it testable and portable.
@@ -577,6 +577,9 @@ pub struct TemplateModifyOperation {
     /// Selector identifying exactly one component to modify.
     #[serde(rename = "match")]
     pub match_selector: TemplateComponentSelector,
+    /// Override the localized number label form when modifying number components.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub label_form: Option<LabelForm>,
     /// Rendering fields to merge onto the matched component.
     #[serde(flatten, default)]
     pub rendering: Rendering,
