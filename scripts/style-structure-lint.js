@@ -14,6 +14,7 @@ const RULES = {
   STYLE004: 'Type variants identical to the base template should be removed.',
   STYLE005: 'Legacy items blocks should be authored as group blocks.',
   STYLE006: 'Page labels must use localized label-form settings instead of raw locale strings.',
+  STYLE007: 'Empty style version values should be omitted so schema defaults apply.',
 };
 
 function parseArgs(argv = process.argv.slice(2)) {
@@ -181,6 +182,24 @@ function lintLegacyItemsAlias(filePath, content) {
       file: repoRelative(filePath),
       line: content.slice(0, match.index).split('\n').length,
       message: `${RULES.STYLE005} Replace items: with group:.`,
+      fixable: true,
+    });
+  }
+
+  return violations;
+}
+
+function lintEmptyStyleVersion(filePath, content) {
+  const violations = [];
+  const pattern = /^version:\s*(['"]{2})\s*$/gm;
+  let match;
+
+  while ((match = pattern.exec(content)) !== null) {
+    violations.push({
+      ruleId: 'STYLE007',
+      file: repoRelative(filePath),
+      line: content.slice(0, match.index).split('\n').length,
+      message: `${RULES.STYLE007} Remove the empty version field.`,
       fixable: true,
     });
   }
@@ -509,6 +528,19 @@ function convertItemsAliasInText(content) {
   });
 }
 
+function removeEmptyVersionInText(content) {
+  return content.replace(/^version:\s*(['"]{2})\s*\n?/gm, '');
+}
+
+function removeEmptyVersion(data) {
+  if (!data || typeof data !== 'object' || data.version !== '') {
+    return false;
+  }
+
+  delete data.version;
+  return true;
+}
+
 function removeInertSubstituteOverrides(data) {
   let changed = false;
   const scopes = [
@@ -606,6 +638,7 @@ function removeDuplicateTypeVariants(data) {
 
 function applyFixes(data) {
   let changed = false;
+  changed = removeEmptyVersion(data) || changed;
   changed = removeInertSubstituteOverrides(data) || changed;
   changed = hoistDuplicateShorten(data) || changed;
   changed = removeDuplicateTypeVariants(data) || changed;
@@ -617,8 +650,17 @@ function lintStyleFile(filePath, options = {}) {
   const content = fs.readFileSync(filePath, 'utf8');
   const violations = lintAnonymousAnchors(filePath, content);
   violations.push(...lintLegacyItemsAlias(filePath, content));
+  violations.push(...lintEmptyStyleVersion(filePath, content));
   let workingContent = content;
   let fixed = false;
+
+  if (options.fix && violations.some((violation) => violation.ruleId === 'STYLE007')) {
+    const removed = removeEmptyVersionInText(workingContent);
+    if (removed !== workingContent) {
+      workingContent = removed;
+      fixed = true;
+    }
+  }
 
   if (options.fix && violations.some((violation) => violation.ruleId === 'STYLE005')) {
     const converted = convertItemsAliasInText(workingContent);
@@ -654,7 +696,7 @@ function lintStyleFile(filePath, options = {}) {
   }
 
   if (options.fix && parsed && typeof parsed === 'object') {
-    const fixableRuleIds = new Set(['STYLE002', 'STYLE003', 'STYLE004']);
+    const fixableRuleIds = new Set(['STYLE002', 'STYLE003', 'STYLE004', 'STYLE007']);
     const hasFixableViolations = violations.some((violation) => fixableRuleIds.has(violation.ruleId));
     const changedStructure = applyFixes(parsed);
     if (hasFixableViolations && changedStructure) {
@@ -676,6 +718,7 @@ function lintStyleFile(filePath, options = {}) {
   const refreshedViolations = [
     ...lintAnonymousAnchors(filePath, refreshedContent),
     ...lintLegacyItemsAlias(filePath, refreshedContent),
+    ...lintEmptyStyleVersion(filePath, refreshedContent),
   ];
   if (parsed && typeof parsed === 'object' && !fixed) {
     refreshedViolations.push(...lintParsedStyle(filePath, refreshedContent, parsed));
@@ -750,12 +793,14 @@ module.exports = {
   collectRawPageLabelPrefixViolations,
   convertItemsAliasInText,
   expandAnonymousAnchorsInText,
+  lintEmptyStyleVersion,
   lintAnonymousAnchors,
   lintLegacyItemsAlias,
   lintParsedStyle,
   lintStyleFile,
   parseAnonymousAnchorBlocks,
   parseInlineAnonymousAnchors,
+  removeEmptyVersionInText,
   stripAnonymousAnchorMarkersInText,
   summarize,
 };
