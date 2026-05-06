@@ -298,21 +298,197 @@ bibliography:
 
 ## [category] Type Variants
 
-When reference types need a different layout, use `type-variants`.
+When reference types need a different layout, use `type-variants`. Citum
+supports two forms:
+
+- **Full variants** replace the default template for a reference type.
+- **Diff variants** start from another template and declare only the structural
+  changes.
+
+Prefer a diff variant when the entry is a small delta from `default`,
+`chapter`, `article-journal`, or another nearby variant. Use a full variant
+when the reference type has a materially different structure, such as a legal
+case, statute, patent, or another entry that does not share stable anchors with
+the default template.
+
+### Full Variants
+
+A full variant is a complete template for that reference type. If a reference
+type matches a full `type-variants` entry, that template is used instead of the
+default template.
 
 ```yaml
 bibliography:
   template:
     - contributor: author
+    - title: primary
   type-variants:
     article-journal:
       - contributor: author
       - title: primary
+      - title: parent-serial
+        emph: true
 ```
 
 > [!TIP]
-> **Type Variants Replace the Default Template**
-> If a reference type matches a `type-variants` entry, that template is used in full instead of the default template. Types not listed fall through to the default.
+> **Use full variants sparingly**
+> Full variants are easiest to read when the structure is truly different, but
+> they duplicate the parent template. If only a component changes punctuation,
+> label form, emphasis, or placement, use a diff variant instead.
+
+### Diff Variants
+
+A diff variant is an object with any of these keys:
+
+| Key | Purpose |
+|---|---|
+| `extends` | Optional parent variant in the same section. If omitted, the default `template` is the parent. |
+| `modify` | Change rendering fields or supported component options on a matched inherited component. |
+| `remove` | Delete a matched inherited component. |
+| `add` | Insert a new component before or after a matched inherited component. |
+
+```yaml
+bibliography:
+  template:
+    - contributor: author
+    - date: issued
+      form: year
+      wrap: parentheses
+      prefix: " "
+    - title: primary
+    - title: parent-monograph
+      prefix: " "
+    - variable: publisher
+      prefix: ". "
+    - number: pages
+      prefix: ", "
+
+  type-variants:
+    chapter:
+      modify:
+        - match:
+            number: pages
+          label-form: short
+      add:
+        - before:
+            number: pages
+          component:
+            term: volume
+            form: short
+            prefix: ", "
+            suffix: " "
+      remove:
+        - match:
+            variable: publisher
+```
+
+The `match`, `before`, and `after` selectors are partial component matches. A
+selector such as `{ number: pages }` matches a component with `number: pages`
+even if that component also has `prefix`, `suffix`, or `label-form`.
+
+Use selectors that identify one inherited component. Ambiguous selectors make a
+variant fragile, especially in templates that contain several titles,
+contributors, or dates.
+
+### Extending Another Variant
+
+Inside `type-variants`, `extends` means "start from this other variant in the
+same section." It is variant-local structural reuse. It is different from:
+
+- top-level `extends`, which inherits a whole style from another style.
+- section-level `template-ref`, which reuses a named citation or bibliography
+  template preset.
+
+```yaml
+bibliography:
+  template:
+    - contributor: author
+    - title: primary
+    - title: parent-monograph
+    - number: pages
+
+  type-variants:
+    chapter:
+      modify:
+        - match:
+            number: pages
+          prefix: ", "
+          label-form: short
+
+    paper-conference:
+      extends: chapter
+      add:
+        - after:
+            title: primary
+          component:
+            title: parent-serial
+            emph: true
+            prefix: ". "
+```
+
+In this example, `paper-conference` first inherits the `chapter` page-label
+change, then inserts the conference proceedings title.
+
+### Operation Examples
+
+Change affixes or formatting on an inherited component:
+
+```yaml
+type-variants:
+  article-journal:
+    modify:
+      - match:
+          title: parent-serial
+        emph: true
+        prefix: ". "
+```
+
+Use localized labels for pages. Do not write `prefix: "pp. "`.
+
+```yaml
+type-variants:
+  chapter:
+    modify:
+      - match:
+          number: pages
+        prefix: ", "
+        label-form: short
+```
+
+Remove an inherited component:
+
+```yaml
+type-variants:
+  article-journal:
+    remove:
+      - match:
+          variable: publisher
+```
+
+Insert a component before or after a matched component:
+
+```yaml
+type-variants:
+  chapter:
+    add:
+      - before:
+          number: pages
+        component:
+          title: parent-monograph
+          emph: true
+          suffix: ", "
+
+  webpage:
+    add:
+      - after:
+          title: primary
+        component:
+          variable: url
+          prefix: ". "
+```
+
+Diff operations are resolved in the order written within each operation list.
+The key order of `modify`, `remove`, and `add` does not matter.
 
 ## [article] Citation Modes
 

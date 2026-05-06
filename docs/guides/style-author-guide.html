@@ -568,28 +568,190 @@ a profile. You need a new base style or an independent style.
                     <span class="material-icons text-primary">category</span>
                     Type Variants
                 </h2>
-        <p>When reference types need a different layout, use <code>type-variants</code>.</p>
+        <p>When reference types need a different layout, use <code>type-variants</code>. Citum
+supports two forms:</p>
+<ul>
+<li><strong>Full variants</strong> replace the default template for a reference type.</li>
+<li><strong>Diff variants</strong> start from another template and declare only the structural
+changes.</li>
+</ul>
+<p>Prefer a diff variant when the entry is a small delta from <code>default</code>,
+<code>chapter</code>, <code>article-journal</code>, or another nearby variant. Use a full variant
+when the reference type has a materially different structure, such as a legal
+case, statute, patent, or another entry that does not share stable anchors with
+the default template.</p>
+<h3 id="full-variants" class="font-bold text-slate-900 mt-8 mb-4">Full Variants</h3><p>A full variant is a complete template for that reference type. If a reference
+type matches a full <code>type-variants</code> entry, that template is used instead of the
+default template.</p>
 
         <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose workshop-block">
             <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-yaml"><span class="text-indigo-400">bibliography</span>:
   <span class="text-primary">template</span>:
     <span class="text-slate-400">- </span><span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
+    <span class="text-slate-400">- </span><span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
   <span class="text-primary">type-variants</span>:
     <span class="text-primary">article-journal</span>:
       <span class="text-slate-400">- </span><span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
-      <span class="text-slate-400">- </span><span class="text-primary">title</span>: <span class="text-emerald-400">primary</span></code></pre>
+      <span class="text-slate-400">- </span><span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
+      <span class="text-slate-400">- </span><span class="text-primary">title</span>: <span class="text-emerald-400">parent-serial</span>
+        <span class="text-primary">emph</span>: <span class="text-emerald-400">true</span></code></pre>
         </div>
     
             <div class="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-5 not-prose citum-callout">
                 <div class="flex items-start gap-3">
                     <span class="material-icons text-blue-600 mt-0.5">tips_and_updates</span>
                     <div class="flex-1 text-blue-800 text-sm">
-                        <strong>Type Variants Replace the Default Template</strong>
-If a reference type matches a <code>type-variants</code> entry, that template is used in full instead of the default template. Types not listed fall through to the default.
+                        <strong>Use full variants sparingly</strong>
+Full variants are easiest to read when the structure is truly different, but
+they duplicate the parent template. If only a component changes punctuation,
+label form, emphasis, or placement, use a diff variant instead.
                     </div>
                 </div>
             </div>
-        </section>
+        <h3 id="diff-variants" class="font-bold text-slate-900 mt-8 mb-4">Diff Variants</h3><p>A diff variant is an object with any of these keys:</p>
+
+        <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8 not-prose citum-table-shell">
+            <table class="w-full text-sm">
+                <thead class="bg-slate-50">
+                    <tr><th class="px-4 py-3 text-left font-semibold text-slate-900">Key</th><th class="px-4 py-3 text-left font-semibold text-slate-900">Purpose</th></tr>
+                </thead>
+                <tbody class="divide-y divide-slate-200">
+                    <tr class="hover:bg-slate-50"><td class="px-4 py-3 text-slate-600"><code>extends</code></td><td class="px-4 py-3 text-slate-600">Optional parent variant in the same section. If omitted, the default <code>template</code> is the parent.</td></tr><tr class="hover:bg-slate-50"><td class="px-4 py-3 text-slate-600"><code>modify</code></td><td class="px-4 py-3 text-slate-600">Change rendering fields or supported component options on a matched inherited component.</td></tr><tr class="hover:bg-slate-50"><td class="px-4 py-3 text-slate-600"><code>remove</code></td><td class="px-4 py-3 text-slate-600">Delete a matched inherited component.</td></tr><tr class="hover:bg-slate-50"><td class="px-4 py-3 text-slate-600"><code>add</code></td><td class="px-4 py-3 text-slate-600">Insert a new component before or after a matched inherited component.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    
+        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose workshop-block">
+            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-yaml"><span class="text-indigo-400">bibliography</span>:
+  <span class="text-primary">template</span>:
+    <span class="text-slate-400">- </span><span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
+    <span class="text-slate-400">- </span><span class="text-primary">date</span>: <span class="text-emerald-400">issued</span>
+      <span class="text-primary">form</span>: <span class="text-emerald-400">year</span>
+      <span class="text-primary">wrap</span>: <span class="text-emerald-400">parentheses</span>
+      <span class="text-primary">prefix</span>: <span class="text-emerald-400">" "</span>
+    <span class="text-slate-400">- </span><span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
+    <span class="text-slate-400">- </span><span class="text-primary">title</span>: <span class="text-emerald-400">parent-monograph</span>
+      <span class="text-primary">prefix</span>: <span class="text-emerald-400">" "</span>
+    <span class="text-slate-400">- </span><span class="text-primary">variable</span>: <span class="text-emerald-400">publisher</span>
+      <span class="text-primary">prefix</span>: <span class="text-emerald-400">". "</span>
+    <span class="text-slate-400">- </span><span class="text-primary">number</span>: <span class="text-emerald-400">pages</span>
+      <span class="text-primary">prefix</span>: <span class="text-emerald-400">", "</span>
+
+  <span class="text-primary">type-variants</span>:
+    <span class="text-primary">chapter</span>:
+      <span class="text-primary">modify</span>:
+        <span class="text-slate-400">- </span><span class="text-primary">match</span>:
+            <span class="text-primary">number</span>: <span class="text-emerald-400">pages</span>
+          <span class="text-primary">label-form</span>: <span class="text-emerald-400">short</span>
+      <span class="text-primary">add</span>:
+        <span class="text-slate-400">- </span><span class="text-primary">before</span>:
+            <span class="text-primary">number</span>: <span class="text-emerald-400">pages</span>
+          <span class="text-primary">component</span>:
+            <span class="text-primary">term</span>: <span class="text-emerald-400">volume</span>
+            <span class="text-primary">form</span>: <span class="text-emerald-400">short</span>
+            <span class="text-primary">prefix</span>: <span class="text-emerald-400">", "</span>
+            <span class="text-primary">suffix</span>: <span class="text-emerald-400">" "</span>
+      <span class="text-primary">remove</span>:
+        <span class="text-slate-400">- </span><span class="text-primary">match</span>:
+            <span class="text-primary">variable</span>: <span class="text-emerald-400">publisher</span></code></pre>
+        </div>
+    <p>The <code>match</code>, <code>before</code>, and <code>after</code> selectors are partial component matches. A
+selector such as <code>{ number: pages }</code> matches a component with <code>number: pages</code>
+even if that component also has <code>prefix</code>, <code>suffix</code>, or <code>label-form</code>.</p>
+<p>Use selectors that identify one inherited component. Ambiguous selectors make a
+variant fragile, especially in templates that contain several titles,
+contributors, or dates.</p>
+<h3 id="extending-another-variant" class="font-bold text-slate-900 mt-8 mb-4">Extending Another Variant</h3><p>Inside <code>type-variants</code>, <code>extends</code> means &quot;start from this other variant in the
+same section.&quot; It is variant-local structural reuse. It is different from:</p>
+<ul>
+<li>top-level <code>extends</code>, which inherits a whole style from another style.</li>
+<li>section-level <code>template-ref</code>, which reuses a named citation or bibliography
+template preset.</li>
+</ul>
+
+        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose workshop-block">
+            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-yaml"><span class="text-indigo-400">bibliography</span>:
+  <span class="text-primary">template</span>:
+    <span class="text-slate-400">- </span><span class="text-primary">contributor</span>: <span class="text-emerald-400">author</span>
+    <span class="text-slate-400">- </span><span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
+    <span class="text-slate-400">- </span><span class="text-primary">title</span>: <span class="text-emerald-400">parent-monograph</span>
+    <span class="text-slate-400">- </span><span class="text-primary">number</span>: <span class="text-emerald-400">pages</span>
+
+  <span class="text-primary">type-variants</span>:
+    <span class="text-primary">chapter</span>:
+      <span class="text-primary">modify</span>:
+        <span class="text-slate-400">- </span><span class="text-primary">match</span>:
+            <span class="text-primary">number</span>: <span class="text-emerald-400">pages</span>
+          <span class="text-primary">prefix</span>: <span class="text-emerald-400">", "</span>
+          <span class="text-primary">label-form</span>: <span class="text-emerald-400">short</span>
+
+    <span class="text-primary">paper-conference</span>:
+      <span class="text-primary">extends</span>: <span class="text-emerald-400">chapter</span>
+      <span class="text-primary">add</span>:
+        <span class="text-slate-400">- </span><span class="text-primary">after</span>:
+            <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
+          <span class="text-primary">component</span>:
+            <span class="text-primary">title</span>: <span class="text-emerald-400">parent-serial</span>
+            <span class="text-primary">emph</span>: <span class="text-emerald-400">true</span>
+            <span class="text-primary">prefix</span>: <span class="text-emerald-400">". "</span></code></pre>
+        </div>
+    <p>In this example, <code>paper-conference</code> first inherits the <code>chapter</code> page-label
+change, then inserts the conference proceedings title.</p>
+<h3 id="operation-examples" class="font-bold text-slate-900 mt-8 mb-4">Operation Examples</h3><p>Change affixes or formatting on an inherited component:</p>
+
+        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose workshop-block">
+            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-yaml"><span class="text-indigo-400">type-variants</span>:
+  <span class="text-primary">article-journal</span>:
+    <span class="text-primary">modify</span>:
+      <span class="text-slate-400">- </span><span class="text-primary">match</span>:
+          <span class="text-primary">title</span>: <span class="text-emerald-400">parent-serial</span>
+        <span class="text-primary">emph</span>: <span class="text-emerald-400">true</span>
+        <span class="text-primary">prefix</span>: <span class="text-emerald-400">". "</span></code></pre>
+        </div>
+    <p>Use localized labels for pages. Do not write <code>prefix: &quot;pp. &quot;</code>.</p>
+
+        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose workshop-block">
+            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-yaml"><span class="text-indigo-400">type-variants</span>:
+  <span class="text-primary">chapter</span>:
+    <span class="text-primary">modify</span>:
+      <span class="text-slate-400">- </span><span class="text-primary">match</span>:
+          <span class="text-primary">number</span>: <span class="text-emerald-400">pages</span>
+        <span class="text-primary">prefix</span>: <span class="text-emerald-400">", "</span>
+        <span class="text-primary">label-form</span>: <span class="text-emerald-400">short</span></code></pre>
+        </div>
+    <p>Remove an inherited component:</p>
+
+        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose workshop-block">
+            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-yaml"><span class="text-indigo-400">type-variants</span>:
+  <span class="text-primary">article-journal</span>:
+    <span class="text-primary">remove</span>:
+      <span class="text-slate-400">- </span><span class="text-primary">match</span>:
+          <span class="text-primary">variable</span>: <span class="text-emerald-400">publisher</span></code></pre>
+        </div>
+    <p>Insert a component before or after a matched component:</p>
+
+        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose workshop-block">
+            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-yaml"><span class="text-indigo-400">type-variants</span>:
+  <span class="text-primary">chapter</span>:
+    <span class="text-primary">add</span>:
+      <span class="text-slate-400">- </span><span class="text-primary">before</span>:
+          <span class="text-primary">number</span>: <span class="text-emerald-400">pages</span>
+        <span class="text-primary">component</span>:
+          <span class="text-primary">title</span>: <span class="text-emerald-400">parent-monograph</span>
+          <span class="text-primary">emph</span>: <span class="text-emerald-400">true</span>
+          <span class="text-primary">suffix</span>: <span class="text-emerald-400">", "</span>
+
+  <span class="text-primary">webpage</span>:
+    <span class="text-primary">add</span>:
+      <span class="text-slate-400">- </span><span class="text-primary">after</span>:
+          <span class="text-primary">title</span>: <span class="text-emerald-400">primary</span>
+        <span class="text-primary">component</span>:
+          <span class="text-primary">variable</span>: <span class="text-emerald-400">url</span>
+          <span class="text-primary">prefix</span>: <span class="text-emerald-400">". "</span></code></pre>
+        </div>
+    <p>Diff operations are resolved in the order written within each operation list.
+The key order of <code>modify</code>, <code>remove</code>, and <code>add</code> does not matter.</p>
+</section>
 
             <section id="citation-modes" class="scroll-mt-24">
                 <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
