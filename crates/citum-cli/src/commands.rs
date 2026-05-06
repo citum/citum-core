@@ -9,6 +9,7 @@ use crate::args::{
 #[cfg(feature = "schema")]
 use crate::args::{SchemaArgs, SchemaType};
 use crate::output::{print_lint_report, write_output};
+use crate::style_browser::{StyleBrowserActions, StyleBrowserConfig, run_style_browser};
 use crate::style_resolver::{create_processor, load_any_style, load_locale_file};
 use crate::table::build_table;
 use crate::typst_pdf;
@@ -213,15 +214,15 @@ struct RegistryInfo {
     status: String,
 }
 
-#[derive(Clone, Serialize)]
-struct StyleCatalogRow {
-    source: String,
-    id: String,
-    aliases: Vec<String>,
-    title: Option<String>,
-    description: Option<String>,
-    fields: Vec<String>,
-    url: Option<String>,
+#[derive(Clone, Debug, Serialize)]
+pub(crate) struct StyleCatalogRow {
+    pub(crate) source: String,
+    pub(crate) id: String,
+    pub(crate) aliases: Vec<String>,
+    pub(crate) title: Option<String>,
+    pub(crate) description: Option<String>,
+    pub(crate) fields: Vec<String>,
+    pub(crate) url: Option<String>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -650,116 +651,15 @@ fn run_style_browse(query: Option<&str>, source: &str) -> Result<(), Box<dyn Err
         return Ok(());
     }
 
-    let mut filter = query.unwrap_or("").to_string();
-    let mut offset = 0usize;
-    loop {
-        let rows: Vec<_> = all_rows
-            .iter()
-            .filter(|row| filter.is_empty() || style_row_matches_query(row, &filter))
-            .cloned()
-            .collect();
-        if rows.is_empty() {
-            println!("No styles match '{filter}'.");
-        } else {
-            print_browse_page(&rows, offset, &filter);
-        }
-        println!();
-        println!("Commands: /text filter, n next, p previous, i <n> info, a <n> add, q quit");
-        print!("browse> ");
-        io::stdout().flush()?;
-
-        let mut input = String::new();
-        io::stdin().read_line(&mut input)?;
-        let command = input.trim();
-        match command {
-            "" => {}
-            "q" | "quit" => break,
-            "n" | "next" => {
-                if offset + 10 < rows.len() {
-                    offset += 10;
-                }
-            }
-            "p" | "prev" | "previous" => {
-                offset = offset.saturating_sub(10);
-            }
-            s if s.starts_with('/') => {
-                filter = s.trim_start_matches('/').trim().to_string();
-                offset = 0;
-            }
-            s if s.starts_with("i ") => {
-                let row = browse_row_by_number(&rows, offset, s.trim_start_matches("i "))?;
-                print_style_detail(&row);
-            }
-            s if s.starts_with("a ") => {
-                let row = browse_row_by_number(&rows, offset, s.trim_start_matches("a "))?;
-                let style = load_any_style(&row.id, false)?;
-                write_installed_style(&row.id, &style)?;
-                println!("Installed style: {}", row.id);
-            }
-            _ => {
-                filter = command.to_string();
-                offset = 0;
-            }
-        }
-    }
-
-    Ok(())
-}
-
-fn print_browse_page(rows: &[StyleCatalogRow], offset: usize, filter: &str) {
-    let end = (offset + 10).min(rows.len());
-    println!(
-        "{} styles{}",
-        rows.len(),
-        if filter.is_empty() {
-            String::new()
-        } else {
-            format!(" matching '{filter}'")
-        }
-    );
-    for (idx, row) in rows.iter().enumerate().skip(offset).take(10) {
-        println!(
-            "{:>2}. {:<36} {}",
-            idx - offset + 1,
-            row.id,
-            row.title.as_deref().unwrap_or("-")
-        );
-    }
-    println!("Showing {}-{} of {}", offset + 1, end, rows.len());
-}
-
-fn browse_row_by_number(
-    rows: &[StyleCatalogRow],
-    offset: usize,
-    input: &str,
-) -> Result<StyleCatalogRow, Box<dyn Error>> {
-    let choice = input.trim().parse::<usize>()?;
-    if choice == 0 || choice > 10 {
-        return Err("selection out of range".into());
-    }
-    rows.get(offset + choice - 1)
-        .cloned()
-        .ok_or_else(|| "selection out of range".into())
-}
-
-fn print_style_detail(row: &StyleCatalogRow) {
-    println!("ID:       {}", row.id);
-    println!("Title:    {}", row.title.as_deref().unwrap_or("-"));
-    println!("Source:   {}", row.source);
-    println!(
-        "Aliases:  {}",
-        if row.aliases.is_empty() {
-            "-".to_string()
-        } else {
-            row.aliases.join(", ")
-        }
-    );
-    if let Some(description) = &row.description {
-        println!("Summary:  {description}");
-    }
-    if !row.fields.is_empty() {
-        println!("Fields:   {}", row.fields.join(", "));
-    }
+    let mut actions = CliStyleBrowserActions;
+    run_style_browser(
+        StyleBrowserConfig {
+            rows: all_rows,
+            initial_query: query.unwrap_or("").to_string(),
+            source_label: source_filter.label(),
+        },
+        &mut actions,
+    )
 }
 
 fn style_install_name_from_url(input: &str) -> Result<String, Box<dyn Error>> {
@@ -793,6 +693,33 @@ fn write_installed_style(name: &str, style: &Style) -> Result<(), Box<dyn Error>
     };
     fs::write(path, bytes)?;
     Ok(())
+}
+
+fn remove_installed_style(name: &str) -> Result<(), Box<dyn Error>> {
+    let Some(data_dir) = platform_data_dir() else {
+        return Err("Unable to determine platform data directory".into());
+    };
+    let config = StoreConfig::load().unwrap_or_default();
+    let resolver = StoreResolver::new(data_dir, config.store_format());
+    let styles = resolver.list_styles()?;
+    if !styles.iter().any(|style| style == name) {
+        return Err(format!("installed style not found: {name}").into());
+    }
+    resolver.remove_style(name)?;
+    Ok(())
+}
+
+struct CliStyleBrowserActions;
+
+impl StyleBrowserActions for CliStyleBrowserActions {
+    fn install_style(&mut self, row: &StyleCatalogRow) -> Result<(), Box<dyn Error>> {
+        let style = load_any_style(&row.id, false)?;
+        write_installed_style(&row.id, &style)
+    }
+
+    fn remove_style(&mut self, row: &StyleCatalogRow) -> Result<(), Box<dyn Error>> {
+        remove_installed_style(&row.id)
+    }
 }
 
 fn install_style_from_file(path: &Path) -> Result<String, Box<dyn Error>> {
