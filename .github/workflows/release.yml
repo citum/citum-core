@@ -60,11 +60,13 @@ jobs:
             RANGE="${LAST_TAG}..HEAD"
           fi
           CURRENT=$(python3 - <<'PY'
-          from pathlib import Path
-          import re
-          match = re.search(r'^\[workspace\.package\]\s*?\n(?:.*\n)*?version = "([^"]+)"', Path("Cargo.toml").read_text(), re.M)
-          if match is None:
-              raise SystemExit("workspace package version not found")
+          import re, pathlib
+          text = pathlib.Path("Cargo.toml").read_text()
+          # Match [workspace.package] section and extract version within it
+          pattern = r'^\[workspace\.package\].*?^version\s*=\s*"([^"]+)"'
+          match = re.search(pattern, text, re.DOTALL | re.MULTILINE)
+          if not match:
+              raise SystemExit("workspace package version not found in Cargo.toml")
           print(match.group(1))
           PY
           )
@@ -150,7 +152,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          NEW_VERSION=$(grep -oP 'version = "\K[^"]+' Cargo.toml | head -1)
+          NEW_VERSION=$(python3 -c 'import re, pathlib; print(re.search(r"\[workspace\.package\].*?version\s*=\s*\"([^\"]+)\"", pathlib.Path(\"Cargo.toml\").read_text(), re.S).group(1))')
           BODY="Automated release PR for **v${NEW_VERSION}**.
 
           | Detail | Value |
@@ -163,11 +165,9 @@ jobs:
           if [ -n "$EXISTING" ]; then
             gh pr edit "$EXISTING" --title "chore: release v${NEW_VERSION}" --body "$BODY"
           else
-            if ! gh label list --json name --jq '.[].name' | grep -qx "release"; then
-              gh label create "release" \
-                --color "0E8A16" \
-                --description "Automated release pull requests"
-            fi
+            # Ensure the 'release' label exists; --force handles existing labels gracefully by updating them
+            gh label create "release" --color "0E8A16" --description "Automated release pull requests" --force
+            
             gh pr create --head "release/next" --base main \
               --title "chore: release v${NEW_VERSION}" --body "$BODY" \
               --label "release"
