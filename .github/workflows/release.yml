@@ -152,7 +152,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          NEW_VERSION=$(python3 -c 'import re, pathlib; print(re.search(r"\[workspace\.package\].*?version\s*=\s*\"([^\"]+)\"", pathlib.Path(\"Cargo.toml\").read_text(), re.S).group(1))')
+          NEW_VERSION=$(sed -n '/^\[workspace\.package\]/,/^\[/{s/^version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p;}' Cargo.toml | head -1)
           BODY="Automated release PR for **v${NEW_VERSION}**.
 
           | Detail | Value |
