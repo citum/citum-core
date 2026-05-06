@@ -9,8 +9,10 @@ const {
   convertItemsAliasInText,
   expandAnonymousAnchorsInText,
   lintAnonymousAnchors,
+  lintEmptyStyleVersion,
   lintLegacyItemsAlias,
   lintParsedStyle,
+  removeEmptyVersionInText,
   stripAnonymousAnchorMarkersInText,
 } = require('./style-structure-lint');
 
@@ -382,4 +384,32 @@ test('STYLE006 flags raw page label prefixes on page components and diffs', () =
 
   assert.equal(violations.length, 2);
   assert.equal(violations.every((violation) => violation.line === null), true);
+});
+
+test('STYLE007 detects and text-fixes empty style versions', () => {
+  const content = `version: ""
+info:
+  title: Example
+`;
+
+  const violations = lintEmptyStyleVersion('styles/fixture.yaml', content);
+  const output = removeEmptyVersionInText(content);
+
+  assert.equal(violations.length, 1);
+  assert.equal(violations[0].ruleId, 'STYLE007');
+  assert.equal(output, `info:
+  title: Example
+`);
+});
+
+test('applyFixes removes empty version properties', () => {
+  const style = {
+    version: '',
+    info: { title: 'Example' },
+  };
+
+  const changed = applyFixes(style);
+
+  assert.equal(changed, true);
+  assert.deepEqual(style, { info: { title: 'Example' } });
 });
