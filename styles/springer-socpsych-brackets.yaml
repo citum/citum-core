@@ -48,7 +48,7 @@ options:
   punctuation-in-quote: true
   volume-pages-delimiter: comma
 citation:
-  extends: numeric-citation
+  template-ref: numeric-citation
   wrap:
     punctuation: brackets
   multi-cite-delimiter: ", "

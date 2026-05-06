@@ -37,7 +37,7 @@ options:
       text-case: as-is
   punctuation-in-quote: true
 citation:
-  extends: numeric-citation
+  template-ref: numeric-citation
   wrap:
     punctuation: brackets
   multi-cite-delimiter: ','

@@ -33,7 +33,7 @@ options:
   dates: long
   titles: humanities
 citation:
-  extends: numeric-citation
+  template-ref: numeric-citation
   wrap:
     punctuation: brackets
   multi-cite-delimiter: ","

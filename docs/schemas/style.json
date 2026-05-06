@@ -4315,8 +4315,8 @@
             }
           ]
         },
-        "extends": {
-          "description": "Reference to an embedded template preset.\nIf both `extends` and `template` are present, `template` takes precedence.",
+        "template-ref": {
+          "description": "Reference to an embedded template preset or external template.\n\nIf both `template-ref` and `template` are present, `template` takes precedence.",
           "anyOf": [
             {
               "$ref": "#/$defs/TemplateReference"
@@ -5225,8 +5225,8 @@
             }
           ]
         },
-        "extends": {
-          "description": "Reference to an embedded template preset.\nIf both `extends` and `template` are present, `template` takes precedence.",
+        "template-ref": {
+          "description": "Reference to an embedded template preset or external template.\n\nIf both `template-ref` and `template` are present, `template` takes precedence.",
           "anyOf": [
             {
               "$ref": "#/$defs/TemplateReference"

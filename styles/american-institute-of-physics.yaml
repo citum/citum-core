@@ -30,7 +30,7 @@ options:
   titles: humanities
   punctuation-in-quote: true
 citation:
-  extends: numeric-citation
+  template-ref: numeric-citation
   collapse: citation-number
   multi-cite-delimiter: ","
 bibliography:
