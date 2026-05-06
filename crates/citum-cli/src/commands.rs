@@ -3,8 +3,8 @@ use crate::args::BindingsArgs;
 use crate::args::{
     CheckArgs, CheckItem, Cli, Commands, ConvertCommands, ConvertRefsArgs, ConvertTypedArgs,
     DataType, InputFormat, LintLocaleArgs, LintStyleArgs, LocaleCommands, OutputFormat, RefsFormat,
-    RegistryCommands, RenderCommands, RenderDocArgs, RenderMode, RenderRefsArgs, StoreCommands,
-    StyleCatalogFormat, StyleCatalogSource, StyleCommands, StylesCommands,
+    RegistryCommands, RenderCommands, RenderDocArgs, RenderMode, RenderRefsArgs,
+    StyleCatalogFormat, StyleCommands,
 };
 #[cfg(feature = "schema")]
 use crate::args::{SchemaArgs, SchemaType};
@@ -30,18 +30,20 @@ use citum_schema::lint::{lint_raw_locale, lint_style_against_locale};
 use citum_schema::locale::RawLocale;
 use citum_schema::options::Processing;
 use citum_schema::{RegistryEntry, Style};
-use citum_store::{StoreConfig, StoreResolver, platform_data_dir};
+use citum_store::{
+    StoreConfig, StoreResolver, platform_cache_dir, platform_config_dir, platform_data_dir,
+};
 use clap::{CommandFactory, Parser};
 use clap_complete::generate;
 #[cfg(feature = "schema")]
 use schemars::schema_for;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fmt::Write as _;
 use std::fs;
-use std::io::{self, Write};
-use std::path::Path;
+use std::io::{self, IsTerminal, Write};
+use std::path::{Path, PathBuf};
 
 impl From<RefsFormat> for EngineRefsFormat {
     fn from(format: RefsFormat) -> Self {
@@ -71,17 +73,12 @@ pub(crate) fn run() -> Result<(), Box<dyn Error>> {
             ConvertCommands::Citations(args) => run_convert_typed(args, DataType::Citations),
             ConvertCommands::Locale(args) => run_convert_typed(args, DataType::Locale),
         },
-        Commands::Styles { command } => match command.unwrap_or(StylesCommands::List) {
-            StylesCommands::List => run_styles_list(),
-        },
         Commands::Registry { command } => match command {
             RegistryCommands::List { format } => run_registry_list(&format),
+            RegistryCommands::Add { source, name } => run_registry_add(&source, name.as_deref()),
+            RegistryCommands::Remove { name, yes } => run_registry_remove(&name, yes),
+            RegistryCommands::Update { name, all } => run_registry_update(name.as_deref(), all),
             RegistryCommands::Resolve { name } => run_registry_resolve(&name),
-        },
-        Commands::Store { command } => match command {
-            StoreCommands::List => run_store_list(),
-            StoreCommands::Install { source } => run_store_install(&source),
-            StoreCommands::Remove { name } => run_store_remove(&name),
         },
         Commands::Style { command } => match command {
             StyleCommands::List {
@@ -89,20 +86,27 @@ pub(crate) fn run() -> Result<(), Box<dyn Error>> {
                 format,
                 limit,
                 offset,
-            } => run_style_list(source, format, limit, offset),
+            } => run_style_list(&source, format, limit, offset),
             StyleCommands::Search {
                 query,
                 source,
                 format,
                 limit,
                 offset,
-            } => run_style_search(&query, source, format, limit, offset),
+            } => run_style_search(&query, &source, format, limit, offset),
             StyleCommands::Info { name, format } => run_style_info(&name, format),
+            StyleCommands::Browse { query, source } => run_style_browse(query.as_deref(), &source),
+            StyleCommands::Add { query, yes } => run_style_add(&query, yes),
+            StyleCommands::Remove { name, yes } => run_style_remove(&name, yes),
             StyleCommands::Lint(args) => run_lint_style(args),
         },
         Commands::Locale { command } => match command {
+            LocaleCommands::List { source, format } => run_locale_list(&source, format),
+            LocaleCommands::Add { path } => run_locale_add(&path),
+            LocaleCommands::Remove { name, yes } => run_locale_remove(&name, yes),
             LocaleCommands::Lint(args) => run_lint_locale(args),
         },
+        Commands::Doctor { json } => run_doctor(json),
         #[cfg(feature = "schema")]
         Commands::Schema(args) => run_schema(args),
         #[cfg(feature = "typescript")]
@@ -187,131 +191,29 @@ fn run_bindings(args: BindingsArgs) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn run_styles_list() -> Result<(), Box<dyn Error>> {
-    println!("Embedded (builtin) citation styles:");
-    println!();
-
-    let mut rows = Vec::new();
-
-    for name in citum_schema::embedded::EMBEDDED_STYLE_NAMES {
-        let style = citum_schema::embedded::get_embedded_style(name)
-            .ok_or_else(|| format!("failed to load builtin style: {name}"))??;
-
-        let alias = citum_schema::embedded::EMBEDDED_STYLE_ALIASES
-            .iter()
-            .find(|(_, full)| *full == *name)
-            .map_or("-".to_string(), |(a, _)| a.to_string());
-
-        let title = style.info.title.as_deref().unwrap_or("-").to_string();
-
-        rows.push(vec![alias, title, name.to_string()]);
-    }
-
-    let table = build_table(&["Alias", "Title", "Full Name"], rows);
-    println!("{table}");
-
-    println!();
-    println!("Usage:");
-    println!("  citum render refs -s <alias|name> -b refs.json");
-    println!("  citum render doc <doc.dj> -s <alias|name> -b refs.json");
-    Ok(())
+#[derive(Clone, Debug, Deserialize, Serialize)]
+struct RegistrySourceRecord {
+    name: String,
+    source: String,
 }
 
-/// List available style registries.
-fn run_registry_list(format: &str) -> Result<(), Box<dyn Error>> {
-    #[derive(Serialize)]
-    struct RegistryInfo {
-        name: String,
-        source: String,
-        version: String,
-        styles: usize,
-    }
-
-    let mut registries = Vec::new();
-
-    // Always include the default embedded registry
-    let default_reg = citum_schema::embedded::default_registry();
-    registries.push(RegistryInfo {
-        name: "default".to_string(),
-        source: "embedded".to_string(),
-        version: default_reg.version.clone(),
-        styles: default_reg.styles.len(),
-    });
-
-    // Check for local registry in current working directory
-    let local_path = std::path::Path::new("citum-registry.yaml");
-    if local_path.exists() {
-        match citum_schema::StyleRegistry::load_from_file(local_path) {
-            Ok(local_reg) => {
-                registries.push(RegistryInfo {
-                    name: "local".to_string(),
-                    source: "local".to_string(),
-                    version: local_reg.version.clone(),
-                    styles: local_reg.styles.len(),
-                });
-            }
-            Err(_) => {
-                // If loading fails, show the row with error indicators
-                registries.push(RegistryInfo {
-                    name: "local".to_string(),
-                    source: "local".to_string(),
-                    version: "?".to_string(),
-                    styles: 0,
-                });
-            }
-        }
-    }
-
-    if format == "json" {
-        let json = serde_json::to_string_pretty(&registries)?;
-        println!("{}", json);
-    } else {
-        println!("Available Style Registries:");
-        println!();
-
-        let rows: Vec<Vec<String>> = registries
-            .iter()
-            .map(|reg| {
-                vec![
-                    reg.name.clone(),
-                    reg.source.clone(),
-                    reg.version.clone(),
-                    reg.styles.to_string(),
-                ]
-            })
-            .collect();
-
-        let table = build_table(&["Name", "Source", "Version", "Styles"], rows);
-        println!("{table}");
-        println!();
-    }
-
-    Ok(())
-}
-
-/// Resolve a style name or alias in the registry.
-fn run_registry_resolve(name: &str) -> Result<(), Box<dyn Error>> {
-    let registry = citum_schema::embedded::default_registry();
-
-    if let Some(entry) = registry.resolve(name) {
-        let source = if entry.builtin.is_some() {
-            "builtin"
-        } else if entry.url.is_some() {
-            "url"
-        } else if entry.path.is_some() {
-            "path"
-        } else {
-            "unknown"
-        };
-        println!("{} ({})", entry.id, source);
-        Ok(())
-    } else {
-        eprintln!("Error: style not found: {name}");
-        std::process::exit(1);
-    }
+#[derive(Clone, Debug)]
+struct LoadedRegistry {
+    name: String,
+    source: String,
+    registry: citum_schema::StyleRegistry,
 }
 
 #[derive(Serialize)]
+struct RegistryInfo {
+    name: String,
+    source: String,
+    version: String,
+    styles: usize,
+    status: String,
+}
+
+#[derive(Clone, Serialize)]
 struct StyleCatalogRow {
     source: String,
     id: String,
@@ -322,11 +224,50 @@ struct StyleCatalogRow {
     url: Option<String>,
 }
 
-fn style_entry_source(entry: &RegistryEntry) -> &'static str {
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum CatalogSourceFilter<'a> {
+    All,
+    Embedded,
+    Installed,
+    Registry(&'a str),
+}
+
+impl<'a> CatalogSourceFilter<'a> {
+    fn parse(source: &'a str) -> Result<Self, Box<dyn Error>> {
+        match source {
+            "all" => Ok(Self::All),
+            "embedded" => Ok(Self::Embedded),
+            "installed" => Ok(Self::Installed),
+            s if s.starts_with("registry:") => {
+                let name = s.trim_start_matches("registry:");
+                if name.is_empty() {
+                    Err("registry source filter requires a name: registry:<name>".into())
+                } else {
+                    Ok(Self::Registry(name))
+                }
+            }
+            _ => Err(format!(
+                "unknown source '{source}' (expected all, embedded, installed, or registry:<name>)"
+            )
+            .into()),
+        }
+    }
+
+    fn label(self) -> String {
+        match self {
+            Self::All => "all".to_string(),
+            Self::Embedded => "embedded".to_string(),
+            Self::Installed => "installed".to_string(),
+            Self::Registry(name) => format!("registry:{name}"),
+        }
+    }
+}
+
+fn style_entry_kind(entry: &RegistryEntry) -> &'static str {
     if entry.builtin.is_some() {
         "embedded"
     } else if entry.url.is_some() {
-        "core-http"
+        "url"
     } else if entry.path.is_some() {
         "path"
     } else {
@@ -334,15 +275,16 @@ fn style_entry_source(entry: &RegistryEntry) -> &'static str {
     }
 }
 
-fn style_entry_matches_source(entry: &RegistryEntry, source: StyleCatalogSource) -> bool {
+fn style_entry_matches_source(source_name: &str, source: CatalogSourceFilter<'_>) -> bool {
     match source {
-        StyleCatalogSource::All => true,
-        StyleCatalogSource::Embedded => entry.builtin.is_some(),
-        StyleCatalogSource::CoreHttp => entry.url.is_some(),
+        CatalogSourceFilter::All => true,
+        CatalogSourceFilter::Embedded => source_name == "embedded",
+        CatalogSourceFilter::Installed => source_name == "installed",
+        CatalogSourceFilter::Registry(name) => source_name == format!("registry:{name}"),
     }
 }
 
-fn style_catalog_row(entry: &RegistryEntry) -> StyleCatalogRow {
+fn style_catalog_row(source: &str, entry: &RegistryEntry) -> StyleCatalogRow {
     let title = entry.title.clone().or_else(|| {
         entry.builtin.as_ref().and_then(|builtin| {
             citum_schema::embedded::get_embedded_style(builtin)
@@ -352,13 +294,25 @@ fn style_catalog_row(entry: &RegistryEntry) -> StyleCatalogRow {
     });
 
     StyleCatalogRow {
-        source: style_entry_source(entry).to_string(),
+        source: source.to_string(),
         id: entry.id.clone(),
         aliases: entry.aliases.clone(),
         title,
         description: entry.description.clone(),
         fields: entry.fields.clone(),
         url: entry.url.clone(),
+    }
+}
+
+fn installed_style_catalog_row(id: String) -> StyleCatalogRow {
+    StyleCatalogRow {
+        source: "installed".to_string(),
+        id,
+        aliases: Vec::new(),
+        title: None,
+        description: None,
+        fields: Vec::new(),
+        url: None,
     }
 }
 
@@ -386,7 +340,7 @@ fn paginate_style_catalog_rows(
 fn print_style_catalog_rows(
     rows: &[StyleCatalogRow],
     total: usize,
-    source: StyleCatalogSource,
+    source: &str,
     format: StyleCatalogFormat,
 ) -> Result<(), Box<dyn Error>> {
     if format == StyleCatalogFormat::Json {
@@ -398,11 +352,7 @@ fn print_style_catalog_rows(
     Ok(())
 }
 
-fn format_style_catalog_text(
-    rows: &[StyleCatalogRow],
-    total: usize,
-    source: StyleCatalogSource,
-) -> String {
+fn format_style_catalog_text(rows: &[StyleCatalogRow], total: usize, source: &str) -> String {
     let mut output = String::new();
     let _ = writeln!(output, "{total} {source} styles");
     if rows.len() != total {
@@ -426,24 +376,188 @@ fn format_style_catalog_text(
     output
 }
 
-fn style_catalog_entries(source: StyleCatalogSource) -> Vec<StyleCatalogRow> {
-    citum_schema::embedded::default_registry()
-        .styles
-        .iter()
-        .filter(|entry| style_entry_matches_source(entry, source))
-        .map(style_catalog_row)
-        .collect()
+fn validate_resource_name(name: &str) -> Result<(), Box<dyn Error>> {
+    if name.is_empty() {
+        return Err("Name cannot be empty".into());
+    }
+    if name
+        .chars()
+        .all(|c| c.is_alphanumeric() || c == '-' || c == '_')
+        && !name.contains("..")
+        && !name.contains('/')
+        && !name.contains('\\')
+    {
+        Ok(())
+    } else {
+        Err(
+            format!("Invalid name: '{name}'. Names must be alphanumeric, hyphens, or underscores.")
+                .into(),
+        )
+    }
+}
+
+fn configured_registry_dir() -> Result<PathBuf, Box<dyn Error>> {
+    platform_config_dir()
+        .map(|dir| dir.join("registries"))
+        .ok_or_else(|| "Unable to determine Citum config directory".into())
+}
+
+fn registry_sources_path() -> Result<PathBuf, Box<dyn Error>> {
+    platform_config_dir()
+        .map(|dir| dir.join("registry-sources.json"))
+        .ok_or_else(|| "Unable to determine Citum config directory".into())
+}
+
+fn read_registry_source_records() -> Result<Vec<RegistrySourceRecord>, Box<dyn Error>> {
+    let path = registry_sources_path()?;
+    if !path.exists() {
+        return Ok(Vec::new());
+    }
+    let bytes = fs::read(path)?;
+    Ok(serde_json::from_slice(&bytes)?)
+}
+
+fn write_registry_source_records(records: &[RegistrySourceRecord]) -> Result<(), Box<dyn Error>> {
+    let path = registry_sources_path()?;
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(path, serde_json::to_vec_pretty(records)?)?;
+    Ok(())
+}
+
+fn registry_file_path(name: &str) -> Result<PathBuf, Box<dyn Error>> {
+    Ok(configured_registry_dir()?.join(format!("{name}.yaml")))
+}
+
+fn fetch_registry_bytes(source: &str) -> Result<Vec<u8>, Box<dyn Error>> {
+    if source.starts_with("http://") || source.starts_with("https://") {
+        let resolver = citum_store::HttpResolver::from_platform_cache_dir()
+            .ok_or("Unable to determine platform cache directory")?;
+        return resolver.fetch_bytes(source);
+    }
+    Ok(fs::read(source)?)
+}
+
+fn parse_registry_bytes(bytes: &[u8]) -> Result<citum_schema::StyleRegistry, Box<dyn Error>> {
+    let registry: citum_schema::StyleRegistry = serde_yaml::from_slice(bytes)?;
+    registry.validate_sources()?;
+    Ok(registry)
+}
+
+fn infer_registry_name(source: &str) -> Result<String, Box<dyn Error>> {
+    if source.starts_with("http://") || source.starts_with("https://") {
+        let url = url::Url::parse(source)?;
+        return url
+            .host_str()
+            .map(|host| host.replace('.', "-"))
+            .ok_or_else(|| format!("URL has no host: {source}").into());
+    }
+    let path = Path::new(source);
+    path.file_stem()
+        .and_then(|stem| stem.to_str())
+        .map(ToString::to_string)
+        .ok_or_else(|| format!("cannot infer registry name from {source}").into())
+}
+
+fn load_configured_registries() -> Result<Vec<LoadedRegistry>, Box<dyn Error>> {
+    let records = read_registry_source_records()?;
+    let mut registries = Vec::new();
+    for record in records {
+        let path = registry_file_path(&record.name)?;
+        if !path.exists() {
+            continue;
+        }
+        let registry = citum_schema::StyleRegistry::load_from_file(&path)?;
+        registries.push(LoadedRegistry {
+            name: record.name,
+            source: record.source,
+            registry,
+        });
+    }
+    Ok(registries)
+}
+
+fn load_local_registry() -> Option<LoadedRegistry> {
+    let path = Path::new("citum-registry.yaml");
+    if !path.exists() {
+        return None;
+    }
+    let registry = citum_schema::StyleRegistry::load_from_file(path).ok()?;
+    Some(LoadedRegistry {
+        name: "local".to_string(),
+        source: path.display().to_string(),
+        registry,
+    })
+}
+
+fn load_registry_chain() -> Result<Vec<LoadedRegistry>, Box<dyn Error>> {
+    let mut registries = Vec::new();
+    if let Some(local) = load_local_registry() {
+        registries.push(local);
+    }
+    registries.extend(load_configured_registries()?);
+    registries.push(LoadedRegistry {
+        name: "embedded".to_string(),
+        source: "embedded".to_string(),
+        registry: citum_schema::embedded::default_registry(),
+    });
+    Ok(registries)
+}
+
+fn style_catalog_entries(
+    source: CatalogSourceFilter<'_>,
+) -> Result<Vec<StyleCatalogRow>, Box<dyn Error>> {
+    let mut rows = Vec::new();
+    for loaded in load_registry_chain()? {
+        for entry in &loaded.registry.styles {
+            let actual_kind = style_entry_kind(entry);
+            let row_source = if loaded.name == "embedded" {
+                if actual_kind == "embedded" {
+                    "embedded".to_string()
+                } else {
+                    "registry:default".to_string()
+                }
+            } else {
+                format!("registry:{}", loaded.name)
+            };
+
+            if style_entry_matches_source(&row_source, source) {
+                // Special case: if filtering for 'embedded', only show truly embedded entries
+                if matches!(source, CatalogSourceFilter::Embedded) && actual_kind != "embedded" {
+                    continue;
+                }
+                rows.push(style_catalog_row(&row_source, entry));
+            }
+        }
+    }
+
+    if style_entry_matches_source("installed", source)
+        && let Some(data_dir) = platform_data_dir()
+    {
+        let config = StoreConfig::load().unwrap_or_default();
+        let resolver = StoreResolver::new(data_dir, config.store_format());
+        rows.extend(
+            resolver
+                .list_styles()?
+                .into_iter()
+                .map(installed_style_catalog_row),
+        );
+    }
+
+    Ok(rows)
 }
 
 fn run_style_list(
-    source: StyleCatalogSource,
+    source: &str,
     format: StyleCatalogFormat,
     limit: Option<usize>,
     offset: usize,
 ) -> Result<(), Box<dyn Error>> {
-    let rows = style_catalog_entries(source);
+    let source_filter = CatalogSourceFilter::parse(source)?;
+    let rows = style_catalog_entries(source_filter)?;
     let (total, rows) = paginate_style_catalog_rows(rows, StyleCatalogPage { limit, offset });
-    print_style_catalog_rows(&rows, total, source, format)
+    print_style_catalog_rows(&rows, total, &source_filter.label(), format)
 }
 
 fn style_row_matches_query(row: &StyleCatalogRow, query: &str) -> bool {
@@ -469,133 +583,648 @@ fn style_row_matches_query(row: &StyleCatalogRow, query: &str) -> bool {
 
 fn run_style_search(
     query: &str,
-    source: StyleCatalogSource,
+    source: &str,
     format: StyleCatalogFormat,
     limit: Option<usize>,
     offset: usize,
 ) -> Result<(), Box<dyn Error>> {
-    let registry = citum_schema::embedded::default_registry();
-    let rows: Vec<_> = registry
-        .styles
-        .iter()
-        .filter(|entry| style_entry_matches_source(entry, source))
-        .map(style_catalog_row)
+    let source_filter = CatalogSourceFilter::parse(source)?;
+    let rows: Vec<_> = style_catalog_entries(source_filter)?
+        .into_iter()
         .filter(|row| style_row_matches_query(row, query))
         .collect();
     let (total, rows) = paginate_style_catalog_rows(rows, StyleCatalogPage { limit, offset });
-    print_style_catalog_rows(&rows, total, source, format)
+    print_style_catalog_rows(&rows, total, &source_filter.label(), format)
 }
 
 fn run_style_info(name: &str, format: StyleCatalogFormat) -> Result<(), Box<dyn Error>> {
-    let registry = citum_schema::embedded::default_registry();
-    let entry = registry
-        .resolve(name)
+    let rows = style_catalog_entries(CatalogSourceFilter::All)?;
+    let row = rows
+        .into_iter()
+        .find(|row| row.id == name || row.aliases.iter().any(|alias| alias == name))
         .ok_or_else(|| format!("style not found: {name}"))?;
-    let row = style_catalog_row(entry);
-    print_style_catalog_rows(&[row], 1, StyleCatalogSource::All, format)
-}
 
-/// List all installed user styles and locales.
-fn run_store_list() -> Result<(), Box<dyn Error>> {
-    let Some(data_dir) = platform_data_dir() else {
-        return Err("Unable to determine platform data directory".into());
-    };
-
-    let config = StoreConfig::load().unwrap_or_default();
-    let resolver = StoreResolver::new(data_dir.clone(), config.store_format());
-
-    let styles = resolver.list_styles().unwrap_or_default();
-    let locales = resolver.list_locales().unwrap_or_default();
-
-    println!("User store location: {}", data_dir.display());
-    println!("Configured format: {}", config.store_format());
-    println!();
-
-    if styles.is_empty() {
-        println!("No installed styles.");
-        println!();
-    } else {
-        println!("Installed styles ({}):", styles.len());
-        for name in &styles {
-            println!("  - {name}");
-        }
-        println!();
-    }
-
-    if locales.is_empty() {
-        println!("No installed locales.");
-        println!();
-    } else {
-        println!("Installed locales ({}):", locales.len());
-        for name in &locales {
-            println!("  - {name}");
-        }
-        println!();
-    }
-
-    println!("Usage:");
-    println!("  Install a style:  citum store install <path>");
-    println!("  Remove a style:   citum store remove <name>");
-
-    Ok(())
-}
-
-/// Install a style or locale from a local file.
-fn run_store_install(source: &Path) -> Result<(), Box<dyn Error>> {
-    if !source.exists() || !source.is_file() {
-        return Err(format!("file not found: {}", source.display()).into());
-    }
-
-    let Some(data_dir) = platform_data_dir() else {
-        return Err("Unable to determine platform data directory".into());
-    };
-
-    let config = StoreConfig::load().unwrap_or_default();
-    let resolver = StoreResolver::new(data_dir, config.store_format());
-
-    let name = resolver
-        .install_style(source)
-        .or_else(|_| resolver.install_locale(source))?;
-
-    println!("Successfully installed: {name}");
-    Ok(())
-}
-
-/// Remove an installed style or locale.
-fn run_store_remove(name: &str) -> Result<(), Box<dyn Error>> {
-    let Some(data_dir) = platform_data_dir() else {
-        return Err("Unable to determine platform data directory".into());
-    };
-
-    let config = StoreConfig::load().unwrap_or_default();
-    let resolver = StoreResolver::new(data_dir, config.store_format());
-
-    // Check if style or locale exists
-    let styles = resolver.list_styles().unwrap_or_default();
-    let locales = resolver.list_locales().unwrap_or_default();
-
-    if !styles.contains(&name.to_string()) && !locales.contains(&name.to_string()) {
-        return Err(format!("style or locale not found: {name}").into());
-    }
-
-    // Ask for confirmation
-    print!("Are you sure you want to remove '{name}'? This cannot be undone. [y/N] ");
-    io::stdout().flush()?;
-
-    let mut response = String::new();
-    io::stdin().read_line(&mut response)?;
-
-    if response.trim().to_lowercase() != "y" && response.trim().to_lowercase() != "yes" {
-        println!("Cancelled.");
+    if format == StyleCatalogFormat::Json {
+        println!("{}", serde_json::to_string_pretty(&row)?);
         return Ok(());
     }
 
-    // Try removing as style first, then as locale
-    resolver
-        .remove_style(name)
-        .or_else(|_| resolver.remove_locale(name))?;
+    println!("ID:       {}", row.id);
+    println!("Title:    {}", row.title.as_deref().unwrap_or("-"));
+    println!("Source:   {}", row.source);
+    println!(
+        "Aliases:  {}",
+        if row.aliases.is_empty() {
+            "-".to_string()
+        } else {
+            row.aliases.join(", ")
+        }
+    );
+    if let Some(description) = row.description {
+        println!("Summary:  {description}");
+    }
+    if !row.fields.is_empty() {
+        println!("Fields:   {}", row.fields.join(", "));
+    }
+    if let Some(url) = row.url {
+        println!("URL:      {url}");
+    }
+    Ok(())
+}
 
-    println!("Successfully removed: {name}");
+fn run_style_browse(query: Option<&str>, source: &str) -> Result<(), Box<dyn Error>> {
+    let source_filter = CatalogSourceFilter::parse(source)?;
+    let all_rows = style_catalog_entries(source_filter)?;
+    if !io::stdin().is_terminal() {
+        let rows: Vec<_> = all_rows
+            .into_iter()
+            .filter(|row| query.is_none_or(|q| style_row_matches_query(row, q)))
+            .take(20)
+            .collect();
+        print_style_catalog_rows(
+            &rows,
+            rows.len(),
+            &source_filter.label(),
+            StyleCatalogFormat::Text,
+        )?;
+        return Ok(());
+    }
+
+    let mut filter = query.unwrap_or("").to_string();
+    let mut offset = 0usize;
+    loop {
+        let rows: Vec<_> = all_rows
+            .iter()
+            .filter(|row| filter.is_empty() || style_row_matches_query(row, &filter))
+            .cloned()
+            .collect();
+        if rows.is_empty() {
+            println!("No styles match '{filter}'.");
+        } else {
+            print_browse_page(&rows, offset, &filter);
+        }
+        println!();
+        println!("Commands: /text filter, n next, p previous, i <n> info, a <n> add, q quit");
+        print!("browse> ");
+        io::stdout().flush()?;
+
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+        let command = input.trim();
+        match command {
+            "" => {}
+            "q" | "quit" => break,
+            "n" | "next" => {
+                if offset + 10 < rows.len() {
+                    offset += 10;
+                }
+            }
+            "p" | "prev" | "previous" => {
+                offset = offset.saturating_sub(10);
+            }
+            s if s.starts_with('/') => {
+                filter = s.trim_start_matches('/').trim().to_string();
+                offset = 0;
+            }
+            s if s.starts_with("i ") => {
+                let row = browse_row_by_number(&rows, offset, s.trim_start_matches("i "))?;
+                print_style_detail(&row);
+            }
+            s if s.starts_with("a ") => {
+                let row = browse_row_by_number(&rows, offset, s.trim_start_matches("a "))?;
+                let style = load_any_style(&row.id, false)?;
+                write_installed_style(&row.id, &style)?;
+                println!("Installed style: {}", row.id);
+            }
+            _ => {
+                filter = command.to_string();
+                offset = 0;
+            }
+        }
+    }
+
+    Ok(())
+}
+
+fn print_browse_page(rows: &[StyleCatalogRow], offset: usize, filter: &str) {
+    let end = (offset + 10).min(rows.len());
+    println!(
+        "{} styles{}",
+        rows.len(),
+        if filter.is_empty() {
+            String::new()
+        } else {
+            format!(" matching '{filter}'")
+        }
+    );
+    for (idx, row) in rows.iter().enumerate().skip(offset).take(10) {
+        println!(
+            "{:>2}. {:<36} {}",
+            idx - offset + 1,
+            row.id,
+            row.title.as_deref().unwrap_or("-")
+        );
+    }
+    println!("Showing {}-{} of {}", offset + 1, end, rows.len());
+}
+
+fn browse_row_by_number(
+    rows: &[StyleCatalogRow],
+    offset: usize,
+    input: &str,
+) -> Result<StyleCatalogRow, Box<dyn Error>> {
+    let choice = input.trim().parse::<usize>()?;
+    if choice == 0 || choice > 10 {
+        return Err("selection out of range".into());
+    }
+    rows.get(offset + choice - 1)
+        .cloned()
+        .ok_or_else(|| "selection out of range".into())
+}
+
+fn print_style_detail(row: &StyleCatalogRow) {
+    println!("ID:       {}", row.id);
+    println!("Title:    {}", row.title.as_deref().unwrap_or("-"));
+    println!("Source:   {}", row.source);
+    println!(
+        "Aliases:  {}",
+        if row.aliases.is_empty() {
+            "-".to_string()
+        } else {
+            row.aliases.join(", ")
+        }
+    );
+    if let Some(description) = &row.description {
+        println!("Summary:  {description}");
+    }
+    if !row.fields.is_empty() {
+        println!("Fields:   {}", row.fields.join(", "));
+    }
+}
+
+fn style_install_name_from_url(input: &str) -> Result<String, Box<dyn Error>> {
+    let url = url::Url::parse(input)?;
+    url.path_segments()
+        .and_then(Iterator::last)
+        .and_then(|segment| segment.split('.').next())
+        .filter(|segment| !segment.is_empty())
+        .map(ToString::to_string)
+        .ok_or_else(|| format!("cannot infer style name from {input}").into())
+}
+
+fn write_installed_style(name: &str, style: &Style) -> Result<(), Box<dyn Error>> {
+    validate_resource_name(name)?;
+    let Some(data_dir) = platform_data_dir() else {
+        return Err("Unable to determine platform data directory".into());
+    };
+    let config = StoreConfig::load().unwrap_or_default();
+    let format = config.store_format();
+    let styles_dir = data_dir.join("styles");
+    fs::create_dir_all(&styles_dir)?;
+    let path = styles_dir.join(format!("{name}.{}", format.extension()));
+    let bytes = match format {
+        citum_store::StoreFormat::Yaml => serde_yaml::to_string(style)?.into_bytes(),
+        citum_store::StoreFormat::Json => serde_json::to_string(style)?.into_bytes(),
+        citum_store::StoreFormat::Cbor => {
+            let mut bytes = Vec::new();
+            ciborium::ser::into_writer(style, &mut bytes)?;
+            bytes
+        }
+    };
+    fs::write(path, bytes)?;
+    Ok(())
+}
+
+fn install_style_from_file(path: &Path) -> Result<String, Box<dyn Error>> {
+    if !path.exists() || !path.is_file() {
+        return Err(format!("file not found: {}", path.display()).into());
+    }
+    let _ = load_any_style(&path.display().to_string(), false)?;
+    let Some(data_dir) = platform_data_dir() else {
+        return Err("Unable to determine platform data directory".into());
+    };
+    let config = StoreConfig::load().unwrap_or_default();
+    let resolver = StoreResolver::new(data_dir, config.store_format());
+    Ok(resolver.install_style(path)?)
+}
+
+fn select_style_match(query: &str, yes: bool) -> Result<StyleCatalogRow, Box<dyn Error>> {
+    let rows = style_catalog_entries(CatalogSourceFilter::All)?;
+    let exact: Vec<_> = rows
+        .iter()
+        .filter(|row| row.id == query || row.aliases.iter().any(|alias| alias == query))
+        .cloned()
+        .collect();
+    if let [row] = exact.as_slice() {
+        return Ok(row.clone());
+    }
+
+    let mut matches: Vec<_> = rows
+        .into_iter()
+        .filter(|row| style_row_matches_query(row, query))
+        .collect();
+    matches.sort_by(|a, b| a.id.len().cmp(&b.id.len()).then_with(|| a.id.cmp(&b.id)));
+
+    match matches.as_slice() {
+        [] => Err(format!(
+            "style not found: {query}\n\nSearch styles with: citum style search {query}"
+        )
+        .into()),
+        [row] => Ok(row.clone()),
+        _ if yes || !io::stdin().is_terminal() => {
+            let mut msg = format!("style query is ambiguous: {query}\n\nMatches:");
+            for row in matches.iter().take(10) {
+                let _ = write!(
+                    msg,
+                    "\n  - {} ({})",
+                    row.id,
+                    row.title.as_deref().unwrap_or(&row.source)
+                );
+            }
+            msg.push_str("\n\nRerun with an exact ID or alias.");
+            Err(msg.into())
+        }
+        _ => {
+            println!("Multiple styles match '{query}':");
+            for (idx, row) in matches.iter().take(10).enumerate() {
+                println!(
+                    "  {}. {} - {}",
+                    idx + 1,
+                    row.id,
+                    row.title.as_deref().unwrap_or("-")
+                );
+            }
+            print!("Choose a style to install [1-{}]: ", matches.len().min(10));
+            io::stdout().flush()?;
+            let mut response = String::new();
+            io::stdin().read_line(&mut response)?;
+            let choice = response.trim().parse::<usize>()?;
+            if choice == 0 || choice > matches.len().min(10) {
+                return Err("selection out of range".into());
+            }
+            matches
+                .get(choice - 1)
+                .cloned()
+                .ok_or_else(|| "selection out of range".into())
+        }
+    }
+}
+
+fn run_style_add(query: &str, yes: bool) -> Result<(), Box<dyn Error>> {
+    let path = Path::new(query);
+    let name = if path.exists() || query.starts_with("file://") {
+        let raw_path = query.strip_prefix("file://").unwrap_or(query);
+        install_style_from_file(Path::new(raw_path))?
+    } else if query.starts_with("http://") || query.starts_with("https://") {
+        let style = load_any_style(query, false)?;
+        let name = style_install_name_from_url(query)?;
+        write_installed_style(&name, &style)?;
+        name
+    } else {
+        let row = select_style_match(query, yes)?;
+        let style = load_any_style(&row.id, false)?;
+        write_installed_style(&row.id, &style)?;
+        row.id
+    };
+
+    println!("Installed style: {name}");
+    Ok(())
+}
+
+fn run_style_remove(name: &str, yes: bool) -> Result<(), Box<dyn Error>> {
+    validate_resource_name(name)?;
+    let Some(data_dir) = platform_data_dir() else {
+        return Err("Unable to determine platform data directory".into());
+    };
+    let config = StoreConfig::load().unwrap_or_default();
+    let resolver = StoreResolver::new(data_dir, config.store_format());
+    let styles = resolver.list_styles()?;
+    if !styles.contains(&name.to_string()) {
+        return Err(format!("installed style not found: {name}").into());
+    }
+    if !yes && !confirm(&format!("Remove installed style '{name}'?"))? {
+        return Ok(());
+    }
+    resolver.remove_style(name)?;
+    println!("Removed style: {name}");
+    Ok(())
+}
+
+fn confirm(prompt: &str) -> Result<bool, Box<dyn Error>> {
+    if !io::stdin().is_terminal() {
+        return Err(format!("{prompt} Use --yes to run non-interactively.").into());
+    }
+    print!("{prompt} [y/N] ");
+    io::stdout().flush()?;
+    let mut response = String::new();
+    io::stdin().read_line(&mut response)?;
+    Ok(matches!(
+        response.trim().to_lowercase().as_str(),
+        "y" | "yes"
+    ))
+}
+
+fn run_registry_list(format: &str) -> Result<(), Box<dyn Error>> {
+    let mut registries = Vec::new();
+    let default_reg = citum_schema::embedded::default_registry();
+    registries.push(RegistryInfo {
+        name: "embedded".to_string(),
+        source: "embedded".to_string(),
+        version: default_reg.version.clone(),
+        styles: default_reg.styles.len(),
+        status: "ok".to_string(),
+    });
+    if let Some(local) = load_local_registry() {
+        registries.push(RegistryInfo {
+            name: local.name,
+            source: local.source,
+            version: local.registry.version,
+            styles: local.registry.styles.len(),
+            status: "ok".to_string(),
+        });
+    }
+    for record in read_registry_source_records()? {
+        let path = registry_file_path(&record.name)?;
+        match citum_schema::StyleRegistry::load_from_file(&path) {
+            Ok(registry) => registries.push(RegistryInfo {
+                name: record.name,
+                source: record.source,
+                version: registry.version,
+                styles: registry.styles.len(),
+                status: "ok".to_string(),
+            }),
+            Err(err) => registries.push(RegistryInfo {
+                name: record.name,
+                source: record.source,
+                version: "-".to_string(),
+                styles: 0,
+                status: err.to_string(),
+            }),
+        }
+    }
+
+    if format == "json" {
+        println!("{}", serde_json::to_string_pretty(&registries)?);
+    } else {
+        let rows = registries
+            .iter()
+            .map(|reg| {
+                vec![
+                    reg.name.clone(),
+                    reg.source.clone(),
+                    reg.version.clone(),
+                    reg.styles.to_string(),
+                    reg.status.clone(),
+                ]
+            })
+            .collect();
+        println!(
+            "{}",
+            build_table(&["Name", "Source", "Version", "Styles", "Status"], rows)
+        );
+    }
+    Ok(())
+}
+
+fn run_registry_add(source: &str, name: Option<&str>) -> Result<(), Box<dyn Error>> {
+    let name = name.map_or_else(|| infer_registry_name(source), |name| Ok(name.to_string()))?;
+    validate_resource_name(&name)?;
+    let bytes = fetch_registry_bytes(source)?;
+    let registry = parse_registry_bytes(&bytes)?;
+    fs::create_dir_all(configured_registry_dir()?)?;
+    fs::write(registry_file_path(&name)?, bytes)?;
+
+    let mut records = read_registry_source_records()?;
+    records.retain(|record| record.name != name);
+    records.push(RegistrySourceRecord {
+        name: name.clone(),
+        source: source.to_string(),
+    });
+    write_registry_source_records(&records)?;
+
+    println!(
+        "Added registry '{name}' with {} styles.",
+        registry.styles.len()
+    );
+    Ok(())
+}
+
+fn run_registry_remove(name: &str, yes: bool) -> Result<(), Box<dyn Error>> {
+    let path = registry_file_path(name)?;
+    if !path.exists() {
+        return Err(format!("configured registry not found: {name}").into());
+    }
+    if !yes && !confirm(&format!("Remove registry '{name}'?"))? {
+        return Ok(());
+    }
+    fs::remove_file(path)?;
+    let mut records = read_registry_source_records()?;
+    records.retain(|record| record.name != name);
+    write_registry_source_records(&records)?;
+    println!("Removed registry: {name}");
+    Ok(())
+}
+
+fn run_registry_update(name: Option<&str>, all: bool) -> Result<(), Box<dyn Error>> {
+    if name.is_some() == all {
+        return Err("Specify either a registry name or --all.".into());
+    }
+    let records = read_registry_source_records()?;
+    let selected: Vec<_> = records
+        .iter()
+        .filter(|record| all || Some(record.name.as_str()) == name)
+        .cloned()
+        .collect();
+    if selected.is_empty() {
+        return Err("No configured registries matched.".into());
+    }
+    for record in selected {
+        let bytes = fetch_registry_bytes(&record.source)?;
+        let registry = parse_registry_bytes(&bytes)?;
+        fs::write(registry_file_path(&record.name)?, bytes)?;
+        println!(
+            "Updated registry '{}' ({} styles).",
+            record.name,
+            registry.styles.len()
+        );
+    }
+    Ok(())
+}
+
+fn run_registry_resolve(name: &str) -> Result<(), Box<dyn Error>> {
+    for loaded in load_registry_chain()? {
+        if let Some(entry) = loaded.registry.resolve(name) {
+            println!(
+                "{} (registry:{}, {})",
+                entry.id,
+                loaded.name,
+                style_entry_kind(entry)
+            );
+            return Ok(());
+        }
+    }
+    Err(format!("style not found: {name}").into())
+}
+
+#[derive(Serialize)]
+struct LocaleRow {
+    source: String,
+    id: String,
+}
+
+fn embedded_locale_ids() -> Vec<String> {
+    citum_schema::embedded::EMBEDDED_LOCALE_IDS
+        .iter()
+        .map(|s| s.to_string())
+        .collect()
+}
+
+fn locale_rows(source: &str) -> Result<Vec<LocaleRow>, Box<dyn Error>> {
+    let mut rows = Vec::new();
+    if matches!(source, "all" | "embedded") {
+        rows.extend(embedded_locale_ids().into_iter().map(|id| LocaleRow {
+            source: "embedded".to_string(),
+            id,
+        }));
+    }
+    if matches!(source, "all" | "installed")
+        && let Some(data_dir) = platform_data_dir()
+    {
+        let config = StoreConfig::load().unwrap_or_default();
+        let resolver = StoreResolver::new(data_dir, config.store_format());
+        rows.extend(
+            resolver
+                .list_locales()
+                .unwrap_or_default()
+                .into_iter()
+                .map(|id| LocaleRow {
+                    source: "installed".to_string(),
+                    id,
+                }),
+        );
+    }
+    if !matches!(source, "all" | "embedded" | "installed") {
+        return Err(
+            format!("unknown source '{source}' (expected all, embedded, or installed)").into(),
+        );
+    }
+    Ok(rows)
+}
+
+fn run_locale_list(source: &str, format: StyleCatalogFormat) -> Result<(), Box<dyn Error>> {
+    let rows = locale_rows(source)?;
+    if format == StyleCatalogFormat::Json {
+        println!("{}", serde_json::to_string_pretty(&rows)?);
+        return Ok(());
+    }
+    let table_rows = rows
+        .iter()
+        .map(|row| vec![row.source.clone(), row.id.clone()])
+        .collect();
+    println!("{}", build_table(&["Source", "ID"], table_rows));
+    Ok(())
+}
+
+fn run_locale_add(path: &Path) -> Result<(), Box<dyn Error>> {
+    let _ = load_raw_locale(path)?;
+    let Some(data_dir) = platform_data_dir() else {
+        return Err("Unable to determine platform data directory".into());
+    };
+    let config = StoreConfig::load().unwrap_or_default();
+    let resolver = StoreResolver::new(data_dir, config.store_format());
+    let name = resolver.install_locale(path)?;
+    println!("Installed locale: {name}");
+    Ok(())
+}
+
+fn run_locale_remove(name: &str, yes: bool) -> Result<(), Box<dyn Error>> {
+    validate_resource_name(name)?;
+    let Some(data_dir) = platform_data_dir() else {
+        return Err("Unable to determine platform data directory".into());
+    };
+    let config = StoreConfig::load().unwrap_or_default();
+    let resolver = StoreResolver::new(data_dir, config.store_format());
+    let locales = resolver.list_locales()?;
+    if !locales.contains(&name.to_string()) {
+        return Err(format!("installed locale not found: {name}").into());
+    }
+    if !yes && !confirm(&format!("Remove installed locale '{name}'?"))? {
+        return Ok(());
+    }
+    resolver.remove_locale(name)?;
+    println!("Removed locale: {name}");
+    Ok(())
+}
+
+#[derive(Serialize)]
+struct DoctorReport {
+    data_dir: Option<String>,
+    config_dir: Option<String>,
+    cache_dir: Option<String>,
+    installed_styles: usize,
+    installed_locales: usize,
+    registries: Vec<RegistryInfo>,
+}
+
+fn run_doctor(json: bool) -> Result<(), Box<dyn Error>> {
+    let data_dir = platform_data_dir();
+    let config = StoreConfig::load().unwrap_or_default();
+    let (installed_styles, installed_locales) = if let Some(dir) = data_dir.clone() {
+        let resolver = StoreResolver::new(dir, config.store_format());
+        (
+            resolver.list_styles().unwrap_or_default().len(),
+            resolver.list_locales().unwrap_or_default().len(),
+        )
+    } else {
+        (0, 0)
+    };
+    let mut registries = Vec::new();
+    let default_reg = citum_schema::embedded::default_registry();
+    registries.push(RegistryInfo {
+        name: "embedded".to_string(),
+        source: "embedded".to_string(),
+        version: default_reg.version,
+        styles: default_reg.styles.len(),
+        status: "ok".to_string(),
+    });
+    for record in read_registry_source_records().unwrap_or_default() {
+        let path = registry_file_path(&record.name)?;
+        let status = if path.exists() { "ok" } else { "missing" };
+        registries.push(RegistryInfo {
+            name: record.name,
+            source: record.source,
+            version: "-".to_string(),
+            styles: 0,
+            status: status.to_string(),
+        });
+    }
+    let report = DoctorReport {
+        data_dir: data_dir.map(|path| path.display().to_string()),
+        config_dir: platform_config_dir().map(|path| path.display().to_string()),
+        cache_dir: platform_cache_dir().map(|path| path.display().to_string()),
+        installed_styles,
+        installed_locales,
+        registries,
+    };
+    if json {
+        println!("{}", serde_json::to_string_pretty(&report)?);
+    } else {
+        println!(
+            "Data dir:          {}",
+            report.data_dir.as_deref().unwrap_or("-")
+        );
+        println!(
+            "Config dir:        {}",
+            report.config_dir.as_deref().unwrap_or("-")
+        );
+        println!(
+            "Cache dir:         {}",
+            report.cache_dir.as_deref().unwrap_or("-")
+        );
+        println!("Installed styles:  {}", report.installed_styles);
+        println!("Installed locales: {}", report.installed_locales);
+        println!("Registries:        {}", report.registries.len());
+    }
     Ok(())
 }
 
@@ -1489,7 +2118,7 @@ mod tests {
         let registry = citum_schema::embedded::default_registry();
         let entry = registry.resolve("apa").expect("APA alias should resolve");
 
-        let row = style_catalog_row(entry);
+        let row = style_catalog_row("embedded", entry);
 
         assert_eq!(
             row.title.as_deref(),
@@ -1499,7 +2128,8 @@ mod tests {
 
     #[test]
     fn test_style_catalog_source_filter_and_pagination() {
-        let rows = style_catalog_entries(StyleCatalogSource::CoreHttp);
+        let rows = style_catalog_entries(CatalogSourceFilter::Embedded)
+            .expect("embedded catalog should load");
         let (total, page) = paginate_style_catalog_rows(
             rows,
             StyleCatalogPage {
@@ -1510,7 +2140,7 @@ mod tests {
 
         assert!(total > 2);
         assert_eq!(page.len(), 2);
-        assert!(page.iter().all(|row| row.source == "core-http"));
+        assert!(page.iter().all(|row| row.source == "embedded"));
     }
 
     #[test]
@@ -1519,7 +2149,7 @@ mod tests {
         let rows: Vec<_> = registry
             .styles
             .iter()
-            .map(style_catalog_row)
+            .map(|entry| style_catalog_row("embedded", entry))
             .filter(|row| style_row_matches_query(row, "Psychological Association"))
             .collect();
 
@@ -1529,7 +2159,7 @@ mod tests {
     #[test]
     fn test_style_catalog_text_output_contains_table() {
         let rows = vec![StyleCatalogRow {
-            source: "core-http".to_string(),
+            source: "embedded".to_string(),
             id: "alpha".to_string(),
             aliases: Vec::new(),
             title: Some("Alpha (biblatex-alpha)".to_string()),
@@ -1538,14 +2168,14 @@ mod tests {
             url: None,
         }];
 
-        let output = format_style_catalog_text(&rows, 3, StyleCatalogSource::CoreHttp);
+        let output = format_style_catalog_text(&rows, 3, "embedded");
 
-        assert!(output.contains("3 core-http styles"));
+        assert!(output.contains("3 embedded styles"));
         assert!(output.contains("showing 1"));
         assert!(output.contains("Source"));
         assert!(output.contains("ID"));
         assert!(output.contains("Title"));
-        assert!(output.contains("core-http"));
+        assert!(output.contains("embedded"));
         assert!(output.contains("alpha"));
         assert!(output.contains("Alpha (biblatex-alpha)"));
     }
@@ -1946,5 +2576,29 @@ grammar-options:
             parsed.legacy_term_aliases.get("page").map(String::as_str),
             Some("term.page-label")
         );
+    }
+
+    #[test]
+    fn test_validate_resource_name() {
+        assert!(validate_resource_name("apa").is_ok());
+        assert!(validate_resource_name("apa-7th").is_ok());
+        assert!(validate_resource_name("chicago_fullnote").is_ok());
+        assert!(validate_resource_name("").is_err());
+        assert!(validate_resource_name("..").is_err());
+        assert!(validate_resource_name("../../etc/passwd").is_err());
+        assert!(validate_resource_name("styles/apa").is_err());
+        assert!(validate_resource_name("apa.yaml").is_err()); // dots not allowed if we want to be strict
+        assert!(validate_resource_name("my registry!").is_err());
+    }
+
+    #[test]
+    fn test_registry_source_record_serialization() {
+        let record = RegistrySourceRecord {
+            name: "test".to_string(),
+            source: "https://example.com/registry.yaml".to_string(),
+        };
+        let json = serde_json::to_string(&record).expect("should serialize");
+        assert!(json.contains("\"name\":\"test\""));
+        assert!(json.contains("\"source\":\"https://example.com/registry.yaml\""));
     }
 }

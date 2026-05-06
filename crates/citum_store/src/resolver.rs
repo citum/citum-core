@@ -272,7 +272,21 @@ impl HttpResolver {
     /// Create a resolver using the platform cache directory.
     #[must_use]
     pub fn from_platform_cache_dir() -> Option<Self> {
-        dirs::cache_dir().map(|dir| Self::new(dir.join("citum")))
+        crate::platform_cache_dir().map(Self::new)
+    }
+
+    /// Fetch raw bytes from a URL.
+    ///
+    /// # Errors
+    /// Returns an error if the request fails.
+    pub fn fetch_bytes(&self, url: &str) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+        let mut response = self.client.get(url).send()?;
+        if !response.status().is_success() {
+            return Err(format!("failed to fetch {url}: status {}", response.status()).into());
+        }
+        let mut bytes = Vec::new();
+        response.copy_to(&mut bytes)?;
+        Ok(bytes)
     }
 
     fn cache_path(&self, uri: &str) -> PathBuf {

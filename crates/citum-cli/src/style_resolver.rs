@@ -1,9 +1,115 @@
 use citum_engine::{Processor, io::LoadedBibliography};
 use citum_schema::{Locale, Style, locale::types::LocaleOverride};
-use citum_store::{StoreConfig, StoreResolver, platform_data_dir};
+use citum_store::{StoreConfig, StoreResolver, platform_config_dir, platform_data_dir};
+use serde::Deserialize;
 use std::error::Error;
 use std::fs;
 use std::path::{Path, PathBuf};
+
+#[derive(Deserialize)]
+struct RegistrySourceRecord {
+    name: String,
+}
+
+fn registry_sources_path() -> Option<PathBuf> {
+    platform_config_dir().map(|dir| dir.join("registry-sources.json"))
+}
+
+fn configured_registry_path(name: &str) -> Option<PathBuf> {
+    platform_config_dir().map(|dir| dir.join("registries").join(format!("{name}.yaml")))
+}
+
+fn configured_registry_names() -> Vec<String> {
+    let Some(path) = registry_sources_path() else {
+        return Vec::new();
+    };
+    let Ok(bytes) = fs::read(path) else {
+        return Vec::new();
+    };
+    let Ok(records) = serde_json::from_slice::<Vec<RegistrySourceRecord>>(&bytes) else {
+        return Vec::new();
+    };
+    records.into_iter().map(|record| record.name).collect()
+}
+
+fn registry_candidate_names() -> Vec<String> {
+    let mut candidates = Vec::new();
+    let local_path = Path::new("citum-registry.yaml");
+    if local_path.exists()
+        && let Ok(registry) = citum_schema::StyleRegistry::load_from_file(local_path)
+    {
+        candidates.extend(registry.styles.iter().flat_map(|entry| {
+            std::iter::once(entry.id.clone()).chain(entry.aliases.iter().cloned())
+        }));
+    }
+    for name in configured_registry_names() {
+        let Some(path) = configured_registry_path(&name) else {
+            continue;
+        };
+        let Ok(registry) = citum_schema::StyleRegistry::load_from_file(&path) else {
+            continue;
+        };
+        candidates.extend(registry.styles.iter().flat_map(|entry| {
+            std::iter::once(entry.id.clone()).chain(entry.aliases.iter().cloned())
+        }));
+    }
+    candidates.extend(
+        citum_schema::embedded::default_registry()
+            .styles
+            .iter()
+            .flat_map(|entry| {
+                std::iter::once(entry.id.clone()).chain(entry.aliases.iter().cloned())
+            }),
+    );
+    candidates
+}
+
+fn registry_resolvers() -> Result<Vec<Box<dyn citum_store::resolver::StyleResolver>>, Box<dyn Error>>
+{
+    use citum_store::resolver::{HttpResolver, RegistryResolver, StyleResolver};
+
+    let mut resolvers: Vec<Box<dyn StyleResolver>> = Vec::new();
+
+    let local_path = Path::new("citum-registry.yaml");
+    if local_path.exists()
+        && let Ok(registry) = citum_schema::StyleRegistry::load_from_file(local_path)
+    {
+        resolvers.push(Box::new(
+            RegistryResolver::new(registry).with_base_dir(std::env::current_dir()?),
+        ));
+    }
+
+    for name in configured_registry_names() {
+        let Some(path) = configured_registry_path(&name) else {
+            continue;
+        };
+        if !path.exists() {
+            continue;
+        }
+        let Ok(registry) = citum_schema::StyleRegistry::load_from_file(&path) else {
+            continue;
+        };
+        let base_dir = path.parent().unwrap_or(Path::new(".")).to_path_buf();
+        let resolver = RegistryResolver::new(registry).with_base_dir(base_dir);
+        let resolver = if let Some(http) = HttpResolver::from_platform_cache_dir() {
+            resolver.with_http(http)
+        } else {
+            resolver
+        };
+        resolvers.push(Box::new(resolver));
+    }
+
+    let resolver = RegistryResolver::new(citum_schema::embedded::default_registry())
+        .with_base_dir(std::env::current_dir()?);
+    let resolver = if let Some(http) = HttpResolver::from_platform_cache_dir() {
+        resolver.with_http(http)
+    } else {
+        resolver
+    };
+    resolvers.push(Box::new(resolver));
+
+    Ok(resolvers)
+}
 
 pub(crate) fn load_locale_file(path: &Path) -> Result<Locale, Box<dyn Error>> {
     Locale::from_file(path)
@@ -93,8 +199,7 @@ pub(crate) fn load_any_style(
     _no_semantics: bool,
 ) -> Result<Style, Box<dyn Error>> {
     use citum_store::resolver::{
-        ChainResolver, EmbeddedResolver, FileResolver, HttpResolver, RegistryResolver,
-        StyleResolver,
+        ChainResolver, EmbeddedResolver, FileResolver, HttpResolver, StyleResolver,
     };
 
     let mut resolvers: Vec<Box<dyn StyleResolver>> = vec![Box::new(FileResolver)];
@@ -114,14 +219,7 @@ pub(crate) fn load_any_style(
         resolvers.push(Box::new(http));
     }
 
-    let registry_resolver = RegistryResolver::new(citum_schema::embedded::default_registry())
-        .with_base_dir(std::env::current_dir()?);
-    let registry_resolver = if let Some(http) = HttpResolver::from_platform_cache_dir() {
-        registry_resolver.with_http(http)
-    } else {
-        registry_resolver
-    };
-    resolvers.push(Box::new(registry_resolver));
+    resolvers.extend(registry_resolvers()?);
 
     resolvers.push(Box::new(EmbeddedResolver));
 
@@ -134,18 +232,10 @@ pub(crate) fn load_any_style(
             Ok(resolved)
         }
         Err(citum_store::resolver::ResolverError::StyleNotFound(_)) => {
-            let registry = citum_schema::embedded::default_registry();
-            let candidates: Vec<_> = registry
-                .styles
-                .iter()
-                .flat_map(|entry| {
-                    std::iter::once(entry.id.as_str())
-                        .chain(entry.aliases.iter().map(String::as_str))
-                })
-                .collect();
+            let candidates = registry_candidate_names();
             let suggestions: Vec<_> = candidates
                 .iter()
-                .filter(|&&name| strsim::jaro_winkler(style_input, name) > 0.8)
+                .filter(|name| strsim::jaro_winkler(style_input, name) > 0.8)
                 .collect();
 
             let mut msg = format!("style not found: '{style_input}'");

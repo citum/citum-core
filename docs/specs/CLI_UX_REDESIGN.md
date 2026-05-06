@@ -1,6 +1,6 @@
 # CLI UX Redesign Specification
 
-**Status:** Draft
+**Status:** Active
 **Date:** 2026-05-06
 **Related:** csl26-j242, docs/specs/STYLE_REGISTRY.md, docs/specs/DISTRIBUTED_RESOLVER.md
 
