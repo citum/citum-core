@@ -5,13 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.36.0] - 2026-05-05
+## [0.37.0] - 2026-05-06
+
+### Bug Fixes
+
+**migrate**
+
+- Emit localized page labels ([`3d2b951`](https://github.com/citum/citum-core/commit/3d2b951c19b5ea98232600823ebc539688bc86f2))
+
+
 
 ### Features
+
+**migrate**
+
+- Migrate 130+ styles to Template V3 ([`69f6973`](https://github.com/citum/citum-core/commit/69f69734719f41560b4b90927ffcdeb658dc3010))
+
 
 **schema**
 
 - Resolve template v3 variants ([`bb9f3bb`](https://github.com/citum/citum-core/commit/bb9f3bbd2668c0bb96144cac49d82d77e4b95676))
+
+- Rename template reuse ([`df4c4ea`](https://github.com/citum/citum-core/commit/df4c4eaaa6e7b69486634a47a1ed355eb22a82ed))
 
 
 ## [0.34.0] - 2026-05-03
