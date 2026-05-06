@@ -337,11 +337,11 @@ pub(crate) enum StylesCommands {
 
 #[derive(Subcommand)]
 pub(crate) enum RegistryCommands {
-    /// List all styles in the registry
+    /// List available style registries
     #[command(
-        about = "List all styles in the registry",
-        long_about = "Display all styles in the style registry with their\n\
-                      aliases and descriptions."
+        about = "List available style registries",
+        long_about = "Display available style registries (embedded default\n\
+                      and local citum-registry.yaml if present)."
     )]
     List {
         /// Output format
