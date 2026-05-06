@@ -64,27 +64,27 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     article-magazine:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     chapter:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     entry-encyclopedia:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     paper-conference:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     patent:
       remove:
         - match:

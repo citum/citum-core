@@ -91,7 +91,7 @@ citation:
           min: 4
           use-first: 1
       - number: pages
-        prefix: 'pp. '
+        label-form: short
         show-with-locator: true
       - variable: url
       - variable: publisher-place
@@ -130,7 +130,7 @@ citation:
           min: 4
           use-first: 1
       - number: pages
-        prefix: 'pp. '
+        label-form: short
         show-with-locator: true
       - variable: url
       - variable: publisher-place
@@ -164,7 +164,7 @@ citation:
           min: 4
           use-first: 1
       - number: pages
-        prefix: 'pp. '
+        label-form: short
         show-with-locator: true
       - variable: url
       - variable: publisher-place
@@ -237,7 +237,7 @@ citation:
           min: 4
           use-first: 1
       - number: pages
-        prefix: 'pp. '
+        label-form: short
         show-with-locator: true
       - variable: url
       - variable: publisher-place
@@ -271,7 +271,7 @@ citation:
           min: 4
           use-first: 1
       - number: pages
-        prefix: 'pp. '
+        label-form: short
         show-with-locator: true
       - variable: url
       - variable: publisher-place
@@ -383,12 +383,12 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     article-magazine:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     article-newspaper:
       remove:
         - match:
@@ -397,7 +397,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     dataset:
       remove:
         - match:
@@ -406,12 +406,12 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     paper-conference:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     interview:
       - contributor: interviewer
         form: long

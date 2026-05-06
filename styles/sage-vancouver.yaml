@@ -49,7 +49,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     broadcast:
       remove:
         - match:
@@ -81,7 +81,7 @@ bibliography:
       form: year
       prefix: ", "
     - number: pages
-      prefix: "pp. "
+      label-form: short
     - variable: publisher-place
     - variable: url
     entry-encyclopedia:
@@ -92,7 +92,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     personal_communication:
       remove:
         - match:

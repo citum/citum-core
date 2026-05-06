@@ -50,7 +50,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
         - match:
             contributor: editor
           prefix: 'In '
@@ -58,7 +58,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     patent:
     - number: citation-number
       suffix: ". "

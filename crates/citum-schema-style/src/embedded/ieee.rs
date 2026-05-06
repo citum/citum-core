@@ -7,7 +7,8 @@ use crate::options::AndOptions;
 use crate::{
     tc_date, tc_number, tc_title,
     template::{
-        ContributorForm, ContributorRole, TemplateComponent, TemplateContributor, WrapPunctuation,
+        ContributorForm, ContributorRole, LabelForm, NumberVariable, TemplateComponent,
+        TemplateContributor, TemplateNumber, WrapPunctuation,
     },
 };
 
@@ -20,7 +21,7 @@ pub fn citation() -> Vec<TemplateComponent> {
 
 /// Embedded bibliography template for IEEE style.
 ///
-/// Renders as: \[1\] A. B. Author and C. D. Author, "Title," *Journal*, vol. X, no. Y, pp. Z–W, Year.
+/// Renders as: \[1\] A. B. Author and C. D. Author, "Title," *Journal*, vol. X, no. Y, localized pages, Year.
 pub fn bibliography() -> Vec<TemplateComponent> {
     vec![
         // [Citation number]
@@ -48,8 +49,16 @@ pub fn bibliography() -> Vec<TemplateComponent> {
         tc_number!(Volume, prefix = "vol. ", suffix = ", "),
         // no. Y,
         tc_number!(Issue, prefix = "no. ", suffix = ", "),
-        // pp. Z–W,
-        tc_number!(Pages, prefix = "pp. ", suffix = ", "),
+        // Localized page label and page range,
+        TemplateComponent::Number(TemplateNumber {
+            number: NumberVariable::Pages,
+            label_form: Some(LabelForm::Short),
+            rendering: crate::template::Rendering {
+                suffix: Some(", ".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        }),
         // Year.
         tc_date!(Issued, Year, suffix = "."),
     ]

@@ -89,7 +89,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
           wrap:
             punctuation: parentheses
       remove:
@@ -120,7 +120,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
           wrap:
             punctuation: parentheses
     patent:

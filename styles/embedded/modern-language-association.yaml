@@ -90,7 +90,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
         - match:
             variable: doi
           prefix: https://doi.org/
@@ -98,22 +98,22 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     chapter:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     entry-encyclopedia:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     paper-conference:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     manuscript:
     - contributor: author
       form: long
@@ -159,7 +159,8 @@ bibliography:
       prefix: ", "
     - variable: medium
     - number: pages
-      prefix: ", pp. "
+      prefix: ", "
+      label-form: short
   template:
   - contributor: author
     form: long

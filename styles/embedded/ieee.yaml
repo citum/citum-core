@@ -48,12 +48,12 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     article-magazine:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     book:
     - delimiter: ""
       group:
@@ -123,7 +123,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     dataset:
     - delimiter: ""
       group:
@@ -161,7 +161,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     motion-picture:
     - delimiter: ""
       group:
@@ -198,7 +198,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     patent:
     - number: citation-number
       wrap:
@@ -230,7 +230,6 @@ bibliography:
         shorten:
           min: 8
           use-first: 1
-        prefix: "pp. "
     - title: primary
       wrap:
         punctuation: quotes

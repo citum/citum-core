@@ -147,7 +147,7 @@ bibliography:
     - number: issue
       prefix: ':'
     - number: pages
-      prefix: 'pp. '
+      label-form: short
     - variable: doi
     entry-encyclopedia:
     - contributor: author
@@ -198,7 +198,7 @@ bibliography:
     - number: issue
       prefix: ':'
     - number: pages
-      prefix: 'pp. '
+      label-form: short
     - variable: doi
   template:
   - contributor: author

@@ -48,7 +48,7 @@ bibliography:
     - title: parent-serial
     - variable: publisher
     - number: pages
-      prefix: 'pp. '
+      label-form: short
     - date: issued
       form: year
       wrap:
@@ -65,7 +65,7 @@ bibliography:
     - title: parent-serial
     - variable: publisher
     - number: pages
-      prefix: 'pp. '
+      label-form: short
     - date: issued
       form: year
       wrap:
@@ -75,7 +75,6 @@ bibliography:
     - contributor: author
       form: long
       name-order: given-first
-      prefix: 'pp. '
     - title: parent-monograph
     - title: parent-serial
     - variable: publisher

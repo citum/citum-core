@@ -70,7 +70,7 @@ citation:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
         - match:
             variable: doi
           prefix: https://doi.org/
@@ -81,7 +81,7 @@ citation:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
       remove:
         - match:
             number: number
@@ -159,7 +159,7 @@ citation:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
   template:
     - contributor: author
       form: long
@@ -209,7 +209,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
         - match:
             variable: doi
           prefix: https://doi.org/
@@ -217,7 +217,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     chapter:
       extends: article-magazine
       remove:
@@ -253,7 +253,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     legal_case:
       - title: primary
         wrap:

@@ -353,6 +353,20 @@ function detectPrefixPatterns(componentName, entries, refByEntry) {
   return { globalWinner, overrides };
 }
 
+function normalizeLocalizedPageLabelPrefix(component, prefix) {
+  if (component?.number !== 'pages') return { prefix, localized: false };
+
+  const pageLabelPrefixes = new Map([
+    ['pp. ', null],
+    [', pp. ', ', '],
+    [' pp. ', ' '],
+  ]);
+
+  if (!pageLabelPrefixes.has(prefix)) return { prefix, localized: false };
+
+  return { prefix: pageLabelPrefixes.get(prefix), localized: true };
+}
+
 function detectVolumeIssueGrouping(entries, refByEntry) {
   let withBoth = 0;
   let grouped = 0;
@@ -721,6 +735,7 @@ function generateYaml(template, delimiter, wrap) {
     if (component.emph) yaml += `${indent}  emph: true\n`;
     if (component.wrap) yaml += `${indent}  wrap: ${component.wrap}\n`;
     if (component.prefix) yaml += `${indent}  prefix: "${component.prefix}"\n`;
+    if (component['label-form']) yaml += `${indent}  label-form: ${component['label-form']}\n`;
     if (component['name-order']) yaml += `${indent}  name-order: ${component['name-order']}\n`;
     if (component.shorten) {
       yaml += `${indent}  shorten:\n`;
@@ -905,10 +920,19 @@ function inferTemplateFromInputs({
     const yamlComp = mapComponentToYaml(componentName, rendered.entries[entryIdx], refByEntry[entryIdx]);
     if (yamlComp) {
       const p = prefixes[componentName] || prefixes[parserName];
-      if (p?.globalWinner) yamlComp.prefix = p.globalWinner;
+      if (p?.globalWinner) {
+        const normalizedPrefix = normalizeLocalizedPageLabelPrefix(yamlComp, p.globalWinner);
+        if (normalizedPrefix.localized) yamlComp['label-form'] = 'short';
+        if (normalizedPrefix.prefix) yamlComp.prefix = normalizedPrefix.prefix;
+      }
       if (p?.overrides) {
         yamlComp.overrides = yamlComp.overrides || {};
-        for (const [t, pfx] of Object.entries(p.overrides)) (yamlComp.overrides[t] = yamlComp.overrides[t] || {}).prefix = pfx;
+        for (const [t, pfx] of Object.entries(p.overrides)) {
+          const override = yamlComp.overrides[t] = yamlComp.overrides[t] || {};
+          const normalizedPrefix = normalizeLocalizedPageLabelPrefix(yamlComp, pfx);
+          if (normalizedPrefix.localized) override['label-form'] = 'short';
+          if (normalizedPrefix.prefix) override.prefix = normalizedPrefix.prefix;
+        }
       }
       const w = wrapPatterns[componentName];
       if (w?.globalWinner && !yamlComp.wrap) yamlComp.wrap = w.globalWinner;
@@ -1118,6 +1142,7 @@ module.exports = {
   findDelimiterConsensus,
   detectSuppressions,
   detectPrefixPatterns,
+  normalizeLocalizedPageLabelPrefix,
   detectWrapPatterns,
   detectVolumeIssueGrouping,
   detectFormatting,

@@ -335,7 +335,7 @@ bibliography:
       - number: report-number
         prefix: "Technical Report No. "
       - number: pages
-        prefix: "pp. "
+        label-form: short
     - variable: publisher
       prefix: " "
       suffix: "."
@@ -381,7 +381,7 @@ bibliography:
           - number: collection-number
             prefix: "Vol. "
           - number: pages
-            prefix: "pp. "
+            label-form: short
     - variable: publisher
       prefix: " "
       suffix: "."
@@ -476,7 +476,7 @@ bibliography:
           - number: collection-number
             prefix: "Vol. "
           - number: pages
-            prefix: "pp. "
+            label-form: short
     - variable: publisher
       prefix: " "
       suffix: "."
@@ -524,7 +524,7 @@ bibliography:
           - number: collection-number
             prefix: "Vol. "
           - number: pages
-            prefix: "pp. "
+            label-form: short
     - variable: publisher
       prefix: " "
       suffix: "."

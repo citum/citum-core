@@ -93,7 +93,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     entry-encyclopedia:
       remove:
         - match:
@@ -103,7 +103,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
   template:
   - contributor: author
     form: long

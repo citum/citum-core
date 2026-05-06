@@ -1,4 +1,6 @@
-use citum_schema::template::{DateVariable, SimpleVariable, TemplateComponent, TitleType};
+use citum_schema::template::{
+    DateVariable, LabelForm, NumberVariable, SimpleVariable, TemplateComponent, TitleType,
+};
 
 pub(super) fn note_citation_template_is_underfit(template: &[TemplateComponent]) -> bool {
     template.len() == 1 && template.first().is_some_and(component_is_contributor_only)
@@ -138,9 +140,10 @@ pub(super) fn scrub_inferred_literal_artifacts(component: &mut TemplateComponent
                 title.rendering.prefix = Some(cleaned);
             }
         }
-        TemplateComponent::Number(number) => {
-            if number.number == citum_schema::template::NumberVariable::Pages
-                && let Some(prefix) = number.rendering.prefix.as_ref()
+        TemplateComponent::Number(number) if number.number == NumberVariable::Pages => {
+            if scrub_literal_page_label_prefix(&mut number.rendering.prefix) {
+                number.label_form = Some(LabelForm::Short);
+            } else if let Some(prefix) = number.rendering.prefix.as_ref()
                 && let Some(cleaned) = scrub_pages_year_literal_prefix(prefix)
             {
                 number.rendering.prefix = Some(cleaned);
@@ -190,6 +193,24 @@ fn scrub_pages_year_literal_prefix(prefix: &str) -> Option<String> {
     }
 
     None
+}
+
+fn scrub_literal_page_label_prefix(prefix: &mut Option<String>) -> bool {
+    match prefix.as_deref() {
+        Some("pp. ") => {
+            *prefix = None;
+            true
+        }
+        Some(", pp. ") => {
+            *prefix = Some(", ".to_string());
+            true
+        }
+        Some(" pp. ") => {
+            *prefix = Some(" ".to_string());
+            true
+        }
+        _ => false,
+    }
 }
 
 fn is_four_digit_year(value: &str) -> bool {
@@ -310,8 +331,10 @@ fn component_has_volume(component: &TemplateComponent) -> bool {
     reason = "Panicking is acceptable and often desired in tests."
 )]
 mod tests {
-    use super::should_merge_inferred_type_template;
-    use citum_schema::template::{TemplateComponent, TemplateTitle, TitleType};
+    use super::{scrub_inferred_literal_artifacts, should_merge_inferred_type_template};
+    use citum_schema::template::{
+        LabelForm, NumberVariable, TemplateComponent, TemplateNumber, TemplateTitle, TitleType,
+    };
 
     fn parent_serial_title() -> TemplateComponent {
         TemplateComponent::Title(TemplateTitle {
@@ -345,5 +368,45 @@ mod tests {
             &[],
             &[],
         ));
+    }
+
+    #[test]
+    fn scrubs_literal_page_label_prefix_to_localized_label_form() {
+        let mut component = TemplateComponent::Number(TemplateNumber {
+            number: NumberVariable::Pages,
+            rendering: citum_schema::template::Rendering {
+                prefix: Some("pp. ".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        });
+
+        scrub_inferred_literal_artifacts(&mut component);
+
+        let TemplateComponent::Number(number) = component else {
+            panic!("component should remain a number");
+        };
+        assert_eq!(number.rendering.prefix, None);
+        assert_eq!(number.label_form, Some(LabelForm::Short));
+    }
+
+    #[test]
+    fn scrubs_literal_page_label_prefix_without_losing_delimiter() {
+        let mut component = TemplateComponent::Number(TemplateNumber {
+            number: NumberVariable::Pages,
+            rendering: citum_schema::template::Rendering {
+                prefix: Some(", pp. ".to_string()),
+                ..Default::default()
+            },
+            ..Default::default()
+        });
+
+        scrub_inferred_literal_artifacts(&mut component);
+
+        let TemplateComponent::Number(number) = component else {
+            panic!("component should remain a number");
+        };
+        assert_eq!(number.rendering.prefix, Some(", ".to_string()));
+        assert_eq!(number.label_form, Some(LabelForm::Short));
     }
 }

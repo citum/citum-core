@@ -93,7 +93,7 @@ bibliography:
           prefix: 'in '
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
       remove:
         - match:
             title: primary

@@ -58,7 +58,7 @@ bibliography:
     - date: issued
       form: year
     - number: pages
-      prefix: "pp. "
+      label-form: short
     entry-encyclopedia:
       remove:
         - match:
@@ -68,12 +68,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
-    personal_communication:
-      modify:
-        - match:
-            contributor: author
-          prefix: 'pp. '
+          label-form: short
     report:
     - contributor: author
       form: long

@@ -4896,6 +4896,17 @@
           "description": "Selector identifying exactly one component to modify.",
           "$ref": "#/$defs/TemplateComponentSelector"
         },
+        "label-form": {
+          "description": "Override the localized number label form when modifying number components.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LabelForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "text-case": {
           "description": "Text-case transform to apply to the rendered value.",
           "anyOf": [

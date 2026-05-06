@@ -94,7 +94,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
       remove:
         - match:
             group:
@@ -116,7 +116,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
   template:
   - contributor: author
     form: long

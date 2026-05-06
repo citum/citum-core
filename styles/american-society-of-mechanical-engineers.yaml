@@ -65,7 +65,7 @@ bibliography:
     - variable: url
     - variable: publisher
     - number: pages
-      prefix: 'pp. '
+      label-form: short
     - variable: doi
       prefix: https://doi.org/
     - variable: publisher-place
@@ -88,7 +88,7 @@ bibliography:
     - variable: url
     - variable: publisher
     - number: pages
-      prefix: 'pp. '
+      label-form: short
     - variable: doi
       prefix: '. '
     - variable: publisher-place
@@ -111,7 +111,7 @@ bibliography:
     - variable: url
     - variable: publisher
     - number: pages
-      prefix: 'pp. '
+      label-form: short
     - variable: doi
       prefix: '. '
     - variable: publisher-place
@@ -134,7 +134,7 @@ bibliography:
     - variable: url
     - variable: publisher
     - number: pages
-      prefix: 'pp. '
+      label-form: short
     - variable: doi
       prefix: '. '
     - variable: publisher-place
@@ -157,7 +157,7 @@ bibliography:
     - variable: url
     - variable: publisher
     - number: pages
-      prefix: 'pp. '
+      label-form: short
     - variable: doi
       prefix: '. '
     - variable: publisher-place

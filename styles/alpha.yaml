@@ -76,7 +76,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
       remove:
         - match:
             date: issued
@@ -84,7 +84,7 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
   template:
   - number: citation-label
     wrap:

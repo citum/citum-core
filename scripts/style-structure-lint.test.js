@@ -349,3 +349,37 @@ docs:
   note: "citation items remain separate"
 `);
 });
+
+test('STYLE006 flags raw page label prefixes on page components and diffs', () => {
+  const content = `bibliography:
+  template:
+    - number: pages
+      prefix: 'pp. '
+  type-variants:
+    chapter:
+      modify:
+        - match:
+            number: pages
+          prefix: 'pp. '
+`;
+  const data = {
+    bibliography: {
+      template: [
+        { number: 'pages', prefix: 'pp. ' },
+      ],
+      'type-variants': {
+        chapter: {
+          modify: [
+            { match: { number: 'pages' }, prefix: 'pp. ' },
+          ],
+        },
+      },
+    },
+  };
+
+  const violations = lintParsedStyle('styles/fixture.yaml', content, data)
+    .filter((violation) => violation.ruleId === 'STYLE006');
+
+  assert.equal(violations.length, 2);
+  assert.equal(violations.every((violation) => violation.line === null), true);
+});

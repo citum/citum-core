@@ -99,13 +99,13 @@ bibliography:
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     paper-conference:
       extends: article-journal
       modify:
         - match:
             number: pages
-          prefix: 'pp. '
+          label-form: short
     webpage:
       remove:
         - match:
