@@ -28,8 +28,8 @@ const CLAP_STYLES: Styles = Styles::styled()
                   citum check -s apa-7th -b refs.json\n\n  \
                   Convert a style to binary CBOR:\n    \
                   citum convert style style.yaml -o style.cbor\n\n  \
-                  List all builtin styles:\n    \
-                  citum styles list\n\n\
+                  Search available styles:\n    \
+                  citum style search apa\n\n\
                   Run 'citum <COMMAND> --help' for more detailed examples and options.",
     styles = CLAP_STYLES,
     arg_required_else_help = true
@@ -139,30 +139,16 @@ pub(crate) enum Commands {
         command: ConvertCommands,
     },
 
-    /// List and inspect embedded (builtin) citation styles
-    #[command(
-        about = "List and inspect embedded (builtin) citation styles",
-        long_about = "Browse and inspect Citum's library of embedded citation styles.\n\n\
-                      Citum includes several standard styles (APA, MLA, Chicago, etc.)\n\
-                      built directly into the binary. You can reference these styles\n\
-                      by their alias (e.g., 'apa-7th') instead of a file path.\n\n\
-                      EXAMPLES:\n  \
-                      List all builtin styles and their aliases:\n    \
-                      citum styles list"
-    )]
-    Styles {
-        #[command(subcommand)]
-        command: Option<StylesCommands>,
-    },
-
     /// Manage and inspect the style registry
     #[command(
-        about = "Manage and inspect the style registry",
-        long_about = "Inspect and manage the citation style registry.\n\n\
-                      The registry maps style names and aliases to available styles.\n\n\
+        about = "Manage style registry sources",
+        long_about = "Manage style registry sources used for style discovery and resolution.\n\n\
+                      Registries map style names and aliases to available styles.\n\n\
                       EXAMPLES:\n  \
-                      List all styles in the registry:\n    \
+                      List configured registries:\n    \
                       citum registry list\n\n  \
+                      Add an institutional registry:\n    \
+                      citum registry add https://styles.example.org/citum-registry.yaml --name example\n\n  \
                       Resolve a style name or alias:\n    \
                       citum registry resolve apa"
     )]
@@ -171,37 +157,46 @@ pub(crate) enum Commands {
         command: RegistryCommands,
     },
 
-    /// Manage user-installed styles and locales
+    /// Find, inspect, install, remove, and lint citation styles
     #[command(
-        about = "Manage user-installed styles and locales",
-        long_about = "Install, remove, and list user-owned styles and locales.\n\n\
-                      Stored in the platform-specific user data directory (for example,\n\
-                      ~/.local/share/citum/ on Linux, ~/Library/Application Support/citum/ on\n\
-                      macOS, or %APPDATA%\\citum\\ on Windows) and checked before builtin styles\n\
-                      when resolving names.\n\n\
+        about = "Find, inspect, install, remove, and lint citation styles",
+        long_about = "Work with citation styles by task: search the catalog, inspect a style,\n\
+                      install a style, remove an installed style, or lint a style file.\n\n\
                       EXAMPLES:\n  \
-                      List all installed styles and locales:\n    \
-                      citum store list\n\n  \
-                      Install a style from a local file:\n    \
-                      citum store install /path/to/my-style.yaml\n\n  \
-                      Remove an installed style:\n    \
-                      citum store remove my-style"
+                      Search styles:\n    \
+                      citum style search chicago\n\n  \
+                      Install a style without copying a full ID:\n    \
+                      citum style add chicago\n\n  \
+                      List embedded styles only:\n    \
+                      citum style list --source embedded"
     )]
-    Store {
-        #[command(subcommand)]
-        command: StoreCommands,
-    },
-
-    /// Validate a style against a locale file
     Style {
         #[command(subcommand)]
         command: StyleCommands,
     },
 
-    /// Validate locale files and inspect locale-specific behavior
+    /// List, install, remove, and lint locale files
+    #[command(
+        about = "List, install, remove, and lint locale files",
+        long_about = "Manage installed locales and validate locale authoring files.\n\n\
+                      EXAMPLES:\n  \
+                      List installed locales:\n    \
+                      citum locale list --source installed\n\n  \
+                      Install a locale:\n    \
+                      citum locale add locales/en-US.yaml\n\n  \
+                      Lint a locale:\n    \
+                      citum locale lint locales/en-US.yaml"
+    )]
     Locale {
         #[command(subcommand)]
         command: LocaleCommands,
+    },
+
+    /// Diagnose local Citum configuration, cache, and installed resources
+    Doctor {
+        /// Output as JSON
+        #[arg(long)]
+        json: bool,
     },
 
     /// Generate JSON schema for Citum models
@@ -330,23 +325,45 @@ pub(crate) enum RefsFormat {
 }
 
 #[derive(Subcommand)]
-pub(crate) enum StylesCommands {
-    /// List all embedded (builtin) style names
-    List,
-}
-
-#[derive(Subcommand)]
 pub(crate) enum RegistryCommands {
     /// List available style registries
     #[command(
         about = "List available style registries",
-        long_about = "Display available style registries (embedded default\n\
-                      and local citum-registry.yaml if present)."
+        long_about = "Display available style registries (embedded default,\n\
+                      local citum-registry.yaml if present, and configured\n\
+                      registry sources)."
     )]
     List {
         /// Output format
         #[arg(long, default_value = "table")]
         format: String,
+    },
+
+    /// Add a registry source from a local path or HTTP(S) URL
+    Add {
+        /// Registry YAML path or HTTP(S) URL
+        source: String,
+        /// Registry name; defaults to the file stem or URL host
+        #[arg(long)]
+        name: Option<String>,
+    },
+
+    /// Remove a configured registry source
+    Remove {
+        /// Registry name to remove
+        name: String,
+        /// Skip the confirmation prompt
+        #[arg(long)]
+        yes: bool,
+    },
+
+    /// Refresh one configured registry or all registries
+    Update {
+        /// Registry name to refresh
+        name: Option<String>,
+        /// Refresh all configured registries
+        #[arg(long)]
+        all: bool,
     },
 
     /// Resolve a style name or alias to its canonical ID
@@ -362,53 +379,12 @@ pub(crate) enum RegistryCommands {
 }
 
 #[derive(Subcommand)]
-pub(crate) enum StoreCommands {
-    /// List all installed user styles and locales
-    #[command(
-        about = "List all installed user styles and locales",
-        long_about = "Display names of all styles and locales installed in the user store\n\
-                      directory. Does not include embedded/builtin styles."
-    )]
-    List,
-
-    /// Install a style or locale from a local file
-    #[command(
-        about = "Install a style or locale from a local file",
-        long_about = "Copy a local style or locale file into the user store directory.\n\
-                      The style/locale name is derived from the file stem (without extension).\n\
-                      Supports YAML, JSON, and CBOR formats.\n\n\
-                      EXAMPLES:\n  \
-                      Install a style:\n    \
-                      citum store install /path/to/my-custom-style.yaml\n\n  \
-                      Install a locale:\n    \
-                      citum store install /path/to/my-locale.yaml"
-    )]
-    Install {
-        /// Path to the style or locale file to install
-        #[arg(index = 1, required = true)]
-        source: PathBuf,
-    },
-
-    /// Remove an installed style or locale
-    #[command(
-        about = "Remove an installed style or locale",
-        long_about = "Delete a style or locale from the user store directory.\n\
-                      Requires confirmation before deletion."
-    )]
-    Remove {
-        /// Name of the style or locale to remove (without extension)
-        #[arg(index = 1, required = true)]
-        name: String,
-    },
-}
-
-#[derive(Subcommand)]
 pub(crate) enum StyleCommands {
-    /// List styles in the unified catalog
+    /// List styles in the style catalog
     List {
-        /// Catalog source to include
-        #[arg(long, value_enum, default_value_t = StyleCatalogSource::All)]
-        source: StyleCatalogSource,
+        /// Catalog source to include: all, embedded, installed, or registry:<name>
+        #[arg(long, default_value = "all")]
+        source: String,
         /// Output format
         #[arg(long, value_enum, default_value_t = StyleCatalogFormat::Text)]
         format: StyleCatalogFormat,
@@ -419,13 +395,13 @@ pub(crate) enum StyleCommands {
         #[arg(long, default_value_t = 0)]
         offset: usize,
     },
-    /// Search styles in the unified catalog
+    /// Search styles in the style catalog
     Search {
         /// Search query matched against IDs, aliases, titles, descriptions, and fields
         query: String,
-        /// Catalog source to include
-        #[arg(long, value_enum, default_value_t = StyleCatalogSource::All)]
-        source: StyleCatalogSource,
+        /// Catalog source to include: all, embedded, installed, or registry:<name>
+        #[arg(long, default_value = "all")]
+        source: String,
         /// Output format
         #[arg(long, value_enum, default_value_t = StyleCatalogFormat::Text)]
         format: StyleCatalogFormat,
@@ -436,7 +412,7 @@ pub(crate) enum StyleCommands {
         #[arg(long, default_value_t = 0)]
         offset: usize,
     },
-    /// Show details for a style in the unified catalog
+    /// Show details for a style in the style catalog
     Info {
         /// Style ID or alias
         name: String,
@@ -444,26 +420,41 @@ pub(crate) enum StyleCommands {
         #[arg(long, value_enum, default_value_t = StyleCatalogFormat::Text)]
         format: StyleCatalogFormat,
     },
-    /// Validate that a style's locale-driven features resolve against a locale file
+
+    /// Browse styles interactively in the terminal
+    Browse {
+        /// Optional initial search query
+        query: Option<String>,
+        /// Catalog source to include: all, embedded, installed, or registry:<name>
+        #[arg(long, default_value = "all")]
+        source: String,
+    },
+
+    /// Install a style by search query, ID, path, or URL
+    Add {
+        /// Style search query, ID, path, or URL
+        query: String,
+        /// Non-interactive: fail on ambiguous queries
+        #[arg(long)]
+        yes: bool,
+    },
+
+    /// Remove an installed style
+    Remove {
+        /// Installed style ID or alias
+        name: String,
+        /// Skip the confirmation prompt
+        #[arg(long)]
+        yes: bool,
+    },
+
+    /// Validate style authoring rules, optionally against a locale file
+    #[command(
+        about = "Validate style authoring rules",
+        long_about = "Validate a style file or installed/builtin style, including locale-driven\n\
+                      terms when --locale is provided."
+    )]
     Lint(LintStyleArgs),
-}
-
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
-pub(crate) enum StyleCatalogSource {
-    All,
-    Embedded,
-    #[value(name = "core-http")]
-    CoreHttp,
-}
-
-impl std::fmt::Display for StyleCatalogSource {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            StyleCatalogSource::All => write!(f, "all"),
-            StyleCatalogSource::Embedded => write!(f, "embedded"),
-            StyleCatalogSource::CoreHttp => write!(f, "core-http"),
-        }
-    }
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
@@ -483,6 +474,31 @@ impl std::fmt::Display for StyleCatalogFormat {
 
 #[derive(Subcommand)]
 pub(crate) enum LocaleCommands {
+    /// List installed or embedded locales
+    List {
+        /// Locale source to include: all, embedded, or installed
+        #[arg(long, default_value = "all")]
+        source: String,
+        /// Output format
+        #[arg(long, value_enum, default_value_t = StyleCatalogFormat::Text)]
+        format: StyleCatalogFormat,
+    },
+
+    /// Install a locale file
+    Add {
+        /// Path to the locale file to install
+        path: PathBuf,
+    },
+
+    /// Remove an installed locale
+    Remove {
+        /// Installed locale ID
+        name: String,
+        /// Skip the confirmation prompt
+        #[arg(long)]
+        yes: bool,
+    },
+
     /// Validate a locale file's message syntax and alias targets
     Lint(LintLocaleArgs),
 }
