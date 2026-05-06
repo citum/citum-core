@@ -29,7 +29,7 @@ The metric must use structural fingerprints of whole components and groups rathe
 
 ### APA preset-first refactor
 
-APA citation templates should not require inline `type-variants`. Shared citation and bibliography structure should move into the shared embedded APA template preset, with YAML using `extends: apa` plus only the minimum true deltas.
+APA citation templates should not require inline `type-variants`. Shared citation and bibliography structure should move into the shared embedded APA template preset, with YAML using `template-ref: apa` plus only the minimum true deltas.
 
 The public `styles/apa-7th.yaml` file should remain a thin wrapper over the preset base. The preset base should also be compacted so preset resolution does not reintroduce duplicated variant trees.
 
@@ -47,7 +47,7 @@ No new user-facing schema surface is introduced. The report output may expose ri
 
 - [ ] `scripts/report-core.js` counts `type-variants` and `type-templates` in concision scoring.
 - [ ] Duplicate-heavy APA-like structures are penalized by automated SQI regression tests.
-- [ ] `styles/apa-7th.yaml` and `styles/preset-bases/apa-7th.yaml` use `citation.extends: apa` and `bibliography.extends: apa`.
+- [ ] `styles/apa-7th.yaml` and `styles/preset-bases/apa-7th.yaml` use `citation.template-ref: apa` and `bibliography.template-ref: apa`.
 - [ ] APA citation configuration has no inline `type-variants`.
 - [ ] APA fidelity remains unchanged in report/oracle verification.
 - [ ] `docs/compat.html` and `scripts/report-data/core-quality-baseline.json` are regenerated from the final implementation.

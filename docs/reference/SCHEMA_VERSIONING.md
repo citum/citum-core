@@ -199,12 +199,12 @@ authoritative record when matching tags were not created at the time.
 
 #### schema-v0.41.0 (2026-05-03)
 - Schema version bumped from 0.40.0 to 0.41.0
-- Generalized `extends` to support URIs via `StyleReference` and `TemplateReference`
+- Generalized style `extends` and section `template-ref` to support URIs via `StyleReference` and `TemplateReference`
 - Phase 1 of Distributed Resolver Architecture implementation
 
 #### schema-v0.40.0 (2026-05-03)
 - Schema version bumped from 0.39.1 to 0.40.0
-- Renamed citation and bibliography template reuse from `use-preset` to `extends`
+- Renamed citation and bibliography template reuse to `template-ref`
 
 #### schema-v0.39.1 (2026-05-01)
 - Schema version bumped from 0.39.0 to 0.39.1

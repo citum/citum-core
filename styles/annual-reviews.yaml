@@ -32,7 +32,7 @@ options:
   page-range-format: chicago
   punctuation-in-quote: true
 citation:
-  extends: numeric-citation
+  template-ref: numeric-citation
   wrap:
     punctuation: parentheses
   multi-cite-delimiter: ", "

@@ -317,7 +317,7 @@ mod tests {
         );
         let citation = style.citation.as_ref().expect("citation should be present");
         assert!(
-            citation.extends.is_none(),
+            citation.template_ref.is_none(),
             "APA base should carry authored citation templates"
         );
         assert!(
@@ -344,7 +344,7 @@ mod tests {
             .as_ref()
             .expect("bibliography should be present");
         assert!(
-            bibliography.extends.is_none(),
+            bibliography.template_ref.is_none(),
             "APA base should carry authored bibliography templates"
         );
         assert!(

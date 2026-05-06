@@ -36,7 +36,7 @@ options:
   dates: long
   titles: journal-emphasis
 citation:
-  extends: numeric-citation
+  template-ref: numeric-citation
   wrap:
     punctuation: brackets
   multi-cite-delimiter: ","

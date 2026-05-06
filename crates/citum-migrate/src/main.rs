@@ -581,7 +581,7 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOut
         options: Some(c.options),
         citation: Some(CitationSpec {
             options: citation_scope_options,
-            extends: None,
+            template_ref: None,
             template: Some(c.new_cit),
             collapse: extract_citation_collapse(&legacy_style.citation),
             wrap: c.citation_wrap.map(Into::into),
@@ -595,7 +595,7 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOut
         }),
         bibliography: Some(BibliographySpec {
             options: bibliography_scope_options,
-            extends: None,
+            template_ref: None,
             template: Some(c.new_bib),
             type_variants,
             sort: bibliography_sort,

@@ -26,7 +26,7 @@ options:
   page-range-format: minimal
   punctuation-in-quote: true
 citation:
-  extends: numeric-citation
+  template-ref: numeric-citation
   wrap:
     punctuation: parentheses
   multi-cite-delimiter: ","

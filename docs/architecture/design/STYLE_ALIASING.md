@@ -357,9 +357,9 @@ options:
   dates: apa
   titles: apa
 citation:
-  extends: apa
+  template-ref: apa
 bibliography:
-  extends: apa
+  template-ref: apa
 ```
 
 ---
@@ -469,7 +469,7 @@ The Citum approach separates "what to render" (templates) from "how to render" (
    - Detection functions: `detect_contributor_preset()`, `detect_title_preset()`, `detect_date_preset()`
 
 4. **Expose embedded templates + Processor Expansion** (PR #45)
-   - Added `extends` field and `TemplatePreset` enum
+   - Added template reference field and `TemplatePreset` enum
    - Implemented `resolve_template()` in core and updated processor to use it
    - Verified with new integration tests
 

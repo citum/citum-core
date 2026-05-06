@@ -36,7 +36,7 @@ options:
   dates: short
   titles: humanities
 citation:
-  extends: numeric-citation
+  template-ref: numeric-citation
   multi-cite-delimiter: ","
 bibliography:
   options:
