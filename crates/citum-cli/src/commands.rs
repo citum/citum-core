@@ -10,6 +10,7 @@ use crate::args::{
 use crate::args::{SchemaArgs, SchemaType};
 use crate::output::{print_lint_report, write_output};
 use crate::style_resolver::{create_processor, load_any_style, load_locale_file};
+use crate::table::build_table;
 use crate::typst_pdf;
 use citum_engine::{
     Citation, CitationItem, DocumentFormat, Processor,
@@ -32,8 +33,6 @@ use citum_schema::{RegistryEntry, Style};
 use citum_store::{StoreConfig, StoreResolver, platform_data_dir};
 use clap::{CommandFactory, Parser};
 use clap_complete::generate;
-use comfy_table::presets::UTF8_FULL;
-use comfy_table::{Cell, Color, ContentArrangement, Table};
 #[cfg(feature = "schema")]
 use schemars::schema_for;
 use serde::Serialize;
@@ -192,15 +191,7 @@ fn run_styles_list() -> Result<(), Box<dyn Error>> {
     println!("Embedded (builtin) citation styles:");
     println!();
 
-    let mut table = Table::new();
-    table
-        .load_preset(UTF8_FULL)
-        .set_content_arrangement(ContentArrangement::Dynamic)
-        .set_header(vec![
-            Cell::new("Alias").fg(Color::Cyan),
-            Cell::new("Title").fg(Color::Cyan),
-            Cell::new("Full Name").fg(Color::Cyan),
-        ]);
+    let mut rows = Vec::new();
 
     for name in citum_schema::embedded::EMBEDDED_STYLE_NAMES {
         let style = citum_schema::embedded::get_embedded_style(name)
@@ -209,13 +200,14 @@ fn run_styles_list() -> Result<(), Box<dyn Error>> {
         let alias = citum_schema::embedded::EMBEDDED_STYLE_ALIASES
             .iter()
             .find(|(_, full)| *full == *name)
-            .map_or("-", |(a, _)| *a);
+            .map_or("-".to_string(), |(a, _)| a.to_string());
 
-        let title = style.info.title.as_deref().unwrap_or("-");
+        let title = style.info.title.as_deref().unwrap_or("-").to_string();
 
-        table.add_row(vec![Cell::new(alias), Cell::new(title), Cell::new(name)]);
+        rows.push(vec![alias, title, name.to_string()]);
     }
 
+    let table = build_table(&["Alias", "Title", "Full Name"], rows);
     println!("{table}");
 
     println!();
@@ -225,42 +217,71 @@ fn run_styles_list() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-/// List all styles in the registry.
+/// List available style registries.
 fn run_registry_list(format: &str) -> Result<(), Box<dyn Error>> {
-    let registry = citum_schema::embedded::default_registry();
+    #[derive(Serialize)]
+    struct RegistryInfo {
+        name: String,
+        source: String,
+        version: String,
+        styles: usize,
+    }
+
+    let mut registries = Vec::new();
+
+    // Always include the default embedded registry
+    let default_reg = citum_schema::embedded::default_registry();
+    registries.push(RegistryInfo {
+        name: "default".to_string(),
+        source: "embedded".to_string(),
+        version: default_reg.version.clone(),
+        styles: default_reg.styles.len(),
+    });
+
+    // Check for local registry in current working directory
+    let local_path = std::path::Path::new("citum-registry.yaml");
+    if local_path.exists() {
+        match citum_schema::StyleRegistry::load_from_file(local_path) {
+            Ok(local_reg) => {
+                registries.push(RegistryInfo {
+                    name: "local".to_string(),
+                    source: "local".to_string(),
+                    version: local_reg.version.clone(),
+                    styles: local_reg.styles.len(),
+                });
+            }
+            Err(_) => {
+                // If loading fails, show the row with error indicators
+                registries.push(RegistryInfo {
+                    name: "local".to_string(),
+                    source: "local".to_string(),
+                    version: "?".to_string(),
+                    styles: 0,
+                });
+            }
+        }
+    }
 
     if format == "json" {
-        let json = serde_json::to_string_pretty(&registry)?;
+        let json = serde_json::to_string_pretty(&registries)?;
         println!("{}", json);
     } else {
-        println!("Style Registry:");
+        println!("Available Style Registries:");
         println!();
 
-        let mut table = Table::new();
-        table
-            .load_preset(UTF8_FULL)
-            .set_content_arrangement(ContentArrangement::Dynamic)
-            .set_header(vec![
-                Cell::new("ID").fg(Color::Cyan),
-                Cell::new("Aliases").fg(Color::Cyan),
-                Cell::new("Description").fg(Color::Cyan),
-            ]);
+        let rows: Vec<Vec<String>> = registries
+            .iter()
+            .map(|reg| {
+                vec![
+                    reg.name.clone(),
+                    reg.source.clone(),
+                    reg.version.clone(),
+                    reg.styles.to_string(),
+                ]
+            })
+            .collect();
 
-        for entry in &registry.styles {
-            let aliases = if entry.aliases.is_empty() {
-                "-".to_string()
-            } else {
-                entry.aliases.join(", ")
-            };
-            let description = entry.description.as_deref().unwrap_or("-");
-
-            table.add_row(vec![
-                Cell::new(&entry.id),
-                Cell::new(aliases),
-                Cell::new(description),
-            ]);
-        }
-
+        let table = build_table(&["Name", "Source", "Version", "Styles"], rows);
         println!("{table}");
         println!();
     }
@@ -389,15 +410,19 @@ fn format_style_catalog_text(
     }
     output.push('\n');
 
-    for row in rows {
-        let _ = writeln!(
-            output,
-            "{:<10}  {:<42}  {}",
-            row.source,
-            row.id,
-            row.title.as_deref().unwrap_or("-")
-        );
-    }
+    let table_rows: Vec<Vec<String>> = rows
+        .iter()
+        .map(|row| {
+            vec![
+                row.source.clone(),
+                row.id.clone(),
+                row.title.as_deref().unwrap_or("-").to_string(),
+            ]
+        })
+        .collect();
+
+    let table = build_table(&["Source", "ID", "Title"], table_rows);
+    output.push_str(&table);
     output
 }
 
@@ -1502,7 +1527,7 @@ mod tests {
     }
 
     #[test]
-    fn test_style_catalog_text_output_is_not_table() {
+    fn test_style_catalog_text_output_contains_table() {
         let rows = vec![StyleCatalogRow {
             source: "core-http".to_string(),
             id: "alpha".to_string(),
@@ -1515,10 +1540,14 @@ mod tests {
 
         let output = format_style_catalog_text(&rows, 3, StyleCatalogSource::CoreHttp);
 
-        assert_eq!(
-            output,
-            "3 core-http styles\nshowing 1\n\ncore-http   alpha                                       Alpha (biblatex-alpha)\n"
-        );
+        assert!(output.contains("3 core-http styles"));
+        assert!(output.contains("showing 1"));
+        assert!(output.contains("Source"));
+        assert!(output.contains("ID"));
+        assert!(output.contains("Title"));
+        assert!(output.contains("core-http"));
+        assert!(output.contains("alpha"));
+        assert!(output.contains("Alpha (biblatex-alpha)"));
     }
 
     // ------------------------------------------------------------------
