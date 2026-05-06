@@ -221,10 +221,47 @@ Aliases:  apa
 Kind:     base
 ```
 
-`citum style browse` implements `csl26-j242`. It is an interactive TUI over the
-same catalog rows used by `list`, `search`, and `info`. It should provide a
-scrollable list, incremental filtering, and a detail pane. It should not define a
-separate data model or registry path.
+`citum style browse` implements `csl26-j242`. It is an interactive Ratatui TUI
+over the same catalog rows used by `list`, `search`, and `info`. It must provide
+a scrollable list, incremental filtering, a detail pane, and install/remove
+actions without defining a separate data model or registry path.
+
+The browser is a style discovery tool, not a monochrome table prompt. It should
+use restrained color to make state legible:
+
+- a header showing the active source filter, search query, result count, and
+  installed count;
+- a selectable table of styles with aligned `Status`, `Source`, `ID`, and
+  `Title` columns;
+- a visible installed indicator for styles already present in the user store,
+  shown as a high-contrast `INSTALLED` cell in the `Status` column rather than
+  appended after the ID;
+- a detail pane with ID, title, source, aliases, fields, description, and URL
+  when available;
+- a footer with the active key bindings and transient success/error messages.
+
+Catalog rows should be merged for display. If an embedded or registry style is
+already installed, it appears once with its original source and an installed
+status. Styles that only exist in the user store appear with source `installed`.
+The TUI must never require the user to copy a full style ID from terminal output.
+
+Required keys:
+
+- `/` focuses search and live-filters the list;
+- `Esc` clears search or returns focus to the list;
+- `Up`/`Down` and `j`/`k` move selection;
+- `PageUp`/`PageDown`, `Home`, and `End` page through results;
+- `Enter` or `d` focuses the detail pane;
+- `i` installs the selected style when it is not already installed;
+- `r` removes the selected installed style after a `y`/`n` confirmation modal;
+- `q` quits from any focus state.
+
+The command must keep a non-TTY fallback that prints the same rows as
+`style list/search`, because scripts and pipes should not enter alternate-screen
+mode. In a narrow terminal, the TUI should collapse to a single-pane list/detail
+toggle with each item split across two lines: status/source first, then ID/title.
+The footer must be mode-specific: search mode only shows search controls, while
+list/detail mode shows install or remove depending on the selected style state.
 
 `citum style add <query-or-url-or-path>` installs a style into the user store. If
 given a URL or path, it validates and installs that style directly. If given text
@@ -370,7 +407,7 @@ workflow:
       registry-add, registry refresh, registry-remove, render, style-lint, and
       locale-lint workflows.
 - [ ] `csl26-j242` is specified as `citum style browse` over the shared style
-      catalog.
+      catalog, including source badges and installed-state indicators.
 - [ ] The target command tree has no public `store` noun; diagnostics live under
       `doctor`, styles under `style`, and locales under `locale`.
 - [ ] The implementation sequence is explicit enough that follow-up commits can
