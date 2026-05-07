@@ -14,7 +14,7 @@ use citum_migrate::{
         note_citation_template_is_underfit, scrub_inferred_literal_artifacts,
         should_merge_inferred_type_template,
     },
-    lineage::StyleLineage,
+    lineage::{MigrationOutputPlan, StyleLineage},
     options_extractor::MigrationOptions,
     provenance::ProvenanceTracker,
     template_resolver,
@@ -652,6 +652,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         lineage.implementation_form,
         lineage.parent_style_id.as_deref().unwrap_or("none")
     );
+    log_migration_output_plan(&lineage);
 
     let text = fs::read_to_string(path)?;
     let doc = Document::parse(&text)?;
@@ -736,6 +737,29 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     output_style_and_debug(&style, cli.debug_variable.as_deref(), &tracker)?;
     Ok(())
+}
+
+fn log_migration_output_plan(lineage: &StyleLineage) {
+    match lineage.output_plan() {
+        MigrationOutputPlan::Standalone => {
+            eprintln!("Migration output plan: standalone");
+        }
+        MigrationOutputPlan::ExistingWrapper {
+            parent_style_id,
+            implementation_form,
+            preserve_template_deltas,
+        } => {
+            eprintln!(
+                "Migration output plan: existing-wrapper parent={parent_style_id} form={implementation_form:?} preserve-template-deltas={preserve_template_deltas}"
+            );
+        }
+        plan if plan.requires_multi_artifact_write() => {
+            eprintln!("Migration output plan: multi-artifact {plan:?}");
+        }
+        plan => {
+            eprintln!("Migration output plan: {plan:?}");
+        }
+    }
 }
 
 fn output_style_and_debug(

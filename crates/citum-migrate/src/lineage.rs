@@ -33,6 +33,47 @@ pub enum ImplementationForm {
     Unknown,
 }
 
+/// Explicit artifact plan for migration output.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum MigrationOutputPlan {
+    /// Emit a single standalone style without an inherited parent.
+    Standalone,
+    /// Emit a single wrapper over an established checked-in parent style.
+    ExistingWrapper {
+        /// Established parent style ID from repo truth.
+        parent_style_id: String,
+        /// Current wrapper implementation form.
+        implementation_form: ImplementationForm,
+        /// Whether local template-bearing deltas are allowed in the wrapper.
+        preserve_template_deltas: bool,
+    },
+    /// Emit a new hidden embedded root and a public wrapper.
+    CreateEmbeddedRootAndWrapper {
+        /// Hidden embedded root style ID to create.
+        root_style_id: String,
+        /// Public style ID for the wrapper.
+        public_style_id: String,
+    },
+    /// Update an existing hidden embedded root and its public wrapper.
+    UpgradeEmbeddedRootAndWrapper {
+        /// Hidden embedded root style ID to update.
+        root_style_id: String,
+        /// Public style ID for the wrapper.
+        public_style_id: String,
+    },
+}
+
+impl MigrationOutputPlan {
+    /// Return whether this plan writes more than one style artifact.
+    #[must_use]
+    pub fn requires_multi_artifact_write(&self) -> bool {
+        matches!(
+            self,
+            Self::CreateEmbeddedRootAndWrapper { .. } | Self::UpgradeEmbeddedRootAndWrapper { .. }
+        )
+    }
+}
+
 /// Migration-time lineage for one style target.
 #[derive(Debug, Clone)]
 pub struct StyleLineage {
@@ -147,21 +188,19 @@ impl StyleLineage {
     /// Returns an error when the rewritten wrapper cannot be serialized or
     /// deserialized as a valid `Style`.
     pub fn apply_to_migrated_style(&self, style: Style) -> Result<Style, LineageError> {
-        let Some(parent_style_id) = self.parent_style_id.as_deref() else {
+        let MigrationOutputPlan::ExistingWrapper {
+            parent_style_id,
+            preserve_template_deltas,
+            ..
+        } = self.output_plan()
+        else {
             return Ok(style);
         };
         let Some(parent_style) = self.parent_style.as_ref() else {
             return Ok(style);
         };
 
-        let exclude_template_paths = match (self.semantic_class, self.implementation_form) {
-            (
-                SemanticClass::Profile | SemanticClass::Journal,
-                ImplementationForm::ConfigWrapper,
-            ) => true,
-            (SemanticClass::Journal, ImplementationForm::StructuralWrapper) => false,
-            _ => return Ok(style),
-        };
+        let exclude_template_paths = !preserve_template_deltas;
 
         let child = serde_yaml::to_value(&style)?;
         let parent = serde_yaml::to_value(parent_style.clone().into_resolved())?;
@@ -178,12 +217,39 @@ impl StyleLineage {
 
         diff.insert(
             Value::String("extends".to_string()),
-            Value::String(parent_style_id.to_string()),
+            Value::String(parent_style_id),
         );
 
         let mut rebuilt: Style = serde_yaml::from_value(Value::Mapping(diff))?;
         rebuilt.raw_yaml = None;
         Ok(rebuilt)
+    }
+
+    /// Return the explicit migration artifact plan derived from repo truth.
+    #[must_use]
+    pub fn output_plan(&self) -> MigrationOutputPlan {
+        let Some(parent_style_id) = self.parent_style_id.clone() else {
+            return MigrationOutputPlan::Standalone;
+        };
+
+        match (self.semantic_class, self.implementation_form) {
+            (
+                SemanticClass::Profile | SemanticClass::Journal,
+                ImplementationForm::ConfigWrapper,
+            ) => MigrationOutputPlan::ExistingWrapper {
+                parent_style_id,
+                implementation_form: self.implementation_form,
+                preserve_template_deltas: false,
+            },
+            (SemanticClass::Journal, ImplementationForm::StructuralWrapper) => {
+                MigrationOutputPlan::ExistingWrapper {
+                    parent_style_id,
+                    implementation_form: self.implementation_form,
+                    preserve_template_deltas: true,
+                }
+            }
+            _ => MigrationOutputPlan::Standalone,
+        }
     }
 }
 
@@ -439,6 +505,14 @@ mod tests {
             lineage.parent_style_id.as_deref(),
             Some("elsevier-harvard-core")
         );
+        assert_eq!(
+            lineage.output_plan(),
+            MigrationOutputPlan::ExistingWrapper {
+                parent_style_id: "elsevier-harvard-core".to_string(),
+                implementation_form: ImplementationForm::ConfigWrapper,
+                preserve_template_deltas: false,
+            }
+        );
     }
 
     #[test]
@@ -458,6 +532,14 @@ mod tests {
             lineage.parent_style_id.as_deref(),
             Some("elsevier-with-titles")
         );
+        assert_eq!(
+            lineage.output_plan(),
+            MigrationOutputPlan::ExistingWrapper {
+                parent_style_id: "elsevier-with-titles".to_string(),
+                implementation_form: ImplementationForm::ConfigWrapper,
+                preserve_template_deltas: false,
+            }
+        );
     }
 
     #[test]
@@ -474,6 +556,14 @@ mod tests {
             ImplementationForm::StructuralWrapper
         );
         assert_eq!(lineage.parent_style_id.as_deref(), Some("ieee"));
+        assert_eq!(
+            lineage.output_plan(),
+            MigrationOutputPlan::ExistingWrapper {
+                parent_style_id: "ieee".to_string(),
+                implementation_form: ImplementationForm::StructuralWrapper,
+                preserve_template_deltas: true,
+            }
+        );
     }
 
     #[test]
@@ -485,6 +575,33 @@ mod tests {
         assert_eq!(lineage.semantic_class, SemanticClass::Unknown);
         assert_eq!(lineage.implementation_form, ImplementationForm::Unknown);
         assert!(lineage.parent_style_id.is_none());
+        assert_eq!(lineage.output_plan(), MigrationOutputPlan::Standalone);
+    }
+
+    #[test]
+    fn embedded_root_wrapper_plans_require_multi_artifact_writes() {
+        assert!(
+            MigrationOutputPlan::CreateEmbeddedRootAndWrapper {
+                root_style_id: "publisher-core".to_string(),
+                public_style_id: "publisher".to_string(),
+            }
+            .requires_multi_artifact_write()
+        );
+        assert!(
+            MigrationOutputPlan::UpgradeEmbeddedRootAndWrapper {
+                root_style_id: "publisher-core".to_string(),
+                public_style_id: "publisher".to_string(),
+            }
+            .requires_multi_artifact_write()
+        );
+        assert!(
+            !MigrationOutputPlan::ExistingWrapper {
+                parent_style_id: "publisher-core".to_string(),
+                implementation_form: ImplementationForm::ConfigWrapper,
+                preserve_template_deltas: false,
+            }
+            .requires_multi_artifact_write()
+        );
     }
 
     #[test]
