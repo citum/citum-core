@@ -1645,12 +1645,14 @@ function collectTemplateScopes(styleData) {
 
   function addVariantScopes(prefix, variants, kind) {
     for (const [rawKey, template] of Object.entries(variants || {})) {
+      const isDiffForm = !Array.isArray(template) && Boolean(template) && typeof template === 'object';
       const components = Array.isArray(template) ? template : templateVariantAuthoredComponents(template);
       if (!Array.isArray(components)) continue;
       const typeSelectors = parseOverrideKey(rawKey).filter((key) => key !== 'default');
       variantSelectorCount += typeSelectors.length || 1;
       addScope(`${prefix}.${rawKey}`, components, {
         kind,
+        isDiffForm,
         typeSelectors,
         typeSelectorCount: typeSelectors.length || 1,
       });
@@ -1683,17 +1685,19 @@ function templateVariantAuthoredComponents(variant) {
   if (!variant || typeof variant !== 'object' || Array.isArray(variant)) return null;
   const components = [];
   for (const operation of variant.modify || []) {
-    const component = { ...(operation.match || {}) };
+    const component = { ...(operation.match || {}), __isDiff: true };
     for (const [key, value] of Object.entries(operation)) {
       if (key !== 'match') component[key] = value;
     }
     components.push(component);
   }
   for (const operation of variant.remove || []) {
-    components.push({ ...(operation.match || {}), suppress: true });
+    components.push({ ...(operation.match || {}), suppress: true, __isDiff: true });
   }
   for (const operation of variant.add || []) {
-    if (operation.component) components.push(operation.component);
+    if (operation.component) {
+      components.push({ ...operation.component, __isDiff: true });
+    }
   }
   return components.length > 0 ? components : null;
 }
@@ -1757,6 +1761,7 @@ function stableStructure(value) {
   }
   const normalized = {};
   for (const key of Object.keys(value).sort()) {
+    if (key === '__isDiff') continue;
     normalized[key] = stableStructure(value[key]);
   }
   return normalized;
@@ -1905,8 +1910,18 @@ function computeTypeCoverageScore(citationsByType) {
 function computeFallbackRobustness(styleData) {
   const bibliography = styleData?.bibliography || {};
   const typeTemplates = bibliography['type-templates'] || {};
-  const typeTemplateSet = new Set(Object.keys(typeTemplates));
-  const assessedTypes = CORE_FALLBACK_TYPES.filter((type) => !typeTemplateSet.has(type));
+  const typeVariants = bibliography['type-variants'] || {};
+  const explicitTypes = new Set();
+
+  [typeTemplates, typeVariants].forEach((map) => {
+    for (const rawKey of Object.keys(map)) {
+      for (const type of parseOverrideKey(rawKey)) {
+        if (type !== 'default') explicitTypes.add(type);
+      }
+    }
+  });
+
+  const assessedTypes = CORE_FALLBACK_TYPES.filter((type) => !explicitTypes.has(type));
   if (typeof bibliography['extends'] === 'string' && bibliography['extends'].trim()) {
     return {
       score: 100,
@@ -1922,7 +1937,7 @@ function computeFallbackRobustness(styleData) {
       score: 100,
       assessedTypes: 0,
       passingTypes: 0,
-      note: 'all core types have explicit type-templates',
+      note: 'all core types have explicit type-templates or type-variants',
     };
   }
 
@@ -1947,6 +1962,7 @@ function computeConcisionScore(styleData, format) {
     .map((scope) => ({
       name: scope.name,
       kind: scope.kind,
+      isDiffForm: Boolean(scope.isDiffForm),
       typeSelectors: scope.typeSelectors || [],
       typeSelectorCount: scope.typeSelectorCount || 0,
       scopeFingerprint: fingerprintScopeComponents(scope.components),
@@ -1955,7 +1971,9 @@ function computeConcisionScore(styleData, format) {
       originalComponents: scope.components,
     }))
     .filter((scope) => scope.components.length > 0);
-  const flattened = scopedComponents.flatMap((scope) => scope.components);
+  const flattened = scopedComponents
+    .filter((scope) => !scope.isDiffForm)
+    .flatMap((scope) => scope.components);
 
   if (flattened.length === 0) {
     return {
@@ -1982,6 +2000,7 @@ function computeConcisionScore(styleData, format) {
     const keys = scope.components.map(componentSemanticKey);
     const uniqueInScope = new Set(keys);
     withinScopeDuplicates += Math.max(0, keys.length - uniqueInScope.size);
+    if (scope.isDiffForm) continue;
     for (const key of uniqueInScope) {
       keyScopeCount.set(key, (keyScopeCount.get(key) || 0) + 1);
     }
@@ -2049,11 +2068,15 @@ function computeConcisionScore(styleData, format) {
     0
   );
   const overrideDensity = overrideCount / flattened.length;
-  const typeTemplateCoverage = Object.keys(styleData?.bibliography?.['type-templates'] || {})
-    .reduce((sum, rawKey) => {
+  const typeTemplateCoverage = [
+    styleData?.bibliography?.['type-templates'] || {},
+    styleData?.bibliography?.['type-variants'] || {},
+  ].reduce((total, map) => {
+    return total + Object.keys(map).reduce((sum, rawKey) => {
       const parsed = parseOverrideKey(rawKey).filter((key) => key !== 'default');
       return sum + (parsed.length || 1);
     }, 0);
+  }, 0);
 
   const componentTargets = {
     'author-date': 52,
@@ -3666,6 +3689,7 @@ module.exports = {
   buildNoteStyleLookup,
   collectTemplateScopes,
   computeConcisionScore,
+  computeFallbackRobustness,
   computeFidelityScore,
   createReportRuntime,
   discoverCoreStyles,
