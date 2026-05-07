@@ -110,7 +110,7 @@ pub trait StyleResolver {
 }
 
 /// Canonical Citum style schema version used when `Style.version` is omitted.
-pub const STYLE_SCHEMA_VERSION: &str = "0.43.0";
+pub const STYLE_SCHEMA_VERSION: &str = "0.44.0";
 
 /// A non-fatal validation warning emitted by [`Style::validate`].
 #[derive(Debug, Clone, PartialEq)]

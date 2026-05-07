@@ -123,7 +123,21 @@ jobs:
           fi
           echo "level=$LEVEL" >> "$GITHUB_OUTPUT"
 
+      - name: Configure branching and tagging
+        id: config
+        run: |
+          if [ "${{ steps.resolve.outputs.level }}" = "patch" ]; then
+            echo "branch=main" >> "$GITHUB_OUTPUT"
+            echo "create_pr=false" >> "$GITHUB_OUTPUT"
+            echo "push_tags=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "branch=release/next" >> "$GITHUB_OUTPUT"
+            echo "create_pr=true" >> "$GITHUB_OUTPUT"
+            echo "push_tags=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create release branch
+        if: steps.config.outputs.create_pr == 'true'
         run: git checkout -B release/next
 
       - name: Bump schema version (if schema changed)
@@ -138,17 +152,61 @@ jobs:
           if ! git diff --cached --quiet; then
             git commit \
               -m "chore(schema): bump schema version" \
-              -m "Update the published schema version and generated schemas for the release."
+              -m "Update published schema version and generated schemas for release."
           fi
 
       - name: Bump workspace version
         run: |
-          BRANCH="release/next"
+          BRANCH="${{ steps.config.outputs.branch }}"
+          TAG_FLAG=""
+          if [ "${{ steps.config.outputs.push_tags }}" = "false" ]; then
+            TAG_FLAG="--no-tag"
+          fi
+          
+          if [ "$BRANCH" = "main" ]; then
+            git pull --rebase origin main || true
+          fi
+
+          # We set a custom message to comply with the commit-msg hook
           cargo release "${{ steps.resolve.outputs.level }}" \
-            --workspace --no-publish --no-push --no-tag --no-confirm --execute
-          git push -f origin "$BRANCH"
+            --workspace --no-publish --no-push $TAG_FLAG --no-confirm --execute \
+            --message "chore: release v{{version}}
+            
+            Automated workspace version bump for v{{version}}."
+          
+          if [ "$BRANCH" = "main" ]; then
+            git push origin "$BRANCH"
+          else
+            git push -f origin "$BRANCH"
+          fi
+
+          if [ "${{ steps.config.outputs.push_tags }}" = "true" ]; then
+            git push origin --tags
+          fi
+
+      - name: Tag schema release when schema changed
+        if: steps.config.outputs.push_tags == 'true' && needs.detect.outputs.schema-changed == 'true'
+        run: |
+            SCHEMA_VERSION=$(python3 - <<'PY'
+            from pathlib import Path
+            import re
+            content = Path("crates/citum-schema-style/src/lib.rs").read_text()
+            match = re.search(r'pub const STYLE_SCHEMA_VERSION: &str = "([^"]+)";', content)
+            if match is None:
+                raise SystemExit("STYLE_SCHEMA_VERSION not found")
+            print(match.group(1))
+            PY
+            )
+            TAG="schema-v${SCHEMA_VERSION}"
+            if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+              echo "Schema tag ${TAG} already exists."
+            else
+              git tag -a "$TAG" -m "Schema ${TAG}"
+              git push origin "$TAG"
+            fi
 
       - name: Create or update release PR
+        if: steps.config.outputs.create_pr == 'true'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -197,13 +255,16 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Finalize release (tag and optionally publish)
-        env:
-          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+      - name: Tag workspace release
         run: |
-          # We use --no-confirm --execute.
-          # It will create the tag and publish based on release.toml settings.
-          cargo release --workspace --no-confirm --execute
+          VERSION=$(sed -n '/^\[workspace\.package\]/,/^\[/{s/^version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p;}' Cargo.toml | head -1)
+          TAG="v${VERSION}"
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "Tag ${TAG} already exists."
+          else
+            git tag -a "$TAG" -m "Release ${TAG}"
+            git push origin "$TAG"
+          fi
 
       - name: Tag schema release when schema changed
         run: |
