@@ -194,6 +194,9 @@ Track schema changes separately from code changes.
 Historical note: entries below may predate the automation baseline and are the
 authoritative record when matching tags were not created at the time.
 
+#### schema-v0.44.0 (2026-05-06)
+- Schema version bumped from 0.43.0 to 0.44.0
+
 #### schema-v0.43.0 (2026-05-06)
 - Schema version bumped from 0.42.0 to 0.43.0
 
