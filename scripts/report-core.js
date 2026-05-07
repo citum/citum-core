@@ -1880,6 +1880,10 @@ function countOptionsPresetUses(styleData) {
   return { uses, fields };
 }
 
+function hasRootExtends(styleData) {
+  return typeof styleData?.extends === 'string' && styleData.extends.trim().length > 0;
+}
+
 function computeTypeCoverageScore(citationsByType) {
   const entries = Object.entries(citationsByType || {})
     .filter(([, stats]) => (stats?.total || 0) > 0);
@@ -1971,11 +1975,35 @@ function computeConcisionScore(styleData, format) {
       originalComponents: scope.components,
     }))
     .filter((scope) => scope.components.length > 0);
+  const diffScopes = scopedComponents.filter((scope) => scope.isDiffForm);
+  const duplicateAnalysisScopes = scopedComponents.filter((scope) => !scope.isDiffForm);
+  const diffVariantOperations = diffScopes.reduce((sum, scope) => sum + scope.components.length, 0);
   const flattened = scopedComponents
     .filter((scope) => !scope.isDiffForm)
     .flatMap((scope) => scope.components);
 
   if (flattened.length === 0) {
+    if (hasRootExtends(styleData)) {
+      return {
+        score: 100,
+        scopeCount: scopedComponents.length,
+        totalComponents: 0,
+        duplicates: 0,
+        withinScopeDuplicates: 0,
+        crossScopeRepeats: 0,
+        exactDuplicateScopes: 0,
+        nearDuplicateScopes: 0,
+        repeatedPatterns: 0,
+        diffVariantScopes: diffScopes.length,
+        diffVariantOperations,
+        variantSelectors: variantSelectorCount,
+        overrideDensity: 0,
+        targetComponents: 0,
+        inheritedPreset: styleData.extends,
+        note: `root extends: ${styleData.extends}`,
+      };
+    }
+
     return {
       score: 0,
       scopeCount: 0,
@@ -1986,6 +2014,8 @@ function computeConcisionScore(styleData, format) {
       exactDuplicateScopes: 0,
       nearDuplicateScopes: 0,
       repeatedPatterns: 0,
+      diffVariantScopes: diffScopes.length,
+      diffVariantOperations,
       variantSelectors: 0,
       overrideDensity: 0,
       targetComponents: 0,
@@ -1996,11 +2026,10 @@ function computeConcisionScore(styleData, format) {
   let withinScopeDuplicates = 0;
   const keyScopeCount = new Map();
 
-  for (const scope of scopedComponents) {
+  for (const scope of duplicateAnalysisScopes) {
     const keys = scope.components.map(componentSemanticKey);
     const uniqueInScope = new Set(keys);
     withinScopeDuplicates += Math.max(0, keys.length - uniqueInScope.size);
-    if (scope.isDiffForm) continue;
     for (const key of uniqueInScope) {
       keyScopeCount.set(key, (keyScopeCount.get(key) || 0) + 1);
     }
@@ -2012,7 +2041,7 @@ function computeConcisionScore(styleData, format) {
   }
 
   const scopeFingerprintCounts = new Map();
-  for (const scope of scopedComponents) {
+  for (const scope of duplicateAnalysisScopes) {
     scopeFingerprintCounts.set(
       scope.scopeFingerprint,
       (scopeFingerprintCounts.get(scope.scopeFingerprint) || 0) + 1
@@ -2025,7 +2054,7 @@ function computeConcisionScore(styleData, format) {
 
   let nearDuplicateScopes = 0;
   const lengthBuckets = new Map();
-  for (const scope of scopedComponents) {
+  for (const scope of duplicateAnalysisScopes) {
     const len = scope.originalComponents.length;
     if (!lengthBuckets.has(len)) lengthBuckets.set(len, []);
     lengthBuckets.get(len).push(scope);
@@ -2046,7 +2075,7 @@ function computeConcisionScore(styleData, format) {
   }
 
   const patternCounts = new Map();
-  for (const scope of scopedComponents) {
+  for (const scope of duplicateAnalysisScopes) {
     const uniquePatterns = new Set(scope.patternFingerprints);
     for (const fingerprint of uniquePatterns) {
       patternCounts.set(fingerprint, (patternCounts.get(fingerprint) || 0) + 1);
@@ -2113,6 +2142,8 @@ function computeConcisionScore(styleData, format) {
     exactDuplicateScopes,
     nearDuplicateScopes,
     repeatedPatterns,
+    diffVariantScopes: diffScopes.length,
+    diffVariantOperations,
     variantSelectors: variantSelectorCount,
     overrideDensity: parseFloat(overrideDensity.toFixed(2)),
     targetComponents: parseFloat(target.toFixed(1)),
@@ -2122,6 +2153,23 @@ function computeConcisionScore(styleData, format) {
 function computePresetUsageScore(styleData, concisionScore) {
   const templateUses = countTemplatePresetUses(styleData);
   const { uses: optionUses, fields: optionPresetFields } = countOptionsPresetUses(styleData);
+  const hasInheritedPreset = hasRootExtends(styleData);
+  const hasAuthoredTemplateScopes = collectTemplateScopes(styleData).scopes.length > 0;
+
+  if (hasInheritedPreset && !hasAuthoredTemplateScopes) {
+    const uses = templateUses + optionUses;
+    return {
+      score: 100,
+      uses,
+      templateUses,
+      optionUses,
+      weightedUses: 5 + optionUses,
+      optionPresetFields,
+      inheritedPreset: styleData.extends,
+      note: `root extends: ${styleData.extends}`,
+    };
+  }
+
   const weightedUses = (templateUses * 2) + optionUses;
   const uses = templateUses + optionUses;
 
@@ -2151,6 +2199,9 @@ function computePresetUsageScore(styleData, concisionScore) {
 
 function selectQualityAuthorshipData(authoredStyleData, effectiveStyleData) {
   const authoredScopes = collectTemplateScopes(authoredStyleData).scopes;
+  if (authoredScopes.length === 0 && hasRootExtends(authoredStyleData)) {
+    return authoredStyleData;
+  }
   if (authoredScopes.length === 0 && effectiveStyleData) {
     return effectiveStyleData;
   }
@@ -3690,6 +3741,7 @@ module.exports = {
   collectTemplateScopes,
   computeConcisionScore,
   computeFallbackRobustness,
+  computePresetUsageScore,
   computeFidelityScore,
   createReportRuntime,
   discoverCoreStyles,
@@ -3700,6 +3752,7 @@ module.exports = {
   getCslSnapshotStatus,
   generateHtml,
   generateReport,
+  hasRootExtends,
   getComparisonEntryTexts,
   loadStyleYaml,
   mapWithConcurrency,

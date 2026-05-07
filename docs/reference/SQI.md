@@ -20,14 +20,16 @@ SQI is computed per style from four subscores:
 1. `typeCoverage`: how broadly the style succeeds across observed reference types.
 2. `fallbackRobustness`: whether core types still render correctly via shared templates/fallback paths.
 3. `concision`: measures how efficiently the style achieves its rendering goals through template reuse.
-   - Counts all template-bearing scopes in the resolved style, including `type-variants` and `type-templates`.
-   - Penalizes high variant-selector counts, exact duplicate scopes, near-duplicate scopes, and repeated copied component/group patterns across scopes.
+   - Scores authored style structure. Thin root `extends:` wrappers are scored as inherited preset use instead of being charged for resolved parent complexity.
+   - Counts full authored template-bearing scopes, including full `type-variants` and `type-templates`.
+   - Reports diff-form `type-variants` as patch operations. They still count selector breadth, but do not create duplicate, near-duplicate, or repeated-pattern penalties.
+   - Penalizes high variant-selector counts, exact duplicate scopes, near-duplicate scopes, and repeated copied component/group patterns across full template scopes.
    - Uses structural fingerprints of whole components and groups rather than coarse field-name matching, so copied template forks are visible to the metric.
-4. `presetUsage`: reuse of shared presets (`processing`, `contributors`, `dates`, `titles`, `substitute`, template presets).
+4. `presetUsage`: reuse of shared presets (`processing`, `contributors`, `dates`, `titles`, `substitute`, template presets). Root `extends:` is treated as strong embedded preset reuse when the authored wrapper has no local template scopes.
 
 Overall SQI is reported as a 0.0-1.0 score in JSON and as a percentage in `docs/compat.html`.
 
-`qualityBreakdown.subscores.concision` now includes supporting diagnostics such as scope count, variant count, exact duplicates, near-duplicates, and repeated-pattern totals so score changes are explainable.
+`qualityBreakdown.subscores.concision` now includes supporting diagnostics such as scope count, variant count, exact duplicates, near-duplicates, repeated-pattern totals, inherited preset ID, diff variant scope count, and diff operation count so score changes are explainable.
 
 ## Working Thresholds
 
@@ -63,5 +65,6 @@ node scripts/check-core-quality.js \
 ## Related
 
 - [SQI refinement plan](../policies/SQI_REFINEMENT_PLAN.md)
+- [SQI integrity audit](../architecture/2026-05-07_SQI_INTEGRITY_AUDIT.md)
 - [Rendering workflow](../guides/RENDERING_WORKFLOW.md)
 - [Style author guide](../guides/style-author-guide.md)
