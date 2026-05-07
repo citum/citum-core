@@ -128,15 +128,11 @@ jobs:
       - name: Configure branching and tagging
         id: config
         run: |
-          if [ "${{ steps.resolve.outputs.level }}" = "patch" ]; then
-            echo "branch=main" >> "$GITHUB_OUTPUT"
-            echo "create_pr=false" >> "$GITHUB_OUTPUT"
-            echo "push_tags=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "branch=release/next" >> "$GITHUB_OUTPUT"
-            echo "create_pr=true" >> "$GITHUB_OUTPUT"
-            echo "push_tags=false" >> "$GITHUB_OUTPUT"
-          fi
+          # Always use release/next and create a PR for all release levels (patch, minor, major)
+          # This ensures consistency and bypasses branch protection on main via the PR process.
+          echo "branch=release/next" >> "$GITHUB_OUTPUT"
+          echo "create_pr=true" >> "$GITHUB_OUTPUT"
+          echo "push_tags=false" >> "$GITHUB_OUTPUT"
 
       - name: Create release branch
         if: steps.config.outputs.create_pr == 'true'
@@ -165,22 +161,15 @@ jobs:
             TAG_FLAG="--no-tag"
           fi
           
-          if [ "$BRANCH" = "main" ]; then
-            git pull --rebase origin main || true
-          fi
+          # We set a custom message to comply with the commit-msg hook.
+          # We place the level at the end to ensure correct argument parsing.
+          cargo release --workspace --no-publish --no-push $TAG_FLAG --no-confirm --execute \
+            -m "chore: release v{{version}}
 
-          # We set a custom message to comply with the commit-msg hook
-          cargo release "${{ steps.resolve.outputs.level }}" \
-            --workspace --no-publish --no-push $TAG_FLAG --no-confirm --execute \
-            --message "chore: release v{{version}}
-            
-            Automated workspace version bump for v{{version}}."
+Automated workspace version bump for v{{version}}." \
+            "${{ steps.resolve.outputs.level }}"
           
-          if [ "$BRANCH" = "main" ]; then
-            git push origin "$BRANCH"
-          else
-            git push -f origin "$BRANCH"
-          fi
+          git push -f origin "$BRANCH"
 
           if [ "${{ steps.config.outputs.push_tags }}" = "true" ]; then
             git push origin --tags
