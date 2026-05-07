@@ -1,7 +1,7 @@
 ---
 # csl26-r8d2
 title: Reconsider Distributed Registry and Resolver Architecture
-status: draft
+status: completed
 type: task
 priority: high
 tags:
@@ -10,7 +10,7 @@ tags:
     - style
     - research
 created_at: 2026-05-03T00:00:00Z
-updated_at: 2026-05-05T10:14:15Z
+updated_at: 2026-05-07T22:00:00Z
 ---
 
 # csl26-r8d2
@@ -75,16 +75,28 @@ the Hub registry as things stabilize; chain order makes this non-breaking.
 
 See spec for full design.
 
-## Remaining Work (Stage 2+)
+## Phase 2 Implementation (completed)
 
-Phase 2 (remote fetching, caching) and Phase 3 (content addressing, hub federation)
-remain. The `StyleResolver` trait and resolver chain in `citum_store` are already
-in place for when HTTP/Git resolution is added.
+Implemented remote fetching, caching, and RegistryConfig support:
 
-Key decision deferred: whether to thread a `&dyn StyleResolver` into
-`try_into_resolved_recursive` — enables pluggable resolution at the schema
-level and is required before Phase 2 can handle non-file URIs.
+- **GitResolver:** Clones shallow repos via `git clone --depth=1`, caches by URI hash
+- **HttpResolver:** Checks host allowlist (empty = allow all), serves stale cache on network error
+- **StoreConfig:** Extends with `registries: Vec<RegistryConfig>` field
+- **RegistryConfig:** Name, URL, priority, ttl_secs, trusted flag
+- **Config Loading:** Supports `~/.config/citum/config.yaml` (YAML preferred) and `config.toml` (fallback)
+- **Config Saving:** `StoreConfig::save()` writes to `config.yaml`
+- **RegistryResolver:** Routes `git+https://` URIs to GitResolver
+- **Depth Cap:** Added MAX_DEPTH=5 check in `try_into_resolved_recursive_with_depth`
+
+Commits: 
+- `feat(store): phase 2 distributed resolver`
+- `fix(schema): add max_depth cap to style resolution`
+
+## Remaining Work (Phase 3)
+
+Phase 3 (content addressing, hub federation) remains. The infrastructure
+for HTTP/Git resolution is now in place and tested.
 
 ## Spec
 
-[docs/specs/DISTRIBUTED_RESOLVER.md](../docs/specs/DISTRIBUTED_RESOLVER.md) — Status: Draft
+[docs/specs/DISTRIBUTED_RESOLVER.md](../docs/specs/DISTRIBUTED_RESOLVER.md) — Status: Active (Phase 2)

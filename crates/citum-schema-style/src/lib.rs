@@ -342,7 +342,7 @@ impl Style {
         self,
         resolver: Option<&dyn StyleResolver>,
     ) -> Result<Self, ResolutionError> {
-        self.try_into_resolved_recursive_with(resolver, &mut HashSet::new())
+        self.try_into_resolved_recursive_with_depth(resolver, &mut HashSet::new(), 0)
     }
 
     /// Internal recursive resolver with loop protection.
@@ -386,12 +386,32 @@ impl Style {
         resolver: Option<&dyn StyleResolver>,
         visited: &mut HashSet<String>,
     ) -> Result<Self, ResolutionError> {
+        self.try_into_resolved_recursive_with_depth(resolver, visited, 0)
+    }
+
+    /// Internal recursive resolver with depth limit.
+    fn try_into_resolved_recursive_with_depth(
+        self,
+        resolver: Option<&dyn StyleResolver>,
+        visited: &mut HashSet<String>,
+        depth: usize,
+    ) -> Result<Self, ResolutionError> {
+        const MAX_DEPTH: usize = 5;
+
         let Some(base_ref) = self.extends.clone() else {
             let mut style = self;
             resolve_style_template_variants(&mut style, None)?;
             options::scoped::apply_scoped_style_options(&mut style);
             return Ok(style);
         };
+
+        if depth >= MAX_DEPTH {
+            let uri = base_ref.key();
+            return Err(ResolutionError::UriResolutionFailed {
+                uri: uri.to_string(),
+                reason: format!("inheritance chain exceeds maximum depth of {MAX_DEPTH}"),
+            });
+        }
 
         let key = base_ref.key().to_string();
         if visited.contains(&key) {
@@ -406,7 +426,7 @@ impl Style {
             }
             style_base::StyleReference::Uri(ref uri) => {
                 let base_style = resolve_style_reference_uri(uri, resolver)?;
-                base_style.try_into_resolved_recursive_with(resolver, visited)?
+                base_style.try_into_resolved_recursive_with_depth(resolver, visited, depth + 1)?
             }
         };
         if is_profile {

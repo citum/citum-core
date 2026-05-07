@@ -164,3 +164,20 @@ fn list_styles_ignores_unsupported_files_and_deduplicates_formats() {
 
     assert_eq!(styles, vec!["alpha"]);
 }
+
+#[cfg(feature = "http")]
+#[test]
+fn git_resolver_parses_git_uri() {
+    use crate::GitResolver;
+
+    // Test URI parsing
+    let uri =
+        "git+https://github.com/citum/citum-external-registry-prototype.git#styles/example.yaml";
+    let (repo, file) = GitResolver::parse_git_uri(uri).expect("parse_git_uri");
+
+    assert_eq!(
+        repo,
+        "https://github.com/citum/citum-external-registry-prototype.git"
+    );
+    assert_eq!(file, "styles/example.yaml");
+}
