@@ -156,13 +156,19 @@ For each style in a wave:
 
 Improve SQI so it rewards real maintainability changes:
 
+0. Type Coverage & Fallback Robustness:
+   - incorporate diff-based `type-variants` into explicit type coverage accounting.
+   - ensure `type-variants` satisfy fallback robustness checks the same as full `type-templates`.
+
 1. Preset detection:
    - count template-level `extends` and `preset` entries.
    - count options-level preset strings plus object-form preset references.
    - weight by impact (template preset > options preset).
 2. Concision:
    - normalize component target thresholds by style class (`author-date`/`numeric`/`note`).
-   - apply dynamic target bonuses when styles intentionally cover many type templates.
+   - apply dynamic target bonuses when styles intentionally cover many type templates
+     or diff-based `type-variants`.
+   - discount diff operations (`modify`, `remove`, `add`, etc.) within `type-variants`     from component count and duplication penalties to reward surgical overrides.
    - reduce over-penalization for cross-template structural reuse.
 3. Note style handling:
    - avoid forcing bibliography-centric penalties when bibliography is intentionally absent.

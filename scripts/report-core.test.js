@@ -18,6 +18,7 @@ const {
   buildNoteStyleLookup,
   collectTemplateScopes,
   computeConcisionScore,
+  computeFallbackRobustness,
   discoverCoreStyles,
   computeFidelityScore,
   buildEmptyOracleResult,
@@ -220,9 +221,9 @@ test('collectTemplateScopes scores authored Template V3 diff components', () => 
 
   assert.equal(Boolean(scope), true);
   assert.deepEqual(scope.components, [
-    { title: 'primary', suffix: '.' },
-    { contributor: 'author', suppress: true },
-    { date: 'issued', form: 'year' },
+    { title: 'primary', suffix: '.', __isDiff: true },
+    { contributor: 'author', suppress: true, __isDiff: true },
+    { date: 'issued', form: 'year', __isDiff: true },
   ]);
   assert.equal(variantSelectorCount, 1);
 });
@@ -323,13 +324,112 @@ test('selectQualityAuthorshipData keeps authored Template V3 diff scopes', () =>
   assert.equal(selectQualityAuthorshipData(authored, resolved), authored);
 });
 
+test('computeConcisionScore does not penalize surgical diff variants as cross-scope repeats', () => {
+  const baseStyle = {
+    bibliography: {
+      template: [
+        { contributor: 'author' },
+        { date: 'issued', form: 'year' },
+        { title: 'primary' },
+      ],
+    },
+  };
+  const diffStyle = {
+    bibliography: {
+      template: [
+        { contributor: 'author' },
+        { date: 'issued', form: 'year' },
+        { title: 'primary' },
+      ],
+      'type-variants': {
+        book: { modify: [{ match: { title: 'primary' }, suffix: '.' }] },
+        chapter: { remove: [{ match: { contributor: 'author' } }] },
+        article: { add: [{ component: { variable: 'doi' } }] },
+      },
+    },
+  };
+
+  const baseScore = computeConcisionScore(baseStyle, 'author-date');
+  const diffScore = computeConcisionScore(diffStyle, 'author-date');
+
+  assert.equal(diffScore.crossScopeRepeats, baseScore.crossScopeRepeats,
+    'modify ops referencing a base component must not register as cross-scope repeats');
+  assert.equal(diffScore.totalComponents, baseScore.totalComponents,
+    'diff scopes must not inflate the component count budget');
+  assert.ok(diffScore.score >= baseScore.score - 0.5,
+    `surgical diff variants should not reduce concision; base=${baseScore.score} diff=${diffScore.score}`);
+});
+
+test('computeConcisionScore detects duplication across parallel diff variants', () => {
+  const styleData = {
+    bibliography: {
+      template: [
+        { contributor: 'author' },
+        { title: 'primary' },
+      ],
+      'type-variants': {
+        book: { add: [{ component: { variable: 'doi' } }] },
+        chapter: { add: [{ component: { variable: 'doi' } }] },
+        article: { add: [{ component: { variable: 'doi' } }] },
+        report: { add: [{ component: { variable: 'doi' } }] },
+        thesis: { add: [{ component: { variable: 'doi' } }] },
+      },
+    },
+  };
+
+  const score = computeConcisionScore(styleData, 'author-date');
+
+  assert.ok(score.exactDuplicateScopes >= 4,
+    `parallel identical diff variants should register as duplicates, got ${score.exactDuplicateScopes}`);
+});
+
+test('computeFallbackRobustness treats type-variants as explicit type coverage', () => {
+  const styleData = {
+    bibliography: {
+      template: [
+        { contributor: 'author' },
+        { title: 'primary' },
+      ],
+      'type-variants': {
+        'article-journal': { modify: [{ match: { title: 'primary' }, suffix: '.' }] },
+        book: { modify: [{ match: { title: 'primary' }, suffix: '.' }] },
+        chapter: { modify: [{ match: { title: 'primary' }, suffix: '.' }] },
+        report: { modify: [{ match: { title: 'primary' }, suffix: '.' }] },
+        thesis: { modify: [{ match: { title: 'primary' }, suffix: '.' }] },
+        'paper-conference': { modify: [{ match: { title: 'primary' }, suffix: '.' }] },
+        webpage: { modify: [{ match: { title: 'primary' }, suffix: '.' }] },
+      },
+    },
+  };
+
+  const result = computeFallbackRobustness(styleData);
+
+  assert.equal(result.score, 100);
+  assert.equal(result.assessedTypes, 0);
+  assert.match(result.note, /type-variants/);
+});
+
+test('computeFallbackRobustness honors extends short-circuit', () => {
+  const styleData = {
+    bibliography: {
+      'extends': 'apa',
+      template: [{ contributor: 'author' }],
+    },
+  };
+
+  const result = computeFallbackRobustness(styleData);
+
+  assert.equal(result.score, 100);
+  assert.match(result.note, /embedded bibliography preset/);
+});
+
 test('apa-7th concision regression reflects preset-first success', () => {
   const style = loadStyleMap().get('apa-7th');
   const loaded = loadStyleYaml(style.name);
   const concision = computeConcisionScore(loaded.resolvedStyleData, style.format);
 
   assert.equal(concision.variantSelectors, 26, 'resolved APA should reflect the embedded authored variant selectors');
-  assert.equal(concision.score, 57.6, `expected embedded APA concision, got ${concision.score}`);
+  assert.equal(concision.score, 62.9, `expected embedded APA concision, got ${concision.score}`);
 });
 
 test('report-core exposes expected benchmark labels for representative styles', () => {
