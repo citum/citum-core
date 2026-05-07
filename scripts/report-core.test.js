@@ -19,6 +19,7 @@ const {
   collectTemplateScopes,
   computeConcisionScore,
   computeFallbackRobustness,
+  computePresetUsageScore,
   discoverCoreStyles,
   computeFidelityScore,
   buildEmptyOracleResult,
@@ -43,6 +44,7 @@ const {
   runCachedJsonJob,
   selectPrimaryComparator,
   selectQualityAuthorshipData,
+  hasRootExtends,
   toPublishedBenchmarkRunRecord,
   determineBenchmarkStatus,
 } = require('./report-core');
@@ -287,7 +289,7 @@ test('computeConcisionScore rewards preset-backed compact structures', () => {
   assert.ok(score.score >= 90, `expected concision >= 90, got ${score.score}`);
 });
 
-test('selectQualityAuthorshipData falls back for inherited wrapper styles', () => {
+test('selectQualityAuthorshipData keeps root wrapper authorship for SQI', () => {
   const authored = {
     extends: 'apa-7th',
   };
@@ -300,7 +302,44 @@ test('selectQualityAuthorshipData falls back for inherited wrapper styles', () =
     },
   };
 
+  assert.equal(selectQualityAuthorshipData(authored, resolved), authored);
+  assert.equal(hasRootExtends(authored), true);
+});
+
+test('selectQualityAuthorshipData still falls back for template-free non-wrappers', () => {
+  const authored = {
+    info: {
+      title: 'Template-free draft',
+    },
+  };
+  const resolved = {
+    bibliography: {
+      template: [
+        { contributor: 'author' },
+        { title: 'primary' },
+      ],
+    },
+  };
+
   assert.equal(selectQualityAuthorshipData(authored, resolved), resolved);
+  assert.equal(hasRootExtends(authored), false);
+});
+
+test('computeConcisionScore treats pure root wrappers as inherited presets', () => {
+  const score = computeConcisionScore({ extends: 'elsevier-with-titles-core' }, 'numeric');
+
+  assert.equal(score.score, 100);
+  assert.equal(score.totalComponents, 0);
+  assert.equal(score.inheritedPreset, 'elsevier-with-titles-core');
+  assert.match(score.note, /root extends/);
+});
+
+test('computePresetUsageScore treats pure root wrappers as strong preset reuse', () => {
+  const score = computePresetUsageScore({ extends: 'springer-vancouver-brackets-core' }, 100);
+
+  assert.equal(score.score, 100);
+  assert.equal(score.inheritedPreset, 'springer-vancouver-brackets-core');
+  assert.match(score.note, /root extends/);
 });
 
 test('selectQualityAuthorshipData keeps authored Template V3 diff scopes', () => {
@@ -360,7 +399,7 @@ test('computeConcisionScore does not penalize surgical diff variants as cross-sc
     `surgical diff variants should not reduce concision; base=${baseScore.score} diff=${diffScore.score}`);
 });
 
-test('computeConcisionScore detects duplication across parallel diff variants', () => {
+test('computeConcisionScore reports but does not penalize parallel diff variants', () => {
   const styleData = {
     bibliography: {
       template: [
@@ -379,8 +418,11 @@ test('computeConcisionScore detects duplication across parallel diff variants', 
 
   const score = computeConcisionScore(styleData, 'author-date');
 
-  assert.ok(score.exactDuplicateScopes >= 4,
-    `parallel identical diff variants should register as duplicates, got ${score.exactDuplicateScopes}`);
+  assert.equal(score.diffVariantScopes, 5);
+  assert.equal(score.diffVariantOperations, 5);
+  assert.equal(score.exactDuplicateScopes, 0);
+  assert.ok(score.score >= 95,
+    `parallel diff variants should not be duplicate-penalized, got ${score.score}`);
 });
 
 test('computeFallbackRobustness treats type-variants as explicit type coverage', () => {
