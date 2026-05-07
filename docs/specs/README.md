@@ -74,6 +74,7 @@ to make sure the document should be a spec rather than architecture or policy.
 | [`EDTF_ERA_LABEL_PROFILES.md`](./EDTF_ERA_LABEL_PROFILES.md) | Era label profiles and unspecified historical-year display |
 | [`EDTF_HISTORICAL_ERA_RENDERING.md`](./EDTF_HISTORICAL_ERA_RENDERING.md) | Locale-backed rendering of valid historical EDTF years |
 | [`EMBEDDED_JS_TEMPLATE_INFERENCE.md`](./EMBEDDED_JS_TEMPLATE_INFERENCE.md) | Embedded JS runtime for live template inference in migrator |
+| [`EMBEDDED_ROOT_WRAPPER_MIGRATION.md`](./EMBEDDED_ROOT_WRAPPER_MIGRATION.md) | Proof-gated embedded roots plus thin public wrappers for style migration |
 | [`ENGINE_MIGRATE_COEVOLUTION_WAVE.md`](./ENGINE_MIGRATE_COEVOLUTION_WAVE.md) | Engine-first co-evolution wave for style-fidelity fixes |
 | [`FIDELITY_RICH_INPUTS.md`](./FIDELITY_RICH_INPUTS.md) | Fidelity pipeline support for relational benchmark inputs |
 | [`GENDERED_LOCALE_TERMS.md`](./GENDERED_LOCALE_TERMS.md) | Multi-dimensional locale terms with grammatical gender support |

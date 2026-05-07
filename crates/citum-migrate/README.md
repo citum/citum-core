@@ -18,6 +18,14 @@ may emit `extends:`-based wrapper output instead of flattening everything into a
 standalone style. Unknown or unresolved styles still fall back to standalone
 output.
 
+Migration output is now planned explicitly. The default CLI still writes one
+style document to stdout, but lineage analysis classifies the target as either a
+standalone style or an existing wrapper over a checked-in parent. Future
+embedded-root workflows must opt into multi-artifact output and prove the
+resolved public wrapper matches the intended effective style before writing the
+hidden root plus wrapper pair. See
+`docs/specs/EMBEDDED_ROOT_WRAPPER_MIGRATION.md`.
+
 ## CLI Usage
 
 ```bash
