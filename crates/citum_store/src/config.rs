@@ -1,4 +1,4 @@
-//! Store configuration from `~/.config/citum/config.toml`.
+//! Store configuration from `~/.config/citum/config.yaml` or `~/.config/citum/config.toml`.
 
 use crate::format::StoreFormat;
 use serde::{Deserialize, Serialize};
@@ -11,13 +11,47 @@ pub enum ConfigError {
     Io(#[from] std::io::Error),
     #[error("toml parse error: {0}")]
     TomlParse(#[from] toml::de::Error),
+    #[error("yaml parse error: {0}")]
+    YamlLoad(#[from] serde_yaml::Error),
+    #[error("yaml save error: {0}")]
+    YamlSave(String),
+}
+
+/// Configuration for a single remote registry.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RegistryConfig {
+    /// Name of the registry.
+    pub name: String,
+    /// URL to fetch the registry YAML from.
+    pub url: String,
+    /// Resolution priority; higher values are checked first. Defaults to 50.
+    #[serde(default = "default_priority")]
+    pub priority: i32,
+    /// Cache TTL in seconds. Defaults to 3600 (1 hour).
+    #[serde(default = "default_ttl_secs")]
+    pub ttl_secs: u64,
+    /// Whether this registry is trusted (future use).
+    #[serde(default)]
+    pub trusted: bool,
+}
+
+fn default_priority() -> i32 {
+    50
+}
+
+fn default_ttl_secs() -> u64 {
+    3600
 }
 
 /// Configuration for the citation store.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StoreConfig {
+    /// Store section configuration.
     #[serde(default)]
     pub store: StoreSection,
+    /// Configured remote registries.
+    #[serde(default)]
+    pub registries: Vec<RegistryConfig>,
 }
 
 /// The `[store]` section of the config file.
@@ -37,28 +71,60 @@ impl Default for StoreConfig {
             store: StoreSection {
                 format: "yaml".to_string(),
             },
+            registries: Vec::new(),
         }
     }
 }
 
 impl StoreConfig {
-    /// Load configuration from `~/.config/citum/config.toml`.
+    /// Load configuration from `~/.config/citum/config.yaml` or `~/.config/citum/config.toml`.
     ///
-    /// Returns the default config if the file does not exist.
+    /// Returns the default config if neither file exists.
     ///
     /// # Errors
     ///
-    /// Returns an error when the config file exists but cannot be read or
-    /// parsed as TOML.
+    /// Returns an error when the config file exists but cannot be read or parsed.
     pub fn load() -> Result<Self, ConfigError> {
         if let Some(config_dir) = dirs::config_dir() {
-            let config_path = config_dir.join("citum").join("config.toml");
-            if config_path.exists() {
-                let content = std::fs::read_to_string(&config_path)?;
+            let citum_dir = config_dir.join("citum");
+
+            // Try YAML first
+            let yaml_path = citum_dir.join("config.yaml");
+            if yaml_path.exists() {
+                let content = std::fs::read_to_string(&yaml_path)?;
+                return serde_yaml::from_str(&content).map_err(ConfigError::YamlLoad);
+            }
+
+            // Fall back to TOML
+            let toml_path = citum_dir.join("config.toml");
+            if toml_path.exists() {
+                let content = std::fs::read_to_string(&toml_path)?;
                 return Ok(toml::from_str(&content)?);
             }
         }
         Ok(StoreConfig::default())
+    }
+
+    /// Save configuration to `~/.config/citum/config.yaml`.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the directory cannot be created or the file cannot be written.
+    pub fn save(&self) -> Result<(), ConfigError> {
+        if let Some(config_dir) = dirs::config_dir() {
+            let citum_dir = config_dir.join("citum");
+            std::fs::create_dir_all(&citum_dir)?;
+            let config_path = citum_dir.join("config.yaml");
+            let content =
+                serde_yaml::to_string(self).map_err(|e| ConfigError::YamlSave(e.to_string()))?;
+            std::fs::write(&config_path, content)?;
+            Ok(())
+        } else {
+            Err(ConfigError::Io(std::io::Error::new(
+                std::io::ErrorKind::NotFound,
+                "config directory not found",
+            )))
+        }
     }
 
     /// Get the configured store format.
@@ -88,10 +154,11 @@ mod tests {
         let cfg = StoreConfig::default();
         assert_eq!(cfg.store.format, "yaml");
         assert_eq!(cfg.store_format(), StoreFormat::Yaml);
+        assert!(cfg.registries.is_empty());
     }
 
     #[test]
-    fn test_parse_config() {
+    fn test_parse_toml_config() {
         let toml_str = r#"
 [store]
 format = "json"
@@ -99,5 +166,24 @@ format = "json"
         let cfg: StoreConfig = toml::from_str(toml_str).unwrap();
         assert_eq!(cfg.store.format, "json");
         assert_eq!(cfg.store_format(), StoreFormat::Json);
+    }
+
+    #[test]
+    fn test_parse_yaml_config() {
+        let yaml_str = r#"
+store:
+  format: json
+registries:
+  - name: example
+    url: https://example.org/registry.yaml
+    priority: 100
+    ttl_secs: 3600
+    trusted: true
+"#;
+        let cfg: StoreConfig = serde_yaml::from_str(yaml_str).unwrap();
+        assert_eq!(cfg.store.format, "json");
+        assert_eq!(cfg.registries.len(), 1);
+        assert_eq!(cfg.registries[0].name, "example");
+        assert_eq!(cfg.registries[0].priority, 100);
     }
 }

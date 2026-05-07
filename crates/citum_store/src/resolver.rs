@@ -19,6 +19,8 @@ use thiserror::Error;
 
 #[cfg(feature = "http")]
 use sha2::{Digest, Sha256};
+#[cfg(feature = "http")]
+use tempfile;
 
 /// Error type for store resolution operations.
 #[derive(Error, Debug)]
@@ -40,6 +42,9 @@ pub enum ResolverError {
     #[cfg(feature = "http")]
     #[error("http error: {0}")]
     HttpError(String),
+    #[cfg(feature = "http")]
+    #[error("git error: {0}")]
+    GitError(String),
 }
 
 /// A trait for resolving Citum styles and locales from various sources.
@@ -116,6 +121,8 @@ pub struct RegistryResolver {
     base_dir: Option<PathBuf>,
     #[cfg(feature = "http")]
     http: Option<HttpResolver>,
+    #[cfg(feature = "http")]
+    git: Option<GitResolver>,
 }
 
 impl RegistryResolver {
@@ -127,6 +134,8 @@ impl RegistryResolver {
             base_dir: None,
             #[cfg(feature = "http")]
             http: None,
+            #[cfg(feature = "http")]
+            git: None,
         }
     }
 
@@ -142,6 +151,14 @@ impl RegistryResolver {
     #[must_use]
     pub fn with_http(mut self, http: HttpResolver) -> Self {
         self.http = Some(http);
+        self
+    }
+
+    /// Set the Git resolver used for `git+https://` backed registry entries.
+    #[cfg(feature = "http")]
+    #[must_use]
+    pub fn with_git(mut self, git: GitResolver) -> Self {
+        self.git = Some(git);
         self
     }
 }
@@ -171,6 +188,14 @@ impl StyleResolver for RegistryResolver {
         if let Some(url) = &entry.url {
             #[cfg(feature = "http")]
             {
+                // Try git resolver if the URL is a git URI
+                if url.starts_with("git+https://") || url.starts_with("git+http://") {
+                    if let Some(git) = &self.git {
+                        return git.resolve_style(url);
+                    }
+                    return Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())));
+                }
+
                 let http = self
                     .http
                     .as_ref()
@@ -244,11 +269,20 @@ impl citum_schema::StyleResolver for FileResolver {
     }
 }
 
+/// A resolver that fetches styles from Git repositories via shallow clone.
+///
+/// URI format: `git+https://github.com/org/repo.git#path/to/style.yaml`
+#[cfg(feature = "http")]
+pub struct GitResolver {
+    cache_dir: PathBuf,
+}
+
 /// A resolver that fetches HTTP(S) style URLs and caches them on disk.
 #[cfg(feature = "http")]
 pub struct HttpResolver {
     cache_dir: PathBuf,
     client: reqwest::blocking::Client,
+    allowed_hosts: Vec<String>,
 }
 
 #[cfg(feature = "http")]
@@ -266,13 +300,24 @@ impl HttpResolver {
             .timeout(HTTP_TIMEOUT)
             .build()
             .unwrap_or_else(|_| reqwest::blocking::Client::new());
-        Self { cache_dir, client }
+        Self {
+            cache_dir,
+            client,
+            allowed_hosts: Vec::new(),
+        }
     }
 
     /// Create a resolver using the platform cache directory.
     #[must_use]
     pub fn from_platform_cache_dir() -> Option<Self> {
         crate::platform_cache_dir().map(Self::new)
+    }
+
+    /// Set an allowlist of hosts for this resolver. Empty list allows all hosts.
+    #[must_use]
+    pub fn with_allowed_hosts(mut self, hosts: Vec<String>) -> Self {
+        self.allowed_hosts = hosts;
+        self
     }
 
     /// Fetch raw bytes from a URL.
@@ -348,35 +393,75 @@ impl StyleResolver for HttpResolver {
             return Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())));
         }
 
+        // Check allowlist if populated
+        if !self.allowed_hosts.is_empty()
+            && let Ok(url) = uri.parse::<reqwest::Url>()
+            && let Some(host) = url.host_str()
+            && !self.allowed_hosts.iter().any(|h| h == host)
+        {
+            return Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())));
+        }
+
         let cache_path = self.cache_path(uri);
         if cache_path.is_file() && Self::cache_is_fresh(&cache_path) {
             let bytes = fs::read(&cache_path)?;
             return Self::parse_style(uri, &bytes);
         }
 
-        let response = self
-            .client
-            .get(uri)
-            .send()
-            .map_err(|err| ResolverError::HttpError(format!("failed to fetch {uri}: {err}")))?;
+        let fetch_result = self.client.get(uri).send();
 
-        if response.status() == reqwest::StatusCode::NOT_FOUND {
-            return Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())));
+        match fetch_result {
+            Ok(response) => {
+                if response.status() == reqwest::StatusCode::NOT_FOUND {
+                    if cache_path.is_file() {
+                        let bytes = fs::read(&cache_path)?;
+                        return Self::parse_style(uri, &bytes);
+                    }
+                    return Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())));
+                }
+
+                if !response.status().is_success() {
+                    if cache_path.is_file() {
+                        let bytes = fs::read(&cache_path)?;
+                        return Self::parse_style(uri, &bytes);
+                    }
+                    return Err(ResolverError::HttpError(format!(
+                        "failed to fetch {uri}: HTTP {}",
+                        response.status()
+                    )));
+                }
+
+                match response.bytes() {
+                    Ok(bytes) => {
+                        let style = Self::parse_style(uri, &bytes)?;
+                        Self::write_cache(&cache_path, &bytes)?;
+                        Ok(style)
+                    }
+                    Err(err) => {
+                        // Check for stale cache and serve if available
+                        if cache_path.is_file() {
+                            let bytes = fs::read(&cache_path)?;
+                            Self::parse_style(uri, &bytes)
+                        } else {
+                            Err(ResolverError::HttpError(format!(
+                                "failed to read {uri}: {err}"
+                            )))
+                        }
+                    }
+                }
+            }
+            Err(err) => {
+                // Check for stale cache and serve if available
+                if cache_path.is_file() {
+                    let bytes = fs::read(&cache_path)?;
+                    Self::parse_style(uri, &bytes)
+                } else {
+                    Err(ResolverError::HttpError(format!(
+                        "failed to fetch {uri}: {err}"
+                    )))
+                }
+            }
         }
-
-        if !response.status().is_success() {
-            return Err(ResolverError::HttpError(format!(
-                "failed to fetch {uri}: HTTP {}",
-                response.status()
-            )));
-        }
-
-        let bytes = response
-            .bytes()
-            .map_err(|err| ResolverError::HttpError(format!("failed to read {uri}: {err}")))?;
-        let style = Self::parse_style(uri, &bytes)?;
-        Self::write_cache(&cache_path, &bytes)?;
-        Ok(style)
     }
 
     fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
@@ -386,6 +471,175 @@ impl StyleResolver for HttpResolver {
 
 #[cfg(feature = "http")]
 impl citum_schema::StyleResolver for HttpResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
+        StyleResolver::resolve_style(self, uri)
+            .map_err(|err| resolution_error_from_store_error(uri, err))
+    }
+}
+
+#[cfg(feature = "http")]
+impl GitResolver {
+    /// Create a resolver using the provided cache directory.
+    #[must_use]
+    pub fn new(cache_dir: PathBuf) -> Self {
+        Self { cache_dir }
+    }
+
+    /// Create a resolver using the platform cache directory.
+    #[must_use]
+    pub fn from_platform_cache_dir() -> Option<Self> {
+        crate::platform_cache_dir().map(Self::new)
+    }
+
+    fn cache_path(&self, uri: &str) -> PathBuf {
+        let mut hasher = Sha256::new();
+        hasher.update(uri.as_bytes());
+        let hash = hasher.finalize();
+        let mut hex = String::with_capacity(hash.len() * 2);
+        for byte in hash {
+            hex.push(hex_digit(byte >> 4));
+            hex.push(hex_digit(byte & 0x0f));
+        }
+        self.cache_dir
+            .join("styles")
+            .join("git")
+            .join(format!("{hex}.yaml"))
+    }
+
+    fn parse_style(uri: &str, bytes: &[u8]) -> Result<Style, ResolverError> {
+        Style::from_yaml_bytes(bytes).map_err(|err| {
+            ResolverError::YamlError(format!("failed to parse style fetched from {uri}: {err}"))
+        })
+    }
+
+    fn cache_is_fresh(path: &Path) -> bool {
+        path.metadata()
+            .and_then(|metadata| metadata.modified())
+            .and_then(|modified| {
+                SystemTime::now()
+                    .duration_since(modified)
+                    .map_err(std::io::Error::other)
+            })
+            .is_ok_and(|age| age < HTTP_CACHE_MAX_AGE)
+    }
+
+    fn write_cache(path: &Path, bytes: &[u8]) -> Result<(), ResolverError> {
+        if let Some(parent) = path.parent() {
+            fs::create_dir_all(parent)?;
+        }
+        let mut tmp = tempfile::NamedTempFile::new_in(
+            path.parent().unwrap_or_else(|| std::path::Path::new(".")),
+        )?;
+        std::io::Write::write_all(&mut tmp, bytes)?;
+        tmp.persist(path).map_err(|e| ResolverError::Io(e.error))?;
+        Ok(())
+    }
+
+    /// Parse a git URI into repo URL and file path.
+    pub fn parse_git_uri(uri: &str) -> Option<(String, String)> {
+        if !uri.starts_with("git+https://") && !uri.starts_with("git+http://") {
+            return None;
+        }
+        let rest = uri.strip_prefix("git+")?;
+        let (repo_part, file_path) = rest.split_once('#')?;
+        Some((repo_part.to_string(), file_path.to_string()))
+    }
+}
+
+#[cfg(feature = "http")]
+impl StyleResolver for GitResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
+        let (repo_url, file_path) = Self::parse_git_uri(uri)
+            .ok_or_else(|| ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))?;
+
+        let cache_path = self.cache_path(uri);
+        if cache_path.is_file() && Self::cache_is_fresh(&cache_path) {
+            let bytes = fs::read(&cache_path)?;
+            return Self::parse_style(uri, &bytes);
+        }
+
+        // Create a temporary directory for the git clone
+        let tmpdir = tempfile::TempDir::new().map_err(ResolverError::Io)?;
+        let tmpdir_str = tmpdir
+            .path()
+            .to_str()
+            .ok_or_else(|| ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))?;
+
+        let Ok(clone_output) = std::process::Command::new("git")
+            .args(["clone", "--depth=1", &repo_url, tmpdir_str])
+            .output()
+        else {
+            // Serve stale cache if available
+            if cache_path.is_file() {
+                let bytes = fs::read(&cache_path)?;
+                return Self::parse_style(uri, &bytes);
+            }
+            return Err(ResolverError::GitError(
+                "git clone failed to spawn".to_string(),
+            ));
+        };
+
+        if !clone_output.status.success() {
+            let stderr = String::from_utf8_lossy(&clone_output.stderr);
+            // Serve stale cache if available
+            if cache_path.is_file() {
+                let bytes = fs::read(&cache_path)?;
+                return Self::parse_style(uri, &bytes);
+            }
+            return Err(ResolverError::GitError(format!(
+                "git clone failed (exit {}): {}",
+                clone_output.status,
+                stderr.trim()
+            )));
+        }
+
+        // Check out the specific file
+        let file_checkout = std::process::Command::new("git")
+            .arg("-C")
+            .arg(tmpdir_str)
+            .args(["checkout", "HEAD", "--"])
+            .arg(&file_path)
+            .output();
+
+        let file_path_full = tmpdir.path().join(&file_path);
+        let bytes_result = if let Ok(output) = file_checkout {
+            if output.status.success() && file_path_full.exists() {
+                fs::read(&file_path_full)
+            } else {
+                Err(std::io::Error::new(
+                    std::io::ErrorKind::NotFound,
+                    "file not found in repo",
+                ))
+            }
+        } else {
+            Err(std::io::Error::other("git checkout failed"))
+        };
+
+        match bytes_result {
+            Ok(bytes) => {
+                let style = Self::parse_style(uri, &bytes)?;
+                Self::write_cache(&cache_path, &bytes)?;
+                Ok(style)
+            }
+            Err(_) => {
+                // Serve stale cache if available
+                if cache_path.is_file() {
+                    let bytes = fs::read(&cache_path)?;
+                    Self::parse_style(uri, &bytes)
+                } else {
+                    Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))
+                }
+            }
+        }
+    }
+
+    fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
+        Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
+    }
+}
+
+#[cfg(feature = "http")]
+impl citum_schema::StyleResolver for GitResolver {
     fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
         StyleResolver::resolve_style(self, uri)
             .map_err(|err| resolution_error_from_store_error(uri, err))
