@@ -1,6 +1,6 @@
 # Distributed Registry and Resolver Architecture Specification
 
-**Status:** Draft
+**Status:** Active (Phase 2)
 **Date:** 2026-05-04
 **Related:** bean csl26-r8d2, `docs/specs/STYLE_REGISTRY.md`
 
@@ -657,6 +657,33 @@ Both are off by default. `citum-cli` enables both. WASM bridge enables neither.
 - [ ] `VerifyingResolver` returns `IntegrityFailure` on hash mismatch
 - [ ] `RegistryResolver` fetches and caches a registry index; resolves style IDs
 - [ ] CID cache entries have TTL `u64::MAX` and are never revalidated
+- [ ] `citum-bindings` WASM surface passes a pre-resolved `Style` to the engine;
+  remote resolution remains server-side (see Surface Exposure below)
+
+### Surface Exposure
+
+`citum_store` is a library crate. Phase 3 completes the resolver stack; the
+resolver is then surfaced through three interfaces:
+
+**CLI (`citum-cli`)** — already wired. `citum render` and `citum registry`
+commands construct a `ChainResolver` from `~/.config/citum/config.yaml` and
+pass it through the render pipeline. `http` and `git` features are enabled in
+`citum-cli/Cargo.toml`.
+
+**WASM binding (`crates/citum-bindings`, feature `wasm`)** — the binding crate
+in this repo exposes `renderCitation`, `renderBibliography`, and
+`materializeStyle` to JavaScript via `wasm_bindgen`. Remote resolution
+(`HttpResolver`, `GitResolver`) is gated out with
+`#[cfg(not(target_arch = "wasm32"))]`; the WASM build uses only
+`EmbeddedResolver` and `StoreResolver`. Callers (e.g. citum-hub's wasm-bridge)
+must resolve remote styles server-side and pass the resolved YAML string into
+`materializeStyle` before rendering.
+
+**Server (`crates/citum-server`)** — not yet wired. Phase 3 should add
+`citum_store` as a dependency of `citum-server` (with `http`/`git` features
+enabled) and construct a `ChainResolver` from the same config path used by the
+CLI. The server then resolves styles before passing them to the engine, mirroring
+the CLI integration added in Phase 2.
 
 ## Changelog
 
