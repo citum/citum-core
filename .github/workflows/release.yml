@@ -166,7 +166,7 @@ jobs:
           cargo release --workspace --no-publish --no-push $TAG_FLAG --no-confirm --execute \
             -m "chore: release v{{version}}
 
-Automated workspace version bump for v{{version}}." \
+          Automated workspace version bump for v{{version}}." \
             "${{ steps.resolve.outputs.level }}"
           
           git push -f origin "$BRANCH"
