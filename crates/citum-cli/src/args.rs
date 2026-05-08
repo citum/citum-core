@@ -455,6 +455,63 @@ pub(crate) enum StyleCommands {
                       terms when --locale is provided."
     )]
     Lint(LintStyleArgs),
+
+    /// Print the canonical CIDv1 for a style file or installed/builtin style
+    #[command(
+        about = "Print the canonical CIDv1 for a style",
+        long_about = "Compute and print the CIDv1 (raw codec, sha-256, base32 lower) for a\n\
+                      style. The output is the same value the schema layer computes when\n\
+                      verifying an extends-pin: parse, then re-serialize to canonical YAML,\n\
+                      then hash. So a child style's extends-pin will match this CID.\n\n\
+                      Accepts a file path or an installed/builtin style name. Remote URIs\n\
+                      (https://, git+https://, cid:) are not resolved here — fetch them\n\
+                      first or pass the local cached copy."
+    )]
+    Cid {
+        /// File path or installed/builtin style ID/alias
+        target: String,
+        /// Output format
+        #[arg(long, value_enum, default_value_t = StyleCatalogFormat::Text)]
+        format: StyleCatalogFormat,
+    },
+
+    /// Print a paste-ready extends + extends-pin pair for a parent style
+    #[command(
+        about = "Print extends + extends-pin for a parent",
+        long_about = "Print a paste-ready YAML snippet binding extends: to a stable URI and\n\
+                      extends-pin: to the style's canonical CID. The CID matches what the\n\
+                      schema layer computes at extends-pin verification time, so the pair\n\
+                      will verify out of the box.\n\n\
+                      Accepts a file path or an installed/builtin style name; remote URIs\n\
+                      (https://, git+https://, cid:) are not resolved here."
+    )]
+    Pin {
+        /// File path or installed/builtin style ID/alias of the parent
+        target: String,
+        /// Override the URI emitted alongside the pin (default: file:// for local paths,
+        /// hub.citum.org placeholder for catalog names)
+        #[arg(long)]
+        uri: Option<String>,
+        /// Output format
+        #[arg(long, value_enum, default_value_t = StyleCatalogFormat::Text)]
+        format: StyleCatalogFormat,
+    },
+
+    /// Validate a style end-to-end (schema, extends, extends-pin, citum-version)
+    #[command(
+        about = "Validate a style end-to-end",
+        long_about = "Load a style, resolve all extends chains, run schema validation, verify\n\
+                      any extends-pin values, and check the citum-version requirement against\n\
+                      the running engine. Exits non-zero on the first failure.\n\n\
+                      Accepts a file path or an installed/builtin style name."
+    )]
+    Validate {
+        /// File path or installed/builtin style ID/alias
+        target: String,
+        /// Output format
+        #[arg(long, value_enum, default_value_t = StyleCatalogFormat::Text)]
+        format: StyleCatalogFormat,
+    },
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
