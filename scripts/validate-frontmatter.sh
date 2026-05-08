@@ -40,9 +40,8 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-if ! command -v ruby >/dev/null 2>&1; then
-  echo "Error: Ruby is required for scripts/validate-frontmatter.sh." >&2
-  echo "Install Ruby or run in an environment with Ruby in PATH." >&2
+if ! command -v node >/dev/null 2>&1; then
+  echo "Error: Node.js is required for scripts/validate-frontmatter.sh." >&2
   exit 1
 fi
 
@@ -66,76 +65,81 @@ if [[ ${#files[@]} -eq 0 ]]; then
   exit 0
 fi
 
-ruby - "$COPILOT_STRICT" "${files[@]}" <<'RUBY'
-require 'yaml'
+SCRIPTS_DIR="$REPO_ROOT/scripts" node - "$COPILOT_STRICT" "${files[@]}" <<'JS'
+const fs = require('fs');
+const path = require('path');
+const yaml = require(path.join(process.env.SCRIPTS_DIR, 'node_modules/js-yaml'));
 
-copilot_strict = ARGV.shift == 'true'
-files = ARGV
-errors = []
+const [,, copilotStrictArg, ...files] = process.argv;
+const copilotStrict = copilotStrictArg === 'true';
+const errors = [];
 
-files.each do |file|
-  text = File.read(file, encoding: 'UTF-8')
+for (const file of files) {
+  const text = fs.readFileSync(file, 'utf8');
 
-  unless text.start_with?("---\n")
-    errors << "#{file}:1 missing frontmatter start delimiter (---)"
-    next
-  end
+  if (!text.startsWith('---\n')) {
+    errors.push(`${file}:1 missing frontmatter start delimiter (---)`);
+    continue;
+  }
 
-  match = text.match(/\A---\n(.*?)\n---\n?/m)
-  if match.nil?
-    errors << "#{file}:1 malformed frontmatter delimiters"
-    next
-  end
+  const match = text.match(/^---\n([\s\S]*?)\n---\n?/);
+  if (!match) {
+    errors.push(`${file}:1 malformed frontmatter delimiters`);
+    continue;
+  }
 
-  frontmatter = match[1]
-  begin
-    parsed = YAML.safe_load(frontmatter, permitted_classes: [], aliases: false)
-  rescue Psych::SyntaxError => e
-    line = e.line ? e.line + 1 : 1
-    errors << "#{file}:#{line} YAML parse error: #{e.problem}"
-    next
-  end
+  const frontmatter = match[1];
+  let parsed;
+  try {
+    parsed = yaml.load(frontmatter, { schema: yaml.CORE_SCHEMA });
+  } catch (e) {
+    const line = e.mark ? e.mark.line + 2 : 1;
+    errors.push(`${file}:${line} YAML parse error: ${e.reason || e.message}`);
+    continue;
+  }
 
-  unless parsed.is_a?(Hash)
-    errors << "#{file}:1 frontmatter must be a YAML mapping"
-    next
-  end
+  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    errors.push(`${file}:1 frontmatter must be a YAML mapping`);
+    continue;
+  }
 
-  %w[name description].each do |key|
-    value = parsed[key]
-    if !value.is_a?(String) || value.strip.empty?
-      errors << "#{file}:1 required key '#{key}' must be a non-empty string"
-    end
-  end
+  for (const key of ['name', 'description']) {
+    const value = parsed[key];
+    if (typeof value !== 'string' || value.trim() === '') {
+      errors.push(`${file}:1 required key '${key}' must be a non-empty string`);
+    }
+  }
 
-  next unless copilot_strict
+  if (!copilotStrict) continue;
 
-  frontmatter.each_line.with_index(2) do |line, line_no|
-    stripped = line.strip
-    next if stripped.empty? || stripped.start_with?('#')
+  const lines = frontmatter.split('\n');
+  lines.forEach((line, idx) => {
+    const lineNo = idx + 2;
+    const stripped = line.trim();
+    if (!stripped || stripped.startsWith('#')) return;
 
-    key_value = stripped.match(/^([A-Za-z0-9_-]+):\s*(.+)$/)
-    next unless key_value
+    const kv = stripped.match(/^([A-Za-z0-9_-]+):\s*(.+)$/);
+    if (!kv) return;
 
-    value = key_value[2].strip
-    next if value.empty?
-    next if value.start_with?("'", '"', '[', '{', '|', '>', '&', '*', '!')
+    const value = kv[2].trim();
+    if (!value) return;
+    if (/^['"\[{|>&*!]/.test(value)) return;
 
-    risky_characters = value.match?(/[:\[\]\(\)\|]/)
-    risky_options = value.match?(/\[[^\]]+\]/) || value.match?(/--[A-Za-z0-9_-]+/) || value.match?(/\s+or\s+/)
+    const riskyChars = /[:\[\]()|]/.test(value);
+    const riskyOpts = /\[[^\]]+\]/.test(value) || /--[A-Za-z0-9_-]+/.test(value) || /\s+or\s+/.test(value);
 
-    if risky_characters || risky_options
-      errors << "#{file}:#{line_no} copilot-strict: quote risky plain scalar for '#{key_value[1]}'"
-    end
-  end
-end
+    if (riskyChars || riskyOpts) {
+      errors.push(`${file}:${lineNo} copilot-strict: quote risky plain scalar for '${kv[1]}'`);
+    }
+  });
+}
 
-if errors.empty?
-  puts "Frontmatter validation passed for #{files.length} file(s)."
-  exit 0
-end
+if (errors.length === 0) {
+  console.log(`Frontmatter validation passed for ${files.length} file(s).`);
+  process.exit(0);
+}
 
-puts "Frontmatter validation failed (#{errors.length} issue#{errors.length == 1 ? '' : 's'}):"
-errors.each { |err| puts "- #{err}" }
-exit 1
-RUBY
+console.log(`Frontmatter validation failed (${errors.length} issue${errors.length === 1 ? '' : 's'}):`);
+errors.forEach(err => console.log(`- ${err}`));
+process.exit(1);
+JS
