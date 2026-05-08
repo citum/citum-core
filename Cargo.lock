@@ -681,15 +681,19 @@ name = "citum-schema-style"
 version = "0.38.0"
 dependencies = [
  "ciborium",
+ "cid",
  "citum-edtf",
  "citum-schema-data",
  "criterion",
  "csl-legacy",
  "indexmap 2.14.0",
+ "multihash",
  "schemars",
+ "semver",
  "serde",
  "serde_json",
  "serde_yaml_ng",
+ "sha2",
  "specta",
  "url",
 ]

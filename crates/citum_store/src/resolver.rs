@@ -933,9 +933,29 @@ fn resolution_error_from_store_error(
     uri: &str,
     err: ResolverError,
 ) -> citum_schema::ResolutionError {
-    citum_schema::ResolutionError::UriResolutionFailed {
-        uri: uri.to_string(),
-        reason: err.to_string(),
+    match err {
+        ResolverError::IntegrityFailure {
+            uri: e_uri,
+            expected,
+            actual,
+        } => citum_schema::ResolutionError::IntegrityFailure {
+            uri: e_uri,
+            expected,
+            actual,
+        },
+        ResolverError::VersionMismatch {
+            uri: e_uri,
+            required,
+            declared,
+        } => citum_schema::ResolutionError::VersionMismatch {
+            uri: e_uri,
+            required,
+            declared,
+        },
+        other => citum_schema::ResolutionError::UriResolutionFailed {
+            uri: uri.to_string(),
+            reason: other.to_string(),
+        },
     }
 }
 

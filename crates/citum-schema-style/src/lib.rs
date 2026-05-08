@@ -178,6 +178,26 @@ pub enum ResolutionError {
         /// Human-readable location hint.
         location: String,
     },
+    /// The fetched parent style's content did not hash to the value declared
+    /// in `extends-pin`.
+    IntegrityFailure {
+        /// URI of the parent that failed integrity verification.
+        uri: String,
+        /// CID declared in the child's `extends-pin`.
+        expected: String,
+        /// CID computed from the bytes the resolver actually returned.
+        actual: String,
+    },
+    /// The fetched style declares a `citum-version` requirement that the
+    /// running engine does not satisfy.
+    VersionMismatch {
+        /// URI whose `citum-version` requirement was unsatisfiable.
+        uri: String,
+        /// `citum-version` requirement declared by the style's `info` block.
+        required: String,
+        /// Version of the running engine.
+        declared: String,
+    },
 }
 
 impl std::fmt::Display for ResolutionError {
@@ -223,6 +243,26 @@ impl std::fmt::Display for ResolutionError {
                 write!(
                     f,
                     "template variant add operation in `{location}` must specify exactly one of before/after"
+                )
+            }
+            ResolutionError::IntegrityFailure {
+                uri,
+                expected,
+                actual,
+            } => {
+                write!(
+                    f,
+                    "extends-pin integrity check failed for `{uri}`: expected {expected}, got {actual}"
+                )
+            }
+            ResolutionError::VersionMismatch {
+                uri,
+                required,
+                declared,
+            } => {
+                write!(
+                    f,
+                    "style `{uri}` requires citum-version `{required}`; running engine is `{declared}`"
                 )
             }
         }
@@ -408,6 +448,16 @@ impl Style {
     ) -> Result<Self, ResolutionError> {
         const MAX_DEPTH: usize = 5;
 
+        // Reject root styles whose declared engine compat range we don't satisfy
+        // before we waste any work on inheritance or template variants.
+        let root_label = self
+            .info
+            .id
+            .as_deref()
+            .or(self.info.title.as_deref())
+            .unwrap_or("<root>");
+        check_citum_version(root_label, &self.info)?;
+
         let Some(base_ref) = self.extends.clone() else {
             let mut style = self;
             resolve_style_template_variants(&mut style, None)?;
@@ -430,12 +480,25 @@ impl Style {
         visited.insert(key);
 
         let is_profile = self.resolves_as_profile();
+        let pin = self.extends_pin.clone();
         let mut effective = match base_ref {
             style_base::StyleReference::Base(base) => {
+                if pin.is_some() {
+                    return Err(ResolutionError::UriResolutionFailed {
+                        uri: base.key().to_string(),
+                        reason:
+                            "extends-pin is only supported for URI-based parents (https://, cid:); \
+                             builtin StyleBase parents are content-fixed already"
+                                .to_string(),
+                    });
+                }
                 base.try_resolve_with_visited(resolver, visited)?
             }
             style_base::StyleReference::Uri(ref uri) => {
                 let base_style = resolve_style_reference_uri(uri, resolver)?;
+                if let Some(ref expected) = pin {
+                    verify_parent_pin(uri, &base_style, expected)?;
+                }
                 base_style.try_into_resolved_recursive_with_depth(resolver, visited, depth + 1)?
             }
         };
@@ -605,12 +668,120 @@ fn yaml_path_present(value: Option<&serde_yaml::Value>, path: &[&str]) -> bool {
     true
 }
 
+/// Compute the canonical CIDv1 (raw codec, sha-256, base32 lower) for the
+/// bytes that represent a parent style.
+///
+/// Used to back `extends-pin` enforcement at the schema layer. The encoding
+/// matches `citum_store::cid::compute_style_cid`; the function lives here
+/// (rather than depending on `citum_store`) so the schema layer remains free
+/// of network-feature crates.
+#[allow(
+    clippy::panic,
+    reason = "Multihash::wrap on a 32-byte SHA-256 digest is infallible by construction"
+)]
+fn schema_compute_style_cid(bytes: &[u8]) -> String {
+    use cid::Cid;
+    use multihash::Multihash;
+    use sha2::{Digest, Sha256};
+
+    const RAW_CODEC: u64 = 0x55;
+    const SHA256_CODE: u64 = 0x12;
+
+    let digest: [u8; 32] = Sha256::digest(bytes).into();
+    let mh = Multihash::<64>::wrap(SHA256_CODE, &digest)
+        .unwrap_or_else(|_| panic!("32-byte SHA-256 digest fits in Multihash<64>"));
+    Cid::new_v1(RAW_CODEC, mh).to_string()
+}
+
+/// Normalize a CID-or-`cid:`-URI to its canonical lowercase string form.
+fn schema_canonicalize_cid(s: &str) -> Result<String, ResolutionError> {
+    use cid::Cid;
+    let trimmed = s.strip_prefix("cid:").unwrap_or(s);
+    let cid: Cid =
+        trimmed
+            .parse()
+            .map_err(|err: cid::Error| ResolutionError::UriResolutionFailed {
+                uri: s.to_string(),
+                reason: format!("invalid CID '{s}': {err}"),
+            })?;
+    Ok(cid.to_string())
+}
+
+/// Verify that the parent style's serialized form matches `expected_pin`.
+///
+/// Re-serializes the parsed `Style` to its canonical YAML form and computes
+/// its CIDv1. Mismatch produces [`ResolutionError::IntegrityFailure`]. This
+/// is a best-effort check at the schema layer; for byte-exact verification
+/// of the originally-fetched bytes, route through
+/// `citum_store::fetch_and_verify_bytes` before parsing.
+fn verify_parent_pin(uri: &str, parent: &Style, expected_pin: &str) -> Result<(), ResolutionError> {
+    let expected = schema_canonicalize_cid(expected_pin)?;
+    let bytes =
+        serde_yaml::to_string(parent).map_err(|err| ResolutionError::UriResolutionFailed {
+            uri: uri.to_string(),
+            reason: format!("re-serialize for extends-pin verification: {err}"),
+        })?;
+    let actual = schema_compute_style_cid(bytes.as_bytes());
+    if actual == expected {
+        Ok(())
+    } else {
+        Err(ResolutionError::IntegrityFailure {
+            uri: uri.to_string(),
+            expected,
+            actual,
+        })
+    }
+}
+
+/// Apply an `info.citum-version` requirement check against the running
+/// engine version (CARGO_PKG_VERSION).
+///
+/// Returns `Ok(())` when the field is absent or the requirement is satisfied;
+/// returns [`ResolutionError::VersionMismatch`] otherwise.
+///
+/// # Errors
+///
+/// Returns [`ResolutionError::VersionMismatch`] when the running engine
+/// version does not satisfy the style's declared `citum-version` requirement.
+/// Returns [`ResolutionError::UriResolutionFailed`] when the requirement
+/// string itself fails to parse as a semver `VersionReq`, or when the
+/// running engine's `CARGO_PKG_VERSION` cannot be parsed (this latter case
+/// is structurally impossible at runtime but is preserved as a typed error
+/// rather than a panic).
+pub fn check_citum_version(uri: &str, info: &StyleInfo) -> Result<(), ResolutionError> {
+    let Some(req_str) = info.citum_version.as_ref() else {
+        return Ok(());
+    };
+    let req =
+        semver::VersionReq::parse(req_str).map_err(|err| ResolutionError::UriResolutionFailed {
+            uri: uri.to_string(),
+            reason: format!("invalid `info.citum-version` requirement '{req_str}': {err}"),
+        })?;
+    let engine_str = env!("CARGO_PKG_VERSION");
+    let engine =
+        semver::Version::parse(engine_str).map_err(|err| ResolutionError::UriResolutionFailed {
+            uri: uri.to_string(),
+            reason: format!("unparseable engine version `{engine_str}`: {err}"),
+        })?;
+    if req.matches(&engine) {
+        Ok(())
+    } else {
+        Err(ResolutionError::VersionMismatch {
+            uri: uri.to_string(),
+            required: req_str.clone(),
+            declared: engine_str.to_string(),
+        })
+    }
+}
+
 fn resolve_style_reference_uri(
     uri: &str,
     resolver: Option<&dyn StyleResolver>,
 ) -> Result<Style, ResolutionError> {
     if let Some(resolver) = resolver {
-        return resolver.resolve_style(uri);
+        let style = resolver.resolve_style(uri)?;
+        check_citum_version(uri, &style.info)?;
+        return Ok(style);
     }
 
     let Some(raw_path) = uri.strip_prefix("file://") else {
@@ -625,24 +796,26 @@ fn resolve_style_reference_uri(
         reason: e.to_string(),
     })?;
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
-    match ext {
+    let style: Style = match ext {
         "cbor" => ciborium::de::from_reader(std::io::Cursor::new(&bytes)).map_err(|e| {
             ResolutionError::UriResolutionFailed {
                 uri: uri.to_string(),
                 reason: e.to_string(),
             }
-        }),
+        })?,
         "json" => {
             serde_json::from_slice(&bytes).map_err(|e| ResolutionError::UriResolutionFailed {
                 uri: uri.to_string(),
                 reason: e.to_string(),
-            })
+            })?
         }
         _ => Style::from_yaml_bytes(&bytes).map_err(|e| ResolutionError::UriResolutionFailed {
             uri: uri.to_string(),
             reason: e.to_string(),
-        }),
-    }
+        })?,
+    };
+    check_citum_version(uri, &style.info)?;
+    Ok(style)
 }
 
 #[derive(Clone, Default)]
@@ -2088,6 +2261,49 @@ info:
         assert!(
             serialized.contains("citum-version:"),
             "citum-version field name preserved on serialization: {serialized}"
+        );
+    }
+
+    #[test]
+    fn citum_version_too_high_rejects_resolution() {
+        let yaml = r#"
+info:
+  title: From the Future
+  citum-version: ">=999.0.0"
+"#;
+        let style = Style::from_yaml_str(yaml).unwrap();
+        let err = style.try_into_resolved().expect_err("must reject");
+        assert!(
+            matches!(err, ResolutionError::VersionMismatch { .. }),
+            "expected VersionMismatch, got {err:?}"
+        );
+    }
+
+    #[test]
+    fn citum_version_satisfied_resolves_normally() {
+        let yaml = r#"
+info:
+  title: Satisfied
+  citum-version: ">=0.0.1"
+"#;
+        let style = Style::from_yaml_str(yaml).unwrap();
+        let resolved = style.try_into_resolved().expect("must resolve");
+        assert_eq!(resolved.info.title.as_deref(), Some("Satisfied"));
+    }
+
+    #[test]
+    fn extends_pin_on_builtin_base_is_rejected() {
+        let yaml = r#"
+extends: apa-7th
+extends-pin: bafkreigh2akiscaildc6mzfo4qtbk3rjmxa3ofkpzxqzd2cs6ftxvtsqfa
+info:
+  title: Bad Pin Target
+"#;
+        let style = Style::from_yaml_str(yaml).unwrap();
+        let err = style.try_into_resolved().expect_err("must reject");
+        assert!(
+            matches!(err, ResolutionError::UriResolutionFailed { .. }),
+            "expected UriResolutionFailed for builtin pin, got {err:?}"
         );
     }
 
