@@ -11,9 +11,7 @@ use citum_engine::{
 use citum_schema::Style;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
-use std::fs;
 use std::io::{self, BufRead, Write};
-use std::path::Path;
 
 /// JSON-RPC request envelope.
 #[derive(Debug, Deserialize)]
@@ -225,19 +223,30 @@ fn validate_style(params: &Value, id: Value) -> Result<Value, ServerError> {
     }
 }
 
-/// Load a style from a YAML file.
-fn load_style(style_path: &str) -> Result<Style, ServerError> {
-    let path = Path::new(style_path);
+/// Load a style through the standard resolver chain.
+///
+/// The chain includes file, store, HTTP, git, and registry resolvers.
+/// This server is intended for local use only; do not expose it to untrusted
+/// clients, as `style_input` can trigger outbound network requests (SSRF risk).
+fn load_style(style_input: &str) -> Result<Style, ServerError> {
+    use citum_store::resolver::{ResolverError, StyleResolver};
 
-    // Check if file exists.
-    if !path.exists() {
-        return Err(ServerError::StyleNotFound(style_path.to_string()));
+    let chain = citum_store::build_standard_chain()
+        .map_err(|e| ServerError::ResolverError(e.to_string()))?;
+
+    match chain.resolve_style(style_input) {
+        Ok(style) => {
+            let mut resolved = style
+                .try_into_resolved_with(Some(&chain))
+                .map_err(|e| ServerError::StyleResolution(e.to_string()))?;
+            resolved.extends = None;
+            Ok(resolved)
+        }
+        Err(ResolverError::StyleNotFound(_)) => {
+            Err(ServerError::StyleNotFound(style_input.to_string()))
+        }
+        Err(e) => Err(ServerError::ResolverError(e.to_string())),
     }
-
-    let content =
-        fs::read_to_string(path).map_err(|_| ServerError::StyleNotFound(style_path.to_string()))?;
-
-    Style::from_yaml_str(&content).map_err(|e| ServerError::StyleValidation(e.to_string()))
 }
 
 /// Run the JSON-RPC server on stdin/stdout.

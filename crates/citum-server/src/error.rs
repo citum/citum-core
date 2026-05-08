@@ -11,13 +11,21 @@ use thiserror::Error;
 /// Server-level errors.
 #[derive(Error, Debug)]
 pub enum ServerError {
-    /// The style file loaded successfully but failed schema validation.
+    /// The style YAML was found but failed to parse or validate against the schema.
     #[error("style validation failed: {0}")]
     StyleValidation(String),
 
-    /// The requested style file could not be found on disk.
+    /// No resolver in the chain could locate the requested style name, path, or URI.
     #[error("style not found: {0}")]
     StyleNotFound(String),
+
+    /// The style was found but inheritance or template resolution failed.
+    #[error("style resolution failed: {0}")]
+    StyleResolution(String),
+
+    /// The chain resolver itself failed to initialize or run.
+    #[error("resolver error: {0}")]
+    ResolverError(String),
 
     /// Bibliography input could not be deserialized or rendered.
     #[error("bibliography processing failed: {0}")]
