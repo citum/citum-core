@@ -645,7 +645,7 @@ Both are off by default. `citum-cli` enables both. WASM bridge enables neither.
 - [ ] `max_depth` cap enforced; deep chains return `UriResolutionFailed`
 - [ ] `VersionMismatch` returned when `citum-version` is incompatible with the
   running engine
-- [ ] `citum registry update [--all | <name>]` CLI command invalidates cache entries
+- [x] `citum registry update [--all | <name>]` CLI command invalidates cache entries
 - [ ] `EmbeddedResolver` serves all styles in `styles/` via the expanded
   `registry/default.yaml`, not only the previous short builtin slice
 
