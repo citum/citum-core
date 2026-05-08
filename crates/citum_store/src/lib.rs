@@ -5,6 +5,8 @@
 //! Provides a `StoreResolver` that searches user data directories for custom styles
 //! and locales, with fallback to embedded builtins. Supports YAML, JSON, and CBOR formats.
 
+#[cfg(feature = "http")]
+pub mod cid;
 pub mod config;
 pub mod format;
 pub mod paths;
@@ -27,7 +29,10 @@ mod resolver_tests;
 pub use config::StoreConfig;
 pub use format::StoreFormat;
 #[cfg(feature = "http")]
-pub use resolver::{GitResolver, HttpResolver};
+pub use resolver::{
+    CidResolver, DEFAULT_CID_GATEWAY, GitResolver, HttpResolver, VerifyingResolver,
+    fetch_and_verify_bytes,
+};
 pub use resolver::{RegistryResolver, StoreResolver};
 
 use std::path::PathBuf;

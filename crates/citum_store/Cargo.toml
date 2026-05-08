@@ -17,10 +17,13 @@ toml = "0.8"
 reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"], optional = true }
 sha2 = { version = "0.10", optional = true }
 tempfile = { version = "3", optional = true }
+cid = { version = "0.11", default-features = false, features = ["alloc", "serde-codec"], optional = true }
+multihash = { version = "0.19", default-features = false, features = ["alloc"], optional = true }
+multibase = { version = "0.9", optional = true }
 
 [features]
 hub = []
-http = ["dep:reqwest", "dep:sha2", "dep:tempfile"]
+http = ["dep:reqwest", "dep:sha2", "dep:tempfile", "dep:cid", "dep:multihash", "dep:multibase"]
 
 [dev-dependencies]
 tempfile = "3"

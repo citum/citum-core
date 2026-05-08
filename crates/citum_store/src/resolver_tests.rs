@@ -182,6 +182,76 @@ fn git_resolver_parses_git_uri() {
     assert_eq!(file, "styles/example.yaml");
 }
 
+#[cfg(feature = "http")]
+#[test]
+fn verifying_resolver_passes_through_when_pin_matches() {
+    use crate::cid::compute_style_cid;
+    use crate::resolver::{StyleResolver, VerifyingResolver};
+    use citum_schema::Style;
+
+    struct FixedResolver(Style);
+    impl StyleResolver for FixedResolver {
+        fn resolve_style(&self, _uri: &str) -> Result<Style, crate::resolver::ResolverError> {
+            Ok(self.0.clone())
+        }
+        fn resolve_locale(
+            &self,
+            id: &str,
+        ) -> Result<citum_schema::Locale, crate::resolver::ResolverError> {
+            Err(crate::resolver::ResolverError::LocaleNotFound(
+                id.to_string().into(),
+            ))
+        }
+    }
+
+    let yaml = b"info:\n  title: Test\n";
+    let style: Style = serde_yaml::from_slice(yaml).unwrap();
+    let canonical = serde_yaml::to_string(&style).unwrap();
+    let pin = compute_style_cid(canonical.as_bytes());
+
+    let inner = FixedResolver(style.clone());
+    let verifying = VerifyingResolver::new(inner, Some(pin));
+    let resolved = verifying
+        .resolve_style("file:///dev/null")
+        .expect("verifying pass-through");
+    assert_eq!(resolved.info.title.as_deref(), Some("Test"));
+}
+
+#[cfg(feature = "http")]
+#[test]
+fn verifying_resolver_rejects_when_pin_mismatches() {
+    use crate::resolver::{StyleResolver, VerifyingResolver};
+    use citum_schema::Style;
+
+    struct FixedResolver(Style);
+    impl StyleResolver for FixedResolver {
+        fn resolve_style(&self, _uri: &str) -> Result<Style, crate::resolver::ResolverError> {
+            Ok(self.0.clone())
+        }
+        fn resolve_locale(
+            &self,
+            id: &str,
+        ) -> Result<citum_schema::Locale, crate::resolver::ResolverError> {
+            Err(crate::resolver::ResolverError::LocaleNotFound(
+                id.to_string().into(),
+            ))
+        }
+    }
+
+    let yaml = b"info:\n  title: Test\n";
+    let style: Style = serde_yaml::from_slice(yaml).unwrap();
+    // Wrong pin: hash of unrelated content.
+    let bogus_pin = crate::cid::compute_style_cid(b"different bytes entirely");
+    let verifying = VerifyingResolver::new(FixedResolver(style), Some(bogus_pin));
+    let err = verifying
+        .resolve_style("file:///dev/null")
+        .expect_err("must reject");
+    assert!(
+        matches!(err, crate::resolver::ResolverError::IntegrityFailure { .. }),
+        "expected IntegrityFailure, got {err:?}"
+    );
+}
+
 #[test]
 fn resolver_error_variants_format_distinctly() {
     use crate::resolver::ResolverError;

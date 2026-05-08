@@ -52,6 +52,11 @@ pub struct StoreConfig {
     /// Configured remote registries.
     #[serde(default)]
     pub registries: Vec<RegistryConfig>,
+    /// Optional override for the IPFS HTTP gateway used to resolve `cid:`
+    /// references. When `None`, the resolver uses
+    /// [`crate::resolver::DEFAULT_CID_GATEWAY`].
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cid_gateway: Option<String>,
 }
 
 /// The `[store]` section of the config file.
@@ -72,6 +77,7 @@ impl Default for StoreConfig {
                 format: "yaml".to_string(),
             },
             registries: Vec::new(),
+            cid_gateway: None,
         }
     }
 }
