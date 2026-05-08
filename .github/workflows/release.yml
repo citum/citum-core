@@ -79,6 +79,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - uses: dtolnay/rust-toolchain@stable
 
@@ -121,15 +122,20 @@ jobs:
       - name: Configure branching and tagging
         id: config
         run: |
-          # Always use release/next and create a PR for all release levels (patch, minor, major)
-          # This ensures consistency and bypasses branch protection on main via the PR process.
-          echo "branch=release/next" >> "$GITHUB_OUTPUT"
-          echo "create_pr=true" >> "$GITHUB_OUTPUT"
+          LEVEL="${{ steps.resolve.outputs.level }}"
+          if [ "$LEVEL" = "major" ]; then
+            echo "branch=release/next" >> "$GITHUB_OUTPUT"
+            echo "create_pr=true" >> "$GITHUB_OUTPUT"
+          else
+            # patch/minor: push directly to main (RELEASE_TOKEN has admin bypass)
+            echo "branch=main" >> "$GITHUB_OUTPUT"
+            echo "create_pr=false" >> "$GITHUB_OUTPUT"
+          fi
           echo "push_tags=false" >> "$GITHUB_OUTPUT"
 
       - name: Create release branch
         if: steps.config.outputs.create_pr == 'true'
-        run: git checkout -B release/next
+        run: git checkout -B "${{ steps.config.outputs.branch }}"
 
       - name: Bump schema version (if schema changed)
         if: needs.detect.outputs.schema-changed == 'true'
@@ -192,7 +198,7 @@ jobs:
       - name: Create or update release PR
         if: steps.config.outputs.create_pr == 'true'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           NEW_VERSION=$(sed -n '/^\[workspace\.package\]/,/^\[/{s/^version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p;}' Cargo.toml | head -1)
           BODY="Automated release PR for **v${NEW_VERSION}**.
@@ -215,15 +221,6 @@ jobs:
               --label "release"
           fi
 
-      - name: Auto-merge patch/minor release PR
-        if: steps.config.outputs.create_pr == 'true' && steps.resolve.outputs.level != 'major'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          PR_NUM=$(gh pr list --head release/next --json number --jq '.[0].number')
-          if [ -n "$PR_NUM" ]; then
-            gh pr merge "$PR_NUM" --auto --merge
-          fi
 
   # ── Step 3: Auto-tag when release PR merges ───────────────────────
   auto-tag:
@@ -236,6 +233,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
 
       - uses: dtolnay/rust-toolchain@stable
 
