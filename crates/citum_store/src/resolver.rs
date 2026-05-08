@@ -284,10 +284,13 @@ pub struct GitResolver {
 }
 
 /// A resolver that fetches HTTP(S) style URLs and caches them on disk.
+///
+/// The underlying HTTP client is initialized lazily on first use so that
+/// constructing a [`ChainResolver`] is safe inside async Tokio contexts.
 #[cfg(feature = "http")]
 pub struct HttpResolver {
     cache_dir: PathBuf,
-    client: reqwest::blocking::Client,
+    client: std::sync::OnceLock<reqwest::blocking::Client>,
     allowed_hosts: Vec<String>,
 }
 
@@ -300,17 +303,24 @@ const HTTP_CACHE_MAX_AGE: Duration = Duration::from_hours(24);
 #[cfg(feature = "http")]
 impl HttpResolver {
     /// Create a resolver using the provided cache directory.
+    ///
+    /// The HTTP client is not created here; it is initialized lazily on first use.
     #[must_use]
     pub fn new(cache_dir: PathBuf) -> Self {
-        let client = reqwest::blocking::Client::builder()
-            .timeout(HTTP_TIMEOUT)
-            .build()
-            .unwrap_or_else(|_| reqwest::blocking::Client::new());
         Self {
             cache_dir,
-            client,
+            client: std::sync::OnceLock::new(),
             allowed_hosts: Vec::new(),
         }
+    }
+
+    fn client(&self) -> &reqwest::blocking::Client {
+        self.client.get_or_init(|| {
+            reqwest::blocking::Client::builder()
+                .timeout(HTTP_TIMEOUT)
+                .build()
+                .unwrap_or_else(|_| reqwest::blocking::Client::new())
+        })
     }
 
     /// Create a resolver using the platform cache directory.
@@ -331,7 +341,7 @@ impl HttpResolver {
     /// # Errors
     /// Returns an error if the request fails.
     pub fn fetch_bytes(&self, url: &str) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-        let mut response = self.client.get(url).send()?;
+        let mut response = self.client().get(url).send()?;
         if !response.status().is_success() {
             return Err(format!("failed to fetch {url}: status {}", response.status()).into());
         }
@@ -417,7 +427,7 @@ impl StyleResolver for HttpResolver {
             return Self::parse_style(uri, &bytes);
         }
 
-        let fetch_result = self.client.get(uri).send();
+        let fetch_result = self.client().get(uri).send();
 
         match fetch_result {
             Ok(response) => {
