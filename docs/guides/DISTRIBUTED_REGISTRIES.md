@@ -257,7 +257,7 @@ on a connected machine via `citum style add`, then copy
 |----------------------------------------|--------------------------------------------------------------|-----------------------------------------------------------|
 | `style not found: '<name>'`            | The chain exhausted without finding the style.               | Check spelling; `citum registry list`; `citum style list`. |
 | `host '<x>' not in resolver allowlist` | A registry's `allowed_hosts` rejects this URL.               | Configure the registry to allow the host or use a different URL. |
-| `network error fetching <uri>: ...`    | DNS, TLS, timeout, or git binary missing.                    | Check connectivity; for git URIs, ensure `git` is on PATH. |
+| `network error fetching <uri>: ...`    | DNS, TLS, timeout, or remote unreachable.                    | Check connectivity and URI validity.                      |
 | `extends-pin integrity check failed`   | The fetched parent's content does not match the declared CID. | The parent has changed: update the pin (after reviewing) or revert the parent. |
 | `style requires citum-version ...`     | Style declares a minimum engine version newer than yours.    | Upgrade `citum`, or use an older style.                   |
 | `inheritance loop detected at base ...` | A cycle in `extends:`.                                       | Break the cycle in one of the offending YAMLs.            |

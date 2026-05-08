@@ -190,23 +190,19 @@ URI scheme: `git+https://github.com/org/repo/styles/apa-7th.yaml@main`
 
 ```rust
 pub struct GitResolver {
-    repo_url: Url,
-    branch: String,         // default: "main"
-    styles_dir: String,     // path within repo, default: "styles/"
-    cache: Arc<dyn ResolverCache>,
-    allowed_origins: Vec<String>,
+    cache_dir: PathBuf,
 }
 ```
 
 Maintains a local shallow clone in the cache directory
 (`<cache_dir>/citum/git/<sha256_of_repo_url>/`). First access runs
-`git clone --depth=1 --filter=blob:none --sparse`; subsequent accesses run
-`git fetch --depth=1` if the TTL has expired.
+a shallow clone (`--depth=1`); subsequent accesses re-use the cache if fresh.
 
-Git operations use `std::process::Command` against the system `git` binary. If
-`git` is unavailable, returns `ResolverError::NetworkError` with reason "git
-binary not found". The `git` feature is opt-in in `citum_store/Cargo.toml`
-(no additional library dependencies).
+Git operations are handled internally by the `gix` (Gitoxide) library. It
+performs a shallow clone and extracts the requested file directly from the
+`HEAD` tree. This removes the dependency on an external `git` binary. The
+`http` feature (which includes `gix`) is opt-in in `citum_store/Cargo.toml`
+to keep WASM and embedded builds lean.
 
 **When to use GitResolver vs HttpResolver.** `GitResolver` is best suited to
 institutional registries where a publisher maintains a private collection and

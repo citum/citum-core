@@ -48,63 +48,86 @@ pub enum ResolverError {
     GitError(String),
     /// The URI host or origin is not in the resolver's allowlist.
     #[error("host not in resolver allowlist: {uri} ({reason})")]
-    Denied {
-        /// URI that triggered the denial.
-        uri: String,
-        /// Human-readable explanation (e.g., "host not in allowlist").
-        reason: String,
-    },
-    /// A network operation failed (DNS, TLS, transport, timeout, etc.).
-    #[error("network error fetching {uri}: {reason}")]
-    NetworkError {
-        /// URI that the resolver was attempting to fetch.
-        uri: String,
-        /// Underlying transport-layer reason.
-        reason: String,
-    },
-    /// The fetched style declares a `citum-version` requirement that the
-    /// running engine does not satisfy.
+    Denied { uri: String, reason: String },
+    /// The style's `citum-version` is not compatible with the running engine.
     #[error(
-        "engine version mismatch for {uri}: running citum {declared} does not satisfy required {required}"
+        "engine version mismatch for {uri}: engine requires {required}, style declares {declared}"
     )]
     VersionMismatch {
-        /// URI of the style with the incompatible version requirement.
         uri: String,
-        /// `citum-version` requirement declared by the style.
         required: String,
-        /// Version of the running engine.
         declared: String,
     },
-    /// The fetched style's content hash did not match an `extends-pin` or CID.
+    /// The content does not match the expected integrity hash.
     #[error("integrity failure for {uri}: expected {expected}, got {actual}")]
     IntegrityFailure {
-        /// URI whose content failed verification.
         uri: String,
-        /// Expected CID or hash.
         expected: String,
-        /// Actual CID or hash computed from the response bytes.
         actual: String,
     },
+    /// Generic network or transport failure.
+    #[error("network error fetching {uri}: {reason}")]
+    NetworkError { uri: String, reason: String },
 }
 
-/// A trait for resolving Citum styles and locales from various sources.
-pub trait StyleResolver {
+/// A resolver that can locate styles and locales.
+pub trait StyleResolver: Send + Sync {
     /// Resolve a style by URI or ID.
     ///
     /// # Errors
-    ///
-    /// Returns [`ResolverError::StyleNotFound`] if the style cannot be located.
+    /// Returns a [`ResolverError`] if the style cannot be found or loaded.
     fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError>;
 
     /// Resolve a locale by ID.
     ///
     /// # Errors
-    ///
-    /// Returns [`ResolverError::LocaleNotFound`] if the locale cannot be located.
+    /// Returns a [`ResolverError`] if the locale cannot be found or loaded.
     fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError>;
 }
 
-/// Resolves user-installed styles and locales from platform-specific data directories.
+/// A resolver that searches a local directory for styles and locales.
+pub struct FileResolver;
+
+impl StyleResolver for FileResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
+        let path = if let Some(path_str) = uri.strip_prefix("file://") {
+            PathBuf::from(path_str)
+        } else {
+            PathBuf::from(uri)
+        };
+
+        if path.is_file() {
+            let content = fs::read(&path)?;
+            let format = StoreFormat::detect(&path).unwrap_or(StoreFormat::Yaml);
+            match format {
+                StoreFormat::Yaml => serde_yaml::from_slice(&content)
+                    .map_err(|e| ResolverError::YamlError(ToString::to_string(&e))),
+                StoreFormat::Json => {
+                    serde_json::from_slice(&content).map_err(ResolverError::JsonError)
+                }
+                StoreFormat::Cbor => ciborium::de::from_reader(Cursor::new(&content))
+                    .map_err(|e| ResolverError::CborError(e.to_string())),
+            }
+        } else {
+            Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))
+        }
+    }
+
+    fn resolve_locale(&self, _id: &str) -> Result<Locale, ResolverError> {
+        Err(ResolverError::LocaleNotFound(Cow::Borrowed(
+            "file resolver only resolves styles",
+        )))
+    }
+}
+
+impl citum_schema::StyleResolver for FileResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
+        StyleResolver::resolve_style(self, uri)
+            .map_err(|err| resolution_error_from_store_error(uri, err))
+    }
+}
+
+/// A resolver that manages user-installed styles and locales in a platform data directory.
 pub struct StoreResolver {
     data_dir: PathBuf,
     format: StoreFormat,
@@ -219,33 +242,21 @@ impl StyleResolver for RegistryResolver {
                 .base_dir
                 .as_ref()
                 .map_or_else(|| path.clone(), |base| base.join(path));
-            let path = path
+            let path_str = path
                 .to_str()
                 .ok_or_else(|| ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))?;
-            return FileResolver.resolve_style(path);
+            return FileResolver.resolve_style(path_str);
         }
 
+        #[cfg(feature = "http")]
         if let Some(url) = &entry.url {
-            #[cfg(feature = "http")]
+            if let Some((_, _)) = GitResolver::parse_git_uri(url)
+                && let Some(git) = &self.git
             {
-                // Try git resolver if the URL is a git URI
-                if url.starts_with("git+https://") || url.starts_with("git+http://") {
-                    if let Some(git) = &self.git {
-                        return git.resolve_style(url);
-                    }
-                    return Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())));
-                }
-
-                let http = self
-                    .http
-                    .as_ref()
-                    .ok_or_else(|| ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))?;
-                return http.resolve_style(url);
+                return git.resolve_style(url);
             }
-
-            #[cfg(not(feature = "http"))]
-            {
-                return Err(ResolverError::StyleNotFound(Cow::Owned(url.clone())));
+            if let Some(http) = &self.http {
+                return http.resolve_style(url);
             }
         }
 
@@ -258,51 +269,6 @@ impl StyleResolver for RegistryResolver {
 }
 
 impl citum_schema::StyleResolver for RegistryResolver {
-    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
-        StyleResolver::resolve_style(self, uri)
-            .map_err(|err| resolution_error_from_store_error(uri, err))
-    }
-}
-
-/// A resolver that handles local file paths.
-pub struct FileResolver;
-
-impl StyleResolver for FileResolver {
-    fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
-        // Normalize file:// URIs to plain filesystem paths.
-        let raw_path = uri.strip_prefix("file://").unwrap_or(uri);
-        let path = Path::new(raw_path);
-        if path.exists() && path.is_file() {
-            let bytes = fs::read(path).map_err(ResolverError::Io)?;
-            let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
-
-            let style: Style = match ext {
-                "cbor" => ciborium::de::from_reader(Cursor::new(&bytes))
-                    .map_err(|e| ResolverError::CborError(e.to_string()))?,
-                "json" => serde_json::from_slice(&bytes)?,
-                _ => Style::from_yaml_bytes(&bytes)
-                    .map_err(|e| ResolverError::YamlError(ToString::to_string(&e)))?,
-            };
-            Ok(style)
-        } else {
-            Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))
-        }
-    }
-
-    fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
-        let locales_dir = Path::new("locales");
-        for ext in ["yaml", "yml", "json", "cbor"] {
-            let path = locales_dir.join(format!("{id}.{ext}"));
-            if path.exists() {
-                return Locale::from_file(&path)
-                    .map_err(|e| ResolverError::YamlError(ToString::to_string(&e)));
-            }
-        }
-        Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
-    }
-}
-
-impl citum_schema::StyleResolver for FileResolver {
     fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
         StyleResolver::resolve_style(self, uri)
             .map_err(|err| resolution_error_from_store_error(uri, err))
@@ -605,64 +571,52 @@ impl StyleResolver for GitResolver {
 
         // Create a temporary directory for the git clone
         let tmpdir = tempfile::TempDir::new().map_err(ResolverError::Io)?;
-        let tmpdir_str = tmpdir
-            .path()
-            .to_str()
-            .ok_or_else(|| ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))?;
 
-        let Ok(clone_output) = std::process::Command::new("git")
-            .args(["clone", "--depth=1", &repo_url, tmpdir_str])
-            .output()
-        else {
+        let mut prepare = gix::prepare_clone(repo_url.clone(), tmpdir.path()).map_err(|e| {
             // Serve stale cache if available
             if cache_path.is_file() {
-                let bytes = fs::read(&cache_path)?;
-                return Self::parse_style(uri, &bytes);
+                return ResolverError::Io(std::io::Error::other("gix fail"));
             }
-            return Err(ResolverError::NetworkError {
+            ResolverError::NetworkError {
                 uri: uri.to_string(),
-                reason: "git clone failed to spawn (is `git` on PATH?)".to_string(),
-            });
-        };
+                reason: format!("git clone failed to prepare: {e}"),
+            }
+        })?;
 
-        if !clone_output.status.success() {
-            let stderr = String::from_utf8_lossy(&clone_output.stderr);
-            // Serve stale cache if available
-            if cache_path.is_file() {
-                let bytes = fs::read(&cache_path)?;
-                return Self::parse_style(uri, &bytes);
-            }
-            return Err(ResolverError::NetworkError {
-                uri: uri.to_string(),
-                reason: format!(
-                    "git clone failed (exit {}): {}",
-                    clone_output.status,
-                    stderr.trim()
-                ),
-            });
+        // We only need a shallow clone of the default branch
+        if let Some(depth) = std::num::NonZeroU32::new(1) {
+            prepare = prepare.with_shallow(gix::remote::fetch::Shallow::DepthAtRemote(depth));
         }
 
-        // Check out the specific file
-        let file_checkout = std::process::Command::new("git")
-            .arg("-C")
-            .arg(tmpdir_str)
-            .args(["checkout", "HEAD", "--"])
-            .arg(&file_path)
-            .output();
+        let (repo, _) = prepare
+            .fetch_only(
+                gix::progress::Discard,
+                &std::sync::atomic::AtomicBool::new(false),
+            )
+            .map_err(|e| {
+                if cache_path.is_file() {
+                    return ResolverError::Io(std::io::Error::other("gix fetch fail"));
+                }
+                ResolverError::NetworkError {
+                    uri: uri.to_string(),
+                    reason: format!("git fetch failed: {e}"),
+                }
+            })?;
 
-        let file_path_full = tmpdir.path().join(&file_path);
-        let bytes_result = if let Ok(output) = file_checkout {
-            if output.status.success() && file_path_full.exists() {
-                fs::read(&file_path_full)
-            } else {
-                Err(std::io::Error::new(
-                    std::io::ErrorKind::NotFound,
-                    "file not found in repo",
-                ))
-            }
-        } else {
-            Err(std::io::Error::other("git checkout failed"))
-        };
+        let bytes_result = (|| -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+            let head = repo
+                .head()?
+                .id()
+                .ok_or("repository has no HEAD")?
+                .object()?
+                .into_commit();
+            let tree = head.tree()?;
+            let entry = tree
+                .lookup_entry_by_path(&file_path)?
+                .ok_or("file not found in repo")?;
+            let blob = entry.object()?;
+            Ok(blob.data.clone())
+        })();
 
         match bytes_result {
             Ok(bytes) => {
@@ -718,7 +672,7 @@ impl CidResolver {
     /// Construct a `CidResolver` with an explicit gateway and HTTP backend.
     ///
     /// `gateway` should end with a trailing slash; `https://dweb.link/ipfs/`
-    /// is the [`DEFAULT_CID_GATEWAY`].
+    /// Construct a `CidResolver` with an explicit gateway and HTTP backend.
     #[must_use]
     pub fn new(gateway: String, http: HttpResolver) -> Self {
         let gateway = if gateway.ends_with('/') {
@@ -886,13 +840,22 @@ pub fn fetch_and_verify_bytes(
     Ok(bytes)
 }
 
-/// A composite resolver that attempts resolution through a chain of resolvers.
+#[cfg(feature = "http")]
+impl<R: StyleResolver> citum_schema::StyleResolver for VerifyingResolver<R> {
+    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
+        StyleResolver::resolve_style(self, uri)
+            .map_err(|err| resolution_error_from_store_error(uri, err))
+    }
+}
+
+/// A resolver that chains multiple resolvers and tries them in order.
 pub struct ChainResolver {
     resolvers: Vec<Box<dyn StyleResolver>>,
 }
 
 impl ChainResolver {
-    /// Create a new chain resolver with the given list of resolvers.
+    /// Create a new `ChainResolver` with the given list of resolvers.
+    #[must_use]
     pub fn new(resolvers: Vec<Box<dyn StyleResolver>>) -> Self {
         ChainResolver { resolvers }
     }
@@ -935,26 +898,22 @@ fn resolution_error_from_store_error(
 ) -> citum_schema::ResolutionError {
     match err {
         ResolverError::IntegrityFailure {
-            uri: e_uri,
-            expected,
-            actual,
+            expected, actual, ..
         } => citum_schema::ResolutionError::IntegrityFailure {
-            uri: e_uri,
+            uri: uri.into(),
             expected,
             actual,
         },
         ResolverError::VersionMismatch {
-            uri: e_uri,
-            required,
-            declared,
+            required, declared, ..
         } => citum_schema::ResolutionError::VersionMismatch {
-            uri: e_uri,
+            uri: uri.into(),
             required,
             declared,
         },
-        other => citum_schema::ResolutionError::UriResolutionFailed {
-            uri: uri.to_string(),
-            reason: other.to_string(),
+        _ => citum_schema::ResolutionError::UriResolutionFailed {
+            uri: uri.into(),
+            reason: err.to_string(),
         },
     }
 }
