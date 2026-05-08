@@ -1,8 +1,9 @@
 # Distributed Registry and Resolver Architecture Specification
 
-**Status:** Active (Phase 2)
-**Date:** 2026-05-04
-**Related:** bean csl26-r8d2, `docs/specs/STYLE_REGISTRY.md`
+**Status:** Active (Phase 3)
+**Date:** 2026-05-08
+**Related:** bean csl26-r8d2, `docs/specs/STYLE_REGISTRY.md`,
+`docs/guides/DISTRIBUTED_REGISTRIES.md`
 
 ## Purpose
 
@@ -34,65 +35,44 @@ without requiring central coordination or manual file installation. Phase 1
 
 ## Design
 
-### Deferred Decision: Threading `&dyn StyleResolver`
+### Threading `&dyn StyleResolver` — implemented as a two-trait bridge
 
-`try_into_resolved_recursive` currently handles `file://` URIs inline
-(citum-schema-style/src/lib.rs). To support `https://` and `git+https://` in
-Phase 2, a resolver must be accessible at that call site.
+The schema layer needs a resolver hook for non-`file://` URIs but cannot
+depend on `citum_store` directly without creating a cycle. Phase 2 resolved
+this without introducing a third crate (the spec's earlier
+`citum-resolver-api` proposal):
 
-**Decision: Thread `Option<&dyn StyleResolver>` as a parameter.**
+- **`citum-schema-style` defines its own minimal `StyleResolver` trait** —
+  one method, `resolve_style(&self, uri: &str) -> Result<Style,
+  ResolutionError>`. This is the trait the schema layer calls through.
+- **`citum_store` defines a fuller `StyleResolver` trait** that adds
+  `resolve_locale`, plus implements *both* traits on every concrete resolver
+  (`StoreResolver`, `EmbeddedResolver`, `RegistryResolver`, `FileResolver`,
+  `HttpResolver`, `GitResolver`, `CidResolver`, `ChainResolver`).
+- `citum_store` resolvers map their richer `ResolverError` variants to
+  schema-layer `ResolutionError` via `resolution_error_from_store_error`,
+  preserving the typed `IntegrityFailure` and `VersionMismatch` cases.
 
-Rationale: avoids hidden global/thread-local state; `StyleResolver` is already
-object-safe (no associated types, no `Sized` bound); the public API gains an
-optional parameter with a `None` default, preserving backward compatibility for
-callers that only need embedded-or-local resolution.
-
-**New crate: `citum-resolver-api`** (zero network dependencies, only
-`thiserror`) — contains `StyleResolver` trait and `ResolverError` enum. This
-breaks what would otherwise be a circular dependency:
-
-```
-citum-schema-style → citum-resolver-api ← citum_store
-```
-
-`citum_store` re-exports the trait and error type for downstream crates.
-`citum-engine` and `citum-cli` depend on `citum_store` for concrete
-implementations. Signatures use `citum_resolver_api::StyleResolver` directly
-(not `citum_store::StyleResolver`) at the schema layer.
-
-**Naming clarification:** The existing private function
-`try_into_resolved_recursive` (which walks the `extends` chain) is **renamed**
-to `try_into_resolved_with` and gains the `resolver` parameter. It is not a
-new wrapper layered on top; it is the same recursive function with a new
-signature. The existing public `try_into_resolved` becomes a thin forwarding
-shim that calls it with `None`.
-
-Affected signatures:
+The relevant resolution entry points:
 
 ```rust
-// Public shim — unchanged call sites remain valid
-pub fn try_into_resolved(self) -> Result<Self, ResolutionError> {
-    self.try_into_resolved_with(None, &mut HashSet::new())
-}
-
-// Renamed from try_into_resolved_recursive; gains resolver parameter
+pub fn try_into_resolved(self) -> Result<Self, ResolutionError>;
 pub fn try_into_resolved_with(
     self,
-    resolver: Option<&dyn citum_resolver_api::StyleResolver>,
+    resolver: Option<&dyn StyleResolver>,
+) -> Result<Self, ResolutionError>;
+fn try_into_resolved_recursive_with_depth(
+    self,
+    resolver: Option<&dyn StyleResolver>,
     visited: &mut HashSet<String>,
-) -> Result<Self, ResolutionError>
-
-// StyleBase::try_resolve_with_visited gains the same resolver parameter
-pub(crate) fn try_resolve_with_visited(
-    &self,
-    resolver: Option<&dyn citum_resolver_api::StyleResolver>,
-    visited: &mut HashSet<String>,
-) -> Result<Style, ResolutionError>
+    depth: usize,
+) -> Result<Self, ResolutionError>;
 ```
 
 When `resolver` is `None` and the URI scheme is not `file://`, the engine
-returns `ResolutionError::UriResolutionFailed` with a clear message indicating
-that a remote resolver is required.
+returns `ResolutionError::UriResolutionFailed` with a clear message
+indicating that a remote resolver is required. `MAX_DEPTH` is 5 hops; the
+inheritance chain is loop-detected via `HashSet<String>` of visited keys.
 
 ### Phase 2: Remote Fetching and Caching
 
@@ -118,35 +98,26 @@ registries:
 this config and constructs the `ChainResolver` with registries ordered by
 `priority` descending, preceded by the local resolvers.
 
-#### Core Registry (Phase 2, HTTP-served)
+#### Core Registry (embedded; small builtin set only)
 
-All ~150 styles in `styles/` are exposed as a **core registry** served via
-`HttpResolver`. Embedding them all at build time is impractical at that volume;
-instead, `registry/default.yaml` (embedded via `include_bytes!`) lists each
-style with its HTTP URI (GitHub raw URL or Hub URL). Only the small index is
-embedded — individual style files are fetched and cached on demand.
+`registry/default.yaml` is the **embedded default registry** — a small,
+versioned index of compiled-in builtin styles plus their aliases. It ships
+inside `citum-schema-data` via `include_bytes!` and powers `EmbeddedResolver`
+without any network access. As of Phase 3 it lists ~12 builtin styles
+(APA 7th, Elsevier Harvard, Chicago Notes 18th, MLA, IEEE, AMA, etc.) and
+their well-known aliases; the keys are `kind: base` / `kind: profile`, not
+URIs. Styles in this index are guaranteed-resolvable offline.
 
-A typical user interaction:
+The full ~150-style catalog (and the long tail of CSL-derived styles) does
+**not** live in citum-core. Bulk style distribution is the Hub's
+responsibility (`hub.citum.org`); `citum-core`'s embedded registry exists
+solely to keep the zero-config user path working without a network call. A
+publishing organization that wants to distribute its full collection runs
+its own registry — see "Federated Registry Protocol" below.
 
-```bash
-citum style search "chicago"       # fetches + caches only the index
-citum style add chicago-author-date # fetches + caches that one file
-```
-
-Three fetched styles means three HTTP requests, not a clone of the whole repo.
-
-`EmbeddedResolver` retains the current small set of compiled-in builtins for
-true zero-network operation (e.g. air-gapped environments). The core registry
-sits above it in the chain and requires Phase 2 networking.
-
-As the ecosystem matures, styles may migrate from the core registry to the Hub
-registry. This is non-breaking: a Hub entry for the same style ID takes
-precedence once the user adds Hub, and the core registry entry remains as the
-fallback. No consumer changes are required when a style migrates.
-
-The core registry is intentionally constrained — a CI-verified testbed, not a
-general-purpose distribution channel. Styles that do not meet the quality bar
-for citum-core belong in the Hub or in institutional registries.
+This split keeps `citum-core` small, makes `EmbeddedResolver` air-gap-safe,
+and lets the broader ecosystem grow without bottlenecking on PRs to this
+repo.
 
 #### Resolver Chain Order (fixed)
 
@@ -293,35 +264,43 @@ used by `StoreResolver` (`XDG_DATA_HOME` or `~/.local/share/citum/` on Unix).
 
 #### CID Integration
 
-A CID (Content Identifier, CIDv1 format from the multiformats ecosystem)
-provides immutable, content-addressed style references:
+Citum's CID format is **CIDv1, raw codec (`0x55`), SHA-256 hash (`0x12`),
+multibase `b` (base32 lowercase)**. Style files are opaque YAML or JSON or
+CBOR bytes from a Citum perspective; the raw codec is correct because we do
+not parse style content as IPLD. The resulting strings begin with `bafkrei…`
+(short for `b` multibase + raw + sha-256). A Citum CID is byte-for-byte
+interchangeable with `ipfs add --raw-leaves` output for the same input.
+
+A CID provides an immutable, content-addressed style reference:
 
 ```yaml
-# Fully immutable reference
-extends: cid:bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi
+# Fully immutable reference (URI scheme cid:)
+extends: cid:bafkreigh2akiscaildc6mzfo4qtbk3rjmxa3ofkpzxqzd2cs6ftxvtsqfa
 
-# Mutable URI with integrity pin
+# Mutable URI with integrity pin (sibling field of extends, not nested)
 extends: https://hub.citum.org/styles/apa-7th.yaml
-extends-pin: bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi
+extends-pin: cid:bafkreigh2akiscaildc6mzfo4qtbk3rjmxa3ofkpzxqzd2cs6ftxvtsqfa
 ```
 
-When `extends-pin` is present the engine verifies SHA-256 of the fetched
-content against the CID after stripping the multibase prefix and codec.
-Mismatch returns `ResolutionError::IntegrityFailure { uri, expected, actual }`.
+`extends-pin` accepts the bare CID (`bafkrei…`) or the `cid:`-prefixed form;
+the resolver canonicalizes both before comparing. Verification re-serializes
+the fetched parent to canonical YAML, computes its CID, and aborts with
+`ResolutionError::IntegrityFailure { uri, expected, actual }` on mismatch.
+For byte-exact verification of the originally-fetched bytes (without a YAML
+round-trip), use the lower-level
+`citum_store::fetch_and_verify_bytes(http, cid_resolver, uri, expected_cid)`
+helper before parsing.
 
-`StyleReference` gains a third variant:
-
-```rust
-pub enum StyleReference {
-    Base(StyleBase),
-    Uri(String),
-    Cid(String),  // raw CIDv1 string
-}
-```
+`StyleReference` does *not* gain a third Rust variant. Phase 3 routes `cid:`
+URIs through the existing `Uri(String)` variant; a `StyleReference::is_cid()`
+helper detects the scheme. This avoids breaking deserialization of every
+existing extends value while keeping the schema two-variant.
 
 `CidResolver` wraps an `HttpResolver` and routes `cid:` URIs to IPFS HTTP
-gateways. The gateway URL is configurable; the default is
-`https://dweb.link/ipfs/<cid>`. CID cache entries have TTL `u64::MAX`.
+gateways. The gateway URL is configurable: default
+`https://dweb.link/ipfs/`, override via `StoreConfig.cid_gateway` in
+`~/.config/citum/config.yaml`. Cache entries for `cid:` URIs are immutable
+and never revalidated.
 
 #### Hash Verification Middleware
 
@@ -441,15 +420,27 @@ found, `ResolverError::VersionMismatch` is returned.
 pub citum_version: Option<String>,
 ```
 
-The engine performs partial deserialization to extract `info.citum-version`
-before full deserialization, compares against `env!("CARGO_PKG_VERSION")` via
-semver range check, and returns `ResolverError::VersionMismatch` on
-incompatibility rather than a cryptic Serde error.
+The check runs **after** full deserialization but **before** any inheritance
+or template-variant resolution: the resolver parses the style, reads
+`info.citum_version`, parses it as a `semver::VersionReq`, and compares
+against the engine's `env!("CARGO_PKG_VERSION")`. Incompatibility returns
+`ResolutionError::VersionMismatch { uri, required, declared }` rather than
+allowing an old engine to silently ignore fields it doesn't understand.
+Missing `citum-version` is treated as "any version".
 
-**Forward compatibility:** `#[serde(deny_unknown_fields)]` is NOT used on
-`Style`. Unknown fields in remote styles from newer engine versions are
-silently ignored, allowing newer styles to load on older engines with
-unrecognized features absent.
+The check applies on three paths:
+1. The root style's own `info.citum-version` (in
+   `try_into_resolved_recursive_with_depth`, before walking `extends`).
+2. Each parent fetched through a resolver (in
+   `resolve_style_reference_uri`, after the resolver returns).
+3. Each `file://` parent loaded directly without a resolver.
+
+**Forward compatibility:** `Style` does use `#[serde(deny_unknown_fields)]`
+at the top level today, so newer-engine-only fields would still fail
+deserialization on an older engine. The version check therefore acts as a
+fast-fail with a meaningful error rather than a cryptic serde message —
+authors can declare `citum-version: ">=0.45.0"` and downstream users get
+"upgrade your engine" instead of "unknown field `gendered-roles-mf2`".
 
 ### Caching Strategy
 
@@ -631,36 +622,81 @@ Both are off by default. `citum-cli` enables both. WASM bridge enables neither.
 
 ## Acceptance Criteria
 
-### Phase 2
+### Phase 2 (complete)
 
-- [ ] `citum-resolver-api` crate exists; `StyleResolver` and `ResolverError`
-  defined there; `citum_store` re-exports both
-- [ ] `try_into_resolved_with(resolver: Option<&dyn StyleResolver>, visited)`
-  is the canonical recursive entry point; `try_into_resolved` delegates with `None`
-- [ ] `HttpResolver` resolves `https://` URIs and returns a valid `Style`
-- [ ] `HttpResolver` returns `Denied` for hosts not in the allowlist
-- [ ] `FsCache` stores and retrieves entries under `<cache_dir>/citum/`
-- [ ] Stale cache entry is served with a warning when the network is unavailable
-- [ ] `GitResolver` resolves `git+https://` URIs via shallow clone
-- [ ] `ChainResolver` constructed from `StoreConfig.registries` in priority order
-- [ ] `RegistryConfig` parsed from `~/.config/citum/config.yaml`
-- [ ] `max_depth` cap enforced; deep chains return `UriResolutionFailed`
-- [ ] `VersionMismatch` returned when `citum-version` is incompatible with the
-  running engine
+- [x] Schema-layer `StyleResolver` trait threads through
+  `try_into_resolved_with(resolver: Option<&dyn StyleResolver>)`;
+  `try_into_resolved` delegates with `None`. (Implemented as a two-trait
+  bridge with `citum_store::StyleResolver`; the standalone
+  `citum-resolver-api` crate proposed in earlier drafts was not needed.)
+- [x] `HttpResolver` resolves `https://` URIs and returns a valid `Style`
+- [x] FS cache stores and retrieves entries under `<cache_dir>/citum/styles/http/`
+- [x] Stale cache entry is served with a warning when the network is unavailable
+- [x] `GitResolver` resolves `git+https://` URIs via shallow clone
+- [x] `ChainResolver` constructed from `StoreConfig.registries` in priority order
+- [x] `RegistryConfig` parsed from `~/.config/citum/config.yaml`
+- [x] `max_depth` cap enforced; deep chains return `UriResolutionFailed`
 - [x] `citum registry update [--all | <name>]` CLI command invalidates cache entries
-- [ ] `EmbeddedResolver` serves all styles in `styles/` via the expanded
-  `registry/default.yaml`, not only the previous short builtin slice
 
-### Phase 3
+Phase-2-flavored items completed in the Phase 3 commits (rolled forward
+because they share the same touch surface):
 
-- [ ] `StyleReference::Cid` variant accepted in YAML as `cid:<cidv1>`
-- [ ] `CidResolver` resolves CID URIs via configurable IPFS HTTP gateway
-- [ ] `extends-pin` field triggers SHA-256 integrity verification after fetch
-- [ ] `VerifyingResolver` returns `IntegrityFailure` on hash mismatch
-- [ ] `RegistryResolver` fetches and caches a registry index; resolves style IDs
-- [ ] CID cache entries have TTL `u64::MAX` and are never revalidated
-- [ ] `citum-bindings` WASM surface passes a pre-resolved `Style` to the engine;
-  remote resolution remains server-side (see Surface Exposure below)
+- [x] `HttpResolver` returns `Denied { uri, reason }` for hosts not in the
+  allowlist (was previously a generic `StyleNotFound`).
+- [x] `NetworkError { uri, reason }` returned for transport-layer failures
+  on both `HttpResolver` and `GitResolver` (was previously generic
+  `HttpError` / `GitError`).
+- [x] `VersionMismatch { uri, required, declared }` returned when
+  `info.citum-version` is incompatible with the running engine.
+
+### Phase 3 (complete)
+
+- [x] `cid:` URI scheme accepted in `extends:` via the existing
+  `StyleReference::Uri(String)` variant; `StyleReference::is_cid()` helper
+  detects the scheme.
+- [x] `CidResolver` resolves CID URIs via a configurable IPFS HTTP gateway
+  (default `https://dweb.link/ipfs/`, override `StoreConfig.cid_gateway`).
+- [x] `extends-pin` field on `Style` triggers CIDv1 integrity verification
+  of the resolved parent.
+- [x] `VerifyingResolver<R>` middleware returns `IntegrityFailure` on hash
+  mismatch.
+- [x] `IntegrityFailure { uri, expected, actual }` exists on both
+  `ResolverError` (citum_store) and `ResolutionError` (schema).
+- [x] CID cache entries (via `HttpResolver`) are revalidated only on
+  explicit `citum registry update`.
+- [x] `citum style cid <target>` prints the canonical CIDv1 of a style.
+- [x] `citum style pin <target>` prints a paste-ready
+  `extends:` + `extends-pin:` block.
+- [x] `citum style validate <path>` runs schema + extends + pin + version
+  checks end-to-end.
+- [x] `citum style info <name>` surfaces CID and `citum-version`.
+- [x] User-facing walkthrough at `docs/guides/DISTRIBUTED_REGISTRIES.md`.
+
+### Deferred follow-ups (post Phase 3)
+
+These appeared in earlier draft acceptance lists but are intentionally
+deferred and tracked separately:
+
+- `citum-server` wiring. A future bean adds `citum_store` as a dependency
+  of `citum-server` (with `http`/`git` features) and constructs a
+  `ChainResolver` from the same config path used by the CLI. Until then,
+  the server caller is responsible for resolving styles and passing
+  pre-resolved YAML into the rendering API.
+- `RegistryResolver` index fetching with `citum-version` filter at the
+  index layer. Today the version check happens per-style after fetch;
+  pushing it into the index probe is a reasonable optimization but not
+  required for correctness.
+- Locale CID/integrity. Locale resolution does not currently flow through
+  the schema-layer chain; remote locale fetching is an open design
+  question handled in a separate spec.
+- `citum-bindings` WASM CID stubs. The WASM build remains
+  `EmbeddedResolver`+`StoreResolver`-only by `#[cfg]`; remote resolution
+  belongs server-side.
+- Registry discovery (`.well-known/citum-registry.yaml`, Hub
+  meta-registry). Forward-compat hooks are documented above; no
+  implementation in this round.
+- IPFS gateway redundancy / multi-gateway fallback. A single configurable
+  gateway is sufficient for v1.
 
 ### Surface Exposure
 
@@ -690,3 +726,14 @@ the CLI integration added in Phase 2.
 ## Changelog
 
 - 2026-05-04: Initial spec (Phases 2 and 3). Phase 1 already implemented.
+- 2026-05-08: Phase 3 active. CID content-addressing, `extends-pin`
+  integrity verification, `info.citum-version` engine-compat checks,
+  typed resolver-error variants (`Denied` / `NetworkError` /
+  `VersionMismatch` / `IntegrityFailure`), and the `citum style
+  cid` / `pin` / `validate` CLI commands shipped together. Spec
+  amendments: dropped the `citum-resolver-api` proposal in favor of
+  the two-trait bridge actually shipped in Phase 2, fixed the
+  bundled-vs-served core-registry contradiction, specified CIDv1
+  raw-codec encoding, clarified `extends-pin` schema location, and
+  moved server wiring + locale CID + registry discovery to deferred
+  follow-ups.
