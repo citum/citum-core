@@ -3,6 +3,7 @@ name = "citum-schema-style"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+description = "Citum style schema types and styling engine"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }

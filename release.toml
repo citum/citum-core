@@ -1,7 +1,6 @@
 shared-version = true
 consolidate-commits = true
 dependent-version = "upgrade"
-publish = false
 tag-prefix = "v"
 tag-message = "v{{version}}"
 pre-release-hook = ["git-cliff", "-o", "CHANGELOG.md", "--tag", "v{{version}}"]

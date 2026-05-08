@@ -3,13 +3,6 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "crates/**/*.rs"
-      - "docs/schemas/**"
-      - "Cargo.toml"
-      - "Cargo.lock"
   pull_request:
     types: [closed]
     branches: [main]
@@ -31,11 +24,11 @@ permissions:
 jobs:
   # ── Step 1: Detect what changed and infer bump level ──────────────
   detect:
-    if: >-
-      (github.event_name == 'push' &&
-       !contains(github.event.head_commit.message, 'release v')) ||
-      (github.event_name == 'workflow_dispatch' &&
-       github.event.inputs.command == 'release-pr')
+    if: |
+      (github.event_name == 'workflow_dispatch') ||
+      (github.event.pull_request.merged == true &&
+       github.event.pull_request.head.ref != 'release/next' &&
+       !startsWith(github.event.pull_request.title, 'chore(release)'))
     runs-on: ubuntu-latest
     outputs:
       code-changed: ${{ steps.infer.outputs.code-changed }}
@@ -216,10 +209,20 @@ jobs:
           else
             # Ensure the 'release' label exists; --force handles existing labels gracefully by updating them
             gh label create "release" --color "0E8A16" --description "Automated release pull requests" --force
-            
+
             gh pr create --head "release/next" --base main \
               --title "chore: release v${NEW_VERSION}" --body "$BODY" \
               --label "release"
+          fi
+
+      - name: Auto-merge patch/minor release PR
+        if: steps.config.outputs.create_pr == 'true' && steps.resolve.outputs.level != 'major'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=$(gh pr list --head release/next --json number --jq '.[0].number')
+          if [ -n "$PR_NUM" ]; then
+            gh pr merge "$PR_NUM" --auto --merge
           fi
 
   # ── Step 3: Auto-tag when release PR merges ───────────────────────

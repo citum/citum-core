@@ -20,6 +20,12 @@ resolver = "2"
 version = "0.38.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
+description = "Citum citation engine — schema, processor, and migration tools"
+repository = "https://github.com/bdarcus/citum-core"
+homepage = "https://citum.org"
+authors = ["Bruce D'Arcus <bdarcus@gmail.com>"]
+keywords = ["citation", "bibliography", "csl"]
+categories = ["text-processing"]
 
 [workspace.lints.rust]
 missing_docs = "deny"

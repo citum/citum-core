@@ -5,6 +5,7 @@ edition.workspace = true
 authors = ["Bruce D'Arcus <bdarcus@gmail.com>"]
 license.workspace = true
 description = "Citum cross-language bindings (WASM, cdylib)"
+publish = false
 
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = false

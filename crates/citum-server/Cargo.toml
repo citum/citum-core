@@ -5,6 +5,7 @@ edition.workspace = true
 authors = ["Bruce D'Arcus <bdarcus@gmail.com>"]
 license.workspace = true
 description = "Citum JSON-RPC server for citation and bibliography processing"
+publish = false
 
 [[bin]]
 name = "citum-server"

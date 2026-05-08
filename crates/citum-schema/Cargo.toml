@@ -3,6 +3,7 @@ name = "citum-schema"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+description = "Citum citation and bibliography data schema types"
 
 [dependencies]
 citum_schema_data = { package = "citum-schema-data", path = "../citum-schema-data", default-features = false }

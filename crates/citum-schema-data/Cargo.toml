@@ -3,6 +3,7 @@ name = "citum-schema-data"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+description = "Citum bibliographic data schema types"
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }

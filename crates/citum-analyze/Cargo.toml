@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 description = "Analyze CSL 1.0 styles to guide migration development"
+publish = false
 
 [[bin]]
 name = "citum-analyze"

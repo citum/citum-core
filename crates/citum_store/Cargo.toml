@@ -3,6 +3,7 @@ name = "citum_store"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
+publish = false
 
 [dependencies]
 citum-schema = { package = "citum-schema", path = "../citum-schema" }
