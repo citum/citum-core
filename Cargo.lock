@@ -737,6 +737,7 @@ dependencies = [
  "axum",
  "citum-engine",
  "citum-schema",
+ "citum_store",
  "clap",
  "serde",
  "serde_json",
