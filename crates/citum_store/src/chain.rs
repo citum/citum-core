@@ -1,0 +1,183 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
+//! Standard ChainResolver construction for platform-aware style resolution.
+
+use crate::{
+    StoreConfig, StoreResolver, platform_config_dir, platform_data_dir,
+    resolver::{
+        ChainResolver, EmbeddedResolver, FileResolver, GitResolver, HttpResolver, RegistryResolver,
+        StyleResolver,
+    },
+};
+use std::{error::Error, fs, path::Path};
+
+/// Construct a `ChainResolver` with the standard platform resolver stack.
+///
+/// Order: FileResolver → StoreResolver → HttpResolver → GitResolver →
+/// registry resolvers (local + configured + embedded default) → EmbeddedResolver.
+///
+/// # Errors
+///
+/// Returns an error if the current working directory cannot be determined.
+pub fn build_standard_chain() -> Result<ChainResolver, Box<dyn Error + Send + Sync>> {
+    let mut resolvers: Vec<Box<dyn StyleResolver>> = vec![Box::new(FileResolver)];
+
+    if let Some(data_dir) = platform_data_dir()
+        && data_dir.exists()
+    {
+        let config = StoreConfig::load().unwrap_or_default();
+        resolvers.push(Box::new(StoreResolver::new(
+            data_dir,
+            config.store_format(),
+        )));
+    }
+
+    if let Some(http) = HttpResolver::from_platform_cache_dir() {
+        resolvers.push(Box::new(http));
+    }
+
+    if let Some(git) = GitResolver::from_platform_cache_dir() {
+        resolvers.push(Box::new(git));
+    }
+
+    resolvers.extend(registry_resolvers()?);
+
+    resolvers.push(Box::new(EmbeddedResolver));
+
+    Ok(ChainResolver::new(resolvers))
+}
+
+#[derive(serde::Deserialize)]
+struct RegistrySourceRecord {
+    name: String,
+}
+
+fn registry_sources_path() -> Option<std::path::PathBuf> {
+    platform_config_dir().map(|dir| dir.join("registry-sources.json"))
+}
+
+fn configured_registry_path(name: &str) -> Option<std::path::PathBuf> {
+    platform_config_dir().map(|dir| dir.join("registries").join(format!("{name}.yaml")))
+}
+
+fn configured_registry_names() -> Vec<String> {
+    let Some(path) = registry_sources_path() else {
+        return Vec::new();
+    };
+    let Ok(bytes) = fs::read(path) else {
+        return Vec::new();
+    };
+    let Ok(records) = serde_json::from_slice::<Vec<RegistrySourceRecord>>(&bytes) else {
+        return Vec::new();
+    };
+    records.into_iter().map(|record| record.name).collect()
+}
+
+fn registry_resolvers() -> Result<Vec<Box<dyn StyleResolver>>, Box<dyn Error + Send + Sync>> {
+    let mut resolvers: Vec<Box<dyn StyleResolver>> = Vec::new();
+
+    let local_path = Path::new("citum-registry.yaml");
+    if local_path.exists()
+        && let Ok(registry) = citum_schema::StyleRegistry::load_from_file(local_path)
+    {
+        resolvers.push(Box::new(
+            RegistryResolver::new(registry).with_base_dir(std::env::current_dir()?),
+        ));
+    }
+
+    for name in configured_registry_names() {
+        let Some(path) = configured_registry_path(&name) else {
+            continue;
+        };
+        if !path.exists() {
+            continue;
+        }
+        let Ok(registry) = citum_schema::StyleRegistry::load_from_file(&path) else {
+            continue;
+        };
+        let base_dir = path.parent().unwrap_or(Path::new(".")).to_path_buf();
+        let resolver = RegistryResolver::new(registry).with_base_dir(base_dir);
+        let resolver = if let Some(http) = HttpResolver::from_platform_cache_dir() {
+            resolver.with_http(http)
+        } else {
+            resolver
+        };
+        let resolver = if let Some(git) = GitResolver::from_platform_cache_dir() {
+            resolver.with_git(git)
+        } else {
+            resolver
+        };
+        resolvers.push(Box::new(resolver));
+    }
+
+    // Wire StoreConfig.registries entries not yet tracked in registry-sources.json
+    if let Ok(config) = StoreConfig::load() {
+        let tracked_names = configured_registry_names();
+
+        for registry_config in &config.registries {
+            if tracked_names.contains(&registry_config.name) {
+                continue;
+            }
+
+            if let Some(path) = configured_registry_path(&registry_config.name)
+                && path.exists()
+                && let Ok(registry) = citum_schema::StyleRegistry::load_from_file(&path)
+            {
+                let base_dir = path.parent().unwrap_or(Path::new(".")).to_path_buf();
+                let resolver = RegistryResolver::new(registry).with_base_dir(base_dir);
+                let resolver = if let Some(http) = HttpResolver::from_platform_cache_dir() {
+                    resolver.with_http(http)
+                } else {
+                    resolver
+                };
+                let resolver = if let Some(git) = GitResolver::from_platform_cache_dir() {
+                    resolver.with_git(git)
+                } else {
+                    resolver
+                };
+                resolvers.push(Box::new(resolver));
+                continue;
+            }
+
+            if let Some(http) = HttpResolver::from_platform_cache_dir()
+                && let Ok(bytes) = http.fetch_bytes(&registry_config.url)
+                && let Ok(registry) = serde_yaml::from_slice::<citum_schema::StyleRegistry>(&bytes)
+            {
+                if let Some(path) = configured_registry_path(&registry_config.name) {
+                    let _ = fs::create_dir_all(path.parent().unwrap_or(Path::new(".")));
+                    let _ = fs::write(&path, &bytes);
+                }
+                let base_dir = configured_registry_path(&registry_config.name)
+                    .and_then(|p| p.parent().map(|p| p.to_path_buf()))
+                    .unwrap_or_else(|| Path::new(".").to_path_buf());
+                let resolver = RegistryResolver::new(registry).with_base_dir(base_dir);
+                let resolver = resolver.with_http(http);
+                let resolver = if let Some(git) = GitResolver::from_platform_cache_dir() {
+                    resolver.with_git(git)
+                } else {
+                    resolver
+                };
+                resolvers.push(Box::new(resolver));
+            }
+        }
+    }
+
+    let resolver = RegistryResolver::new(citum_schema::embedded::default_registry())
+        .with_base_dir(std::env::current_dir()?);
+    let resolver = if let Some(http) = HttpResolver::from_platform_cache_dir() {
+        resolver.with_http(http)
+    } else {
+        resolver
+    };
+    let resolver = if let Some(git) = GitResolver::from_platform_cache_dir() {
+        resolver.with_git(git)
+    } else {
+        resolver
+    };
+    resolvers.push(Box::new(resolver));
+
+    Ok(resolvers)
+}

@@ -6,6 +6,8 @@
 //! and locales, with fallback to embedded builtins. Supports YAML, JSON, and CBOR formats.
 
 #[cfg(feature = "http")]
+pub mod chain;
+#[cfg(feature = "http")]
 pub mod cid;
 pub mod config;
 pub mod format;
@@ -26,14 +28,20 @@ pub mod resolver;
 )]
 mod resolver_tests;
 
+#[cfg(feature = "http")]
+pub use chain::build_standard_chain;
 pub use config::StoreConfig;
 pub use format::StoreFormat;
+#[cfg(feature = "http")]
+pub use resolver::ChainResolver;
 #[cfg(feature = "http")]
 pub use resolver::{
     CidResolver, DEFAULT_CID_GATEWAY, GitResolver, HttpResolver, VerifyingResolver,
     fetch_and_verify_bytes,
 };
-pub use resolver::{RegistryResolver, StoreResolver};
+pub use resolver::{
+    EmbeddedResolver, FileResolver, RegistryResolver, ResolverError, StoreResolver,
+};
 
 use std::path::PathBuf;
 
