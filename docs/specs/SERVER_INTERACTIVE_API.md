@@ -68,19 +68,20 @@ citum-server (Daemon / Network adapter)
 All methods that accept a style use a `StyleInput` union to avoid adapter-specific leakage. The current variants cover all transports:
 
 ```json
-// Path — server resolves from filesystem or embedded registry
-{"kind": "path", "value": "styles/embedded/apa-7th.yaml"}
+// ID — resolved from the resolver chain (embedded, store, or remote registries)
+{"kind": "id", "value": "apa-7th"}
 
-// Embedded ID — resolved from the embedded style registry by name
-{"kind": "embedded", "value": "apa-7th"}
+// URI — resolved directly from a remote URL or Git repository
+{"kind": "uri", "value": "https://hub.citum.org/styles/apa-7th.yaml"}
+
+// Path — server resolves from local filesystem
+{"kind": "path", "value": "styles/apa-7th.yaml"}
 
 // Inline YAML — WASM and HTTP callers may supply the style body directly
 {"kind": "yaml", "value": "---\ninfo:\n  title: ..."}
 ```
 
-Adapter mapping: `path` and `embedded` are valid in all transports; `yaml` is valid everywhere but most useful in WASM where filesystem access is unavailable.
-
-> **Note (csl26-r8d2):** The resolver architecture is under active reconsideration. That bean proposes a `StyleResolver` trait with a `ChainResolver` (`EmbeddedResolver` → `FileResolver` → `StoreResolver` → future `HttpResolver`) and URI-based `extends` values. When that work lands, `StyleInput` will grow a `url` variant (`{"kind": "url", "value": "https://..."}`) and resolution of `path`/`embedded` variants will delegate to the resolver chain. This spec's `StyleInput` union is intentionally open for that extension; no API shape change is required at Tier 1 or Tier 2 entry points.
+Adapter mapping: `id`, `uri`, and `path` are valid in all transports; `yaml` is valid everywhere but most useful in WASM where filesystem access is unavailable.
 
 ### `DocumentOptions` — document-level configuration
 
@@ -278,7 +279,7 @@ Modelled on Pandoc citeproc: one call, all inputs, all outputs. Works in stdio, 
 **Example request:**
 ```json
 {
-  "style": {"kind": "embedded", "value": "apa-7th"},
+  "style": {"kind": "id", "value": "apa-7th"},
   "locale": "en-US",
   "output_format": "plain",
   "refs": {
@@ -396,7 +397,7 @@ Clients must handle this by opening a new session and re-uploading references.
 {
   "method": "open_session",
   "params": {
-    "style": {"kind": "embedded", "value": "chicago-17th"},
+    "style": {"kind": "id", "value": "chicago-17th"},
     "locale": "en-US",
     "output_format": "plain",
     "document_options": {
