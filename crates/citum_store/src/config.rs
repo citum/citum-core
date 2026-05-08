@@ -85,9 +85,7 @@ impl StoreConfig {
     ///
     /// Returns an error when the config file exists but cannot be read or parsed.
     pub fn load() -> Result<Self, ConfigError> {
-        if let Some(config_dir) = dirs::config_dir() {
-            let citum_dir = config_dir.join("citum");
-
+        if let Some(citum_dir) = crate::platform_config_dir() {
             // Try YAML first
             let yaml_path = citum_dir.join("config.yaml");
             if yaml_path.exists() {
@@ -111,8 +109,7 @@ impl StoreConfig {
     ///
     /// Returns an error if the directory cannot be created or the file cannot be written.
     pub fn save(&self) -> Result<(), ConfigError> {
-        if let Some(config_dir) = dirs::config_dir() {
-            let citum_dir = config_dir.join("citum");
+        if let Some(citum_dir) = crate::platform_config_dir() {
             std::fs::create_dir_all(&citum_dir)?;
             let config_path = citum_dir.join("config.yaml");
             let content =
