@@ -1,6 +1,6 @@
 use citum_engine::{Processor, io::LoadedBibliography};
 use citum_schema::{Locale, Style, locale::types::LocaleOverride};
-use citum_store::{StoreConfig, StoreResolver, platform_config_dir, platform_data_dir};
+use citum_store::platform_config_dir;
 use serde::Deserialize;
 use std::error::Error;
 use std::fs;
@@ -62,118 +62,6 @@ fn registry_candidate_names() -> Vec<String> {
             }),
     );
     candidates
-}
-
-fn registry_resolvers() -> Result<Vec<Box<dyn citum_store::resolver::StyleResolver>>, Box<dyn Error>>
-{
-    use citum_store::resolver::{GitResolver, HttpResolver, RegistryResolver, StyleResolver};
-
-    let mut resolvers: Vec<Box<dyn StyleResolver>> = Vec::new();
-
-    let local_path = Path::new("citum-registry.yaml");
-    if local_path.exists()
-        && let Ok(registry) = citum_schema::StyleRegistry::load_from_file(local_path)
-    {
-        resolvers.push(Box::new(
-            RegistryResolver::new(registry).with_base_dir(std::env::current_dir()?),
-        ));
-    }
-
-    for name in configured_registry_names() {
-        let Some(path) = configured_registry_path(&name) else {
-            continue;
-        };
-        if !path.exists() {
-            continue;
-        }
-        let Ok(registry) = citum_schema::StyleRegistry::load_from_file(&path) else {
-            continue;
-        };
-        let base_dir = path.parent().unwrap_or(Path::new(".")).to_path_buf();
-        let resolver = RegistryResolver::new(registry).with_base_dir(base_dir);
-        let resolver = if let Some(http) = HttpResolver::from_platform_cache_dir() {
-            resolver.with_http(http)
-        } else {
-            resolver
-        };
-        let resolver = if let Some(git) = GitResolver::from_platform_cache_dir() {
-            resolver.with_git(git)
-        } else {
-            resolver
-        };
-        resolvers.push(Box::new(resolver));
-    }
-
-    // Wire StoreConfig.registries entries not yet tracked in registry-sources.json
-    if let Ok(config) = StoreConfig::load() {
-        let tracked_names = configured_registry_names();
-
-        for registry_config in &config.registries {
-            // Skip if already tracked in registry-sources.json
-            if tracked_names.contains(&registry_config.name) {
-                continue;
-            }
-
-            // Try to load from cache
-            if let Some(path) = configured_registry_path(&registry_config.name)
-                && path.exists()
-                && let Ok(registry) = citum_schema::StyleRegistry::load_from_file(&path)
-            {
-                let base_dir = path.parent().unwrap_or(Path::new(".")).to_path_buf();
-                let resolver = RegistryResolver::new(registry).with_base_dir(base_dir);
-                let resolver = if let Some(http) = HttpResolver::from_platform_cache_dir() {
-                    resolver.with_http(http)
-                } else {
-                    resolver
-                };
-                let resolver = if let Some(git) = GitResolver::from_platform_cache_dir() {
-                    resolver.with_git(git)
-                } else {
-                    resolver
-                };
-                resolvers.push(Box::new(resolver));
-                continue;
-            }
-
-            // Fetch from URL and cache it
-            if let Some(http) = HttpResolver::from_platform_cache_dir()
-                && let Ok(bytes) = http.fetch_bytes(&registry_config.url)
-                && let Ok(registry) = serde_yaml::from_slice::<citum_schema::StyleRegistry>(&bytes)
-            {
-                if let Some(path) = configured_registry_path(&registry_config.name) {
-                    let _ = fs::create_dir_all(path.parent().unwrap_or(Path::new(".")));
-                    let _ = fs::write(&path, &bytes);
-                }
-                let base_dir = configured_registry_path(&registry_config.name)
-                    .and_then(|p| p.parent().map(|p| p.to_path_buf()))
-                    .unwrap_or_else(|| Path::new(".").to_path_buf());
-                let resolver = RegistryResolver::new(registry).with_base_dir(base_dir);
-                let resolver = resolver.with_http(http);
-                let resolver = if let Some(git) = GitResolver::from_platform_cache_dir() {
-                    resolver.with_git(git)
-                } else {
-                    resolver
-                };
-                resolvers.push(Box::new(resolver));
-            }
-        }
-    }
-
-    let resolver = RegistryResolver::new(citum_schema::embedded::default_registry())
-        .with_base_dir(std::env::current_dir()?);
-    let resolver = if let Some(http) = HttpResolver::from_platform_cache_dir() {
-        resolver.with_http(http)
-    } else {
-        resolver
-    };
-    let resolver = if let Some(git) = GitResolver::from_platform_cache_dir() {
-        resolver.with_git(git)
-    } else {
-        resolver
-    };
-    resolvers.push(Box::new(resolver));
-
-    Ok(resolvers)
 }
 
 pub(crate) fn load_locale_file(path: &Path) -> Result<Locale, Box<dyn Error>> {
@@ -263,36 +151,10 @@ pub(crate) fn load_any_style(
     style_input: &str,
     _no_semantics: bool,
 ) -> Result<Style, Box<dyn Error>> {
-    use citum_store::resolver::{
-        ChainResolver, EmbeddedResolver, FileResolver, GitResolver, HttpResolver, StyleResolver,
-    };
+    use citum_store::resolver::{ResolverError, StyleResolver};
 
-    let mut resolvers: Vec<Box<dyn StyleResolver>> = vec![Box::new(FileResolver)];
-
-    // Try user store if it exists
-    if let Some(data_dir) = platform_data_dir()
-        && data_dir.exists()
-    {
-        let config = StoreConfig::load().unwrap_or_default();
-        resolvers.push(Box::new(StoreResolver::new(
-            data_dir,
-            config.store_format(),
-        )));
-    }
-
-    if let Some(http) = HttpResolver::from_platform_cache_dir() {
-        resolvers.push(Box::new(http));
-    }
-
-    if let Some(git) = GitResolver::from_platform_cache_dir() {
-        resolvers.push(Box::new(git));
-    }
-
-    resolvers.extend(registry_resolvers()?);
-
-    resolvers.push(Box::new(EmbeddedResolver));
-
-    let chain = ChainResolver::new(resolvers);
+    let chain = citum_store::build_standard_chain()
+        .map_err(|e| -> Box<dyn Error> { Box::new(std::io::Error::other(e.to_string())) })?;
 
     match chain.resolve_style(style_input) {
         Ok(style) => {
@@ -300,7 +162,7 @@ pub(crate) fn load_any_style(
             resolved.extends = None;
             Ok(resolved)
         }
-        Err(citum_store::resolver::ResolverError::StyleNotFound(_)) => {
+        Err(ResolverError::StyleNotFound(_)) => {
             let candidates = registry_candidate_names();
             let suggestions: Vec<_> = candidates
                 .iter()
