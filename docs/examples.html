@@ -207,6 +207,10 @@
                         <span class="material-icons text-lg opacity-60">comment</span>
                         Annotated Bibliography
                     </a>
+                    <a href="#distributed-registries" class="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-all">
+                        <span class="material-icons text-lg opacity-60">lan</span>
+                        Distributed Registries
+                    </a>
                 </div>
             </nav>
         </aside>
@@ -1949,6 +1953,91 @@ jones2021: >
                     <p class="text-xs text-slate-500">Annotations are document-scoped overlays. The same reference carries different
                         annotations in different contexts (a course syllabus vs. a grant proposal vs. a personal reading list).
                         This design avoids style proliferation and keeps concerns separated.</p>
+                </div>
+            </div>
+        </article>
+
+        <!-- Distributed Registries -->
+        <article id="distributed-registries" class="example-card rounded-xl overflow-hidden shadow-sm scroll-mt-24">
+            <div class="p-8 bg-slate-50 border-b border-slate-200">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                        <span class="material-icons">lan</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900">
+                        Distributed Registries
+                        <span class="ml-2 text-xs align-middle px-2 py-0.5 rounded-full bg-primary/10 text-primary font-mono uppercase tracking-wider">New</span>
+                    </h2>
+                </div>
+                <p class="text-slate-600 leading-relaxed mb-2">
+                    Citum ships with a tiny embedded registry of builtin styles. Everything else
+                    lives in registries you opt into &mdash; the Citum Hub, an institutional
+                    registry, or your own static-HTTP host. Styles can be referenced by name,
+                    by URL, or by content-addressed
+                    <code class="text-xs bg-slate-200/60 px-1.5 py-0.5 rounded">cid:</code> URI,
+                    and any
+                    <code class="text-xs bg-slate-200/60 px-1.5 py-0.5 rounded">extends:</code>
+                    edge can be locked to a specific parent version with
+                    <code class="text-xs bg-slate-200/60 px-1.5 py-0.5 rounded">extends-pin</code>.
+                </p>
+                <p class="text-slate-600 leading-relaxed">
+                    Walk the full UX in the
+                    <a class="text-primary hover:underline" target="_blank"
+                       href="https://github.com/citum/citum-core/blob/main/docs/guides/DISTRIBUTED_REGISTRIES.md">distributed
+                    registries guide</a>. Spec:
+                    <a class="text-primary hover:underline" target="_blank"
+                       href="https://github.com/citum/citum-core/blob/main/docs/specs/DISTRIBUTED_RESOLVER.md">DISTRIBUTED_RESOLVER.md</a>.
+                </p>
+            </div>
+
+            <div class="p-6 bg-[var(--citum-surface)]">
+                <div class="grid gap-6">
+                    <div class="border border-slate-300/30 rounded-lg p-4">
+                        <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
+                            Add a registry &amp; render against an HTTPS URL
+                        </div>
+                        <div class="bg-slate-900 rounded p-3 overflow-x-auto mt-1">
+                            <pre class="font-mono text-xs text-slate-300 leading-relaxed">citum registry add https://hub.citum.org/registry/default.yaml --name citum-hub
+citum render refs -b refs.json -s https://hub.citum.org/styles/apa-7th.yaml</pre>
+                        </div>
+                    </div>
+
+                    <div class="border border-slate-300/30 rounded-lg p-4">
+                        <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
+                            Pin a parent for reproducibility
+                        </div>
+                        <div class="bg-slate-900 rounded p-3 overflow-x-auto mt-1">
+                            <pre class="font-mono text-xs text-slate-300 leading-relaxed">$ citum style pin apa-7th --uri https://hub.citum.org/styles/apa-7th.yaml
+extends: https://hub.citum.org/styles/apa-7th.yaml
+extends-pin: cid:bafkreicpx6nc4rll4eahyfid2nbxjjli65tf2vjjed75xtl2ymjtjref44</pre>
+                        </div>
+                        <p class="text-sm text-slate-500 leading-relaxed mt-3">
+                            Paste the snippet at the top of any child style YAML. The resolver
+                            re-hashes the fetched parent and refuses to render if the bytes drift,
+                            so style inheritance becomes deterministic across upgrades.
+                        </p>
+                    </div>
+
+                    <div class="border border-slate-300/30 rounded-lg p-4">
+                        <div class="text-xs font-semibold text-slate-500 uppercase mb-1">
+                            Validate before publishing
+                        </div>
+                        <div class="bg-slate-900 rounded p-3 overflow-x-auto mt-1">
+                            <pre class="font-mono text-xs text-slate-300 leading-relaxed">$ citum style validate my-journal.yaml
+OK   my-journal.yaml
+CID  bafkreigh2akiscaildc6mzfo4qtbk3rjmxa3ofkpzxqzd2cs6ftxvtsqfa
+Citum &gt;=0.38.0</pre>
+                        </div>
+                        <p class="text-sm text-slate-500 leading-relaxed mt-3">
+                            <code class="text-xs">style validate</code> resolves
+                            <code class="text-xs">extends</code> chains, verifies any
+                            <code class="text-xs">extends-pin</code>, and checks
+                            <code class="text-xs">info.citum-version</code> against the running
+                            engine. Air-gapped? Configure no remotes and the resolver chain falls
+                            through to your local store and the embedded builtins with zero
+                            network calls.
+                        </p>
+                    </div>
                 </div>
             </div>
         </article>

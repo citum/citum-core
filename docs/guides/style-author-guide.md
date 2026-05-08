@@ -227,6 +227,20 @@ templates; the inheriting style can only set metadata and normal typed options
 extends: springer-basic-author-date-core
 ```
 
+`extends:` also accepts a URI (`file://…`, `https://…`, `git+https://…`, or
+`cid:bafkrei…`) for parents that live outside the embedded builtin set. To
+lock the parent to a specific version, add a sibling `extends-pin:` whose
+value is the parent's CID:
+
+```yaml
+extends: https://hub.citum.org/styles/apa-7th.yaml
+extends-pin: cid:bafkreicpx6nc4rll4eahyfid2nbxjjli65tf2vjjed75xtl2ymjtjref44
+```
+
+Generate a paste-ready pair with `citum style pin <name|path>`. The full
+distributed-registry workflow lives in
+[DISTRIBUTED_REGISTRIES.md](DISTRIBUTED_REGISTRIES.md).
+
 ## [tune] Scoped Options
 
 When a style uses `extends:`, it tunes behaviour through the same scoped option
