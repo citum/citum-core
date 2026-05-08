@@ -695,6 +695,197 @@ impl citum_schema::StyleResolver for GitResolver {
     }
 }
 
+/// Default IPFS HTTP gateway used by [`CidResolver`] when none is configured.
+#[cfg(feature = "http")]
+pub const DEFAULT_CID_GATEWAY: &str = "https://dweb.link/ipfs/";
+
+/// A resolver that fetches content-addressed Citum styles via an IPFS HTTP
+/// gateway and verifies their integrity against the requested CID.
+///
+/// `CidResolver` accepts URIs of the form `cid:bafkrei…`. It rewrites the
+/// URI to `<gateway>/<cid>`, delegates the HTTP fetch and disk caching to a
+/// wrapped [`HttpResolver`], then re-hashes the response bytes and refuses to
+/// hand back a [`Style`] whose CID does not match the requested one. Cache
+/// entries for `cid:` URIs are immutable — they need not be revalidated.
+#[cfg(feature = "http")]
+pub struct CidResolver {
+    gateway: String,
+    http: HttpResolver,
+}
+
+#[cfg(feature = "http")]
+impl CidResolver {
+    /// Construct a `CidResolver` with an explicit gateway and HTTP backend.
+    ///
+    /// `gateway` should end with a trailing slash; `https://dweb.link/ipfs/`
+    /// is the [`DEFAULT_CID_GATEWAY`].
+    #[must_use]
+    pub fn new(gateway: String, http: HttpResolver) -> Self {
+        let gateway = if gateway.ends_with('/') {
+            gateway
+        } else {
+            format!("{gateway}/")
+        };
+        Self { gateway, http }
+    }
+
+    /// Construct a `CidResolver` using [`DEFAULT_CID_GATEWAY`] and the platform
+    /// cache directory. Returns `None` when the platform has no cache dir.
+    #[must_use]
+    pub fn from_platform_cache_dir() -> Option<Self> {
+        HttpResolver::from_platform_cache_dir()
+            .map(|http| Self::new(DEFAULT_CID_GATEWAY.to_string(), http))
+    }
+
+    fn resolve_cid_uri(&self, uri: &str) -> Result<Style, ResolverError> {
+        let cid_str = crate::cid::strip_cid_scheme(uri);
+        let canonical = crate::cid::canonicalize_cid(cid_str)?;
+        let gateway_url = format!("{}{canonical}", self.gateway);
+        let bytes =
+            self.http
+                .fetch_bytes(&gateway_url)
+                .map_err(|err| ResolverError::NetworkError {
+                    uri: uri.to_string(),
+                    reason: err.to_string(),
+                })?;
+        crate::cid::verify_cid(uri, &canonical, &bytes)?;
+        Style::from_yaml_bytes(&bytes).map_err(|err| {
+            ResolverError::YamlError(format!("failed to parse CID-resolved style {uri}: {err}"))
+        })
+    }
+}
+
+#[cfg(feature = "http")]
+impl StyleResolver for CidResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
+        if !crate::cid::is_cid_uri(uri) {
+            return Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())));
+        }
+        self.resolve_cid_uri(uri)
+    }
+
+    fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
+        Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
+    }
+}
+
+#[cfg(feature = "http")]
+impl citum_schema::StyleResolver for CidResolver {
+    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
+        StyleResolver::resolve_style(self, uri)
+            .map_err(|err| resolution_error_from_store_error(uri, err))
+    }
+}
+
+/// Middleware resolver that wraps another [`StyleResolver`] and verifies the
+/// content of every successful resolution against an expected CID.
+///
+/// Used by Phase 3 `extends-pin` enforcement: the parent resolution path
+/// constructs a `VerifyingResolver` whose `expected` is the child's
+/// declared pin, then routes the parent fetch through it. When `expected`
+/// is `None`, the wrapper is a no-op pass-through.
+///
+/// Note: this wrapper has to re-fetch raw bytes through `HttpResolver`'s
+/// public `fetch_bytes` API to verify integrity, because the inner
+/// `resolve_style` returns a parsed `Style` whose serialized form is not
+/// guaranteed to be byte-identical to the source. Callers that care about
+/// `extends-pin` enforcement should prefer [`fetch_and_verify_bytes`] for
+/// HTTP/CID URIs and skip the trip through `Style`.
+#[cfg(feature = "http")]
+pub struct VerifyingResolver<R: StyleResolver> {
+    inner: R,
+    expected: Option<String>,
+}
+
+#[cfg(feature = "http")]
+impl<R: StyleResolver> VerifyingResolver<R> {
+    /// Wrap `inner` with an integrity check against `expected_cid`.
+    ///
+    /// `expected_cid` may include or omit the `cid:` scheme prefix.
+    #[must_use]
+    pub fn new(inner: R, expected_cid: Option<String>) -> Self {
+        Self {
+            inner,
+            expected: expected_cid,
+        }
+    }
+
+    /// Returns the inner resolver, consuming this wrapper.
+    pub fn into_inner(self) -> R {
+        self.inner
+    }
+}
+
+#[cfg(feature = "http")]
+impl<R: StyleResolver> StyleResolver for VerifyingResolver<R> {
+    fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
+        let style = self.inner.resolve_style(uri)?;
+        if let Some(ref pin) = self.expected {
+            // Best-effort verification: re-serialize and hash. This rejects
+            // tampering at the trust boundary even if the canonical serializer
+            // round-trip differs from the upstream bytes — at the cost of
+            // false negatives for whitespace-only differences. Callers that
+            // need exact-bytes verification should use
+            // [`fetch_and_verify_bytes`] before parsing.
+            let bytes = serde_yaml::to_string(&style).map_err(|err| {
+                ResolverError::YamlError(format!("re-serialize for pin check: {err}"))
+            })?;
+            crate::cid::verify_cid(uri, pin, bytes.as_bytes())?;
+        }
+        Ok(style)
+    }
+
+    fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
+        self.inner.resolve_locale(id)
+    }
+}
+
+/// Fetch raw bytes for a remote URI and verify them against `expected_cid`
+/// before returning. This is the canonical entry point for `extends-pin`
+/// enforcement — it operates on bytes, not parsed structures, so a single
+/// trailing newline cannot make verification falsely pass or fail.
+///
+/// Supported schemes: `https://`, `http://`, `cid:`. Unsupported schemes
+/// (including `file://` and `git+https://`) return [`ResolverError::Denied`]
+/// — pinning makes sense only for content-addressed or HTTPS-fetched bytes.
+///
+/// # Errors
+///
+/// - [`ResolverError::Denied`] for unsupported URI schemes.
+/// - [`ResolverError::NetworkError`] when the HTTP fetch fails.
+/// - [`ResolverError::IntegrityFailure`] when the bytes do not match
+///   `expected_cid`.
+#[cfg(feature = "http")]
+pub fn fetch_and_verify_bytes(
+    http: &HttpResolver,
+    cid_resolver: &CidResolver,
+    uri: &str,
+    expected_cid: &str,
+) -> Result<Vec<u8>, ResolverError> {
+    let bytes = if crate::cid::is_cid_uri(uri) {
+        let canonical = crate::cid::canonicalize_cid(crate::cid::strip_cid_scheme(uri))?;
+        let gateway_url = format!("{}{canonical}", cid_resolver.gateway);
+        http.fetch_bytes(&gateway_url)
+            .map_err(|err| ResolverError::NetworkError {
+                uri: uri.to_string(),
+                reason: err.to_string(),
+            })?
+    } else if uri.starts_with("https://") || uri.starts_with("http://") {
+        http.fetch_bytes(uri)
+            .map_err(|err| ResolverError::NetworkError {
+                uri: uri.to_string(),
+                reason: err.to_string(),
+            })?
+    } else {
+        return Err(ResolverError::Denied {
+            uri: uri.to_string(),
+            reason: "extends-pin only supports cid: and https:// URIs".to_string(),
+        });
+    };
+    crate::cid::verify_cid(uri, expected_cid, &bytes)?;
+    Ok(bytes)
+}
+
 /// A composite resolver that attempts resolution through a chain of resolvers.
 pub struct ChainResolver {
     resolvers: Vec<Box<dyn StyleResolver>>,
