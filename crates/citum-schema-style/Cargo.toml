@@ -17,6 +17,10 @@ url = { version = "2.5", features = ["serde"] }
 csl_legacy = { package = "csl-legacy", path = "../csl-legacy", optional = true }
 indexmap = { version = "2", features = ["serde"] }
 citum_schema_data = { package = "citum-schema-data", path = "../citum-schema-data" }
+sha2 = "0.10"
+cid = { version = "0.11", default-features = false, features = ["alloc"] }
+multihash = { version = "0.19", default-features = false, features = ["alloc"] }
+semver = "1"
 
 [features]
 default = []
