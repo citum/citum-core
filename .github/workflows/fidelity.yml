@@ -1,6 +1,4 @@
 name: Fidelity
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
   push:
@@ -32,7 +30,7 @@ jobs:
       CARGO_INCREMENTAL: "0"
       SCCACHE_DIR: /home/runner/.cache/sccache
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
 
@@ -46,7 +44,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y mold sccache
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22"
 

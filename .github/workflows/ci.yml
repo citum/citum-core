@@ -1,6 +1,4 @@
 name: CI
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
   push:
@@ -28,8 +26,8 @@ jobs:
       hygiene: ${{ steps.filter.outputs.hygiene }}
       semver: ${{ steps.filter.outputs.semver }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v3
+      - uses: actions/checkout@v5
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -68,7 +66,7 @@ jobs:
     if: ${{ needs.changes.outputs.hygiene == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -93,14 +91,9 @@ jobs:
           sudo install -m 0755 /tmp/beans /usr/local/bin/beans
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: "22"
-
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: "3.3"
 
       - name: Install script dependencies
         run: npm install --prefix scripts
@@ -142,7 +135,7 @@ jobs:
       RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
       CARGO_INCREMENTAL: "0"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 1
 
@@ -191,7 +184,7 @@ jobs:
           needs.changes.outputs.semver == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 

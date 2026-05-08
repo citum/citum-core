@@ -1,6 +1,4 @@
 name: Release
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 on:
   pull_request:
@@ -36,7 +34,7 @@ jobs:
       bump-level: ${{ steps.infer.outputs.level }}
       should-release: ${{ steps.infer.outputs.should-release }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
@@ -76,7 +74,7 @@ jobs:
     if: needs.detect.outputs.should-release == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_TOKEN }}
@@ -230,7 +228,7 @@ jobs:
       github.event.pull_request.head.ref == 'release/next'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_TOKEN }}
