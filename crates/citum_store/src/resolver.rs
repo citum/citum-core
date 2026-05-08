@@ -24,6 +24,7 @@ use tempfile;
 
 /// Error type for store resolution operations.
 #[derive(Error, Debug)]
+#[non_exhaustive]
 pub enum ResolverError {
     #[error("io error: {0}")]
     Io(#[from] std::io::Error),
@@ -45,6 +46,45 @@ pub enum ResolverError {
     #[cfg(feature = "http")]
     #[error("git error: {0}")]
     GitError(String),
+    /// The URI host or origin is not in the resolver's allowlist.
+    #[error("host not in resolver allowlist: {uri} ({reason})")]
+    Denied {
+        /// URI that triggered the denial.
+        uri: String,
+        /// Human-readable explanation (e.g., "host not in allowlist").
+        reason: String,
+    },
+    /// A network operation failed (DNS, TLS, transport, timeout, etc.).
+    #[error("network error fetching {uri}: {reason}")]
+    NetworkError {
+        /// URI that the resolver was attempting to fetch.
+        uri: String,
+        /// Underlying transport-layer reason.
+        reason: String,
+    },
+    /// The fetched style declares a `citum-version` requirement that the
+    /// running engine does not satisfy.
+    #[error(
+        "engine version mismatch for {uri}: running citum {declared} does not satisfy required {required}"
+    )]
+    VersionMismatch {
+        /// URI of the style with the incompatible version requirement.
+        uri: String,
+        /// `citum-version` requirement declared by the style.
+        required: String,
+        /// Version of the running engine.
+        declared: String,
+    },
+    /// The fetched style's content hash did not match an `extends-pin` or CID.
+    #[error("integrity failure for {uri}: expected {expected}, got {actual}")]
+    IntegrityFailure {
+        /// URI whose content failed verification.
+        uri: String,
+        /// Expected CID or hash.
+        expected: String,
+        /// Actual CID or hash computed from the response bytes.
+        actual: String,
+    },
 }
 
 /// A trait for resolving Citum styles and locales from various sources.
@@ -399,7 +439,10 @@ impl StyleResolver for HttpResolver {
             && let Some(host) = url.host_str()
             && !self.allowed_hosts.iter().any(|h| h == host)
         {
-            return Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())));
+            return Err(ResolverError::Denied {
+                uri: uri.to_string(),
+                reason: format!("host '{host}' not in resolver allowlist"),
+            });
         }
 
         let cache_path = self.cache_path(uri);
@@ -443,9 +486,10 @@ impl StyleResolver for HttpResolver {
                             let bytes = fs::read(&cache_path)?;
                             Self::parse_style(uri, &bytes)
                         } else {
-                            Err(ResolverError::HttpError(format!(
-                                "failed to read {uri}: {err}"
-                            )))
+                            Err(ResolverError::NetworkError {
+                                uri: uri.to_string(),
+                                reason: err.to_string(),
+                            })
                         }
                     }
                 }
@@ -456,9 +500,10 @@ impl StyleResolver for HttpResolver {
                     let bytes = fs::read(&cache_path)?;
                     Self::parse_style(uri, &bytes)
                 } else {
-                    Err(ResolverError::HttpError(format!(
-                        "failed to fetch {uri}: {err}"
-                    )))
+                    Err(ResolverError::NetworkError {
+                        uri: uri.to_string(),
+                        reason: err.to_string(),
+                    })
                 }
             }
         }
@@ -574,9 +619,10 @@ impl StyleResolver for GitResolver {
                 let bytes = fs::read(&cache_path)?;
                 return Self::parse_style(uri, &bytes);
             }
-            return Err(ResolverError::GitError(
-                "git clone failed to spawn".to_string(),
-            ));
+            return Err(ResolverError::NetworkError {
+                uri: uri.to_string(),
+                reason: "git clone failed to spawn (is `git` on PATH?)".to_string(),
+            });
         };
 
         if !clone_output.status.success() {
@@ -586,11 +632,14 @@ impl StyleResolver for GitResolver {
                 let bytes = fs::read(&cache_path)?;
                 return Self::parse_style(uri, &bytes);
             }
-            return Err(ResolverError::GitError(format!(
-                "git clone failed (exit {}): {}",
-                clone_output.status,
-                stderr.trim()
-            )));
+            return Err(ResolverError::NetworkError {
+                uri: uri.to_string(),
+                reason: format!(
+                    "git clone failed (exit {}): {}",
+                    clone_output.status,
+                    stderr.trim()
+                ),
+            });
         }
 
         // Check out the specific file
