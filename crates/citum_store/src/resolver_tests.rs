@@ -181,3 +181,39 @@ fn git_resolver_parses_git_uri() {
     );
     assert_eq!(file, "styles/example.yaml");
 }
+
+#[test]
+fn resolver_error_variants_format_distinctly() {
+    use crate::resolver::ResolverError;
+
+    let denied = ResolverError::Denied {
+        uri: "https://evil.example.com/x.yaml".to_string(),
+        reason: "host not in allowlist".to_string(),
+    };
+    assert!(denied.to_string().contains("not in resolver allowlist"));
+    assert!(denied.to_string().contains("evil.example.com"));
+
+    let net = ResolverError::NetworkError {
+        uri: "https://example.org/y.yaml".to_string(),
+        reason: "connection refused".to_string(),
+    };
+    assert!(net.to_string().contains("network error fetching"));
+    assert!(net.to_string().contains("connection refused"));
+
+    let version = ResolverError::VersionMismatch {
+        uri: "https://example.org/z.yaml".to_string(),
+        required: ">=99.0.0".to_string(),
+        declared: "0.38.0".to_string(),
+    };
+    assert!(version.to_string().contains("engine version mismatch"));
+    assert!(version.to_string().contains(">=99.0.0"));
+
+    let integrity = ResolverError::IntegrityFailure {
+        uri: "cid:bafkreiabc".to_string(),
+        expected: "bafkreiabc".to_string(),
+        actual: "bafkreidef".to_string(),
+    };
+    assert!(integrity.to_string().contains("integrity failure"));
+    assert!(integrity.to_string().contains("bafkreiabc"));
+    assert!(integrity.to_string().contains("bafkreidef"));
+}
