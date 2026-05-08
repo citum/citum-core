@@ -78,6 +78,13 @@
           "type": "null"
         }
       ]
+    },
+    "extends-pin": {
+      "description": "Optional content-addressed integrity pin for the parent style referenced\nby [`extends`](Self::extends).\n\nWhen present, the resolver verifies that the SHA-256 of the fetched\nparent matches this CIDv1 string before merging. Mismatches abort\nresolution with [`ResolutionError::IntegrityFailure`]. Absent means\n\"no integrity check\" — appropriate for `file://` parents under user\ncontrol or trusted local registries.",
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
   "additionalProperties": false,
@@ -141,6 +148,13 @@
         },
         "edition": {
           "description": "Edition or version qualifier used alongside `short_name` to\ndisambiguate multiple editions of the same style family\n(e.g. `\"7th\"`, `\"18th edition\"`). Omit when only one edition exists.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "citum-version": {
+          "description": "Minimum Citum engine version required to load and render this style.\n\nAccepts a [`semver::VersionReq`]-compatible string (e.g. `\">=0.38.0\"`,\n`\"^0.40\"`). When the running engine does not satisfy the requirement,\nthe resolver returns\n[`ResolutionError::VersionMismatch`]\ninstead of attempting to deserialize fields the engine may not\nunderstand. Omit for styles that use only stable, long-lived features.",
           "type": [
             "string",
             "null"
@@ -6117,14 +6131,14 @@
       ]
     },
     "StyleReference": {
-      "description": "A reference to a base style, which can be either a named builtin base\nor a URI (e.g., `file://...`, `@hub/...`, `https://...`).",
+      "description": "A reference to a base style, which can be either a named builtin base,\na URI (e.g., `file://...`, `@hub/...`, `https://...`, `git+https://...`),\nor a content-addressed identifier (`cid:bafkrei...`).",
       "anyOf": [
         {
           "description": "A named builtin style base.",
           "$ref": "#/$defs/StyleBase"
         },
         {
-          "description": "A URI reference to a remote or local style.",
+          "description": "A URI reference to a remote or local style.\n\nSupported schemes: `file://`, `https://`, `git+https://`, `cid:`.",
           "type": "string"
         }
       ]
