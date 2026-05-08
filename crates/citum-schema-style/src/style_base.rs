@@ -134,8 +134,9 @@ impl StyleBase {
     }
 }
 
-/// A reference to a base style, which can be either a named builtin base
-/// or a URI (e.g., `file://...`, `@hub/...`, `https://...`).
+/// A reference to a base style, which can be either a named builtin base,
+/// a URI (e.g., `file://...`, `@hub/...`, `https://...`, `git+https://...`),
+/// or a content-addressed identifier (`cid:bafkrei...`).
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(untagged)]
@@ -143,6 +144,8 @@ pub enum StyleReference {
     /// A named builtin style base.
     Base(StyleBase),
     /// A URI reference to a remote or local style.
+    ///
+    /// Supported schemes: `file://`, `https://`, `git+https://`, `cid:`.
     Uri(String),
 }
 
@@ -153,6 +156,11 @@ impl StyleReference {
             StyleReference::Base(base) => base.key(),
             StyleReference::Uri(uri) => uri,
         }
+    }
+
+    /// Returns true when this reference is a content-addressed CID URI.
+    pub fn is_cid(&self) -> bool {
+        matches!(self, StyleReference::Uri(uri) if uri.starts_with("cid:"))
     }
 }
 

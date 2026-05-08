@@ -51,8 +51,9 @@ impl InfoExtractor {
             default_locale: None, // populated elsewhere
             fields,
             source,
-            short_name: None, // set manually on well-known styles
-            edition: None,    // set manually on well-known styles
+            short_name: None,    // set manually on well-known styles
+            edition: None,       // set manually on well-known styles
+            citum_version: None, // set manually when a style needs a min engine
         }
     }
 }

@@ -282,6 +282,16 @@ pub struct Style {
     /// precedence over the resolved base.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub extends: Option<style_base::StyleReference>,
+    /// Optional content-addressed integrity pin for the parent style referenced
+    /// by [`extends`](Self::extends).
+    ///
+    /// When present, the resolver verifies that the SHA-256 of the fetched
+    /// parent matches this CIDv1 string before merging. Mismatches abort
+    /// resolution with [`ResolutionError::IntegrityFailure`]. Absent means
+    /// "no integrity check" — appropriate for `file://` parents under user
+    /// control or trusted local registries.
+    #[serde(rename = "extends-pin", skip_serializing_if = "Option::is_none")]
+    pub extends_pin: Option<String>,
     /// Raw YAML captured when the style was loaded via [`Style::from_yaml_str`]
     /// or [`Style::from_yaml_bytes`]. Used by [`merge_style_overlay`] for
     /// null-aware overlay merging (e.g., `ibid: ~` correctly clears an
@@ -437,6 +447,7 @@ impl Style {
         merge_style_overlay(&mut effective, &self);
         effective.version = self.version;
         effective.extends = self.extends;
+        effective.extends_pin = self.extends_pin;
         effective.raw_yaml = self.raw_yaml;
         resolve_style_template_variants(&mut effective, inherited_variants.as_ref())?;
         options::scoped::apply_scoped_style_options(&mut effective);
@@ -1709,6 +1720,16 @@ pub struct StyleInfo {
     /// (e.g. `"7th"`, `"18th edition"`). Omit when only one edition exists.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub edition: Option<String>,
+    /// Minimum Citum engine version required to load and render this style.
+    ///
+    /// Accepts a [`semver::VersionReq`]-compatible string (e.g. `">=0.38.0"`,
+    /// `"^0.40"`). When the running engine does not satisfy the requirement,
+    /// the resolver returns
+    /// [`ResolutionError::VersionMismatch`]
+    /// instead of attempting to deserialize fields the engine may not
+    /// understand. Omit for styles that use only stable, long-lived features.
+    #[serde(rename = "citum-version", skip_serializing_if = "Option::is_none")]
+    pub citum_version: Option<String>,
 }
 
 impl StyleInfo {
@@ -1722,6 +1743,7 @@ impl StyleInfo {
             && self.source.is_none()
             && self.short_name.is_none()
             && self.edition.is_none()
+            && self.citum_version.is_none()
     }
 }
 
@@ -2039,6 +2061,50 @@ citation:
             }
             _ => panic!("Expected Variable"),
         }
+    }
+
+    #[test]
+    fn cid_and_integrity_fields_round_trip() {
+        let yaml = r#"
+extends: https://hub.citum.org/styles/apa-7th.yaml
+extends-pin: bafkreigh2akiscaildc6mzfo4qtbk3rjmxa3ofkpzxqzd2cs6ftxvtsqfa
+info:
+  title: Pinned APA Variant
+  citum-version: ">=0.38.0"
+"#;
+        let style: Style = Style::from_yaml_str(yaml).expect("yaml parses");
+        assert!(style.extends.is_some(), "extends preserved");
+        assert_eq!(
+            style.extends_pin.as_deref(),
+            Some("bafkreigh2akiscaildc6mzfo4qtbk3rjmxa3ofkpzxqzd2cs6ftxvtsqfa")
+        );
+        assert_eq!(style.info.citum_version.as_deref(), Some(">=0.38.0"));
+
+        let serialized = serde_yaml::to_string(&style).expect("serializes");
+        assert!(
+            serialized.contains("extends-pin: bafkrei"),
+            "extends-pin field name preserved on serialization: {serialized}"
+        );
+        assert!(
+            serialized.contains("citum-version:"),
+            "citum-version field name preserved on serialization: {serialized}"
+        );
+    }
+
+    #[test]
+    fn cid_extends_uri_round_trips_as_uri_variant() {
+        let yaml = r#"
+extends: cid:bafkreigh2akiscaildc6mzfo4qtbk3rjmxa3ofkpzxqzd2cs6ftxvtsqfa
+info:
+  title: CID-extended Style
+"#;
+        let style: Style = Style::from_yaml_str(yaml).expect("yaml parses");
+        let extends = style.extends.expect("extends present");
+        assert!(extends.is_cid(), "cid: prefix detected as CID URI");
+        assert_eq!(
+            extends.key(),
+            "cid:bafkreigh2akiscaildc6mzfo4qtbk3rjmxa3ofkpzxqzd2cs6ftxvtsqfa"
+        );
     }
 
     #[test]
