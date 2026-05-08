@@ -20,10 +20,11 @@ tempfile = { version = "3", optional = true }
 cid = { version = "0.11", default-features = false, features = ["alloc", "serde-codec"], optional = true }
 multihash = { version = "0.19", default-features = false, features = ["alloc"], optional = true }
 multibase = { version = "0.9", optional = true }
+gix = { version = "0.70", default-features = false, features = ["blocking-network-client", "blocking-http-transport-reqwest-rust-tls", "revision"], optional = true }
 
 [features]
 hub = []
-http = ["dep:reqwest", "dep:sha2", "dep:tempfile", "dep:cid", "dep:multihash", "dep:multibase"]
+http = ["dep:reqwest", "dep:sha2", "dep:tempfile", "dep:cid", "dep:multihash", "dep:multibase", "dep:gix"]
 
 [dev-dependencies]
 tempfile = "3"

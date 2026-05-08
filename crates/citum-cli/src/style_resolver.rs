@@ -66,7 +66,7 @@ fn registry_candidate_names() -> Vec<String> {
 
 fn registry_resolvers() -> Result<Vec<Box<dyn citum_store::resolver::StyleResolver>>, Box<dyn Error>>
 {
-    use citum_store::resolver::{HttpResolver, RegistryResolver, StyleResolver};
+    use citum_store::resolver::{GitResolver, HttpResolver, RegistryResolver, StyleResolver};
 
     let mut resolvers: Vec<Box<dyn StyleResolver>> = Vec::new();
 
@@ -96,6 +96,11 @@ fn registry_resolvers() -> Result<Vec<Box<dyn citum_store::resolver::StyleResolv
         } else {
             resolver
         };
+        let resolver = if let Some(git) = GitResolver::from_platform_cache_dir() {
+            resolver.with_git(git)
+        } else {
+            resolver
+        };
         resolvers.push(Box::new(resolver));
     }
 
@@ -121,6 +126,11 @@ fn registry_resolvers() -> Result<Vec<Box<dyn citum_store::resolver::StyleResolv
                 } else {
                     resolver
                 };
+                let resolver = if let Some(git) = GitResolver::from_platform_cache_dir() {
+                    resolver.with_git(git)
+                } else {
+                    resolver
+                };
                 resolvers.push(Box::new(resolver));
                 continue;
             }
@@ -139,6 +149,11 @@ fn registry_resolvers() -> Result<Vec<Box<dyn citum_store::resolver::StyleResolv
                     .unwrap_or_else(|| Path::new(".").to_path_buf());
                 let resolver = RegistryResolver::new(registry).with_base_dir(base_dir);
                 let resolver = resolver.with_http(http);
+                let resolver = if let Some(git) = GitResolver::from_platform_cache_dir() {
+                    resolver.with_git(git)
+                } else {
+                    resolver
+                };
                 resolvers.push(Box::new(resolver));
             }
         }
@@ -148,6 +163,11 @@ fn registry_resolvers() -> Result<Vec<Box<dyn citum_store::resolver::StyleResolv
         .with_base_dir(std::env::current_dir()?);
     let resolver = if let Some(http) = HttpResolver::from_platform_cache_dir() {
         resolver.with_http(http)
+    } else {
+        resolver
+    };
+    let resolver = if let Some(git) = GitResolver::from_platform_cache_dir() {
+        resolver.with_git(git)
     } else {
         resolver
     };
@@ -244,7 +264,7 @@ pub(crate) fn load_any_style(
     _no_semantics: bool,
 ) -> Result<Style, Box<dyn Error>> {
     use citum_store::resolver::{
-        ChainResolver, EmbeddedResolver, FileResolver, HttpResolver, StyleResolver,
+        ChainResolver, EmbeddedResolver, FileResolver, GitResolver, HttpResolver, StyleResolver,
     };
 
     let mut resolvers: Vec<Box<dyn StyleResolver>> = vec![Box::new(FileResolver)];
@@ -262,6 +282,10 @@ pub(crate) fn load_any_style(
 
     if let Some(http) = HttpResolver::from_platform_cache_dir() {
         resolvers.push(Box::new(http));
+    }
+
+    if let Some(git) = GitResolver::from_platform_cache_dir() {
+        resolvers.push(Box::new(git));
     }
 
     resolvers.extend(registry_resolvers()?);
