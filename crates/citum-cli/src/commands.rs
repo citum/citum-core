@@ -956,13 +956,38 @@ fn run_registry_update(name: Option<&str>, all: bool) -> Result<(), Box<dyn Erro
     if name.is_some() == all {
         return Err("Specify either a registry name or --all.".into());
     }
-    let records = read_registry_source_records()?;
+    let mut records = read_registry_source_records()?;
     let selected: Vec<_> = records
         .iter()
         .filter(|record| all || Some(record.name.as_str()) == name)
         .cloned()
         .collect();
-    if selected.is_empty() {
+
+    // When all=true, also bootstrap config.yaml entries not yet in registry-sources.json
+    if all && let Ok(config) = StoreConfig::load() {
+        let existing_names: std::collections::HashSet<_> =
+            records.iter().map(|r| r.name.clone()).collect();
+        for registry_config in &config.registries {
+            if !existing_names.contains(&registry_config.name)
+                && let Ok(bytes) = fetch_registry_bytes(&registry_config.url)
+                && let Ok(registry) = parse_registry_bytes(&bytes)
+            {
+                fs::create_dir_all(configured_registry_dir()?)?;
+                fs::write(registry_file_path(&registry_config.name)?, &bytes)?;
+                println!(
+                    "Bootstrapped registry '{}' ({} styles).",
+                    registry_config.name,
+                    registry.styles.len()
+                );
+                records.push(RegistrySourceRecord {
+                    name: registry_config.name.clone(),
+                    source: registry_config.url.clone(),
+                });
+            }
+        }
+    }
+
+    if selected.is_empty() && records.is_empty() {
         return Err("No configured registries matched.".into());
     }
     for record in selected {
@@ -975,6 +1000,12 @@ fn run_registry_update(name: Option<&str>, all: bool) -> Result<(), Box<dyn Erro
             registry.styles.len()
         );
     }
+
+    // Write updated records to persist any newly bootstrapped entries
+    if all {
+        write_registry_source_records(&records)?;
+    }
+
     Ok(())
 }
 

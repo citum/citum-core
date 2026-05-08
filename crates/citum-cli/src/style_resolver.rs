@@ -99,6 +99,51 @@ fn registry_resolvers() -> Result<Vec<Box<dyn citum_store::resolver::StyleResolv
         resolvers.push(Box::new(resolver));
     }
 
+    // Wire StoreConfig.registries entries not yet tracked in registry-sources.json
+    if let Ok(config) = StoreConfig::load() {
+        let tracked_names = configured_registry_names();
+
+        for registry_config in &config.registries {
+            // Skip if already tracked in registry-sources.json
+            if tracked_names.contains(&registry_config.name) {
+                continue;
+            }
+
+            // Try to load from cache
+            if let Some(path) = configured_registry_path(&registry_config.name)
+                && path.exists()
+                && let Ok(registry) = citum_schema::StyleRegistry::load_from_file(&path)
+            {
+                let base_dir = path.parent().unwrap_or(Path::new(".")).to_path_buf();
+                let resolver = RegistryResolver::new(registry).with_base_dir(base_dir);
+                let resolver = if let Some(http) = HttpResolver::from_platform_cache_dir() {
+                    resolver.with_http(http)
+                } else {
+                    resolver
+                };
+                resolvers.push(Box::new(resolver));
+                continue;
+            }
+
+            // Fetch from URL and cache it
+            if let Some(http) = HttpResolver::from_platform_cache_dir()
+                && let Ok(bytes) = http.fetch_bytes(&registry_config.url)
+                && let Ok(registry) = serde_yaml::from_slice::<citum_schema::StyleRegistry>(&bytes)
+            {
+                if let Some(path) = configured_registry_path(&registry_config.name) {
+                    let _ = fs::create_dir_all(path.parent().unwrap_or(Path::new(".")));
+                    let _ = fs::write(&path, &bytes);
+                }
+                let base_dir = configured_registry_path(&registry_config.name)
+                    .and_then(|p| p.parent().map(|p| p.to_path_buf()))
+                    .unwrap_or_else(|| Path::new(".").to_path_buf());
+                let resolver = RegistryResolver::new(registry).with_base_dir(base_dir);
+                let resolver = resolver.with_http(http);
+                resolvers.push(Box::new(resolver));
+            }
+        }
+    }
+
     let resolver = RegistryResolver::new(citum_schema::embedded::default_registry())
         .with_base_dir(std::env::current_dir()?);
     let resolver = if let Some(http) = HttpResolver::from_platform_cache_dir() {
