@@ -7,6 +7,7 @@
 
 pub mod config;
 pub mod format;
+pub mod paths;
 pub mod resolver;
 
 #[cfg(test)]
@@ -33,39 +34,36 @@ use std::path::PathBuf;
 
 /// Returns the platform-specific data directory for Citum user files.
 ///
-/// This path is derived from [`dirs::data_dir()`] with a `citum` subdirectory appended.
+/// This path is derived from [`paths::data_dir()`] with a `citum` subdirectory appended.
 ///
 /// Typical locations:
-/// - Linux:   `~/.local/share/citum/`
-/// - macOS:   `~/Library/Application Support/citum/`
+/// - Unix (incl. macOS): `~/.local/share/citum/`
 /// - Windows: `%APPDATA%\citum\`
 #[must_use]
 pub fn platform_data_dir() -> Option<PathBuf> {
-    dirs::data_dir().map(|d| d.join("citum"))
+    paths::data_dir().map(|d| d.join("citum"))
 }
 
 /// Returns the platform-specific configuration directory for Citum.
 ///
-/// This path is derived from [`dirs::config_dir()`] with a `citum` subdirectory appended.
+/// This path is derived from [`paths::config_dir()`] with a `citum` subdirectory appended.
 ///
 /// Typical locations:
-/// - Linux:   `~/.config/citum/`
-/// - macOS:   `~/Library/Application Support/citum/`
+/// - Unix (incl. macOS): `~/.config/citum/`
 /// - Windows: `%APPDATA%\citum\`
 #[must_use]
 pub fn platform_config_dir() -> Option<PathBuf> {
-    dirs::config_dir().map(|d| d.join("citum"))
+    paths::config_dir().map(|d| d.join("citum"))
 }
 
 /// Returns the platform-specific cache directory for Citum.
 ///
-/// This path is derived from [`dirs::cache_dir()`] with a `citum` subdirectory appended.
+/// This path is derived from [`paths::cache_dir()`] with a `citum` subdirectory appended.
 ///
 /// Typical locations:
-/// - Linux:   `~/.cache/citum/`
-/// - macOS:   `~/Library/Caches/citum/`
+/// - Unix (incl. macOS): `~/.cache/citum/`
 /// - Windows: `%LOCALAPPDATA%\citum\`
 #[must_use]
 pub fn platform_cache_dir() -> Option<PathBuf> {
-    dirs::cache_dir().map(|d| d.join("citum"))
+    paths::cache_dir().map(|d| d.join("citum"))
 }

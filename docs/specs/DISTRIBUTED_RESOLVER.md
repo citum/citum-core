@@ -265,10 +265,10 @@ pub struct CacheEntry {
 ```
 
 Default implementation `FsCache` stores entries under
-`<platform_cache_dir>/citum/`:
+`<platform_cache_dir>`:
 
 ```
-<cache_dir>/citum/
+<cache_dir>/
   styles/<sha256_of_uri>/
     content.yaml          # raw fetched bytes
     meta.json             # { uri, fetched_at, ttl_secs, sha256 }
@@ -284,8 +284,10 @@ to prevent path traversal in the filesystem.
 Default TTL: 24 hours. CID entries: `u64::MAX` (immutable, never revalidated).
 TTL `0` = always revalidate. Per-registry override via `ttl_secs:` in config.
 
-Cache location uses `dirs::cache_dir()` (separate from `dirs::data_dir()` used
-by `StoreResolver`).
+Cache location follows the XDG Base Directory specification on all Unix platforms
+(including macOS): `XDG_CACHE_HOME` or `~/.cache/citum/`. Windows continues to
+use native `%LOCALAPPDATA%\citum\`. This is separate from the data directory
+used by `StoreResolver` (`XDG_DATA_HOME` or `~/.local/share/citum/` on Unix).
 
 ### Phase 3: Content Addressing and Hub Federation
 
