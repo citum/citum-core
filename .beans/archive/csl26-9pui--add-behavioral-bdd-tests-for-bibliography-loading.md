@@ -1,7 +1,7 @@
 ---
 # csl26-9pui
 title: Add behavioral BDD tests for bibliography loading
-status: in-progress
+status: completed
 type: task
 priority: normal
 tags:
