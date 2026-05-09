@@ -1043,7 +1043,7 @@ fn resolve_variant_parent_template(
     visiting: &mut HashSet<TypeSelector>,
 ) -> Result<Template, ResolutionError> {
     if let Some(parent_selector) = &diff.extends {
-        if original.contains_key(parent_selector) {
+        if parent_selector != selector && original.contains_key(parent_selector) {
             return resolve_template_variant(
                 parent_selector,
                 original,
