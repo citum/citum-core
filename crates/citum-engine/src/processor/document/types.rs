@@ -9,7 +9,7 @@ use crate::Citation;
 use citum_schema::grouping::BibliographyGroup;
 use citum_schema::locale::Locale;
 use citum_schema::options::IntegralNameConfig;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
 /// Describes where a parsed citation appears in the source document.
@@ -36,7 +36,7 @@ pub struct CitationStructure {
 }
 
 /// Document-level integral-name override parsed from frontmatter.
-#[derive(Debug, Clone, Default, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct DocumentIntegralNameOverride {
     /// Whether the integral-name policy is enabled for this document.
