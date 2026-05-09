@@ -149,7 +149,7 @@ fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
 /// Maps biblatex entry types (book, article, inproceedings, etc.) to
 /// appropriate Citum reference types. Extracts all relevant fields
 /// including contributors, dates, and metadata.
-pub(crate) fn input_reference_from_biblatex(entry: &biblatex_crate::Entry) -> InputReference {
+pub fn input_reference_from_biblatex(entry: &biblatex_crate::Entry) -> InputReference {
     let id = Some(entry.key.clone().into());
     let field_str = |key: &str| {
         entry.fields.get(key).map(|f| {
@@ -280,9 +280,7 @@ fn biblatex_monograph(
 ///
 /// Maps biblatex Person data (given name, family name, prefix, suffix)
 /// to Citum's `StructuredName` contributors wrapped in a `ContributorList`.
-pub(crate) fn contributors_from_biblatex_persons(
-    persons: &[biblatex_crate::Person],
-) -> Contributor {
+pub fn contributors_from_biblatex_persons(persons: &[biblatex_crate::Person]) -> Contributor {
     let contributors: Vec<Contributor> = persons
         .iter()
         .map(|p| {

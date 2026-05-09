@@ -2230,7 +2230,7 @@ fn anonymous_entry_type_variants_reorder_online_entries_and_drop_print_fallback_
 #[test]
 fn elsevier_harvard_entry_encyclopedia_uses_entry_template_instead_of_chapter_detail() {
     let style = load_style("styles/embedded/elsevier-harvard.yaml");
-    let bibliography = citum_engine::io::load_bibliography(
+    let bibliography = citum_io::load_bibliography(
         &project_root().join("tests/fixtures/references-expanded.json"),
     )
     .expect("expanded bibliography should load");
@@ -2826,7 +2826,7 @@ fn nested_inline_article_journal_detail_group_suppresses_missing_issue_without_e
 
 fn royal_society_of_chemistry_restores_legacy_page_less_doi_behavior() {
     let style = load_style("styles/royal-society-of-chemistry.yaml");
-    let bib = citum_engine::io::load_bibliography(
+    let bib = citum_io::load_bibliography(
         &project_root().join("tests/fixtures/references-expanded.json"),
     )
     .expect("expanded bibliography should load");
@@ -3518,7 +3518,9 @@ fn archive_location_string_bypasses_assembly() {
 
 #[test]
 fn processor_renders_bibliography_annotations() {
-    use citum_engine::{Processor, io::AnnotationStyle, render::plain::PlainText};
+    use citum_engine::Processor;
+    use citum_engine::render::plain::PlainText;
+    use citum_io::AnnotationStyle;
     use citum_schema::reference::{InputReference, Monograph, MonographType, RefID, Title};
     use indexmap::IndexMap;
     use std::collections::HashMap;

@@ -6,7 +6,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use std::collections::HashMap;
 use std::fmt::Write;
 
-use crate::io::{AnnotationFormat, AnnotationStyle};
+use crate::api::{AnnotationFormat, AnnotationStyle};
 use crate::render::component::{ProcEntry, ProcTemplateComponent, render_component_with_format};
 use crate::render::format::OutputFormat;
 use crate::render::plain::PlainText;

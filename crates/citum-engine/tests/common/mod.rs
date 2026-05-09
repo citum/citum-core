@@ -19,7 +19,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use std::{fs, path::PathBuf};
 
 use citum_engine::Processor;
-use citum_engine::io::load_bibliography;
+use citum_io::load_bibliography;
 use citum_schema::{
     CitationSpec, Style, StyleInfo,
     citation::{Citation, CitationItem, CitationMode},

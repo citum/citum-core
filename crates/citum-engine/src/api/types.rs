@@ -50,6 +50,35 @@ pub enum OutputFormatKind {
     Typst,
 }
 
+/// Controls how annotation text is rendered in an annotated bibliography.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AnnotationStyle {
+    /// Markup format for annotation text. Default: Djot.
+    #[serde(default)]
+    pub format: AnnotationFormat,
+}
+
+impl Default for AnnotationStyle {
+    fn default() -> Self {
+        Self {
+            format: AnnotationFormat::Djot,
+        }
+    }
+}
+
+/// Markup format for annotation text.
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum AnnotationFormat {
+    /// Parse annotation as djot inline markup (default).
+    #[default]
+    Djot,
+    /// Treat annotation as plain text with no markup interpretation.
+    Plain,
+    /// Parse annotation as org-mode markup.
+    Org,
+}
+
 /// A single item within a citation occurrence.
 ///
 /// Maps to `CitationItem` from `citum-schema-data`.
@@ -154,7 +183,7 @@ pub struct DocumentOptions {
     pub annotations: Option<HashMap<String, String>>,
     /// Format for annotation text (djot, plain, org).
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub annotation_format: Option<crate::io::AnnotationFormat>,
+    pub annotation_format: Option<AnnotationFormat>,
 }
 
 /// A single formatted citation.

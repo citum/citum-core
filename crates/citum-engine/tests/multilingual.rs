@@ -20,7 +20,7 @@ mod common;
 use common::announce_behavior;
 
 use citum_engine::Processor;
-use citum_engine::io::load_bibliography;
+use citum_io::load_bibliography;
 use citum_schema::Style;
 use citum_schema::citation::{Citation, CitationItem};
 use std::fs;

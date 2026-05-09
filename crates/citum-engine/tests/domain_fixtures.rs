@@ -17,7 +17,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
 use citum_engine::Processor;
-use citum_engine::io::load_bibliography;
+use citum_io::load_bibliography;
 use citum_schema::Style;
 use citum_schema::citation::{Citation, CitationItem, CitationLocator, LocatorType};
 use citum_schema::reference::{InputReference, MultilingualString};

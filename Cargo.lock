@@ -573,6 +573,7 @@ dependencies = [
  "ciborium",
  "citum-bindings",
  "citum-engine",
+ "citum-io",
  "citum-pdf",
  "citum-resolver-api",
  "citum-schema",
@@ -635,9 +636,8 @@ dependencies = [
 name = "citum-engine"
 version = "0.38.0"
 dependencies = [
- "biblatex 0.11.0",
- "ciborium",
  "citum-edtf",
+ "citum-io",
  "citum-migrate",
  "citum-schema",
  "criterion",
@@ -658,6 +658,23 @@ dependencies = [
  "unicode-script",
  "url",
  "winnow 0.7.15",
+]
+
+[[package]]
+name = "citum-io"
+version = "0.38.0"
+dependencies = [
+ "biblatex 0.11.0",
+ "ciborium",
+ "citum-engine",
+ "citum-schema",
+ "csl-legacy",
+ "indexmap 2.14.0",
+ "serde",
+ "serde_json",
+ "serde_yaml_ng",
+ "thiserror 2.0.18",
+ "url",
 ]
 
 [[package]]

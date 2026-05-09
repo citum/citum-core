@@ -19,13 +19,11 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 mod common;
 use common::*;
 
-use citum_engine::{
-    Processor,
-    io::load_bibliography,
-    processor::document::{
-        CitationParser, DocumentFormat, djot::DjotParser, markdown::MarkdownParser,
-    },
+use citum_engine::Processor;
+use citum_engine::processor::document::{
+    CitationParser, DocumentFormat, djot::DjotParser, markdown::MarkdownParser,
 };
+use citum_io::load_bibliography;
 use citum_schema::{
     BibliographySpec, Locale, Style, StyleInfo,
     options::{

@@ -112,7 +112,7 @@ pub fn citation() -> Vec<TemplateComponent> {
 /// Embedded bibliography template for APA style.
 ///
 /// Renders the full bibliographic entry in APA format:
-/// Author, A. A., & Author, B. B. (Year). Title of work. *Journal Title*, *Volume*(Issue), Pages. https://doi.org/xxx
+/// Author, A. A., & Author, B. B. (Year). Title of work. *Journal Title*, *Volume*(Issue), Pages. <https://doi.org/xxx>
 ///
 /// # Panics
 ///

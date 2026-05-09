@@ -20,7 +20,7 @@ use std::fs;
 use std::path::PathBuf;
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use citum_engine::io::load_bibliography_with_sets;
+use citum_io::load_bibliography_with_sets;
 use rstest::rstest;
 
 /// Generate a temp file path with unique suffix.

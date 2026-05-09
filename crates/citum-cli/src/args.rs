@@ -382,7 +382,7 @@ pub(crate) enum RegistryCommands {
 pub(crate) enum StyleCommands {
     /// List styles in the style catalog
     List {
-        /// Catalog source to include: all, embedded, installed, or registry:<name>
+        /// Catalog source to include: all, embedded, installed, or registry:`<name>`
         #[arg(long, default_value = "all")]
         source: String,
         /// Output format
@@ -399,7 +399,7 @@ pub(crate) enum StyleCommands {
     Search {
         /// Search query matched against IDs, aliases, titles, descriptions, and fields
         query: String,
-        /// Catalog source to include: all, embedded, installed, or registry:<name>
+        /// Catalog source to include: all, embedded, installed, or registry:`<name>`
         #[arg(long, default_value = "all")]
         source: String,
         /// Output format
@@ -425,7 +425,7 @@ pub(crate) enum StyleCommands {
     Browse {
         /// Optional initial search query
         query: Option<String>,
-        /// Catalog source to include: all, embedded, installed, or registry:<name>
+        /// Catalog source to include: all, embedded, installed, or registry:`<name>`
         #[arg(long, default_value = "all")]
         source: String,
     },

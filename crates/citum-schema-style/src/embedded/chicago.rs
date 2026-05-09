@@ -30,7 +30,7 @@ pub fn author_date_citation() -> Vec<TemplateComponent> {
 /// Embedded bibliography template for Chicago author-date style.
 ///
 /// Renders the full bibliographic entry in Chicago format:
-/// Author, First. Year. "Article Title." *Journal Title* Volume (Issue): Pages. https://doi.org/xxx
+/// Author, First. Year. "Article Title." *Journal Title* Volume (Issue): Pages. <https://doi.org/xxx>
 pub fn author_date_bibliography() -> Vec<TemplateComponent> {
     vec![
         // Author

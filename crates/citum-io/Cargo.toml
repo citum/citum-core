@@ -1,0 +1,22 @@
+[package]
+name = "citum-io"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Citum I/O and format conversion library"
+
+[dependencies]
+citum-schema = { package = "citum-schema", path = "../citum-schema", features = ["legacy-convert"] }
+citum-engine = { package = "citum-engine", path = "../citum-engine" }
+csl_legacy = { package = "csl-legacy", path = "../csl-legacy" }
+biblatex = "0.11"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
+ciborium = "0.2"
+indexmap = { version = "2.2.6", features = ["serde"] }
+url = { version = "2.5", features = ["serde"] }
+thiserror = "2.0"
+
+[lints]
+workspace = true

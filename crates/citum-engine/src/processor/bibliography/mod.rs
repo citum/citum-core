@@ -15,7 +15,7 @@ mod grouping;
 use super::matching::Matcher;
 use super::rendering::{CompoundRenderData, Renderer, RendererResources};
 use super::{ProcessedReferences, Processor};
-use crate::io::AnnotationStyle;
+use crate::api::AnnotationStyle;
 use crate::reference::Reference;
 use crate::render::format::OutputFormat;
 use crate::render::{ProcEntry, ProcTemplate};
