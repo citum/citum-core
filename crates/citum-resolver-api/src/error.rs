@@ -136,3 +136,29 @@ pub enum ResolutionError {
         declared: String,
     },
 }
+
+impl ResolutionError {
+    /// Convert a [`ResolverError`] into a [`ResolutionError`] for a specific URI.
+    pub fn from_resolver_error(uri: &str, err: ResolverError) -> Self {
+        match err {
+            ResolverError::IntegrityFailure {
+                expected, actual, ..
+            } => ResolutionError::IntegrityFailure {
+                uri: uri.into(),
+                expected,
+                actual,
+            },
+            ResolverError::VersionMismatch {
+                required, declared, ..
+            } => ResolutionError::VersionMismatch {
+                uri: uri.into(),
+                required,
+                declared,
+            },
+            _ => ResolutionError::UriResolutionFailed {
+                uri: uri.into(),
+                reason: err.to_string(),
+            },
+        }
+    }
+}

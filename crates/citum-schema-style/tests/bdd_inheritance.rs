@@ -127,9 +127,19 @@ fn test_template_variant_inheritance(#[case] overlay_yaml: &str, #[case] asserti
     let overlay = Style::from_yaml_str(overlay_yaml).expect("valid overlay style");
 
     struct MockResolver(Style);
-    impl citum_schema_style::StyleResolver for MockResolver {
+    impl citum_resolver_api::StyleResolver for MockResolver {
+        type Style = Style;
+        type Locale = citum_schema_style::locale::Locale;
+
         fn resolve_style(&self, _uri: &str) -> Result<Style, citum_schema_style::ResolutionError> {
             Ok(self.0.clone())
+        }
+
+        fn resolve_locale(
+            &self,
+            _id: &str,
+        ) -> Result<Self::Locale, citum_schema_style::ResolverError> {
+            unimplemented!()
         }
     }
 
@@ -214,7 +224,10 @@ bibliography:
         base: Style,
         mid: Style,
     }
-    impl citum_schema_style::StyleResolver for MultiResolver {
+    impl citum_resolver_api::StyleResolver for MultiResolver {
+        type Style = Style;
+        type Locale = citum_schema_style::locale::Locale;
+
         fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema_style::ResolutionError> {
             match uri {
                 "base" => Ok(self.base.clone()),
@@ -224,6 +237,13 @@ bibliography:
                     reason: "unknown style in test".to_string(),
                 }),
             }
+        }
+
+        fn resolve_locale(
+            &self,
+            _id: &str,
+        ) -> Result<Self::Locale, citum_schema_style::ResolverError> {
+            unimplemented!()
         }
     }
 

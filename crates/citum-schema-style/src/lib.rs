@@ -99,15 +99,11 @@ pub type Template = Vec<TemplateComponent>;
 /// Type-specific template variants keyed by reference-type selector.
 pub type TemplateVariants = IndexMap<TypeSelector, TemplateVariant>;
 
+/// Canonical style resolution interfaces and error types.
+pub use citum_resolver_api::{ResolutionError, ResolverError};
+
 /// Resolver interface used by schema-layer style inheritance.
-pub trait StyleResolver {
-    /// Resolve a style by URI, registry ID, or implementation-specific key.
-    ///
-    /// # Errors
-    ///
-    /// Returns a [`ResolutionError`] when the style cannot be loaded or parsed.
-    fn resolve_style(&self, uri: &str) -> Result<Style, ResolutionError>;
-}
+pub type StyleResolver = dyn citum_resolver_api::StyleResolver<Style = Style, Locale = Locale>;
 
 /// Canonical Citum style schema version used when `Style.version` is omitted.
 pub const STYLE_SCHEMA_VERSION: &str = "0.44.0";
@@ -127,149 +123,6 @@ pub enum SchemaWarning {
         location: String,
     },
 }
-
-/// Failure modes while resolving a style with inheritance.
-#[derive(Debug, Clone, PartialEq)]
-#[non_exhaustive]
-pub enum ResolutionError {
-    /// A `profile` style attempted to override template-bearing structure.
-    InvalidProfileOverride {
-        /// Human-readable location hint.
-        location: String,
-    },
-    /// An inheritance loop was detected.
-    InheritanceLoop {
-        /// Base key that closed the cycle.
-        base: String,
-    },
-    /// A `file://` URI could not be resolved.
-    UriResolutionFailed {
-        /// The URI that failed to resolve.
-        uri: String,
-        /// Reason for failure.
-        reason: String,
-    },
-    /// A Template V3 variant references a missing parent variant.
-    MissingTemplateVariantParent {
-        /// Human-readable location hint.
-        location: String,
-        /// Parent selector that could not be found.
-        selector: String,
-    },
-    /// A Template V3 variant parent chain contains a cycle.
-    TemplateVariantCycle {
-        /// Human-readable location hint.
-        location: String,
-        /// Selector that closed the cycle.
-        selector: String,
-    },
-    /// A Template V3 operation matched no components.
-    TemplateVariantAnchorNotFound {
-        /// Human-readable location hint.
-        location: String,
-    },
-    /// A Template V3 operation matched more than one component.
-    TemplateVariantAmbiguousAnchor {
-        /// Human-readable location hint.
-        location: String,
-    },
-    /// A Template V3 add operation does not define exactly one anchor.
-    InvalidTemplateVariantAdd {
-        /// Human-readable location hint.
-        location: String,
-    },
-    /// The fetched parent style's content did not hash to the value declared
-    /// in `extends-pin`.
-    IntegrityFailure {
-        /// URI of the parent that failed integrity verification.
-        uri: String,
-        /// CID declared in the child's `extends-pin`.
-        expected: String,
-        /// CID computed from the bytes the resolver actually returned.
-        actual: String,
-    },
-    /// The fetched style declares a `citum-version` requirement that the
-    /// running engine does not satisfy.
-    VersionMismatch {
-        /// URI whose `citum-version` requirement was unsatisfiable.
-        uri: String,
-        /// `citum-version` requirement declared by the style's `info` block.
-        required: String,
-        /// Version of the running engine.
-        declared: String,
-    },
-}
-
-impl std::fmt::Display for ResolutionError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ResolutionError::InvalidProfileOverride { location } => {
-                write!(
-                    f,
-                    "profile styles may not override template-bearing field `{location}`"
-                )
-            }
-            ResolutionError::InheritanceLoop { base } => {
-                write!(f, "inheritance loop detected at base `{base}`")
-            }
-            ResolutionError::UriResolutionFailed { uri, reason } => {
-                write!(f, "failed to resolve URI `{uri}`: {reason}")
-            }
-            ResolutionError::MissingTemplateVariantParent { location, selector } => {
-                write!(
-                    f,
-                    "template variant `{location}` extends missing variant `{selector}`"
-                )
-            }
-            ResolutionError::TemplateVariantCycle { location, selector } => {
-                write!(
-                    f,
-                    "template variant inheritance loop at `{location}` through `{selector}`"
-                )
-            }
-            ResolutionError::TemplateVariantAnchorNotFound { location } => {
-                write!(
-                    f,
-                    "template variant operation in `{location}` matched no component"
-                )
-            }
-            ResolutionError::TemplateVariantAmbiguousAnchor { location } => {
-                write!(
-                    f,
-                    "template variant operation in `{location}` matched multiple components"
-                )
-            }
-            ResolutionError::InvalidTemplateVariantAdd { location } => {
-                write!(
-                    f,
-                    "template variant add operation in `{location}` must specify exactly one of before/after"
-                )
-            }
-            ResolutionError::IntegrityFailure {
-                uri,
-                expected,
-                actual,
-            } => {
-                write!(
-                    f,
-                    "extends-pin integrity check failed for `{uri}`: expected {expected}, got {actual}"
-                )
-            }
-            ResolutionError::VersionMismatch {
-                uri,
-                required,
-                declared,
-            } => {
-                write!(
-                    f,
-                    "style `{uri}` requires citum-version `{required}`; running engine is `{declared}`"
-                )
-            }
-        }
-    }
-}
-
-impl std::error::Error for ResolutionError {}
 
 impl std::fmt::Display for SchemaWarning {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -390,7 +243,7 @@ impl Style {
     /// resolution fails.
     pub fn try_into_resolved_with(
         self,
-        resolver: Option<&dyn StyleResolver>,
+        resolver: Option<&StyleResolver>,
     ) -> Result<Self, ResolutionError> {
         self.try_into_resolved_recursive_with_depth(resolver, &mut HashSet::new(), 0)
     }
@@ -433,7 +286,7 @@ impl Style {
     /// resolution fails.
     pub fn try_into_resolved_recursive_with(
         self,
-        resolver: Option<&dyn StyleResolver>,
+        resolver: Option<&StyleResolver>,
         visited: &mut HashSet<String>,
     ) -> Result<Self, ResolutionError> {
         self.try_into_resolved_recursive_with_depth(resolver, visited, 0)
@@ -442,7 +295,7 @@ impl Style {
     /// Internal recursive resolver with depth limit.
     fn try_into_resolved_recursive_with_depth(
         self,
-        resolver: Option<&dyn StyleResolver>,
+        resolver: Option<&StyleResolver>,
         visited: &mut HashSet<String>,
         depth: usize,
     ) -> Result<Self, ResolutionError> {
@@ -776,10 +629,12 @@ pub fn check_citum_version(uri: &str, info: &StyleInfo) -> Result<(), Resolution
 
 fn resolve_style_reference_uri(
     uri: &str,
-    resolver: Option<&dyn StyleResolver>,
+    resolver: Option<&StyleResolver>,
 ) -> Result<Style, ResolutionError> {
     if let Some(resolver) = resolver {
-        let style = resolver.resolve_style(uri)?;
+        let style = resolver
+            .resolve_style(uri)
+            .map_err(|e| ResolutionError::from_resolver_error(uri, e))?;
         check_citum_version(uri, &style.info)?;
         return Ok(style);
     }
@@ -2726,7 +2581,10 @@ bibliography:
             style: Style,
         }
 
-        impl StyleResolver for FakeResolver {
+        impl citum_resolver_api::StyleResolver for FakeResolver {
+            type Style = Style;
+            type Locale = Locale;
+
             fn resolve_style(&self, uri: &str) -> Result<Style, ResolutionError> {
                 if uri == "parent-style" {
                     Ok(self.style.clone())
@@ -2736,6 +2594,10 @@ bibliography:
                         reason: "missing test style".to_string(),
                     })
                 }
+            }
+
+            fn resolve_locale(&self, _id: &str) -> Result<Self::Locale, ResolverError> {
+                unimplemented!()
             }
         }
 

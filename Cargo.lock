@@ -683,6 +683,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "citum-resolver-api"
+version = "0.38.0"
+dependencies = [
+ "serde_json",
+ "thiserror 2.0.18",
+]
+
+[[package]]
 name = "citum-schema"
 version = "0.38.0"
 dependencies = [
@@ -716,6 +724,7 @@ dependencies = [
  "ciborium",
  "cid",
  "citum-edtf",
+ "citum-resolver-api",
  "citum-schema-data",
  "criterion",
  "csl-legacy",

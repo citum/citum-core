@@ -270,7 +270,7 @@ impl StyleBase {
     /// Internal resolver with loop protection that preserves profile errors.
     pub(crate) fn try_resolve_with_visited(
         &self,
-        resolver: Option<&dyn crate::StyleResolver>,
+        resolver: Option<&crate::StyleResolver>,
         visited: &mut HashSet<String>,
     ) -> Result<Style, crate::ResolutionError> {
         self.base()
