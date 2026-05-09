@@ -250,6 +250,27 @@ pub fn validate_style(style_yaml: &str) -> Result<(), String> {
         .map_err(|e| format!("Style parse error: {e}"))
 }
 
+/// Format a complete document's citations and bibliography in one call.
+///
+/// Takes a JSON-encoded `FormatDocumentRequest` and returns a JSON-encoded
+/// `FormatDocumentResult`. In WASM, the resolver chain is unavailable —
+/// `StyleInput::Id` and `StyleInput::Uri` variants return an error; use
+/// `StyleInput::Yaml` (preferred) or `StyleInput::Path` (if filesystem
+/// access is available in the host).
+///
+/// # Errors
+///
+/// Returns a string error on request JSON parse failure, style resolution failure,
+/// or engine rendering error.
+#[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "formatDocument"))]
+pub fn format_document(request_json: &str) -> Result<String, String> {
+    let request: citum_engine::FormatDocumentRequest =
+        serde_json::from_str(request_json).map_err(|e| format!("Invalid request JSON: {}", e))?;
+    let result =
+        citum_engine::format_document(request).map_err(|e| format!("Format error: {}", e))?;
+    serde_json::to_string(&result).map_err(|e| format!("Result serialization failed: {}", e))
+}
+
 /// Export all Citum schema types as TypeScript type definitions to a file.
 ///
 /// Writes a `.d.ts` file to `out_path` containing type definitions for all
