@@ -574,6 +574,7 @@ dependencies = [
  "citum-bindings",
  "citum-engine",
  "citum-pdf",
+ "citum-resolver-api",
  "citum-schema",
  "citum_store",
  "clap",
@@ -763,6 +764,7 @@ version = "0.38.0"
 dependencies = [
  "ciborium",
  "cid",
+ "citum-resolver-api",
  "citum-schema",
  "dirs",
  "gix",
@@ -774,7 +776,7 @@ dependencies = [
  "serde_yaml_ng",
  "sha2",
  "tempfile",
- "thiserror 1.0.69",
+ "thiserror 2.0.18",
  "toml",
 ]
 

@@ -12,7 +12,10 @@ use crate::{
         StyleResolver,
     },
 };
+use citum_schema::{Locale, Style};
 use std::{error::Error, fs, path::Path};
+
+type DynStyleResolver = dyn StyleResolver<Style = Style, Locale = Locale>;
 
 /// Construct a `ChainResolver` with the standard platform resolver stack.
 ///
@@ -23,7 +26,7 @@ use std::{error::Error, fs, path::Path};
 ///
 /// Returns an error if the current working directory cannot be determined.
 pub fn build_standard_chain() -> Result<ChainResolver, Box<dyn Error + Send + Sync>> {
-    let mut resolvers: Vec<Box<dyn StyleResolver>> = vec![Box::new(FileResolver)];
+    let mut resolvers: Vec<Box<DynStyleResolver>> = vec![Box::new(FileResolver)];
 
     if let Some(data_dir) = platform_data_dir()
         && data_dir.exists()
@@ -76,8 +79,8 @@ fn configured_registry_names() -> Vec<String> {
     records.into_iter().map(|record| record.name).collect()
 }
 
-fn registry_resolvers() -> Result<Vec<Box<dyn StyleResolver>>, Box<dyn Error + Send + Sync>> {
-    let mut resolvers: Vec<Box<dyn StyleResolver>> = Vec::new();
+fn registry_resolvers() -> Result<Vec<Box<DynStyleResolver>>, Box<dyn Error + Send + Sync>> {
+    let mut resolvers: Vec<Box<DynStyleResolver>> = Vec::new();
 
     let local_path = Path::new("citum-registry.yaml");
     if local_path.exists()

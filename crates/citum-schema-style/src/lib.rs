@@ -2585,19 +2585,20 @@ bibliography:
             type Style = Style;
             type Locale = Locale;
 
-            fn resolve_style(&self, uri: &str) -> Result<Style, ResolutionError> {
+            fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
                 if uri == "parent-style" {
                     Ok(self.style.clone())
                 } else {
-                    Err(ResolutionError::UriResolutionFailed {
-                        uri: uri.to_string(),
-                        reason: "missing test style".to_string(),
-                    })
+                    Err(ResolverError::StyleNotFound(std::borrow::Cow::Owned(
+                        uri.to_string(),
+                    )))
                 }
             }
 
-            fn resolve_locale(&self, _id: &str) -> Result<Self::Locale, ResolverError> {
-                unimplemented!()
+            fn resolve_locale(&self, id: &str) -> Result<Self::Locale, ResolverError> {
+                Err(ResolverError::LocaleNotFound(std::borrow::Cow::Owned(
+                    id.to_string(),
+                )))
             }
         }
 

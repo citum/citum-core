@@ -5,10 +5,13 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 //! Canonical style resolution interfaces for the Citum citation engine.
 //!
-//! This crate provides a lightweight, zero-dependency (by default) bridge
-//! between the schema layer (which defines style models) and the store layer
-//! (which implements persistence and network resolution).
+//! This crate provides a lightweight bridge between the schema layer
+//! (which defines style models) and the store layer (which implements
+//! persistence and network resolution). It minimizes dependencies
+//! to facilitate integration by third-party tool authors who don't
+//! need the full store logic.
 
+/// Error types and conversion helpers.
 pub mod error;
 pub use error::{ResolutionError, ResolverError};
 

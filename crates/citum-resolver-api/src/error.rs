@@ -10,49 +10,74 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 #[non_exhaustive]
 pub enum ResolverError {
+    /// An underlying I/O error occurred.
     #[error("io error: {0}")]
     Io(#[from] std::io::Error),
+    /// The style content is malformed or invalid for the target version.
     #[error("invalid style: {0}")]
     InvalidStyle(Cow<'static, str>),
+    /// The requested style could not be located.
     #[error("style not found: {0}")]
     StyleNotFound(Cow<'static, str>),
+    /// The requested locale could not be located.
     #[error("locale not found: {0}")]
     LocaleNotFound(Cow<'static, str>),
+    /// Failure during YAML deserialization.
     #[error("yaml error: {0}")]
     YamlError(String),
+    /// Failure during JSON deserialization.
     #[cfg(feature = "serde_json")]
     #[error("json error: {0}")]
     JsonError(#[from] serde_json::Error),
+    /// Failure during CBOR deserialization.
     #[error("cbor error: {0}")]
     CborError(String),
+    /// A network failure occurred during HTTP fetch.
     #[cfg(feature = "http")]
     #[error("http error: {0}")]
     HttpError(String),
+    /// A failure occurred during a Git operation.
     #[cfg(feature = "http")]
     #[error("git error: {0}")]
     GitError(String),
     /// The URI host or origin is not in the resolver's allowlist.
     #[error("host not in resolver allowlist: {uri} ({reason})")]
-    Denied { uri: String, reason: String },
+    Denied {
+        /// The URI that was denied.
+        uri: String,
+        /// Reason for the denial.
+        reason: String,
+    },
     /// The style's `citum-version` is not compatible with the running engine.
     #[error(
         "engine version mismatch for {uri}: engine requires {required}, style declares {declared}"
     )]
     VersionMismatch {
+        /// URI of the style with the incompatible version.
         uri: String,
+        /// Version requirement declared by the style.
         required: String,
+        /// Version of the running engine.
         declared: String,
     },
     /// The content does not match the expected integrity hash.
     #[error("integrity failure for {uri}: expected {expected}, got {actual}")]
     IntegrityFailure {
+        /// URI of the content that failed verification.
         uri: String,
+        /// The expected CIDv1 string.
         expected: String,
+        /// The CID computed from the actual content bytes.
         actual: String,
     },
     /// Generic network or transport failure.
     #[error("network error fetching {uri}: {reason}")]
-    NetworkError { uri: String, reason: String },
+    NetworkError {
+        /// URI of the failed fetch.
+        uri: String,
+        /// Reason for the network failure.
+        reason: String,
+    },
 }
 
 /// Error type for style resolution and inheritance processing at the schema layer.
@@ -108,7 +133,9 @@ pub enum ResolutionError {
         location: String,
     },
     /// A Template V3 add operation does not define exactly one anchor.
-    #[error("template variant add operation in `{location}` must specify exactly one of before/after")]
+    #[error(
+        "template variant add operation in `{location}` must specify exactly one of before/after"
+    )]
     InvalidTemplateVariantAdd {
         /// Human-readable location hint.
         location: String,
@@ -139,6 +166,7 @@ pub enum ResolutionError {
 
 impl ResolutionError {
     /// Convert a [`ResolverError`] into a [`ResolutionError`] for a specific URI.
+    #[must_use]
     pub fn from_resolver_error(uri: &str, err: ResolverError) -> Self {
         match err {
             ResolverError::IntegrityFailure {
