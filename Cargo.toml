@@ -12,7 +12,8 @@ members = [
     "crates/citum-server",
     "crates/citum-edtf",
     "crates/citum_store",
-    "crates/citum-bindings"
+    "crates/citum-bindings",
+    "crates/citum-resolver-api"
 ]
 resolver = "2"
 
