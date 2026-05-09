@@ -30,7 +30,7 @@ use citum_schema::InputBibliography;
 use citum_schema::lint::{lint_raw_locale, lint_style_against_locale};
 use citum_schema::locale::RawLocale;
 use citum_schema::options::Processing;
-use citum_schema::{RegistryEntry, Style};
+use citum_schema::{Locale, RegistryEntry, Style};
 use citum_store::{
     StoreConfig, StoreResolver, platform_cache_dir, platform_config_dir, platform_data_dir,
 };
@@ -780,7 +780,8 @@ fn load_unresolved_style(target: &str) -> Result<Style, Box<dyn Error>> {
         return Ok(Style::from_yaml_bytes(&bytes)?);
     }
 
-    let mut resolvers: Vec<Box<dyn StyleResolver>> = vec![Box::new(FileResolver)];
+    let mut resolvers: Vec<Box<dyn StyleResolver<Style = Style, Locale = Locale>>> =
+        vec![Box::new(FileResolver)];
     if let Some(data_dir) = platform_data_dir()
         && data_dir.exists()
     {
@@ -799,10 +800,12 @@ fn load_unresolved_style(target: &str) -> Result<Style, Box<dyn Error>> {
 /// `Style::try_into_resolved_with(Some(&...))`. CidResolver is intentionally
 /// omitted — `style validate` operates on local bytes and should not silently
 /// reach across the network during a "is my file OK?" check.
-fn build_chain_resolver() -> Result<impl citum_schema::StyleResolver, Box<dyn Error>> {
+fn build_chain_resolver()
+-> Result<impl citum_resolver_api::StyleResolver<Style = Style, Locale = Locale>, Box<dyn Error>> {
     use citum_store::resolver::{ChainResolver, EmbeddedResolver, FileResolver, StyleResolver};
 
-    let mut resolvers: Vec<Box<dyn StyleResolver>> = vec![Box::new(FileResolver)];
+    let mut resolvers: Vec<Box<dyn StyleResolver<Style = Style, Locale = Locale>>> =
+        vec![Box::new(FileResolver)];
     if let Some(data_dir) = platform_data_dir()
         && data_dir.exists()
     {

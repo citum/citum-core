@@ -12,3 +12,6 @@ serde_json = { version = "1.0", optional = true }
 [features]
 default = ["serde_json"]
 http = []
+
+[lints]
+workspace = true

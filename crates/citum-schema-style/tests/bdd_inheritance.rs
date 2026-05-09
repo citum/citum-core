@@ -131,15 +131,17 @@ fn test_template_variant_inheritance(#[case] overlay_yaml: &str, #[case] asserti
         type Style = Style;
         type Locale = citum_schema_style::locale::Locale;
 
-        fn resolve_style(&self, _uri: &str) -> Result<Style, citum_schema_style::ResolutionError> {
+        fn resolve_style(&self, _uri: &str) -> Result<Style, citum_schema_style::ResolverError> {
             Ok(self.0.clone())
         }
 
         fn resolve_locale(
             &self,
-            _id: &str,
+            id: &str,
         ) -> Result<Self::Locale, citum_schema_style::ResolverError> {
-            unimplemented!()
+            Err(citum_schema_style::ResolverError::LocaleNotFound(
+                std::borrow::Cow::Owned(id.to_string()),
+            ))
         }
     }
 
@@ -228,22 +230,23 @@ bibliography:
         type Style = Style;
         type Locale = citum_schema_style::locale::Locale;
 
-        fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema_style::ResolutionError> {
+        fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema_style::ResolverError> {
             match uri {
                 "base" => Ok(self.base.clone()),
                 "mid" => Ok(self.mid.clone()),
-                _ => Err(citum_schema_style::ResolutionError::UriResolutionFailed {
-                    uri: uri.to_string(),
-                    reason: "unknown style in test".to_string(),
-                }),
+                _ => Err(citum_schema_style::ResolverError::StyleNotFound(
+                    std::borrow::Cow::Owned(uri.to_string()),
+                )),
             }
         }
 
         fn resolve_locale(
             &self,
-            _id: &str,
+            id: &str,
         ) -> Result<Self::Locale, citum_schema_style::ResolverError> {
-            unimplemented!()
+            Err(citum_schema_style::ResolverError::LocaleNotFound(
+                std::borrow::Cow::Owned(id.to_string()),
+            ))
         }
     }
 

@@ -191,6 +191,9 @@ fn verifying_resolver_passes_through_when_pin_matches() {
 
     struct FixedResolver(Style);
     impl StyleResolver for FixedResolver {
+        type Style = Style;
+        type Locale = citum_schema::Locale;
+
         fn resolve_style(&self, _uri: &str) -> Result<Style, crate::resolver::ResolverError> {
             Ok(self.0.clone())
         }
@@ -225,6 +228,9 @@ fn verifying_resolver_rejects_when_pin_mismatches() {
 
     struct FixedResolver(Style);
     impl StyleResolver for FixedResolver {
+        type Style = Style;
+        type Locale = citum_schema::Locale;
+
         fn resolve_style(&self, _uri: &str) -> Result<Style, crate::resolver::ResolverError> {
             Ok(self.0.clone())
         }

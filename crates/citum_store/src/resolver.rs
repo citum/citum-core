@@ -15,80 +15,21 @@ use std::io::Cursor;
 use std::path::{Path, PathBuf};
 #[cfg(feature = "http")]
 use std::time::{Duration, SystemTime};
-use thiserror::Error;
 
 #[cfg(feature = "http")]
 use sha2::{Digest, Sha256};
 #[cfg(feature = "http")]
 use tempfile;
 
-/// Error type for store resolution operations.
-#[derive(Error, Debug)]
-#[non_exhaustive]
-pub enum ResolverError {
-    #[error("io error: {0}")]
-    Io(#[from] std::io::Error),
-    #[error("invalid style: {0}")]
-    InvalidStyle(Cow<'static, str>),
-    #[error("style not found: {0}")]
-    StyleNotFound(Cow<'static, str>),
-    #[error("locale not found: {0}")]
-    LocaleNotFound(Cow<'static, str>),
-    #[error("yaml error: {0}")]
-    YamlError(String),
-    #[error("json error: {0}")]
-    JsonError(#[from] serde_json::Error),
-    #[error("cbor error: {0}")]
-    CborError(String),
-    #[cfg(feature = "http")]
-    #[error("http error: {0}")]
-    HttpError(String),
-    #[cfg(feature = "http")]
-    #[error("git error: {0}")]
-    GitError(String),
-    /// The URI host or origin is not in the resolver's allowlist.
-    #[error("host not in resolver allowlist: {uri} ({reason})")]
-    Denied { uri: String, reason: String },
-    /// The style's `citum-version` is not compatible with the running engine.
-    #[error(
-        "engine version mismatch for {uri}: engine requires {required}, style declares {declared}"
-    )]
-    VersionMismatch {
-        uri: String,
-        required: String,
-        declared: String,
-    },
-    /// The content does not match the expected integrity hash.
-    #[error("integrity failure for {uri}: expected {expected}, got {actual}")]
-    IntegrityFailure {
-        uri: String,
-        expected: String,
-        actual: String,
-    },
-    /// Generic network or transport failure.
-    #[error("network error fetching {uri}: {reason}")]
-    NetworkError { uri: String, reason: String },
-}
-
-/// A resolver that can locate styles and locales.
-pub trait StyleResolver: Send + Sync {
-    /// Resolve a style by URI or ID.
-    ///
-    /// # Errors
-    /// Returns a [`ResolverError`] if the style cannot be found or loaded.
-    fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError>;
-
-    /// Resolve a locale by ID.
-    ///
-    /// # Errors
-    /// Returns a [`ResolverError`] if the locale cannot be found or loaded.
-    fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError>;
-}
+pub use citum_resolver_api::{ResolutionError, ResolverError, StyleResolver};
 
 /// A resolver that searches a local directory for styles and locales.
 pub struct FileResolver;
 
 impl StyleResolver for FileResolver {
+    type Style = Style;
+    type Locale = Locale;
+
     fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
         let path = if let Some(path_str) = uri.strip_prefix("file://") {
             PathBuf::from(path_str)
@@ -120,13 +61,6 @@ impl StyleResolver for FileResolver {
     }
 }
 
-impl citum_schema::StyleResolver for FileResolver {
-    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
-        StyleResolver::resolve_style(self, uri)
-            .map_err(|err| resolution_error_from_store_error(uri, err))
-    }
-}
-
 /// A resolver that manages user-installed styles and locales in a platform data directory.
 pub struct StoreResolver {
     data_dir: PathBuf,
@@ -134,6 +68,9 @@ pub struct StoreResolver {
 }
 
 impl StyleResolver for StoreResolver {
+    type Style = Style;
+    type Locale = Locale;
+
     fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
         StoreResolver::resolve_style(self, uri)
     }
@@ -143,17 +80,13 @@ impl StyleResolver for StoreResolver {
     }
 }
 
-impl citum_schema::StyleResolver for StoreResolver {
-    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
-        StyleResolver::resolve_style(self, uri)
-            .map_err(|err| resolution_error_from_store_error(uri, err))
-    }
-}
-
 /// A resolver that checks for embedded styles and locales.
 pub struct EmbeddedResolver;
 
 impl StyleResolver for EmbeddedResolver {
+    type Style = Style;
+    type Locale = Locale;
+
     fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
         citum_schema::embedded::get_embedded_style(uri)
             .ok_or_else(|| ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))?
@@ -168,13 +101,6 @@ impl StyleResolver for EmbeddedResolver {
         } else {
             Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
         }
-    }
-}
-
-impl citum_schema::StyleResolver for EmbeddedResolver {
-    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
-        StyleResolver::resolve_style(self, uri)
-            .map_err(|err| resolution_error_from_store_error(uri, err))
     }
 }
 
@@ -227,6 +153,9 @@ impl RegistryResolver {
 }
 
 impl StyleResolver for RegistryResolver {
+    type Style = Style;
+    type Locale = Locale;
+
     fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
         let entry = self
             .registry
@@ -265,13 +194,6 @@ impl StyleResolver for RegistryResolver {
 
     fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
         Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
-    }
-}
-
-impl citum_schema::StyleResolver for RegistryResolver {
-    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
-        StyleResolver::resolve_style(self, uri)
-            .map_err(|err| resolution_error_from_store_error(uri, err))
     }
 }
 
@@ -404,6 +326,9 @@ fn hex_digit(nibble: u8) -> char {
 
 #[cfg(feature = "http")]
 impl StyleResolver for HttpResolver {
+    type Style = Style;
+    type Locale = Locale;
+
     fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
         if !uri.starts_with("http://") && !uri.starts_with("https://") {
             return Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())));
@@ -491,14 +416,6 @@ impl StyleResolver for HttpResolver {
 }
 
 #[cfg(feature = "http")]
-impl citum_schema::StyleResolver for HttpResolver {
-    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
-        StyleResolver::resolve_style(self, uri)
-            .map_err(|err| resolution_error_from_store_error(uri, err))
-    }
-}
-
-#[cfg(feature = "http")]
 impl GitResolver {
     /// Create a resolver using the provided cache directory.
     #[must_use]
@@ -569,6 +486,9 @@ impl GitResolver {
 
 #[cfg(feature = "http")]
 impl StyleResolver for GitResolver {
+    type Style = Style;
+    type Locale = Locale;
+
     fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
         let (repo_url, file_path) = Self::parse_git_uri(uri)
             .ok_or_else(|| ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))?;
@@ -651,14 +571,6 @@ impl StyleResolver for GitResolver {
     }
 }
 
-#[cfg(feature = "http")]
-impl citum_schema::StyleResolver for GitResolver {
-    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
-        StyleResolver::resolve_style(self, uri)
-            .map_err(|err| resolution_error_from_store_error(uri, err))
-    }
-}
-
 /// Default IPFS HTTP gateway used by [`CidResolver`] when none is configured.
 #[cfg(feature = "http")]
 pub const DEFAULT_CID_GATEWAY: &str = "https://dweb.link/ipfs/";
@@ -721,6 +633,9 @@ impl CidResolver {
 
 #[cfg(feature = "http")]
 impl StyleResolver for CidResolver {
+    type Style = Style;
+    type Locale = Locale;
+
     fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
         if !crate::cid::is_cid_uri(uri) {
             return Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())));
@@ -730,14 +645,6 @@ impl StyleResolver for CidResolver {
 
     fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
         Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
-    }
-}
-
-#[cfg(feature = "http")]
-impl citum_schema::StyleResolver for CidResolver {
-    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
-        StyleResolver::resolve_style(self, uri)
-            .map_err(|err| resolution_error_from_store_error(uri, err))
     }
 }
 
@@ -781,7 +688,10 @@ impl<R: StyleResolver> VerifyingResolver<R> {
 }
 
 #[cfg(feature = "http")]
-impl<R: StyleResolver> StyleResolver for VerifyingResolver<R> {
+impl<R: StyleResolver<Style = Style, Locale = Locale>> StyleResolver for VerifyingResolver<R> {
+    type Style = Style;
+    type Locale = Locale;
+
     fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
         let style = self.inner.resolve_style(uri)?;
         if let Some(ref pin) = self.expected {
@@ -850,28 +760,23 @@ pub fn fetch_and_verify_bytes(
     Ok(bytes)
 }
 
-#[cfg(feature = "http")]
-impl<R: StyleResolver> citum_schema::StyleResolver for VerifyingResolver<R> {
-    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
-        StyleResolver::resolve_style(self, uri)
-            .map_err(|err| resolution_error_from_store_error(uri, err))
-    }
-}
-
 /// A resolver that chains multiple resolvers and tries them in order.
 pub struct ChainResolver {
-    resolvers: Vec<Box<dyn StyleResolver>>,
+    resolvers: Vec<Box<dyn StyleResolver<Style = Style, Locale = Locale>>>,
 }
 
 impl ChainResolver {
     /// Create a new `ChainResolver` with the given list of resolvers.
     #[must_use]
-    pub fn new(resolvers: Vec<Box<dyn StyleResolver>>) -> Self {
+    pub fn new(resolvers: Vec<Box<dyn StyleResolver<Style = Style, Locale = Locale>>>) -> Self {
         ChainResolver { resolvers }
     }
 }
 
 impl StyleResolver for ChainResolver {
+    type Style = Style;
+    type Locale = Locale;
+
     fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
         for resolver in &self.resolvers {
             match resolver.resolve_style(uri) {
@@ -892,39 +797,6 @@ impl StyleResolver for ChainResolver {
             }
         }
         Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
-    }
-}
-
-impl citum_schema::StyleResolver for ChainResolver {
-    fn resolve_style(&self, uri: &str) -> Result<Style, citum_schema::ResolutionError> {
-        StyleResolver::resolve_style(self, uri)
-            .map_err(|err| resolution_error_from_store_error(uri, err))
-    }
-}
-
-fn resolution_error_from_store_error(
-    uri: &str,
-    err: ResolverError,
-) -> citum_schema::ResolutionError {
-    match err {
-        ResolverError::IntegrityFailure {
-            expected, actual, ..
-        } => citum_schema::ResolutionError::IntegrityFailure {
-            uri: uri.into(),
-            expected,
-            actual,
-        },
-        ResolverError::VersionMismatch {
-            required, declared, ..
-        } => citum_schema::ResolutionError::VersionMismatch {
-            uri: uri.into(),
-            required,
-            declared,
-        },
-        _ => citum_schema::ResolutionError::UriResolutionFailed {
-            uri: uri.into(),
-            reason: err.to_string(),
-        },
     }
 }
 
