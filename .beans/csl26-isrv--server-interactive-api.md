@@ -1,11 +1,11 @@
 ---
 # csl26-isrv
 title: Interactive server API — document-batch and session modes
-status: todo
+status: in-progress
 type: feature
 priority: normal
 created_at: 2026-05-04T00:00:00Z
-updated_at: 2026-05-04T12:00:04Z
+updated_at: 2026-05-08T23:56:56Z
 ---
 
 Implement the interactive server API as specified in

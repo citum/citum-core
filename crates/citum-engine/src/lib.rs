@@ -86,6 +86,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! assert_eq!(result, "(Kuhn, 1962)");
 //! ```
 
+/// Interactive document-level API for batch citation formatting.
+pub mod api;
 mod biblatex;
 /// Error types returned by citation and bibliography processing.
 pub mod error;
@@ -104,6 +106,12 @@ mod sort_support;
 /// Template value resolution and formatting helpers.
 pub mod values;
 
+pub use api::{
+    BibliographyEntry, CitationOccurrence, CitationOccurrenceItem, DocumentOptions, EntryMetadata,
+    FormatDocumentError, FormatDocumentRequest, FormatDocumentResult, FormattedBibliography,
+    FormattedCitation, OutputFormatKind, StyleInput, Warning, WarningLevel, format_document,
+    format_document_with_style,
+};
 pub use citum_schema::options::{Config, Processing};
 pub use citum_schema::reference::{
     Contributor, ContributorList, EdtfString, Monograph, MonographType, MultilingualString,
