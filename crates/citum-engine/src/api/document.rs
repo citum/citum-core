@@ -5,8 +5,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 //! Document-level batch formatting API.
 
+use crate::api::AnnotationStyle;
 use crate::error::ProcessorError;
-use crate::io::AnnotationStyle;
 use crate::processor::Processor;
 use crate::reference::Bibliography;
 use crate::render::djot::Djot;

@@ -88,14 +88,11 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 /// Interactive document-level API for batch citation formatting.
 pub mod api;
-mod biblatex;
 /// Error types returned by citation and bibliography processing.
 pub mod error;
 #[cfg(feature = "ffi")]
 pub mod ffi;
 pub mod grouping;
-/// File loading and deserialization helpers for processor inputs.
-pub mod io;
 /// Citation, bibliography, sorting, and document processing logic.
 pub mod processor;
 pub mod reference;

@@ -1,7 +1,7 @@
 ---
 # csl26-xio1
 title: Extract Biblatex and external input conversions to dedicated I/O crate
-status: todo
+status: done
 type: task
 priority: normal
 created_at: 2026-05-09T00:00:00Z

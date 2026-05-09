@@ -25,6 +25,7 @@ indexmap = "2.2.3"
 ratatui = { version = "0.30.0", default-features = false, features = ["crossterm_0_29"] }
 citum_schema = { package = "citum-schema", path = "../citum-schema", features = ["legacy-convert"] }
 citum_engine = { package = "citum-engine", path = "../citum-engine" }
+citum_io = { package = "citum-io", path = "../citum-io" }
 csl_legacy = { package = "csl-legacy", path = "../csl-legacy" }
 biblatex = "0.11"
 citum_store = { package = "citum_store", path = "../citum_store", features = ["http"] }

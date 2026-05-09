@@ -3,6 +3,11 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
+//! Citum I/O and format conversion library.
+//!
+//! Provides functions to load bibliographies and citations from various formats
+//! (Citum YAML/JSON/CBOR, CSL-JSON, BibLaTeX, RIS) into Citum's internal types.
+
 use std::collections::HashMap;
 use std::fmt::Write as _;
 use std::fs;
@@ -15,9 +20,13 @@ use citum_schema::reference::types::{ArchiveInfo, EprintInfo};
 use csl_legacy::csl_json::Reference as LegacyReference;
 use indexmap::IndexMap;
 
-use crate::render::format::OutputFormat;
-use crate::render::rich_text::render_djot_inline;
-use crate::{Bibliography, Citation, ProcessorError, Reference};
+pub use citum_engine::api::{AnnotationFormat, AnnotationStyle};
+use citum_engine::processor::validate_compound_sets;
+use citum_engine::render::format::OutputFormat;
+use citum_engine::render::rich_text::render_djot_inline;
+use citum_engine::{Bibliography, Citation, ProcessorError, Reference};
+
+pub mod biblatex;
 
 /// Bibliography formats supported by reusable reference conversion helpers.
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
@@ -50,35 +59,6 @@ struct LegacyBibliographyWrapper {
     references: Vec<LegacyReference>,
     #[serde(default)]
     sets: Option<IndexMap<String, Vec<String>>>,
-}
-
-/// Controls how annotation text is rendered in an annotated bibliography.
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
-pub struct AnnotationStyle {
-    /// Markup format for annotation text. Default: Djot.
-    #[serde(default)]
-    pub format: AnnotationFormat,
-}
-
-impl Default for AnnotationStyle {
-    fn default() -> Self {
-        Self {
-            format: AnnotationFormat::Djot,
-        }
-    }
-}
-
-/// Markup format for annotation text.
-#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum AnnotationFormat {
-    /// Parse annotation as djot inline markup (default).
-    #[default]
-    Djot,
-    /// Treat annotation as plain text with no markup interpretation.
-    Plain,
-    /// Parse annotation as org-mode markup.
-    Org,
 }
 
 /// Render a free-text reference field with djot inline markup.
@@ -168,57 +148,6 @@ pub fn load_annotations(path: &Path) -> Result<HashMap<String, String>, Processo
         serde_yaml::from_str::<HashMap<String, String>>(&content)
             .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))
     }
-}
-
-/// Validate optional compound sets against the loaded bibliography.
-///
-/// Validation rules:
-/// - Every member ID must exist in `bibliography`.
-/// - A member ID must not appear more than once in a single set.
-/// - A member ID must not appear across multiple sets.
-///
-/// # Errors
-///
-/// Returns an error when a compound set references an unknown ID or reuses the
-/// same member within or across sets.
-pub fn validate_compound_sets(
-    sets: Option<IndexMap<String, Vec<String>>>,
-    bibliography: &Bibliography,
-) -> Result<Option<IndexMap<String, Vec<String>>>, ProcessorError> {
-    let Some(sets) = sets else {
-        return Ok(None);
-    };
-
-    let mut member_owner: HashMap<String, String> = HashMap::new();
-    for (set_id, members) in &sets {
-        let mut seen_in_set: std::collections::HashSet<String> = std::collections::HashSet::new();
-        for member in members {
-            if !seen_in_set.insert(member.clone()) {
-                return Err(ProcessorError::ParseError(
-                    "BIBLIOGRAPHY".to_string(),
-                    format!(
-                        "reference '{member}' appears more than once in compound set '{set_id}'"
-                    ),
-                ));
-            }
-            if !bibliography.contains_key(member) {
-                return Err(ProcessorError::ParseError(
-                    "BIBLIOGRAPHY".to_string(),
-                    format!("compound set '{set_id}' references unknown id '{member}'"),
-                ));
-            }
-            if let Some(existing) = member_owner.insert(member.clone(), set_id.clone()) {
-                return Err(ProcessorError::ParseError(
-                    "BIBLIOGRAPHY".to_string(),
-                    format!(
-                        "reference '{member}' appears in both compound sets '{existing}' and '{set_id}'"
-                    ),
-                ));
-            }
-        }
-    }
-
-    Ok(Some(sets))
 }
 
 fn loaded_from_input_bibliography(
@@ -752,8 +681,7 @@ fn load_citum_json_bibliography(bytes: &[u8]) -> Result<InputBibliography, Proce
                 .cloned()
                 .map(serde_json::from_value)
                 .transpose()
-                .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?
-                .unwrap_or_default(),
+                .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?,
             ..Default::default()
         });
     }
@@ -844,11 +772,11 @@ fn load_csl_json_bibliography(path: &Path) -> Result<InputBibliography, Processo
 
 fn load_biblatex_bibliography(path: &Path) -> Result<InputBibliography, ProcessorError> {
     let src = fs::read_to_string(path)?;
-    let bibliography = biblatex::Bibliography::parse(&src)
+    let bibliography = ::biblatex::Bibliography::parse(&src)
         .map_err(|e| ProcessorError::ParseError("BibLaTeX".to_string(), e.to_string()))?;
     let references = bibliography
         .iter()
-        .map(crate::biblatex::input_reference_from_biblatex)
+        .map(biblatex::input_reference_from_biblatex)
         .collect();
     Ok(InputBibliography {
         references,
@@ -1161,7 +1089,7 @@ fn render_ris(input: &InputBibliography) -> String {
 )]
 mod tests {
     use super::*;
-    use crate::render::plain::PlainText;
+    use citum_engine::render::plain::PlainText;
     use indexmap::IndexMap;
     use std::time::{SystemTime, UNIX_EPOCH};
 

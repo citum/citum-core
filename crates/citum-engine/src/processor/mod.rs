@@ -127,3 +127,54 @@ pub struct ProcessedReferences {
     /// None if no citations were processed; Some(vec) otherwise.
     pub citations: Option<Vec<String>>,
 }
+
+/// Validate optional compound sets against the loaded bibliography.
+///
+/// Validation rules:
+/// - Every member ID must exist in `bibliography`.
+/// - A member ID must not appear more than once in a single set.
+/// - A member ID must not appear across multiple sets.
+///
+/// # Errors
+///
+/// Returns an error when a compound set references an unknown ID or reuses the
+/// same member within or across sets.
+pub fn validate_compound_sets(
+    sets: Option<IndexMap<String, Vec<String>>>,
+    bibliography: &Bibliography,
+) -> Result<Option<IndexMap<String, Vec<String>>>, crate::error::ProcessorError> {
+    let Some(sets) = sets else {
+        return Ok(None);
+    };
+
+    let mut member_owner: HashMap<String, String> = HashMap::new();
+    for (set_id, members) in &sets {
+        let mut seen_in_set: std::collections::HashSet<String> = std::collections::HashSet::new();
+        for member in members {
+            if !seen_in_set.insert(member.clone()) {
+                return Err(crate::error::ProcessorError::ParseError(
+                    "BIBLIOGRAPHY".to_string(),
+                    format!(
+                        "reference '{member}' appears more than once in compound set '{set_id}'"
+                    ),
+                ));
+            }
+            if !bibliography.contains_key(member) {
+                return Err(crate::error::ProcessorError::ParseError(
+                    "BIBLIOGRAPHY".to_string(),
+                    format!("compound set '{set_id}' references unknown id '{member}'"),
+                ));
+            }
+            if let Some(existing) = member_owner.insert(member.clone(), set_id.clone()) {
+                return Err(crate::error::ProcessorError::ParseError(
+                    "BIBLIOGRAPHY".to_string(),
+                    format!(
+                        "reference '{member}' appears in both compound sets '{existing}' and '{set_id}'"
+                    ),
+                ));
+            }
+        }
+    }
+
+    Ok(Some(sets))
+}

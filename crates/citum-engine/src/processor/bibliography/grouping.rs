@@ -6,8 +6,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! Grouped bibliography rendering with configurable selectors and sorting.
 
 use super::RenderedBibliographyGroup;
+use crate::api::AnnotationStyle;
 use crate::grouping::{GroupSorter, SelectorEvaluator};
-use crate::io::AnnotationStyle;
 use crate::processor::Processor;
 use crate::processor::disambiguation::Disambiguator;
 use crate::processor::rendering::{CompoundRenderData, Renderer, RendererResources};

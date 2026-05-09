@@ -24,8 +24,7 @@ fn main() {
     let style_str = fs::read_to_string("styles/embedded/apa-7th.yaml").unwrap();
     let style: Style = serde_yaml::from_str(&style_str).unwrap();
 
-    let bib =
-        citum_engine::io::load_bibliography(Path::new("bindings/latex/example-refs.yaml")).unwrap();
+    let bib = citum_io::load_bibliography(Path::new("bindings/latex/example-refs.yaml")).unwrap();
     let processor = Processor::new(style, bib);
 
     let cite = Citation {

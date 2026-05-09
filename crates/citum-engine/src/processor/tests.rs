@@ -751,8 +751,8 @@ fn test_springer_locator_label_survives_sorting() {
     let style = Style::from_yaml_str(&style_yaml)
         .expect("style should parse")
         .into_resolved();
-    let bibliography = crate::io::load_bibliography(&bib_path).expect("bib should load");
-    let citations = crate::io::load_citations(&cite_path).expect("citations should load");
+    let bibliography = citum_io::load_bibliography(&bib_path).expect("bib should load");
+    let citations = citum_io::load_citations(&cite_path).expect("citations should load");
 
     let processor = Processor::new(style.clone(), bibliography);
     let citation = citations
@@ -789,7 +789,7 @@ fn test_springer_locator_label_survives_sorting() {
     let loaded_locale = citum_schema::locale::Locale::load("en-US", &locales_dir);
     let with_loaded = Processor::with_locale(
         style,
-        crate::io::load_bibliography(&bib_path).unwrap(),
+        citum_io::load_bibliography(&bib_path).unwrap(),
         loaded_locale,
     );
     let rendered_loaded_locale = with_loaded.process_citation(&citation).unwrap();
@@ -813,8 +813,8 @@ fn test_harvard_cite_them_right_grouped_citations_render_cleanly() {
     let style = Style::from_yaml_str(&style_yaml)
         .expect("style should parse")
         .into_resolved();
-    let bibliography = crate::io::load_bibliography(&bib_path).expect("bib should load");
-    let citations = crate::io::load_citations(&cite_path).expect("citations should load");
+    let bibliography = citum_io::load_bibliography(&bib_path).expect("bib should load");
+    let citations = citum_io::load_citations(&cite_path).expect("citations should load");
 
     let processor = Processor::new(style, bibliography);
 
@@ -857,8 +857,8 @@ fn test_parsed_style_no_date_terms_match_expected_variants() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let bib_path = root.join("tests/fixtures/references-expanded.json");
     let cite_path = root.join("tests/fixtures/citations-expanded.json");
-    let bibliography = crate::io::load_bibliography(&bib_path).expect("bib should load");
-    let citations = crate::io::load_citations(&cite_path).expect("citations should load");
+    let bibliography = citum_io::load_bibliography(&bib_path).expect("bib should load");
+    let citations = citum_io::load_citations(&cite_path).expect("citations should load");
     let no_date = citations
         .iter()
         .find(|c| c.id.as_deref() == Some("no-date-single"))

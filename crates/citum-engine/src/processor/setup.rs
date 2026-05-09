@@ -101,7 +101,7 @@ impl Processor {
         bibliography: &Bibliography,
         compound_sets: IndexMap<String, Vec<String>>,
     ) -> Result<IndexMap<String, Vec<String>>, ProcessorError> {
-        crate::io::validate_compound_sets(Some(compound_sets), bibliography)
+        super::validate_compound_sets(Some(compound_sets), bibliography)
             .map(Option::unwrap_or_default)
     }
 

@@ -15,15 +15,15 @@ use crate::table::build_table;
 use crate::typst_pdf;
 use citum_engine::{
     Citation, CitationItem, DocumentFormat, Processor,
-    io::{
-        AnnotationFormat, AnnotationStyle, RefsFormat as EngineRefsFormat,
-        infer_refs_input_format as infer_engine_refs_input_format,
-        infer_refs_output_format as infer_engine_refs_output_format, load_annotations,
-        load_bibliography, load_citations, load_input_bibliography, load_merged_bibliography,
-        load_merged_citations, write_output_bibliography,
-    },
     processor::document::{djot::DjotParser, markdown::MarkdownParser},
     render::{djot::Djot, html::Html, latex::Latex, plain::PlainText, typst::Typst},
+};
+use citum_io::{
+    AnnotationFormat, AnnotationStyle, RefsFormat as EngineRefsFormat,
+    infer_refs_input_format as infer_engine_refs_input_format,
+    infer_refs_output_format as infer_engine_refs_output_format, load_annotations,
+    load_bibliography, load_citations, load_input_bibliography, load_merged_bibliography,
+    load_merged_citations, write_output_bibliography,
 };
 #[cfg(feature = "schema")]
 use citum_schema::InputBibliography;
@@ -1775,7 +1775,7 @@ struct RenderContext<'a> {
     /// Optional annotation map (reference ID → annotation text).
     annotations: Option<&'a HashMap<String, String>>,
     /// Formatting style for annotations.
-    annotation_style: &'a citum_engine::io::AnnotationStyle,
+    annotation_style: &'a citum_io::AnnotationStyle,
 }
 
 /// Render bibliography/citation output as a human-readable string.
@@ -2244,7 +2244,8 @@ where
 mod tests {
     use super::*;
     use crate::style_resolver::parse_locale_override_bytes;
-    use citum_engine::{Bibliography, io::LoadedBibliography};
+    use citum_engine::Bibliography;
+    use citum_io::LoadedBibliography;
     use citum_schema::citation::CitationMode;
     use citum_schema::grouping::{GroupSort, GroupSortEntry, GroupSortKey, SortKey};
     use citum_schema::options::{Config, Processing};

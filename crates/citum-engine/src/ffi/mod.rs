@@ -22,7 +22,6 @@ use citum_schema::locale::Locale;
 use std::cell::RefCell;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
-use std::path::Path;
 use std::ptr;
 
 thread_local! {
@@ -67,13 +66,6 @@ fn parse_bibliography_json(bib_str: &str) -> Result<Bibliography, String> {
             serde_json::from_str(bib_str).map_err(|e| format!("Bibliography JSON parse error: {e}"))
         }
     }
-}
-
-/// Load and parse a Citum YAML style file from disk.
-fn load_style_yaml(path: &str) -> Result<Style, String> {
-    let src = std::fs::read_to_string(Path::new(path))
-        .map_err(|e| format!("Failed to read style YAML: {e}"))?;
-    Style::from_yaml_str(&src).map_err(|e| format!("Style YAML parse error: {e}"))
 }
 
 /// Get the last error message.
@@ -170,111 +162,6 @@ pub unsafe extern "C" fn citum_processor_new_with_locale(
     };
 
     let processor = Box::new(Processor::with_locale(style, bib, locale));
-    Box::into_raw(processor)
-}
-
-/// Create a new processor from Citum YAML files on disk (primary format).
-///
-/// Reads the style from `style_yaml_path` and the bibliography from
-/// `bib_yaml_path`. Both are Citum YAML files.
-///
-/// # Safety
-/// Both path pointers must be valid null-terminated UTF-8 C strings.
-/// The returned pointer must be freed with `citum_processor_free`.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn citum_processor_new_from_yaml(
-    style_yaml_path: *const c_char,
-    bib_yaml_path: *const c_char,
-) -> *mut Processor {
-    if style_yaml_path.is_null() || bib_yaml_path.is_null() {
-        return ptr::null_mut();
-    }
-
-    let style_path_str = parse_c_str!(style_yaml_path);
-    let bib_path_str = parse_c_str!(bib_yaml_path);
-
-    let style: Style = match load_style_yaml(style_path_str) {
-        Ok(s) => s,
-        Err(e) => {
-            set_error(e);
-            return ptr::null_mut();
-        }
-    };
-
-    let loaded = match crate::io::load_bibliography_with_sets(Path::new(bib_path_str)) {
-        Ok(b) => b,
-        Err(e) => {
-            set_error(format!("Failed to load bibliography: {e}"));
-            return ptr::null_mut();
-        }
-    };
-
-    let processor = match Processor::try_with_compound_sets(
-        style,
-        loaded.references,
-        loaded.sets.unwrap_or_default(),
-    ) {
-        Ok(p) => Box::new(p),
-        Err(e) => {
-            set_error(format!("Invalid compound sets: {e}"));
-            return ptr::null_mut();
-        }
-    };
-    Box::into_raw(processor)
-}
-
-/// Create a new processor from a Citum YAML style and a biblatex `.bib` file.
-///
-/// Reads the style from `style_yaml_path` (Citum YAML) and the bibliography
-/// from `bib_path` (biblatex `.bib`). Entries are converted via
-/// `input_reference_from_biblatex`.
-///
-/// # Safety
-/// Both path pointers must be valid null-terminated UTF-8 C strings.
-/// The returned pointer must be freed with `citum_processor_free`.
-#[unsafe(no_mangle)]
-pub unsafe extern "C" fn citum_processor_new_from_bib(
-    style_yaml_path: *const c_char,
-    bib_path: *const c_char,
-) -> *mut Processor {
-    if style_yaml_path.is_null() || bib_path.is_null() {
-        return ptr::null_mut();
-    }
-
-    let style_path_str = parse_c_str!(style_yaml_path);
-    let bib_path_str = parse_c_str!(bib_path);
-
-    let style: Style = match load_style_yaml(style_path_str) {
-        Ok(s) => s,
-        Err(e) => {
-            set_error(e);
-            return ptr::null_mut();
-        }
-    };
-
-    let bib_src = match std::fs::read_to_string(Path::new(bib_path_str)) {
-        Ok(s) => s,
-        Err(e) => {
-            set_error(format!("Failed to read bibliography: {e}"));
-            return ptr::null_mut();
-        }
-    };
-    let bibliography_parsed = match ::biblatex::Bibliography::parse(&bib_src) {
-        Ok(b) => b,
-        Err(e) => {
-            set_error(format!("BibLaTeX parse error: {e}"));
-            return ptr::null_mut();
-        }
-    };
-
-    let mut bib: Bibliography = indexmap::IndexMap::new();
-    for entry in bibliography_parsed.iter() {
-        let key = entry.key.clone();
-        let reference = crate::biblatex::input_reference_from_biblatex(entry);
-        bib.insert(key, reference);
-    }
-
-    let processor = Box::new(Processor::new(style, bib));
     Box::into_raw(processor)
 }
 

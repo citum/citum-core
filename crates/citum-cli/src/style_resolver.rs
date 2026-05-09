@@ -1,4 +1,5 @@
-use citum_engine::{Processor, io::LoadedBibliography};
+use citum_engine::Processor;
+use citum_io::LoadedBibliography;
 use citum_schema::{Locale, Style, locale::types::LocaleOverride};
 use citum_store::platform_config_dir;
 use serde::Deserialize;

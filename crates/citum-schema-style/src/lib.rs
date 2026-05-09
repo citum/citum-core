@@ -186,7 +186,7 @@ pub struct Style {
     #[serde(rename = "extends-pin", skip_serializing_if = "Option::is_none")]
     pub extends_pin: Option<String>,
     /// Raw YAML captured when the style was loaded via [`Style::from_yaml_str`]
-    /// or [`Style::from_yaml_bytes`]. Used by [`merge_style_overlay`] for
+    /// or [`Style::from_yaml_bytes`]. Used during style resolution for
     /// null-aware overlay merging (e.g., `ibid: ~` correctly clears an
     /// inherited preset value). Absent in programmatically-constructed styles.
     #[cfg_attr(feature = "schema", schemars(skip))]
