@@ -721,6 +721,7 @@ dependencies = [
  "csl-legacy",
  "indexmap 2.14.0",
  "multihash",
+ "rstest",
  "schemars",
  "semver",
  "serde",
