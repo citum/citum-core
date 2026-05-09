@@ -1,7 +1,7 @@
 ---
 # csl26-bdd2
 title: Add comprehensive BDD coverage for TemplateVariantDiff inheritance chains
-status: todo
+status: completed
 type: task
 priority: high
 created_at: 2026-05-09T00:00:00Z
