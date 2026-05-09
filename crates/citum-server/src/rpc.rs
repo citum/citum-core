@@ -83,6 +83,9 @@ pub fn dispatch(req: RpcRequest) -> Result<Value, (Option<Value>, String)> {
         "validate_style" => {
             validate_style(&req.params, id).map_err(|e| (Some(req.id), e.to_string()))
         }
+        "format_document" => {
+            format_document(&req.params, id).map_err(|e| (Some(req.id), e.to_string()))
+        }
         _ => Err((Some(req.id), format!("unknown method: {}", req.method))),
     }
 }
@@ -221,6 +224,32 @@ fn validate_style(params: &Value, id: Value) -> Result<Value, ServerError> {
             }
         })),
     }
+}
+
+/// Format a complete document's citations and bibliography.
+fn format_document(params: &Value, id: Value) -> Result<Value, ServerError> {
+    let request: citum_engine::FormatDocumentRequest = serde_json::from_value(params.clone())
+        .map_err(|e| ServerError::CitationError(format!("Invalid request JSON: {}", e)))?;
+
+    let result = match &request.style {
+        citum_engine::StyleInput::Yaml(_) => citum_engine::format_document(request)
+            .map_err(|e| ServerError::CitationError(e.to_string()))?,
+        citum_engine::StyleInput::Id(s)
+        | citum_engine::StyleInput::Uri(s)
+        | citum_engine::StyleInput::Path(s) => {
+            let style = load_style(s)?;
+            citum_engine::format_document_with_style(style, request)
+                .map_err(|e| ServerError::CitationError(e.to_string()))?
+        }
+    };
+
+    let result_json =
+        serde_json::to_value(&result).map_err(|e| ServerError::CitationError(e.to_string()))?;
+
+    Ok(json!({
+        "id": id,
+        "result": result_json
+    }))
 }
 
 /// Load a style through the standard resolver chain.

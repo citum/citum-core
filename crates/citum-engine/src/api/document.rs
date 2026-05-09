@@ -17,6 +17,7 @@ use crate::render::plain::PlainText;
 use crate::render::typst::Typst;
 use citum_schema::Style;
 use citum_schema::data::citation::Citation;
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use super::{
@@ -25,7 +26,7 @@ use super::{
 };
 
 /// A request to format a complete document's citations and bibliography.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FormatDocumentRequest {
     /// The style to use (may be resolved locally or by an adapter).
     pub style: StyleInput,
@@ -47,7 +48,7 @@ pub struct FormatDocumentRequest {
 }
 
 /// The result of formatting a document.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FormatDocumentResult {
     /// Formatted citations in document order.
     pub formatted_citations: Vec<FormattedCitation>,
