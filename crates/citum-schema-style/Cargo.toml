@@ -25,6 +25,7 @@ semver = "1"
 
 [features]
 default = []
+icu = []
 legacy-convert = ["dep:csl_legacy", "citum_schema_data/legacy-convert"]
 schema = ["dep:schemars", "citum_schema_data/schema"]
 bindings = ["dep:specta", "citum_schema_data/bindings"]

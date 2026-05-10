@@ -764,6 +764,7 @@ fn group_sorting_orders_cluster_by_year_within_an_author_group() {
 }
 
 /// Test multi-item citation sorting with accented surnames.
+#[cfg(feature = "icu")]
 fn author_date_sorting_orders_cluster_with_unicode_surnames() {
     let input = vec![
         make_book("item1", "Zimring", "Craig", 2020, "Title A"),
@@ -1596,6 +1597,7 @@ mod sorting_and_grouping {
     }
 
     #[test]
+    #[cfg(feature = "icu")]
     fn author_date_sorting_orders_cluster_with_unicode_surnames() {
         announce_behavior(
             "Author-date citation clusters should sort accented surnames with Unicode-aware collation.",

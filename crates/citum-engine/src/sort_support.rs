@@ -10,12 +10,17 @@ use std::cmp::Ordering;
 use crate::reference::Reference;
 use citum_schema::grouping::NameSortOrder;
 use citum_schema::locale::Locale;
+
+#[cfg(feature = "icu")]
 use icu_collator::options::{AlternateHandling, CaseLevel, CollatorOptions, Strength};
+#[cfg(feature = "icu")]
 use icu_collator::{CollatorBorrowed, CollatorPreferences};
+#[cfg(feature = "icu")]
 use icu_locale::Locale as IcuLocale;
 
 /// Locale-aware comparator used by bibliography sorting paths.
 pub(crate) struct TextCollator {
+    #[cfg(feature = "icu")]
     collator: CollatorBorrowed<'static>,
 }
 
@@ -28,23 +33,38 @@ impl TextCollator {
     /// - Alternate handling shifted (punctuation/spaces ignorable at primary/secondary)
     #[must_use]
     pub(crate) fn new(locale: &Locale) -> Self {
-        let mut options = CollatorOptions::default();
-        options.strength = Some(Strength::Secondary);
-        options.case_level = Some(CaseLevel::Off);
-        options.alternate_handling = Some(AlternateHandling::Shifted);
-        // Note: Numeric ordering and script reordering are not explicitly
-        // configurable at the ICU4X collator API level; they follow CLDR
-        // defaults for the resolved locale.
-        #[allow(clippy::expect_used, reason = "ICU bootstrap failure is fatal")]
-        let collator = CollatorBorrowed::try_new(collator_preferences(locale), options)
-            .expect("ICU4X compiled collation data should be available");
-        Self { collator }
+        #[cfg(feature = "icu")]
+        {
+            let mut options = CollatorOptions::default();
+            options.strength = Some(Strength::Secondary);
+            options.case_level = Some(CaseLevel::Off);
+            options.alternate_handling = Some(AlternateHandling::Shifted);
+            // Note: Numeric ordering and script reordering are not explicitly
+            // configurable at the ICU4X collator API level; they follow CLDR
+            // defaults for the resolved locale.
+            #[allow(clippy::expect_used, reason = "ICU bootstrap failure is fatal")]
+            let collator = CollatorBorrowed::try_new(collator_preferences(locale), options)
+                .expect("ICU4X compiled collation data should be available");
+            Self { collator }
+        }
+        #[cfg(not(feature = "icu"))]
+        {
+            let _ = locale;
+            Self {}
+        }
     }
 
     /// Compare two already-normalized sort keys.
     #[must_use]
     pub(crate) fn compare(&self, left: &str, right: &str) -> Ordering {
-        self.collator.compare(left, right)
+        #[cfg(feature = "icu")]
+        {
+            self.collator.compare(left, right)
+        }
+        #[cfg(not(feature = "icu"))]
+        {
+            left.cmp(right)
+        }
     }
 }
 
@@ -85,19 +105,23 @@ pub(crate) fn title_sort_key(reference: &Reference, locale: &Locale) -> String {
 
 /// Normalize plain text for bibliography sorting.
 ///
-/// Returns the text unchanged; collator handles case-insensitive comparison
-/// internally via CaseLevel::Off configuration, preserving original text.
+/// When the `icu` feature is enabled, returns the text unchanged; the collator
+/// handles case-insensitive comparison internally via `CaseLevel::Off`.
+///
+/// When the `icu` feature is disabled, the fallback comparison is case-sensitive.
 #[must_use]
 pub(crate) fn normalize_sort_text(text: &str) -> String {
     text.to_string()
 }
 
+#[cfg(feature = "icu")]
 fn collator_preferences(locale: &Locale) -> CollatorPreferences {
     parse_icu_locale(&locale.locale)
         .unwrap_or_else(default_icu_locale)
         .into()
 }
 
+#[cfg(feature = "icu")]
 fn parse_icu_locale(locale_id: &str) -> Option<IcuLocale> {
     let mut candidate = locale_id.trim();
     while !candidate.is_empty() {
@@ -112,6 +136,7 @@ fn parse_icu_locale(locale_id: &str) -> Option<IcuLocale> {
     None
 }
 
+#[cfg(feature = "icu")]
 fn default_icu_locale() -> IcuLocale {
     #[allow(clippy::expect_used, reason = "ICU bootstrap failure is fatal")]
     "en-US"
@@ -135,6 +160,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg(feature = "icu")]
     fn test_parse_icu_locale_trims_unparseable_override_suffix() {
         let parsed = parse_icu_locale("de-DE-foo_bar")
             .expect("fallback parsing should produce a base locale");
@@ -142,6 +168,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "icu")]
     fn test_text_collator_sorts_accented_names_near_ascii_peers() {
         let collator = TextCollator::new(&Locale::en_us());
         assert_eq!(collator.compare("celik", "çelik"), Ordering::Less);
@@ -154,6 +181,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "icu")]
     fn test_text_collator_is_case_insensitive() {
         let collator = TextCollator::new(&Locale::en_us());
         // "smith" and "Smith" should compare equal at primary/secondary levels
@@ -162,6 +190,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "icu")]
     fn test_text_collator_nfc_nfd_equivalence() {
         let collator = TextCollator::new(&Locale::en_us());
         // é as single codepoint (NFC) vs e + combining acute (NFD) should compare equal
@@ -171,6 +200,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "icu")]
     fn test_text_collator_hangul_latin_consistent_order() {
         let collator = TextCollator::new(&Locale::en_us());
         // Under en-US tailored collator, these should have a consistent order.
@@ -185,6 +215,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "icu")]
     fn test_text_collator_arabic_latin_consistent_order() {
         let collator = TextCollator::new(&Locale::en_us());
         // Under en-US tailored collator, Arabic script sorts consistently.
@@ -197,6 +228,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "icu")]
     fn test_text_collator_punctuation_ignorable() {
         let collator = TextCollator::new(&Locale::en_us());
         // With AlternateHandling::Shifted, punctuation and spaces should be ignorable

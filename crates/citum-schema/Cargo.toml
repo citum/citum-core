@@ -11,6 +11,7 @@ citum_schema_style = { package = "citum-schema-style", path = "../citum-schema-s
 
 [features]
 default = []
+icu = ["citum_schema_style/icu"]
 legacy-convert = ["citum_schema_data/legacy-convert", "citum_schema_style/legacy-convert"]
 schema = ["citum_schema_data/schema", "citum_schema_style/schema"]
 bindings = ["citum_schema_data/bindings", "citum_schema_style/bindings"]

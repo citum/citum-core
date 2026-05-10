@@ -8,15 +8,15 @@ description = "Citum cross-language bindings (WASM, cdylib)"
 publish = false
 
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = false
+wasm-opt = ["-Oz", "--enable-bulk-memory", "--enable-simd", "--strip-debug", "--strip-producers"]
 
 [lib]
 name = "citum_bindings"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-citum-engine = { path = "../citum-engine" }
-citum-schema = { package = "citum-schema", path = "../citum-schema" }
+citum-engine = { path = "../citum-engine", default-features = false }
+citum-schema = { package = "citum-schema", path = "../citum-schema", default-features = false }
 csl_legacy = { package = "csl-legacy", path = "../csl-legacy", optional = true }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
@@ -27,7 +27,15 @@ specta = { version = "2.0.0-rc.23", features = ["collect"], optional = true }
 specta-typescript = { version = "0.0.10", optional = true }
 
 [features]
+# Standard ICU-backed build (native or WASM)
+default = ["icu"]
+icu = ["citum-engine/icu", "citum-schema/icu"]
+# Core WASM bindings (requires feature opt-in)
 wasm = ["dep:wasm-bindgen"]
+# Combined profiles for easy build configuration
+full-wasm = ["wasm", "icu"]
+small-wasm = ["wasm"]
+
 legacy-convert = ["dep:csl_legacy", "citum-schema/legacy-convert"]
 bindings = ["citum-schema/bindings"]
 typescript = ["dep:specta", "dep:specta-typescript", "bindings"]

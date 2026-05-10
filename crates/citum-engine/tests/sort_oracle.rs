@@ -229,6 +229,7 @@ fn test_multiauthor_same_year_sort() {
 
 /// Test accented surnames sort with Unicode-aware collation instead of bytewise ordering.
 #[test]
+#[cfg(feature = "icu")]
 fn test_apa_7th_sort_unicode_accented_surnames() {
     announce_behavior(
         "Accented surnames sort near their ASCII peers in author-date bibliographies.",
@@ -344,6 +345,7 @@ fn test_numeric_style_volume_issue_independence() {
 /// Spec: UNICODE_BIBLIOGRAPHY_SORTING.md §Collation Policy — single collator,
 /// locale-tailored, root-collation fallback for unsupported locales.
 #[test]
+#[cfg(feature = "icu")]
 fn test_mixed_script_sort_order() {
     announce_behavior(
         "Mixed-script bibliography: Latin entries sort alphabetically first, Arabic after Latin, Hangul after Arabic (en-US collator).",

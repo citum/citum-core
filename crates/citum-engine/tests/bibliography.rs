@@ -302,6 +302,7 @@ fn given_no_partitioning_when_rendering_mixed_script_bibliography_then_single_co
 }
 
 #[test]
+#[cfg(feature = "icu")]
 fn given_script_sort_only_partitioning_when_rendering_flat_bibliography_then_partition_order_precedes_title_sort()
  {
     announce_behavior(
@@ -344,6 +345,7 @@ options:
 }
 
 #[test]
+#[cfg(feature = "icu")]
 fn given_script_section_partitioning_when_rendering_grouped_bibliography_then_configured_headings_are_used()
  {
     announce_behavior(
@@ -372,6 +374,7 @@ options:
 }
 
 #[test]
+#[cfg(feature = "icu")]
 fn given_explicit_groups_when_partition_sections_are_enabled_then_manual_groups_remain_authoritative()
  {
     announce_behavior(
