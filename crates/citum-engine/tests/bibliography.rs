@@ -398,9 +398,21 @@ groups:
     );
     let processor = Processor::new(style, script_partition_bibliography());
 
-    assert_eq!(
-        processor.render_grouped_bibliography_with_format::<PlainText>(),
-        "# Manual Group\n\nБета\n\nAlpha\n\n東京"
+    let output = processor.render_grouped_bibliography_with_format::<PlainText>();
+
+    // Manual groups gate wins; auto-partition section headings must not appear
+    assert_eq!(output, "Бета\n\nAlpha\n\n東京");
+    assert!(
+        !output.contains("Cyrillic"),
+        "auto-partition heading 'Cyrillic' must not appear when manual groups are configured: {output}"
+    );
+    assert!(
+        !output.contains("Latin"),
+        "auto-partition heading 'Latin' must not appear when manual groups are configured: {output}"
+    );
+    assert!(
+        !output.contains("Han"),
+        "auto-partition heading 'Han' must not appear when manual groups are configured: {output}"
     );
 }
 
@@ -3564,4 +3576,100 @@ fn processor_renders_bibliography_annotations() {
     assert!(rendered.contains("This is an annotation."));
     // Default is now flush left
     assert!(rendered.contains("\n\nThis is an annotation."));
+}
+
+#[test]
+fn given_all_refs_in_single_group_when_rendered_then_heading_is_suppressed() {
+    announce_behavior(
+        "When all references fall into a single bibliography group and no unassigned references exist, the group heading is suppressed.",
+    );
+
+    let style = build_partition_style(
+        "",
+        r#"
+groups:
+  - id: single
+    heading: { literal: "Secondary Sources Section Heading" }
+    selector: {}
+"#,
+    );
+
+    let mut bib = IndexMap::new();
+    bib.insert(
+        "ref1".to_string(),
+        InputReference::Monograph(Box::new(Monograph {
+            id: Some("ref1".into()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single("First Book".to_string())),
+            ..Default::default()
+        })),
+    );
+    bib.insert(
+        "ref2".to_string(),
+        InputReference::Monograph(Box::new(Monograph {
+            id: Some("ref2".into()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single("Second Book".to_string())),
+            ..Default::default()
+        })),
+    );
+
+    let processor = Processor::new(style, bib);
+    let rendered = processor.render_grouped_bibliography_with_format::<PlainText>();
+
+    // The group heading should NOT appear in the output
+    assert!(!rendered.contains("Secondary Sources Section Heading"));
+    // But the entries should be present
+    assert!(rendered.contains("First Book"));
+    assert!(rendered.contains("Second Book"));
+}
+
+#[test]
+fn given_refs_split_across_two_groups_when_rendered_then_both_headings_appear() {
+    announce_behavior(
+        "When references are split across two bibliography groups, both group headings are shown.",
+    );
+
+    let style = build_partition_style(
+        "",
+        r#"
+groups:
+  - id: primary
+    heading: { literal: "Primary Sources Section" }
+    selector:
+      type: book
+  - id: secondary
+    heading: { literal: "Secondary Sources Section" }
+    selector: {}
+"#,
+    );
+
+    let mut bib = IndexMap::new();
+    bib.insert(
+        "ref1".to_string(),
+        InputReference::Monograph(Box::new(Monograph {
+            id: Some("ref1".into()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single("First Book".to_string())),
+            ..Default::default()
+        })),
+    );
+    bib.insert(
+        "ref2".to_string(),
+        InputReference::Monograph(Box::new(Monograph {
+            id: Some("ref2".into()),
+            r#type: MonographType::Manuscript,
+            title: Some(Title::Single("An Archival Manuscript".to_string())),
+            ..Default::default()
+        })),
+    );
+
+    let processor = Processor::new(style, bib);
+    let rendered = processor.render_grouped_bibliography_with_format::<PlainText>();
+
+    // Both headings should appear since we have two groups with content
+    assert!(rendered.contains("Primary Sources Section"));
+    assert!(rendered.contains("Secondary Sources Section"));
+    assert!(rendered.contains("First Book"));
+    assert!(rendered.contains("An Archival Manuscript"));
 }

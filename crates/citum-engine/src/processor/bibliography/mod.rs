@@ -220,6 +220,7 @@ impl Processor {
             .style
             .bibliography
             .as_ref()
+            .filter(|bibliography| bibliography.groups_enabled)
             .and_then(|bibliography| bibliography.groups.as_ref())
         {
             let all_entries = self.process_references().bibliography;

@@ -1516,8 +1516,12 @@ impl CitationSpec {
     }
 }
 
+fn default_true() -> bool {
+    true
+}
+
 /// Bibliography specification.
-#[derive(Debug, Deserialize, Serialize, Clone, Default)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct BibliographySpec {
@@ -1547,6 +1551,14 @@ pub struct BibliographySpec {
     /// for groups that don't specify their own sort.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort: Option<grouping::GroupSortEntry>,
+    /// Whether to apply manual `groups:` bibliography grouping.
+    ///
+    /// Defaults to `true`. Set to `false` to disable the `groups:` configuration
+    /// and render a flat bibliography instead. Automatic sort-partition sections
+    /// are unaffected by this toggle.
+    // TODO: consider defaulting to false once grouping matures for publishing workflows
+    #[serde(default = "default_true")]
+    pub groups_enabled: bool,
     /// Optional bibliography grouping specification.
     ///
     /// When present, divides the bibliography into labeled sections with
@@ -1559,6 +1571,22 @@ pub struct BibliographySpec {
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
+}
+
+impl Default for BibliographySpec {
+    fn default() -> Self {
+        Self {
+            options: None,
+            template_ref: None,
+            template: None,
+            locales: None,
+            type_variants: None,
+            sort: None,
+            groups_enabled: true,
+            groups: None,
+            custom: None,
+        }
+    }
 }
 
 impl BibliographySpec {

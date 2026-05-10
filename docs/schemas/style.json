@@ -5302,6 +5302,11 @@
             }
           ]
         },
+        "groups-enabled": {
+          "description": "Whether to apply manual `groups:` bibliography grouping.\n\nDefaults to `true`. Set to `false` to disable the `groups:` configuration\nand render a flat bibliography instead. Automatic sort-partition sections\nare unaffected by this toggle.",
+          "type": "boolean",
+          "default": true
+        },
         "groups": {
           "description": "Optional bibliography grouping specification.\n\nWhen present, divides the bibliography into labeled sections with\noptional per-group sorting. Items match the first group whose selector\nevaluates to true (first-match semantics). Omit for flat bibliography.\n\nSee `BibliographyGroup` for examples.",
           "type": [
