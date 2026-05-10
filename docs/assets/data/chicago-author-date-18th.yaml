@@ -1,0 +1,405 @@
+info:
+  title: Chicago Manual of Style 18th edition (author-date)
+  description: Chicago-style source citations (with Bluebook for legal citations), author-date system
+  fields:
+  - anthropology
+  - communications
+  - geography
+  - history
+  - humanities
+  - law
+  - linguistics
+  - literature
+  - philosophy
+  - science
+  - sociology
+  - theology
+  source:
+    csl-id: http://www.zotero.org/styles/chicago-author-date
+    adapted-by: citum-migrate
+    license: http://creativecommons.org/licenses/by-sa/3.0/
+    original-authors:
+    - name: Andrew Dunning
+      uri: https://orcid.org/0000-0003-0464-5036
+    links:
+    - href: http://www.zotero.org/styles/chicago-author-date
+      rel: self
+    - href: http://www.zotero.org/styles/chicago-notes-bibliography
+      rel: template
+    - href: https://www.chicagomanualofstyle.org/
+      rel: documentation
+  short-name: "Chicago Author-Date"
+  edition: "18th edition"
+options:
+  locators: note
+  processing:
+    disambiguate:
+      names: true
+      add-givenname: true
+      year-suffix: true
+    sort:
+      template:
+      - key: author
+        ascending: true
+      - key: year
+        ascending: true
+  contributors:
+    and: text
+    shorten:
+      min: 7
+      use-first: 3
+      and-others: et-al
+      delimiter-precedes-last: contextual
+    demote-non-dropping-particle: display-and-sort
+  dates: long
+  titles:
+    component:
+      text-case: title
+    monograph:
+      text-case: title
+      emph: true
+    container-monograph:
+      text-case: title
+      emph: true
+    periodical:
+      emph: true
+    serial:
+      emph: true
+  page-range-format: chicago16
+  punctuation-in-quote: true
+citation:
+  options:
+    substitute:
+      template:
+      - editor
+      - translator
+      - title
+    contributors:
+      shorten:
+        min: 3
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+  type-variants:
+    personal_communication:
+    - contributor: author
+      form: long
+      name-order: given-first
+      shorten:
+        min: 3
+        use-first: 1
+        and-others: et-al
+    - title: primary
+      wrap:
+        punctuation: quotes
+      prefix: ", "
+    - variable: locator
+      prefix: ", "
+  template:
+  - contributor: author
+    form: short
+    shorten:
+      min: 3
+      use-first: 1
+      and-others: et-al
+  - date: issued
+    form: year
+  - variable: locator
+    prefix: ", "
+  wrap:
+    punctuation: parentheses
+  delimiter: " "
+  multi-cite-delimiter: "; "
+bibliography:
+  options:
+    substitute:
+      contributor-role-form: short
+      template:
+      - editor
+      - translator
+      - title
+    contributors:
+      display-as-sort: first
+      shorten:
+        min: 7
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+    hanging-indent: true
+    entry-suffix: .
+    separator: ". "
+  groups:
+  - id: primary-sources
+    heading:
+      localized:
+        en-US: Primary Sources
+        en: Primary Sources
+        de: Primärquellen
+        de-DE: Primärquellen
+    selector:
+      field:
+        note: primary
+  - id: archival
+    heading:
+      localized:
+        en-US: Archival Sources
+        en: Archival Sources
+        de: Archivalische Quellen
+        de-DE: Archivalische Quellen
+    selector:
+      field:
+        note: archival
+  - id: secondary
+    heading:
+      localized:
+        en-US: Secondary Sources
+        en: Secondary Sources
+        de: Sekundärquellen
+        de-DE: Sekundärquellen
+    selector:
+      not:
+        field:
+          note:
+          - primary
+          - archival
+  type-variants:
+    article-journal:
+      modify:
+        - match:
+            variable: doi
+          prefix: https://doi.org/
+    article-magazine:
+      remove:
+        - match:
+            group:
+              - number: volume
+              - number: issue
+                prefix: ' ('
+                suffix: )
+      add:
+        - component:
+            group:
+              - number: volume
+          before:
+            number: pages
+    bill-proceeding:
+    - title: primary
+    - variable: publisher
+      prefix: ", "
+    - number: chapter-number
+      prefix: " "
+    - variable: number
+      prefix: ", "
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    bill-record:
+    - group:
+      - number: volume
+      - title: primary
+      delimiter: " "
+    - variable: number
+      prefix: " "
+    - date: issued
+      form: year
+      wrap:
+        punctuation: parentheses
+      prefix: " "
+    book:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 3
+    - date: issued
+      form: year
+    - title: primary
+    - contributor: translator
+      form: long
+      name-order: given-first
+      prefix: ". Translated by "
+    - group:
+      - contributor: editor
+        form: verb
+        name-order: given-first
+      - title: parent-monograph
+        emph: true
+    - title: parent-serial
+      emph: true
+    - group:
+      - number: volume
+      - number: issue
+        prefix: " ("
+        suffix: ")"
+    - variable: publisher
+    - variable: doi
+    - variable: url
+    broadcast:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 3
+    - date: issued
+      form: year
+    - title: parent-serial
+      emph: true
+    - variable: number
+      prefix: ". "
+      text-case: capitalize-first
+    - title: primary
+      wrap:
+        punctuation: quotes
+      prefix: ", "
+    - date: issued
+      form: month-day
+      prefix: ". Aired "
+    - variable: publisher
+      prefix: ", on "
+    - variable: dimensions
+      prefix: ". "
+    - variable: url
+    manuscript:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 3
+    - date: issued
+      form: year
+    - title: primary
+    - variable: genre
+    - variable: archive-location
+    - group:
+      - variable: archive-name
+      - variable: archive-place
+        prefix: ", "
+    - variable: url
+    webpage:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 3
+    - variable: publisher
+    - date: issued
+      form: year
+    - title: primary
+      wrap:
+        punctuation: quotes
+    - variable: url
+    chapter:
+      remove:
+        - match:
+            number: pages
+    entry-dictionary:
+    - title: parent-monograph
+      emph: true
+      suffix: "."
+    - date: issued
+      form: year
+    - title: primary
+      quote: true
+      prefix: " "
+      suffix: "."
+    - variable: status
+      text-case: capitalize-first
+      prefix: " "
+      suffix: "."
+    - variable: publisher
+    - variable: doi
+      prefix: "https://doi.org/"
+    legal-case:
+      extends: book
+      modify:
+        - match:
+            title: primary
+          emph: true
+      remove:
+        - match:
+            contributor: translator
+      add:
+        - component:
+            number: pages
+            prefix: ': '
+          before:
+            variable: publisher
+    motion-picture:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 3
+    - date: issued
+      form: year
+    - title: primary
+    - variable: publisher
+    - group:
+      - variable: medium
+      - variable: dimensions
+        prefix: ", "
+    - variable: url
+    patent:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - date: issued
+      form: year
+    - title: primary
+    - prefix: ". "
+      delimiter: none
+      group:
+      - term: patent
+        suffix: " "
+      - number: number
+      - date: issued
+        form: full
+        prefix: ", issued "
+    report:
+      extends: book
+      remove:
+        - match:
+            contributor: translator
+    thesis:
+      extends: book
+      remove:
+        - match:
+            contributor: translator
+    personal-communication: []
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten:
+      min: 8
+      use-first: 3
+  - date: issued
+    form: year
+  - title: primary
+    wrap:
+      punctuation: quotes
+  - group:
+    - contributor: editor
+      form: verb
+      name-order: given-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - group:
+    - number: volume
+    - number: issue
+      prefix: " ("
+      suffix: ")"
+  - number: pages
+    prefix: ": "
+  - variable: publisher
+  - variable: doi
+  - variable: url

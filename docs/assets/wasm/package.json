@@ -1,0 +1,21 @@
+{
+  "name": "citum-bindings",
+  "type": "module",
+  "collaborators": [
+    "Bruce D'Arcus <bdarcus@gmail.com>"
+  ],
+  "description": "Citum cross-language bindings (WASM, cdylib)",
+  "version": "0.38.0",
+  "license": "MIT OR Apache-2.0",
+  "files": [
+    "citum_bindings_bg.wasm",
+    "citum_bindings_bg.wasm.d.ts",
+    "citum_bindings.js",
+    "citum_bindings.d.ts"
+  ],
+  "main": "citum_bindings.js",
+  "types": "citum_bindings.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

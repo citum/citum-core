@@ -1,0 +1,112 @@
+{
+  "kuhn1962": {
+    "id": "kuhn1962",
+    "class": "serial-component",
+    "type": "article",
+    "title": "The Structure of Scientific Revolutions",
+    "author": [{ "family": "Kuhn", "given": "Thomas S." }],
+    "issued": "1962",
+    "container": {
+      "class": "serial",
+      "type": "academic-journal",
+      "title": "International Encyclopedia of Unified Science",
+      "publisher": { "name": "University of Chicago Press" }
+    },
+    "volume": "2",
+    "issue": "2",
+    "doi": "10.1234/example"
+  },
+  "watson1953": {
+    "id": "watson1953",
+    "class": "serial-component",
+    "type": "article",
+    "title": "Molecular Structure of Nucleic Acids: A Structure for Deoxyribose Nucleic Acid",
+    "author": [
+      { "family": "Watson", "given": "James D." },
+      { "family": "Crick", "given": "Francis H. C." }
+    ],
+    "issued": "1953-04-25",
+    "container": {
+      "class": "serial",
+      "type": "academic-journal",
+      "title": "Nature"
+    },
+    "volume": "171",
+    "issue": "4356",
+    "pages": "737-738"
+  },
+  "smith2010": {
+    "id": "smith2010",
+    "class": "monograph",
+    "type": "book",
+    "title": "Nationalism: Theory, Ideology, History",
+    "author": [{ "family": "Smith", "given": "Anthony D." }],
+    "issued": "2010",
+    "publisher": { "name": "Polity" }
+  },
+  "brown1954": {
+    "id": "brown1954",
+    "class": "monograph",
+    "type": "book",
+    "title": "Methods of Surveying and Measuring Vegetation",
+    "author": [{ "family": "Brown", "given": "Dorothy" }],
+    "issued": "1954",
+    "publisher": { "name": "Commonwealth Agricultural Bureaux" }
+  },
+  "doe2023": {
+    "id": "doe2023",
+    "class": "serial-component",
+    "type": "article",
+    "title": "Digital Humanities and Interactive Scholarly Communication",
+    "author": [{ "family": "Doe", "given": "John" }],
+    "issued": "2023",
+    "container": {
+      "class": "serial",
+      "type": "academic-journal",
+      "title": "Journal of Electronic Publishing"
+    },
+    "volume": "26",
+    "issue": "1",
+    "pages": "45-67"
+  },
+  "smith2020": {
+    "id": "smith2020",
+    "class": "monograph",
+    "type": "book",
+    "title": "Modern Web Standards for Academic Writing",
+    "author": [{ "family": "Smith", "given": "Alice" }],
+    "issued": "2020",
+    "publisher": { "name": "Web Press" }
+  },
+  "citum2026": {
+    "id": "citum2026",
+    "class": "monograph",
+    "type": "report",
+    "title": "Citum: A Declarative Future for Citations",
+    "author": [{ "family": "Citum Team", "given": "" }],
+    "issued": "2026",
+    "publisher": { "name": "GitHub" }
+  },
+  "doe2020": {
+    "id": "doe2020",
+    "class": "serial-component",
+    "type": "article",
+    "title": "Silent Paper",
+    "author": [{ "family": "Doe", "given": "Jane" }],
+    "issued": "2020",
+    "container": {
+      "class": "serial",
+      "type": "academic-journal",
+      "title": "Journal of Silence"
+    }
+  },
+  "bird1987": {
+    "id": "bird1987",
+    "class": "monograph",
+    "type": "book",
+    "title": "Ornithology",
+    "author": [{ "family": "Bird", "given": "Arthur" }],
+    "issued": "1987",
+    "publisher": { "name": "Nature Press" }
+  }
+}

@@ -1,0 +1,88 @@
+info:
+  title: Nature
+  fields:
+  - science
+  source:
+    csl-id: http://www.zotero.org/styles/nature
+    adapted-by: citum-migrate
+    license: http://creativecommons.org/licenses/by-sa/3.0/
+    original-authors:
+    - name: Michael Berkowitz
+      email: mberkowi@gmu.edu
+    links:
+    - href: http://www.zotero.org/styles/nature
+      rel: self
+    - href: https://www.nature.com/nature/for-authors/formatting-guide
+      rel: documentation
+  short-name: "Nature"
+options:
+  processing: numeric
+  contributors:
+    display-as-sort: all
+    name-form: initials
+    initialize-with: ". "
+    shorten:
+      min: 6
+      use-first: 1
+      and-others: et-al
+      delimiter-precedes-last: contextual
+    delimiter: ", "
+    delimiter-precedes-last: never
+    demote-non-dropping-particle: sort-only
+    sort-separator: ", "
+  dates: long
+  titles: humanities
+citation:
+  template-ref: numeric-citation
+  collapse: citation-number
+  multi-cite-delimiter: ","
+bibliography:
+  options:
+    contributors:
+      display-as-sort: all
+      name-form: initials
+      initialize-with: ". "
+      shorten:
+        min: 6
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      delimiter: ", "
+      delimiter-precedes-last: never
+      sort-separator: ", "
+    entry-suffix: .
+    separator: ". "
+  type-variants:
+    report:
+      remove:
+        - match:
+            variable: publisher
+        - match:
+            variable: publisher-place
+  template:
+  - contributor: author
+    form: long
+    name-order: family-first
+    shorten:
+      min: 8
+      use-first: 1
+  - title: primary
+    prefix: " "
+  - group:
+    - contributor: editor
+      form: verb
+      name-order: family-first
+    - title: parent-monograph
+      emph: true
+  - title: parent-serial
+    emph: true
+  - number: pages
+  - variable: publisher
+    prefix: " ("
+  - variable: publisher-place
+    prefix: ", "
+  - date: issued
+    form: year
+    wrap:
+      punctuation: parentheses
+    prefix: ", "
