@@ -635,6 +635,64 @@ locale: en-US
         </div>
     </section>
 
+    <!-- Language Bindings -->
+    <section class="py-24 px-6 border-t border-slate-200 bg-slate-50" id="bindings">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Language Bindings</h2>
+                <p class="text-slate-500">Integrate the Citum engine into your favorite language or framework.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+                <!-- Rust Native -->
+                <div class="p-8 rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <span class="material-icons">terminal</span>
+                        </div>
+                        <span class="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200">Git</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Rust Native</h3>
+                    <p class="text-slate-500 leading-relaxed text-sm mb-4">
+                        The core engine is available as a standalone Rust crate (<code class="text-xs">citum-engine</code>) for seamless integration into Rust projects.
+                    </p>
+                    <p class="text-xs font-mono text-slate-400 italic">Available via git dependency</p>
+                </div>
+
+                <!-- WebAssembly & TypeScript -->
+                <div class="p-8 rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <span class="material-icons">javascript</span>
+                        </div>
+                        <span class="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200">Coming Soon</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">WebAssembly &amp; TS</h3>
+                    <p class="text-slate-500 leading-relaxed text-sm mb-4">
+                        Full-featured WASM package with TypeScript definitions, generated via <code class="text-xs">wasm-bindgen</code>, for browser or Node.js environments.
+                    </p>
+                    <p class="text-xs font-mono text-slate-400 italic">Pre-release development</p>
+                </div>
+
+                <!-- C-FFI -->
+                <div class="p-8 rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                            <span class="material-icons">settings_input_component</span>
+                        </div>
+                        <span class="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">Preview</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-slate-900 mb-3">Universal C-FFI</h3>
+                    <p class="text-slate-500 leading-relaxed text-sm mb-4">
+                        Shared dynamic library (<code class="text-xs">cdylib</code>) exposing a C-ABI, enabling integration with LuaLaTeX, Python, C++, and Ruby.
+                    </p>
+                    <p class="text-xs font-mono text-slate-400 italic">Built from source</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
     <!-- Status Section -->
     <section class="py-24 px-6 border-t border-slate-200" id="roadmap">
         <div class="max-w-7xl mx-auto">
