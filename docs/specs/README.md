@@ -63,6 +63,7 @@ to make sure the document should be a spec rather than architecture or policy.
 | File | Feature |
 |------|---------|
 | [`ANNOTATED_BIBLIOGRAPHY.md`](./ANNOTATED_BIBLIOGRAPHY.md) | Document-scoped annotation overlay for bibliography rendering |
+| [`AUTHORING_AGENT_SKILL.md`](./AUTHORING_AGENT_SKILL.md) | Citum Authoring Agent Skill specification for AI-assisted style authoring |
 | [`APA_SQI_ALIGNMENT_AND_PRESET_REFACTOR.md`](./APA_SQI_ALIGNMENT_AND_PRESET_REFACTOR.md) | APA SQI alignment and preset-first cleanup |
 | [`ARCHIVAL_UNPUBLISHED_SUPPORT.md`](./ARCHIVAL_UNPUBLISHED_SUPPORT.md) | ArchiveInfo and EprintInfo first-class source support |
 | [`ARTICLE_JOURNAL_NO_PAGE_FALLBACK.md`](./ARTICLE_JOURNAL_NO_PAGE_FALLBACK.md) | External bibliography parameter for article-journal page fallback |
