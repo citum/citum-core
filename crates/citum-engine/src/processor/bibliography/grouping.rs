@@ -248,6 +248,7 @@ impl Processor {
         entries: Vec<ProcEntry>,
         annotations: Option<&HashMap<String, String>>,
         annotation_style: Option<&AnnotationStyle>,
+        suppress_heading: bool,
     ) where
         F: OutputFormat<Output = String>,
     {
@@ -255,10 +256,11 @@ impl Processor {
             result.push_str("\n\n");
         }
 
-        if let Some(heading) = group
-            .heading
-            .as_ref()
-            .and_then(|group_heading| self.resolve_group_heading(group_heading))
+        if !suppress_heading
+            && let Some(heading) = group
+                .heading
+                .as_ref()
+                .and_then(|group_heading| self.resolve_group_heading(group_heading))
         {
             result.push_str(&self.render_group_heading::<F>(&heading));
         }
@@ -365,6 +367,9 @@ impl Processor {
         let mut assigned = HashSet::new();
         let mut result = String::new();
 
+        // First pass: collect all populated groups with their rendered entries
+        let mut populated_groups: Vec<(&BibliographyGroup, Vec<ProcEntry>)> = Vec::new();
+
         for group in groups {
             let matching_refs =
                 self.collect_matching_group_refs(all_entries, &assigned, &evaluator, group);
@@ -393,12 +398,27 @@ impl Processor {
                 local_hints.as_ref(),
             ));
 
+            populated_groups.push((group, entries));
+        }
+
+        // Compute unassigned entries to determine if heading suppression applies
+        let unassigned_refs: Vec<&Reference> = all_entries
+            .iter()
+            .filter(|entry| !assigned.contains(&entry.id) && selected.contains(&entry.id))
+            .filter_map(|entry| self.bibliography.get(&entry.id))
+            .collect();
+
+        let suppress_heading = populated_groups.len() == 1 && unassigned_refs.is_empty();
+
+        // Second pass: render populated groups with optional heading suppression
+        for (group, entries) in populated_groups {
             self.append_rendered_group::<F>(
                 &mut result,
                 group,
                 entries,
                 annotations,
                 annotation_style,
+                suppress_heading,
             );
         }
 

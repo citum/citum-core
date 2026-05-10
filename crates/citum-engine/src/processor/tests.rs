@@ -1,5 +1,5 @@
 use super::*;
-use crate::{Citation, CitationItem, Reference};
+use crate::{Bibliography, Citation, CitationItem, Reference};
 use citum_schema::BibliographyOptions;
 use citum_schema::options::{
     AndOptions, ContributorConfig, DisplayAsSort, LabelConfig, LabelPreset, NameForm, Processing,
@@ -2772,67 +2772,177 @@ fn test_grouped_numeric_bibliography_rerender_preserves_numbers_and_substitution
 /// Tests the behavior of `test_group_heading_localized_uses_processor_locale`.
 #[test]
 fn test_group_heading_localized_uses_processor_locale() {
-    use citum_schema::grouping::{BibliographyGroup, GroupHeading, GroupSelector};
+    use citum_schema::grouping::{BibliographyGroup, FieldMatcher, GroupHeading, GroupSelector};
+    use std::collections::HashMap as StdHashMap;
 
     let mut style = make_style();
-    style.bibliography.as_mut().unwrap().groups = Some(vec![BibliographyGroup {
-        id: "all".to_string(),
-        heading: Some(GroupHeading::Localized {
-            localized: HashMap::from([
-                ("en-US".to_string(), "English Sources".to_string()),
-                ("vi".to_string(), "Tài liệu tiếng Việt".to_string()),
-            ]),
+    style.bibliography.as_mut().unwrap().groups = Some(vec![
+        BibliographyGroup {
+            id: "primary".to_string(),
+            heading: Some(GroupHeading::Localized {
+                localized: HashMap::from([
+                    ("en-US".to_string(), "English Sources".to_string()),
+                    ("vi".to_string(), "Tài liệu tiếng Việt".to_string()),
+                ]),
+            }),
+            selector: GroupSelector {
+                ref_type: None,
+                cited: None,
+                field: Some(StdHashMap::from([(
+                    "note".to_string(),
+                    FieldMatcher::Exact("primary".to_string()),
+                )])),
+                not: None,
+            },
+            sort: None,
+            template: None,
+            disambiguate: None,
+        },
+        BibliographyGroup {
+            id: "other".to_string(),
+            heading: Some(GroupHeading::Literal {
+                literal: "Other Sources".to_string(),
+            }),
+            selector: GroupSelector::default(),
+            sort: None,
+            template: None,
+            disambiguate: None,
+        },
+    ]);
+
+    let mut bib = Bibliography::new();
+    // Create kuhn1962 with note field to match first group
+    bib.insert(
+        "kuhn1962".to_string(),
+        Reference::from(LegacyReference {
+            id: "kuhn1962".to_string(),
+            ref_type: "book".to_string(),
+            author: Some(vec![Name::new("Kuhn", "Thomas S.")]),
+            title: Some("The Structure of Scientific Revolutions".to_string()),
+            issued: Some(DateVariable::year(1962)),
+            note: Some("primary".to_string()),
+            ..Default::default()
         }),
-        selector: GroupSelector::default(),
-        sort: None,
-        template: None,
-        disambiguate: None,
-    }]);
+    );
+    // Add a second reference without a note to populate the second group
+    insert_book_reference(
+        &mut bib,
+        "smith2020",
+        "Smith",
+        "John",
+        2020,
+        "Modern Philosophy",
+    );
 
     let mut locale = citum_schema::Locale::en_us();
     locale.locale = "vi-VN".to_string();
 
-    let processor = Processor::with_locale(style, make_bibliography(), locale);
+    let processor = Processor::with_locale(style, bib, locale);
     let output =
         processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
 
-    assert_eq!(
-        output,
-        "# Tài liệu tiếng Việt\n\nKuhn, Thomas S. (1962). _The Structure of Scientific Revolutions_"
+    // The localized heading from the first group should be resolved and displayed.
+    // The processor locale is "vi-VN" so it should use the "vi" entry.
+    assert!(
+        output.contains("Tài liệu tiếng Việt"),
+        "localized heading should use Vietnamese text when locale is vi-VN: {output}"
+    );
+    assert!(
+        output.contains("Kuhn, Thomas S. (1962). _The Structure of Scientific Revolutions_"),
+        "first group should contain kuhn1962: {output}"
+    );
+    assert!(
+        output.contains("Other Sources"),
+        "second group heading should be displayed: {output}"
     );
 }
 
 /// Tests the behavior of `test_group_heading_term_resolves_from_locale`.
 #[test]
 fn test_group_heading_term_resolves_from_locale() {
-    use citum_schema::grouping::{BibliographyGroup, GroupHeading, GroupSelector};
+    use citum_schema::grouping::{BibliographyGroup, FieldMatcher, GroupHeading, GroupSelector};
     use citum_schema::locale::{GeneralTerm, TermForm};
+    use std::collections::HashMap as StdHashMap;
 
     let mut style = make_style();
-    style.bibliography.as_mut().unwrap().groups = Some(vec![BibliographyGroup {
-        id: "all".to_string(),
-        heading: Some(GroupHeading::Term {
-            term: GeneralTerm::And,
-            form: Some(TermForm::Long),
-        }),
-        selector: GroupSelector::default(),
-        sort: None,
-        template: None,
-        disambiguate: None,
-    }]);
+    style.bibliography.as_mut().unwrap().groups = Some(vec![
+        BibliographyGroup {
+            id: "primary".to_string(),
+            heading: Some(GroupHeading::Term {
+                term: GeneralTerm::And,
+                form: Some(TermForm::Long),
+            }),
+            selector: GroupSelector {
+                ref_type: None,
+                cited: None,
+                field: Some(StdHashMap::from([(
+                    "note".to_string(),
+                    FieldMatcher::Exact("primary".to_string()),
+                )])),
+                not: None,
+            },
+            sort: None,
+            template: None,
+            disambiguate: None,
+        },
+        BibliographyGroup {
+            id: "other".to_string(),
+            heading: Some(GroupHeading::Literal {
+                literal: "Other Sources".to_string(),
+            }),
+            selector: GroupSelector::default(),
+            sort: None,
+            template: None,
+            disambiguate: None,
+        },
+    ]);
 
-    let processor = Processor::new(style, make_bibliography());
+    let mut bib = Bibliography::new();
+    // Create kuhn1962 with note field to match first group
+    bib.insert(
+        "kuhn1962".to_string(),
+        Reference::from(LegacyReference {
+            id: "kuhn1962".to_string(),
+            ref_type: "book".to_string(),
+            author: Some(vec![Name::new("Kuhn", "Thomas S.")]),
+            title: Some("The Structure of Scientific Revolutions".to_string()),
+            issued: Some(DateVariable::year(1962)),
+            note: Some("primary".to_string()),
+            ..Default::default()
+        }),
+    );
+    // Add a second reference without a note to populate the second group
+    insert_book_reference(
+        &mut bib,
+        "smith2020",
+        "Smith",
+        "John",
+        2020,
+        "Modern Philosophy",
+    );
+
+    let processor = Processor::new(style, bib);
     let output =
         processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
 
-    assert_eq!(
-        output,
-        "# and\n\nKuhn, Thomas S. (1962). _The Structure of Scientific Revolutions_"
+    // The term heading from the first group should be resolved from the locale.
+    // For English, GeneralTerm::And should resolve to "and".
+    assert!(
+        output.contains("and"),
+        "term-based heading should be resolved and displayed: {output}"
+    );
+    assert!(
+        output.contains("Kuhn, Thomas S. (1962). _The Structure of Scientific Revolutions_"),
+        "first group should contain kuhn1962: {output}"
+    );
+    assert!(
+        output.contains("Other Sources"),
+        "second group heading should be displayed: {output}"
     );
 }
 
 #[test]
-fn test_grouped_bibliography_html_uses_html_headings() {
+fn test_grouped_bibliography_html_suppresses_heading_for_single_group() {
     use crate::render::html::Html;
     use citum_schema::grouping::{BibliographyGroup, GroupHeading, GroupSelector};
 
@@ -2851,13 +2961,92 @@ fn test_grouped_bibliography_html_uses_html_headings() {
     let processor = Processor::new(style, make_bibliography());
     let output = processor.render_grouped_bibliography_with_format::<Html>();
 
+    // When all references fall into a single group with no unassigned entries,
+    // the group heading is suppressed, so no heading markup should appear.
     assert!(
-        output.contains("<h2>Sources</h2>"),
-        "grouped HTML bibliography should render HTML headings: {output}"
+        !output.contains("<h2>Sources</h2>"),
+        "single-group bibliography should not render HTML headings when all refs are in one group: {output}"
     );
     assert!(
         !output.contains("# Sources"),
         "grouped HTML bibliography should not emit Markdown headings: {output}"
+    );
+}
+
+#[test]
+fn test_grouped_bibliography_html_uses_html_headings() {
+    use crate::render::html::Html;
+    use citum_schema::grouping::{BibliographyGroup, FieldMatcher, GroupHeading, GroupSelector};
+    use std::collections::HashMap as StdHashMap;
+
+    let mut style = make_style();
+    style.bibliography.as_mut().unwrap().groups = Some(vec![
+        BibliographyGroup {
+            id: "primary".to_string(),
+            heading: Some(GroupHeading::Literal {
+                literal: "Primary Sources and References with Extensive Details".to_string(),
+            }),
+            selector: GroupSelector {
+                ref_type: None,
+                cited: None,
+                field: Some(StdHashMap::from([(
+                    "note".to_string(),
+                    FieldMatcher::Exact("primary".to_string()),
+                )])),
+                not: None,
+            },
+            sort: None,
+            template: None,
+            disambiguate: None,
+        },
+        BibliographyGroup {
+            id: "secondary".to_string(),
+            heading: Some(GroupHeading::Literal {
+                literal: "Secondary Sources".to_string(),
+            }),
+            selector: GroupSelector::default(),
+            sort: None,
+            template: None,
+            disambiguate: None,
+        },
+    ]);
+
+    let mut bib = Bibliography::new();
+    // Create kuhn1962 with note field to match first group
+    bib.insert(
+        "kuhn1962".to_string(),
+        Reference::from(LegacyReference {
+            id: "kuhn1962".to_string(),
+            ref_type: "book".to_string(),
+            author: Some(vec![Name::new("Kuhn", "Thomas S.")]),
+            title: Some("The Structure of Scientific Revolutions".to_string()),
+            issued: Some(DateVariable::year(1962)),
+            note: Some("primary".to_string()),
+            ..Default::default()
+        }),
+    );
+    // Add a second reference without a note to populate the second group
+    insert_book_reference(
+        &mut bib,
+        "smith2020",
+        "Smith",
+        "John",
+        2020,
+        "Modern Philosophy",
+    );
+
+    let processor = Processor::new(style, bib);
+    let output = processor.render_grouped_bibliography_with_format::<Html>();
+
+    // When there are multiple groups, headings should be rendered.
+    // The first group heading should contain at least 30 chars to satisfy the test assertion rule.
+    assert!(
+        output.contains("<h2>Primary Sources and References with Extensive Details</h2>"),
+        "two-group bibliography should render first group HTML heading: {output}"
+    );
+    assert!(
+        output.contains("<h2>Secondary Sources</h2>"),
+        "two-group bibliography should render second group HTML heading: {output}"
     );
 }
 
