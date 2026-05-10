@@ -326,6 +326,7 @@ mod tests {
     }
 
     #[test]
+
     fn skips_punctuation_before_script_detection() {
         let locale = Locale::en_us();
         let script = partitioning(BibliographyPartitionKind::Script);
@@ -338,6 +339,7 @@ mod tests {
     }
 
     #[test]
+
     fn falls_back_to_title_for_script_detection() {
         let locale = Locale::en_us();
         let script = partitioning(BibliographyPartitionKind::Script);
@@ -350,6 +352,7 @@ mod tests {
     }
 
     #[test]
+
     fn returns_none_for_unknown_script_key() {
         let locale = Locale::en_us();
         let script = partitioning(BibliographyPartitionKind::Script);

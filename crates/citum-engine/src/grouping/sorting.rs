@@ -491,6 +491,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "icu")]
     fn test_author_sort_uses_unicode_collation_for_accented_names() {
         let locale = make_locale();
         let sorter = GroupSorter::new(&locale);
@@ -518,6 +519,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "icu")]
     fn test_title_sort_uses_unicode_collation_for_accented_titles() {
         let locale = make_locale();
         let sorter = GroupSorter::new(&locale);

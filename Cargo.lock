@@ -647,7 +647,6 @@ dependencies = [
  "indexmap 2.14.0",
  "jotdown",
  "orgize",
- "regex",
  "roxmltree",
  "rstest",
  "serde",
