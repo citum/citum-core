@@ -2,23 +2,34 @@
 
 ## Purpose
 
-Use jj as an optional local change-stack layer for AI-assisted work while keeping
-Git and GitHub as the public collaboration interface.
+Use jj as an optional local change-stack layer for AI-assisted work while
+keeping Git and GitHub as the public collaboration interface.
 
-This workflow is for Claude, Codex, and other LLM-assisted sessions. It captures
-short-lived intent during development, makes exploratory changes easier to split
-or abandon, and preserves Citum's existing commit, PR, and verification gates.
+This workflow is for Claude, Codex, and other LLM-assisted sessions. It
+captures short-lived intent during development, makes exploratory changes easier
+to split or abandon, and preserves Citum's existing commit, PR, and verification
+gates.
+
+The core idea is to let the parent AI session build and refine an *iterative
+stack of small, well-scoped jj changes* locally, then export only the curated
+result as conventional Git commits. Subagents implement or review bounded
+changes inside that stack without owning or rewriting its structure.
 
 ## Default Model
 
 - Use GitHub branches and PRs for published collaboration.
-- Use jj locally when `.jj` is present and the user has not requested a Git-only
-  workflow.
+- Use jj locally when `.jj` is present and the user has not requested a
+  Git-only workflow.
 - Keep one jj change per coherent plan step, bean/spec phase, style pass, or
-  Rust fix.
-- Let the parent session own jj stack curation. Subagents may implement or
-  review bounded changes, but they must not independently split, squash, rebase,
-  abandon, publish, or otherwise rewrite the shared stack.
+  Rust fix. Treat each change as an independently reviewable unit that the
+  parent session can evolve, reorder, or discard without affecting others.
+- Let the parent session own jj stack curation. It decides when to create,
+  evolve, split, squash, rebase, abandon, or publish changes in the stack as the
+  implementation plan matures.
+- Subagents may implement or review bounded changes, but they must not
+  independently split, squash, rebase, abandon, publish, or otherwise rewrite
+  the shared stack. They work *within* a designated change and report back
+  artifacts, diffs, and verification results.
 - Treat raw prompt capture as temporary local provenance. In jj, intent files
   may be part of the evolving mutable change while work is in progress. They
   must be deleted from that change before export or publication, so the final
@@ -42,13 +53,13 @@ Each file should contain only the information needed to curate the local stack:
 - files or subsystem touched
 - verification command and result
 
-These files are temporary. In a colocated jj/Git repository, they may be tracked
-inside the current mutable jj change during drafting. jj snapshots workspace
-edits into that change automatically, so there is no separate Git-style staging
-step for the intent file. Before export or publication, delete the file and let
-jj amend the current change so the final Git-visible snapshot has no
-`.ai-intents/` paths. Do not publish intent files unless the user explicitly
-chooses durable prompt provenance for a specific commit.
+These files are temporary. In a colocated jj/Git repository, they may be
+tracked inside the current mutable jj change during drafting. jj snapshots
+workspace edits into that change automatically, so there is no separate
+Git-style staging step for the intent file. Before export or publication, delete
+the file and let jj amend the current change so the final Git-visible snapshot
+has no `.ai-intents/` paths. Do not publish intent files unless the user
+explicitly chooses durable prompt provenance for a specific commit.
 
 ## Command Protocol
 
@@ -60,18 +71,22 @@ jj log
 git status --short --branch
 ```
 
-For each coherent step:
+For each coherent step, the parent session should create or select one jj
+change that represents a single plan step and evolve it until it is clean and
+independently reviewable:
 
 ```bash
 jj new
 # create a temporary .ai-intents/ file if intent capture is useful
-# implement one bounded step
+# assign this bounded step to a subagent if needed
+# implement one bounded step inside this change
 jj status
 jj diff
 jj describe
 ```
 
-During curation:
+During curation, the parent session shapes the stack order and boundaries as
+understanding improves:
 
 ```bash
 jj split
@@ -89,8 +104,8 @@ jj git export
 git status --short --branch
 ```
 
-If jj is unavailable, use the existing Git workflow. Do not block Citum work just
-because jj is missing.
+If jj is unavailable, use the existing Git workflow. Do not block Citum work
+just because jj is missing.
 
 ## Hook Gap
 
@@ -117,39 +132,32 @@ Skipping step 1 is the most common CI failure when using jj. Always run it.
 
 The jj workflow is subordinate to Citum's repo rules:
 
-- When the user asks for a PR, create a `codex/<scope>-<goal>` branch and open a
-  PR instead of pushing to `main`.
+- When the user asks for a PR, create a `codex/<scope>-<goal>` branch and open a PR instead of pushing to `main`.
 - Keep commit messages conventional and follow the 50/72 rule.
 - For Rust changes, run the required Rust gate before committing:
-  `cargo fmt --check && cargo clippy --all-targets --all-features -- -D warnings && cargo nextest run`.
+`cargo fmt --check && cargo clippy --all-targets --all-features -- -D warnings
+&& cargo nextest run`.
 - If `cargo nextest` is unavailable, use `cargo test`.
-- If schema crate or CLI schema behavior changes, regenerate schemas and include
-  the required schema/version footer.
+- If schema crate or CLI schema behavior changes, regenerate schemas and include the required schema/version footer.
 - For style work, route through `/style-evolve` and preserve fidelity gates.
-- For task-tracked work, keep bean state changes in the same final Git commit as
-  the related work.
+- For task-tracked work, keep bean state changes in the same final Git commit as the related work.
 
 ## Agent Coordination
 
-Use jj to isolate and curate changes, not to distribute history ownership across
-agents.
+Use jj to isolate and curate changes, not to distribute history ownership
+across agents.
 
-- The parent session decides when to create a new jj change and how to curate the
-  stack.
-- Implementation subagents receive one bounded task and report changed paths,
-  verification, and risks.
+- The parent session decides when to create a new jj change and how to curate the stack. It can iteratively refine a change over multiple interactions, or abandon and replace it, without affecting neighboring changes.
+- Implementation subagents receive one bounded task anchored to a specific jj change and report changed paths, verification, and risks. They do not alter stack shape.
 - Review subagents inspect diffs and findings without rewriting history.
-- If two LLMs produce competing designs, put each design on a separate jj change
-  or branch, compare the diffs, then keep or squash only the selected approach.
+- If two LLMs produce competing designs, put each design on a separate jj change or branch, compare the diffs, then keep or squash only the selected approach. This keeps each alternative independently evolvable until the parent session chooses.
 
 ## Publishing
 
 Before push or PR creation:
 
-- Ensure `jj status` and `git status --short --branch` agree on the intended
-  published diff.
-- Confirm `.ai-intents/` paths are absent from the final jj change and from
-  `git status --short --branch`.
+- Ensure `jj status` and `git status --short --branch` agree on the intended published diff.
+- Confirm `.ai-intents/` paths are absent from the final jj change and from `git status --short --branch`.
 - Run the manual hook checks from the **Hook Gap** section above.
 - Run the verification gate for the touched change type.
 - Push the Git branch and check CI for PR branches.
