@@ -1,7 +1,7 @@
 ---
 # csl26-f9nh
 title: Wire StoreConfig.registries into resolution and registry update
-status: in-progress
+status: completed
 type: bug
 created_at: 2026-05-08T09:25:25Z
 updated_at: 2026-05-08T09:25:25Z
