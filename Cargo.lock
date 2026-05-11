@@ -567,7 +567,7 @@ dependencies = [
 
 [[package]]
 name = "citum"
-version = "0.39.0"
+version = "0.40.0"
 dependencies = [
  "biblatex 0.11.0",
  "ciborium",
@@ -596,7 +596,7 @@ dependencies = [
 
 [[package]]
 name = "citum-analyze"
-version = "0.39.0"
+version = "0.40.0"
 dependencies = [
  "citum-migrate",
  "citum-schema",
@@ -610,7 +610,7 @@ dependencies = [
 
 [[package]]
 name = "citum-bindings"
-version = "0.39.0"
+version = "0.40.0"
 dependencies = [
  "citum-engine",
  "citum-schema",
@@ -626,7 +626,7 @@ dependencies = [
 
 [[package]]
 name = "citum-edtf"
-version = "0.39.0"
+version = "0.40.0"
 dependencies = [
  "serde",
  "winnow 0.7.15",
@@ -634,7 +634,7 @@ dependencies = [
 
 [[package]]
 name = "citum-engine"
-version = "0.39.0"
+version = "0.40.0"
 dependencies = [
  "citum-edtf",
  "citum-io",
@@ -661,7 +661,7 @@ dependencies = [
 
 [[package]]
 name = "citum-io"
-version = "0.39.0"
+version = "0.40.0"
 dependencies = [
  "biblatex 0.11.0",
  "ciborium",
@@ -678,7 +678,7 @@ dependencies = [
 
 [[package]]
 name = "citum-migrate"
-version = "0.39.0"
+version = "0.40.0"
 dependencies = [
  "citum-schema",
  "csl-legacy",
@@ -692,7 +692,7 @@ dependencies = [
 
 [[package]]
 name = "citum-pdf"
-version = "0.39.0"
+version = "0.40.0"
 dependencies = [
  "typst",
  "typst-kit",
@@ -701,7 +701,7 @@ dependencies = [
 
 [[package]]
 name = "citum-resolver-api"
-version = "0.39.0"
+version = "0.40.0"
 dependencies = [
  "serde_json",
  "thiserror 2.0.18",
@@ -709,7 +709,7 @@ dependencies = [
 
 [[package]]
 name = "citum-schema"
-version = "0.39.0"
+version = "0.40.0"
 dependencies = [
  "ciborium",
  "citum-schema-data",
@@ -721,7 +721,7 @@ dependencies = [
 
 [[package]]
 name = "citum-schema-data"
-version = "0.39.0"
+version = "0.40.0"
 dependencies = [
  "citum-edtf",
  "csl-legacy",
@@ -736,7 +736,7 @@ dependencies = [
 
 [[package]]
 name = "citum-schema-style"
-version = "0.39.0"
+version = "0.40.0"
 dependencies = [
  "ciborium",
  "cid",
@@ -760,7 +760,7 @@ dependencies = [
 
 [[package]]
 name = "citum-server"
-version = "0.39.0"
+version = "0.40.0"
 dependencies = [
  "axum",
  "citum-engine",
@@ -776,7 +776,7 @@ dependencies = [
 
 [[package]]
 name = "citum_store"
-version = "0.39.0"
+version = "0.40.0"
 dependencies = [
  "ciborium",
  "cid",
@@ -1110,7 +1110,7 @@ dependencies = [
 
 [[package]]
 name = "csl-legacy"
-version = "0.39.0"
+version = "0.40.0"
 dependencies = [
  "indexmap 2.14.0",
  "roxmltree",
