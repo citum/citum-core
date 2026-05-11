@@ -345,6 +345,7 @@ pub struct NoteConfig {
     pub order: Option<NoteMarkerOrder>,
 }
 
+/// Controls where movable punctuation is placed relative to closing quotation marks.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -359,6 +360,7 @@ pub enum NoteQuotePlacement {
     Adaptive,
 }
 
+/// Controls where a footnote number marker is placed relative to closing quotation marks.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
@@ -372,6 +374,7 @@ pub enum NoteNumberPlacement {
     Same,
 }
 
+/// Controls whether a note marker appears before or after adjacent movable punctuation.
 #[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]

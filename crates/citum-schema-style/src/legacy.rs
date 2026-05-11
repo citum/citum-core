@@ -464,11 +464,15 @@ pub enum TextDecoration {
     Underline,
 }
 
+/// Vertical text alignment relative to the baseline.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum VerticalAlign {
+    /// Render at the baseline (default).
     Baseline,
+    /// Render as superscript.
     Superscript,
+    /// Render as subscript.
     Subscript,
 }

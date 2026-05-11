@@ -1201,7 +1201,7 @@ impl JsonSchema for DelimiterPunctuation {
     }
 
     fn json_schema(_gen: &mut schemars::SchemaGenerator) -> schemars::Schema {
-        schemars::json_schema!({"type": "string"})
+        schemars::json_schema!({"type": "string", "description": "Delimiter punctuation options."})
     }
 }
 
