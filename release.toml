@@ -3,4 +3,5 @@ consolidate-commits = true
 dependent-version = "upgrade"
 tag-prefix = "v"
 tag-message = "v{{version}}"
+pre-release-commit-message = "chore: release v{{version}}\n\nAutomated workspace version bump for v{{version}}."
 pre-release-hook = ["git-cliff", "-o", "CHANGELOG.md", "--tag", "v{{version}}"]
