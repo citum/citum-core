@@ -21,9 +21,11 @@ if [[ -x "$ROOT_DIR/scripts/check-docs-beans-hygiene.sh" ]]; then
   fi
 fi
 
-# 3. Cargo fmt check
-printf '[PRE-COMMIT] Running cargo fmt --check...\n'
-if ! cargo fmt --all -- --check; then
-  printf '[ERROR] Code formatting check failed. Run `cargo fmt` and try again.\n' >&2
-  exit 1
+# 3. Cargo fmt check (only if Rust files changed)
+if git diff --cached --name-only | grep -qE '\.rs$|Cargo\.toml$|Cargo\.lock$'; then
+  printf '[PRE-COMMIT] Running cargo fmt --check...\n'
+  if ! cargo fmt --all -- --check; then
+    printf '[ERROR] Code formatting check failed. Run `cargo fmt` and try again.\n' >&2
+    exit 1
+  fi
 fi
