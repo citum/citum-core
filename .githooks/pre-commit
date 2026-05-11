@@ -20,3 +20,10 @@ if [[ -x "$ROOT_DIR/scripts/check-docs-beans-hygiene.sh" ]]; then
     exit 1
   fi
 fi
+
+# 3. Cargo fmt check
+printf '[PRE-COMMIT] Running cargo fmt --check...\n'
+if ! cargo fmt --all -- --check; then
+  printf '[ERROR] Code formatting check failed. Run `cargo fmt` and try again.\n' >&2
+  exit 1
+fi

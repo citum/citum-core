@@ -6,7 +6,7 @@
   "properties": {
     "version": {
       "description": "Style schema version.",
-      "type": "string",
+      "$ref": "#/$defs/SchemaVersion",
       "default": "0.45.0"
     },
     "info": {
@@ -89,6 +89,10 @@
   },
   "additionalProperties": false,
   "$defs": {
+    "SchemaVersion": {
+      "description": "A schema version (major.minor).",
+      "type": "string"
+    },
     "StyleInfo": {
       "description": "Style metadata.",
       "type": "object",

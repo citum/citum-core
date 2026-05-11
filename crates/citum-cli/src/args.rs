@@ -780,5 +780,9 @@ pub(crate) struct CheckItem {
     pub(crate) path: String,
     pub(crate) ok: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) schema_version: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(crate) warnings: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub(crate) error: Option<String>,
 }
