@@ -962,11 +962,23 @@
       ]
     },
     "VerticalAlign": {
-      "type": "string",
-      "enum": [
-        "baseline",
-        "superscript",
-        "subscript"
+      "description": "Vertical text alignment relative to the baseline.",
+      "oneOf": [
+        {
+          "description": "Render at the baseline (default).",
+          "type": "string",
+          "const": "baseline"
+        },
+        {
+          "description": "Render as superscript.",
+          "type": "string",
+          "const": "superscript"
+        },
+        {
+          "description": "Render as subscript.",
+          "type": "string",
+          "const": "subscript"
+        }
       ]
     },
     "WrapConfig": {
@@ -2018,6 +2030,7 @@
       ]
     },
     "DelimiterPunctuation": {
+      "description": "Delimiter punctuation options.",
       "type": "string"
     },
     "TemplateTerm": {
@@ -4156,6 +4169,7 @@
       "additionalProperties": false
     },
     "NoteQuotePlacement": {
+      "description": "Controls where movable punctuation is placed relative to closing quotation marks.",
       "oneOf": [
         {
           "description": "Keep movable punctuation inside the closing quotation mark.",
@@ -4175,6 +4189,7 @@
       ]
     },
     "NoteNumberPlacement": {
+      "description": "Controls where a footnote number marker is placed relative to closing quotation marks.",
       "oneOf": [
         {
           "description": "Place the note marker inside the closing quotation mark.",
@@ -4194,6 +4209,7 @@
       ]
     },
     "NoteMarkerOrder": {
+      "description": "Controls whether a note marker appears before or after adjacent movable punctuation.",
       "oneOf": [
         {
           "description": "Place the note marker before the closest movable punctuation mark.",
