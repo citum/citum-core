@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.38.0] - 2026-05-06
+## [0.39.0] - 2026-05-11
 
 ### Bug Fixes
 
@@ -21,12 +21,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Migrate 130+ styles to Template V3 ([`69f6973`](https://github.com/citum/citum-core/commit/69f69734719f41560b4b90927ffcdeb658dc3010))
 
+- Expose wrapper output plans ([`7e1fc0c`](https://github.com/citum/citum-core/commit/7e1fc0c5b5e28c9869f7b5d51b3bdd639dc6b746))
+
 
 **schema**
 
 - Resolve template v3 variants ([`bb9f3bb`](https://github.com/citum/citum-core/commit/bb9f3bbd2668c0bb96144cac49d82d77e4b95676))
 
 - Rename template reuse ([`df4c4ea`](https://github.com/citum/citum-core/commit/df4c4eaaa6e7b69486634a47a1ed355eb22a82ed))
+
+- Add cid and integrity fields ([`dbe3c72`](https://github.com/citum/citum-core/commit/dbe3c723c0208dc02e113a09fc3603601ae39f1d))
 
 
 ## [0.34.0] - 2026-05-03
