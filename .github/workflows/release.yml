@@ -164,23 +164,20 @@ jobs:
       - name: Tag schema release when schema changed
         if: steps.config.outputs.push_tags == 'true' && needs.detect.outputs.schema-changed == 'true'
         run: |
-            SCHEMA_VERSION=$(python3 - <<'PY'
-            from pathlib import Path
-            import re
-            content = Path("crates/citum-schema-style/src/lib.rs").read_text()
-            match = re.search(r'pub const STYLE_SCHEMA_VERSION: &str = "([^"]+)";', content)
-            if match is None:
-                raise SystemExit("STYLE_SCHEMA_VERSION not found")
-            print(match.group(1))
-            PY
-            )
-            TAG="schema-v${SCHEMA_VERSION}"
-            if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
-              echo "Schema tag ${TAG} already exists."
-            else
-              git tag -a "$TAG" -m "Schema ${TAG}"
-              git push origin "$TAG"
-            fi
+          SCHEMA_VERSION=$(sed -n \
+            's/.*STYLE_SCHEMA_VERSION: \&str = "\([^"]*\)".*/\1/p' \
+            crates/citum-schema-style/src/lib.rs)
+          if [ -z "$SCHEMA_VERSION" ]; then
+            echo "Error: STYLE_SCHEMA_VERSION not found" >&2
+            exit 1
+          fi
+          TAG="schema-v${SCHEMA_VERSION}"
+          if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
+            echo "Schema tag ${TAG} already exists."
+          else
+            git tag -a "$TAG" -m "Schema ${TAG}"
+            git push origin "$TAG"
+          fi
 
       - name: Create or update release PR
         if: steps.config.outputs.create_pr == 'true'
@@ -249,16 +246,13 @@ jobs:
         run: |
           if git diff --name-only "${{ github.event.pull_request.base.sha }}" HEAD \
             | grep -qE '^(crates/citum-schema-style/src/lib.rs|docs/schemas/)'; then
-            SCHEMA_VERSION=$(python3 - <<'PY'
-            from pathlib import Path
-            import re
-            content = Path("crates/citum-schema-style/src/lib.rs").read_text()
-            match = re.search(r'pub const STYLE_SCHEMA_VERSION: &str = "([^"]+)";', content)
-            if match is None:
-                raise SystemExit("STYLE_SCHEMA_VERSION not found")
-            print(match.group(1))
-            PY
-            )
+            SCHEMA_VERSION=$(sed -n \
+              's/.*STYLE_SCHEMA_VERSION: \&str = "\([^"]*\)".*/\1/p' \
+              crates/citum-schema-style/src/lib.rs)
+            if [ -z "$SCHEMA_VERSION" ]; then
+              echo "Error: STYLE_SCHEMA_VERSION not found" >&2
+              exit 1
+            fi
             TAG="schema-v${SCHEMA_VERSION}"
             if git rev-parse -q --verify "refs/tags/${TAG}" >/dev/null; then
               echo "Schema tag ${TAG} already exists."
