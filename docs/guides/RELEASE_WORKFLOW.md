@@ -12,7 +12,7 @@ The workflow does **not** trigger on direct pushes to `main` — all code arrive
 
 ## Conventional Commits and Bump Levels
 
-The release workflow infers the bump level from commit messages on the incoming PR. The first commit matching a conventional commit pattern determines the bump:
+The release workflow infers the bump level from conventional commit messages in the inspected commit range and applies the highest matching impact:
 
 | Commit Type | Bump Level | Note |
 |---|---|---|
@@ -37,20 +37,9 @@ The `release-pr` job then:
 2. Bumps all crate versions via `cargo-release`
 3. Updates schema versions and regenerates schema files
 4. Creates a pull request against `main` titled `chore: release v<version>`
-5. **Auto-merges for patch/minor bumps** (see below)
+5. Updates that PR on subsequent release-triggering merges until it is merged
 
-## Auto-Merge Behavior
-
-- **Patch and Minor releases**: The release PR auto-merges immediately after creation.
-- **Major releases**: The release PR is created but requires manual review and merge approval.
-
-This keeps the pipeline flowing for routine updates while giving maintainers a chance to review breaking changes before they go live.
-
-### Requirements for Auto-Merge
-
-- The repository must have auto-merge enabled in settings
-- The `release/next` branch must **not** be under branch protection rules
-- `GITHUB_TOKEN` must have `pull-requests:write` and `contents:write` permissions (automatically available to workflows)
+All release levels (`patch`, `minor`, pre-1.0-capped `major`) use this same `release/next` PR flow.
 
 ## Tag and Publish (Future)
 
@@ -123,10 +112,10 @@ These crates are marked `publish = false` in their `Cargo.toml`:
 2. Verify the commit message follows conventional commit format
 3. Check workflow logs under `.github/workflows/release.yml` for details
 
-**Auto-merge doesn't trigger:**
-1. Verify auto-merge is enabled in repo settings
-2. Check that `release/next` is not in branch protection rules
-3. Ensure the bump level is `patch` or `minor` (not `major`)
+**Release PR is not created or updated:**
+1. Verify the release workflow has `pull-requests: write` and `contents: write`
+2. Confirm `RELEASE_TOKEN` is available and has repo write permissions
+3. Check whether the release trigger inferred `should-release=false`
 
 **Tag not created after PR merges:**
 1. Ensure the `auto-tag` job has `contents:write` permission

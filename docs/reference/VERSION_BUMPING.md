@@ -10,7 +10,7 @@ Citum keeps code and schema versioning separate:
 | Track | What | Source of truth | Automation |
 |-------|------|-----------------|------------|
 | **Code** | Rust workspace crates | `[workspace.package].version` in `Cargo.toml` | `cargo-release` via GitHub Actions release workflow |
-| **Schema** | Citum schema format | `STYLE_SCHEMA_VERSION` | automated release workflow + `Schema-Bump:` footer |
+| **Schema** | Citum schema format | `STYLE_SCHEMA_VERSION` | automated release workflow |
 
 ## How It Works
 
@@ -22,22 +22,16 @@ When code merges to `main`, the release workflow:
    - Schema crates (`citum-schema*`, `citum-cli`) → schema track
    - Other publishable crates → code track
 2. **Infers bump level** from conventional commit messages since the last tag:
-   - `fix:`, `perf:`, `refactor:` → patch
+   - `fix:`, `perf:` → patch
    - `feat:` → minor
    - `feat!:` or `BREAKING CHANGE:` → major (capped at minor for pre-1.0)
 3. **Runs `cargo-semver-checks`** as a safety net — if it detects breaking API changes
    but the commits only say `fix:`, the level is escalated.
-4. **Opens a release PR** (only for minor+ bumps; patches accumulate silently):
-   - Runs `cargo release <level> --workspace` to bump `Cargo.toml`
-   - Runs `git-cliff` to generate the changelog
-   - If schema paths changed, also bumps `STYLE_SCHEMA_VERSION`
+4. **Opens or updates a release PR** on `release/next` (for all release levels):
+    - Runs `cargo release <level> --workspace` to bump `Cargo.toml`
+    - Runs `git-cliff` to generate the changelog
+    - If schema paths changed, also bumps `STYLE_SCHEMA_VERSION`
 5. **Auto-tags** when the release PR is merged to `main`.
-
-### Schema-Bump footers (development-time)
-
-Individual commits that change schema crate code still require a `Schema-Bump:` footer,
-enforced by the pre-commit and commit-msg hooks. This catches schema changes during
-development. The release workflow handles the actual version bump.
 
 ### No Version-Bump footers
 

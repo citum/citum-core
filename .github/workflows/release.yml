@@ -120,15 +120,9 @@ jobs:
       - name: Configure branching and tagging
         id: config
         run: |
-          LEVEL="${{ steps.resolve.outputs.level }}"
-          if [ "$LEVEL" = "major" ]; then
-            echo "branch=release/next" >> "$GITHUB_OUTPUT"
-            echo "create_pr=true" >> "$GITHUB_OUTPUT"
-          else
-            # patch/minor: push directly to main (RELEASE_TOKEN has admin bypass)
-            echo "branch=main" >> "$GITHUB_OUTPUT"
-            echo "create_pr=false" >> "$GITHUB_OUTPUT"
-          fi
+          # All releases flow through a release PR on release/next.
+          echo "branch=release/next" >> "$GITHUB_OUTPUT"
+          echo "create_pr=true" >> "$GITHUB_OUTPUT"
           echo "push_tags=false" >> "$GITHUB_OUTPUT"
 
       - name: Create release branch
@@ -158,12 +152,7 @@ jobs:
             TAG_FLAG="--no-tag"
           fi
           
-          # We set a custom message to comply with the commit-msg hook.
-          # We place the level at the end to ensure correct argument parsing.
           cargo release --workspace --no-publish --no-push $TAG_FLAG --no-confirm --execute \
-            -m "chore: release v{{version}}
-
-          Automated workspace version bump for v{{version}}." \
             "${{ steps.resolve.outputs.level }}"
           
           git push -f origin "$BRANCH"
