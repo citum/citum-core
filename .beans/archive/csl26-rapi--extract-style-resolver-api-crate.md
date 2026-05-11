@@ -1,7 +1,7 @@
 ---
 # csl26-rapi
 title: Extract StyleResolver and related types to a dedicated API crate
-status: todo
+status: completed
 type: task
 priority: normal
 created_at: 2026-05-09T00:00:00Z

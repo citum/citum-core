@@ -1,14 +1,14 @@
 ---
 # csl26-yipx
 title: wire Style.version to schema validation in citum check
-status: todo
+status: completed
 type: feature
 priority: normal
 tags:
     - schema
     - cli
 created_at: 2026-02-24T17:28:12Z
-updated_at: 2026-04-25T20:20:06Z
+updated_at: 2026-05-11T12:00:00Z
 parent: csl26-li63
 ---
 

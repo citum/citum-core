@@ -1,7 +1,7 @@
 ---
 # csl26-v2k9
 title: 'Citum Authoring Agent Skill Specification'
-status: todo
+status: completed
 type: spec
 priority: high
 tags:
