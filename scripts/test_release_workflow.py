@@ -4,11 +4,14 @@
 from __future__ import annotations
 
 import re
+import subprocess
 import unittest
 from pathlib import Path
 
 
-WORKFLOW_PATH = Path(__file__).resolve().parent.parent / ".github/workflows/release.yml"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+WORKFLOW_PATH = REPO_ROOT / ".github/workflows/release.yml"
+SCHEMA_LIB = REPO_ROOT / "crates/citum-schema-style/src/lib.rs"
 
 
 class ReleaseWorkflowTests(unittest.TestCase):
@@ -35,6 +38,42 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIsNotNone(bump_workspace_block)
         assert bump_workspace_block is not None
         self.assertNotIn(" -m ", bump_workspace_block.group(0))
+
+    def test_schema_tag_steps_do_not_use_heredoc(self) -> None:
+        """Heredoc closing delimiters can gain indentation via YAML processing,
+        causing 'unexpected EOF' shell errors. Both schema-tag steps must use
+        a plain command instead of a Python heredoc to extract the version."""
+        schema_tag_blocks = re.findall(
+            r"- name: Tag schema release when schema changed.*?(?=\n      -|\Z)",
+            self.workflow,
+            flags=re.DOTALL,
+        )
+        self.assertTrue(schema_tag_blocks, "Expected at least one 'Tag schema release' step")
+        for block in schema_tag_blocks:
+            self.assertNotIn("<<'PY'", block, "Python heredoc found in schema tag step")
+            self.assertNotIn("python3 -", block, "Python heredoc invocation found in schema tag step")
+            self.assertIn("STYLE_SCHEMA_VERSION", block, "Step must reference STYLE_SCHEMA_VERSION")
+
+    def test_schema_version_sed_pattern_extracts_correctly(self) -> None:
+        """The sed command used in auto-tag must extract the correct version
+        from the actual lib.rs file on disk."""
+        result = subprocess.run(
+            [
+                "sed",
+                "-n",
+                r"s/.*STYLE_SCHEMA_VERSION: \&str = \"\([^\"]*\)\".*/\1/p",
+                str(SCHEMA_LIB),
+            ],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        version = result.stdout.strip()
+        self.assertRegex(
+            version,
+            r"^\d+\.\d+\.\d+$",
+            f"sed did not extract a valid semver from {SCHEMA_LIB}; got: {version!r}",
+        )
 
 
 if __name__ == "__main__":
