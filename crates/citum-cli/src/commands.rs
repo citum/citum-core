@@ -1547,20 +1547,7 @@ fn run_check(args: CheckArgs) -> Result<(), Box<dyn Error>> {
     let mut checks = Vec::<CheckItem>::new();
 
     if let Some(style_input) = args.style {
-        let status = match load_any_style(&style_input, false) {
-            Ok(_) => CheckItem {
-                kind: "style",
-                path: style_input,
-                ok: true,
-                error: None,
-            },
-            Err(e) => CheckItem {
-                kind: "style",
-                path: style_input,
-                ok: false,
-                error: Some(e.to_string()),
-            },
-        };
+        let status = check_style_input(&style_input);
         checks.push(status);
     }
 
@@ -1571,12 +1558,16 @@ fn run_check(args: CheckArgs) -> Result<(), Box<dyn Error>> {
                 kind: "bibliography",
                 path: display,
                 ok: true,
+                schema_version: None,
+                warnings: None,
                 error: None,
             },
             Err(e) => CheckItem {
                 kind: "bibliography",
                 path: display,
                 ok: false,
+                schema_version: None,
+                warnings: None,
                 error: Some(e.to_string()),
             },
         };
@@ -1590,12 +1581,16 @@ fn run_check(args: CheckArgs) -> Result<(), Box<dyn Error>> {
                 kind: "citations",
                 path: display,
                 ok: true,
+                schema_version: None,
+                warnings: None,
                 error: None,
             },
             Err(e) => CheckItem {
                 kind: "citations",
                 path: display,
                 ok: false,
+                schema_version: None,
+                warnings: None,
                 error: Some(e.to_string()),
             },
         };
@@ -1608,6 +1603,11 @@ fn run_check(args: CheckArgs) -> Result<(), Box<dyn Error>> {
         for check in &checks {
             if check.ok {
                 println!("OK   {:<12} {}", check.kind, check.path);
+                if let Some(warnings) = &check.warnings {
+                    for warn in warnings {
+                        println!("  ! {warn}");
+                    }
+                }
             } else {
                 println!("FAIL {:<12} {}", check.kind, check.path);
                 if let Some(err) = &check.error {
@@ -1622,6 +1622,53 @@ fn run_check(args: CheckArgs) -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
+}
+
+fn check_style_input(style_input: &str) -> CheckItem {
+    let current_version = citum_schema::SchemaVersion::default();
+    match load_any_style(style_input, false) {
+        Ok(style) => {
+            let mut warnings = Vec::new();
+            let mut ok = true;
+            let mut error = None;
+
+            if style.version.major > current_version.major {
+                ok = false;
+                error = Some(format!(
+                    "Style requires a newer major schema version ({}) than currently supported ({}).",
+                    style.version, current_version
+                ));
+            } else if style.version.major == current_version.major
+                && style.version.minor > current_version.minor
+            {
+                warnings.push(format!(
+                    "Style uses a newer minor schema version ({}); some features may not be supported.",
+                    style.version
+                ));
+            }
+
+            CheckItem {
+                kind: "style",
+                path: style_input.to_string(),
+                ok,
+                schema_version: Some(style.version.to_string()),
+                warnings: if warnings.is_empty() {
+                    None
+                } else {
+                    Some(warnings)
+                },
+                error,
+            }
+        }
+        Err(e) => CheckItem {
+            kind: "style",
+            path: style_input.to_string(),
+            ok: false,
+            schema_version: None,
+            warnings: None,
+            error: Some(e.to_string()),
+        },
+    }
 }
 
 /// Execute typed conversion subcommands (`style`, `locale`, `citations`).
