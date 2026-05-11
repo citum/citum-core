@@ -5,9 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.38.0] - 2026-05-06
+## [0.39.0] - 2026-05-11
 
 ### Features
+
+**server**
+
+- Wire ChainResolver in server ([`dd952fe`](https://github.com/citum/citum-core/commit/dd952fe27e9e611a507e03c96b2e6941520409a8))
+
+- Wire format_document arm + wasm ([`4b7dc22`](https://github.com/citum/citum-core/commit/4b7dc22834eda499ad8e9920de3c68bee4ae5a35))
+
 
 **tooling**
 

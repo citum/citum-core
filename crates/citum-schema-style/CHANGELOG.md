@@ -5,17 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.38.0] - 2026-05-06
+## [0.39.0] - 2026-05-11
 
 ### Bug Fixes
+
+**engine**
+
+- Suppress single-group heading ([`754b337`](https://github.com/citum/citum-core/commit/754b3373b18a335bc6fdf6fb0771eccdd79aee39))
+
 
 **migrate**
 
 - Emit localized page labels ([`3d2b951`](https://github.com/citum/citum-core/commit/3d2b951c19b5ea98232600823ebc539688bc86f2))
 
 
+**schema**
+
+- Allow variants to self-extend ([`75e9c81`](https://github.com/citum/citum-core/commit/75e9c811d10876544e86a189532daf21539caa95))
+
+
 
 ### Features
+
+**io**
+
+- Move biblatex and i/o to dedicated crate ([`c0016ce`](https://github.com/citum/citum-core/commit/c0016cec2137e11ec4dbb498d9aa33e00e57d9c6))
+
 
 **schema**
 
@@ -25,10 +40,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Rename template reuse ([`df4c4ea`](https://github.com/citum/citum-core/commit/df4c4eaaa6e7b69486634a47a1ed355eb22a82ed))
 
+- Add cid and integrity fields ([`dbe3c72`](https://github.com/citum/citum-core/commit/dbe3c723c0208dc02e113a09fc3603601ae39f1d))
+
+- Wire pin and version into resolution ([`8b740f0`](https://github.com/citum/citum-core/commit/8b740f050b94ce9d67b16952242ace68ac8b80b5))
+
+
+**store**
+
+- Phase 2 distributed resolver ([`9b92a89`](https://github.com/citum/citum-core/commit/9b92a89b72d8b1f6463763ec03fd9561b2449f18))
+
 
 **styles**
 
 - Add HTTP core catalog ([`a91e968`](https://github.com/citum/citum-core/commit/a91e9689159e8d11fac2a0801ed4c923fbfbb1bd))
+
+
+
+### Refactor
+
+**schema**
+
+- Use api traits and errors ([`e589b1a`](https://github.com/citum/citum-core/commit/e589b1a16dbad6556dba731d01fd9c714f764280))
+
+
+**store**
+
+- Unify style resolution ([`49b1337`](https://github.com/citum/citum-core/commit/49b133755146746d7d39610c0bda967061fdfae0))
+
+
+
+### Testing
+
+**schema**
+
+- Add BDD variant inheritance tests ([`6e5b3cb`](https://github.com/citum/citum-core/commit/6e5b3cba0fe40c71a9fc2df36f03546cd9e2b7aa))
 
 
 ## [0.35.0] - 2026-05-03

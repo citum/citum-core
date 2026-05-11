@@ -5,9 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.38.0] - 2026-05-06
+## [0.39.0] - 2026-05-11
 
 ### Bug Fixes
+
+**engine**
+
+- Suppress single-group heading ([`754b337`](https://github.com/citum/citum-core/commit/754b3373b18a335bc6fdf6fb0771eccdd79aee39))
+
 
 **migrate**
 
@@ -17,11 +22,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Features
 
+**engine**
+
+- Add format_document batch API ([`4eb074d`](https://github.com/citum/citum-core/commit/4eb074d7cc040f6e95f61b50c7c4d578d2938473))
+
+
+**io**
+
+- Move biblatex and i/o to dedicated crate ([`c0016ce`](https://github.com/citum/citum-core/commit/c0016cec2137e11ec4dbb498d9aa33e00e57d9c6))
+
+
 **schema**
 
 - Resolve template v3 variants ([`bb9f3bb`](https://github.com/citum/citum-core/commit/bb9f3bbd2668c0bb96144cac49d82d77e4b95676))
 
 - Rename template reuse ([`df4c4ea`](https://github.com/citum/citum-core/commit/df4c4eaaa6e7b69486634a47a1ed355eb22a82ed))
+
+
+**server**
+
+- Wire format_document arm + wasm ([`4b7dc22`](https://github.com/citum/citum-core/commit/4b7dc22834eda499ad8e9920de3c68bee4ae5a35))
 
 
 ## [0.35.0] - 2026-05-03
