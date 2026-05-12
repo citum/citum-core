@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-source_root="$repo_root/.codex/skills"
+source_root="$repo_root/.skills"
 codex_home="${CODEX_HOME:-$HOME/.codex}"
 target_root="$codex_home/skills"
 
@@ -33,4 +33,4 @@ for skill_dir in "$source_root"/*; do
   ln -s "$skill_dir" "$target_path"
 done
 
-echo "Installed Codex skills into $target_root"
+echo "Installed skills into $target_root"

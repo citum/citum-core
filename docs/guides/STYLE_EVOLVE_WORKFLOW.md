@@ -9,7 +9,7 @@ Use `/style-evolve` for all style tasks.
 Do not choose internal skills directly unless you are maintaining the workflow.
 
 For Codex CLI use, install the repo-owned skills with
-`./scripts/install-codex-skills.sh` and invoke the named skills directly.
+`./scripts/install-skills.sh` and invoke the named skills directly.
 `./scripts/codex <role> <target...>` remains available as a fallback for direct role
 targeting.
 
@@ -82,11 +82,11 @@ A style wave is a bounded cohort executed through repeated `upgrade`,
 
 `/styleauthor` remains available as a legacy alias and forwards to `/style-evolve`.
 
-For Codex CLI users outside the host slash-command UI, use the named Codex skills
+For Codex CLI users outside the host slash-command UI, use the named skills
 first:
 
 ```bash
-./scripts/install-codex-skills.sh
+./scripts/install-skills.sh
 # Then invoke $style-evolve, $migrate-research, or $rust-simplify in Codex.
 ```
 

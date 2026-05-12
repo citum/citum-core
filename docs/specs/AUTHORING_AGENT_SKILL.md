@@ -1,6 +1,6 @@
 # Citum Authoring Agent Skill Specification
 
-**Status:** Draft
+**Status:** Active
 **Date:** 2026-05-10
 **Related:** bean csl26-v2k9
 
