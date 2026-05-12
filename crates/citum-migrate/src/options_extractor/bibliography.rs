@@ -1,8 +1,11 @@
-use citum_schema::grouping::{GroupSort, GroupSortKey, SortKey as GroupSortKeyType};
+use citum_schema::grouping::{
+    GroupSort, GroupSortEntry, GroupSortKey, SortKey as GroupSortKeyType,
+};
 use citum_schema::options::{
     ArticleJournalBibliographyConfig, ArticleJournalNoPageFallback, BibliographyConfig, Sort,
     SortKey, SortSpec, SubsequentAuthorSubstituteRule,
 };
+use citum_schema::presets::SortPreset;
 use citum_schema::template::DelimiterPunctuation;
 use csl_legacy::model::{Choose, ChooseBranch, CslNode, Layout, Macro, Sort as LegacySort, Style};
 
@@ -476,34 +479,78 @@ pub fn extract_sort_from_bibliography(sort: &LegacySort) -> Option<Sort> {
 ///
 /// Converts CSL sort keys with grouping context to citum `GroupSort` format.
 #[must_use]
-pub fn extract_group_sort_from_bibliography(sort: &LegacySort) -> Option<GroupSort> {
-    let template: Vec<GroupSortKey> = sort
-        .keys
-        .iter()
-        .filter_map(|key| {
-            let key_kind = key
-                .variable
-                .as_ref()
-                .and_then(|name| parse_group_sort_key(name))
-                .or_else(|| {
-                    key.macro_name
-                        .as_ref()
-                        .and_then(|name| parse_group_sort_key(name))
-                })?;
+pub fn extract_group_sort_from_bibliography(sort: &LegacySort) -> Option<GroupSortEntry> {
+    let template = deduplicate_group_sort_keys(
+        sort.keys
+            .iter()
+            .filter_map(|key| {
+                let key_kind = key
+                    .variable
+                    .as_ref()
+                    .and_then(|name| parse_group_sort_key(name))
+                    .or_else(|| {
+                        key.macro_name
+                            .as_ref()
+                            .and_then(|name| parse_group_sort_key(name))
+                    })?;
 
-            Some(GroupSortKey {
-                key: key_kind,
-                ascending: key.sort.as_deref() != Some("descending"),
-                order: None,
-                sort_order: None,
+                Some(GroupSortKey {
+                    key: key_kind,
+                    ascending: key.sort.as_deref() != Some("descending"),
+                    order: None,
+                    sort_order: None,
+                })
             })
-        })
-        .collect();
+            .collect(),
+    );
 
     if template.is_empty() {
         None
+    } else if let Some(preset) = group_sort_preset_for_keys(&template) {
+        Some(GroupSortEntry::Preset(preset))
     } else {
-        Some(GroupSort { template })
+        Some(GroupSortEntry::Explicit(GroupSort { template }))
+    }
+}
+
+fn deduplicate_group_sort_keys(template: Vec<GroupSortKey>) -> Vec<GroupSortKey> {
+    let mut deduplicated = Vec::new();
+
+    for key in template {
+        if let Some(existing) = deduplicated
+            .iter_mut()
+            .find(|existing: &&mut GroupSortKey| existing.key == key.key)
+        {
+            existing.ascending &= key.ascending;
+            continue;
+        }
+        deduplicated.push(key);
+    }
+
+    deduplicated
+}
+
+fn group_sort_preset_for_keys(template: &[GroupSortKey]) -> Option<SortPreset> {
+    if template.iter().any(|key| !key.ascending) {
+        return None;
+    }
+
+    let keys: Vec<&GroupSortKeyType> = template.iter().map(|key| &key.key).collect();
+    match keys.as_slice() {
+        [GroupSortKeyType::Author]
+        | [GroupSortKeyType::Author, GroupSortKeyType::Issued]
+        | [
+            GroupSortKeyType::Author,
+            GroupSortKeyType::Issued,
+            GroupSortKeyType::Title,
+        ] => Some(SortPreset::AuthorDateTitle),
+        [GroupSortKeyType::Author, GroupSortKeyType::Title]
+        | [
+            GroupSortKeyType::Author,
+            GroupSortKeyType::Title,
+            GroupSortKeyType::Issued,
+        ] => Some(SortPreset::AuthorTitleDate),
+        _ => None,
     }
 }
 
