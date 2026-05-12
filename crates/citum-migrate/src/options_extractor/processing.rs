@@ -1,6 +1,7 @@
 use citum_schema::options::{
     Disambiguation, Group, Processing, ProcessingCustom, Sort, SortEntry, SortKey, SortSpec,
 };
+use citum_schema::presets::SortPreset;
 use csl_legacy::model::{CslNode, Style};
 use std::collections::HashSet;
 
@@ -58,10 +59,13 @@ pub fn detect_processing_mode(style: &Style) -> Option<Processing> {
         };
 
         let sort = style.citation.sort.as_ref().and_then(extract_sort);
-        let group = sort.as_ref().and_then(extract_group_from_sort);
+        let group = sort
+            .as_ref()
+            .map(SortEntry::resolve)
+            .and_then(|sort| extract_group_from_sort(&sort));
 
         return Some(Processing::Custom(ProcessingCustom {
-            sort: sort.map(SortEntry::Explicit),
+            sort,
             group,
             disambiguate: Some(disamb),
         }));
@@ -128,37 +132,76 @@ fn node_has_author_date_signal(
     }
 }
 
-fn extract_sort(legacy_sort: &csl_legacy::model::Sort) -> Option<Sort> {
-    let template: Vec<SortSpec> = legacy_sort
-        .keys
-        .iter()
-        .filter_map(|key| {
-            let key_kind = key
-                .variable
-                .as_ref()
-                .and_then(|name| parse_sort_key(name))
-                .or_else(|| {
-                    key.macro_name
-                        .as_ref()
-                        .and_then(|name| parse_sort_key(name))
-                })?;
+fn extract_sort(legacy_sort: &csl_legacy::model::Sort) -> Option<SortEntry> {
+    let template = deduplicate_sort_specs(
+        legacy_sort
+            .keys
+            .iter()
+            .filter_map(|key| {
+                let key_kind = key
+                    .variable
+                    .as_ref()
+                    .and_then(|name| parse_sort_key(name))
+                    .or_else(|| {
+                        key.macro_name
+                            .as_ref()
+                            .and_then(|name| parse_sort_key(name))
+                    })?;
 
-            let ascending = key.sort.as_deref() != Some("descending");
-            Some(SortSpec {
-                key: key_kind,
-                ascending,
+                let ascending = key.sort.as_deref() != Some("descending");
+                Some(SortSpec {
+                    key: key_kind,
+                    ascending,
+                })
             })
-        })
-        .collect();
+            .collect(),
+    );
 
     if template.is_empty() {
         None
+    } else if let Some(preset) = sort_preset_for_specs(&template) {
+        Some(SortEntry::Preset(preset))
     } else {
-        Some(Sort {
+        Some(SortEntry::Explicit(Sort {
             shorten_names: false,
             render_substitutions: false,
             template,
-        })
+        }))
+    }
+}
+
+fn deduplicate_sort_specs(template: Vec<SortSpec>) -> Vec<SortSpec> {
+    let mut deduplicated = Vec::new();
+
+    for spec in template {
+        if let Some(existing) = deduplicated
+            .iter_mut()
+            .find(|existing: &&mut SortSpec| existing.key == spec.key)
+        {
+            existing.ascending &= spec.ascending;
+            continue;
+        }
+        deduplicated.push(spec);
+    }
+
+    deduplicated
+}
+
+fn sort_preset_for_specs(template: &[SortSpec]) -> Option<SortPreset> {
+    if template.iter().any(|spec| !spec.ascending) {
+        return None;
+    }
+
+    let keys: Vec<&SortKey> = template.iter().map(|spec| &spec.key).collect();
+    match keys.as_slice() {
+        [SortKey::Author]
+        | [SortKey::Author, SortKey::Year]
+        | [SortKey::Author, SortKey::Year, SortKey::Title] => Some(SortPreset::AuthorDateTitle),
+        [SortKey::Author, SortKey::Title] | [SortKey::Author, SortKey::Title, SortKey::Year] => {
+            Some(SortPreset::AuthorTitleDate)
+        }
+        [SortKey::CitationNumber] => Some(SortPreset::CitationNumber),
+        _ => None,
     }
 }
 

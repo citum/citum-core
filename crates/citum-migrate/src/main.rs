@@ -805,14 +805,15 @@ fn resolve_migrated_bibliography_sort(
     processing: Option<&citum_schema::options::Processing>,
     legacy_sort: Option<&csl_legacy::model::Sort>,
 ) -> Option<citum_schema::grouping::GroupSortEntry> {
-    let extracted = legacy_sort.and_then(
+    let extracted_entry = legacy_sort.and_then(
         citum_migrate::options_extractor::bibliography::extract_group_sort_from_bibliography,
     )?;
+    let extracted = extracted_entry.resolve();
 
     if bibliography_sort_matches_processing_default(processing, &extracted) {
         None
     } else {
-        Some(citum_schema::grouping::GroupSortEntry::Explicit(extracted))
+        Some(extracted_entry)
     }
 }
 
@@ -1671,29 +1672,8 @@ mod tests {
 
         assert_eq!(
             sort,
-            Some(citum_schema::grouping::GroupSortEntry::Explicit(
-                citum_schema::grouping::GroupSort {
-                    template: vec![
-                        citum_schema::grouping::GroupSortKey {
-                            key: citum_schema::grouping::SortKey::Author,
-                            ascending: true,
-                            order: None,
-                            sort_order: None,
-                        },
-                        citum_schema::grouping::GroupSortKey {
-                            key: citum_schema::grouping::SortKey::Issued,
-                            ascending: true,
-                            order: None,
-                            sort_order: None,
-                        },
-                        citum_schema::grouping::GroupSortKey {
-                            key: citum_schema::grouping::SortKey::Title,
-                            ascending: true,
-                            order: None,
-                            sort_order: None,
-                        },
-                    ],
-                }
+            Some(citum_schema::grouping::GroupSortEntry::Preset(
+                citum_schema::presets::SortPreset::AuthorDateTitle
             ))
         );
     }

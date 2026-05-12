@@ -3,6 +3,7 @@ use citum_schema::grouping::SortKey as GroupSortKey;
 use citum_schema::options::{
     ArticleJournalNoPageFallback, Processing, SortKey, SubstituteConfig, SubstituteKey,
 };
+use citum_schema::presets::SortPreset;
 use csl_legacy::parser::parse_style;
 use roxmltree::Document;
 
@@ -124,6 +125,70 @@ fn test_extract_processing_sort_and_disambiguation() {
 }
 
 #[test]
+fn test_extract_processing_sort_uses_author_date_title_preset_for_duplicate_macro_keys() {
+    let xml = r#"<style class="in-text">
+        <citation>
+            <sort>
+                <key macro="author-sort"/>
+                <key macro="date-sort-group"/>
+                <key macro="date-sort"/>
+            </sort>
+            <layout><text macro="year"/></layout>
+        </citation>
+        <bibliography><layout><text variable="title"/></layout></bibliography>
+    </style>"#;
+    let style = parse_csl(xml).unwrap();
+    let config = OptionsExtractor::extract(&style);
+
+    let Processing::Custom(custom) = config.processing.unwrap() else {
+        panic!("expected custom processing mode");
+    };
+
+    assert!(matches!(
+        custom.sort,
+        Some(citum_schema::options::SortEntry::Preset(
+            SortPreset::AuthorDateTitle
+        ))
+    ));
+
+    let group = custom.group.unwrap();
+    assert_eq!(
+        group.template,
+        vec![SortKey::Author, SortKey::Year, SortKey::Title]
+    );
+}
+
+#[test]
+fn test_extract_processing_sort_keeps_conflicting_duplicate_direction_explicit() {
+    let xml = r#"<style class="in-text">
+        <citation>
+            <sort>
+                <key macro="author-sort"/>
+                <key macro="date-sort-group"/>
+                <key macro="date-sort" sort="descending"/>
+            </sort>
+            <layout><text macro="year"/></layout>
+        </citation>
+        <bibliography><layout><text variable="title"/></layout></bibliography>
+    </style>"#;
+    let style = parse_csl(xml).unwrap();
+    let config = OptionsExtractor::extract(&style);
+
+    let Processing::Custom(custom) = config.processing.unwrap() else {
+        panic!("expected custom processing mode");
+    };
+    let Some(citum_schema::options::SortEntry::Explicit(sort)) = custom.sort else {
+        panic!("expected conflicting duplicate sort directions to stay explicit");
+    };
+
+    assert_eq!(sort.template.len(), 2);
+    assert_eq!(sort.template[0].key, SortKey::Author);
+    assert!(sort.template[0].ascending);
+    assert_eq!(sort.template[1].key, SortKey::Year);
+    assert!(!sort.template[1].ascending);
+}
+
+#[test]
 fn test_extract_processing_disambiguation_defaults() {
     let xml = r#"<style class="in-text">
         <citation>
@@ -215,10 +280,79 @@ fn test_extract_group_sort_from_bibliography_macros() {
 
     let sort = super::bibliography::extract_group_sort_from_bibliography(legacy_sort)
         .expect("group sort should be extracted");
+    let sort = sort.resolve();
     assert_eq!(sort.template.len(), 3);
     assert!(matches!(sort.template[0].key, GroupSortKey::Author));
     assert!(matches!(sort.template[1].key, GroupSortKey::Title));
     assert!(matches!(sort.template[2].key, GroupSortKey::Issued));
+}
+
+#[test]
+fn test_extract_group_sort_uses_author_date_title_preset_for_duplicate_macro_keys() {
+    let xml = r#"<style class="in-text">
+        <citation><layout><text variable="title"/></layout></citation>
+        <bibliography>
+            <sort>
+                <key macro="author-sort"/>
+                <key macro="date-sort-group"/>
+                <key macro="date-sort"/>
+                <key macro="title"/>
+                <key variable="event-date"/>
+                <key variable="original-date"/>
+            </sort>
+            <layout><text variable="title"/></layout>
+        </bibliography>
+    </style>"#;
+    let style = parse_csl(xml).unwrap();
+    let legacy_sort = style
+        .bibliography
+        .as_ref()
+        .and_then(|b| b.sort.as_ref())
+        .expect("legacy bibliography sort should exist");
+
+    let sort = super::bibliography::extract_group_sort_from_bibliography(legacy_sort)
+        .expect("group sort should be extracted");
+
+    assert!(matches!(
+        sort,
+        citum_schema::grouping::GroupSortEntry::Preset(SortPreset::AuthorDateTitle)
+    ));
+}
+
+#[test]
+fn test_extract_group_sort_keeps_conflicting_duplicate_direction_explicit() {
+    let xml = r#"<style class="in-text">
+        <citation><layout><text variable="title"/></layout></citation>
+        <bibliography>
+            <sort>
+                <key macro="author-sort"/>
+                <key macro="date-sort-group"/>
+                <key macro="date-sort" sort="descending"/>
+                <key macro="title"/>
+            </sort>
+            <layout><text variable="title"/></layout>
+        </bibliography>
+    </style>"#;
+    let style = parse_csl(xml).unwrap();
+    let legacy_sort = style
+        .bibliography
+        .as_ref()
+        .and_then(|b| b.sort.as_ref())
+        .expect("legacy bibliography sort should exist");
+
+    let sort = super::bibliography::extract_group_sort_from_bibliography(legacy_sort)
+        .expect("group sort should be extracted");
+    let citum_schema::grouping::GroupSortEntry::Explicit(sort) = sort else {
+        panic!("expected conflicting duplicate sort directions to stay explicit");
+    };
+
+    assert_eq!(sort.template.len(), 3);
+    assert_eq!(sort.template[0].key, GroupSortKey::Author);
+    assert!(sort.template[0].ascending);
+    assert_eq!(sort.template[1].key, GroupSortKey::Issued);
+    assert!(!sort.template[1].ascending);
+    assert_eq!(sort.template[2].key, GroupSortKey::Title);
+    assert!(sort.template[2].ascending);
 }
 
 #[test]
