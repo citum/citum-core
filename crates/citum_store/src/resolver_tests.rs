@@ -184,6 +184,32 @@ fn git_resolver_parses_git_uri() {
 
 #[cfg(feature = "http")]
 #[test]
+fn git_resolver_rejects_plain_http_uri() {
+    use crate::GitResolver;
+
+    let uri = "git+http://github.com/citum/example.git#styles/example.yaml";
+
+    assert!(GitResolver::parse_git_uri(uri).is_none());
+}
+
+#[cfg(feature = "http")]
+#[test]
+fn git_resolver_rejects_unsafe_style_paths() {
+    use crate::GitResolver;
+
+    assert!(
+        GitResolver::parse_git_uri("git+https://github.com/citum/example.git#/etc/passwd")
+            .is_none()
+    );
+    assert!(
+        GitResolver::parse_git_uri("git+https://github.com/citum/example.git#../style.yaml")
+            .is_none()
+    );
+    assert!(GitResolver::parse_git_uri("git+https://github.com/citum/example.git#").is_none());
+}
+
+#[cfg(feature = "http")]
+#[test]
 fn verifying_resolver_passes_through_when_pin_matches() {
     use crate::cid::compute_style_cid;
     use crate::resolver::{StyleResolver, VerifyingResolver};

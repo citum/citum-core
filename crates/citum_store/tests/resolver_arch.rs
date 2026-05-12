@@ -13,14 +13,21 @@
 )]
 
 use citum_schema::{RegistryEntry, StyleRegistry};
+#[cfg(feature = "http")]
+use citum_store::resolver::RemoteFetchPolicy;
 use citum_store::resolver::{
     ChainResolver, EmbeddedResolver, FileResolver, RegistryResolver, ResolverError, StyleResolver,
 };
 use std::fs;
+#[cfg(feature = "http")]
 use std::io::{Read, Write};
+#[cfg(feature = "http")]
 use std::net::TcpListener;
+#[cfg(feature = "http")]
 use std::sync::Arc;
+#[cfg(feature = "http")]
 use std::sync::atomic::{AtomicUsize, Ordering};
+#[cfg(feature = "http")]
 use std::thread;
 use tempfile::TempDir;
 
@@ -127,6 +134,15 @@ fn spawn_style_server(
     body: &'static str,
     status: &'static str,
 ) -> (String, Arc<AtomicUsize>, thread::JoinHandle<()>) {
+    spawn_style_server_with_headers(body, status, "")
+}
+
+#[cfg(feature = "http")]
+fn spawn_style_server_with_headers(
+    body: &'static str,
+    status: &'static str,
+    headers: &'static str,
+) -> (String, Arc<AtomicUsize>, thread::JoinHandle<()>) {
     let listener = TcpListener::bind("127.0.0.1:0").unwrap();
     let address = listener.local_addr().unwrap();
     let requests = Arc::new(AtomicUsize::new(0));
@@ -138,7 +154,7 @@ fn spawn_style_server(
             let _ = stream.read(&mut buffer);
             request_counter.fetch_add(1, Ordering::SeqCst);
             let response = format!(
-                "HTTP/1.1 {status}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                "HTTP/1.1 {status}\r\n{headers}Content-Length: {}\r\nConnection: close\r\n\r\n{body}",
                 body.len()
             );
             stream.write_all(response.as_bytes()).unwrap();
@@ -149,12 +165,92 @@ fn spawn_style_server(
 
 #[cfg(feature = "http")]
 #[test]
+fn test_http_resolver_rejects_plain_http_by_default() {
+    use citum_store::resolver::HttpResolver;
+
+    let (url, _requests, handle) = spawn_style_server("info:\n  title: HTTP Style\n", "200 OK");
+    let temp = TempDir::new().unwrap();
+    let resolver = HttpResolver::new(temp.path().to_path_buf());
+
+    match resolver.resolve_style(&url) {
+        Err(ResolverError::Denied { reason, .. }) => {
+            assert!(reason.contains("plaintext HTTP"));
+        }
+        err => panic!("expected Denied, got {err:?}"),
+    }
+    drop(handle);
+}
+
+#[cfg(feature = "http")]
+#[test]
+fn test_http_resolver_rejects_loopback_https_literal_by_default() {
+    use citum_store::resolver::HttpResolver;
+
+    let temp = TempDir::new().unwrap();
+    let resolver = HttpResolver::new(temp.path().to_path_buf());
+
+    match resolver.resolve_style("https://127.0.0.1/style.yaml") {
+        Err(ResolverError::Denied { reason, .. }) => {
+            assert!(reason.contains("IP literal"));
+        }
+        err => panic!("expected Denied, got {err:?}"),
+    }
+}
+
+#[cfg(feature = "http")]
+#[test]
+fn test_http_resolver_rejects_oversized_response() {
+    use citum_store::resolver::HttpResolver;
+
+    let body = "info:\n  title: Oversized\n";
+    let (url, _requests, handle) = spawn_style_server(body, "200 OK");
+    let temp = TempDir::new().unwrap();
+    let resolver = HttpResolver::new(temp.path().to_path_buf()).with_policy(RemoteFetchPolicy {
+        max_bytes: 4,
+        ..RemoteFetchPolicy::localhost_for_tests()
+    });
+
+    match resolver.resolve_style(&url) {
+        Err(ResolverError::Denied { reason, .. }) => {
+            assert!(reason.contains("exceeds"));
+        }
+        err => panic!("expected Denied, got {err:?}"),
+    }
+    drop(handle);
+}
+
+#[cfg(feature = "http")]
+#[test]
+fn test_http_resolver_rejects_redirects() {
+    use citum_store::resolver::HttpResolver;
+
+    let (url, _requests, handle) = spawn_style_server_with_headers(
+        "",
+        "302 Found",
+        "Location: https://example.com/style.yaml\r\n",
+    );
+    let temp = TempDir::new().unwrap();
+    let resolver = HttpResolver::new(temp.path().to_path_buf())
+        .with_policy(RemoteFetchPolicy::localhost_for_tests());
+
+    match resolver.resolve_style(&url) {
+        Err(ResolverError::Denied { reason, .. }) => {
+            assert!(reason.contains("redirect"));
+        }
+        err => panic!("expected Denied, got {err:?}"),
+    }
+    drop(handle);
+}
+
+#[cfg(feature = "http")]
+#[test]
 fn test_http_resolver_fetches_and_reuses_cache() {
     use citum_store::resolver::HttpResolver;
 
     let (url, requests, handle) = spawn_style_server("info:\n  title: HTTP Style\n", "200 OK");
     let temp = TempDir::new().unwrap();
-    let resolver = HttpResolver::new(temp.path().to_path_buf());
+    let resolver = HttpResolver::new(temp.path().to_path_buf())
+        .with_policy(RemoteFetchPolicy::localhost_for_tests());
 
     let style = resolver.resolve_style(&url).unwrap();
     assert_eq!(style.info.title.as_deref(), Some("HTTP Style"));
@@ -172,7 +268,8 @@ fn test_http_resolver_reports_not_found() {
 
     let (url, _requests, handle) = spawn_style_server("missing", "404 Not Found");
     let temp = TempDir::new().unwrap();
-    let resolver = HttpResolver::new(temp.path().to_path_buf());
+    let resolver = HttpResolver::new(temp.path().to_path_buf())
+        .with_policy(RemoteFetchPolicy::localhost_for_tests());
 
     match resolver.resolve_style(&url) {
         Err(ResolverError::StyleNotFound(_)) => {}
@@ -188,7 +285,8 @@ fn test_http_resolver_reports_malformed_yaml() {
 
     let (url, _requests, handle) = spawn_style_server("info: [", "200 OK");
     let temp = TempDir::new().unwrap();
-    let resolver = HttpResolver::new(temp.path().to_path_buf());
+    let resolver = HttpResolver::new(temp.path().to_path_buf())
+        .with_policy(RemoteFetchPolicy::localhost_for_tests());
 
     match resolver.resolve_style(&url) {
         Err(ResolverError::YamlError(_)) => {}
@@ -224,7 +322,9 @@ fn test_registry_resolver_loads_url_entry() {
         }],
     };
     let temp = TempDir::new().unwrap();
-    let resolver = RegistryResolver::new(registry).with_http(HttpResolver::new(temp.path().into()));
+    let resolver = RegistryResolver::new(registry).with_http(
+        HttpResolver::new(temp.path().into()).with_policy(RemoteFetchPolicy::localhost_for_tests()),
+    );
 
     let style = resolver.resolve_style("http-style").unwrap();
     assert_eq!(style.info.title.as_deref(), Some("Registry HTTP Style"));

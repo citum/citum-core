@@ -21,7 +21,7 @@ tempfile = { version = "3", optional = true }
 cid = { version = "0.11", default-features = false, features = ["alloc", "serde-codec"], optional = true }
 multihash = { version = "0.19", default-features = false, features = ["alloc"], optional = true }
 multibase = { version = "0.9", optional = true }
-gix = { version = "0.70", default-features = false, features = ["blocking-network-client", "blocking-http-transport-reqwest-rust-tls", "revision"], optional = true }
+gix = { version = "0.83", default-features = false, features = ["blocking-network-client", "blocking-http-transport-reqwest-rust-tls", "revision", "sha1"], optional = true }
 
 [features]
 hub = []

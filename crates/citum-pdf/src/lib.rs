@@ -16,7 +16,7 @@ use typst::layout::PagedDocument;
 use typst::syntax::{FileId, Source, VirtualPath};
 use typst::text::{Font, FontBook};
 use typst::utils::LazyHash;
-use typst::{Library, World, compile};
+use typst::{Library, LibraryExt, World, compile};
 use typst_kit::fonts::{FontSearcher, FontSlot};
 
 struct TypstWorld {

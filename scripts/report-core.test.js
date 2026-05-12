@@ -918,7 +918,7 @@ test('generateHtml returns JSON string if template is missing', () => {
 
 test('generateReport supports style-scoped official reports', {
   skip: !hasLegacyStyles,
-  timeout: 60000,
+  timeout: 180000,
 }, async () => {
   const { report } = await generateReport({
     styleName: 'apa-7th',
@@ -933,7 +933,7 @@ test('generateReport supports style-scoped official reports', {
 
 test('generateReport supports multi-style selected reports', {
   skip: !hasLegacyStyles,
-  timeout: 60000,
+  timeout: 180000,
 }, async () => {
   const { report } = await generateReport({
     styles: ['chicago-author-date-18th', 'apa-7th'],

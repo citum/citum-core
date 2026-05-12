@@ -2,6 +2,7 @@
 .claude/skills/migrate-research/lab/
 .oracle-cache
 target/
+fuzz/target/
 /docs/compat.html
 **/*.rs.bk
 *.swp

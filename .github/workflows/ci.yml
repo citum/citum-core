@@ -1,5 +1,8 @@
 name: CI
 
+permissions:
+  contents: read
+
 on:
   push:
     branches: [ "main" ]
@@ -176,6 +179,42 @@ jobs:
           tmp_dir="$(mktemp -d)"
           cargo run --bin citum --all-features -- schema --out-dir "$tmp_dir"
           diff -ru "$tmp_dir" docs/schemas
+
+  security:
+    name: Security Audit
+    needs: changes
+    if: ${{ needs.changes.outputs.rust == 'true' }}
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Set up nightly Rust for fuzzing
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Install security tools
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-audit,cargo-deny,cargo-fuzz
+
+      - name: Check RustSec advisories
+        run: >
+          cargo audit --deny warnings
+          --ignore RUSTSEC-2024-0320
+          --ignore RUSTSEC-2024-0436
+          --ignore RUSTSEC-2025-0141
+
+      - name: Check dependency policy
+        run: cargo deny check advisories licenses bans sources
+
+      - name: Build fuzz targets
+        run: cargo +nightly fuzz build --target x86_64-unknown-linux-gnu
 
   semver-check:
     name: API Semver Check

@@ -44,14 +44,28 @@ fn safe_c_string(s: String) -> *mut c_char {
     }
 }
 
-/// Parse a `*const c_char` to `&str`, returning null on failure.
-macro_rules! parse_c_str {
-    ($ptr:expr) => {
-        match unsafe { CStr::from_ptr($ptr) }.to_str() {
-            Ok(s) => s,
-            Err(_) => return ptr::null_mut(),
+unsafe fn parse_c_str<'a>(ptr: *const c_char, label: &str) -> Result<&'a str, ()> {
+    if ptr.is_null() {
+        set_error(format!("{label} pointer is null"));
+        return Err(());
+    }
+    unsafe { CStr::from_ptr(ptr) }.to_str().map_err(|err| {
+        set_error(format!("Invalid UTF-8 in {label}: {err}"));
+    })
+}
+
+fn parse_output_format(format: &str) -> Result<&'static str, ()> {
+    match format {
+        "html" => Ok("html"),
+        "latex" => Ok("latex"),
+        "djot" => Ok("djot"),
+        "typst" => Ok("typst"),
+        "plain" => Ok("plain"),
+        other => {
+            set_error(format!("Unsupported output format: {other}"));
+            Err(())
         }
-    };
+    }
 }
 
 /// Parse bibliography JSON string, handling both CSL-JSON and native formats.
@@ -92,12 +106,12 @@ pub unsafe extern "C" fn citum_processor_new(
     style_json: *const c_char,
     bib_json: *const c_char,
 ) -> *mut Processor {
-    if style_json.is_null() || bib_json.is_null() {
+    let Ok(style_str) = (unsafe { parse_c_str(style_json, "style_json") }) else {
         return ptr::null_mut();
-    }
-
-    let style_str = parse_c_str!(style_json);
-    let bib_str = parse_c_str!(bib_json);
+    };
+    let Ok(bib_str) = (unsafe { parse_c_str(bib_json, "bib_json") }) else {
+        return ptr::null_mut();
+    };
 
     let style: Style = match serde_json::from_str(style_str) {
         Ok(s) => s,
@@ -129,13 +143,15 @@ pub unsafe extern "C" fn citum_processor_new_with_locale(
     bib_json: *const c_char,
     locale_json: *const c_char,
 ) -> *mut Processor {
-    if style_json.is_null() || bib_json.is_null() || locale_json.is_null() {
+    let Ok(style_str) = (unsafe { parse_c_str(style_json, "style_json") }) else {
         return ptr::null_mut();
-    }
-
-    let style_str = parse_c_str!(style_json);
-    let bib_str = parse_c_str!(bib_json);
-    let locale_str = parse_c_str!(locale_json);
+    };
+    let Ok(bib_str) = (unsafe { parse_c_str(bib_json, "bib_json") }) else {
+        return ptr::null_mut();
+    };
+    let Ok(locale_str) = (unsafe { parse_c_str(locale_json, "locale_json") }) else {
+        return ptr::null_mut();
+    };
 
     let style: Style = match serde_json::from_str(style_str) {
         Ok(s) => s,
@@ -169,6 +185,8 @@ pub unsafe extern "C" fn citum_processor_new_with_locale(
 ///
 /// # Safety
 /// The pointer must have been created by a `citum_processor_new` function.
+/// Passing the same pointer more than once, or passing a pointer allocated by
+/// any other API, is undefined behavior.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn citum_processor_free(processor: *mut Processor) {
     if !processor.is_null() {
@@ -181,17 +199,14 @@ unsafe fn render_citation<F>(processor: *mut Processor, cite_json: *const c_char
 where
     F: crate::render::format::OutputFormat<Output = String>,
 {
-    if processor.is_null() || cite_json.is_null() {
+    if processor.is_null() {
+        set_error("processor pointer is null".to_string());
         return ptr::null_mut();
     }
 
     let processor = unsafe { &*processor };
-    let cite_str = match unsafe { CStr::from_ptr(cite_json) }.to_str() {
-        Ok(s) => s,
-        Err(e) => {
-            set_error(format!("Invalid UTF-8 in citation JSON: {e}"));
-            return ptr::null_mut();
-        }
+    let Ok(cite_str) = (unsafe { parse_c_str(cite_json, "cite_json") }) else {
+        return ptr::null_mut();
     };
 
     let citation: Citation = match serde_json::from_str(cite_str) {
@@ -283,6 +298,7 @@ where
     F: crate::render::format::OutputFormat<Output = String>,
 {
     if processor.is_null() {
+        set_error("processor pointer is null".to_string());
         return ptr::null_mut();
     }
 
@@ -345,6 +361,7 @@ where
     F: crate::render::format::OutputFormat<Output = String>,
 {
     if processor.is_null() {
+        set_error("processor pointer is null".to_string());
         return ptr::null_mut();
     }
 
@@ -386,17 +403,14 @@ pub unsafe extern "C" fn citum_render_citations_json(
     citations_json: *const c_char,
     format: *const c_char,
 ) -> *mut c_char {
-    if processor.is_null() || citations_json.is_null() || format.is_null() {
+    if processor.is_null() {
+        set_error("processor pointer is null".to_string());
         return ptr::null_mut();
     }
 
     let processor = unsafe { &*processor };
-    let citations_str = match unsafe { CStr::from_ptr(citations_json) }.to_str() {
-        Ok(s) => s,
-        Err(e) => {
-            set_error(format!("Invalid UTF-8 in citations JSON: {e}"));
-            return ptr::null_mut();
-        }
+    let Ok(citations_str) = (unsafe { parse_c_str(citations_json, "citations_json") }) else {
+        return ptr::null_mut();
     };
 
     let citations: Vec<Citation> = match serde_json::from_str(citations_str) {
@@ -407,9 +421,10 @@ pub unsafe extern "C" fn citum_render_citations_json(
         }
     };
 
-    let format_str = unsafe { CStr::from_ptr(format) }
-        .to_str()
-        .unwrap_or("plain");
+    let Ok(format_str) = (unsafe { parse_c_str(format, "format") }).and_then(parse_output_format)
+    else {
+        return ptr::null_mut();
+    };
 
     let result = match format_str {
         "html" => processor.process_citations_with_format::<Html>(&citations),
@@ -438,6 +453,8 @@ pub unsafe extern "C" fn citum_render_citations_json(
 ///
 /// # Safety
 /// The pointer must have been returned by one of the rendering functions.
+/// Passing the same pointer more than once, or passing a pointer allocated by
+/// any other API, is undefined behavior.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn citum_string_free(s: *mut c_char) {
     if !s.is_null() {
@@ -452,4 +469,100 @@ pub unsafe extern "C" fn citum_string_free(s: *mut c_char) {
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn citum_version() -> *mut c_char {
     safe_c_string(env!("CARGO_PKG_VERSION").to_string())
+}
+
+#[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
+mod tests {
+    use super::*;
+
+    fn c_string(value: &str) -> CString {
+        CString::new(value).expect("test string has no interior NUL")
+    }
+
+    fn processor() -> *mut Processor {
+        let style = serde_json::to_string(&Style::default()).expect("style serializes");
+        let bibliography = "{}";
+        unsafe { citum_processor_new(c_string(&style).as_ptr(), c_string(bibliography).as_ptr()) }
+    }
+
+    fn last_error() -> String {
+        let ptr = unsafe { citum_get_last_error() };
+        assert!(!ptr.is_null(), "last error should be set");
+        let error = unsafe { CStr::from_ptr(ptr) }
+            .to_str()
+            .expect("error is UTF-8")
+            .to_string();
+        unsafe { citum_string_free(ptr) };
+        error
+    }
+
+    #[test]
+    fn processor_new_rejects_null_style_pointer() {
+        let bibliography = c_string("{}");
+        let processor = unsafe { citum_processor_new(ptr::null(), bibliography.as_ptr()) };
+        assert!(processor.is_null());
+        assert!(last_error().contains("style_json pointer is null"));
+    }
+
+    #[test]
+    fn processor_new_rejects_invalid_utf8() {
+        let invalid = [0xff, 0x00];
+        let bibliography = c_string("{}");
+        let processor = unsafe {
+            citum_processor_new(invalid.as_ptr().cast::<c_char>(), bibliography.as_ptr())
+        };
+        assert!(processor.is_null());
+        assert!(last_error().contains("Invalid UTF-8 in style_json"));
+    }
+
+    #[test]
+    fn processor_new_rejects_invalid_json() {
+        let style = c_string("{");
+        let bibliography = c_string("{}");
+        let processor = unsafe { citum_processor_new(style.as_ptr(), bibliography.as_ptr()) };
+        assert!(processor.is_null());
+        assert!(last_error().contains("Style JSON parse error"));
+    }
+
+    #[test]
+    fn render_citation_rejects_null_processor() {
+        let citation = c_string("{}");
+        let rendered = unsafe { citum_render_citation_plain(ptr::null_mut(), citation.as_ptr()) };
+        assert!(rendered.is_null());
+        assert!(last_error().contains("processor pointer is null"));
+    }
+
+    #[test]
+    fn render_citation_rejects_null_citation_pointer() {
+        let processor = processor();
+        assert!(!processor.is_null());
+        let rendered = unsafe { citum_render_citation_plain(processor, ptr::null()) };
+        assert!(rendered.is_null());
+        assert!(last_error().contains("cite_json pointer is null"));
+        unsafe { citum_processor_free(processor) };
+    }
+
+    #[test]
+    fn batch_render_rejects_invalid_format() {
+        let processor = processor();
+        assert!(!processor.is_null());
+        let citations = c_string("[]");
+        let format = c_string("bogus");
+        let rendered =
+            unsafe { citum_render_citations_json(processor, citations.as_ptr(), format.as_ptr()) };
+        assert!(rendered.is_null());
+        assert!(last_error().contains("Unsupported output format"));
+        unsafe { citum_processor_free(processor) };
+    }
 }

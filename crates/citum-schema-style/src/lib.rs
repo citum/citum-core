@@ -3,7 +3,7 @@
 use indexmap::IndexMap;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
-use serde::de::DeserializeOwned;
+use serde::de::{DeserializeOwned, Error as _};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
@@ -107,6 +107,12 @@ pub type StyleResolver = dyn citum_resolver_api::StyleResolver<Style = Style, Lo
 
 /// Canonical Citum style schema version used when `Style.version` is omitted.
 pub const STYLE_SCHEMA_VERSION: &str = "0.46.1";
+
+/// Maximum accepted nesting depth for authored template groups and fallbacks.
+pub const MAX_TEMPLATE_NESTING_DEPTH: usize = 64;
+
+/// Maximum accepted authored template components in one style.
+pub const MAX_TEMPLATE_COMPONENTS: usize = 16_384;
 
 /// A schema version (major.minor).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -519,6 +525,9 @@ impl Style {
         let raw: serde_yaml::Value = serde_yaml::from_str(s)?;
         let mut style: Style = serde_yaml::from_value(raw.clone())?;
         style.raw_yaml = Some(raw);
+        style
+            .validate_resource_limits()
+            .map_err(serde_yaml::Error::custom)?;
         Ok(style)
     }
 
@@ -532,7 +541,34 @@ impl Style {
         let raw: serde_yaml::Value = serde_yaml::from_slice(bytes)?;
         let mut style: Style = serde_yaml::from_value(raw.clone())?;
         style.raw_yaml = Some(raw);
+        style
+            .validate_resource_limits()
+            .map_err(serde_yaml::Error::custom)?;
         Ok(style)
+    }
+
+    /// Validate hard resource limits for style templates.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when authored template structure exceeds the maximum
+    /// depth or component count accepted by the engine.
+    pub fn validate_resource_limits(&self) -> Result<(), String> {
+        let mut budget = TemplateResourceBudget::default();
+
+        if let Some(templates) = &self.templates {
+            for (name, template) in templates {
+                budget.check_template(template, &format!("templates.{name}"), 0)?;
+            }
+        }
+        if let Some(citation) = &self.citation {
+            budget.check_citation_spec(citation, "citation", 0)?;
+        }
+        if let Some(bibliography) = &self.bibliography {
+            budget.check_bibliography_spec(bibliography, "bibliography", 0)?;
+        }
+
+        Ok(())
     }
 
     /// Validate the style and return any non-fatal warnings.
@@ -633,6 +669,222 @@ fn collect_citation_spec_warnings(
     .filter_map(|(n, s)| s.map(|s| (n, s)))
     {
         collect_citation_spec_warnings(sub_spec, &format!("{location}.{sub_name}"), warnings);
+    }
+}
+
+#[derive(Default)]
+struct TemplateResourceBudget {
+    component_count: usize,
+}
+
+impl TemplateResourceBudget {
+    fn check_template(
+        &mut self,
+        template: &[TemplateComponent],
+        location: &str,
+        depth: usize,
+    ) -> Result<(), String> {
+        if depth > MAX_TEMPLATE_NESTING_DEPTH {
+            return Err(format!(
+                "{location} exceeds maximum template nesting depth of {MAX_TEMPLATE_NESTING_DEPTH}"
+            ));
+        }
+        for component in template {
+            self.check_component(component, location, depth)?;
+        }
+        Ok(())
+    }
+
+    fn check_component(
+        &mut self,
+        component: &TemplateComponent,
+        location: &str,
+        depth: usize,
+    ) -> Result<(), String> {
+        self.component_count = self.component_count.saturating_add(1);
+        if self.component_count > MAX_TEMPLATE_COMPONENTS {
+            return Err(format!(
+                "style exceeds maximum template component count of {MAX_TEMPLATE_COMPONENTS}"
+            ));
+        }
+
+        match component {
+            TemplateComponent::Date(date) => {
+                if let Some(fallback) = &date.fallback {
+                    self.check_template(fallback, &format!("{location}.date.fallback"), depth + 1)?;
+                }
+            }
+            TemplateComponent::Group(group) => {
+                self.check_template(&group.group, &format!("{location}.group"), depth + 1)?;
+            }
+            TemplateComponent::Contributor(_)
+            | TemplateComponent::Title(_)
+            | TemplateComponent::Number(_)
+            | TemplateComponent::Variable(_)
+            | TemplateComponent::Term(_) => {}
+        }
+
+        Ok(())
+    }
+
+    fn check_variant(
+        &mut self,
+        variant: &TemplateVariant,
+        location: &str,
+        depth: usize,
+    ) -> Result<(), String> {
+        match variant {
+            TemplateVariant::Full(template) => self.check_template(template, location, depth),
+            TemplateVariant::Diff(diff) => {
+                for (index, add) in diff.add.iter().enumerate() {
+                    self.check_component(
+                        &add.component,
+                        &format!("{location}.add[{index}].component"),
+                        depth,
+                    )?;
+                }
+                Ok(())
+            }
+        }
+    }
+
+    fn check_variants(
+        &mut self,
+        variants: &TemplateVariants,
+        location: &str,
+        depth: usize,
+    ) -> Result<(), String> {
+        for (selector, variant) in variants {
+            self.check_variant(variant, &format!("{location}.{selector:?}"), depth)?;
+        }
+        Ok(())
+    }
+
+    fn check_locales(
+        &mut self,
+        locales: &[LocalizedTemplateSpec],
+        location: &str,
+        depth: usize,
+    ) -> Result<(), String> {
+        for (index, locale) in locales.iter().enumerate() {
+            self.check_template(
+                &locale.template,
+                &format!("{location}[{index}].template"),
+                depth,
+            )?;
+        }
+        Ok(())
+    }
+
+    fn check_citation_spec(
+        &mut self,
+        spec: &CitationSpec,
+        location: &str,
+        depth: usize,
+    ) -> Result<(), String> {
+        if let Some(template) = &spec.template {
+            self.check_template(template, &format!("{location}.template"), depth)?;
+        }
+        if let Some(locales) = &spec.locales {
+            self.check_locales(locales, &format!("{location}.locales"), depth)?;
+        }
+        if let Some(variants) = &spec.type_variants {
+            self.check_variants(variants, &format!("{location}.type-variants"), depth)?;
+        }
+        for (sub_name, sub_spec) in [
+            ("integral", spec.integral.as_deref()),
+            ("non-integral", spec.non_integral.as_deref()),
+            ("subsequent", spec.subsequent.as_deref()),
+            ("ibid", spec.ibid.as_deref()),
+        ]
+        .into_iter()
+        .filter_map(|(n, s)| s.map(|s| (n, s)))
+        {
+            self.check_citation_spec(sub_spec, &format!("{location}.{sub_name}"), depth + 1)?;
+        }
+        Ok(())
+    }
+
+    fn check_bibliography_spec(
+        &mut self,
+        spec: &BibliographySpec,
+        location: &str,
+        depth: usize,
+    ) -> Result<(), String> {
+        if let Some(template) = &spec.template {
+            self.check_template(template, &format!("{location}.template"), depth)?;
+        }
+        if let Some(locales) = &spec.locales {
+            self.check_locales(locales, &format!("{location}.locales"), depth)?;
+        }
+        if let Some(variants) = &spec.type_variants {
+            self.check_variants(variants, &format!("{location}.type-variants"), depth)?;
+        }
+        Ok(())
+    }
+}
+
+#[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
+mod security_resource_tests {
+    use super::*;
+
+    fn nested_group(depth: usize) -> TemplateComponent {
+        if depth == 0 {
+            TemplateComponent::default()
+        } else {
+            TemplateComponent::Group(TemplateGroup {
+                group: vec![nested_group(depth - 1)],
+                ..TemplateGroup::default()
+            })
+        }
+    }
+
+    #[test]
+    fn validate_resource_limits_rejects_deeply_nested_templates() {
+        let style = Style {
+            bibliography: Some(BibliographySpec {
+                template: Some(vec![nested_group(MAX_TEMPLATE_NESTING_DEPTH + 1)]),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+
+        let err = style
+            .validate_resource_limits()
+            .expect_err("deep template must be rejected");
+
+        assert!(err.contains("maximum template nesting depth"));
+    }
+
+    #[test]
+    fn validate_resource_limits_rejects_too_many_components() {
+        let style = Style {
+            bibliography: Some(BibliographySpec {
+                template: Some(vec![
+                    TemplateComponent::default();
+                    MAX_TEMPLATE_COMPONENTS + 1
+                ]),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+
+        let err = style
+            .validate_resource_limits()
+            .expect_err("oversized template must be rejected");
+
+        assert!(err.contains("maximum template component count"));
     }
 }
 
