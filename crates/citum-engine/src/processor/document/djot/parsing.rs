@@ -387,7 +387,7 @@ pub(crate) fn scan_bibliography_blocks(content: &str) -> Vec<BibliographyBlock> 
     for (event, range) in Parser::new(content).into_offset_iter() {
         match event {
             Event::Start(Container::Div { class }, attrs) if class.contains("bibliography") => {
-                div_stack.push((range.start, extract_group_from_attrs(class, attrs)));
+                div_stack.push((range.start, extract_group_from_attrs(&class, attrs)));
             }
             Event::End(Container::Div { class }) => {
                 if class.contains("bibliography")
