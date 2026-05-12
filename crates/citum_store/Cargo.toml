@@ -14,7 +14,7 @@ serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
 ciborium = "0.2"
 thiserror = "2.0"
 citum_resolver_api = { package = "citum-resolver-api", path = "../citum-resolver-api" }
-toml = "0.8"
+toml = "1.1"
 reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"], optional = true }
 sha2 = { version = "0.10", optional = true }
 tempfile = { version = "3", optional = true }
