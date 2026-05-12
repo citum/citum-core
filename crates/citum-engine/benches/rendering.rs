@@ -31,10 +31,11 @@ use citum_schema::{
         WrapPunctuation,
     },
 };
-use criterion::{BatchSize, Criterion, black_box, criterion_group, criterion_main};
+use criterion::{BatchSize, Criterion, criterion_group, criterion_main};
 use csl_legacy::csl_json::Reference as LegacyReference;
 use indexmap::IndexMap;
 use std::fs;
+use std::hint::black_box;
 use std::path::PathBuf;
 
 fn bench_rendering(c: &mut Criterion) {

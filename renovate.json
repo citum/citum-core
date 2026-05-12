@@ -1,0 +1,31 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "enabledManagers": ["cargo", "github-actions"],
+  "schedule": ["before 6am on monday"],
+  "prConcurrentLimit": 5,
+  "semanticCommits": "enabled",
+  "commitMessageAction": "update",
+  "commitBody": "",
+  "commitBodyTable": false,
+  "packageRules": [
+    {
+      "matchManagers": ["cargo"],
+      "groupName": "cargo deps",
+      "groupSlug": "cargo-deps",
+      "semanticCommitType": "chore",
+      "semanticCommitScope": "deps",
+      "commitMessageTopic": "cargo deps",
+      "commitMessageExtra": ""
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "actions",
+      "groupSlug": "actions",
+      "semanticCommitType": "chore",
+      "semanticCommitScope": "ci",
+      "commitMessageTopic": "actions",
+      "commitMessageExtra": ""
+    }
+  ]
+}
