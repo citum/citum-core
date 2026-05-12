@@ -4,9 +4,15 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
 use crate::rpc::{RpcRequest, dispatch};
-use axum::{Json, Router, http::StatusCode, response::IntoResponse, routing::post};
+use axum::{
+    Json, Router, extract::DefaultBodyLimit, http::StatusCode, response::IntoResponse,
+    routing::post,
+};
 use serde_json::json;
 use std::net::SocketAddr;
+
+/// Maximum accepted HTTP JSON-RPC request size.
+pub const DEFAULT_HTTP_BODY_LIMIT_BYTES: usize = 8 * 1024 * 1024;
 
 /// HTTP handler for JSON-RPC requests.
 /// Dispatches to the same RPC logic as stdin/stdout.
@@ -25,7 +31,9 @@ async fn rpc_handler(Json(payload): Json<RpcRequest>) -> impl IntoResponse {
 
 /// Build the HTTP router for JSON-RPC requests.
 pub fn app() -> Router {
-    Router::new().route("/rpc", post(rpc_handler))
+    Router::new()
+        .route("/rpc", post(rpc_handler))
+        .layer(DefaultBodyLimit::max(DEFAULT_HTTP_BODY_LIMIT_BYTES))
 }
 
 /// Start the HTTP server on the given port.
@@ -58,13 +66,15 @@ pub async fn run_http(port: u16) -> Result<(), Box<dyn std::error::Error>> {
     reason = "Panicking is acceptable and often desired in tests."
 )]
 mod tests {
-    use super::rpc_handler;
+    use super::{DEFAULT_HTTP_BODY_LIMIT_BYTES, app, rpc_handler};
     use axum::{
         Json,
         body::{Body, to_bytes},
+        http::{Request, StatusCode},
         response::IntoResponse,
     };
     use serde_json::json;
+    use tower::ServiceExt;
 
     /// Absolute path to the APA style.
     /// `CARGO_MANIFEST_DIR` is the crate root; workspace root is two levels up.
@@ -192,5 +202,20 @@ mod tests {
                 .expect("error should be a string")
                 .contains("style_path")
         );
+    }
+
+    #[tokio::test(flavor = "current_thread")]
+    async fn app_rejects_oversized_http_request_body() {
+        let oversized = "x".repeat(DEFAULT_HTTP_BODY_LIMIT_BYTES + 1);
+        let request = Request::builder()
+            .method("POST")
+            .uri("/rpc")
+            .header("content-type", "application/json")
+            .body(Body::from(oversized))
+            .expect("request should build");
+
+        let response = app().oneshot(request).await.expect("request should run");
+
+        assert_eq!(response.status(), StatusCode::PAYLOAD_TOO_LARGE);
     }
 }

@@ -36,8 +36,8 @@ pub use format::StoreFormat;
 pub use resolver::ChainResolver;
 #[cfg(feature = "http")]
 pub use resolver::{
-    CidResolver, DEFAULT_CID_GATEWAY, GitResolver, HttpResolver, VerifyingResolver,
-    fetch_and_verify_bytes,
+    CidResolver, DEFAULT_CID_GATEWAY, GitResolver, HttpResolver, RemoteFetchPolicy,
+    VerifyingResolver, fetch_and_verify_bytes,
 };
 pub use resolver::{
     EmbeddedResolver, FileResolver, RegistryResolver, ResolverError, StoreResolver,

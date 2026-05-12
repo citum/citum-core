@@ -149,9 +149,14 @@ fn registry_resolvers() -> Result<Vec<Box<DynStyleResolver>>, Box<dyn Error + Se
                 && let Ok(bytes) = http.fetch_bytes(&registry_config.url)
                 && let Ok(registry) = serde_yaml::from_slice::<citum_schema::StyleRegistry>(&bytes)
             {
-                if let Some(path) = configured_registry_path(&registry_config.name) {
-                    let _ = fs::create_dir_all(path.parent().unwrap_or(Path::new(".")));
-                    let _ = fs::write(&path, &bytes);
+                if let Some(path) = configured_registry_path(&registry_config.name)
+                    && let Some(parent) = path.parent()
+                {
+                    let _ = fs::create_dir_all(parent);
+                    if let Ok(mut tmp) = tempfile::NamedTempFile::new_in(parent) {
+                        let _ = std::io::Write::write_all(&mut tmp, &bytes);
+                        let _ = tmp.persist(&path);
+                    }
                 }
                 let base_dir = configured_registry_path(&registry_config.name)
                     .and_then(|p| p.parent().map(|p| p.to_path_buf()))

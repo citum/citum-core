@@ -64,7 +64,7 @@ jobs:
         run: npm install --prefix scripts
 
       - name: Run corpus-aware script tests
-        run: node --test scripts/oracle.test.js scripts/report-core.test.js scripts/oracle-yaml.test.js
+        run: node --test --test-timeout=180000 scripts/oracle.test.js scripts/report-core.test.js scripts/oracle-yaml.test.js
 
       - name: Check core fidelity and SQI drift
         run: |

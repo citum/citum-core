@@ -438,8 +438,20 @@ fn registry_file_path(name: &str) -> Result<PathBuf, Box<dyn Error>> {
     Ok(configured_registry_dir()?.join(format!("{name}.yaml")))
 }
 
+fn parse_http_url(source: &str) -> Result<Option<url::Url>, Box<dyn Error>> {
+    if !source.starts_with("http://") && !source.starts_with("https://") {
+        return Ok(None);
+    }
+
+    match url::Url::parse(source) {
+        Ok(url) if matches!(url.scheme(), "http" | "https") => Ok(Some(url)),
+        Ok(url) => Err(format!("unsupported registry URL scheme '{}'", url.scheme()).into()),
+        Err(err) => Err(format!("invalid registry URL: {err}").into()),
+    }
+}
+
 fn fetch_registry_bytes(source: &str) -> Result<Vec<u8>, Box<dyn Error>> {
-    if source.starts_with("http://") || source.starts_with("https://") {
+    if parse_http_url(source)?.is_some() {
         let resolver = citum_store::HttpResolver::from_platform_cache_dir()
             .ok_or("Unable to determine platform cache directory")?;
         return resolver.fetch_bytes(source);
@@ -454,8 +466,7 @@ fn parse_registry_bytes(bytes: &[u8]) -> Result<citum_schema::StyleRegistry, Box
 }
 
 fn infer_registry_name(source: &str) -> Result<String, Box<dyn Error>> {
-    if source.starts_with("http://") || source.starts_with("https://") {
-        let url = url::Url::parse(source)?;
+    if let Some(url) = parse_http_url(source)? {
         return url
             .host_str()
             .map(|host| host.replace('.', "-"))
@@ -2356,6 +2367,14 @@ mod tests {
             .collect();
 
         assert!(rows.iter().any(|row| row.id == "apa-7th"));
+    }
+
+    #[test]
+    fn parse_http_url_treats_windows_absolute_paths_as_filesystem_paths() {
+        let parsed = parse_http_url(r"C:\Users\citum\registry.yaml")
+            .expect("windows path should not be treated as a URL");
+
+        assert!(parsed.is_none());
     }
 
     #[test]

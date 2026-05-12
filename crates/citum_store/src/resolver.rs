@@ -12,6 +12,10 @@ use std::borrow::Cow;
 use std::collections::BTreeSet;
 use std::fs;
 use std::io::Cursor;
+#[cfg(feature = "http")]
+use std::io::Read;
+#[cfg(feature = "http")]
+use std::net::IpAddr;
 use std::path::{Path, PathBuf};
 #[cfg(feature = "http")]
 use std::time::{Duration, SystemTime};
@@ -179,6 +183,13 @@ impl StyleResolver for RegistryResolver {
 
         #[cfg(feature = "http")]
         if let Some(url) = &entry.url {
+            if url.starts_with("git+") && GitResolver::parse_git_uri(url).is_none() {
+                return Err(ResolverError::Denied {
+                    uri: url.clone(),
+                    reason: "only git+https:// URLs with safe relative file paths are allowed"
+                        .to_string(),
+                });
+            }
             if let Some((_, _)) = GitResolver::parse_git_uri(url)
                 && let Some(git) = &self.git
             {
@@ -203,6 +214,7 @@ impl StyleResolver for RegistryResolver {
 #[cfg(feature = "http")]
 pub struct GitResolver {
     cache_dir: PathBuf,
+    policy: RemoteFetchPolicy,
 }
 
 /// A resolver that fetches HTTP(S) style URLs and caches them on disk.
@@ -212,8 +224,8 @@ pub struct GitResolver {
 #[cfg(feature = "http")]
 pub struct HttpResolver {
     cache_dir: PathBuf,
-    client: std::sync::OnceLock<reqwest::blocking::Client>,
-    allowed_hosts: Vec<String>,
+    client: std::sync::OnceLock<Result<reqwest::blocking::Client, String>>,
+    policy: RemoteFetchPolicy,
 }
 
 #[cfg(feature = "http")]
@@ -221,6 +233,138 @@ const HTTP_TIMEOUT: Duration = Duration::from_secs(15);
 
 #[cfg(feature = "http")]
 const HTTP_CACHE_MAX_AGE: Duration = Duration::from_hours(24);
+
+/// Maximum number of remote bytes accepted for a style or registry fetch.
+#[cfg(feature = "http")]
+pub const DEFAULT_REMOTE_FETCH_MAX_BYTES: u64 = 2 * 1024 * 1024;
+
+/// Network policy applied before fetching remote styles or registries.
+#[cfg(feature = "http")]
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RemoteFetchPolicy {
+    /// Whether plaintext `http://` URLs are allowed.
+    pub allow_http: bool,
+    /// Whether HTTP redirects are allowed.
+    pub allow_redirects: bool,
+    /// Maximum accepted response body size in bytes.
+    pub max_bytes: u64,
+    /// Optional exact-match hostname allowlist.
+    pub allowed_hosts: Vec<String>,
+}
+
+#[cfg(feature = "http")]
+impl Default for RemoteFetchPolicy {
+    fn default() -> Self {
+        Self {
+            allow_http: false,
+            allow_redirects: false,
+            max_bytes: DEFAULT_REMOTE_FETCH_MAX_BYTES,
+            allowed_hosts: Vec::new(),
+        }
+    }
+}
+
+#[cfg(feature = "http")]
+impl RemoteFetchPolicy {
+    /// Return a policy suitable for local test servers.
+    #[must_use]
+    pub fn localhost_for_tests() -> Self {
+        Self {
+            allow_http: true,
+            allow_redirects: false,
+            max_bytes: DEFAULT_REMOTE_FETCH_MAX_BYTES,
+            allowed_hosts: vec!["127.0.0.1".to_string(), "localhost".to_string()],
+        }
+    }
+
+    /// Validate and parse a URL before a network request is attempted.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`ResolverError::Denied`] when the URL violates this policy.
+    pub fn validate_url(&self, uri: &str) -> Result<reqwest::Url, ResolverError> {
+        let url = reqwest::Url::parse(uri).map_err(|err| ResolverError::Denied {
+            uri: uri.to_string(),
+            reason: format!("invalid URL: {err}"),
+        })?;
+
+        match url.scheme() {
+            "https" => {}
+            "http" if self.allow_http => {}
+            "http" => {
+                return Err(ResolverError::Denied {
+                    uri: uri.to_string(),
+                    reason: "plaintext HTTP is disabled by default".to_string(),
+                });
+            }
+            scheme => {
+                return Err(ResolverError::Denied {
+                    uri: uri.to_string(),
+                    reason: format!("unsupported URL scheme '{scheme}'"),
+                });
+            }
+        }
+
+        if !url.username().is_empty() || url.password().is_some() {
+            return Err(ResolverError::Denied {
+                uri: uri.to_string(),
+                reason: "credentials in remote style URLs are not allowed".to_string(),
+            });
+        }
+
+        if url.fragment().is_some() {
+            return Err(ResolverError::Denied {
+                uri: uri.to_string(),
+                reason: "fragments in remote style URLs are not allowed".to_string(),
+            });
+        }
+
+        let Some(host) = url.host_str() else {
+            return Err(ResolverError::Denied {
+                uri: uri.to_string(),
+                reason: "remote URL has no host".to_string(),
+            });
+        };
+
+        let host_is_allowlisted =
+            !self.allowed_hosts.is_empty() && self.allowed_hosts.iter().any(|h| h == host);
+
+        if !host_is_allowlisted && host.parse::<IpAddr>().is_ok_and(is_denied_ip_literal) {
+            return Err(ResolverError::Denied {
+                uri: uri.to_string(),
+                reason: format!("IP literal host '{host}' is not allowed by default"),
+            });
+        }
+
+        if !self.allowed_hosts.is_empty() && !host_is_allowlisted {
+            return Err(ResolverError::Denied {
+                uri: uri.to_string(),
+                reason: format!("host '{host}' not in resolver allowlist"),
+            });
+        }
+
+        Ok(url)
+    }
+}
+
+#[cfg(feature = "http")]
+fn is_denied_ip_literal(ip: IpAddr) -> bool {
+    match ip {
+        IpAddr::V4(ip) => {
+            ip.is_private()
+                || ip.is_loopback()
+                || ip.is_link_local()
+                || ip.is_unspecified()
+                || ip.is_broadcast()
+        }
+        IpAddr::V6(ip) => {
+            ip.is_loopback()
+                || ip.is_unspecified()
+                || ip.is_unique_local()
+                || ip.is_unicast_link_local()
+        }
+    }
+}
 
 #[cfg(feature = "http")]
 impl HttpResolver {
@@ -232,17 +376,84 @@ impl HttpResolver {
         Self {
             cache_dir,
             client: std::sync::OnceLock::new(),
-            allowed_hosts: Vec::new(),
+            policy: RemoteFetchPolicy::default(),
         }
     }
 
-    fn client(&self) -> &reqwest::blocking::Client {
-        self.client.get_or_init(|| {
-            reqwest::blocking::Client::builder()
-                .timeout(HTTP_TIMEOUT)
-                .build()
-                .unwrap_or_else(|_| reqwest::blocking::Client::new())
-        })
+    fn client(&self) -> Result<&reqwest::blocking::Client, ResolverError> {
+        self.client
+            .get_or_init(|| {
+                let mut builder = reqwest::blocking::Client::builder().timeout(HTTP_TIMEOUT);
+                if !self.policy.allow_redirects {
+                    builder = builder.redirect(reqwest::redirect::Policy::none());
+                }
+                builder
+                    .build()
+                    .map_err(|err| format!("failed to build HTTP client: {err}"))
+            })
+            .as_ref()
+            .map_err(|err| ResolverError::HttpError(err.clone()))
+    }
+
+    /// Set the complete remote fetch policy for this resolver.
+    #[must_use]
+    pub fn with_policy(mut self, policy: RemoteFetchPolicy) -> Self {
+        self.policy = policy;
+        self.client = std::sync::OnceLock::new();
+        self
+    }
+
+    /// Return the active remote fetch policy.
+    #[must_use]
+    pub fn policy(&self) -> &RemoteFetchPolicy {
+        &self.policy
+    }
+
+    fn read_limited_body(
+        &self,
+        uri: &str,
+        mut response: reqwest::blocking::Response,
+    ) -> Result<Vec<u8>, ResolverError> {
+        let mut reader = response
+            .by_ref()
+            .take(self.policy.max_bytes.saturating_add(1));
+        let mut bytes = Vec::new();
+        reader.read_to_end(&mut bytes)?;
+        if bytes.len() as u64 > self.policy.max_bytes {
+            return Err(ResolverError::Denied {
+                uri: uri.to_string(),
+                reason: format!(
+                    "remote response exceeds {} byte limit",
+                    self.policy.max_bytes
+                ),
+            });
+        }
+        Ok(bytes)
+    }
+
+    fn fetch_validated_bytes(&self, uri: &str) -> Result<Vec<u8>, ResolverError> {
+        let url = self.policy.validate_url(uri)?;
+        let response =
+            self.client()?
+                .get(url)
+                .send()
+                .map_err(|err| ResolverError::NetworkError {
+                    uri: uri.to_string(),
+                    reason: err.to_string(),
+                })?;
+        if response.status().is_redirection() && !self.policy.allow_redirects {
+            return Err(ResolverError::Denied {
+                uri: uri.to_string(),
+                reason: format!("redirect response {} is not allowed", response.status()),
+            });
+        }
+        if !response.status().is_success() {
+            return Err(ResolverError::HttpError(format!(
+                "failed to fetch {uri}: status {}",
+                response.status()
+            )));
+        }
+        self.read_limited_body(uri, response)
     }
 
     /// Create a resolver using the platform cache directory.
@@ -254,7 +465,8 @@ impl HttpResolver {
     /// Set an allowlist of hosts for this resolver. Empty list allows all hosts.
     #[must_use]
     pub fn with_allowed_hosts(mut self, hosts: Vec<String>) -> Self {
-        self.allowed_hosts = hosts;
+        self.policy.allowed_hosts = hosts;
+        self.client = std::sync::OnceLock::new();
         self
     }
 
@@ -263,13 +475,8 @@ impl HttpResolver {
     /// # Errors
     /// Returns an error if the request fails.
     pub fn fetch_bytes(&self, url: &str) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-        let mut response = self.client().get(url).send()?;
-        if !response.status().is_success() {
-            return Err(format!("failed to fetch {url}: status {}", response.status()).into());
-        }
-        let mut bytes = Vec::new();
-        response.copy_to(&mut bytes)?;
-        Ok(bytes)
+        self.fetch_validated_bytes(url)
+            .map_err(|err| Box::new(err) as Box<dyn std::error::Error>)
     }
 
     fn cache_path(&self, uri: &str) -> PathBuf {
@@ -308,9 +515,11 @@ impl HttpResolver {
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent)?;
         }
-        let temp_path = path.with_extension(format!("yaml.tmp.{}", std::process::id()));
-        fs::write(&temp_path, bytes)?;
-        fs::rename(&temp_path, path)?;
+        let mut tmp = tempfile::NamedTempFile::new_in(
+            path.parent().unwrap_or_else(|| std::path::Path::new(".")),
+        )?;
+        std::io::Write::write_all(&mut tmp, bytes)?;
+        tmp.persist(path).map_err(|e| ResolverError::Io(e.error))?;
         Ok(())
     }
 }
@@ -333,18 +542,7 @@ impl StyleResolver for HttpResolver {
         if !uri.starts_with("http://") && !uri.starts_with("https://") {
             return Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())));
         }
-
-        // Check allowlist if populated
-        if !self.allowed_hosts.is_empty()
-            && let Ok(url) = uri.parse::<reqwest::Url>()
-            && let Some(host) = url.host_str()
-            && !self.allowed_hosts.iter().any(|h| h == host)
-        {
-            return Err(ResolverError::Denied {
-                uri: uri.to_string(),
-                reason: format!("host '{host}' not in resolver allowlist"),
-            });
-        }
+        let url = self.policy.validate_url(uri)?;
 
         let cache_path = self.cache_path(uri);
         if cache_path.is_file() && Self::cache_is_fresh(&cache_path) {
@@ -352,10 +550,21 @@ impl StyleResolver for HttpResolver {
             return Self::parse_style(uri, &bytes);
         }
 
-        let fetch_result = self.client().get(uri).send();
+        let fetch_result = self.client()?.get(url).send();
 
         match fetch_result {
             Ok(response) => {
+                if response.status().is_redirection() && !self.policy.allow_redirects {
+                    if cache_path.is_file() {
+                        let bytes = fs::read(&cache_path)?;
+                        return Self::parse_style(uri, &bytes);
+                    }
+                    return Err(ResolverError::Denied {
+                        uri: uri.to_string(),
+                        reason: format!("redirect response {} is not allowed", response.status()),
+                    });
+                }
+
                 if response.status() == reqwest::StatusCode::NOT_FOUND {
                     if cache_path.is_file() {
                         let bytes = fs::read(&cache_path)?;
@@ -375,13 +584,16 @@ impl StyleResolver for HttpResolver {
                     )));
                 }
 
-                match response.bytes() {
+                match self.read_limited_body(uri, response) {
                     Ok(bytes) => {
                         let style = Self::parse_style(uri, &bytes)?;
                         Self::write_cache(&cache_path, &bytes)?;
                         Ok(style)
                     }
                     Err(err) => {
+                        if matches!(err, ResolverError::Denied { .. }) {
+                            return Err(err);
+                        }
                         // Check for stale cache and serve if available
                         if cache_path.is_file() {
                             let bytes = fs::read(&cache_path)?;
@@ -420,7 +632,17 @@ impl GitResolver {
     /// Create a resolver using the provided cache directory.
     #[must_use]
     pub fn new(cache_dir: PathBuf) -> Self {
-        Self { cache_dir }
+        Self {
+            cache_dir,
+            policy: RemoteFetchPolicy::default(),
+        }
+    }
+
+    /// Set the complete remote fetch policy for this resolver.
+    #[must_use]
+    pub fn with_policy(mut self, policy: RemoteFetchPolicy) -> Self {
+        self.policy = policy;
+        self
     }
 
     /// Create a resolver using the platform cache directory.
@@ -475,13 +697,26 @@ impl GitResolver {
 
     /// Parse a git URI into repo URL and file path.
     pub fn parse_git_uri(uri: &str) -> Option<(String, String)> {
-        if !uri.starts_with("git+https://") && !uri.starts_with("git+http://") {
+        if !uri.starts_with("git+https://") {
             return None;
         }
         let rest = uri.strip_prefix("git+")?;
         let (repo_part, file_path) = rest.split_once('#')?;
+        if !is_safe_git_style_path(file_path) {
+            return None;
+        }
         Some((repo_part.to_string(), file_path.to_string()))
     }
+}
+
+#[cfg(feature = "http")]
+fn is_safe_git_style_path(file_path: &str) -> bool {
+    let path = Path::new(file_path);
+    !file_path.is_empty()
+        && !path.is_absolute()
+        && !path
+            .components()
+            .any(|component| matches!(component, std::path::Component::ParentDir))
 }
 
 #[cfg(feature = "http")]
@@ -490,8 +725,18 @@ impl StyleResolver for GitResolver {
     type Locale = Locale;
 
     fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
-        let (repo_url, file_path) = Self::parse_git_uri(uri)
-            .ok_or_else(|| ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))?;
+        let (repo_url, file_path) = Self::parse_git_uri(uri).ok_or_else(|| {
+            if uri.starts_with("git+") {
+                ResolverError::Denied {
+                    uri: uri.to_string(),
+                    reason: "only git+https:// URLs with safe relative file paths are allowed"
+                        .to_string(),
+                }
+            } else {
+                ResolverError::StyleNotFound(Cow::Owned(uri.to_string()))
+            }
+        })?;
+        self.policy.validate_url(&repo_url)?;
 
         let cache_path = self.cache_path(uri);
         if cache_path.is_file() && Self::cache_is_fresh(&cache_path) {
@@ -744,7 +989,10 @@ pub fn fetch_and_verify_bytes(
                 uri: uri.to_string(),
                 reason: err.to_string(),
             })?
-    } else if uri.starts_with("https://") || uri.starts_with("http://") {
+    } else if matches!(
+        reqwest::Url::parse(uri).as_ref().map(reqwest::Url::scheme),
+        Ok("https" | "http")
+    ) {
         http.fetch_bytes(uri)
             .map_err(|err| ResolverError::NetworkError {
                 uri: uri.to_string(),
@@ -753,7 +1001,7 @@ pub fn fetch_and_verify_bytes(
     } else {
         return Err(ResolverError::Denied {
             uri: uri.to_string(),
-            reason: "extends-pin only supports cid: and https:// URIs".to_string(),
+            reason: "extends-pin only supports cid: and policy-approved HTTP(S) URIs".to_string(),
         });
     };
     crate::cid::verify_cid(uri, expected_cid, &bytes)?;
