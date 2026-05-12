@@ -3837,9 +3837,9 @@ dependencies = [
 
 [[package]]
 name = "jotdown"
-version = "0.5.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3fff02adc563a0901266af314a47aa676f950a2f328a60b20691fdba0946fd98"
+checksum = "206bf4773a58f2a051a24fb77cb6c5eeaa84403c0dc5d072ec460ed1648db594"
 
 [[package]]
 name = "js-sys"

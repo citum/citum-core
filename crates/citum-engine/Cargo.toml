@@ -21,7 +21,7 @@ citum_edtf = { package = "citum-edtf", path = "../citum-edtf", features = ["serd
 url = { version = "2.5", features = ["serde"] }
 indexmap = { version = "2.2.6", features = ["serde"] }
 winnow = "0.7"
-jotdown = "0.5"
+jotdown = "0.10"
 orgize = "0.9"
 icu_collator = { version = "2.2.0", features = ["compiled_data"], optional = true }
 icu_locale = { version = "2.2.0", optional = true }
