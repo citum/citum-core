@@ -14,6 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Harden publish readiness ([`e73f246`](https://github.com/citum/citum-core/commit/e73f246414d71bf708a56ebe762d5396c6471c16))
 
 
+**tooling**
+
+- Consolidate dependency updates ([`e91ebf1`](https://github.com/citum/citum-core/commit/e91ebf158f5d958ed7fc965e732318609522233c))
+
+
 ## [0.39.0] - 2026-05-11
 
 ### Bug Fixes

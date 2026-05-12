@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.2] - 2026-05-12
+
+### Bug Fixes
+
+**tooling**
+
+- Consolidate dependency updates ([`e91ebf1`](https://github.com/citum/citum-core/commit/e91ebf158f5d958ed7fc965e732318609522233c))
+
+
 ## [0.30.2] - 2026-04-30
 
 ### Bug Fixes
