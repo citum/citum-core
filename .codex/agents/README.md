@@ -2,8 +2,8 @@
 
 This directory contains repo-local Codex agent drafts for `citum-core`.
 
-Repo-owned public Codex skills live under `.codex/skills/` and are installed into
-`$CODEX_HOME/skills` with `./scripts/install-codex-skills.sh`.
+Repo-owned public skills live under `.skills/` and are installed into
+`$CODEX_HOME/skills` with `./scripts/install-skills.sh`.
 
 Authoritative shared process docs:
 - `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`

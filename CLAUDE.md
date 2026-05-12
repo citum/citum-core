@@ -106,8 +106,8 @@ Git-visible commit is published unless explicitly requested.
 | @builder | Implementation | 2-retry cap, no questions |
 | @reviewer | QA / conflict detection | Use after code changes |
 
-Style tasks: use **`/style-evolve`** (`upgrade`, `migrate`, `create`). Codex skills
-live in `.codex/skills/` and are installed with `./scripts/install-codex-skills.sh`.
+Style tasks: use **`/style-evolve`** (`upgrade`, `migrate`, `create`). Agent skills
+live in `.skills/` and are installed with `./scripts/install-skills.sh`.
 Claude skills remain in `.claude/skills/`.
 Rust quality tasks: use **`/rust-simplify`** (file-length, duplication cleanup) or **`/rust-refine`** (API shape, clippy suppression removal).
 

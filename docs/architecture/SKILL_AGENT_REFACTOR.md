@@ -4,8 +4,8 @@
 Improve execution speed and reduce instruction drift by separating routing,
 planning, implementation, QA, and PR workflow concerns.
 
-Codex also mirrors the public skill surface with repo-owned skill folders under
-`.codex/skills/` and a local installer into `$CODEX_HOME/skills`.
+The repo also mirrors the public skill surface with repo-owned skill folders under
+`.skills/` and a local installer into `$CODEX_HOME/skills`.
 
 ## Problems Addressed
 - Overloaded style workflow mixed routing, planning, build, and QA.
@@ -22,10 +22,12 @@ Codex also mirrors the public skill surface with repo-owned skill folders under
 - `style-qa`: standardized fidelity/SQI/format gate.
 - `pr-workflow-fast`: branch/PR process with change-type validation gates.
 
-## Codex Skill Mirror
-- Public Codex skills live in `.codex/skills/`.
+## Skill Distribution
+- Public agent skills live in `.skills/`.
+- Legacy `.codex/skills/` entries remain as compatibility shims for existing
+  Codex installs.
 - Internal role contracts live in `.codex/agents/`.
-- `./scripts/install-codex-skills.sh` refreshes symlinks into `$CODEX_HOME/skills`.
+- `./scripts/install-skills.sh` refreshes symlinks into `$CODEX_HOME/skills`.
 - `./scripts/codex` remains a fallback for direct role execution.
 
 ## Agent Role Purity

@@ -9,10 +9,10 @@ usage() {
   cat <<'USAGE'
 Usage: scripts/validate-frontmatter.sh [--repo-only] [--copilot-strict]
 
-Validates YAML frontmatter for local Claude skills/commands.
+Validates YAML frontmatter for local skills/commands.
 
 Options:
-  --repo-only      Validate repo-managed manifests only (.claude/skills/*/SKILL.md)
+  --repo-only      Validate repo-managed manifests only (.claude/skills/*/SKILL.md and .skills/*/SKILL.md)
   --copilot-strict Reject risky unquoted plain scalars that often break Copilot parsing
   -h, --help       Show this help
 USAGE
@@ -49,6 +49,10 @@ files=()
 while IFS= read -r path; do
   files+=("$path")
 done < <(find "$REPO_ROOT/.claude/skills" -mindepth 2 -maxdepth 2 -type f -name 'SKILL.md' 2>/dev/null | sort)
+
+while IFS= read -r path; do
+  files+=("$path")
+done < <(find "$REPO_ROOT/.skills" -mindepth 2 -maxdepth 2 -type f -name 'SKILL.md' 2>/dev/null | sort)
 
 if [[ "$REPO_ONLY" == false ]]; then
   while IFS= read -r path; do

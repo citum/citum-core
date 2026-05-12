@@ -13,7 +13,7 @@ local change isolation and intent capture before publishing through Git/GitHub.
 
 Read first:
 - `docs/guides/CODING_STANDARDS.md`
-- `docs/guides/CODEX_SKILLS.md`
+- `docs/guides/AGENT_SKILLS.md`
 
 ## Target Selection
 

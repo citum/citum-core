@@ -1,6 +1,6 @@
 ---
 name: migrate-research
-description: Autonomous Codex research loop for Citum migration fidelity gaps and converter-focused Rust fixes.
+description: Autonomous research loop for Citum migration fidelity gaps and converter-focused Rust fixes.
 ---
 
 # Migrate Research
@@ -12,7 +12,7 @@ Read first:
 - `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`
 - `docs/guides/STYLE_WORKFLOW_EXECUTION.md`
 - `docs/specs/MIGRATE_RESEARCH_RICH_INPUTS.md`
-- `docs/guides/CODEX_SKILLS.md`
+- `docs/guides/AGENT_SKILLS.md`
 - `docs/guides/JJ_AI_CHANGE_STACK.md` when `.jj` is present and the research
   pass needs an isolated local change
 
