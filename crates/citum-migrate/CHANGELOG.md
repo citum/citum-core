@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.40.1] - 2026-05-12
+
+### Bug Fixes
+
+**migrate**
+
+- Collapse sort presets ([`b0da89e`](https://github.com/citum/citum-core/commit/b0da89e157e1efd06d65a0c1b5e28cb8df949b93))
+
+
 ## [0.39.0] - 2026-05-11
 
 ### Bug Fixes
