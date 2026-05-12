@@ -635,7 +635,7 @@ name = "citum-edtf"
 version = "0.40.1"
 dependencies = [
  "serde",
- "winnow 0.7.15",
+ "winnow 1.0.2",
 ]
 
 [[package]]
@@ -662,7 +662,7 @@ dependencies = [
  "thiserror 2.0.18",
  "unicode-script",
  "url",
- "winnow 0.7.15",
+ "winnow 1.0.2",
 ]
 
 [[package]]

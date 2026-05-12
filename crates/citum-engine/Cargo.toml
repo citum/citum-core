@@ -20,7 +20,7 @@ thiserror = "2.0"
 citum_edtf = { package = "citum-edtf", path = "../citum-edtf", features = ["serde"] }
 url = { version = "2.5", features = ["serde"] }
 indexmap = { version = "2.2.6", features = ["serde"] }
-winnow = "0.7"
+winnow = "1.0"
 jotdown = "0.5"
 orgize = "0.9"
 icu_collator = { version = "2.2.0", features = ["compiled_data"], optional = true }
