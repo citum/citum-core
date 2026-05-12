@@ -33,7 +33,7 @@ icu = ["dep:icu_collator", "dep:icu_locale"]
 ffi = []
 
 [dev-dependencies]
-criterion = { version = "0.5", features = ["html_reports"] }
+criterion = { version = "0.8", features = ["html_reports"] }
 citum_migrate = { package = "citum-migrate", path = "../citum-migrate" }
 citum_io = { package = "citum-io", path = "../citum-io" }
 roxmltree = "0.21"
