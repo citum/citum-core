@@ -18,7 +18,7 @@ csl_legacy = { package = "csl-legacy", path = "../csl-legacy", optional = true }
 indexmap = { version = "2", features = ["serde"] }
 citum_schema_data = { package = "citum-schema-data", path = "../citum-schema-data" }
 citum_resolver_api = { package = "citum-resolver-api", path = "../citum-resolver-api" }
-sha2 = "0.10"
+sha2 = "0.11"
 cid = { version = "0.11", default-features = false, features = ["alloc"] }
 multihash = { version = "0.19", default-features = false, features = ["alloc"] }
 semver = "1"
@@ -31,7 +31,7 @@ schema = ["dep:schemars", "citum_schema_data/schema"]
 bindings = ["dep:specta", "citum_schema_data/bindings"]
 
 [dev-dependencies]
-criterion = { version = "0.5", features = ["html_reports"] }
+criterion = { version = "0.8", features = ["html_reports"] }
 rstest = "0.26"
 
 [[bench]]

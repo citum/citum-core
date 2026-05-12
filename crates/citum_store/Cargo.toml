@@ -7,7 +7,7 @@ publish = false
 
 [dependencies]
 citum-schema = { package = "citum-schema", path = "../citum-schema" }
-dirs = "5.0"
+dirs = "6.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
@@ -16,7 +16,7 @@ thiserror = "2.0"
 citum_resolver_api = { package = "citum-resolver-api", path = "../citum-resolver-api" }
 toml = "1.1"
 reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"], optional = true }
-sha2 = { version = "0.10", optional = true }
+sha2 = { version = "0.11", optional = true }
 tempfile = { version = "3", optional = true }
 cid = { version = "0.11", default-features = false, features = ["alloc", "serde-codec"], optional = true }
 multihash = { version = "0.19", default-features = false, features = ["alloc"], optional = true }

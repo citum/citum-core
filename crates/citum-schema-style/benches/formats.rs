@@ -12,8 +12,9 @@
 #![allow(missing_docs, reason = "test/bench/bin crate")]
 
 use citum_schema_style::{InputBibliography, Style};
-use criterion::{Criterion, black_box, criterion_group, criterion_main};
+use criterion::{Criterion, criterion_group, criterion_main};
 use std::fs;
+use std::hint::black_box;
 use std::path::PathBuf;
 
 fn bench_formats(c: &mut Criterion) {

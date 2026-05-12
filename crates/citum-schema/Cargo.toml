@@ -19,7 +19,7 @@ bindings = ["citum_schema_data/bindings", "citum_schema_style/bindings"]
 [dev-dependencies]
 serde_json = "1.0"
 serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
-criterion = { version = "0.5", features = ["html_reports"] }
+criterion = { version = "0.8", features = ["html_reports"] }
 ciborium = "0.2"
 
 [lints]
