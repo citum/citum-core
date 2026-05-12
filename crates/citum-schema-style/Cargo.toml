@@ -32,7 +32,7 @@ bindings = ["dep:specta", "citum_schema_data/bindings"]
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
-rstest = "0.25"
+rstest = "0.26"
 
 [[bench]]
 name = "formats"
