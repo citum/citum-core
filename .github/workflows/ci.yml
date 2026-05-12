@@ -94,7 +94,7 @@ jobs:
           sudo install -m 0755 /tmp/beans /usr/local/bin/beans
 
       - name: Set up Node
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v6
         with:
           node-version: "22"
 
