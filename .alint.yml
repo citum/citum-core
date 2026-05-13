@@ -5,6 +5,10 @@
 
 version: 1
 
+ignore:
+  - "styles-legacy/**"
+  - "tests/csl-test-suite/**"
+
 extends:
   - alint://bundled/oss-baseline@v1
   - alint://bundled/rust@v1
