@@ -1,6 +1,6 @@
-**Status:** Active  
-**Version:** 1.2  
-**Date:** 2026-04-15  
+**Status:** Active
+**Version:** 1.2
+**Date:** 2026-04-15
 **Bean:** `csl26-y3kj`
 
 ## Problem

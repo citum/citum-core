@@ -1,6 +1,6 @@
 # Numeric Compound Citations — Architecture Record
 
-**Bean:** csl26-zafv  
+**Bean:** csl26-zafv
 **Status:** Implemented in revised form (2026-03-05)
 
 ## Final Decision

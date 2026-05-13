@@ -1,7 +1,7 @@
 # Citum WASM Performance Benchmark Report
 
-**Date:** 2026-05-03  
-**Bean:** csl26-qf4k (WASM Support)  
+**Date:** 2026-05-03
+**Bean:** csl26-qf4k (WASM Support)
 **Status:** Verification Phase (Tier 5)
 
 ## Overview

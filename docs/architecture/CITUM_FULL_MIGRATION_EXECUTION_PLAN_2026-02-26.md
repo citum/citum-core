@@ -1,7 +1,7 @@
 # Citum Full Migration Execution Plan (2026-02-26)
 
-**Status:** Ready for execution at wave break  
-**Scope:** End-to-end migration from `csl26`/`csln_*` naming to `citum` ecosystem naming  
+**Status:** Ready for execution at wave break
+**Scope:** End-to-end migration from `csl26`/`csln_*` naming to `citum` ecosystem naming
 **Depends on:** [CITUM_MODULARIZATION.md](./CITUM_MODULARIZATION.md), [MIGRATE_ENHANCE_PHASE3_4_SINGLE_PR_PLAN_2026-02-26.md](./MIGRATE_ENHANCE_PHASE3_4_SINGLE_PR_PLAN_2026-02-26.md)
 
 ## 1. Objective

@@ -1,8 +1,8 @@
 # CSL Style Targets: Multilingual and Sectional Bibliography
 
-**Status:** Active - Implementation Pending  
-**Date:** 2026-02-22  
-**Beans:** csl26-mls1 (multilingual styles), csl26-grp1 (grouping styles)  
+**Status:** Active - Implementation Pending
+**Date:** 2026-02-22
+**Beans:** csl26-mls1 (multilingual styles), csl26-grp1 (grouping styles)
 **Precondition:** csl26-mlt2 (processor multilingual logic) must be completed first
 
 ## Overview

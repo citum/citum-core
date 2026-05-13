@@ -8,7 +8,7 @@ Citum locale file in `locales/`. It is the practical companion to
 
 - MF2 evaluator: live in `crates/citum-schema-style/src/locale/message.rs`.
 - Engine call sites: live. `resolved_locator_term` and `resolved_role_term`
-  are wired in `crates/citum-engine/src/values/{locator,number,contributor/labels}.rs`
+  are wired in `crates/citum-engine/src/values/` (locator, number, contributor/labels)
   and consult the `messages:` map first, falling back to the legacy `terms:` /
   `roles:` / `locators:` maps.
 - Gendered term values: live through `MaybeGendered<T>` in the legacy locale

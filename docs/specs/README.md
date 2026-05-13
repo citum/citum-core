@@ -41,7 +41,7 @@ Before creating or converting a spec, consult
 [`../guides/DOCUMENT_CLASSIFICATION.md`](../guides/DOCUMENT_CLASSIFICATION.md)
 to make sure the document should be a spec rather than architecture or policy.
 
-1. Create `docs/specs/FEATURE_NAME.md` (Status: `Draft`) **before** writing
+1. Create a spec file in `docs/specs/` (Status: `Draft`) **before** writing
    implementation code.
 2. Commit the spec. Get it merged.
 3. Set Status to `Active` in the same commit as the first implementation.

@@ -567,7 +567,7 @@ Full YAML equivalent:
 
 #### 4.3 Parser Location and Error Handling
 
-The parser will live at `crates/citum-schema-style/src/template_dsl.rs`.
+The parser will live at `crates/citum-schema-style/src/template.rs`.
 
 Public API (design):
 ```rust
@@ -721,7 +721,7 @@ Step 5 warrants `Schema-Bump: major` (field removal).
 |--------|------|
 | `TemplateGroup` rename | `crates/citum-schema-style/src/template.rs` |
 | `CitationSpec.type_variants`, `Style::validate` | `crates/citum-schema-style/src/lib.rs` |
-| Compact DSL parser (follow-on) | `crates/citum-schema-style/src/template_dsl.rs` (new) |
+| Compact DSL parser (follow-on) | `crates/citum-schema-style/src/template.rs` |
 | Migration output field + suppress pattern | `crates/citum-migrate/src/template_compiler/bibliography.rs` |
 | Citation-level type-variants emission | `crates/citum-migrate/src/template_compiler/compilation.rs` |
 

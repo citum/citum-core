@@ -7,34 +7,34 @@ references:
   - id: biss
     class: monograph
     type: book
-    author: 
+    author:
       family: Bissell
       given: Tom
     issued: "2011"
-    title: 
+    title:
       main: Extra Lives
       sub: Why Video Games Matter
-    publisher: 
+    publisher:
       location: New York
       name: Vintage Books
   - id: hutt
     class: collection-component
     type: chapter
     issued: "2011"
-    author: 
+    author:
       family: Hutter
       given: Michael
-    title: 
+    title:
       main: Infinite Surprises
       sub: Value in the Creative Industries
     container:
       class: collection
       type: edited-book
       issued: "2011"
-      title: 
+      title:
         main: The Worth of Goods
         sub: Valuation and Pricing in the Economy
-      editor: 
+      editor:
         - family: Beckert
           given: Jens
         - family: Aspers
@@ -54,7 +54,7 @@ references:
       - family: Shamsie
         given: Jamal
     issued: "2000"
-    title: 
+    title:
       main: Balancing Act
       sub: Learning from Organizing Practices in Cultural Industries
     container:
@@ -74,7 +74,7 @@ references:
     title:
       main: Selfish, Shallow, and Self-Absorbed
       sub: Sixteen Writers on the Decision Not to Have Kids
-    publisher: 
+    publisher:
       name: Picador
       location: New York
   - id: liu

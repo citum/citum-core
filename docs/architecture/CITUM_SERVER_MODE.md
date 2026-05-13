@@ -93,7 +93,7 @@ same dispatcher logic as the stdin/stdout handler.
 ## Scalability and Performance
 
 As of Phase 2, the server operates in a **stateless** mode. On every request, the
-client must provide the full reference library and style path. 
+client must provide the full reference library and style path.
 
 Benchmarking (May 2026) confirmed:
 - **500 Refs:** ~21ms latency for full bibliography refresh (Interval=1)

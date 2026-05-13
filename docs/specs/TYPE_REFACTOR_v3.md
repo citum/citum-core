@@ -515,7 +515,7 @@ The following are explicitly **not in scope** for this refactor:
 | `crates/citum-schema-data/src/reference/types/structural.rs` | Add `contributors: Vec<ContributorEntry>` to structural types (`Monograph`, `Collection`, `CollectionComponent`, `SerialComponent`, `Serial`) and retain targeted shorthands via deserialization shims |
 | `crates/citum-schema-data/src/reference/types/specialized.rs` | Add `WorkCore`, `AudioVisualWork`, and `AudioVisualType`; carry `contributors` on work-level audio-visual data |
 | `crates/citum-schema-data/src/reference/mod.rs` | Add `AudioVisual(Box<AudioVisualWork>)` to `InputReference` and contributor-role accessors over canonical `contributors` |
-| `crates/citum-engine/src/…` | Update contributor accessors to read from `contributors` by role |
+| `crates/citum-engine/src/` (multiple files) | Update contributor accessors to read from `contributors` by role |
 | `examples/chicago-note-converted.yaml` | Update film and broadcast entries to use `class: audio-visual` |
 | `docs/policies/TYPE_ADDITION_POLICY.md` | Document `ContributorRole` extension policy and `AudioVisualWork` rationale |
 

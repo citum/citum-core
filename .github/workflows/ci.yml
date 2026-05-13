@@ -98,17 +98,17 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Run repository hygiene (alint)
+        uses: asamarts/alint@v0.9.20
+
       - name: Install script dependencies
         run: npm install --prefix scripts
 
       - name: Run bean hygiene regression tests
         run: ./scripts/test-beans-hygiene.sh
 
-      - name: Check docs and bean hygiene
-        run: ./scripts/check-docs-beans-hygiene.sh
-
-      - name: Validate repo frontmatter manifests
-        run: ./scripts/validate-frontmatter.sh --repo-only --copilot-strict
+      - name: Check bean hygiene
+        run: ./scripts/check-bean-hygiene.sh
 
       - name: Validate production styles and structure
         run: ./scripts/validate-production-styles.sh

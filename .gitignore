@@ -3,7 +3,6 @@
 .oracle-cache
 target/
 fuzz/target/
-/docs/compat.html
 **/*.rs.bk
 *.swp
 **/*.cbor

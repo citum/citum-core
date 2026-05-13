@@ -40,7 +40,7 @@ dates:
   open-ended-term: present
 roles:
   author:
-    long: 
+    long:
   chair:
     long:
       singular: chair
@@ -65,11 +65,11 @@ roles:
     verb: compiled by
     verb-short: comp. by
   composer:
-    long: 
+    long:
     verb: composed by
     verb-short: comp. by
   container-author:
-    long: 
+    long:
     verb: by
   contributor:
     long:
@@ -187,7 +187,7 @@ roles:
     verb: organized by
     verb-short: org. by
   original-author:
-    long: 
+    long:
     verb: by
   performer:
     long:
@@ -208,10 +208,10 @@ roles:
     verb: produced by
     verb-short: prod. by
   recipient:
-    long: 
+    long:
     verb: to
   reviewed-author:
-    long: 
+    long:
     verb: by
   script-writer:
     long:

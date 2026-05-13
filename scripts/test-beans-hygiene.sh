@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
 WRAPPER="$ROOT_DIR/.claude/skills/beans/bin/citum-bean"
-HYGIENE_SCRIPT="$ROOT_DIR/scripts/check-docs-beans-hygiene.sh"
+HYGIENE_SCRIPT="$ROOT_DIR/scripts/check-bean-hygiene.sh"
 TMP_ROOT=$(mktemp -d)
 
 cleanup() {
@@ -104,7 +104,7 @@ run_wrapper() {
 run_hygiene_script() {
   local repo=$1
   local wrapper=$2
-  local script_copy="$repo/scripts/check-docs-beans-hygiene.sh"
+  local script_copy="$repo/scripts/check-bean-hygiene.sh"
   mkdir -p "$repo/scripts"
   cp "$HYGIENE_SCRIPT" "$script_copy"
   chmod +x "$script_copy"
@@ -360,19 +360,14 @@ echo "No bean hygiene issues found."
 EOF
 chmod +x "$mock_wrapper_ok"
 
-repo="$TMP_ROOT/docs-only"
-mkdir -p "$repo/docs"
-cat >"$repo/docs/broken.md" <<'EOF'
-[Broken](./missing.md)
-EOF
+repo="$TMP_ROOT/bean-pass"
+mkdir -p "$repo/scripts"
 set +e
-docs_only_output=$(run_hygiene_script "$repo" "$mock_wrapper_ok" 2>&1)
-docs_only_status=$?
+bean_pass_output=$(run_hygiene_script "$repo" "$mock_wrapper_ok" 2>&1)
+bean_pass_status=$?
 set -e
-[[ "$docs_only_status" -eq 1 ]] || fail "expected docs-only hygiene script to fail"
-assert_contains "$docs_only_output" "[check] markdown relative links"
-assert_contains "$docs_only_output" "ERROR: broken markdown links found"
-assert_not_contains "$docs_only_output" "ERROR: bean hygiene failed"
+[[ "$bean_pass_status" -eq 0 ]] || fail "expected bean hygiene to pass: $bean_pass_output"
+assert_contains "$bean_pass_output" "ok: bean hygiene passed"
 
 mock_wrapper_fail="$TMP_ROOT/mock-wrapper-fail.sh"
 cat >"$mock_wrapper_fail" <<'EOF'
@@ -386,33 +381,14 @@ exit 1
 EOF
 chmod +x "$mock_wrapper_fail"
 
-repo="$TMP_ROOT/bean-only"
-mkdir -p "$repo/docs"
-cat >"$repo/docs/ok.md" <<'EOF'
-[Self](./ok.md)
-EOF
+repo="$TMP_ROOT/bean-fail"
+mkdir -p "$repo/scripts"
 set +e
-bean_only_output=$(run_hygiene_script "$repo" "$mock_wrapper_fail" 2>&1)
-bean_only_status=$?
+bean_fail_output=$(run_hygiene_script "$repo" "$mock_wrapper_fail" 2>&1)
+bean_fail_status=$?
 set -e
-[[ "$bean_only_status" -eq 1 ]] || fail "expected bean-only hygiene script to fail"
-assert_contains "$bean_only_output" "ok: no broken markdown links"
-assert_contains "$bean_only_output" "ERROR: bean hygiene failed"
-assert_contains "$bean_only_output" "Open beans with landed work on main (hard failure):"
-
-repo="$TMP_ROOT/combined"
-mkdir -p "$repo/docs"
-cat >"$repo/docs/broken.md" <<'EOF'
-[Broken](./missing.md)
-EOF
-set +e
-combined_output=$(run_hygiene_script "$repo" "$mock_wrapper_fail" 2>&1)
-combined_status=$?
-set -e
-[[ "$combined_status" -eq 1 ]] || fail "expected combined hygiene script to fail"
-assert_contains "$combined_output" "ERROR: broken markdown links found"
-assert_contains "$combined_output" "ERROR: bean hygiene failed"
-assert_contains "$combined_output" "hygiene check failed with 2 error(s)"
+[[ "$bean_fail_status" -eq 1 ]] || fail "expected bean hygiene to fail"
+assert_contains "$bean_fail_output" "ERROR: bean hygiene failed"
 
 cat >"$TMP_ROOT/next-list.json" <<'EOF'
 [
