@@ -15,7 +15,7 @@
       "Search(*)",
       "Edit(*)",
       "Write(*)",
-      
+
       "Bash(beans *)",
       "Bash(.beans)",
       "Bash(node *)",
