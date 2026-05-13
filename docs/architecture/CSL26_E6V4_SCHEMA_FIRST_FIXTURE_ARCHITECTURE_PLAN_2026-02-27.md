@@ -59,7 +59,7 @@ preserving `citeproc-js` compatibility during the migration window.
 Introduce a schema-first bibliography fixture source under `tests/fixtures/`,
 for example:
 
-- `tests/fixtures/references-expanded.source.json`
+- `tests/fixtures/references-expanded.json`
 
 This source should be authored in a structure that maps directly to
 `InputReference` semantics.
@@ -77,8 +77,8 @@ internal conversion layer.
 
 Add two helper scripts in a follow-on implementation:
 
-- `scripts/validate-test-fixtures.js`
-- `scripts/export-test-fixtures.js`
+- `scripts/validate-schemas.js`
+- `scripts/validate-schemas.js`
 
 Responsibilities:
 

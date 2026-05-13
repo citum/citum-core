@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 use super::*;
 use crate::Processor;
 use crate::processor::rendering::grouped::group_citation_items_by_author;

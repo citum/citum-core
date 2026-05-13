@@ -4,12 +4,14 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 description = "CSL 1.0 to Citum style migration library"
+repository.workspace = true
 
 [[bin]]
 name = "citum-migrate"
 path = "src/main.rs"
 
 [dependencies]
+tracing.workspace = true
 csl_legacy = { package = "csl-legacy", path = "../csl-legacy" }
 citum_schema = { package = "citum-schema", path = "../citum-schema" }
 deno_core = "0.400.0"

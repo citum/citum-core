@@ -121,9 +121,11 @@ pub fn run_profile_discovery(styles_dir: &str, json_output: bool) {
 
     if json_output {
         match serde_json::to_string_pretty(&report) {
-            Ok(json) => println!("{json}"),
+            Ok(json) => tracing::debug!("{json}"),
             Err(err) => {
-                eprintln!("Error: Failed to serialize profile discovery report to JSON: {err}");
+                tracing::debug!(
+                    "Error: Failed to serialize profile discovery report to JSON: {err}"
+                );
             }
         }
     } else {
@@ -632,34 +634,35 @@ fn non_empty(value: &str) -> Option<String> {
     }
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn print_profile_discovery_report(report: &ProfileDiscoveryReport) {
-    println!("=== Journal-Profile Candidate Audit ===\n");
-    println!("Styles directory: {}", report.styles_dir);
-    println!("Audited candidates: {}", report.summary.total_audited);
-    println!(
+    tracing::debug!("=== Journal-Profile Candidate Audit ===\n");
+    tracing::debug!("Styles directory: {}", report.styles_dir);
+    tracing::debug!("Audited candidates: {}", report.summary.total_audited);
+    tracing::debug!(
         "Dispositions: {} journal-structural, {} false-positive, {} journal-profile, {} journal-alias",
         report.summary.journal_structural,
         report.summary.false_positive,
         report.summary.journal_profile,
         report.summary.journal_alias
     );
-    println!(
+    tracing::debug!(
         "Corrected parent mappings: {}",
         report.summary.corrected_parent_changes
     );
-    println!();
+    tracing::debug!("");
 
     for candidate in &report.audited_candidates {
-        println!(
+        tracing::debug!(
             "{} [{}]",
             candidate.normalized_id,
             candidate.disposition_label()
         );
-        println!("  proposed parent: {}", candidate.proposed_parent);
+        tracing::debug!("  proposed parent: {}", candidate.proposed_parent);
         if let Some(corrected_parent) = &candidate.corrected_parent {
-            println!("  corrected parent: {corrected_parent}");
+            tracing::debug!("  corrected parent: {corrected_parent}");
         }
-        println!(
+        tracing::debug!(
             "  structural match: {} (bib {:.2}, cit {:.2}, combined {:.2})",
             candidate.structural_match.best_target,
             candidate.structural_match.bibliography_similarity,
@@ -667,7 +670,7 @@ fn print_profile_discovery_report(report: &ProfileDiscoveryReport) {
             candidate.structural_match.combined_similarity
         );
         if let Some(alias_evidence) = &candidate.alias_evidence {
-            println!(
+            tracing::debug!(
                 "  alias evidence: {} (sim {:.2}, cite {:.2}, bib {:.2})",
                 alias_evidence.best_target,
                 alias_evidence.similarity,
@@ -676,16 +679,16 @@ fn print_profile_discovery_report(report: &ProfileDiscoveryReport) {
             );
         }
         if let Some(template_target) = &candidate.template_target {
-            println!("  CSL template link: {template_target}");
+            tracing::debug!("  CSL template link: {template_target}");
         }
-        println!("  note: {}", candidate.audit_note);
-        println!();
+        tracing::debug!("  note: {}", candidate.audit_note);
+        tracing::debug!("");
     }
 
     if !report.parse_errors.is_empty() {
-        println!("Parse errors:");
+        tracing::debug!("Parse errors:");
         for error in &report.parse_errors {
-            println!("  - {error}");
+            tracing::debug!("  - {error}");
         }
     }
 }

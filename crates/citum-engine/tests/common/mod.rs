@@ -1,4 +1,11 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
+#![allow(missing_docs, reason = "test")]
 #![allow(
+    dead_code,
     clippy::unwrap_used,
     clippy::expect_used,
     clippy::panic,
@@ -9,12 +16,10 @@
     clippy::get_unwrap,
     reason = "Panicking is acceptable and often desired in test, benchmark, and example code."
 )]
-#![allow(missing_docs, reason = "test")]
 /*
 SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
-#![allow(dead_code, reason = "test helpers")]
 
 use std::{fs, path::PathBuf};
 
@@ -301,7 +306,7 @@ pub fn example_document_processor(style_path: &str) -> Processor {
 
 /// Emit a short behavior summary for narrative integration tests.
 pub fn announce_behavior(summary: &str) {
-    println!("behavior: {summary}");
+    tracing::debug!("behavior: {summary}");
 }
 
 /// Build an author-date style with customizable disambiguation options.

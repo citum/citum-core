@@ -86,6 +86,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! assert_eq!(result, "(Kuhn, 1962)");
 //! ```
 
+#![deny(unsafe_code)]
+
 /// Interactive document-level API for batch citation formatting.
 pub mod api;
 /// Error types returned by citation and bibliography processing.

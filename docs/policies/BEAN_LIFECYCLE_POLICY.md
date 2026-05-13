@@ -3,7 +3,7 @@
 **Status:** Active
 **Version:** 1.1
 **Date:** 2026-03-09
-**Superseded by:** 
+**Superseded by:**
 **Related:** `CLAUDE.md` task management and commit rules; `.claude/skills/beans/SKILL.md`
 
 ## Rule

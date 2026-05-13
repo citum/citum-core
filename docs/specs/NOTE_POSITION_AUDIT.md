@@ -10,7 +10,7 @@
 Define a committed audit layer for note-style repeated-citation behavior so Citum can verify, report, and gap-track `first`, `subsequent`, and `ibid` rendering across shipped note styles instead of relying on ad hoc spot checks.
 
 ## Scope
-In scope: committed repeated-note fixtures, a note-style expectation manifest, a scriptable audit over all shipped `processing: note` styles, report-core integration for core-style visibility, and automated tests for the audit plumbing. Out of scope: changing style-guide intent, broad style fidelity cleanup unrelated to repeated-note behavior, and rebuilding the published `docs/compat.html` artifact in this change.
+In scope: committed repeated-note fixtures, a note-style expectation manifest, a scriptable audit over all shipped `processing: note` styles, report-core integration for core-style visibility, and automated tests for the audit plumbing. Out of scope: changing style-guide intent, broad style fidelity cleanup unrelated to repeated-note behavior, and rebuilding the published `compat.html` artifact in this change.
 
 ## Design
 The audit introduces a dedicated repeated-note citation fixture that models one source cited first, cited again immediately without a locator, cited again immediately with a locator, interrupted by another source, and then cited subsequently with a locator. The paired reference fixture must use stable references that expose note shortening clearly and are valid across Chicago-, MHRA-, legal-, and New Hart’s-style families.

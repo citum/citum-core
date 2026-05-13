@@ -34,7 +34,7 @@ Full-featured adapter. In addition to citation parsing, the Djot adapter support
 Narrative citations are integrated into the text flow using the `+` mode modifier. For numeric styles, these render as **Author [1]**.
 
 | Syntax | Description | Example |
-|--------|-------------|---------| 
+|--------|-------------|---------|
 | `[+@key]` | Explicit narrative | Smith (2023) |
 
 #### Modifiers

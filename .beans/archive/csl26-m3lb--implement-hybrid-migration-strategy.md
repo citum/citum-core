@@ -9,7 +9,7 @@ updated_at: 2026-02-19T20:49:49Z
 ---
 
 Strategic pivot from pure XML semantic compiler to hybrid approach combining
-XML options extraction, output-driven template inference, and hand-authored 
+XML options extraction, output-driven template inference, and hand-authored
 templates.
 
 **Context:** Current migration achieves 87-100% citation match but 0%

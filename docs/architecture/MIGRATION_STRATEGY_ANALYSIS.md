@@ -196,7 +196,7 @@ The inferrer validates that **template structure is often easier to solve from o
 
 ### Future application: visual style creation
 
-The same output-driven approach could power a visual style editor where users provide example formatted entries (by pasting, uploading, or modifying pre-selected reference data) and the system infers a Citum template. The component parser and template inferrer already perform the core task: given structured reference data and a formatted string, derive component ordering, delimiters, formatting, and type-specific behavior. This aligns with the progressive-refinement UI described in `./design/STYLE_EDITOR_VISION.md` and would allow style creation without requiring knowledge of any style language.
+The same output-driven approach could power a visual style editor where users provide example formatted entries (by pasting, uploading, or modifying pre-selected reference data) and the system infers a Citum template. The component parser and template inferrer already perform the core task: given structured reference data and a formatted string, derive component ordering, delimiters, formatting, and type-specific behavior. This aligns with the progressive-refinement UI described in `../design/STYLE_EDITOR_VISION.md` and would allow style creation without requiring knowledge of any style language.
 
 ---
 

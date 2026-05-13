@@ -1,7 +1,7 @@
 # CSL26-6N3C Fix Plan: Name Initials Without Periods
 
-Date: 2026-02-27  
-Bean: `csl26-6n3c`  
+Date: 2026-02-27
+Bean: `csl26-6n3c`
 Scope: `crates/citum-engine` (name rendering), targeted tests
 
 ## Problem
@@ -19,7 +19,7 @@ Bean requirements:
 
 ## Current State
 The initials logic is implemented in:
-- `crates/citum-engine/src/values/contributor.rs` (`format_single_name`)
+- `crates/citum-engine/src/values/contributor/mod.rs` (`format_single_name`)
 
 Existing coverage includes disambiguation scenarios with `initialize_with = " "`, but current tests do not explicitly cover multi-token given names where whitespace separators can be duplicated.
 

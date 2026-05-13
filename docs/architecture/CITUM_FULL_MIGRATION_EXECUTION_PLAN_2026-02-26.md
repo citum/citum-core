@@ -1,7 +1,7 @@
 # Citum Full Migration Execution Plan (2026-02-26)
 
-**Status:** Ready for execution at wave break  
-**Scope:** End-to-end migration from `csl26`/`csln_*` naming to `citum` ecosystem naming  
+**Status:** Ready for execution at wave break
+**Scope:** End-to-end migration from `csl26`/`csln_*` naming to `citum` ecosystem naming
 **Depends on:** [CITUM_MODULARIZATION.md](./CITUM_MODULARIZATION.md), [MIGRATE_ENHANCE_PHASE3_4_SINGLE_PR_PLAN_2026-02-26.md](./MIGRATE_ENHANCE_PHASE3_4_SINGLE_PR_PLAN_2026-02-26.md)
 
 ## 1. Objective
@@ -67,11 +67,11 @@ Core mappings:
 | `csln_migrate` | `citum_migrate` | word-boundary token |
 | `csln_analyze` | `citum_analyze` | word-boundary token |
 | `csl_legacy` | `csl_legacy` (crate path) / `csl-legacy` (package display) | targeted only |
-| `crates/csln_core` | `crates/citum-schema` | path |
-| `crates/csln_processor` | `crates/citum-engine` | path |
-| `crates/csln_migrate` | `crates/citum-migrate` | path |
-| `crates/csln_analyze` | `crates/citum-analyze` | path |
-| `crates/csln` | `crates/citum-cli` | path |
+| `crates/citum-schema` | `crates/citum-schema` | path |
+| `crates/citum-engine` | `crates/citum-engine` | path |
+| `crates/citum-migrate` | `crates/citum-migrate` | path |
+| `crates/citum-analyze` | `crates/citum-analyze` | path |
+| `crates/citum-cli` | `crates/citum-cli` | path |
 | `--bin csln` | `--bin citum` | command token |
 | `bdarcus/csl26` | `citum/citum-core` | literal URL text |
 

@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Minimal renderer for the legacy Citum (CSL Node) AST.
 //!
 //! This module provides a basic AST renderer used internally for schema tests and migration workflows.

@@ -1,3 +1,9 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
+#![allow(missing_docs, reason = "test")]
 #![allow(
     clippy::unwrap_used,
     clippy::expect_used,
@@ -9,7 +15,6 @@
     clippy::get_unwrap,
     reason = "Panicking is acceptable and often desired in test, benchmark, and example code."
 )]
-#![allow(missing_docs, reason = "test")]
 
 use citum_migrate::{TemplateCompiler, Upsampler};
 use citum_schema::CslnNode;
@@ -18,7 +23,7 @@ use citum_schema::template::{NumberVariable, SimpleVariable, TemplateComponent};
 use csl_legacy::model::{CslNode, Formatting, Label, Names, Text};
 
 fn announce_behavior(summary: &str) {
-    println!("behavior: {summary}");
+    tracing::debug!("behavior: {summary}");
 }
 
 #[test]

@@ -6,7 +6,8 @@
 **Canonical metrics source of truth:**
 - `docs/TIER_STATUS.md` for style-level strict oracle status
 - `scripts/report-data/core-quality-baseline.json` for portfolio baseline gates
-- `docs/compat.html` for published compatibility snapshot
+- `../compat.html` for published compatibility snapshot
+
 
 ## Current State Matrix
 

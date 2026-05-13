@@ -98,6 +98,12 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Install alint
+        run: curl -sSL https://raw.githubusercontent.com/asamarts/alint/main/install.sh | bash
+
+      - name: Run repository hygiene (alint)
+        run: $HOME/.local/bin/alint check --compact
+
       - name: Install script dependencies
         run: npm install --prefix scripts
 
@@ -106,9 +112,6 @@ jobs:
 
       - name: Check docs and bean hygiene
         run: ./scripts/check-docs-beans-hygiene.sh
-
-      - name: Validate repo frontmatter manifests
-        run: ./scripts/validate-frontmatter.sh --repo-only --copilot-strict
 
       - name: Validate production styles and structure
         run: ./scripts/validate-production-styles.sh

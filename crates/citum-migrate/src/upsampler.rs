@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 use citum_schema::{self as csln, FormattingOptions, ItemType, Variable};
 use csl_legacy::model::{self as legacy, CslNode as LNode};
 use std::collections::HashMap;
@@ -168,7 +173,7 @@ fn analyze_fast_path_branch(
             };
             if *saw {
                 if migrate_debug_enabled() {
-                    eprintln!(
+                    tracing::debug!(
                         "Upsampler: conflicting {token}-position branches at {branch_label}."
                     );
                 }
@@ -233,7 +238,7 @@ fn analyze_position_choose(choose: &legacy::Choose, analysis: &mut CitationPosit
             };
             if pure_position_branch && *saw {
                 if migrate_debug_enabled() {
-                    eprintln!(
+                    tracing::debug!(
                         "Upsampler: conflicting {token}-position branches at {branch_label}."
                     );
                 }
@@ -711,9 +716,10 @@ impl Upsampler {
                         prov.record_upsampling(&var_name, "Text", "Variable");
                     }
                     if migrate_debug_enabled() {
-                        eprintln!(
+                        tracing::debug!(
                             "Upsampler: Text({:?}) macro_call_order={:?}",
-                            var, t.macro_call_order
+                            var,
+                            t.macro_call_order
                         );
                     }
                     return Some(csln::CslnNode::Variable(csln::VariableBlock {
@@ -918,9 +924,10 @@ impl Upsampler {
         }
 
         if migrate_debug_enabled() {
-            eprintln!(
+            tracing::debug!(
                 "Upsampler: Names({:?}) macro_call_order={:?}",
-                variable, n.macro_call_order
+                variable,
+                n.macro_call_order
             );
         }
         Some(csln::CslnNode::Names(csln::NamesBlock {
@@ -1197,9 +1204,10 @@ impl Upsampler {
         }
 
         if migrate_debug_enabled() {
-            eprintln!(
+            tracing::debug!(
                 "Upsampler: Date({:?}) macro_call_order={:?}",
-                variable, d.macro_call_order
+                variable,
+                d.macro_call_order
             );
         }
         Some(csln::CslnNode::Date(csln::DateBlock {

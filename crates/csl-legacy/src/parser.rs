@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! CSL 1.0 XML → [`model`](crate::model) parser.
 //!
 //! The entry point is [`crate::parser::parse_style()`], which accepts a [`roxmltree::Node`] rooted

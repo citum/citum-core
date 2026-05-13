@@ -1,10 +1,10 @@
 info:
-  title: Chicago Manual of Style 18th edition (notes without bibliography, place of publication 
+  title: Chicago Manual of Style 18th edition (notes without bibliography, place of publication
     substituted for publisher, archival references with place first, without URLs)
-  description: Chicago-style source citations (with Bluebook for legal citations), notes system 
-    without bibliography, listing up to six authors in a full citation (CMOS18 13.23), chapter page 
-    numbers (CMOS18 14.8), displaying number of volumes (CMOS18 14.20), substituting place of 
-    publication for publisher name (CMOS18 14.31), archival references with place first (CMOS18 
+  description: Chicago-style source citations (with Bluebook for legal citations), notes system
+    without bibliography, listing up to six authors in a full citation (CMOS18 13.23), chapter page
+    numbers (CMOS18 14.8), displaying number of volumes (CMOS18 14.20), substituting place of
+    publication for publisher name (CMOS18 14.31), archival references with place first (CMOS18
     14.205), without URLs (CMOS18 13.6)
   fields:
   - anthropology

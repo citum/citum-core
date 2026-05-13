@@ -4,8 +4,10 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 description = "Citum I/O and format conversion library"
+repository.workspace = true
 
 [dependencies]
+tracing.workspace = true
 citum-schema = { package = "citum-schema", path = "../citum-schema", features = ["legacy-convert"] }
 citum-engine = { package = "citum-engine", path = "../citum-engine" }
 csl_legacy = { package = "csl-legacy", path = "../csl-legacy" }

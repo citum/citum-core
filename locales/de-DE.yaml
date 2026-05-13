@@ -38,7 +38,7 @@ dates:
     - Winter
 roles:
   author:
-    long: 
+    long:
   chair:
     long:
       singular: Vorsitz
@@ -63,9 +63,9 @@ roles:
     verb: kompiliert von
     verb-short: komp. von
   composer:
-    long: 
+    long:
   container-author:
-    long: 
+    long:
     verb: von
   contributor:
     long:
@@ -161,7 +161,7 @@ roles:
     verb: illustriert von
     verb-short: illus. von
   interviewer:
-    long: 
+    long:
     verb: interviewt von
   narrator:
     long:
@@ -182,7 +182,7 @@ roles:
     verb: organisiert von
     verb-short: org. von
   original-author:
-    long: 
+    long:
   performer:
     long:
       singular: Künstler
@@ -202,10 +202,10 @@ roles:
     verb: produziert von
     verb-short: prod. von
   recipient:
-    long: 
+    long:
     verb: an
   reviewed-author:
-    long: 
+    long:
     verb: von
   script-writer:
     long:

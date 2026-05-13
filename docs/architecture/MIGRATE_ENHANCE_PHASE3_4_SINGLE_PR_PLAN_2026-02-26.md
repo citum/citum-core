@@ -113,7 +113,7 @@ Likely files/modules:
 2. `scripts/report-core.js`
 3. `scripts/check-core-quality.js`
 4. `docs/TIER_STATUS.md`
-5. `docs/architecture/SQI_REFINEMENT_PLAN.md`
+5. `docs/policies/SQI_REFINEMENT_PLAN.md`
 
 ## Metrics Mapping
 

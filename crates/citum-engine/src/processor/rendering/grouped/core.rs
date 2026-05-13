@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 use super::super::{
     GroupRenderParams, Renderer, TemplateComponentTracker, TemplateRenderParams,
     TemplateRenderRequest, find_grouping_component, get_variable_key, has_contributor_component,

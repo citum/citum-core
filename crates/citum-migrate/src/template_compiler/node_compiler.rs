@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 use super::{
     ContributorForm, ContributorRole, CslnNode, DateForm, DateVariable, NumberVariable,
     SimpleVariable, TemplateCompiler, TemplateComponent, TemplateContributor, TemplateDate,

@@ -1,8 +1,8 @@
 # CSL Style Targets: Multilingual and Sectional Bibliography
 
-**Status:** Active - Implementation Pending  
-**Date:** 2026-02-22  
-**Beans:** csl26-mls1 (multilingual styles), csl26-grp1 (grouping styles)  
+**Status:** Active - Implementation Pending
+**Date:** 2026-02-22
+**Beans:** csl26-mls1 (multilingual styles), csl26-grp1 (grouping styles)
 **Precondition:** csl26-mlt2 (processor multilingual logic) must be completed first
 
 ## Overview
@@ -56,7 +56,7 @@ options:
 ```
 
 Test fixture: Add 2-3 references with non-English titles and English translations
-to `tests/fixtures/multilingual/apa-multilingual.json`.
+to `tests/fixtures/multilingual/`.
 
 ### 1.2 ISO-690 Family - NEW STYLES
 

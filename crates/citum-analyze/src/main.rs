@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 #![allow(missing_docs, reason = "bin/main")]
 /*
 SPDX-License-Identifier: MIT OR Apache-2.0
@@ -52,31 +57,32 @@ fn main() {
     }
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn print_usage() {
-    eprintln!("CSL Style Analyzer");
-    eprintln!();
-    eprintln!("Usage:");
-    eprintln!("  citum_analyze <styles_dir> [--json]");
-    eprintln!("      Analyze all .csl files and report feature statistics.");
-    eprintln!();
-    eprintln!("  citum_analyze <styles_dir> --rank-parents [--json] [--format <format>]");
-    eprintln!("      Rank parent styles by how many dependent styles reference them.");
-    eprintln!(
+    tracing::debug!("CSL Style Analyzer");
+    tracing::debug!("");
+    tracing::debug!("Usage:");
+    tracing::debug!("  citum_analyze <styles_dir> [--json]");
+    tracing::debug!("      Analyze all .csl files and report feature statistics.");
+    tracing::debug!("");
+    tracing::debug!("  citum_analyze <styles_dir> --rank-parents [--json] [--format <format>]");
+    tracing::debug!("      Rank parent styles by how many dependent styles reference them.");
+    tracing::debug!(
         "      Use --format to filter by citation format (author-date, numeric, note, label)."
     );
-    eprintln!();
-    eprintln!("  citum_analyze <styles_dir> --quantify-savings [--json]");
-    eprintln!("      Estimate how many CSL styles presets and locale overrides can replace.");
-    eprintln!();
-    eprintln!("  citum_analyze <styles_dir> --identify-profiles [--json]");
-    eprintln!(
+    tracing::debug!("");
+    tracing::debug!("  citum_analyze <styles_dir> --quantify-savings [--json]");
+    tracing::debug!("      Estimate how many CSL styles presets and locale overrides can replace.");
+    tracing::debug!("");
+    tracing::debug!("  citum_analyze <styles_dir> --identify-profiles [--json]");
+    tracing::debug!(
         "      Audit the current journal-profile candidate shortlist with normalized IDs and repo evidence."
     );
-    eprintln!();
-    eprintln!("Examples:");
-    eprintln!("  citum_analyze styles-legacy/");
-    eprintln!("  citum_analyze styles-legacy/ --rank-parents");
-    eprintln!("  citum_analyze styles-legacy/ --rank-parents --format author-date --json");
-    eprintln!("  citum_analyze styles-legacy/ --quantify-savings --json");
-    eprintln!("  citum_analyze styles-legacy/ --identify-profiles --json");
+    tracing::debug!("");
+    tracing::debug!("Examples:");
+    tracing::debug!("  citum_analyze styles-legacy/");
+    tracing::debug!("  citum_analyze styles-legacy/ --rank-parents");
+    tracing::debug!("  citum_analyze styles-legacy/ --rank-parents --format author-date --json");
+    tracing::debug!("  citum_analyze styles-legacy/ --quantify-savings --json");
+    tracing::debug!("  citum_analyze styles-legacy/ --identify-profiles --json");
 }

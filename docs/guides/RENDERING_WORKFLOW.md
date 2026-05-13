@@ -94,7 +94,7 @@ Know when you've reached "good enough" for a style:
 | **High Quality** | Citation ≥90%, Bibliography ≥85% (full fixture) | Style ready for broad usage |
 | **Production Target** | Citation ≥90%, Bibliography ≥90% (full fixture) | Meets compat dashboard goals |
 
-**Scoring basis**: use `node ../scripts/oracle.js <style.csl> --json` on `tests/fixtures/references-expanded.json` (same basis as `docs/compat.html`).
+**Scoring basis**: use `node ../scripts/oracle.js <style.csl> --json` on `tests/fixtures/references-expanded.json` (same basis as `compat.html`).
 
 ## Acceptance Rule: Fidelity First, SQI Second
 
@@ -423,7 +423,7 @@ Bibliography: 24/28 passing (86%)
 
 **When to use**: Mandatory first step when hand-authoring a high-priority (Tier 2) style with `/style-evolve`.
 
-**What it does**: 
+**What it does**:
 1. Generates "Target Rendering" using `citeproc-js`.
 2. Generates "Baseline Citum" (Tier 1 options + Tier 4 templates).
 3. Packages both into a high-fidelity context packet for the agent.

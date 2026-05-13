@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Author-substitution logic for contributor rendering.
 //!
 //! When a reference has no author, this module handles the fallback chain:

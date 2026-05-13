@@ -20,7 +20,7 @@ style / processor / migration work, not as an acceptable fuzzy residual.
 - the first structural chapter / entry / proceedings pass in `csl26-5ap9`
   moved a reduced cluster from `0 / 10` to `9 / 10` and lifted the full
   benchmark to `54 / 74`
-- `docs/compat.html` still shows an older published snapshot and is not the
+- `compat.html` still shows an older published snapshot and is not the
   source of truth for current branch progress
 
 ## Success Definition
@@ -91,7 +91,7 @@ The APA rich-bibliography effort is concluded only when all three are true:
 - `cargo fmt --check`
 - `cargo clippy --all-targets --all-features -- -D warnings`
 - `cargo nextest run`
-- `./scripts/check-docs-beans-hygiene.sh`
+- `../scripts/check-docs-beans-hygiene.sh`
 - `node scripts/report-core.js --style apa-7th`
 
 Every pass must also:

@@ -22,5 +22,5 @@ We need to evaluate if the `Rendering` struct should distinguish between:
 1. **Inner affixes**: Inside the wrap (e.g., `[(ed.)]`).
 2. **Outer affixes**: Outside the wrap (e.g., `[1] `).
 
-This would avoid the need for "hacky" prefixes on subsequent components to manage 
+This would avoid the need for "hacky" prefixes on subsequent components to manage
 spacing after bracketed elements.

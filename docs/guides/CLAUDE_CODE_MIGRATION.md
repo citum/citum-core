@@ -38,7 +38,7 @@ CLAUDE.md          # Standalone project instructions
 **Before:** TODO items scattered across:
 - `.agent/todo/*.md` files
 - GitHub issues
-- `./TIER*_PLAN.md` files
+- `../TIER*_PLAN.md` files
 
 **After:** All work tracked as native Claude tasks:
 - Use `TaskList` to see all tasks

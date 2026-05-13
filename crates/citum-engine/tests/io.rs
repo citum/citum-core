@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! BDD behavioral integration tests for bibliography I/O operations.
 //!
 //! Tests coverage for `load_bibliography_with_sets` across multiple input formats:

@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Rendering logic for contributors (authors, editors, translators).
 //!
 //! This module handles contributor rendering with support for name ordering,

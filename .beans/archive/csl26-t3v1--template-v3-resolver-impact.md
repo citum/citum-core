@@ -21,7 +21,7 @@ updated_at: 2026-05-05T22:56:33Z
 Implement the TEMPLATE_V3 "Structural Diff" model in the Citum engine and transition the core style ecosystem (including authoring tools and `styles/`) to utilize it. This work will be delivered as a **Stacked PR sequence using `jj` (Jujutsu)** for seamless change management.
 
 # Context
-With the introduction of `DISTRIBUTED_RESOLVER.md` and `TEMPLATE_V3.md`, Citum is moving to a decentralized web of styles. The engine needs deep-merge capabilities to support surgical diffs (`modify`, `add`, `remove`) across network boundaries. 
+With the introduction of `DISTRIBUTED_RESOLVER.md` and `TEMPLATE_V3.md`, Citum is moving to a decentralized web of styles. The engine needs deep-merge capabilities to support surgical diffs (`modify`, `add`, `remove`) across network boundaries.
 
 Using `jj` allows us to maintain a live stack of these changes. We can refine the engine logic (base of the stack) and have those changes automatically propagate to the migration logic (top of the stack), ensuring consistent end-to-end testing throughout development.
 

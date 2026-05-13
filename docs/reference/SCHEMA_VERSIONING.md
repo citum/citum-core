@@ -373,7 +373,7 @@ authoritative record when matching tags were not created at the time.
 ## Follow-Up Work
 
 - Bean `csl26-fuw7` owns the deeper compatibility contract docs:
-  `docs/architecture/design/VERSIONING.md` and `docs/architecture/SCHEMA_CHANGELOG.md`
+  `docs/reference/SCHEMA_VERSIONING.md` and `CHANGELOG.md`
 - Bean `csl26-yipx` still owns runtime enforcement of `Style.version` in `citum check`
 
 ## References

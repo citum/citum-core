@@ -2,7 +2,7 @@
 
 **Status:** Planning phase
 **Created:** 2026-02-16
-**Related:** ../reference/DISAMBIGUATION.md, ./MULTILINGUAL.md, ./design/BIBLIOGRAPHY_GROUPING.md
+**Related:** ../reference/DISAMBIGUATION.md, ../MULTILINGUAL.md, ../design/BIBLIOGRAPHY_GROUPING.md
 
 ## Executive Summary
 
@@ -278,8 +278,8 @@ for group in &grouped_refs {
 
 **Files:**
 - `../reference/DISAMBIGUATION.md`
-- `./MULTILINGUAL.md`
-- `./design/BIBLIOGRAPHY_GROUPING.md`
+- `../MULTILINGUAL.md`
+- `../design/BIBLIOGRAPHY_GROUPING.md`
 
 **Updates:**
 1. Document multilingual disambiguation behavior with examples

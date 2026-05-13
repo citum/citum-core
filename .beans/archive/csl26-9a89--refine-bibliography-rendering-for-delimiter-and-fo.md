@@ -17,28 +17,28 @@ The template resolver and per-component delimiter detection are working.
 - Items group (volume+issue) predecessor lookup: tries both issue and volume
   names, fixing pages prefix detection for entries without issue numbers
 - Elsevier-harvard bibliography: 0/28 → 6/28 match
-- **Wrapped component prefix fix**: Template inferrer now skips setting 
+- **Wrapped component prefix fix**: Template inferrer now skips setting
   whitespace-only prefix for components with wrap (e.g. date in parentheses).
   This prevents "( 2019)" rendering. Springer bibliography: 0/28 → 2/28
-- **Renderer separator simplification**: Refactored refs_to_string separator 
+- **Renderer separator simplification**: Refactored refs_to_string separator
   logic to be clearer and more predictable. year:missing dropped 57 → 46.
-- **Name ordering logic**: Fixed name order detection to correctly infer 
-  `family-first` for bibliographic entries. Removed hardcoded `GivenFirst` 
-  override for APA editors in the migrator. APA bibliography now uses correct 
+- **Name ordering logic**: Fixed name order detection to correctly infer
+  `family-first` for bibliographic entries. Removed hardcoded `GivenFirst`
+  override for APA editors in the migrator. APA bibliography now uses correct
   name order for both authors and editors.
-- **Container grouping and prefix detection**: Enhanced `template-inferrer.js` to 
-  detect "In " prefixes for container groups and merge editors and 
-  monographic container titles into semantic `items` blocks. This handles 
-  "In Editor, Book Title" groupings correctly while maintaining clean 
+- **Container grouping and prefix detection**: Enhanced `template-inferrer.js` to
+  detect "In " prefixes for container groups and merge editors and
+  monographic container titles into semantic `items` blocks. This handles
+  "In Editor, Book Title" groupings correctly while maintaining clean
   journal titles.
-- **Prefix-aware delimiter detection**: Refined separator inference to strip 
-  component-level prefixes, allowing accurate detection of underlying section 
+- **Prefix-aware delimiter detection**: Refined separator inference to strip
+  component-level prefixes, allowing accurate detection of underlying section
   delimiters (e.g. distinguishing ". " from ". In ").
-- **Entry suffix infrastructure**: Implemented `entry_suffix` support in 
-  `citum-engine` and `citum-migrate` pipeline. `infer-template.js` now 
-  passes detected suffix to the renderer, resolving trailing period 
+- **Entry suffix infrastructure**: Implemented `entry_suffix` support in
+  `citum-engine` and `citum-migrate` pipeline. `infer-template.js` now
+  passes detected suffix to the renderer, resolving trailing period
   mismatches for styles like Springer.
-- **Migration Prep Tooling**: Created `scripts/prep-migration.sh` to 
+- **Migration Prep Tooling**: Created `scripts/prep-migration.sh` to
   aggregate context for agent-assisted manual migration of complex styles.
 
 1. **Issue number leaking**: Issue numbers render when citeproc-js suppresses

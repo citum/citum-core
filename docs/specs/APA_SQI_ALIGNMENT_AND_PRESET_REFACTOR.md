@@ -10,7 +10,7 @@ Correct the Style Quality Index so it measures real duplication in resolved Citu
 
 ## Scope
 
-In scope: `scripts/report-core.js` SQI scoring, `scripts/report-core.test.js`, APA embedded template presets, APA preset-backed YAML styles, and generated report artifacts (`docs/compat.html`, `scripts/report-data/core-quality-baseline.json`).
+In scope: `scripts/report-core.js` SQI scoring, `scripts/report-core.test.js`, APA embedded template presets, APA preset-backed YAML styles, and generated report artifacts (`compat.html`, `scripts/report-data/core-quality-baseline.json`).
 
 Out of scope: new public schema keys, non-APA style refactors, processor behavior changes unrelated to preserving APA fidelity, and any weakening of the fidelity gate.
 
@@ -50,7 +50,7 @@ No new user-facing schema surface is introduced. The report output may expose ri
 - [ ] `styles/apa-7th.yaml` and `styles/preset-bases/apa-7th.yaml` use `citation.template-ref: apa` and `bibliography.template-ref: apa`.
 - [ ] APA citation configuration has no inline `type-variants`.
 - [ ] APA fidelity remains unchanged in report/oracle verification.
-- [ ] `docs/compat.html` and `scripts/report-data/core-quality-baseline.json` are regenerated from the final implementation.
+- [ ] `compat.html` and `scripts/report-data/core-quality-baseline.json` are regenerated from the final implementation.
 
 ## Changelog
 

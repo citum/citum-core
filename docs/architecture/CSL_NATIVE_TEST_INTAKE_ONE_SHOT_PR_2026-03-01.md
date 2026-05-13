@@ -52,7 +52,7 @@ The correct approach is:
 ### 1. Intake reporting script
 
 `scripts/report-csl-intake.js` parses Hayagriva issue `#327`, checks fixture
-presence under `tests/csl-test-suite/processor-tests`, and reports section and
+presence under `tests/csl-test-suite/`, and reports section and
 state counts.
 
 This gives the project a repeatable way to answer:

@@ -14,8 +14,8 @@ then drill into strategy and implementation details only as needed.
 
 Generate the compatibility snapshot locally with `node scripts/report-core.js --output-html docs/compat.html`.
 Generate an official single-style report for workflow consumption with `node scripts/report-core.js --style <style-name>`.
-Generate the local behavior report with `./scripts/test-report.sh`.
-Generate the local CSL-to-Citum migration behavior report with `./scripts/migration-test-report.sh`.
+Generate the local behavior report with `../scripts/test-report.sh`.
+Generate the local CSL-to-Citum migration behavior report with `../scripts/migration-test-report.sh`.
 
 ## Active Guides
 

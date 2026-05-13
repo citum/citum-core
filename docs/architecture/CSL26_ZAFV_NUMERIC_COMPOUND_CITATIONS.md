@@ -1,6 +1,6 @@
 # Numeric Compound Citations — Architecture Record
 
-**Bean:** csl26-zafv  
+**Bean:** csl26-zafv
 **Status:** Implemented in revised form (2026-03-05)
 
 ## Final Decision
@@ -96,9 +96,9 @@ During bibliography loading:
 ## Files Updated By This Design
 
 - `crates/citum-schema/src/lib.rs`
-- `crates/citum-schema-style/src/reference/*`
-- `crates/citum-engine/src/io.rs`
+- `crates/citum-schema-style/src/`
+- `crates/citum-engine/tests/io.rs`
 - `crates/citum-engine/src/processor/*`
 - `crates/citum-engine/src/values/*`
 - `crates/citum-cli/src/main.rs`
-- `tests/fixtures/compound-numeric-refs.{yaml,json}`
+- `tests/fixtures/citations-compound-numeric.json`

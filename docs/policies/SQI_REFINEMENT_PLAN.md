@@ -184,7 +184,7 @@ Improve SQI so it rewards real maintainability changes:
    - metric computation failures
    - Completed (warn-level): emitted by `scripts/check-core-quality.js`
      against `scripts/report-data/core-quality-baseline.json`.
-3. Record per-wave before/after snapshots in `docs/compat.html` generation notes.
+3. Record per-wave before/after snapshots in `compat.html` generation notes.
    - Pending follow-up: add explicit wave snapshot notes to compat page output.
 
 ## Deliverables

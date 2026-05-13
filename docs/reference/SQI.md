@@ -27,7 +27,7 @@ SQI is computed per style from four subscores:
    - Uses structural fingerprints of whole components and groups rather than coarse field-name matching, so copied template forks are visible to the metric.
 4. `presetUsage`: reuse of shared presets (`processing`, `contributors`, `dates`, `titles`, `substitute`, template presets). Root `extends:` is treated as strong embedded preset reuse when the authored wrapper has no local template scopes.
 
-Overall SQI is reported as a 0.0-1.0 score in JSON and as a percentage in `docs/compat.html`.
+Overall SQI is reported as a 0.0-1.0 score in JSON and as a percentage in `compat.html`.
 
 `qualityBreakdown.subscores.concision` now includes supporting diagnostics such as scope count, variant count, exact duplicates, near-duplicates, repeated-pattern totals, inherited preset ID, diff variant scope count, and diff operation count so score changes are explainable.
 
