@@ -45,7 +45,7 @@ Pervasive presets that bundle common configurations, avoiding macro complexity:
 ```yaml
 title: ABC Journal
 processing: author-date  # preset
-dates: long              # preset  
+dates: long              # preset
 contributors: long       # preset
 titles: apa              # preset
 citation:
@@ -83,7 +83,7 @@ pub trait Renderer {
 }
 ```
 
-**Prior art**: 
+**Prior art**:
 - jotdown's `Render` trait
 - stanza's markdown renderer
 - citeproc-rs `OutputFormat` trait
@@ -276,7 +276,7 @@ CSL-M provides `<cs:institution>` for complex organizational names:
 ```xml
 <names variable="author">
   <name/>
-  <institution 
+  <institution
     delimiter=", "
     use-first="1"
     use-last="1"

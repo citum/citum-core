@@ -173,12 +173,12 @@ options:
     # - transliterated: Prefer transliteration
     # - translated: Use translation matching style locale
     # - combined: "original [translation]" pattern
-    title-mode: "transliterated [translated]" 
-    
+    title-mode: "transliterated [translated]"
+
     # Preferred view for names:
     # - primary, transliterated, translated, combined
     name-mode: "transliterated"
-    
+
     # Preferred script for transliterations (e.g., "Latn", "Cyrl")
     preferred-script: "Latn"
 
@@ -200,7 +200,7 @@ options:
 For contributors, the processor must be script-aware to handle ordering (Given Family vs Family Given) and delimiters.
 
 1.  **Detection**: Determine the script of the resolved name (e.g., Latin vs CJK).
-2.  **Ordering**: 
+2.  **Ordering**:
     *   If CJK and `use-native-ordering` is true, use `FamilyGiven`.
     *   If Latin, use `Given Family` (unless `sort-order` is requested).
 3.  **Delimiters**: Use script-appropriate delimiters for contributor lists (e.g., "・" for Japanese lists).
@@ -222,9 +222,9 @@ Sorting mixed scripts (e.g., Hanzi vs. Latin) requires Unicode Collation Algorit
 ### 4.1 Implementation
 
 *   **Library**: Use `icu_collation` (ICU4X) for robust, locale-aware sorting.
-*   **Logic**: 
+*   **Logic**:
     *   If a sort key is `author` or `title`, the processor should prefer the `transliteration` variant if available, even if the bibliography displays the `original` script. This ensures that "Tolstoy" (Cyrillic) sorts near "Tolstoy" (Latin) in an English bibliography.
-    
+
 ### 4.2 Performance & Feature Flags
 
 To avoid bloating the binary size for users who only need English/Simple citation support, all ICU4X dependencies will be gated.

@@ -1,7 +1,7 @@
 # Citum.org Website and Domain Strategy
 
-**Date:** February 26, 2026  
-**Owner:** Citum maintainers  
+**Date:** February 26, 2026
+**Owner:** Citum maintainers
 **Scope:** Public docs/website migration from GitHub Pages project URL to `citum.org`
 
 ## 1) Goals

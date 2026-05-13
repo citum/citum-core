@@ -1,7 +1,7 @@
 # CSL26-6N3C Fix Plan: Name Initials Without Periods
 
-Date: 2026-02-27  
-Bean: `csl26-6n3c`  
+Date: 2026-02-27
+Bean: `csl26-6n3c`
 Scope: `crates/citum-engine` (name rendering), targeted tests
 
 ## Problem

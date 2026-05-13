@@ -25,7 +25,7 @@ pub struct Citation {
     pub citation_id: String,
     pub citation_items: Vec<CitationItem>,
     pub properties: CitationProperties,
-    
+
     /// If true, the entire citation is treated as a single dynamic compound set.
     /// The first item in `citation_items` acts as the head, and subsequent
     /// items are merged into its bibliography entry as tails.
@@ -49,7 +49,7 @@ When the `Processor` encounters a `Citation` with `grouped: true`:
 
 ### 2.3. Conflict Resolution
 
-Static definitions always take precedence over dynamic cite-site grouping requests. 
+Static definitions always take precedence over dynamic cite-site grouping requests.
 
 Implementations *should* emit a logged warning (or surfaced message in debug mode) when a cite-site group conflicts with a static compound set, and may ignore the dynamic grouping entirely in that case.
 
@@ -81,7 +81,7 @@ To ensure consistent implementation behavior, the following defaults are recomme
 ### 5.1. Mixed Citations
 Citum will not support per-item grouping flags in a single cluster. Authors and integrators must split mixed references (e.g., `[1, 2a-c, 3]`) into separate grouped and ungrouped citation nodes.
 - **Source:** `[@ref1] [*@ref2; @ref3; @ref4] [@ref5]`
-- **AST:** Three distinct `Citation` objects: 
+- **AST:** Three distinct `Citation` objects:
   1. `[ref1]` (`grouped: false`)
   2. `[ref2, ref3, ref4]` (`grouped: true`)
   3. `[ref5]` (`grouped: false`)

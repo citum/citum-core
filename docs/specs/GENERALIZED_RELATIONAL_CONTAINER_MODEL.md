@@ -12,15 +12,15 @@ The goal is to give Citum a consistent recursive relation model for bibliographi
 
 ## Core Principle: The Document is the Part
 
-In complex bibliographic hierarchies (Multivolume works, Serial installments), **the part is the document**. 
+In complex bibliographic hierarchies (Multivolume works, Serial installments), **the part is the document**.
 
-When citing "Part 1" of a serialized article or "Book 3" of a multivolume set, the physical document in hand is defined by that sequence identifier. 
+When citing "Part 1" of a serialized article or "Book 3" of a multivolume set, the physical document in hand is defined by that sequence identifier.
 - **Document Identity:** Its `title` is the part's title; its identifiers (`number`/`numbering`) define its specific identity.
 - **Container Identity:** The Journal, Book Set, or Series is the `container`.
 
 ## Universal Relation Model: `WorkRelation`
 
-While this specification focuses on the `container` hierarchy, **`WorkRelation` is the universal type for all bibliographic relations in Citum.** 
+While this specification focuses on the `container` hierarchy, **`WorkRelation` is the universal type for all bibliographic relations in Citum.**
 
 Any property that links one bibliographic entity to another (whether hierarchical or semantic) uses the `WorkRelation` enum. This ensures a consistent developer experience and uniform YAML/JSON behavior (supporting both inline embedding and citekey referencing) across the entire schema.
 
@@ -85,7 +85,7 @@ Analysis of CSL JSON fixtures reveals that document numbering such as generic `n
 ```rust
 pub struct Numbering {
     /// Controlled vocabulary (see `NumberingType`), e.g.: "volume", "issue", "number", "report", "part", "supplement", "chapter", "section", "edition"
-    pub r#type: NumberingType, 
+    pub r#type: NumberingType,
     pub value: String, // e.g., "4", "B", "12"
 }
 ```

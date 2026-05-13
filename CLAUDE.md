@@ -60,7 +60,7 @@ For CI/PR parity (repo-local manifests only), run:
 
 Before implementing a non-trivial feature (schema, engine behavior, type
 system), create a spec first:
-1. Create `docs/specs/FEATURE_NAME.md` using the spec template in `docs/specs/README.md`.
+1. Create a spec file in `docs/specs/` (e.g. `LOCALE_MESSAGES.md`) using the spec template in `docs/specs/README.md`.
 2. Status: `Draft`. Get it committed before writing implementation code.
 3. Set Status to `Active` in the same commit as the first implementation.
 4. Reference the spec path in the bean description.
