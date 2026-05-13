@@ -97,6 +97,9 @@ four_forward_slashes = "deny"      # Enforce comment syntax correctness
 missing_safety_doc = "deny"        # Safety-critical items must be documented
 tabs_in_doc_comments = "deny"      # Enforce consistent formatting
 
+[workspace.dependencies]
+tracing = "0.1"
+
 [profile.dev]
 debug = 0
 codegen-units = 256

@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Role-label resolution for contributor rendering.
 
 use super::contributor_role_to_reference_role;

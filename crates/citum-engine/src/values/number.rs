@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Rendering logic for numeric variables (volume, issue, pages, citation numbers, etc.).
 //!
 //! This module handles number component rendering with support for page range formatting,

@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Matching logic for determining if references share primary contributors.
 //!
 //! This module implements contributor matching according to substitution rules,

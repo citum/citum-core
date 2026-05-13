@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Locale-specific term types and definitions.
 //!
 //! This module defines the data structures for representing locale information including

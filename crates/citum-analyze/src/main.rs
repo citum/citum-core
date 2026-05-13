@@ -1,13 +1,13 @@
-#![allow(missing_docs, reason = "bin/main")]
 /*
 SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-//! CSL Style Analyzer
-//!
 //! Analyzes CSL 1.0 styles in a directory to collect statistics
 //! and identify patterns for guiding migration development.
+
+#![forbid(unsafe_code)]
+#![allow(missing_docs, reason = "bin/main")]
 
 mod analyzer;
 mod profile_discovery;
@@ -52,27 +52,28 @@ fn main() {
     }
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn print_usage() {
     eprintln!("CSL Style Analyzer");
-    eprintln!();
+    eprintln!("");
     eprintln!("Usage:");
     eprintln!("  citum_analyze <styles_dir> [--json]");
     eprintln!("      Analyze all .csl files and report feature statistics.");
-    eprintln!();
+    eprintln!("");
     eprintln!("  citum_analyze <styles_dir> --rank-parents [--json] [--format <format>]");
     eprintln!("      Rank parent styles by how many dependent styles reference them.");
     eprintln!(
         "      Use --format to filter by citation format (author-date, numeric, note, label)."
     );
-    eprintln!();
+    eprintln!("");
     eprintln!("  citum_analyze <styles_dir> --quantify-savings [--json]");
     eprintln!("      Estimate how many CSL styles presets and locale overrides can replace.");
-    eprintln!();
+    eprintln!("");
     eprintln!("  citum_analyze <styles_dir> --identify-profiles [--json]");
     eprintln!(
         "      Audit the current journal-profile candidate shortlist with normalized IDs and repo evidence."
     );
-    eprintln!();
+    eprintln!("");
     eprintln!("Examples:");
     eprintln!("  citum_analyze styles-legacy/");
     eprintln!("  citum_analyze styles-legacy/ --rank-parents");

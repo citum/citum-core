@@ -1,3 +1,9 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
+#![allow(missing_docs, reason = "test")]
 #![allow(
     clippy::unwrap_used,
     clippy::expect_used,
@@ -9,7 +15,6 @@
     clippy::get_unwrap,
     reason = "Panicking is acceptable and often desired in test, benchmark, and example code."
 )]
-#![allow(missing_docs, reason = "test")]
 
 use citum_engine::processor::Processor;
 use citum_engine::render::latex::Latex;
@@ -20,6 +25,7 @@ use citum_schema::{
 use std::fs;
 use std::path::Path;
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn main() {
     let style_str = fs::read_to_string("styles/embedded/apa-7th.yaml").unwrap();
     let style: Style = serde_yaml::from_str(&style_str).unwrap();
@@ -46,8 +52,8 @@ fn main() {
     };
 
     match processor.process_citation_with_format::<Latex>(&cite) {
-        Ok(res) => println!("CITATION: {res}"),
-        Err(e) => println!("ERROR: {e:?}"),
+        Ok(res) => tracing::debug!("CITATION: {res}"),
+        Err(e) => tracing::debug!("ERROR: {e:?}"),
     }
 
     // Try suppress author just in case
@@ -57,7 +63,7 @@ fn main() {
         ..cite.clone()
     };
     match processor.process_citation_with_format::<Latex>(&cite_sa) {
-        Ok(res) => println!("CITATION SA: {res}"),
-        Err(e) => println!("ERROR: {e:?}"),
+        Ok(res) => tracing::debug!("CITATION SA: {res}"),
+        Err(e) => tracing::debug!("ERROR: {e:?}"),
     }
 }

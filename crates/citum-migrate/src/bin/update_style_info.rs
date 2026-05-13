@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 #![allow(missing_docs, reason = "bin")]
 
 use citum_migrate::InfoExtractor;
@@ -6,6 +11,7 @@ use roxmltree::Document;
 use std::fs;
 use std::path::Path;
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn main() {
     let styles_dir = "styles";
     let csl_dir = "styles-legacy";
@@ -13,7 +19,7 @@ fn main() {
     let entries = match fs::read_dir(styles_dir) {
         Ok(e) => e,
         Err(e) => {
-            eprintln!("Error reading styles directory: {e}");
+            tracing::debug!("Error reading styles directory: {e}");
             return;
         }
     };
@@ -22,7 +28,7 @@ fn main() {
     let mut success = 0;
     let mut failures = 0;
 
-    println!("Starting bulk update of style info metadata...");
+    tracing::debug!("Starting bulk update of style info metadata...");
 
     for entry in entries.flatten() {
         let path = entry.path();
@@ -39,7 +45,7 @@ fn main() {
             let csl_path = Path::new(csl_dir).join(format!("{yaml_stem}.csl"));
 
             if !csl_path.exists() {
-                eprintln!("Warning: No CSL file found for {filename}");
+                tracing::debug!("Warning: No CSL file found for {filename}");
                 failures += 1;
                 continue;
             }
@@ -48,7 +54,7 @@ fn main() {
             let csl_text = match fs::read_to_string(&csl_path) {
                 Ok(t) => t,
                 Err(e) => {
-                    eprintln!("Error reading {}: {}", csl_path.display(), e);
+                    tracing::debug!("Error reading {}: {}", csl_path.display(), e);
                     failures += 1;
                     continue;
                 }
@@ -57,7 +63,7 @@ fn main() {
             let doc = match Document::parse(&csl_text) {
                 Ok(d) => d,
                 Err(e) => {
-                    eprintln!("Error parsing {}: {}", csl_path.display(), e);
+                    tracing::debug!("Error parsing {}: {}", csl_path.display(), e);
                     failures += 1;
                     continue;
                 }
@@ -66,7 +72,7 @@ fn main() {
             let legacy_style = match parse_style(doc.root_element()) {
                 Ok(s) => s,
                 Err(e) => {
-                    eprintln!("Error extracting style from {}: {}", csl_path.display(), e);
+                    tracing::debug!("Error extracting style from {}: {}", csl_path.display(), e);
                     failures += 1;
                     continue;
                 }
@@ -79,7 +85,7 @@ fn main() {
             let yaml_text = match fs::read_to_string(&path) {
                 Ok(t) => t,
                 Err(e) => {
-                    eprintln!("Error reading {}: {}", path.display(), e);
+                    tracing::debug!("Error reading {}: {}", path.display(), e);
                     failures += 1;
                     continue;
                 }
@@ -90,7 +96,7 @@ fn main() {
 
             // Write back
             if let Err(e) = fs::write(&path, updated_yaml) {
-                eprintln!("Error writing {}: {}", path.display(), e);
+                tracing::debug!("Error writing {}: {}", path.display(), e);
                 failures += 1;
             } else {
                 success += 1;
@@ -105,14 +111,14 @@ fn main() {
         }
     }
 
-    println!("\n\n=== UPDATE STATS ===");
-    println!("Total Styles: {total}");
-    println!(
+    tracing::debug!("\n\n=== UPDATE STATS ===");
+    tracing::debug!("Total Styles: {total}");
+    tracing::debug!(
         "Success:      {} ({:.1}%)",
         success,
         (f64::from(success) / f64::from(total)) * 100.0
     );
-    println!(
+    tracing::debug!(
         "Failures:     {} ({:.1}%)",
         failures,
         (f64::from(failures) / f64::from(total)) * 100.0

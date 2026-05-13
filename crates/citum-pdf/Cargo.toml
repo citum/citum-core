@@ -4,11 +4,13 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish = false
+repository.workspace = true
 
 [lib]
 name = "citum_pdf"
 
 [dependencies]
+tracing.workspace = true
 typst = "0.14.2"
 typst-pdf = "0.14.2"
 typst-kit = { version = "0.14.2", default-features = false, features = ["fonts", "embed-fonts"] }

@@ -29,8 +29,8 @@ jobs:
       hygiene: ${{ steps.filter.outputs.hygiene }}
       semver: ${{ steps.filter.outputs.semver }}
     steps:
-      - uses: actions/checkout@v6
-      - uses: dorny/paths-filter@v4
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
         id: filter
         with:
           filters: |
@@ -69,7 +69,7 @@ jobs:
     if: ${{ needs.changes.outputs.hygiene == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -94,7 +94,7 @@ jobs:
           sudo install -m 0755 /tmp/beans /usr/local/bin/beans
 
       - name: Set up Node
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v4
         with:
           node-version: "22"
 
@@ -139,7 +139,7 @@ jobs:
       RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
       CARGO_INCREMENTAL: "0"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
@@ -188,7 +188,7 @@ jobs:
     env:
       CARGO_TERM_COLOR: always
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
@@ -224,7 +224,7 @@ jobs:
           needs.changes.outputs.semver == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 

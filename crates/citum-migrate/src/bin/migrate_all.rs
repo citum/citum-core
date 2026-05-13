@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 #![allow(missing_docs, reason = "bin")]
 
 use citum_migrate::{MacroInliner, Upsampler};
@@ -8,12 +13,13 @@ use std::fs;
 use citum_schema::CslnNode as CNode;
 use csl_legacy::model::CslNode as LNode;
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn main() {
     let styles_dir = "styles";
     let entries = match fs::read_dir(styles_dir) {
         Ok(e) => e,
         Err(e) => {
-            eprintln!("Error reading styles directory: {e}");
+            tracing::debug!("Error reading styles directory: {e}");
             return;
         }
     };
@@ -25,7 +31,7 @@ fn main() {
     let mut total_output_nodes = 0;
     let mut error_types = std::collections::HashMap::new();
 
-    println!("Starting BULK MIGRATION of styles in {styles_dir}...");
+    tracing::debug!("Starting BULK MIGRATION of styles in {styles_dir}...");
 
     for entry in entries.flatten() {
         let path = entry.path();
@@ -91,33 +97,33 @@ fn main() {
         }
     }
 
-    println!("\n\n=== MIGRATION STATS ===");
-    println!("Total Styles: {total}");
-    println!(
+    tracing::debug!("\n\n=== MIGRATION STATS ===");
+    tracing::debug!("Total Styles: {total}");
+    tracing::debug!(
         "Success:      {} ({:.1}%)",
         success,
         (f64::from(success) / f64::from(total)) * 100.0
     );
-    println!(
+    tracing::debug!(
         "Failures:     {} ({:.1}%)",
         failures,
         (f64::from(failures) / f64::from(total)) * 100.0
     );
 
-    println!("\n=== DATA RETENTION ===");
-    println!("Input Nodes:  {total_input_nodes}");
-    println!("Output Nodes: {total_output_nodes}");
-    println!(
+    tracing::debug!("\n=== DATA RETENTION ===");
+    tracing::debug!("Input Nodes:  {total_input_nodes}");
+    tracing::debug!("Output Nodes: {total_output_nodes}");
+    tracing::debug!(
         "Retention:    {:.1}%",
         (total_output_nodes as f64 / total_input_nodes as f64) * 100.0
     );
-    println!("(Note: Retention < 100% is expected due to node collapsing/upsampling)");
+    tracing::debug!("(Note: Retention < 100% is expected due to node collapsing/upsampling)");
 
-    println!("\n=== TOP ERRORS ===");
+    tracing::debug!("\n=== TOP ERRORS ===");
     let mut err_vec: Vec<_> = error_types.iter().collect();
     err_vec.sort_by(|a, b| b.1.cmp(a.1));
     for (msg, count) in err_vec.into_iter().take(10) {
-        println!("{count:4}x {msg}");
+        tracing::debug!("{count:4}x {msg}");
     }
 }
 

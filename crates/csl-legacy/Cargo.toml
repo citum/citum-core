@@ -4,8 +4,10 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish = false
+repository.workspace = true
 
 [dependencies]
+tracing.workspace = true
 indexmap = "2.13.0"
 roxmltree = "0.21"
 serde = { version = "1.0", features = ["derive"] }

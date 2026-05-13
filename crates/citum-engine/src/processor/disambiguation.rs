@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 use crate::reference::{Bibliography, Reference};
 use crate::values::ProcHints;
 use citum_schema::options::Config;

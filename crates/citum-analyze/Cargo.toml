@@ -5,6 +5,7 @@ edition.workspace = true
 license.workspace = true
 description = "Analyze CSL 1.0 styles to guide migration development"
 publish = false
+repository.workspace = true
 
 [[bin]]
 name = "citum-analyze"
@@ -15,6 +16,7 @@ name = "citum-batch-test"
 path = "src/batch_test.rs"
 
 [dependencies]
+tracing.workspace = true
 csl_legacy = { package = "csl-legacy", path = "../csl-legacy" }
 citum_schema = { package = "citum-schema", path = "../citum-schema" }
 citum_migrate = { package = "citum-migrate", path = "../citum-migrate" }

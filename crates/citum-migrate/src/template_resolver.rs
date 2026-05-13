@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Template resolution for Citum migration.
 //!
 //! Resolves bibliography and citation templates from multiple sources:
@@ -333,13 +338,14 @@ fn load_inferred_json(
     let text = match std::fs::read_to_string(path) {
         Ok(t) => t,
         Err(e) => {
-            eprintln!("  [template_resolver] Failed to read cache file: {e}");
+            tracing::debug!("  [template_resolver] Failed to read cache file: {e}");
             return None;
         }
     };
     parse_fragment(&text, section, min_confidence)
 }
 
+#[allow(clippy::cognitive_complexity, reason = "complex JSON parsing logic")]
 fn parse_fragment(
     text: &str,
     section: TemplateSection,
@@ -351,8 +357,8 @@ fn parse_fragment(
             value
         }
         Err(e) => {
-            eprintln!("  [template_resolver] Failed to parse fragment JSON: {e}");
-            eprintln!(
+            tracing::debug!("  [template_resolver] Failed to parse fragment JSON: {e}");
+            tracing::debug!(
                 "  [template_resolver] First 200 chars: {}",
                 preview_text(text, 200)
             );
@@ -363,8 +369,8 @@ fn parse_fragment(
     let fragment: InferredFragment = match serde_json::from_value(sanitized) {
         Ok(f) => f,
         Err(e) => {
-            eprintln!("  [template_resolver] Failed to parse fragment JSON: {e}");
-            eprintln!(
+            tracing::debug!("  [template_resolver] Failed to parse fragment JSON: {e}");
+            tracing::debug!(
                 "  [template_resolver] First 200 chars: {}",
                 preview_text(text, 200)
             );
@@ -387,7 +393,7 @@ fn parse_fragment(
     if let Some(score) = confidence
         && score < min_confidence
     {
-        eprintln!(
+        tracing::debug!(
             "  [template_resolver] Rejected {} template (confidence {:.2} < {:.2})",
             section.as_str(),
             score,
@@ -448,7 +454,7 @@ fn infer_live(
     cache_dir: &Path,
     ctx: &mut ResolveContext<'_>,
 ) -> Option<ResolvedTemplateSection> {
-    eprintln!(
+    tracing::debug!(
         "Inferring {} template for {}...",
         section.as_str(),
         style_name
@@ -489,7 +495,7 @@ fn infer_with_embedded(
 
     result
         .map_err(|err| {
-            eprintln!(
+            tracing::debug!(
                 "  [template_resolver] Embedded inference failed for {}: {err}",
                 section.as_str()
             );
@@ -530,7 +536,7 @@ fn infer_with_node(
         .ok()?;
 
     if !output.status.success() {
-        eprintln!(
+        tracing::debug!(
             "  [template_resolver] Node inference failed for {}: {}",
             section.as_str(),
             String::from_utf8_lossy(&output.stderr).trim()
@@ -548,7 +554,7 @@ fn embedded_runtime<'a>(
         ctx.embedded_runtime = match EmbeddedTemplateRuntime::new(ctx.workspace_root) {
             Ok(runtime) => EmbeddedRuntimeState::Ready(runtime),
             Err(err) => {
-                eprintln!("  [template_resolver] Embedded runtime unavailable: {err}");
+                tracing::debug!("  [template_resolver] Embedded runtime unavailable: {err}");
                 EmbeddedRuntimeState::Failed
             }
         };
@@ -565,7 +571,7 @@ fn style_xml<'a>(ctx: &'a mut ResolveContext<'_>) -> Option<&'a str> {
         ctx.style_xml = match std::fs::read_to_string(ctx.style_path) {
             Ok(text) => Some(text),
             Err(err) => {
-                eprintln!(
+                tracing::debug!(
                     "  [template_resolver] Failed to read style XML {}: {err}",
                     ctx.style_path
                 );

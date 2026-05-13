@@ -5,6 +5,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 //! Formats provenance debug output for display.
 
+use std::fmt::Write;
+
 use crate::provenance::{ProvenanceTracker, TransformationEvent};
 
 pub struct DebugOutputFormatter;
@@ -16,7 +18,7 @@ impl DebugOutputFormatter {
         match tracker.get_provenance(var_name) {
             Some(provenance) => {
                 let mut output = String::new();
-                output.push_str(&format!("Variable: {var_name}\n"));
+                let _ = writeln!(output, "Variable: {var_name}");
                 output.push('\n');
 
                 // Group events by category
@@ -36,7 +38,7 @@ impl DebugOutputFormatter {
                 if !source_nodes.is_empty() {
                     output.push_str("Source CSL nodes:\n");
                     for (i, event) in source_nodes.iter().enumerate() {
-                        output.push_str(&format!("  {}. {}\n", i + 1, event));
+                        let _ = writeln!(output, "  {}. {}", i + 1, event);
                     }
                     output.push('\n');
                 }
@@ -45,7 +47,7 @@ impl DebugOutputFormatter {
                 if !transformations.is_empty() {
                     output.push_str("Transformations:\n");
                     for event in transformations {
-                        output.push_str(&format!("  - {event}\n"));
+                        let _ = writeln!(output, "  - {event}");
                     }
                     output.push('\n');
                 }
@@ -55,15 +57,16 @@ impl DebugOutputFormatter {
                     let placements_count = placements.len();
                     output.push_str("Compiled to:\n");
                     for event in placements {
-                        output.push_str(&format!("  - {event}\n"));
+                        let _ = writeln!(output, "  - {event}");
                     }
                     output.push_str("\nSummary:\n");
-                    output.push_str(&format!(
-                        "  Total transformations: {}\n",
+                    let _ = writeln!(
+                        output,
+                        "  Total transformations: {}",
                         provenance.events.len()
-                    ));
-                    output.push_str(&format!("  Source nodes found: {}\n", source_nodes.len()));
-                    output.push_str(&format!("  Template placements: {placements_count}\n"));
+                    );
+                    let _ = writeln!(output, "  Source nodes found: {}", source_nodes.len());
+                    let _ = writeln!(output, "  Template placements: {placements_count}");
                 }
 
                 output
@@ -86,7 +89,7 @@ impl DebugOutputFormatter {
         } else {
             let mut result = String::new();
             for (i, v) in vars.iter().enumerate() {
-                result.push_str(&format!("  {}. {}\n", i + 1, v));
+                let _ = writeln!(result, "  {}. {}", i + 1, v);
             }
             result
         }

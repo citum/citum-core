@@ -1,6 +1,11 @@
-#![allow(missing_docs, reason = "bin crate")]
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
 
 //! Example binary for parsing a legacy CSL style and printing the JSON form.
+
+#![allow(missing_docs, reason = "bin crate")]
 
 use csl_legacy::parser::parse_style;
 use roxmltree::Document;

@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Sorting logic for bibliography and citation entries.
 //!
 //! This module handles multi-key sorting of references according to style instructions,

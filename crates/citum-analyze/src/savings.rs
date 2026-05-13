@@ -17,9 +17,9 @@ pub fn run_savings_report(styles_dir: &str, json_output: bool) {
         Ok(report) => {
             if json_output {
                 match serde_json::to_string_pretty(&report) {
-                    Ok(json) => println!("{json}"),
+                    Ok(json) => tracing::debug!("{json}"),
                     Err(error) => {
-                        eprintln!("Failed to serialize report to JSON: {error}");
+                        tracing::debug!("Failed to serialize report to JSON: {error}");
                         std::process::exit(1);
                     }
                 }
@@ -28,7 +28,7 @@ pub fn run_savings_report(styles_dir: &str, json_output: bool) {
             }
         }
         Err(error) => {
-            eprintln!("Failed to analyze corpus savings: {error}");
+            tracing::debug!("Failed to analyze corpus savings: {error}");
             std::process::exit(1);
         }
     }
@@ -358,49 +358,54 @@ fn locale_suffix_from_locale(locale: &str) -> Option<String> {
     }
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn print_savings_report(report: &SavingsReport) {
-    println!("=== CSL Corpus Savings Report ===\n");
-    println!("Independent styles: {}", report.total_independent_styles);
-    println!("Dependent styles:   {}", report.total_dependent_styles);
-    println!("Unique parents:     {}", report.unique_parent_styles);
-    println!();
-    println!("Certain savings:");
-    println!(
+    tracing::debug!("=== CSL Corpus Savings Report ===\n");
+    tracing::debug!("Independent styles: {}", report.total_independent_styles);
+    tracing::debug!("Dependent styles:   {}", report.total_dependent_styles);
+    tracing::debug!("Unique parents:     {}", report.unique_parent_styles);
+    tracing::debug!("");
+    tracing::debug!("Certain savings:");
+    tracing::debug!(
         "  dependent alias savings: {}",
         report.dependent_alias_savings
     );
-    println!(
+    tracing::debug!(
         "  locale override savings (high confidence): {}",
         report.locale_override_savings_high_confidence
     );
-    println!();
-    println!("Heuristic opportunity:");
-    println!(
+    tracing::debug!("");
+    tracing::debug!("Heuristic opportunity:");
+    tracing::debug!(
         "  locale override savings (possible): {}",
         report.locale_override_savings_possible
     );
-    println!(
+    tracing::debug!(
         "  preset wrapper opportunity: {}",
         report.preset_wrapper_opportunity
     );
-    println!();
-    println!(
+    tracing::debug!("");
+    tracing::debug!(
         "Lower-bound avoided conversions: {}",
         report.avoided_conversion_estimate_lower_bound
     );
-    println!(
+    tracing::debug!(
         "Upper-bound avoided conversions: {}",
         report.avoided_conversion_estimate_upper_bound
     );
-    println!();
-    println!("Top parent families by opportunity:\n");
-    println!(
+    tracing::debug!("");
+    tracing::debug!("Top parent families by opportunity:\n");
+    tracing::debug!(
         "{:4}  {:40} {:>10} {:>10} {:>10}",
-        "Rank", "Parent", "Aliases", "Wrappers", "Combined"
+        "Rank",
+        "Parent",
+        "Aliases",
+        "Wrappers",
+        "Combined"
     );
-    println!("{}", "-".repeat(84));
+    tracing::debug!("{}", "-".repeat(84));
     for (index, family) in report.top_parent_families.iter().enumerate() {
-        println!(
+        tracing::debug!(
             "{:4}  {:40} {:>10} {:>10} {:>10}",
             index + 1,
             truncate(&family.parent_short_name, 40),

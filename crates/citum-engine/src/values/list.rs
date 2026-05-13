@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Rendering logic for list components with configurable delimiters.
 //!
 //! This module handles rendering of lists of template items, with support for

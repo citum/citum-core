@@ -3,12 +3,12 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-#![allow(unsafe_code, reason = "FFI interface")]
-
 //! C-FFI for the Citum processor.
 //!
 //! This module provides a C-compatible interface for other languages
 //! (like Lua, Python, or JavaScript) to use the processor.
+
+#![allow(unsafe_code, reason = "FFI interface")]
 
 use crate::processor::Processor;
 use crate::reference::{Bibliography, Citation, Reference};

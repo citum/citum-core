@@ -6,12 +6,14 @@ authors = ["Bruce D'Arcus <bdarcus@gmail.com>"]
 license.workspace = true
 description = "Citum JSON-RPC server for citation and bibliography processing"
 publish = false
+repository.workspace = true
 
 [[bin]]
 name = "citum-server"
 path = "src/main.rs"
 
 [dependencies]
+tracing.workspace = true
 citum-engine = { package = "citum-engine", path = "../citum-engine" }
 citum-schema = { package = "citum-schema", path = "../citum-schema" }
 citum_store = { package = "citum_store", path = "../citum_store", features = ["http"] }

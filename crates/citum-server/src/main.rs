@@ -1,9 +1,10 @@
-#![allow(missing_docs, reason = "bin")]
-
 /*
 SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
+
+#![forbid(unsafe_code)]
+#![allow(missing_docs, reason = "bin")]
 
 #[cfg(feature = "http")]
 use citum_server::http;
