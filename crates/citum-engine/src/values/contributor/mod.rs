@@ -303,6 +303,7 @@ impl ComponentValues for TemplateContributor {
         );
 
         let is_pre_formatted = role_prefix.is_some() || role_suffix.is_some();
+        let formatted = crate::values::apply_abbreviation(formatted, options.abbreviation_map);
         let final_value = if is_pre_formatted {
             fmt.text(&formatted)
         } else {

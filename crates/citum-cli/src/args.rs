@@ -74,6 +74,9 @@ pub(crate) enum SchemaType {
     Citation,
     /// Style registry schema
     Registry,
+    /// Abbreviation map schema
+    #[value(name = "abbrev-map")]
+    AbbrevMap,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]

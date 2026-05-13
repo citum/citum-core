@@ -489,6 +489,8 @@ pub struct RenderOptions<'a> {
     pub show_semantics: bool,
     /// The current top-level template index, when propagating preview annotations.
     pub current_template_index: Option<usize>,
+    /// Document-level abbreviation map for post-render substitution.
+    pub abbreviation_map: Option<&'a crate::api::AbbreviationMap>,
 }
 
 /// Trait for extracting values from template components.
@@ -546,4 +548,15 @@ pub fn should_strip_periods(
 #[must_use]
 pub fn strip_trailing_periods(s: &str) -> String {
     s.trim_end_matches('.').to_string()
+}
+
+/// Apply abbreviation substitution if the map contains an entry for `value`.
+///
+/// Returns the abbreviation if found, otherwise returns the original value unchanged.
+#[must_use]
+pub fn apply_abbreviation(value: String, map: Option<&crate::api::AbbreviationMap>) -> String {
+    if let Some(abbr) = map.and_then(|m| m.0.get(&value)) {
+        return abbr.clone();
+    }
+    value
 }

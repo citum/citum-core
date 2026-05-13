@@ -233,6 +233,7 @@ mod tests {
             show_semantics: false,
             inject_ast_indices: false,
             filtered_to_original_index: RefCell::new(None),
+            abbreviation_map: None,
         }
     }
 

@@ -265,15 +265,16 @@ impl ComponentValues for TemplateTitle {
             && !short_title.is_empty()
         {
             let (value, pre_formatted) = if looks_like_djot_markup(&short_title) {
-                let (value, _) = render_djot_inline_with_transform(
+                let (v, _) = render_djot_inline_with_transform(
                     &short_title,
                     &F::default(),
                     smarten_title_quotes,
                 );
-                (value, true)
+                (v, true)
             } else {
                 (smarten_title_quotes(&short_title), false)
             };
+            let value = crate::values::apply_abbreviation(value, options.abbreviation_map);
             return Some(ProcValues {
                 value,
                 prefix: None,
@@ -284,88 +285,97 @@ impl ComponentValues for TemplateTitle {
             });
         }
 
-        let title = match self.title {
-            TitleType::Primary => reference.title(),
-            TitleType::ParentMonograph => match reference {
-                Reference::Monograph(_)
-                | Reference::CollectionComponent(_)
-                | Reference::Event(_)
-                | Reference::AudioVisual(_) => reference.container_title(),
-                _ => None,
-            },
-            TitleType::ParentSerial => match reference {
-                Reference::SerialComponent(_) | Reference::LegalCase(_) | Reference::Treaty(_) => {
-                    reference.container_title()
-                }
-                _ => None,
-            },
-            _ => None,
-        };
-
+        let title = resolve_primary_title(reference, &self.title)?;
         let effective_case = resolve_effective_text_case(self, reference, options);
-        let fmt = F::default();
+        let (value, has_explicit_link, pre_formatted) =
+            render_title_variant::<F>(&title, self.form.as_ref(), effective_case, options);
 
-        // Render title with structured-title-aware case transforms
-        let rendered: Option<(String, bool, bool)> = title.as_ref().map(|title| match title {
-            Title::Structured(st) => {
-                let short = matches!(self.form, Some(TitleForm::Short));
-                let (value, has_link) = render_structured_title(st, &fmt, effective_case, short);
-                // Scope pre_formatted to what was actually rendered: when
-                // short=true only main was rendered, so check only main for
-                // Djot markers; checking the full title would incorrectly set
-                // the flag when a subtitle contains markup but value does not.
-                let pre_formatted = if short {
-                    looks_like_djot_markup(&st.main)
-                } else {
-                    looks_like_djot_markup(&title_text(title, self.form.as_ref()))
-                };
-                (value, has_link, pre_formatted)
-            }
-            Title::Multilingual(m) => {
-                let (mode, preferred_transliteration, preferred_script) =
-                    resolve_multilingual_title_config(options);
-                let locale_str = options.locale.locale.as_str();
+        if value.is_empty() {
+            return None;
+        }
 
-                let complex =
-                    citum_schema::reference::types::MultilingualString::Complex(m.clone());
-                let value = crate::values::resolve_multilingual_string(
-                    &complex,
-                    mode,
-                    preferred_transliteration,
-                    preferred_script,
-                    locale_str,
-                );
-                let (rendered, has_link) = render_part_with_case(&value, &fmt, effective_case);
-                let pre_formatted = looks_like_djot_markup(&value);
-                (rendered, has_link, pre_formatted)
-            }
-            _ => {
-                let value = title_text(title, self.form.as_ref());
-                let (rendered, has_link) = render_part_with_case(&value, &fmt, effective_case);
-                let pre_formatted = looks_like_djot_markup(&value);
-                (rendered, has_link, pre_formatted)
-            }
-        });
+        use citum_schema::options::LinkAnchor;
+        let value = crate::values::apply_abbreviation(value, options.abbreviation_map);
+        let url = crate::values::resolve_effective_url(
+            self.links.as_ref(),
+            options.config.links.as_ref(),
+            reference,
+            LinkAnchor::Title,
+        );
+        Some(ProcValues {
+            value,
+            prefix: None,
+            suffix: None,
+            url: if has_explicit_link { None } else { url },
+            substituted_key: None,
+            pre_formatted,
+        })
+    }
+}
 
-        rendered
-            .filter(|(v, _, _): &(String, bool, bool)| !v.is_empty())
-            .map(|(value, has_explicit_link, pre_formatted)| {
-                use citum_schema::options::LinkAnchor;
-                let url = crate::values::resolve_effective_url(
-                    self.links.as_ref(),
-                    options.config.links.as_ref(),
-                    reference,
-                    LinkAnchor::Title,
-                );
-                ProcValues {
-                    value,
-                    prefix: None,
-                    suffix: None,
-                    url: if has_explicit_link { None } else { url },
-                    substituted_key: None,
-                    pre_formatted,
-                }
-            })
+/// Resolve which title field to render for the given `TitleType` and reference.
+fn resolve_primary_title(reference: &Reference, title_type: &TitleType) -> Option<Title> {
+    match title_type {
+        TitleType::Primary => reference.title(),
+        TitleType::ParentMonograph => match reference {
+            Reference::Monograph(_)
+            | Reference::CollectionComponent(_)
+            | Reference::Event(_)
+            | Reference::AudioVisual(_) => reference.container_title(),
+            _ => None,
+        },
+        TitleType::ParentSerial => match reference {
+            Reference::SerialComponent(_) | Reference::LegalCase(_) | Reference::Treaty(_) => {
+                reference.container_title()
+            }
+            _ => None,
+        },
+        _ => None,
+    }
+}
+
+/// Render a `Title` value into `(rendered_string, has_explicit_link, pre_formatted)`.
+///
+/// Handles structured, multilingual, and plain title variants with case transforms.
+fn render_title_variant<F: crate::render::format::OutputFormat<Output = String>>(
+    title: &Title,
+    form: Option<&TitleForm>,
+    effective_case: Option<TextCase>,
+    options: &RenderOptions<'_>,
+) -> (String, bool, bool) {
+    let fmt = F::default();
+    match title {
+        Title::Structured(st) => {
+            let short = matches!(form, Some(TitleForm::Short));
+            let (value, has_link) = render_structured_title(st, &fmt, effective_case, short);
+            let pre_formatted = if short {
+                looks_like_djot_markup(&st.main)
+            } else {
+                looks_like_djot_markup(&title_text(title, form))
+            };
+            (value, has_link, pre_formatted)
+        }
+        Title::Multilingual(m) => {
+            let (mode, preferred_transliteration, preferred_script) =
+                resolve_multilingual_title_config(options);
+            let complex = citum_schema::reference::types::MultilingualString::Complex(m.clone());
+            let value = crate::values::resolve_multilingual_string(
+                &complex,
+                mode,
+                preferred_transliteration,
+                preferred_script,
+                options.locale.locale.as_str(),
+            );
+            let (rendered, has_link) = render_part_with_case(&value, &fmt, effective_case);
+            let pre_formatted = looks_like_djot_markup(&value);
+            (rendered, has_link, pre_formatted)
+        }
+        _ => {
+            let value = title_text(title, form);
+            let (rendered, has_link) = render_part_with_case(&value, &fmt, effective_case);
+            let pre_formatted = looks_like_djot_markup(&value);
+            (rendered, has_link, pre_formatted)
+        }
     }
 }
 

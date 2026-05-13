@@ -45,6 +45,7 @@ impl Default for Processor {
             dynamic_compound_sets: RefCell::new(IndexMap::new()),
             show_semantics: true,
             inject_ast_indices: false,
+            abbreviation_map: None,
         }
     }
 }
@@ -90,6 +91,7 @@ impl Processor {
             dynamic_compound_sets: RefCell::new(IndexMap::new()),
             show_semantics: true,
             inject_ast_indices: false,
+            abbreviation_map: None,
         };
 
         // Pre-calculate hints for disambiguation.

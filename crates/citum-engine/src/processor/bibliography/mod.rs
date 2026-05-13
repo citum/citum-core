@@ -52,6 +52,7 @@ impl Processor {
             },
             self.show_semantics,
             self.inject_ast_indices,
+            self.abbreviation_map.as_ref(),
         );
 
         render(renderer)

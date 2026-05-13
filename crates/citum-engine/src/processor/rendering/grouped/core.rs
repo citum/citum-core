@@ -886,6 +886,7 @@ impl Renderer<'_> {
             ref_type: Some(ref_type.clone()),
             show_semantics: self.show_semantics,
             current_template_index: None,
+            abbreviation_map: self.abbreviation_map,
         };
         let hint = self.build_template_render_hint(
             reference,

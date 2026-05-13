@@ -313,6 +313,7 @@ impl Processor {
             },
             self.show_semantics,
             self.inject_ast_indices,
+            self.abbreviation_map.as_ref(),
         );
         let processing = citation_config.processing.clone().unwrap_or_default();
         let has_explicit_integral_multi_cite_delimiter = matches!(

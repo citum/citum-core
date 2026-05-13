@@ -13,6 +13,8 @@ use serde::{Deserialize, Serialize};
 use specta::Type;
 use std::collections::HashMap;
 
+/// Document-level abbreviation map type.
+pub mod abbreviation;
 /// Citation input model.
 #[allow(missing_docs, reason = "internal derives")]
 pub mod citation;
@@ -20,6 +22,7 @@ pub mod citation;
 #[allow(missing_docs, reason = "internal derives")]
 pub mod reference;
 
+pub use abbreviation::AbbreviationMap;
 pub use citation::{
     Citation, CitationItem, CitationMode, Citations, IntegralNameState, LocatorType, Position,
 };
