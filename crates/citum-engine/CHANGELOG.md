@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.41.0] - 2026-05-13
+
+### Features
+
+**engine**
+
+- Add document-level abbreviation-map ([`9f6e1fa`](https://github.com/citum/citum-core/commit/9f6e1fa3e6a3fb5b65c8dd31a42b9f808060b5f6))
+
+
 ## [0.40.2] - 2026-05-12
 
 ### Bug Fixes
