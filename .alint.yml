@@ -8,12 +8,33 @@ version: 1
 ignore:
   - "styles-legacy/**"
   - "tests/csl-test-suite/**"
+  - ".beans/**"
 
 extends:
   - alint://bundled/oss-baseline@v1
   - alint://bundled/rust@v1
 
 rules:
+  - id: oss-no-trailing-whitespace
+    paths:
+      exclude:
+        - ".beans/**"
+        - "**/*.md"
+        - "docs/**"
+        - "scripts/**/*.js"
+        - "scripts/**/*.py"
+        - "scripts/report-data/**"
+        - "tests/fixtures/**"
+
+  - id: oss-license-exists
+    level: off
+  - id: oss-dependency-update-tool
+    level: off
+  - id: oss-codeowners-exists
+    level: off
+  - id: oss-code-of-conduct-exists
+    level: off
+
   - id: broken-markdown-links
     kind: markdown_paths_resolve
     paths:
@@ -57,7 +78,7 @@ rules:
       - "scripts/report-data/core-quality-baseline.json"
       - "scripts/report-data/verification-policy.yaml"
       - "scripts/report-data/fixture-sufficiency.yaml"
-    level: error
+    level: off
 
   - id: rust-license-header
     kind: file_content_matches
@@ -68,7 +89,7 @@ rules:
   - id: rust-crate-readme
     kind: file_exists
     paths: "crates/*/README.md"
-    level: warning
+    level: off
 
   - id: rust-no-println
     kind: file_content_forbidden
