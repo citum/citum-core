@@ -6,6 +6,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 #![forbid(unsafe_code)]
 #![allow(missing_docs, reason = "bin")]
 
+#[cfg(feature = "http")]
 use citum_server::http;
 use citum_server::rpc;
 use clap::Parser;
