@@ -3,16 +3,11 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
-#![allow(missing_docs, reason = "bin/main")]
-/*
-SPDX-License-Identifier: MIT OR Apache-2.0
-SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
-*/
-
-//! CSL Style Analyzer
-//!
 //! Analyzes CSL 1.0 styles in a directory to collect statistics
 //! and identify patterns for guiding migration development.
+
+#![forbid(unsafe_code)]
+#![allow(missing_docs, reason = "bin/main")]
 
 mod analyzer;
 mod profile_discovery;

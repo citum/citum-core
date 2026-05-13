@@ -11,7 +11,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!
 //! The processor is designed to be pluggable with different renderers and supports
 //! advanced features like disambiguation, sorting, and localization.
-//!
+
+#![deny(unsafe_code)]
+
 //! # Example
 //!
 //! ```rust
@@ -85,8 +87,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! let result = processor.process_citation(&citation).unwrap();
 //! assert_eq!(result, "(Kuhn, 1962)");
 //! ```
-
-#![deny(unsafe_code)]
 
 /// Interactive document-level API for batch citation formatting.
 pub mod api;

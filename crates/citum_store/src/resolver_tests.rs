@@ -297,30 +297,37 @@ fn resolver_error_variants_format_distinctly() {
         uri: "https://evil.example.com/x.yaml".to_string(),
         reason: "host not in allowlist".to_string(),
     };
-    assert!(denied.to_string().contains("not in resolver allowlist"));
-    assert!(denied.to_string().contains("evil.example.com"));
+    assert_eq!(
+        denied.to_string(),
+        "host not in resolver allowlist: https://evil.example.com/x.yaml (host not in allowlist)"
+    );
 
     let net = ResolverError::NetworkError {
         uri: "https://example.org/y.yaml".to_string(),
         reason: "connection refused".to_string(),
     };
-    assert!(net.to_string().contains("network error fetching"));
-    assert!(net.to_string().contains("connection refused"));
+    assert_eq!(
+        net.to_string(),
+        "network error fetching https://example.org/y.yaml: connection refused"
+    );
 
     let version = ResolverError::VersionMismatch {
         uri: "https://example.org/z.yaml".to_string(),
         required: ">=99.0.0".to_string(),
         declared: "0.38.0".to_string(),
     };
-    assert!(version.to_string().contains("engine version mismatch"));
-    assert!(version.to_string().contains(">=99.0.0"));
+    assert_eq!(
+        version.to_string(),
+        "engine version mismatch for https://example.org/z.yaml: engine requires >=99.0.0, style declares 0.38.0"
+    );
 
     let integrity = ResolverError::IntegrityFailure {
         uri: "cid:bafkreiabc".to_string(),
         expected: "bafkreiabc".to_string(),
         actual: "bafkreidef".to_string(),
     };
-    assert!(integrity.to_string().contains("integrity failure"));
-    assert!(integrity.to_string().contains("bafkreiabc"));
-    assert!(integrity.to_string().contains("bafkreidef"));
+    assert_eq!(
+        integrity.to_string(),
+        "integrity failure for cid:bafkreiabc: expected bafkreiabc, got bafkreidef"
+    );
 }

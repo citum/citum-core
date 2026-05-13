@@ -179,7 +179,7 @@ fn test_http_resolver_rejects_plain_http_by_default() {
 
     match resolver.resolve_style(&url) {
         Err(ResolverError::Denied { reason, .. }) => {
-            assert!(reason.contains("plaintext HTTP"));
+            assert_eq!(reason, "plaintext HTTP is disabled by default");
         }
         err => panic!("expected Denied, got {err:?}"),
     }
@@ -196,7 +196,10 @@ fn test_http_resolver_rejects_loopback_https_literal_by_default() {
 
     match resolver.resolve_style("https://127.0.0.1/style.yaml") {
         Err(ResolverError::Denied { reason, .. }) => {
-            assert!(reason.contains("IP literal"));
+            assert_eq!(
+                reason,
+                "IP literal host '127.0.0.1' is not allowed by default"
+            );
         }
         err => panic!("expected Denied, got {err:?}"),
     }
@@ -217,7 +220,7 @@ fn test_http_resolver_rejects_oversized_response() {
 
     match resolver.resolve_style(&url) {
         Err(ResolverError::Denied { reason, .. }) => {
-            assert!(reason.contains("exceeds"));
+            assert_eq!(reason, "remote response exceeds 4 byte limit");
         }
         err => panic!("expected Denied, got {err:?}"),
     }
@@ -240,7 +243,7 @@ fn test_http_resolver_rejects_redirects() {
 
     match resolver.resolve_style(&url) {
         Err(ResolverError::Denied { reason, .. }) => {
-            assert!(reason.contains("redirect"));
+            assert_eq!(reason, "redirect response 302 Found is not allowed");
         }
         err => panic!("expected Denied, got {err:?}"),
     }

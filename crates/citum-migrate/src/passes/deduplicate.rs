@@ -8,6 +8,7 @@ use citum_schema::{
     template::{DateVariable, TemplateComponent},
 };
 use std::collections::HashSet;
+use std::fmt::Write;
 
 /// Deduplicate title components in nested lists.
 pub fn deduplicate_titles_in_lists(components: &mut Vec<TemplateComponent>) {
@@ -178,12 +179,24 @@ pub fn list_signature(list: &citum_schema::template::TemplateGroup) -> String {
     let mut sig = String::new();
     for item in &list.group {
         match item {
-            TemplateComponent::Variable(v) => sig.push_str(&format!("v:{:?},", v.variable)),
-            TemplateComponent::Number(n) => sig.push_str(&format!("n:{:?},", n.number)),
-            TemplateComponent::Title(t) => sig.push_str(&format!("t:{:?},", t.title)),
-            TemplateComponent::Contributor(c) => sig.push_str(&format!("c:{:?},", c.contributor)),
-            TemplateComponent::Date(d) => sig.push_str(&format!("d:{:?},", d.date)),
-            TemplateComponent::Group(l) => sig.push_str(&format!("l({}),", list_signature(l))),
+            TemplateComponent::Variable(v) => {
+                let _ = write!(sig, "v:{:?},", v.variable);
+            }
+            TemplateComponent::Number(n) => {
+                let _ = write!(sig, "n:{:?},", n.number);
+            }
+            TemplateComponent::Title(t) => {
+                let _ = write!(sig, "t:{:?},", t.title);
+            }
+            TemplateComponent::Contributor(c) => {
+                let _ = write!(sig, "c:{:?},", c.contributor);
+            }
+            TemplateComponent::Date(d) => {
+                let _ = write!(sig, "d:{:?},", d.date);
+            }
+            TemplateComponent::Group(l) => {
+                let _ = write!(sig, "l({}),", list_signature(l));
+            }
             _ => sig.push_str("unknown,"),
         }
     }
