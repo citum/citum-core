@@ -147,6 +147,9 @@ pub fn format_document_with_style(
         if let Some(inject_ast) = opts.inject_ast_indices {
             processor.set_inject_ast_indices(inject_ast);
         }
+        if let Some(abbr_map) = opts.abbreviation_map.clone() {
+            processor.abbreviation_map = Some(abbr_map);
+        }
         if opts.integral_names.is_some() {
             warnings.push(Warning {
                 level: WarningLevel::Warning,

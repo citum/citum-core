@@ -1957,6 +1957,85 @@ jones2021: >
             </div>
         </article>
 
+        <!-- Abbreviation Maps -->
+        <article id="abbreviation-map" class="example-card rounded-xl overflow-hidden shadow-sm scroll-mt-24">
+            <div class="p-8 bg-slate-50 border-b border-slate-200">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                        <span class="material-icons">find_replace</span>
+                    </div>
+                    <h2 class="text-2xl font-bold text-slate-900">
+                        Abbreviation Maps
+                    </h2>
+                </div>
+                <p class="text-slate-600 leading-relaxed">
+                    Substitute full rendered strings with abbreviations at document scope. Pass a YAML or JSON map at render time to replace
+                    journal titles, institutional names, corporate authors, and other strings with their abbreviations. The substitution applies after rendering,
+                    so any style renders the full title first, then the map replaces it with the abbreviation.
+                </p>
+            </div>
+            <div class="p-6 bg-[var(--citum-surface)]">
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">CLI Example</div>
+                <div class="bg-slate-900 rounded p-3 overflow-x-auto mb-6">
+                    <pre class="font-mono text-xs text-emerald-400">citum render refs \
+  -b examples/references.json \
+  -s ieee \
+  --abbreviation-map examples/abbrevs.yaml</pre>
+                </div>
+
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">YAML Format</div>
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <div class="bg-slate-900 rounded p-3 overflow-x-auto">
+                            <pre class="font-mono text-xs text-emerald-400">Estates Gazette: EG
+"Lloyd's Law Reports": "Lloyd's Rep"
+"World Health Organization": WHO
+Nature Reviews Neuroscience: Nat Rev Neurosci</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Sample Output (Before &amp; After)</div>
+                <div class="bg-slate-50 border border-slate-200 rounded p-4 space-y-4 overflow-x-auto">
+                    <div>
+                        <div class="text-xs font-semibold text-slate-500 mb-2">Without abbreviation map:</div>
+                        <div class="font-mono text-sm text-slate-700">
+                            Smith, J., et al. "Analysis of inheritance." <i>Nature Reviews Neuroscience</i>, vol. 24, no. 5, pp. 311–326, 2023.
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-xs font-semibold text-slate-500 mb-2">With abbreviation map:</div>
+                        <div class="font-mono text-sm text-slate-700">
+                            Smith, J., et al. "Analysis of inheritance." <i>Nat Rev Neurosci</i>, vol. 24, no. 5, pp. 311–326, 2023.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Configuration Guide -->
+            <div class="bg-slate-50 p-8 border-t border-slate-200">
+                <h3 class="text-lg font-bold text-slate-900 mb-4">Abbreviation Map Format</h3>
+                <p class="text-slate-600 text-sm mb-6">Abbreviation maps are simple flat key-value maps. Keys are full rendered strings (exact, case-sensitive). Values are the replacement abbreviations.</p>
+
+                <div class="mt-4 p-4 bg-white rounded border border-slate-200">
+                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">What Gets Abbreviated?</div>
+                    <ul class="text-xs text-slate-600 space-y-2 list-disc list-inside">
+                        <li>Title fields: main title, container title, collection title</li>
+                        <li>Variable fields: publisher, archive, series</li>
+                        <li>Contributor literal names: corporate or institutional authors</li>
+                    </ul>
+                </div>
+
+                <div class="mt-8 bg-[var(--citum-surface)] p-4 rounded-lg border border-slate-200">
+                    <h4 class="font-bold text-slate-900 text-sm mb-2 flex items-center gap-2">
+                        <span class="material-icons text-primary text-base">description</span>
+                        Why Separate from the Style?
+                    </h4>
+                    <p class="text-xs text-slate-500">Abbreviations are document-scoped overlays. Different contexts may abbreviate the same reference differently (a journal article in a biology manuscript vs. a history paper). Keeping abbreviations separate from the style avoids proliferation of variant styles and keeps concerns separated.</p>
+                </div>
+            </div>
+        </article>
+
         <!-- Distributed Registries -->
         <article id="distributed-registries" class="example-card rounded-xl overflow-hidden shadow-sm scroll-mt-24">
             <div class="p-8 bg-slate-50 border-b border-slate-200">

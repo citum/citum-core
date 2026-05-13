@@ -46,6 +46,8 @@ pub struct Renderer<'a> {
     pub inject_ast_indices: bool,
     /// Mapping from filtered to original template indices (for grouped citations).
     pub filtered_to_original_index: RefCell<Option<Vec<usize>>>,
+    /// Document-level abbreviation map for post-render substitution.
+    pub abbreviation_map: Option<&'a crate::api::AbbreviationMap>,
 }
 
 /// Borrowed compound-set context for rendering.
@@ -158,6 +160,7 @@ impl<'a> Renderer<'a> {
         compound: CompoundRenderData<'a>,
         show_semantics: bool,
         inject_ast_indices: bool,
+        abbreviation_map: Option<&'a crate::api::AbbreviationMap>,
     ) -> Self {
         Self {
             style: resources.style,
@@ -173,6 +176,7 @@ impl<'a> Renderer<'a> {
             show_semantics,
             inject_ast_indices,
             filtered_to_original_index: RefCell::new(None),
+            abbreviation_map,
         }
     }
 
@@ -404,6 +408,7 @@ impl<'a> Renderer<'a> {
             ref_type,
             show_semantics: self.show_semantics,
             current_template_index: None,
+            abbreviation_map: self.abbreviation_map,
         }
     }
 

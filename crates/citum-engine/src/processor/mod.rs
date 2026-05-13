@@ -115,6 +115,8 @@ pub struct Processor {
     pub show_semantics: bool,
     /// Whether to annotate semantic HTML wrappers with source template indices.
     pub inject_ast_indices: bool,
+    /// Document-level abbreviation map for post-render substitution.
+    pub abbreviation_map: Option<crate::api::AbbreviationMap>,
 }
 
 /// Processed output containing citations and bibliography.

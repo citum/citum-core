@@ -321,6 +321,7 @@ fn affix_content_normalizes_prefix_and_suffix_spacing() {
         },
         true,
         false,
+        None,
     );
     let fmt = crate::render::plain::PlainText;
 
@@ -455,6 +456,7 @@ fn grouping_helper_matches_citation_wide_preserve_behavior() {
         },
         true,
         false,
+        None,
     );
     let items = vec![
         CitationItem {
@@ -826,6 +828,7 @@ fn test_bibliography_type_specific_rendering() {
         },
         false,
         false,
+        None,
     );
 
     let reference = bibliography.get("ref1").unwrap();

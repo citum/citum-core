@@ -9,6 +9,8 @@ use citum_schema::data::citation::{CitationLocator, IntegralNameState};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+pub use citum_schema_data::AbbreviationMap;
+
 /// Severity level for a structured diagnostic.
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
@@ -184,6 +186,9 @@ pub struct DocumentOptions {
     /// Format for annotation text (djot, plain, org).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub annotation_format: Option<AnnotationFormat>,
+    /// Map from full rendered strings to their abbreviations.
+    #[serde(alias = "abbreviation-map", skip_serializing_if = "Option::is_none")]
+    pub abbreviation_map: Option<AbbreviationMap>,
 }
 
 /// A single formatted citation.

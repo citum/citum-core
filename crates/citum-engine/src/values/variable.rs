@@ -260,6 +260,7 @@ impl ComponentValues for TemplateVariable {
             } else {
                 value
             };
+            let value = crate::values::apply_abbreviation(value, options.abbreviation_map);
             use citum_schema::options::{LinkAnchor, LinkTarget};
             let component_anchor = match self.variable {
                 SimpleVariable::Url => LinkAnchor::Url,

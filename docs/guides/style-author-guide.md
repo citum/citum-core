@@ -740,6 +740,29 @@ bibliography:
     label-mode: numeric
 ```
 
+## [tune] Document-Level Options
+
+Document-level options control rendering behavior that belongs to the document rather than the style. They are passed at render time and do not modify the style itself.
+
+### Abbreviation Map
+
+The `abbreviation-map` document option substitutes full rendered strings with abbreviations before output. It accepts both `abbreviation-map` (YAML frontmatter) and `abbreviation_map` (JSON API) as the key name.
+
+```yaml
+abbreviation-map:
+  Estates Gazette: EG
+  "Lloyd's Law Reports": "Lloyd's Rep"
+  "World Health Organization": WHO
+```
+
+Keys are full rendered strings (exact, case-sensitive). The map applies to:
+
+- Title fields (main title, container title, collection title)
+- Variable fields (publisher, archive, series)
+- Contributor literal names (corporate/institutional authors)
+
+Abbreviations are applied after value extraction and before output assembly. The style has no knowledge of the map — it is purely a document-level transform.
+
 ## [lightbulb] Workflow & Tips
 
 ### Recommended Workflow

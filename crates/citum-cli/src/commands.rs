@@ -31,6 +31,8 @@ use citum_schema::lint::{lint_raw_locale, lint_style_against_locale};
 use citum_schema::locale::RawLocale;
 use citum_schema::options::Processing;
 use citum_schema::{Locale, RegistryEntry, Style};
+#[cfg(feature = "schema")]
+use citum_schema_data::AbbreviationMap;
 use citum_store::{
     StoreConfig, StoreResolver, platform_cache_dir, platform_config_dir, platform_data_dir,
 };
@@ -165,6 +167,7 @@ fn run_schema(args: SchemaArgs) -> Result<(), Box<dyn Error>> {
             ("locale", schema_for!(RawLocale)),
             ("citation", schema_for!(citum_schema::Citations)),
             ("registry", schema_for!(citum_schema::StyleRegistry)),
+            ("abbrev-map", schema_for!(AbbreviationMap)),
         ];
         for (name, schema) in schemas {
             let filename = format!("{name}.json");
@@ -182,12 +185,16 @@ fn run_schema(args: SchemaArgs) -> Result<(), Box<dyn Error>> {
             SchemaType::Locale => schema_for!(RawLocale),
             SchemaType::Citation => schema_for!(citum_schema::Citations),
             SchemaType::Registry => schema_for!(citum_schema::StyleRegistry),
+            SchemaType::AbbrevMap => schema_for!(AbbreviationMap),
         };
         println!("{}", serde_json::to_string_pretty(&schema)?);
         return Ok(());
     }
 
-    Err("Specify a schema type (style, bib, locale, citation, registry) or --out-dir".into())
+    Err(
+        "Specify a schema type (style, bib, locale, citation, registry, abbrev-map) or --out-dir"
+            .into(),
+    )
 }
 
 #[cfg(feature = "typescript")]

@@ -168,6 +168,7 @@ fn test_contributor_values() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let reference = make_reference();
     let hints = ProcHints::default();
@@ -209,6 +210,7 @@ fn test_spanish_role_label_uses_feminine_form_for_single_editor() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let reference = make_editor_reference(&[ContributorGender::Feminine]);
     let hints = ProcHints::default();
@@ -246,6 +248,7 @@ fn test_spanish_role_label_uses_plural_feminine_form_for_matching_group() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let reference =
         make_editor_reference(&[ContributorGender::Feminine, ContributorGender::Feminine]);
@@ -284,6 +287,7 @@ fn test_spanish_role_label_prefers_common_form_for_mixed_group() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let reference =
         make_editor_reference(&[ContributorGender::Feminine, ContributorGender::Masculine]);
@@ -336,6 +340,7 @@ roles:
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let reference =
         make_editor_reference(&[ContributorGender::Feminine, ContributorGender::Masculine]);
@@ -374,6 +379,7 @@ fn test_french_role_label_uses_feminine_form_for_single_contributor() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let reference = make_editor_reference(&[ContributorGender::Feminine]);
     let hints = ProcHints::default();
@@ -411,6 +417,7 @@ fn test_arabic_role_label_uses_feminine_form_for_single_contributor() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let reference = make_editor_reference(&[ContributorGender::Feminine]);
     let hints = ProcHints::default();
@@ -448,6 +455,7 @@ fn test_french_role_label_falls_back_to_masculine_plural_for_mixed_group() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let reference =
         make_editor_reference(&[ContributorGender::Feminine, ContributorGender::Masculine]);
@@ -486,6 +494,7 @@ fn test_arabic_role_label_falls_back_to_verbal_noun_for_mixed_group() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let reference =
         make_editor_reference(&[ContributorGender::Feminine, ContributorGender::Masculine]);
@@ -524,6 +533,7 @@ fn test_arabic_role_label_falls_back_to_roles_common_when_gender_missing() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
 
     // Reference with no gender info
@@ -582,6 +592,7 @@ fn test_collection_editor_role_label_derives_gender_from_reference_data() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let reference = make_custom_role_reference(
         citum_schema::reference::ContributorRole::Custom("collection-editor".to_string()),
@@ -623,6 +634,7 @@ fn test_date_values() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let reference = make_reference();
     let hints = ProcHints::default();
@@ -657,6 +669,7 @@ fn test_year_month_day_dates_inline_disambiguation_suffix_on_year() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let reference = Reference::from(LegacyReference {
         id: "dated-2018".to_string(),
@@ -703,6 +716,7 @@ fn test_et_al() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -766,6 +780,7 @@ fn test_et_al_delimiter_never() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -822,6 +837,7 @@ fn test_role_substitute_uses_custom_fallback_roles_without_silent_drop() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let reference = Reference::from(LegacyReference {
         id: "compiler-fallback".to_string(),
@@ -874,6 +890,7 @@ fn test_et_al_delimiter_always() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1172,6 +1189,7 @@ fn test_template_list_suppression() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let reference = Reference::from(LegacyReference {
         id: "multi".to_string(),
@@ -1223,6 +1241,7 @@ fn test_et_al_use_last() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1277,6 +1296,7 @@ fn test_et_al_use_last_overlap() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1324,6 +1344,7 @@ fn test_title_hyperlink() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1372,6 +1393,7 @@ fn test_title_hyperlink_url_fallback() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1418,6 +1440,7 @@ fn test_title_values_smarten_leading_single_quotes() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1459,6 +1482,7 @@ fn test_title_values_smarten_starting_apostrophe() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1503,6 +1527,7 @@ fn test_title_values_smarten_french_apostrophes() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1545,6 +1570,7 @@ fn test_title_values_smarten_double_quotes() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1582,6 +1608,7 @@ fn test_title_values_flip_flop_outer_single_inner_double_quotes() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1619,6 +1646,7 @@ fn test_title_values_flip_flop_outer_double_inner_single_quotes() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1656,6 +1684,7 @@ fn test_title_values_preserve_ambiguous_double_quotes() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1693,6 +1722,7 @@ fn test_title_values_render_djot_markup_as_preformatted() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1731,6 +1761,7 @@ fn test_title_values_smarten_djot_text_leaves() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1769,6 +1800,7 @@ fn test_title_values_smarten_djot_double_quotes() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1807,6 +1839,7 @@ fn test_title_values_inline_link_suppresses_outer_title_link() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1855,6 +1888,7 @@ fn test_variable_hyperlink() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1898,6 +1932,7 @@ fn test_report_number_variable_uses_report_number_accessor() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -1950,6 +1985,7 @@ fn test_number_variable_excludes_report_number_accessor() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -2008,6 +2044,7 @@ locators:
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -2073,6 +2110,7 @@ locators:
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
 
     let reference: Reference = serde_json::from_str(
@@ -2117,6 +2155,7 @@ fn test_template_number_gender_overrides_locator_label_resolution() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -2186,6 +2225,7 @@ fn test_role_label_preset_applies_to_translator_component() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let component = TemplateContributor {
         contributor: ContributorRole::Translator,
@@ -2233,6 +2273,7 @@ fn test_translator_substitute_uses_locale_aware_role_label() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let component = TemplateContributor {
         contributor: ContributorRole::Author,
@@ -2288,6 +2329,7 @@ fn test_editor_substitute_suppresses_verb_prefix_role_label() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let component = TemplateContributor {
         contributor: ContributorRole::Author,
@@ -2340,6 +2382,7 @@ fn test_editor_component_keeps_verb_prefix_role_label() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let component = TemplateContributor {
         contributor: ContributorRole::Editor,
@@ -2380,6 +2423,7 @@ fn test_role_substitute_normalizes_primary_role_lookup_keys() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let reference = Reference::from(LegacyReference {
         id: "normalized-role-key".to_string(),
@@ -2452,6 +2496,7 @@ fn test_role_specific_name_order_applies_in_substitute_path() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let component = TemplateContributor {
         contributor: ContributorRole::Author,
@@ -2484,6 +2529,7 @@ fn test_term_values() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let reference = make_reference();
     let hints = ProcHints::default();
@@ -2517,6 +2563,7 @@ fn test_template_list_term_suppression() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     // Reference with no editor
     let reference = make_reference();
@@ -2559,6 +2606,7 @@ fn test_date_fallback() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     // Reference with NO issued date
     let reference = Reference::from(LegacyReference {
@@ -2615,6 +2663,7 @@ fn test_strip_periods_global_config() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
 
     let component = TemplateContributor {
@@ -2659,6 +2708,7 @@ fn test_strip_periods_component_override() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
 
     // Component overrides global setting
@@ -2707,6 +2757,7 @@ fn test_strip_periods_no_strip_by_default() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
 
     let component = TemplateContributor {
@@ -2752,6 +2803,7 @@ fn test_should_strip_periods_precedence() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
 
     // Component override takes precedence
@@ -2784,6 +2836,7 @@ fn test_should_strip_periods_precedence() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     assert!(!should_strip_periods(&rendering_default, &options_none));
 }
@@ -3003,6 +3056,7 @@ fn title_value_with_config(title_str: &str, ref_type: &str, config: &Config) -> 
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
     let reference = Reference::from(LegacyReference {
@@ -3162,6 +3216,7 @@ fn test_text_case_structured_title_sentence_apa() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -3222,6 +3277,7 @@ fn test_text_case_structured_title_sentence_nlm() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -3276,6 +3332,7 @@ fn test_text_case_non_english_falls_back_to_as_is() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -3321,6 +3378,7 @@ fn test_text_case_template_level_override() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
     let reference = Reference::from(LegacyReference {
@@ -3371,6 +3429,7 @@ fn test_structured_title_form_short_returns_main_only() {
         ref_type: None,
         show_semantics: true,
         current_template_index: None,
+        abbreviation_map: None,
     };
     let hints = ProcHints::default();
 
@@ -3414,4 +3473,98 @@ fn test_structured_title_form_short_returns_main_only() {
         .values::<PlainText>(&reference, &hints, &options)
         .unwrap();
     assert_eq!(short.value, "Homeland Security Act of 2002");
+}
+
+#[test]
+fn given_abbreviation_map_when_title_matches_then_abbreviation_returned() {
+    let reference = Reference::from(LegacyReference {
+        id: "test-journal".to_string(),
+        ref_type: "journal-article".to_string(),
+        title: Some("Estates Gazette".to_string()),
+        container_title: Some("Estates Gazette".to_string()),
+        ..Default::default()
+    });
+
+    let mut abbrev_map = std::collections::HashMap::new();
+    abbrev_map.insert("Estates Gazette".to_string(), "EG".to_string());
+
+    let config = Config {
+        ..Default::default()
+    };
+
+    let abbrev_map_obj = crate::api::AbbreviationMap(abbrev_map);
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &make_locale(),
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: false,
+        current_template_index: None,
+        abbreviation_map: Some(&abbrev_map_obj),
+    };
+
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+
+    let hints = ProcHints {
+        group_length: 1,
+        ..Default::default()
+    };
+
+    let result = component.values::<PlainText>(&reference, &hints, &options);
+    assert!(result.is_some());
+    assert_eq!(result.unwrap().value, "EG");
+}
+
+#[test]
+fn given_abbreviation_map_when_title_not_in_map_then_original_returned() {
+    let reference = Reference::from(LegacyReference {
+        id: "test-journal".to_string(),
+        ref_type: "journal-article".to_string(),
+        title: Some("Some Other Journal".to_string()),
+        container_title: Some("Some Other Journal".to_string()),
+        ..Default::default()
+    });
+
+    let mut abbrev_map = std::collections::HashMap::new();
+    abbrev_map.insert("Estates Gazette".to_string(), "EG".to_string());
+
+    let config = Config {
+        ..Default::default()
+    };
+
+    let abbrev_map_obj = crate::api::AbbreviationMap(abbrev_map);
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &make_locale(),
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: false,
+        current_template_index: None,
+        abbreviation_map: Some(&abbrev_map_obj),
+    };
+
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        ..Default::default()
+    };
+
+    let hints = ProcHints {
+        group_length: 1,
+        ..Default::default()
+    };
+
+    let result = component.values::<PlainText>(&reference, &hints, &options);
+    assert!(result.is_some());
+    assert_eq!(result.unwrap().value, "Some Other Journal");
 }

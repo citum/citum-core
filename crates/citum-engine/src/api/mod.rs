@@ -19,7 +19,7 @@ pub use document::{
 };
 pub use style_input::StyleInput;
 pub use types::{
-    AnnotationFormat, AnnotationStyle, BibliographyEntry, CitationOccurrence,
+    AbbreviationMap, AnnotationFormat, AnnotationStyle, BibliographyEntry, CitationOccurrence,
     CitationOccurrenceItem, DocumentOptions, EntryMetadata, FormattedBibliography,
     FormattedCitation, OutputFormatKind, Warning, WarningLevel,
 };

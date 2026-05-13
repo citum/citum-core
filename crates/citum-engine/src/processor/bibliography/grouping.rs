@@ -202,6 +202,7 @@ impl Processor {
             },
             self.show_semantics,
             self.inject_ast_indices,
+            self.abbreviation_map.as_ref(),
         );
 
         let mut entries = Vec::new();
@@ -661,6 +662,7 @@ impl Processor {
             ref_type: None,
             show_semantics: self.show_semantics,
             current_template_index: None,
+            abbreviation_map: self.abbreviation_map.as_ref(),
         };
 
         ProcEntryMetadata {
