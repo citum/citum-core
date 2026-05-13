@@ -1,3 +1,9 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
+#![allow(missing_docs, reason = "test")]
 #![allow(
     clippy::unwrap_used,
     clippy::expect_used,
@@ -9,11 +15,6 @@
     clippy::get_unwrap,
     reason = "Panicking is acceptable and often desired in test, benchmark, and example code."
 )]
-#![allow(missing_docs, reason = "test")]
-/*
-SPDX-License-Identifier: MIT OR Apache-2.0
-SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
-*/
 
 //! Tests for cross-list variable deduplication (variable-once rule).
 //!
@@ -26,7 +27,7 @@ use citum_schema::template::{
 };
 
 fn announce_behavior(summary: &str) {
-    println!("behavior: {summary}");
+    tracing::debug!("behavior: {summary}");
 }
 
 #[test]

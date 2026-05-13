@@ -5,6 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use std::collections::HashMap;
 use std::fs;
+use std::io::Write as _;
 use std::path::Path;
 use walkdir::WalkDir;
 
@@ -26,8 +27,8 @@ pub fn run_style_analyzer(styles_dir: &str, json_output: bool) {
 
     if json_output {
         match serde_json::to_string_pretty(&stats) {
-            Ok(json) => println!("{json}"),
-            Err(err) => eprintln!("Error: Failed to serialize style analysis stats to JSON: {err}"),
+            Ok(json) => writeln!(std::io::stdout(), "{json}").unwrap_or(()),
+            Err(err) => eprintln!("Error: serializing style analysis stats: {err}"),
         }
     } else {
         print_stats(&stats);
@@ -346,7 +347,7 @@ fn analyze_nodes(node: &roxmltree::Node, stats: &mut StyleStats) {
 }
 
 fn print_style_section(stats: &StyleStats) {
-    println!(
+    tracing::debug!(
         "=== Style-Level Attributes ===
 "
     );
@@ -364,7 +365,7 @@ fn print_style_section(stats: &StyleStats) {
 }
 
 fn print_citation_section(stats: &StyleStats) {
-    println!(
+    tracing::debug!(
         "
 === Citation Attributes ===
 "
@@ -385,7 +386,7 @@ fn print_citation_section(stats: &StyleStats) {
 }
 
 fn print_bibliography_section(stats: &StyleStats) {
-    println!(
+    tracing::debug!(
         "
 === Bibliography Attributes ===
 "
@@ -398,7 +399,7 @@ fn print_bibliography_section(stats: &StyleStats) {
 }
 
 fn print_condition_section(stats: &StyleStats) {
-    println!(
+    tracing::debug!(
         "
 === Condition Patterns ===
 "
@@ -413,8 +414,9 @@ fn print_condition_section(stats: &StyleStats) {
     print_counter("position conditions", &stats.condition_position);
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn print_name_date_element_section(stats: &StyleStats) {
-    println!(
+    tracing::debug!(
         "
 === Name Element Options ===
 "
@@ -423,7 +425,7 @@ fn print_name_date_element_section(stats: &StyleStats) {
     print_counter("name initialize", &stats.name_initialize);
     print_counter("name initialize-with", &stats.name_initialize_with);
 
-    println!(
+    tracing::debug!(
         "
 === Date Element Options ===
 "
@@ -431,42 +433,42 @@ fn print_name_date_element_section(stats: &StyleStats) {
     print_counter("date form", &stats.date_form);
     print_counter("date-parts", &stats.date_parts);
 
-    println!(
+    tracing::debug!(
         "
 === Element Usage ===
 "
     );
-    println!(
+    tracing::debug!(
         "  names:  {}",
         stats.element_names.get("count").unwrap_or(&0)
     );
-    println!(
+    tracing::debug!(
         "  date:   {}",
         stats.element_date.get("count").unwrap_or(&0)
     );
-    println!(
+    tracing::debug!(
         "  text:   {}",
         stats.element_text.get("count").unwrap_or(&0)
     );
-    println!(
+    tracing::debug!(
         "  number: {}",
         stats.element_number.get("count").unwrap_or(&0)
     );
-    println!(
+    tracing::debug!(
         "  label:  {}",
         stats.element_label.get("count").unwrap_or(&0)
     );
-    println!(
+    tracing::debug!(
         "  group:  {}",
         stats.element_group.get("count").unwrap_or(&0)
     );
-    println!(
+    tracing::debug!(
         "  choose: {}",
         stats.element_choose.get("count").unwrap_or(&0)
     );
 
     if !stats.unhandled_style_attrs.is_empty() {
-        println!(
+        tracing::debug!(
             "
 === Unhandled Style Attributes (Gap Analysis) ===
 "
@@ -475,7 +477,7 @@ fn print_name_date_element_section(stats: &StyleStats) {
     }
 
     if !stats.unhandled_name_attrs.is_empty() {
-        println!(
+        tracing::debug!(
             "
 === Unhandled Name Attributes ===
 "
@@ -483,14 +485,14 @@ fn print_name_date_element_section(stats: &StyleStats) {
         print_counter("name element", &stats.unhandled_name_attrs);
     }
 }
-
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn print_stats(stats: &StyleStats) {
-    println!(
+    tracing::debug!(
         "=== CSL Style Analysis ===
 "
     );
-    println!("Total styles analyzed: {}", stats.total_styles);
-    println!(
+    tracing::debug!("Total styles analyzed: {}", stats.total_styles);
+    tracing::debug!(
         "Parse errors: {}
 ",
         stats.parse_errors.len()
@@ -503,27 +505,28 @@ fn print_stats(stats: &StyleStats) {
     print_name_date_element_section(stats);
 
     if !stats.parse_errors.is_empty() {
-        println!(
+        tracing::debug!(
             "
 === Parse Errors ===
 "
         );
         for (i, err) in stats.parse_errors.iter().take(10).enumerate() {
-            println!("  {}. {}", i + 1, err);
+            tracing::debug!("  {}. {}", i + 1, err);
         }
         if stats.parse_errors.len() > 10 {
-            println!("  ... and {} more", stats.parse_errors.len() - 10);
+            tracing::debug!("  ... and {} more", stats.parse_errors.len() - 10);
         }
     }
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn print_counter(name: &str, counter: &Counter) {
     if counter.is_empty() {
         return;
     }
 
     let total: u32 = counter.values().sum();
-    println!("{name}: {total} occurrences");
+    tracing::debug!("{name}: {total} occurrences");
 
     // Sort by count descending
     let mut items: Vec<_> = counter.iter().collect();
@@ -531,10 +534,10 @@ fn print_counter(name: &str, counter: &Counter) {
 
     for (value, count) in items.iter().take(8) {
         let pct = (f64::from(**count) / f64::from(total)) * 100.0;
-        println!("  {value:40} {count:5} ({pct:.1}%)");
+        tracing::debug!("  {value:40} {count:5} ({pct:.1}%)");
     }
     if items.len() > 8 {
-        println!("  ... and {} more values", items.len() - 8);
+        tracing::debug!("  ... and {} more values", items.len() - 8);
     }
-    println!();
+    tracing::debug!("");
 }

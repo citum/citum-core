@@ -5,6 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use std::collections::HashMap;
 use std::fs;
+use std::io::Write as _;
 use std::path::Path;
 use walkdir::WalkDir;
 
@@ -153,6 +154,7 @@ fn build_rankings(
     rankings
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 pub fn run_parent_ranker(styles_dir: &str, json_output: bool, format_filter: Option<&str>) {
     let mut stats = ParentRankerStats {
         format_filter: format_filter.map(std::string::ToString::to_string),
@@ -165,8 +167,8 @@ pub fn run_parent_ranker(styles_dir: &str, json_output: bool, format_filter: Opt
 
     let dependent_dir = Path::new(styles_dir).join("dependent");
     if !dependent_dir.exists() {
-        eprintln!("Warning: No 'dependent' subdirectory found in {styles_dir}");
-        eprintln!("Dependent styles are typically in styles-legacy/dependent/");
+        tracing::debug!("Warning: No 'dependent' subdirectory found in {styles_dir}");
+        tracing::debug!("Dependent styles are typically in styles-legacy/dependent/");
     }
 
     let parent_counts = collect_parent_counts(
@@ -179,8 +181,8 @@ pub fn run_parent_ranker(styles_dir: &str, json_output: bool, format_filter: Opt
 
     if json_output {
         match serde_json::to_string_pretty(&stats) {
-            Ok(json) => println!("{json}"),
-            Err(err) => eprintln!("Error: Failed to serialize parent rankings to JSON: {err}"),
+            Ok(json) => writeln!(std::io::stdout(), "{json}").unwrap_or(()),
+            Err(err) => eprintln!("Error: serializing parent rankings: {err}"),
         }
     } else {
         print_parent_rankings(&stats);
@@ -261,53 +263,58 @@ fn extract_style_info(path: &Path) -> Result<StyleInfo, String> {
     Ok(StyleInfo { citation_format })
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn print_parent_rankings(stats: &ParentRankerStats) {
-    println!(
+    tracing::debug!(
         "=== Parent Style Rankings ===
 "
     );
 
     if let Some(ref filter) = stats.format_filter {
-        println!(
+        tracing::debug!(
             "Filter: citation-format = {filter}
 "
         );
     }
 
-    println!("Dependent styles analyzed: {}", stats.total_dependent);
-    println!("Independent styles found: {}", stats.total_independent);
-    println!(
+    tracing::debug!("Dependent styles analyzed: {}", stats.total_dependent);
+    tracing::debug!("Independent styles found: {}", stats.total_independent);
+    tracing::debug!(
         "Unique parent styles referenced: {}",
         stats.parent_rankings.len()
     );
-    println!();
+    tracing::debug!("");
 
     // Format distribution
     if !stats.format_distribution.is_empty() && stats.format_filter.is_none() {
-        println!(
+        tracing::debug!(
             "=== Citation Format Distribution ===
 "
         );
         let mut formats: Vec<_> = stats.format_distribution.iter().collect();
         formats.sort_by(|a, b| b.1.cmp(a.1));
         for (format, count) in formats {
-            println!("  {format:20} {count:5}");
+            tracing::debug!("  {format:20} {count:5}");
         }
-        println!();
+        tracing::debug!("");
     }
 
-    println!(
+    tracing::debug!(
         "=== Top Parent Styles by Usage ===
 "
     );
-    println!(
+    tracing::debug!(
         "{:4}  {:40} {:>8}  {:>6}  {:15}",
-        "Rank", "Parent Style", "Count", "%", "Format"
+        "Rank",
+        "Parent Style",
+        "Count",
+        "%",
+        "Format"
     );
-    println!("{}", "-".repeat(80));
+    tracing::debug!("{}", "-".repeat(80));
 
     for (i, ranking) in stats.parent_rankings.iter().take(50).enumerate() {
-        println!(
+        tracing::debug!(
             "{:4}  {:40} {:>8}  {:>5.1}%  {:15}",
             i + 1,
             truncate(&ranking.short_name, 40),
@@ -318,7 +325,7 @@ fn print_parent_rankings(stats: &ParentRankerStats) {
     }
 
     if stats.parent_rankings.len() > 50 {
-        println!(
+        tracing::debug!(
             "
 ... and {} more parent styles",
             stats.parent_rankings.len() - 50
@@ -326,12 +333,12 @@ fn print_parent_rankings(stats: &ParentRankerStats) {
     }
 
     // Show top styles by format for prioritization
-    println!(
+    tracing::debug!(
         "
 === Priority Styles by Format ===
 "
     );
-    println!(
+    tracing::debug!(
         "These parent styles should be prioritized for rendering development:
 "
     );
@@ -345,24 +352,24 @@ fn print_parent_rankings(stats: &ParentRankerStats) {
             .collect();
 
         if !top_for_format.is_empty() {
-            println!("  {format} styles:");
+            tracing::debug!("  {format} styles:");
             for r in top_for_format {
-                println!("    - {} ({} dependents)", r.short_name, r.dependent_count);
+                tracing::debug!("    - {} ({} dependents)", r.short_name, r.dependent_count);
             }
-            println!();
+            tracing::debug!("");
         }
     }
 
     if !stats.parse_errors.is_empty() {
-        println!(
+        tracing::debug!(
             "=== Parse Errors ===
 "
         );
         for (i, err) in stats.parse_errors.iter().take(5).enumerate() {
-            println!("  {}. {}", i + 1, err);
+            tracing::debug!("  {}. {}", i + 1, err);
         }
         if stats.parse_errors.len() > 5 {
-            println!("  ... and {} more", stats.parse_errors.len() - 5);
+            tracing::debug!("  ... and {} more", stats.parse_errors.len() - 5);
         }
     }
 }

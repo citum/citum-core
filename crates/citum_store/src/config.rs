@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Store configuration from `~/.config/citum/config.yaml` or `~/.config/citum/config.toml`.
 
 use crate::format::StoreFormat;

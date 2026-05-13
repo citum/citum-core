@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 use super::{
     CslnNode, DelimiterPunctuation, FormattingOptions, Rendering, TemplateCompiler,
     TemplateComponent,
@@ -228,7 +233,7 @@ impl TemplateCompiler {
             _ => None,
         };
         if super::migrate_debug_enabled() {
-            eprintln!(
+            tracing::debug!(
                 "TemplateCompiler: extract_source_order({:?}) = {:?}",
                 match node {
                     CslnNode::Variable(v) => format!("Variable({:?})", v.variable),

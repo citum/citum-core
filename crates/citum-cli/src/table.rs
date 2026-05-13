@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 /// Unified table builder for CLI list output.
 ///
 /// Provides a consistent table rendering interface using `UTF8_BORDERS_ONLY`

@@ -1,3 +1,9 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
+#![allow(missing_docs, reason = "test")]
 #![allow(
     clippy::unwrap_used,
     clippy::expect_used,
@@ -9,12 +15,6 @@
     clippy::get_unwrap,
     reason = "Panicking is acceptable and often desired in test, benchmark, and example code."
 )]
-#![allow(missing_docs, reason = "test")]
-
-/*
-SPDX-License-Identifier: MIT OR Apache-2.0
-SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
-*/
 
 mod common;
 use common::*;
@@ -3575,10 +3575,7 @@ fn processor_renders_bibliography_annotations() {
         Some(&annotation_style),
     );
 
-    assert!(rendered.contains("Test Book"));
-    assert!(rendered.contains("This is an annotation."));
-    // Default is now flush left
-    assert!(rendered.contains("\n\nThis is an annotation."));
+    assert_eq!(rendered, "Test Book\n\nThis is an annotation.");
 }
 
 #[test]
@@ -3620,11 +3617,7 @@ groups:
     let processor = Processor::new(style, bib);
     let rendered = processor.render_grouped_bibliography_with_format::<PlainText>();
 
-    // The group heading should NOT appear in the output
-    assert!(!rendered.contains("Secondary Sources Section Heading"));
-    // But the entries should be present
-    assert!(rendered.contains("First Book"));
-    assert!(rendered.contains("Second Book"));
+    assert_eq!(rendered, "First Book\n\nSecond Book");
 }
 
 #[test]
@@ -3670,9 +3663,8 @@ groups:
     let processor = Processor::new(style, bib);
     let rendered = processor.render_grouped_bibliography_with_format::<PlainText>();
 
-    // Both headings should appear since we have two groups with content
-    assert!(rendered.contains("Primary Sources Section"));
-    assert!(rendered.contains("Secondary Sources Section"));
-    assert!(rendered.contains("First Book"));
-    assert!(rendered.contains("An Archival Manuscript"));
+    assert_eq!(
+        rendered,
+        "# Primary Sources Section\n\nFirst Book\n\n# Secondary Sources Section\n\nAn Archival Manuscript"
+    );
 }

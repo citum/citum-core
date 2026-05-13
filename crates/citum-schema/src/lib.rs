@@ -1,7 +1,14 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Compatibility facade crate for Citum schema models.
 //!
 //! This crate re-exports style-focused types from `citum-schema-style`
 //! and data-focused accessors through `citum-schema-data`.
+
+#![forbid(unsafe_code)]
 
 pub use citum_schema_style::*;
 

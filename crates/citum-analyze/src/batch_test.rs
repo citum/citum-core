@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 #![allow(missing_docs, reason = "bin crate")]
 /*
 SPDX-License-Identifier: MIT OR Apache-2.0
@@ -61,12 +66,13 @@ fn collect_styles(styles_dir: &str, sample_size: Option<usize>) -> Vec<PathBuf> 
     styles
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn run_batch(cli: CliArgs) {
     let styles = collect_styles(&cli.styles_dir, cli.sample_size);
     let total = styles.len();
     let mut results = BatchResults::default();
 
-    eprintln!("Testing {total} styles...\n");
+    tracing::debug!("Testing {total} styles...\n");
 
     for (i, path) in styles.iter().enumerate() {
         let result = test_style(path);
@@ -79,7 +85,7 @@ fn run_batch(cli: CliArgs) {
             TestResult::Success => {
                 results.migration_success += 1;
                 if cli.verbose {
-                    eprintln!("[{}/{}] ✅ {}", i + 1, total, name);
+                    tracing::debug!("[{}/{}] ✅ {}", i + 1, total, name);
                 }
             }
             TestResult::MigrationFailed(err) => {
@@ -89,7 +95,7 @@ fn run_batch(cli: CliArgs) {
                     .entry(categorize_error(err))
                     .or_insert(0) += 1;
                 if cli.verbose {
-                    eprintln!(
+                    tracing::debug!(
                         "[{}/{}] ❌ {} - Migration: {}",
                         i + 1,
                         total,
@@ -105,7 +111,7 @@ fn run_batch(cli: CliArgs) {
                     .entry(categorize_error(err))
                     .or_insert(0) += 1;
                 if cli.verbose {
-                    eprintln!(
+                    tracing::debug!(
                         "[{}/{}] ⚠️  {} - Processor: {}",
                         i + 1,
                         total,
@@ -121,7 +127,7 @@ fn run_batch(cli: CliArgs) {
                     .entry(categorize_error(err))
                     .or_insert(0) += 1;
                 if cli.verbose {
-                    eprintln!(
+                    tracing::debug!(
                         "[{}/{}] ❌ {} - Invalid YAML: {}",
                         i + 1,
                         total,
@@ -133,7 +139,7 @@ fn run_batch(cli: CliArgs) {
         }
 
         if !cli.verbose && (i + 1) % 100 == 0 {
-            eprintln!("  Processed {}/{}", i + 1, total);
+            tracing::debug!("  Processed {}/{}", i + 1, total);
         }
     }
 
@@ -141,23 +147,26 @@ fn run_batch(cli: CliArgs) {
 
     if cli.json_output {
         match serde_json::to_string_pretty(&results) {
-            Ok(json) => println!("{json}"),
-            Err(err) => eprintln!("Error: Failed to serialize batch test results to JSON: {err}"),
+            Ok(json) => tracing::debug!("{json}"),
+            Err(err) => {
+                tracing::debug!("Error: Failed to serialize batch test results to JSON: {err}");
+            }
         }
     } else {
         print_results(&results);
     }
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        eprintln!("Usage: citum_batch_test <styles_dir> [--verbose] [--sample N]");
-        eprintln!();
-        eprintln!("Options:");
-        eprintln!("  --verbose    Show individual style results");
-        eprintln!("  --sample N   Only test N random styles");
-        eprintln!("  --json       Output as JSON");
+        tracing::debug!("Usage: citum_batch_test <styles_dir> [--verbose] [--sample N]");
+        tracing::debug!("");
+        tracing::debug!("Options:");
+        tracing::debug!("  --verbose    Show individual style results");
+        tracing::debug!("  --sample N   Only test N random styles");
+        tracing::debug!("  --json       Output as JSON");
         std::process::exit(1);
     }
     run_batch(parse_cli(&args));
@@ -280,32 +289,34 @@ fn truncate(s: &str, max: usize) -> String {
     }
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn print_results(results: &BatchResults) {
-    println!("\n=== Batch Migration Test Results ===\n");
-    println!("Total styles tested: {}", results.total);
-    println!();
+    tracing::debug!("\n=== Batch Migration Test Results ===\n");
+    tracing::debug!("Total styles tested: {}", results.total);
+    tracing::debug!("");
 
     let success_rate = (results.migration_success as f64 / results.total as f64) * 100.0;
-    println!(
+    tracing::debug!(
         "Migration + Processor Success: {} ({:.1}%)",
-        results.migration_success, success_rate
+        results.migration_success,
+        success_rate
     );
-    println!("Migration Failed: {}", results.migration_failed);
-    println!("YAML Invalid: {}", results.yaml_invalid);
-    println!("Processor Failed: {}", results.processor_failed);
+    tracing::debug!("Migration Failed: {}", results.migration_failed);
+    tracing::debug!("YAML Invalid: {}", results.yaml_invalid);
+    tracing::debug!("Processor Failed: {}", results.processor_failed);
 
     if !results.migration_errors.is_empty() {
-        println!("\n--- Migration Errors ---");
+        tracing::debug!("\n--- Migration Errors ---");
         print_error_summary(&results.migration_errors);
     }
 
     if !results.yaml_errors.is_empty() {
-        println!("\n--- YAML Validation Errors ---");
+        tracing::debug!("\n--- YAML Validation Errors ---");
         print_error_summary(&results.yaml_errors);
     }
 
     if !results.processor_errors.is_empty() {
-        println!("\n--- Processor Errors ---");
+        tracing::debug!("\n--- Processor Errors ---");
         print_error_summary(&results.processor_errors);
     }
 }
@@ -315,9 +326,9 @@ fn print_error_summary(errors: &HashMap<String, usize>) {
     items.sort_by(|a, b| b.1.cmp(a.1));
 
     for (error, count) in items.iter().take(10) {
-        println!("  {count:5} - {error}");
+        tracing::debug!("  {count:5} - {error}");
     }
     if items.len() > 10 {
-        println!("  ... and {} more error types", items.len() - 10);
+        tracing::debug!("  ... and {} more error types", items.len() - 10);
     }
 }

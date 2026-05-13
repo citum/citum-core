@@ -4,8 +4,10 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish = false
+repository.workspace = true
 
 [dependencies]
+tracing.workspace = true
 citum-schema = { package = "citum-schema", path = "../citum-schema" }
 dirs = "6.0"
 serde = { version = "1.0", features = ["derive"] }

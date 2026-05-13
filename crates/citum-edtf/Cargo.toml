@@ -4,9 +4,10 @@ version.workspace = true
 edition.workspace = true
 description = "A modern EDTF (Extended Date/Time Format) parser built with winnow."
 license.workspace = true
-repository = "https://github.com/citum/citum-core"
+repository.workspace = true
 
 [dependencies]
+tracing.workspace = true
 winnow = "1.0"
 serde = { version = "1.0", features = ["derive"], optional = true }
 

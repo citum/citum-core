@@ -1,3 +1,9 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
+#![allow(missing_docs, reason = "test/bench")]
 #![allow(
     clippy::unwrap_used,
     clippy::expect_used,
@@ -9,12 +15,12 @@
     clippy::get_unwrap,
     reason = "Panicking is acceptable and often desired in test, benchmark, and example code."
 )]
-#![allow(missing_docs, reason = "test/bench")]
 
 use std::fs;
 use std::path::PathBuf;
 
 #[test]
+#[allow(clippy::cognitive_complexity, reason = "complex test function")]
 fn test_verify_comprehensive_examples() {
     // Locate the examples directory relative to this test file
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -28,10 +34,10 @@ fn test_verify_comprehensive_examples() {
     match bib {
         Ok(bib) => {
             let refs = bib.references;
-            println!("Successfully parsed {} references", refs.len());
+            tracing::debug!("Successfully parsed {} references", refs.len());
             for reference in &refs {
                 let id = reference.id().expect("Reference should have an ID");
-                println!("Parsed: {id}");
+                tracing::debug!("Parsed: {id}");
 
                 // Verify specific fields for Foucault example
                 if id == "foucault_discipline" {
@@ -44,7 +50,7 @@ fn test_verify_comprehensive_examples() {
                     assert_eq!(orig_date.0, "1975");
                 }
             }
-            println!("Successfully verified {} references", refs.len());
+            tracing::debug!("Successfully verified {} references", refs.len());
         }
         Err(e) => {
             panic!("Failed to parse comprehensive.yaml: {e}");
@@ -53,6 +59,7 @@ fn test_verify_comprehensive_examples() {
 }
 
 #[test]
+#[allow(clippy::cognitive_complexity, reason = "complex test function")]
 fn test_verify_all_refs_examples() {
     // Locate the examples directory relative to this test file
     let mut examples_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -79,7 +86,7 @@ fn test_verify_all_refs_examples() {
 
     yaml_files.sort();
 
-    println!("Found {} *-refs.yaml files", yaml_files.len());
+    tracing::debug!("Found {} *-refs.yaml files", yaml_files.len());
     assert!(
         !yaml_files.is_empty(),
         "Expected to find at least one *-refs.yaml file"
@@ -90,7 +97,7 @@ fn test_verify_all_refs_examples() {
             .file_name()
             .and_then(|n| n.to_str())
             .unwrap_or("unknown");
-        println!("\nTesting: {filename}");
+        tracing::debug!("\nTesting: {filename}");
 
         let content =
             fs::read_to_string(&path).unwrap_or_else(|_| panic!("Failed to read {filename}"));
@@ -101,10 +108,10 @@ fn test_verify_all_refs_examples() {
         match bib {
             Ok(bib) => {
                 let refs = bib.references;
-                println!("  ✓ Successfully parsed {} references", refs.len());
+                tracing::debug!("  ✓ Successfully parsed {} references", refs.len());
                 for reference in &refs {
                     let id = reference.id().expect("Reference should have an ID");
-                    println!("    - {id}");
+                    tracing::debug!("    - {id}");
                 }
             }
             Err(e) => {

@@ -1,6 +1,14 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! `citum_edtf` - A modern EDTF (Extended Date/Time Format) parser
 //!
 //! This crate implements ISO 8601-2:2019 (EDTF) Level 0 and Level 1.
+
+#![forbid(unsafe_code)]
+
 use winnow::ascii::dec_int;
 use winnow::combinator::{alt, opt};
 use winnow::error::{ContextError, ErrMode};

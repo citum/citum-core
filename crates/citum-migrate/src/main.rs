@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 #![allow(missing_docs, reason = "bin")]
 
 use citum_migrate::{
@@ -31,6 +36,7 @@ use csl_legacy::parser::parse_style;
 use roxmltree::Document;
 use std::collections::BTreeMap;
 use std::fs;
+use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
 /// Shorthand for the per-type template map used throughout the migration pipeline.
@@ -386,7 +392,7 @@ fn parse_template_mode_arg(value: &str) -> template_resolver::TemplateMode {
     match value.parse::<template_resolver::TemplateMode>() {
         Ok(mode) => mode,
         Err(msg) => {
-            eprintln!("Error: {msg}");
+            tracing::debug!("Error: {msg}");
             std::process::exit(1);
         }
     }
@@ -396,7 +402,7 @@ fn parse_live_infer_backend_arg(value: &str) -> template_resolver::LiveInferBack
     match value.parse::<template_resolver::LiveInferBackend>() {
         Ok(backend) => backend,
         Err(msg) => {
-            eprintln!("Error: {msg}");
+            tracing::debug!("Error: {msg}");
             std::process::exit(1);
         }
     }
@@ -406,12 +412,13 @@ fn parse_min_template_confidence_arg(value: &str) -> f64 {
     match value.parse::<f64>() {
         Ok(parsed) if (0.0..=1.0).contains(&parsed) => parsed,
         _ => {
-            eprintln!("Error: --min-template-confidence requires a number in [0.0, 1.0]");
+            tracing::debug!("Error: --min-template-confidence requires a number in [0.0, 1.0]");
             std::process::exit(1);
         }
     }
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn parse_cli_args(args: &[String]) -> CliArgs {
     let program_name = args
         .first()
@@ -438,7 +445,7 @@ fn parse_cli_args(args: &[String]) -> CliArgs {
                 if let Some(val) = iter.next() {
                     debug_variable = Some(val.clone());
                 } else {
-                    eprintln!("Error: --debug-variable requires an argument");
+                    tracing::debug!("Error: --debug-variable requires an argument");
                     std::process::exit(1);
                 }
             }
@@ -446,7 +453,7 @@ fn parse_cli_args(args: &[String]) -> CliArgs {
                 if let Some(val) = iter.next() {
                     template_mode = parse_template_mode_arg(val);
                 } else {
-                    eprintln!(
+                    tracing::debug!(
                         "Error: --template-source requires an argument (auto|hand|inferred|xml)"
                     );
                     std::process::exit(1);
@@ -456,7 +463,7 @@ fn parse_cli_args(args: &[String]) -> CliArgs {
                 if let Some(val) = iter.next() {
                     live_infer_backend = parse_live_infer_backend_arg(val);
                 } else {
-                    eprintln!(
+                    tracing::debug!(
                         "Error: --live-infer-backend requires an argument (auto|embedded|node)"
                     );
                     std::process::exit(1);
@@ -466,7 +473,7 @@ fn parse_cli_args(args: &[String]) -> CliArgs {
                 if let Some(val) = iter.next() {
                     min_template_confidence = parse_min_template_confidence_arg(val);
                 } else {
-                    eprintln!("Error: --min-template-confidence requires a numeric argument");
+                    tracing::debug!("Error: --min-template-confidence requires a numeric argument");
                     std::process::exit(1);
                 }
             }
@@ -474,7 +481,7 @@ fn parse_cli_args(args: &[String]) -> CliArgs {
                 if let Some(val) = iter.next() {
                     template_dir = Some(PathBuf::from(val));
                 } else {
-                    eprintln!("Error: --template-dir requires a path argument");
+                    tracing::debug!("Error: --template-dir requires a path argument");
                     std::process::exit(1);
                 }
             }
@@ -482,8 +489,8 @@ fn parse_cli_args(args: &[String]) -> CliArgs {
                 path = arg.to_string();
             }
             _ => {
-                eprintln!("Error: unknown argument '{}'", arg);
-                eprintln!();
+                tracing::debug!("Error: unknown argument '{}'", arg);
+                tracing::debug!("");
                 print_help(program_name);
                 std::process::exit(1);
             }
@@ -645,8 +652,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let workspace_root = workspace_root_for_style_path(path);
     let lineage = StyleLineage::resolve(path, &workspace_root)?;
 
-    eprintln!("Migrating {path} to Citum...");
-    eprintln!(
+    tracing::debug!("Migrating {path} to Citum...");
+    tracing::debug!(
         "Resolved lineage: semantic={:?}, form={:?}, parent={}",
         lineage.semantic_class,
         lineage.implementation_form,
@@ -689,7 +696,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(ref fallback) = xml_fallback
         && fallback.unsupported_mixed_conditions
     {
-        eprintln!(
+        tracing::debug!(
             "Warning: citation position branches could not be migrated cleanly for style {}. Falling back to base citation template only.",
             legacy_style.info.id
         );
@@ -739,25 +746,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn log_migration_output_plan(lineage: &StyleLineage) {
     match lineage.output_plan() {
         MigrationOutputPlan::Standalone => {
-            eprintln!("Migration output plan: standalone");
+            tracing::debug!("Migration output plan: standalone");
         }
         MigrationOutputPlan::ExistingWrapper {
             parent_style_id,
             implementation_form,
             preserve_template_deltas,
         } => {
-            eprintln!(
+            tracing::debug!(
                 "Migration output plan: existing-wrapper parent={parent_style_id} form={implementation_form:?} preserve-template-deltas={preserve_template_deltas}"
             );
         }
         plan if plan.requires_multi_artifact_write() => {
-            eprintln!("Migration output plan: multi-artifact {plan:?}");
+            tracing::debug!("Migration output plan: multi-artifact {plan:?}");
         }
         plan => {
-            eprintln!("Migration output plan: {plan:?}");
+            tracing::debug!("Migration output plan: {plan:?}");
         }
     }
 }
@@ -767,14 +775,10 @@ fn output_style_and_debug(
     debug_variable: Option<&str>,
     tracker: &ProvenanceTracker,
 ) -> Result<(), Box<dyn std::error::Error>> {
-    // Output YAML to stdout
     let yaml = serde_yaml::to_string(style)?;
-    println!("{yaml}");
+    writeln!(std::io::stdout(), "{yaml}")?;
 
-    // Output debug information if requested
     if let Some(var_name) = debug_variable {
-        eprintln!("\n");
-        eprintln!("=== PROVENANCE DEBUG ===\n");
         let debug_output = DebugOutputFormatter::format_variable(tracker, var_name);
         eprint!("{debug_output}");
     }
@@ -782,23 +786,26 @@ fn output_style_and_debug(
     Ok(())
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn print_help(program_name: &str) {
-    eprintln!("Citum style migration tool");
-    eprintln!();
-    eprintln!("Usage:");
-    eprintln!("  {program_name} [STYLE.csl] [options]");
-    eprintln!();
-    eprintln!("Arguments:");
-    eprintln!("  STYLE.csl                       Input CSL 1.0 style path");
-    eprintln!("                                  (default: styles-legacy/apa.csl)");
-    eprintln!();
-    eprintln!("Options:");
-    eprintln!("  -h, --help                      Show this help text");
-    eprintln!("  --debug-variable <name>         Print provenance details for one variable");
-    eprintln!("  --template-source <mode>        Template source: auto|hand|inferred|xml");
-    eprintln!("  --live-infer-backend <mode>     Live inference backend: auto|embedded|node");
-    eprintln!("  --template-dir <path>           Override directory for hand-authored templates");
-    eprintln!("  --min-template-confidence <n>   Minimum inferred confidence [0.0, 1.0]");
+    tracing::debug!("Citum style migration tool");
+    tracing::debug!("");
+    tracing::debug!("Usage:");
+    tracing::debug!("  {program_name} [STYLE.csl] [options]");
+    tracing::debug!("");
+    tracing::debug!("Arguments:");
+    tracing::debug!("  STYLE.csl                       Input CSL 1.0 style path");
+    tracing::debug!("                                  (default: styles-legacy/apa.csl)");
+    tracing::debug!("");
+    tracing::debug!("Options:");
+    tracing::debug!("  -h, --help                      Show this help text");
+    tracing::debug!("  --debug-variable <name>         Print provenance details for one variable");
+    tracing::debug!("  --template-source <mode>        Template source: auto|hand|inferred|xml");
+    tracing::debug!("  --live-infer-backend <mode>     Live inference backend: auto|embedded|node");
+    tracing::debug!(
+        "  --template-dir <path>           Override directory for hand-authored templates"
+    );
+    tracing::debug!("  --min-template-confidence <n>   Minimum inferred confidence [0.0, 1.0]");
 }
 
 fn resolve_migrated_bibliography_sort(
@@ -826,26 +833,27 @@ fn bibliography_sort_matches_processing_default(
         .is_some_and(|preset| preset.group_sort() == *sort)
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn log_template_sources(resolved: &template_resolver::ResolvedTemplates) {
     if let Some(ref resolved_bib) = resolved.bibliography {
-        eprintln!("Using {} bibliography template", resolved_bib.source);
+        tracing::debug!("Using {} bibliography template", resolved_bib.source);
         if let Some(conf) = resolved_bib.confidence {
-            eprintln!("  bibliography confidence: {:.0}%", conf * 100.0);
+            tracing::debug!("  bibliography confidence: {:.0}%", conf * 100.0);
         }
     } else {
-        eprintln!(
+        tracing::debug!(
             "Using {} bibliography template",
             template_resolver::TemplateSource::XmlCompiled
         );
     }
 
     if let Some(ref resolved_cit) = resolved.citation {
-        eprintln!("Using {} citation template", resolved_cit.source);
+        tracing::debug!("Using {} citation template", resolved_cit.source);
         if let Some(conf) = resolved_cit.confidence {
-            eprintln!("  citation confidence: {:.0}%", conf * 100.0);
+            tracing::debug!("  citation confidence: {:.0}%", conf * 100.0);
         }
     } else {
-        eprintln!(
+        tracing::debug!(
             "Using {} citation template",
             template_resolver::TemplateSource::XmlCompiled
         );
@@ -944,6 +952,7 @@ fn select_citation_template(
     )
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn override_bibliography_options_if_inferred(
     resolved: &template_resolver::ResolvedTemplates,
     legacy_style: &csl_legacy::model::Style,
@@ -959,18 +968,18 @@ fn override_bibliography_options_if_inferred(
 
         if allow_bib_punctuation_override {
             if let Some(ref delim) = resolved_bib.delimiter {
-                eprintln!("  Overriding bibliography separator: {delim:?}");
+                tracing::debug!("  Overriding bibliography separator: {delim:?}");
                 let bib_cfg = options.get_or_insert_with(Default::default);
                 bib_cfg.separator = Some(delim.clone());
             }
 
             if let Some(ref suffix) = resolved_bib.entry_suffix {
-                eprintln!("  Overriding bibliography entry suffix: {suffix:?}");
+                tracing::debug!("  Overriding bibliography entry suffix: {suffix:?}");
                 let bib_cfg = options.get_or_insert_with(Default::default);
                 bib_cfg.entry_suffix = Some(suffix.clone());
             }
         } else {
-            eprintln!(
+            tracing::debug!(
                 "  Skipping inferred bibliography separator/entry-suffix override for note style."
             );
         }
@@ -1201,6 +1210,7 @@ fn component_is_publisher_place(component: &TemplateComponent) -> bool {
     )
 }
 
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn validate_and_normalize_inferred_citations(
     resolved: &mut template_resolver::ResolvedTemplates,
     options: &citum_schema::options::Config,
@@ -1231,7 +1241,7 @@ fn validate_and_normalize_inferred_citations(
                 None
             };
             if let Some(reason) = reject_reason {
-                eprintln!(
+                tracing::debug!(
                     "Rejecting inferred citation template for {style_name}: {reason}. Falling back to XML citation template."
                 );
                 resolved.citation = None;
@@ -1255,7 +1265,7 @@ fn validate_and_normalize_inferred_citations(
             && citation_template_is_author_year_only(&resolved_cit.template)
             && normalize_contributor_form_to_short(&mut resolved_cit.template)
         {
-            eprintln!(
+            tracing::debug!(
                 "Normalized citation contributor form to short for {style_name} (author-year inferred citation template)."
             );
         }
@@ -1278,7 +1288,7 @@ fn validate_and_normalize_inferred_citations(
                 citation_has_scope_shorten,
             )
         {
-            eprintln!(
+            tracing::debug!(
                 "Normalized inferred author-date citation contributors for {style_name} (family-short + scoped shorten)."
             );
         }

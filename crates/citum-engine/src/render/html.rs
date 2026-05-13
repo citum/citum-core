@@ -24,7 +24,7 @@ impl Html {
                 let mut buf = [0u8; 4];
                 for byte in ch.encode_utf8(&mut buf).as_bytes() {
                     escaped.push('%');
-                    escaped.push_str(&format!("{byte:02X}"));
+                    let _ = write!(escaped, "{byte:02X}");
                 }
             } else {
                 escaped.push(ch);

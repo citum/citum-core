@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Rendering logic for simple variables (DOI, URL, ISBN, etc.).
 //!
 //! This module handles template variable rendering, including proper localization

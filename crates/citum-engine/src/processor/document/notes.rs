@@ -5,6 +5,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 //! Note-style document rendering and numbering helpers.
 
+use std::fmt::Write;
+
 use super::note_support::{
     GeneratedNote, NoteOccurrence, NoteRule, adjust_manual_note_citation_rendering,
     assign_note_numbers, build_note_order_indices, collect_note_occurrences, language_tag,
@@ -86,7 +88,7 @@ impl Processor {
 
             for note in &generated_notes {
                 if let Some(rendered) = rendered_notes.get(&note.citation_index) {
-                    result.push_str(&format!("[^{}]: {}\n", note.label, rendered));
+                    let _ = writeln!(result, "[^{}]: {}", note.label, rendered);
                 }
             }
         }
@@ -162,7 +164,7 @@ impl Processor {
 
             for note in &generated_notes {
                 if let Some(rendered) = rendered_notes.get(&note.citation_index) {
-                    result.push_str(&format!("[^{}]: {}\n", note.label, rendered));
+                    let _ = writeln!(result, "[^{}]: {}", note.label, rendered);
                 }
             }
         }

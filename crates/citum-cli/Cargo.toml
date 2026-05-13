@@ -4,12 +4,14 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 publish = false
+repository.workspace = true
 
 [[bin]]
 name = "citum"
 path = "src/main.rs"
 
 [dependencies]
+tracing.workspace = true
 clap = { version = "4.4", features = ["derive", "color"] }
 clap_complete = "4.4"
 comfy-table = "7.1"

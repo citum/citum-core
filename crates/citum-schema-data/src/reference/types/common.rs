@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Shared primitive types used across all reference categories.
 //!
 //! Includes multilingual string support, title representation, date types,

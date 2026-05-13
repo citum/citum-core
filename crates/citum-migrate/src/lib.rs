@@ -1,3 +1,11 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
+//! citum-migrate
+
+#![forbid(unsafe_code)]
 #![allow(missing_docs, reason = "lib/crate")]
 
 use csl_legacy::model::{CslNode, Style};

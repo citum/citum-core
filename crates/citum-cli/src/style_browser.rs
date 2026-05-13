@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 use crate::commands::StyleCatalogRow;
 use crossterm::{
     event::{self, Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers},
@@ -667,13 +672,13 @@ fn browser_row_matches_query(row: &BrowserRow, query: &str) -> bool {
 fn style_table_row(row: &BrowserRow) -> Row<'_> {
     Row::new([
         Cell::from(status_label(row.installed)).style(status_cell_style(row.installed)),
-        Cell::from(row.catalog.source.clone()).style(source_style(&row.catalog.source)),
-        Cell::from(row.catalog.id.clone()).style(
+        Cell::from(row.catalog.source.as_str()).style(source_style(&row.catalog.source)),
+        Cell::from(row.catalog.id.as_str()).style(
             TuiStyle::default()
                 .fg(Color::White)
                 .add_modifier(Modifier::BOLD),
         ),
-        Cell::from(row.catalog.title.clone().unwrap_or_else(|| "-".to_string()))
+        Cell::from(row.catalog.title.as_deref().unwrap_or("-"))
             .style(TuiStyle::default().fg(Color::Gray)),
     ])
 }

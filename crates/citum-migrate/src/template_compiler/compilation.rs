@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 use super::{
     BranchContext, ComponentOccurrence, CslnNode, IndexMap, TemplateCompiler, TemplateComponent,
     TemplateGroup,
@@ -228,6 +233,7 @@ impl TemplateCompiler {
     ///
     /// Type-specific behavior is handled entirely by `type-variants` at the spec
     /// level (via `compile_for_type`), not per-component overrides.
+    #[allow(clippy::cognitive_complexity, reason = "complex merge logic")]
     pub(super) fn merge_occurrences(
         &self,
         occurrences: Vec<ComponentOccurrence>,
@@ -292,7 +298,7 @@ impl TemplateCompiler {
         }
 
         if super::migrate_debug_enabled() {
-            eprintln!("=== Component source orders before sorting ===");
+            tracing::debug!("=== Component source orders before sorting ===");
             for (comp, order) in &result {
                 let comp_type = match comp {
                     TemplateComponent::Contributor(c) => {
@@ -305,7 +311,7 @@ impl TemplateCompiler {
                     TemplateComponent::Group(_) => "Group".to_string(),
                     _ => "Other".to_string(),
                 };
-                eprintln!("  {comp_type} -> order: {order:?}");
+                tracing::debug!("  {comp_type} -> order: {order:?}");
             }
         }
 
@@ -313,7 +319,7 @@ impl TemplateCompiler {
         result.sort_by_key(|(_, order)| order.unwrap_or(usize::MAX));
 
         if super::migrate_debug_enabled() {
-            eprintln!("=== After sorting ===");
+            tracing::debug!("=== After sorting ===");
             for (comp, order) in &result {
                 let comp_type = match comp {
                     TemplateComponent::Contributor(c) => {
@@ -323,7 +329,7 @@ impl TemplateCompiler {
                     TemplateComponent::Title(t) => format!("Title({:?})", t.title),
                     _ => "...".to_string(),
                 };
-                eprintln!("  {comp_type} -> order: {order:?}");
+                tracing::debug!("  {comp_type} -> order: {order:?}");
             }
         }
 

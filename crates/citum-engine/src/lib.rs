@@ -11,7 +11,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //!
 //! The processor is designed to be pluggable with different renderers and supports
 //! advanced features like disambiguation, sorting, and localization.
-//!
+
+#![deny(unsafe_code)]
+
 //! # Example
 //!
 //! ```rust

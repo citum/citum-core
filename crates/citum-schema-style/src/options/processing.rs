@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 //! Processing mode and citation/bibliography rendering options.
 //!
 //! This module defines the processing modes (author-date, numeric, note, label, custom) that

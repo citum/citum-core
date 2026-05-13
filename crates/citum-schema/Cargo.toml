@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 description = "Citum citation and bibliography data schema types"
+repository.workspace = true
 
 [dependencies]
 citum_schema_data = { package = "citum-schema-data", path = "../citum-schema-data", default-features = false }
@@ -17,6 +18,7 @@ schema = ["citum_schema_data/schema", "citum_schema_style/schema"]
 bindings = ["citum_schema_data/bindings", "citum_schema_style/bindings"]
 
 [dev-dependencies]
+tracing.workspace = true
 serde_json = "1.0"
 serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
 criterion = { version = "0.8", features = ["html_reports"] }

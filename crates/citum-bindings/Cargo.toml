@@ -6,6 +6,7 @@ authors = ["Bruce D'Arcus <bdarcus@gmail.com>"]
 license.workspace = true
 description = "Citum cross-language bindings (WASM, cdylib)"
 publish = false
+repository.workspace = true
 
 [package.metadata.wasm-pack.profile.release]
 wasm-opt = ["-Oz", "--enable-bulk-memory", "--enable-simd", "--strip-debug", "--strip-producers"]
@@ -15,6 +16,7 @@ name = "citum_bindings"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
+tracing.workspace = true
 citum-engine = { path = "../citum-engine", default-features = false }
 citum-schema = { package = "citum-schema", path = "../citum-schema", default-features = false }
 csl_legacy = { package = "csl-legacy", path = "../csl-legacy", optional = true }

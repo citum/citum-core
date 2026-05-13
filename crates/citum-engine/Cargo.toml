@@ -5,12 +5,14 @@ edition.workspace = true
 authors = ["Bruce D'Arcus <bdarcus@gmail.com>"]
 license.workspace = true
 description = "Citum citation and bibliography processor"
+repository.workspace = true
 
 [lib]
 name = "citum_engine"
 crate-type = ["rlib"]
 
 [dependencies]
+tracing.workspace = true
 citum_schema = { package = "citum-schema", path = "../citum-schema", features = ["legacy-convert"] }
 citum_schema_data = { package = "citum-schema-data", path = "../citum-schema-data" }
 csl_legacy = { package = "csl-legacy", path = "../csl-legacy" }

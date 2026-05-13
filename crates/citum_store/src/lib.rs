@@ -1,9 +1,15 @@
-#![allow(missing_docs, reason = "lib/crate")]
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
 
 //! Platform-aware store for user-installed Citum styles and locales.
 //!
 //! Provides a `StoreResolver` that searches user data directories for custom styles
 //! and locales, with fallback to embedded builtins. Supports YAML, JSON, and CBOR formats.
+
+#![forbid(unsafe_code)]
+#![allow(missing_docs, reason = "lib/crate")]
 
 #[cfg(feature = "http")]
 pub mod chain;

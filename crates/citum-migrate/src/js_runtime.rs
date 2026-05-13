@@ -1,3 +1,8 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
 use deno_core::{JsRuntime, RuntimeOptions, serde_v8, v8};
 use serde::Serialize;
 use std::fs;
@@ -178,11 +183,13 @@ mod tests {
             .join("apa.csl")
             .exists()
         {
-            eprintln!("skipping embedded/node parity test because styles-legacy is unavailable");
+            tracing::debug!(
+                "skipping embedded/node parity test because styles-legacy is unavailable"
+            );
             return;
         }
         if Command::new("node").arg("--version").output().is_err() {
-            eprintln!("skipping embedded/node parity test because node is unavailable");
+            tracing::debug!("skipping embedded/node parity test because node is unavailable");
             return;
         }
 
