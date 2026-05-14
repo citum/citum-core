@@ -805,6 +805,7 @@ dependencies = [
  "citum-schema",
  "citum_store",
  "clap",
+ "schemars",
  "serde",
  "serde_json",
  "serde_yaml_ng",

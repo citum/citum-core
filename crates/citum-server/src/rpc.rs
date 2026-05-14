@@ -15,6 +15,7 @@ use std::io::{self, BufRead, Write};
 
 /// JSON-RPC request envelope.
 #[derive(Debug, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct RpcRequest {
     /// The request identifier echoed back in success and error responses.
     pub id: Value,
@@ -24,32 +25,76 @@ pub struct RpcRequest {
     pub params: Value,
 }
 
+/// Output format for rendered citations and bibliographies.
 #[derive(Debug, Clone, Copy, Default, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
-enum OutputFormat {
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub enum OutputFormat {
+    /// Plain text output.
     #[default]
     Plain,
+    /// HTML output.
     Html,
+    /// Djot markup output.
     Djot,
+    /// LaTeX output.
     Latex,
+    /// Typst output.
     Typst,
 }
 
-impl OutputFormat {
-    fn parse(params: &Value) -> Result<Self, ServerError> {
-        match params.get("output_format") {
-            Some(value) => serde_json::from_value(value.clone())
-                .map_err(|_| ServerError::UnsupportedOutputFormat(value.to_string().into())),
-            None => Ok(Self::default()),
-        }
-    }
+/// Parameters for the `render_citation` method.
+#[derive(Debug, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct RenderCitationParams {
+    /// Path to the Citum YAML style file.
+    pub style_path: String,
+    /// Bibliography (references) as a map of reference objects.
+    pub refs: serde_json::Value,
+    /// Citation object specifying which references to cite.
+    pub citation: serde_json::Value,
+    /// Output format for the rendered citation.
+    pub output_format: Option<OutputFormat>,
+    /// Debug: embed AST node indices in output.
+    pub inject_ast_indices: Option<bool>,
 }
 
-fn parse_inject_ast_indices(params: &Value) -> bool {
-    params
-        .get("inject_ast_indices")
-        .and_then(Value::as_bool)
-        .unwrap_or(false)
+/// Parameters for the `render_bibliography` method.
+#[derive(Debug, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct RenderBibliographyParams {
+    /// Path to the Citum YAML style file.
+    pub style_path: String,
+    /// Bibliography (references) as a map of reference objects.
+    pub refs: serde_json::Value,
+    /// Output format for the rendered bibliography.
+    pub output_format: Option<OutputFormat>,
+    /// Debug: embed AST node indices in output.
+    pub inject_ast_indices: Option<bool>,
+}
+
+/// Parameters for the `validate_style` method.
+#[derive(Debug, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct ValidateStyleParams {
+    /// Path to the Citum YAML style file to validate.
+    pub style_path: String,
+}
+
+/// Parameters for the `format_document` method (schema mirror of `FormatDocumentRequest`).
+#[derive(Debug, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct FormatDocumentParams {
+    /// Style identifier, path, URI, or inline YAML.
+    pub style: String,
+    /// Optional BCP 47 locale override.
+    pub locale: Option<String>,
+    /// Output format (plain, html, djot, latex, typst). Defaults to plain.
+    pub output_format: Option<OutputFormat>,
+    /// Bibliography (references) as a map of reference objects.
+    pub refs: serde_json::Value,
+    /// Ordered citations as they appear in the document.
+    pub citations: serde_json::Value,
 }
 
 #[derive(Debug, Serialize)]
@@ -58,6 +103,25 @@ struct BibliographyResult {
     content: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     entries: Option<Vec<String>>,
+}
+
+/// Return `MissingField` if `field` is absent from `params`.
+fn require_field(params: &Value, field: &'static str) -> Result<(), ServerError> {
+    if params.get(field).is_none() {
+        return Err(ServerError::MissingField(field.into()));
+    }
+    Ok(())
+}
+
+/// Validate the optional `output_format` field before full deserialization.
+fn validate_output_format(params: &Value) -> Result<(), ServerError> {
+    if let Some(v) = params.get("output_format") {
+        serde_json::from_value::<OutputFormat>(v.clone()).map_err(|_| {
+            let raw = v.as_str().unwrap_or("unknown").to_string();
+            ServerError::UnsupportedOutputFormat(raw.into())
+        })?;
+    }
+    Ok(())
 }
 
 /// Main RPC dispatcher that processes a single request.
@@ -92,35 +156,29 @@ pub fn dispatch(req: RpcRequest) -> Result<Value, (Option<Value>, String)> {
 
 /// Render a single citation.
 fn render_citation(params: &Value, id: Value) -> Result<Value, ServerError> {
-    let style_path = params
-        .get("style_path")
-        .and_then(|v| v.as_str())
-        .ok_or_else(|| ServerError::MissingField("style_path".into()))?;
-
-    let refs = params
-        .get("refs")
-        .ok_or_else(|| ServerError::MissingField("refs".into()))?;
-
-    let citation_obj = params
-        .get("citation")
-        .ok_or_else(|| ServerError::MissingField("citation".into()))?;
-    let output_format = OutputFormat::parse(params)?;
-    let inject_ast_indices = parse_inject_ast_indices(params);
+    require_field(params, "style_path")?;
+    require_field(params, "refs")?;
+    require_field(params, "citation")?;
+    validate_output_format(params)?;
+    let params: RenderCitationParams = serde_json::from_value(params.clone())
+        .map_err(|e| ServerError::CitationError(e.to_string()))?;
 
     // Load the style.
-    let style = load_style(style_path)?;
+    let style = load_style(&params.style_path)?;
 
     // Deserialize references and citation from JSON.
-    let bibliography: Bibliography = serde_json::from_value(refs.clone())
+    let bibliography: Bibliography = serde_json::from_value(params.refs.clone())
         .map_err(|e| ServerError::BibliographyError(e.to_string()))?;
 
-    let citation: Citation = serde_json::from_value(citation_obj.clone())
+    let citation: Citation = serde_json::from_value(params.citation.clone())
         .map_err(|e| ServerError::CitationError(e.to_string()))?;
 
     // Create processor and render.
     let mut processor = Processor::new(style, bibliography);
+    let inject_ast_indices = params.inject_ast_indices.unwrap_or(false);
     processor.set_inject_ast_indices(inject_ast_indices);
 
+    let output_format = params.output_format.unwrap_or_default();
     let result = render_citation_with_format(&processor, &citation, output_format)
         .map_err(|e| ServerError::CitationError(e.to_string()))?;
 
@@ -132,28 +190,25 @@ fn render_citation(params: &Value, id: Value) -> Result<Value, ServerError> {
 
 /// Render a bibliography.
 fn render_bibliography(params: &Value, id: Value) -> Result<Value, ServerError> {
-    let style_path = params
-        .get("style_path")
-        .and_then(|v| v.as_str())
-        .ok_or_else(|| ServerError::MissingField("style_path".into()))?;
-
-    let refs = params
-        .get("refs")
-        .ok_or_else(|| ServerError::MissingField("refs".into()))?;
-    let output_format = OutputFormat::parse(params)?;
-    let inject_ast_indices = parse_inject_ast_indices(params);
+    require_field(params, "style_path")?;
+    require_field(params, "refs")?;
+    validate_output_format(params)?;
+    let params: RenderBibliographyParams = serde_json::from_value(params.clone())
+        .map_err(|e| ServerError::CitationError(e.to_string()))?;
 
     // Load the style.
-    let style = load_style(style_path)?;
+    let style = load_style(&params.style_path)?;
 
     // Deserialize bibliography from JSON.
-    let bibliography: Bibliography = serde_json::from_value(refs.clone())
+    let bibliography: Bibliography = serde_json::from_value(params.refs.clone())
         .map_err(|e| ServerError::BibliographyError(e.to_string()))?;
 
     // Create processor and render bibliography.
     let mut processor = Processor::new(style, bibliography);
+    let inject_ast_indices = params.inject_ast_indices.unwrap_or(false);
     processor.set_inject_ast_indices(inject_ast_indices);
 
+    let output_format = params.output_format.unwrap_or_default();
     let content = render_bibliography_with_format(&processor, output_format)?;
     let entries = matches!(output_format, OutputFormat::Plain).then(|| {
         content
@@ -203,12 +258,11 @@ fn render_bibliography_with_format(
 
 /// Validate a style YAML file.
 fn validate_style(params: &Value, id: Value) -> Result<Value, ServerError> {
-    let style_path = params
-        .get("style_path")
-        .and_then(|v| v.as_str())
-        .ok_or_else(|| ServerError::MissingField("style_path".into()))?;
+    require_field(params, "style_path")?;
+    let params: ValidateStyleParams = serde_json::from_value(params.clone())
+        .map_err(|e| ServerError::CitationError(e.to_string()))?;
 
-    match load_style(style_path) {
+    match load_style(&params.style_path) {
         Ok(_) => Ok(json!({
             "id": id,
             "result": {

@@ -5,8 +5,11 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use crate::rpc::{RpcRequest, dispatch};
 use axum::{
-    Json, Router, extract::DefaultBodyLimit, http::StatusCode, response::IntoResponse,
-    routing::post,
+    Json, Router,
+    extract::DefaultBodyLimit,
+    http::{StatusCode, header},
+    response::IntoResponse,
+    routing::{get, post},
 };
 use serde_json::json;
 use std::net::SocketAddr;
@@ -29,11 +32,78 @@ async fn rpc_handler(Json(payload): Json<RpcRequest>) -> impl IntoResponse {
     }
 }
 
+/// GET /rpc — returns 405 with a JSON hint about POST usage.
+///
+/// Includes `Allow: POST` as required by RFC 9110 §15.5.6.
+async fn rpc_get_hint() -> impl IntoResponse {
+    (
+        StatusCode::METHOD_NOT_ALLOWED,
+        [(header::ALLOW, "POST")],
+        Json(json!({
+            "error": "POST required",
+            "hint": "Send a JSON-RPC envelope via POST. See GET /rpc/methods for available methods."
+        })),
+    )
+}
+
+/// GET /rpc/methods — returns a static descriptor list of all supported methods.
+async fn rpc_methods() -> impl IntoResponse {
+    Json(json!([
+        {
+            "method": "render_citation",
+            "description": "Render a single citation.",
+            "required": ["style_path", "refs", "citation"],
+            "optional": ["output_format", "inject_ast_indices"]
+        },
+        {
+            "method": "render_bibliography",
+            "description": "Render a complete bibliography.",
+            "required": ["style_path", "refs"],
+            "optional": ["output_format", "inject_ast_indices"]
+        },
+        {
+            "method": "validate_style",
+            "description": "Validate a Citum YAML style file.",
+            "required": ["style_path"],
+            "optional": []
+        },
+        {
+            "method": "format_document",
+            "description": "Format all citations and bibliography in a document.",
+            "required": ["style", "refs", "citations"],
+            "optional": ["output_format"]
+        }
+    ]))
+}
+
+#[cfg(feature = "schema")]
+async fn rpc_schema() -> impl IntoResponse {
+    use crate::rpc::{
+        FormatDocumentParams, RenderBibliographyParams, RenderCitationParams, ValidateStyleParams,
+    };
+    use schemars::schema_for;
+
+    let schema = serde_json::json!({
+        "render_citation": schema_for!(RenderCitationParams),
+        "render_bibliography": schema_for!(RenderBibliographyParams),
+        "validate_style": schema_for!(ValidateStyleParams),
+        "format_document": schema_for!(FormatDocumentParams),
+    });
+    Json(schema)
+}
+
 /// Build the HTTP router for JSON-RPC requests.
 pub fn app() -> Router {
-    Router::new()
+    let router = Router::new()
         .route("/rpc", post(rpc_handler))
-        .layer(DefaultBodyLimit::max(DEFAULT_HTTP_BODY_LIMIT_BYTES))
+        .route("/rpc", get(rpc_get_hint))
+        .route("/rpc/methods", get(rpc_methods))
+        .layer(DefaultBodyLimit::max(DEFAULT_HTTP_BODY_LIMIT_BYTES));
+
+    #[cfg(feature = "schema")]
+    let router = router.route("/rpc/schema", get(rpc_schema));
+
+    router
 }
 
 /// Start the HTTP server on the given port.
@@ -217,5 +287,82 @@ mod tests {
         let response = app().oneshot(request).await.expect("request should run");
 
         assert_eq!(response.status(), StatusCode::PAYLOAD_TOO_LARGE);
+    }
+
+    #[tokio::test(flavor = "current_thread")]
+    async fn get_rpc_returns_405_with_hint_and_allow_header() {
+        let request = Request::builder()
+            .method("GET")
+            .uri("/rpc")
+            .body(Body::empty())
+            .expect("request should build");
+
+        let response = app().oneshot(request).await.expect("request should run");
+        assert_eq!(response.status(), StatusCode::METHOD_NOT_ALLOWED);
+        assert_eq!(
+            response
+                .headers()
+                .get("allow")
+                .and_then(|v| v.to_str().ok()),
+            Some("POST"),
+        );
+
+        let body = response_body_json(response).await;
+        assert!(body["hint"].as_str().unwrap_or("").contains("POST"));
+    }
+
+    #[cfg(feature = "schema")]
+    #[tokio::test(flavor = "current_thread")]
+    async fn get_rpc_schema_returns_all_four_method_schemas() {
+        let request = Request::builder()
+            .method("GET")
+            .uri("/rpc/schema")
+            .body(Body::empty())
+            .expect("request should build");
+
+        let response = app().oneshot(request).await.expect("request should run");
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let body = response_body_json(response).await;
+        assert!(
+            body["render_citation"].is_object(),
+            "render_citation schema missing"
+        );
+        assert!(
+            body["render_bibliography"].is_object(),
+            "render_bibliography schema missing"
+        );
+        assert!(
+            body["validate_style"].is_object(),
+            "validate_style schema missing"
+        );
+        assert!(
+            body["format_document"].is_object(),
+            "format_document schema missing"
+        );
+    }
+
+    #[tokio::test(flavor = "current_thread")]
+    async fn get_rpc_methods_returns_all_four_methods() {
+        let request = Request::builder()
+            .method("GET")
+            .uri("/rpc/methods")
+            .body(Body::empty())
+            .expect("request should build");
+
+        let response = app().oneshot(request).await.expect("request should run");
+        assert_eq!(response.status(), StatusCode::OK);
+
+        let body = response_body_json(response).await;
+        let methods: Vec<&str> = body
+            .as_array()
+            .expect("should be array")
+            .iter()
+            .filter_map(|m| m["method"].as_str())
+            .collect();
+        assert!(methods.contains(&"render_citation"));
+        assert!(methods.contains(&"render_bibliography"));
+        assert!(methods.contains(&"validate_style"));
+        assert!(methods.contains(&"format_document"));
     }
 }
