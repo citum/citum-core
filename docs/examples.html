@@ -1,23 +1,23 @@
 <!-- PAGE_ID: examples -->
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-        <meta name="description" content="Feature examples for Citum: document processing, advanced citations, bibliography grouping, multilingual support, and more." />
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+        <meta name="description" content="Feature examples for Citum: document processing, advanced citations, bibliography grouping, multilingual support, and more.">
     <title>Examples | Citum</title>
 
         <link
         href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap"
-        rel="stylesheet" />
+        rel="stylesheet">
 
     <link rel="stylesheet" href="assets/citum-theme.css">
 </head>
 
 <body>
     <!-- Navigation -->
-        <nav class="site-nav">
+        <nav class="site-nav" aria-label="Site">
     <!-- LAYOUT_NAV_START -->
         <div class="site-nav-inner">
             <div class="site-brand-wrap">
@@ -26,7 +26,7 @@
                     <span class="site-brand-name">Citum</span>
                 </a>
             </div>
-            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
+            <div class="site-nav-links">
                 <a class="site-nav-link" href="https://citum.org">&#8592; citum.org</a>
                 <a class="site-nav-link " href="index.html">Overview</a>
                 <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
@@ -40,7 +40,7 @@
                     GitHub
                 </a>
             </div>
-            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation menu">
                 <span class="mobile-nav-icon" aria-hidden="true">&#9776;</span>
             </button>
         </div>
@@ -55,23 +55,24 @@
         </div>        <!-- LAYOUT_NAV_END -->
     </nav>
 
-    <!-- Header -->
-    <header class="doc-section-header">
-        <span class="citum-kicker">Examples</span>
-        <h1>Feature Examples</h1>
-        <p>Verified examples drawn from current styles, schemas, and checked-in sample data.</p>
-        <p style="font-size: 0.9rem; color: var(--citum-muted);">
-            For current oracle fidelity and SQI status, see
-            <a href="compat.html">compatibility report</a> and
-            <a href="TIER_STATUS.md">tier status</a>.
-        </p>
-    </header>
+    <main class="doc-shell">
+        <!-- Header -->
+        <header class="doc-section-header">
+            <span class="citum-kicker">Examples</span>
+            <h1>Feature Examples</h1>
+            <p>Verified examples drawn from current styles, schemas, and checked-in sample data.</p>
+            <p class="example-intro-note">
+                For current oracle fidelity and SQI status, see
+                <a href="compat.html">compatibility report</a> and
+                <a href="TIER_STATUS.md">tier status</a>.
+            </p>
+        </header>
 
-    <!-- Main Content Layout -->
-    <div class="doc-shell doc-sidebar-layout">
+        <!-- Main Content Layout -->
+        <div class="doc-sidebar-layout">
         <!-- Sticky Sidebar Navigation -->
         <aside class="doc-sidebar">
-            <nav>
+            <nav aria-label="Examples sections">
                 <div class="doc-sidebar-title">Sections</div>
                                 <div>
                     <a class="doc-sidebar-link" href="#document-processing">Document Processing
@@ -80,7 +81,7 @@
                     </a>
                     <a class="doc-sidebar-link" href="#bibliography-grouping">Bibliography Grouping
                     </a>
-                    <a class="doc-sidebar-link" href="#archival-eprints">Archival & Eprints
+                    <a class="doc-sidebar-link" href="#archival-eprints">Archival &amp; Eprints
                     </a>
                     <a class="doc-sidebar-link" href="#compound-numeric-sets">Compound Numeric Sets
                     </a>
@@ -90,7 +91,7 @@
                     </a>
                     <a class="doc-sidebar-link" href="#options-presets">Options &amp; Inheritance
                     </a>
-                    <a class="doc-sidebar-link" href="#titles-links">Titles & Links
+                    <a class="doc-sidebar-link" href="#titles-links">Titles &amp; Links
                     </a>
                     <a class="doc-sidebar-link" href="#overrides">Overrides
                     </a>
@@ -102,9 +103,13 @@
                     </a>
                     <a class="doc-sidebar-link" href="#binary-performance">Binary Perf
                     </a>
+                    <a class="doc-sidebar-link" href="#schema-generation">Schema Generation
+                    </a>
                     <a class="doc-sidebar-link" href="#web-interactivity">Web Interactivity
                     </a>
                     <a class="doc-sidebar-link" href="#annotated-bibliography">Annotated Bibliography
+                    </a>
+                    <a class="doc-sidebar-link" href="#abbreviation-map">Abbreviation Maps
                     </a>
                     <a class="doc-sidebar-link" href="#distributed-registries">Distributed Registries
                     </a>
@@ -120,7 +125,6 @@
                 <h2>
                         Document Processing
                     </h2>
-                </div>
                 <p>
                     Citum processes full documents from checked-in Djot inputs, and also accepts
                     Markdown documents that use Pandoc-style citation markers in prose. The current
@@ -151,9 +155,9 @@ Suppress author with locator: [-@kuhn1962, p. 10].</pre>
                             Rendered Output (Plain Text)
                         </div>
                         <div>
-                            Multi-cite with locator: (Kuhn; Watson and Crick, ch. 2).<br />
-                            Structured locator: (Kuhn, sec. 5).<br />
-                            First narrative mention: John Smith (10) surveys the broader literature.<br />
+                            Multi-cite with locator: (Kuhn; Watson and Crick, ch. 2).<br>
+                            Structured locator: (Kuhn, sec. 5).<br>
+                            First narrative mention: John Smith (10) surveys the broader literature.<br>
                             Suppress author with locator: (10).
                         </div>
                     </div>
@@ -167,7 +171,6 @@ Suppress author with locator: [-@kuhn1962, p. 10].</pre>
                 <h2>
                         Advanced Citations
                     </h2>
-                </div>
                 <p>
                     Current styles use explicit integral and non-integral branches, per-mode contributor
                     options, and document-scoped integral-name memory where the style opts in.
@@ -244,40 +247,33 @@ New chapter reset: <span class="token-string">[+@smith2010, p. 14]</span></pre>
             </div>
 
             <!-- Visual Output -->
-            <div>
-                <div>
+            <div class="example-section">
+                <div class="example-section-heading">
                     <h3>
                         Rendered Examples (Current Djot Input)
                     </h3>
                 </div>
-                <div class="example-card-body">
-                    <div>
+                <div class="example-grid">
                         <div class="example-io-panel">
                             <div class="example-io-label">Multi-Cite with Locator</div>
-                            <div>Source: [@kuhn1962; @watson1953, ch. 2]</div>
-                            <div>(Kuhn; Watson and Crick, ch. 2)</div>
+                            <div class="example-rendered">(Kuhn; Watson and Crick, ch. 2)</div>
                         </div>
                         <div class="example-io-panel">
                             <div class="example-io-label">Structured Locator</div>
-                            <div>Source: [@kuhn1962, section: 5]</div>
-                            <div>(Kuhn, sec. 5)</div>
+                            <div class="example-rendered">(Kuhn, sec. 5)</div>
                         </div>
                         <div class="example-io-panel">
                             <div class="example-io-label">Narrative Name Memory</div>
-                            <div>Source: [+@smith2010, p. 10] ... later [+@smith2010, p. 12] ... then in Chapter 2 [+@smith2010, p. 14]</div>
-                            <div>John Smith (10) ... later Smith (12) ... then John Smith (14) again</div>
+                            <div class="example-rendered">John Smith (10) ... later Smith (12) ... then John Smith (14) again</div>
                         </div>
                         <div class="example-io-panel">
                             <div class="example-io-label">Integral Citation</div>
-                            <div>Source: [+@kuhn1962, p. 10]</div>
-                            <div>Thomas S. Kuhn (10)</div>
+                            <div class="example-rendered">Thomas S. Kuhn (10)</div>
                         </div>
                         <div class="example-io-panel">
                             <div class="example-io-label">Visibility Modifier</div>
-                            <div>Source: [-@kuhn1962, p. 10]</div>
-                            <div>(10)</div>
+                            <div class="example-rendered">(10)</div>
                         </div>
-                    </div>
                 </div>
             </div>
         </article>
@@ -288,7 +284,6 @@ New chapter reset: <span class="token-string">[+@smith2010, p. 14]</span></pre>
                 <h2>
                         Bibliography Grouping
                     </h2>
-                </div>
                 <p>
                     Divide bibliographies into labeled sections with distinct sorting rules. Essential for legal
                     hierarchies (Bluebook), multilingual bibliographies, and primary/secondary source divisions.
@@ -315,7 +310,7 @@ New chapter reset: <span class="token-string">[+@smith2010, p. 14]</span></pre>
             <span class="token-value">order</span>: [<span class="token-string">legal-case, statute, treaty</span>]
           - <span class="token-value">key</span>: <span class="token-string">issued</span></pre>
                         </div>
-                        <p class="text-xs">
+                        <p class="example-small">
                             Explicit type ordering ensures legal-case appears before statute, regardless of alphabetical
                             content.
                         </p>
@@ -328,7 +323,7 @@ New chapter reset: <span class="token-string">[+@smith2010, p. 14]</span></pre>
                         </div>
                         <div class="code-dark">
                             <pre
-                                class="font-mono text-xs"><span class="token-key">bibliography</span>:
+                                class="example-mono example-small"><span class="token-key">bibliography</span>:
   <span class="token-value">groups</span>:
     - <span class="token-value">id</span>: <span class="token-string">vietnamese</span>
       <span class="token-value">heading</span>:
@@ -361,7 +356,7 @@ New chapter reset: <span class="token-string">[+@smith2010, p. 14]</span></pre>
             <span class="token-value">ascending</span>: <span class="token-string">false</span>
       <span class="token-value">disambiguate</span>: <span class="token-string">locally</span></pre>
                         </div>
-                        <p class="text-xs">
+                        <p class="example-small">
                             Vietnamese names use given-family ordering, Western names use family-given ordering.
                         </p>
                     </div>
@@ -386,7 +381,7 @@ New chapter reset: <span class="token-string">[+@smith2010, p. 14]</span></pre>
       <span class="token-value">selector</span>:
         <span class="token-value">status</span>: <span class="token-string">silent</span></pre>
                         </div>
-                        <p class="text-xs">
+                        <p class="example-small">
                             Isolating disambiguation prevents collisions across bibliography sections, allowing
                             independent suffix assignment in each.
                         </p>
@@ -394,23 +389,82 @@ New chapter reset: <span class="token-string">[+@smith2010, p. 14]</span></pre>
                 </div>
             </div>
 
-            <div class="bg-slate-50 border-t">
-                <div class="flex items-start">
+            <div class="example-section-muted">
+                <div class="example-callout">
                     <div
-                        class="w-8-lg-shrink-0">
+                        class="example-callout-icon">
                         </div>
                     <div>
-                        <strong class="text-slate-900">Key Features:</strong>
+                        <strong class="example-strong">Key Features:</strong>
                         First-match semantics prevent duplication. Selectors support type matching, field matching
                         (language, keywords), citation status (visible/silent), and negation for fallback groups. See <a
                             href="https://github.com/citum/citum-core/blob/main/docs/architecture/design/BIBLIOGRAPHY_GROUPING.md"
-                            class="text-primary">design document</a> for full details.
+                            class="example-link">design document</a> for full details.
                     </div>
                 </div>
             </div>
 
-            <div class="border-t bg-[var(--citum-surface)]">
-                <div class="flex">
+            <!-- Grouping CLI Examples -->
+            <div class="example-section">
+                <div class="example-section-heading">
+                    <h3>
+                        Run Grouped Bibliographies
+                    </h3>
+                </div>
+
+                <!-- English Grouping Example -->
+                <div>
+                    <p class="example-small">
+                        Render a grouped bibliography with primary, archival, and secondary sources in English:
+                    </p>
+                    <div class="code-dark">
+                        <pre><span class="token-string">citum</span> render refs \
+  -b examples/bib-grouping-refs.yaml \
+  -s chicago-author-date</pre>
+                    </div>
+                    <p class="example-small">
+                        Expected output with English headings:
+                    </p>
+                    <div class="example-output-block example-small">
+                        <pre># Primary Sources
+
+Darwin, Charles. 1859. _On the Origin of Species_. John Murray.
+
+Freud, Sigmund. 1900. _Die Traumdeutung_. Franz Deuticke.
+
+# Archival Sources
+
+Darwin, Charles. 1876. “Letter to T.H. Huxley, 14 September 1876.”
+
+# Secondary Sources
+
+Browne, Janet. 2002. _Charles Darwin: The Power of Place_. Alfred A. Knopf.
+
+Gay, Peter. 1988. _Freud: A Life for Our Time_. W.W. Norton.
+
+Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of the American Philosophical Society_. 135, (4): 317–30.</pre>
+                    </div>
+                </div>
+
+                <!-- Multilingual Grouping Example -->
+                <div class="example-io-panel">
+                    <p class="example-small">
+                        Render the multilingual grouping example shipped in the repo:
+                    </p>
+                    <div class="code-dark">
+                        <pre><span class="token-string">citum</span> render refs \
+  -b examples/multilingual-refs.yaml \
+  -s styles/experimental/multilingual-academic.yaml</pre>
+                    </div>
+                    <p class="example-small">
+                        This style groups Vietnamese and non-Vietnamese records separately and applies per-group sort
+                        behavior against the checked-in mixed-language sample corpus.
+                    </p>
+                </div>
+            </div>
+
+            <div class="example-section">
+                <div class="example-row">
                     <h3>
                         Gender-Aware Spanish Locale Terms
                     </h3>
@@ -433,7 +487,7 @@ New chapter reset: <span class="token-string">[+@smith2010, p. 14]</span></pre>
                         <div>
                             Ana Martinez, editora
                         </div>
-                        <div class="text-xs">
+                        <div class="example-small">
                             A feminine contributor entry selects the feminine role label from the Spanish locale.
                         </div>
                     </div>
@@ -444,7 +498,7 @@ New chapter reset: <span class="token-string">[+@smith2010, p. 14]</span></pre>
                         <div>
                             Ana Martinez y Luis Pérez, equipo editorial
                         </div>
-                        <div class="text-xs">
+                        <div class="example-small">
                             Mixed contributor genders prefer the locale's neutral/common form instead of falling back to a masculine-specific label.
                         </div>
                     </div>
@@ -464,65 +518,6 @@ New chapter reset: <span class="token-string">[+@smith2010, p. 14]</span></pre>
                     </div>
                 </div>
             </div>
-
-            <!-- Try It Yourself -->
-            <div class="bg-[var(--citum-surface)] border-t">
-                <div class="flex">
-                    <h3>
-                        Try It Yourself
-                    </h3>
-                </div>
-
-                <!-- English Grouping Example -->
-                <div>
-                    <p class="text-xs">
-                        Render a grouped bibliography with primary, archival, and secondary sources in English:
-                    </p>
-                    <div class="code-dark">
-                        <pre><span class="token-string">citum</span> render refs \
-  -b examples/bib-grouping-refs.yaml \
-  -s chicago-author-date</pre>
-                    </div>
-                    <p class="text-xs">
-                        Expected output with English headings:
-                    </p>
-                    <div class="bg-slate-50 border text-xs">
-                        <pre># Primary Sources
-
-Darwin, Charles. 1859. _On the Origin of Species_. John Murray.
-
-Freud, Sigmund. 1900. _Die Traumdeutung_. Franz Deuticke.
-
-# Archival Sources
-
-Darwin, Charles. 1876. “Letter to T.H. Huxley, 14 September 1876.”
-
-# Secondary Sources
-
-Browne, Janet. 2002. _Charles Darwin: The Power of Place_. Alfred A. Knopf.
-
-Gay, Peter. 1988. _Freud: A Life for Our Time_. W.W. Norton.
-
-Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of the American Philosophical Society_. 135, (4): 317–30.</pre>
-                    </div>
-                </div>
-
-                <!-- German Grouping Example -->
-                <div class="example-io-panel">
-                    <p class="text-xs">
-                        Render the multilingual grouping example shipped in the repo:
-                    </p>
-                    <div class="code-dark">
-                        <pre><span class="token-string">citum</span> render refs \
-  -b examples/multilingual-refs.yaml \
-  -s styles/experimental/multilingual-academic.yaml</pre>
-                    </div>
-                    <p class="text-xs">
-                        This style groups Vietnamese and non-Vietnamese records separately and applies per-group sort
-                        behavior against the checked-in mixed-language sample corpus.
-                    </p>
-                </div>
-            </div>
         </article>
 
         <!-- Archival & Eprints -->
@@ -531,13 +526,12 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 <h2>
                         Archival &amp; Eprints
                     </h2>
-                </div>
-                <p class="text-slate-600">
+                <p class="example-muted">
                     Citum now accepts structured <code>archive-info</code>
                     data for manuscripts and related records, plus a structured
                     <code>eprint</code> object for preprint-style identifiers.
                 </p>
-                <p class="text-slate-600">
+                <p class="example-muted">
                     Legacy flat <code>archive</code> and
                     <code>archive_location</code> fields still load for
                     compatibility, but new inputs should use <code>archive-info</code>.
@@ -594,7 +588,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 </div>
             </div>
 
-            <div class="p-6 bg-[var(--citum-surface)] border-b">
+            <div class="example-card-body example-card-body-separated">
                 <div>
                     <div class="example-io-panel">
                         <div class="example-io-label">
@@ -603,7 +597,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                         <div>
                             The Community Rule (1QS). Manuscript scroll, 100 BC, Israel Antiquities Authority, Shrine of the Book, Jerusalem
                         </div>
-                        <div class="text-xs">
+                        <div class="example-small">
                             Verified with the checked-in
                             <code>archive-eprint-demo-style</code>
                             so the examples page reflects current branch behavior. The example uses valid EDTF
@@ -615,10 +609,10 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                         <div class="example-io-label">
                             Archive + Eprint Demo Output
                         </div>
-                        <div class="font-mono text-sm break-all">
+                        <div class="example-mono example-text-sm example-break">
                             Archive-Aware Preprint. February 2026, Houghton Library, Ada Lovelace Papers, MS Am 1280, Series Correspondence, Box 12, Folder 4, Item 7, Cambridge, MA, https://example.com/archive, arxiv:2602.01234 [cs.DL]
                         </div>
-                        <div class="text-xs">
+                        <div class="example-small">
                             Verified with the checked-in demo style that surfaces
                             <code>archive-*</code> and
                             <code>eprint-*</code> variables directly from
@@ -629,14 +623,14 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 </div>
             </div>
 
-            <div class="bg-[var(--citum-surface)]">
-                <div class="flex">
+            <div class="example-section">
+                <div class="example-row">
                     <h3>
                         Try It Yourself
                     </h3>
                 </div>
                 <div>
-                    <p class="text-xs">
+                    <p class="example-small">
                         Render the archival manuscript with the current Chicago notes style:
                     </p>
                     <div class="code-dark">
@@ -647,7 +641,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                     </div>
                 </div>
                 <div class="example-io-panel">
-                    <p class="text-xs">
+                    <p class="example-small">
                         Render the structured <code>archive-info</code> +
                         <code>eprint</code> example with the demo style:
                     </p>
@@ -667,7 +661,6 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 <h2>
                         Compound Numeric Sets
                     </h2>
-                </div>
                 <p>
                     Chemistry-style compound numeric output is modeled via top-level bibliography
                     <code>sets</code>, not per-reference fields.
@@ -741,7 +734,6 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 <h2>
                         Multilingual Support
                     </h2>
-                </div>
                 <p>
                     Current bibliography data can carry original text, transliterations, and translations.
                     Styles then declare how titles and contributor names should render for a given workflow,
@@ -785,16 +777,16 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                         Automatic Script &amp; Language Partitioning
                     </h3>
                 </div>
-                <div class="p-8">
+                <div class="example-card-body">
                     <p>
                         Bibliographies can be automatically partitioned by script or language. This ensures that
                         references in different scripts (e.g., Latin and Arabic) are grouped together, and that
                         subsequent-author substitutions correctly reset for each new partition section.
                     </p>
-                    <div class="grid">
+                    <div class="example-grid">
                         <!-- Config -->
-                        <div class="space-y-4">
-                            <div class="text-[10px]">Style Configuration</div>
+                        <div class="example-stack">
+                            <div class="example-overline">Style Configuration</div>
                             <div class="code-dark">
                                 <pre><span class="token-key">bibliography</span>:
   <span class="token-value">options</span>:
@@ -809,18 +801,18 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                             </div>
                         </div>
                         <!-- Mock Output -->
-                        <div class="space-y-4">
-                            <div class="text-[10px]">Partitioned Output</div>
-                            <div class="bg-white border text-xs h-[220px]">
-                                <div class="font-bold"># Western Sources</div>
-                                <div class="mb-2">Smith, John. 2024. _First Book_.</div>
-                                <div class="mb-4">———. 2025. _Second Book_.</div>
+                        <div class="example-stack">
+                            <div class="example-overline">Partitioned Output</div>
+                            <div class="example-output-block example-small example-scroll-panel">
+                                <div class="example-strong"># Western Sources</div>
+                                <div class="example-gap-bottom">Smith, John. 2024. _First Book_.</div>
+                                <div class="example-gap-bottom-lg">———. 2025. _Second Book_.</div>
 
-                                <div class="font-bold"># Arabic Sources</div>
-                                <div class="mb-2">محمود, علي. 2023. _الكتاب الأول_.</div>
-                                <div class="mb-2">———. 2024. _الكتاب الثاني_.</div>
+                                <div class="example-strong"># Arabic Sources</div>
+                                <div class="example-gap-bottom">محمود, علي. 2023. _الكتاب الأول_.</div>
+                                <div class="example-gap-bottom">———. 2024. _الكتاب الثاني_.</div>
                             </div>
-                            <p class="text-[11px] italic">
+                            <p class="example-caption">
                                 Subsequent author dashes (———) are automatically reset when entering a new script partition.
                             </p>
                         </div>
@@ -877,7 +869,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                             <div>
                                 (紫式部)
                             </div>
-                            <div class="text-xs">
+                            <div class="example-small">
                                 Current MLA rendering for the checked-in multilingual record
                             </div>
                         </div>
@@ -888,7 +880,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                             <div>
                                 紫式部
                             </div>
-                            <div class="text-xs">
+                            <div class="example-small">
                                 Integral rendering uses the same checked-in data
                             </div>
                         </div>
@@ -899,7 +891,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                             <div>
                                 紫式部. _Genji Monogatari_. 古典文学之友, 1010.
                             </div>
-                            <div class="text-xs">
+                            <div class="example-small">
                                 Verified with <code>citum render refs -b examples/multilingual-refs.yaml -s mla -k genji_tale</code>
                             </div>
                         </div>
@@ -910,7 +902,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                             <div>
                                 Çelik, Zeynep. _Streets: critical perspectives on public space_. University of California Press, 1996.
                             </div>
-                            <div class="text-xs">
+                            <div class="example-small">
                                 Plain English, multilingual, and accented Latin-script records can coexist in the same bibliography input
                             </div>
                         </div>
@@ -919,14 +911,14 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
             </div>
 
             <!-- Try It Yourself -->
-            <div class="bg-[var(--citum-surface)] border-t">
-                <div class="flex">
+            <div class="example-section">
+                <div class="example-row">
                     <h3>
                         Try It Yourself
                     </h3>
                 </div>
                 <div>
-                    <p class="text-xs">
+                    <p class="example-small">
                         Render the checked-in multilingual bibliography with a builtin style:
                     </p>
                     <div class="code-dark">
@@ -934,13 +926,13 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
   -b examples/multilingual-refs.yaml \
   -s mla</pre>
                     </div>
-                    <p class="text-xs">
+                    <p class="example-small">
                         For style-authoring work, compare this data with a style that sets different
                         <code>options.multilingual</code> values.
                     </p>
                 </div>
-                <div class="border border-indigo-500/30-lg">
-                    <p class="text-xs">
+                <div class="example-note-box example-note-box-accent">
+                    <p class="example-small">
                         Render the script-partitioned bibliography example:
                     </p>
                     <div class="code-dark">
@@ -948,13 +940,13 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
   -b examples/multilingual-refs.yaml \
   -s styles/experimental/multilingual-partitioned.yaml</pre>
                     </div>
-                    <p class="text-xs">
+                    <p class="example-small">
                         This style demonstrates <code>sort-partitioning</code>
                         by script, which separates Latin and Non-Latin records into distinct sections with reset subsequent-author substitutions.
                     </p>
                 </div>
                 <div class="example-io-panel">
-                    <p class="text-xs">
+                    <p class="example-small">
                         Render the shipped German Chicago locale-override example:
                     </p>
                     <div class="code-dark">
@@ -962,7 +954,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
   -b tests/fixtures/references-expanded.json \
   -s examples/preset-chicago-de.yaml</pre>
                     </div>
-                    <p class="text-xs">
+                    <p class="example-small">
                         This example keeps Chicago Author-Date as the base style while switching to the shipped
                         <code>de-DE-chicago</code> locale override.
                     </p>
@@ -976,13 +968,12 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 <h2>
                         Advanced Dates
                     </h2>
-                </div>
                 <p>
-                    Citum supports native <strong class="text-slate-900">EDTF (Extended Date/Time Format)</strong>
+                    Citum supports native <strong class="example-strong">EDTF (Extended Date/Time Format)</strong>
                     for handling complex historical ranges, uncertain or approximate dates,
                     and seasons.
                 </p>
-                <p class="text-slate-600">
+                <p class="example-muted">
                     Historical EDTF years use astronomical numbering, so
                     <code>-0099</code> means
                     <code>100 BC</code>.
@@ -990,13 +981,13 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
             </div>
 
             <div class="example-card-body">
-                <div class="grid">
+                <div class="example-grid">
                     <!-- Date Ranges -->
                     <div class="example-io-panel">
                         <div class="example-io-label">Date Intervals (Level 0)</div>
                         <div class="code-dark">
                             <pre
-                                class="font-mono text-xs"><span class="token-key">issued</span>: <span class="token-string">"2023-05/2024-06"</span>  <span class="token-comment"># Closed interval</span>
+                                class="example-mono example-small"><span class="token-key">issued</span>: <span class="token-string">"2023-05/2024-06"</span>  <span class="token-comment"># Closed interval</span>
 <span class="token-key">issued</span>: <span class="token-string">"2023-05/.."</span>        <span class="token-comment"># Open start</span>
 <span class="token-key">issued</span>: <span class="token-string">"../2023-05"</span>        <span class="token-comment"># Open end</span></pre>
                         </div>
@@ -1004,13 +995,13 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
 
                     <!-- Uncertain & Approximate -->
                     <div class="example-io-panel">
-                        <div class="example-io-label">Uncertain & Approximate (Level
+                        <div class="example-io-label">Uncertain &amp; Approximate (Level
                             1)</div>
                         <div class="code-dark">
                             <pre
-                                class="font-mono text-xs"><span class="token-key">issued</span>: <span class="token-string">"2004?"</span>              <span class="token-comment"># Uncertain year (2004?)</span>
+                                class="example-mono example-small"><span class="token-key">issued</span>: <span class="token-string">"2004?"</span>              <span class="token-comment"># Uncertain year (2004?)</span>
 <span class="token-key">issued</span>: <span class="token-string">"2004~"</span>              <span class="token-comment"># Approximate year (ca. 2004)</span>
-<span class="token-key">issued</span>: <span class="token-string">"2004%"</span>              <span class="token-comment"># Uncertain & approximate</span>
+<span class="token-key">issued</span>: <span class="token-string">"2004%"</span>              <span class="token-comment"># Uncertain &amp; approximate</span>
 <span class="token-key">issued</span>: <span class="token-string">"2004-06-11?"</span>        <span class="token-comment"># Uncertain day only</span></pre>
                         </div>
                     </div>
@@ -1020,7 +1011,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                         <div class="example-io-label">Seasons (Level 1)</div>
                         <div class="code-dark">
                             <pre
-                                class="font-mono text-xs"><span class="token-key">issued</span>: <span class="token-string">"2023-21"</span>           <span class="token-comment"># Spring 2023</span>
+                                class="example-mono example-small"><span class="token-key">issued</span>: <span class="token-string">"2023-21"</span>           <span class="token-comment"># Spring 2023</span>
 <span class="token-key">issued</span>: <span class="token-string">"2023-22"</span>           <span class="token-comment"># Summer 2023</span>
 <span class="token-key">issued</span>: <span class="token-string">"2023-23"</span>           <span class="token-comment"># Autumn 2023</span>
 <span class="token-key">issued</span>: <span class="token-string">"2023-24"</span>           <span class="token-comment"># Winter 2023</span></pre>
@@ -1033,20 +1024,20 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                         </div>
                         <div class="code-dark">
                             <pre
-                                class="font-mono text-xs"><span class="token-key">issued</span>: <span class="token-string">"199u"</span>              <span class="token-comment"># Some time in the 1990s</span>
+                                class="example-mono example-small"><span class="token-key">issued</span>: <span class="token-string">"199u"</span>              <span class="token-comment"># Some time in the 1990s</span>
 <span class="token-key">issued</span>: <span class="token-string">"2004-uu-uu"</span>        <span class="token-comment"># Some time in 2004 (month/day unknown)</span></pre>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="bg-slate-50 border-t">
-                <div class="flex items-start">
+            <div class="example-section-muted">
+                <div class="example-callout">
                     <div
-                        class="w-8-lg-shrink-0">
+                        class="example-callout-icon">
                         </div>
                     <div>
-                        <strong class="text-slate-900">Fidelity First:</strong>
+                        <strong class="example-strong">Fidelity First:</strong>
                         Unlike CSL 1.0's structured date objects, Citum uses EDTF strings as the primary exchange format,
                         ensuring that semantic nuances like "approximate" or "unspecified" are preserved and can be
                         localized by the processor according to the style's locale.
@@ -1061,7 +1052,6 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 <h2>
                         Options Presets &amp; Style Inheritance
                     </h2>
-                </div>
                 <p>
                     Common configuration patterns for contributors, dates,
                     and titles can be expressed as a single preset name
@@ -1095,7 +1085,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
 <span class="token-comment">#   substitute:   standard | editor-* | editor-translator-* | editor-title-* | editor-translator-title-*</span>
 <span class="token-comment">#   citation:     extends: numeric-citation</span></pre>
             </div>
-            <div class="border-t">
+            <div class="example-section">
                 <div>
                     <h3>
                         Style Inheritance
@@ -1107,7 +1097,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
 <span class="token-key">extends</span>: <span class="token-string">springer-basic-author-date-core</span></pre>
                 </div>
             </div>
-            <div class="border-t">
+            <div class="example-section">
                 <div>
                     <h3>
                         Scoped Options
@@ -1136,7 +1126,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
 <span class="token-comment"># Supported fields here include: contributors | label-wrap | label-mode | date-position</span></pre>
                 </div>
             </div>
-            <div class="bg-[var(--citum-surface)] border-t">
+            <div class="example-section">
                 <div>
                     <div class="example-io-panel">
                         <div class="example-io-label">
@@ -1164,9 +1154,8 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
         <article id="titles-links" class="example-card">
             <div class="example-card-header">
                 <h2>
-                        Titles & Links
+                        Titles &amp; Links
                     </h2>
-                </div>
                 <p>
                     Citum separates title content from its role (primary,
                     parent-monograph, parent-serial) and uses declarative
@@ -1175,8 +1164,8 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 </p>
             </div>
 
-            <div class="grid border-b">
-                <div class="border-r">
+            <div class="example-grid example-grid-separated">
+                <div class="example-column-separated">
                     <div>
                         <h3>
                             Global Formatting (options.titles)
@@ -1196,7 +1185,7 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 <div>
                     <div>
                         <h3>
-                            Template Usage & Links
+                            Template Usage &amp; Links
                         </h3>
                     </div>
                     <div class="code-dark">
@@ -1219,10 +1208,9 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 <h2>
                         Type Variants
                     </h2>
-                </div>
                 <p>
                     When reference types need a completely different component layout,
-                    declare a <code class="font-mono">type-variants</code>
+                    declare a <code class="example-mono">type-variants</code>
                     map. Each entry replaces the default template for matching types.
                     Use a comma-separated selector to share one template across multiple types.
                 </p>
@@ -1259,7 +1247,6 @@ Mayr, Ernst. 1991. “Darwin’s Impact on Modern Thought.” _Proceedings of th
                 <h2>
                         Pluggable Output Formats
                     </h2>
-                </div>
                 <p>
                     Citum supports multiple output formats with a pluggable
                     architecture. Generate semantic HTML, native LaTeX, flexible Djot for
@@ -1317,7 +1304,7 @@ Smith, J. A. (2023). \textit{The Future of Citations}. Academic Press.</pre>
                     </div>
 
                     <!-- Typst -->
-                    <div class="border border-sky-500/30-lg">
+                    <div class="example-note-box example-note-box-info">
                         <div class="example-io-label">
                             Typst Markup (-f typst)
                         </div>
@@ -1329,13 +1316,13 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                 </div>
             </div>
 
-            <div class="bg-slate-50 border-t">
-                <div class="flex items-start">
+            <div class="example-section-muted">
+                <div class="example-callout">
                     <div
-                        class="w-8-lg-shrink-0">
+                        class="example-callout-icon">
                         </div>
                     <div>
-                        <strong class="text-slate-900">Consistent Rendering:</strong>
+                        <strong class="example-strong">Consistent Rendering:</strong>
                         The pluggable renderer system ensures that complex CSL rules (sorting, disambiguation, name
                         formatting) are applied identically regardless of the output target. LaTeX and Typst support include
                         native escaping for their respective markup systems, and Typst can now be compiled to PDF directly
@@ -1348,14 +1335,10 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
         <!-- Typst PDF Publishing -->
         <article id="typst-pdf-publishing" class="example-card">
             <div class="example-card-header">
-                <div class="flex">
-                    <div class="w-10-lg bg-sky-100 text-sky-700">
-                        </div>
-                    <h2>
-                        Typst PDF Publishing
-                        <span class="text-xs font-normal bg-sky-100 text-sky-700.5-full align-middle">Native Rust path</span>
-                    </h2>
-                </div>
+                <h2>
+                    Typst PDF Publishing
+                    <span class="example-badge example-badge-info">Native Rust path</span>
+                </h2>
                 <p>
                     Citum now supports a native Typst workflow for PDF publishing. The Rust engine renders citations,
                     notes, and bibliography entries to Typst markup, then the CLI can compile that markup to PDF in
@@ -1391,15 +1374,15 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                         What This Gives You
                     </h3>
                 </div>
-                <div class="p-8 bg-[var(--citum-surface)]">
-                    <div class="grid text-sm">
-                        <div class="rounded-lg border">
-                            <h4 class="font-bold">Citum remains the citation formatter</h4>
+                <div class="example-card-body">
+                    <div class="example-grid example-text-sm">
+                        <div class="example-output-block">
+                            <h4 class="example-strong">Citum remains the citation formatter</h4>
                             Citum still handles citation formatting, bibliography grouping, note behavior, and link
                             resolution. Typst is the markup and PDF backend, not the bibliography engine.
                         </div>
-                        <div class="rounded-lg border">
-                            <h4 class="font-bold">Practical PDF interactivity</h4>
+                        <div class="example-output-block">
+                            <h4 class="example-strong">Practical PDF interactivity</h4>
                             Generated PDFs include internal citation-to-bibliography links and external DOI/URL links.
                             Advanced hover-only behaviors and custom metadata popups are not currently part of the Typst path.
                         </div>
@@ -1407,13 +1390,13 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                 </div>
             </div>
 
-            <div class="bg-slate-50 border-t">
-                <div class="flex items-start">
+            <div class="example-section-muted">
+                <div class="example-callout">
                     <div
-                        class="w-8-lg-shrink-0">
+                        class="example-callout-icon">
                         </div>
                     <div>
-                        <strong class="text-slate-900">Positioning:</strong>
+                        <strong class="example-strong">Positioning:</strong>
                         Use Typst when you want a pure Rust markup-to-PDF workflow driven by the CLI. The
                         LuaLaTeX example below remains useful for TeX-native documents and direct
                         <code>\cite{...}</code> integration.
@@ -1427,9 +1410,8 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
             <div class="example-card-header">
                 <h2>
                         LuaLaTeX Integration
-                        <span class="text-xs font-normal bg-amber-100 text-amber-700.5-full align-middle">Proof-of-concept</span>
+                        <span class="example-badge example-badge-warning">Proof-of-concept</span>
                     </h2>
-                </div>
                 <p>
                     A single-pass LuaLaTeX citation workflow backed by the Citum Rust processor via C-FFI.
                     No Biber, no <code>.bbl</code> file, no
@@ -1486,16 +1468,16 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                 </div>
             </div>
 
-            <div class="bg-slate-50 border-t">
-                <div class="flex items-start">
+            <div class="example-section-muted">
+                <div class="example-callout">
                     <div
-                        class="w-8-lg bg-amber-100 text-amber-600-shrink-0">
+                        class="example-callout-icon example-callout-icon-warning">
                         </div>
                     <div>
-                        <strong class="text-slate-900">Proof-of-concept status:</strong>
+                        <strong class="example-strong">Proof-of-concept status:</strong>
                         Currently targets macOS and Linux. A full working example document is available in
                         <a href="https://github.com/citum/citum-labs/tree/main/bindings/latex"
-                            class="text-primary">bindings/latex/</a>.
+                            class="example-link">bindings/latex/</a>.
                         The <code>&amp;</code> conjunction in
                         two-author citations is correctly escaped for LuaLaTeX output.
                     </div>
@@ -1509,37 +1491,36 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                 <h2>
                         Binary Performance (CBOR)
                     </h2>
-                </div>
                 <p>
                     For production environments, Citum styles and
                     bibliographies can be compiled into binary CBOR (Concise
                     Binary Object Representation) for near-instant loading.
                 </p>
             </div>
-            <div class="p-8 bg-[var(--citum-surface)]">
-                <div class="grid">
+            <div class="example-card-body">
+                <div class="example-grid">
                     <div>
-                        <h4 class="font-bold text-sm">
+                        <h4 class="example-heading-small">
                             Compilation
                         </h4>
                         <div class="code-dark">
                             <span class="token-value">$</span> citum convert style
                             styles/embedded/apa-7th.yaml -o /tmp/apa-7th.cbor
                         </div>
-                        <p class="text-xs italic">
+                        <p class="example-caption">
                             Binary formats can reduce parse overhead for
                             large styles and bibliographies.
                         </p>
                     </div>
                     <div>
-                        <h4 class="font-bold text-sm">
+                        <h4 class="example-heading-small">
                             Processing
                         </h4>
                         <div class="code-dark">
                             <span class="token-value">$</span> citum render refs
                             -b data.cbor -s style.cbor
                         </div>
-                        <p class="text-xs italic">
+                        <p class="example-caption">
                             Full binary pipeline for maximum throughput.
                         </p>
                     </div>
@@ -1550,28 +1531,24 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
         <!-- Schema Generation -->
         <article id="schema-generation" class="example-card">
             <div class="example-card-header">
-                <div class="flex">
-                    <div class="w-10-lg">
-                    </div>
-                    <h2>
-                        Schema Generation
-                    </h2>
-                </div>
+                <h2>
+                    Schema Generation
+                </h2>
                 <p>
                     Citum can generate JSON Schemas for its configuration formats, enabling
                     rich IDE support, validation, and auto-completion in editors like VS Code.
                 </p>
             </div>
-            <div class="p-8 bg-[var(--citum-surface)]">
-                <div class="p-4 border-lg">
-                    <h4 class="font-bold text-sm">
+            <div class="example-card-body">
+                <div class="example-note-box">
+                    <h4 class="example-heading-small">
                         Generation Command (Optional Feature)
                     </h4>
                     <div class="code-dark">
                         <span class="token-value">$</span> cargo run --bin citum --features schema -- schema &gt;
                         citum.schema.json
                     </div>
-                    <p class="text-xs italic">
+                    <p class="example-caption">
                         Use this only when generating schemas locally; published schemas are already available on the
                         project website.
                     </p>
@@ -1585,19 +1562,18 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                 <h2>
                         Web Interactivity
                     </h2>
-                </div>
                 <p>
                     Citum provides optional JS/CSS assets that enrich semantic HTML output with interactive behaviors.
                     They target data attributes injected by the processor, providing a <strong
-                        class="text-slate-900">progressive enhancement</strong> layer for web-based citation views.
+                        class="example-strong">progressive enhancement</strong> layer for web-based citation views.
                 </p>
                 <a href="interactive-demo.html"
-                    class="inline-flex text-white-lg-105 text-sm">
+                    class="citum-button-primary">
                     Explore Enhancements
                     </a>
             </div>
             <div class="example-card-body">
-                <div class="grid">
+                <div class="example-grid">
                     <div class="example-io-panel">
                         <div class="example-io-label">Bidirectional Navigation</div>
                         <p>Click a citation to scroll to its bibliography entry. Hover an
@@ -1622,46 +1598,46 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
             </div>
 
             <!-- Integration Guide -->
-            <div class="bg-slate-50 border-t">
+            <div class="example-section-muted">
                 <h3>Quick Start Integration</h3>
-                <p class="text-slate-600 text-sm">To add interactivity to your own site, simply include the
+                <p class="example-muted example-text-sm">To add interactivity to your own site, simply include the
                     following tags in your HTML. These link to the latest assets via the JSDelivr CDN.</p>
 
-                <div class="space-y-4">
+                <div class="example-stack">
                     <div>
-                        <div class="text-[10px]">1. CSS (Place
+                        <div class="example-overline">1. CSS (Place
                             in &lt;head&gt;)</div>
                         <div class="code-dark">
                             <pre
-                                class="font-mono text-xs">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/citum/citum-core@main/docs/assets/citum-interactive.css"&gt;</pre>
+                                class="example-mono example-small">&lt;link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/citum/citum-core@main/docs/assets/citum-interactive.css"&gt;</pre>
                         </div>
                     </div>
                     <div>
-                        <div class="text-[10px]">2. JS (Place
+                        <div class="example-overline">2. JS (Place
                             before &lt;/body&gt;)</div>
                         <div class="code-dark">
                             <pre
-                                class="font-mono text-xs">&lt;script src="https://cdn.jsdelivr.net/gh/citum/citum-core@main/docs/assets/citum-interactive.js"&gt;&lt;/script&gt;</pre>
+                                class="example-mono example-small">&lt;script src="https://cdn.jsdelivr.net/gh/citum/citum-core@main/docs/assets/citum-interactive.js"&gt;&lt;/script&gt;</pre>
                         </div>
                     </div>
                 </div>
 
-                <div class="mt-8">
-                    <div class="bg-[var(--citum-surface)]-lg border">
-                        <h4 class="font-bold text-sm">
+                <div class="example-gap-top-lg">
+                    <div class="example-note-box">
+                        <h4 class="example-heading-small">
                             Requirements
                         </h4>
-                        <p class="text-xs">Requires HTML output generated by the Citum processor
+                        <p class="example-small">Requires HTML output generated by the Citum processor
                             (including v0.6.0+), which includes the semantic classes and data attributes used by the
                             interactive layer.</p>
                     </div>
-                    <div class="bg-[var(--citum-surface)]-lg border">
-                        <h4 class="font-bold text-sm">
+                    <div class="example-note-box">
+                        <h4 class="example-heading-small">
                             Sidebar Layout
                         </h4>
-                        <p class="text-xs">To enable the sidebar mode on large screens, wrap your content
+                        <p class="example-small">To enable the sidebar mode on large screens, wrap your content
                             and bibliography in a container with the class <code
-                                class="bg-slate-100">citum-with-sidebar</code>.</p>
+                                class="example-inline-code">citum-with-sidebar</code>.</p>
                     </div>
                 </div>
             </div>
@@ -1673,15 +1649,14 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                 <h2>
                         Annotated Bibliography
                     </h2>
-                </div>
-                <p class="text-slate-600">
+                <p class="example-muted">
                     Attach reader-authored annotations to any bibliography without style variants. Annotations are passed as a separate
                     YAML or JSON file mapping reference IDs to annotation text. The processor appends annotations after each entry,
                     respecting formatting options for italic, indentation, and paragraph spacing.
                 </p>
             </div>
             <div class="example-card-body">
-                <div class="text-[10px]">Render with Annotations</div>
+                <div class="example-overline">Render with Annotations</div>
                 <div class="code-dark">
                     <pre>citum render refs \
   -b examples/annotated-bibliography/references.yaml \
@@ -1689,9 +1664,9 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
   --annotations examples/annotated-bibliography/annotations.yaml</pre>
                 </div>
 
-                <div class="text-[10px]">Sample Output</div>
-                <div class="bg-slate-50 border text-sm">
-                    <div class="font-mono-wrap">
+                <div class="example-overline">Sample Output</div>
+                <div class="example-output-block example-text-sm">
+                    <div class="example-mono-wrap">
 Smith, J. (2019). Foundations of knowledge. Oxford University Press.
 
     A landmark work that fundamentally reshaped our understanding of the field.
@@ -1706,14 +1681,14 @@ Hawking, S. (1988). A brief history of time. Bantam Books.
             </div>
 
             <!-- Configuration Guide -->
-            <div class="bg-slate-50 border-t">
+            <div class="example-section-muted">
                 <h3>Annotation Format</h3>
-                <p class="text-slate-600 text-sm">Annotations are stored in a simple flat map. YAML is recommended for hand-authoring;
+                <p class="example-muted example-text-sm">Annotations are stored in a simple flat map. YAML is recommended for hand-authoring;
                 JSON is also supported.</p>
 
-                <div class="grid">
+                <div class="example-grid">
                     <div>
-                        <div class="text-[10px]">YAML Format</div>
+                        <div class="example-overline">YAML Format</div>
                         <div class="code-dark">
                             <pre>smith2019: >
   A landmark work that fundamentally
@@ -1727,10 +1702,10 @@ jones2021: >
                 </div>
 
                 <!-- Documentation of annotation styling -->
-                <div class="mt-4 border">
-                    <div class="text-[10px]">Styling Annotations</div>
-                    <p class="text-xs">Annotation presentation is handled via CSS or document-level show rules. To style HTML output:</p>
-                    <pre class="bg-slate-800 text-[10px]">
+                <div class="example-output-block example-gap-top">
+                    <div class="example-overline">Styling Annotations</div>
+                    <p class="example-small">Annotation presentation is handled via CSS or document-level show rules. To style HTML output:</p>
+                    <pre class="example-code-sample">
 .citum-annotation {
     font-style: italic;
     padding-left: 1.5rem;
@@ -1739,26 +1714,26 @@ jones2021: >
 }</pre>
                 </div>
 
-                <div class="mt-8 bg-[var(--citum-surface)]-lg border">
-                    <h4 class="font-bold text-sm">
+                <div class="example-note-box example-gap-top-lg">
+                    <h4 class="example-heading-small">
                         Djot Inline Markup
                     </h4>
-                    <p class="text-xs">Annotation text is parsed as <a href="https://djot.net" class="text-primary">djot</a> inline markup by default.
+                    <p class="example-small">Annotation text is parsed as <a href="https://djot.net" class="example-link">djot</a> inline markup by default.
                         Emphasis, strong, and verbatim code are rendered into the target output format automatically.
-                        Citum also recognises <code class="bg-slate-100">{.smallcaps}[…]</code> spans as a convention on top of djot's generic span attributes.</p>
+                        Citum also recognises <code class="example-inline-code">{.smallcaps}[…]</code> spans as a convention on top of djot's generic span attributes.</p>
                     <div class="code-dark">
                         <pre>smith2019: >
   A _landmark_ work. Particularly useful for its
   {.smallcaps}[comparative methodology].</pre>
                     </div>
-                    <p class="text-xs">To opt out, set <code class="bg-slate-100">format: plain</code> in the annotation style options.</p>
+                    <p class="example-small">To opt out, set <code class="example-inline-code">format: plain</code> in the annotation style options.</p>
                 </div>
 
-                <div class="mt-4 bg-[var(--citum-surface)]-lg border">
-                    <h4 class="font-bold text-sm">
+                <div class="example-note-box example-gap-top">
+                    <h4 class="example-heading-small">
                         Why Separate from References?
                     </h4>
-                    <p class="text-xs">Annotations are document-scoped overlays. The same reference carries different
+                    <p class="example-small">Annotations are document-scoped overlays. The same reference carries different
                         annotations in different contexts (a course syllabus vs. a grant proposal vs. a personal reading list).
                         This design avoids style proliferation and keeps concerns separated.</p>
                 </div>
@@ -1771,15 +1746,14 @@ jones2021: >
                 <h2>
                         Abbreviation Maps
                     </h2>
-                </div>
-                <p class="text-slate-600">
+                <p class="example-muted">
                     Substitute full rendered strings with abbreviations at document scope. Pass a YAML or JSON map at render time to replace
                     journal titles, institutional names, corporate authors, and other strings with their abbreviations. The substitution applies after rendering,
                     so any style renders the full title first, then the map replaces it with the abbreviation.
                 </p>
             </div>
             <div class="example-card-body">
-                <div class="text-[10px]">CLI Example</div>
+                <div class="example-overline">CLI Example</div>
                 <div class="code-dark">
                     <pre>citum render refs \
   -b examples/references.json \
@@ -1787,8 +1761,8 @@ jones2021: >
   --abbreviation-map examples/abbrevs.yaml</pre>
                 </div>
 
-                <div class="text-[10px]">YAML Format</div>
-                <div class="grid">
+                <div class="example-overline">YAML Format</div>
+                <div class="example-grid">
                     <div>
                         <div class="code-dark">
                             <pre>Estates Gazette: EG
@@ -1799,17 +1773,17 @@ Nature Reviews Neuroscience: Nat Rev Neurosci</pre>
                     </div>
                 </div>
 
-                <div class="text-[10px]">Sample Output (Before &amp; After)</div>
-                <div class="bg-slate-50 border">
+                <div class="example-overline">Sample Output (Before &amp; After)</div>
+                <div class="example-output-block">
                     <div>
-                        <div class="text-xs">Without abbreviation map:</div>
-                        <div class="font-mono text-sm">
+                        <div class="example-small">Without abbreviation map:</div>
+                        <div class="example-mono example-text-sm">
                             Smith, J., et al. "Analysis of inheritance." <i>Nature Reviews Neuroscience</i>, vol. 24, no. 5, pp. 311–326, 2023.
                         </div>
                     </div>
                     <div>
-                        <div class="text-xs">With abbreviation map:</div>
-                        <div class="font-mono text-sm">
+                        <div class="example-small">With abbreviation map:</div>
+                        <div class="example-mono example-text-sm">
                             Smith, J., et al. "Analysis of inheritance." <i>Nat Rev Neurosci</i>, vol. 24, no. 5, pp. 311–326, 2023.
                         </div>
                     </div>
@@ -1817,24 +1791,24 @@ Nature Reviews Neuroscience: Nat Rev Neurosci</pre>
             </div>
 
             <!-- Configuration Guide -->
-            <div class="bg-slate-50 border-t">
+            <div class="example-section-muted">
                 <h3>Abbreviation Map Format</h3>
-                <p class="text-slate-600 text-sm">Abbreviation maps are simple flat key-value maps. Keys are full rendered strings (exact, case-sensitive). Values are the replacement abbreviations.</p>
+                <p class="example-muted example-text-sm">Abbreviation maps are simple flat key-value maps. Keys are full rendered strings (exact, case-sensitive). Values are the replacement abbreviations.</p>
 
-                <div class="mt-4 bg-white border">
-                    <div class="text-[10px]">What Gets Abbreviated?</div>
-                    <ul class="text-xs list-disc list-inside">
+                <div class="example-output-block example-gap-top">
+                    <div class="example-overline">What Gets Abbreviated?</div>
+                    <ul class="example-list example-small">
                         <li>Title fields: main title, container title, collection title</li>
                         <li>Variable fields: publisher, archive, series</li>
                         <li>Contributor literal names: corporate or institutional authors</li>
                     </ul>
                 </div>
 
-                <div class="mt-8 bg-[var(--citum-surface)]-lg border">
-                    <h4 class="font-bold text-sm">
+                <div class="example-note-box example-gap-top-lg">
+                    <h4 class="example-heading-small">
                         Why Separate from the Style?
                     </h4>
-                    <p class="text-xs">Abbreviations are document-scoped overlays. Different contexts may abbreviate the same reference differently (a journal article in a biology manuscript vs. a history paper). Keeping abbreviations separate from the style avoids proliferation of variant styles and keeps concerns separated.</p>
+                    <p class="example-small">Abbreviations are document-scoped overlays. Different contexts may abbreviate the same reference differently (a journal article in a biology manuscript vs. a history paper). Keeping abbreviations separate from the style avoids proliferation of variant styles and keeps concerns separated.</p>
                 </div>
             </div>
         </article>
@@ -1844,26 +1818,25 @@ Nature Reviews Neuroscience: Nat Rev Neurosci</pre>
             <div class="example-card-header">
                 <h2>
                         Distributed Registries
-                        <span class="ml-2 text-xs align-middle.5-full">New</span>
+                        <span class="example-badge">New</span>
                     </h2>
-                </div>
-                <p class="text-slate-600">
+                <p class="example-muted">
                     Citum ships with a tiny embedded registry of builtin styles. Everything else
                     lives in registries you opt into &mdash; the Citum Hub, an institutional
                     registry, or your own static-HTTP host. Styles can be referenced by name,
                     by URL, or by content-addressed
-                    <code class="text-xs.5.5">cid:</code> URI,
+                    <code class="example-inline-code">cid:</code> URI,
                     and any
-                    <code class="text-xs.5.5">extends:</code>
+                    <code class="example-inline-code">extends:</code>
                     edge can be locked to a specific parent version with
-                    <code class="text-xs.5.5">extends-pin</code>.
+                    <code class="example-inline-code">extends-pin</code>.
                 </p>
-                <p class="text-slate-600">
+                <p class="example-muted">
                     Walk the full UX in the
-                    <a class="text-primary" target="_blank"
+                    <a class="example-link" target="_blank"
                        href="https://github.com/citum/citum-core/blob/main/docs/guides/DISTRIBUTED_REGISTRIES.md">distributed
                     registries guide</a>. Spec:
-                    <a class="text-primary" target="_blank"
+                    <a class="example-link" target="_blank"
                        href="https://github.com/citum/citum-core/blob/main/docs/specs/DISTRIBUTED_RESOLVER.md">DISTRIBUTED_RESOLVER.md</a>.
                 </p>
             </div>
@@ -1921,10 +1894,11 @@ Citum &gt;=0.38.0</pre>
         </article>
 
         </div>
-    </div>
+        </div>
+    </main>
 
     <!-- Footer -->
-        <footer style="padding: 3rem 0; border-top: 1px solid var(--citum-border); background: var(--citum-surface);">
+        <footer class="site-footer">
         <!-- LAYOUT_FOOTER_START -->
             <div class="site-footer-inner">
                 <div class="site-brand site-brand-small">
