@@ -7,7 +7,6 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-tracing.workspace = true
 winnow = "1.0"
 serde = { version = "1.0", features = ["derive"], optional = true }
 
@@ -17,3 +16,6 @@ serde = ["dep:serde"]
 
 [lints]
 workspace = true
+
+[lib]
+doctest = false

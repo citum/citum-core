@@ -26,3 +26,7 @@ ciborium = "0.2"
 
 [lints]
 workspace = true
+
+[lib]
+test = false
+doctest = false
