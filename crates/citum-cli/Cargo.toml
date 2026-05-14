@@ -11,7 +11,6 @@ name = "citum"
 path = "src/main.rs"
 
 [dependencies]
-tracing.workspace = true
 clap = { version = "4.4", features = ["derive", "color"] }
 clap_complete = "4.4"
 comfy-table = "7.1"
@@ -21,16 +20,12 @@ serde_json = "1.0"
 serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
 ciborium = "0.2"
 strsim = "0.11"
-walkdir = "2.4"
 schemars = { version = "1.2.1", features = ["indexmap2"], optional = true }
-indexmap = "2.2.3"
 ratatui = { version = "0.30.0", default-features = false, features = ["crossterm_0_29"] }
 citum_schema = { package = "citum-schema", path = "../citum-schema", features = ["legacy-convert"] }
 citum_schema_data = { package = "citum-schema-data", path = "../citum-schema-data" }
 citum_engine = { package = "citum-engine", path = "../citum-engine" }
 citum_io = { package = "citum-io", path = "../citum-io" }
-csl_legacy = { package = "csl-legacy", path = "../csl-legacy" }
-biblatex = "0.11"
 citum_store = { package = "citum_store", path = "../citum_store", features = ["http"] }
 citum_resolver_api = { package = "citum-resolver-api", path = "../citum-resolver-api" }
 citum-pdf = { path = "../citum-pdf", optional = true }

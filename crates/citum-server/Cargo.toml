@@ -13,7 +13,6 @@ name = "citum-server"
 path = "src/main.rs"
 
 [dependencies]
-tracing.workspace = true
 citum-engine = { package = "citum-engine", path = "../citum-engine" }
 citum-schema = { package = "citum-schema", path = "../citum-schema" }
 citum_store = { package = "citum_store", path = "../citum_store", features = ["http"] }
@@ -44,3 +43,6 @@ schema = ["http", "schema-types"]
 
 [lints]
 workspace = true
+
+[lib]
+doctest = false

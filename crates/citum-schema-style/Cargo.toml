@@ -7,15 +7,12 @@ description = "Citum style schema types and styling engine"
 repository.workspace = true
 
 [dependencies]
-tracing.workspace = true
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
 ciborium = "0.2"
 schemars = { version = "1.2.1", features = ["derive", "url2", "indexmap2"], optional = true }
 specta = { version = "2.0.0-rc.23", features = ["derive"], optional = true }
-citum_edtf = { package = "citum-edtf", path = "../citum-edtf", features = ["serde"] }
-url = { version = "2.5", features = ["serde"] }
 csl_legacy = { package = "csl-legacy", path = "../csl-legacy", optional = true }
 indexmap = { version = "2", features = ["serde"] }
 citum_schema_data = { package = "citum-schema-data", path = "../citum-schema-data" }
@@ -42,3 +39,6 @@ harness = false
 
 [lints]
 workspace = true
+
+[lib]
+doctest = false

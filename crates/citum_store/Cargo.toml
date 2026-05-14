@@ -7,7 +7,6 @@ publish = false
 repository.workspace = true
 
 [dependencies]
-tracing.workspace = true
 citum-schema = { package = "citum-schema", path = "../citum-schema" }
 dirs = "6.0"
 serde = { version = "1.0", features = ["derive"] }
@@ -35,3 +34,6 @@ serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
 
 [lints]
 workspace = true
+
+[lib]
+doctest = false

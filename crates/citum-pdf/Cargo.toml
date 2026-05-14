@@ -8,9 +8,10 @@ repository.workspace = true
 
 [lib]
 name = "citum_pdf"
+test = false
+doctest = false
 
 [dependencies]
-tracing.workspace = true
 typst = "0.14.2"
 typst-pdf = "0.14.2"
 typst-kit = { version = "0.14.2", default-features = false, features = ["fonts", "embed-fonts"] }
