@@ -15,7 +15,10 @@ use std::io::{self, BufRead, Write};
 
 /// JSON-RPC request envelope.
 #[derive(Debug, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(
+    any(feature = "schema", feature = "schema-types"),
+    derive(schemars::JsonSchema)
+)]
 pub struct RpcRequest {
     /// The request identifier echoed back in success and error responses.
     pub id: Value,
@@ -28,7 +31,10 @@ pub struct RpcRequest {
 /// Output format for rendered citations and bibliographies.
 #[derive(Debug, Clone, Copy, Default, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "lowercase")]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(
+    any(feature = "schema", feature = "schema-types"),
+    derive(schemars::JsonSchema)
+)]
 pub enum OutputFormat {
     /// Plain text output.
     #[default]
@@ -45,7 +51,10 @@ pub enum OutputFormat {
 
 /// Parameters for the `render_citation` method.
 #[derive(Debug, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(
+    any(feature = "schema", feature = "schema-types"),
+    derive(schemars::JsonSchema)
+)]
 pub struct RenderCitationParams {
     /// Path to the Citum YAML style file.
     pub style_path: String,
@@ -61,7 +70,10 @@ pub struct RenderCitationParams {
 
 /// Parameters for the `render_bibliography` method.
 #[derive(Debug, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(
+    any(feature = "schema", feature = "schema-types"),
+    derive(schemars::JsonSchema)
+)]
 pub struct RenderBibliographyParams {
     /// Path to the Citum YAML style file.
     pub style_path: String,
@@ -75,7 +87,10 @@ pub struct RenderBibliographyParams {
 
 /// Parameters for the `validate_style` method.
 #[derive(Debug, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(
+    any(feature = "schema", feature = "schema-types"),
+    derive(schemars::JsonSchema)
+)]
 pub struct ValidateStyleParams {
     /// Path to the Citum YAML style file to validate.
     pub style_path: String,
@@ -83,7 +98,10 @@ pub struct ValidateStyleParams {
 
 /// Parameters for the `format_document` method (schema mirror of `FormatDocumentRequest`).
 #[derive(Debug, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(
+    any(feature = "schema", feature = "schema-types"),
+    derive(schemars::JsonSchema)
+)]
 pub struct FormatDocumentParams {
     /// Style identifier, path, URI, or inline YAML.
     pub style: String,

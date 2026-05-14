@@ -814,89 +814,18 @@ locale: en-US
 
     <!-- JSON Schemas Section -->
     <section class="py-24 px-6 border-t border-slate-200" id="schemas">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">JSON Schemas</h2>
-                <p class="text-slate-500">Validation tools for developers and style authors. Use these in your IDE for
-                    autocomplete and real-time validation.</p>
-            </div>
-            <div class="max-w-3xl mx-auto mb-10 p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                <p class="text-sm text-slate-700">
-                    Schema files on this site are published automatically by CI. The local CLI
-                    <code class="text-xs bg-amber-100 px-1 rounded">schema</code> command is feature-gated to keep the
-                    default binary smaller.
-                </p>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Style Schema -->
-                <a href="schemas/style.json"
-                    class="citum-panel p-6 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons text-sm">architecture</span>
-                    </div>
-                    <h4 class="font-bold text-slate-900 mb-2">Style</h4>
-                    <p class="text-xs text-slate-500">Core Citum style definition.</p>
-                </a>
-                <!-- Bib Schema -->
-                <a href="schemas/bib.json"
-                    class="citum-panel p-6 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons text-sm">inventory_2</span>
-                    </div>
-                    <h4 class="font-bold text-slate-900 mb-2">Bibliography</h4>
-                    <p class="text-xs text-slate-500">Input reference format.</p>
-                </a>
-                <!-- Locale Schema -->
-                <a href="schemas/locale.json"
-                    class="citum-panel p-6 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons text-sm">language</span>
-                    </div>
-                    <h4 class="font-bold text-slate-900 mb-2">Locale</h4>
-                    <p class="text-xs text-slate-500">Terms and date patterns.</p>
-                </a>
-                <!-- Citations Schema -->
-                    <a href="schemas/citation.json"
-                        class="citum-panel p-6 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons text-sm">format_quote</span>
-                    </div>
-                    <h4 class="font-bold text-slate-900 mb-2">Citations</h4>
-                    <p class="text-xs text-slate-500">Citation list format.</p>
-                </a>
-            </div>
-
-            <!-- IDE Integration Note -->
-            <div class="mt-12 p-6 bg-slate-50 rounded-xl border border-slate-200 max-w-3xl mx-auto text-left">
-                <h4 class="font-bold text-slate-900 mb-3 flex items-center gap-2 text-sm">
-                    <span class="material-icons text-primary text-lg">tips_and_updates</span>
-                    Editor Integration
-                </h4>
-                <p class="text-sm text-slate-600 mb-4">
-                    To get real-time validation and autocomplete in editors with <a href="https://github.com/redhat-developer/yaml-language-server#clients" class="text-primary hover:underline" target="_blank">YAML language server support</a> (including VS Code, Helix, Zed, and many others),
-                    add this comment as the first line of your YAML file:
-                </p>
-                <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
-                    <code class="font-mono text-xs text-slate-300">
-                        <span class="text-slate-500"># yaml-language-server: $schema=https://docs.citum.org/schemas/style.json</span>
-                    </code>
-                    <button class="text-slate-500 hover:text-white transition-colors"
-                        onclick="navigator.clipboard.writeText('# yaml-language-server: $schema=https://docs.citum.org/schemas/style.json')"
-                        title="Copy to clipboard">
-                        <span class="material-icons text-base">content_copy</span>
-                    </button>
-                </div>
-                <p class="text-[10px] text-slate-400 mt-4 font-mono italic">
-                    Note: Replace <code class="text-slate-600 px-0.5 rounded">style.json</code> with 
-                    <code class="text-slate-600 px-0.5 rounded">bib.json</code>, 
-                    <code class="text-slate-600 px-0.5 rounded">locale.json</code>, or 
-                    <code class="text-slate-600 px-0.5 rounded">citation.json</code> depending on the file type.
-                </p>
-            </div>
+        <div class="max-w-7xl mx-auto text-center">
+            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">JSON Schemas</h2>
+            <p class="text-slate-500 max-w-2xl mx-auto mb-8">
+                Citum publishes schemas for every data format — styles, locales, bibliographies, citations,
+                the registry, abbreviation maps, and the JSON-RPC server API. Use them in your editor for
+                autocomplete and real-time validation.
+            </p>
+            <a href="schemas/"
+                class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:brightness-110 transition-all">
+                <span class="material-icons text-base">schema</span>
+                Browse all schemas
+            </a>
         </div>
     </section>
 

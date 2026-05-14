@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Citum Server RPC",
+  "description": "Parameter schemas for all Citum JSON-RPC methods.",
+  "$defs": {
+    "OutputFormat": {
+      "description": "Output format for rendered citations and bibliographies.",
+      "oneOf": [
+        {
+          "description": "Plain text output.",
+          "type": "string",
+          "const": "plain"
+        },
+        {
+          "description": "HTML output.",
+          "type": "string",
+          "const": "html"
+        },
+        {
+          "description": "Djot markup output.",
+          "type": "string",
+          "const": "djot"
+        },
+        {
+          "description": "LaTeX output.",
+          "type": "string",
+          "const": "latex"
+        },
+        {
+          "description": "Typst output.",
+          "type": "string",
+          "const": "typst"
+        }
+      ]
+    }
+  },
+  "render_citation": {
+    "required": [
+      "style_path",
+      "refs",
+      "citation"
+    ],
+    "title": "RenderCitationParams",
+    "description": "Parameters for the `render_citation` method.",
+    "type": "object",
+    "properties": {
+      "style_path": {
+        "description": "Path to the Citum YAML style file.",
+        "type": "string"
+      },
+      "refs": {
+        "description": "Bibliography (references) as a map of reference objects."
+      },
+      "citation": {
+        "description": "Citation object specifying which references to cite."
+      },
+      "output_format": {
+        "description": "Output format for the rendered citation.",
+        "anyOf": [
+          {
+            "$ref": "#/$defs/OutputFormat"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "inject_ast_indices": {
+        "description": "Debug: embed AST node indices in output.",
+        "type": [
+          "boolean",
+          "null"
+        ]
+      }
+    }
+  },
+  "render_bibliography": {
+    "required": [
+      "style_path",
+      "refs"
+    ],
+    "title": "RenderBibliographyParams",
+    "description": "Parameters for the `render_bibliography` method.",
+    "type": "object",
+    "properties": {
+      "style_path": {
+        "description": "Path to the Citum YAML style file.",
+        "type": "string"
+      },
+      "refs": {
+        "description": "Bibliography (references) as a map of reference objects."
+      },
+      "output_format": {
+        "description": "Output format for the rendered bibliography.",
+        "anyOf": [
+          {
+            "$ref": "#/$defs/OutputFormat"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "inject_ast_indices": {
+        "description": "Debug: embed AST node indices in output.",
+        "type": [
+          "boolean",
+          "null"
+        ]
+      }
+    }
+  },
+  "validate_style": {
+    "required": [
+      "style_path"
+    ],
+    "title": "ValidateStyleParams",
+    "description": "Parameters for the `validate_style` method.",
+    "type": "object",
+    "properties": {
+      "style_path": {
+        "description": "Path to the Citum YAML style file to validate.",
+        "type": "string"
+      }
+    }
+  },
+  "format_document": {
+    "required": [
+      "style",
+      "refs",
+      "citations"
+    ],
+    "title": "FormatDocumentParams",
+    "description": "Parameters for the `format_document` method (schema mirror of `FormatDocumentRequest`).",
+    "type": "object",
+    "properties": {
+      "style": {
+        "description": "Style identifier, path, URI, or inline YAML.",
+        "type": "string"
+      },
+      "locale": {
+        "description": "Optional BCP 47 locale override.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "output_format": {
+        "description": "Output format (plain, html, djot, latex, typst). Defaults to plain.",
+        "anyOf": [
+          {
+            "$ref": "#/$defs/OutputFormat"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "refs": {
+        "description": "Bibliography (references) as a map of reference objects."
+      },
+      "citations": {
+        "description": "Ordered citations as they appear in the document."
+      }
+    }
+  }
+}

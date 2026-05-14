@@ -39,7 +39,8 @@ tower = { version = "0.5", features = ["util"] }
 default = []
 async = ["tokio"]
 http = ["async", "axum"]
-schema = ["http", "dep:schemars"]
+schema-types = ["dep:schemars"]
+schema = ["http", "schema-types"]
 
 [lints]
 workspace = true

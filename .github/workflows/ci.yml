@@ -178,7 +178,7 @@ jobs:
         run: |
           tmp_dir="$(mktemp -d)"
           cargo run --bin citum --all-features -- schema --out-dir "$tmp_dir"
-          diff -ru "$tmp_dir" docs/schemas
+          diff -ru --exclude="*.html" "$tmp_dir" docs/schemas
 
   security:
     name: Security Audit
