@@ -38,7 +38,7 @@ tower = { version = "0.5", features = ["util"] }
 default = []
 async = ["tokio"]
 http = ["async", "axum"]
-schema-types = ["dep:schemars"]
+schema-types = ["dep:schemars", "citum-engine/schema"]
 schema = ["http", "schema-types"]
 
 [lints]
