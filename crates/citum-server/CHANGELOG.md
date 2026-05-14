@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.43.0] - 2026-05-14
+
+### Features
+
+**server**
+
+- Rpc discovery + schema endpoint ([`2f24bb6`](https://github.com/citum/citum-core/commit/2f24bb6e81de564e94fe0b1fb6c529f4c97deba6))
+
+- Schema discovery + /schemas/ page ([`6a80e8a`](https://github.com/citum/citum-core/commit/6a80e8a9ab0342bb104939144d08e02be75e41a3))
+
+
 ## [0.42.0] - 2026-05-13
 
 ### Bug Fixes
