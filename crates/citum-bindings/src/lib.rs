@@ -25,8 +25,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! - [`render_bibliography`] — render a full bibliography
 //! - [`validate_style`] — check a style for parse/schema errors
 
-#![forbid(unsafe_code)]
-
 #[cfg(feature = "wasm")]
 use wasm_bindgen::prelude::*;
 

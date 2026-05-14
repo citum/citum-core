@@ -8,8 +8,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! Provides functions to load bibliographies and citations from various formats
 //! (Citum YAML/JSON/CBOR, CSL-JSON, BibLaTeX, RIS) into Citum's internal types.
 
-#![forbid(unsafe_code)]
-
 use std::collections::HashMap;
 use std::fmt::Write as _;
 use std::fs;
