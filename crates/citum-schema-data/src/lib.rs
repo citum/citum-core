@@ -5,8 +5,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 //! Data input models for Citum references, citations, and bibliographies.
 
-#![deny(unsafe_code)]
-
 use indexmap::IndexMap;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;

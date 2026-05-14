@@ -14,8 +14,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! - [`parser`] – XML → model parser built on top of [`roxmltree`].
 //! - [`csl_json`] – companion CSL-JSON reference model (legacy input format).
 
-#![forbid(unsafe_code)]
-
 /// CSL-JSON reference types used alongside legacy CSL style processing.
 pub mod csl_json;
 /// Rust data structures that mirror the CSL 1.0 XML schema.

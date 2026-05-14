@@ -5,8 +5,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 //! Typst PDF compilation for Citum.
 
-#![forbid(unsafe_code)]
-
 use std::error::Error;
 use std::fs;
 use std::path::Path;

@@ -31,7 +31,7 @@ categories = ["text-processing"]
 
 [workspace.lints.rust]
 missing_docs = "deny"
-unsafe_code = "deny"
+unsafe_code = "forbid"
 
 [workspace.lints.rustdoc]
 bare_urls = "warn"
