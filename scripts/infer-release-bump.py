@@ -16,13 +16,9 @@ from typing import Sequence
 REPO_ROOT = Path(__file__).resolve().parent.parent
 LEVEL_ORDER = {"none": 0, "patch": 1, "minor": 2, "major": 3}
 CODE_PATHS = ("crates/", "Cargo.toml", "Cargo.lock")
-SCHEMA_PATHS = (
-    "crates/citum-schema-data/",
-    "crates/citum-schema-style/",
-    "crates/citum-schema/",
-    "crates/citum-cli/",
-    "docs/schemas/",
-)
+SCHEMA_ARTIFACT_PREFIX = "docs/schemas/"
+SCHEMA_ARTIFACT_SUFFIX = ".json"
+SCHEMA_VERSION_DEFAULT_SENTINEL = "__CITUM_SCHEMA_VERSION_DEFAULT__"
 
 
 @dataclass(frozen=True)
@@ -78,9 +74,71 @@ def is_code_path(path: str) -> bool:
 
 
 def is_schema_path(path: str) -> bool:
-    """Return whether a path should trigger a schema version bump."""
+    """Return whether a path is a committed generated JSON schema artifact."""
 
-    return path.startswith(SCHEMA_PATHS)
+    return path.startswith(SCHEMA_ARTIFACT_PREFIX) and path.endswith(SCHEMA_ARTIFACT_SUFFIX)
+
+
+def git_file_at(revision: str, path: str) -> str | None:
+    """Return file contents at a git revision, or None when the file is absent."""
+
+    result = subprocess.run(
+        ["git", "show", f"{revision}:{path}"],
+        cwd=REPO_ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    return result.stdout
+
+
+def normalize_schema_json(content: str) -> object:
+    """Normalize generated schema JSON for release-impact comparisons."""
+
+    document = json.loads(content)
+    if isinstance(document, dict):
+        properties = document.get("properties")
+        if isinstance(properties, dict):
+            version = properties.get("version")
+            if isinstance(version, dict) and "default" in version:
+                version["default"] = SCHEMA_VERSION_DEFAULT_SENTINEL
+    return document
+
+
+def schema_contents_differ(old: str | None, new: str | None) -> bool:
+    """Return whether generated schema contents differ beyond version defaults."""
+
+    if old is None or new is None:
+        return old != new
+    try:
+        return normalize_schema_json(old) != normalize_schema_json(new)
+    except json.JSONDecodeError:
+        return old != new
+
+
+def revisions_for_range(commit_range: str) -> tuple[str, str]:
+    """Return old and new revisions for a git range or single commit."""
+
+    if ".." in commit_range:
+        old_revision, new_revision = commit_range.split("..", maxsplit=1)
+        return old_revision, new_revision
+    return f"{commit_range}^", commit_range
+
+
+def schema_artifacts_changed(paths: Sequence[str], commit_range: str) -> bool:
+    """Return whether committed generated schemas changed structurally."""
+
+    old_revision, new_revision = revisions_for_range(commit_range)
+    return any(
+        schema_contents_differ(
+            git_file_at(old_revision, path),
+            git_file_at(new_revision, path),
+        )
+        for path in paths
+        if is_schema_path(path)
+    )
 
 
 def cap_major_for_pre_one(level: str, current_version: str) -> str:
@@ -115,11 +173,13 @@ def infer_release_impact(
     subjects: Sequence[str],
     bodies: str,
     current_version: str,
+    schema_changed: bool | None = None,
 ) -> ReleaseImpact:
     """Infer release impact from paths plus conventional commit metadata."""
 
     code_changed = any(is_code_path(path) for path in paths)
-    schema_changed = any(is_schema_path(path) for path in paths)
+    if schema_changed is None:
+        schema_changed = any(is_schema_path(path) for path in paths)
     level = conventional_level(subjects, bodies, current_version)
     should_release = (code_changed or schema_changed) and level != "none"
     if not should_release:
@@ -164,11 +224,13 @@ def main(argv: Sequence[str]) -> int:
     """Run the release inference CLI."""
 
     args = parse_args(argv)
+    paths = changed_files(args.range)
     impact = infer_release_impact(
-        changed_files(args.range),
+        paths,
         commit_subjects(args.range),
         commit_bodies(args.range),
         args.current_version,
+        schema_changed=schema_artifacts_changed(paths, args.range),
     )
     if args.github_output is not None:
         write_github_output(args.github_output, impact)

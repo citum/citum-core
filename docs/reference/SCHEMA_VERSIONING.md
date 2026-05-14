@@ -41,9 +41,9 @@ Code and schema releases are prepared by `.github/workflows/release.yml`.
 2. It infers the bump level from conventional commits:
    `feat` -> minor, `fix` / `perf` -> patch, and breaking commits -> major.
    During the pre-1.0 line, major is capped to minor.
-3. If schema-affecting paths changed, the release PR bumps
-   `STYLE_SCHEMA_VERSION`, updates this changelog, and regenerates
-   `docs/schemas/*`.
+3. If committed generated schema artifacts in `docs/schemas/*.json` changed
+   structurally, the release PR bumps `STYLE_SCHEMA_VERSION`, updates this
+   changelog, and regenerates `docs/schemas/*`.
 4. It runs `cargo release <level> --workspace` to bump crate versions and
    generate the root changelog.
 5. It opens or updates a release PR on the `release/next` branch.
@@ -68,8 +68,8 @@ Release impact comes from conventional commits:
 | `chore:` / `docs:` / `test:` / `ci:` | None |
 
 The inferred level is applied to every changed release track in the release PR.
-For example, a `feat(schema): ...` commit that changes schema-generating code
-bumps both the schema version and workspace crate versions by minor.
+For example, a `feat(schema): ...` commit that changes committed generated JSON
+schemas bumps both the schema version and workspace crate versions by minor.
 
 ### Choosing Patch, Minor, Or Major
 
