@@ -1,0 +1,215 @@
+<!-- PAGE_ID: developer -->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Developer | Citum Docs</title>
+    <meta name="description" content="Integrate Citum into your application via WASM, C FFI, CLI, or JSON-RPC server." />
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="assets/citum-theme.css" />
+</head>
+<body>
+    <nav class="site-nav">
+        <!-- LAYOUT_NAV_START -->
+        <div class="site-nav-inner">
+            <div class="site-brand-wrap">
+                <a href="index.html" class="site-brand">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </a>
+            </div>
+            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
+                <a class="site-nav-link " href="index.html">Overview</a>
+                <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
+                <a class="site-nav-link active" href="developer.html">Developer</a>
+                <a class="site-nav-link " href="schemas/">Schemas</a>
+                <a class="site-nav-link " href="reports.html">Reports</a>
+                <a class="site-source-link" href="https://github.com/citum/citum-core">
+                    <svg aria-hidden="true" class="site-source-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+                <span class="mobile-nav-icon" aria-hidden="true">&#9776;</span>
+            </button>
+        </div>
+        <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
+            <a class="site-nav-link " href="index.html">Overview</a>
+            <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
+            <a class="site-nav-link active" href="developer.html">Developer</a>
+            <a class="site-nav-link " href="schemas/">Schemas</a>
+            <a class="site-nav-link " href="reports.html">Reports</a>
+            <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
+        </div>        <!-- LAYOUT_NAV_END -->
+    </nav>
+
+    <main class="doc-shell">
+        <header class="doc-section-header">
+            <span class="citum-kicker">Integration</span>
+            <h1>Developer</h1>
+            <p>
+                Citum exposes several integration surfaces depending on your runtime.
+                Pick the one that fits your environment.
+            </p>
+        </header>
+
+        <section class="doc-section">
+            <div class="doc-grid">
+                <a class="doc-card" href="#cli">
+                    <h3>CLI</h3>
+                    <p>Render references, process Djot documents, validate styles, and inspect schemas from the command line. The simplest integration path for build pipelines and scripted workflows.</p>
+                </a>
+                <a class="doc-card" href="#wasm">
+                    <h3>WASM</h3>
+                    <p>Run the engine in a browser or Node.js application. The WASM bridge exposes rendering and validation as async functions with TypeScript types.</p>
+                </a>
+                <a class="doc-card" href="#ffi">
+                    <h3>C FFI</h3>
+                    <p>Call the engine from any language with a C FFI. Current bindings cover Lua (for LuaLaTeX). The shared library exports a stable C-compatible surface.</p>
+                </a>
+                <a class="doc-card" href="#server">
+                    <h3>JSON-RPC server</h3>
+                    <p>Run Citum as a long-lived process and call it over stdin/stdout or HTTP. Suitable for editor integrations, language-server patterns, and applications that need live formatting without process-spawn overhead.</p>
+                </a>
+            </div>
+        </section>
+
+        <section class="doc-section" id="cli">
+            <div class="doc-section-header">
+                <h2>CLI</h2>
+                <p>Install with Cargo and use the <code>citum</code> binary directly.</p>
+            </div>
+            <div class="workshop-block">
+                <div class="workshop-label">Install</div>
+                <pre><code>cargo install --git https://github.com/citum/citum-core --bin citum</code></pre>
+            </div>
+            <div class="workshop-block" style="margin-top: 1rem;">
+                <div class="workshop-label">Common commands</div>
+                <pre><code># Render a bibliography (plain text)
+citum render refs -b references.json -s styles/apa-7th.yaml
+
+# Render a bibliography (HTML)
+citum render refs -b references.json -s styles/apa-7th.yaml -f html
+
+# Process a Djot document with citations
+citum render doc -d paper.djot -b references.json -s styles/apa-7th.yaml
+
+# Validate a style
+citum style validate styles/my-style.yaml
+
+# Inspect the style schema
+citum schema --out-dir ./schemas</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                See <a href="examples.html">feature examples</a> for input and output samples across citation modes, bibliography grouping, multilingual terms, and output formats.
+            </p>
+        </section>
+
+        <section class="doc-section" id="wasm">
+            <div class="doc-section-header">
+                <h2>WASM</h2>
+                <p>
+                    The WASM bridge is built from
+                    <code>citum-hub/server/crates/wasm-bridge</code> using
+                    <code>wasm-pack</code> with the <code>nodejs</code> target.
+                    It is the integration layer used by <a href="https://hub.citum.org">Citum Hub</a>.
+                </p>
+            </div>
+            <div class="workshop-block">
+                <div class="workshop-label">Build</div>
+                <pre><code>cd citum-hub/server/crates/wasm-bridge
+wasm-pack build --target nodejs</code></pre>
+            </div>
+            <div class="workshop-block" style="margin-top: 1rem;">
+                <div class="workshop-label">Usage (Node.js)</div>
+                <pre><code>import { render_bibliography } from './pkg/wasm_bridge.js';
+
+const result = render_bibliography({
+  style: styleYamlString,
+  references: referencesJson,
+  locale: 'en-US',
+});</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                The WASM module requires rebuilding when the engine changes. TypeScript types are generated by <code>wasm-pack</code> alongside the module.
+            </p>
+        </section>
+
+        <section class="doc-section" id="ffi">
+            <div class="doc-section-header">
+                <h2>C FFI</h2>
+                <p>
+                    The <code>crates/citum-engine</code> crate exposes a C-compatible FFI surface in
+                    <code>src/ffi/mod.rs</code>. Build the shared library first, then link against
+                    it from your target language.
+                </p>
+            </div>
+            <div class="workshop-block">
+                <div class="workshop-label">Build shared library</div>
+                <pre><code>cargo build --release --lib
+# Output: target/release/libcitum_engine.{so,dylib,dll}</code></pre>
+            </div>
+            <div style="margin-top: 1.5rem;">
+                <div class="citum-panel" style="padding: 1.25rem; max-width: 36rem;">
+                    <h3 style="font-family: var(--citum-font-sans); font-size: 1rem; letter-spacing: 0; margin: 0 0 0.5rem;">Lua / LuaLaTeX</h3>
+                    <p style="color: var(--citum-muted); font-size: 0.88rem; line-height: 1.55; margin: 0;">
+                        Proof-of-concept bindings let a LuaLaTeX document call the Citum engine
+                        directly for citations and bibliography rendering. See
+                        <a href="https://github.com/citum/citum-labs/tree/main/bindings/lua">citum-labs/bindings/lua</a>
+                        for the binding source.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="doc-section" id="server">
+            <div class="doc-section-header">
+                <h2>JSON-RPC server</h2>
+                <p>
+                    The <code>citum-server</code> crate provides a long-running process that
+                    accepts JSON-RPC requests over stdin/stdout or HTTP. Use it for editor
+                    integrations, plugins, or web applications that need live citation formatting
+                    without process-spawn overhead per request.
+                </p>
+            </div>
+            <div class="workshop-block">
+                <div class="workshop-label">Start the server (stdin/stdout)</div>
+                <pre><code>citum serve --stdio</code></pre>
+            </div>
+            <div class="workshop-block" style="margin-top: 1rem;">
+                <div class="workshop-label">Start the server (HTTP, feature-gated)</div>
+                <pre><code>citum serve --http --port 8765</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                The HTTP server is behind the <code>citum-server/http</code> feature flag (axum).
+                See <a href="reference.html">Reference → JSON Schemas</a> for the
+                <code>server.json</code> schema describing the RPC surface, or browse
+                <a href="schemas/">docs/schemas/</a> directly.
+            </p>
+        </section>
+    </main>
+
+    <footer style="padding: 3rem 0; border-top: 1px solid var(--citum-border); background: var(--citum-surface);">
+        <!-- LAYOUT_FOOTER_START -->
+            <div class="site-footer-inner">
+                <div class="site-brand site-brand-small">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </div>
+                <div class="site-footer-links">
+                    <a href="guides/style-authoring/start.html">Style Authoring</a>
+                    <a href="developer.html">Developer</a>
+                    <a href="schemas/">Schemas</a>
+                    <a href="reports.html">Reports</a>
+                    <a href="operating.html">Contributing</a>
+                    <a href="https://github.com/citum/citum-core">GitHub</a>
+                </div>
+                <div class="site-footer-note">&copy; 2026 Citum Project.</div>
+            </div>        <!-- LAYOUT_FOOTER_END -->
+    </footer>
+    <script src="assets/citum-interactive.js"></script>
+</body>
+</html>
