@@ -593,7 +593,6 @@ dependencies = [
 name = "citum"
 version = "0.43.0"
 dependencies = [
- "biblatex",
  "ciborium",
  "citum-bindings",
  "citum-engine",
@@ -608,17 +607,13 @@ dependencies = [
  "clap_complete",
  "comfy-table",
  "crossterm",
- "csl-legacy",
- "indexmap 2.14.0",
  "ratatui",
  "schemars",
  "serde",
  "serde_json",
  "serde_yaml_ng",
  "strsim",
- "tracing",
  "url",
- "walkdir",
 ]
 
 [[package]]
@@ -644,12 +639,10 @@ dependencies = [
  "citum-schema",
  "csl-legacy",
  "indexmap 2.14.0",
- "serde",
  "serde_json",
  "serde_yaml_ng",
  "specta",
  "specta-typescript",
- "tracing",
  "wasm-bindgen",
 ]
 
@@ -658,7 +651,6 @@ name = "citum-edtf"
 version = "0.43.0"
 dependencies = [
  "serde",
- "tracing",
  "winnow 1.0.2",
 ]
 
@@ -668,7 +660,6 @@ version = "0.43.0"
 dependencies = [
  "citum-edtf",
  "citum-io",
- "citum-migrate",
  "citum-schema",
  "citum-schema-data",
  "criterion",
@@ -678,7 +669,6 @@ dependencies = [
  "indexmap 2.14.0",
  "jotdown",
  "orgize",
- "roxmltree 0.21.1",
  "rstest",
  "serde",
  "serde_json",
@@ -704,8 +694,6 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_yaml_ng",
- "thiserror",
- "tracing",
  "url",
 ]
 
@@ -728,7 +716,6 @@ dependencies = [
 name = "citum-pdf"
 version = "0.43.0"
 dependencies = [
- "tracing",
  "typst",
  "typst-kit",
  "typst-pdf",
@@ -740,7 +727,6 @@ version = "0.43.0"
 dependencies = [
  "serde_json",
  "thiserror",
- "tracing",
 ]
 
 [[package]]
@@ -768,7 +754,6 @@ dependencies = [
  "serde_json",
  "serde_yaml_ng",
  "specta",
- "tracing",
  "url",
 ]
 
@@ -778,7 +763,6 @@ version = "0.43.0"
 dependencies = [
  "ciborium",
  "cid",
- "citum-edtf",
  "citum-resolver-api",
  "citum-schema-data",
  "criterion",
@@ -793,8 +777,6 @@ dependencies = [
  "serde_yaml_ng",
  "sha2",
  "specta",
- "tracing",
- "url",
 ]
 
 [[package]]
@@ -813,7 +795,6 @@ dependencies = [
  "thiserror",
  "tokio",
  "tower",
- "tracing",
 ]
 
 [[package]]
@@ -836,7 +817,6 @@ dependencies = [
  "tempfile",
  "thiserror",
  "toml 1.1.2+spec-1.1.0",
- "tracing",
 ]
 
 [[package]]
@@ -1202,7 +1182,6 @@ dependencies = [
  "roxmltree 0.21.1",
  "serde",
  "serde_json",
- "tracing",
 ]
 
 [[package]]
