@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.43.0] - 2026-05-14
+
+### Refactor
+
+**migrate**
+
+- Extract modules from main.rs ([`4c8869a`](https://github.com/citum/citum-core/commit/4c8869aa38e34256f2161641db1abe08c76f63f5))
+
+
 ## [0.42.0] - 2026-05-13
 
 ### Bug Fixes
