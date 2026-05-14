@@ -1,11 +1,11 @@
-<!-- PAGE_ID: docs -->
+<!-- PAGE_ID: operating -->
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Citum Docs</title>
-    <meta name="description" content="Documentation for Citum: a Rust citation engine and YAML style system for structured bibliographies, multilingual terms, reusable style families, and verifiable output." />
+    <title>Contributing | Citum Docs</title>
+    <meta name="description" content="Contributor workflows, migration practice, policies, and architecture entrypoints for people working on Citum." />
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="assets/citum-theme.css" />
 </head>
@@ -20,7 +20,7 @@
                 </a>
             </div>
             <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
-                <a class="site-nav-link active" href="index.html">Overview</a>
+                <a class="site-nav-link " href="index.html">Overview</a>
                 <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
                 <a class="site-nav-link " href="developer.html">Developer</a>
                 <a class="site-nav-link " href="schemas/">Schemas</a>
@@ -37,7 +37,7 @@
             </button>
         </div>
         <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
-            <a class="site-nav-link active" href="index.html">Overview</a>
+            <a class="site-nav-link " href="index.html">Overview</a>
             <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
             <a class="site-nav-link " href="developer.html">Developer</a>
             <a class="site-nav-link " href="schemas/">Schemas</a>
@@ -45,87 +45,78 @@
             <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
         </div>        <!-- LAYOUT_NAV_END -->
     </nav>
-
     <main class="doc-shell">
-        <header class="doc-hero">
-            <div>
-                <h1>Citum docs</h1>
-                <p class="doc-lede">
-                    A Rust citation engine and YAML style system. Citum handles
-                    structured bibliographies, multilingual terms, reusable style
-                    families, and output that can be checked against real examples.
-                    CSL compatibility is a goal, not the ceiling.
-                </p>
-                <div class="doc-actions">
-                    <a class="citum-button-primary" href="guides/style-authoring/start.html">Write a style</a>
-                    <a class="citum-button-secondary" href="developer.html">Integrate Citum</a>
-                </div>
-            </div>
-            <aside class="workshop-block">
-                <div class="workshop-label">Djot input → rendered output</div>
-                <pre><code>[@kuhn1962, ch. 2; @watson1953]
-
-# style: chicago-author-date
-# locale: en-US
-
-(Kuhn 1962, chap. 2; Watson 1953)</code></pre>
-            </aside>
+        <header class="doc-section-header">
+            <span class="citum-kicker">Contributing</span>
+            <h1>Contributing to Citum</h1>
+            <p>Internal workflows, migration practice, policies, and architecture references for people working on the project.</p>
         </header>
-
         <section class="doc-section">
             <div class="doc-section-header">
-                <h2>What Citum does</h2>
-                <p>
-                    Most citation engines treat formatting as an afterthought. Citum
-                    makes the hard parts first-class — so the output you need is
-                    expressible, testable, and maintainable.
-                </p>
+                <h2>Status and quality</h2>
             </div>
             <div class="doc-grid">
-                <a class="doc-card" href="examples.html#bibliography-grouping">
-                    <h3>Bibliographies that organize themselves</h3>
-                    <p>Group references by type, language, or citation status. Legal hierarchies, multilingual sections, and primary/secondary divisions without custom renderer code.</p>
+                <a class="doc-card" href="TIER_STATUS.md">
+                    <h3>Tier status</h3>
+                    <p>Canonical style status, fidelity metrics, and current known gaps across the top parent styles.</p>
                 </a>
-                <a class="doc-card" href="guides/style-authoring/locales.html">
-                    <h3>Multilingual by default</h3>
-                    <p>Role labels, date formats, and locators adapt to the document locale automatically. Gendered terms, plural forms, and right-to-left scripts work without style modifications.</p>
-                </a>
-                <a class="doc-card" href="guides/style-authoring/inheritance-and-registries.html">
-                    <h3>Styles that extend, not fork</h3>
-                    <p>Build on existing styles with scoped overrides. Pin to a specific parent version for reproducibility, and distribute your styles without handing out a mystery clone.</p>
+                <a class="doc-card" href="compat.html">
+                    <h3>Compatibility report</h3>
+                    <p>Generated compatibility snapshot across the CSL oracle fixture suite.</p>
                 </a>
                 <a class="doc-card" href="reports.html">
-                    <h3>Bundled, validated styles</h3>
-                    <p>APA, Chicago, MLA, and more ship with Citum and are tested against real published examples. Use them as-is or as a base for your own.</p>
+                    <h3>Core quality reports</h3>
+                    <p>Portfolio baseline gate and per-style SQI scoring.</p>
                 </a>
             </div>
         </section>
-
         <section class="doc-section">
             <div class="doc-section-header">
-                <h2>Where to start</h2>
+                <h2>Workflows</h2>
             </div>
             <div class="doc-grid">
-                <a class="feature-link" href="guides/style-authoring/start.html">
-                    <h3>Style authoring</h3>
-                    <p>Write or adapt a YAML citation style. Start from the anatomy, add templates, type variants, and scoped options for the behavior your journal or workflow needs.</p>
+                <a class="doc-card" href="guides/STYLE_EVOLVE_WORKFLOW.md">
+                    <h3>Style evolve workflow</h3>
+                    <p>Process for migrating, upgrading, and refining Citum styles using the <code>/style-evolve</code> skill.</p>
                 </a>
-                <a class="feature-link" href="developer.html">
-                    <h3>Integration</h3>
-                    <p>Embed Citum in a web app, a LaTeX workflow, or an editor plugin. WASM, C FFI, CLI, and JSON-RPC server entry points with usage examples.</p>
+                <a class="doc-card" href="guides/RENDERING_WORKFLOW.md">
+                    <h3>Rendering workflow</h3>
+                    <p>Operational rendering and verification commands: oracle, batch impact, core quality gate.</p>
                 </a>
-                <a class="feature-link" href="reference.html">
-                    <h3>Reference</h3>
-                    <p>JSON schemas, canonical value tables, BibLaTeX field mappings, schema versioning rules, and feature status.</p>
+                <a class="doc-card" href="guides/CODING_STANDARDS.md">
+                    <h3>Coding standards</h3>
+                    <p>Rust verification table, benchmark workflow, Serde checklist, and test style expectations.</p>
                 </a>
-                <a class="feature-link" href="operating.html">
-                    <h3>Contributing</h3>
-                    <p>Migration practice, fidelity workflows, coding standards, and architectural policies for people moving the project forward.</p>
+                <a class="doc-card" href="guides/DOCUMENT_CLASSIFICATION.md">
+                    <h3>Document classification</h3>
+                    <p>Placement rules for specs, architecture notes, policies, guides, and reference docs.</p>
+                </a>
+            </div>
+        </section>
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>Policies and architecture</h2>
+            </div>
+            <div class="doc-grid">
+                <a class="doc-card" href="policies/TYPE_ADDITION_POLICY.md">
+                    <h3>Type addition policy</h3>
+                    <p>Active policy governing when and how new data-model and style-discriminated types are added.</p>
+                </a>
+                <a class="doc-card" href="architecture/DESIGN_PRINCIPLES.md">
+                    <h3>Design principles</h3>
+                    <p>Explicit templates, typed data, processor boundaries, and the explicit-over-magic principle.</p>
+                </a>
+                <a class="doc-card" href="architecture/MIGRATION_STRATEGY_ANALYSIS.md">
+                    <h3>Migration strategy</h3>
+                    <p>Current strategy for migrating CSL 1.0 styles into Citum: hybrid XML pipeline and LLM-authored templates.</p>
+                </a>
+                <a class="doc-card" href="architecture/ROADMAP.md">
+                    <h3>Roadmap</h3>
+                    <p>Strategic direction and milestone priorities.</p>
                 </a>
             </div>
         </section>
     </main>
-
     <footer style="padding: 3rem 0; border-top: 1px solid var(--citum-border); background: var(--citum-surface);">
         <!-- LAYOUT_FOOTER_START -->
             <div class="site-footer-inner">

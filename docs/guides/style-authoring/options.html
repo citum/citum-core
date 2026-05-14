@@ -1,0 +1,165 @@
+<!-- PAGE_ID: style -->
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>Options, Sorting, and Document Inputs | Citum Docs</title>
+        <meta name="description" content="Configure shared formatting behavior without duplicating templates." />
+        <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="../../assets/citum-theme.css">
+    </head>
+    <body>
+        <nav class="site-nav">
+            <!-- LAYOUT_NAV_START -->
+        <div class="site-nav-inner">
+            <div class="site-brand-wrap">
+                <a href="../../index.html" class="site-brand">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </a>
+            </div>
+            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
+                <a class="site-nav-link " href="../../index.html">Overview</a>
+                <a class="site-nav-link active" href="../../guides/style-authoring/start.html">Style Authoring</a>
+                <a class="site-nav-link " href="../../developer.html">Developer</a>
+                <a class="site-nav-link " href="../../schemas/">Schemas</a>
+                <a class="site-nav-link " href="../../reports.html">Reports</a>
+                <a class="site-source-link" href="https://github.com/citum/citum-core">
+                    <svg aria-hidden="true" class="site-source-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+                <span class="mobile-nav-icon" aria-hidden="true">&#9776;</span>
+            </button>
+        </div>
+        <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
+            <a class="site-nav-link " href="../../index.html">Overview</a>
+            <a class="site-nav-link active" href="../../guides/style-authoring/start.html">Style Authoring</a>
+            <a class="site-nav-link " href="../../developer.html">Developer</a>
+            <a class="site-nav-link " href="../../schemas/">Schemas</a>
+            <a class="site-nav-link " href="../../reports.html">Reports</a>
+            <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
+        </div>        <!-- LAYOUT_NAV_END -->
+        </nav>
+
+        <main class="doc-shell">
+            <header class="doc-section-header">
+                <span class="citum-kicker">Style authoring</span>
+                <h1>Options, Sorting, and Document Inputs</h1>
+                <p>Configure shared formatting behavior without duplicating templates.</p>
+                <div class="version-badges"><span class="version-badge" data-feature="style-authoring" data-status="active">active</span><span class="version-badge" data-feature="style-authoring">schema 0.1.0+</span><span class="version-badge" data-feature="style-authoring">engine 0.1.0+</span><span class="version-badge" data-feature="abbreviation-map" data-status="active">active</span><span class="version-badge" data-feature="abbreviation-map">schema 0.49.0+</span><span class="version-badge" data-feature="abbreviation-map">engine 0.49.0+</span></div>
+            </header>
+
+            <div class="doc-sidebar-layout">
+                <aside class="doc-sidebar" aria-label="Style authoring sections">
+                    <div class="doc-sidebar-title">Guide</div>
+                    <a class="doc-sidebar-link" href="../../guides/style-authoring/start.html">Start</a>
+<a class="doc-sidebar-link" href="../../guides/style-authoring/style-anatomy.html">Style Anatomy</a>
+<a class="doc-sidebar-link" href="../../guides/style-authoring/templates.html">Templates</a>
+<a class="doc-sidebar-link active" href="../../guides/style-authoring/options.html">Options</a>
+<a class="doc-sidebar-link" href="../../guides/style-authoring/locales.html">Locales</a>
+<a class="doc-sidebar-link" href="../../guides/style-authoring/inheritance-and-registries.html">Inheritance</a>
+<a class="doc-sidebar-link" href="../../guides/style-authoring/validation.html">Validation</a>
+                </aside>
+                <article class="doc-prose">
+                    <h2 id="global-options">Global options</h2><p>Global options apply across citation and bibliography rendering unless a
+section or component overrides them.</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-yaml"><span class="text-indigo-400">options</span>:
+  <span class="text-primary">processing</span>: <span class="text-emerald-400">author-date</span>
+  <span class="text-primary">contributors</span>: <span class="text-emerald-400">apa</span>
+  <span class="text-primary">dates</span>: <span class="text-emerald-400">long</span></code></pre>
+            </div>
+
+            <div class="doc-table-shell">
+                <table class="doc-table">
+                    <thead><tr><th>Option family</th><th>Controls</th></tr></thead>
+                    <tbody><tr><td><code>processing</code></td><td>author-date, numeric, note, or label behavior</td></tr><tr><td><code>contributors</code></td><td>name order, initials, conjunctions, shortening</td></tr><tr><td><code>dates</code></td><td>long, short, numeric, or ISO date rendering</td></tr><tr><td><code>titles</code></td><td>title casing and title form behavior</td></tr></tbody>
+                </table>
+            </div>
+        <h2 id="component-rendering-options">Component rendering options</h2><p>Use component options for punctuation, wrapping, and emphasis.</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-yaml"><span class="text-slate-400">- </span><span class="text-primary">title</span>: <span class="text-emerald-400">parent-serial</span>
+  <span class="text-primary">prefix</span>: <span class="text-emerald-400">". "</span>
+  <span class="text-primary">emph</span>: <span class="text-emerald-400">true</span>
+
+<span class="text-slate-400">- </span><span class="text-primary">number</span>: <span class="text-emerald-400">pages</span>
+  <span class="text-primary">prefix</span>: <span class="text-emerald-400">", "</span>
+  <span class="text-primary">label-form</span>: <span class="text-emerald-400">short</span></code></pre>
+            </div>
+
+            <div class="callout warning">
+                <span aria-hidden="true">⚠️</span>
+                <div><strong>Do not hardcode localized labels</strong>
+Avoid <code>prefix: &quot;pp. &quot;</code> or <code>prefix: &quot;In: &quot;</code>. Use <code>term</code> components or
+label options so locale files own language-specific text.</div>
+            </div>
+        <h2 id="options-inheritance">Options inheritance</h2><p>More local options override broader options:</p>
+<ol>
+<li>component-level options</li>
+<li>citation or bibliography section options</li>
+<li>global options</li>
+</ol>
+
+            <div class="workshop-block">
+                <pre><code class="language-yaml"><span class="text-indigo-400">options</span>:
+  <span class="text-primary">contributors</span>: <span class="text-emerald-400">apa</span>
+
+<span class="text-primary">citation</span>:
+  <span class="text-primary">options</span>:
+    <span class="text-primary">contributors</span>:
+      <span class="text-primary">shorten</span>: { min: 3, use-first: <span class="text-emerald-400">1</span> }</code></pre>
+            </div>
+        <h2 id="bibliography-sort-and-groups">Bibliography sort and groups</h2>
+            <div class="workshop-block">
+                <pre><code class="language-yaml"><span class="text-indigo-400">bibliography</span>:
+  <span class="text-primary">sort</span>: <span class="text-emerald-400">author-date-title</span>
+  <span class="text-primary">groups</span>:
+    <span class="text-slate-400">- </span><span class="text-primary">id</span>: <span class="text-emerald-400">primary</span>
+      <span class="text-primary">heading</span>:
+        <span class="text-primary">localized</span>:
+          en-US: <span class="text-emerald-400">"Primary Sources"</span>
+      <span class="text-primary">selector</span>:
+        <span class="text-primary">type</span>: <span class="text-emerald-400">legal-case</span></code></pre>
+            </div>
+        <h2 id="document-level-abbreviation-maps">Document-level abbreviation maps</h2><p>Abbreviation maps belong to the document input, not the style. They replace
+full rendered strings after value extraction and before output assembly.</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-yaml"><span class="text-indigo-400">abbreviation-map</span>:
+  Estates Gazette: <span class="text-emerald-400">EG</span>
+  "Lloyd's Law Reports": <span class="text-emerald-400">"Lloyd's Rep"</span>
+  "World Health Organization": <span class="text-emerald-400">WHO</span></code></pre>
+            </div>
+
+                </article>
+            </div>
+        </main>
+
+        <footer style="padding: 3rem 0; border-top: 1px solid var(--citum-border); background: var(--citum-surface);">
+            <!-- LAYOUT_FOOTER_START -->
+            <div class="site-footer-inner">
+                <div class="site-brand site-brand-small">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </div>
+                <div class="site-footer-links">
+                    <a href="../../guides/style-authoring/start.html">Style Authoring</a>
+                    <a href="../../developer.html">Developer</a>
+                    <a href="../../schemas/">Schemas</a>
+                    <a href="../../reports.html">Reports</a>
+                    <a href="../../operating.html">Contributing</a>
+                    <a href="https://github.com/citum/citum-core">GitHub</a>
+                </div>
+                <div class="site-footer-note">&copy; 2026 Citum Project.</div>
+            </div>        <!-- LAYOUT_FOOTER_END -->
+        </footer>
+        <script src="../../assets/citum-interactive.js"></script>
+    </body>
+</html>

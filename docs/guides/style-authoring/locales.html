@@ -1,0 +1,170 @@
+<!-- PAGE_ID: style -->
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>Locales and Gender-Aware Terms | Citum Docs</title>
+        <meta name="description" content="Use locale terms for roles, labels, locators, and grammatical agreement." />
+        <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="../../assets/citum-theme.css">
+    </head>
+    <body>
+        <nav class="site-nav">
+            <!-- LAYOUT_NAV_START -->
+        <div class="site-nav-inner">
+            <div class="site-brand-wrap">
+                <a href="../../index.html" class="site-brand">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </a>
+            </div>
+            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
+                <a class="site-nav-link " href="../../index.html">Overview</a>
+                <a class="site-nav-link active" href="../../guides/style-authoring/start.html">Style Authoring</a>
+                <a class="site-nav-link " href="../../developer.html">Developer</a>
+                <a class="site-nav-link " href="../../schemas/">Schemas</a>
+                <a class="site-nav-link " href="../../reports.html">Reports</a>
+                <a class="site-source-link" href="https://github.com/citum/citum-core">
+                    <svg aria-hidden="true" class="site-source-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+                <span class="mobile-nav-icon" aria-hidden="true">&#9776;</span>
+            </button>
+        </div>
+        <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
+            <a class="site-nav-link " href="../../index.html">Overview</a>
+            <a class="site-nav-link active" href="../../guides/style-authoring/start.html">Style Authoring</a>
+            <a class="site-nav-link " href="../../developer.html">Developer</a>
+            <a class="site-nav-link " href="../../schemas/">Schemas</a>
+            <a class="site-nav-link " href="../../reports.html">Reports</a>
+            <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
+        </div>        <!-- LAYOUT_NAV_END -->
+        </nav>
+
+        <main class="doc-shell">
+            <header class="doc-section-header">
+                <span class="citum-kicker">Style authoring</span>
+                <h1>Locales and Gender-Aware Terms</h1>
+                <p>Use locale terms for roles, labels, locators, and grammatical agreement.</p>
+                <div class="version-badges"><span class="version-badge" data-feature="gender-aware-locale-terms" data-status="active">active</span><span class="version-badge" data-feature="gender-aware-locale-terms">schema 0.49.0+</span><span class="version-badge" data-feature="gender-aware-locale-terms">engine 0.49.0+</span></div>
+            </header>
+
+            <div class="doc-sidebar-layout">
+                <aside class="doc-sidebar" aria-label="Style authoring sections">
+                    <div class="doc-sidebar-title">Guide</div>
+                    <a class="doc-sidebar-link" href="../../guides/style-authoring/start.html">Start</a>
+<a class="doc-sidebar-link" href="../../guides/style-authoring/style-anatomy.html">Style Anatomy</a>
+<a class="doc-sidebar-link" href="../../guides/style-authoring/templates.html">Templates</a>
+<a class="doc-sidebar-link" href="../../guides/style-authoring/options.html">Options</a>
+<a class="doc-sidebar-link active" href="../../guides/style-authoring/locales.html">Locales</a>
+<a class="doc-sidebar-link" href="../../guides/style-authoring/inheritance-and-registries.html">Inheritance</a>
+<a class="doc-sidebar-link" href="../../guides/style-authoring/validation.html">Validation</a>
+                </aside>
+                <article class="doc-prose">
+                    <h2 id="locale-owned-text">Locale-owned text</h2><p>Use locale terms for text that varies by language: page labels, role labels,
+and other bibliographic terms. Style templates should express structure; locale
+files should own language.</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-yaml"><span class="text-slate-400">- </span><span class="text-primary">term</span>: <span class="text-emerald-400">volume</span>
+  <span class="text-primary">form</span>: <span class="text-emerald-400">short</span>
+  <span class="text-primary">suffix</span>: <span class="text-emerald-400">" "</span>
+<span class="text-slate-400">- </span><span class="text-primary">number</span>: <span class="text-emerald-400">volume</span></code></pre>
+            </div>
+        <h2 id="contributor-gender-metadata">Contributor gender metadata</h2><p>Contributor-driven role labels can use contributor gender metadata where the
+locale provides gendered forms.</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-yaml"><span class="text-indigo-400">contributors</span>:
+  <span class="text-slate-400">- </span><span class="text-primary">role</span>: <span class="text-emerald-400">editor</span>
+    <span class="text-primary">contributor</span>:
+      <span class="text-primary">family</span>: <span class="text-emerald-400">"Martinez"</span>
+      <span class="text-primary">given</span>: <span class="text-emerald-400">"Ana"</span>
+    <span class="text-primary">gender</span>: <span class="text-emerald-400">feminine</span></code></pre>
+            </div>
+        <p>Mixed-gender contributor groups prefer a locale&#39;s neutral or common form when
+one exists. Citum does not silently choose a masculine-specific label for a
+mixed group when only gendered forms are available.</p>
+<h2 id="template-gender-overrides">Template gender overrides</h2><p>Use a template-level <code>gender</code> override when the style needs to request a
+specific agreement form directly.</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-yaml"><span class="text-slate-400">- </span><span class="text-primary">contributor</span>: <span class="text-emerald-400">editor</span>
+  <span class="text-primary">form</span>: <span class="text-emerald-400">long</span>
+  <span class="text-primary">gender</span>: <span class="text-emerald-400">feminine</span>
+
+<span class="text-slate-400">- </span><span class="text-primary">term</span>: <span class="text-emerald-400">volume</span>
+  <span class="text-primary">form</span>: <span class="text-emerald-400">short</span>
+  <span class="text-primary">gender</span>: <span class="text-emerald-400">masculine</span>
+
+<span class="text-slate-400">- </span><span class="text-primary">number</span>: <span class="text-emerald-400">volume</span>
+  <span class="text-primary">label-form</span>: <span class="text-emerald-400">short</span>
+  <span class="text-primary">gender</span>: <span class="text-emerald-400">feminine</span></code></pre>
+            </div>
+        <h2 id="locale-yaml">Locale YAML</h2><p>Locale terms can be plain strings or gendered maps.</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-yaml"><span class="text-indigo-400">roles</span>:
+  <span class="text-primary">editor</span>:
+    <span class="text-primary">long</span>:
+      <span class="text-primary">singular</span>:
+        <span class="text-primary">masculine</span>: <span class="text-emerald-400">editor</span>
+        <span class="text-primary">feminine</span>: <span class="text-emerald-400">editora</span>
+        <span class="text-primary">common</span>: <span class="text-emerald-400">persona</span> editora
+      <span class="text-primary">plural</span>:
+        <span class="text-primary">masculine</span>: <span class="text-emerald-400">editores</span>
+        <span class="text-primary">feminine</span>: <span class="text-emerald-400">editoras</span>
+        <span class="text-primary">common</span>: <span class="text-emerald-400">equipo</span> editorial</code></pre>
+            </div>
+        <p>Locator terms can also declare lexical gender metadata.</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-yaml"><span class="text-indigo-400">locators</span>:
+  <span class="text-primary">page</span>:
+    <span class="text-primary">long</span>:
+      <span class="text-primary">singular</span>: página
+      <span class="text-primary">plural</span>: páginas
+    <span class="text-primary">short</span>:
+      <span class="text-primary">singular</span>: <span class="text-emerald-400">p.</span>
+      <span class="text-primary">plural</span>: <span class="text-emerald-400">pp.</span>
+    <span class="text-primary">gender</span>: <span class="text-emerald-400">feminine</span></code></pre>
+            </div>
+
+            <div class="callout tip">
+                <span aria-hidden="true">ℹ️</span>
+                <div><strong>Current scope</strong>
+Gender-aware rendering applies to locale term selection and contributor role
+labels. Verb-form role terms remain ungendered until the follow-up adds the
+required plumbing.</div>
+            </div>
+
+                </article>
+            </div>
+        </main>
+
+        <footer style="padding: 3rem 0; border-top: 1px solid var(--citum-border); background: var(--citum-surface);">
+            <!-- LAYOUT_FOOTER_START -->
+            <div class="site-footer-inner">
+                <div class="site-brand site-brand-small">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </div>
+                <div class="site-footer-links">
+                    <a href="../../guides/style-authoring/start.html">Style Authoring</a>
+                    <a href="../../developer.html">Developer</a>
+                    <a href="../../schemas/">Schemas</a>
+                    <a href="../../reports.html">Reports</a>
+                    <a href="../../operating.html">Contributing</a>
+                    <a href="https://github.com/citum/citum-core">GitHub</a>
+                </div>
+                <div class="site-footer-note">&copy; 2026 Citum Project.</div>
+            </div>        <!-- LAYOUT_FOOTER_END -->
+        </footer>
+        <script src="../../assets/citum-interactive.js"></script>
+    </body>
+</html>

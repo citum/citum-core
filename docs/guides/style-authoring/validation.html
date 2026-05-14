@@ -1,0 +1,131 @@
+<!-- PAGE_ID: style -->
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>Validation and Compatibility | Citum Docs</title>
+        <meta name="description" content="Check styles before publishing and understand the existing version enforcement boundaries." />
+        <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="../../assets/citum-theme.css">
+    </head>
+    <body>
+        <nav class="site-nav">
+            <!-- LAYOUT_NAV_START -->
+        <div class="site-nav-inner">
+            <div class="site-brand-wrap">
+                <a href="../../index.html" class="site-brand">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </a>
+            </div>
+            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
+                <a class="site-nav-link " href="../../index.html">Overview</a>
+                <a class="site-nav-link active" href="../../guides/style-authoring/start.html">Style Authoring</a>
+                <a class="site-nav-link " href="../../developer.html">Developer</a>
+                <a class="site-nav-link " href="../../schemas/">Schemas</a>
+                <a class="site-nav-link " href="../../reports.html">Reports</a>
+                <a class="site-source-link" href="https://github.com/citum/citum-core">
+                    <svg aria-hidden="true" class="site-source-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+                <span class="mobile-nav-icon" aria-hidden="true">&#9776;</span>
+            </button>
+        </div>
+        <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
+            <a class="site-nav-link " href="../../index.html">Overview</a>
+            <a class="site-nav-link active" href="../../guides/style-authoring/start.html">Style Authoring</a>
+            <a class="site-nav-link " href="../../developer.html">Developer</a>
+            <a class="site-nav-link " href="../../schemas/">Schemas</a>
+            <a class="site-nav-link " href="../../reports.html">Reports</a>
+            <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
+        </div>        <!-- LAYOUT_NAV_END -->
+        </nav>
+
+        <main class="doc-shell">
+            <header class="doc-section-header">
+                <span class="citum-kicker">Style authoring</span>
+                <h1>Validation and Compatibility</h1>
+                <p>Check styles before publishing and understand the existing version enforcement boundaries.</p>
+                <div class="version-badges"><span class="version-badge" data-feature="style-authoring" data-status="active">active</span><span class="version-badge" data-feature="style-authoring">schema 0.1.0+</span><span class="version-badge" data-feature="style-authoring">engine 0.1.0+</span><span class="version-badge" data-feature="style-inheritance-pins" data-status="active">active</span><span class="version-badge" data-feature="style-inheritance-pins">schema 0.38.0+</span><span class="version-badge" data-feature="style-inheritance-pins">engine 0.38.0+</span></div>
+            </header>
+
+            <div class="doc-sidebar-layout">
+                <aside class="doc-sidebar" aria-label="Style authoring sections">
+                    <div class="doc-sidebar-title">Guide</div>
+                    <a class="doc-sidebar-link" href="../../guides/style-authoring/start.html">Start</a>
+<a class="doc-sidebar-link" href="../../guides/style-authoring/style-anatomy.html">Style Anatomy</a>
+<a class="doc-sidebar-link" href="../../guides/style-authoring/templates.html">Templates</a>
+<a class="doc-sidebar-link" href="../../guides/style-authoring/options.html">Options</a>
+<a class="doc-sidebar-link" href="../../guides/style-authoring/locales.html">Locales</a>
+<a class="doc-sidebar-link" href="../../guides/style-authoring/inheritance-and-registries.html">Inheritance</a>
+<a class="doc-sidebar-link active" href="../../guides/style-authoring/validation.html">Validation</a>
+                </aside>
+                <article class="doc-prose">
+                    <h2 id="validate-before-publishing">Validate before publishing</h2><p>Run the end-to-end style validator before publishing or comparing fidelity.</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-bash">citum style validate path/to/my-journal.yaml</code></pre>
+            </div>
+        <p>The validator parses the style, runs schema validation, resolves <code>extends</code>,
+verifies any <code>extends-pin</code> values, and checks <code>info.citum-version</code> against the
+running engine.</p>
+<p>Machine-readable output is available for tools:</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-bash">citum style validate path/to/my-journal.yaml --format json</code></pre>
+            </div>
+        <h2 id="engine-compatibility">Engine compatibility</h2><p>Use <code>info.citum-version</code> when a style depends on an engine feature that older
+versions should not try to render.</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-yaml"><span class="text-indigo-400">info</span>:
+  <span class="text-primary">title</span>: <span class="text-emerald-400">Hypothetical</span> Style With New Features
+  <span class="text-primary">citum-version</span>: <span class="text-emerald-400">"&gt;=0.49.0"</span></code></pre>
+            </div>
+        <p>An older engine returns a direct version mismatch instead of an opaque
+deserialization or rendering failure.</p>
+<h2 id="schema-compatibility">Schema compatibility</h2><p>Style schema versioning and engine versioning are related but separate:</p>
+<ul>
+<li>schema version describes the YAML wire format</li>
+<li>engine version describes the Rust processor release</li>
+<li>generated schemas in <code>docs/schemas/</code> remain the committed validation
+artifacts</li>
+</ul>
+<p>For policy details, see <a href="../../reference/SCHEMA_VERSIONING.md"><code>SCHEMA_VERSIONING.md</code></a>.</p>
+<h2 id="fidelity-reports">Fidelity reports</h2><p>Use the generated reports when checking whether a style is production-ready:</p>
+<ul>
+<li><a href="../../compat.html"><code>compat.html</code></a> for style-level fidelity and SQI status</li>
+<li><a href="../../reports.html"><code>reports.html</code></a> for generated report entrypoints</li>
+<li><a href="../../TIER_STATUS.md"><code>TIER_STATUS.md</code></a> for the current style status table</li>
+</ul>
+
+                </article>
+            </div>
+        </main>
+
+        <footer style="padding: 3rem 0; border-top: 1px solid var(--citum-border); background: var(--citum-surface);">
+            <!-- LAYOUT_FOOTER_START -->
+            <div class="site-footer-inner">
+                <div class="site-brand site-brand-small">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </div>
+                <div class="site-footer-links">
+                    <a href="../../guides/style-authoring/start.html">Style Authoring</a>
+                    <a href="../../developer.html">Developer</a>
+                    <a href="../../schemas/">Schemas</a>
+                    <a href="../../reports.html">Reports</a>
+                    <a href="../../operating.html">Contributing</a>
+                    <a href="https://github.com/citum/citum-core">GitHub</a>
+                </div>
+                <div class="site-footer-note">&copy; 2026 Citum Project.</div>
+            </div>        <!-- LAYOUT_FOOTER_END -->
+        </footer>
+        <script src="../../assets/citum-interactive.js"></script>
+    </body>
+</html>
