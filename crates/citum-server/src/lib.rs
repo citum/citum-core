@@ -28,8 +28,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! - `async`: Enable tokio runtime (required for HTTP)
 //! - `http`: Enable HTTP server (implies async)
 
-#![forbid(unsafe_code)]
-
 /// Server error types and conversions.
 pub mod error;
 /// JSON-RPC request handling and stdio transport.

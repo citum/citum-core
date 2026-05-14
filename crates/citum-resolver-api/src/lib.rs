@@ -11,8 +11,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! to facilitate integration by third-party tool authors who don't
 //! need the full store logic.
 
-#![forbid(unsafe_code)]
-
 /// Error types and conversion helpers.
 pub mod error;
 pub use error::{ResolutionError, ResolverError};
