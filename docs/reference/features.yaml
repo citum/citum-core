@@ -1,0 +1,64 @@
+features:
+  - id: style-authoring
+    title: Style authoring
+    status: active
+    since_schema: "0.1.0"
+    since_engine: "0.1.0"
+    spec: docs/guides/style-author-guide.md
+    summary: Declarative YAML styles with explicit citation and bibliography templates.
+  - id: gender-aware-locale-terms
+    title: Gender-aware locale terms
+    status: active
+    since_schema: "0.49.0"
+    since_engine: "0.49.0"
+    spec: docs/specs/LOCALE_MESSAGES.md
+    summary: Locale role and locator terms can select gendered forms where the locale provides them.
+  - id: style-inheritance-pins
+    title: Style inheritance and pins
+    status: active
+    since_schema: "0.38.0"
+    since_engine: "0.38.0"
+    spec: docs/specs/DISTRIBUTED_RESOLVER.md
+    summary: Styles can extend parent styles and lock remote parents with content identifiers.
+  - id: distributed-registries
+    title: Distributed registries
+    status: active
+    since_schema: "0.38.0"
+    since_engine: "0.38.0"
+    spec: docs/specs/DISTRIBUTED_RESOLVER.md
+    summary: Resolver chains can fetch, verify, and validate styles outside the built-in catalog.
+  - id: typst-output
+    title: Typst output
+    status: preview
+    since_schema: "0.47.0"
+    since_engine: "0.47.0"
+    spec: docs/specs/DOCUMENT_INPUT_PARSER_BOUNDARY.md
+    summary: Citum can feed rendered citations and bibliographies into a Typst PDF workflow.
+  - id: lualatex-ffi
+    title: LuaLaTeX and FFI
+    status: experimental
+    since_schema: "0.47.0"
+    since_engine: "0.47.0"
+    spec: docs/architecture/design/WASM_SUPPORT.md
+    summary: Native bindings expose the engine to non-Rust hosts and TeX integration experiments.
+  - id: web-interactivity
+    title: Web interactivity
+    status: preview
+    since_schema: "0.46.0"
+    since_engine: "0.46.0"
+    spec: docs/specs/SERVER_INTERACTIVE_API.md
+    summary: Citum HTML output can be enriched with citation navigation and bibliography previews.
+  - id: annotated-bibliography
+    title: Annotated bibliography
+    status: active
+    since_schema: "0.48.0"
+    since_engine: "0.48.0"
+    spec: docs/specs/ANNOTATED_BIBLIOGRAPHY.md
+    summary: Bibliographies can include annotation content as a first-class rendering concern.
+  - id: abbreviation-map
+    title: Abbreviation map
+    status: active
+    since_schema: "0.49.0"
+    since_engine: "0.49.0"
+    spec: docs/specs/ABBREVIATION_MAP.md
+    summary: Document-level abbreviation maps can substitute rendered names and titles without changing styles.

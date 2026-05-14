@@ -1,891 +1,206 @@
 <!-- PAGE_ID: docs -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en" class="scroll-smooth">
-
 <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Citum | Rust Citation Formatting for Modern Workflows</title>
-    <meta name="description"
-        content="A Rust citation engine and YAML style system for modern publishing workflows.">
-
+    <title>Citum Docs | Citation Styles You Can Check</title>
+    <meta name="description" content="Documentation for Citum: grouped bibliographies, multilingual terms, reusable style families, and citation output that can be checked against real examples." />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-        rel="stylesheet" />
-
     <script>
         tailwind.config = {
-            darkMode: "class",
             theme: {
                 extend: {
                     colors: {
-                        "primary": "#2a94d6", // Desaturated blue
-                        "background-light": "#fdfbf7", // Soft cream off-white
-                        "accent-cream": "#f5f2eb",
-                    },
-                    fontFamily: {
-                        "display": ["Libre Franklin", "sans-serif"],
-                        "mono": ["JetBrains Mono", "monospace"]
-                    },
-                    borderRadius: {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
+                        primary: "#2a94d6",
+                        "background-light": "#fdfbf7",
                     },
                 },
             },
-        }
+        };
     </script>
-    <style type="text/tailwindcss">
-        body {
-            font-family: 'Libre Franklin', sans-serif;
-            color: #374151;
-        }
-        .font-mono {
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .glass-nav {
-            background: rgba(253, 251, 247, 0.85);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(42, 148, 214, 0.1);
-        }
-        .code-gradient {
-            background: linear-gradient(135deg, rgba(42, 148, 214, 0.05) 0%, rgba(253, 251, 247, 0) 100%);
-        }
-        .citum-panel {
-            background: var(--citum-surface);
-            transition: all 0.3s ease;
-        }
-        .citum-panel:hover {
-            border-color: #2a94d6;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-        }
-        
-        /* Command Copy Button */
-        .copy-btn {
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-        .code-block:hover .copy-btn {
-            opacity: 1;
-        }
-    </style>
     <link rel="stylesheet" href="assets/citum-theme.css">
 </head>
-
 <body class="bg-background-light text-slate-700 selection:bg-primary/20">
-
-    <!-- Navigation -->
-    <!-- LAYOUT_NAV_START -->
-        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2 shrink-0">
-                <a href="index.html" class="flex items-center gap-2 group">
-                    <div class="w-8 h-8 bg-primary rounded flex items-center justify-center group-hover:brightness-110 transition-all">
-                        <span class="text-white font-mono font-bold">C</span>
-                    </div>
-                    <span class="font-mono text-xl font-bold tracking-tight text-slate-900">Citum</span>
+    <nav class="site-nav">
+        <!-- LAYOUT_NAV_START -->
+        <div class="site-nav-inner">
+            <div class="site-brand-wrap">
+                <a href="index.html" class="site-brand">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
                 </a>
             </div>
-            <div class="hidden md:flex items-center gap-3 lg:gap-4 xl:gap-6 min-w-0 overflow-x-auto whitespace-nowrap pl-4">
-                <a class="nav-link" href="https://citum.org">Home</a>
-                <a class="nav-link text-slate-600" href="https://citum.org/news/">News</a>
-                <a class="nav-link active bg-primary/10 text-primary font-semibold" href="index.html">Docs</a>
-                <a class="nav-link text-slate-600" href="https://hub.citum.org">Hub</a>
-                <a class="nav-link text-slate-600" href="https://citum.org/demo/">Demo</a>
-                <a class="nav-link text-slate-600" href="examples.html">Examples</a>
-                <a class="nav-link text-slate-600" href="guides/style-author-guide.html">Style Guide</a>
-                <a class="nav-link text-slate-600" href="reports.html">Reports</a>
-                <a class="nav-link" href="https://github.com/citum">GitHub</a>
-                <a class="hidden xl:flex btn-primary ml-2" href="https://github.com/citum/citum-core">
-                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
+                <a class="site-nav-link active" href="index.html">Overview</a>
+                <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
+                <a class="site-nav-link " href="examples.html">Examples</a>
+                <a class="site-nav-link " href="reference.html">Reference</a>
+                <a class="site-nav-link " href="reports.html">Reports</a>
+                <a class="site-nav-link " href="operating.html">Operating</a>
+                <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
+                <a class="site-source-link" href="https://github.com/citum/citum-core">
+                    <svg aria-hidden="true" class="site-source-icon" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
                     </svg>
                     Source
                 </a>
             </div>
-            <button type="button" class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-[var(--citum-surface)]/80 px-3 py-2 text-slate-700" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
                 <span class="material-icons text-[20px]">menu</span>
             </button>
         </div>
-        <div id="mobile-nav" class="md:hidden hidden border-t border-slate-200 bg-background-light/95 px-6 py-4" data-mobile-menu>
-            <div class="flex flex-col gap-3 text-sm font-medium text-slate-700">
-                <a class="hover:text-primary transition-colors" href="https://citum.org">Home</a>
-                <a class="hover:text-primary transition-colors" href="https://citum.org/news/">News</a>
-                <a class="hover:text-primary transition-colors" href="index.html">Docs</a>
-                <a class="hover:text-primary transition-colors" href="https://hub.citum.org">Hub</a>
-                <a class="hover:text-primary transition-colors" href="https://citum.org/demo/">Demo</a>
-                <a class="hover:text-primary transition-colors" href="examples.html">Examples</a>
-                <a class="hover:text-primary transition-colors" href="guides/style-author-guide.html">Style Guide</a>
-                <a class="hover:text-primary transition-colors" href="reports.html">Reports</a>
-                <a class="hover:text-primary transition-colors" href="https://github.com/citum">GitHub</a>
-            </div>
+        <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
+            <a class="site-nav-link active" href="index.html">Overview</a>
+            <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
+            <a class="site-nav-link " href="examples.html">Examples</a>
+            <a class="site-nav-link " href="reference.html">Reference</a>
+            <a class="site-nav-link " href="reports.html">Reports</a>
+            <a class="site-nav-link " href="operating.html">Operating</a>
+            <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
         </div>        <!-- LAYOUT_NAV_END -->
+    </nav>
 
-    <!-- Hero Section -->
-    <header class="pt-32 pb-20 px-6 relative overflow-hidden">
-        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full pointer-events-none opacity-30">
-            <div
-                class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-primary/10 rounded-full blur-[120px]">
-            </div>
-        </div>
-        <div class="max-w-7xl mx-auto relative z-10 grid lg:grid-cols-[1.1fr_0.9fr] gap-12 items-center">
+    <main class="doc-shell">
+        <header class="doc-hero">
             <div>
-            <div class="mb-8 flex flex-wrap items-center gap-2 text-sm">
                 <span class="citum-kicker">Docs workshop</span>
-                <a class="rounded-full border border-slate-200 bg-[var(--citum-surface)]/80 px-4 py-2 text-slate-700 hover:border-primary/40 hover:text-primary transition-colors"
-                    href="#features">Features</a>
-                <a class="rounded-full border border-slate-200 bg-[var(--citum-surface)]/80 px-4 py-2 text-slate-700 hover:border-primary/40 hover:text-primary transition-colors"
-                    href="#roadmap">Current Status</a>
-            </div>
-            <h1 class="text-6xl md:text-8xl font-bold tracking-tight text-slate-900 mb-6 max-w-[9ch]">
-                Citum docs
-            </h1>
-            <p class="text-xl md:text-2xl text-slate-500 mb-10 max-w-2xl leading-relaxed">
-                A Rust citation engine and YAML style system for
-                rendering documents, styling references, and validating
-                bibliographic data.
-            </p>
-
-            <!-- Getting Started Command -->
-            <div class="max-w-xl mb-10">
-                <div
-                    class="workshop-block bg-slate-900 rounded-lg p-4 flex items-center justify-between group cursor-text border border-slate-700 shadow-lg text-left">
-                    <code
-                        class="font-mono text-emerald-400 text-sm">$ cargo install --git https://github.com/citum/citum-core --bin citum</code>
-                    <button class="text-slate-500 hover:text-white transition-colors"
-                        onclick="navigator.clipboard.writeText('cargo install --git https://github.com/citum/citum-core --bin citum')"
-                        title="Copy to clipboard">
-                        <span class="material-icons text-base">content_copy</span>
-                    </button>
+                <h1>Citum docs</h1>
+                <p class="doc-lede">
+                    Citum is for citation styles that need grouped
+                    bibliographies, multilingual terms, reusable journal
+                    families, and output that can be checked against real
+                    examples. It keeps CSL compatibility in view without
+                    making CSL the full scope of the project.
+                </p>
+                <div class="doc-actions">
+                    <a class="citum-button-primary" href="guides/style-authoring/start.html">
+                        Write a style
+                        <span class="material-icons text-sm" aria-hidden="true">arrow_forward</span>
+                    </a>
+                    <a class="citum-button-secondary" href="reference.html">Browse reference</a>
                 </div>
-                <p class="text-slate-400 text-xs mt-2 font-mono">Requires Rust toolchain</p>
             </div>
-
-            <div class="flex flex-col sm:flex-row items-start gap-4">
-                <a class="w-full sm:w-auto citum-button-primary"
-                    href="#features">
-                    Explore Features
-                    <span class="material-icons text-sm">arrow_downward</span>
-                </a>
-                <a class="w-full sm:w-auto citum-button-secondary"
-                    href="https://github.com/citum/citum-core/tree/main/docs">
-                    View Documentation
-                </a>
-            </div>
-            </div>
-            <aside class="workshop-block p-6 rotate-1">
+            <aside class="workshop-block">
                 <div class="workshop-label">Rendering trace</div>
-                <pre class="text-sm leading-relaxed"><span class="text-slate-400"># Input</span>
+                <pre><code># Input
 [@kuhn1962, pp. 10-12]
 
-<span class="text-slate-400"># Resolver</span>
-style: chicago-author-date
-position: first
+# Style
+processing: author-date
 locale: en-US
 
-<span class="text-slate-400"># Output</span>
-<span class="text-primary">(Kuhn 1962, 10-12)</span></pre>
+# Output
+(Kuhn 1962, 10-12)</code></pre>
             </aside>
-        </div>
-    </header>
+        </header>
 
-    <!-- YAML Example Section -->
-    <section class="px-6 py-12">
-        <div class="max-w-5xl mx-auto bg-slate-50 rounded-xl border border-slate-200 shadow-xl overflow-hidden">
-            <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-100/50">
-                <div class="flex gap-2">
-                    <div class="w-3 h-3 rounded-full bg-slate-300"></div>
-                    <div class="w-3 h-3 rounded-full bg-slate-300"></div>
-                    <div class="w-3 h-3 rounded-full bg-slate-300"></div>
-                </div>
-                <div class="text-xs font-mono text-slate-400">citation_config.citum.yaml</div>
-                <div class="w-12"></div>
-            </div>
-            <div class="p-8 overflow-x-auto bg-[#fafafa]">
-                <pre class="font-mono text-sm leading-relaxed"><span class="text-indigo-600">info</span>:
-  <span class="text-primary">title</span>: <span class="text-emerald-600">"APA 7th Edition"</span>
-<span class="text-indigo-600">options</span>:
-  <span class="text-primary">processing</span>: <span class="text-emerald-600">author-date</span>
-  <span class="text-primary">contributors</span>:
-    <span class="text-primary">initialize-with</span>: <span class="text-emerald-600">". "</span>
-    <span class="text-primary">and</span>: <span class="text-emerald-600">symbol</span>
-  <span class="text-primary">dates</span>: <span class="text-emerald-600">long</span>
-<span class="text-indigo-600">citation</span>:
-  <span class="text-primary">integral</span>:
-    <span class="text-primary">options</span>:
-      <span class="text-primary">contributors</span>:
-        <span class="text-primary">and</span>: <span class="text-emerald-600">text</span></pre>
-            </div>
-        </div>
-    </section>
-
-    <!-- Features Grid -->
-    <section class="py-24 px-6" id="features">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Built for Current Citation Workflows</h2>
-                <p class="text-slate-500">Style authoring, document rendering, validation, and compatibility reporting in one toolchain.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-                <!-- Document Processing -->
-                <a href="examples.html#document-processing"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">description</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Document Processing</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        Render Djot documents end to end, or process Markdown documents with Pandoc-style citation markers through the same CLI output targets.
-                    </p>
-                </a>
-
-                <!-- Advanced Citations -->
-                <a href="examples.html#advanced-citations"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">auto_awesome</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Advanced Citations</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        Integral and parenthetical citation modes, multi-cites, locators, and style-specific name handling.
-                    </p>
-                </a>
-
-                <!-- Bibliography Grouping -->
-                <a href="examples.html#bibliography-grouping"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">library_books</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Bibliography Grouping</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        Configurable bibliography sections with per-group sorting. Essential for legal hierarchies,
-                        multilingual bibliographies, and primary/secondary source divisions.
-                    </p>
-                </a>
-
-                <!-- Compound Numeric Sets -->
-                <a href="examples.html#compound-numeric-sets"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">view_agenda</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Compound Numeric Sets</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        Optional top-level bibliography <code class="text-xs">sets</code> model for chemistry-style
-                        grouped numeric entries with shared number slots and configurable whole-set vs sub-entry citations.
-                    </p>
-                </a>
-
-                <!-- Multilingual Support -->
-                <a href="examples.html#multilingual-support"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">translate</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Multilingual Support</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        First-class support for multilingual citations, RTL languages, locale-aware title casing,
-                        transliterations, and shipped locale overrides for style-specific language variants.
-                        Locale messages use Unicode MessageFormat 2 (MF2) syntax for plural and select
-                        dispatch, with a one-struct upgrade path to ICU4X when it stabilizes.
-                    </p>
-                </a>
-
-                <!-- Advanced Dates -->
-                <a href="examples.html#advanced-dates"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">event</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Advanced Dates</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        Handle complex historical ranges, uncertain dates, and non-Gregorian calendars with native EDTF
-                        precision.
-                    </p>
-                </a>
-
-                <!-- Smart Presets -->
-                <a href="examples.html#options-presets"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">tune</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Presets &amp; Inheritance</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        Reusable presets for contributors, dates, and titles. Inherit a full style with
-                        <code class="text-xs bg-slate-100 px-1 rounded">extends:</code> and tune declared
-                        axes — date position, name lists, label wrapping — via
-                        <code class="text-xs bg-slate-100 px-1 rounded">options.*</code>, <code class="text-xs bg-slate-100 px-1 rounded">citation.options.*</code>, and <code class="text-xs bg-slate-100 px-1 rounded">bibliography.options.*</code>.
-                    </p>
-                </a>
-
-                <!-- Title Formatting -->
-                <a href="examples.html#titles-links"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">title</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Title Formatting</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        Distinct title/subtitle formatting and declarative rules for text transformations and automatic
-                        linking.
-                    </p>
-                </a>
-
-                <!-- Type-Specific Overrides -->
-                <a href="examples.html#overrides"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">sync_alt</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Type Overrides</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        Declaratively render components differently for each reference type without procedural
-                        conditional logic.
-                    </p>
-                </a>
-
-                <!-- Pluggable Output Formats -->
-                <a href="examples.html#output-formats"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">html</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Pluggable Output</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        Generate plain text, HTML, Djot, LaTeX, or Typst output and move into PDF workflows from the same CLI.
-                    </p>
-                </a>
-
-                <!-- Universal C-FFI -->
-                <a href="examples.html#lualatex-integration"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">settings_input_component</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">LuaLaTeX via FFI</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        A LuaLaTeX proof-of-concept lets TeX documents call the Citum engine directly for citations and bibliography rendering.
-                    </p>
-                </a>
-
-                <!-- Performance -->
-                <a href="examples.html#binary-performance"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">speed</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Performance</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        Convert styles and bibliographies to CBOR for faster load paths in larger rendering workflows.
-                    </p>
-                </a>
-
-                <!-- JSON Server Mode -->
-                <a href="https://github.com/citum/citum-core/tree/main/crates/citum-server"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block"
-                    target="_blank">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">hub</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">JSON-RPC Server</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        Long-running RPC and HTTP entrypoints for editor integrations, plugins, and web applications that need live formatting.
-                    </p>
-                </a>
-
-                <!-- Distributed Registries -->
-                <a href="examples.html#distributed-registries"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">lan</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Distributed Registries
-                        <span class="ml-2 text-xs align-middle px-2 py-0.5 rounded-full bg-primary/10 text-primary font-mono uppercase tracking-wider">New</span>
-                    </h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        Federated style discovery: opt into the Citum Hub or any institutional registry, render directly against an
-                        <code class="text-xs">https://</code> URL, and lock parent inheritance with content-addressed
-                        <code class="text-xs">extends-pin</code> CIDs. Air-gap-safe by default.
-                    </p>
-                </a>
-
-                <!-- Web Interactivity -->
-                <a href="examples.html#web-interactivity"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">mouse</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Web Interactivity</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        Progressive enhancement for HTML citations. Add bidirectional navigation, hover tooltips, and
-                        responsive sidebars to any Citum-generated HTML view.
-                    </p>
-                </a>
-
-                <!-- Annotated Bibliographies -->
-                <a href="examples.html#annotated-bibliography"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">comment</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Annotated Bibliographies</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        Pass a YAML or JSON annotation map at render time. Any citation style becomes an annotated bibliography
-                        without style variants. Control indentation, italic rendering, and paragraph spacing per render.
-                    </p>
-                </a>
-
-                <!-- Abbreviation Maps -->
-                <a href="examples.html#abbreviation-map"
-                    class="citum-panel p-8 rounded-xl border border-slate-200 transition-all group block">
-                    <div
-                        class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:bg-primary group-hover:text-white transition-colors">
-                        <span class="material-icons">find_replace</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Abbreviation Maps</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm">
-                        Substitute full rendered strings with abbreviations at document scope. A flat YAML map covers journal titles, institutional names, and corporate authors — no style variants needed.
-                    </p>
-                </a>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Why Citum & CLI Examples -->
-    <section class="py-24 px-6 bg-accent-cream" id="examples">
-        <div class="max-w-7xl mx-auto">
-            <div class="grid lg:grid-cols-2 gap-16 items-start">
-
-                <!-- Why Text -->
-                <div>
-                    <h2 class="text-4xl font-bold text-slate-900 mb-6">CLI Workflow</h2>
-                    <p class="text-lg text-slate-500 mb-8 leading-relaxed">
-                        Use the same binary to render references, process documents, inspect styles, and generate output for downstream publishing tools.
-                    </p>
-
-                    <div class="space-y-6">
-                        <!-- Example 1 -->
-                        <div>
-                            <h4 class="font-bold text-slate-900 mb-2">Render references (HTML)</h4>
-                            <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
-                                <code class="font-mono text-sm text-slate-300">
-                                    <span class="text-primary">$</span> citum render refs -b tests/fixtures/references-expanded.json -s mla <span class="text-emerald-400">-f html</span>
-                                </code>
-                                <button class="text-slate-500 hover:text-white transition-colors"
-                                    onclick="navigator.clipboard.writeText('citum render refs -b tests/fixtures/references-expanded.json -s mla -f html')"
-                                    title="Copy to clipboard">
-                                    <span class="material-icons text-base">content_copy</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Example 1b (Djot) -->
-                        <div>
-                            <h4 class="font-bold text-slate-900 mb-2">Render for static sites (Djot)</h4>
-                            <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
-                                <code class="font-mono text-sm text-slate-300">
-                                    <span class="text-primary">$</span> citum render refs -b tests/fixtures/references-expanded.json -s mla <span class="text-emerald-400">-f djot</span>
-                                </code>
-                                <button class="text-slate-500 hover:text-white transition-colors"
-                                    onclick="navigator.clipboard.writeText('citum render refs -b tests/fixtures/references-expanded.json -s mla -f djot')"
-                                    title="Copy to clipboard">
-                                    <span class="material-icons text-base">content_copy</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Example 1c (LaTeX) -->
-                        <div>
-                            <h4 class="font-bold text-slate-900 mb-2">Render for LaTeX (Native Escaping)</h4>
-                            <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
-                                <code class="font-mono text-sm text-slate-300">
-                                    <span class="text-primary">$</span> citum render refs -b tests/fixtures/references-expanded.json -s mla <span class="text-emerald-400">-f latex</span>
-                                </code>
-                                <button class="text-slate-500 hover:text-white transition-colors"
-                                    onclick="navigator.clipboard.writeText('citum render refs -b tests/fixtures/references-expanded.json -s mla -f latex')"
-                                    title="Copy to clipboard">
-                                    <span class="material-icons text-base">content_copy</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h4 class="font-bold text-slate-900 mb-2">Render for Typst (Native Markup)</h4>
-                            <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
-                                <code class="font-mono text-sm text-slate-300">
-                                    <span class="text-primary">$</span> citum render refs -b tests/fixtures/references-expanded.json -s mla <span class="text-emerald-400">-f typst</span>
-                                </code>
-                                <button class="text-slate-500 hover:text-white transition-colors"
-                                    onclick="navigator.clipboard.writeText('citum render refs -b tests/fixtures/references-expanded.json -s mla -f typst')"
-                                    title="Copy to clipboard">
-                                    <span class="material-icons text-base">content_copy</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h4 class="font-bold text-slate-900 mb-2">Compile a Typst PDF (Pure Rust)</h4>
-                            <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
-                                <code class="font-mono text-sm text-slate-300">
-                                    <span class="text-primary">$</span> cargo run -p citum --features typst-pdf -- render doc examples/document.djot -b examples/document-refs.json -s mla <span class="text-emerald-400">-f typst --pdf -o paper.pdf</span>
-                                </code>
-                                <button class="text-slate-500 hover:text-white transition-colors"
-                                    onclick="navigator.clipboard.writeText('cargo run -p citum --features typst-pdf -- render doc examples/document.djot -b examples/document-refs.json -s mla -f typst --pdf -o paper.pdf')"
-                                    title="Copy to clipboard">
-                                    <span class="material-icons text-base">content_copy</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Example 1d (Document) -->
-                        <div>
-                            <h4 class="font-bold text-slate-900 mb-2">Render full document (Djot draft syntax)</h4>
-                            <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
-                                <code class="font-mono text-sm text-slate-300">
-                                    <span class="text-primary">$</span> citum render doc examples/document.djot -b examples/document-refs.json -s mla
-                                </code>
-                                <button class="text-slate-500 hover:text-white transition-colors"
-                                    onclick="navigator.clipboard.writeText('citum render doc examples/document.djot -b examples/document-refs.json -s mla')"
-                                    title="Copy to clipboard">
-                                    <span class="material-icons text-base">content_copy</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Example 1e (Builtin) -->
-                        <div>
-                            <h4 class="font-bold text-slate-900 mb-2">Use a builtin style (no file needed)</h4>
-                            <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
-                                <code class="font-mono text-sm text-slate-300">
-                                    <span class="text-primary">$</span> citum render refs -b refs.json <span class="text-emerald-400">-s apa</span>
-                                </code>
-                                <button class="text-slate-500 hover:text-white transition-colors"
-                                    onclick="navigator.clipboard.writeText('citum render refs -b refs.json -s apa')"
-                                    title="Copy to clipboard">
-                                    <span class="material-icons text-base">content_copy</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Example 1f (List styles) -->
-                        <div>
-                            <h4 class="font-bold text-slate-900 mb-2">List all embedded styles</h4>
-                            <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
-                                <code class="font-mono text-sm text-slate-300">
-                                    <span class="text-primary">$</span> citum styles list
-                                </code>
-                                <button class="text-slate-500 hover:text-white transition-colors"
-                                    onclick="navigator.clipboard.writeText('citum styles list')"
-                                    title="Copy to clipboard">
-                                    <span class="material-icons text-base">content_copy</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Example 2 -->
-                        <div>
-                            <h4 class="font-bold text-slate-900 mb-2">Convert to binary (Performance Mode)</h4>
-                            <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
-                                <code class="font-mono text-sm text-slate-300">
-                                    <span class="text-primary">$</span> citum convert style styles/embedded/apa-7th.yaml --output /tmp/apa-7th.cbor
-                                </code>
-                                <button class="text-slate-500 hover:text-white transition-colors"
-                                    onclick="navigator.clipboard.writeText('citum convert style styles/embedded/apa-7th.yaml --output /tmp/apa-7th.cbor')"
-                                    title="Copy to clipboard">
-                                    <span class="material-icons text-base">content_copy</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Simple Visual/Image Placeholder -->
-                <div class="relative mt-8 lg:mt-0">
-                    <div
-                        class="aspect-square md:aspect-video lg:aspect-square bg-slate-800 rounded-xl overflow-hidden shadow-2xl relative flex items-center justify-center p-8">
-                        <div class="text-slate-400 font-mono text-sm">
-                            <div class="mb-4 text-emerald-400"># Output Preview</div>
-                            <div class="pl-4 border border-slate-700/30 rounded-lg">
-                                <p class="mb-2">Smith, J. A. (2023). <span class="italic">The Future of
-                                        Citations</span>. Academic Press.</p>
-                                <p class="mb-2">Doe, A., & Lee, B. (2024). Rust in Publishing. <span
-                                        class="italic">Journal of Open Source</span>, 12(4), 45-67.
-                                    https://doi.org/10.1234/jos.2024.12</p>
-                                <p class="text-primary/50 text-xs mt-4">... generated in 4ms</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Language Bindings -->
-    <section class="py-24 px-6 border-t border-slate-200 bg-slate-50" id="bindings">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Language Bindings</h2>
-                <p class="text-slate-500">Integrate the Citum engine into your favorite language or framework.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-
-                <!-- Rust Native -->
-                <div class="p-8 rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                            <span class="material-icons">terminal</span>
-                        </div>
-                        <span class="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-slate-100 text-slate-500 border border-slate-200">Git</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Rust Native</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm mb-4">
-                        The core engine is available as a standalone Rust crate (<code class="text-xs">citum-engine</code>) for seamless integration into Rust projects.
-                    </p>
-                    <p class="text-xs font-mono text-slate-400 italic">Available via git dependency</p>
-                </div>
-
-                <!-- WebAssembly & TypeScript -->
-                <div class="p-8 rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                            <span class="material-icons">javascript</span>
-                        </div>
-                        <span class="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-amber-100 text-amber-700 border border-amber-200">Coming Soon</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">WebAssembly &amp; TS</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm mb-4">
-                        Full-featured WASM package with TypeScript definitions, generated via <code class="text-xs">wasm-bindgen</code>, for browser or Node.js environments.
-                    </p>
-                    <p class="text-xs font-mono text-slate-400 italic">Pre-release development</p>
-                </div>
-
-                <!-- C-FFI -->
-                <div class="p-8 rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md">
-                    <div class="flex items-center justify-between mb-6">
-                        <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                            <span class="material-icons">settings_input_component</span>
-                        </div>
-                        <span class="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">Preview</span>
-                    </div>
-                    <h3 class="text-xl font-bold text-slate-900 mb-3">Universal C-FFI</h3>
-                    <p class="text-slate-500 leading-relaxed text-sm mb-4">
-                        Shared dynamic library (<code class="text-xs">cdylib</code>) exposing a C-ABI, enabling integration with LuaLaTeX, Python, C++, and Ruby.
-                    </p>
-                    <p class="text-xs font-mono text-slate-400 italic">Built from source</p>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- Status Section -->
-    <section class="py-24 px-6 border-t border-slate-200" id="roadmap">
-        <div class="max-w-7xl mx-auto">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Current Status</h2>
-                <p class="text-slate-500">Compatibility and quality reports are published from CI so current progress stays visible.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-
-                <!-- Compatibility Report -->
-                <a href="https://docs.citum.org/compat.html" class="p-6 rounded-xl border border-slate-100 bg-[var(--citum-surface)] block hover:border-primary/40 transition-colors">
-                    <div class="flex items-center gap-3 mb-4">
-                        <span
-                            class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                            <span class="material-icons text-sm">analytics</span>
-                        </span>
-                        <h3 class="font-bold text-slate-900">Compatibility Dashboard</h3>
-                    </div>
-                    <p class="text-sm text-slate-500 mb-4">
-                        Per-style fidelity and SQI metrics for the core production style set.
-                    </p>
-                    <p class="text-[10px] font-mono text-slate-400">Source: scripts/report-core.js -> docs/compat.html</p>
-                </a>
-
-                <!-- Behavior Coverage -->
-                <a href="https://docs.citum.org/behavior-report.html" class="p-6 rounded-xl border border-slate-100 bg-[var(--citum-surface)] block hover:border-primary/40 transition-colors">
-                    <div class="flex items-center gap-3 mb-4">
-                        <span
-                            class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                            <span class="material-icons text-sm">fact_check</span>
-                        </span>
-                        <h3 class="font-bold text-slate-900">Engine Behavior Coverage</h3>
-                    </div>
-                    <p class="text-sm text-slate-500 mb-4">
-                        Human-readable scenario coverage for selected engine behavior suites, with source file and line references.
-                    </p>
-                    <p class="text-[10px] font-mono text-slate-400">Source: scripts/test-report.sh -> docs/behavior-report.html</p>
-                </a>
-
-                <!-- Migration Behavior Coverage -->
-                <a href="https://docs.citum.org/migration-behavior-report.html" class="p-6 rounded-xl border border-slate-100 bg-[var(--citum-surface)] block hover:border-primary/40 transition-colors">
-                    <div class="flex items-center gap-3 mb-4">
-                        <span
-                            class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                            <span class="material-icons text-sm">swap_horiz</span>
-                        </span>
-                        <h3 class="font-bold text-slate-900">Migration Behavior Coverage</h3>
-                    </div>
-                    <p class="text-sm text-slate-500 mb-4">
-                        Reviewer-facing migration scenarios for selected `citum-migrate` suites, with source file and line references.
-                    </p>
-                    <p class="text-[10px] font-mono text-slate-400">Source: scripts/migration-test-report.sh -> docs/migration-behavior-report.html</p>
-                </a>
-
-                <!-- Tier Tracking -->
-                <a href="TIER_STATUS.md" class="p-6 rounded-xl border border-slate-100 bg-[var(--citum-surface)] block hover:border-primary/40 transition-colors">
-                    <div class="flex items-center gap-3 mb-4">
-                        <span
-                            class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                            <span class="material-icons text-sm">list_alt</span>
-                        </span>
-                        <h3 class="font-bold text-slate-900">Tier Status</h3>
-                    </div>
-                    <p class="text-sm text-slate-500 mb-4">
-                        Current tracking for top parent styles, strict citation scenarios, and migration priorities.
-                    </p>
-                    <p class="text-[10px] font-mono text-slate-400">Source: docs/TIER_STATUS.md</p>
-                </a>
-
-                <!-- Quality Gates -->
-                <a href="https://github.com/citum/citum-core/blob/main/docs/architecture/SQI_REFINEMENT_PLAN.md"
-                    class="p-6 rounded-xl border border-slate-100 bg-[var(--citum-surface)] block hover:border-primary/40 transition-colors">
-                    <div class="flex items-center gap-3 mb-4">
-                        <span
-                            class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center">
-                            <span class="material-icons text-sm">rule</span>
-                        </span>
-                        <h3 class="font-bold text-slate-900">Fidelity + SQI Gates</h3>
-                    </div>
-                    <p class="text-sm text-slate-500 mb-4">
-                        Fidelity remains the release gate, while SQI helps track maintainability and style quality.
-                    </p>
-                    <p class="text-[10px] font-mono text-slate-400">Policy: no SQI gain may regress fidelity</p>
-                </a>
-
-                <!-- User Style Store -->
-                <div class="p-6 rounded-xl border border-emerald-100 bg-emerald-50">
-                    <div class="flex items-center gap-3 mb-4">
-                        <span
-                            class="w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center">
-                            <span class="material-icons text-sm">folder_open</span>
-                        </span>
-                        <h3 class="font-bold text-slate-900">User Style Store <span class="text-xs font-normal text-emerald-600 ml-1">new</span></h3>
-                    </div>
-                    <p class="text-sm text-slate-500 mb-4">
-                        Install and manage your own styles and locales locally in YAML, JSON, or CBOR formats.
-                        <code class="text-xs bg-[var(--citum-surface)] px-1 rounded border border-slate-200">citum store install</code>
-                        <code class="text-xs bg-[var(--citum-surface)] px-1 rounded border border-slate-200">citum store list</code>
-                    </p>
-                    <p class="text-[10px] font-mono text-slate-400">Works across CLI, desktop, web, and mobile</p>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    <!-- JSON Schemas Section -->
-    <section class="py-24 px-6 border-t border-slate-200" id="schemas">
-        <div class="max-w-7xl mx-auto text-center">
-            <h2 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">JSON Schemas</h2>
-            <p class="text-slate-500 max-w-2xl mx-auto mb-8">
-                Citum publishes schemas for every data format — styles, locales, bibliographies, citations,
-                the registry, abbreviation maps, and the JSON-RPC server API. Use them in your editor for
-                autocomplete and real-time validation.
-            </p>
-            <a href="schemas/"
-                class="inline-flex items-center gap-2 bg-primary text-white px-6 py-3 rounded-lg font-semibold hover:brightness-110 transition-all">
-                <span class="material-icons text-base">schema</span>
-                Browse all schemas
-            </a>
-        </div>
-    </section>
-
-    <!-- Project Origins -->
-    <section class="py-24 px-6 border-t border-slate-100 bg-slate-50/50">
-        <div class="max-w-3xl mx-auto text-center">
-            <h2 class="text-2xl font-bold text-slate-900 mb-6 font-mono">Origins & Direction</h2>
-            <div class="space-y-4 text-slate-600 leading-relaxed">
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>What Citum is for</h2>
                 <p>
-                    Citum is led by Bruce D'Arcus, who created the initial CSL prototype in 2005. It grows out of that
-                    work while focusing on current needs: new features, clearer style definitions, stronger validation, and a faster Rust implementation.
+                    CSL remains the compatibility baseline. Citum's goal is
+                    to make citation behavior easier to describe:
+                    bibliography grouping, multilingual terms, reusable style
+                    families, and output that can be checked against real
+                    examples.
                 </p>
-                <p>
-                    The project replaces procedural XML with declarative, type-safe YAML so style authors can express behavior more directly and tool builders can rely on explicit schemas and reproducible rendering.
-                </p>
-                <div class="pt-4">
-                    <a href="https://github.com/citum/citum-core"
-                        class="text-primary font-medium hover:underline inline-flex items-center gap-1">
-                        Follow development on GitHub
-                        <span class="material-icons text-xs">open_in_new</span>
-                    </a>
-                </div>
             </div>
-        </div>
-    </section>
+            <div class="doc-grid">
+                <a class="doc-card" href="examples.html#bibliography-grouping">
+                    <h3>Handle real bibliography structure</h3>
+                    <p>A bibliography is not always one sequence. Citum has room for grouping, sorting, type variants, note behavior, and specialized reference shapes without burying that logic in renderer-specific conventions.</p>
+                </a>
+                <a class="doc-card" href="guides/style-authoring/locales.html">
+                    <h3>Render across languages and locales</h3>
+                    <p>Citation terms are not just English strings. Locale files own role labels, locators, grammatical gender, and the multilingual details that styles should not hardcode.</p>
+                </a>
+                <a class="doc-card" href="guides/style-authoring/inheritance-and-registries.html">
+                    <h3>Reuse styles without hidden inheritance</h3>
+                    <p>A dependent style should not become a mystery fork. Base styles, scoped overrides, version requirements, registries, and `extends-pin` make reuse inspectable.</p>
+                </a>
+                <a class="doc-card" href="reports.html">
+                    <h3>Check the output</h3>
+                    <p>A style is only useful if its output can be checked. Citum pairs validation with oracle comparisons, strict fixtures, and CI-generated compatibility reports.</p>
+                </a>
+            </div>
+        </section>
 
-    <!-- Footer -->
-    <footer class="py-12 px-6 border-t border-slate-200 bg-[var(--citum-surface)]">
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>Start where your problem is</h2>
+                <p>Pick the path that matches the citation problem in front of you.</p>
+            </div>
+            <div class="doc-grid">
+                <a class="feature-link" href="guides/style-authoring/start.html">
+                    <h3>Author or adapt a style</h3>
+                    <p>Start from the style anatomy, then choose templates, type variants, and scoped options for the behavior you need.</p>
+                </a>
+                <a class="feature-link" href="guides/style-authoring/locales.html">
+                    <h3>Localize terms and labels</h3>
+                    <p>Use locale-owned terms for roles, locators, grammatical gender, and language-specific labels.</p>
+                </a>
+                <a class="feature-link" href="guides/style-authoring/validation.html">
+                    <h3>Validate and compare output</h3>
+                    <p>Run style validation, then use compatibility reports and examples to check rendered output against evidence.</p>
+                </a>
+                <a class="feature-link" href="guides/style-authoring/inheritance-and-registries.html">
+                    <h3>Reuse or publish a style</h3>
+                    <p>Wrap a base style, pin remote parents, declare engine requirements, and validate before publishing.</p>
+                </a>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>Know what a style depends on</h2>
+                <p>
+                    Styles can say which Citum version they need, and the docs
+                    can show when support for a capability landed. That matters
+                    when styles are shared across journals, registries, and
+                    local publishing workflows.
+                </p>
+            </div>
+            <div class="version-badges">
+                <span class="version-badge" data-feature="style-authoring">active</span>
+                <span class="version-badge" data-feature="style-authoring">schema 0.1.0+</span>
+                <span class="version-badge" data-feature="style-authoring">engine 0.1.0+</span>
+            </div>
+            <div class="doc-grid">
+                <a class="doc-card" href="reference/FEATURES.md">
+                    <h3>Capability status</h3>
+                    <p>See which documented capabilities are active, preview, or experimental, and which versions introduced them.</p>
+                </a>
+                <a class="doc-card" href="reference/SCHEMA_VERSIONING.md">
+                    <h3>Style format versions</h3>
+                    <p>Understand how Citum changes the style format, how compatibility is tracked, and how tools can pin versions.</p>
+                </a>
+                <a class="doc-card" href="guides/style-authoring/validation.html">
+                    <h3>Runtime requirements</h3>
+                    <p>`info.citum-version` gives users a direct upgrade message when a style needs newer Citum behavior.</p>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="py-12 border-t border-slate-200 bg-[var(--citum-surface)]">
         <!-- LAYOUT_FOOTER_START -->
-            <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-8">
-                <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 bg-primary rounded flex items-center justify-center">
-                        <span class="text-white font-mono text-xs font-bold">C</span>
-                    </div>
-                    <span class="font-mono text-lg font-bold text-slate-900">Citum</span>
+            <div class="site-footer-inner">
+                <div class="site-brand site-brand-small">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
                 </div>
-                <div class="flex gap-8 text-sm font-medium text-slate-500">
-                    <a class="hover:text-primary transition-colors" href="https://github.com/citum/citum-core">GitHub</a>
-                    <a class="hover:text-primary transition-colors" href="examples.html">Examples</a>
-                    <a class="hover:text-primary transition-colors" href="reports.html">Reports</a>
+                <div class="site-footer-links">
+                    <a href="guides/style-authoring/start.html">Style Authoring</a>
+                    <a href="reference.html">Reference</a>
+                    <a href="reports.html">Reports</a>
+                    <a href="https://github.com/citum/citum-core">GitHub</a>
                 </div>
-                <div class="text-sm text-slate-400">
-                    © 2026 Citum Project.
-                </div>
+                <div class="site-footer-note">© 2026 Citum Project.</div>
             </div>        <!-- LAYOUT_FOOTER_END -->
     </footer>
-
-    <script>
-        const navToggle = document.querySelector("[data-nav-toggle]");
-        const mobileMenu = document.querySelector("[data-mobile-menu]");
-
-        if (navToggle && mobileMenu) {
-            navToggle.addEventListener("click", () => {
-                const expanded = navToggle.getAttribute("aria-expanded") === "true";
-                navToggle.setAttribute("aria-expanded", String(!expanded));
-                mobileMenu.classList.toggle("hidden", expanded);
-            });
-        }
-    </script>
-
+    <script src="assets/citum-interactive.js"></script>
 </body>
-
 </html>

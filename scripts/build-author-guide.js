@@ -1,202 +1,187 @@
 const fs = require('fs');
 const path = require('path');
 const { marked } = require('marked');
+const yaml = require('js-yaml');
 
-const MD_PATH = path.join(__dirname, '../docs/guides/style-author-guide.md');
-const TEMPLATE_PATH = path.join(__dirname, '../docs/guides/style-author-guide.template.html');
-const HTML_PATH = path.join(__dirname, '../docs/guides/style-author-guide.html');
+const ROOT = path.join(__dirname, '..');
+const SOURCE_DIR = path.join(ROOT, 'docs/guides/style-authoring');
+const TEMPLATE_PATH = path.join(ROOT, 'docs/guides/style-author-guide.template.html');
+const LEGACY_HTML_PATH = path.join(ROOT, 'docs/guides/style-author-guide.html');
+const FEATURES_PATH = path.join(ROOT, 'docs/reference/features.yaml');
 
-const renderer = new marked.Renderer();
+const GUIDE_PAGES = [
+    'start',
+    'style-anatomy',
+    'templates',
+    'options',
+    'locales',
+    'inheritance-and-registries',
+    'validation',
+];
 
-// Helper to generate IDs consistent with the sidebar
+function parseFrontmatter(raw) {
+    if (!raw.startsWith('---\n')) return [{}, raw];
+    const end = raw.indexOf('\n---\n', 4);
+    if (end === -1) return [{}, raw];
+    const data = yaml.load(raw.slice(4, end)) || {};
+    return [data, raw.slice(end + 5)];
+}
+
 function slugify(text) {
     return text
         .toLowerCase()
-        .replace(/\[[a-z0-9_]+\]/, '') // strip icons
+        .replace(/\[[a-z0-9_]+\]/, '')
         .trim()
         .replace(/[^\w]+/g, '-')
         .replace(/^-+|-+$/g, '');
 }
 
-// Simple YAML syntax highlighter using regex and project Tailwind colors
-function highlightYaml(code) {
-    const escaped = code
+function escapeHtml(text) {
+    return String(text)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
+}
 
-    return escaped
-        // 1. Comments (slate-500)
+function highlightYaml(code) {
+    return escapeHtml(code)
         .replace(/(#.*$)/gm, '<span class="text-slate-500">$1</span>')
-        // 2. Keys (indigo-400 for top-level, primary/sky-400 for nested)
-        // Now handles both "key:" and "- key:"
         .replace(/^(\s*)(-?\s*)([a-z0-9_-]+)(:)/gm, (match, indent, dash, key, colon) => {
             const colorClass = indent.length === 0 && dash.length === 0 ? 'text-indigo-400' : 'text-primary';
             const dashHtml = dash.length > 0 ? `<span class="text-slate-400">${dash}</span>` : '';
             return `${indent}${dashHtml}<span class="${colorClass}">${key}</span>${colon}`;
         })
-        // 3. String values (emerald-400)
         .replace(/(: )("[^"]*"|'[^']*'|[a-z0-9_.-]+)(?=\s|$|<)/gi, (match, separator, value) => {
             if (value === '~' || value === 'null') return `${separator}<span class="text-slate-400">${value}</span>`;
             return `${separator}<span class="text-emerald-400">${value}</span>`;
         });
 }
 
-let firstHeading = true;
+function createRenderer() {
+    const renderer = new marked.Renderer();
 
-renderer.heading = function(arg1, arg2) {
-    let text, level;
-    if (typeof arg1 === 'object') {
-        text = arg1.text;
-        level = arg1.depth;
-    } else {
-        text = arg1;
-        level = arg2;
-    }
-    
-    const iconMatch = text.match(/^\[([a-z0-9_]+)\]\s*(.*)/);
-    const id = slugify(text);
-    
-    if (iconMatch && level === 2) {
-        const icon = iconMatch[1];
-        const title = iconMatch[2];
-        
-        let output = '';
-        if (!firstHeading) {
-            output += '</section>\n';
-        }
-        firstHeading = false;
-        
-        output += `
-            <section id="${id}" class="scroll-mt-24">
-                <h2 class="text-3xl font-bold text-slate-900 mb-6 flex items-center gap-3">
-                    <span class="material-icons text-primary">${icon}</span>
-                    ${title}
-                </h2>
-        `;
-        return output;
-    }
-    return `<h${level} id="${id}" class="font-bold text-slate-900 mt-8 mb-4">${text}</h${level}>`;
-};
+    renderer.heading = function(arg1, arg2) {
+        const text = typeof arg1 === 'object' ? arg1.text : arg1;
+        const level = typeof arg1 === 'object' ? arg1.depth : arg2;
+        const iconMatch = text.match(/^\[([a-z0-9_]+)\]\s*(.*)/);
+        const cleanTitle = iconMatch ? iconMatch[2] : text;
+        const id = slugify(text);
+        const icon = iconMatch ? `<span class="material-icons text-primary" aria-hidden="true">${iconMatch[1]}</span>` : '';
+        return `<h${level} id="${id}">${icon}${cleanTitle}</h${level}>`;
+    };
 
-renderer.blockquote = function(arg1) {
-    let text;
-    if (typeof arg1 === 'object') {
-        text = arg1.text;
-    } else {
-        text = arg1;
-    }
-
-    const content = marked.parseInline(text.replace(/\[!(TIP|WARNING)\]\s*/, ''));
-
-    if (text.includes('[!TIP]')) {
+    renderer.blockquote = function(arg1) {
+        const text = typeof arg1 === 'object' ? arg1.text : arg1;
+        const kind = text.includes('[!WARNING]') ? 'warning' : 'tip';
+        const label = kind === 'warning' ? 'warning' : 'tips_and_updates';
+        const content = marked.parseInline(text.replace(/\[!(TIP|WARNING)\]\s*/, ''));
         return `
-            <div class="mb-8 bg-blue-50 border border-blue-200 rounded-lg p-5 not-prose citum-callout">
-                <div class="flex items-start gap-3">
-                    <span class="material-icons text-blue-600 mt-0.5">tips_and_updates</span>
-                    <div class="flex-1 text-blue-800 text-sm">
-                        ${content}
-                    </div>
-                </div>
+            <div class="callout ${kind}">
+                <span class="material-icons" aria-hidden="true">${label}</span>
+                <div>${content}</div>
             </div>
         `;
-    }
-    if (text.includes('[!WARNING]')) {
+    };
+
+    renderer.code = function(arg1, arg2) {
+        const code = typeof arg1 === 'object' ? arg1.text : arg1;
+        const lang = typeof arg1 === 'object' ? arg1.lang : arg2;
+        const highlighted = (lang === 'yaml' || lang === 'yml') ? highlightYaml(code) : escapeHtml(code);
         return `
-            <div class="border border-amber-500/30 bg-amber-50 p-4 rounded-lg mb-6 not-prose">
-                <div class="flex gap-3">
-                    <span class="material-icons text-amber-600 flex-shrink-0">warning</span>
-                    <div class="text-amber-800 text-sm">
-                        ${content}
-                    </div>
-                </div>
+            <div class="workshop-block">
+                <pre><code class="language-${lang || 'text'}">${highlighted}</code></pre>
             </div>
         `;
-    }
-    return `<blockquote>${content}</blockquote>`;
-};
+    };
 
-renderer.code = function(arg1, arg2) {
-    let code, lang;
-    if (typeof arg1 === 'object') {
-        code = arg1.text;
-        lang = arg1.lang;
-    } else {
-        code = arg1;
-        lang = arg2;
-    }
+    renderer.table = function(token) {
+        const header = token.header
+            .map((cell) => `<th>${marked.parseInline(cell.text)}</th>`)
+            .join('');
+        const body = token.rows
+            .map((row) => `<tr>${row.map((cell) => `<td>${marked.parseInline(cell.text)}</td>`).join('')}</tr>`)
+            .join('');
+        return `
+            <div class="doc-table-shell">
+                <table class="doc-table">
+                    <thead><tr>${header}</tr></thead>
+                    <tbody>${body}</tbody>
+                </table>
+            </div>
+        `;
+    };
 
-    const highlighted = (lang === 'yaml' || lang === 'yml')
-        ? highlightYaml(code)
-        : code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return renderer;
+}
 
-    return `
-        <div class="bg-slate-900 rounded-lg p-6 overflow-x-auto mb-8 not-prose workshop-block">
-            <pre class="font-mono text-sm text-slate-300 leading-relaxed"><code class="language-${lang}">${highlighted}</code></pre>
-        </div>
-    `;
-};
+function loadFeatures() {
+    if (!fs.existsSync(FEATURES_PATH)) return new Map();
+    const doc = yaml.load(fs.readFileSync(FEATURES_PATH, 'utf8'));
+    return new Map((doc.features || []).map((feature) => [feature.id, feature]));
+}
 
-// Handle tables with Tailwind styles
-renderer.table = function(token) {
-    let header = '';
-    let body = '';
+function readPage(slug) {
+    const sourcePath = path.join(SOURCE_DIR, `${slug}.md`);
+    const [frontmatter, body] = parseFrontmatter(fs.readFileSync(sourcePath, 'utf8'));
+    return { slug, sourcePath, frontmatter, body };
+}
 
-    for (let i = 0; i < token.header.length; i++) {
-        header += `<th class="px-4 py-3 text-left font-semibold text-slate-900">${marked.parseInline(token.header[i].text)}</th>`;
-    }
+function renderSidebar(currentSlug, pages, rootPrefix) {
+    return pages.map((page) => {
+        const active = page.slug === currentSlug ? ' active' : '';
+        return `<a class="doc-sidebar-link${active}" href="${rootPrefix}guides/style-authoring/${page.slug}.html">${page.frontmatter.nav || page.frontmatter.title}</a>`;
+    }).join('\n');
+}
 
-    for (let i = 0; i < token.rows.length; i++) {
-        body += '<tr class="hover:bg-slate-50">';
-        for (let j = 0; j < token.rows[i].length; j++) {
-            body += `<td class="px-4 py-3 text-slate-600">${marked.parseInline(token.rows[i][j].text)}</td>`;
+function renderFeatureBadges(featureIds, featureMap) {
+    if (!Array.isArray(featureIds) || featureIds.length === 0) return '';
+    const badges = [];
+    for (const id of featureIds) {
+        const feature = featureMap.get(id);
+        if (!feature) {
+            badges.push(`<span class="version-badge" data-feature="${id}">unknown feature: ${id}</span>`);
+            continue;
         }
-        body += '</tr>';
+        badges.push(`<span class="version-badge" data-feature="${id}" data-status="${feature.status}">${feature.status}</span>`);
+        badges.push(`<span class="version-badge" data-feature="${id}">schema ${feature.since_schema}+</span>`);
+        badges.push(`<span class="version-badge" data-feature="${id}">engine ${feature.since_engine}+</span>`);
     }
+    return `<div class="version-badges">${badges.join('')}</div>`;
+}
 
-    return `
-        <div class="overflow-x-auto rounded-lg border border-slate-200 mb-8 not-prose citum-table-shell">
-            <table class="w-full text-sm">
-                <thead class="bg-slate-50">
-                    <tr>${header}</tr>
-                </thead>
-                <tbody class="divide-y divide-slate-200">
-                    ${body}
-                </tbody>
-            </table>
-        </div>
-    `;
-};
+function renderPage(page, pages, featureMap, options = {}) {
+    const renderer = createRenderer();
+    marked.setOptions({ renderer });
+    const rootPrefix = options.rootPrefix || '../../';
+    const content = marked.parse(page.body);
+    const featureBadges = renderFeatureBadges(page.frontmatter.features, featureMap);
+    const template = fs.readFileSync(TEMPLATE_PATH, 'utf8');
 
-marked.setOptions({ renderer });
+    return template
+        .replace(/{{PAGE_ID}}/g, 'style')
+        .replace(/{{ROOT}}/g, rootPrefix)
+        .replace(/{{TITLE}}/g, escapeHtml(page.frontmatter.title || 'Style Authoring'))
+        .replace(/{{DESCRIPTION}}/g, escapeHtml(page.frontmatter.description || 'Citum style authoring documentation.'))
+        .replace(/{{SIDEBAR}}/g, renderSidebar(page.slug, pages, rootPrefix))
+        .replace(/{{FEATURE_BADGES}}/g, featureBadges)
+        .replace(/{{CONTENT}}/g, content)
+        .replace(/[ \t]+$/gm, '');
+}
 
 function build() {
-    console.log('Building Style Author Guide...');
-    firstHeading = true;
-    
-    if (!fs.existsSync(MD_PATH)) {
-        console.error(`Markdown file not found: ${MD_PATH}`);
-        process.exit(1);
-    }
-    if (!fs.existsSync(TEMPLATE_PATH)) {
-        console.error(`Template file not found: ${TEMPLATE_PATH}`);
-        process.exit(1);
+    console.log('Building Style Authoring Guide...');
+    const featureMap = loadFeatures();
+    const pages = GUIDE_PAGES.map(readPage);
+
+    for (const page of pages) {
+        const htmlPath = path.join(SOURCE_DIR, `${page.slug}.html`);
+        fs.writeFileSync(htmlPath, renderPage(page, pages, featureMap));
+        console.log(`Wrote ${path.relative(ROOT, htmlPath)}`);
     }
 
-    const mdContent = fs.readFileSync(MD_PATH, 'utf8');
-    const templateContent = fs.readFileSync(TEMPLATE_PATH, 'utf8');
-    
-    let bodyHtml = marked.parse(mdContent);
-    
-    // Close the last section
-    if (!firstHeading) {
-        bodyHtml += '</section>';
-    }
-    
-    const finalHtml = templateContent.replace('{{CONTENT}}', bodyHtml);
-    
-    fs.writeFileSync(HTML_PATH, finalHtml);
-    console.log('Done!');
+    const start = pages[0];
+    fs.writeFileSync(LEGACY_HTML_PATH, renderPage(start, pages, featureMap, { rootPrefix: '../' }));
+    console.log(`Wrote ${path.relative(ROOT, LEGACY_HTML_PATH)}`);
 }
 
 build();

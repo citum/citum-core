@@ -57,6 +57,7 @@ __pycache__/
 *.pyc
 scripts/x-bench.js
 docs/guides/style-author-guide.html
+docs/guides/style-authoring/*.html
 
 .claude/scheduled_tasks.lock
 clippy_errors.log

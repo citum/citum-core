@@ -8,9 +8,22 @@
 
   const CITUM = {
     init: function() {
+      this.setupMobileNav();
       this.setupCitations();
       this.setupBibliography();
       this.setupTooltips();
+    },
+
+    setupMobileNav: function() {
+      const navToggle = document.querySelector('[data-nav-toggle]');
+      const mobileMenu = document.querySelector('[data-mobile-menu]');
+      if (!navToggle || !mobileMenu) return;
+
+      navToggle.addEventListener('click', () => {
+        const isOpen = navToggle.getAttribute('aria-expanded') === 'true';
+        navToggle.setAttribute('aria-expanded', String(!isOpen));
+        mobileMenu.classList.toggle('hidden', isOpen);
+      });
     },
 
     setupCitations: function() {

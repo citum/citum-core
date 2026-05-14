@@ -1,8 +1,9 @@
 {
   "scripts": {
-    "build:docs": "node build-author-guide.js",
+    "build:docs": "node build-author-guide.js && node build-layout.js",
     "build:layout": "node build-layout.js",
-    "build:embedded-template-runtime": "node build-embedded-template-runtime.js"
+    "build:embedded-template-runtime": "node build-embedded-template-runtime.js",
+    "check:docs-metadata": "node check-docs-metadata.js"
   },
   "dependencies": {
     "ajv": "^8.17.1",

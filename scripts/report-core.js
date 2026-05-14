@@ -2771,48 +2771,35 @@ function generateHtmlHeader(report) {
 <body class="bg-background-light text-slate-700 selection:bg-primary/20">
 
     <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 glass-nav">
-        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2 shrink-0">
-                <a href="index.html" class="flex items-center gap-2 group">
-                    <div class="w-8 h-8 bg-primary rounded flex items-center justify-center group-hover:brightness-110 transition-all">
-                        <span class="text-white font-mono font-bold">C</span>
-                    </div>
-                    <span class="font-mono text-xl font-bold tracking-tight text-slate-900">Citum</span>
+    <nav class="site-nav">
+        <div class="site-nav-inner">
+            <div class="site-brand-wrap">
+                <a href="index.html" class="site-brand">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
                 </a>
             </div>
-            <div class="hidden md:flex items-center gap-3 lg:gap-4 xl:gap-6 min-w-0 overflow-x-auto whitespace-nowrap pl-4">
-                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="https://citum.org">Home</a>
-                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="index.html">Docs</a>
-                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="interactive-demo.html">Demo</a>
-                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="examples.html">Examples</a>
-                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="guides/style-author-guide.html">Style Guide</a>
-                <a class="text-sm font-medium text-primary font-semibold"
-                    href="reports.html">Reports</a>
-                <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="https://github.com/citum/citum-core">GitHub</a>
+            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
+                <a class="site-nav-link" href="index.html">Overview</a>
+                <a class="site-nav-link" href="guides/style-authoring/start.html">Style Authoring</a>
+                <a class="site-nav-link" href="examples.html">Examples</a>
+                <a class="site-nav-link" href="reference.html">Reference</a>
+                <a class="site-nav-link active" href="reports.html">Reports</a>
+                <a class="site-nav-link" href="operating.html">Operating</a>
+                <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
             </div>
-            <button type="button"
-                class="md:hidden inline-flex items-center justify-center rounded-lg border border-slate-200 bg-[var(--citum-surface)]/80 px-3 py-2 text-slate-700"
-                data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
                 <span class="material-icons text-[20px]">menu</span>
             </button>
         </div>
-        <div id="mobile-nav" class="md:hidden hidden border-t border-slate-200 bg-background-light/95 px-6 py-4" data-mobile-menu>
-            <div class="flex flex-col gap-3 text-sm font-medium text-slate-700">
-                <a class="hover:text-primary transition-colors" href="https://citum.org">Home</a>
-                <a class="hover:text-primary transition-colors" href="index.html">Docs</a>
-                <a class="hover:text-primary transition-colors" href="interactive-demo.html">Demo</a>
-                <a class="hover:text-primary transition-colors" href="examples.html">Examples</a>
-                <a class="hover:text-primary transition-colors" href="guides/style-author-guide.html">Style Guide</a>
-                <a class="text-primary font-semibold" href="reports.html">Reports</a>
-                <a class="hover:text-primary transition-colors" href="https://github.com/citum/citum-core">GitHub</a>
-            </div>
+        <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
+            <a class="site-nav-link" href="index.html">Overview</a>
+            <a class="site-nav-link" href="guides/style-authoring/start.html">Style Authoring</a>
+            <a class="site-nav-link" href="examples.html">Examples</a>
+            <a class="site-nav-link" href="reference.html">Reference</a>
+            <a class="site-nav-link active" href="reports.html">Reports</a>
+            <a class="site-nav-link" href="operating.html">Operating</a>
+            <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
         </div>
     </nav>
 
@@ -3498,26 +3485,18 @@ function generateHtmlFooter() {
 
     <!-- Footer -->
     <footer class="py-12 px-6 border-t border-slate-200 bg-[var(--citum-surface)]">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-8">
-                <div class="flex items-center gap-2">
-                    <a href="index.html" class="flex items-center gap-2 group">
-                        <div class="w-6 h-6 bg-primary rounded flex items-center justify-center group-hover:brightness-110 transition-all">
-                            <span class="text-white font-mono text-xs font-bold">C</span>
-                        </div>
-                        <span class="font-mono text-lg font-bold text-slate-900">Citum</span>
-                    </a>
-                </div>
-                <div class="flex gap-8 text-sm font-medium text-slate-500">
-                    <a class="hover:text-primary transition-colors" href="https://github.com/citum/citum-core">GitHub</a>
-                    <a class="hover:text-primary transition-colors" href="index.html">Docs</a>
-                    <a class="hover:text-primary transition-colors" href="examples.html">Examples</a>
-                    <a class="hover:text-primary transition-colors" href="reports.html">Reports</a>
-                </div>
-                <div class="text-sm text-slate-400">
-                    © 2026 Citum Project. MIT Licensed.
-                </div>
+        <div class="site-footer-inner">
+            <div class="site-brand site-brand-small">
+                <div class="site-brand-mark"><span>C</span></div>
+                <span class="site-brand-name">Citum</span>
             </div>
+            <div class="site-footer-links">
+                <a href="guides/style-authoring/start.html">Style Authoring</a>
+                <a href="reference.html">Reference</a>
+                <a href="reports.html">Reports</a>
+                <a href="https://github.com/citum/citum-core">GitHub</a>
+            </div>
+            <div class="site-footer-note">© 2026 Citum Project. MIT Licensed.</div>
         </div>
     </footer>
 
