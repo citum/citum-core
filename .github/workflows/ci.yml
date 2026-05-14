@@ -40,7 +40,6 @@ jobs:
               - 'Cargo.lock'
               - 'rust-toolchain.toml'
               - 'styles/**'
-              - '.github/workflows/ci.yml'
             hygiene:
               - 'scripts/**'
               - 'locales/**'
