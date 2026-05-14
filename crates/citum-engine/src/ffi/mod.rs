@@ -19,6 +19,7 @@ use crate::render::plain::PlainText;
 use crate::render::typst::Typst;
 use citum_schema::Style;
 use citum_schema::locale::Locale;
+use citum_schema::reference::InputReference;
 use std::cell::RefCell;
 use std::ffi::{CStr, CString};
 use std::os::raw::c_char;
@@ -80,6 +81,53 @@ fn parse_bibliography_json(bib_str: &str) -> Result<Bibliography, String> {
             serde_json::from_str(bib_str).map_err(|e| format!("Bibliography JSON parse error: {e}"))
         }
     }
+}
+
+/// Parse bibliography YAML string into a `Bibliography`.
+///
+/// Supports Citum YAML (`InputBibliography` with `references:` field),
+/// a flat `IndexMap<id, Reference>`, and a `Vec<InputReference>`.
+fn parse_bibliography_yaml(bib_str: &str) -> Result<Bibliography, String> {
+    // Try Citum native YAML: { references: [...], ... }
+    // Capture the error here so we can report it if all attempts fail.
+    let native_err = match serde_yaml::from_str::<citum_schema::InputBibliography>(bib_str) {
+        Ok(input_bib) => {
+            let bib: Bibliography = input_bib
+                .references
+                .into_iter()
+                .filter_map(|r| r.id().map(|id| (id.to_string(), r)))
+                .collect();
+            return Ok(bib);
+        }
+        Err(e) => e,
+    };
+
+    // Try flat IndexMap<String, InputReference>.
+    // Map key is authoritative: always assign it as the reference id so the
+    // map key and stored id are never out of sync.
+    if let Ok(map) = serde_yaml::from_str::<indexmap::IndexMap<String, InputReference>>(bib_str) {
+        let bib: Bibliography = map
+            .into_iter()
+            .map(|(key, mut r)| {
+                r.set_id(key.clone());
+                (key, r)
+            })
+            .collect();
+        return Ok(bib);
+    }
+
+    // Try Vec<InputReference>
+    if let Ok(refs) = serde_yaml::from_str::<Vec<InputReference>>(bib_str) {
+        let bib: Bibliography = refs
+            .into_iter()
+            .filter_map(|r| r.id().map(|id| (id.to_string(), r)))
+            .collect();
+        return Ok(bib);
+    }
+
+    Err(format!(
+        "Bibliography YAML parse error (tried InputBibliography, flat map, and Vec): {native_err}"
+    ))
 }
 
 /// Get the last error message.
@@ -173,6 +221,93 @@ pub unsafe extern "C" fn citum_processor_new_with_locale(
         Ok(l) => l,
         Err(e) => {
             set_error(format!("Locale JSON parse error: {e}"));
+            return ptr::null_mut();
+        }
+    };
+
+    let processor = Box::new(Processor::with_locale(style, bib, locale));
+    Box::into_raw(processor)
+}
+
+/// Create a new processor instance from YAML strings with default English locale.
+///
+/// # Safety
+/// The caller must ensure that `style_yaml` and `bib_yaml` are valid
+/// null-terminated C strings. The returned pointer must be freed
+/// with `citum_processor_free`.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn citum_processor_new_from_yaml(
+    style_yaml: *const c_char,
+    bib_yaml: *const c_char,
+) -> *mut Processor {
+    let Ok(style_str) = (unsafe { parse_c_str(style_yaml, "style_yaml") }) else {
+        return ptr::null_mut();
+    };
+    let Ok(bib_str) = (unsafe { parse_c_str(bib_yaml, "bib_yaml") }) else {
+        return ptr::null_mut();
+    };
+
+    let style: Style = match Style::from_yaml_str(style_str) {
+        Ok(s) => s,
+        Err(e) => {
+            set_error(format!("Style YAML parse error: {e}"));
+            return ptr::null_mut();
+        }
+    };
+
+    let bib: Bibliography = match parse_bibliography_yaml(bib_str) {
+        Ok(b) => b,
+        Err(e) => {
+            set_error(e);
+            return ptr::null_mut();
+        }
+    };
+
+    let processor = Box::new(Processor::new(style, bib));
+    Box::into_raw(processor)
+}
+
+/// Create a new processor instance with a specific locale from YAML strings.
+///
+/// # Safety
+/// The caller must ensure all string pointers are valid null-terminated C strings.
+/// The returned pointer must be freed with `citum_processor_free`.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn citum_processor_new_with_locale_from_yaml(
+    style_yaml: *const c_char,
+    bib_yaml: *const c_char,
+    locale_yaml: *const c_char,
+) -> *mut Processor {
+    let Ok(style_str) = (unsafe { parse_c_str(style_yaml, "style_yaml") }) else {
+        return ptr::null_mut();
+    };
+    let Ok(bib_str) = (unsafe { parse_c_str(bib_yaml, "bib_yaml") }) else {
+        return ptr::null_mut();
+    };
+    let Ok(locale_str) = (unsafe { parse_c_str(locale_yaml, "locale_yaml") }) else {
+        return ptr::null_mut();
+    };
+
+    let style: Style = match Style::from_yaml_str(style_str) {
+        Ok(s) => s,
+        Err(e) => {
+            set_error(format!("Style YAML parse error: {e}"));
+            return ptr::null_mut();
+        }
+    };
+
+    let bib: Bibliography = match parse_bibliography_yaml(bib_str) {
+        Ok(b) => b,
+        Err(e) => {
+            set_error(e);
+            return ptr::null_mut();
+        }
+    };
+
+    let locale: Locale = match Locale::from_yaml_str(locale_str) {
+        Ok(l) => l,
+        Err(e) => {
+            set_error(format!("Locale YAML parse error: {e}"));
             return ptr::null_mut();
         }
     };
@@ -563,6 +698,47 @@ mod tests {
             unsafe { citum_render_citations_json(processor, citations.as_ptr(), format.as_ptr()) };
         assert!(rendered.is_null());
         assert!(last_error().contains("Unsupported output format"));
+        unsafe { citum_processor_free(processor) };
+    }
+
+    #[test]
+    fn processor_new_from_yaml_returns_valid_pointer() {
+        let style = serde_yaml::to_string(&Style::default()).expect("style serializes");
+        let bib = "references: []";
+        let processor = unsafe {
+            citum_processor_new_from_yaml(c_string(&style).as_ptr(), c_string(bib).as_ptr())
+        };
+        assert!(!processor.is_null());
+        unsafe { citum_processor_free(processor) };
+    }
+
+    #[test]
+    fn processor_new_from_yaml_rejects_invalid_style() {
+        let bib = "references: []";
+        let processor = unsafe {
+            citum_processor_new_from_yaml(
+                c_string("not: valid: yaml: [").as_ptr(),
+                c_string(bib).as_ptr(),
+            )
+        };
+        assert!(processor.is_null());
+        assert!(last_error().contains("Style YAML parse error"));
+    }
+
+    #[test]
+    fn processor_new_with_locale_from_yaml_returns_valid_pointer() {
+        let style = serde_yaml::to_string(&Style::default()).expect("style serializes");
+        let bib = "references: []";
+        // Use RawLocale wire format, not the internal Locale type.
+        let locale = "locale: en-US";
+        let processor = unsafe {
+            citum_processor_new_with_locale_from_yaml(
+                c_string(&style).as_ptr(),
+                c_string(bib).as_ptr(),
+                c_string(locale).as_ptr(),
+            )
+        };
+        assert!(!processor.is_null());
         unsafe { citum_processor_free(processor) };
     }
 }
