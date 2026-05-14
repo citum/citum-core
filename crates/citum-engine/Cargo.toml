@@ -27,11 +27,13 @@ orgize = "0.9"
 icu_collator = { version = "2.2.0", features = ["compiled_data"], optional = true }
 icu_locale = { version = "2.2.0", optional = true }
 unicode-script = "0.5.8"
+schemars = { version = "1.2.1", features = ["derive"], optional = true }
 
 [features]
 default = ["icu"]
 icu = ["dep:icu_collator", "dep:icu_locale"]
 ffi = []
+schema = ["dep:schemars", "citum_schema/schema", "citum_schema_data/schema"]
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }

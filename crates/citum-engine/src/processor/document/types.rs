@@ -37,6 +37,7 @@ pub struct CitationStructure {
 
 /// Document-level integral-name override parsed from frontmatter.
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct DocumentIntegralNameOverride {
     /// Whether the integral-name policy is enabled for this document.

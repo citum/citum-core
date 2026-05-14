@@ -70,6 +70,7 @@ impl Default for AnnotationStyle {
 
 /// Markup format for annotation text.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "snake_case")]
 pub enum AnnotationFormat {
     /// Parse annotation as djot inline markup (default).
@@ -163,6 +164,7 @@ impl From<CitationOccurrence> for citum_schema::data::citation::Citation {
 ///
 /// Controls rendering behavior that belongs to the document rather than the style.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default)]
 pub struct DocumentOptions {
     /// Override or replace style-defined bibliography grouping.

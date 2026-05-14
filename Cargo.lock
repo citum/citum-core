@@ -670,6 +670,7 @@ dependencies = [
  "jotdown",
  "orgize",
  "rstest",
+ "schemars",
  "serde",
  "serde_json",
  "serde_yaml_ng",

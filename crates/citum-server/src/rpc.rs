@@ -5,7 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use crate::error::ServerError;
 use citum_engine::{
-    Bibliography, Citation, Processor,
+    Bibliography, Citation, DocumentOptions, Processor, StyleInput,
     render::{djot::Djot, html::Html, latex::Latex, plain::PlainText, typst::Typst},
 };
 use citum_schema::Style;
@@ -104,7 +104,7 @@ pub struct ValidateStyleParams {
 )]
 pub struct FormatDocumentParams {
     /// Style identifier, path, URI, or inline YAML.
-    pub style: String,
+    pub style: StyleInput,
     /// Optional BCP 47 locale override.
     pub locale: Option<String>,
     /// Output format (plain, html, djot, latex, typst). Defaults to plain.
@@ -113,6 +113,8 @@ pub struct FormatDocumentParams {
     pub refs: serde_json::Value,
     /// Ordered citations as they appear in the document.
     pub citations: serde_json::Value,
+    /// Optional document-level configuration.
+    pub document_options: Option<DocumentOptions>,
 }
 
 #[derive(Debug, Serialize)]

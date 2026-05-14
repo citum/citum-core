@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 /// or as an identifier that requires a remote resolver. Only `Path` and `Yaml`
 /// can be resolved locally; `Id` and `Uri` require the citum-server resolver chain.
 #[derive(Debug, Clone, Deserialize, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(tag = "kind", content = "value", rename_all = "lowercase")]
 pub enum StyleInput {
     /// A style identifier to be resolved from registries (builtin, store, remote).
