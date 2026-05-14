@@ -1,0 +1,15 @@
+[
+  {
+    "id": "cite-1",
+    "items": [{ "id": "kuhn1962" }],
+    "mode": "non-integral"
+  },
+  {
+    "id": "cite-2",
+    "items": [{ 
+      "id": "watson1953", 
+      "locator": { "label": "page", "value": "737" } 
+    }],
+    "mode": "integral"
+  }
+]

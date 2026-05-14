@@ -25,11 +25,11 @@ Build with `--features http` to expose the same three methods over HTTP via
 `axum`. Useful for the citum-hub live preview panel.
 
 ```sh
-cargo run -p citum-server --features http -- --http --port 8080
+cargo run -p citum-server --features http -- --http --port 9000
 ```
 
 ```sh
-curl -s http://localhost:8080/rpc \
+curl -s http://localhost:9000/rpc \
   -H 'Content-Type: application/json' \
   -d '{
     "id": 1,
@@ -74,7 +74,7 @@ node scripts/benchmark-rpc-workflow.js
 | `render_citation` | `style_path`, `refs`, `citation`, `output_format?`, `inject_ast_indices?` | `String` |
 | `render_bibliography` | `style_path`, `refs`, `output_format?`, `inject_ast_indices?` | `{format, content, entries?}` |
 | `validate_style` | `style_path` | `{valid, warnings}` |
-| `format_document` | `style`, `refs`, `citations`, `output_format?` | `{citations, bibliography}` |
+| `format_document` | `style`, `refs`, `citations`, `document_options?`, `output_format?`, `locale?` | `{formatted_citations, bibliography, warnings}` |
 
 Supported `output_format` values:
 
@@ -101,21 +101,53 @@ When running in HTTP mode, two read-only discovery endpoints are available:
 
 ```sh
 # List all supported methods
-curl http://localhost:8080/rpc/methods
+curl http://localhost:9000/rpc/methods
 
 # JSON Schema for method parameters (requires --features schema build)
-curl http://localhost:8080/rpc/schema
+curl http://localhost:9000/rpc/schema
 ```
 
 Sending a `GET` request to `/rpc` returns a `405 Method Not Allowed` response with a JSON hint explaining POST usage.
+
+## Batch Document Formatting
+
+The `format_document` method is designed for processing a full document in one request. For practical workflows where data is stored in local files, you can use `jq` to assemble the JSON-RPC payload.
+
+```sh
+# Assemble and send a document formatting request using local JSON files
+jq -n \
+  --arg style_path "styles/embedded/apa-7th.yaml" \
+  --slurpfile refs examples/document-refs-native.json \
+  --slurpfile citations examples/document-citations.json \
+  --slurpfile options examples/document-options.json \
+  '{
+    id: 1,
+    method: "format_document",
+    params: {
+      style: { kind: "path", value: $style_path },
+      refs: $refs[0],
+      citations: $citations[0],
+      document_options: $options[0],
+      output_format: "html"
+    }
+  }' | curl -s http://localhost:9000/rpc \
+    -H 'Content-Type: application/json' \
+    -d @-
+```
+
+## Working with Local Files
+
+When running `citum-server` locally, the `style_path` (or `style`) parameter accepts relative or absolute paths to Citum YAML files.
+
+However, the `refs` and `citations` parameters always expect data objects, not paths. This allows the server to remain transport-agnostic and simplifies its security model (preventing arbitrary file reads by the server process). To use local files for these parameters, load them into the request payload on the client side as shown in the example above.
 
 ## Features
 
 | Feature | Default | Description |
 |---|---|---|
-| `async` | off | Wraps `Processor` in `tokio::task::spawn_blocking` |
-| `http` | off | Enables axum HTTP server; implies `async` |
-| `schema` | off | Enables GET /rpc/schema endpoint with schemars-generated JSON Schema; implies `http` |
+| `async` | off | Required for non-blocking I/O. Wraps `Processor` in `tokio::task::spawn_blocking` |
+| `http` | off | Enables axum HTTP server; **requires and automatically enables `async`** |
+| `schema` | off | Enables `/rpc/schema` endpoint; **requires and automatically enables `http` and `async`** |
 
 ## Usage
 
