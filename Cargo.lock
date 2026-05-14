@@ -602,6 +602,7 @@ dependencies = [
  "citum-resolver-api",
  "citum-schema",
  "citum-schema-data",
+ "citum-server",
  "citum_store",
  "clap",
  "clap_complete",

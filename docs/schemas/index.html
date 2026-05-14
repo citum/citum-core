@@ -1,0 +1,248 @@
+<!-- PAGE_ID: schemas -->
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Citum | JSON Schemas</title>
+    <meta name="description"
+        content="JSON schemas for Citum styles, bibliography input, locales, citations, the style registry, abbreviation maps, and the JSON-RPC server API.">
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap"
+        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#2a94d6",
+                        "background-light": "#fdfbf7",
+                        "accent-cream": "#f5f2eb",
+                    },
+                    fontFamily: {
+                        "display": ["Libre Franklin", "sans-serif"],
+                        "mono": ["JetBrains Mono", "monospace"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+    <style type="text/tailwindcss">
+        body {
+            font-family: 'Libre Franklin', sans-serif;
+            color: #374151;
+        }
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .glass-nav {
+            background: rgba(253, 251, 247, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(42, 148, 214, 0.1);
+        }
+        .citum-panel {
+            background: var(--citum-surface);
+            transition: all 0.3s ease;
+        }
+        .citum-panel:hover {
+            border-color: #2a94d6;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+    <link rel="stylesheet" href="../assets/citum-theme.css">
+</head>
+
+<body class="bg-background-light text-slate-700 selection:bg-primary/20">
+
+    <!-- Navigation -->
+    <nav class="glass-nav sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2 shrink-0">
+                <a href="../index.html" class="flex items-center gap-2 group">
+                    <div class="w-8 h-8 bg-primary rounded flex items-center justify-center group-hover:brightness-110 transition-all">
+                        <span class="text-white font-mono font-bold">C</span>
+                    </div>
+                    <span class="font-mono text-xl font-bold tracking-tight text-slate-900">Citum</span>
+                </a>
+            </div>
+            <div class="flex items-center gap-6 text-sm font-medium text-slate-600">
+                <a href="../index.html" class="hover:text-primary transition-colors">Docs</a>
+                <a href="https://github.com/bdarcus/citum-core" class="hover:text-primary transition-colors flex items-center gap-1" target="_blank">
+                    <span class="material-icons text-base">code</span> GitHub
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="py-16 px-6 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto text-center">
+            <div class="inline-flex items-center gap-2 text-primary text-sm font-mono mb-4 bg-primary/10 px-3 py-1 rounded-full">
+                <span class="material-icons text-sm">schema</span>
+                JSON Schemas
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-4">Citum Schema Catalogue</h1>
+            <p class="text-slate-500 max-w-2xl mx-auto">
+                Machine-readable schemas for every Citum data format. Use them in your editor for autocomplete
+                and real-time validation, or in your tooling to validate inputs at build time.
+            </p>
+        </div>
+    </section>
+
+    <!-- Schema Cards -->
+    <section class="py-16 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="max-w-3xl mx-auto mb-10 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                <p class="text-sm text-slate-700">
+                    Schema files are published automatically by CI from
+                    <code class="text-xs bg-amber-100 px-1 rounded">cargo run --bin citum --features schema -- schema --out-dir docs/schemas</code>.
+                    The <code class="text-xs bg-amber-100 px-1 rounded">schema</code> feature is gated to keep the default binary smaller.
+                </p>
+            </div>
+
+            <!-- Style Authoring row: style + locale -->
+            <h2 class="text-lg font-semibold text-slate-700 mb-4">Style Authoring</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12 max-w-2xl">
+                <a href="style.json"
+                    class="citum-panel p-6 rounded-xl border border-slate-200 transition-all group block">
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-icons text-sm">architecture</span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 mb-1">Style</h3>
+                    <p class="text-xs text-slate-500 mb-3">Core Citum style definition.</p>
+                    <code class="text-[10px] font-mono text-slate-400">style.json</code>
+                </a>
+                <a href="locale.json"
+                    class="citum-panel p-6 rounded-xl border border-slate-200 transition-all group block">
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-icons text-sm">language</span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 mb-1">Locale</h3>
+                    <p class="text-xs text-slate-500 mb-3">Terms and date patterns.</p>
+                    <code class="text-[10px] font-mono text-slate-400">locale.json</code>
+                </a>
+            </div>
+
+            <!-- Configuration row: registry + abbrev-map -->
+            <h2 class="text-lg font-semibold text-slate-700 mb-4">Configuration</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12 max-w-2xl">
+                <a href="registry.json"
+                    class="citum-panel p-6 rounded-xl border border-slate-200 transition-all group block">
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-icons text-sm">library_books</span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 mb-1">Registry</h3>
+                    <p class="text-xs text-slate-500 mb-3">Style registry / alias map.</p>
+                    <code class="text-[10px] font-mono text-slate-400">registry.json</code>
+                </a>
+                <a href="abbrev-map.json"
+                    class="citum-panel p-6 rounded-xl border border-slate-200 transition-all group block">
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-icons text-sm">short_text</span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 mb-1">Abbreviation Map</h3>
+                    <p class="text-xs text-slate-500 mb-3">Journal/publisher abbreviations.</p>
+                    <code class="text-[10px] font-mono text-slate-400">abbrev-map.json</code>
+                </a>
+            </div>
+
+            <!-- Reference / Citation data row -->
+            <h2 class="text-lg font-semibold text-slate-700 mb-4">Reference &amp; Citation Data</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12 max-w-2xl">
+                <a href="bib.json"
+                    class="citum-panel p-6 rounded-xl border border-slate-200 transition-all group block">
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-icons text-sm">inventory_2</span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 mb-1">Bibliography</h3>
+                    <p class="text-xs text-slate-500 mb-3">Input reference format.</p>
+                    <code class="text-[10px] font-mono text-slate-400">bib.json</code>
+                </a>
+                <a href="citation.json"
+                    class="citum-panel p-6 rounded-xl border border-slate-200 transition-all group block">
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-icons text-sm">format_quote</span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 mb-1">Citations</h3>
+                    <p class="text-xs text-slate-500 mb-3">Citation list format.</p>
+                    <code class="text-[10px] font-mono text-slate-400">citation.json</code>
+                </a>
+            </div>
+
+            <!-- Server API row -->
+            <h2 class="text-lg font-semibold text-slate-700 mb-4">Server API</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12 max-w-2xl">
+                <a href="server.json"
+                    class="citum-panel p-6 rounded-xl border border-slate-200 transition-all group block">
+                    <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary mb-4 group-hover:bg-primary group-hover:text-white transition-colors">
+                        <span class="material-icons text-sm">dns</span>
+                    </div>
+                    <h3 class="font-bold text-slate-900 mb-1">Server RPC</h3>
+                    <p class="text-xs text-slate-500 mb-3">
+                        JSON-RPC method parameter schemas:
+                        <code class="text-[10px] font-mono">render_citation</code>,
+                        <code class="text-[10px] font-mono">render_bibliography</code>,
+                        <code class="text-[10px] font-mono">validate_style</code>,
+                        <code class="text-[10px] font-mono">format_document</code>.
+                    </p>
+                    <code class="text-[10px] font-mono text-slate-400">server.json</code>
+                </a>
+            </div>
+
+            <!-- IDE Integration Note -->
+            <div class="mt-4 p-6 bg-slate-50 rounded-xl border border-slate-200 max-w-3xl text-left">
+                <h3 class="font-bold text-slate-900 mb-3 flex items-center gap-2 text-sm">
+                    <span class="material-icons text-primary text-lg">tips_and_updates</span>
+                    Editor Integration
+                </h3>
+                <p class="text-sm text-slate-600 mb-4">
+                    To get real-time validation and autocomplete in editors with
+                    <a href="https://github.com/redhat-developer/yaml-language-server#clients"
+                        class="text-primary hover:underline" target="_blank">YAML language server support</a>
+                    (VS Code, Helix, Zed, and many others), add this comment as the first line of your YAML file:
+                </p>
+                <div class="bg-slate-900 rounded-lg p-4 flex items-center justify-between group border border-slate-700 shadow-md">
+                    <code class="font-mono text-xs text-slate-300">
+                        <span class="text-slate-500"># yaml-language-server: $schema=https://docs.citum.org/schemas/style.json</span>
+                    </code>
+                    <button class="text-slate-500 hover:text-white transition-colors"
+                        onclick="navigator.clipboard.writeText('# yaml-language-server: $schema=https://docs.citum.org/schemas/style.json')"
+                        title="Copy to clipboard">
+                        <span class="material-icons text-base">content_copy</span>
+                    </button>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-4 font-mono italic">
+                    Replace <code class="text-slate-600 px-0.5 rounded">style.json</code> with the appropriate schema filename for your file type.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-10 px-6 border-t border-slate-200 text-center text-xs text-slate-400">
+        <p>
+            <a href="../index.html" class="hover:text-primary transition-colors">← Back to Citum Docs</a>
+            &nbsp;·&nbsp;
+            Schemas published automatically by CI from
+            <a href="https://github.com/bdarcus/citum-core" class="hover:text-primary transition-colors" target="_blank">citum-core</a>.
+        </p>
+    </footer>
+
+</body>
+</html>

@@ -35,11 +35,12 @@ citum_store = { package = "citum_store", path = "../citum_store", features = ["h
 citum_resolver_api = { package = "citum-resolver-api", path = "../citum-resolver-api" }
 citum-pdf = { path = "../citum-pdf", optional = true }
 citum-bindings = { path = "../citum-bindings", optional = true }
+citum-server = { path = "../citum-server", optional = true }
 url = { version = "2.5", features = ["serde"] }
 
 [features]
 default = []
-schema = ["dep:schemars", "citum_schema/schema"]
+schema = ["dep:schemars", "citum_schema/schema", "dep:citum-server", "citum-server/schema-types"]
 typst-pdf = ["dep:citum-pdf"]
 typescript = ["dep:citum-bindings", "citum-bindings/typescript"]
 

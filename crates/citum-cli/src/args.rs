@@ -82,6 +82,8 @@ pub(crate) enum SchemaType {
     /// Abbreviation map schema
     #[value(name = "abbrev-map")]
     AbbrevMap,
+    /// JSON-RPC server method parameter schemas
+    Server,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
