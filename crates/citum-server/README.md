@@ -71,9 +71,10 @@ node scripts/benchmark-rpc-workflow.js
 
 | Method | Params | Result |
 |---|---|---|
-| `render_citation` | `style_path`, `refs`, `citation`, `output_format?` | `String` |
-| `render_bibliography` | `style_path`, `refs`, `output_format?` | `{format, content, entries?}` |
+| `render_citation` | `style_path`, `refs`, `citation`, `output_format?`, `inject_ast_indices?` | `String` |
+| `render_bibliography` | `style_path`, `refs`, `output_format?`, `inject_ast_indices?` | `{format, content, entries?}` |
 | `validate_style` | `style_path` | `{valid, warnings}` |
+| `format_document` | `style`, `refs`, `citations`, `output_format?` | `{citations, bibliography}` |
 
 Supported `output_format` values:
 
@@ -82,6 +83,8 @@ Supported `output_format` values:
 - `djot`
 - `latex`
 - `typst`
+
+**Debug Parameters:** The `inject_ast_indices` parameter (optional, default `false`) is accepted by `render_citation` and `render_bibliography` for debug use. When enabled, AST node indices are embedded in the output.
 
 ### Request / response envelope
 
@@ -92,12 +95,27 @@ Supported `output_format` values:
 {"id": 2, "error": "style not found: missing.yaml"}
 ```
 
+## Discovery
+
+When running in HTTP mode, two read-only discovery endpoints are available:
+
+```sh
+# List all supported methods
+curl http://localhost:8080/rpc/methods
+
+# JSON Schema for method parameters (requires --features schema build)
+curl http://localhost:8080/rpc/schema
+```
+
+Sending a `GET` request to `/rpc` returns a `405 Method Not Allowed` response with a JSON hint explaining POST usage.
+
 ## Features
 
 | Feature | Default | Description |
 |---|---|---|
 | `async` | off | Wraps `Processor` in `tokio::task::spawn_blocking` |
 | `http` | off | Enables axum HTTP server; implies `async` |
+| `schema` | off | Enables GET /rpc/schema endpoint with schemars-generated JSON Schema; implies `http` |
 
 ## Usage
 

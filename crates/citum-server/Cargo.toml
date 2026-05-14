@@ -29,6 +29,9 @@ tokio = { version = "1", features = ["full"], optional = true }
 # http feature dependencies (implies async)
 axum = { version = "0.8", optional = true }
 
+# schema feature dependencies
+schemars = { version = "1.2.1", features = ["derive"], optional = true }
+
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }
 
@@ -36,6 +39,7 @@ tower = { version = "0.5", features = ["util"] }
 default = []
 async = ["tokio"]
 http = ["async", "axum"]
+schema = ["http", "dep:schemars"]
 
 [lints]
 workspace = true
