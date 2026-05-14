@@ -105,6 +105,14 @@ rules:
     pattern: "(?s)license(\\.workspace)?\\s*=.*repository(\\.workspace)?\\s*="
     level: warning
 
+  - id: conventional-commits
+    kind: git_commit_message
+    pattern: '^(Revert ".+"|fixup! .+|squash! .+|(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9._/-]+\))?(!)?: [a-z].+)'
+    subject_max_length: 50
+    requires_body: true
+    since: ${ALINT_BASE_SHA:-origin/main}
+    level: error
+
   - id: rust-mod-doc
     kind: file_content_matches
     paths: "crates/*/src/lib.rs"
