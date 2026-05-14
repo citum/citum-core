@@ -71,6 +71,7 @@ class ReleaseImpactTests(unittest.TestCase):
             ["feat(schema): add URL-backed entries"],
             "",
             "0.41.0",
+            schema_changed=True,
         )
 
         self.assertTrue(impact.should_release)
@@ -108,11 +109,43 @@ class ReleaseImpactTests(unittest.TestCase):
             ["chore(schema): regenerate output"],
             "",
             "0.41.0",
+            schema_changed=True,
         )
 
         self.assertTrue(impact.schema_changed)
         self.assertFalse(impact.should_release)
         self.assertEqual(impact.level, "none")
+
+    def test_schema_source_change_without_artifact_does_not_mark_schema_changed(self) -> None:
+        impact = infer.infer_release_impact(
+            ["crates/citum-schema-style/src/lib.rs"],
+            ["feat(schema): document schema version"],
+            "",
+            "0.41.0",
+            schema_changed=False,
+        )
+
+        self.assertTrue(impact.should_release)
+        self.assertTrue(impact.code_changed)
+        self.assertFalse(impact.schema_changed)
+        self.assertEqual(impact.level, "minor")
+
+    def test_version_default_only_schema_change_is_ignored(self) -> None:
+        old = '{"properties":{"version":{"default":"0.47.0"},"title":{"type":"string"}}}'
+        new = '{"properties":{"version":{"default":"0.48.0"},"title":{"type":"string"}}}'
+
+        self.assertFalse(infer.schema_contents_differ(old, new))
+
+    def test_structural_schema_change_is_detected(self) -> None:
+        old = '{"properties":{"version":{"default":"0.47.0"}}}'
+        new = '{"properties":{"version":{"default":"0.48.0"},"title":{"type":"string"}}}'
+
+        self.assertTrue(infer.schema_contents_differ(old, new))
+
+    def test_added_schema_artifact_is_detected(self) -> None:
+        new = '{"properties":{"version":{"default":"0.48.0"}}}'
+
+        self.assertTrue(infer.schema_contents_differ(None, new))
 
     def test_github_output_uses_action_field_names(self) -> None:
         impact = infer.ReleaseImpact(

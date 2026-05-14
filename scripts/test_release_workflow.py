@@ -11,6 +11,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 WORKFLOW_PATH = REPO_ROOT / ".github/workflows/release.yml"
+RELEASE_CONFIG_PATH = REPO_ROOT / "release.toml"
 SCHEMA_LIB = REPO_ROOT / "crates/citum-schema-style/src/lib.rs"
 
 
@@ -20,6 +21,7 @@ class ReleaseWorkflowTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
+        cls.release_config = RELEASE_CONFIG_PATH.read_text(encoding="utf-8")
 
     def test_release_branch_is_always_release_next(self) -> None:
         self.assertIn('echo "branch=release/next" >> "$GITHUB_OUTPUT"', self.workflow)
@@ -38,6 +40,27 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIsNotNone(bump_workspace_block)
         assert bump_workspace_block is not None
         self.assertNotIn(" -m ", bump_workspace_block.group(0))
+
+    def test_release_hook_writes_repo_root_changelog(self) -> None:
+        self.assertNotIn('"git-cliff", "-o", "CHANGELOG.md"', self.release_config)
+        self.assertIn("git rev-parse --show-toplevel", self.release_config)
+        self.assertIn("$repo/CHANGELOG.md", self.release_config)
+
+    def test_crate_changelogs_are_absent(self) -> None:
+        tracked = subprocess.run(
+            ["git", "ls-files", "crates/*/CHANGELOG.md"],
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        existing_tracked = [
+            path
+            for path in tracked.stdout.splitlines()
+            if (REPO_ROOT / path).exists()
+        ]
+
+        self.assertEqual(existing_tracked, [])
 
     def test_schema_tag_steps_do_not_use_heredoc(self) -> None:
         """Heredoc closing delimiters can gain indentation via YAML processing,

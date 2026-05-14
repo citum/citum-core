@@ -23,7 +23,11 @@ The release workflow infers the bump level from conventional commit messages in 
 
 ## Schema Version Bumps
 
-If `crates/citum-schema-style/src/lib.rs` or `docs/schemas/` changes in the PR, the schema version is bumped **within the same bump level** as the workspace (e.g., if it's a patch release, schema bumps its patch version).
+If committed generated JSON schemas in `docs/schemas/*.json` change structurally, the schema version is bumped **within the same bump level** as the workspace (e.g., if it's a patch release, schema bumps its patch version). Version-default-only schema diffs produced by the release bump itself are ignored when deciding whether the schema track changed.
+
+## Changelog
+
+The repository uses one canonical root `CHANGELOG.md` for the shared workspace version. Crate-local changelogs are intentionally not tracked.
 
 ## Release PR Creation
 

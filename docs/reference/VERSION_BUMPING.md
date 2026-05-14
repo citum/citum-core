@@ -18,9 +18,9 @@ Citum keeps code and schema versioning separate:
 
 When code merges to `main`, the release workflow:
 
-1. **Detects which tracks changed** using path filters:
-   - Schema crates (`citum-schema*`, `citum-cli`) → schema track
-   - Other publishable crates → code track
+1. **Detects which tracks changed**:
+   - Structural changes to committed `docs/schemas/*.json` artifacts → schema track
+   - Rust workspace crate, `Cargo.toml`, or `Cargo.lock` changes → code track
 2. **Infers bump level** from conventional commit messages since the last tag:
    - `fix:`, `perf:` → patch
    - `feat:` → minor
@@ -29,8 +29,8 @@ When code merges to `main`, the release workflow:
    but the commits only say `fix:`, the level is escalated.
 4. **Opens or updates a release PR** on `release/next` (for all release levels):
     - Runs `cargo release <level> --workspace` to bump `Cargo.toml`
-    - Runs `git-cliff` to generate the changelog
-    - If schema paths changed, also bumps `STYLE_SCHEMA_VERSION`
+    - Runs `git-cliff` to generate the root `CHANGELOG.md`
+    - If generated schema artifacts changed structurally, also bumps `STYLE_SCHEMA_VERSION`
 5. **Auto-tags** when the release PR is merged to `main`.
 
 ### No Version-Bump footers
@@ -76,6 +76,8 @@ The release tool is configured in `release.toml`:
 - `shared-version = true` — all workspace crates share one version
 - `consolidate-commits = true` — one version-bump commit per release
 - `dependent-version = "upgrade"` — intra-workspace deps are auto-updated
+- root `CHANGELOG.md` is the single workspace changelog; crate-local changelogs
+  are intentionally not tracked
 
 ## Related
 
