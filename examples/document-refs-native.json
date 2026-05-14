@@ -1,0 +1,39 @@
+{
+  "kuhn1962": {
+    "id": "kuhn1962",
+    "class": "monograph",
+    "type": "book",
+    "title": "The Structure of Scientific Revolutions",
+    "author": [{ "family": "Kuhn", "given": "Thomas S." }],
+    "issued": "1962",
+    "publisher": { "name": "University of Chicago Press" }
+  },
+  "watson1953": {
+    "id": "watson1953",
+    "class": "serial-component",
+    "type": "article",
+    "title": "Molecular Structure of Nucleic Acids",
+    "author": [
+      { "family": "Watson", "given": "J. D." },
+      { "family": "Crick", "given": "F. H. C." }
+    ],
+    "issued": "1953-04-25",
+    "container": {
+      "class": "serial",
+      "type": "academic-journal",
+      "title": "Nature"
+    },
+    "volume": "171",
+    "issue": "4356",
+    "pages": "737-738"
+  },
+  "smith2010": {
+    "id": "smith2010",
+    "class": "monograph",
+    "type": "book",
+    "title": "Nationalism: Theory, Ideology, History",
+    "author": [{ "family": "Smith", "given": "Anthony D." }],
+    "issued": "2010",
+    "publisher": { "name": "Polity" }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "show_semantics": true,
+  "inject_ast_indices": false,
+  "annotation_format": "djot"
+}
