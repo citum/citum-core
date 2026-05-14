@@ -26,7 +26,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       rust: ${{ steps.filter.outputs.rust }}
-      hygiene: ${{ steps.filter.outputs.hygiene }}
+      docs: ${{ steps.filter.outputs.docs }}
+      scripts: ${{ steps.filter.outputs.scripts }}
+      beans: ${{ steps.filter.outputs.beans }}
+      infra: ${{ steps.filter.outputs.infra }}
       semver: ${{ steps.filter.outputs.semver }}
     steps:
       - uses: actions/checkout@v4
@@ -40,18 +43,24 @@ jobs:
               - 'Cargo.lock'
               - 'rust-toolchain.toml'
               - 'styles/**'
-            hygiene:
-              - 'scripts/**'
-              - 'locales/**'
-              - 'registry/**'
-              - 'templates/**'
-              - 'examples/**'
-              - '.beans.yml'
-              - '.github/workflows/ci.yml'
+            docs:
               - '**.md'
               - 'docs/**'
               - 'CONTRIBUTING.md'
+              - 'examples/**'
+              - '.github/**'
+            scripts:
+              - 'scripts/**'
+              - 'examples/**'
+            beans:
+              - 'registry/**'
+              - 'locales/**'
+              - 'templates/**'
+              - '.beans.yml'
               - '.beans/**'
+            infra:
+              - 'scripts/**'
+              - 'crates/**'
             semver:
               - 'crates/csl-legacy/**'
               - 'crates/citum-schema-data/**'
@@ -62,10 +71,23 @@ jobs:
               - 'crates/citum-cli/**'
               - 'crates/citum-bindings/**'
 
-  checks:
-    name: Hygiene Checks
+  hygiene-docs:
+    name: Hygiene Checks — Docs
     needs: changes
-    if: ${{ needs.changes.outputs.hygiene == 'true' }}
+    if: ${{ needs.changes.outputs.docs == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run repository hygiene (alint)
+        uses: asamarts/alint@v0.9.21
+
+  hygiene-beans:
+    name: Hygiene Checks — Beans
+    needs: changes
+    if: ${{ needs.changes.outputs.beans == 'true' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -85,9 +107,6 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Run repository hygiene (alint)
-        uses: asamarts/alint@v0.9.21
-
       - name: Install script dependencies
         run: npm install --prefix scripts
 
@@ -97,14 +116,21 @@ jobs:
       - name: Check bean hygiene
         run: ./scripts/check-bean-hygiene.sh
 
-      - name: Validate production styles and structure
-        run: ./scripts/validate-production-styles.sh
+  hygiene-scripts:
+    name: Hygiene Checks — Scripts
+    needs: changes
+    if: ${{ needs.changes.outputs.scripts == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Check testing infrastructure contracts
-        run: node scripts/check-testing-infra.js
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
-      - name: Check facade crate boundaries
-        run: ./scripts/check-facade-crate.sh
+      - name: Install script dependencies
+        run: npm install --prefix scripts
 
       - name: Run script regression tests
         run: node --test scripts/*.test.js
@@ -115,6 +141,31 @@ jobs:
             scripts/test_infer_release_bump.py \
             scripts/test_coverage_analysis.py \
             scripts/test_release_workflow.py
+
+  hygiene-infra:
+    name: Hygiene Checks — Infra
+    needs: changes
+    if: ${{ needs.changes.outputs.infra == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install script dependencies
+        run: npm install --prefix scripts
+
+      - name: Validate production styles and structure
+        run: ./scripts/validate-production-styles.sh
+
+      - name: Check testing infrastructure contracts
+        run: node scripts/check-testing-infra.js
+
+      - name: Check facade crate boundaries
+        run: ./scripts/check-facade-crate.sh
 
   rust-ci:
     name: Rust CI (Lint + Test)
