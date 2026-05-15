@@ -33,7 +33,6 @@ use std::fs;
 use std::path::Path;
 
 use citum_schema::Style;
-use citum_schema::locale::Locale;
 use citum_schema_data::InputBibliography;
 
 /// What a loader did when it met a "future" feature.
@@ -82,13 +81,6 @@ fn parse_bibliography(yaml: &str) -> Outcome {
     }
 }
 
-fn parse_locale(yaml: &str) -> Outcome {
-    match Locale::from_yaml_str(yaml) {
-        Ok(_) => Outcome::Pass,
-        Err(_) => Outcome::HardFail,
-    }
-}
-
 // ------------ Case fixtures ------------
 //
 // Every fixture is a self-contained YAML literal. The only "future" feature
@@ -120,9 +112,13 @@ fn case_discriminator_class() -> Outcome {
 }
 
 fn case_locale_form() -> Outcome {
-    // TermForm gains hypothetical `vocative`.
-    let yaml = "language: en\nterms:\n  page:\n    vocative: pp\n";
-    parse_locale(yaml)
+    // TermForm gains hypothetical `vocative`. Drives the typed enum via
+    // TemplateTerm.form: Option<TermForm> on the style side — the raw
+    // locale YAML uses string-keyed maps and does not exercise TermForm
+    // deserialization.
+    let yaml =
+        format!("{STYLE_HEAD}bibliography:\n  template:\n    - term: page\n      form: vocative\n");
+    parse_style(&yaml)
 }
 
 fn case_date_form() -> Outcome {
@@ -157,9 +153,14 @@ fn case_new_reference_field() -> Outcome {
 }
 
 fn case_new_locale_term_key() -> Outcome {
-    // A locale term that's not in the current vocabulary.
-    let yaml = "language: en\nterms:\n  preprint-server:\n    long: preprint server\n";
-    parse_locale(yaml)
+    // A style references a GeneralTerm key that the engine vocabulary
+    // does not enumerate. Drives the typed enum via TemplateTerm.term:
+    // GeneralTerm — the style-side lookup path the spec actually targets,
+    // not the raw locale map.
+    let yaml = format!(
+        "{STYLE_HEAD}bibliography:\n  template:\n    - term: preprint-server\n      form: long\n"
+    );
+    parse_style(&yaml)
 }
 
 fn case_custom_namespace() -> Outcome {
@@ -347,8 +348,8 @@ fn forward_compat_snapshot_matches() {
         .join("snapshots")
         .join("forward_compat_gaps.snap");
 
-    // Update-on-demand path: setting INSTA_UPDATE=1 (or the project's
-    // standard env var) rewrites the snapshot. Otherwise we assert equality.
+    // Update-on-demand path: setting UPDATE_FORWARD_COMPAT_SNAPSHOT=1
+    // rewrites the snapshot. Otherwise we assert equality.
     if std::env::var_os("UPDATE_FORWARD_COMPAT_SNAPSHOT").is_some() {
         fs::create_dir_all(snapshot_path.parent().unwrap()).unwrap();
         fs::write(&snapshot_path, &actual).expect("write snapshot");

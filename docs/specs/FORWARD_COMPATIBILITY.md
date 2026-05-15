@@ -97,31 +97,36 @@ follow-up implementation beans; this spec only fixes the contract.
 ## Scope table
 
 Each row is anchored to one or more cases in
-`crates/citum-engine/tests/forward_compatibility.rs`. The "Currently
-observed" column reflects what the engine does **today**, not what the
-contract demands.
+`crates/citum-engine/tests/forward_compatibility.rs`. The columns below
+measure **loader behavior** and align row-for-row with
+`crates/citum-engine/tests/snapshots/forward_compat_gaps.snap` — the
+truth-of-record. End-to-end user-visible outcomes may add a warning via
+`citum check` on top of a loader `Pass`; see row 10.
 
-| # | Category | Example | Desired | Currently observed | Follow-up |
+| # | Category | Example | Declared | Observed | Follow-up |
 |---|---|---|---|---|---|
-| 1 | Attribute enum in template | `contributor: producer` (new `ContributorRole`) | `SoftDegrade` | `HardFail` (raw serde error) | Tolerant enum deserializer |
-| 2 | Attribute enum in data | `class: monograph, type: dance-performance` | `SoftDegrade` | `HardFail` | Tolerant enum deserializer |
-| 2b | Top-level `class` value | `class: dance-performance` | `HardFail` (opt-out, major bump) **or** `SoftDegrade` via catch-all variant | `HardFail` | InputReference discriminator design |
-| 3 | Locale form | `form: vocative` | `SoftDegrade` (fall back to `Long`) | `HardFail` | Tolerant enum deserializer |
-| 4 | Date form | `form: month-and-day` (new `DateForm`) | `SoftDegrade` | `HardFail` | Tolerant enum deserializer |
-| 5 | New style option key | `options.contributors.future-key: true` | `SoftDegrade` (ignore field, warn) | `HardFail` (`deny_unknown_fields`) | Capture-unknown-fields wrapper |
-| 6 | New top-level style section | `experiments: { ... }` | `SoftDegrade` | `HardFail` (`deny_unknown_fields` on `Style`) | Capture-unknown-fields wrapper |
-| 7 | New reference field | `audience: scholarly` on `Monograph` | `Pass` (silent ignore) **or** `SoftDegrade` (warn) | `Pass` (silent — known gap) | Reference-data silent-acceptance fix |
-| 8 | New locale term key | term key not in current vocabulary | `SoftDegrade` at lookup, render the key as fallback | depends on lookup path — to be measured | Tolerant locale lookup |
-| 9 | Custom namespace | `custom.publisher-x.foo: true` | `Pass` | `Pass` (control case) | none |
-| 10 | Version-only signal | `version: "99.0"` on otherwise valid style | `SoftDegrade` via `citum check` | `SoftDegrade` (control case) | none |
-| 11 | Template grammar add | hypothetical `loop:` variant | `HardFail` (opt-out, major) | `HardFail` (control case) | none |
-| 12 | Required template field add | new required field on `TemplateVariable` | `HardFail` (opt-out, major) | `HardFail` (control case) | none |
+| 1 | Attribute enum in template | `contributor: producer` (new `ContributorRole`) | `SoftDegrade` | `HardFail` | `csl26-ld6e` tolerant enum deserializer |
+| 2 | Attribute enum in data | `class: monograph, type: dance-performance` | `SoftDegrade` | `HardFail` | `csl26-ld6e` |
+| 2b | Top-level `class` value | `class: dance-performance` | `HardFail` | `HardFail` | `csl26-1bdr` (post-1.0 design) |
+| 3 | TermForm in template | `term: page, form: vocative` (new `TermForm`) | `SoftDegrade` | `HardFail` | `csl26-ld6e` |
+| 4 | DateForm in template | `date: issued, form: month-and-day` (new `DateForm`) | `SoftDegrade` | `HardFail` | `csl26-ld6e` |
+| 5 | New style option key | `options.contributors.future-key: true` | `SoftDegrade` | `HardFail` | `csl26-0ksu` capture-unknown-fields wrapper |
+| 6 | New top-level style section | `experiments: { ... }` | `SoftDegrade` | `HardFail` | `csl26-0ksu` |
+| 7 | New reference field | `audience: scholarly` on `Monograph` | `SoftDegrade` | `Pass` (silent — known gap) | `csl26-acfh` reference-data silent-acceptance |
+| 8 | New `GeneralTerm` in template | `term: preprint-server` (unknown `GeneralTerm`) | `SoftDegrade` | `HardFail` | `csl26-o1z5` tolerant locale lookup |
+| 9 | Custom namespace | `custom.publisher-x.foo: true` | `Pass` | `Pass` | — |
+| 10 | Style version bumped | `version: "99.0"` on otherwise valid style | `Pass` | `Pass` | — (see footnote) |
+| 11 | Template grammar add | hypothetical `loop:` variant | `HardFail` | `HardFail` | — (opt-out by design) |
+| 12 | Malformed template shape | typoed `variable` body | `HardFail` | `HardFail` | — (opt-out by design) |
 
-The truth-of-record for these outcomes is
-`crates/citum-engine/tests/snapshots/forward_compat_gaps.snap`. The
-test corpus runs every row, captures `(declared, observed)` pairs, and
-asserts the snapshot. Documentation rows that drift from the snapshot
-must be updated in the same PR that changes engine behavior.
+**Row 10 footnote.** The loader correctly accepts a style whose `version`
+declares a newer minor than the engine knows. The user-visible
+`SoftDegrade` is delivered by `citum check`
+(`crates/citum-cli/src/commands.rs:1716`), which compares
+`style.version` against `SchemaVersion::default()` and emits a clean
+warning when minor > supported minor. The snapshot measures the loader
+only; end-to-end the composition is `loader Pass + citum check warning =
+SoftDegrade`.
 
 ## InputReference discriminator
 
@@ -132,24 +137,23 @@ determines which concrete struct (`Monograph`, `SerialComponent`,
 `class` value has no struct shape to fall into; serde cannot type the
 payload at all.
 
-Two viable shapes (one must be picked before this spec graduates to
-`Active`):
+**Pre-1.0 stance (current).** New top-level reference classes are the
+second opt-out category alongside template grammar. Producers must
+introduce them as a `major` bump; older engines hard-fail. Pre-1.0 the
+engine has no published older-engine population to honor, so the cost
+of a hard-break on `class` rebases the design question to "do we ever
+need anything else?" — and the answer today is no.
 
-**Option A — Catch-all variant.** Add
+**Post-1.0 future work.** Once crates have a real wild-engine
+population, we may want to keep the headline rule ("new features warn,
+not break") even for new classes. The shape that delivers that is a
+catch-all variant —
 `InputReference::Unknown(UnknownReference { class: String, fields:
-serde_json::Map<String, Value> })`. A brand-new class round-trips its
-data, emits a `SoftDegrade` warning, and degrades to a generic
-rendering path (likely "render title + author + year, drop everything
-else"). Preserves the spec's headline rule that new features warn
-rather than break.
-
-**Option B — Major-bump category.** Declare new top-level classes as a
-second opt-out category alongside template grammar. Producers must bump
-major and accept that older engines hard-fail. Simpler to implement;
-worse user experience.
-
-This spec recommends Option A and tracks the design in a follow-up
-bean. Until then row 2b stays `HardFail` in the snapshot.
+serde_json::Map<String, Value> })` — which round-trips the data, emits
+a `SoftDegrade` warning, and degrades to a generic rendering path. We
+defer this design until there is real-world evidence that brand-new
+classes are common enough to warrant the engineering cost. Tracked in
+bean `csl26-1bdr`.
 
 ## Producer obligations
 
@@ -263,10 +267,10 @@ otherwise unchanged.
   title: ...
 ```
 
-Today: parse fails. Under Option A (recommended): the reference lands
-in `InputReference::Unknown { class: "dance-performance", fields: ... }`
-and degrades to a generic render. Under Option B: hard fail; the
-producer must bump major and accept the break.
+Today: parse fails. Pre-1.0 stance: the producer must introduce
+`dance-performance` as a `major` bump; older engines may hard-fail.
+Post-1.0 we may revisit this with a catch-all variant — see
+[§ InputReference discriminator](#inputreference-discriminator).
 
 ## Non-goals
 

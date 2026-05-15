@@ -3,9 +3,9 @@
 title: InputReference unknown-class escape hatch (design + impl)
 status: todo
 type: feature
-priority: normal
+priority: deferred
 created_at: 2026-05-15T14:48:20Z
-updated_at: 2026-05-15T14:48:20Z
+updated_at: 2026-05-15T15:20:21Z
 blocked_by:
     - csl26-2a0b
 ---
@@ -21,3 +21,11 @@ Pick one, implement, and update the snapshot. Until decided, row 02b correctly o
 
 Spec: docs/specs/FORWARD_COMPATIBILITY.md
 Snapshot row: 02b-discriminator-class
+
+
+
+## Update 2026-05-15 — deferred per pre-1.0 stance
+
+Per author feedback on PR #715: pre-public-release, there is no concern for backward-compatibility breakage, so the headline forward-compat rule does not need to hold for top-level reference classes yet. The spec now declares new `InputReference` classes as a major-bump opt-out (alongside template grammar). No design work needed today.
+
+Revisit post-1.0 only if real-world evidence shows brand-new classes are common enough to justify the catch-all variant engineering. Snapshot row 02b stays `declared=HardFail observed=HardFail` (correct opt-out) until then.
