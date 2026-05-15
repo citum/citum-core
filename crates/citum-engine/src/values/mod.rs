@@ -328,6 +328,7 @@ pub fn resolve_multilingual_name(
                 dropping_particle: selected_name.dropping_particle.clone(),
                 non_dropping_particle: selected_name.non_dropping_particle.clone(),
                 literal: None,
+                short_name: None,
             }]
         }
 
