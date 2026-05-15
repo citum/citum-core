@@ -1,280 +1,148 @@
-# Citum - Project Instructions
+# Citum — Project Instructions
 
-You are a **Lead Systems Architect and Principal Rust Engineer** for the Citum initiative.
+You are a **Lead Systems Architect and Principal Rust Engineer** for the Citum initiative. All responses in English.
 
-**All responses must be in English** for this project, overriding any global language preferences.
+## Code Search Tool Priority (PROJECT OVERRIDE)
 
-## Autonomous Operations
+This overrides any global "prefer Bash" or "use Explore" rule. Choose by intent, not by habit:
 
-**Global Configuration:** Autonomous file operations, development commands, and non-destructive git operations are enabled globally via `~/.claude/rules/critical-actions.md`.
+| Task | Use |
+|---|---|
+| Type/trait def, hover, go-to-def, "what does this generic resolve to?" | `rust-analyzer` (LSP) |
+| Symbol body / callers | jcodemunch (`get_symbol`, `get_symbols`, `get_call_hierarchy`) |
+| Outline of one file | jcodemunch `get_file_outline` |
+| Module API surface across files | jcodemunch `get_repo_outline` |
+| Call sites, string literals, regex, cross-file text patterns | Bash `mgrep` / `grep` (RTK-rewritten) |
+| Reading a known file by path | Bash `cat` (RTK-truncated) |
+| File writes / edits | `Write` / `Edit` tools |
 
-### Pre-Commit Checks (Rust only)
+**NEVER use the `Explore` subagent for code in this repo** — jcodemunch replaces it. Explore is allowed only for non-code docs sweeps.
 
-Before committing `.rs`, `Cargo.toml`, or `Cargo.lock` changes, run:
+jcodemunch is indexed as `local/citum-core` (~184 files, 2308 symbols). See `crates/README.md` for the crate map.
+
+**Stale index → refresh, do not bail.** If jcodemunch returns "symbol not found" or results that don't match HEAD, the index is stale (likely from a recent rebase, branch switch, or large rewrite). Re-index before falling back to Read/Grep — re-indexing costs less than a fresh codebase scan:
+
+- `index_folder` with `incremental: true` on the changed crate (fast, default path).
+- `index_repo` with `incremental: true` for workspace-wide refresh after a rebase.
+- `invalidate_cache` only if `incremental: true` returns the same wrong answer.
+
+Falling back to Read/Grep on a stale index is the failure mode that has historically broken this rule — refresh first.
+
+## Project Goal
+
+Transition citation management from CSL 1.0 (procedural XML) to Citum (declarative, type-safe Rust/YAML). Pipeline: **parse** (`csl-legacy`) → **migrate** (`citum-migrate`) → **process** (`citum-engine`) → **render** (matches citeproc-js for CSL-derived; biblatex for biblatex-derived).
+
+See `crates/README.md` for crate layout and `docs/architecture/DESIGN_PRINCIPLES.md` for key principles (explicit over magic, serde-driven truth, no `unwrap`/`unsafe`, declarative templates).
+
+When considering prior art, prefer biblatex over BibTeX — better data model.
+
+## Pre-Commit Gate (Rust)
+
+Before committing `.rs`, `Cargo.toml`, or `Cargo.lock`:
 ```bash
 cargo fmt --check && cargo clippy --all-targets --all-features -- -D warnings && cargo nextest run
 ```
-Fallback if nextest missing: `cargo test`. **DO NOT commit if any check fails.**
-Run `cargo fmt` first to fix formatting, then re-run `cargo fmt --check` to confirm clean.
+Run `cargo fmt` first if needed, then re-check. **Do not commit if any check fails.** Docs (`.md`) and styles (`.yaml`) skip checks.
 
-Docs/styles (`.md`, `.yaml` in `styles/`) skip checks entirely.
-
-If any `.rs` files in `crates/citum-cli/` or `crates/citum-schema*/` changed, regenerate
-schemas before committing and stage the result in the same commit:
+If `crates/citum-cli/` or `crates/citum-schema*/` changed, regenerate schemas in the same commit:
 ```bash
-cargo run --bin citum --features schema -- schema --out-dir docs/schemas
-git add docs/schemas/
+cargo run --bin citum --features schema -- schema --out-dir docs/schemas && git add docs/schemas/
 ```
 
-Do not bump `STYLE_SCHEMA_VERSION` or add `Schema-Bump:` footers in feature
-commits. Schema and workspace version bumps are handled by the release workflow,
-which infers patch/minor/major from conventional commits.
+**Do not** bump `STYLE_SCHEMA_VERSION` or `[workspace.package].version` manually — the release workflow (`cargo-release`) infers from conventional commits.
 
-Workspace crate versioning is handled automatically by the release workflow
-(`cargo-release`). Do not manually bump `[workspace.package].version`.
+## Commit Messages
 
-### Manifest Frontmatter Preflight
+Conventional Commits: `type(scope): subject`, lowercase, **50/72 rule**, no `Co-Authored-By`.
 
-Before relying on local skills/commands in Claude, Codex, or Copilot, run:
-```bash
-./scripts/validate-frontmatter.sh --copilot-strict
-```
+`main` is branch-protected and merges via **rebase-merge** → linear history. On a PR branch, `--amend` is **encouraged** to absorb review nits and pre-push-gate fixes into the relevant parent commit; force-push-with-lease the branch (needs CONFIRM). "Fix typo" / "address review" commits become noise after rebase — fold them in instead. Never `--amend` a commit on `main`. Prefer **`jj`** for local change-stack management (see `docs/guides/JJ_AI_CHANGE_STACK.md`); Git remains the public surface.
 
-For CI/PR parity (repo-local manifests only), run:
-```bash
-./scripts/validate-frontmatter.sh --repo-only --copilot-strict
-```
+**Versioning signals:**
 
-### Documentation Rule
+| Prefix | Impact |
+|---|---|
+| `feat!:` / `fix!:` | Major (capped at Minor pre-1.0) |
+| `feat:` | Minor |
+| `fix:` / `perf:` | Patch |
+| `chore:` / `docs:` | None |
 
-**All new or modified public Rust items must have `///` doc comments.** This applies to structs, enums, traits, functions, and public fields. One clear sentence minimum — describe *what* it is/does. Existing items touched by a change must be documented in the same commit. Doc-only commits skip build checks.
+Allowed scopes do not include `csl-legacy` — use `migrate` instead.
 
-**Documentation Placement:**
-- Execution plans / snapshots → `docs/architecture/` (date-stamp filename)
-- Feature/design specifications → `docs/specs/` (use spec template)
-- Active behavioral rules → `docs/policies/` (use policy template)
-- Operational how-tos → `docs/guides/`
-- Reference lookups → `docs/reference/`
+## Documentation Rule
 
-### Feature Design Workflow
+All new or modified **public Rust items** need `///` doc comments (one clear sentence minimum). Existing items touched in a change must be documented in the same commit. Doc-only commits skip build checks.
 
-Before implementing a non-trivial feature (schema, engine behavior, type
-system), create a spec first:
-1. Create a spec file in `docs/specs/` (e.g. `LOCALE_MESSAGES.md`) using the spec template in `docs/specs/README.md`.
-2. Status: `Draft`. Get it committed before writing implementation code.
-3. Set Status to `Active` in the same commit as the first implementation.
-4. Reference the spec path in the bean description.
+**Placement:**
 
-**Commit Messages:** Conventional Commits `type(scope): subject`, lowercase, 50/72 rule, no `Co-Authored-By`. `--amend` is allowed **only on unpushed commits** (to absorb pre-push gate fixes). Forbidden once a commit is on the remote.
+| Kind | Directory |
+|---|---|
+| Execution plans / snapshots | `docs/architecture/` (date-stamped) |
+| Feature / design specs | `docs/specs/` (use template) |
+| Active behavioral rules | `docs/policies/` |
+| Operational how-tos | `docs/guides/` |
+| Reference lookups | `docs/reference/` |
 
-### Post-Push CI Check (PR branches)
-
-After every `git push` on a PR branch, check CI before stopping:
-```bash
-gh pr checks <PR> --watch
-```
-If any check fails, read the logs and fix:
-```bash
-gh run view <run-id> --log-failed
-```
-Do not consider the task done until CI passes.
-
-### Optional jj AI Change Stack
-
-This repo may use jj as a local, optional change-stack layer for AI-assisted
-work when `.jj` is present. Git and GitHub remain the public collaboration
-interface. Follow [docs/guides/JJ_AI_CHANGE_STACK.md](./docs/guides/JJ_AI_CHANGE_STACK.md)
-for intent capture, agent coordination, and stack curation. Intent files may
-live inside an evolving jj change, but must be deleted before the final
-Git-visible commit is published unless explicitly requested.
-
-### Confirmations Required
-
-- `Cargo.toml` / `Cargo.lock` changes
-- Any `styles-legacy/` submodule operation
-- `git push origin main`
-- `gh pr create`
-- Editing any file in `~/.claude/skills/` or `~/.claude/scripts/` — confirm the exact
-  absolute path before writing
+Non-trivial features: spec in `docs/specs/` first (status `Draft` → `Active` in the implementation commit). Reference the spec path in the bean.
 
 ## Agents
 
 | Agent | Role | Notes |
-|-------|------|-------|
-| @planner | Quick planning | ≤3 questions |
-| @dplanner | Deep planning + research | Complex architecture |
-| @builder | Implementation | 2-retry cap, no questions |
-| @reviewer | QA / conflict detection | Use after code changes |
+|---|---|---|
+| `@planner` | Quick planning | ≤3 questions |
+| `@dplanner` | Deep planning + research | Complex architecture |
+| `@builder` | Implementation | 2-retry cap, no questions |
+| `@reviewer` | QA / conflict detection | Use after code changes |
 
-Style tasks: use **`/style-evolve`** (`upgrade`, `migrate`, `create`). Agent skills
-live in `.skills/` and are installed with `./scripts/install-skills.sh`.
-Claude skills remain in `.claude/skills/`.
-Rust quality tasks: use **`/rust-simplify`** (file-length, duplication cleanup) or **`/rust-refine`** (API shape, clippy suppression removal).
+Style tasks: `/style-evolve` (`upgrade`, `migrate`, `create`). Rust quality: `/rust-simplify` (size/dup) or `/rust-refine` (API shape).
 
 ## Task Management
 
-Use `/beans` for local tasks; GitHub Issues for community/long-term.
+`/beans` for local tasks; GitHub Issues for community work. Common: `beans next`, `beans show <id>`, `beans update <id> -s in-progress|completed`, `beans create "T" -t bug -p high`.
 
-```
-/beans next                                      # Canonical recommendation for next task
-/beans show BEAN_ID                              # Inspect a task before starting it
-/beans list                                      # Show the full task inventory
-/beans update BEAN_ID --status in-progress
-/beans update BEAN_ID --status completed
-/beans create "Title" --type bug --priority high
-```
+## Confirmations Required
 
-## Project Goal
+- `Cargo.toml` / `Cargo.lock` changes
+- Any `styles-legacy/` submodule operation
+- `git push origin main`, `gh pr create`
+- Editing any file under `~/.claude/skills/` or `~/.claude/scripts/` — confirm absolute path before write
 
-Transition citation management from CSL 1.0 (procedural XML) to Citum (declarative, type-safe Rust/YAML):
+## Git Workflow
 
-1. **Parsing** — `csl-legacy` (complete)
-2. **Migrating** — `citum_migrate`
-3. **Processing** — `citum_engine`
-4. **Rendering** — match citeproc-js exactly for CSL-derived styles; match biblatex behavior for biblatex-derived styles
+Branch protection on `main` — all changes via PR. Branch **before** committing when a PR is planned. Pre-commit gate above is required for Rust.
 
-```
-crates/
-  csl-legacy/      # CSL 1.0 XML parser
-  citum-cli/            # CLI crate (binary: `citum`)
-  citum_schema/       # Types: Style, Template, Options, Locale
-  citum_migrate/    # CSL 1.0 → Citum conversion
-  citum_engine/  # Citation/bibliography rendering engine
-styles/            # Citum YAML styles
-styles-legacy/     # 2,844 CSL 1.0 styles (submodule)
-```
+**After every push on a PR branch:** `gh pr checks <PR> --watch`. If failing, `gh run view <run-id> --log-failed`. Task is not done until CI passes.
 
-## Migration Strategy
+**Never make content decisions unilaterally** (e.g. what text to put in a title field) — confirm with the user first.
 
-Hybrid: XML pipeline for options extraction + LLM-authored templates for top parent styles. See [docs/architecture/MIGRATION_STRATEGY_ANALYSIS.md](./docs/architecture/MIGRATION_STRATEGY_ANALYSIS.md).
+**PR merge is always the user's action.** "Looks good", "go ahead", "CI is green" do not grant merge permission. Report green CI and stop.
 
-Use `./scripts/prep-migration.sh` + `/style-evolve migrate` for hand-authoring. See
-`docs/TIER_STATUS.md` for live fidelity metrics.
-
-## Authoring Locales
-
-Locale files in `locales/` use schema v2 with MessageFormat 2 (MF2)
-parameterized messages. The MF2 path is **live in the engine** —
-`resolved_locator_term` and `resolved_role_term` consult `messages:` first and
-fall back to the legacy `terms:` / `roles:` / `locators:` maps.
-
-When editing or creating a locale, see
-[docs/guides/AUTHORING_LOCALES.md](./docs/guides/AUTHORING_LOCALES.md). Key
-gotcha: `MaybeGendered<T>` is live in the legacy locale maps, but MF2 role and
-locator lookup currently passes `$count` only and the custom evaluator supports
-one selector per `.match`. Keep gendered role labels in `roles:` until the
-gender-aware MF2 follow-up adds `$gender` plumbing and multi-selector support.
-Spec: [docs/specs/LOCALE_MESSAGES.md](./docs/specs/LOCALE_MESSAGES.md).
-
-## Design Principles
-
-[docs/architecture/DESIGN_PRINCIPLES.md](./docs/architecture/DESIGN_PRINCIPLES.md)
-
-Key: explicit over magic (style declares behavior, processor stays dumb), serde-driven truth, no `unwrap()`/`unsafe`, declarative templates over procedural `<choose>/<if>`.
-
-When considering prior art, prefer biblatex solutions to BibTeX. biblatex has a more modern, better-designed data model and feature set.
-
-## Documentation Quality
-
-Use `/humanizer` on docs before finalizing. Exceptions: rule 18 (curly quotes) excluded; rule 13 (em dash) triggers only at 3+ per paragraph.
-
-## Verification & Coding Standards
-
-[docs/guides/CODING_STANDARDS.md](./docs/guides/CODING_STANDARDS.md) — verification table, benchmark workflow, Serde checklist, **test style rule** (BDD `given/when/then` + `#[rstest]` for parameterised integration tests; plain `#[test]` for unit tests and single-scenario integration tests).
-
-## Current Status
-
-Canonical status and metrics live in:
-
-- `docs/TIER_STATUS.md` (style-level status, strict oracle snapshots)
-- `scripts/report-data/core-quality-baseline.json` (portfolio baseline gate)
-- `docs/compat.html` (published compatibility snapshot)
-
-Oracle scoring uses the strict 12-scenario citation fixture
-(`tests/fixtures/citations-expanded.json`).
-
-### Known Gaps
-- Volume-pages delimiter varies by style (comma vs colon)
-- DOI suppression for styles that don't output DOI
-- Editor name-order varies by style (given-first vs family-first)
-
-## Feature Priority
-
-See [docs/TIER_STATUS.md](./docs/TIER_STATUS.md) and [docs/reference/STYLE_PRIORITY.md](./docs/reference/STYLE_PRIORITY.md). Top 10 parent styles cover 60% of dependents. Author-date first (APA, Elsevier Harvard, Springer), then numeric + note styles.
-
-## Prior Art & Design Documents
-
-- Prior art reference: [docs/architecture/PRIOR_ART.md](./docs/architecture/PRIOR_ART.md)
-- Personas: [docs/architecture/PERSONAS.md](./docs/architecture/PERSONAS.md)
-- Style aliasing: [STYLE_ALIASING.md](./docs/architecture/design/STYLE_ALIASING.md)
-- Legal citations: [LEGAL_CITATIONS.md](./docs/architecture/design/LEGAL_CITATIONS.md)
-- Type system: [TYPE_SYSTEM_ARCHITECTURE.md](./docs/architecture/design/TYPE_SYSTEM_ARCHITECTURE.md)
-- Type addition policy: [TYPE_ADDITION_POLICY.md](./docs/policies/TYPE_ADDITION_POLICY.md) (**active policy**)
-- SQI plan: [SQI_REFINEMENT_PLAN.md](./docs/policies/SQI_REFINEMENT_PLAN.md)
-
-## Issue Handling
-
-[docs/guides/DOMAIN_EXPERT.md](./docs/guides/DOMAIN_EXPERT.md) — Domain Expert Context Packets workflow.
+`gh pr create` with body: write to temp file, then `--body-file /tmp/file.txt` (hooks reject inline `--body`).
 
 ## Test Commands
 
 ```bash
-cargo nextest run                                          # All tests
-cargo nextest run --test citations                        # Citation rendering
-cargo nextest run --test bibliography                     # Bibliography
-cargo nextest run --test i18n                             # Locale logic
-./scripts/bootstrap.sh full                               # Fetch optional corpora for fidelity workflows
-./scripts/workflow-test.sh styles-legacy/apa.csl         # Oracle + batch impact
-node scripts/oracle.js styles-legacy/apa.csl             # Component-level diff
-node scripts/oracle-batch-aggregate.js styles-legacy/ --top 10
-node scripts/report-core.js > /tmp/core-report.json && \
+cargo nextest run                                          # all tests
+./scripts/workflow-test.sh styles-legacy/apa.csl           # oracle + batch impact
+node scripts/oracle.js styles-legacy/apa.csl               # component-level diff
+node scripts/report-core.js > /tmp/r.json && \
   node scripts/check-core-quality.js \
-  --report /tmp/core-report.json \
-  --baseline scripts/report-data/core-quality-baseline.json
-./scripts/dev-env.sh cargo build --workspace             # Local cargo with out-of-repo target dir
-cargo run --bin citum -- render refs -b tests/fixtures/references-expanded.json -s styles/apa-7th.yaml
-cargo run --bin citum -- schema > citum.schema.json
-cargo bench --bench rendering                            # Hot path benchmarks
-python3 scripts/audit-rust-review-smells.py --changed    # Run before committing test changes
+    --report /tmp/r.json \
+    --baseline scripts/report-data/core-quality-baseline.json
 ```
 
-**Test assertion rule:** Never use `contains()` with a substring under 30 chars to verify rendered output. Use `assert_eq!` with the full expected string. See `docs/guides/CODING_STANDARDS.md` for the full rule and escape hatch.
+Full catalogue and the **test-assertion rule** (no `contains()` with substrings <30 chars): `docs/guides/CODING_STANDARDS.md`. Test style (BDD `given/when/then`, `rstest` for parameterised): same doc.
 
-## Git Workflow
+## Optional: jj Change Stack
 
-Branch protection is enabled on `main` — all changes go through PRs. Pre-commit checks required for Rust; docs/styles skip.
+If `.jj` is present, see `docs/guides/JJ_AI_CHANGE_STACK.md`. Git remains the public surface. **jj skips all git hooks** — run commit-msg / pre-commit / pre-push manually before `jj git push`.
 
-Create a branch, implement, then `gh pr create`. jj may be used locally to
-curate the change stack, but the final published work must be on a Git branch
-and submitted through GitHub.
-**Never make content decisions unilaterally** (e.g. what text to put in a title field) — confirm with the user first.
+## Pointers
 
-Code and schema versioning are automated: the release workflow detects path
-changes, infers bump level from conventional commits, and opens a release PR via
-`cargo-release`. Do not manually bump workspace crate versions or schema
-versions in feature PRs.
-
-#### Versioning Signals (Conventional Commits)
-
-Agents MUST use the following prefixes to signal the intended release impact:
-
-| Commit Prefix | Release Impact | Note |
-| :--- | :--- | :--- |
-| `feat!:` / `fix!:` | **Major** (Breaking) | Capped at **Minor** during pre-1.0 |
-| `feat:` | **Minor** (Feature) | Triggers a new feature release |
-| `fix:` / `perf:` | **Patch** (Fix) | Triggers a maintenance release |
-| `chore:` / `docs:` | **None** | Does not trigger a release PR |
-
-*   **Breaking Changes**: Append a `!` after the type (e.g., `feat!:`) OR include `BREAKING CHANGE:` in the footer.
-*   **Schema Bumps**: Do not add a footer. Commit regenerated schemas when they change; the release workflow bumps schema versions.
-
-
-```bash
-# Rust change
-cargo fmt && cargo clippy && cargo nextest run && \
-  git add -A && git commit -m "fix(scope): subject
-
-Body explaining why.
-
-Refs: csl26-xxxx, #123"
-```
+- Crate map: `crates/README.md`
+- Design principles: `docs/architecture/DESIGN_PRINCIPLES.md`
+- Architecture index: `docs/architecture/README.md`
+- Live fidelity: `docs/TIER_STATUS.md`
+- Coding standards: `docs/guides/CODING_STANDARDS.md`
+- Locale authoring: `docs/guides/AUTHORING_LOCALES.md`
+- Domain Expert workflow: `docs/guides/DOMAIN_EXPERT.md`
+- Frontmatter preflight: `./scripts/validate-frontmatter.sh --copilot-strict`

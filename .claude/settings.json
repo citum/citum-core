@@ -7,6 +7,14 @@
     ],
     "PreCompact": [
       { "hooks": [{ "type": "command", "command": "beans prime" }] }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Read|Grep|Glob",
+        "hooks": [
+          { "type": "command", "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/jcm-nudge.sh" }
+        ]
+      }
     ]
   },
   "permissions": {
