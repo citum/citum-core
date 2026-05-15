@@ -699,6 +699,28 @@ fn test_integral_name_memory_full_then_short_in_one_document() {
 }
 
 #[test]
+fn test_suppress_author_counts_as_seen_for_later_integral_name_memory() {
+    let bib = make_test_bib();
+    let processor = Processor::new(
+        make_integral_name_style(
+            IntegralNameScope::Document,
+            IntegralNameContexts::BodyAndNotes,
+        ),
+        bib,
+    );
+    let parser = DjotParser;
+
+    let content = "Hidden [-@item1]. Later [+@item1].";
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert_eq!(
+        result,
+        "Hidden (2020). Later Doe.\n\n# Bibliography\n\nJohn Doe (2020)"
+    );
+}
+
+#[test]
 fn test_integral_name_memory_chapter_reset_uses_full_name_again() {
     let bib = make_test_bib();
     let processor = Processor::new(

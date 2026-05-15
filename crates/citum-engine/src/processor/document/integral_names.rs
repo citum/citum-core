@@ -115,10 +115,14 @@ impl Processor {
 
         let mut seen: HashMap<(String, String), SeenIntegralNameState> = HashMap::new();
         for (citation, context) in citations.iter_mut().zip(contexts.iter()) {
-            if !matches!(
+            // suppress-author on a non-integral citation is semantically
+            // equivalent to integral mode — both suppress the author in the
+            // rendered output, so both should count as "seen" for name memory.
+            let counts_as_integral = matches!(
                 citation.mode,
                 citum_schema::citation::CitationMode::Integral
-            ) {
+            ) || citation.suppress_author;
+            if !counts_as_integral {
                 continue;
             }
 
