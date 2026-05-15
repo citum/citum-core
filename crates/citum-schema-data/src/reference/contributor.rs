@@ -68,6 +68,9 @@ pub struct SimpleName {
     /// Geographic place associated with the name.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub location: Option<Place>,
+    /// Short form of the name (e.g., abbreviation or shortened form).
+    #[serde(rename = "short-name", skip_serializing_if = "Option::is_none")]
+    pub short_name: Option<String>,
 }
 
 /// A structured name is a name broken down into its constituent parts.
@@ -97,6 +100,7 @@ impl Contributor {
         match self {
             Contributor::SimpleName(n) => vec![FlatName {
                 literal: Some(n.name.to_string()),
+                short_name: n.short_name.clone(),
                 ..Default::default()
             }],
             Contributor::StructuredName(n) => vec![FlatName {
@@ -146,6 +150,7 @@ pub struct FlatName {
     pub dropping_particle: Option<String>,
     pub non_dropping_particle: Option<String>,
     pub literal: Option<String>,
+    pub short_name: Option<String>,
 }
 
 impl FlatName {
