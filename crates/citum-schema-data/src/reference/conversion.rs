@@ -1566,6 +1566,7 @@ fn from_event_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> I
             contributor: Contributor::SimpleName(SimpleName {
                 name: organizer_name.into(),
                 location: None,
+                short_name: None,
             }),
             gender: None,
         });
@@ -1720,6 +1721,7 @@ impl From<Vec<csl_legacy::csl_json::Name>> for Contributor {
                     Contributor::SimpleName(SimpleName {
                         name: literal.into(),
                         location: None,
+                        short_name: None,
                     })
                 } else {
                     let given_str = n.given.as_deref().map(str::trim).unwrap_or("");
@@ -1731,6 +1733,7 @@ impl From<Vec<csl_legacy::csl_json::Name>> for Contributor {
                         Contributor::SimpleName(SimpleName {
                             name: n.family.unwrap_or_default().into(),
                             location: None,
+                            short_name: None,
                         })
                     } else {
                         Contributor::StructuredName(StructuredName {

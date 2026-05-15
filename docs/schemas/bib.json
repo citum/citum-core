@@ -585,6 +585,13 @@
               "type": "null"
             }
           ]
+        },
+        "short-name": {
+          "description": "Short form of the name (e.g., abbreviation or shortened form).",
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "required": [

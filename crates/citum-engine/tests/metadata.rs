@@ -216,6 +216,7 @@ fn test_name_rendering_corporate() {
                     "World Health Organization".to_string(),
                 ),
                 location: None,
+                short_name: None,
             },
         ));
     }
