@@ -21,6 +21,9 @@ pub(crate) struct NameFormatContext<'a> {
     pub(crate) name_form: Option<NameForm>,
     pub(crate) demote_ndp: Option<&'a DemoteNonDroppingParticle>,
     pub(crate) sort_separator: Option<&'a String>,
+    pub(crate) integral_name_state: Option<citum_schema::citation::IntegralNameState>,
+    pub(crate) use_integral_short_name: bool,
+    pub(crate) short_name_display: Option<citum_schema::options::ShortNameDisplay>,
 }
 
 /// Per-call template overrides passed to [`format_names`].
@@ -293,6 +296,16 @@ pub fn format_names(
         sort_separator: overrides
             .sort_separator
             .or_else(|| config.and_then(|c| c.sort_separator.as_ref())),
+        integral_name_state: hints.integral_name_state,
+        use_integral_short_name: matches!(
+            options.mode,
+            citum_schema::citation::CitationMode::Integral
+        ),
+        short_name_display: options
+            .config
+            .integral_names
+            .as_ref()
+            .map(|c| c.resolve().short_name_display),
     };
 
     let delimiter = config.and_then(|c| c.delimiter.as_deref()).unwrap_or(", ");
@@ -483,6 +496,28 @@ fn assemble_long_name(
     }
 }
 
+fn format_literal_name(literal: &str, short: Option<&str>, ctx: &NameFormatContext) -> String {
+    if ctx.use_integral_short_name
+        && let Some(short) = short
+    {
+        match ctx.integral_name_state {
+            Some(citum_schema::citation::IntegralNameState::First) => {
+                return match ctx.short_name_display {
+                    Some(citum_schema::options::ShortNameDisplay::ShortThenBracketed) => {
+                        format!("{short} [{literal}]")
+                    }
+                    _ => format!("{literal} ({short})"),
+                };
+            }
+            Some(citum_schema::citation::IntegralNameState::Subsequent) => {
+                return short.to_string();
+            }
+            _ => {}
+        }
+    }
+    literal.to_string()
+}
+
 /// Format a single name.
 pub(crate) fn format_single_name(
     name: &crate::reference::FlatName,
@@ -501,7 +536,7 @@ pub(crate) fn format_single_name(
 
     // Handle literal names (e.g., corporate authors)
     if let Some(literal) = &name.literal {
-        return literal.clone();
+        return format_literal_name(literal, name.short_name.as_deref(), ctx);
     }
 
     let family = name.family.as_deref().unwrap_or("");

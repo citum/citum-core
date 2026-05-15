@@ -84,6 +84,7 @@ fn integral_name_style() -> Style {
                 scope: Some(IntegralNameScope::Document),
                 contexts: Some(IntegralNameContexts::BodyAndNotes),
                 subsequent_form: Some(IntegralNameForm::Short),
+                short_name_display: None,
             }),
             ..Default::default()
         }),
