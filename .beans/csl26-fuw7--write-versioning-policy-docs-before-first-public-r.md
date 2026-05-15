@@ -8,7 +8,7 @@ tags:
     - policy
     - dx
 created_at: 2026-02-24T17:28:17Z
-updated_at: 2026-04-25T20:20:08Z
+updated_at: 2026-05-15T14:47:53Z
 parent: csl26-li63
 blocked_by:
     - csl26-yipx
@@ -35,3 +35,26 @@ Operational release wiring now lives in `.github/workflows/release-plz.yml` and
 
 This bean remains the place for the deeper compatibility contract and durable
 schema-history docs. Blocked by version validation task `csl26-yipx`.
+
+
+
+## Update 2026-05-15 — forward-compat contract relocated
+
+The forward-compatibility portion of this bean's scope is now owned by
+**docs/specs/FORWARD_COMPATIBILITY.md** (Draft, shipped in bean csl26-2a0b).
+That spec defines the older-engine-reads-newer-data contract, the outcome
+classes, the scope table, and the producer/consumer obligations. It also
+records the InputReference discriminator escape-hatch design question.
+
+What still belongs in this bean (the deeper compatibility contract for the
+first public release):
+
+- the deprecation policy (2-version window) for renaming/removing fields
+- the citum-migrate command specification for upgrading older data
+- docs/architecture/SCHEMA_CHANGELOG.md (machine-readable schema-field
+  history)
+- promoting docs/specs/FORWARD_COMPATIBILITY.md to Active once the engine
+  matches its declared outcomes
+
+Snapshot of current gaps:
+crates/citum-engine/tests/snapshots/forward_compat_gaps.snap

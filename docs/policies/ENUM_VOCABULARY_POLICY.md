@@ -98,7 +98,7 @@ Enums marked `#[non_exhaustive]` signal that new variants may be added. For
 deserialization of unknown values:
 
 1. **Strict mode** (current, default): reject unknown variants with a descriptive error naming the field and listing valid values. This is what derived `serde::Deserialize` provides.
-2. **Proposed tolerant mode** (not yet implemented): in future, applications MAY implement a custom deserializer that maps unknown variants to a catch-all (e.g., `Other(String)`) and emits a warning, for forward compatibility when reading data from a newer schema version. This requires an explicit implementation — no built-in `Other(String)` variant exists today.
+2. **Tolerant mode** (specified, not yet implemented): the forward-compatibility contract in [`../specs/FORWARD_COMPATIBILITY.md`](../specs/FORWARD_COMPATIBILITY.md) calls for a custom deserializer that maps unknown variants of *attribute* enums (not the `InputReference::class` discriminator) to a catch-all and emits a warning. That spec is the source of truth for which enums must be tolerant and which categories may hard-fail; the current observed behavior per category is recorded in `crates/citum-engine/tests/snapshots/forward_compat_gaps.snap`.
 
 ## Controlled Vocabulary Strings
 
