@@ -58,6 +58,13 @@ Do not use `scripts/bump.sh` for code versions or `v*` tags.
 
 ## Bump Contract
 
+What `minor` *promises* end-to-end — which categories of additive change
+older engines must keep loading, and which warning behavior they should
+emit — is defined in
+[`../specs/FORWARD_COMPATIBILITY.md`](../specs/FORWARD_COMPATIBILITY.md).
+A schema change that violates that contract is not a valid `minor` bump
+regardless of what the conventional-commit prefix says.
+
 Release impact comes from conventional commits:
 
 | Commit signal | Release impact |

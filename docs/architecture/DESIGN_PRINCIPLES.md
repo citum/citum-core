@@ -25,6 +25,8 @@ See CLAUDE.md for active behavioral policy. This document captures the full desi
 3. **Explicit Extension Points**: Styles use explicit `custom: Option<HashMap<String, serde_json::Value>>` fields for user-defined metadata and extensions. See [EXTENSIBILITY_STRATEGY_2026-03-14.md](./EXTENSIBILITY_STRATEGY_2026-03-14.md) for the portability-first extension ladder and limits on executable extensions.
 4. **Extension via Defaults**: All new features must be `Option<T>` with `#[serde(default)]`.
 
+The end-to-end contract — what an older engine must do when it meets a newer feature, and which categories may or may not hard-fail — is defined in [`../specs/FORWARD_COMPATIBILITY.md`](../specs/FORWARD_COMPATIBILITY.md).
+
 **Graceful Degradation for Multilingual Data**
 - **Fallback Chain**: Multilingual fields must always implement a `Display` fallback (e.g., `Complex.original` -> `Simple string`).
 - **Mode Fallback**: If a style requests a `translated` view but the data only provides `original`, the processor must return `original` rather than failing.

@@ -1,0 +1,376 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
+//! Forward-compatibility scenario corpus.
+//!
+//! Each scenario constructs a "future" style, reference, or locale that uses a
+//! feature beyond what the current engine knows, then runs it through the same
+//! load path real users hit. The actual outcome is captured as `Pass`,
+//! `SoftDegrade`, or `HardFail` and compared against a checked-in snapshot.
+//!
+//! See `docs/specs/FORWARD_COMPATIBILITY.md` for the contract these cases
+//! anchor and `crates/citum-engine/tests/snapshots/forward_compat_gaps.snap`
+//! for the truth-of-record outcomes.
+//!
+//! The test passes when the observed outcomes match the snapshot exactly. It
+//! fails only on drift in either direction — a gap that silently closed (good
+//! — update the snapshot) or a new gap that appeared (review and decide). The
+//! snapshot rows whose `declared != observed` are the punch list for the
+//! follow-up implementation beans listed in the spec.
+
+#![allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
+
+use std::fmt::Write as _;
+use std::fs;
+use std::path::Path;
+
+use citum_schema::Style;
+use citum_schema::locale::Locale;
+use citum_schema_data::InputBibliography;
+
+/// What a loader did when it met a "future" feature.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Outcome {
+    /// Parse succeeded and the feature was silently accepted (no warning channel today).
+    Pass,
+    /// Parse succeeded with a documented warning emitted through the
+    /// compatibility channel. Not reachable today — there is no warning
+    /// channel yet, so this class only appears in the `declared` column.
+    SoftDegrade,
+    /// Parse returned an error and no artifact was produced.
+    HardFail,
+}
+
+impl Outcome {
+    fn as_str(self) -> &'static str {
+        match self {
+            Outcome::Pass => "Pass",
+            Outcome::SoftDegrade => "SoftDegrade",
+            Outcome::HardFail => "HardFail",
+        }
+    }
+}
+
+/// One row of the scope table in `docs/specs/FORWARD_COMPATIBILITY.md`.
+struct Scenario {
+    id: &'static str,
+    category: &'static str,
+    declared: Outcome,
+    observed: fn() -> Outcome,
+    follow_up: &'static str,
+}
+
+fn parse_style(yaml: &str) -> Outcome {
+    match Style::from_yaml_str(yaml) {
+        Ok(_) => Outcome::Pass,
+        Err(_) => Outcome::HardFail,
+    }
+}
+
+fn parse_bibliography(yaml: &str) -> Outcome {
+    match serde_yaml::from_str::<InputBibliography>(yaml) {
+        Ok(_) => Outcome::Pass,
+        Err(_) => Outcome::HardFail,
+    }
+}
+
+fn parse_locale(yaml: &str) -> Outcome {
+    match Locale::from_yaml_str(yaml) {
+        Ok(_) => Outcome::Pass,
+        Err(_) => Outcome::HardFail,
+    }
+}
+
+// ------------ Case fixtures ------------
+//
+// Every fixture is a self-contained YAML literal. The only "future" feature
+// in each fixture is the one named by the case; everything else is valid
+// against the current schema.
+
+const STYLE_HEAD: &str =
+    "version: \"0.51\"\ninfo:\n  id: forward-compat-fixture\n  title: Forward compat fixture\n";
+
+fn case_attribute_enum_in_template() -> Outcome {
+    // ContributorRole gains hypothetical `producer`.
+    let yaml = format!(
+        "{STYLE_HEAD}bibliography:\n  template:\n    - contributor: producer\n      form: long\n"
+    );
+    parse_style(&yaml)
+}
+
+fn case_attribute_enum_in_data() -> Outcome {
+    // MonographType gains hypothetical `dance-performance`.
+    let yaml = "references:\n  - id: perf2026\n    class: monograph\n    type: dance-performance\n    title: A Performance\n";
+    parse_bibliography(yaml)
+}
+
+fn case_discriminator_class() -> Outcome {
+    // InputReference gains a brand-new `class`.
+    let yaml =
+        "references:\n  - id: perf2026\n    class: dance-performance\n    title: A Performance\n";
+    parse_bibliography(yaml)
+}
+
+fn case_locale_form() -> Outcome {
+    // TermForm gains hypothetical `vocative`.
+    let yaml = "language: en\nterms:\n  page:\n    vocative: pp\n";
+    parse_locale(yaml)
+}
+
+fn case_date_form() -> Outcome {
+    // DateForm gains hypothetical `month-and-day`.
+    let yaml = format!(
+        "{STYLE_HEAD}bibliography:\n  template:\n    - date: issued\n      form: month-and-day\n"
+    );
+    parse_style(&yaml)
+}
+
+fn case_new_style_option_key() -> Outcome {
+    // A new key inside a `deny_unknown_fields` option struct.
+    let yaml = format!(
+        "{STYLE_HEAD}options:\n  contributors:\n    future-key: true\nbibliography:\n  template:\n    - contributor: author\n      form: long\n"
+    );
+    parse_style(&yaml)
+}
+
+fn case_new_top_level_section() -> Outcome {
+    // A brand-new top-level block on Style.
+    let yaml = format!(
+        "{STYLE_HEAD}experiments:\n  inline-author-disambiguation: true\nbibliography:\n  template:\n    - contributor: author\n      form: long\n"
+    );
+    parse_style(&yaml)
+}
+
+fn case_new_reference_field() -> Outcome {
+    // A field that does not exist on Monograph. Everything else is a valid
+    // Monograph so the only "future" element is `audience: scholarly`.
+    let yaml = "references:\n  - id: smith2026\n    class: monograph\n    type: book\n    audience: scholarly\n";
+    parse_bibliography(yaml)
+}
+
+fn case_new_locale_term_key() -> Outcome {
+    // A locale term that's not in the current vocabulary.
+    let yaml = "language: en\nterms:\n  preprint-server:\n    long: preprint server\n";
+    parse_locale(yaml)
+}
+
+fn case_custom_namespace() -> Outcome {
+    // Namespaced custom metadata — must Pass per the spec.
+    let yaml = format!(
+        "{STYLE_HEAD}bibliography:\n  template:\n    - contributor: author\n      form: long\n      custom:\n        publisher-x.house-format: true\n"
+    );
+    parse_style(&yaml)
+}
+
+fn case_version_only_signal() -> Outcome {
+    // version: "99.0" on an otherwise-valid style. citum check is the warning
+    // channel for this case; parsing alone succeeds (Pass). The SoftDegrade
+    // is delivered later by `citum check`, not by the loader.
+    let yaml = "version: \"99.0\"\ninfo:\n  id: forward-compat-fixture\n  title: Forward compat fixture\nbibliography:\n  template:\n    - contributor: author\n      form: long\n";
+    parse_style(yaml)
+}
+
+fn case_template_grammar() -> Outcome {
+    // Hypothetical new TemplateComponent variant (must HardFail; opt-out).
+    let yaml = format!(
+        "{STYLE_HEAD}bibliography:\n  template:\n    - loop: authors\n      body:\n        - contributor: author\n          form: long\n"
+    );
+    parse_style(&yaml)
+}
+
+fn case_template_required_field() -> Outcome {
+    // We can't actually introduce a hypothetical required field from a test;
+    // we exercise the dual — a known-good template with a typoed required
+    // shape — to confirm the loader still rejects malformed templates
+    // (the contract for this row is HardFail).
+    let yaml = format!(
+        "{STYLE_HEAD}bibliography:\n  template:\n    - variable:\n        not-a-real-shape: true\n"
+    );
+    parse_style(&yaml)
+}
+
+// ------------ Snapshot harness ------------
+
+fn scenarios() -> Vec<Scenario> {
+    vec![
+        Scenario {
+            id: "01-attr-enum-template",
+            category: "Attribute enum in template",
+            declared: Outcome::SoftDegrade,
+            observed: case_attribute_enum_in_template,
+            follow_up: "csl26-ld6e tolerant-enum-deserializer",
+        },
+        Scenario {
+            id: "02-attr-enum-data",
+            category: "Attribute enum in reference data",
+            declared: Outcome::SoftDegrade,
+            observed: case_attribute_enum_in_data,
+            follow_up: "csl26-ld6e tolerant-enum-deserializer",
+        },
+        Scenario {
+            id: "02b-discriminator-class",
+            category: "Unknown InputReference class",
+            declared: Outcome::HardFail,
+            observed: case_discriminator_class,
+            follow_up: "csl26-1bdr inputreference-discriminator-design",
+        },
+        Scenario {
+            id: "03-locale-form",
+            category: "Locale TermForm value",
+            declared: Outcome::SoftDegrade,
+            observed: case_locale_form,
+            follow_up: "csl26-ld6e tolerant-enum-deserializer",
+        },
+        Scenario {
+            id: "04-date-form",
+            category: "DateForm value in template",
+            declared: Outcome::SoftDegrade,
+            observed: case_date_form,
+            follow_up: "csl26-ld6e tolerant-enum-deserializer",
+        },
+        Scenario {
+            id: "05-new-option-key",
+            category: "New key inside style option struct",
+            declared: Outcome::SoftDegrade,
+            observed: case_new_style_option_key,
+            follow_up: "csl26-0ksu capture-unknown-fields-wrapper",
+        },
+        Scenario {
+            id: "06-new-top-level-section",
+            category: "New top-level Style section",
+            declared: Outcome::SoftDegrade,
+            observed: case_new_top_level_section,
+            follow_up: "csl26-0ksu capture-unknown-fields-wrapper",
+        },
+        Scenario {
+            id: "07-new-reference-field",
+            category: "New optional field on reference type",
+            declared: Outcome::SoftDegrade,
+            observed: case_new_reference_field,
+            follow_up: "csl26-acfh reference-data-silent-acceptance",
+        },
+        Scenario {
+            id: "08-new-locale-term-key",
+            category: "New locale term key",
+            declared: Outcome::SoftDegrade,
+            observed: case_new_locale_term_key,
+            follow_up: "csl26-o1z5 tolerant-locale-lookup",
+        },
+        Scenario {
+            id: "09-custom-namespace",
+            category: "Namespaced custom.* metadata (control)",
+            declared: Outcome::Pass,
+            observed: case_custom_namespace,
+            follow_up: "—",
+        },
+        Scenario {
+            id: "10-version-only-signal",
+            category: "Style version bumped without other changes (control)",
+            declared: Outcome::Pass,
+            observed: case_version_only_signal,
+            follow_up: "—",
+        },
+        Scenario {
+            id: "11-template-grammar",
+            category: "New TemplateComponent variant (opt-out)",
+            declared: Outcome::HardFail,
+            observed: case_template_grammar,
+            follow_up: "—",
+        },
+        Scenario {
+            id: "12-template-required-field",
+            category: "Malformed template shape (opt-out)",
+            declared: Outcome::HardFail,
+            observed: case_template_required_field,
+            follow_up: "—",
+        },
+    ]
+}
+
+fn render_report(rows: &[(String, Outcome, Outcome, String, String)]) -> String {
+    let mut out = String::new();
+    out.push_str("# Forward-compat gap snapshot\n");
+    out.push_str("#\n");
+    out.push_str("# Source: crates/citum-engine/tests/forward_compatibility.rs\n");
+    out.push_str("# Spec:   docs/specs/FORWARD_COMPATIBILITY.md\n");
+    out.push_str("#\n");
+    out.push_str("# Format: id | category | declared | observed | gap? | follow-up\n");
+    out.push_str(
+        "# A row is a GAP when declared != observed. GAP rows roll up to follow-up beans.\n",
+    );
+    out.push_str("#\n\n");
+    for (id, declared, observed, category, follow_up) in rows {
+        let gap = if declared == observed { "ok " } else { "GAP" };
+        writeln!(
+            out,
+            "{:<28} | {:<55} | declared={:<11} observed={:<11} {} | {}",
+            id,
+            category,
+            declared.as_str(),
+            observed.as_str(),
+            gap,
+            follow_up,
+        )
+        .unwrap();
+    }
+    out
+}
+
+#[test]
+fn forward_compat_snapshot_matches() {
+    let rows: Vec<_> = scenarios()
+        .into_iter()
+        .map(|s| {
+            let observed = (s.observed)();
+            (
+                s.id.to_string(),
+                s.declared,
+                observed,
+                s.category.to_string(),
+                s.follow_up.to_string(),
+            )
+        })
+        .collect();
+
+    let actual = render_report(&rows);
+
+    let snapshot_path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests")
+        .join("snapshots")
+        .join("forward_compat_gaps.snap");
+
+    // Update-on-demand path: setting INSTA_UPDATE=1 (or the project's
+    // standard env var) rewrites the snapshot. Otherwise we assert equality.
+    if std::env::var_os("UPDATE_FORWARD_COMPAT_SNAPSHOT").is_some() {
+        fs::create_dir_all(snapshot_path.parent().unwrap()).unwrap();
+        fs::write(&snapshot_path, &actual).expect("write snapshot");
+        return;
+    }
+
+    let expected = fs::read_to_string(&snapshot_path).unwrap_or_else(|_| {
+        panic!(
+            "snapshot missing at {}. Run with UPDATE_FORWARD_COMPAT_SNAPSHOT=1 to create it.",
+            snapshot_path.display()
+        )
+    });
+
+    if expected != actual {
+        // Show full diff via assert_eq! so reviewers can see exactly which
+        // (declared, observed) tuple changed.
+        assert_eq!(
+            expected.trim_end(),
+            actual.trim_end(),
+            "Forward-compat snapshot drift detected. \
+             If this drift is intentional (an engine change closed or moved a gap), \
+             rerun with UPDATE_FORWARD_COMPAT_SNAPSHOT=1 and review the diff.",
+        );
+    }
+}

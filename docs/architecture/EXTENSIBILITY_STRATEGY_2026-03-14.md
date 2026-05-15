@@ -200,6 +200,11 @@ Interpretation:
 When a new need appears, use this sequence:
 
 1. If several important styles need it, promote it into the core schema.
+   How that promoted feature behaves in older engines is governed by
+   [`../specs/FORWARD_COMPATIBILITY.md`](../specs/FORWARD_COMPATIBILITY.md):
+   most additive promotions ship as a `minor` bump and older engines
+   degrade gracefully; only template-grammar changes and brand-new
+   `InputReference` classes are allowed to hard-fail.
 2. If it is still exploratory or domain-specific, model it as namespaced
    data-only metadata first.
 3. If data-only metadata is insufficient, ask whether a tiny declarative rule
