@@ -7,17 +7,24 @@
 
 ## Purpose
 
-Define the contract that an older Citum engine must honor when it parses a
-newer style, reference, or locale that uses features it does not yet
-understand. The goal is to make most non-template feature additions safe to
-ship as a `minor` schema bump: producers can ship styles or data using new
-options, attribute enum values, or locale terms without breaking older
-engines. Older engines surface a single, consistent warning channel instead
-of raw serde errors.
+Define the contract that an older build of the Citum engine must honor
+when it parses a newer style, reference, or locale that uses features it
+does not yet understand. The goal is to make most non-template feature
+additions safe to ship as a `minor` schema bump: producers can ship
+styles or data using new options, attribute enum values, or locale
+terms without breaking older engine builds. Older builds surface a
+single, consistent warning channel instead of raw serde errors.
 
 Template grammar changes and brand-new top-level reference classes are
 explicitly out of scope: those remain `major`-level changes that older
-engines may reject.
+builds may reject.
+
+**Scope of "implementations."** This spec governs the behavior of the
+Citum engine as we ship it. It does not assume — or attempt to bind —
+any alternative implementation of the Citum data model. There is one
+engine; this spec is our internal forward-compatibility contract with
+ourselves and with style/data producers whose output may reach older
+engine builds (e.g. via an editor that ships a pinned engine version).
 
 ## Scope
 
@@ -92,7 +99,7 @@ The channel must be extended so that:
    locale handle.
 
 The shape of `CompatibilityWarning` is intentionally left to the
-follow-up implementation beans; this spec only fixes the contract.
+follow-up engine beans; this spec only fixes the contract.
 
 ## Scope table
 
@@ -107,7 +114,7 @@ truth-of-record. End-to-end user-visible outcomes may add a warning via
 |---|---|---|---|---|---|
 | 1 | Attribute enum in template | `contributor: producer` (new `ContributorRole`) | `SoftDegrade` | `HardFail` | `csl26-ld6e` tolerant enum deserializer |
 | 2 | Attribute enum in data | `class: monograph, type: dance-performance` | `SoftDegrade` | `HardFail` | `csl26-ld6e` |
-| 2b | Top-level `class` value | `class: dance-performance` | `HardFail` | `HardFail` | `csl26-1bdr` (post-1.0 design) |
+| 2b | Top-level `class` value | `class: dance-performance` | `HardFail` | `HardFail` | `csl26-1bdr` (deferred future option) |
 | 3 | TermForm in template | `term: page, form: vocative` (new `TermForm`) | `SoftDegrade` | `HardFail` | `csl26-ld6e` |
 | 4 | DateForm in template | `date: issued, form: month-and-day` (new `DateForm`) | `SoftDegrade` | `HardFail` | `csl26-ld6e` |
 | 5 | New style option key | `options.contributors.future-key: true` | `SoftDegrade` | `HardFail` | `csl26-0ksu` capture-unknown-fields wrapper |
@@ -137,23 +144,21 @@ determines which concrete struct (`Monograph`, `SerialComponent`,
 `class` value has no struct shape to fall into; serde cannot type the
 payload at all.
 
-**Pre-1.0 stance (current).** New top-level reference classes are the
-second opt-out category alongside template grammar. Producers must
-introduce them as a `major` bump; older engines hard-fail. Pre-1.0 the
-engine has no published older-engine population to honor, so the cost
-of a hard-break on `class` rebases the design question to "do we ever
-need anything else?" — and the answer today is no.
+**Current stance.** New top-level reference classes are the second
+opt-out category alongside template grammar. Style/data producers must
+introduce them as a `major` bump; older engine builds hard-fail. The
+soft-degrade rule does not apply at the `class` boundary.
 
-**Post-1.0 future work.** Once crates have a real wild-engine
-population, we may want to keep the headline rule ("new features warn,
-not break") even for new classes. The shape that delivers that is a
-catch-all variant —
+**Future option (deferred).** If downstream environments end up pinning
+older engine builds (e.g. an editor ships citum-engine 0.51 and users
+encounter styles authored against 0.52 in the wild) and brand-new
+classes become a common reason for hard-fails, we can add a catch-all
+variant —
 `InputReference::Unknown(UnknownReference { class: String, fields:
-serde_json::Map<String, Value> })` — which round-trips the data, emits
-a `SoftDegrade` warning, and degrades to a generic rendering path. We
-defer this design until there is real-world evidence that brand-new
-classes are common enough to warrant the engineering cost. Tracked in
-bean `csl26-1bdr`.
+serde_json::Map<String, Value> })` — that round-trips the data, emits a
+`SoftDegrade` warning, and degrades to a generic rendering path. This
+is an engine-side change, not an ecosystem-wide contract, and is
+deferred until the evidence justifies it. Tracked in bean `csl26-1bdr`.
 
 ## Producer obligations
 
@@ -267,10 +272,11 @@ otherwise unchanged.
   title: ...
 ```
 
-Today: parse fails. Pre-1.0 stance: the producer must introduce
-`dance-performance` as a `major` bump; older engines may hard-fail.
-Post-1.0 we may revisit this with a catch-all variant — see
-[§ InputReference discriminator](#inputreference-discriminator).
+Today: parse fails. The producer must introduce `dance-performance` as
+a `major` bump — new top-level classes are an explicit opt-out from the
+soft-degrade rule. See
+[§ InputReference discriminator](#inputreference-discriminator) for the
+deferred future option.
 
 ## Non-goals
 
