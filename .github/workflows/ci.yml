@@ -82,7 +82,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run repository hygiene (alint)
-        uses: asamarts/alint@v0.9.21
+        uses: asamarts/alint@v0.9.22
 
   hygiene-beans:
     name: Hygiene Checks — Beans
