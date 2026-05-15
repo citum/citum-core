@@ -17,6 +17,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 )]
 
 mod common;
+use citum_schema::reference::ClassExtension;
 use common::*;
 
 use citum_engine::{Processor, render::html::Html, render::plain::PlainText};
@@ -1631,7 +1632,7 @@ fn sorting_empty_dates_pushes_undated_items_after_dated_ones() {
 
     fn make_undated_book(id: &str, title: &str) -> InputReference {
         let mut reference = make_book(id, "Smith", "Jane", 2000, title);
-        if let InputReference::Monograph(monograph) = &mut reference {
+        if let ClassExtension::Monograph(monograph) = reference.extension_mut() {
             monograph.issued = citum_schema::reference::EdtfString(String::new());
         }
         reference
@@ -1761,7 +1762,7 @@ fn legal_case_parent_serial_uses_reporter_as_container_title() {
 fn suppressed_group_children_do_not_leave_stray_delimiters() {
     let style = build_group_with_suppressed_child_style();
     let mut reference = make_book("grouped", "Smith", "Jane", 2024, "Grouped Title");
-    if let InputReference::Monograph(book) = &mut reference {
+    if let ClassExtension::Monograph(book) = reference.extension_mut() {
         book.url = Some(Url::parse("https://example.com/grouped").expect("url should parse"));
     }
 
@@ -1781,7 +1782,7 @@ fn status_variables_render_in_bibliography_templates() {
         2025,
         "Oxford English Dictionary",
     );
-    if let InputReference::Monograph(book) = &mut reference {
+    if let ClassExtension::Monograph(book) = reference.extension_mut() {
         book.status = Some("last modified".to_string());
     }
 
@@ -2948,7 +2949,7 @@ fn given_archive_location_override_when_rendering_bibliography_then_legacy_fallb
     let mut bib = indexmap::IndexMap::new();
     let mut reference = make_archive_eprint_reference();
 
-    let InputReference::Monograph(monograph) = &mut reference else {
+    let ClassExtension::Monograph(monograph) = reference.extension_mut() else {
         panic!("archive test fixture should be a monograph");
     };
     monograph.id = Some("archive-eprint-location-ref".into());
@@ -2999,14 +3000,17 @@ fn given_legacy_archive_fields_when_converting_then_archive_info_is_hydrated() {
     .expect("legacy reference should parse");
 
     let reference: InputReference = legacy.into();
-    if let InputReference::Monograph(m) = reference {
+    if let ClassExtension::Monograph(m) = reference.extension() {
         assert_eq!(m.archive, Some("Bodleian Library".to_string()));
         assert_eq!(
             m.archive_location,
             Some("MS Bodl. Or. 579, fol. 23r".to_string())
         );
 
-        let archive_info = m.archive_info.expect("archive info should be hydrated");
+        let archive_info = m
+            .archive_info
+            .clone()
+            .expect("archive info should be hydrated");
         assert_eq!(
             archive_info
                 .name

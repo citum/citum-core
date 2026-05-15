@@ -14,9 +14,9 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use citum_schema::InputBibliography;
-use citum_schema::reference::InputReference;
 use citum_schema::reference::conversion::input_reference_from_legacy_edited_book;
 use citum_schema::reference::types::{ArchiveInfo, EprintInfo};
+use citum_schema::reference::{ClassExtension, InputReference};
 use csl_legacy::csl_json::Reference as LegacyReference;
 use indexmap::IndexMap;
 
@@ -200,29 +200,29 @@ fn apply_hybrid_json_extensions(
         .transpose()
         .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
 
-    match &mut reference {
-        InputReference::Monograph(record) => {
-            if archive_info.is_some() {
-                record.archive_info = archive_info;
+    match reference.extension_mut() {
+        ClassExtension::Monograph(record) => {
+            if let Some(info) = archive_info.clone() {
+                record.archive_info = Some(info);
             }
-            if eprint.is_some() {
-                record.eprint = eprint;
-            }
-        }
-        InputReference::CollectionComponent(record) => {
-            if archive_info.is_some() {
-                record.archive_info = archive_info;
-            }
-            if eprint.is_some() {
-                record.eprint = eprint;
+            if let Some(info) = eprint.clone() {
+                record.eprint = Some(info);
             }
         }
-        InputReference::SerialComponent(record) => {
-            if archive_info.is_some() {
-                record.archive_info = archive_info;
+        ClassExtension::CollectionComponent(record) => {
+            if let Some(info) = archive_info.clone() {
+                record.archive_info = Some(info);
             }
-            if eprint.is_some() {
-                record.eprint = eprint;
+            if let Some(info) = eprint.clone() {
+                record.eprint = Some(info);
+            }
+        }
+        ClassExtension::SerialComponent(record) => {
+            if let Some(info) = archive_info {
+                record.archive_info = Some(info);
+            }
+            if let Some(info) = eprint {
+                record.eprint = Some(info);
             }
         }
         _ => {}
@@ -812,14 +812,14 @@ fn input_reference_to_csl_json(reference: &InputReference) -> LegacyReference {
     r.translator = reference.translator().map(contributor_to_csl_names);
     r.publisher = reference.publisher().map(|p| p.name.to_string());
 
-    match reference {
-        InputReference::Monograph(m) => {
+    match reference.extension() {
+        ClassExtension::Monograph(m) => {
             r.ref_type = "book".to_string();
             r.isbn.clone_from(&m.isbn);
             r.url = m.url.as_ref().map(std::string::ToString::to_string);
             r.edition = reference.edition().map(StringOrNumber::String);
         }
-        InputReference::SerialComponent(s) => {
+        ClassExtension::SerialComponent(s) => {
             r.ref_type = "article-journal".to_string();
             r.container_title = reference.container_title().map(|t| t.to_string());
             r.page.clone_from(&s.pages);
@@ -831,7 +831,7 @@ fn input_reference_to_csl_json(reference: &InputReference) -> LegacyReference {
                 .map(|v| StringOrNumber::String(v.to_string()));
             r.url = s.url.as_ref().map(std::string::ToString::to_string);
         }
-        InputReference::CollectionComponent(c) => {
+        ClassExtension::CollectionComponent(c) => {
             r.ref_type = "chapter".to_string();
             r.container_title = reference.container_title().map(|t| t.to_string());
             r.page = c.pages.as_ref().map(std::string::ToString::to_string);
@@ -885,9 +885,9 @@ fn render_biblatex(input: &InputBibliography) -> String {
     let mut out = String::new();
     for reference in &input.references {
         let id = reference.id().unwrap_or_else(|| "item".into());
-        let entry_type = match reference {
-            InputReference::SerialComponent(_) => "article",
-            InputReference::CollectionComponent(_) => "incollection",
+        let entry_type = match reference.extension() {
+            ClassExtension::SerialComponent(_) => "article",
+            ClassExtension::CollectionComponent(_) => "incollection",
             _ => "book",
         };
         let _ = writeln!(&mut out, "@{entry_type}{{{id},");
@@ -1045,9 +1045,9 @@ fn ris_record_to_reference(fields: &[(String, String)]) -> LegacyReference {
 fn render_ris(input: &InputBibliography) -> String {
     let mut out = String::new();
     for reference in &input.references {
-        let ty = match reference {
-            InputReference::SerialComponent(_) => "JOUR",
-            InputReference::CollectionComponent(_) => "CHAP",
+        let ty = match reference.extension() {
+            ClassExtension::SerialComponent(_) => "JOUR",
+            ClassExtension::CollectionComponent(_) => "CHAP",
             _ => "BOOK",
         };
         let _ = writeln!(&mut out, "TY  - {ty}");
@@ -1409,7 +1409,10 @@ issued: "2020"
             .get("edited-book-1")
             .expect("reference should be preserved");
         assert_eq!(reference.ref_type(), "book");
-        assert!(matches!(reference, Reference::Collection(_)));
+        assert!(matches!(
+            reference.extension(),
+            ClassExtension::Collection(_)
+        ));
         assert!(result.sets.is_none());
     }
 
@@ -1435,7 +1438,10 @@ issued: "2020"
             .get("edited-book-1")
             .expect("reference should be preserved");
         assert_eq!(reference.ref_type(), "book");
-        assert!(matches!(reference, Reference::Collection(_)));
+        assert!(matches!(
+            reference.extension(),
+            ClassExtension::Collection(_)
+        ));
     }
 
     #[test]

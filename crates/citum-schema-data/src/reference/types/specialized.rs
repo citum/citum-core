@@ -24,7 +24,7 @@ use url::Url;
 #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Event {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -83,7 +83,6 @@ pub struct Event {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(from = "ClassicDeser", rename_all = "kebab-case")]
-// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Classic {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -167,7 +166,7 @@ pub struct Classic {
 #[derive(Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 struct ClassicDeser {
     id: Option<RefID>,
     title: Option<Title>,
@@ -287,8 +286,7 @@ impl NormalizeNumbering for Classic {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
-// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Patent {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -353,8 +351,7 @@ pub struct Patent {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
-// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Dataset {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -420,8 +417,7 @@ pub struct Dataset {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
-// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Standard {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -477,8 +473,7 @@ pub struct Standard {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
-// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Software {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -648,7 +643,7 @@ pub struct AudioVisualWork {
 #[derive(Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 struct AudioVisualDeser {
     id: Option<RefID>,
     #[serde(default)]

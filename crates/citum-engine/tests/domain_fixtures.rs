@@ -25,7 +25,7 @@ use citum_engine::Processor;
 use citum_io::load_bibliography;
 use citum_schema::Style;
 use citum_schema::citation::{Citation, CitationItem, CitationLocator, LocatorType};
-use citum_schema::reference::{InputReference, MultilingualString};
+use citum_schema::reference::{ClassExtension, MultilingualString};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -227,7 +227,7 @@ fn test_humanities_note_fixture_preserves_archive_and_interview_fields() {
         .process_citation(&single_item_citation("derrida-letter"))
         .expect("personal communication citation should render");
 
-    let InputReference::Monograph(manuscript_record) = manuscript_ref else {
+    let ClassExtension::Monograph(manuscript_record) = manuscript_ref.extension() else {
         panic!("dead-sea-scrolls should deserialize as a monograph");
     };
     let archive_info = manuscript_record

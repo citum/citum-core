@@ -44,8 +44,8 @@ fn test_parse_csl_json_structural_author_populates_canonical_contributors() {
 
     assert!(reference.contributor(ContributorRole::Author).is_some());
 
-    match reference {
-        InputReference::Monograph(monograph) => assert!(
+    match reference.extension() {
+        ClassExtension::Monograph(monograph) => assert!(
             monograph
                 .contributors
                 .iter()
@@ -69,8 +69,8 @@ fn test_parse_csl_json_motion_picture_produces_audio_visual() {
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
     let reference: InputReference = legacy.into();
 
-    match reference {
-        InputReference::AudioVisual(work) => {
+    match reference.extension() {
+        ClassExtension::AudioVisual(work) => {
             assert_eq!(work.r#type, AudioVisualType::Film);
             assert!(
                 work.core
@@ -98,8 +98,8 @@ fn test_parse_csl_json_broadcast_without_audio_roles_stays_serial_component() {
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
     let reference: InputReference = legacy.into();
 
-    match reference {
-        InputReference::SerialComponent(component) => {
+    match reference.extension() {
+        ClassExtension::SerialComponent(component) => {
             assert!(component.author.is_some());
             let container_title =
                 component
@@ -135,8 +135,8 @@ fn test_parse_csl_json_broadcast_with_producers_stays_serial_component() {
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
     let reference: InputReference = legacy.into();
 
-    match reference {
-        InputReference::SerialComponent(component) => {
+    match reference.extension() {
+        ClassExtension::SerialComponent(component) => {
             assert!(component.author.is_some());
             assert!(
                 component
@@ -177,8 +177,8 @@ fn test_parse_csl_json_broadcast_podcast_number_normalizes_with_no_prefix_added(
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
     let reference: InputReference = legacy.into();
 
-    match reference {
-        InputReference::SerialComponent(component) => {
+    match reference.extension() {
+        ClassExtension::SerialComponent(component) => {
             assert_eq!(component.issue.as_deref(), Some("No. 443"));
         }
         other => panic!("expected serial component, got {:?}", other),
@@ -247,7 +247,7 @@ fn test_parse_csl_json_event_note_type_routes_to_event_with_chair_and_session() 
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
     let reference: InputReference = legacy.into();
 
-    let InputReference::Event(event) = reference else {
+    let ClassExtension::Event(event) = reference.extension() else {
         panic!("expected event reference");
     };
 
@@ -320,7 +320,7 @@ fn test_parse_csl_json_containerless_article_maps_to_preprint() {
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
     let reference: InputReference = legacy.into();
 
-    let InputReference::Monograph(preprint) = reference else {
+    let ClassExtension::Monograph(preprint) = reference.extension() else {
         panic!("expected preprint to map to a monograph");
     };
 
@@ -486,8 +486,8 @@ fn test_parse_csl_bill_record_prefers_container_title_as_title() {
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
     let reference: InputReference = legacy.into();
 
-    match reference {
-        InputReference::Monograph(monograph) => {
+    match reference.extension() {
+        ClassExtension::Monograph(monograph) => {
             assert_eq!(monograph.r#type, MonographType::Document);
             assert_eq!(monograph.genre.as_deref(), Some("bill-record"));
             assert_eq!(
@@ -515,8 +515,8 @@ fn test_parse_csl_bill_proceeding_uses_number_as_surrogate_title() {
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
     let reference: InputReference = legacy.into();
 
-    match reference {
-        InputReference::Monograph(monograph) => {
+    match reference.extension() {
+        ClassExtension::Monograph(monograph) => {
             assert_eq!(monograph.r#type, MonographType::Document);
             assert_eq!(monograph.genre.as_deref(), Some("bill-proceeding"));
             assert_eq!(monograph.title, Some(Title::Single("149".to_string())));
@@ -539,8 +539,8 @@ fn test_parse_csl_bill_with_title_and_authority_routes_to_hearing() {
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
     let reference: InputReference = legacy.into();
 
-    match reference {
-        InputReference::Hearing(hearing) => {
+    match reference.extension() {
+        ClassExtension::Hearing(hearing) => {
             assert_eq!(
                 hearing.authority.as_deref(),
                 Some("U.S. Senate Committee on the Judiciary")
@@ -621,8 +621,8 @@ issued: "2019"
 
     let reference: InputReference = serde_yaml::from_str(yaml).expect("failed to parse YAML");
 
-    match &reference {
-        InputReference::AudioVisual(av) => {
+    match reference.extension() {
+        ClassExtension::AudioVisual(av) => {
             assert_eq!(av.r#type, AudioVisualType::Film);
             assert_eq!(av.core.title, Some(Title::Single("Parasite".to_string())));
             assert_eq!(av.core.issued.0, "2019");
@@ -670,8 +670,8 @@ issued: "1971"
 
     let reference: InputReference = serde_yaml::from_str(yaml).expect("failed to parse YAML");
 
-    match &reference {
-        InputReference::AudioVisual(av) => {
+    match reference.extension() {
+        ClassExtension::AudioVisual(av) => {
             assert_eq!(av.r#type, AudioVisualType::Episode);
             assert_eq!(
                 av.core.title,
@@ -742,8 +742,8 @@ issued: "1975"
 
     let reference: InputReference = serde_yaml::from_str(yaml).expect("failed to parse YAML");
 
-    match &reference {
-        InputReference::Monograph(_mono) => {
+    match reference.extension() {
+        ClassExtension::Monograph(_mono) => {
             // verify it parses as monograph
         }
         other => panic!("expected Monograph, got {:?}", other),
@@ -785,7 +785,7 @@ author:
 issued: "1962"
 "#;
     let r: InputReference = serde_yaml::from_str(yaml).unwrap();
-    if let InputReference::Monograph(m) = &r {
+    if let ClassExtension::Monograph(m) = r.extension() {
         assert!(
             m.contributors
                 .iter()
@@ -815,7 +815,7 @@ contributors:
 issued: "2020"
 "#;
     let r: InputReference = serde_yaml::from_str(yaml).unwrap();
-    if let InputReference::Monograph(m) = &r {
+    if let ClassExtension::Monograph(m) = r.extension() {
         let author_count = m
             .contributors
             .iter()
@@ -944,7 +944,7 @@ number: "PR90113"
 issued: "1962"
 "#;
     let r: InputReference = serde_yaml::from_str(yaml).unwrap();
-    if let InputReference::AudioVisual(av) = &r {
+    if let ClassExtension::AudioVisual(av) = r.extension() {
         assert!(
             av.numbering.iter().any(|n| n.value == "PR90113"),
             "catalog number not folded into numbering"
@@ -968,10 +968,11 @@ fn conversion_hydrates_structured_archive_info_from_legacy_fields() {
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
     let reference: InputReference = legacy.into();
 
-    match reference {
-        InputReference::Monograph(monograph) => {
+    match reference.extension() {
+        ClassExtension::Monograph(monograph) => {
             let archive_info = monograph
                 .archive_info
+                .clone()
                 .expect("archive info should be hydrated");
             assert_eq!(
                 archive_info
@@ -1073,22 +1074,22 @@ fn conversion_promotes_paper_conference_event_metadata() {
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
     let reference: InputReference = legacy.into();
 
-    let container = match &reference {
-        InputReference::CollectionComponent(r) => r.container.as_ref(),
+    let container = match reference.extension() {
+        ClassExtension::CollectionComponent(r) => r.container.as_ref(),
         other => panic!("expected CollectionComponent, got {:?}", other),
     };
 
     let collection = match container {
-        Some(WorkRelation::Embedded(inner)) => match inner.as_ref() {
-            InputReference::Collection(c) => c,
+        Some(WorkRelation::Embedded(inner)) => match inner.extension() {
+            ClassExtension::Collection(c) => c,
             other => panic!("expected Collection container, got {:?}", other),
         },
         other => panic!("expected embedded container, got {:?}", other),
     };
 
     let event = match collection.event.as_ref() {
-        Some(WorkRelation::Embedded(inner)) => match inner.as_ref() {
-            InputReference::Event(e) => e,
+        Some(WorkRelation::Embedded(inner)) => match inner.extension() {
+            ClassExtension::Event(e) => e,
             other => panic!("expected embedded Event, got {:?}", other),
         },
         other => panic!("expected embedded event relation, got {:?}", other),
@@ -1118,14 +1119,14 @@ fn conversion_paper_conference_without_event_fields_has_no_event() {
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
     let reference: InputReference = legacy.into();
 
-    let container = match &reference {
-        InputReference::CollectionComponent(r) => r.container.as_ref(),
+    let container = match reference.extension() {
+        ClassExtension::CollectionComponent(r) => r.container.as_ref(),
         other => panic!("expected CollectionComponent, got {:?}", other),
     };
 
     let collection = match container {
-        Some(WorkRelation::Embedded(inner)) => match inner.as_ref() {
-            InputReference::Collection(c) => c,
+        Some(WorkRelation::Embedded(inner)) => match inner.extension() {
+            ClassExtension::Collection(c) => c,
             other => panic!("expected Collection container, got {:?}", other),
         },
         other => panic!("expected embedded container, got {:?}", other),
@@ -1160,8 +1161,8 @@ fn conversion_chapter_without_named_parent_keeps_volume_but_avoids_empty_contain
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
     let reference: InputReference = legacy.into();
 
-    let component = match &reference {
-        InputReference::CollectionComponent(component) => component,
+    let component = match reference.extension() {
+        ClassExtension::CollectionComponent(component) => component,
         other => panic!("expected CollectionComponent, got {:?}", other),
     };
 
@@ -1176,8 +1177,8 @@ fn conversion_chapter_without_named_parent_keeps_volume_but_avoids_empty_contain
     );
 
     let collection = match component.container.as_ref() {
-        Some(WorkRelation::Embedded(inner)) => match inner.as_ref() {
-            InputReference::Collection(collection) => collection,
+        Some(WorkRelation::Embedded(inner)) => match inner.extension() {
+            ClassExtension::Collection(collection) => collection,
             other => panic!("expected Collection container, got {:?}", other),
         },
         other => panic!("expected embedded collection container, got {:?}", other),
@@ -1241,13 +1242,13 @@ fn conversion_maps_original_publisher_metadata_into_original_relation() {
         Some("Boston".to_string())
     );
 
-    let InputReference::Monograph(book) = reference else {
+    let ClassExtension::Monograph(book) = reference.extension() else {
         panic!("expected monograph");
     };
     let Some(WorkRelation::Embedded(original)) = book.original.as_ref() else {
         panic!("expected embedded original relation");
     };
-    let InputReference::Monograph(original_book) = original.as_ref() else {
+    let ClassExtension::Monograph(original_book) = original.as_ref().extension() else {
         panic!("expected original relation to be a monograph");
     };
 
@@ -1288,13 +1289,13 @@ fn conversion_preserves_place_only_original_publication_metadata() {
         Some("Boston".to_string())
     );
 
-    let InputReference::Monograph(book) = reference else {
+    let ClassExtension::Monograph(book) = reference.extension() else {
         panic!("expected monograph");
     };
     let Some(WorkRelation::Embedded(original)) = book.original.as_ref() else {
         panic!("expected embedded original relation");
     };
-    let InputReference::Monograph(original_book) = original.as_ref() else {
+    let ClassExtension::Monograph(original_book) = original.as_ref().extension() else {
         panic!("expected original relation to be a monograph");
     };
 
@@ -1482,13 +1483,13 @@ fn conversion_maps_original_relation_for_legal_case_references() {
         Some("Old Press".to_string())
     );
 
-    let InputReference::LegalCase(case_ref) = reference else {
+    let ClassExtension::LegalCase(case_ref) = reference.extension() else {
         panic!("expected legal case");
     };
     let Some(WorkRelation::Embedded(original)) = case_ref.original.as_ref() else {
         panic!("expected embedded original");
     };
-    let InputReference::Monograph(original_book) = original.as_ref() else {
+    let ClassExtension::Monograph(original_book) = original.as_ref().extension() else {
         panic!("expected original relation to normalize to a monograph");
     };
     assert_eq!(

@@ -12,7 +12,7 @@ use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_schema::locale::ArchiveHierarchyField;
 use citum_schema::options::titles::TextCase;
-use citum_schema::reference::RichText;
+use citum_schema::reference::{ClassExtension, RichText};
 use citum_schema::template::{SimpleVariable, TemplateVariable};
 
 /// Extracts the short title from a parent reference if available.
@@ -169,16 +169,16 @@ fn resolve_variable_value(
         SimpleVariable::Section => reference.section(),
         SimpleVariable::Volume => reference.volume().map(|v| v.to_string()),
         SimpleVariable::Number => reference.number(),
-        SimpleVariable::DocketNumber => match reference {
-            Reference::Brief(r) => r.docket_number.clone(),
+        SimpleVariable::DocketNumber => match reference.extension() {
+            ClassExtension::Brief(r) => r.docket_number.clone(),
             _ => None,
         },
-        SimpleVariable::PatentNumber => match reference {
-            Reference::Patent(r) => Some(r.patent_number.clone()),
+        SimpleVariable::PatentNumber => match reference.extension() {
+            ClassExtension::Patent(r) => Some(r.patent_number.clone()),
             _ => None,
         },
-        SimpleVariable::StandardNumber => match reference {
-            Reference::Standard(r) => Some(r.standard_number.clone()),
+        SimpleVariable::StandardNumber => match reference.extension() {
+            ClassExtension::Standard(r) => Some(r.standard_number.clone()),
             _ => None,
         },
         SimpleVariable::AdsBibcode => reference.ads_bibcode(),

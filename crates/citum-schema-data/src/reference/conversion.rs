@@ -1764,6 +1764,8 @@ impl From<Vec<csl_legacy::csl_json::Name>> for Contributor {
     reason = "Panicking is acceptable and often desired in tests."
 )]
 mod tests {
+    use crate::reference::ClassExtension;
+
     use super::*;
     use serde_json::json;
 
@@ -1828,13 +1830,13 @@ mod tests {
 
         let converted = InputReference::from(legacy);
 
-        let InputReference::Monograph(monograph) = converted else {
+        let ClassExtension::Monograph(monograph) = converted.extension() else {
             panic!("expected monograph");
         };
-        let Some(WorkRelation::Embedded(original)) = monograph.original else {
+        let Some(WorkRelation::Embedded(original)) = monograph.original.as_ref() else {
             panic!("expected embedded original relation");
         };
-        let InputReference::Monograph(original_monograph) = *original else {
+        let ClassExtension::Monograph(original_monograph) = original.extension() else {
             panic!("expected original monograph relation");
         };
 
@@ -1867,7 +1869,7 @@ mod tests {
 
         let converted = InputReference::from(legacy);
 
-        let InputReference::SerialComponent(component) = converted else {
+        let ClassExtension::SerialComponent(component) = converted.extension() else {
             panic!("expected serial component");
         };
         assert!(
@@ -1876,10 +1878,10 @@ mod tests {
                 .iter()
                 .any(|entry| entry.r#type == NumberingType::Supplement && entry.value == "S1")
         );
-        let Some(WorkRelation::Embedded(reviewed)) = component.reviewed else {
+        let Some(WorkRelation::Embedded(reviewed)) = component.reviewed.as_ref() else {
             panic!("expected reviewed relation");
         };
-        let InputReference::Monograph(reviewed_work) = *reviewed else {
+        let ClassExtension::Monograph(reviewed_work) = reviewed.extension() else {
             panic!("expected reviewed monograph relation");
         };
         assert_eq!(
@@ -1909,7 +1911,7 @@ mod tests {
 
         let converted = InputReference::from(legacy);
 
-        let InputReference::Event(event) = converted else {
+        let ClassExtension::Event(event) = converted.extension() else {
             panic!("expected event");
         };
         assert_eq!(
@@ -1938,7 +1940,7 @@ mod tests {
 
         let converted = InputReference::from(legacy);
 
-        let InputReference::Event(event) = converted else {
+        let ClassExtension::Event(event) = converted.extension() else {
             panic!("expected event");
         };
         assert_eq!(event.date, None);
@@ -1960,7 +1962,7 @@ mod tests {
 
         let converted = InputReference::from(legacy);
 
-        let InputReference::SerialComponent(work) = converted else {
+        let ClassExtension::SerialComponent(work) = converted.extension() else {
             panic!("expected serial component");
         };
         assert!(
@@ -1996,7 +1998,7 @@ mod tests {
 
         let converted = InputReference::from(legacy);
 
-        let InputReference::Monograph(monograph) = converted else {
+        let ClassExtension::Monograph(monograph) = converted.extension() else {
             panic!("expected monograph");
         };
 
@@ -2033,7 +2035,7 @@ mod tests {
 
         let converted = InputReference::from(legacy);
 
-        let InputReference::Monograph(monograph) = converted else {
+        let ClassExtension::Monograph(monograph) = converted.extension() else {
             panic!("expected monograph");
         };
         assert_eq!(
@@ -2054,7 +2056,7 @@ mod tests {
 
         let converted = InputReference::from(legacy);
 
-        let InputReference::CollectionComponent(component) = converted else {
+        let ClassExtension::CollectionComponent(component) = converted.extension() else {
             panic!("expected collection component");
         };
         assert_eq!(

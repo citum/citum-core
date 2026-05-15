@@ -10,8 +10,8 @@ use citum_schema::locale::{GeneralTerm, GrammaticalGender, Locale, TermForm};
 use citum_schema::options::contributors::NameForm;
 use citum_schema::options::*;
 use citum_schema::reference::{
-    Contributor, ContributorEntry, ContributorGender, EdtfString, FlatName, InputReference,
-    Monograph, MonographType, StructuredName,
+    ClassExtension, Contributor, ContributorEntry, ContributorGender, EdtfString, FlatName,
+    InputReference, Monograph, MonographType, StructuredName,
 };
 use citum_schema::template::DateVariable as TemplateDateVar;
 use citum_schema::template::*;
@@ -3313,7 +3313,7 @@ fn test_text_case_structured_title_sentence_apa() {
         ..Default::default()
     });
     // Replace with structured title
-    if let Reference::Monograph(ref mut m) = reference {
+    if let ClassExtension::Monograph(m) = reference.extension_mut() {
         m.title = Some(Title::Structured(StructuredTitle {
             full: None,
             main: "Understanding Citation Systems".to_string(),
@@ -3372,7 +3372,7 @@ fn test_text_case_structured_title_sentence_nlm() {
         title: Some("placeholder".to_string()),
         ..Default::default()
     });
-    if let Reference::Monograph(ref mut m) = reference {
+    if let ClassExtension::Monograph(m) = reference.extension_mut() {
         m.title = Some(Title::Structured(StructuredTitle {
             full: None,
             main: "Understanding Citation Systems".to_string(),
@@ -3524,7 +3524,7 @@ fn test_structured_title_form_short_returns_main_only() {
         title: Some("placeholder".to_string()),
         ..Default::default()
     });
-    if let Reference::Treaty(ref mut m) = reference {
+    if let ClassExtension::Treaty(m) = reference.extension_mut() {
         m.title = Some(Title::Structured(StructuredTitle {
             full: None,
             main: "Homeland Security Act of 2002".to_string(),

@@ -14,6 +14,8 @@ use std::collections::HashMap;
 
 use citum_schema::grouping::{GroupSort, GroupSortKey, NameSortOrder, SortKey as GroupSortKeyType};
 use citum_schema::locale::Locale;
+#[cfg(test)]
+use citum_schema::reference::ClassExtension;
 
 use crate::reference::Reference;
 use crate::sort_support::{TextCollator, author_sort_key_opt, normalize_sort_text, title_sort_key};
@@ -582,7 +584,7 @@ mod tests {
         let dated_early = make_reference("r1", "book", "Smith", "Book D", 1999);
         let dated_late = make_reference("r2", "book", "Jones", "Book B", 2000);
         let mut undated = make_reference("r3", "book", "Brown", "Book A", 2000);
-        if let Reference::Monograph(monograph) = &mut undated {
+        if let ClassExtension::Monograph(monograph) = undated.extension_mut() {
             monograph.issued = citum_schema::reference::EdtfString(String::new());
         }
 
@@ -611,7 +613,7 @@ mod tests {
 
         let dated = make_reference("r1", "book", "Smith", "Book D", 1999);
         let mut created_only = make_reference("r2", "book", "Jones", "Book C", 2000);
-        if let Reference::Monograph(monograph) = &mut created_only {
+        if let ClassExtension::Monograph(monograph) = created_only.extension_mut() {
             monograph.created = citum_schema::reference::EdtfString("1985".to_string());
             monograph.issued = citum_schema::reference::EdtfString(String::new());
         }
