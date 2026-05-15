@@ -21,8 +21,7 @@ use url::Url;
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
-// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct LegalCase {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -81,8 +80,7 @@ pub struct LegalCase {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
-// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Statute {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -147,8 +145,7 @@ pub struct Statute {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
-// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Treaty {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -204,8 +201,7 @@ pub struct Treaty {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
-// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Hearing {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -255,8 +251,7 @@ pub struct Hearing {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
-// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Regulation {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -312,8 +307,7 @@ pub struct Regulation {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
-// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 pub struct Brief {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]

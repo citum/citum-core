@@ -22,6 +22,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 */
 
 mod common;
+use citum_schema::reference::ClassExtension;
 use common::*;
 
 use citum_engine::{Processor, render::html::Html};
@@ -787,7 +788,7 @@ fn sorting_empty_dates_pushes_undated_items_to_the_end() {
     // Upstream provenance: CSL fixture `date_SortEmptyDatesCitation`.
     fn make_undated_book(id: &str, title: &str) -> InputReference {
         let mut reference = make_book(id, "Smith", "Jane", 2000, title);
-        if let InputReference::Monograph(monograph) = &mut reference {
+        if let ClassExtension::Monograph(monograph) = reference.extension_mut() {
             monograph.issued = citum_schema::reference::EdtfString(String::new());
         }
         reference

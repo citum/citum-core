@@ -11,6 +11,7 @@ use crate::render::rich_text::render_djot_inline_with_transform;
 use crate::values::text_case::{self, apply_text_case, capitalize_first_word};
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_schema::options::titles::TextCase;
+use citum_schema::reference::ClassExtension;
 use citum_schema::reference::types::{StructuredTitle, Subtitle, Title};
 use citum_schema::template::{TemplateTitle, TitleForm, TitleType};
 
@@ -317,17 +318,17 @@ impl ComponentValues for TemplateTitle {
 fn resolve_primary_title(reference: &Reference, title_type: &TitleType) -> Option<Title> {
     match title_type {
         TitleType::Primary => reference.title(),
-        TitleType::ParentMonograph => match reference {
-            Reference::Monograph(_)
-            | Reference::CollectionComponent(_)
-            | Reference::Event(_)
-            | Reference::AudioVisual(_) => reference.container_title(),
+        TitleType::ParentMonograph => match reference.extension() {
+            ClassExtension::Monograph(_)
+            | ClassExtension::CollectionComponent(_)
+            | ClassExtension::Event(_)
+            | ClassExtension::AudioVisual(_) => reference.container_title(),
             _ => None,
         },
-        TitleType::ParentSerial => match reference {
-            Reference::SerialComponent(_) | Reference::LegalCase(_) | Reference::Treaty(_) => {
-                reference.container_title()
-            }
+        TitleType::ParentSerial => match reference.extension() {
+            ClassExtension::SerialComponent(_)
+            | ClassExtension::LegalCase(_)
+            | ClassExtension::Treaty(_) => reference.container_title(),
             _ => None,
         },
         _ => None,

@@ -11,6 +11,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_schema::locale::{GrammaticalGender, TermForm};
+use citum_schema::reference::ClassExtension;
 use citum_schema::template::{NumberVariable, TemplateNumber};
 
 /// Resolve the raw value string for a number variable from a reference.
@@ -40,8 +41,8 @@ fn resolve_number_value(
                 })
             }
         }
-        NumberVariable::ChapterNumber => match reference {
-            Reference::Statute(r) => r.chapter_number.clone(),
+        NumberVariable::ChapterNumber => match reference.extension() {
+            ClassExtension::Statute(r) => r.chapter_number.clone(),
             _ => reference.numbering_value(&citum_schema::reference::NumberingType::Chapter),
         },
         NumberVariable::Edition => reference.edition(),
@@ -50,16 +51,16 @@ fn resolve_number_value(
         NumberVariable::Custom(kind) => reference.numbering_value(
             &citum_schema::reference::NumberingType::Custom(kind.clone()),
         ),
-        NumberVariable::DocketNumber => match reference {
-            Reference::Brief(r) => r.docket_number.clone(),
+        NumberVariable::DocketNumber => match reference.extension() {
+            ClassExtension::Brief(r) => r.docket_number.clone(),
             _ => None,
         },
-        NumberVariable::PatentNumber => match reference {
-            Reference::Patent(r) => Some(r.patent_number.clone()),
+        NumberVariable::PatentNumber => match reference.extension() {
+            ClassExtension::Patent(r) => Some(r.patent_number.clone()),
             _ => None,
         },
-        NumberVariable::StandardNumber => match reference {
-            Reference::Standard(r) => Some(r.standard_number.clone()),
+        NumberVariable::StandardNumber => match reference.extension() {
+            ClassExtension::Standard(r) => Some(r.standard_number.clone()),
             _ => None,
         },
         NumberVariable::ReportNumber => reference.report_number(),

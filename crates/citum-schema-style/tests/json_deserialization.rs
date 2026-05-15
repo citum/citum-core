@@ -18,7 +18,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use citum_schema_style::citation::{CitationItem, IntegralNameState};
 use citum_schema_style::options::{IntegralNameContexts, IntegralNameRule, IntegralNameScope};
-use citum_schema_style::reference::{InputReference, Monograph};
+use citum_schema_style::reference::{ClassExtension, InputReference, Monograph};
 use citum_schema_style::{InputBibliography, Style};
 
 #[test]
@@ -43,7 +43,7 @@ fn test_input_reference_doi_alias() {
         "DOI": "10.1001/test"
     }"#;
     let reference: InputReference = serde_json::from_str(json).unwrap();
-    if let InputReference::Monograph(m) = reference {
+    if let ClassExtension::Monograph(m) = reference.extension() {
         assert_eq!(m.doi, Some("10.1001/test".to_string()));
     } else {
         panic!("Expected Monograph");
@@ -60,8 +60,8 @@ fn test_input_reference_url_alias() {
         "URL": "https://example.com"
     }"#;
     let reference: InputReference = serde_json::from_str(json).unwrap();
-    if let InputReference::Monograph(m) = reference {
-        assert_eq!(m.url.unwrap().to_string(), "https://example.com/");
+    if let ClassExtension::Monograph(m) = reference.extension() {
+        assert_eq!(m.url.as_ref().unwrap().to_string(), "https://example.com/");
     } else {
         panic!("Expected Monograph");
     }
@@ -87,8 +87,8 @@ fn test_input_reference_archive_info_and_eprint_fields() {
     }"#;
 
     let reference: InputReference = serde_json::from_str(json).expect("reference should parse");
-    if let InputReference::Monograph(m) = reference {
-        let archive_info = m.archive_info.expect("archive info should exist");
+    if let ClassExtension::Monograph(m) = reference.extension() {
+        let archive_info = m.archive_info.clone().expect("archive info should exist");
         assert_eq!(
             archive_info
                 .name
@@ -105,7 +105,7 @@ fn test_input_reference_archive_info_and_eprint_fields() {
             "https://example.com/archive"
         );
 
-        let eprint = m.eprint.expect("eprint should exist");
+        let eprint = m.eprint.clone().expect("eprint should exist");
         assert_eq!(eprint.server, "arXiv");
         assert_eq!(eprint.id, "2301.00001");
         assert_eq!(eprint.class, Some("cs.AI".to_string()));

@@ -76,7 +76,6 @@ fn collect_contributors_by_role(
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(from = "MonographDeser", rename_all = "kebab-case")]
-// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Monograph {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -219,7 +218,7 @@ pub struct Monograph {
 #[derive(Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 struct MonographDeser {
     id: Option<RefID>,
     r#type: MonographType,
@@ -390,7 +389,6 @@ pub enum MonographType {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(from = "CollectionDeser", rename_all = "kebab-case")]
-// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Collection {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -482,7 +480,7 @@ pub struct Collection {
 #[derive(Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 struct CollectionDeser {
     id: Option<RefID>,
     r#type: CollectionType,
@@ -598,7 +596,6 @@ pub enum CollectionType {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(from = "CollectionComponentDeser", rename_all = "kebab-case")]
-// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct CollectionComponent {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -705,7 +702,7 @@ pub struct CollectionComponent {
 #[derive(Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 struct CollectionComponentDeser {
     id: Option<RefID>,
     r#type: MonographComponentType,
@@ -828,7 +825,6 @@ pub enum MonographComponentType {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(from = "SerialComponentDeser", rename_all = "kebab-case")]
-// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct SerialComponent {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -948,7 +944,7 @@ pub struct SerialComponent {
 #[derive(Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 struct SerialComponentDeser {
     id: Option<RefID>,
     r#type: SerialComponentType,
@@ -1080,7 +1076,6 @@ pub enum SerialComponentType {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(from = "SerialDeser", rename_all = "kebab-case")]
-// deny_unknown_fields removed: incompatible with #[serde(tag)] on InputReference (serde limitation - tag field is replayed into inner struct)
 pub struct Serial {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1129,7 +1124,7 @@ pub struct Serial {
 #[derive(Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
+#[serde(deny_unknown_fields, rename_all = "kebab-case")]
 struct SerialDeser {
     id: Option<RefID>,
     r#type: SerialType,
