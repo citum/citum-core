@@ -114,7 +114,7 @@ truth-of-record. End-to-end user-visible outcomes may add a warning via
 |---|---|---|---|---|---|
 | 1 | Attribute enum in template | `contributor: producer` (new `ContributorRole`) | `SoftDegrade` | `HardFail` | `csl26-ld6e` tolerant enum deserializer |
 | 2 | Attribute enum in data | `class: monograph, type: dance-performance` | `SoftDegrade` | `HardFail` | `csl26-ld6e` |
-| 2b | Top-level `class` value | `class: dance-performance` | `HardFail` | `HardFail` | `csl26-1bdr` (deferred future option) |
+| 2b | Top-level `class` value | `class: dance-performance` | `HardFail` | `HardFail` | `csl26-1bdr` (discriminator architecture — see [`INPUT_REFERENCE_CLASS_DISCRIMINATOR.md`](./INPUT_REFERENCE_CLASS_DISCRIMINATOR.md)) |
 | 3 | TermForm in template | `term: page, form: vocative` (new `TermForm`) | `SoftDegrade` | `HardFail` | `csl26-ld6e` |
 | 4 | DateForm in template | `date: issued, form: month-and-day` (new `DateForm`) | `SoftDegrade` | `HardFail` | `csl26-ld6e` |
 | 5 | New style option key | `options.contributors.future-key: true` | `SoftDegrade` | `HardFail` | `csl26-0ksu` capture-unknown-fields wrapper |
@@ -149,16 +149,14 @@ opt-out category alongside template grammar. Style/data producers must
 introduce them as a `major` bump; older engine builds hard-fail. The
 soft-degrade rule does not apply at the `class` boundary.
 
-**Future option (deferred).** If downstream environments end up pinning
-older engine builds (e.g. an editor ships citum-engine 0.51 and users
-encounter styles authored against 0.52 in the wild) and brand-new
-classes become a common reason for hard-fails, we can add a catch-all
-variant —
-`InputReference::Unknown(UnknownReference { class: String, fields:
-serde_json::Map<String, Value> })` — that round-trips the data, emits a
-`SoftDegrade` warning, and degrades to a generic rendering path. This
-is an engine-side change, not an ecosystem-wide contract, and is
-deferred until the evidence justifies it. Tracked in bean `csl26-1bdr`.
+**Pending architecture decision.** A separate spec —
+[`INPUT_REFERENCE_CLASS_DISCRIMINATOR.md`](./INPUT_REFERENCE_CLASS_DISCRIMINATOR.md)
+— specifies a replacement shape (shared base struct + class-specific
+overlay via a hand-written `Deserialize` dispatcher) that restores
+`deny_unknown_fields` strictness on `*Fields` structs and turns unknown
+classes into a soft-degrade path. Tracked in bean `csl26-1bdr`. Row 02b
+stays `declared=HardFail observed=HardFail` until that spec is Active
+and its implementation lands.
 
 ## Producer obligations
 
