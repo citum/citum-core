@@ -29,7 +29,7 @@ pub use contributors::{
 pub use dates::{DateConfig, DateConfigEntry};
 pub use integral_names::{
     IntegralNameConfig, IntegralNameContexts, IntegralNameForm, IntegralNameRule,
-    IntegralNameScope, ResolvedIntegralNameConfig,
+    IntegralNameScope, ResolvedIntegralNameConfig, ShortNameDisplay,
 };
 pub use localization::{Localize, MonthFormat, Scope};
 pub use locators::{

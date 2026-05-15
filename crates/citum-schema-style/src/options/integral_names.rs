@@ -24,6 +24,9 @@ pub struct IntegralNameConfig {
     /// The contributor form to use after the first mention in scope.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub subsequent_form: Option<IntegralNameForm>,
+    /// How to display the short name on the first mention.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub short_name_display: Option<ShortNameDisplay>,
 }
 
 impl IntegralNameConfig {
@@ -41,6 +44,9 @@ impl IntegralNameConfig {
         if other.subsequent_form.is_some() {
             self.subsequent_form = other.subsequent_form;
         }
+        if other.short_name_display.is_some() {
+            self.short_name_display = other.short_name_display;
+        }
     }
 
     /// Resolve the effective integral-name config with defaults filled in.
@@ -50,6 +56,7 @@ impl IntegralNameConfig {
             scope: self.scope.unwrap_or_default(),
             contexts: self.contexts.unwrap_or_default(),
             subsequent_form: self.subsequent_form.unwrap_or_default(),
+            short_name_display: self.short_name_display.unwrap_or_default(),
         }
     }
 }
@@ -102,6 +109,18 @@ pub enum IntegralNameForm {
     FamilyOnly,
 }
 
+/// How to display a contributor's short name on the first integral mention.
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum ShortNameDisplay {
+    /// Render "Full Name (Short)" on first mention (default).
+    #[default]
+    FullThenParenthetical,
+    /// Render "Short [Full Name]" on first mention.
+    ShortThenBracketed,
+}
+
 /// Integral-name configuration with defaults resolved.
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct ResolvedIntegralNameConfig {
@@ -113,4 +132,6 @@ pub struct ResolvedIntegralNameConfig {
     pub contexts: IntegralNameContexts,
     /// The contributor form used after the first mention.
     pub subsequent_form: IntegralNameForm,
+    /// How to display short names on first mention.
+    pub short_name_display: ShortNameDisplay,
 }

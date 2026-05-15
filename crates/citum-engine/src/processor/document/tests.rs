@@ -173,6 +173,7 @@ fn make_integral_name_style(scope: IntegralNameScope, contexts: IntegralNameCont
                 scope: Some(scope),
                 contexts: Some(contexts),
                 subsequent_form: Some(IntegralNameForm::Short),
+                short_name_display: None,
             }),
             ..Default::default()
         }),

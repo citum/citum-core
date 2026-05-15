@@ -55,6 +55,9 @@ pub struct DocumentIntegralNameOverride {
     /// The contributor form used after the first mention.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub subsequent_form: Option<citum_schema::options::IntegralNameForm>,
+    /// How to display a short name on the first integral mention.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub short_name_display: Option<citum_schema::options::ShortNameDisplay>,
 }
 
 impl DocumentIntegralNameOverride {
@@ -76,7 +79,51 @@ impl DocumentIntegralNameOverride {
         if self.subsequent_form.is_some() {
             result.subsequent_form = self.subsequent_form;
         }
+        if self.short_name_display.is_some() {
+            result.short_name_display = self.short_name_display;
+        }
         Some(result)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::DocumentIntegralNameOverride;
+    use citum_schema::options::{IntegralNameConfig, IntegralNameRule, ShortNameDisplay};
+
+    #[test]
+    fn test_document_integral_name_override_deserializes_short_name_display() {
+        assert_eq!(
+            serde_yaml::from_str::<DocumentIntegralNameOverride>(
+                "short-name-display: short-then-bracketed"
+            )
+            .ok()
+            .map(|config| config.short_name_display),
+            Some(Some(ShortNameDisplay::ShortThenBracketed))
+        );
+    }
+
+    #[test]
+    fn test_document_integral_name_override_applies_short_name_display() {
+        let base = IntegralNameConfig {
+            rule: Some(IntegralNameRule::FullThenShort),
+            short_name_display: Some(ShortNameDisplay::FullThenParenthetical),
+            ..Default::default()
+        };
+        let override_config = DocumentIntegralNameOverride {
+            short_name_display: Some(ShortNameDisplay::ShortThenBracketed),
+            ..Default::default()
+        };
+
+        assert_eq!(
+            override_config
+                .apply_to(Some(&base))
+                .map(|config| (config.short_name_display, config.rule)),
+            Some((
+                Some(ShortNameDisplay::ShortThenBracketed),
+                Some(IntegralNameRule::FullThenShort)
+            ))
+        );
     }
 }
 

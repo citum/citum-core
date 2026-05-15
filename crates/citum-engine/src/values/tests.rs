@@ -154,7 +154,87 @@ fn make_name_format_context<'a>(
         name_form,
         demote_ndp,
         sort_separator,
+        integral_name_state: None,
+        use_integral_short_name: true,
+        short_name_display: None,
     }
+}
+
+fn make_literal_name_with_short_name() -> FlatName {
+    FlatName {
+        literal: Some("World Health Organization".to_string()),
+        short_name: Some("WHO".to_string()),
+        ..Default::default()
+    }
+}
+
+#[test]
+fn given_literal_short_name_when_first_integral_mention_then_parenthetical_form_renders() {
+    let mut ctx = make_name_format_context(None, None, None, None, None, None, None);
+    ctx.integral_name_state = Some(citum_schema::citation::IntegralNameState::First);
+    ctx.short_name_display = Some(ShortNameDisplay::FullThenParenthetical);
+
+    let result = super::contributor::format_single_name(
+        &make_literal_name_with_short_name(),
+        &ContributorForm::Long,
+        0,
+        &ctx,
+        false,
+    );
+
+    assert_eq!(result, "World Health Organization (WHO)");
+}
+
+#[test]
+fn given_literal_short_name_when_subsequent_integral_mention_then_short_form_renders() {
+    let mut ctx = make_name_format_context(None, None, None, None, None, None, None);
+    ctx.integral_name_state = Some(citum_schema::citation::IntegralNameState::Subsequent);
+    ctx.short_name_display = Some(ShortNameDisplay::FullThenParenthetical);
+
+    let result = super::contributor::format_single_name(
+        &make_literal_name_with_short_name(),
+        &ContributorForm::Long,
+        0,
+        &ctx,
+        false,
+    );
+
+    assert_eq!(result, "WHO");
+}
+
+#[test]
+fn given_short_then_bracketed_option_when_first_integral_mention_then_bracketed_form_renders() {
+    let mut ctx = make_name_format_context(None, None, None, None, None, None, None);
+    ctx.integral_name_state = Some(citum_schema::citation::IntegralNameState::First);
+    ctx.short_name_display = Some(ShortNameDisplay::ShortThenBracketed);
+
+    let result = super::contributor::format_single_name(
+        &make_literal_name_with_short_name(),
+        &ContributorForm::Long,
+        0,
+        &ctx,
+        false,
+    );
+
+    assert_eq!(result, "WHO [World Health Organization]");
+}
+
+#[test]
+fn given_non_integral_context_when_integral_name_state_is_set_then_literal_short_name_is_ignored() {
+    let mut ctx = make_name_format_context(None, None, None, None, None, None, None);
+    ctx.integral_name_state = Some(citum_schema::citation::IntegralNameState::Subsequent);
+    ctx.use_integral_short_name = false;
+    ctx.short_name_display = Some(ShortNameDisplay::FullThenParenthetical);
+
+    let result = super::contributor::format_single_name(
+        &make_literal_name_with_short_name(),
+        &ContributorForm::Long,
+        0,
+        &ctx,
+        false,
+    );
+
+    assert_eq!(result, "World Health Organization");
 }
 
 /// Tests the behavior of `test_contributor_values`.

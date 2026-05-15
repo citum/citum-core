@@ -4270,6 +4270,17 @@
               "type": "null"
             }
           ]
+        },
+        "short-name-display": {
+          "description": "How to display the short name on the first mention.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ShortNameDisplay"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "additionalProperties": false
@@ -4331,6 +4342,21 @@
           "description": "Use family name only for subsequent mentions.",
           "type": "string",
           "const": "family-only"
+        }
+      ]
+    },
+    "ShortNameDisplay": {
+      "description": "How to display a contributor's short name on the first integral mention.",
+      "oneOf": [
+        {
+          "description": "Render \"Full Name (Short)\" on first mention (default).",
+          "type": "string",
+          "const": "full-then-parenthetical"
+        },
+        {
+          "description": "Render \"Short [Full Name]\" on first mention.",
+          "type": "string",
+          "const": "short-then-bracketed"
         }
       ]
     },
