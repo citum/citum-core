@@ -3175,15 +3175,17 @@ bibliography:
     }
 
     #[test]
-    fn top_level_options_reject_bibliography_only_fields() {
+    fn top_level_options_capture_unknown_fields() {
         let yaml = r#"
 options:
   bibliography:
     entry-suffix: "."
 "#;
 
-        let err = Style::from_yaml_str(yaml).expect_err("top-level bibliography config must fail");
-        assert!(err.to_string().contains("bibliography"));
+        // Unknown keys under `options:` are captured for forward-compat rather than rejected.
+        let style =
+            Style::from_yaml_str(yaml).expect("unknown top-level option key must be tolerated");
+        assert!(!style.options.unwrap().unknown_fields.is_empty());
     }
 
     #[test]
