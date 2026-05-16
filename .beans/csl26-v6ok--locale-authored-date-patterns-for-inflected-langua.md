@@ -45,8 +45,9 @@ Added `pattern.date-full` and `pattern.date-month-day` to `es-ES.yaml` as a seco
 - `csl26-qrpo` — ICU4X swap (this PR's pre-formatted approach is the spec'd path until ICU4X stabilizes `:citum-date`)
 - `docs/specs/LOCALE_MESSAGES.md` §1.5 — anticipates exactly this seam
 
-## Follow-ups (separate beans, do not bundle)
+## Follow-ups
 
-- Title / proper-noun inflection (the broader cross-language ask in CSL #6369) — needs design
-- Remaining `DateForm` variants (`YearMonth`, `YearMonthDay`, abbr-month forms) once a locale needs them
-- Month-form variants (`dates.months.{nominative,locative,…}`) if a single locale ever needs more than one inflected form
+- `csl26-37jv` — Wire remaining `DateForm` variants (`YearMonth`, `YearMonthDay`, abbr-month forms) to `pattern.date-*`
+- `csl26-hqy5` — Custom locale file invocation for builtin-alias styles (surfaced by this PR's smoke test)
+- `csl26-1b4e` — Title / proper-noun inflection across languages (the broader CSL #6369 ask; draft, needs design)
+- `csl26-dno4` — Per-case month-form maps (`dates.months.<case>`) (draft, defer until a real locale needs it)
