@@ -97,7 +97,7 @@ citum render refs -b references.json -s styles/apa-7th.yaml
 citum render refs -b references.json -s styles/apa-7th.yaml -f html
 
 # Process a Djot document with citations
-citum render doc -d paper.djot -b references.json -s styles/apa-7th.yaml
+citum render doc paper.djot -b references.json -s styles/apa-7th.yaml
 
 # Validate a style
 citum style validate styles/my-style.yaml
@@ -115,19 +115,19 @@ citum schema --out-dir ./schemas</code></pre>
                 <h2>WASM</h2>
                 <p>
                     The WASM bridge is built from
-                    <code>citum-hub/server/crates/wasm-bridge</code> using
+                    <code>crates/citum-bindings</code> using
                     <code>wasm-pack</code> with the <code>nodejs</code> target.
                     It is the integration layer used by <a href="https://hub.citum.org">Citum Hub</a>.
                 </p>
             </div>
             <div class="workshop-block">
                 <div class="workshop-label">Build</div>
-                <pre><code>cd citum-hub/server/crates/wasm-bridge
+                <pre><code>cd crates/citum-bindings
 wasm-pack build --target nodejs</code></pre>
             </div>
             <div class="workshop-block" style="margin-top: 1rem;">
                 <div class="workshop-label">Usage (Node.js)</div>
-                <pre><code>import { render_bibliography } from './pkg/wasm_bridge.js';
+                <pre><code>import { render_bibliography } from './pkg/citum_bindings.js';
 
 const result = render_bibliography({
   style: styleYamlString,
@@ -144,15 +144,14 @@ const result = render_bibliography({
             <div class="doc-section-header">
                 <h2>C FFI</h2>
                 <p>
-                    The <code>crates/citum-engine</code> crate exposes a C-compatible FFI surface in
-                    <code>src/ffi/mod.rs</code>. Build the shared library first, then link against
-                    it from your target language.
+                    The <code>crates/citum-bindings</code> crate exposes a C-compatible FFI surface. Build the shared library first, then link against it from your target language.
                 </p>
             </div>
             <div class="workshop-block">
                 <div class="workshop-label">Build shared library</div>
-                <pre><code>cargo build --release --lib
-# Output: target/release/libcitum_engine.{so,dylib,dll}</code></pre>
+                <pre><code>cd crates/citum-bindings
+cargo build --release
+# Output: target/release/libcitum_bindings.{so,dylib,dll}</code></pre>
             </div>
             <div style="margin-top: 1.5rem;">
                 <div class="citum-panel" style="padding: 1.25rem; max-width: 36rem;">
@@ -179,11 +178,11 @@ const result = render_bibliography({
             </div>
             <div class="workshop-block">
                 <div class="workshop-label">Start the server (stdin/stdout)</div>
-                <pre><code>citum serve --stdio</code></pre>
+                <pre><code>citum-server</code></pre>
             </div>
             <div class="workshop-block" style="margin-top: 1rem;">
                 <div class="workshop-label">Start the server (HTTP, feature-gated)</div>
-                <pre><code>citum serve --http --port 8765</code></pre>
+                <pre><code>citum-server --http --port 8765</code></pre>
             </div>
             <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
                 The HTTP server is behind the <code>citum-server/http</code> feature flag (axum).
