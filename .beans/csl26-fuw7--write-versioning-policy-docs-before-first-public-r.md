@@ -9,10 +9,8 @@ tags:
     - dx
     - forward-compat
 created_at: 2026-02-24T17:28:17Z
-updated_at: 2026-05-16T12:48:56Z
+updated_at: 2026-05-16T14:13:59Z
 parent: csl26-li63
-blocked_by:
-    - csl26-yipx
 ---
 
 Before any public release or first external user, finish the normative

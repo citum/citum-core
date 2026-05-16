@@ -1,13 +1,13 @@
 ---
 # csl26-2a0b
 title: Forward-compatibility spec + scenario test corpus
-status: in-progress
+status: completed
 type: task
 priority: high
 tags:
     - forward-compat
 created_at: 2026-05-15T14:41:05Z
-updated_at: 2026-05-16T12:48:55Z
+updated_at: 2026-05-16T14:13:54Z
 ---
 
 Audit + tests + spec to confirm and document the forward-compat strategy: older engines should soft-degrade with warnings on new attribute enums / option fields / locale terms, hard-fail only on template grammar changes and unknown InputReference class.
@@ -22,4 +22,4 @@ Related: csl26-piea, csl26-fuw7
 - [x] Cross-link from DESIGN_PRINCIPLES, SCHEMA_VERSIONING, ENUM_VOCABULARY_POLICY, EXTENSIBILITY_STRATEGY
 - [x] Update bean csl26-fuw7 body to point at the new spec
 - [x] File follow-up beans for each declared!=observed gap row (csl26-ld6e, csl26-0ksu, csl26-acfh, csl26-o1z5, csl26-1bdr)
-- [ ] PR with snapshot summary table
+- [x] PR with snapshot summary table

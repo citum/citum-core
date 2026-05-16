@@ -7,12 +7,10 @@ priority: normal
 tags:
     - forward-compat
 created_at: 2026-05-15T14:48:11Z
-updated_at: 2026-05-16T12:48:55Z
-blocked_by:
-    - csl26-2a0b
+updated_at: 2026-05-16T14:15:58Z
 ---
 
-Promote forward-compat row 07 from observed=Pass (silent) to observed=SoftDegrade (warning).
+Promote forward-compat row 07 from observed=HardFail to observed=SoftDegrade (warning).
 
 Reference data structs cannot use deny_unknown_fields due to serde's #[serde(tag)] limitation on InputReference, so unknown keys are silently discarded today. Add a Deserializer hook that records skipped keys during reference parsing and emits a CompatibilityWarning per dropped key. The render still proceeds without the extra data.
 

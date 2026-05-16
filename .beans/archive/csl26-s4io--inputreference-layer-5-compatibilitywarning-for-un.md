@@ -1,13 +1,13 @@
 ---
 # csl26-s4io
 title: 'InputReference Layer 5: CompatibilityWarning for unknown class'
-status: todo
+status: completed
 type: task
 priority: normal
 tags:
     - forward-compat
 created_at: 2026-05-16T00:15:48Z
-updated_at: 2026-05-16T12:49:19Z
+updated_at: 2026-05-16T14:13:49Z
 parent: csl26-1bdr
 ---
 
