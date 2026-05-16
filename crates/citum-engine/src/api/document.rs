@@ -17,6 +17,7 @@ use crate::render::plain::PlainText;
 use crate::render::typst::Typst;
 use citum_schema::Style;
 use citum_schema::data::citation::Citation;
+use citum_schema::reference::ReferenceClass;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -132,6 +133,7 @@ pub fn format_document_with_style(
             level: WarningLevel::Warning,
             code: "locale_fallback".to_string(),
             citation_id: None,
+            ref_id: None,
             message: format!(
                 "Requested locale '{tag}' could not be loaded by the engine; falling back to en-US. Adapter-side locale resolution is not yet wired through."
             ),
@@ -139,6 +141,7 @@ pub fn format_document_with_style(
     }
 
     let mut processor = Processor::new(style, request.refs);
+    warnings.extend(unknown_reference_class_warnings(&processor.bibliography));
 
     if let Some(opts) = &request.document_options {
         if let Some(show_semantics) = opts.show_semantics {
@@ -155,6 +158,7 @@ pub fn format_document_with_style(
                 level: WarningLevel::Warning,
                 code: "integral_names_not_applied".to_string(),
                 citation_id: None,
+                ref_id: None,
                 message: "document_options.integral_names is accepted but not yet wired through the processor; tracked in csl26-wq0y.".to_string(),
             });
         }
@@ -175,6 +179,7 @@ pub fn format_document_with_style(
                     level: WarningLevel::Warning,
                     code: "missing_ref".to_string(),
                     citation_id: citation.id.clone(),
+                    ref_id: Some(item.id.clone()),
                     message: format!("Reference '{}' not found in bibliography", item.id),
                 });
                 false
@@ -226,6 +231,26 @@ pub fn format_document_with_style(
         bibliography,
         warnings,
     })
+}
+
+fn unknown_reference_class_warnings(bibliography: &Bibliography) -> Vec<Warning> {
+    bibliography
+        .iter()
+        .filter_map(|(ref_id, reference)| {
+            let ReferenceClass::Unknown(class) = reference.class() else {
+                return None;
+            };
+            Some(Warning {
+                level: WarningLevel::Warning,
+                code: "unknown_reference_class".to_string(),
+                citation_id: None,
+                ref_id: Some(ref_id.clone()),
+                message: format!(
+                    "Reference '{ref_id}' uses unknown class '{class}'; rendering will use only fields this engine understands."
+                ),
+            })
+        })
+        .collect()
 }
 
 /// Process citations and return formatted text.
@@ -444,6 +469,58 @@ mod tests {
         assert!(result.is_ok());
         let res = result.unwrap();
         assert!(res.warnings.iter().any(|w| w.code == "missing_ref"));
+    }
+
+    #[test]
+    fn format_document_unknown_reference_class_warning() {
+        let style = make_test_style();
+        let mut refs = Bibliography::new();
+        let unknown_ref: InputReference = serde_json::from_str(
+            r#"{
+                "class": "dance-performance",
+                "id": "pina2011",
+                "title": "Pina",
+                "issued": "2011",
+                "venue": "Berlin"
+            }"#,
+        )
+        .expect("unknown class should parse through the compatibility path");
+        refs.insert("pina2011".to_string(), unknown_ref);
+
+        let citation_occ = CitationOccurrence {
+            id: "cite1".to_string(),
+            items: vec![CitationOccurrenceItem {
+                id: "pina2011".to_string(),
+                locator: None,
+                prefix: None,
+                suffix: None,
+                integral_name_state: None,
+            }],
+            mode: None,
+            note_number: None,
+            suppress_author: None,
+            grouped: None,
+            prefix: None,
+            suffix: None,
+        };
+
+        let request = FormatDocumentRequest {
+            style: StyleInput::Yaml("dummy".to_string()),
+            locale: None,
+            output_format: OutputFormatKind::Plain,
+            refs,
+            citations: vec![citation_occ],
+            document_options: None,
+        };
+
+        let result = format_document_with_style(style, request).unwrap();
+        let warning = result
+            .warnings
+            .iter()
+            .find(|w| w.code == "unknown_reference_class")
+            .expect("unknown class warning should be emitted");
+        assert_eq!(warning.ref_id.as_deref(), Some("pina2011"));
+        assert!(warning.message.contains("dance-performance"));
     }
 
     #[test]

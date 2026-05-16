@@ -3047,9 +3047,67 @@ mod discriminator_tests {
         let schema_text = serde_json::to_string(&schema).unwrap();
 
         assert!(schema_text.contains("\"unevaluatedProperties\":false"));
-        assert!(schema_text.contains("\"const\":\"monograph\""));
-        assert!(schema_text.contains("\"const\":\"legal-case\""));
-        assert!(schema_text.contains("\"const\":\"audio-visual\""));
+        for class in ReferenceClass::KNOWN {
+            assert!(
+                schema_text.contains(&format!("\"const\":\"{class}\"")),
+                "schema must contain a class branch for `{class}`"
+            );
+        }
+        assert!(
+            !schema_text.contains("\"const\":\"dance-performance\""),
+            "producer-side schema must stay closed over known class strings"
+        );
+    }
+
+    #[cfg(feature = "schema")]
+    #[test]
+    fn public_discriminator_schema_alignment_corpus_matches_dispatcher() {
+        let schema = serde_json::to_value(schemars::schema_for!(InputReference)).unwrap();
+        let schema_text = serde_json::to_string(&schema).unwrap();
+
+        let known_valid =
+            r#"{ "class": "monograph", "type": "book", "title": "B", "issued": "2024" }"#;
+        let wrong_class_field = r#"{
+            "class": "legal-case",
+            "title": "Smith v. Jones",
+            "monograph-type": "book"
+        }"#;
+        let unknown_class = r#"{
+            "class": "dance-performance",
+            "id": "pina2011",
+            "title": "Pina",
+            "venue": "Berlin"
+        }"#;
+
+        assert!(
+            parse_reference(known_valid).is_ok(),
+            "known-valid corpus row must parse through the dispatcher"
+        );
+        assert!(
+            schema_text.contains("\"const\":\"monograph\""),
+            "known-valid corpus row must have a matching schema branch"
+        );
+        assert!(
+            parse_reference(wrong_class_field).is_err(),
+            "known-invalid corpus row must be rejected by the dispatcher"
+        );
+        assert!(
+            schema_text.contains("\"const\":\"legal-case\"")
+                && schema_text.contains("\"authority\"")
+                && schema_text.contains("\"type\""),
+            "schema must expose both relevant branches so unevaluatedProperties can reject cross-class leakage"
+        );
+
+        let parsed_unknown = parse_reference(unknown_class)
+            .expect("unknown class must parse through the consumer compatibility path");
+        assert!(matches!(
+            parsed_unknown.class(),
+            ReferenceClass::Unknown(ref class) if class == "dance-performance"
+        ));
+        assert!(
+            !schema_text.contains("\"const\":\"dance-performance\""),
+            "schema intentionally rejects unknown producer-side class strings"
+        );
     }
 }
 

@@ -1,7 +1,7 @@
 # InputReference Class Discriminator Design
 
-**Status:** Draft
-**Version:** 0.3
+**Status:** Active
+**Version:** 0.4
 **Date:** 2026-05-15
 **Related:** bean `csl26-1bdr`, [`FORWARD_COMPATIBILITY.md`](./FORWARD_COMPATIBILITY.md), [`../architecture/EXTENSIBILITY_STRATEGY_2026-03-14.md`](../architecture/EXTENSIBILITY_STRATEGY_2026-03-14.md), [`../policies/TYPE_ADDITION_POLICY.md`](../policies/TYPE_ADDITION_POLICY.md), [`../policies/ENUM_VOCABULARY_POLICY.md`](../policies/ENUM_VOCABULARY_POLICY.md)
 
@@ -9,10 +9,11 @@
 
 Specifies the data shape and deserialization mechanics of
 `InputReference`, the top-level bibliographic-data type in
-`citum-schema-data`. The chosen shape is **a shared base struct + a
-class-specific overlay dispatched by a hand-written `Deserialize`
-impl**. This document is the design contract for the follow-up
-implementation bean.
+`citum-schema-data`. The implemented shape is **a class-specific
+overlay dispatched by a hand-written flat-map `Deserialize` impl**.
+Shared bibliographic data remains resident in the active class payload
+and is exposed through `InputReference` accessors; unknown classes
+capture into `UnknownClassData`.
 
 ## Background
 
@@ -73,13 +74,13 @@ Consumers interact with `InputReference` through this surface; the
 internal layout that makes the dispatcher work is private to the
 crate.
 
-**Shared fields are public struct fields.**
+**Shared fields are reached through public accessors.**
 
 ```rust
-reference.id           // RefID
-reference.title        // Option<Title>
-reference.contributors // Option<ContributorList>
-reference.issued       // Option<EdtfString>
+reference.id()           // Option<RefID>
+reference.title()        // Option<Title>
+reference.contributors() // Option<ContributorList>
+reference.issued()       // Option<EdtfString>
 // ... etc.
 ```
 
@@ -121,6 +122,12 @@ holding the active `ClassExtension`. Crate-internal call sites and the
 custom `Serialize`/`Deserialize` impls touch it directly; downstream
 consumers cannot. The name of the private field is not part of the API
 contract.
+
+**Implementation note.** Version 0.3 specified physically moving shared
+fields onto the outer struct. The shipped v0.4 keeps them in the typed
+payloads and exposes them through accessors. That preserves existing
+constructor/call-site compatibility while still delivering the wire
+boundary, strictness, unknown-class capture, and schema goals.
 
 ## Design
 

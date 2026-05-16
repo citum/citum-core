@@ -33,6 +33,7 @@ use std::fs;
 use std::path::Path;
 
 use citum_schema::Style;
+use citum_schema::reference::ReferenceClass;
 use citum_schema_data::InputBibliography;
 
 /// What a loader did when it met a "future" feature.
@@ -41,8 +42,7 @@ enum Outcome {
     /// Parse succeeded and the feature was silently accepted (no warning channel today).
     Pass,
     /// Parse succeeded with a documented warning emitted through the
-    /// compatibility channel. Not reachable today — there is no warning
-    /// channel yet, so this class only appears in the `declared` column.
+    /// compatibility channel.
     SoftDegrade,
     /// Parse returned an error and no artifact was produced.
     HardFail,
@@ -76,7 +76,17 @@ fn parse_style(yaml: &str) -> Outcome {
 
 fn parse_bibliography(yaml: &str) -> Outcome {
     match serde_yaml::from_str::<InputBibliography>(yaml) {
-        Ok(_) => Outcome::Pass,
+        Ok(bibliography) => {
+            if bibliography
+                .references
+                .iter()
+                .any(|reference| matches!(reference.class(), ReferenceClass::Unknown(_)))
+            {
+                Outcome::SoftDegrade
+            } else {
+                Outcome::Pass
+            }
+        }
         Err(_) => Outcome::HardFail,
     }
 }
@@ -219,9 +229,9 @@ fn scenarios() -> Vec<Scenario> {
         Scenario {
             id: "02b-discriminator-class",
             category: "Unknown InputReference class",
-            declared: Outcome::HardFail,
+            declared: Outcome::SoftDegrade,
             observed: case_discriminator_class,
-            follow_up: "csl26-1bdr inputreference-discriminator-design",
+            follow_up: "csl26-odgh inputreference-discriminator-design",
         },
         Scenario {
             id: "03-locale-form",

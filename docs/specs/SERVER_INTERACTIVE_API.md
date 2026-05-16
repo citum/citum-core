@@ -246,6 +246,7 @@ Both `format_document` and session mutation results carry a `warnings` array wit
   "level": "warning",
   "code": "missing_ref",
   "citation_id": "cite1",
+  "ref_id": "smith2020",
   "message": "Reference 'smith2020' not found in refs"
 }
 ```
@@ -255,6 +256,7 @@ Both `format_document` and session mutation results carry a `warnings` array wit
 | `level` | `"warning"` \| `"error"` | Severity |
 | `code` | string | Machine-readable code (e.g. `missing_ref`, `invalid_label`, `style_not_found`) |
 | `citation_id` | string | Which citation occurrence triggered the diagnostic (omitted for document-level issues) |
+| `ref_id` | string | Which reference triggered the diagnostic, when the warning is about a specific reference rather than a citation or whole document |
 | `message` | string | Human-readable description |
 
 ---

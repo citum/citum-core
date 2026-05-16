@@ -31,6 +31,9 @@ pub struct Warning {
     /// The citation ID this warning pertains to, if any.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub citation_id: Option<String>,
+    /// The reference ID this warning pertains to, if any.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ref_id: Option<String>,
     /// A human-readable diagnostic message.
     pub message: String,
 }
