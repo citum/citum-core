@@ -5,7 +5,7 @@ status: todo
 type: milestone
 priority: normal
 created_at: 2026-05-16T14:30:00Z
-updated_at: 2026-05-16T14:30:00Z
+updated_at: 2026-05-16T23:31:58Z
 ---
 
 Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by refactor priority and grouped by modularization strategy.
@@ -21,7 +21,7 @@ Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by r
 2. [ ] **`citum-schema-data/src/reference/mod.rs` (3377 lines)**
    - **Issues:** Mixed concerns between core `InputReference` data model and JSON schema generation logic.
    - **Target:** Move `InputReference` and `ReferenceClass` to specialized modules (`src/reference/input.rs`, `src/reference/classes.rs`).
-3. [ ] **`citum-cli/src/commands.rs` (2923 lines)**
+3. [x] **`citum-cli/src/commands.rs` (2923 lines → commands/ module hierarchy)**
    - **Issues:** Command handler monolith.
    - **Target:** Split into `src/commands/*.rs` hierarchy (e.g., `style.rs`, `registry.rs`, `doctor.rs`).
 
