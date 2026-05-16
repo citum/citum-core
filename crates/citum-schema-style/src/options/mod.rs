@@ -653,7 +653,7 @@ impl<'de> Deserialize<'de> for Config {
         D: serde::Deserializer<'de>,
     {
         #[derive(Deserialize)]
-        #[serde(rename_all = "kebab-case", deny_unknown_fields)]
+        #[serde(rename_all = "kebab-case")]
         struct ConfigWire {
             #[serde(skip_serializing_if = "Option::is_none")]
             substitute: Option<SubstituteConfig>,
@@ -707,6 +707,8 @@ impl<'de> Deserialize<'de> for Config {
             profile: Option<serde_yaml::Value>,
             #[serde(skip_serializing_if = "Option::is_none")]
             custom: Option<HashMap<String, serde_json::Value>>,
+            #[serde(flatten)]
+            unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
         }
 
         let wire = ConfigWire::deserialize(deserializer)?;
@@ -734,7 +736,7 @@ impl<'de> Deserialize<'de> for Config {
             notes: wire.notes,
             integral_names: wire.integral_names,
             custom: wire.custom,
-            unknown_fields: std::collections::BTreeMap::new(),
+            unknown_fields: wire.unknown_fields,
         })
     }
 }
