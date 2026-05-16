@@ -7,9 +7,7 @@ priority: normal
 tags:
     - forward-compat
 created_at: 2026-05-15T14:48:14Z
-updated_at: 2026-05-16T12:48:55Z
-blocked_by:
-    - csl26-2a0b
+updated_at: 2026-05-16T14:14:19Z
 ---
 
 Promote forward-compat row 08 from observed=HardFail to observed=SoftDegrade.
