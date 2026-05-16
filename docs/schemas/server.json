@@ -991,104 +991,29 @@
       "description": "Contributor roles.",
       "oneOf": [
         {
-          "description": "String-backed enum variant.",
           "type": "string",
-          "const": "author"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "chair"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "editor"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "translator"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "director"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "publisher"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "recipient"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "interviewer"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "interviewee"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "guest"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "inventor"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "counsel"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "composer"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "collection-editor"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "container-author"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "editorial-director"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "textual-editor"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "illustrator"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "original-author"
-        },
-        {
-          "description": "String-backed enum variant.",
-          "type": "string",
-          "const": "reviewed-author"
+          "enum": [
+            "author",
+            "chair",
+            "editor",
+            "translator",
+            "director",
+            "publisher",
+            "recipient",
+            "interviewer",
+            "interviewee",
+            "guest",
+            "inventor",
+            "counsel",
+            "composer",
+            "collection-editor",
+            "container-author",
+            "editorial-director",
+            "textual-editor",
+            "illustrator",
+            "original-author",
+            "reviewed-author"
+          ]
         }
       ]
     },

@@ -22,10 +22,10 @@ impl ComponentValues for TemplateTerm {
     ) -> Option<ProcValues<F::Output>> {
         let effective_rendering = self.rendering.clone();
 
-        let form = self.form.unwrap_or(TermForm::Long);
+        let form = self.form.clone().unwrap_or(TermForm::Long);
         let mut value = options
             .locale
-            .resolved_general_term(&self.term, form, self.gender)
+            .resolved_general_term(&self.term, &form, self.gender.clone())
             .unwrap_or_default();
 
         // Apply strip-periods if configured

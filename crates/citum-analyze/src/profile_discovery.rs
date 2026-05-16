@@ -599,7 +599,7 @@ fn to_semantic_items(component: &TemplateComponent, items: &mut Vec<SemanticItem
             items.push(SemanticItem::Contributor(c.contributor.clone()));
         }
         TemplateComponent::Title(t) => items.push(SemanticItem::Title(t.title.clone())),
-        TemplateComponent::Term(t) => items.push(SemanticItem::Term(t.term)),
+        TemplateComponent::Term(t) => items.push(SemanticItem::Term(t.term.clone())),
         TemplateComponent::Group(g) => {
             for child in &g.group {
                 to_semantic_items(child, items);

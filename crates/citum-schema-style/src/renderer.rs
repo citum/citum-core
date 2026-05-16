@@ -74,7 +74,7 @@ impl Renderer {
 
     /// Render a term block by looking up the term and applying formatting.
     fn render_term(&self, block: &TermBlock) -> String {
-        let text = render_legacy_term(block.term, block.form);
+        let text = render_legacy_term(&block.term, &block.form);
         self.apply_formatting(&text, &block.formatting)
     }
 
@@ -249,7 +249,7 @@ impl Renderer {
 }
 
 /// Render a legacy general term using an explicit term/form mapping.
-fn render_legacy_term(term: crate::locale::GeneralTerm, form: crate::locale::TermForm) -> String {
+fn render_legacy_term(term: &crate::locale::GeneralTerm, form: &crate::locale::TermForm) -> String {
     use crate::locale::GeneralTerm as T;
     use crate::locale::TermForm as F;
 
@@ -304,38 +304,8 @@ fn render_legacy_term(term: crate::locale::GeneralTerm, form: crate::locale::Ter
         (T::ReviewOf, _) => "review of".to_string(),
         (T::OriginalWorkPublished, _) => "originally published".to_string(),
         (T::Patent, _) => "patent".to_string(),
-        (term, _) => match term {
-            T::NoDate => "no date".to_string(),
-            T::Page => "page".to_string(),
-            T::Chapter => "chapter".to_string(),
-            T::Section => "section".to_string(),
-            T::Volume => "volume".to_string(),
-            T::Issue => "issue".to_string(),
-            T::Edition => "edition".to_string(),
-            T::In => "in".to_string(),
-            T::Accessed => "accessed".to_string(),
-            T::Retrieved => "retrieved".to_string(),
-            T::At => "at".to_string(),
-            T::From => "from".to_string(),
-            T::Of => "of".to_string(),
-            T::To => "to".to_string(),
-            T::By => "by".to_string(),
-            T::Anonymous => "anonymous".to_string(),
-            T::Circa => "circa".to_string(),
-            T::AvailableAt => "available at".to_string(),
-            T::Ibid => "ibid.".to_string(),
-            T::And => "and".to_string(),
-            T::EtAl => "et al.".to_string(),
-            T::AndOthers => "and others".to_string(),
-            T::Forthcoming => "forthcoming".to_string(),
-            T::Online => "online".to_string(),
-            T::Here => "here".to_string(),
-            T::Deposited => "deposited".to_string(),
-            T::ReviewOf => "review of".to_string(),
-            T::OriginalWorkPublished => "originally published".to_string(),
-            T::Patent => "patent".to_string(),
-            T::PersonalCommunication => "personal communication".to_string(),
-        },
+        (T::Unknown(s), _) => s.clone(),
+        (term, _) => term.as_str().to_string(),
     }
 }
 

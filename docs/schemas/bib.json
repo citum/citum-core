@@ -3733,7 +3733,7 @@
     },
     "ContributorRole": {
       "description": "A contributor role for use in the unified contributors list.",
-      "anyOf": [
+      "oneOf": [
         {
           "type": "string",
           "enum": [
@@ -3753,10 +3753,6 @@
             "producer",
             "writer"
           ]
-        },
-        {
-          "description": "An open extension point for domain-specific roles.",
-          "type": "string"
         }
       ]
     },

@@ -15,6 +15,9 @@ use std::collections::HashMap;
 
 /// Document-level abbreviation map type.
 pub mod abbreviation;
+/// Declarative macros.
+#[macro_use]
+pub mod macros;
 /// Citation input model.
 #[allow(missing_docs, reason = "internal derives")]
 pub mod citation;

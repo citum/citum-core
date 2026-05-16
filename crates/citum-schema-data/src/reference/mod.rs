@@ -1045,7 +1045,7 @@ impl InputReference {
                     .or_else(|| {
                         collect_contributors_by_role(
                             &r.contributors,
-                            &DataRole::Custom("organizer".to_string()),
+                            &DataRole::Unknown("organizer".to_string()),
                         )
                     })
                     .or_else(|| collect_contributors_by_role(&r.contributors, &DataRole::Author))
@@ -1184,7 +1184,8 @@ impl InputReference {
             .collect()
     }
 
-    fn all_contributor_entries(&self) -> &[ContributorEntry] {
+    /// Return all contributor entries regardless of role.
+    pub fn all_contributor_entries(&self) -> &[ContributorEntry] {
         match &self.extension {
             ClassExtension::Monograph(r) => &r.contributors,
             ClassExtension::Collection(r) => &r.contributors,
@@ -2464,6 +2465,7 @@ impl InputReference {
                         "document".to_string()
                     }
                 }
+                _ => r.r#type.as_str().to_string(),
             },
             ClassExtension::CollectionComponent(r) => match r.r#type {
                 MonographComponentType::Chapter => match r.genre.as_deref() {
@@ -2472,6 +2474,7 @@ impl InputReference {
                     _ => "chapter".to_string(),
                 },
                 MonographComponentType::Document => "paper-conference".to_string(),
+                _ => r.r#type.as_str().to_string(),
             },
             ClassExtension::SerialComponent(r) => {
                 if r.genre.as_deref() == Some("entry-encyclopedia") {

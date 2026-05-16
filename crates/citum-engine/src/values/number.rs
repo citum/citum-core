@@ -125,7 +125,7 @@ fn resolve_number_label<F: crate::render::format::OutputFormat<Output = String>>
 
         options
             .locale
-            .resolved_locator_term(&locator_type, plural, term_form, requested_gender)
+            .resolved_locator_term(&locator_type, plural, &term_form, requested_gender)
             .map(|t| {
                 let term_str = if crate::values::should_strip_periods(effective_rendering, options)
                 {
@@ -167,7 +167,7 @@ impl ComponentValues for TemplateNumber {
                     &self.number,
                     label_form,
                     &value,
-                    self.gender,
+                    self.gender.clone(),
                     effective_rendering,
                     options,
                     &fmt,

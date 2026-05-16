@@ -680,7 +680,7 @@ fn test_collection_editor_role_label_derives_gender_from_reference_data() {
         abbreviation_map: None,
     };
     let reference = make_custom_role_reference(
-        citum_schema::reference::ContributorRole::Custom("collection-editor".to_string()),
+        citum_schema::reference::ContributorRole::Unknown("collection-editor".to_string()),
         &[ContributorGender::Feminine],
     );
     let hints = ProcHints::default();

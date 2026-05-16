@@ -179,8 +179,8 @@ impl TemplateCompiler {
     pub(super) fn compile_term(&self, term: &citum_schema::TermBlock) -> Option<TemplateComponent> {
         Some(TemplateComponent::Term(
             citum_schema::template::TemplateTerm {
-                term: term.term,
-                form: Some(term.form),
+                term: term.term.clone(),
+                form: Some(term.form.clone()),
                 rendering: self.convert_formatting(&term.formatting),
                 ..Default::default()
             },

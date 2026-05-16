@@ -183,31 +183,26 @@ impl fmt::Display for ContributorList {
     }
 }
 
-/// A contributor role for use in the unified contributors list.
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
-#[non_exhaustive]
-pub enum ContributorRole {
-    Author,
-    Editor,
-    Translator,
-    Director,
-    Performer,
-    Composer,
-    Illustrator,
-    Narrator,
-    Host,
-    Guest,
-    Interviewer,
-    Recipient,
-    Compiler,
-    Producer,
-    Writer,
-    /// An open extension point for domain-specific roles.
-    #[serde(untagged)]
-    Custom(String),
+crate::tolerant_enum! {
+    /// A contributor role for use in the unified contributors list.
+    #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+    pub enum ContributorRole {
+        Author = "author",
+        Editor = "editor",
+        Translator = "translator",
+        Director = "director",
+        Performer = "performer",
+        Composer = "composer",
+        Illustrator = "illustrator",
+        Narrator = "narrator",
+        Host = "host",
+        Guest = "guest",
+        Interviewer = "interviewer",
+        Recipient = "recipient",
+        Compiler = "compiler",
+        Producer = "producer",
+        Writer = "writer"
+    }
 }
 
 /// A single entry in a reference's contributors list.

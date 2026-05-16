@@ -278,7 +278,7 @@ fn test_parse_csl_json_event_note_type_routes_to_event_with_chair_and_session() 
         event
             .contributors
             .iter()
-            .any(|entry| entry.role == ContributorRole::Custom("chair".to_string())),
+            .any(|entry| entry.role == ContributorRole::Unknown("chair".to_string())),
         "chair should be preserved as a custom contributor role"
     );
     assert_eq!(

@@ -133,7 +133,7 @@ pub fn lint_style_against_locale(style: &Style, locale: &Locale) -> LintReport {
     for requirement in requirements {
         match requirement.kind {
             LocaleRequirementKind::General { term, form } => {
-                if locale.resolved_general_term(&term, form, None).is_none() {
+                if locale.resolved_general_term(&term, &form, None).is_none() {
                     report.warning(
                         requirement.path,
                         format!(
@@ -143,8 +143,8 @@ pub fn lint_style_against_locale(style: &Style, locale: &Locale) -> LintReport {
                 }
             }
             LocaleRequirementKind::Role { role, form } => {
-                let singular = locale.resolved_role_term(&role, false, form, None);
-                let plural = locale.resolved_role_term(&role, true, form, None);
+                let singular = locale.resolved_role_term(&role, false, &form, None);
+                let plural = locale.resolved_role_term(&role, true, &form, None);
                 if singular.is_none() || plural.is_none() {
                     report.warning(
                         requirement.path,
@@ -155,8 +155,8 @@ pub fn lint_style_against_locale(style: &Style, locale: &Locale) -> LintReport {
                 }
             }
             LocaleRequirementKind::Locator { locator, form } => {
-                let singular = lint_locator_term(locale, &locator, false, form);
-                let plural = lint_locator_term(locale, &locator, true, form);
+                let singular = lint_locator_term(locale, &locator, false, form.clone());
+                let plural = lint_locator_term(locale, &locator, true, form.clone());
                 if singular.is_none() || plural.is_none() {
                     report.warning(
                         requirement.path,
@@ -203,7 +203,7 @@ fn lint_locator_term(
                     forms.singular.as_str().to_string()
                 }
             }),
-        _ => locale.resolved_locator_term(locator, plural, form, None),
+        _ => locale.resolved_locator_term(locator, plural, &form, None),
     }
 }
 
@@ -363,8 +363,8 @@ fn collect_bibliography_spec_requirements(
                 requirements.push(LocaleRequirement {
                     path: format!("{path}.groups[{index}].heading"),
                     kind: LocaleRequirementKind::General {
-                        term: *term,
-                        form: form.unwrap_or(TermForm::Long),
+                        term: term.clone(),
+                        form: form.clone().unwrap_or(TermForm::Long),
                     },
                 });
             }
@@ -392,8 +392,8 @@ fn collect_template_requirements(
             TemplateComponent::Term(term) => requirements.push(LocaleRequirement {
                 path: component_path,
                 kind: LocaleRequirementKind::General {
-                    term: term.term,
-                    form: term.form.unwrap_or(TermForm::Long),
+                    term: term.term.clone(),
+                    form: term.form.clone().unwrap_or(TermForm::Long),
                 },
             }),
             TemplateComponent::Contributor(contributor) => {

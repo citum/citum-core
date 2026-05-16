@@ -403,7 +403,7 @@ impl Processor {
             .or_else(|| {
                 self.locale.resolved_general_term(
                     &citum_schema::locale::GeneralTerm::Ibid,
-                    citum_schema::locale::TermForm::Long,
+                    &citum_schema::locale::TermForm::Long,
                     None,
                 )
             })

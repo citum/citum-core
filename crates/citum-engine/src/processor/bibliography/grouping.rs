@@ -26,7 +26,7 @@ impl Processor {
             GroupHeading::Literal { literal } => Some(literal.clone()),
             GroupHeading::Term { term, form } => self.locale.resolved_general_term(
                 term,
-                form.unwrap_or(citum_schema::locale::TermForm::Long),
+                &form.clone().unwrap_or(citum_schema::locale::TermForm::Long),
                 None,
             ),
             GroupHeading::Localized { localized } => self.resolve_localized_heading(localized),
@@ -74,7 +74,7 @@ impl Processor {
             BibliographyPartitionHeading::Literal { literal } => Some(literal.clone()),
             BibliographyPartitionHeading::Term { term, form } => self.locale.resolved_general_term(
                 term,
-                form.unwrap_or(citum_schema::locale::TermForm::Long),
+                &form.clone().unwrap_or(citum_schema::locale::TermForm::Long),
                 None,
             ),
             BibliographyPartitionHeading::Localized { localized } => {

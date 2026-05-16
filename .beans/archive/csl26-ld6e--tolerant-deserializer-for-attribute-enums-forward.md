@@ -1,13 +1,13 @@
 ---
 # csl26-ld6e
 title: Tolerant deserializer for attribute enums (forward compat)
-status: todo
+status: completed
 type: feature
 priority: high
 tags:
     - forward-compat
 created_at: 2026-05-15T14:48:03Z
-updated_at: 2026-05-16T14:14:09Z
+updated_at: 2026-05-16T16:31:33Z
 ---
 
 Promote forward-compat rows 01, 02, 03, 04 in crates/citum-engine/tests/snapshots/forward_compat_gaps.snap from observed=HardFail to observed=SoftDegrade.

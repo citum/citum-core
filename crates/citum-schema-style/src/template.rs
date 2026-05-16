@@ -720,9 +720,7 @@ pub enum ContributorForm {
 
 crate::str_enum! {
     /// Contributor roles.
-    #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq, Eq, Hash)]
-    #[cfg_attr(feature = "schema", derive(JsonSchema))]
-    #[serde(rename_all = "kebab-case")]
+    #[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
     pub enum ContributorRole {
         #[default] Author = "author",
         Chair = "chair",
@@ -781,20 +779,20 @@ pub enum DateVariable {
     EventDate,
 }
 
-/// Date rendering forms.
-#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case")]
-pub enum DateForm {
-    #[default]
-    Year,
-    YearMonth,
-    Full,
-    MonthDay,
-    YearMonthDay,
-    DayMonthAbbrYear,
-    /// Abbreviated month + day + year in US order: "Jan 15, 2024".
-    MonthAbbrDayYear,
+crate::str_enum! {
+    /// Date rendering forms.
+    #[derive(Debug, Default, Clone, PartialEq)]
+    pub enum DateForm {
+        #[default]
+        Year = "year",
+        YearMonth = "year-month",
+        Full = "full",
+        MonthDay = "month-day",
+        YearMonthDay = "year-month-day",
+        DayMonthAbbrYear = "day-month-abbr-year",
+        /// Abbreviated month + day + year in US order: "Jan 15, 2024".
+        MonthAbbrDayYear = "month-abbr-day-year"
+    }
 }
 
 /// A title component.
