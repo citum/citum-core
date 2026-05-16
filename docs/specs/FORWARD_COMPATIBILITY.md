@@ -84,7 +84,7 @@ categories above.
 All `SoftDegrade` outcomes surface through one channel so consumers — the
 CLI, `citum-hub`, the language bindings — present them uniformly. The
 channel already exists in skeletal form at
-`crates/citum-cli/src/commands.rs:1716`, where `citum check` compares
+`crates/citum-cli/src/commands/check.rs:113`, where `citum check` compares
 `style.version` against `SchemaVersion::default()` and emits a warning
 when minor > supported minor.
 
@@ -131,7 +131,7 @@ truth-of-record. End-to-end user-visible outcomes may add a warning via
 **Row 10 footnote.** The loader correctly accepts a style whose `version`
 declares a newer minor than the engine knows. The user-visible
 `SoftDegrade` is delivered by `citum check`
-(`crates/citum-cli/src/commands.rs:1716`), which compares
+(`crates/citum-cli/src/commands/check.rs:113`), which compares
 `style.version` against `SchemaVersion::default()` and emits a clean
 warning when minor > supported minor. The snapshot measures the loader
 only; end-to-end the composition is `loader Pass + citum check warning =
