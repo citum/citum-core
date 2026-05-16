@@ -41,7 +41,7 @@ impl ContributorConfigEntry {
 /// Contributor formatting configuration.
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct ContributorConfig {
     /// When to display a contributor's name in sort order.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -97,6 +97,16 @@ pub struct ContributorConfig {
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 impl ContributorConfig {

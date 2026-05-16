@@ -671,6 +671,7 @@ impl SubstitutePreset {
                 ],
                 overrides: HashMap::new(),
                 role_substitute: HashMap::new(),
+                unknown_fields: std::collections::BTreeMap::new(),
             },
             SubstitutePreset::EditorFirst => Substitute {
                 contributor_role_form: None,
@@ -681,6 +682,7 @@ impl SubstitutePreset {
                 ],
                 overrides: HashMap::new(),
                 role_substitute: HashMap::new(),
+                unknown_fields: std::collections::BTreeMap::new(),
             },
             SubstitutePreset::TitleFirst => Substitute {
                 contributor_role_form: None,
@@ -691,42 +693,49 @@ impl SubstitutePreset {
                 ],
                 overrides: HashMap::new(),
                 role_substitute: HashMap::new(),
+                unknown_fields: std::collections::BTreeMap::new(),
             },
             SubstitutePreset::EditorShort => Substitute {
                 contributor_role_form: Some("short".to_string()),
                 template: vec![SubstituteKey::Editor],
                 overrides: HashMap::new(),
                 role_substitute: HashMap::new(),
+                unknown_fields: std::collections::BTreeMap::new(),
             },
             SubstitutePreset::EditorLong => Substitute {
                 contributor_role_form: Some("long".to_string()),
                 template: vec![SubstituteKey::Editor],
                 overrides: HashMap::new(),
                 role_substitute: HashMap::new(),
+                unknown_fields: std::collections::BTreeMap::new(),
             },
             SubstitutePreset::EditorTranslatorShort => Substitute {
                 contributor_role_form: Some("short".to_string()),
                 template: vec![SubstituteKey::Editor, SubstituteKey::Translator],
                 overrides: HashMap::new(),
                 role_substitute: HashMap::new(),
+                unknown_fields: std::collections::BTreeMap::new(),
             },
             SubstitutePreset::EditorTranslatorLong => Substitute {
                 contributor_role_form: Some("long".to_string()),
                 template: vec![SubstituteKey::Editor, SubstituteKey::Translator],
                 overrides: HashMap::new(),
                 role_substitute: HashMap::new(),
+                unknown_fields: std::collections::BTreeMap::new(),
             },
             SubstitutePreset::EditorTitleShort => Substitute {
                 contributor_role_form: Some("short".to_string()),
                 template: vec![SubstituteKey::Editor, SubstituteKey::Title],
                 overrides: HashMap::new(),
                 role_substitute: HashMap::new(),
+                unknown_fields: std::collections::BTreeMap::new(),
             },
             SubstitutePreset::EditorTitleLong => Substitute {
                 contributor_role_form: Some("long".to_string()),
                 template: vec![SubstituteKey::Editor, SubstituteKey::Title],
                 overrides: HashMap::new(),
                 role_substitute: HashMap::new(),
+                unknown_fields: std::collections::BTreeMap::new(),
             },
             SubstitutePreset::EditorTranslatorTitleShort => Substitute {
                 contributor_role_form: Some("short".to_string()),
@@ -737,6 +746,7 @@ impl SubstitutePreset {
                 ],
                 overrides: HashMap::new(),
                 role_substitute: HashMap::new(),
+                unknown_fields: std::collections::BTreeMap::new(),
             },
             SubstitutePreset::EditorTranslatorTitleLong => Substitute {
                 contributor_role_form: Some("long".to_string()),
@@ -747,6 +757,7 @@ impl SubstitutePreset {
                 ],
                 overrides: HashMap::new(),
                 role_substitute: HashMap::new(),
+                unknown_fields: std::collections::BTreeMap::new(),
             },
         }
     }

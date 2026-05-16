@@ -56,7 +56,7 @@ use std::collections::HashMap;
 /// Top-level style configuration.
 #[derive(Debug, Default, PartialEq, Clone, Serialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct Config {
     /// Substitution rules for missing data.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -141,6 +141,16 @@ pub struct Config {
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 /// Citation-local option overrides.
@@ -535,6 +545,7 @@ impl CitationOptions {
             notes: self.notes.clone(),
             integral_names: self.integral_names.clone(),
             custom: self.custom.clone(),
+            unknown_fields: std::collections::BTreeMap::new(),
         }
     }
 
@@ -584,6 +595,7 @@ impl BibliographyOptions {
             notes: None,
             integral_names: None,
             custom: self.custom.clone(),
+            unknown_fields: std::collections::BTreeMap::new(),
         }
     }
 
@@ -722,6 +734,7 @@ impl<'de> Deserialize<'de> for Config {
             notes: wire.notes,
             integral_names: wire.integral_names,
             custom: wire.custom,
+            unknown_fields: std::collections::BTreeMap::new(),
         })
     }
 }

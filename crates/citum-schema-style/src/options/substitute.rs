@@ -47,7 +47,7 @@ impl SubstituteConfig {
 /// Explicit substitution configuration.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct Substitute {
     /// Form to use for contributor roles when substituting.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -66,6 +66,16 @@ pub struct Substitute {
     /// do not have a dedicated template enum variant.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub role_substitute: HashMap<String, Vec<String>>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 impl Default for Substitute {
@@ -79,6 +89,7 @@ impl Default for Substitute {
             ],
             overrides: HashMap::new(),
             role_substitute: HashMap::new(),
+            unknown_fields: std::collections::BTreeMap::new(),
         }
     }
 }

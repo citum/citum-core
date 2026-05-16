@@ -302,6 +302,7 @@ fn from_software_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         field_languages: HashMap::new(),
         note: ctx.note.map(RichText::Plain),
         keywords: None,
+        unknown_fields: Default::default(),
     }))
 }
 
@@ -553,6 +554,7 @@ fn from_monograph_ref(
         duration,
         references,
         scale,
+        unknown_fields: Default::default(),
     }))
 }
 
@@ -841,6 +843,7 @@ pub fn input_reference_from_legacy_edited_book(
         supplement_number: None,
         printing_number: None,
         keywords: None,
+        unknown_fields: Default::default(),
     }))
 }
 
@@ -965,6 +968,7 @@ fn from_serial_component_ref(
                 field_languages: HashMap::new(),
                 note: None,
                 issn: legacy.issn.clone(),
+                unknown_fields: Default::default(),
             }),
         )))),
         volume,
@@ -992,6 +996,7 @@ fn from_serial_component_ref(
         archive_info: None,
         eprint: None,
         keywords: None,
+        unknown_fields: Default::default(),
         section: legacy.section,
         status,
         available_date,
@@ -1106,6 +1111,7 @@ fn from_audio_visual_ref(
         accessed: ctx.accessed,
         field_languages: HashMap::new(),
         note: ctx.note.map(RichText::Plain),
+        unknown_fields: Default::default(),
     }))
 }
 
@@ -1128,6 +1134,7 @@ fn from_legal_case_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext)
         note: ctx.note.map(RichText::Plain),
         doi: ctx.doi,
         keywords: None,
+        unknown_fields: Default::default(),
     }))
 }
 
@@ -1152,6 +1159,7 @@ fn from_statute_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) ->
         field_languages: HashMap::new(),
         note: ctx.note.map(RichText::Plain),
         keywords: None,
+        unknown_fields: Default::default(),
     }))
 }
 
@@ -1173,6 +1181,7 @@ fn from_regulation_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext)
         field_languages: HashMap::new(),
         note: ctx.note.map(RichText::Plain),
         keywords: None,
+        unknown_fields: Default::default(),
     }))
 }
 
@@ -1194,6 +1203,7 @@ fn from_treaty_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> 
         field_languages: HashMap::new(),
         note: ctx.note.map(RichText::Plain),
         keywords: None,
+        unknown_fields: Default::default(),
     }))
 }
 
@@ -1218,6 +1228,7 @@ fn from_standard_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         field_languages: HashMap::new(),
         note: ctx.note.map(RichText::Plain),
         keywords: None,
+        unknown_fields: Default::default(),
     }))
 }
 
@@ -1242,6 +1253,7 @@ fn from_patent_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> 
         field_languages: HashMap::new(),
         note: ctx.note.map(RichText::Plain),
         keywords: None,
+        unknown_fields: Default::default(),
     }))
 }
 
@@ -1283,6 +1295,7 @@ fn from_dataset_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) ->
         field_languages: HashMap::new(),
         note: ctx.note.map(RichText::Plain),
         keywords: None,
+        unknown_fields: Default::default(),
     }))
 }
 
@@ -1360,6 +1373,7 @@ fn from_bill_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> In
         archive_info: None,
         eprint: None,
         keywords: None,
+        unknown_fields: Default::default(),
         original: None,
         ..Default::default()
     }))
@@ -1433,6 +1447,7 @@ fn from_document_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         archive_info,
         eprint: None,
         keywords: None,
+        unknown_fields: Default::default(),
         original,
         ..Default::default()
     }))
@@ -1455,6 +1470,7 @@ fn from_hearing_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) ->
         field_languages: HashMap::new(),
         note: ctx.note.map(RichText::Plain),
         keywords: None,
+        unknown_fields: Default::default(),
     }))
 }
 
@@ -1527,6 +1543,7 @@ fn from_preprint_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -
         archive_info,
         eprint: None,
         keywords: None,
+        unknown_fields: Default::default(),
         original: None,
         ..Default::default()
     }))
@@ -1598,6 +1615,7 @@ fn from_event_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> I
         language: ctx.language,
         field_languages: HashMap::new(),
         note: ctx.note.map(RichText::Plain),
+        unknown_fields: Default::default(),
     }))
 }
 

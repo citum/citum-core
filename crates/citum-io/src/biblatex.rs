@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! Provides functions to convert biblatex entries and contributor
 //! information into Citum's `InputReference` and Contributor types.
 
-use ::biblatex as biblatex_crate;
+use biblatex as biblatex_crate;
 use citum_schema::reference::{
     InputReference, LangID, Numbering, NumberingType, Publisher, RefID, RichText, WorkRelation,
     contributor::{Contributor, ContributorList, StructuredName},
@@ -128,6 +128,7 @@ fn build_article_reference(ctx: BibRefContext<'_>) -> InputReference {
                 field_languages: HashMap::new(),
                 note: None,
                 issn: field_str("issn"),
+                unknown_fields: Default::default(),
             }),
         )))),
         numbering: component_numbering,

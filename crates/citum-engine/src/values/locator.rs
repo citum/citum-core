@@ -355,6 +355,7 @@ mod tests {
                 order: vec![LocatorType::Page, LocatorType::Line],
                 delimiter: ", ".to_string(),
                 label_repeat: LabelRepeat::First,
+                unknown_fields: Default::default(),
             }],
             ..Default::default()
         };
@@ -411,6 +412,7 @@ mod tests {
                 order: vec![LocatorType::Page],
                 delimiter: ", ".to_string(),
                 label_repeat: LabelRepeat::None,
+                unknown_fields: Default::default(),
             }],
             ..Default::default()
         };
@@ -436,6 +438,7 @@ mod tests {
                 order: vec![LocatorType::Page, LocatorType::Line],
                 delimiter: ", ".to_string(),
                 label_repeat: LabelRepeat::All,
+                unknown_fields: Default::default(),
             }],
             ..Default::default()
         };
@@ -495,6 +498,7 @@ locators:
                 order: vec![LocatorType::Custom("reel".to_string())],
                 delimiter: " | ".to_string(),
                 label_repeat: LabelRepeat::All,
+                unknown_fields: Default::default(),
             }],
             ..Default::default()
         };

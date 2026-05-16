@@ -213,12 +213,22 @@ pub struct Monograph {
     /// Cartographic scale for maps and globes (e.g., `"1:250,000"`).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scale: Option<String>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// reference produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 #[derive(Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 struct MonographDeser {
     id: Option<RefID>,
     r#type: MonographType,
@@ -283,6 +293,8 @@ struct MonographDeser {
     duration: Option<String>,
     references: Option<String>,
     scale: Option<String>,
+    #[serde(flatten, default)]
+    unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 impl From<MonographDeser> for Monograph {
@@ -342,6 +354,7 @@ impl From<MonographDeser> for Monograph {
             duration: raw.duration,
             references: raw.references,
             scale: raw.scale,
+            unknown_fields: raw.unknown_fields,
         };
         monograph.normalize_numbering();
         monograph
@@ -473,12 +486,22 @@ pub struct Collection {
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// reference produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 #[derive(Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 struct CollectionDeser {
     id: Option<RefID>,
     r#type: CollectionType,
@@ -524,6 +547,8 @@ struct CollectionDeser {
     isbn: Option<String>,
     event: Option<WorkRelation>,
     keywords: Option<Vec<String>>,
+    #[serde(flatten, default)]
+    unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 impl From<CollectionDeser> for Collection {
@@ -565,6 +590,7 @@ impl From<CollectionDeser> for Collection {
             isbn: raw.isbn,
             event: raw.event,
             keywords: raw.keywords,
+            unknown_fields: raw.unknown_fields,
         };
         collection.normalize_numbering();
         collection
@@ -693,12 +719,22 @@ pub struct CollectionComponent {
     /// Original publication relation.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub original: Option<WorkRelation>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// reference produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 #[derive(Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 struct CollectionComponentDeser {
     id: Option<RefID>,
     r#type: MonographComponentType,
@@ -749,6 +785,8 @@ struct CollectionComponentDeser {
     eprint: Option<EprintInfo>,
     keywords: Option<Vec<String>>,
     original: Option<WorkRelation>,
+    #[serde(flatten, default)]
+    unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 impl From<CollectionComponentDeser> for CollectionComponent {
@@ -795,6 +833,7 @@ impl From<CollectionComponentDeser> for CollectionComponent {
             eprint: raw.eprint,
             keywords: raw.keywords,
             original: raw.original,
+            unknown_fields: raw.unknown_fields,
         };
         component.normalize_numbering();
         component
@@ -933,12 +972,22 @@ pub struct SerialComponent {
     /// Original publication relation.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub original: Option<WorkRelation>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// reference produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 #[derive(Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 struct SerialComponentDeser {
     id: Option<RefID>,
     r#type: SerialComponentType,
@@ -994,6 +1043,8 @@ struct SerialComponentDeser {
     available_date: Option<EdtfString>,
     reviewed: Option<WorkRelation>,
     original: Option<WorkRelation>,
+    #[serde(flatten, default)]
+    unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 impl From<SerialComponentDeser> for SerialComponent {
@@ -1044,6 +1095,7 @@ impl From<SerialComponentDeser> for SerialComponent {
             available_date: raw.available_date,
             reviewed: raw.reviewed,
             original: raw.original,
+            unknown_fields: raw.unknown_fields,
         };
         component.normalize_numbering();
         component
@@ -1112,12 +1164,22 @@ pub struct Serial {
     /// ISSN identifier.
     #[serde(alias = "ISSN", skip_serializing_if = "Option::is_none")]
     pub issn: Option<String>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// reference produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 #[derive(Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 struct SerialDeser {
     id: Option<RefID>,
     r#type: SerialType,
@@ -1138,6 +1200,8 @@ struct SerialDeser {
     note: Option<RichText>,
     #[serde(alias = "ISSN")]
     issn: Option<String>,
+    #[serde(flatten, default)]
+    unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 impl From<SerialDeser> for Serial {
@@ -1163,6 +1227,7 @@ impl From<SerialDeser> for Serial {
             field_languages: raw.field_languages,
             note: raw.note,
             issn: raw.issn,
+            unknown_fields: raw.unknown_fields,
         }
     }
 }

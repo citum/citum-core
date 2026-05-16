@@ -63,7 +63,7 @@ pub enum TypeClass {
 /// Per-locator-kind configuration overrides.
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct LocatorKindConfig {
     /// Override the default label form for this locator kind.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -74,6 +74,16 @@ pub struct LocatorKindConfig {
     /// Strip trailing periods from labels (e.g., "p." → "p").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub strip_label_periods: Option<bool>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 /// A pattern matching a specific combination of LocatorType values.
@@ -81,7 +91,7 @@ pub struct LocatorKindConfig {
 /// Patterns are tested in declaration order; first match wins.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct LocatorPattern {
     /// The set of LocatorType values this pattern matches (order-insensitive).
     pub kinds: Vec<LocatorType>,
@@ -96,12 +106,22 @@ pub struct LocatorPattern {
     /// Whether labels appear on every segment, only the first, or none.
     #[serde(default)]
     pub label_repeat: LabelRepeat,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 /// Top-level locator rendering configuration.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct LocatorConfig {
     /// Default label form for all locator kinds (default: Short).
     #[serde(default = "default_label_form")]
@@ -121,6 +141,16 @@ pub struct LocatorConfig {
     /// Fallback delimiter for unmatched compound locators (default: ", ").
     #[serde(default = "default_delimiter")]
     pub fallback_delimiter: String,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 impl Default for LocatorConfig {
@@ -132,6 +162,7 @@ impl Default for LocatorConfig {
             kinds: HashMap::new(),
             patterns: Vec::new(),
             fallback_delimiter: ", ".to_string(),
+            unknown_fields: std::collections::BTreeMap::new(),
         }
     }
 }
@@ -165,12 +196,14 @@ impl LocatorPreset {
                             label_form: Some(LabelForm::None),
                             range_format: None,
                             strip_label_periods: None,
+                            unknown_fields: std::collections::BTreeMap::new(),
                         },
                     );
                     m
                 },
                 patterns: Vec::new(),
                 fallback_delimiter: ", ".to_string(),
+                unknown_fields: std::collections::BTreeMap::new(),
             },
             LocatorPreset::AuthorDate => LocatorConfig {
                 default_label_form: LabelForm::Short,
@@ -179,6 +212,7 @@ impl LocatorPreset {
                 kinds: HashMap::new(),
                 patterns: Vec::new(),
                 fallback_delimiter: ", ".to_string(),
+                unknown_fields: std::collections::BTreeMap::new(),
             },
         }
     }
