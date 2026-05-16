@@ -4,8 +4,10 @@ title: Tolerant locale term-key lookup
 status: todo
 type: feature
 priority: normal
+tags:
+    - forward-compat
 created_at: 2026-05-15T14:48:14Z
-updated_at: 2026-05-15T14:48:14Z
+updated_at: 2026-05-16T12:48:55Z
 blocked_by:
     - csl26-2a0b
 ---

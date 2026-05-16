@@ -4,8 +4,10 @@ title: 'InputReference Layer 5: CompatibilityWarning for unknown class'
 status: todo
 type: task
 priority: normal
+tags:
+    - forward-compat
 created_at: 2026-05-16T00:15:48Z
-updated_at: 2026-05-16T00:15:48Z
+updated_at: 2026-05-16T12:49:19Z
 parent: csl26-1bdr
 ---
 
@@ -29,3 +31,8 @@ PR #717 landed the discriminator cutover (Layers 1–4) and explicitly deferred 
 - [ ] WASM bridge exposes warnings in the structured result.
 - [ ] Round-trip preservation of unknown-class data is unchanged.
 - [ ] Tests cover: unknown class in citation list, unknown class in bibliography, unknown class in both.
+
+
+## Update 2026-05-16 — document API warning path landed
+
+`format_document` / `format_document_with_style` now scan the bibliography for unknown `InputReference` classes and emit a structured `unknown_reference_class` warning with `ref_id` and the raw class string in the message. Bindings and the local JSON-RPC server receive this through the existing `FormatDocumentResult.warnings` payload. Direct `render refs` CLI warning output remains a separate CLI-surface concern if needed later.

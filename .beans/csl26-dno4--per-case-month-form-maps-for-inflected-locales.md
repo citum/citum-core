@@ -4,8 +4,11 @@ title: Per-case month-form maps for inflected locales
 status: draft
 type: feature
 priority: low
+tags:
+    - dates
+    - multilingual
 created_at: 2026-05-16T11:28:30Z
-updated_at: 2026-05-16T11:28:30Z
+updated_at: 2026-05-16T12:48:56Z
 ---
 
 ## Goal

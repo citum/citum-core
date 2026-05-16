@@ -4,8 +4,10 @@ title: Transliteration-aware bibliography sort keys
 status: draft
 type: feature
 priority: normal
+tags:
+    - multilingual
 created_at: 2026-05-01T11:32:10Z
-updated_at: 2026-05-01T11:45:00Z
+updated_at: 2026-05-16T12:48:56Z
 ---
 
 Support romanization/transliteration-based sort keys so Arabic, Cyrillic, CJK names can optionally sort under their romanized forms. Currently explicitly out of scope in the Unicode sorting spec — deferred by design.

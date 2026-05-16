@@ -4,8 +4,10 @@ title: Wire remaining DateForm variants to pattern.date-*
 status: todo
 type: task
 priority: low
+tags:
+    - dates
 created_at: 2026-05-16T11:28:27Z
-updated_at: 2026-05-16T11:28:27Z
+updated_at: 2026-05-16T12:48:56Z
 ---
 
 ## Goal

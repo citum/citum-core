@@ -6,8 +6,9 @@ type: task
 priority: normal
 tags:
     - policy
+    - forward-compat
 created_at: 2026-02-15T00:17:53Z
-updated_at: 2026-04-25T20:20:08Z
+updated_at: 2026-05-16T12:48:56Z
 ---
 
 Complete infrastructure for type addition policy enforcement.

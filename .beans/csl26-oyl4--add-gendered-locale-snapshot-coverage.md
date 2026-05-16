@@ -8,8 +8,9 @@ tags:
     - locale
     - testing
     - schema
+    - multilingual
 created_at: 2026-04-29T15:43:17Z
-updated_at: 2026-04-29T15:44:22Z
+updated_at: 2026-05-16T12:48:56Z
 parent: csl26-li63
 ---
 

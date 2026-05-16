@@ -1,11 +1,13 @@
 ---
 # csl26-1bdr
 title: InputReference unknown-class escape hatch (design + impl)
-status: in-progress
+status: completed
 type: feature
 priority: deferred
+tags:
+    - forward-compat
 created_at: 2026-05-15T14:48:20Z
-updated_at: 2026-05-15T18:45:57Z
+updated_at: 2026-05-16T13:10:33Z
 blocked_by:
     - csl26-2a0b
 ---

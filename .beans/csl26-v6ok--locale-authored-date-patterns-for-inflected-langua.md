@@ -4,8 +4,11 @@ title: Locale-authored date patterns for inflected languages
 status: in-progress
 type: feature
 priority: normal
+tags:
+    - dates
+    - multilingual
 created_at: 2026-05-16T10:47:07Z
-updated_at: 2026-05-16T11:04:56Z
+updated_at: 2026-05-16T12:48:56Z
 ---
 
 ## Goal
