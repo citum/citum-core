@@ -1,5 +1,5 @@
 ---
-# csl26-rfcp
+# csl26-rfct
 title: Codebase Modularization and Refactor Priorities
 status: todo
 type: milestone
@@ -15,9 +15,9 @@ Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by r
 ### Tier 1: Massive "God" Files (> 2500 lines)
 *Urgent modularization required to reduce cognitive load and compilation unit size.*
 
-1. [ ] **`citum-schema-style/src/lib.rs` (3607 lines)**
-   - **Issues:** Orchestrates the entire style model; contains versioning, warnings, and complex template resolution logic.
-   - **Target:** Move `SchemaVersion`/`SchemaWarning` to `src/version.rs`, and extraction of template resolution logic to `src/template/resolution.rs`.
+1. [x] **`citum-schema-style/src/lib.rs` (3607 lines before; facade after this PR)**
+   - **Issues:** Orchestrated the entire style model; contained versioning, warnings, and complex template resolution logic.
+   - **Target:** Split style-owned schema, validation, inheritance, overlay, section specs, template references, and template resolution into focused modules.
 2. [ ] **`citum-schema-data/src/reference/mod.rs` (3377 lines)**
    - **Issues:** Mixed concerns between core `InputReference` data model and JSON schema generation logic.
    - **Target:** Move `InputReference` and `ReferenceClass` to specialized modules (`src/reference/input.rs`, `src/reference/classes.rs`).
@@ -56,7 +56,7 @@ Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by r
 16. **`citum-schema-data/src/citation.rs` (1067 lines)**
 17. **`citum-schema-style/src/options/mod.rs` (1063 lines)**
 18. **`csl-legacy/src/parser.rs` (1028 lines)**
-19. **`citum-cli/src/style_browser.rs` (1000) lines**
+19. **`citum-cli/src/style_browser.rs` (1000 lines)**
 
 ### Tier 4: Long Files (800 - 1000 lines)
 *Maintenance and clean-up.*

@@ -34,12 +34,26 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! This keeps all conditional logic in the style, making it testable and portable.
 
 use crate::locale::{GeneralTerm, GrammaticalGender, TermForm};
+use indexmap::IndexMap;
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::borrow::Cow;
 use std::collections::{BTreeMap, HashMap};
 use std::hash::{Hash, Hasher};
+
+mod reference;
+pub(crate) mod resolution;
+
+pub(crate) use reference::locale_matches;
+pub use reference::{LocalizedTemplateSpec, TemplatePreset, TemplateReference};
+pub(crate) use resolution::{inherited_variant_context, resolve_style_template_variants};
+
+/// A named template (reusable sequence of components).
+pub type Template = Vec<TemplateComponent>;
+
+/// Type-specific template variants keyed by reference-type selector.
+pub type TemplateVariants = IndexMap<TypeSelector, TemplateVariant>;
 
 /// Rendering instructions applied to template components.
 ///
