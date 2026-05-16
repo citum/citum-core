@@ -53,12 +53,17 @@ This bean is therefore green-field. The design note should justify the choices o
 
 ## Todo
 
-- [ ] Write design note in `docs/specs/` (probably `TITLE_NAME_INFLECTION.md`) covering the six questions above and the prior-art findings
+- [x] Write initial design note: [`docs/specs/TITLE_NAME_INFLECTION.md`](../../docs/specs/TITLE_NAME_INFLECTION.md) (v0.1, Draft — bundled into the `csl26-v6ok` PR)
+- [ ] Native-speaker review of the worked examples in the spec (Finnish, Russian, Basque entries; resolve the 🚧 markers)
+- [ ] Resolve the open follow-up questions (§"Open questions for follow-up research" in the spec) — each gets an answer or its own child bean
+- [ ] Record decisions for Q1–Q6 with one-paragraph rationale each
+- [ ] Author a sample Finnish or Russian style against the proposed schema; render a realistic bibliography correctly
 - [ ] Get sign-off from the user before implementation
 - [ ] Decompose into implementation beans
 
 ## Related
 
+- Spec: [`docs/specs/TITLE_NAME_INFLECTION.md`](../../docs/specs/TITLE_NAME_INFLECTION.md)
 - Sibling deferred work from `csl26-v6ok` (dates were the easy subset)
 - CSL upstream #6369
 - `docs/specs/GENDERED_LOCALE_TERMS.md` is the closest precedent (`MaybeGendered<T>` shape)
