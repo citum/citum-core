@@ -32,6 +32,13 @@ pub struct MessageArgs<'a> {
     pub url: Option<&'a str>,
     /// Pre-formatted date string.
     pub date: Option<&'a str>,
+    /// Year component of a date (e.g. `"2023"`).
+    pub year: Option<&'a str>,
+    /// Month component of a date, already inflected for this locale's date
+    /// context (e.g. `"January"`, `"urtarrila"`).
+    pub month: Option<&'a str>,
+    /// Day-of-month component of a date (e.g. `"12"`).
+    pub day: Option<&'a str>,
     /// Main contributor list for "et al." patterns.
     pub main_list: Option<&'a str>,
 }
@@ -130,6 +137,9 @@ fn resolve_var<'a>(var_name: &str, args: &'a MessageArgs<'a>) -> Option<&'a str>
         "end" => args.end,
         "url" => args.url,
         "date" => args.date,
+        "year" => args.year,
+        "month" => args.month,
+        "day" => args.day,
         "main_list" => args.main_list,
         _ => None,
     }
@@ -215,6 +225,9 @@ fn determine_match_key(
                 "end" => args.end.map(|s| s.to_string()),
                 "url" => args.url.map(|s| s.to_string()),
                 "date" => args.date.map(|s| s.to_string()),
+                "year" => args.year.map(|s| s.to_string()),
+                "month" => args.month.map(|s| s.to_string()),
+                "day" => args.day.map(|s| s.to_string()),
                 "main_list" => args.main_list.map(|s| s.to_string()),
                 _ => None,
             }?;
@@ -413,6 +426,40 @@ mod tests {
         assert_eq!(
             result,
             Some("retrieved from https://example.com".to_string())
+        );
+    }
+
+    #[test]
+    fn test_date_component_substitution() {
+        let evaluator = Mf2MessageEvaluator;
+        let args = MessageArgs {
+            year: Some("2023"),
+            month: Some("urtarrila"),
+            day: Some("12"),
+            ..Default::default()
+        };
+        assert_eq!(
+            evaluator.evaluate("{$year}ko {$month}ren {$day}a", &args),
+            Some("2023ko urtarrilaren 12a".to_string())
+        );
+        assert_eq!(
+            evaluator.evaluate("{$month} {$day}", &args),
+            Some("urtarrila 12".to_string())
+        );
+    }
+
+    #[test]
+    fn test_date_component_missing_returns_none() {
+        let evaluator = Mf2MessageEvaluator;
+        let args = MessageArgs {
+            year: Some("2023"),
+            month: Some("urtarrila"),
+            ..Default::default()
+        };
+        // day is required but absent
+        assert_eq!(
+            evaluator.evaluate("{$year}ko {$month}ren {$day}a", &args),
+            None
         );
     }
 

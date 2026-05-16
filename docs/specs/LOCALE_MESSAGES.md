@@ -1,10 +1,10 @@
 # Locale Messages Specification
 
 **Status:** Active
-**Version:** 1.3
-**Date:** 2026-03-22
+**Version:** 1.4
+**Date:** 2026-05-16
 **Supersedes:** (none)
-**Related:** bean `csl26-qrpo` (ICU4X upgrade)
+**Related:** bean `csl26-qrpo` (ICU4X upgrade), bean `csl26-v6ok` (locale-authored date patterns)
 
 ## Purpose
 
@@ -182,6 +182,42 @@ The `dateFormats` map (§3) is the stable API regardless: both the pre-formattin
 path and a future `:citum-date` formatter consume the same symbolic name → CLDR
 pattern mapping.
 
+#### Date component substitution (`pattern.date-*`)
+
+Pre-formatting the whole date as a single `{$date}` blob leaves inflected
+languages (Basque, Finnish, Hungarian, …) without a way to express their own
+year/month/day order or morphology. Citum addresses this by also exposing the
+*components* of a date as named MF2 variables: `{$year}`, `{$month}`, `{$day}`.
+
+A locale may author one or more `pattern.date-<form>` messages — see §2 — and
+the engine substitutes the pre-formatted components into them at render time.
+These IDs live under the `messages:` map alongside `pattern.page-range` etc.:
+
+```yaml
+# es-ES: day-first with "de" connectors
+messages:
+  pattern.date-full:      "{$day} de {$month} de {$year}"
+  pattern.date-month-day: "{$day} de {$month}"
+```
+
+```yaml
+# eu-ES (Basque, PROVISIONAL): genitive month + absolutive day suffix
+messages:
+  pattern.date-full:      "{$year}ko {$month}ren {$day}a"
+  pattern.date-month-day: "{$month}ren {$day}a"
+```
+
+When no `pattern.date-<form>` message is authored, the engine falls back to
+its hardcoded English assembly (`{$month} {$day}, {$year}`) — so `en-US` and
+every legacy locale render identically with or without this feature enabled.
+
+Month inflection rides on the existing `dates.months.long` / `dates.months.short`
+lists: the locale stores the date-context-appropriate form there (e.g.
+`urtarrila`, not `urtarrilak`). The genitive / absolutive markers are applied
+in the pattern, not in the month list. If a future locale ever needs more than
+one inflected form of the same month, add a `dates.months.<case>` map and a
+`:form` selector — do not preempt.
+
 ---
 
 ### 2. Message ID Namespace
@@ -192,8 +228,29 @@ All message IDs are dot-namespaced strings:
 |--------|---------|---------|
 | `term.` | Localized labels | `term.page-label` |
 | `role.<role>.<form>` | Contributor role phrases | `role.editor.label`, `role.editor.verb` |
-| `pattern.` | Compositional phrase templates | `pattern.page-range`, `pattern.retrieved-from` |
+| `pattern.` | Compositional phrase templates | `pattern.page-range`, `pattern.retrieved-from`, `pattern.date-full` |
 | `date.` | Date-specific terms not in `dateFormats` | `date.open-ended` |
+
+#### Reserved `pattern.date-*` IDs
+
+One reserved ID per engine `DateForm` variant. Today the engine consumes the
+two marked **Active**; the others are reserved so locale authors can write
+forward-compatible files. Reserved-but-unconsumed IDs are silently ignored
+(the engine falls through to the hardcoded English assembly).
+
+| Message ID | Variables | `DateForm` | Status |
+|---|---|---|---|
+| `pattern.date-full` | `$year`, `$month`, `$day` | `Full` | **Active** |
+| `pattern.date-month-day` | `$month`, `$day` | `MonthDay` | **Active** |
+| `pattern.date-year-month` | `$year`, `$month` | `YearMonth` | Reserved |
+| `pattern.date-year-month-day` | `$year`, `$month`, `$day` | `YearMonthDay` | Reserved |
+| `pattern.date-day-month-abbr-year` | `$year`, `$month`, `$day` | `DayMonthAbbrYear` | Reserved |
+| `pattern.date-month-abbr-day-year` | `$year`, `$month`, `$day` | `MonthAbbrDayYear` | Reserved |
+
+A pattern that references a missing component (e.g. `pattern.date-full` uses
+`{$day}` but the input date has no day) returns `None` from the evaluator,
+and the engine falls back to its hardcoded assembly. Authors who need a
+no-day form should author `pattern.date-year-month` once that ID is wired.
 
 Legacy CSL-style term keys (`page`, `et_al`, `no_date`, …) remain accessible
 via the `legacyTermAliases` map on `LocalePreset`, which redirects old keys to
@@ -690,6 +747,9 @@ pub struct MessageArgs<'a> {
     pub end: Option<&'a str>,
     pub url: Option<&'a str>,
     pub date: Option<&'a str>,
+    pub year: Option<&'a str>,
+    pub month: Option<&'a str>,
+    pub day: Option<&'a str>,
     pub main_list: Option<&'a str>,
 }
 
