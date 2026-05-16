@@ -4,8 +4,10 @@ title: Tolerant deserializer for attribute enums (forward compat)
 status: todo
 type: feature
 priority: high
+tags:
+    - forward-compat
 created_at: 2026-05-15T14:48:03Z
-updated_at: 2026-05-15T14:48:03Z
+updated_at: 2026-05-16T12:48:55Z
 blocked_by:
     - csl26-2a0b
 ---

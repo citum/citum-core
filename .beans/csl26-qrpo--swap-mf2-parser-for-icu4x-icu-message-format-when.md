@@ -6,8 +6,9 @@ type: task
 priority: deferred
 tags:
     - locale
+    - multilingual
 created_at: 2026-03-22T12:45:31Z
-updated_at: 2026-04-25T20:20:06Z
+updated_at: 2026-05-16T12:48:56Z
 ---
 
 The current Mf2MessageEvaluator in crates/citum-schema-style/src/locale/message.rs is a

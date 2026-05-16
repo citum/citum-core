@@ -7,8 +7,9 @@ priority: deferred
 tags:
     - policy
     - dx
+    - forward-compat
 created_at: 2026-02-24T17:28:17Z
-updated_at: 2026-05-15T14:47:53Z
+updated_at: 2026-05-16T12:48:56Z
 parent: csl26-li63
 blocked_by:
     - csl26-yipx

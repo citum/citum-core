@@ -4,8 +4,10 @@ title: Title and proper-noun inflection across languages
 status: draft
 type: feature
 priority: normal
+tags:
+    - multilingual
 created_at: 2026-05-16T11:28:29Z
-updated_at: 2026-05-16T11:28:29Z
+updated_at: 2026-05-16T12:48:56Z
 ---
 
 ## Goal

@@ -4,8 +4,10 @@ title: Forward-compatibility spec + scenario test corpus
 status: in-progress
 type: task
 priority: high
+tags:
+    - forward-compat
 created_at: 2026-05-15T14:41:05Z
-updated_at: 2026-05-15T14:49:05Z
+updated_at: 2026-05-16T12:48:55Z
 ---
 
 Audit + tests + spec to confirm and document the forward-compat strategy: older engines should soft-degrade with warnings on new attribute enums / option fields / locale terms, hard-fail only on template grammar changes and unknown InputReference class.
