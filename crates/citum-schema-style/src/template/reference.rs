@@ -1,0 +1,134 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
+//! Template presets, references, and locale-scoped template overrides.
+
+#[cfg(feature = "schema")]
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+
+use crate::embedded;
+use crate::template::Template;
+
+/// Available embedded template presets.
+///
+/// These reference battle-tested templates for common citation styles.
+/// See `citum_schema::embedded` for the actual template implementations.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum TemplatePreset {
+    /// APA 7th edition (author-date)
+    Apa,
+    /// Chicago Manual of Style (author-date)
+    ChicagoAuthorDate,
+    /// Vancouver (numeric)
+    Vancouver,
+    /// IEEE (numeric)
+    Ieee,
+    /// Harvard/Elsevier (author-date)
+    Harvard,
+    /// Numeric citation number only (citation-focused preset)
+    NumericCitation,
+}
+
+/// A reference to a template, which can be either a named builtin preset
+/// or a URI (e.g., `file://...`, `@hub/...`, `https://...`).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(untagged)]
+pub enum TemplateReference {
+    /// A named builtin template preset.
+    Preset(TemplatePreset),
+    /// A URI reference to a remote or local template.
+    Uri(String),
+}
+
+impl From<TemplatePreset> for TemplateReference {
+    fn from(preset: TemplatePreset) -> Self {
+        TemplateReference::Preset(preset)
+    }
+}
+
+impl TemplateReference {
+    /// Resolve this reference to a citation template when it names a built-in preset.
+    #[must_use]
+    pub fn citation_template(&self) -> Option<Template> {
+        match self {
+            Self::Preset(preset) => Some(preset.citation_template()),
+            Self::Uri(_) => None,
+        }
+    }
+
+    /// Resolve this reference to a bibliography template when it names a built-in preset.
+    #[must_use]
+    pub fn bibliography_template(&self) -> Option<Template> {
+        match self {
+            Self::Preset(preset) => Some(preset.bibliography_template()),
+            Self::Uri(_) => None,
+        }
+    }
+}
+
+impl TemplatePreset {
+    /// Resolve this preset to a citation template.
+    #[must_use]
+    pub fn citation_template(&self) -> Template {
+        match self {
+            TemplatePreset::Apa => embedded::apa_citation(),
+            TemplatePreset::ChicagoAuthorDate => embedded::chicago_author_date_citation(),
+            TemplatePreset::Vancouver => embedded::vancouver_citation(),
+            TemplatePreset::Ieee => embedded::ieee_citation(),
+            TemplatePreset::Harvard => embedded::harvard_citation(),
+            TemplatePreset::NumericCitation => embedded::numeric_citation(),
+        }
+    }
+
+    /// Resolve this preset to a bibliography template.
+    #[must_use]
+    pub fn bibliography_template(&self) -> Template {
+        match self {
+            TemplatePreset::Apa => embedded::apa_bibliography(),
+            TemplatePreset::ChicagoAuthorDate => embedded::chicago_author_date_bibliography(),
+            TemplatePreset::Vancouver => embedded::vancouver_bibliography(),
+            TemplatePreset::Ieee => embedded::ieee_bibliography(),
+            TemplatePreset::Harvard => embedded::harvard_bibliography(),
+            // Citation-focused preset; Vancouver bibliography is the closest numeric fallback.
+            TemplatePreset::NumericCitation => embedded::vancouver_bibliography(),
+        }
+    }
+}
+
+/// Locale-scoped template override with optional fallback behavior.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Default)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub struct LocalizedTemplateSpec {
+    /// Language tags that should select this template override.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub locale: Option<Vec<String>>,
+    /// Whether this override is the fallback when no locale matches.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub default: Option<bool>,
+    /// Template used when this localized override is selected.
+    pub template: Template,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
+}
+
+pub(crate) fn locale_matches(targets: &[String], language: &str) -> bool {
+    let primary = language.split('-').next().unwrap_or(language);
+    targets.iter().any(|candidate| {
+        candidate == language || candidate.split('-').next().unwrap_or(candidate) == primary
+    })
+}

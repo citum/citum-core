@@ -1,0 +1,19 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+*/
+
+//! Style model, metadata, validation, and inheritance internals.
+
+mod metadata;
+mod model;
+mod overlay;
+mod resolution;
+mod sections;
+mod validation;
+
+pub use metadata::{CitationField, StyleInfo, StyleLink, StylePerson, StyleSource};
+pub use model::Style;
+pub use resolution::check_citum_version;
+pub use sections::{BibliographySpec, CitationCollapse, CitationSpec, NoteStartTextCase};
+pub use validation::SchemaWarning;
