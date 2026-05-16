@@ -600,6 +600,11 @@ fn format_single_date(
                 return None;
             }
             let day = date.day();
+            if let Some(rendered) =
+                locale.resolve_date_pattern("pattern.date-month-day", None, Some(&month), day)
+            {
+                return Some(rendered);
+            }
             match day {
                 Some(d) => Some(format!("{month} {d}")),
                 None => Some(month),
@@ -612,11 +617,18 @@ fn format_single_date(
             }
             let month = extract_month(date, &locale.dates.months.long);
             let day = date.day();
-            let base = match (month.is_empty(), day) {
-                (true, _) => year,
-                (false, None) => format!("{month} {year}"),
-                (false, Some(d)) => format!("{month} {d}, {year}"),
-            };
+            let base = locale
+                .resolve_date_pattern(
+                    "pattern.date-full",
+                    Some(&year),
+                    (!month.is_empty()).then_some(month.as_str()),
+                    day,
+                )
+                .unwrap_or_else(|| match (month.is_empty(), day) {
+                    (true, _) => year.clone(),
+                    (false, None) => format!("{month} {year}"),
+                    (false, Some(d)) => format!("{month} {d}, {year}"),
+                });
             // Append time component if configured and present
             if let (Some(time_fmt), Some(time)) = (
                 date_config.and_then(|c| c.time_format.as_ref()),
@@ -1108,5 +1120,90 @@ mod era_tests {
             "–",
         );
         assert_eq!(result, "100 BC");
+    }
+}
+
+#[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    reason = "Panicking is acceptable in tests."
+)]
+mod locale_pattern_tests {
+    use super::*;
+    use citum_schema::locale::Locale;
+
+    fn en_us() -> Locale {
+        Locale::from_yaml_str(include_str!("../../../../locales/en-US.yaml"))
+            .expect("en-US locale should parse")
+    }
+
+    fn es_es() -> Locale {
+        Locale::from_yaml_str(include_str!("../../../../locales/es-ES.yaml"))
+            .expect("es-ES locale should parse")
+    }
+
+    fn eu_es() -> Locale {
+        Locale::from_yaml_str(include_str!("../../../../locales/eu-ES.yaml"))
+            .expect("eu-ES locale should parse")
+    }
+
+    fn full(locale: &Locale, edtf: &str) -> String {
+        format_single_date(&EdtfString(edtf.to_string()), &DateForm::Full, locale, None)
+            .expect("date should render")
+    }
+
+    fn month_day(locale: &Locale, edtf: &str) -> String {
+        format_single_date(
+            &EdtfString(edtf.to_string()),
+            &DateForm::MonthDay,
+            locale,
+            None,
+        )
+        .expect("date should render")
+    }
+
+    #[test]
+    fn en_us_full_unchanged_by_pattern_machinery() {
+        // Regression: en-US declares no pattern.date-*, so the engine's
+        // hardcoded English assembly must still produce the original output.
+        assert_eq!(full(&en_us(), "2023-01-12"), "January 12, 2023");
+    }
+
+    #[test]
+    fn en_us_month_day_unchanged_by_pattern_machinery() {
+        assert_eq!(month_day(&en_us(), "2023-01-12"), "January 12");
+    }
+
+    #[test]
+    fn es_es_full_uses_locale_pattern() {
+        // Spanish day-first assembly via pattern.date-full.
+        assert_eq!(full(&es_es(), "2023-01-12"), "12 de enero de 2023");
+    }
+
+    #[test]
+    fn es_es_month_day_uses_locale_pattern() {
+        assert_eq!(month_day(&es_es(), "2023-01-12"), "12 de enero");
+    }
+
+    #[test]
+    fn eu_es_full_uses_locale_pattern() {
+        // Basque genitive-absolutive shape via pattern.date-full.
+        // Content is PROVISIONAL — see locales/eu-ES.yaml header comment.
+        assert_eq!(full(&eu_es(), "2023-01-12"), "2023ko urtarrilaren 12a");
+    }
+
+    #[test]
+    fn eu_es_month_day_uses_locale_pattern() {
+        assert_eq!(month_day(&eu_es(), "2023-01-12"), "urtarrilaren 12a");
+    }
+
+    #[test]
+    fn pattern_missing_day_falls_back_to_english_assembly() {
+        // Year-month only input: pattern.date-full requires {$day} so the
+        // evaluator returns None, and the engine falls through to its
+        // hardcoded `{month} {year}` assembly. (A future pattern.date-year-month
+        // can fix this for inflected locales — out of scope for this bean.)
+        assert_eq!(full(&es_es(), "2023-01"), "enero 2023");
     }
 }

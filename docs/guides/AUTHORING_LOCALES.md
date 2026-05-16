@@ -93,6 +93,9 @@ limitation applies to other gendered locales, including French and Arabic.
 | `role.guest.label`, `role.guest.label-long`, `role.guest.verb` | `$count` | |
 | `pattern.page-range` | `$start`, `$end` | Spec'd; not yet consumed by the engine |
 | `pattern.retrieved-from`, `pattern.available-at` | `$url` | Spec'd; not yet consumed by the engine |
+| `pattern.date-full` | `$year`, `$month`, `$day` | Active. See "Date assembly" below. |
+| `pattern.date-month-day` | `$month`, `$day` | Active. |
+| `pattern.date-year-month`, `pattern.date-year-month-day`, `pattern.date-day-month-abbr-year`, `pattern.date-month-abbr-day-year` | as named | Reserved — see spec `LOCALE_MESSAGES.md` §1.5. |
 | `date.open-ended` | none | "present" / "heute" / "presente" |
 
 > **Note on `pattern.*` messages.** No engine call site currently passes
@@ -104,6 +107,74 @@ limitation applies to other gendered locales, including French and Arabic.
 The `legacy-term-aliases:` map bridges single-word legacy keys (e.g. `page`,
 `et_al`, `editor`) to message IDs so styles authored against the v1 vocabulary
 keep rendering. Mirror the en-US shape.
+
+## Date assembly
+
+The engine pre-formats `$year` / `$month` / `$day` from EDTF input, then looks
+up a `pattern.date-<form>` message in the active locale. If a pattern is
+authored, it is evaluated and used. If no pattern is authored, the engine
+falls through to a hardcoded English assembly (`{month} {day}, {year}`).
+
+When to author `pattern.date-*`:
+
+- The locale wants a non-English component order (Spanish day-first, Basque
+  year-first, …).
+- The locale wants connector words ("de") or non-comma punctuation between
+  components.
+- The locale needs morphological suffixes on components (Basque genitive
+  `-(r)en`, absolutive `-a`).
+
+```yaml
+# es-ES — day first, "de" connectors
+messages:
+  pattern.date-full:      "{$day} de {$month} de {$year}"
+  pattern.date-month-day: "{$day} de {$month}"
+```
+
+```yaml
+# eu-ES — Basque, year first with genitive month and absolutive day suffix
+# (provisional — pending native-speaker review)
+messages:
+  pattern.date-full:      "{$year}ko {$month}ren {$day}a"
+  pattern.date-month-day: "{$month}ren {$day}a"
+```
+
+Month inflection rides on `dates.months.long` / `dates.months.short`. Store
+the citation-form month (e.g. `urtarrila`) and add case suffixes in the
+pattern. If a locale ever needs more than one inflected form of the same
+month, file a follow-up before extending — do not preempt.
+
+A pattern that references a missing component (e.g. `pattern.date-full` uses
+`{$day}` but the input has no day) returns `None`, and the engine falls back
+to its English assembly. Author a separate `pattern.date-year-month` once
+that ID is wired if you need a no-day form to stay locale-shaped.
+
+### Sourcing minority-language grammar
+
+For widely-resourced languages (English, Spanish, French, German, …) the
+locale's morphology and date conventions are well documented and easy to
+verify against a normative reference. For minority and lesser-resourced
+languages, finding a citable shape is harder.
+
+[Apertium](https://www.apertium.org) is the most useful starting point we've
+found: it is a free/open-source rule-based machine translation platform that
+maintains explicit morphological grammars for languages it supports, and its
+wiki (`wiki.apertium.org`) contains relatively rigorous community-curated
+notes on case marking, agreement, and date formation. The Basque locale
+(`locales/eu-ES.yaml`) was bootstrapped from
+[`wiki.apertium.org/wiki/Basque_to_English`](https://wiki.apertium.org/wiki/Basque_to_English)
+for exactly this reason.
+
+Treat Apertium notes as a **secondary source** — credible enough to be
+better than invention, not authoritative enough to ship without a native
+speaker confirming. Always:
+
+1. Cite the specific wiki page (or other source) in the locale file header
+   so reviewers can trace your derivation.
+2. Mark the locale `PROVISIONAL` in the header until a native speaker has
+   reviewed both the term content and any inflected patterns.
+3. Prefer normative authorities (e.g. national language academies, major
+   university-press style guides) when they exist and cover the question.
 
 ## Gender
 

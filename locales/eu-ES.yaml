@@ -1,0 +1,131 @@
+locale-schema-version: "2"
+locale: eu-ES
+
+# PROVISIONAL — pending native-speaker review.
+#
+# This locale demonstrates the `pattern.date-*` mechanism for inflected
+# languages (see bean `csl26-v6ok`, csln #107, citation-style-language/styles
+# #6369).
+#
+# Source of the Basque grammar below: Apertium — a free/open-source rule-based
+# machine translation platform (https://www.apertium.org) that maintains
+# explicit morphological grammars for lesser-resourced languages. The Basque
+# date shape is taken from its wiki:
+#
+#   https://wiki.apertium.org/wiki/Basque_to_English
+#
+# which describes `YYYYko {month}aren {day}a(n)` as the full-date form and
+# contrasts it with the ergative `{month}-ak` shape (the form the CSL upstream
+# issue used). Apertium is a secondary source — credible for "more rigorous
+# than guessing" but not a normative authority like Euskaltzaindia (the Royal
+# Academy of the Basque Language). A native speaker should confirm before
+# this locale is advertised as production-ready. Term content beyond dates
+# is a minimal stub copied from en-US and should be authored properly in
+# the same review pass.
+
+evaluation:
+  message-syntax: mf2
+
+dates:
+  months:
+    long:
+      - urtarrila
+      - otsaila
+      - martxoa
+      - apirila
+      - maiatza
+      - ekaina
+      - uztaila
+      - abuztua
+      - iraila
+      - urria
+      - azaroa
+      - abendua
+    short:
+      - urt.
+      - ots.
+      - mar.
+      - api.
+      - mai.
+      - eka.
+      - uzt.
+      - abu.
+      - ira.
+      - urr.
+      - aza.
+      - abe.
+  seasons:
+    - udaberria
+    - uda
+    - udazkena
+    - negua
+
+terms:
+  and:
+    long: eta
+  et_al:
+    long: et al.
+  "no date":
+    long: d. g.
+
+messages:
+  # Conjunctions and access labels — stubs, please review.
+  term.and: "eta"
+  term.and-symbol: "&"
+  term.et-al: "et al."
+  term.and-others: "eta beste"
+  term.accessed: "kontsulta-data"
+  term.retrieved: "iturria"
+  term.no-date: "d. g."
+  term.no-date-long: "data gabe"
+  term.circa: "ca."
+
+  # Date assembly — the feature this locale is designed to exercise.
+  #
+  # Pattern source: Apertium notes `1926ko apirilaren 21a` (full bibliography
+  # date). The month is stored in citation-form (`apirila`) and the genitive
+  # marker `-(r)en` plus the absolutive `-a` on the day are applied in the
+  # pattern. This works because every Basque month lemma above ends in `-a`.
+  #
+  # If a native-speaker reviewer reports a different convention (e.g.
+  # `2023(e)ko urtarrilak 12` from CSL #6369), update both patterns and the
+  # month list together.
+  pattern.date-full: "{$year}ko {$month}ren {$day}a"
+  pattern.date-month-day: "{$month}ren {$day}a"
+
+  pattern.page-range: "{$start}–{$end}"
+  pattern.retrieved-from: "iturria: {$url}"
+  date.open-ended: "gaur"
+
+date-formats:
+  numeric-short: "yyyy/MM/dd"
+  textual-long: "yyyy'ko' MMMM"
+  textual-full: "yyyy'ko' MMMM d'a'"
+  bib-default: "yyyy'ko' MMMM'ren' d'a'"
+  year-only: "yyyy"
+  iso: "yyyy-MM-dd"
+
+number-formats:
+  decimal-separator: ","
+  thousands-separator: "."
+  minimum-digits: 1
+
+grammar-options:
+  punctuation-in-quote: false
+  nbsp-before-colon: false
+  open-quote: "«"
+  close-quote: "»"
+  open-inner-quote: "“"
+  close-inner-quote: "”"
+  serial-comma: false
+  page-range-delimiter: "–"
+
+legacy-term-aliases:
+  page: term.page-label
+  pages: term.page-label
+  et_al: term.et-al
+  and: term.and
+  accessed: term.accessed
+  retrieved: term.retrieved
+  no_date: term.no-date
+  "no date": term.no-date

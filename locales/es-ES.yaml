@@ -295,6 +295,10 @@ messages:
   pattern.page-range: "{$start}–{$end}"
   pattern.retrieved-from: "recuperado de {$url}"
   pattern.available-at: "disponible en {$url}"
+  # Date assembly — Spanish places the day first and connects with "de".
+  # Mirrors the long-form already declared in `date-formats.bib-default`.
+  pattern.date-full: "{$day} de {$month} de {$year}"
+  pattern.date-month-day: "{$day} de {$month}"
   date.open-ended: "presente"
 
 date-formats:
