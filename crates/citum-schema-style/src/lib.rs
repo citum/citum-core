@@ -111,7 +111,7 @@ pub use citum_resolver_api::{ResolutionError, ResolverError};
 pub type StyleResolver = dyn citum_resolver_api::StyleResolver<Style = Style, Locale = Locale>;
 
 /// Canonical Citum style schema version used when `Style.version` is omitted.
-pub const STYLE_SCHEMA_VERSION: &str = "0.51.0";
+pub const STYLE_SCHEMA_VERSION: &str = "0.52.0";
 
 /// Maximum accepted nesting depth for authored template groups and fallbacks.
 pub const MAX_TEMPLATE_NESTING_DEPTH: usize = 64;
