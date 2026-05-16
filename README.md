@@ -58,10 +58,10 @@ Render a document:
 
 ```bash
 cargo run --bin citum -- render doc \
-  -i examples/document.djot \
+  examples/document.djot \
   -b examples/document-refs.json \
   -s styles/apa-7th.yaml \
-  -I djot -O html
+  -f html
 ```
 
 Validate inputs:
@@ -98,11 +98,11 @@ when parseable or `literal` otherwise to avoid dropping date semantics.
 - `render` (subcommands: `doc`, `refs`)
 - `check`
 - `convert` (subcommands: `refs`, `style`, `citations`, `locale`)
-- `styles` (subcommands: `list`)
-- `registry` (subcommands: `list`, `resolve`)
-- `store` (subcommands: `list`, `install`, `remove`)
-- `style` (subcommand: `lint`)
-- `locale` (subcommand: `lint`)
+- `registry` (subcommands: `list`, `add`, `remove`, `update`, `resolve`)
+- `style` (subcommands: `list`, `search`, `info`, `browse`, `add`, `remove`, `lint`, `cid`, `pin`, `validate`)
+- `locale` (subcommands: `list`, `add`, `remove`, `lint`)
+- `doctor`
+- `completions`
 
 Schema generation is available with the feature-enabled build:
 
