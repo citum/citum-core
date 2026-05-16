@@ -9,7 +9,7 @@
 
 01-attr-enum-template        | Attribute enum in template                              | declared=SoftDegrade observed=HardFail    GAP | csl26-ld6e tolerant-enum-deserializer
 02-attr-enum-data            | Attribute enum in reference data                        | declared=SoftDegrade observed=HardFail    GAP | csl26-ld6e tolerant-enum-deserializer
-02b-discriminator-class      | Unknown InputReference class                            | declared=HardFail    observed=Pass        GAP | csl26-1bdr inputreference-discriminator-design
+02b-discriminator-class      | Unknown InputReference class                            | declared=SoftDegrade observed=SoftDegrade ok  | csl26-odgh inputreference-discriminator-design
 03-locale-form               | Locale TermForm value                                   | declared=SoftDegrade observed=HardFail    GAP | csl26-ld6e tolerant-enum-deserializer
 04-date-form                 | DateForm value in template                              | declared=SoftDegrade observed=HardFail    GAP | csl26-ld6e tolerant-enum-deserializer
 05-new-option-key            | New key inside style option struct                      | declared=SoftDegrade observed=HardFail    GAP | csl26-0ksu capture-unknown-fields-wrapper

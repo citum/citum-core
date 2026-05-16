@@ -1,7 +1,7 @@
 # Forward-Compatibility Specification
 
 **Status:** Draft
-**Version:** 0.1
+**Version:** 0.2
 **Date:** 2026-05-15
 **Related:** bean `csl26-2a0b`, bean `csl26-fuw7`, `docs/architecture/DESIGN_PRINCIPLES.md`, `docs/reference/SCHEMA_VERSIONING.md`, `docs/policies/ENUM_VOCABULARY_POLICY.md`, `docs/architecture/EXTENSIBILITY_STRATEGY_2026-03-14.md`
 
@@ -15,9 +15,10 @@ styles or data using new options, attribute enum values, or locale
 terms without breaking older engine builds. Older builds surface a
 single, consistent warning channel instead of raw serde errors.
 
-Template grammar changes and brand-new top-level reference classes are
-explicitly out of scope: those remain `major`-level changes that older
-builds may reject.
+Template grammar changes are explicitly out of scope: those remain
+`major`-level changes that older builds may reject. Brand-new
+top-level reference classes soft-degrade through the
+`InputReference` discriminator escape hatch.
 
 **Scope of "implementations."** This spec governs the behavior of the
 Citum engine as we ship it. It does not assume — or attempt to bind —
@@ -43,6 +44,9 @@ engine builds (e.g. via an editor that ships a pinned engine version).
 - New optional top-level sections in a `Style` document.
 - New locale term keys that a style references but the engine's vocabulary
   does not yet enumerate.
+- Unknown values of the top-level `InputReference::class` discriminator.
+  These parse as unknown-class references and emit compatibility warnings
+  during document formatting.
 - New `custom.<namespace>.*` keys (the existing inert-metadata escape
   hatch from [`EXTENSIBILITY_STRATEGY_2026-03-14.md`](../architecture/EXTENSIBILITY_STRATEGY_2026-03-14.md)).
 
@@ -51,8 +55,6 @@ engine builds (e.g. via an editor that ships a pinned engine version).
 - Changes to template grammar — new required variants of
   `TemplateComponent`, new required fields on an existing template
   component, changed semantics of an existing variant.
-- Unknown values of the top-level `InputReference::class` discriminator.
-  See [§ InputReference discriminator](#inputreference-discriminator).
 - Renames or removals of any field, variant, or term key. See
   [`ENUM_VOCABULARY_POLICY.md` §Backward Compatibility](../policies/ENUM_VOCABULARY_POLICY.md).
 
@@ -70,7 +72,7 @@ outcome class when an older engine reads it:
 |---|---|
 | `Pass` | The new feature was silently accepted and the artifact behaves as if the feature were absent. No warning emitted. Used for inert metadata (`custom.*`) and for new fields the older engine simply ignores. |
 | `SoftDegrade` | The new feature was acknowledged but its effect was dropped or replaced with a documented fallback. A warning is emitted through the documented channel. The render still produces output. |
-| `HardFail` | Parse or load returned an error. No render. Used only for grammar-level changes the engine cannot reason about and for unknown top-level reference classes. |
+| `HardFail` | Parse or load returned an error. No render. Used only for grammar-level changes the engine cannot reason about. |
 
 `SoftDegrade` is the dominant target. `Pass` is acceptable only when the
 older engine genuinely cannot infer the producer's intent (e.g.
@@ -114,7 +116,7 @@ truth-of-record. End-to-end user-visible outcomes may add a warning via
 |---|---|---|---|---|---|
 | 1 | Attribute enum in template | `contributor: producer` (new `ContributorRole`) | `SoftDegrade` | `HardFail` | `csl26-ld6e` tolerant enum deserializer |
 | 2 | Attribute enum in data | `class: monograph, type: dance-performance` | `SoftDegrade` | `HardFail` | `csl26-ld6e` |
-| 2b | Top-level `class` value | `class: dance-performance` | `HardFail` | `HardFail` | `csl26-1bdr` (discriminator architecture — see [`INPUT_REFERENCE_CLASS_DISCRIMINATOR.md`](./INPUT_REFERENCE_CLASS_DISCRIMINATOR.md)) |
+| 2b | Top-level `class` value | `class: dance-performance` | `SoftDegrade` | `SoftDegrade` | `csl26-odgh` (discriminator architecture — see [`INPUT_REFERENCE_CLASS_DISCRIMINATOR.md`](./INPUT_REFERENCE_CLASS_DISCRIMINATOR.md)) |
 | 3 | TermForm in template | `term: page, form: vocative` (new `TermForm`) | `SoftDegrade` | `HardFail` | `csl26-ld6e` |
 | 4 | DateForm in template | `date: issued, form: month-and-day` (new `DateForm`) | `SoftDegrade` | `HardFail` | `csl26-ld6e` |
 | 5 | New style option key | `options.contributors.future-key: true` | `SoftDegrade` | `HardFail` | `csl26-0ksu` capture-unknown-fields wrapper |
@@ -137,26 +139,15 @@ SoftDegrade`.
 
 ## InputReference discriminator
 
-`InputReference` uses `#[serde(tag = "class")]` at
-`crates/citum-schema-data/src/reference/mod.rs:74`. The tag value
-determines which concrete struct (`Monograph`, `SerialComponent`,
-`LegalCase`, …) the rest of the payload deserializes into. An unknown
-`class` value has no struct shape to fall into; serde cannot type the
-payload at all.
+`InputReference` no longer uses serde's closed `#[serde(tag = "class")]`
+enum boundary. The live model uses a flat hand-written dispatcher:
+known classes route into typed payloads, while unknown class strings
+capture into `UnknownClassData` and round-trip without a wrapper key.
 
-**Current stance.** New top-level reference classes are the second
-opt-out category alongside template grammar. Style/data producers must
-introduce them as a `major` bump; older engine builds hard-fail. The
-soft-degrade rule does not apply at the `class` boundary.
-
-**Pending architecture decision.** A separate spec —
-[`INPUT_REFERENCE_CLASS_DISCRIMINATOR.md`](./INPUT_REFERENCE_CLASS_DISCRIMINATOR.md)
-— specifies a replacement shape (shared base struct + class-specific
-overlay via a hand-written `Deserialize` dispatcher) that restores
-`deny_unknown_fields` strictness on `*Fields` structs and turns unknown
-classes into a soft-degrade path. Tracked in bean `csl26-1bdr`. Row 02b
-stays `declared=HardFail observed=HardFail` until that spec is Active
-and its implementation lands.
+Unknown top-level classes are therefore consumer-side `SoftDegrade`.
+The document API emits an `unknown_reference_class` warning containing
+the reference ID and class string. Producer-side JSON Schema remains
+closed over known class strings; this asymmetry is intentional.
 
 ## Producer obligations
 
@@ -270,15 +261,14 @@ otherwise unchanged.
   title: ...
 ```
 
-Today: parse fails. The producer must introduce `dance-performance` as
-a `major` bump — new top-level classes are an explicit opt-out from the
-soft-degrade rule. See
-[§ InputReference discriminator](#inputreference-discriminator) for the
-deferred future option.
+Current behavior: parse succeeds, the unknown class and its unrecognized
+fields are preserved in `UnknownClassData`, and document formatting emits
+an `unknown_reference_class` warning. Rendering degrades to fields this
+engine understands.
 
 ## Non-goals
 
-- Defining the exact Rust shape of `CompatibilityWarning`.
+- Defining the complete long-term Rust shape of compatibility warnings.
 - Specifying which `style.version` value corresponds to which feature
   (the schema changelog already records that).
 - Adding any tolerant deserializer code in this spec's PR.
