@@ -1,8 +1,8 @@
 # Forward-Compatibility Specification
 
-**Status:** Draft
-**Version:** 0.2
-**Date:** 2026-05-15
+**Status:** Active
+**Version:** 0.3
+**Date:** 2026-05-16
 **Related:** bean `csl26-2a0b`, bean `csl26-fuw7`, `docs/architecture/DESIGN_PRINCIPLES.md`, `docs/reference/SCHEMA_VERSIONING.md`, `docs/policies/ENUM_VOCABULARY_POLICY.md`, `docs/architecture/EXTENSIBILITY_STRATEGY_2026-03-14.md`
 
 ## Purpose
@@ -119,9 +119,9 @@ truth-of-record. End-to-end user-visible outcomes may add a warning via
 | 2b | Top-level `class` value | `class: dance-performance` | `SoftDegrade` | `SoftDegrade` | `csl26-odgh` (discriminator architecture — see [`INPUT_REFERENCE_CLASS_DISCRIMINATOR.md`](./INPUT_REFERENCE_CLASS_DISCRIMINATOR.md)) |
 | 3 | TermForm in template | `term: page, form: vocative` (new `TermForm`) | `SoftDegrade` | `HardFail` | `csl26-ld6e` |
 | 4 | DateForm in template | `date: issued, form: month-and-day` (new `DateForm`) | `SoftDegrade` | `HardFail` | `csl26-ld6e` |
-| 5 | New style option key | `options.contributors.future-key: true` | `SoftDegrade` | `HardFail` | `csl26-0ksu` capture-unknown-fields wrapper |
-| 6 | New top-level style section | `experiments: { ... }` | `SoftDegrade` | `HardFail` | `csl26-0ksu` |
-| 7 | New reference field | `audience: scholarly` on `Monograph` | `SoftDegrade` | `Pass` (silent — known gap) | `csl26-acfh` reference-data silent-acceptance |
+| 5 | New style option key | `options.contributors.future-key: true` | `SoftDegrade` | `SoftDegrade` | `csl26-0ksu` capture-unknown-fields wrapper |
+| 6 | New top-level style section | `experiments: { ... }` | `SoftDegrade` | `SoftDegrade` | `csl26-0ksu` |
+| 7 | New reference field | `audience: scholarly` on `Monograph` | `SoftDegrade` | `SoftDegrade` | `csl26-acfh` reference-data silent-acceptance |
 | 8 | New `GeneralTerm` in template | `term: preprint-server` (unknown `GeneralTerm`) | `SoftDegrade` | `HardFail` | `csl26-o1z5` tolerant locale lookup |
 | 9 | Custom namespace | `custom.publisher-x.foo: true` | `Pass` | `Pass` | — |
 | 10 | Style version bumped | `version: "99.0"` on otherwise valid style | `Pass` | `Pass` | — (see footnote) |

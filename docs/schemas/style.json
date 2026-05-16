@@ -87,7 +87,6 @@
       ]
     }
   },
-  "additionalProperties": false,
   "$defs": {
     "SchemaVersion": {
       "description": "A schema version (major.minor).",
@@ -2467,8 +2466,7 @@
           ],
           "additionalProperties": true
         }
-      },
-      "additionalProperties": false
+      }
     },
     "SubstituteConfig": {
       "description": "Substitution rules for missing author data.",
@@ -2582,8 +2580,7 @@
             }
           }
         }
-      },
-      "additionalProperties": false
+      }
     },
     "SubstituteKey": {
       "description": "Fields that can be used as author substitutes.",
@@ -3249,8 +3246,7 @@
           ],
           "additionalProperties": true
         }
-      },
-      "additionalProperties": false
+      }
     },
     "DisplayAsSort": {
       "description": "When to display names in sort order (family-first).",
@@ -3733,8 +3729,7 @@
           ],
           "additionalProperties": true
         }
-      },
-      "additionalProperties": false
+      }
     },
     "TitleRendering": {
       "description": "Rendering options for titles.",
@@ -3796,8 +3791,7 @@
             "$ref": "#/$defs/TitleRendering"
           }
         }
-      },
-      "additionalProperties": false
+      }
     },
     "LocatorConfigEntry": {
       "description": "Preset-or-explicit entry — same pattern as DateConfigEntry.",
@@ -3869,8 +3863,7 @@
           "type": "string",
           "default": ", "
         }
-      },
-      "additionalProperties": false
+      }
     },
     "LabelForm2": {
       "description": "How a locator label is displayed.",
@@ -3960,8 +3953,7 @@
             "null"
           ]
         }
-      },
-      "additionalProperties": false
+      }
     },
     "LocatorPattern": {
       "description": "A pattern matching a specific combination of LocatorType values.\n\nPatterns are tested in declaration order; first match wins.",
@@ -4003,7 +3995,6 @@
           "default": "all"
         }
       },
-      "additionalProperties": false,
       "required": [
         "kinds",
         "order"
@@ -4465,8 +4456,7 @@
           ],
           "additionalProperties": true
         }
-      },
-      "additionalProperties": false
+      }
     },
     "CitationOptions": {
       "description": "Citation-local option overrides.",
@@ -4781,7 +4771,6 @@
           }
         }
       },
-      "additionalProperties": false,
       "required": [
         "template"
       ]
@@ -5296,8 +5285,7 @@
           ],
           "additionalProperties": true
         }
-      },
-      "additionalProperties": false
+      }
     },
     "BibliographyOptions": {
       "description": "Bibliography-local option overrides.",
