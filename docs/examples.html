@@ -1461,7 +1461,7 @@ Smith, J. A. (2023). _The Future of Citations_. Academic Press. &lt;ref-smith202
                 <div class="code-dark">
                     <pre>
 <span class="token-comment"># 1. Build the shared library</span>
-<span class="token-value">$</span> cargo build -p citum_engine --release --features ffi
+<span class="token-value">$</span> cargo build -p citum-bindings --release
 
 <span class="token-comment"># 2. Compile your document</span>
 <span class="token-value">$</span> CITUM_LIB=$(pwd)/target/release lualatex --shell-escape paper.tex</pre>
