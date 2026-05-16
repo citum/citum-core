@@ -394,11 +394,11 @@
               "const": "monograph"
             }
           },
-          "additionalProperties": false,
           "required": [
             "type",
             "class"
-          ]
+          ],
+          "additionalProperties": true
         },
         {
           "description": "A component of a larger monograph, such as a chapter in a book.",
@@ -650,11 +650,11 @@
               "const": "collection-component"
             }
           },
-          "additionalProperties": false,
           "required": [
             "type",
             "class"
-          ]
+          ],
+          "additionalProperties": true
         },
         {
           "description": "A component of a larger serial publication; for example a journal or newspaper article.\nThe parent serial is referenced by its ID.",
@@ -934,11 +934,11 @@
               "const": "serial-component"
             }
           },
-          "additionalProperties": false,
           "required": [
             "type",
             "class"
-          ]
+          ],
+          "additionalProperties": true
         },
         {
           "description": "A collection of works, such as an anthology or proceedings.",
@@ -1148,11 +1148,11 @@
               "const": "collection"
             }
           },
-          "additionalProperties": false,
           "required": [
             "type",
             "class"
-          ]
+          ],
+          "additionalProperties": true
         },
         {
           "description": "A serial publication (journal, magazine, etc.).",
@@ -1277,11 +1277,11 @@
               "const": "serial"
             }
           },
-          "additionalProperties": false,
           "required": [
             "type",
             "class"
-          ]
+          ],
+          "additionalProperties": true
         },
         {
           "description": "A legal case (court decision).",
@@ -1426,7 +1426,6 @@
               "const": "legal-case"
             }
           },
-          "additionalProperties": false,
           "required": [
             "class"
           ]
@@ -1588,7 +1587,6 @@
               "const": "statute"
             }
           },
-          "additionalProperties": false,
           "required": [
             "class"
           ]
@@ -1860,7 +1858,6 @@
               "const": "hearing"
             }
           },
-          "additionalProperties": false,
           "required": [
             "class"
           ]
@@ -2001,7 +1998,6 @@
               "const": "regulation"
             }
           },
-          "additionalProperties": false,
           "required": [
             "class"
           ]
@@ -2139,7 +2135,6 @@
               "const": "brief"
             }
           },
-          "additionalProperties": false,
           "required": [
             "class"
           ]
@@ -2341,7 +2336,7 @@
               "const": "classic"
             }
           },
-          "additionalProperties": false,
+          "additionalProperties": true,
           "required": [
             "class"
           ]
@@ -2512,7 +2507,6 @@
               "const": "patent"
             }
           },
-          "additionalProperties": false,
           "required": [
             "patent-number",
             "class"
@@ -2683,7 +2677,6 @@
               "const": "dataset"
             }
           },
-          "additionalProperties": false,
           "required": [
             "class"
           ]
@@ -2825,7 +2818,6 @@
               "const": "standard"
             }
           },
-          "additionalProperties": false,
           "required": [
             "standard-number",
             "class"
@@ -2996,7 +2988,6 @@
               "const": "software"
             }
           },
-          "additionalProperties": false,
           "required": [
             "class"
           ]
@@ -3163,7 +3154,6 @@
               "const": "event"
             }
           },
-          "additionalProperties": false,
           "required": [
             "class"
           ]
@@ -3325,7 +3315,7 @@
               "const": "audio-visual"
             }
           },
-          "additionalProperties": false,
+          "additionalProperties": true,
           "required": [
             "class"
           ]
