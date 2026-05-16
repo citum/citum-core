@@ -15,7 +15,7 @@ mod types;
 
 pub use document::{
     FormatDocumentError, FormatDocumentRequest, FormatDocumentResult, format_document,
-    format_document_with_style,
+    format_document_with_style, unknown_enum_warnings, unknown_reference_class_warnings,
 };
 pub use style_input::StyleInput;
 pub use types::{

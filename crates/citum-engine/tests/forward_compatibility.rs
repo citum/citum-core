@@ -67,21 +67,113 @@ struct Scenario {
     follow_up: &'static str,
 }
 
+use citum_schema::locale::{GeneralTerm, TermForm};
+use citum_schema::reference::{
+    ClassExtension, CollectionType, ContributorRole, MonographComponentType, MonographType,
+    SerialComponentType,
+};
+use citum_schema::template::{DateForm, TemplateComponent};
+
 fn parse_style(yaml: &str) -> Outcome {
     match Style::from_yaml_str(yaml) {
-        Ok(_) => Outcome::Pass,
+        Ok(style) => {
+            if style_has_unknowns(&style) {
+                Outcome::SoftDegrade
+            } else {
+                Outcome::Pass
+            }
+        }
         Err(_) => Outcome::HardFail,
     }
+}
+
+fn style_has_unknowns(style: &Style) -> bool {
+    if let Some(templates) = &style.templates {
+        for template in templates.values() {
+            if template_has_unknowns(template) {
+                return true;
+            }
+        }
+    }
+    if let Some(citation) = &style.citation
+        && let Some(template) = &citation.template
+        && template_has_unknowns(template)
+    {
+        return true;
+    }
+    if let Some(bib) = &style.bibliography
+        && let Some(template) = &bib.template
+        && template_has_unknowns(template)
+    {
+        return true;
+    }
+    false
+}
+
+fn template_has_unknowns(components: &[TemplateComponent]) -> bool {
+    for component in components {
+        match component {
+            TemplateComponent::Term(t) => {
+                if matches!(t.term, GeneralTerm::Unknown(_)) {
+                    return true;
+                }
+                if let Some(TermForm::Unknown(_)) = &t.form {
+                    return true;
+                }
+            }
+            TemplateComponent::Contributor(c) => {
+                if matches!(
+                    c.contributor,
+                    citum_schema::template::ContributorRole::Unknown(_)
+                ) {
+                    return true;
+                }
+            }
+            TemplateComponent::Date(d) => {
+                if matches!(d.form, DateForm::Unknown(_)) {
+                    return true;
+                }
+            }
+            TemplateComponent::Group(g) if template_has_unknowns(&g.group) => {
+                return true;
+            }
+            _ => {}
+        }
+    }
+    false
 }
 
 fn parse_bibliography(yaml: &str) -> Outcome {
     match serde_yaml::from_str::<InputBibliography>(yaml) {
         Ok(bibliography) => {
-            if bibliography
-                .references
-                .iter()
-                .any(|reference| matches!(reference.class(), ReferenceClass::Unknown(_)))
-            {
+            let has_unknown = bibliography.references.iter().any(|reference| {
+                if matches!(reference.class(), ReferenceClass::Unknown(_)) {
+                    return true;
+                }
+                let ext_unknown = match reference.extension() {
+                    ClassExtension::Monograph(r) => {
+                        matches!(r.r#type, MonographType::Unknown(_))
+                    }
+                    ClassExtension::Collection(r) => {
+                        matches!(r.r#type, CollectionType::Unknown(_))
+                    }
+                    ClassExtension::CollectionComponent(r) => {
+                        matches!(r.r#type, MonographComponentType::Unknown(_))
+                    }
+                    ClassExtension::SerialComponent(r) => {
+                        matches!(r.r#type, SerialComponentType::Unknown(_))
+                    }
+                    _ => false,
+                };
+
+                ext_unknown
+                    || reference
+                        .all_contributor_entries()
+                        .iter()
+                        .any(|c| matches!(c.role, ContributorRole::Unknown(_)))
+            });
+
+            if has_unknown {
                 Outcome::SoftDegrade
             } else {
                 Outcome::Pass

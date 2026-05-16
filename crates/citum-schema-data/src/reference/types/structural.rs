@@ -348,40 +348,38 @@ impl From<MonographDeser> for Monograph {
     }
 }
 
-/// Discriminates monograph subtypes for style-directed formatting.
-#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
-#[non_exhaustive]
-pub enum MonographType {
-    /// A book or monograph (default).
-    #[default]
-    Book,
-    /// A technical manual or user guide.
-    Manual,
-    /// A technical or institutional report.
-    Report,
-    /// An academic thesis or dissertation.
-    Thesis,
-    /// A webpage or standalone web document.
-    Webpage,
-    /// A standalone post (e.g., social media, forum).
-    Post,
-    /// An interview treated as a standalone monographic source.
-    Interview,
-    /// An unpublished manuscript or archival document.
-    Manuscript,
-    /// A preprint hosted on a preprint server (arXiv, bioRxiv, SSRN, etc.).
-    ///
-    /// The preprint server has a custodial relationship with the work (hosting and
-    /// preservation), not an editorial one. This parallels an archived manuscript
-    /// held by a repository.
-    Preprint,
-    /// A letter, email, or other personal communication.
-    PersonalCommunication,
-    /// A generic standalone document that does not fit a more specific subtype.
-    Document,
+crate::tolerant_enum! {
+    /// Discriminates monograph subtypes for style-directed formatting.
+    #[derive(Debug, Default, Clone, PartialEq)]
+    pub enum MonographType {
+        /// A book or monograph (default).
+        #[default]
+        Book = "book",
+        /// A technical manual or user guide.
+        Manual = "manual",
+        /// A technical or institutional report.
+        Report = "report",
+        /// An academic thesis or dissertation.
+        Thesis = "thesis",
+        /// A webpage or standalone web document.
+        Webpage = "webpage",
+        /// A standalone post (e.g., social media, forum).
+        Post = "post",
+        /// An interview treated as a standalone monographic source.
+        Interview = "interview",
+        /// An unpublished manuscript or archival document.
+        Manuscript = "manuscript",
+        /// A preprint hosted on a preprint server (arXiv, bioRxiv, SSRN, etc.).
+        ///
+        /// The preprint server has a custodial relationship with the work (hosting and
+        /// preservation), not an editorial one. This parallels an archived manuscript
+        /// held by a repository.
+        Preprint = "preprint",
+        /// A letter, email, or other personal communication.
+        PersonalCommunication = "personal-communication",
+        /// A generic standalone document that does not fit a more specific subtype.
+        Document = "document"
+    }
 }
 
 /// A collection of works, such as an anthology or proceedings.
@@ -573,22 +571,20 @@ impl From<CollectionDeser> for Collection {
     }
 }
 
-/// Discriminates collection subtypes for style-directed formatting.
-#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
-#[non_exhaustive]
-pub enum CollectionType {
-    /// A curated anthology of independent works (e.g., short stories, essays).
-    #[default]
-    Anthology,
-    /// Published proceedings of a conference or symposium.
-    Proceedings,
-    /// A book assembled from contributions by multiple authors under an editor.
-    EditedBook,
-    /// An edited volume that may span multiple books or a series.
-    EditedVolume,
+crate::tolerant_enum! {
+    /// Discriminates collection subtypes for style-directed formatting.
+    #[derive(Debug, Default, Clone, PartialEq)]
+    pub enum CollectionType {
+        /// A curated anthology of independent works (e.g., short stories, essays).
+        #[default]
+        Anthology = "anthology",
+        /// Published proceedings of a conference or symposium.
+        Proceedings = "proceedings",
+        /// A book assembled from contributions by multiple authors under an editor.
+        EditedBook = "edited-book",
+        /// An edited volume that may span multiple books or a series.
+        EditedVolume = "edited-volume"
+    }
 }
 
 /// A component of a larger monograph, such as a chapter in a book.
@@ -805,18 +801,16 @@ impl From<CollectionComponentDeser> for CollectionComponent {
     }
 }
 
-/// Discriminates monograph-component subtypes for style-directed formatting.
-#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
-#[non_exhaustive]
-pub enum MonographComponentType {
-    /// A chapter within a book or edited volume.
-    #[default]
-    Chapter,
-    /// A document component that does not fit a more specific subtype.
-    Document,
+crate::tolerant_enum! {
+    /// Discriminates monograph-component subtypes for style-directed formatting.
+    #[derive(Debug, Default, Clone, PartialEq)]
+    pub enum MonographComponentType {
+        /// A chapter within a book or edited volume.
+        #[default]
+        Chapter = "chapter",
+        /// A document component that does not fit a more specific subtype.
+        Document = "document"
+    }
 }
 
 /// A component of a larger serial publication; for example a journal or newspaper article.
@@ -1056,19 +1050,18 @@ impl From<SerialComponentDeser> for SerialComponent {
     }
 }
 
-/// Discriminates serial-component subtypes for style-directed formatting.
-#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(rename_all = "kebab-case")]
-pub enum SerialComponentType {
-    /// A peer-reviewed or editorial article in a journal, magazine, or newspaper.
-    #[default]
-    Article,
-    /// A post within an online serial (blog, news site, social feed).
-    Post,
-    /// A review published in a serial (book review, film review, etc.).
-    Review,
+crate::tolerant_enum! {
+    /// Discriminates serial-component subtypes for style-directed formatting.
+    #[derive(Debug, Default, Clone, PartialEq)]
+    pub enum SerialComponentType {
+        /// A peer-reviewed or editorial article in a journal, magazine, or newspaper.
+        #[default]
+        Article = "article",
+        /// A post within an online serial (blog, news site, social feed).
+        Post = "post",
+        /// A review published in a serial (book review, film review, etc.).
+        Review = "review"
+    }
 }
 
 /// A serial publication (journal, magazine, etc.).

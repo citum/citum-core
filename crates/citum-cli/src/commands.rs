@@ -1642,14 +1642,29 @@ fn run_check(args: CheckArgs) -> Result<(), Box<dyn Error>> {
     for path in args.bibliography {
         let display = path.display().to_string();
         let status = match load_bibliography(&path) {
-            Ok(_) => CheckItem {
-                kind: "bibliography",
-                path: display,
-                ok: true,
-                schema_version: None,
-                warnings: None,
-                error: None,
-            },
+            Ok(bib) => {
+                let mut warnings = Vec::new();
+                let class_warnings = citum_engine::api::unknown_reference_class_warnings(&bib);
+                warnings.extend(class_warnings.into_iter().map(|w| w.message));
+
+                // For enums, we need a processor context
+                let processor = citum_engine::Processor::new(citum_schema::Style::default(), bib);
+                let enum_warnings = citum_engine::api::unknown_enum_warnings(&processor);
+                warnings.extend(enum_warnings.into_iter().map(|w| w.message));
+
+                CheckItem {
+                    kind: "bibliography",
+                    path: display,
+                    ok: true,
+                    schema_version: None,
+                    warnings: if warnings.is_empty() {
+                        None
+                    } else {
+                        Some(warnings)
+                    },
+                    error: None,
+                }
+            }
             Err(e) => CheckItem {
                 kind: "bibliography",
                 path: display,
@@ -1734,6 +1749,12 @@ fn check_style_input(style_input: &str) -> CheckItem {
                     style.version
                 ));
             }
+
+            // Capture unknown enums and term keys from the style AST
+            let processor =
+                citum_engine::Processor::new(style.clone(), citum_engine::Bibliography::new());
+            let enum_warnings = citum_engine::api::unknown_enum_warnings(&processor);
+            warnings.extend(enum_warnings.into_iter().map(|w| w.message));
 
             CheckItem {
                 kind: "style",

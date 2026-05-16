@@ -109,22 +109,22 @@ fn lookup_role_contributor(
             reference.contributor(DataRole::Illustrator)
         }
         ResolvedRole::BuiltIn(ContributorRole::ContainerAuthor) => {
-            reference.contributor(DataRole::Custom("container-author".to_string()))
+            reference.contributor(DataRole::Unknown("container-author".to_string()))
         }
         ResolvedRole::BuiltIn(ContributorRole::CollectionEditor) => {
-            reference.contributor(DataRole::Custom("collection-editor".to_string()))
+            reference.contributor(DataRole::Unknown("collection-editor".to_string()))
         }
         ResolvedRole::BuiltIn(ContributorRole::EditorialDirector) => {
-            reference.contributor(DataRole::Custom("editorial-director".to_string()))
+            reference.contributor(DataRole::Unknown("editorial-director".to_string()))
         }
         ResolvedRole::BuiltIn(ContributorRole::TextualEditor) => {
-            reference.contributor(DataRole::Custom("textual-editor".to_string()))
+            reference.contributor(DataRole::Unknown("textual-editor".to_string()))
         }
         ResolvedRole::BuiltIn(ContributorRole::OriginalAuthor) => {
-            reference.contributor(DataRole::Custom("original-author".to_string()))
+            reference.contributor(DataRole::Unknown("original-author".to_string()))
         }
         ResolvedRole::BuiltIn(ContributorRole::ReviewedAuthor) => {
-            reference.contributor(DataRole::Custom("reviewed-author".to_string()))
+            reference.contributor(DataRole::Unknown("reviewed-author".to_string()))
         }
         ResolvedRole::BuiltIn(ContributorRole::Recipient) => {
             reference.contributor(DataRole::Recipient)
@@ -134,13 +134,13 @@ fn lookup_role_contributor(
         }
         ResolvedRole::BuiltIn(ContributorRole::Guest) => reference.contributor(DataRole::Guest),
         ResolvedRole::BuiltIn(ContributorRole::Chair) => {
-            reference.contributor(DataRole::Custom("chair".to_string()))
+            reference.contributor(DataRole::Unknown("chair".to_string()))
         }
         ResolvedRole::BuiltIn(ContributorRole::Inventor) => {
-            reference.contributor(DataRole::Custom("inventor".to_string()))
+            reference.contributor(DataRole::Unknown("inventor".to_string()))
         }
         ResolvedRole::BuiltIn(ContributorRole::Counsel) => {
-            reference.contributor(DataRole::Custom("counsel".to_string()))
+            reference.contributor(DataRole::Unknown("counsel".to_string()))
         }
         ResolvedRole::Custom(role) => match role.as_str() {
             "compiler" => reference.contributor(DataRole::Compiler),
@@ -149,7 +149,7 @@ fn lookup_role_contributor(
             "host" => reference.contributor(DataRole::Host),
             "producer" | "executive-producer" => reference.contributor(DataRole::Producer),
             "writer" => reference.contributor(DataRole::Writer),
-            _ => reference.contributor(DataRole::Custom(role.clone())),
+            _ => reference.contributor(DataRole::Unknown(role.clone())),
         },
         _ => None,
     }

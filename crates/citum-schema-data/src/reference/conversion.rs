@@ -603,7 +603,7 @@ fn from_collection_component_ref(
     }
     if let Some(container_author) = container_author.clone() {
         contributors.push(ContributorEntry {
-            role: ContributorRole::Custom("container-author".to_string()),
+            role: ContributorRole::Unknown("container-author".to_string()),
             contributor: container_author,
             gender: None,
         });
@@ -1555,14 +1555,14 @@ fn from_event_ref(legacy: csl_legacy::csl_json::Reference, ctx: RefContext) -> I
     );
     push_legacy_contributor(
         &mut contributors,
-        ContributorRole::Custom("chair".to_string()),
+        ContributorRole::Unknown("chair".to_string()),
         chair_names,
     );
     push_legacy_contributor(&mut contributors, ContributorRole::Producer, producer_names);
     push_legacy_contributor(&mut contributors, ContributorRole::Host, host_names);
     if let Some(organizer_name) = legacy.publisher.clone() {
         contributors.push(ContributorEntry {
-            role: ContributorRole::Custom("organizer".to_string()),
+            role: ContributorRole::Unknown("organizer".to_string()),
             contributor: Contributor::SimpleName(SimpleName {
                 name: organizer_name.into(),
                 location: None,

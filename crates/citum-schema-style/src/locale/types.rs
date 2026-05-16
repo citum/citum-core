@@ -20,38 +20,38 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-/// Form for term lookup.
-///
-/// Specifies which form variant of a term should be used in citation output.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case")]
-pub enum TermForm {
-    /// Long form of a term (e.g., "page" vs "p.").
-    Long,
-    /// Short form of a term (e.g., "p." vs "page").
-    Short,
-    /// Verb form of a term (e.g., "edited by").
-    Verb,
-    /// Short verb form of a term (e.g., "ed." vs "edited by").
-    VerbShort,
-    /// Symbol form of a term (e.g., "§" for section).
-    Symbol,
+crate::str_enum! {
+    /// Form for term lookup.
+    ///
+    /// Specifies which form variant of a term should be used in citation output.
+    #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+    pub enum TermForm {
+        /// Long form of a term (e.g., "page" vs "p.").
+        Long = "long",
+        /// Short form of a term (e.g., "p." vs "page").
+        Short = "short",
+        /// Verb form of a term (e.g., "edited by").
+        Verb = "verb",
+        /// Short verb form of a term (e.g., "ed." vs "edited by").
+        VerbShort = "verb-short",
+        /// Symbol form of a term (e.g., "§" for section).
+        Symbol = "symbol"
+    }
 }
 
-/// Grammatical gender used for locale agreement and term selection.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case")]
-pub enum GrammaticalGender {
-    /// Masculine grammatical gender.
-    Masculine,
-    /// Feminine grammatical gender.
-    Feminine,
-    /// Neuter grammatical gender.
-    Neuter,
-    /// Common or shared grammatical gender.
-    Common,
+crate::str_enum! {
+    /// Grammatical gender used for locale agreement and term selection.
+    #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+    pub enum GrammaticalGender {
+        /// Masculine grammatical gender.
+        Masculine = "masculine",
+        /// Feminine grammatical gender.
+        Feminine = "feminine",
+        /// Neuter grammatical gender.
+        Neuter = "neuter",
+        /// Common or shared grammatical gender.
+        Common = "common"
+    }
 }
 
 /// A value that may vary by grammatical gender.
@@ -110,6 +110,7 @@ impl<T> MaybeGendered<T> {
                 GrammaticalGender::Feminine => feminine.as_ref(),
                 GrammaticalGender::Neuter => neuter.as_ref(),
                 GrammaticalGender::Common => common.as_ref(),
+                _ => None,
             },
         }
     }
@@ -173,77 +174,77 @@ impl MaybeGendered<String> {
     }
 }
 
-/// A list of general terms for citation formatting.
-///
-/// These are the standard terms that appear in bibliographies and citations,
-/// including prepositions (in, at, from, by), punctuation terms (and, et al),
-/// date-related terms (accessed, no-date, circa), locator terms (page, chapter, volume),
-/// and special phrases (ibid, forthcoming, available-at).
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case")]
-pub enum GeneralTerm {
-    #[default]
-    /// The preposition "in" (e.g., "in Smith, 2020").
-    In,
-    /// The term used for access dates (e.g., "accessed May 1").
-    Accessed,
-    /// The term used for retrieval statements (e.g., "retrieved from URL").
-    Retrieved,
-    /// The preposition "at" (e.g., "at the conference").
-    At,
-    /// The preposition "from" (e.g., "from the publisher").
-    From,
-    /// The preposition "of" (e.g., "special issue of").
-    Of,
-    /// The preposition "to" (e.g., "from x to y").
-    To,
-    /// The preposition "by" (e.g., "by John Smith").
-    By,
-    /// The term used when no date is available (e.g., "n.d.").
-    NoDate,
-    /// The term used for anonymous authorship (e.g., "anonymous").
-    Anonymous,
-    /// The term used for approximate dates (e.g., "circa").
-    Circa,
-    /// The phrase used for availability statements (e.g., "available at URL").
-    AvailableAt,
-    /// The term used for immediately repeated citations (e.g., "ibid.").
-    Ibid,
-    /// The conjunction "and" (e.g., "Smith and Jones").
-    And,
-    /// The abbreviation for omitted additional names (e.g., "et al.").
-    EtAl,
-    /// The phrase "and others" (generic use).
-    AndOthers,
-    /// The term used for forthcoming works (e.g., "forthcoming").
-    Forthcoming,
-    /// The term used for online resources (e.g., "online").
-    Online,
-    /// The adverb "here".
-    Here,
-    /// The term used for deposited materials.
-    Deposited,
-    /// The phrase used to introduce reviewed works (e.g., "review of").
-    ReviewOf,
-    /// The phrase used for original publication references (e.g., "originally published").
-    OriginalWorkPublished,
-    /// The term used for patents (e.g., "patent").
-    Patent,
-    /// The general term for volume locators (e.g., "volume", "vol.").
-    Volume,
-    /// The general term for issue locators (e.g., "issue", "no.").
-    Issue,
-    /// The general term for page locators (e.g., "page", "p.", "pp.").
-    Page,
-    /// The general term for chapter locators (e.g., "chapter", "ch.").
-    Chapter,
-    /// The general term for editions (e.g., "edition", "ed.").
-    Edition,
-    /// The general term for section locators (e.g., "section", "§").
-    Section,
-    /// The label for personal communications (e.g., "personal communication").
-    PersonalCommunication,
+crate::str_enum! {
+    /// A list of general terms for citation formatting.
+    ///
+    /// These are the standard terms that appear in bibliographies and citations,
+    /// including prepositions (in, at, from, by), punctuation terms (and, et al),
+    /// date-related terms (accessed, no-date, circa), locator terms (page, chapter, volume),
+    /// and special phrases (ibid, forthcoming, available-at).
+    #[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
+    pub enum GeneralTerm {
+        #[default]
+        /// The preposition "in" (e.g., "in Smith, 2020").
+        In = "in",
+        /// The term used for access dates (e.g., "accessed May 1").
+        Accessed = "accessed",
+        /// The term used for retrieval statements (e.g., "retrieved from URL").
+        Retrieved = "retrieved",
+        /// The preposition "at" (e.g., "at the conference").
+        At = "at",
+        /// The preposition "from" (e.g., "from the publisher").
+        From = "from",
+        /// The preposition "of" (e.g., "special issue of").
+        Of = "of",
+        /// The preposition "to" (e.g., "from x to y").
+        To = "to",
+        /// The preposition "by" (e.g., "by John Smith").
+        By = "by",
+        /// The term used when no date is available (e.g., "n.d.").
+        NoDate = "no-date",
+        /// The term used for anonymous authorship (e.g., "anonymous").
+        Anonymous = "anonymous",
+        /// The term used for approximate dates (e.g., "circa").
+        Circa = "circa",
+        /// The phrase used for availability statements (e.g., "available at URL").
+        AvailableAt = "available-at",
+        /// The term used for immediately repeated citations (e.g., "ibid.").
+        Ibid = "ibid",
+        /// The conjunction "and" (e.g., "Smith and Jones").
+        And = "and",
+        /// The abbreviation for omitted additional names (e.g., "et al.").
+        EtAl = "et-al",
+        /// The phrase "and others" (generic use).
+        AndOthers = "and-others",
+        /// The term used for forthcoming works (e.g., "forthcoming").
+        Forthcoming = "forthcoming",
+        /// The term used for online resources (e.g., "online").
+        Online = "online",
+        /// The adverb "here".
+        Here = "here",
+        /// The term used for deposited materials.
+        Deposited = "deposited",
+        /// The phrase used to introduce reviewed works (e.g., "review of").
+        ReviewOf = "review-of",
+        /// The phrase used for original publication references (e.g., "originally published").
+        OriginalWorkPublished = "original-work-published",
+        /// The term used for patents (e.g., "patent").
+        Patent = "patent",
+        /// The general term for volume locators (e.g., "volume", "vol.").
+        Volume = "volume",
+        /// The general term for issue locators (e.g., "issue", "no.").
+        Issue = "issue",
+        /// The general term for page locators (e.g., "page", "p.", "pp.").
+        Page = "page",
+        /// The general term for chapter locators (e.g., "chapter", "ch.").
+        Chapter = "chapter",
+        /// The general term for editions (e.g., "edition", "ed.").
+        Edition = "edition",
+        /// The general term for section locators (e.g., "section", "§").
+        Section = "section",
+        /// The label for personal communications (e.g., "personal communication").
+        PersonalCommunication = "personal-communication"
+    }
 }
 
 /// General terms used in citations and bibliographies.

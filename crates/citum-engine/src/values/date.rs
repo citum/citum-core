@@ -399,6 +399,7 @@ fn format_range_start(
                 (false, Some(d)) => format!("{month} {d}, {year}"),
             }
         }
+        _ => extract_year(date),
     }
 }
 
@@ -511,6 +512,7 @@ fn inline_disamb_suffix(formatted: &str, form: &DateForm, year: &str, suffix: &s
         | DateForm::DayMonthAbbrYear
         | DateForm::MonthAbbrDayYear => formatted.rfind(year),
         DateForm::MonthDay => None,
+        _ => None,
     };
 
     let Some(index) = year_index else {
@@ -689,6 +691,7 @@ fn format_single_date(
                 (false, Some(d)) => Some(format!("{month} {d}, {year}")),
             }
         }
+        _ => Some(extract_year(date)),
     }
 }
 
@@ -720,7 +723,7 @@ impl ComponentValues for TemplateDate {
             if matches!(self.date, TemplateDateVar::Issued)
                 && let Some(nd) = options.locale.resolved_general_term(
                     &GeneralTerm::NoDate,
-                    TermForm::Short,
+                    &TermForm::Short,
                     None,
                 )
             {

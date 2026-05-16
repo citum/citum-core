@@ -7,15 +7,15 @@
 # A row is a GAP when declared != observed. GAP rows roll up to follow-up beans.
 #
 
-01-attr-enum-template        | Attribute enum in template                              | declared=SoftDegrade observed=HardFail    GAP | csl26-ld6e tolerant-enum-deserializer
-02-attr-enum-data            | Attribute enum in reference data                        | declared=SoftDegrade observed=HardFail    GAP | csl26-ld6e tolerant-enum-deserializer
+01-attr-enum-template        | Attribute enum in template                              | declared=SoftDegrade observed=SoftDegrade ok  | csl26-ld6e tolerant-enum-deserializer
+02-attr-enum-data            | Attribute enum in reference data                        | declared=SoftDegrade observed=SoftDegrade ok  | csl26-ld6e tolerant-enum-deserializer
 02b-discriminator-class      | Unknown InputReference class                            | declared=SoftDegrade observed=SoftDegrade ok  | csl26-odgh inputreference-discriminator-design
-03-locale-form               | Locale TermForm value                                   | declared=SoftDegrade observed=HardFail    GAP | csl26-ld6e tolerant-enum-deserializer
-04-date-form                 | DateForm value in template                              | declared=SoftDegrade observed=HardFail    GAP | csl26-ld6e tolerant-enum-deserializer
+03-locale-form               | Locale TermForm value                                   | declared=SoftDegrade observed=SoftDegrade ok  | csl26-ld6e tolerant-enum-deserializer
+04-date-form                 | DateForm value in template                              | declared=SoftDegrade observed=SoftDegrade ok  | csl26-ld6e tolerant-enum-deserializer
 05-new-option-key            | New key inside style option struct                      | declared=SoftDegrade observed=HardFail    GAP | csl26-0ksu capture-unknown-fields-wrapper
 06-new-top-level-section     | New top-level Style section                             | declared=SoftDegrade observed=HardFail    GAP | csl26-0ksu capture-unknown-fields-wrapper
 07-new-reference-field       | New optional field on reference type                    | declared=SoftDegrade observed=HardFail    GAP | csl26-acfh reference-data-silent-acceptance
-08-new-locale-term-key       | New locale term key                                     | declared=SoftDegrade observed=HardFail    GAP | csl26-o1z5 tolerant-locale-lookup
+08-new-locale-term-key       | New locale term key                                     | declared=SoftDegrade observed=SoftDegrade ok  | csl26-o1z5 tolerant-locale-lookup
 09-custom-namespace          | Namespaced custom.* metadata (control)                  | declared=Pass        observed=Pass        ok  | —
 10-version-only-signal       | Style version bumped without other changes (control)    | declared=Pass        observed=Pass        ok  | —
 11-template-grammar          | New TemplateComponent variant (opt-out)                 | declared=HardFail    observed=HardFail    ok  | —

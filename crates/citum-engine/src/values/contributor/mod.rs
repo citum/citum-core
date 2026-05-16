@@ -47,7 +47,7 @@ pub(super) fn contributor_role_to_reference_role(
         ContributorRole::Editor => Some(citum_schema::reference::ContributorRole::Editor),
         ContributorRole::Translator => Some(citum_schema::reference::ContributorRole::Translator),
         ContributorRole::Recipient => Some(citum_schema::reference::ContributorRole::Recipient),
-        ContributorRole::Chair => Some(citum_schema::reference::ContributorRole::Custom(
+        ContributorRole::Chair => Some(citum_schema::reference::ContributorRole::Unknown(
             "chair".to_string(),
         )),
         ContributorRole::Interviewer => Some(citum_schema::reference::ContributorRole::Interviewer),
@@ -55,28 +55,28 @@ pub(super) fn contributor_role_to_reference_role(
         ContributorRole::Director => Some(citum_schema::reference::ContributorRole::Director),
         ContributorRole::Composer => Some(citum_schema::reference::ContributorRole::Composer),
         ContributorRole::Illustrator => Some(citum_schema::reference::ContributorRole::Illustrator),
-        ContributorRole::Inventor => Some(citum_schema::reference::ContributorRole::Custom(
+        ContributorRole::Inventor => Some(citum_schema::reference::ContributorRole::Unknown(
             "inventor".to_string(),
         )),
-        ContributorRole::Counsel => Some(citum_schema::reference::ContributorRole::Custom(
+        ContributorRole::Counsel => Some(citum_schema::reference::ContributorRole::Unknown(
             "counsel".to_string(),
         )),
         ContributorRole::CollectionEditor => Some(
-            citum_schema::reference::ContributorRole::Custom("collection-editor".to_string()),
+            citum_schema::reference::ContributorRole::Unknown("collection-editor".to_string()),
         ),
-        ContributorRole::ContainerAuthor => Some(citum_schema::reference::ContributorRole::Custom(
-            "container-author".to_string(),
-        )),
+        ContributorRole::ContainerAuthor => Some(
+            citum_schema::reference::ContributorRole::Unknown("container-author".to_string()),
+        ),
         ContributorRole::EditorialDirector => Some(
-            citum_schema::reference::ContributorRole::Custom("editorial-director".to_string()),
+            citum_schema::reference::ContributorRole::Unknown("editorial-director".to_string()),
         ),
-        ContributorRole::TextualEditor => Some(citum_schema::reference::ContributorRole::Custom(
+        ContributorRole::TextualEditor => Some(citum_schema::reference::ContributorRole::Unknown(
             "textual-editor".to_string(),
         )),
-        ContributorRole::OriginalAuthor => Some(citum_schema::reference::ContributorRole::Custom(
+        ContributorRole::OriginalAuthor => Some(citum_schema::reference::ContributorRole::Unknown(
             "original-author".to_string(),
         )),
-        ContributorRole::ReviewedAuthor => Some(citum_schema::reference::ContributorRole::Custom(
+        ContributorRole::ReviewedAuthor => Some(citum_schema::reference::ContributorRole::Unknown(
             "reviewed-author".to_string(),
         )),
         ContributorRole::Interviewee | ContributorRole::Publisher => None,
