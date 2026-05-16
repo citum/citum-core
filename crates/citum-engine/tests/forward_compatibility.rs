@@ -88,6 +88,36 @@ fn parse_style(yaml: &str) -> Outcome {
 }
 
 fn style_has_unknowns(style: &Style) -> bool {
+    // Top-level Style unknown_fields (row 06: new top-level section).
+    if !style.unknown_fields.is_empty() {
+        return true;
+    }
+    // Nested option struct captures (row 05: new key inside an option struct).
+    if let Some(options) = &style.options
+        && options_has_unknowns(options)
+    {
+        return true;
+    }
+    if let Some(citation) = &style.citation {
+        if !citation.unknown_fields.is_empty() {
+            return true;
+        }
+        if let Some(template) = &citation.template
+            && template_has_unknowns(template)
+        {
+            return true;
+        }
+    }
+    if let Some(bib) = &style.bibliography {
+        if !bib.unknown_fields.is_empty() {
+            return true;
+        }
+        if let Some(template) = &bib.template
+            && template_has_unknowns(template)
+        {
+            return true;
+        }
+    }
     if let Some(templates) = &style.templates {
         for template in templates.values() {
             if template_has_unknowns(template) {
@@ -95,15 +125,15 @@ fn style_has_unknowns(style: &Style) -> bool {
             }
         }
     }
-    if let Some(citation) = &style.citation
-        && let Some(template) = &citation.template
-        && template_has_unknowns(template)
-    {
+    false
+}
+
+fn options_has_unknowns(options: &citum_schema::options::Config) -> bool {
+    if !options.unknown_fields.is_empty() {
         return true;
     }
-    if let Some(bib) = &style.bibliography
-        && let Some(template) = &bib.template
-        && template_has_unknowns(template)
+    if let Some(contributors) = &options.contributors
+        && !contributors.unknown_fields.is_empty()
     {
         return true;
     }
@@ -153,15 +183,19 @@ fn parse_bibliography(yaml: &str) -> Outcome {
                 let ext_unknown = match reference.extension() {
                     ClassExtension::Monograph(r) => {
                         matches!(r.r#type, MonographType::Unknown(_))
+                            || !r.unknown_fields.is_empty()
                     }
                     ClassExtension::Collection(r) => {
                         matches!(r.r#type, CollectionType::Unknown(_))
+                            || !r.unknown_fields.is_empty()
                     }
                     ClassExtension::CollectionComponent(r) => {
                         matches!(r.r#type, MonographComponentType::Unknown(_))
+                            || !r.unknown_fields.is_empty()
                     }
                     ClassExtension::SerialComponent(r) => {
                         matches!(r.r#type, SerialComponentType::Unknown(_))
+                            || !r.unknown_fields.is_empty()
                     }
                     _ => false,
                 };

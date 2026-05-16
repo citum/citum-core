@@ -287,7 +287,7 @@ impl std::fmt::Display for SchemaWarning {
 /// and simple template components instead of procedural conditionals.
 #[derive(Debug, Default, Deserialize, Serialize, Clone)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct Style {
     /// Style schema version.
     #[serde(default = "default_version")]
@@ -335,6 +335,16 @@ pub struct Style {
     #[cfg_attr(feature = "schema", schemars(skip))]
     #[serde(skip, default)]
     pub raw_yaml: Option<serde_yaml::Value>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 impl Style {
@@ -1572,7 +1582,7 @@ impl TemplatePreset {
 /// Locale-scoped template override with optional fallback behavior.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Default)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct LocalizedTemplateSpec {
     /// Language tags that should select this template override.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1582,6 +1592,16 @@ pub struct LocalizedTemplateSpec {
     pub default: Option<bool>,
     /// Template used when this localized override is selected.
     pub template: Template,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 fn locale_matches(targets: &[String], language: &str) -> bool {
@@ -1614,7 +1634,7 @@ pub enum NoteStartTextCase {
 /// Citation specification.
 #[derive(Debug, Deserialize, Serialize, Clone, Default)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct CitationSpec {
     /// Citation-specific option overrides merged over the style config.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1690,6 +1710,16 @@ pub struct CitationSpec {
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 impl CitationSpec {
@@ -1912,7 +1942,7 @@ fn default_true() -> bool {
 /// Bibliography specification.
 #[derive(Debug, Deserialize, Serialize, Clone)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct BibliographySpec {
     /// Bibliography-specific option overrides merged over the style config.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1960,6 +1990,16 @@ pub struct BibliographySpec {
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 impl Default for BibliographySpec {
@@ -1974,6 +2014,7 @@ impl Default for BibliographySpec {
             groups_enabled: true,
             groups: None,
             custom: None,
+            unknown_fields: std::collections::BTreeMap::new(),
         }
     }
 }
@@ -2596,16 +2637,21 @@ info:
     }
 
     #[test]
-    fn old_section_extends_key_is_rejected() {
+    fn old_section_extends_key_is_captured_for_forward_compat() {
         let yaml = r#"
 info:
   title: Old Section Template Reuse Key
 citation:
   extends: apa
 "#;
-        let err = serde_yaml::from_str::<Style>(yaml)
-            .expect_err("section extends should no longer be accepted");
-        assert!(err.to_string().contains("extends"));
+        let style: Style = serde_yaml::from_str(yaml).expect("parse succeeds");
+        let citation = style.citation.expect("citation section present");
+        assert!(
+            citation.unknown_fields.contains_key("extends"),
+            "removed `extends` key should land in unknown_fields for SoftDegrade detection, \
+             got: {:?}",
+            citation.unknown_fields,
+        );
     }
 
     #[test]

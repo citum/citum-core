@@ -712,11 +712,13 @@ fn given_localized_citation_templates_when_the_item_language_matches_then_the_lo
                     locale: Some(vec!["de".to_string()]),
                     default: None,
                     template: vec![citum_schema::tc_variable!(Publisher)],
+                    unknown_fields: Default::default(),
                 },
                 LocalizedTemplateSpec {
                     locale: None,
                     default: Some(true),
                     template: vec![citum_schema::tc_variable!(Note)],
+                    unknown_fields: Default::default(),
                 },
             ]),
             ..Default::default()
@@ -831,11 +833,13 @@ fn given_localized_bibliography_templates_when_only_the_multilingual_title_has_a
                     locale: Some(vec!["ja".to_string()]),
                     default: None,
                     template: vec![citum_schema::tc_title!(Primary)],
+                    unknown_fields: Default::default(),
                 },
                 LocalizedTemplateSpec {
                     locale: None,
                     default: Some(true),
                     template: vec![citum_schema::tc_variable!(Note)],
+                    unknown_fields: Default::default(),
                 },
             ]),
             ..Default::default()

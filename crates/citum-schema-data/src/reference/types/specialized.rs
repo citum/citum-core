@@ -24,7 +24,7 @@ use url::Url;
 #[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct Event {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -76,6 +76,16 @@ pub struct Event {
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<RichText>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// reference produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 /// A classic work (Aristotle, Bible, etc.) with standard citation forms.
@@ -161,12 +171,22 @@ pub struct Classic {
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// reference produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 #[derive(Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 struct ClassicDeser {
     id: Option<RefID>,
     title: Option<Title>,
@@ -207,6 +227,8 @@ struct ClassicDeser {
     field_languages: FieldLanguageMap,
     note: Option<RichText>,
     keywords: Option<Vec<String>>,
+    #[serde(flatten, default)]
+    unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 impl From<ClassicDeser> for Classic {
@@ -236,6 +258,7 @@ impl From<ClassicDeser> for Classic {
             field_languages: raw.field_languages,
             note: raw.note,
             keywords: raw.keywords,
+            unknown_fields: raw.unknown_fields,
         };
         classic.normalize_numbering();
         classic
@@ -286,7 +309,7 @@ impl NormalizeNumbering for Classic {
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct Patent {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -345,13 +368,23 @@ pub struct Patent {
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// reference produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 /// A research dataset.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct Dataset {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -411,13 +444,23 @@ pub struct Dataset {
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// reference produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 /// A technical standard or specification.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct Standard {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -467,13 +510,23 @@ pub struct Standard {
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// reference produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 /// Software or source code.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 pub struct Software {
     /// Unique identifier for this reference.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -533,6 +586,16 @@ pub struct Software {
     /// Keywords or subject tags.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub keywords: Option<Vec<String>>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// reference produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 /// Shared fields for all work-level reference classes.
@@ -635,6 +698,16 @@ pub struct AudioVisualWork {
     /// Freeform note.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub note: Option<RichText>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// reference produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 /// Deserialization shim for `AudioVisualWork`.
@@ -643,7 +716,7 @@ pub struct AudioVisualWork {
 #[derive(Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
-#[serde(deny_unknown_fields, rename_all = "kebab-case")]
+#[serde(rename_all = "kebab-case")]
 struct AudioVisualDeser {
     id: Option<RefID>,
     #[serde(default)]
@@ -679,6 +752,8 @@ struct AudioVisualDeser {
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     field_languages: FieldLanguageMap,
     note: Option<RichText>,
+    #[serde(flatten, default)]
+    unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
 
 impl HasNumbering for AudioVisualWork {
@@ -720,6 +795,7 @@ impl From<AudioVisualDeser> for AudioVisualWork {
             accessed: raw.accessed,
             field_languages: raw.field_languages,
             note: raw.note,
+            unknown_fields: raw.unknown_fields,
         }
     }
 }

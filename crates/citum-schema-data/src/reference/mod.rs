@@ -2650,28 +2650,31 @@ mod discriminator_tests {
     }
 
     #[test]
-    fn public_discriminator_rejects_unknown_field_on_known_class() {
+    fn public_discriminator_captures_unknown_field_on_known_class() {
         // when an unknown-for-this-class field is present on a known class,
-        // then deserialization must fail with a serde-canonical "unknown field"
-        // error that names the offending field — not merely a generic schema error.
-        let err = parse_reference(
+        // forward-compat pattern silently captures it in unknown_fields
+        // (SoftDegrade behavior per FORWARD_COMPATIBILITY.md row 07).
+        let result = parse_reference(
             r#"{
                 "class": "legal-case",
                 "title": "Smith v. Jones",
                 "monograph-type": "book"
             }"#,
-        )
-        .unwrap_err()
-        .to_string();
+        );
 
         assert!(
-            err.contains("`monograph-type`"),
-            "error must quote the offending field name in backticks, got: {err}"
+            result.is_ok(),
+            "unknown field should be captured, not rejected"
         );
-        assert!(
-            err.contains("unknown field") || err.contains("did not match"),
-            "error must be a canonical unknown-field/match-failure error, got: {err}"
-        );
+        let ref_obj = result.unwrap();
+        if let ClassExtension::LegalCase(lc) = ref_obj.extension {
+            assert!(
+                lc.unknown_fields.contains_key("monograph-type"),
+                "unknown field must be captured in unknown_fields map"
+            );
+        } else {
+            panic!("expected LegalCase variant");
+        }
     }
 
     #[test]
@@ -3090,15 +3093,22 @@ mod discriminator_tests {
             schema_text.contains("\"const\":\"monograph\""),
             "known-valid corpus row must have a matching schema branch"
         );
+        // Cross-class field on a known class: the runtime captures it into
+        // `unknown_fields` per the forward-compat SoftDegrade contract
+        // (`docs/specs/FORWARD_COMPATIBILITY.md`, row 07). Producer-side
+        // typo catching is the JSON-Schema's job — schema strictness
+        // (`unevaluatedProperties: false`) is asserted separately below.
+        let parsed_cross_class = parse_reference(wrong_class_field)
+            .expect("wrong-class field must soft-degrade through the runtime path");
         assert!(
-            parse_reference(wrong_class_field).is_err(),
-            "known-invalid corpus row must be rejected by the dispatcher"
+            matches!(parsed_cross_class.class(), ReferenceClass::LegalCase),
+            "wrong-class field must not change the dispatched class"
         );
         assert!(
             schema_text.contains("\"const\":\"legal-case\"")
                 && schema_text.contains("\"authority\"")
                 && schema_text.contains("\"type\""),
-            "schema must expose both relevant branches so unevaluatedProperties can reject cross-class leakage"
+            "schema must expose both relevant branches so unevaluatedProperties can reject cross-class leakage at the producer boundary"
         );
 
         let parsed_unknown = parse_reference(unknown_class)
