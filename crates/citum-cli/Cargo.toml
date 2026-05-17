@@ -3,8 +3,12 @@ name = "citum"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-publish = false
 repository.workspace = true
+homepage.workspace = true
+description = "Citum CLI: render, validate, convert, and migrate citation styles, references, and documents"
+readme = "../../README.md"
+keywords = ["citation", "bibliography", "csl", "citeproc", "scholarly"]
+categories = ["command-line-utilities", "text-processing"]
 
 [[bin]]
 name = "citum"
@@ -22,22 +26,23 @@ ciborium = "0.2"
 strsim = "0.11"
 schemars = { version = "1.2.1", features = ["indexmap2"], optional = true }
 ratatui = { version = "0.30.0", default-features = false, features = ["crossterm_0_29"] }
-citum_schema = { package = "citum-schema", path = "../citum-schema", features = ["legacy-convert"] }
-citum_schema_data = { package = "citum-schema-data", path = "../citum-schema-data" }
-citum_engine = { package = "citum-engine", path = "../citum-engine" }
-citum_io = { package = "citum-io", path = "../citum-io" }
-citum_store = { package = "citum_store", path = "../citum_store", features = ["http"] }
-citum_resolver_api = { package = "citum-resolver-api", path = "../citum-resolver-api" }
-citum-pdf = { path = "../citum-pdf", optional = true }
-citum-bindings = { path = "../citum-bindings", optional = true }
-citum-server = { path = "../citum-server", optional = true }
+citum-schema = { workspace = true, features = ["legacy-convert"] }
+citum-schema-data = { workspace = true }
+citum-engine = { workspace = true }
+citum-io = { workspace = true }
+citum_store = { workspace = true, features = ["http"] }
+citum-resolver-api = { workspace = true }
+citum-server = { workspace = true, optional = true }
 url = { version = "2.5", features = ["serde"] }
 
+# Features intentionally removed for the v1 crates.io publish: `typst-pdf`
+# (depended on the unpublished `citum-pdf` crate) and `typescript` (depended
+# on the unpublished `citum-bindings` crate). The cfg-gated code paths
+# remain in src/ as dead code; check-cfg below silences warnings. `--pdf`
+# at runtime returns a clear error pointing users at `typst compile`.
 [features]
 default = []
-schema = ["dep:schemars", "citum_schema/schema", "dep:citum-server", "citum-server/schema-types"]
-typst-pdf = ["dep:citum-pdf"]
-typescript = ["dep:citum-bindings", "citum-bindings/typescript"]
+schema = ["dep:schemars", "citum-schema/schema", "dep:citum-server", "citum-server/schema-types"]
 
 [lints]
 workspace = true

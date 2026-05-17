@@ -23,7 +23,7 @@ version = "0.52.0"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Citum citation engine — schema, processor, and migration tools"
-repository = "https://github.com/bdarcus/citum-core"
+repository = "https://github.com/citum/citum-core"
 homepage = "https://citum.org"
 authors = ["Bruce D'Arcus <bdarcus@gmail.com>"]
 keywords = ["citation", "bibliography", "csl"]
@@ -32,6 +32,10 @@ categories = ["text-processing"]
 [workspace.lints.rust]
 missing_docs = "deny"
 unsafe_code = "deny"
+# Features removed from citum-cli for the v1 crates.io publish (typst-pdf,
+# typescript) still appear in cfg-gated source as dead code; declare the
+# cfg names here so check-cfg doesn't warn on them workspace-wide.
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("typst-pdf", "typescript"))'] }
 
 [workspace.lints.rustdoc]
 bare_urls = "warn"
@@ -98,10 +102,26 @@ missing_safety_doc = "deny"        # Safety-critical items must be documented
 tabs_in_doc_comments = "deny"      # Enforce consistent formatting
 
 [workspace.metadata.cargo-shear]
-ignored = ["csl_legacy", "specta", "multibase"]
+ignored = ["csl-legacy", "specta", "multibase"]
 
+# Workspace-internal crates. Each `path` makes local dev resolve to the
+# in-tree crate; each `version` is required for `cargo publish` to accept
+# the dep (path-only deps cannot be published). `release.toml` has
+# `shared-version = true`, so every internal crate moves together and the
+# pin here stays in sync on bump.
 [workspace.dependencies]
 tracing = "0.1"
+citum-edtf = { path = "crates/citum-edtf", version = "0.50.0" }
+citum-resolver-api = { path = "crates/citum-resolver-api", version = "0.50.0" }
+citum-schema-data = { path = "crates/citum-schema-data", version = "0.50.0" }
+citum-schema-style = { path = "crates/citum-schema-style", version = "0.50.0" }
+citum-schema = { path = "crates/citum-schema", version = "0.50.0" }
+csl-legacy = { path = "crates/csl-legacy", version = "0.50.0" }
+citum-engine = { path = "crates/citum-engine", version = "0.50.0" }
+citum-io = { path = "crates/citum-io", version = "0.50.0" }
+citum-migrate = { path = "crates/citum-migrate", version = "0.50.0" }
+citum_store = { path = "crates/citum_store", version = "0.50.0" }
+citum-server = { path = "crates/citum-server", version = "0.50.0" }
 
 [profile.dev]
 debug = 0

@@ -12,8 +12,8 @@ path = "src/main.rs"
 
 [dependencies]
 tracing.workspace = true
-csl_legacy = { package = "csl-legacy", path = "../csl-legacy" }
-citum_schema = { package = "citum-schema", path = "../citum-schema" }
+csl-legacy = { workspace = true }
+citum-schema = { workspace = true }
 deno_core = "0.400.0"
 indexmap = "2.13.0"
 roxmltree = "0.21"

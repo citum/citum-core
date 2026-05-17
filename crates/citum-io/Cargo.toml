@@ -7,9 +7,9 @@ description = "Citum I/O and format conversion library"
 repository.workspace = true
 
 [dependencies]
-citum-schema = { package = "citum-schema", path = "../citum-schema", features = ["legacy-convert"] }
-citum-engine = { package = "citum-engine", path = "../citum-engine" }
-csl_legacy = { package = "csl-legacy", path = "../csl-legacy" }
+citum-schema = { workspace = true, features = ["legacy-convert"] }
+citum-engine = { workspace = true }
+csl-legacy = { workspace = true }
 biblatex = "0.11"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

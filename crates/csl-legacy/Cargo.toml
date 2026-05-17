@@ -3,8 +3,12 @@ name = "csl-legacy"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-publish = false
 repository.workspace = true
+homepage.workspace = true
+description = "Legacy CSL 1.0 XML and CSL-JSON parsers — infrastructure for the Citum migration pipeline"
+readme = "../../README.md"
+keywords = ["citation", "csl", "parser", "xml"]
+categories = ["parser-implementations", "text-processing"]
 
 [dependencies]
 indexmap = "2.13.0"
