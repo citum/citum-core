@@ -8,34 +8,14 @@ use super::super::{
     TemplateRenderRequest, find_grouping_component, get_variable_key, has_contributor_component,
     leading_group_affix, strip_author_component, strip_leading_group_affixes,
 };
+use super::component_predicates::{is_term_only_component, resolve_type_variant};
 use super::group_citation_items_by_author;
 use crate::error::ProcessorError;
 use crate::reference::Reference;
-use crate::render::bibliography::{append_rendered_component, component_starts_new_sentence};
-use crate::render::component::render_component_with_format;
 use crate::render::{ProcTemplate, ProcTemplateComponent};
 use crate::values::{ComponentValues, ProcHints, RenderContext, RenderOptions};
-use citum_schema::{
-    NoteStartTextCase,
-    locale::GeneralTerm,
-    options::ArticleJournalNoPageFallback,
-    options::titles::TextCase,
-    reference::NumOrStr,
-    template::{DateVariable, NumberVariable, SimpleVariable, TemplateComponent},
-};
+use citum_schema::template::TemplateComponent;
 use std::borrow::Cow;
-
-#[derive(Clone, Copy)]
-enum ArticleJournalBibliographyMode {
-    StandardDetail,
-    DoiFallback,
-}
-
-#[derive(Clone, Copy)]
-enum AnonymousEntryBibliographyMode {
-    ContainerLed,
-    SuppressPrintLike,
-}
 
 struct GroupRenderState<'a> {
     first_item: &'a crate::reference::CitationItem,
@@ -59,25 +39,17 @@ struct GroupItemRenderRequest<'a> {
     delimiter: &'a str,
 }
 
-/// Returns the first type-variant template whose selector matches `ref_type`,
-/// or `None` if there are no variants or none match.
-fn resolve_type_variant<'a>(
-    type_variants: Option<
-        &'a indexmap::IndexMap<citum_schema::template::TypeSelector, citum_schema::TemplateVariant>,
-    >,
-    ref_type: &str,
-) -> Option<&'a [TemplateComponent]> {
-    let selector_candidates = aliased_type_selector_candidates(ref_type);
-    type_variants?.iter().find_map(|(selector, variant)| {
-        if selector_candidates
-            .iter()
-            .any(|candidate| selector.matches(candidate))
-        {
-            variant.as_template()
-        } else {
-            None
-        }
-    })
+/// Resolved context for rendering a single template (or nested group)
+/// component. Bundles parameters that would otherwise inflate
+/// [`Renderer::render_template_component_with_format`] and
+/// [`Renderer::render_group_component_with_format`] past the clippy
+/// argument-count limit.
+struct TemplateRenderContext<'a> {
+    reference: &'a Reference,
+    ref_type: &'a str,
+    options: &'a RenderOptions<'a>,
+    hint: &'a ProcHints,
+    template_index: usize,
 }
 
 impl Renderer<'_> {
@@ -139,30 +111,23 @@ impl Renderer<'_> {
     ) -> Result<Vec<String>, ProcessorError> {
         self.render_grouped_citation_with_format::<crate::render::plain::PlainText>(
             items,
-            spec,
-            mode,
-            intra_delimiter,
-            suppress_author,
-            position,
-            spec.note_start_text_case,
+            &GroupRenderParams {
+                spec,
+                mode,
+                intra_delimiter,
+                suppress_author,
+                position,
+                note_start_text_case: spec.note_start_text_case,
+            },
         )
     }
 
     /// Render a group of items that must not be author-collapsed (legal cases,
     /// personal communications). Returns the rendered citation strings.
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "Citation item rendering now needs explicit note-start context."
-    )]
     fn render_special_type_items<F>(
         &self,
         group: &[&crate::reference::CitationItem],
-        spec: &citum_schema::CitationSpec,
-        mode: &citum_schema::citation::CitationMode,
-        suppress_author: bool,
-        position: Option<&citum_schema::citation::Position>,
-        intra_delimiter: &str,
-        note_start_text_case: Option<citum_schema::NoteStartTextCase>,
+        params: &GroupRenderParams<'_>,
     ) -> Result<Vec<String>, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -170,17 +135,17 @@ impl Renderer<'_> {
         let fmt = F::default();
         let mut rendered_items = Vec::new();
         for item in group {
-            let state = self.resolve_item_render_state(item, spec)?;
+            let state = self.resolve_item_render_state(item, params.spec)?;
             if let Some(item_str) = self.render_group_item_from_template_with_format::<F>(
                 state.reference,
                 GroupItemRenderRequest {
                     item: state.item,
                     template: &state.template,
-                    mode,
-                    suppress_author,
-                    position,
-                    note_start_text_case,
-                    delimiter: intra_delimiter,
+                    mode: params.mode,
+                    suppress_author: params.suppress_author,
+                    position: params.position,
+                    note_start_text_case: params.note_start_text_case,
+                    delimiter: params.intra_delimiter,
                 },
             ) && let Some((ids, content)) = self.build_citation_chunk(
                 &fmt,
@@ -257,19 +222,10 @@ impl Renderer<'_> {
     ///
     /// Returns an error when a referenced item is missing or grouped rendering
     /// fails.
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "Grouped citation rendering now needs explicit note-start context."
-    )]
     pub fn render_grouped_citation_with_format<F>(
         &self,
         items: &[crate::reference::CitationItem],
-        spec: &citum_schema::CitationSpec,
-        mode: &citum_schema::citation::CitationMode,
-        intra_delimiter: &str,
-        suppress_author: bool,
-        position: Option<&citum_schema::citation::Position>,
-        note_start_text_case: Option<citum_schema::NoteStartTextCase>,
+        params: &GroupRenderParams<'_>,
     ) -> Result<Vec<String>, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -277,59 +233,35 @@ impl Renderer<'_> {
         let groups = group_citation_items_by_author(self, items);
         let mut rendered_groups = Vec::new();
         for (_author_key, group) in groups {
-            rendered_groups.extend(self.render_grouped_citation_group_with_format::<F>(
-                &group,
-                spec,
-                mode,
-                intra_delimiter,
-                suppress_author,
-                position,
-                note_start_text_case,
-            )?);
+            rendered_groups
+                .extend(self.render_grouped_citation_group_with_format::<F>(&group, params)?);
         }
 
         Ok(rendered_groups)
     }
 
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "Grouped citation rendering now needs explicit note-start context."
-    )]
     fn render_grouped_citation_group_with_format<F>(
         &self,
         group: &[&crate::reference::CitationItem],
-        spec: &citum_schema::CitationSpec,
-        mode: &citum_schema::citation::CitationMode,
-        intra_delimiter: &str,
-        suppress_author: bool,
-        position: Option<&citum_schema::citation::Position>,
-        note_start_text_case: Option<citum_schema::NoteStartTextCase>,
+        params: &GroupRenderParams<'_>,
     ) -> Result<Vec<String>, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
-        let state = self.resolve_group_render_state(group, spec)?;
+        let state = self.resolve_group_render_state(group, params.spec)?;
 
         if let Some(citation) = self.try_render_integral_group_with_format::<F>(
             group,
-            spec,
-            mode,
-            suppress_author,
-            position,
+            params.spec,
+            params.mode,
+            params.suppress_author,
+            params.position,
         )? {
             return Ok(vec![citation]);
         }
 
-        if self.requires_full_group_item_rendering(mode, state.first_ref) {
-            return self.render_special_type_items::<F>(
-                group,
-                spec,
-                mode,
-                suppress_author,
-                position,
-                intra_delimiter,
-                note_start_text_case,
-            );
+        if self.requires_full_group_item_rendering(params.mode, state.first_ref) {
+            return self.render_special_type_items::<F>(group, params);
         }
 
         Ok(self
@@ -338,14 +270,7 @@ impl Renderer<'_> {
                 state.first_ref,
                 state.first_item,
                 &state.template,
-                &GroupRenderParams {
-                    spec,
-                    mode,
-                    intra_delimiter,
-                    suppress_author,
-                    position,
-                    note_start_text_case,
-                },
+                params,
             )?
             .into_iter()
             .collect())
@@ -900,274 +825,46 @@ impl Renderer<'_> {
             position,
             integral_name_state,
         );
+        let mut components =
+            self.render_template_components::<F>(reference, &ref_type, &options, &hint, template);
+
+        self.apply_sentence_initial_context::<F>(&mut components, context, note_start_text_case);
+
+        (!components.is_empty()).then_some(components)
+    }
+
+    /// Render each top-level template component for `reference`, threading a
+    /// fresh `TemplateRenderContext` per index so the source position is
+    /// preserved in AST-injection mode.
+    fn render_template_components<F>(
+        &self,
+        reference: &Reference,
+        ref_type: &str,
+        options: &RenderOptions<'_>,
+        hint: &ProcHints,
+        template: &[TemplateComponent],
+    ) -> Vec<ProcTemplateComponent>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
         let mut tracker = TemplateComponentTracker::default();
-        let mut components: Vec<ProcTemplateComponent> = template
+        template
             .iter()
             .enumerate()
             .filter_map(|(template_index, component)| {
                 let mut component_options = options.clone();
                 component_options.current_template_index =
                     self.inject_ast_indices.then_some(template_index);
-                self.render_template_component_with_format::<F>(
+                let ctx = TemplateRenderContext {
                     reference,
-                    &ref_type,
-                    &component_options,
-                    &hint,
+                    ref_type,
+                    options: &component_options,
+                    hint,
                     template_index,
-                    component,
-                    &mut tracker,
-                )
+                };
+                self.render_template_component_with_format::<F>(&ctx, component, &mut tracker)
             })
-            .collect();
-
-        self.apply_sentence_initial_context::<F>(&mut components, context, note_start_text_case);
-
-        if components.is_empty() {
-            None
-        } else {
-            Some(components)
-        }
-    }
-
-    fn apply_sentence_initial_context<F>(
-        &self,
-        components: &mut [ProcTemplateComponent],
-        context: RenderContext,
-        note_start_text_case: Option<NoteStartTextCase>,
-    ) where
-        F: crate::render::format::OutputFormat<Output = String>,
-    {
-        match context {
-            RenderContext::Bibliography => {
-                self.apply_bibliography_sentence_initial_context::<F>(components);
-            }
-            RenderContext::Citation => {
-                self.apply_note_start_sentence_initial_context(components, note_start_text_case);
-            }
-        }
-    }
-
-    fn apply_bibliography_sentence_initial_context<F>(
-        &self,
-        components: &mut [ProcTemplateComponent],
-    ) where
-        F: crate::render::format::OutputFormat<Output = String>,
-    {
-        let punctuation_in_quote = components
-            .first()
-            .and_then(|component| component.config.as_ref())
-            .is_some_and(|config| config.punctuation_in_quote);
-        let default_separator = components
-            .first()
-            .and_then(|component| component.bibliography_config.as_ref())
-            .and_then(|bib| bib.separator.as_deref())
-            .unwrap_or(". ")
-            .to_string();
-
-        let mut entry_output = String::new();
-        for component in components.iter_mut() {
-            let rendered = render_component_with_format::<F>(component);
-            if rendered.is_empty() {
-                continue;
-            }
-
-            if component_starts_new_sentence(
-                &entry_output,
-                &rendered,
-                &default_separator,
-                punctuation_in_quote,
-            ) {
-                component.sentence_initial = true;
-                self.apply_sentence_initial_transform(component, None);
-            }
-
-            let rendered = render_component_with_format::<F>(component);
-            append_rendered_component(
-                &mut entry_output,
-                &rendered,
-                &default_separator,
-                punctuation_in_quote,
-            );
-        }
-    }
-
-    fn apply_note_start_sentence_initial_context(
-        &self,
-        components: &mut [ProcTemplateComponent],
-        note_start_text_case: Option<NoteStartTextCase>,
-    ) {
-        let Some(text_case) = note_start_text_case else {
-            return;
-        };
-
-        for component in components.iter_mut() {
-            if !self.is_note_start_term_component(component) {
-                continue;
-            }
-
-            component.sentence_initial = true;
-            self.apply_sentence_initial_transform(component, Some(text_case));
-            break;
-        }
-    }
-
-    fn apply_sentence_initial_transform(
-        &self,
-        component: &mut ProcTemplateComponent,
-        note_start_text_case: Option<NoteStartTextCase>,
-    ) {
-        if !component.sentence_initial {
-            return;
-        }
-
-        let locale = Some(self.locale.locale.as_str());
-        match &component.template_component {
-            TemplateComponent::Contributor(_) => {
-                let case =
-                    crate::values::text_case::resolve_text_case(TextCase::CapitalizeFirst, locale);
-                if let Some(prefix) = component.prefix.as_mut() {
-                    // Explicit template prefix (e.g. ". Translated by ") — capitalize it.
-                    *prefix = crate::values::text_case::apply_text_case(prefix, case);
-                } else {
-                    // No explicit prefix: the role label (e.g. "edited by ") is baked
-                    // into the rendered value.  Capitalize the first word so that
-                    // sentence-initial contributors read "Edited by …" not "edited by …".
-                    component.value =
-                        crate::values::text_case::apply_text_case(&component.value, case);
-                }
-            }
-            // Pre-formatted group components — capitalize the first word of the
-            // rendered group value (e.g. "edited by Smith" as first child).
-            TemplateComponent::Group(_) => {
-                let case =
-                    crate::values::text_case::resolve_text_case(TextCase::CapitalizeFirst, locale);
-                component.value = crate::values::text_case::apply_text_case(&component.value, case);
-            }
-            TemplateComponent::Term(_) if self.is_note_start_term_component(component) => {
-                if let Some(case) = note_start_text_case {
-                    component.value = crate::values::text_case::apply_note_start_text_case(
-                        &component.value,
-                        case,
-                        locale,
-                    );
-                }
-            }
-            _ => {}
-        }
-    }
-
-    fn is_note_start_term_component(&self, component: &ProcTemplateComponent) -> bool {
-        matches!(
-            &component.template_component,
-            TemplateComponent::Term(term) if term.term == GeneralTerm::Ibid
-        )
-    }
-
-    fn apply_article_journal_bibliography_policy<'a>(
-        &self,
-        reference: &Reference,
-        template: Cow<'a, [TemplateComponent]>,
-    ) -> Cow<'a, [TemplateComponent]> {
-        let Some(mode) = self.article_journal_bibliography_mode(reference) else {
-            return template;
-        };
-
-        if !article_journal_template_needs_filter(template.as_ref(), mode) {
-            return template;
-        }
-
-        Cow::Owned(filter_article_journal_template_components(
-            template.as_ref(),
-            mode,
-        ))
-    }
-
-    fn apply_anonymous_entry_bibliography_policy<'a>(
-        &self,
-        reference: &Reference,
-        template: Cow<'a, [TemplateComponent]>,
-    ) -> Option<Cow<'a, [TemplateComponent]>> {
-        let Some(mode) = self.anonymous_entry_bibliography_mode(reference, template.as_ref())
-        else {
-            return Some(template);
-        };
-
-        match mode {
-            AnonymousEntryBibliographyMode::ContainerLed => {
-                Some(Cow::Owned(rewrite_anonymous_entry_template(
-                    template.as_ref(),
-                    mode,
-                    reference.ref_type().as_str(),
-                    reference_has_doi(reference),
-                )))
-            }
-            AnonymousEntryBibliographyMode::SuppressPrintLike => None,
-        }
-    }
-
-    fn article_journal_bibliography_mode(
-        &self,
-        reference: &Reference,
-    ) -> Option<ArticleJournalBibliographyMode> {
-        if reference.ref_type() != "article-journal" {
-            return None;
-        }
-
-        let fallback = self
-            .bibliography_config
-            .as_ref()?
-            .article_journal
-            .as_ref()?
-            .no_page_fallback?;
-
-        match fallback {
-            ArticleJournalNoPageFallback::Doi => {
-                if reference_has_pages(reference) {
-                    Some(ArticleJournalBibliographyMode::StandardDetail)
-                } else if reference_has_doi(reference) {
-                    Some(ArticleJournalBibliographyMode::DoiFallback)
-                } else {
-                    None
-                }
-            }
-        }
-    }
-
-    fn anonymous_entry_bibliography_mode(
-        &self,
-        reference: &Reference,
-        template: &[TemplateComponent],
-    ) -> Option<AnonymousEntryBibliographyMode> {
-        if !matches!(
-            reference.ref_type().as_str(),
-            "entry-dictionary" | "entry-encyclopedia" | "chapter"
-        ) {
-            return None;
-        }
-
-        if reference.ref_type() == "chapter" && !template_has_dictionary_entry_shape(template) {
-            return None;
-        }
-
-        if self.reference_has_visible_author(reference) {
-            return None;
-        }
-
-        if !template_has_primary_title(template) || !template_has_parent_container_title(template) {
-            return None;
-        }
-
-        if reference_has_online_access(reference) {
-            Some(AnonymousEntryBibliographyMode::ContainerLed)
-        } else {
-            Some(AnonymousEntryBibliographyMode::SuppressPrintLike)
-        }
-    }
-
-    fn reference_has_visible_author(&self, reference: &Reference) -> bool {
-        reference
-            .author()
-            .is_some_and(|author| !self.resolve_contributor_names(&author).is_empty())
+            .collect()
     }
 
     fn build_template_render_hint(
@@ -1199,17 +896,9 @@ impl Renderer<'_> {
         }
     }
 
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "Template rendering needs the resolved context plus the source template index."
-    )]
     fn render_template_component_with_format<F>(
         &self,
-        reference: &Reference,
-        ref_type: &str,
-        options: &RenderOptions<'_>,
-        hint: &ProcHints,
-        template_index: usize,
+        ctx: &TemplateRenderContext<'_>,
         component: &TemplateComponent,
         tracker: &mut TemplateComponentTracker,
     ) -> Option<ProcTemplateComponent>
@@ -1217,15 +906,7 @@ impl Renderer<'_> {
         F: crate::render::format::OutputFormat<Output = String>,
     {
         if let TemplateComponent::Group(group) = component {
-            return self.render_group_component_with_format::<F>(
-                reference,
-                ref_type,
-                options,
-                hint,
-                template_index,
-                group,
-                tracker,
-            );
+            return self.render_group_component_with_format::<F>(ctx, group, tracker);
         }
 
         let resolved_component = component;
@@ -1234,78 +915,105 @@ impl Renderer<'_> {
             return None;
         }
 
-        let mut values = resolved_component.values::<F>(reference, hint, options)?;
+        let mut values = resolved_component.values::<F>(ctx.reference, ctx.hint, ctx.options)?;
         // Suppress affixes when a component resolves to no meaningful content.
         // A whitespace-only value carries no data, so its prefix/suffix must
         // not leak into output (e.g. a ". In " prefix on an empty editor list).
         if values.value.trim().is_empty() {
             return None;
         }
-        self.apply_issued_no_date_fallback(reference, options, resolved_component, &mut values);
-        self.apply_entry_link_fallback(reference, options, &mut values);
+        self.apply_issued_no_date_fallback(
+            ctx.reference,
+            ctx.options,
+            resolved_component,
+            &mut values,
+        );
+        self.apply_entry_link_fallback(ctx.reference, ctx.options, &mut values);
 
         let item_language =
-            crate::values::effective_component_language(reference, resolved_component);
+            crate::values::effective_component_language(ctx.reference, resolved_component);
         tracker.mark_rendered(var_key, values.substituted_key.as_deref());
 
         Some(ProcTemplateComponent {
             template_component: resolved_component.clone(),
-            template_index: self.inject_ast_indices.then_some(template_index),
+            template_index: self.inject_ast_indices.then_some(ctx.template_index),
             value: values.value,
             prefix: values.prefix,
             suffix: values.suffix,
             url: values.url,
-            ref_type: Some(ref_type.to_string()),
-            config: Some(options.config.clone()),
-            bibliography_config: options.bibliography_config.clone(),
+            ref_type: Some(ctx.ref_type.to_string()),
+            config: Some(ctx.options.config.clone()),
+            bibliography_config: ctx.options.bibliography_config.clone(),
             item_language,
             sentence_initial: false,
             pre_formatted: values.pre_formatted,
         })
     }
 
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "Nested group rendering reuses the same tracker and template metadata."
-    )]
     fn render_group_component_with_format<F>(
         &self,
-        reference: &Reference,
-        ref_type: &str,
-        options: &RenderOptions<'_>,
-        hint: &ProcHints,
-        template_index: usize,
+        ctx: &TemplateRenderContext<'_>,
         group: &citum_schema::template::TemplateGroup,
         tracker: &mut TemplateComponentTracker,
     ) -> Option<ProcTemplateComponent>
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
+        let fmt = F::default();
+        let values = self.render_group_child_values(&fmt, ctx, group, tracker)?;
         let delimiter = group
             .delimiter
             .as_ref()
             .unwrap_or(&citum_schema::template::DelimiterPunctuation::Comma)
             .to_string_with_space();
-        let fmt = F::default();
+        let group_component = TemplateComponent::Group(group.clone());
+        Some(ProcTemplateComponent {
+            template_component: group_component.clone(),
+            template_index: self.inject_ast_indices.then_some(ctx.template_index),
+            value: fmt.join(values, &delimiter),
+            prefix: None,
+            suffix: None,
+            url: None,
+            ref_type: Some(ctx.ref_type.to_string()),
+            config: Some(ctx.options.config.clone()),
+            bibliography_config: ctx.options.bibliography_config.clone(),
+            item_language: crate::values::effective_component_language(
+                ctx.reference,
+                &group_component,
+            ),
+            sentence_initial: false,
+            pre_formatted: true,
+        })
+    }
+
+    /// Render the children of a template group into rendered strings, dropping
+    /// empty values. Returns `None` when no child carries meaningful content
+    /// (i.e. only term-only siblings produced output). Borrows the parent
+    /// `fmt` so a stateful `OutputFormat` sees a single instance for both
+    /// child rendering and the final `join` in the caller.
+    fn render_group_child_values<F>(
+        &self,
+        fmt: &F,
+        ctx: &TemplateRenderContext<'_>,
+        group: &citum_schema::template::TemplateGroup,
+        tracker: &mut TemplateComponentTracker,
+    ) -> Option<Vec<String>>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
         let mut has_meaningful_content = false;
         let mut values = Vec::new();
 
         for item in &group.group {
-            let Some(rendered) = self.render_template_component_with_format::<F>(
-                reference,
-                ref_type,
-                options,
-                hint,
-                template_index,
-                item,
-                tracker,
-            ) else {
+            let Some(rendered) =
+                self.render_template_component_with_format::<F>(ctx, item, tracker)
+            else {
                 continue;
             };
             let rendered_str = crate::render::render_component_with_format_and_renderer::<F>(
                 &rendered,
-                &fmt,
-                options.show_semantics,
+                fmt,
+                ctx.options.show_semantics,
             );
             if rendered_str.trim().is_empty() {
                 continue;
@@ -1316,25 +1024,7 @@ impl Renderer<'_> {
             values.push(rendered_str);
         }
 
-        if values.is_empty() || !has_meaningful_content {
-            return None;
-        }
-
-        let group_component = TemplateComponent::Group(group.clone());
-        Some(ProcTemplateComponent {
-            template_component: group_component.clone(),
-            template_index: self.inject_ast_indices.then_some(template_index),
-            value: fmt.join(values, &delimiter),
-            prefix: None,
-            suffix: None,
-            url: None,
-            ref_type: Some(ref_type.to_string()),
-            config: Some(options.config.clone()),
-            bibliography_config: options.bibliography_config.clone(),
-            item_language: crate::values::effective_component_language(reference, &group_component),
-            sentence_initial: false,
-            pre_formatted: true,
-        })
+        (has_meaningful_content && !values.is_empty()).then_some(values)
     }
 
     fn apply_issued_no_date_fallback(
@@ -1440,258 +1130,6 @@ impl Renderer<'_> {
             item_request.note_start_text_case,
         );
         self.render_item_from_template_with_format::<F>(reference, request, item_request.delimiter)
-    }
-}
-
-fn filter_article_journal_template_components(
-    components: &[TemplateComponent],
-    mode: ArticleJournalBibliographyMode,
-) -> Vec<TemplateComponent> {
-    components
-        .iter()
-        .filter_map(|component| filter_article_journal_template_component(component, mode))
-        .collect()
-}
-
-fn filter_article_journal_template_component(
-    component: &TemplateComponent,
-    mode: ArticleJournalBibliographyMode,
-) -> Option<TemplateComponent> {
-    if should_suppress_article_journal_component(component, mode) {
-        return None;
-    }
-
-    match component {
-        TemplateComponent::Group(list) => {
-            let mut filtered = list.clone();
-            filtered.group = filter_article_journal_template_components(&list.group, mode);
-            (!filtered.group.is_empty()).then_some(TemplateComponent::Group(filtered))
-        }
-        _ => Some(component.clone()),
-    }
-}
-
-fn article_journal_template_needs_filter(
-    components: &[TemplateComponent],
-    mode: ArticleJournalBibliographyMode,
-) -> bool {
-    components
-        .iter()
-        .any(|component| article_journal_component_needs_filter(component, mode))
-}
-
-fn rewrite_anonymous_entry_template(
-    template: &[TemplateComponent],
-    mode: AnonymousEntryBibliographyMode,
-    ref_type: &str,
-    prefer_doi: bool,
-) -> Vec<TemplateComponent> {
-    match mode {
-        AnonymousEntryBibliographyMode::ContainerLed => {
-            let mut rewritten = Vec::new();
-
-            if let Some(container_title) =
-                find_preferred_parent_container_component(template, ref_type)
-            {
-                rewritten.push(container_title.clone());
-            }
-            if let Some(issued) = find_first_component(template, is_issued_date_component) {
-                rewritten.push(issued.clone());
-            }
-            if let Some(primary_title) = find_first_component(template, is_primary_title_component)
-            {
-                rewritten.push(primary_title.clone());
-            }
-            if let Some(volume) = find_first_component(template, is_volume_component) {
-                rewritten.push(volume.clone());
-            }
-
-            if prefer_doi {
-                if let Some(doi) = find_first_component(template, is_doi_component) {
-                    rewritten.push(doi.clone());
-                }
-            } else if let Some(url) = find_first_component(template, is_url_component) {
-                rewritten.push(url.clone());
-            }
-
-            if rewritten.is_empty() {
-                template.to_vec()
-            } else {
-                rewritten
-            }
-        }
-        AnonymousEntryBibliographyMode::SuppressPrintLike => template.to_vec(),
-    }
-}
-
-fn find_first_component(
-    template: &[TemplateComponent],
-    predicate: impl Fn(&TemplateComponent) -> bool,
-) -> Option<&TemplateComponent> {
-    template.iter().find(|component| predicate(component))
-}
-
-fn find_preferred_parent_container_component<'a>(
-    template: &'a [TemplateComponent],
-    ref_type: &str,
-) -> Option<&'a TemplateComponent> {
-    if matches!(
-        ref_type,
-        "chapter" | "entry-dictionary" | "entry-encyclopedia"
-    ) && let Some(parent_monograph) =
-        find_first_component(template, is_parent_monograph_title_component)
-    {
-        return Some(parent_monograph);
-    }
-
-    find_first_component(template, is_parent_container_title_component)
-}
-
-fn article_journal_component_needs_filter(
-    component: &TemplateComponent,
-    mode: ArticleJournalBibliographyMode,
-) -> bool {
-    if should_suppress_article_journal_component(component, mode) {
-        return true;
-    }
-
-    match component {
-        TemplateComponent::Group(group) => {
-            article_journal_template_needs_filter(&group.group, mode)
-        }
-        _ => false,
-    }
-}
-
-fn is_term_only_component(component: &TemplateComponent) -> bool {
-    match component {
-        TemplateComponent::Term(_) => true,
-        TemplateComponent::Group(group) => group.group.iter().all(is_term_only_component),
-        _ => false,
-    }
-}
-
-fn should_suppress_article_journal_component(
-    component: &TemplateComponent,
-    mode: ArticleJournalBibliographyMode,
-) -> bool {
-    match mode {
-        ArticleJournalBibliographyMode::StandardDetail => is_doi_component(component),
-        ArticleJournalBibliographyMode::DoiFallback => is_article_detail_component(component),
-    }
-}
-
-fn template_has_primary_title(template: &[TemplateComponent]) -> bool {
-    template.iter().any(is_primary_title_component)
-}
-
-fn template_has_parent_container_title(template: &[TemplateComponent]) -> bool {
-    template.iter().any(is_parent_container_title_component)
-}
-
-fn template_has_dictionary_entry_shape(template: &[TemplateComponent]) -> bool {
-    template.iter().any(|component| {
-        matches!(
-            component,
-            TemplateComponent::Variable(variable) if variable.variable == SimpleVariable::Version
-        )
-    })
-}
-
-fn is_primary_title_component(component: &TemplateComponent) -> bool {
-    matches!(
-        component,
-        TemplateComponent::Title(title)
-            if title.title == citum_schema::template::TitleType::Primary
-    )
-}
-
-fn is_parent_container_title_component(component: &TemplateComponent) -> bool {
-    matches!(
-        component,
-        TemplateComponent::Title(title)
-            if matches!(
-                title.title,
-                citum_schema::template::TitleType::ParentSerial
-                    | citum_schema::template::TitleType::ParentMonograph
-            )
-    )
-}
-
-fn is_parent_monograph_title_component(component: &TemplateComponent) -> bool {
-    matches!(
-        component,
-        TemplateComponent::Title(title)
-            if title.title == citum_schema::template::TitleType::ParentMonograph
-    )
-}
-
-fn is_issued_date_component(component: &TemplateComponent) -> bool {
-    matches!(
-        component,
-        TemplateComponent::Date(date) if date.date == DateVariable::Issued
-    )
-}
-
-fn is_volume_component(component: &TemplateComponent) -> bool {
-    matches!(
-        component,
-        TemplateComponent::Number(number) if number.number == NumberVariable::Volume
-    )
-}
-
-fn is_url_component(component: &TemplateComponent) -> bool {
-    matches!(
-        component,
-        TemplateComponent::Variable(variable) if variable.variable == SimpleVariable::Url
-    )
-}
-
-fn is_doi_component(component: &TemplateComponent) -> bool {
-    matches!(
-        component,
-        TemplateComponent::Variable(variable) if variable.variable == SimpleVariable::Doi
-    )
-}
-
-fn is_article_detail_component(component: &TemplateComponent) -> bool {
-    matches!(
-        component,
-        TemplateComponent::Date(date) if date.date == DateVariable::Issued
-    ) || matches!(
-        component,
-        TemplateComponent::Number(number)
-            if matches!(
-                number.number,
-                NumberVariable::Volume | NumberVariable::Issue | NumberVariable::Pages
-            )
-    )
-}
-
-fn reference_has_pages(reference: &Reference) -> bool {
-    match reference.pages() {
-        Some(NumOrStr::Str(pages)) => !pages.trim().is_empty(),
-        Some(NumOrStr::Number(_)) => true,
-        None => false,
-    }
-}
-
-fn reference_has_doi(reference: &Reference) -> bool {
-    reference.doi().is_some_and(|doi| !doi.trim().is_empty())
-}
-
-fn reference_has_url(reference: &Reference) -> bool {
-    reference.url().is_some()
-}
-
-fn reference_has_online_access(reference: &Reference) -> bool {
-    reference_has_doi(reference) || reference_has_url(reference)
-}
-
-fn aliased_type_selector_candidates(ref_type: &str) -> Vec<&str> {
-    match ref_type {
-        "chapter" => vec!["chapter", "entry-dictionary"],
-        _ => vec![ref_type],
     }
 }
 
