@@ -3,7 +3,7 @@
 **Status:** Active
 **Version:** 0.4
 **Date:** 2026-05-15
-**Related:** bean `csl26-1bdr`, [`FORWARD_COMPATIBILITY.md`](./FORWARD_COMPATIBILITY.md), [`../architecture/EXTENSIBILITY_STRATEGY_2026-03-14.md`](../architecture/EXTENSIBILITY_STRATEGY_2026-03-14.md), [`../policies/TYPE_ADDITION_POLICY.md`](../policies/TYPE_ADDITION_POLICY.md), [`../policies/ENUM_VOCABULARY_POLICY.md`](../policies/ENUM_VOCABULARY_POLICY.md)
+**Related:** bean `csl26-1bdr`, [`FORWARD_COMPATIBILITY.md`](./FORWARD_COMPATIBILITY.md), [`../architecture/EXTENSIBILITY_STRATEGY.md`](../architecture/EXTENSIBILITY_STRATEGY.md), [`../policies/TYPE_ADDITION_POLICY.md`](../policies/TYPE_ADDITION_POLICY.md), [`../policies/ENUM_VOCABULARY_POLICY.md`](../policies/ENUM_VOCABULARY_POLICY.md)
 
 ## Purpose
 

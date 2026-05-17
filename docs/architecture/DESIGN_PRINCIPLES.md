@@ -209,7 +209,7 @@ styles into processor-dependent programs.
   boundaries unless a later spec explicitly says otherwise.
 
 See also:
-[`EXTENSIBILITY_STRATEGY_2026-03-14.md`](./EXTENSIBILITY_STRATEGY_2026-03-14.md).
+[`EXTENSIBILITY_STRATEGY.md`](./EXTENSIBILITY_STRATEGY.md).
 
 ## 9. Rust Engineering Serves The Model
 
