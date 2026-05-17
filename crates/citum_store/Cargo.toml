@@ -3,18 +3,22 @@ name = "citum_store"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-publish = false
 repository.workspace = true
+homepage.workspace = true
+description = "Citum style and reference storage layer — registry, cache, and resolver chain"
+readme = "../../README.md"
+keywords = ["citation", "csl", "storage", "registry"]
+categories = ["caching", "text-processing"]
 
 [dependencies]
-citum-schema = { package = "citum-schema", path = "../citum-schema" }
+citum-schema = { workspace = true }
+citum-resolver-api = { workspace = true }
 dirs = "6.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
 ciborium = "0.2"
 thiserror = "2.0"
-citum_resolver_api = { package = "citum-resolver-api", path = "../citum-resolver-api" }
 toml = "1.1"
 reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls"], optional = true }
 sha2 = { version = "0.11", optional = true }
@@ -26,7 +30,7 @@ gix = { version = "0.83", default-features = false, features = ["blocking-networ
 
 [features]
 hub = []
-http = ["citum_resolver_api/http", "dep:reqwest", "dep:sha2", "dep:tempfile", "dep:cid", "dep:multihash", "dep:multibase", "dep:gix"]
+http = ["citum-resolver-api/http", "dep:reqwest", "dep:sha2", "dep:tempfile", "dep:cid", "dep:multihash", "dep:multibase", "dep:gix"]
 
 [dev-dependencies]
 tempfile = "3"

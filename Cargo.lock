@@ -594,10 +594,8 @@ name = "citum"
 version = "0.52.0"
 dependencies = [
  "ciborium",
- "citum-bindings",
  "citum-engine",
  "citum-io",
- "citum-pdf",
  "citum-resolver-api",
  "citum-schema",
  "citum-schema-data",

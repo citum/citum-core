@@ -13,10 +13,10 @@ serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
 ciborium = "0.2"
 schemars = { version = "1.2.1", features = ["derive", "url2", "indexmap2"], optional = true }
 specta = { version = "2.0.0-rc.23", features = ["derive"], optional = true }
-csl_legacy = { package = "csl-legacy", path = "../csl-legacy", optional = true }
+csl-legacy = { workspace = true, optional = true }
 indexmap = { version = "2", features = ["serde"] }
-citum_schema_data = { package = "citum-schema-data", path = "../citum-schema-data" }
-citum_resolver_api = { package = "citum-resolver-api", path = "../citum-resolver-api" }
+citum-schema-data = { workspace = true }
+citum-resolver-api = { workspace = true }
 sha2 = "0.11"
 cid = { version = "0.11", default-features = false, features = ["alloc"] }
 multihash = { version = "0.19", default-features = false, features = ["alloc"] }
@@ -25,9 +25,9 @@ semver = "1"
 [features]
 default = []
 icu = []
-legacy-convert = ["dep:csl_legacy", "citum_schema_data/legacy-convert"]
-schema = ["dep:schemars", "citum_schema_data/schema"]
-bindings = ["dep:specta", "citum_schema_data/bindings"]
+legacy-convert = ["dep:csl-legacy", "citum-schema-data/legacy-convert"]
+schema = ["dep:schemars", "citum-schema-data/schema"]
+bindings = ["dep:specta", "citum-schema-data/bindings"]
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }

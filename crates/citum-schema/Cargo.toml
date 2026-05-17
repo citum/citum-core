@@ -7,15 +7,15 @@ description = "Citum citation and bibliography data schema types"
 repository.workspace = true
 
 [dependencies]
-citum_schema_data = { package = "citum-schema-data", path = "../citum-schema-data", default-features = false }
-citum_schema_style = { package = "citum-schema-style", path = "../citum-schema-style", default-features = false }
+citum-schema-data = { workspace = true }
+citum-schema-style = { workspace = true }
 
 [features]
 default = []
-icu = ["citum_schema_style/icu"]
-legacy-convert = ["citum_schema_data/legacy-convert", "citum_schema_style/legacy-convert"]
-schema = ["citum_schema_data/schema", "citum_schema_style/schema"]
-bindings = ["citum_schema_data/bindings", "citum_schema_style/bindings"]
+icu = ["citum-schema-style/icu"]
+legacy-convert = ["citum-schema-data/legacy-convert", "citum-schema-style/legacy-convert"]
+schema = ["citum-schema-data/schema", "citum-schema-style/schema"]
+bindings = ["citum-schema-data/bindings", "citum-schema-style/bindings"]
 
 [dev-dependencies]
 tracing.workspace = true

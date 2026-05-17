@@ -255,9 +255,9 @@ pub(crate) enum RenderCommands {
                       citum render doc manuscript.djot -b refs.json -s apa-7th -f html\n\n  \
                       Render Markdown with Pandoc-style citations:\n    \
                       citum render doc manuscript.md --input-format markdown -b refs.json -s apa-7th\n\n  \
-                      Render to PDF (requires 'typst-pdf' feature):\n    \
-                      citum render doc manuscript.djot -b refs.json -s apa-7th\n\
-                      -f typst -o paper.pdf --pdf"
+                      Render to Typst, then PDF (typst CLI required):\n    \
+                      citum render doc manuscript.djot -b refs.json -s apa-7th -f typst -o paper.typ\n    \
+                      typst compile paper.typ"
     )]
     Doc(RenderDocArgs),
 
@@ -603,7 +603,8 @@ pub(crate) struct RenderDocArgs {
     #[arg(short = 'o', long)]
     pub(crate) output: Option<PathBuf>,
 
-    /// Compile Typst output to PDF (requires `typst-pdf` feature)
+    /// Compile Typst output to PDF (not in v1 cargo-install builds; use
+    /// `-f typst` then `typst compile`)
     #[arg(long)]
     pub(crate) pdf: bool,
 
