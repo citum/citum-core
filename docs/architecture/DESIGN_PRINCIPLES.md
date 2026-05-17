@@ -1,65 +1,117 @@
 # Citum Design Principles
 
-See CLAUDE.md for active behavioral policy. This document captures the full design rationale.
+**Status:** Active architectural doctrine
+**Scope:** Project-wide design constraints for Citum schema, styles, migration,
+engine behavior, and public surfaces.
 
-## 1. High-Fidelity Data & Math Support
+This document states the durable principles. Operational policy lives in
+`CLAUDE.md`; detailed contracts live in the linked specs and policies.
 
-- **EDTF as Primary**: Prioritize Extended Date/Time Format (EDTF) for all date fields. The engine must support ranges, uncertainty, and approximations natively.
-- **Math in Variables**: Support mathematical notation and rich text within metadata variables (e.g., title or note). Prefer standard encodings (e.g., Unicode) over format-specific markup where possible, while ensuring the processor can handle complex fragments without corruption. Ref: csln#64
-- **Scoped Multilingualism**: Support multilingual/multiscript data via field 'scopes' (e.g., author+an:mslang). Ref: csln#66
-- **Contributor Distinction**: Maintain a strict distinction between individual and organizational authors.
+## 1. Fidelity Is The First Constraint
 
-## 2. Hybrid Processing Architecture
+Citum is not a new citation aesthetic. It is a typed, declarative citation
+system whose first obligation is to render known styles correctly.
 
-- **Dual-Mode Support**: The architecture must cater to both Batch Processing (CLI-based like Pandoc/LaTeX) and Interactive/Real-time usage (GUI-based like Word/Zotero).
-- **JSON Server Mode**: Consider a service-oriented approach (similar to Haskell citeproc) where the engine can run as a background process to minimize startup latency for interactive apps.
+- **Declared authority comes first.** When a current style guide, publisher
+  instruction, manual, or curated documentary example states the rule, Citum
+  follows that authority even if CSL XML, citeproc-js output, or migrated YAML
+  says something easier to test.
+- **Fidelity checks are the automation gate.** CSL-derived styles are usually
+  compared against citeproc-js for supported features; biblatex-derived work is
+  compared against biblatex behavior where that is the relevant prior art.
+  These comparators are executable authorities or fallbacks, not a replacement
+  for better documentary evidence.
+- **Byte-visible output matters.** Punctuation, spacing, affixes, ordering,
+  disambiguation, and locale terms are architectural behavior, not cosmetic
+  cleanup.
+- **SQI is secondary.** Style Quality Index can guide concision, preset reuse,
+  and fallback robustness, but no SQI gain justifies a fidelity regression.
+- **Divergence must be explicit.** Intentional departures from CSL/citeproc or
+  biblatex behavior belong in the divergence register or a focused spec, not
+  in hidden processor behavior.
 
-## 3. Future-Proofing & Versioning (Stability)
+See also: [`../TIER_STATUS.md`](../TIER_STATUS.md),
+[`../policies/SQI_REFINEMENT_PLAN.md`](../policies/SQI_REFINEMENT_PLAN.md),
+[`../adjudication/DIVERGENCE_REGISTER.md`](../adjudication/DIVERGENCE_REGISTER.md),
+[`../policies/STYLE_WORKFLOW_DECISION_RULES.md`](../policies/STYLE_WORKFLOW_DECISION_RULES.md),
+[`MULTI_AUTHORITY_STYLE_VERIFICATION_PLAN_2026-03-07.md`](./MULTI_AUTHORITY_STYLE_VERIFICATION_PLAN_2026-03-07.md).
 
-- **Forward/Backward Compatibility**: We must ensure that a style written in 2026 works in 2030, and ideally, that a newer style degrades gracefully in an older engine.
-- **Schema Evolution**: Utilize Serde's `#[serde(default)]` and `#[serde(flatten)]` to handle unknown or new fields gracefully. Implement a versioning strategy within the Rust types to allow for non-breaking extensions to the specification.
+## 2. Data Model Before Formatting Tricks
 
-**Strategy: Strict Typing with Explicit Extensions**
-1. **Explicit Versioning**: Styles include a `version` field for unambiguous schema identification.
-2. **Strict Validation**: Style and locale types use `deny_unknown_fields` to catch typos at parse time. `InputReference` variants are an exception: serde's internally-tagged enum dispatch replays the tag field into the inner struct's deserializer, making `deny_unknown_fields` incompatible. Unknown fields on reference types silently produce `None` and surface as missing data at render time rather than a parse error. This is an accepted trade-off for deterministic class-based dispatch.
-3. **Explicit Extension Points**: Styles use explicit `custom: Option<HashMap<String, serde_json::Value>>` fields for user-defined metadata and extensions. See [EXTENSIBILITY_STRATEGY_2026-03-14.md](./EXTENSIBILITY_STRATEGY_2026-03-14.md) for the portability-first extension ladder and limits on executable extensions.
-4. **Extension via Defaults**: All new features must be `Option<T>` with `#[serde(default)]`.
+The reference model should preserve bibliographic reality before it serves a
+particular output string.
 
-The end-to-end contract — what an older engine must do when it meets a newer feature, and which categories may or may not hard-fail — is defined in [`../specs/FORWARD_COMPATIBILITY.md`](../specs/FORWARD_COMPATIBILITY.md).
+- **EDTF-first dates.** Date fields prefer parsed EDTF so ranges,
+  uncertainty, approximation, seasons, and open intervals remain structured.
+  Literal fallback is allowed when data cannot be parsed without loss.
+- **Structured contributors.** Personal names, organizational names, and
+  contributor lists are distinct inputs. Processors must not parse display
+  strings to recover name structure; corporate names may contain commas.
+- **Hybrid reference classes.** Academic parent-child relationships are
+  structural when the parent is semantically meaningful, such as journal
+  articles and book chapters. Domain objects are flat when the apparent
+  container is only a locator, such as legal reporters, treaty series,
+  repositories, and standards bodies.
+- **New top-level types require evidence.** Add a class only when semantic
+  distinction, style discrimination, field-schema difference, and lack of a
+  meaningful parent all justify it.
+- **Rich text is bounded.** Freeform text fields support plain strings and Djot
+  inline markup. Full executable or format-specific fragments are not part of
+  the portable data model.
 
-**Graceful Degradation for Multilingual Data**
-- **Fallback Chain**: Multilingual fields must always implement a `Display` fallback (e.g., `Complex.original` -> `Simple string`).
-- **Mode Fallback**: If a style requests a `translated` view but the data only provides `original`, the processor must return `original` rather than failing.
+See also: [`../policies/TYPE_ADDITION_POLICY.md`](../policies/TYPE_ADDITION_POLICY.md),
+[`../specs/INPUT_REFERENCE_CLASS_DISCRIMINATOR.md`](../specs/INPUT_REFERENCE_CLASS_DISCRIMINATOR.md).
 
-## 4. Multilingual Support
+## 3. Multilingual Data Is First-Class
 
-- **Explicit Language/Script Tagging**: All multilingual metadata uses BCP 47 tags with script and optional variant (e.g., "ja-Latn-hepburn" for Hepburn romanization)
-- **Graceful Degradation**: Simple string → original → transliteration → translation fallback chain via `Display` trait
-- **Surface-Level Disambiguation**: Disambiguation matches displayed written forms (transliterated strings if style shows transliteration), NOT PIDs (ORCID/DOI are for identity, not disambiguation)
-- **Declarative Modes**: Styles declare viewing preference (original/transliterated/translated/combined) without procedural logic
+Multilingual and multiscript behavior is data and style configuration, not an
+after-the-fact rendering patch.
 
-## 5. Rust Engineering Standards (Code-as-Schema)
+- **Use explicit language/script tags.** Language identifiers use BCP 47 style
+  tags. Reference data may carry item language, per-field language overrides,
+  original text, transliterations, and translations.
+- **Render the requested view when possible.** Styles declare multilingual
+  modes such as primary, transliterated, translated, and combined. Missing
+  preferred views degrade to available data rather than failing.
+- **Disambiguate what the reader sees.** Name and title disambiguation operates
+  on displayed written forms. Identifiers such as DOI and ORCID establish
+  identity; they do not replace surface-form disambiguation.
+- **Locale and script choices are declarative.** Locale terms, grammatical
+  forms, transliteration priority, and script-specific behavior belong in style
+  or locale data.
 
-- **Serde-Driven Truth**: We use a Code-First approach. The Rust structs and enums are the source of truth for the schema.
-- **Total Stability**: Prohibit the use of `unwrap()` or `unsafe`. Use idiomatic Rust `Result` patterns for all processing logic.
+See also: [`MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](../specs/MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md),
+[`DISAMBIGUATION_MULTILINGUAL_GROUPING.md`](./DISAMBIGUATION_MULTILINGUAL_GROUPING.md).
 
-## 6. Explicit Over Magic
+## 4. Styles Are Declarative Contracts
 
-**The style language should be explicit; the processor should be dumb.**
+The style language should describe citation behavior directly. The processor
+should execute the contract, not infer house rules from hidden type checks.
 
-If special behavior is needed (e.g., different punctuation for journals vs books), it should be expressed in the style YAML, not hardcoded in the processor.
+- **Explicit over magic.** If journals, books, legal cases, or datasets need
+  different punctuation or components, the style declares that behavior.
+- **Templates replace procedural conditionals.** Citum templates and options
+  replace CSL 1.0 macro/choose/if structures with typed, inspectable data.
+- **Generic spines first.** Prefer lean base templates, option presets, template
+  presets, and inheritance before adding per-type variants.
+- **Type variants are for structural outliers.** Use `type-variants` only when
+  a reference class or subtype genuinely needs a different component set or
+  ordering.
+- **Reuse is part of the language.** `extends`, `extends-pin`, template refs,
+  embedded bases, option presets, and null-aware overlays are architectural
+  mechanisms for keeping styles small without hiding semantics.
 
-Bad (magic in processor):
+Example of hidden processor magic to avoid:
+
 ```rust
-// Processor has hidden logic for journal articles
 if ref_type == "article-journal" {
     separator = ", ";
 }
 ```
 
-Good (explicit in style):
+The same distinction belongs in style data:
+
 ```yaml
-# Style explicitly declares type-specific behavior via type-variants
 bibliography:
   type-variants:
     article-journal:
@@ -68,69 +120,113 @@ bibliography:
           suffix: ","
 ```
 
-This makes styles portable, testable, and understandable without reading processor code.
+See also: [`MIGRATION_STRATEGY_ANALYSIS.md`](./MIGRATION_STRATEGY_ANALYSIS.md),
+[`CITUM_MODULARIZATION.md`](./CITUM_MODULARIZATION.md).
 
-## 7. Declarative Templates
+## 5. Compatibility Is A Public Contract
 
-Replace CSL 1.0's procedural `<choose>/<if>` with flat templates and spec-level
-`type-variants` for structural outliers:
-```yaml
-bibliography:
-  template:
-    - contributor: author
-      form: long
-    - date: issued
-      form: year
-      wrap: parentheses
-    - title: primary
-    - variable: publisher
-  # type-variants at the spec level — only for genuine structural differences
-  type-variants:
-    article-journal:
-      template:
-        - contributor: author
-          form: long
-        - date: issued
-          form: year
-          wrap: parentheses
-        - title: primary
-        # publisher omitted for journals
-```
+Citum is pre-1.0, but style and data producers still need predictable upgrade
+behavior.
 
-**Prefer presets and lean generic templates over `type-variants`** — the goal is to
-design the base template so it handles ~90% of reference types, reserving `type-variants`
-only for types that need a structurally different component set. Use option presets
-(`options.contributors`, `options.dates`, `options.titles`) and template presets
-(`citation.template-ref`) to share configuration without per-type duplication.
+- **Rust types are schema truth.** Serde structs/enums define the data model;
+  JSON Schema is generated from code and checked into docs when schema crates
+  or the CLI schema generator change.
+- **Older engines should degrade deliberately.** Additive style/data/locale
+  changes normally produce `SoftDegrade` with warnings, not raw serde errors.
+- **Template grammar changes are different.** New required template variants,
+  required fields, or changed component semantics are major-level changes and
+  may hard-fail in older engines.
+- **Unknown reference classes round-trip.** The `InputReference` discriminator
+  captures unknown top-level classes and lets document APIs warn while
+  preserving data.
+- **Warnings are API behavior.** Compatibility warnings must surface through
+  documented CLI, engine, server, and binding channels rather than ad hoc
+  logging.
 
-## 8. Structured Name Input
+See also: [`../specs/FORWARD_COMPATIBILITY.md`](../specs/FORWARD_COMPATIBILITY.md),
+[`../policies/ENUM_VOCABULARY_POLICY.md`](../policies/ENUM_VOCABULARY_POLICY.md),
+[`../reference/SCHEMA_VERSIONING.md`](../reference/SCHEMA_VERSIONING.md).
 
-Names must be structured (`family`/`given` or `literal`), never parsed from strings. Corporate names can contain commas.
+## 6. Migration Is Hybrid By Design
 
-## 9. Oracle Verification
+CSL 1.0 and Citum have different shapes. The migration strategy must respect
+that mismatch instead of pretending XML can be translated mechanically into a
+clean declarative model.
 
-All changes must pass the verification loop:
-1. Render with citeproc-js → String A
-2. Render with Citum → String B
-3. **Pass**: A == B (for supported features)
+- **Keep what XML is good at.** CSL XML remains useful for extracting options,
+  locale terms, substitute rules, disambiguation hints, and latent branches.
+- **Do not over-trust XML template compilation.** Procedural macro and
+  conditional flattening is the hard part of migration; heuristic fixes should
+  be treated as risk unless comparator or fixture evidence supports them.
+- **Use output-driven evidence where it is stronger.** citeproc-js output can
+  reveal actual component order, delimiters, formatting, and type-specific
+  suppression for exercised reference types.
+- **Hand-author high-impact styles when needed.** Production parent styles are
+  allowed to be domain-authored and presetized rather than treated as compiler
+  artifacts.
+- **Migration success is measured downstream.** The converted style is not done
+  when YAML parses; it is done when rendering, fallback behavior, and quality
+  gates hold.
 
-## 9a. Dual Metrics: Fidelity + SQI
+See also: [`MIGRATION_STRATEGY_ANALYSIS.md`](./MIGRATION_STRATEGY_ANALYSIS.md),
+[`ROADMAP.md`](./ROADMAP.md).
 
-Use two metrics with clear priority:
+## 7. One Engine, Multiple Surfaces
 
-1. **Fidelity** (oracle match) is the hard gate.
-2. **SQI** (Style Quality Index) is a secondary optimization metric.
+The core engine should remain a synchronous, deterministic library that can be
+reached through several product surfaces.
 
-Policy:
-- Never accept an SQI improvement that causes a fidelity regression.
-- Use SQI to break ties when multiple implementations have comparable fidelity.
-- Prefer SQI improvements that increase fallback robustness and concision without changing rendered output.
-- When tradeoffs are unavoidable during iteration, restore fidelity before merge and document temporary SQI/fidelity drift explicitly.
+- **Batch and interactive modes are both first-class.** The CLI supports
+  document and reference workflows; `citum-server` provides long-running
+  JSON-RPC over stdio and optional HTTP for low-latency clients.
+- **Rendering targets share semantics.** Plain text, HTML, Djot, LaTeX, and
+  Typst renderers should differ in markup representation, not in citation
+  logic.
+- **Document processing is part of the system.** Citations, note behavior,
+  bibliography placement, grouping, and output-format details are engine
+  behavior, not CLI-only conveniences.
+- **Bindings are consumers of the same contract.** Lua, Python, JS, FFI, server,
+  and CLI surfaces should expose the same style/data semantics and warning
+  behavior.
 
-## 10. Well-Commented Code
+See also: [`../../crates/README.md`](../../crates/README.md).
 
-Code should be self-documenting with clear comments explaining:
-- **Why** decisions were made, not just what the code does
-- Non-obvious behavior or edge cases
-- References to CSL 1.0 spec where relevant
-- Known limitations or TODOs
+## 8. Extensibility Protects Portability
+
+Extensions exist to relieve pressure on the core schema without turning shared
+styles into processor-dependent programs.
+
+- **Promote repeated needs into the core schema.** Common behavior should become
+  a typed field, option, preset, locale term, or template construct.
+- **Use `custom.*` as inert metadata.** Namespaced custom data may incubate
+  domain-specific information, but portable rendering must not silently depend
+  on executable interpretation of it.
+- **Prefer constrained declarative rules before scripting.** Any future rule
+  layer must be deterministic, bounded, serializable, schema-visible, and safe
+  to ignore or degrade.
+- **Do not put executable code in portable shared styles.** Runtime scripting,
+  host plugins, preprocessors, and postprocessors belong at local deployment
+  boundaries unless a later spec explicitly says otherwise.
+
+See also:
+[`EXTENSIBILITY_STRATEGY_2026-03-14.md`](./EXTENSIBILITY_STRATEGY_2026-03-14.md).
+
+## 9. Rust Engineering Serves The Model
+
+Engineering standards are not ornamental. They protect schema truth,
+determinism, and diagnosability.
+
+- **No hidden panic paths in production logic.** Use `Result`, typed errors, and
+  explicit fallbacks. `unwrap`/`expect` belong only in tests, benchmarks,
+  checked invariants with local rationale, or fatal bootstrap paths.
+- **No `unsafe` without separate justification.** If it ever becomes necessary,
+  the invariant and boundary must be documented at the use site.
+- **Comments explain constraints.** Good comments record why a design exists,
+  what invariant the type system cannot express, or which external spec forced
+  a behavior. They do not narrate obvious code.
+- **Public Rust items are documented.** The schema is public surface; new or
+  touched public items need concise `///` documentation.
+- **Generated artifacts stay coupled to source.** Schema and docs generated from
+  Rust must be regenerated in the same change that modifies their source.
+
+See also: [`../guides/CODING_STANDARDS.md`](../guides/CODING_STANDARDS.md).
