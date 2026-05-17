@@ -825,8 +825,30 @@ impl Renderer<'_> {
             position,
             integral_name_state,
         );
+        let mut components =
+            self.render_template_components::<F>(reference, &ref_type, &options, &hint, template);
+
+        self.apply_sentence_initial_context::<F>(&mut components, context, note_start_text_case);
+
+        (!components.is_empty()).then_some(components)
+    }
+
+    /// Render each top-level template component for `reference`, threading a
+    /// fresh `TemplateRenderContext` per index so the source position is
+    /// preserved in AST-injection mode.
+    fn render_template_components<F>(
+        &self,
+        reference: &Reference,
+        ref_type: &str,
+        options: &RenderOptions<'_>,
+        hint: &ProcHints,
+        template: &[TemplateComponent],
+    ) -> Vec<ProcTemplateComponent>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
         let mut tracker = TemplateComponentTracker::default();
-        let mut components: Vec<ProcTemplateComponent> = template
+        template
             .iter()
             .enumerate()
             .filter_map(|(template_index, component)| {
@@ -835,22 +857,14 @@ impl Renderer<'_> {
                     self.inject_ast_indices.then_some(template_index);
                 let ctx = TemplateRenderContext {
                     reference,
-                    ref_type: &ref_type,
+                    ref_type,
                     options: &component_options,
-                    hint: &hint,
+                    hint,
                     template_index,
                 };
                 self.render_template_component_with_format::<F>(&ctx, component, &mut tracker)
             })
-            .collect();
-
-        self.apply_sentence_initial_context::<F>(&mut components, context, note_start_text_case);
-
-        if components.is_empty() {
-            None
-        } else {
-            Some(components)
-        }
+            .collect()
     }
 
     fn build_template_render_hint(
@@ -945,39 +959,13 @@ impl Renderer<'_> {
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
+        let fmt = F::default();
+        let values = self.render_group_child_values(&fmt, ctx, group, tracker)?;
         let delimiter = group
             .delimiter
             .as_ref()
             .unwrap_or(&citum_schema::template::DelimiterPunctuation::Comma)
             .to_string_with_space();
-        let fmt = F::default();
-        let mut has_meaningful_content = false;
-        let mut values = Vec::new();
-
-        for item in &group.group {
-            let Some(rendered) =
-                self.render_template_component_with_format::<F>(ctx, item, tracker)
-            else {
-                continue;
-            };
-            let rendered_str = crate::render::render_component_with_format_and_renderer::<F>(
-                &rendered,
-                &fmt,
-                ctx.options.show_semantics,
-            );
-            if rendered_str.trim().is_empty() {
-                continue;
-            }
-            if !is_term_only_component(item) {
-                has_meaningful_content = true;
-            }
-            values.push(rendered_str);
-        }
-
-        if values.is_empty() || !has_meaningful_content {
-            return None;
-        }
-
         let group_component = TemplateComponent::Group(group.clone());
         Some(ProcTemplateComponent {
             template_component: group_component.clone(),
@@ -996,6 +984,47 @@ impl Renderer<'_> {
             sentence_initial: false,
             pre_formatted: true,
         })
+    }
+
+    /// Render the children of a template group into rendered strings, dropping
+    /// empty values. Returns `None` when no child carries meaningful content
+    /// (i.e. only term-only siblings produced output). Borrows the parent
+    /// `fmt` so a stateful `OutputFormat` sees a single instance for both
+    /// child rendering and the final `join` in the caller.
+    fn render_group_child_values<F>(
+        &self,
+        fmt: &F,
+        ctx: &TemplateRenderContext<'_>,
+        group: &citum_schema::template::TemplateGroup,
+        tracker: &mut TemplateComponentTracker,
+    ) -> Option<Vec<String>>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let mut has_meaningful_content = false;
+        let mut values = Vec::new();
+
+        for item in &group.group {
+            let Some(rendered) =
+                self.render_template_component_with_format::<F>(ctx, item, tracker)
+            else {
+                continue;
+            };
+            let rendered_str = crate::render::render_component_with_format_and_renderer::<F>(
+                &rendered,
+                fmt,
+                ctx.options.show_semantics,
+            );
+            if rendered_str.trim().is_empty() {
+                continue;
+            }
+            if !is_term_only_component(item) {
+                has_meaningful_content = true;
+            }
+            values.push(rendered_str);
+        }
+
+        (has_meaningful_content && !values.is_empty()).then_some(values)
     }
 
     fn apply_issued_no_date_fallback(
