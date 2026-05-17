@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.50.0] - 2026-05-16
+## [0.51.0] - 2026-05-17
 
 ### Bug Fixes
 
@@ -81,6 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **cli**
 
 - Delegate style loading to store ([`683c86f`](https://github.com/citum/citum-core/commit/683c86fb07043a22475a7427b213dc811c361cda))
+
+- Split commands.rs into modules ([`5c61049`](https://github.com/citum/citum-core/commit/5c61049ed113066a2c4a4643796e25d705689bc7))
 
 
 **store**
