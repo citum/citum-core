@@ -3,7 +3,7 @@
 **Status:** Active
 **Version:** 0.3
 **Date:** 2026-05-16
-**Related:** bean `csl26-2a0b`, bean `csl26-fuw7`, `docs/architecture/DESIGN_PRINCIPLES.md`, `docs/reference/SCHEMA_VERSIONING.md`, `docs/policies/ENUM_VOCABULARY_POLICY.md`, `docs/architecture/EXTENSIBILITY_STRATEGY_2026-03-14.md`
+**Related:** bean `csl26-2a0b`, bean `csl26-fuw7`, `docs/architecture/DESIGN_PRINCIPLES.md`, `docs/reference/SCHEMA_VERSIONING.md`, `docs/policies/ENUM_VOCABULARY_POLICY.md`, `docs/architecture/EXTENSIBILITY_STRATEGY.md`
 
 ## Purpose
 
@@ -48,7 +48,7 @@ engine builds (e.g. via an editor that ships a pinned engine version).
   These parse as unknown-class references and emit compatibility warnings
   during document formatting.
 - New `custom.<namespace>.*` keys (the existing inert-metadata escape
-  hatch from [`EXTENSIBILITY_STRATEGY_2026-03-14.md`](../architecture/EXTENSIBILITY_STRATEGY_2026-03-14.md)).
+  hatch from [`EXTENSIBILITY_STRATEGY.md`](../architecture/EXTENSIBILITY_STRATEGY.md)).
 
 **Out of scope** (older engines may hard-fail; producers must bump major):
 
@@ -157,9 +157,10 @@ Style and tool authors:
    newer schema minor. The `version` is the primary signal `citum check`
    uses to emit the global "this style targets a newer engine" warning.
 2. **Prefer `custom.<namespace>.*`** for genuinely experimental or
-   institution-specific metadata. The portable schema is not the right
-   incubation surface; see
-   [`EXTENSIBILITY_STRATEGY_2026-03-14.md`](../architecture/EXTENSIBILITY_STRATEGY_2026-03-14.md).
+   institution-specific metadata that does not need to appear in
+   rendered output. `custom.*` fields are inert — the engine ignores
+   them during rendering. See
+   [`EXTENSIBILITY_STRATEGY.md`](../architecture/EXTENSIBILITY_STRATEGY.md).
 3. **Treat template grammar changes as `major`-only.** New
    `TemplateComponent` variants and changes to existing-component
    shapes are not forward-compatible and must not ship as `minor`.
@@ -181,13 +182,16 @@ Engine and binding authors:
 ## Promotion path
 
 Borrowed from
-[`EXTENSIBILITY_STRATEGY_2026-03-14.md`](../architecture/EXTENSIBILITY_STRATEGY_2026-03-14.md)
+[`EXTENSIBILITY_STRATEGY.md`](../architecture/EXTENSIBILITY_STRATEGY.md)
 and applied here:
 
-1. New behavior starts as `custom.<namespace>.*` if it is exploratory or
-   non-portable.
-2. If multiple styles need it, it graduates to a typed schema addition
-   (`Option<T>` field, new attribute-enum variant).
+1. Non-rendering metadata may start as `custom.<namespace>.*` for
+   tooling and workflow purposes. These fields are inert — the engine
+   does not render them.
+2. When rendering behavior is needed and evidence supports it, a typed
+   schema addition is designed (`Option<T>` field, new attribute-enum
+   variant, new template component). This is the rendering debut — no
+   rendering happens before this point.
 3. The schema addition lands as a `minor` bump. Older engines see it as
    `SoftDegrade`. Newer engines honor it.
 4. Stable promoted features may eventually become required — that
