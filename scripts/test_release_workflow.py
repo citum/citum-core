@@ -12,7 +12,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 WORKFLOW_PATH = REPO_ROOT / ".github/workflows/release.yml"
 RELEASE_CONFIG_PATH = REPO_ROOT / "release.toml"
-SCHEMA_LIB = REPO_ROOT / "crates/citum-schema-style/src/lib.rs"
+SCHEMA_LIB = REPO_ROOT / "crates/citum-schema-style/src/version.rs"
 
 
 class ReleaseWorkflowTests(unittest.TestCase):

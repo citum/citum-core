@@ -135,7 +135,7 @@ jobs:
           python3 scripts/bump.py schema "${{ steps.resolve.outputs.level }}" \
             --yes --no-commit --no-tag --no-validate
           cargo run --bin citum --features schema -- schema --out-dir docs/schemas
-          git add crates/citum-schema-style/src/lib.rs \
+          git add crates/citum-schema-style/src/version.rs \
             docs/reference/SCHEMA_VERSIONING.md \
             docs/schemas
           if ! git diff --cached --quiet; then
@@ -166,7 +166,7 @@ jobs:
         run: |
           SCHEMA_VERSION=$(sed -n \
             's/.*STYLE_SCHEMA_VERSION: \&str = "\([^"]*\)".*/\1/p' \
-            crates/citum-schema-style/src/lib.rs)
+            crates/citum-schema-style/src/version.rs)
           if [ -z "$SCHEMA_VERSION" ]; then
             echo "Error: STYLE_SCHEMA_VERSION not found" >&2
             exit 1
@@ -245,10 +245,10 @@ jobs:
       - name: Tag schema release when schema changed
         run: |
           if git diff --name-only "${{ github.event.pull_request.base.sha }}" HEAD \
-            | grep -qE '^(crates/citum-schema-style/src/lib.rs|docs/schemas/)'; then
+            | grep -qE '^(crates/citum-schema-style/src/version.rs|docs/schemas/)'; then
             SCHEMA_VERSION=$(sed -n \
               's/.*STYLE_SCHEMA_VERSION: \&str = "\([^"]*\)".*/\1/p' \
-              crates/citum-schema-style/src/lib.rs)
+              crates/citum-schema-style/src/version.rs)
             if [ -z "$SCHEMA_VERSION" ]; then
               echo "Error: STYLE_SCHEMA_VERSION not found" >&2
               exit 1
