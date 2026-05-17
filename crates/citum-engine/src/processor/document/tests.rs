@@ -174,6 +174,7 @@ fn make_integral_name_style(scope: IntegralNameScope, contexts: IntegralNameCont
                 contexts: Some(contexts),
                 subsequent_form: Some(IntegralNameForm::Short),
                 short_name_display: None,
+                ..Default::default()
             }),
             ..Default::default()
         }),
@@ -378,6 +379,7 @@ fn test_note_style_config_can_place_marker_before_period() {
             punctuation: Some(NoteQuotePlacement::Outside),
             number: Some(NoteNumberPlacement::Outside),
             order: Some(NoteMarkerOrder::Before),
+            ..Default::default()
         }),
         bib,
     );
@@ -401,6 +403,7 @@ fn test_note_style_config_moves_marker_inside_quotes() {
             punctuation: Some(NoteQuotePlacement::Outside),
             number: Some(NoteNumberPlacement::Inside),
             order: Some(NoteMarkerOrder::After),
+            ..Default::default()
         }),
         bib,
     );

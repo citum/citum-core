@@ -156,7 +156,7 @@ pub struct Config {
 /// Citation-local option overrides.
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct CitationOptions {
     /// Substitution rules for missing data.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -232,12 +232,22 @@ pub struct CitationOptions {
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 /// Bibliography-local option overrides.
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct BibliographyOptions {
     /// Substitution rules for missing data.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -335,12 +345,22 @@ pub struct BibliographyOptions {
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 /// Document-level note marker placement rules.
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct NoteConfig {
     /// Desired location of movable punctuation relative to closing quotation
     /// marks when note markers are introduced.
@@ -353,6 +373,16 @@ pub struct NoteConfig {
     /// punctuation mark.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub order: Option<NoteMarkerOrder>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 /// Controls where movable punctuation is placed relative to closing quotation marks.
@@ -571,6 +601,7 @@ impl BibliographyOptions {
             custom: None,
             compound_numeric: self.compound_numeric.clone(),
             sort_partitioning: self.sort_partitioning.clone(),
+            unknown_fields: std::collections::BTreeMap::new(),
         }
     }
 
@@ -1059,5 +1090,27 @@ locale-override: en-US-chicago
         let merged = overrides.merged_with(&base);
         assert_eq!(merged.processing, Some(Processing::AuthorDate));
         assert!(merged.contributors.is_some());
+    }
+
+    #[test]
+    fn citation_options_captures_unknown_fields_for_forward_compat() {
+        let yaml = "future-key: true\n";
+        let opts: CitationOptions = serde_yaml::from_str(yaml).unwrap();
+        assert!(opts.unknown_fields.contains_key("future-key"));
+    }
+
+    #[test]
+    fn bibliography_options_captures_unknown_fields_for_forward_compat() {
+        let yaml = "future-key: true\n";
+        let opts: BibliographyOptions = serde_yaml::from_str(yaml).unwrap();
+        assert!(opts.unknown_fields.contains_key("future-key"));
+    }
+
+    #[test]
+    fn note_config_captures_unknown_fields_for_forward_compat() {
+        let yaml = "punctuation: inside\nfuture-key: true\n";
+        let cfg: NoteConfig = serde_yaml::from_str(yaml).unwrap();
+        assert!(cfg.unknown_fields.contains_key("future-key"));
+        assert_eq!(cfg.punctuation, Some(NoteQuotePlacement::Inside));
     }
 }

@@ -17,6 +17,107 @@ use citum_server::rpc::{
 use schemars::schema_for;
 use std::fs;
 
+/// Types that carry a flatten-captured `unknown_fields` map for forward-compat
+/// parse tolerance. The Rust loaders accept extra keys (SoftDegrade contract,
+/// see `docs/specs/FORWARD_COMPATIBILITY.md`), so producers no longer get the
+/// `additionalProperties: false` typo catch from `deny_unknown_fields`. We
+/// inject `unevaluatedProperties: false` on the generated schema for each so
+/// editor validation still flags unknown keys at authoring time.
+const TOLERANT_TYPE_NAMES: &[&str] = &[
+    "ArticleJournalBibliographyConfig",
+    "AudioVisualWork",
+    "BibliographyConfig",
+    "BibliographyOptions",
+    "BibliographySortPartitioning",
+    "BibliographySpec",
+    "Brief",
+    "CitationOptions",
+    "CitationSpec",
+    "Classic",
+    "Collection",
+    "CollectionComponent",
+    "CompoundNumericConfig",
+    "Config",
+    "ContributorConfig",
+    "Dataset",
+    "DateConfig",
+    "Event",
+    "Hearing",
+    "IntegralNameConfig",
+    "LegalCase",
+    "LocalizedTemplateSpec",
+    "LocatorConfig",
+    "LocatorKindConfig",
+    "LocatorPattern",
+    "Monograph",
+    "NoteConfig",
+    "Patent",
+    "Regulation",
+    "Serial",
+    "SerialComponent",
+    "Software",
+    "Standard",
+    "Statute",
+    "Style",
+    "Substitute",
+    "TitleRendering",
+    "TitlesConfig",
+    "Treaty",
+];
+
+/// Stamp `unevaluatedProperties: false` on each tolerant object schema so
+/// producer-side validation rejects typos that the Rust loader would silently
+/// capture into `unknown_fields`.
+fn stamp_unevaluated_properties(schema: &mut serde_json::Value) {
+    fn stamp_object(obj: &mut serde_json::Map<String, serde_json::Value>) {
+        if obj.get("type").and_then(|v| v.as_str()) != Some("object") {
+            return;
+        }
+        if obj.contains_key("unevaluatedProperties") {
+            return;
+        }
+        if obj.get("additionalProperties") == Some(&serde_json::Value::Bool(false)) {
+            return;
+        }
+        obj.insert(
+            "unevaluatedProperties".to_string(),
+            serde_json::Value::Bool(false),
+        );
+    }
+
+    if let Some(root_obj) = schema.as_object_mut() {
+        let root_is_tolerant = root_obj
+            .get("title")
+            .and_then(|v| v.as_str())
+            .is_some_and(|t| TOLERANT_TYPE_NAMES.contains(&t));
+        if root_is_tolerant {
+            stamp_object(root_obj);
+        }
+        if let Some(defs) = root_obj.get_mut("$defs").and_then(|v| v.as_object_mut()) {
+            for name in TOLERANT_TYPE_NAMES {
+                if let Some(def_obj) = defs.get_mut(*name).and_then(|v| v.as_object_mut()) {
+                    stamp_object(def_obj);
+                }
+            }
+            // InputReference is a discriminated union: each `oneOf` branch is a
+            // tolerant reference-type struct inlined by schemars. Stamp each so
+            // producer-side validation rejects typos on reference payloads.
+            if let Some(ir) = defs
+                .get_mut("InputReference")
+                .and_then(|v| v.as_object_mut())
+                && let Some(one_of) = ir.get_mut("oneOf").and_then(|v| v.as_array_mut())
+            {
+                for branch in one_of {
+                    if let Some(branch_obj) = branch.as_object_mut() {
+                        branch_obj.remove("additionalProperties");
+                        stamp_object(branch_obj);
+                    }
+                }
+            }
+        }
+    }
+}
+
 fn build_server_schema() -> Result<serde_json::Value, serde_json::Error> {
     use serde_json::{Map, Value};
     let methods: &[(&str, Value)] = &[
@@ -69,7 +170,7 @@ pub(super) fn run_schema(args: SchemaArgs) -> CliResult {
     if let Some(dir) = args.out_dir {
         fs::create_dir_all(&dir)?;
         let server_schema = build_server_schema()?;
-        let schemas: &[(&str, serde_json::Value)] = &[
+        let mut schemas: Vec<(&str, serde_json::Value)> = vec![
             ("style", serde_json::to_value(schema_for!(Style))?),
             ("bib", serde_json::to_value(schema_for!(InputBibliography))?),
             ("locale", serde_json::to_value(schema_for!(RawLocale))?),
@@ -87,7 +188,10 @@ pub(super) fn run_schema(args: SchemaArgs) -> CliResult {
             ),
             ("server", server_schema),
         ];
-        for (name, schema) in schemas {
+        for (_, schema) in &mut schemas {
+            stamp_unevaluated_properties(schema);
+        }
+        for (name, schema) in &schemas {
             let filename = format!("{name}.json");
             let path = dir.join(&filename);
             fs::write(&path, serde_json::to_string_pretty(&schema)?)?;
@@ -97,7 +201,7 @@ pub(super) fn run_schema(args: SchemaArgs) -> CliResult {
     }
 
     if let Some(t) = args.r#type {
-        let schema: serde_json::Value = match t {
+        let mut schema: serde_json::Value = match t {
             SchemaType::Style => serde_json::to_value(schema_for!(Style))?,
             SchemaType::Bib => serde_json::to_value(schema_for!(InputBibliography))?,
             SchemaType::Locale => serde_json::to_value(schema_for!(RawLocale))?,
@@ -106,6 +210,7 @@ pub(super) fn run_schema(args: SchemaArgs) -> CliResult {
             SchemaType::AbbrevMap => serde_json::to_value(schema_for!(AbbreviationMap))?,
             SchemaType::Server => build_server_schema()?,
         };
+        stamp_unevaluated_properties(&mut schema);
         println!("{}", serde_json::to_string_pretty(&schema)?);
         return Ok(());
     }

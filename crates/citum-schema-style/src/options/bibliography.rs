@@ -13,7 +13,7 @@ use crate::locale::{GeneralTerm, TermForm};
 /// Bibliography-specific configuration.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct BibliographyConfig {
     /// Article-journal-specific bibliography policies.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -55,16 +55,36 @@ pub struct BibliographyConfig {
     /// Partitioning policy for multilingual bibliography sorting and sections.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort_partitioning: Option<BibliographySortPartitioning>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 /// Article-journal-specific bibliography configuration.
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct ArticleJournalBibliographyConfig {
     /// Fallback policy used when page data is absent from an article-journal reference.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub no_page_fallback: Option<ArticleJournalNoPageFallback>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 /// Named fallback policies for page-less article-journal bibliography entries.
@@ -79,7 +99,7 @@ pub enum ArticleJournalNoPageFallback {
 /// Bibliography partitioning policy for multilingual sort order and sections.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct BibliographySortPartitioning {
     /// Source used to derive each reference's partition key.
     pub by: BibliographyPartitionKind,
@@ -92,6 +112,16 @@ pub struct BibliographySortPartitioning {
     /// Optional headings for visible partition sections.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub headings: HashMap<String, BibliographyPartitionHeading>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 /// Localizable heading source for automatic bibliography partition sections.
@@ -208,7 +238,7 @@ fn default_collapse_subentries() -> bool {
 /// Used in chemistry journals (e.g., Angewandte Chemie).
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct CompoundNumericConfig {
     /// Whether grouped item citations render sub-entry labels (`1a`, `1b`).
     ///
@@ -230,6 +260,16 @@ pub struct CompoundNumericConfig {
     /// Delimiter between sub-items (default: ", ").
     #[serde(default = "default_sub_delimiter")]
     pub sub_delimiter: String,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 impl Default for BibliographyConfig {
@@ -245,6 +285,7 @@ impl Default for BibliographyConfig {
             custom: None,
             compound_numeric: None,
             sort_partitioning: None,
+            unknown_fields: std::collections::BTreeMap::new(),
         }
     }
 }
@@ -257,6 +298,7 @@ impl Default for CompoundNumericConfig {
             sub_label: SubLabelStyle::default(),
             sub_label_suffix: default_sub_label_suffix(),
             sub_delimiter: default_sub_delimiter(),
+            unknown_fields: std::collections::BTreeMap::new(),
         }
     }
 }
@@ -327,6 +369,7 @@ mod tests {
         let config = BibliographyConfig {
             article_journal: Some(ArticleJournalBibliographyConfig {
                 no_page_fallback: Some(ArticleJournalNoPageFallback::Doi),
+                ..Default::default()
             }),
             ..Default::default()
         };
@@ -395,6 +438,7 @@ mod tests {
                 mode: BibliographyPartitionMode::SortAndSections,
                 order: vec!["Latn".to_string()],
                 headings,
+                unknown_fields: std::collections::BTreeMap::new(),
             }),
             ..Default::default()
         };
@@ -406,14 +450,38 @@ mod tests {
     }
 
     #[test]
-    fn test_sort_partitioning_rejects_unknown_fields() {
-        let json = r#"{"sort-partitioning": {"by": "script", "unknown": true}}"#;
-        let error = serde_json::from_str::<BibliographyConfig>(json)
-            .expect_err("unknown partitioning fields should be rejected");
+    fn test_sort_partitioning_captures_unknown_fields_for_forward_compat() {
+        let json = r#"{"sort-partitioning": {"by": "script", "future-key": true}}"#;
+        let config: BibliographyConfig = serde_json::from_str(json)
+            .expect("unknown partitioning fields should be captured, not rejected");
 
-        assert!(
-            error.to_string().contains("unknown field"),
-            "unexpected error: {error}"
-        );
+        let partitioning = config
+            .sort_partitioning
+            .expect("partitioning should deserialize");
+
+        assert!(partitioning.unknown_fields.contains_key("future-key"));
+        assert_eq!(partitioning.by, BibliographyPartitionKind::Script);
+    }
+
+    #[test]
+    fn test_bibliography_config_captures_unknown_fields_for_forward_compat() {
+        let json = r#"{"future-key": true}"#;
+        let config: BibliographyConfig = serde_json::from_str(json).unwrap();
+        assert!(config.unknown_fields.contains_key("future-key"));
+    }
+
+    #[test]
+    fn test_compound_numeric_captures_unknown_fields_for_forward_compat() {
+        let json = r#"{"sub-label": "alphabetic", "future-key": true}"#;
+        let config: CompoundNumericConfig = serde_json::from_str(json).unwrap();
+        assert!(config.unknown_fields.contains_key("future-key"));
+        assert_eq!(config.sub_label, SubLabelStyle::Alphabetic);
+    }
+
+    #[test]
+    fn test_article_journal_captures_unknown_fields_for_forward_compat() {
+        let json = r#"{"future-key": true}"#;
+        let config: ArticleJournalBibliographyConfig = serde_json::from_str(json).unwrap();
+        assert!(config.unknown_fields.contains_key("future-key"));
     }
 }

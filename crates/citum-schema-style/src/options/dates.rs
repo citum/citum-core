@@ -79,7 +79,7 @@ impl DateConfigEntry {
 /// Date formatting configuration.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct DateConfig {
     pub month: MonthFormat,
     /// Marker for uncertain dates (e.g., "?" or "uncertain"). None suppresses display.
@@ -112,6 +112,16 @@ pub struct DateConfig {
     /// How negative EDTF years with unspecified digits are rendered.
     #[serde(default)]
     pub negative_unspecified_years: NegativeUnspecifiedYears,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 fn default_range_delimiter() -> String {
@@ -132,6 +142,24 @@ impl Default for DateConfig {
             show_timezone: false,
             era_labels: EraLabels::default(),
             negative_unspecified_years: NegativeUnspecifiedYears::default(),
+            unknown_fields: std::collections::BTreeMap::new(),
         }
+    }
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used, reason = "Panicking is acceptable in tests.")]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn captures_unknown_fields_for_forward_compat() {
+        let yaml = r#"
+month: long
+future-key: true
+"#;
+        let cfg: DateConfig = serde_yaml::from_str(yaml).unwrap();
+        assert!(cfg.unknown_fields.contains_key("future-key"));
+        assert_eq!(cfg.month, MonthFormat::Long);
     }
 }

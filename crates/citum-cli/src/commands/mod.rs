@@ -93,5 +93,6 @@ fn run_deprecated_validate(args: crate::args::LegacyValidateArgs) -> CliResult {
         bibliography: Vec::new(),
         citations: Vec::new(),
         json: false,
+        strict: false,
     })
 }

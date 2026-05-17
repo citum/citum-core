@@ -18,7 +18,7 @@ pub(super) fn run_check(args: CheckArgs) -> CliResult {
     let mut checks = Vec::<CheckItem>::new();
 
     if let Some(style_input) = args.style {
-        let status = check_style_input(&style_input);
+        let status = check_style_input(&style_input, args.strict);
         checks.push(status);
     }
 
@@ -110,7 +110,7 @@ pub(super) fn run_check(args: CheckArgs) -> CliResult {
     Ok(())
 }
 
-fn check_style_input(style_input: &str) -> CheckItem {
+fn check_style_input(style_input: &str, strict: bool) -> CheckItem {
     let current_version = citum_schema::SchemaVersion::default();
     match load_any_style(style_input, false) {
         Ok(style) => {
@@ -138,6 +138,23 @@ fn check_style_input(style_input: &str) -> CheckItem {
                 citum_engine::Processor::new(style.clone(), citum_engine::Bibliography::new());
             let enum_warnings = citum_engine::api::unknown_enum_warnings(&processor);
             warnings.extend(enum_warnings.into_iter().map(|w| w.message));
+
+            // Forward-compat: report captured `unknown_fields` paths. In strict
+            // mode every populated path becomes a hard error; otherwise they
+            // surface as warnings alongside enum warnings.
+            let unknown_paths = citum_engine::api::collect_unknown_field_paths(&style);
+            if !unknown_paths.is_empty() {
+                let messages: Vec<String> = unknown_paths
+                    .into_iter()
+                    .map(|p| format!("unknown field(s) at {}: {}", p.path, p.keys.join(", ")))
+                    .collect();
+                if strict {
+                    ok = false;
+                    error = Some(format!("strict: {}", messages.join("; ")));
+                } else {
+                    warnings.extend(messages);
+                }
+            }
 
             CheckItem {
                 kind: "style",

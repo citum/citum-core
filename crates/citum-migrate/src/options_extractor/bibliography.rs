@@ -68,6 +68,7 @@ pub fn extract_bibliography_config(style: &Style) -> Option<BibliographyConfig> 
     if has_article_journal_no_page_doi_fallback(style, &bib.layout) {
         config.article_journal = Some(ArticleJournalBibliographyConfig {
             no_page_fallback: Some(ArticleJournalNoPageFallback::Doi),
+            ..Default::default()
         });
         has_config = true;
     }

@@ -88,35 +88,25 @@ fn parse_style(yaml: &str) -> Outcome {
 }
 
 fn style_has_unknowns(style: &Style) -> bool {
-    // Top-level Style unknown_fields (row 06: new top-level section).
-    if !style.unknown_fields.is_empty() {
+    // Capture-fields (rows 05/06: new option key, new top-level section)
+    // delegate to the published engine walker so the test and `citum check`
+    // share a single source of truth.
+    if !citum_engine::api::collect_unknown_field_paths(style).is_empty() {
         return true;
     }
-    // Nested option struct captures (row 05: new key inside an option struct).
-    if let Some(options) = &style.options
-        && options_has_unknowns(options)
+    // Templates remain opt-out (rows 11/12 HardFail); local enum walker
+    // catches Unknown variants captured by the tolerant deserializer.
+    if let Some(citation) = &style.citation
+        && let Some(template) = &citation.template
+        && template_has_unknowns(template)
     {
         return true;
     }
-    if let Some(citation) = &style.citation {
-        if !citation.unknown_fields.is_empty() {
-            return true;
-        }
-        if let Some(template) = &citation.template
-            && template_has_unknowns(template)
-        {
-            return true;
-        }
-    }
-    if let Some(bib) = &style.bibliography {
-        if !bib.unknown_fields.is_empty() {
-            return true;
-        }
-        if let Some(template) = &bib.template
-            && template_has_unknowns(template)
-        {
-            return true;
-        }
+    if let Some(bib) = &style.bibliography
+        && let Some(template) = &bib.template
+        && template_has_unknowns(template)
+    {
+        return true;
     }
     if let Some(templates) = &style.templates {
         for template in templates.values() {
@@ -124,18 +114,6 @@ fn style_has_unknowns(style: &Style) -> bool {
                 return true;
             }
         }
-    }
-    false
-}
-
-fn options_has_unknowns(options: &citum_schema::options::Config) -> bool {
-    if !options.unknown_fields.is_empty() {
-        return true;
-    }
-    if let Some(contributors) = &options.contributors
-        && !contributors.unknown_fields.is_empty()
-    {
-        return true;
     }
     false
 }
