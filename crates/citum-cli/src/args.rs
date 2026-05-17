@@ -689,6 +689,11 @@ pub(crate) struct CheckArgs {
     /// Output as JSON
     #[arg(long)]
     pub(crate) json: bool,
+
+    /// Treat captured forward-compat `unknown_fields` paths as hard errors
+    /// instead of warnings. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[arg(long)]
+    pub(crate) strict: bool,
 }
 
 #[derive(Args, Debug)]

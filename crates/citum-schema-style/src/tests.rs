@@ -897,15 +897,21 @@ citation:
 }
 
 #[test]
-fn citation_options_reject_bibliography_only_fields() {
+fn citation_options_capture_bibliography_only_fields_for_forward_compat() {
     let yaml = r#"
 citation:
   options:
     entry-suffix: "."
 "#;
 
-    let err = Style::from_yaml_str(yaml).expect_err("citation entry-suffix must fail");
-    assert!(err.to_string().contains("entry-suffix"));
+    // Misplaced keys land in `unknown_fields` (SoftDegrade contract); strict-mode
+    // surfaces them via `citum check --strict`.
+    let style = Style::from_yaml_str(yaml).expect("citation options must tolerate unknown keys");
+    let options = style
+        .citation
+        .and_then(|c| c.options)
+        .expect("citation.options must exist");
+    assert!(options.unknown_fields.contains_key("entry-suffix"));
 }
 
 #[test]
@@ -927,7 +933,7 @@ bibliography:
 }
 
 #[test]
-fn bibliography_options_reject_citation_only_fields() {
+fn bibliography_options_capture_citation_only_fields_for_forward_compat() {
     let yaml = r#"
 bibliography:
   options:
@@ -935,8 +941,13 @@ bibliography:
       form: short
 "#;
 
-    let err = Style::from_yaml_str(yaml).expect_err("bibliography locators must fail");
-    assert!(err.to_string().contains("locators"));
+    let style =
+        Style::from_yaml_str(yaml).expect("bibliography options must tolerate unknown keys");
+    let options = style
+        .bibliography
+        .and_then(|b| b.options)
+        .expect("bibliography.options must exist");
+    assert!(options.unknown_fields.contains_key("locators"));
 }
 
 #[test]

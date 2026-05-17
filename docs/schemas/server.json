@@ -2520,10 +2520,10 @@
           }
         }
       },
-      "additionalProperties": false,
       "required": [
         "by"
-      ]
+      ],
+      "unevaluatedProperties": false
     },
     "BibliographyPartitionKind": {
       "description": "Partition key source for bibliography partitioning.",

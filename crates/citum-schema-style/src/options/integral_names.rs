@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 /// Integral citation name-memory configuration.
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+#[serde(rename_all = "kebab-case")]
 pub struct IntegralNameConfig {
     /// The name-memory rule to apply to integral citations.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -27,6 +27,16 @@ pub struct IntegralNameConfig {
     /// How to display the short name on the first mention.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub short_name_display: Option<ShortNameDisplay>,
+    /// Forward-compat: captures unknown keys when an older engine reads a
+    /// style produced by a newer schema. Empty by default; treated as a
+    /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
 impl IntegralNameConfig {
@@ -119,6 +129,23 @@ pub enum ShortNameDisplay {
     FullThenParenthetical,
     /// Render "Short [Full Name]" on first mention.
     ShortThenBracketed,
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used, reason = "Panicking is acceptable in tests.")]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn captures_unknown_fields_for_forward_compat() {
+        let yaml = r#"
+rule: full-then-short
+future-key: true
+"#;
+        let cfg: IntegralNameConfig = serde_yaml::from_str(yaml).unwrap();
+        assert!(cfg.unknown_fields.contains_key("future-key"));
+        assert_eq!(cfg.rule, Some(IntegralNameRule::FullThenShort));
+    }
 }
 
 /// Integral-name configuration with defaults resolved.

@@ -278,6 +278,7 @@ fn language_partition_substitute_style() -> Style {
                 },
             ),
         ]),
+        unknown_fields: std::collections::BTreeMap::new(),
     });
     style
         .bibliography
@@ -558,6 +559,7 @@ fn build_article_journal_no_page_fallback_style() -> Style {
             options: Some(BibliographyOptions {
                 article_journal: Some(ArticleJournalBibliographyConfig {
                     no_page_fallback: Some(ArticleJournalNoPageFallback::Doi),
+                    ..Default::default()
                 }),
                 separator: Some(", ".to_string()),
                 ..Default::default()

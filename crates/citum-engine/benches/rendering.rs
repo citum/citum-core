@@ -453,6 +453,7 @@ fn build_type_variant_bench_style() -> Style {
                     no_page_fallback: Some(
                         citum_schema::options::ArticleJournalNoPageFallback::Doi,
                     ),
+                    ..Default::default()
                 }),
                 ..Default::default()
             }),

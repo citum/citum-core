@@ -398,7 +398,7 @@
             "type",
             "class"
           ],
-          "additionalProperties": true
+          "unevaluatedProperties": false
         },
         {
           "description": "A component of a larger monograph, such as a chapter in a book.",
@@ -654,7 +654,7 @@
             "type",
             "class"
           ],
-          "additionalProperties": true
+          "unevaluatedProperties": false
         },
         {
           "description": "A component of a larger serial publication; for example a journal or newspaper article.\nThe parent serial is referenced by its ID.",
@@ -938,7 +938,7 @@
             "type",
             "class"
           ],
-          "additionalProperties": true
+          "unevaluatedProperties": false
         },
         {
           "description": "A collection of works, such as an anthology or proceedings.",
@@ -1152,7 +1152,7 @@
             "type",
             "class"
           ],
-          "additionalProperties": true
+          "unevaluatedProperties": false
         },
         {
           "description": "A serial publication (journal, magazine, etc.).",
@@ -1281,7 +1281,7 @@
             "type",
             "class"
           ],
-          "additionalProperties": true
+          "unevaluatedProperties": false
         },
         {
           "description": "A legal case (court decision).",
@@ -1428,7 +1428,8 @@
           },
           "required": [
             "class"
-          ]
+          ],
+          "unevaluatedProperties": false
         },
         {
           "description": "A statute or legislative act.",
@@ -1589,7 +1590,8 @@
           },
           "required": [
             "class"
-          ]
+          ],
+          "unevaluatedProperties": false
         },
         {
           "description": "An international treaty or agreement.",
@@ -1731,10 +1733,10 @@
               "const": "treaty"
             }
           },
-          "additionalProperties": false,
           "required": [
             "class"
-          ]
+          ],
+          "unevaluatedProperties": false
         },
         {
           "description": "A legislative or administrative hearing.",
@@ -1860,7 +1862,8 @@
           },
           "required": [
             "class"
-          ]
+          ],
+          "unevaluatedProperties": false
         },
         {
           "description": "An administrative regulation.",
@@ -2000,7 +2003,8 @@
           },
           "required": [
             "class"
-          ]
+          ],
+          "unevaluatedProperties": false
         },
         {
           "description": "A legal brief or filing.",
@@ -2137,7 +2141,8 @@
           },
           "required": [
             "class"
-          ]
+          ],
+          "unevaluatedProperties": false
         },
         {
           "description": "A classic work (Aristotle, Bible, etc.) with standard citation forms.",
@@ -2336,10 +2341,10 @@
               "const": "classic"
             }
           },
-          "additionalProperties": true,
           "required": [
             "class"
-          ]
+          ],
+          "unevaluatedProperties": false
         },
         {
           "description": "A patent.",
@@ -2510,7 +2515,8 @@
           "required": [
             "patent-number",
             "class"
-          ]
+          ],
+          "unevaluatedProperties": false
         },
         {
           "description": "A research dataset.",
@@ -2679,7 +2685,8 @@
           },
           "required": [
             "class"
-          ]
+          ],
+          "unevaluatedProperties": false
         },
         {
           "description": "A technical standard or specification.",
@@ -2821,7 +2828,8 @@
           "required": [
             "standard-number",
             "class"
-          ]
+          ],
+          "unevaluatedProperties": false
         },
         {
           "description": "Software or source code.",
@@ -2990,7 +2998,8 @@
           },
           "required": [
             "class"
-          ]
+          ],
+          "unevaluatedProperties": false
         },
         {
           "description": "Event metadata for conferences, performances, broadcasts, and recordings.",
@@ -3156,7 +3165,8 @@
           },
           "required": [
             "class"
-          ]
+          ],
+          "unevaluatedProperties": false
         },
         {
           "description": "An audio-visual work: film, TV episode, recording, or broadcast.\n\nThis is a work-like reference class. It represents the creative work\nwhen that work is the citee, not a fully modeled release hierarchy.",
@@ -3315,10 +3325,10 @@
               "const": "audio-visual"
             }
           },
-          "additionalProperties": true,
           "required": [
             "class"
-          ]
+          ],
+          "unevaluatedProperties": false
         }
       ],
       "unevaluatedProperties": false

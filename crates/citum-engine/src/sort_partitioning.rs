@@ -193,6 +193,7 @@ mod tests {
             mode: BibliographyPartitionMode::SortOnly,
             order: Vec::new(),
             headings: std::collections::HashMap::new(),
+            unknown_fields: std::collections::BTreeMap::new(),
         }
     }
 
@@ -381,6 +382,7 @@ mod tests {
             mode: BibliographyPartitionMode::Sections,
             order: vec!["ru".to_string(), "en".to_string()],
             headings: std::collections::HashMap::new(),
+            unknown_fields: std::collections::BTreeMap::new(),
         };
         let ru = reference("ru", Some("Пушкин"), "Title", Some("ru"));
         let en = reference("en", Some("Smith"), "Title", Some("en"));
