@@ -18,9 +18,9 @@ Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by r
 1. [x] **`citum-schema-style/src/lib.rs` (3607 lines before; facade after this PR)**
    - **Issues:** Orchestrated the entire style model; contained versioning, warnings, and complex template resolution logic.
    - **Target:** Split style-owned schema, validation, inheritance, overlay, section specs, template references, and template resolution into focused modules.
-2. [ ] **`citum-schema-data/src/reference/mod.rs` (3377 lines)**
+2. [x] **`citum-schema-data/src/reference/mod.rs` (3377 lines before; facade after this PR)**
    - **Issues:** Mixed concerns between core `InputReference` data model and JSON schema generation logic.
-   - **Target:** Move `InputReference` and `ReferenceClass` to specialized modules (`src/reference/input.rs`, `src/reference/classes.rs`).
+   - **Target:** Move `InputReference` and class-discriminator types to specialized modules (`src/reference/input.rs`, `src/reference/classes.rs`) while retaining stable `reference::*` re-exports.
 3. [x] **`citum-cli/src/commands.rs` (2923 lines → commands/ module hierarchy)**
    - **Issues:** Command handler monolith.
    - **Target:** Split into `src/commands/*.rs` hierarchy (e.g., `style.rs`, `registry.rs`, `doctor.rs`).
