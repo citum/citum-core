@@ -59,6 +59,19 @@ struct GroupItemRenderRequest<'a> {
     delimiter: &'a str,
 }
 
+/// Resolved context for rendering a single template (or nested group)
+/// component. Bundles parameters that would otherwise inflate
+/// [`Renderer::render_template_component_with_format`] and
+/// [`Renderer::render_group_component_with_format`] past the clippy
+/// argument-count limit.
+struct TemplateRenderContext<'a> {
+    reference: &'a Reference,
+    ref_type: &'a str,
+    options: &'a RenderOptions<'a>,
+    hint: &'a ProcHints,
+    template_index: usize,
+}
+
 /// Returns the first type-variant template whose selector matches `ref_type`,
 /// or `None` if there are no variants or none match.
 fn resolve_type_variant<'a>(
@@ -139,30 +152,23 @@ impl Renderer<'_> {
     ) -> Result<Vec<String>, ProcessorError> {
         self.render_grouped_citation_with_format::<crate::render::plain::PlainText>(
             items,
-            spec,
-            mode,
-            intra_delimiter,
-            suppress_author,
-            position,
-            spec.note_start_text_case,
+            &GroupRenderParams {
+                spec,
+                mode,
+                intra_delimiter,
+                suppress_author,
+                position,
+                note_start_text_case: spec.note_start_text_case,
+            },
         )
     }
 
     /// Render a group of items that must not be author-collapsed (legal cases,
     /// personal communications). Returns the rendered citation strings.
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "Citation item rendering now needs explicit note-start context."
-    )]
     fn render_special_type_items<F>(
         &self,
         group: &[&crate::reference::CitationItem],
-        spec: &citum_schema::CitationSpec,
-        mode: &citum_schema::citation::CitationMode,
-        suppress_author: bool,
-        position: Option<&citum_schema::citation::Position>,
-        intra_delimiter: &str,
-        note_start_text_case: Option<citum_schema::NoteStartTextCase>,
+        params: &GroupRenderParams<'_>,
     ) -> Result<Vec<String>, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -170,17 +176,17 @@ impl Renderer<'_> {
         let fmt = F::default();
         let mut rendered_items = Vec::new();
         for item in group {
-            let state = self.resolve_item_render_state(item, spec)?;
+            let state = self.resolve_item_render_state(item, params.spec)?;
             if let Some(item_str) = self.render_group_item_from_template_with_format::<F>(
                 state.reference,
                 GroupItemRenderRequest {
                     item: state.item,
                     template: &state.template,
-                    mode,
-                    suppress_author,
-                    position,
-                    note_start_text_case,
-                    delimiter: intra_delimiter,
+                    mode: params.mode,
+                    suppress_author: params.suppress_author,
+                    position: params.position,
+                    note_start_text_case: params.note_start_text_case,
+                    delimiter: params.intra_delimiter,
                 },
             ) && let Some((ids, content)) = self.build_citation_chunk(
                 &fmt,
@@ -257,19 +263,10 @@ impl Renderer<'_> {
     ///
     /// Returns an error when a referenced item is missing or grouped rendering
     /// fails.
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "Grouped citation rendering now needs explicit note-start context."
-    )]
     pub fn render_grouped_citation_with_format<F>(
         &self,
         items: &[crate::reference::CitationItem],
-        spec: &citum_schema::CitationSpec,
-        mode: &citum_schema::citation::CitationMode,
-        intra_delimiter: &str,
-        suppress_author: bool,
-        position: Option<&citum_schema::citation::Position>,
-        note_start_text_case: Option<citum_schema::NoteStartTextCase>,
+        params: &GroupRenderParams<'_>,
     ) -> Result<Vec<String>, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -277,59 +274,35 @@ impl Renderer<'_> {
         let groups = group_citation_items_by_author(self, items);
         let mut rendered_groups = Vec::new();
         for (_author_key, group) in groups {
-            rendered_groups.extend(self.render_grouped_citation_group_with_format::<F>(
-                &group,
-                spec,
-                mode,
-                intra_delimiter,
-                suppress_author,
-                position,
-                note_start_text_case,
-            )?);
+            rendered_groups
+                .extend(self.render_grouped_citation_group_with_format::<F>(&group, params)?);
         }
 
         Ok(rendered_groups)
     }
 
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "Grouped citation rendering now needs explicit note-start context."
-    )]
     fn render_grouped_citation_group_with_format<F>(
         &self,
         group: &[&crate::reference::CitationItem],
-        spec: &citum_schema::CitationSpec,
-        mode: &citum_schema::citation::CitationMode,
-        intra_delimiter: &str,
-        suppress_author: bool,
-        position: Option<&citum_schema::citation::Position>,
-        note_start_text_case: Option<citum_schema::NoteStartTextCase>,
+        params: &GroupRenderParams<'_>,
     ) -> Result<Vec<String>, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
-        let state = self.resolve_group_render_state(group, spec)?;
+        let state = self.resolve_group_render_state(group, params.spec)?;
 
         if let Some(citation) = self.try_render_integral_group_with_format::<F>(
             group,
-            spec,
-            mode,
-            suppress_author,
-            position,
+            params.spec,
+            params.mode,
+            params.suppress_author,
+            params.position,
         )? {
             return Ok(vec![citation]);
         }
 
-        if self.requires_full_group_item_rendering(mode, state.first_ref) {
-            return self.render_special_type_items::<F>(
-                group,
-                spec,
-                mode,
-                suppress_author,
-                position,
-                intra_delimiter,
-                note_start_text_case,
-            );
+        if self.requires_full_group_item_rendering(params.mode, state.first_ref) {
+            return self.render_special_type_items::<F>(group, params);
         }
 
         Ok(self
@@ -338,14 +311,7 @@ impl Renderer<'_> {
                 state.first_ref,
                 state.first_item,
                 &state.template,
-                &GroupRenderParams {
-                    spec,
-                    mode,
-                    intra_delimiter,
-                    suppress_author,
-                    position,
-                    note_start_text_case,
-                },
+                params,
             )?
             .into_iter()
             .collect())
@@ -908,15 +874,14 @@ impl Renderer<'_> {
                 let mut component_options = options.clone();
                 component_options.current_template_index =
                     self.inject_ast_indices.then_some(template_index);
-                self.render_template_component_with_format::<F>(
+                let ctx = TemplateRenderContext {
                     reference,
-                    &ref_type,
-                    &component_options,
-                    &hint,
+                    ref_type: &ref_type,
+                    options: &component_options,
+                    hint: &hint,
                     template_index,
-                    component,
-                    &mut tracker,
-                )
+                };
+                self.render_template_component_with_format::<F>(&ctx, component, &mut tracker)
             })
             .collect();
 
@@ -1199,17 +1164,9 @@ impl Renderer<'_> {
         }
     }
 
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "Template rendering needs the resolved context plus the source template index."
-    )]
     fn render_template_component_with_format<F>(
         &self,
-        reference: &Reference,
-        ref_type: &str,
-        options: &RenderOptions<'_>,
-        hint: &ProcHints,
-        template_index: usize,
+        ctx: &TemplateRenderContext<'_>,
         component: &TemplateComponent,
         tracker: &mut TemplateComponentTracker,
     ) -> Option<ProcTemplateComponent>
@@ -1217,15 +1174,7 @@ impl Renderer<'_> {
         F: crate::render::format::OutputFormat<Output = String>,
     {
         if let TemplateComponent::Group(group) = component {
-            return self.render_group_component_with_format::<F>(
-                reference,
-                ref_type,
-                options,
-                hint,
-                template_index,
-                group,
-                tracker,
-            );
+            return self.render_group_component_with_format::<F>(ctx, group, tracker);
         }
 
         let resolved_component = component;
@@ -1234,47 +1183,44 @@ impl Renderer<'_> {
             return None;
         }
 
-        let mut values = resolved_component.values::<F>(reference, hint, options)?;
+        let mut values = resolved_component.values::<F>(ctx.reference, ctx.hint, ctx.options)?;
         // Suppress affixes when a component resolves to no meaningful content.
         // A whitespace-only value carries no data, so its prefix/suffix must
         // not leak into output (e.g. a ". In " prefix on an empty editor list).
         if values.value.trim().is_empty() {
             return None;
         }
-        self.apply_issued_no_date_fallback(reference, options, resolved_component, &mut values);
-        self.apply_entry_link_fallback(reference, options, &mut values);
+        self.apply_issued_no_date_fallback(
+            ctx.reference,
+            ctx.options,
+            resolved_component,
+            &mut values,
+        );
+        self.apply_entry_link_fallback(ctx.reference, ctx.options, &mut values);
 
         let item_language =
-            crate::values::effective_component_language(reference, resolved_component);
+            crate::values::effective_component_language(ctx.reference, resolved_component);
         tracker.mark_rendered(var_key, values.substituted_key.as_deref());
 
         Some(ProcTemplateComponent {
             template_component: resolved_component.clone(),
-            template_index: self.inject_ast_indices.then_some(template_index),
+            template_index: self.inject_ast_indices.then_some(ctx.template_index),
             value: values.value,
             prefix: values.prefix,
             suffix: values.suffix,
             url: values.url,
-            ref_type: Some(ref_type.to_string()),
-            config: Some(options.config.clone()),
-            bibliography_config: options.bibliography_config.clone(),
+            ref_type: Some(ctx.ref_type.to_string()),
+            config: Some(ctx.options.config.clone()),
+            bibliography_config: ctx.options.bibliography_config.clone(),
             item_language,
             sentence_initial: false,
             pre_formatted: values.pre_formatted,
         })
     }
 
-    #[allow(
-        clippy::too_many_arguments,
-        reason = "Nested group rendering reuses the same tracker and template metadata."
-    )]
     fn render_group_component_with_format<F>(
         &self,
-        reference: &Reference,
-        ref_type: &str,
-        options: &RenderOptions<'_>,
-        hint: &ProcHints,
-        template_index: usize,
+        ctx: &TemplateRenderContext<'_>,
         group: &citum_schema::template::TemplateGroup,
         tracker: &mut TemplateComponentTracker,
     ) -> Option<ProcTemplateComponent>
@@ -1291,21 +1237,15 @@ impl Renderer<'_> {
         let mut values = Vec::new();
 
         for item in &group.group {
-            let Some(rendered) = self.render_template_component_with_format::<F>(
-                reference,
-                ref_type,
-                options,
-                hint,
-                template_index,
-                item,
-                tracker,
-            ) else {
+            let Some(rendered) =
+                self.render_template_component_with_format::<F>(ctx, item, tracker)
+            else {
                 continue;
             };
             let rendered_str = crate::render::render_component_with_format_and_renderer::<F>(
                 &rendered,
                 &fmt,
-                options.show_semantics,
+                ctx.options.show_semantics,
             );
             if rendered_str.trim().is_empty() {
                 continue;
@@ -1323,15 +1263,18 @@ impl Renderer<'_> {
         let group_component = TemplateComponent::Group(group.clone());
         Some(ProcTemplateComponent {
             template_component: group_component.clone(),
-            template_index: self.inject_ast_indices.then_some(template_index),
+            template_index: self.inject_ast_indices.then_some(ctx.template_index),
             value: fmt.join(values, &delimiter),
             prefix: None,
             suffix: None,
             url: None,
-            ref_type: Some(ref_type.to_string()),
-            config: Some(options.config.clone()),
-            bibliography_config: options.bibliography_config.clone(),
-            item_language: crate::values::effective_component_language(reference, &group_component),
+            ref_type: Some(ctx.ref_type.to_string()),
+            config: Some(ctx.options.config.clone()),
+            bibliography_config: ctx.options.bibliography_config.clone(),
+            item_language: crate::values::effective_component_language(
+                ctx.reference,
+                &group_component,
+            ),
             sentence_initial: false,
             pre_formatted: true,
         })

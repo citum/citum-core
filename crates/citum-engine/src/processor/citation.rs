@@ -10,7 +10,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! sentence-initial note-start handling, lives in `rendering`.
 
 use super::Processor;
-use super::rendering::{CompoundRenderData, Renderer, RendererResources};
+use super::rendering::{CompoundRenderData, GroupRenderParams, Renderer, RendererResources};
 use crate::error::ProcessorError;
 use crate::reference::Citation;
 use citum_schema::NoteStartTextCase;
@@ -342,12 +342,14 @@ impl Processor {
         } else {
             renderer.render_grouped_citation_with_format::<F>(
                 &sorted_items,
-                effective_spec,
-                &citation.mode,
-                renderer_delimiter,
-                citation.suppress_author,
-                citation.position.as_ref(),
-                note_start_text_case,
+                &GroupRenderParams {
+                    spec: effective_spec,
+                    mode: &citation.mode,
+                    intra_delimiter: renderer_delimiter,
+                    suppress_author: citation.suppress_author,
+                    position: citation.position.as_ref(),
+                    note_start_text_case,
+                },
             )?
         };
 
