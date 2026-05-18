@@ -15,6 +15,7 @@ on:
         type: choice
         options:
           - release-pr
+          - publish-jsr
 
 permissions:
   contents: read
@@ -23,7 +24,7 @@ jobs:
   # ── Step 1: Detect what changed and infer bump level ──────────────
   detect:
     if: |
-      (github.event_name == 'workflow_dispatch') ||
+      (github.event_name == 'workflow_dispatch' && inputs.command == 'release-pr') ||
       (github.event.pull_request.merged == true &&
        github.event.pull_request.head.ref != 'release/next' &&
        !startsWith(github.event.pull_request.title, 'chore(release)'))
@@ -401,9 +402,15 @@ jobs:
   # JSR uses GitHub OIDC trusted publishing, so this job needs
   # id-token: write but no registry token secret. The package must be
   # linked to citum/citum-core in the JSR package settings first.
+  # This job intentionally does not wait for the binary build matrix:
+  # it builds its own package, and metadata/OIDC failures should surface
+  # quickly. Use workflow_dispatch command=publish-jsr to recover a JSR
+  # publish after a tag workflow failure; the selected ref supplies the
+  # package version from Cargo.toml.
   publish-jsr:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
-    needs: build
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && inputs.command == 'publish-jsr')
     runs-on: ubuntu-latest
     permissions:
       contents: read
