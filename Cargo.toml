@@ -19,7 +19,7 @@ members = [
 resolver = "2"
 
 [workspace.package]
-version = "0.53.1"
+version = "0.53.2"
 edition = "2024"
 license = "MIT OR Apache-2.0"
 description = "Citum citation engine — schema, processor, and migration tools"
@@ -110,17 +110,17 @@ ignored = ["csl-legacy", "specta", "multibase"]
 # pin here stays in sync on bump.
 [workspace.dependencies]
 tracing = "0.1"
-citum-edtf = { path = "crates/citum-edtf", version = "0.53.1" }
-citum-resolver-api = { path = "crates/citum-resolver-api", version = "0.53.1" }
-citum-schema-data = { path = "crates/citum-schema-data", version = "0.53.1" }
-citum-schema-style = { path = "crates/citum-schema-style", version = "0.53.1" }
-citum-schema = { path = "crates/citum-schema", version = "0.53.1" }
-csl-legacy = { path = "crates/csl-legacy", version = "0.53.1" }
-citum-engine = { path = "crates/citum-engine", version = "0.53.1" }
-citum-io = { path = "crates/citum-io", version = "0.53.1" }
-citum-migrate = { path = "crates/citum-migrate", version = "0.53.1" }
-citum_store = { path = "crates/citum_store", version = "0.53.1" }
-citum-server = { path = "crates/citum-server", version = "0.53.1" }
+citum-edtf = { path = "crates/citum-edtf", version = "0.53.2" }
+citum-resolver-api = { path = "crates/citum-resolver-api", version = "0.53.2" }
+citum-schema-data = { path = "crates/citum-schema-data", version = "0.53.2" }
+citum-schema-style = { path = "crates/citum-schema-style", version = "0.53.2" }
+citum-schema = { path = "crates/citum-schema", version = "0.53.2" }
+csl-legacy = { path = "crates/csl-legacy", version = "0.53.2" }
+citum-engine = { path = "crates/citum-engine", version = "0.53.2" }
+citum-io = { path = "crates/citum-io", version = "0.53.2" }
+citum-migrate = { path = "crates/citum-migrate", version = "0.53.2" }
+citum_store = { path = "crates/citum_store", version = "0.53.2" }
+citum-server = { path = "crates/citum-server", version = "0.53.2" }
 
 [profile.dev]
 debug = 0
