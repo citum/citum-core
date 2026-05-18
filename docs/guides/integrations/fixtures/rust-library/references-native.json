@@ -1,0 +1,11 @@
+{
+  "smith2010": {
+    "id": "smith2010",
+    "class": "monograph",
+    "type": "book",
+    "title": "Nationalism: Theory, Ideology, History",
+    "author": [{ "family": "Smith", "given": "Anthony D." }],
+    "issued": "2010",
+    "publisher": { "name": "Polity" }
+  }
+}

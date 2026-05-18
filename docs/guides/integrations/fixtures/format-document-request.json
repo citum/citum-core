@@ -1,0 +1,27 @@
+{
+  "id": "req-1",
+  "method": "format_document",
+  "params": {
+    "style": { "kind": "id", "value": "apa-7th" },
+    "output_format": "html",
+    "refs": {
+      "smith2010": {
+        "id": "smith2010",
+        "class": "monograph",
+        "type": "book",
+        "title": "Nationalism: Theory, Ideology, History",
+        "author": [{ "family": "Smith", "given": "Anthony D." }],
+        "issued": "2010",
+        "publisher": { "name": "Polity" }
+      }
+    },
+    "citations": [
+      {
+        "id": "cite-1",
+        "items": [
+          { "id": "smith2010", "locator": { "label": "page", "value": "10" } }
+        ]
+      }
+    ]
+  }
+}

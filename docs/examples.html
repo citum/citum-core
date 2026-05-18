@@ -26,11 +26,11 @@
                     <span class="site-brand-name">Citum</span>
                 </a>
             </div>
-            <div class="site-nav-links">
-                <a class="site-nav-link" href="https://citum.org">&#8592; citum.org</a>
+            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
                 <a class="site-nav-link " href="index.html">Overview</a>
                 <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
                 <a class="site-nav-link " href="developer.html">Developer</a>
+                <a class="site-nav-link " href="interactive-demo.html">Demo</a>
                 <a class="site-nav-link " href="schemas/">Schemas</a>
                 <a class="site-nav-link " href="reports.html">Reports</a>
                 <a class="site-source-link" href="https://github.com/citum/citum-core">
@@ -40,15 +40,15 @@
                     GitHub
                 </a>
             </div>
-            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav" aria-label="Open navigation menu">
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
                 <span class="mobile-nav-icon" aria-hidden="true">&#9776;</span>
             </button>
         </div>
         <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
-            <a class="site-nav-link" href="https://citum.org">&#8592; citum.org</a>
             <a class="site-nav-link " href="index.html">Overview</a>
             <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
             <a class="site-nav-link " href="developer.html">Developer</a>
+            <a class="site-nav-link " href="interactive-demo.html">Demo</a>
             <a class="site-nav-link " href="schemas/">Schemas</a>
             <a class="site-nav-link " href="reports.html">Reports</a>
             <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
@@ -1914,7 +1914,9 @@ Citum &gt;=0.38.0</pre>
                     <a href="https://github.com/citum/citum-core">GitHub</a>
                 </div>
                 <div class="site-footer-note">&copy; 2026 Citum Project.</div>
-            </div>        <!-- LAYOUT_FOOTER_END -->
+            </div>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github.min.css">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js" defer onload="hljs.highlightAll();"></script>        <!-- LAYOUT_FOOTER_END -->
     </footer>
 
         <script src="assets/citum-interactive.js"></script>

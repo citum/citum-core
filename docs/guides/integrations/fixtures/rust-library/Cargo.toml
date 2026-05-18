@@ -1,0 +1,15 @@
+[package]
+name = "citum-library-example"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# Standalone workspace — keeps this fixture from being pulled into the
+# surrounding citum-core workspace as a member.
+[workspace]
+
+# Until the crates.io publish lands, swap this for:
+#   citum-engine = { git = "https://github.com/citum/citum-core" }
+[dependencies]
+citum-engine = "0.50"
+serde_json = "1"

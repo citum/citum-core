@@ -1,0 +1,184 @@
+<!-- PAGE_ID: developer -->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Format a document on the CLI | Citum Docs</title>
+    <meta name="description" content="Render a Markdown or Djot manuscript with citations into HTML, LaTeX, Typst, or PDF using the citum CLI." />
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/citum-theme.css" />
+</head>
+<body>
+    <nav class="site-nav">
+        <!-- LAYOUT_NAV_START -->
+        <div class="site-nav-inner">
+            <div class="site-brand-wrap">
+                <a href="../../index.html" class="site-brand">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </a>
+            </div>
+            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
+                <a class="site-nav-link " href="../../index.html">Overview</a>
+                <a class="site-nav-link " href="../../guides/style-authoring/start.html">Style Authoring</a>
+                <a class="site-nav-link active" href="../../developer.html">Developer</a>
+                <a class="site-nav-link " href="../../interactive-demo.html">Demo</a>
+                <a class="site-nav-link " href="../../schemas/">Schemas</a>
+                <a class="site-nav-link " href="../../reports.html">Reports</a>
+                <a class="site-source-link" href="https://github.com/citum/citum-core">
+                    <svg aria-hidden="true" class="site-source-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+                <span class="mobile-nav-icon" aria-hidden="true">&#9776;</span>
+            </button>
+        </div>
+        <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
+            <a class="site-nav-link " href="../../index.html">Overview</a>
+            <a class="site-nav-link " href="../../guides/style-authoring/start.html">Style Authoring</a>
+            <a class="site-nav-link active" href="../../developer.html">Developer</a>
+            <a class="site-nav-link " href="../../interactive-demo.html">Demo</a>
+            <a class="site-nav-link " href="../../schemas/">Schemas</a>
+            <a class="site-nav-link " href="../../reports.html">Reports</a>
+            <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
+        </div>        <!-- LAYOUT_NAV_END -->
+    </nav>
+
+    <main class="doc-shell">
+        <header class="doc-section-header">
+            <span class="citum-kicker">Integration recipe</span>
+            <h1>Format a Markdown or Djot document on the command line</h1>
+            <p>
+                You have a manuscript with <code>[@key]</code> citations and a bibliography. You want HTML, LaTeX,
+                Typst, or PDF out. This is the same workflow you might know from Pandoc, with a different engine doing
+                the citation work.
+            </p>
+        </header>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>1. Install</h2>
+            </div>
+            <div class="workshop-block">
+                <pre><code>cargo install citum</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                Pre-built binaries are also available from GitHub releases.
+            </p>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>2. Render to HTML</h2>
+                <p>
+                    Two ingredients: the manuscript and a bibliography. The bibliography can be CSL-JSON, Citum
+                    YAML/JSON, BibLaTeX, or RIS &mdash; Citum auto-detects from the extension.
+                </p>
+            </div>
+            <div class="workshop-block">
+                <div class="workshop-label">Manuscript (Markdown, Pandoc citation syntax)</div>
+                <pre><code># A short paper
+
+Parenthetical citation: [@kuhn1962].
+
+Integral (Pandoc-style narrative): @smith2010 [p. 10] argues the point.
+
+Author suppressed: [-@watson1953, p. 737].
+
+Multi-cite: [@kuhn1962; @watson1953, ch. 2].</code></pre>
+            </div>
+            <div class="workshop-block" style="margin-top: 1rem;">
+                <div class="workshop-label">Render</div>
+                <pre><code>citum render doc manuscript.md \
+  -I markdown \
+  -b references.json \
+  -s apa-7th \
+  -f html \
+  -o paper.html</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                Drop <code>-I markdown</code> if you use Djot (the default). In Djot the integral form is
+                <code>[+@key]</code> instead of bare <code>@key</code>.
+            </p>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>3. Other output formats</h2>
+            </div>
+            <div class="workshop-block">
+                <pre><code># LaTeX
+citum render doc manuscript.md -I markdown -b references.json -s apa-7th -f latex -o paper.tex
+
+# Typst
+citum render doc manuscript.md -I markdown -b references.json -s apa-7th -f typst -o paper.typ
+
+# PDF (renders through Typst; requires the typst CLI on PATH)
+citum render doc manuscript.md -I markdown -b references.json -s apa-7th --pdf -o paper.pdf</code></pre>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>4. Coming from BibTeX or CSL-JSON</h2>
+                <p>
+                    Convert an existing bibliography to Citum's native YAML once, then point at it. <code>citum
+                    render</code> reads BibLaTeX and CSL-JSON directly; converting first is only useful if you want
+                    to edit the references by hand.
+                </p>
+            </div>
+            <div class="workshop-block">
+                <pre><code># BibLaTeX -&gt; Citum YAML
+citum convert refs thesis.bib -o refs.yaml
+
+# CSL-JSON array -&gt; Citum YAML
+citum convert refs legacy.json --from csl-json -o refs.yaml</code></pre>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>Reproduce this recipe</h2>
+                <p>
+                    The exact fixture used to verify these commands lives in
+                    <a href="fixtures/">guides/integrations/fixtures/</a>: <code>manuscript.md</code>,
+                    <code>manuscript.djot</code>, and <code>references.json</code>. Copy them locally and run any of
+                    the commands above.
+                </p>
+            </div>
+            <p>
+                Need to wire this into a build pipeline? See
+                <a href="static-site.html">Add citations to your static-site or docs build</a>. Need live formatting
+                from an editor or plugin? See
+                <a href="editor-plugin.html">Use Citum as a long-lived process</a>.
+            </p>
+        </section>
+    </main>
+
+    <footer style="padding: 3rem 0; border-top: 1px solid var(--citum-border); background: var(--citum-surface);">
+        <!-- LAYOUT_FOOTER_START -->
+            <div class="site-footer-inner">
+                <div class="site-brand site-brand-small">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </div>
+                <div class="site-footer-links">
+                    <a href="../../guides/style-authoring/start.html">Style Authoring</a>
+                    <a href="../../developer.html">Developer</a>
+                    <a href="../../schemas/">Schemas</a>
+                    <a href="../../reports.html">Reports</a>
+                    <a href="../../operating.html">Contributing</a>
+                    <a href="https://github.com/citum/citum-core">GitHub</a>
+                </div>
+                <div class="site-footer-note">&copy; 2026 Citum Project.</div>
+            </div>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github.min.css">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js" defer onload="hljs.highlightAll();"></script>        <!-- LAYOUT_FOOTER_END -->
+    </footer>
+    <script src="../../assets/citum-interactive.js"></script>
+</body>
+</html>

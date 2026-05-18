@@ -1,0 +1,300 @@
+<!-- PAGE_ID: developer -->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Embed Citum in a Rust application | Citum Docs</title>
+    <meta name="description" content="Depend on citum-engine as a Rust crate and format citations directly from your own binary or library." />
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/citum-theme.css" />
+</head>
+<body>
+    <nav class="site-nav">
+        <!-- LAYOUT_NAV_START -->
+        <div class="site-nav-inner">
+            <div class="site-brand-wrap">
+                <a href="../../index.html" class="site-brand">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </a>
+            </div>
+            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
+                <a class="site-nav-link " href="../../index.html">Overview</a>
+                <a class="site-nav-link " href="../../guides/style-authoring/start.html">Style Authoring</a>
+                <a class="site-nav-link active" href="../../developer.html">Developer</a>
+                <a class="site-nav-link " href="../../interactive-demo.html">Demo</a>
+                <a class="site-nav-link " href="../../schemas/">Schemas</a>
+                <a class="site-nav-link " href="../../reports.html">Reports</a>
+                <a class="site-source-link" href="https://github.com/citum/citum-core">
+                    <svg aria-hidden="true" class="site-source-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+                <span class="mobile-nav-icon" aria-hidden="true">&#9776;</span>
+            </button>
+        </div>
+        <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
+            <a class="site-nav-link " href="../../index.html">Overview</a>
+            <a class="site-nav-link " href="../../guides/style-authoring/start.html">Style Authoring</a>
+            <a class="site-nav-link active" href="../../developer.html">Developer</a>
+            <a class="site-nav-link " href="../../interactive-demo.html">Demo</a>
+            <a class="site-nav-link " href="../../schemas/">Schemas</a>
+            <a class="site-nav-link " href="../../reports.html">Reports</a>
+            <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
+        </div>        <!-- LAYOUT_NAV_END -->
+    </nav>
+
+    <main class="doc-shell">
+        <header class="doc-section-header">
+            <span class="citum-kicker">Integration recipe</span>
+            <h1>Embed Citum in a Rust binary or library</h1>
+            <p>
+                You are writing a Rust application &mdash; a static-site generator, an mdbook preprocessor, a
+                publishing toolchain, a custom document compiler &mdash; and you want citation formatting without
+                spawning a CLI, crossing a WASM boundary, or speaking JSON-RPC. Depend on
+                <code>citum-engine</code> as an ordinary crate and call its public API directly.
+            </p>
+        </header>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>1. Add the dependency</h2>
+            </div>
+            <div class="workshop-block">
+                <pre><code>cargo add citum-engine</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                Until the crates.io publish lands, depend on it from git:
+                <code>citum-engine = { git = "https://github.com/citum/citum-core" }</code>.
+                The engine pulls in the schema, EDTF, and resolver-API crates transitively; for most callers
+                <code>citum-engine</code> is the only direct dependency you need.
+            </p>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>2. Minimal example &mdash; everything in-memory</h2>
+                <p>
+                    Construct a style, a one-entry bibliography, and a citation programmatically, then render. This
+                    is the shape of the doctest in <code>citum_engine::lib.rs</code> and is the fastest way to see
+                    that the dependency is wired correctly.
+                </p>
+            </div>
+            <div class="workshop-block">
+                <pre><code>use citum_engine::{
+    Bibliography, Citation, CitationItem, CitationSpec, Config, Contributor, ContributorForm,
+    ContributorList, ContributorRole, DateForm, EdtfString, Monograph, MonographType,
+    MultilingualString, Processing, Processor, Reference, Rendering, StructuredName, Style,
+    StyleInfo, TemplateComponent, TemplateContributor, TemplateDate, TemplateDateVariable,
+    Title, WrapPunctuation,
+};
+
+let style = Style {
+    info: StyleInfo {
+        title: Some("Simple".to_string()),
+        id: Some("simple".into()),
+        ..Default::default()
+    },
+    options: Some(Config { processing: Some(Processing::AuthorDate), ..Default::default() }),
+    citation: Some(CitationSpec {
+        template: Some(vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                form: ContributorForm::Short,
+                rendering: Rendering::default(),
+                ..Default::default()
+            }),
+            TemplateComponent::Date(TemplateDate {
+                date: TemplateDateVariable::Issued,
+                form: DateForm::Year,
+                rendering: Rendering::default(),
+                ..Default::default()
+            }),
+        ]),
+        wrap: Some(WrapPunctuation::Parentheses.into()),
+        ..Default::default()
+    }),
+    ..Default::default()
+};
+
+let mut bib = Bibliography::new();
+bib.insert("kuhn1962".to_string(), Reference::Monograph(Box::new(Monograph {
+    id: Some("kuhn1962".into()),
+    r#type: MonographType::Book,
+    title: Some(Title::Single("The Structure of Scientific Revolutions".to_string())),
+    author: Some(Contributor::ContributorList(ContributorList(vec![
+        Contributor::StructuredName(StructuredName {
+            family: MultilingualString::Simple("Kuhn".to_string()),
+            given: MultilingualString::Simple("Thomas".to_string()),
+            suffix: None, dropping_particle: None, non_dropping_particle: None,
+        }),
+    ]))),
+    issued: EdtfString("1962".to_string()),
+    ..Default::default()
+}));
+
+let processor = Processor::new(style, bib);
+let citation = Citation {
+    id: Some("c1".into()),
+    items: vec![CitationItem { id: "kuhn1962".to_string(), ..Default::default() }],
+    ..Default::default()
+};
+assert_eq!(processor.process_citation(&citation).unwrap(), "(Kuhn, 1962)");</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                The lower-level <code>Processor::new(style, bib)</code> + <code>process_citation</code> path is the
+                right one for one-off renders or interactive use. For batch document rendering with proper note
+                positions, ibid disambiguation, and bibliography sorting, use <code>format_document</code> &mdash;
+                shown next.
+            </p>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>3. Load style and references from disk</h2>
+                <p>
+                    Most real applications keep styles and bibliographies in files. The engine reads YAML styles
+                    natively, and the native bibliography format deserializes directly into <code>Bibliography</code>
+                    via serde &mdash; no separate parser needed.
+                </p>
+            </div>
+            <div class="workshop-block">
+                <pre><code>use citum_engine::{Bibliography, StyleInput};
+use std::fs;
+
+// Style: YAML on disk, inline string, or a registry id (id/uri variants need
+// the citum-server resolver chain; path/yaml resolve locally).
+let style = StyleInput::Path("apa-7th.yaml".to_string());
+
+// References: native Citum JSON deserializes straight into Bibliography.
+// For BibLaTeX or CSL-JSON inputs, convert first with `citum convert refs`
+// or pull in the citum-io crate.
+let refs: Bibliography =
+    serde_json::from_str(&fs::read_to_string("references-native.json")?)?;</code></pre>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>4. Format a document with <code>format_document</code></h2>
+                <p>
+                    The Tier-1 API takes a list of <code>CitationOccurrence</code>s in document order and emits
+                    formatted citations and a rendered bibliography. Your application owns the job of scanning
+                    Markdown / Djot / your own AST for citation keys; the engine only needs the resolved occurrence
+                    list and the references they point at.
+                </p>
+            </div>
+            <div class="workshop-block">
+                <pre><code>use citum_engine::{
+    CitationOccurrence, CitationOccurrenceItem, FormatDocumentRequest, OutputFormatKind,
+    format_document,
+};
+
+let citations = vec![
+    CitationOccurrence {
+        id: "c1".to_string(),
+        items: vec![CitationOccurrenceItem {
+            id: "smith2010".to_string(),
+            locator: None, prefix: None, suffix: None, integral_name_state: None,
+        }],
+        mode: None, note_number: None, suppress_author: None, grouped: None,
+        prefix: None, suffix: None,
+    },
+    // ...one entry per citation in document order
+];
+
+let result = format_document(FormatDocumentRequest {
+    style,                             // from step 3
+    locale: Some("en-US".to_string()),
+    output_format: OutputFormatKind::Html,
+    refs,                              // from step 3
+    citations,
+    document_options: None,
+})?;
+
+for cite in &result.formatted_citations {
+    println!("{}: {}", cite.id, cite.text);
+}
+println!("\n{}", result.bibliography.content);</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                <code>OutputFormatKind</code> covers <code>Plain</code>, <code>Html</code>, <code>Djot</code>,
+                <code>Latex</code>, and <code>Typst</code>. <code>document_options</code> exposes bibliography
+                grouping, sort partitioning, semantic-markup toggles, and an abbreviation map &mdash; all optional.
+            </p>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>5. Wiring this into your document model</h2>
+                <p>
+                    The engine is intentionally a citation formatter, not a document compiler. To use it inside an
+                    mdbook preprocessor, a static-site generator, or any Rust tool with its own document
+                    representation, the integration shape is:
+                </p>
+            </div>
+            <ol style="line-height: 1.7; color: var(--citum-fg); padding-left: 1.25rem;">
+                <li>Walk your document, finding citation tokens (<code>[@key]</code>, <code>@key</code>, or whatever
+                    syntax you support).</li>
+                <li>Build a <code>Vec&lt;CitationOccurrence&gt;</code> in document order, recording the stable id
+                    you'll use to splice results back in.</li>
+                <li>Call <code>format_document</code> once per document.</li>
+                <li>Substitute each <code>FormattedCitation.text</code> into the position of the corresponding
+                    citation token, and emit <code>result.bibliography.content</code> wherever your document wants
+                    the bibliography to appear.</li>
+            </ol>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                For an mdbook preprocessor specifically, the same code goes inside the preprocessor's
+                <code>run</code> entry point: read the <code>[Context, Book]</code> JSON from stdin, run steps 1&ndash;4
+                against each chapter's content, and write the modified <code>Book</code> back to stdout. The engine
+                call itself does not change.
+            </p>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>Reproduce this recipe</h2>
+                <p>
+                    A runnable copy of steps 3 and 4 lives in
+                    <a href="fixtures/rust-library/">fixtures/rust-library/</a>: a self-contained crate with
+                    <code>Cargo.toml</code>, <code>src/main.rs</code>, <code>apa-7th.yaml</code>, and
+                    <code>references-native.json</code>. Drop the workspace path-dep override into
+                    <code>Cargo.toml</code> while the crates.io publish is pending, then <code>cargo run</code>.
+                </p>
+            </div>
+            <p>
+                Coming from the CLI? See <a href="scholar-cli.html">Format a document on the CLI</a>. Wiring this
+                into a build pipeline? See <a href="static-site.html">Add citations to your static-site or docs
+                build</a>. Need live formatting from an editor? See <a href="editor-plugin.html">Use Citum as a
+                long-lived process</a>.
+            </p>
+        </section>
+    </main>
+
+    <footer style="padding: 3rem 0; border-top: 1px solid var(--citum-border); background: var(--citum-surface);">
+        <!-- LAYOUT_FOOTER_START -->
+            <div class="site-footer-inner">
+                <div class="site-brand site-brand-small">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </div>
+                <div class="site-footer-links">
+                    <a href="../../guides/style-authoring/start.html">Style Authoring</a>
+                    <a href="../../developer.html">Developer</a>
+                    <a href="../../schemas/">Schemas</a>
+                    <a href="../../reports.html">Reports</a>
+                    <a href="../../operating.html">Contributing</a>
+                    <a href="https://github.com/citum/citum-core">GitHub</a>
+                </div>
+                <div class="site-footer-note">&copy; 2026 Citum Project.</div>
+            </div>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github.min.css">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js" defer onload="hljs.highlightAll();"></script>        <!-- LAYOUT_FOOTER_END -->
+    </footer>
+    <script src="../../assets/citum-interactive.js"></script>
+</body>
+</html>
