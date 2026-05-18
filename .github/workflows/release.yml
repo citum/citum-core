@@ -286,7 +286,7 @@ jobs:
             os: ubuntu-latest
             use_cross: "1"
           - target: x86_64-apple-darwin
-            os: macos-13      # last Intel runner; macos-latest is arm64
+            os: macos-latest  # arm64 host cross-builds x86_64 via Apple's universal linker
             use_cross: "0"
           - target: aarch64-apple-darwin
             os: macos-latest
