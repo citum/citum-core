@@ -5,7 +5,7 @@ status: in-progress
 type: milestone
 priority: normal
 created_at: 2026-05-16T14:30:00Z
-updated_at: 2026-05-18T10:48:53Z
+updated_at: 2026-05-18T11:03:15Z
 ---
 
 Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by refactor priority and grouped by modularization strategy.
@@ -28,9 +28,8 @@ Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by r
 ### Tier 2: Large Logic Blocks (1500 - 2500 lines)
 *High priority refactoring to separate concerns.*
 
-4. [ ] **`citum-schema-style/src/locale/mod.rs` (2410 lines)**
-   - **Issues:** Contains massive embedded en-US defaults and message evaluation logic.
-   - **Target:** Move embedded data to `src/locale/embedded/en_us.rs`.
+4. [x] **`citum-schema-style/src/locale/mod.rs` (2410 → 1347 lines, -44%)**
+   - **Done:** Extracted embedded en-US data to `src/locale/embedded/en_us.rs` (per original target), the raw → Locale conversion to `src/locale/raw_conversion.rs`, and message-ID mappings + MF2 dispatch to `src/locale/message_ids.rs`. 1306/1306 workspace tests pass.
 5. [ ] **`citum-schema-data/src/reference/conversion.rs` (2085 lines)**
    - **Issues:** Giant legacy CSL-JSON converter.
    - **Target:** Split by reference category (legal, scholarly, media).
