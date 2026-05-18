@@ -15,6 +15,7 @@ RELEASE_CONFIG_PATH = REPO_ROOT / "release.toml"
 SCHEMA_LIB = REPO_ROOT / "crates/citum-schema-style/src/version.rs"
 PUBLISH_CRATES_SCRIPT = REPO_ROOT / "scripts/publish-crates.sh"
 BUILD_JSR_SCRIPT = REPO_ROOT / "scripts/build-jsr-package.sh"
+JSR_README_SOURCE = REPO_ROOT / "crates/citum-bindings/README-JSR.md"
 
 
 class ReleaseWorkflowTests(unittest.TestCase):
@@ -26,6 +27,7 @@ class ReleaseWorkflowTests(unittest.TestCase):
         cls.release_config = RELEASE_CONFIG_PATH.read_text(encoding="utf-8")
         cls.publish_crates_script = PUBLISH_CRATES_SCRIPT.read_text(encoding="utf-8")
         cls.build_jsr_script = BUILD_JSR_SCRIPT.read_text(encoding="utf-8")
+        cls.jsr_readme_source = JSR_README_SOURCE.read_text(encoding="utf-8")
 
     def test_release_branch_is_always_release_next(self) -> None:
         self.assertIn('echo "branch=release/next" >> "$GITHUB_OUTPUT"', self.workflow)
@@ -69,6 +71,12 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIn('"license": "MIT"', self.build_jsr_script)
         self.assertNotIn('"license": "(MIT OR Apache-2.0)"', self.build_jsr_script)
         self.assertNotIn('"license": "MIT OR Apache-2.0"', self.build_jsr_script)
+
+    def test_jsr_package_uses_package_specific_readme(self) -> None:
+        self.assertIn("crates/citum-bindings/README-JSR.md", self.build_jsr_script)
+        self.assertNotIn('cp "$REPO_ROOT/README.md"', self.build_jsr_script)
+        self.assertIn("# @citum/citum", self.jsr_readme_source)
+        self.assertIn("Package metadata is `MIT` for JSR compatibility", self.jsr_readme_source)
 
     def test_publish_jsr_tag_job_uses_oidc_and_publishes(self) -> None:
         publish_jsr = re.search(
