@@ -1,5 +1,11 @@
 # Citum Project Roadmap
 
+> **Archival.** This document captures a point-in-time strategic snapshot and
+> is not kept current. For active work and near-term priorities, see
+> [open issues](https://github.com/citum/citum-core/issues) on GitHub. The
+> contributor docs no longer link to this file; it is retained for historical
+> reference.
+
 **Last updated:** 2026-02-26
 **Purpose:** Strategic plan tracking project maturity, phases, and risks
 

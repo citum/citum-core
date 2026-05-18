@@ -1,0 +1,247 @@
+<!-- PAGE_ID: developer -->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Use Citum from an editor or plugin | Citum Docs</title>
+    <meta name="description" content="Run citum-server as a long-lived JSON-RPC process and call it from an editor, IDE plugin, or word-processor add-in." />
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../../assets/citum-theme.css" />
+</head>
+<body>
+    <nav class="site-nav">
+        <!-- LAYOUT_NAV_START -->
+        <div class="site-nav-inner">
+            <div class="site-brand-wrap">
+                <a href="../../index.html" class="site-brand">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </a>
+            </div>
+            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
+                <a class="site-nav-link " href="../../index.html">Overview</a>
+                <a class="site-nav-link " href="../../guides/style-authoring/start.html">Style Authoring</a>
+                <a class="site-nav-link active" href="../../developer.html">Developer</a>
+                <a class="site-nav-link " href="../../interactive-demo.html">Demo</a>
+                <a class="site-nav-link " href="../../schemas/">Schemas</a>
+                <a class="site-nav-link " href="../../reports.html">Reports</a>
+                <a class="site-source-link" href="https://github.com/citum/citum-core">
+                    <svg aria-hidden="true" class="site-source-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+                <span class="mobile-nav-icon" aria-hidden="true">&#9776;</span>
+            </button>
+        </div>
+        <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
+            <a class="site-nav-link " href="../../index.html">Overview</a>
+            <a class="site-nav-link " href="../../guides/style-authoring/start.html">Style Authoring</a>
+            <a class="site-nav-link active" href="../../developer.html">Developer</a>
+            <a class="site-nav-link " href="../../interactive-demo.html">Demo</a>
+            <a class="site-nav-link " href="../../schemas/">Schemas</a>
+            <a class="site-nav-link " href="../../reports.html">Reports</a>
+            <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
+        </div>        <!-- LAYOUT_NAV_END -->
+    </nav>
+
+    <main class="doc-shell">
+        <header class="doc-section-header">
+            <span class="citum-kicker">Integration recipe</span>
+            <h1>Use Citum as a long-lived process from your editor or plugin</h1>
+            <p>
+                Editor and plugin authors usually do not want to spawn a fresh process per keystroke. Run
+                <code>citum-server</code> once, speak newline-delimited JSON-RPC over stdin/stdout, and you get
+                live citation and bibliography formatting at interactive latency. The same surface is the natural
+                target for word-processor add-ins (Word, LibreOffice, Pages) &mdash; Citum doesn't ship those
+                plugins itself, but the integration path is open.
+            </p>
+        </header>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>1. Install and start the server</h2>
+            </div>
+            <div class="workshop-block">
+                <pre><code>cargo install citum-server
+citum-server      # reads JSON-RPC from stdin, writes responses to stdout</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                Use <code>citum-server --http --port 8765</code> to enable HTTP mode (requires the <code>http</code>
+                feature). For editor plugins, stdin/stdout is the simpler integration; it sidesteps port
+                allocation, CORS, and process discovery.
+            </p>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>2. The wire format</h2>
+                <p>
+                    One JSON object per line in, one JSON object per line out. The envelope is
+                    <code>{ "id", "method", "params" }</code>; responses echo the <code>id</code> and carry either
+                    <code>result</code> or <code>error</code>. The most useful method for editor integration is
+                    <code>format_document</code>, which renders an entire document's citations and bibliography in
+                    one round-trip.
+                </p>
+            </div>
+            <div class="workshop-block">
+                <div class="workshop-label">Request (one line in actual use; pretty-printed here)</div>
+                <pre><code>{
+  "id": "req-1",
+  "method": "format_document",
+  "params": {
+    "style": { "kind": "id", "value": "apa-7th" },
+    "output_format": "html",
+    "refs": {
+      "smith2010": {
+        "id": "smith2010",
+        "class": "monograph",
+        "type": "book",
+        "title": "Nationalism: Theory, Ideology, History",
+        "author": [{ "family": "Smith", "given": "Anthony D." }],
+        "issued": "2010",
+        "publisher": { "name": "Polity" }
+      }
+    },
+    "citations": [
+      {
+        "id": "cite-1",
+        "items": [
+          { "id": "smith2010", "locator": { "label": "page", "value": "10" } }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+            </div>
+            <div class="workshop-block" style="margin-top: 1rem;">
+                <div class="workshop-label">Response (excerpt)</div>
+                <pre><code>{
+  "id": "req-1",
+  "result": {
+    "formatted_citations": [
+      {
+        "id": "cite-1",
+        "text": "(&lt;span class=\"citum-citation\" data-ref=\"smith2010\"&gt;Smith, &lt;span class=\"citum-issued\"&gt;2010&lt;/span&gt;, &lt;span class=\"citum-variable\"&gt;p. 10&lt;/span&gt;&lt;/span&gt;)",
+        "ref_ids": ["smith2010"]
+      }
+    ],
+    "bibliography": { "format": "html", "content": "..." },
+    "warnings": []
+  }
+}</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                <code>style</code> is a tagged union: <code>{"kind":"id","value":"apa-7th"}</code> for a registry
+                id, <code>{"kind":"path","value":"/abs/style.yaml"}</code> for a local file,
+                <code>{"kind":"yaml","value":"..."}</code> for inline YAML, or
+                <code>{"kind":"uri","value":"https://..."}</code> for a remote URL.
+                Reference objects use the native Citum schema with a <code>class</code> discriminator. To send
+                CSL-JSON, convert first with <code>citum convert refs legacy.json --from csl-json -o
+                refs.yaml</code> and read it back, or use the file-based <code>render</code> command.
+            </p>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>3. A working Node client</h2>
+                <p>
+                    Spawn <code>citum-server</code>, write one request, read one response. The fixture under
+                    <a href="fixtures/">guides/integrations/fixtures/</a> is what produced the response above &mdash;
+                    you can run this verbatim against a local install.
+                </p>
+            </div>
+            <div class="workshop-block">
+                <pre><code>// client.mjs
+import { spawn } from "node:child_process";
+import { createInterface } from "node:readline";
+import { readFileSync } from "node:fs";
+
+const request = JSON.parse(
+  readFileSync(new URL("./format-document-request.json", import.meta.url))
+);
+
+const server = spawn("citum-server", [], { stdio: ["pipe", "pipe", "inherit"] });
+const lines = createInterface({ input: server.stdout });
+
+server.stdin.write(JSON.stringify(request) + "\n");
+
+for await (const line of lines) {
+  const response = JSON.parse(line);
+  console.log(JSON.stringify(response, null, 2));
+  server.stdin.end();
+  break;
+}</code></pre>
+            </div>
+            <div class="workshop-block" style="margin-top: 1rem;">
+                <pre><code>node client.mjs</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                In a real editor plugin you'd keep the server alive for the session and pipeline requests through it.
+                The protocol is newline-delimited, so any framing library that handles that pattern works.
+            </p>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>For browser-based editors</h2>
+                <p>
+                    If your editor runs in a browser (Google Docs add-on, web-based IDE, custom Electron app), prefer
+                    the <a href="../../developer.html#wasm">WASM bridge</a>. The functions
+                    <code>render_citation</code>, <code>render_bibliography</code>, <code>validate_style</code>,
+                    <code>get_style_metadata</code>, and <code>materialize_style</code> cover the same surface as
+                    the JSON-RPC server, but in-process.
+                </p>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>Word, LibreOffice, Pages</h2>
+                <p>
+                    Citum doesn't currently ship a Word, LibreOffice, or Pages plugin. The integration shape is
+                    well-suited to it &mdash; JSON-RPC for desktop add-ins, WASM for web-based ones &mdash; and we're
+                    happy to support anyone building one. Open a thread on
+                    <a href="https://github.com/citum/citum-core/discussions/734">GitHub Discussions</a> to coordinate.
+                </p>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>Security note</h2>
+                <p>
+                    <code>citum-server</code> resolves styles by id, path, or URI through a resolver chain that can
+                    issue outbound network requests (registry, HTTP, git). Do not expose it to untrusted clients.
+                    For editor integrations, run it as a local child process; for HTTP mode, bind to localhost.
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer style="padding: 3rem 0; border-top: 1px solid var(--citum-border); background: var(--citum-surface);">
+        <!-- LAYOUT_FOOTER_START -->
+            <div class="site-footer-inner">
+                <div class="site-brand site-brand-small">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </div>
+                <div class="site-footer-links">
+                    <a href="../../guides/style-authoring/start.html">Style Authoring</a>
+                    <a href="../../developer.html">Developer</a>
+                    <a href="../../schemas/">Schemas</a>
+                    <a href="../../reports.html">Reports</a>
+                    <a href="../../operating.html">Contributing</a>
+                    <a href="https://github.com/citum/citum-core">GitHub</a>
+                </div>
+                <div class="site-footer-note">&copy; 2026 Citum Project.</div>
+            </div>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github.min.css">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js" defer onload="hljs.highlightAll();"></script>        <!-- LAYOUT_FOOTER_END -->
+    </footer>
+    <script src="../../assets/citum-interactive.js"></script>
+</body>
+</html>

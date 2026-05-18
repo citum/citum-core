@@ -1,0 +1,195 @@
+<!-- PAGE_ID: docs -->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Design principles | Citum Docs</title>
+    <meta name="description" content="Explicit templates, typed data, processor boundaries, and the explicit-over-magic principle that shape the Citum codebase." />
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../assets/citum-theme.css" />
+</head>
+<body>
+    <nav class="site-nav">
+        <!-- LAYOUT_NAV_START -->
+        <div class="site-nav-inner">
+            <div class="site-brand-wrap">
+                <a href="../index.html" class="site-brand">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </a>
+            </div>
+            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
+                <a class="site-nav-link active" href="../index.html">Overview</a>
+                <a class="site-nav-link " href="../guides/style-authoring/start.html">Style Authoring</a>
+                <a class="site-nav-link " href="../developer.html">Developer</a>
+                <a class="site-nav-link " href="../interactive-demo.html">Demo</a>
+                <a class="site-nav-link " href="../schemas/">Schemas</a>
+                <a class="site-nav-link " href="../reports.html">Reports</a>
+                <a class="site-source-link" href="https://github.com/citum/citum-core">
+                    <svg aria-hidden="true" class="site-source-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+                <span class="mobile-nav-icon" aria-hidden="true">&#9776;</span>
+            </button>
+        </div>
+        <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
+            <a class="site-nav-link active" href="../index.html">Overview</a>
+            <a class="site-nav-link " href="../guides/style-authoring/start.html">Style Authoring</a>
+            <a class="site-nav-link " href="../developer.html">Developer</a>
+            <a class="site-nav-link " href="../interactive-demo.html">Demo</a>
+            <a class="site-nav-link " href="../schemas/">Schemas</a>
+            <a class="site-nav-link " href="../reports.html">Reports</a>
+            <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
+        </div>        <!-- LAYOUT_NAV_END -->
+    </nav>
+
+    <main class="doc-shell">
+        <header class="doc-section-header">
+            <span class="citum-kicker">Architecture</span>
+            <h1>Design principles</h1>
+        </header>
+        <section class="doc-section">
+            <div class="doc-prose">
+<p>See CLAUDE.md for active behavioral policy. This document captures the full design rationale.</p>
+<h2>1. High-Fidelity Data &amp; Math Support</h2><ul>
+<li><strong>EDTF as Primary</strong>: Prioritize Extended Date/Time Format (EDTF) for all date fields. The engine must support ranges, uncertainty, and approximations natively.</li>
+<li><strong>Math in Variables</strong>: Support mathematical notation and rich text within metadata variables (e.g., title or note). Prefer standard encodings (e.g., Unicode) over format-specific markup where possible, while ensuring the processor can handle complex fragments without corruption. Ref: csln#64</li>
+<li><strong>Scoped Multilingualism</strong>: Support multilingual/multiscript data via field &#39;scopes&#39; (e.g., author+an:mslang). Ref: csln#66</li>
+<li><strong>Contributor Distinction</strong>: Maintain a strict distinction between individual and organizational authors.</li>
+</ul>
+<h2>2. Hybrid Processing Architecture</h2><ul>
+<li><strong>Dual-Mode Support</strong>: The architecture must cater to both Batch Processing (CLI-based like Pandoc/LaTeX) and Interactive/Real-time usage (GUI-based like Word/Zotero).</li>
+<li><strong>JSON Server Mode</strong>: Consider a service-oriented approach (similar to Haskell citeproc) where the engine can run as a background process to minimize startup latency for interactive apps.</li>
+</ul>
+<h2>3. Future-Proofing &amp; Versioning (Stability)</h2><ul>
+<li><strong>Forward/Backward Compatibility</strong>: We must ensure that a style written in 2026 works in 2030, and ideally, that a newer style degrades gracefully in an older engine.</li>
+<li><strong>Schema Evolution</strong>: Utilize Serde&#39;s <code>#[serde(default)]</code> and <code>#[serde(flatten)]</code> to handle unknown or new fields gracefully. Implement a versioning strategy within the Rust types to allow for non-breaking extensions to the specification.</li>
+</ul>
+<p><strong>Strategy: Strict Typing with Explicit Extensions</strong></p>
+<ol>
+<li><strong>Explicit Versioning</strong>: Styles include a <code>version</code> field for unambiguous schema identification.</li>
+<li><strong>Strict Validation</strong>: Style and locale types use <code>deny_unknown_fields</code> to catch typos at parse time. <code>InputReference</code> variants are an exception: serde&#39;s internally-tagged enum dispatch replays the tag field into the inner struct&#39;s deserializer, making <code>deny_unknown_fields</code> incompatible. Unknown fields on reference types silently produce <code>None</code> and surface as missing data at render time rather than a parse error. This is an accepted trade-off for deterministic class-based dispatch.</li>
+<li><strong>Explicit Extension Points</strong>: Styles use explicit <code>custom: Option&lt;HashMap&lt;String, serde_json::Value&gt;&gt;</code> fields for user-defined metadata and extensions. See <a href="./EXTENSIBILITY_STRATEGY_2026-03-14.md">EXTENSIBILITY_STRATEGY_2026-03-14.md</a> for the portability-first extension ladder and limits on executable extensions.</li>
+<li><strong>Extension via Defaults</strong>: All new features must be <code>Option&lt;T&gt;</code> with <code>#[serde(default)]</code>.</li>
+</ol>
+<p>The end-to-end contract — what an older engine must do when it meets a newer feature, and which categories may or may not hard-fail — is defined in <a href="../specs/FORWARD_COMPATIBILITY.md"><code>../specs/FORWARD_COMPATIBILITY.md</code></a>.</p>
+<p><strong>Graceful Degradation for Multilingual Data</strong></p>
+<ul>
+<li><strong>Fallback Chain</strong>: Multilingual fields must always implement a <code>Display</code> fallback (e.g., <code>Complex.original</code> -&gt; <code>Simple string</code>).</li>
+<li><strong>Mode Fallback</strong>: If a style requests a <code>translated</code> view but the data only provides <code>original</code>, the processor must return <code>original</code> rather than failing.</li>
+</ul>
+<h2>4. Multilingual Support</h2><ul>
+<li><strong>Explicit Language/Script Tagging</strong>: All multilingual metadata uses BCP 47 tags with script and optional variant (e.g., &quot;ja-Latn-hepburn&quot; for Hepburn romanization)</li>
+<li><strong>Graceful Degradation</strong>: Simple string → original → transliteration → translation fallback chain via <code>Display</code> trait</li>
+<li><strong>Surface-Level Disambiguation</strong>: Disambiguation matches displayed written forms (transliterated strings if style shows transliteration), NOT PIDs (ORCID/DOI are for identity, not disambiguation)</li>
+<li><strong>Declarative Modes</strong>: Styles declare viewing preference (original/transliterated/translated/combined) without procedural logic</li>
+</ul>
+<h2>5. Rust Engineering Standards (Code-as-Schema)</h2><ul>
+<li><strong>Serde-Driven Truth</strong>: We use a Code-First approach. The Rust structs and enums are the source of truth for the schema.</li>
+<li><strong>Total Stability</strong>: Prohibit the use of <code>unwrap()</code> or <code>unsafe</code>. Use idiomatic Rust <code>Result</code> patterns for all processing logic.</li>
+</ul>
+<h2>6. Explicit Over Magic</h2><p><strong>The style language should be explicit; the processor should be dumb.</strong></p>
+<p>If special behavior is needed (e.g., different punctuation for journals vs books), it should be expressed in the style YAML, not hardcoded in the processor.</p>
+<p>Bad (magic in processor):</p>
+<pre><code class="language-rust">// Processor has hidden logic for journal articles
+if ref_type == &quot;article-journal&quot; {
+    separator = &quot;, &quot;;
+}
+</code></pre>
+<p>Good (explicit in style):</p>
+<pre><code class="language-yaml"># Style explicitly declares type-specific behavior via type-variants
+bibliography:
+  type-variants:
+    article-journal:
+      template:
+        - title: parent-serial
+          suffix: &quot;,&quot;
+</code></pre>
+<p>This makes styles portable, testable, and understandable without reading processor code.</p>
+<h2>7. Declarative Templates</h2><p>Replace CSL 1.0&#39;s procedural <code>&lt;choose&gt;/&lt;if&gt;</code> with flat templates and spec-level
+<code>type-variants</code> for structural outliers:</p>
+<pre><code class="language-yaml">bibliography:
+  template:
+    - contributor: author
+      form: long
+    - date: issued
+      form: year
+      wrap: parentheses
+    - title: primary
+    - variable: publisher
+  # type-variants at the spec level — only for genuine structural differences
+  type-variants:
+    article-journal:
+      template:
+        - contributor: author
+          form: long
+        - date: issued
+          form: year
+          wrap: parentheses
+        - title: primary
+        # publisher omitted for journals
+</code></pre>
+<p><strong>Prefer presets and lean generic templates over <code>type-variants</code></strong> — the goal is to
+design the base template so it handles ~90% of reference types, reserving <code>type-variants</code>
+only for types that need a structurally different component set. Use option presets
+(<code>options.contributors</code>, <code>options.dates</code>, <code>options.titles</code>) and template presets
+(<code>citation.template-ref</code>) to share configuration without per-type duplication.</p>
+<h2>8. Structured Name Input</h2><p>Names must be structured (<code>family</code>/<code>given</code> or <code>literal</code>), never parsed from strings. Corporate names can contain commas.</p>
+<h2>9. Oracle Verification</h2><p>All changes must pass the verification loop:</p>
+<ol>
+<li>Render with citeproc-js → String A</li>
+<li>Render with Citum → String B</li>
+<li><strong>Pass</strong>: A == B (for supported features)</li>
+</ol>
+<h2>9a. Dual Metrics: Fidelity + SQI</h2><p>Use two metrics with clear priority:</p>
+<ol>
+<li><strong>Fidelity</strong> (oracle match) is the hard gate.</li>
+<li><strong>SQI</strong> (Style Quality Index) is a secondary optimization metric.</li>
+</ol>
+<p>Policy:</p>
+<ul>
+<li>Never accept an SQI improvement that causes a fidelity regression.</li>
+<li>Use SQI to break ties when multiple implementations have comparable fidelity.</li>
+<li>Prefer SQI improvements that increase fallback robustness and concision without changing rendered output.</li>
+<li>When tradeoffs are unavoidable during iteration, restore fidelity before merge and document temporary SQI/fidelity drift explicitly.</li>
+</ul>
+<h2>10. Well-Commented Code</h2><p>Code should be self-documenting with clear comments explaining:</p>
+<ul>
+<li><strong>Why</strong> decisions were made, not just what the code does</li>
+<li>Non-obvious behavior or edge cases</li>
+<li>References to CSL 1.0 spec where relevant</li>
+<li>Known limitations or TODOs</li>
+</ul>
+
+            </div>
+        </section>
+    </main>
+
+    <footer style="padding: 3rem 0; border-top: 1px solid var(--citum-border); background: var(--citum-surface);">
+        <!-- LAYOUT_FOOTER_START -->
+            <div class="site-footer-inner">
+                <div class="site-brand site-brand-small">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </div>
+                <div class="site-footer-links">
+                    <a href="../guides/style-authoring/start.html">Style Authoring</a>
+                    <a href="../developer.html">Developer</a>
+                    <a href="../schemas/">Schemas</a>
+                    <a href="../reports.html">Reports</a>
+                    <a href="../operating.html">Contributing</a>
+                    <a href="https://github.com/citum/citum-core">GitHub</a>
+                </div>
+                <div class="site-footer-note">&copy; 2026 Citum Project.</div>
+            </div>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github.min.css">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js" defer onload="hljs.highlightAll();"></script>        <!-- LAYOUT_FOOTER_END -->
+    </footer>
+    <script src="../assets/citum-interactive.js"></script>
+</body>
+</html>

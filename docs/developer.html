@@ -5,7 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Developer | Citum Docs</title>
-    <meta name="description" content="Integrate Citum into your application via WASM, C FFI, CLI, or JSON-RPC server." />
+    <meta name="description" content="Integrate Citum into your application via the Rust library, CLI, JSR (Deno / Node / browser), WASM, C FFI, or JSON-RPC server." />
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="assets/citum-theme.css" />
 </head>
@@ -20,10 +20,10 @@
                 </a>
             </div>
             <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
-                <a class="site-nav-link" href="https://citum.org">&#8592; citum.org</a>
                 <a class="site-nav-link " href="index.html">Overview</a>
                 <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
                 <a class="site-nav-link active" href="developer.html">Developer</a>
+                <a class="site-nav-link " href="interactive-demo.html">Demo</a>
                 <a class="site-nav-link " href="schemas/">Schemas</a>
                 <a class="site-nav-link " href="reports.html">Reports</a>
                 <a class="site-source-link" href="https://github.com/citum/citum-core">
@@ -38,10 +38,10 @@
             </button>
         </div>
         <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
-            <a class="site-nav-link" href="https://citum.org">&#8592; citum.org</a>
             <a class="site-nav-link " href="index.html">Overview</a>
             <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
             <a class="site-nav-link active" href="developer.html">Developer</a>
+            <a class="site-nav-link " href="interactive-demo.html">Demo</a>
             <a class="site-nav-link " href="schemas/">Schemas</a>
             <a class="site-nav-link " href="reports.html">Reports</a>
             <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
@@ -54,19 +54,59 @@
             <h1>Developer</h1>
             <p>
                 Citum exposes several integration surfaces depending on your runtime.
-                Pick the one that fits your environment.
+                Pick the one that fits your environment &mdash; or start from one of the recipes below.
             </p>
         </header>
 
         <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>Start here if you're building&hellip;</h2>
+            </div>
+            <div class="doc-grid">
+                <a class="doc-card" href="guides/integrations/scholar-cli.html">
+                    <h3>&hellip;and you just want to format a document</h3>
+                    <p>Render a Markdown or Djot manuscript with citations into HTML, LaTeX, Typst, or PDF using the <code>citum</code> CLI.</p>
+                </a>
+                <a class="doc-card" href="guides/integrations/static-site.html">
+                    <h3>&hellip;a static site or docs build</h3>
+                    <p>Wire <code>citum</code> into a Makefile, npm script, or CI job to render citations as part of your existing build.</p>
+                </a>
+                <a class="doc-card" href="guides/integrations/editor-plugin.html">
+                    <h3>&hellip;an editor or plugin</h3>
+                    <p>Run <code>citum-server</code> as a long-lived JSON-RPC process and call it from your editor, IDE plugin, or word-processor add-in.</p>
+                </a>
+                <a class="doc-card" href="guides/integrations/rust-library.html">
+                    <h3>&hellip;and you're already writing Rust</h3>
+                    <p>Depend on <code>citum-engine</code> as an ordinary crate and call its API directly &mdash; no CLI, WASM, or RPC boundary. The path for static-site generators, mdbook preprocessors, and custom publishing toolchains written in Rust.</p>
+                </a>
+                <a class="doc-card" href="#jsr">
+                    <h3>&hellip;a Deno, Node, or browser app</h3>
+                    <p>Import <code>@citum/citum</code> from JSR and call <code>renderBibliography</code> / <code>renderCitation</code> directly. TypeScript types included; the WASM is cached after first load.</p>
+                </a>
+                <a class="doc-card" href="guides/style-authoring/start.html">
+                    <h3>&hellip;a house style for a publisher or journal</h3>
+                    <p>Express your style as YAML that extends a pinned parent (APA, Chicago, &hellip;) instead of forking and re-maintaining XML.</p>
+                </a>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>Integration surfaces</h2>
+                <p>Reference cards for each integration path. Each links to deeper documentation below.</p>
+            </div>
             <div class="doc-grid">
                 <a class="doc-card" href="#cli">
                     <h3>CLI</h3>
-                    <p>Render references, process Djot documents, validate styles, and inspect schemas from the command line. The simplest integration path for build pipelines and scripted workflows.</p>
+                    <p>Render references, process Djot or Markdown documents, validate styles, and inspect schemas from the command line. The simplest integration path for build pipelines and scripted workflows.</p>
                 </a>
-                <a class="doc-card" href="#wasm">
-                    <h3>WASM</h3>
-                    <p>Run the engine in a browser or Node.js application. The WASM bridge exposes rendering and validation as async functions with TypeScript types.</p>
+                <a class="doc-card" href="#library">
+                    <h3>Rust library</h3>
+                    <p>Depend on <code>citum-engine</code> as a crate and call its API directly. The native path for Rust binaries and libraries &mdash; no process spawn, no WASM, no RPC.</p>
+                </a>
+                <a class="doc-card" href="#jsr">
+                    <h3>JSR (Deno / Node / browser)</h3>
+                    <p>Import the engine from the JSR registry as <code>@citum/citum</code>. The simplest path for TypeScript / JavaScript projects on Deno, Node, or the browser &mdash; types included.</p>
                 </a>
                 <a class="doc-card" href="#ffi">
                     <h3>C FFI</h3>
@@ -75,6 +115,10 @@
                 <a class="doc-card" href="#server">
                     <h3>JSON-RPC server</h3>
                     <p>Run Citum as a long-lived process and call it over stdin/stdout or HTTP. Suitable for editor integrations, language-server patterns, and applications that need live formatting without process-spawn overhead.</p>
+                </a>
+                <a class="doc-card" href="#interactive">
+                    <h3>Interactive HTML</h3>
+                    <p>Drop one stylesheet and one script into your rendered page and citations become clickable, scroll to their bibliography entry, and show hover previews. No build step.</p>
                 </a>
             </div>
         </section>
@@ -86,7 +130,7 @@
             </div>
             <div class="workshop-block">
                 <div class="workshop-label">Install</div>
-                <pre><code>cargo install --git https://github.com/citum/citum-core --bin citum</code></pre>
+                <pre><code>cargo install citum</code></pre>
             </div>
             <div class="workshop-block" style="margin-top: 1rem;">
                 <div class="workshop-label">Common commands</div>
@@ -110,14 +154,117 @@ citum schema --out-dir ./schemas</code></pre>
             </p>
         </section>
 
+        <section class="doc-section" id="library">
+            <div class="doc-section-header">
+                <h2>Rust library</h2>
+                <p>
+                    The engine is published as the <code>citum-engine</code> crate. Depend on it from any Rust binary
+                    or library and call its API directly &mdash; the natural path for static-site generators, mdbook
+                    preprocessors, custom publishing toolchains, and any tool that already runs in the Rust
+                    ecosystem.
+                </p>
+            </div>
+            <div class="workshop-block">
+                <div class="workshop-label">Add the dependency</div>
+                <pre><code>cargo add citum-engine</code></pre>
+            </div>
+            <div class="workshop-block" style="margin-top: 1rem;">
+                <div class="workshop-label">Format a document</div>
+                <pre><code>use citum_engine::{
+    Bibliography, CitationOccurrence, CitationOccurrenceItem, FormatDocumentRequest,
+    OutputFormatKind, StyleInput, format_document,
+};
+
+let refs: Bibliography = serde_json::from_str(&amp;std::fs::read_to_string("refs.json")?)?;
+let result = format_document(FormatDocumentRequest {
+    style: StyleInput::Path("apa-7th.yaml".to_string()),
+    locale: Some("en-US".to_string()),
+    output_format: OutputFormatKind::Html,
+    refs,
+    citations: vec![/* CitationOccurrence per citation in document order */],
+    document_options: None,
+})?;</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                See <a href="guides/integrations/rust-library.html">Embed Citum in a Rust binary or library</a> for
+                the full recipe &mdash; programmatic construction, loading styles and references from disk, document
+                formatting, and how to wire this into your own document model (mdbook, static-site generators, custom
+                tools).
+            </p>
+        </section>
+
+        <section class="doc-section" id="jsr">
+            <div class="doc-section-header">
+                <h2>JSR (Deno / Node / browser)</h2>
+                <p>
+                    The engine is published to the JSR registry as
+                    <a href="https://jsr.io/@citum/citum"><code>@citum/citum</code></a>.
+                    It wraps the WASM bridge below, packaged for direct <code>import</code>
+                    from Deno, Node, or the browser with TypeScript types included.
+                    Best fit for Deno and Node, where the ~5 MB WASM is downloaded once
+                    into the lockfile or <code>node_modules</code> and loaded from disk
+                    thereafter. In the browser, ship through a bundler and serve with
+                    Brotli or gzip at your CDN &mdash; the compressed payload is closer
+                    to 800 KB; JSR itself serves the WASM uncompressed. The
+                    <a href="#wasm">raw WASM bridge</a> is the lower-level escape hatch.
+                </p>
+            </div>
+            <div class="workshop-block">
+                <div class="workshop-label">Deno</div>
+                <pre><code>import init, { renderBibliography, renderCitation } from "jsr:@citum/citum";
+await init();</code></pre>
+            </div>
+            <div class="workshop-block" style="margin-top: 1rem;">
+                <div class="workshop-label">Node 20+ (ESM)</div>
+                <pre><code># In your project
+npx jsr add @citum/citum</code></pre>
+                <pre style="margin-top: 0.5rem;"><code>import init, { renderBibliography, renderCitation } from "@citum/citum";
+import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+
+// Node's fetch can't load file:// URLs, so feed init() the wasm bytes
+const jsUrl = import.meta.resolve("@citum/citum");
+const wasmUrl = jsUrl.replace("citum_bindings.js", "citum_bindings_bg.wasm");
+await init({ module_or_path: await readFile(fileURLToPath(wasmUrl)) });</code></pre>
+            </div>
+            <div class="workshop-block" style="margin-top: 1rem;">
+                <div class="workshop-label">Render (any runtime)</div>
+                <pre><code>const style = "id: apa-7th";
+const refs = JSON.stringify([
+  {
+    id: "darcus2026",
+    class: "monograph",
+    type: "book",
+    title: "Citum: A Modern Citation Engine",
+    author: [{ family: "D'Arcus", given: "Bruce" }],
+    issued: "2026",
+  },
+]);
+
+const html = renderBibliography(style, refs);</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                In a browser, use the same call sequence with a bundler that handles
+                <code>wasm-pack --target web</code> output (Vite, esbuild, Webpack 5+,
+                Rollup with <code>@rollup/plugin-wasm</code>): the bundler resolves the
+                wasm asset for <code>init()</code> automatically, so the snippet looks
+                like the Deno one. The package also exports <code>formatDocument</code>,
+                <code>validateStyle</code>, <code>materializeStyle</code>, and
+                <code>getStyleMetadata</code>. See the <a href="#interactive">Interactive HTML</a>
+                section below to make the rendered output clickable in a page.
+            </p>
+        </section>
+
         <section class="doc-section" id="wasm">
             <div class="doc-section-header">
                 <h2>WASM</h2>
                 <p>
-                    The WASM bridge is built from
+                    The lower-level WASM bridge is built from
                     <code>crates/citum-bindings</code> using
-                    <code>wasm-pack</code> with the <code>nodejs</code> target.
-                    It is the integration layer used by <a href="https://hub.citum.org">Citum Hub</a>.
+                    <code>wasm-pack</code>. The <a href="#jsr">JSR package</a> above wraps this
+                    bridge for Deno / Node / browser; build it yourself only when you need a
+                    custom target or to embed the engine inside another bundle. The bridge is
+                    the integration layer used by <a href="https://hub.citum.org">Citum Hub</a>.
                 </p>
             </div>
             <div class="workshop-block">
@@ -177,19 +324,61 @@ cargo build --release
                 </p>
             </div>
             <div class="workshop-block">
-                <div class="workshop-label">Start the server (stdin/stdout)</div>
-                <pre><code>citum-server</code></pre>
-            </div>
-            <div class="workshop-block" style="margin-top: 1rem;">
-                <div class="workshop-label">Start the server (HTTP, feature-gated)</div>
-                <pre><code>citum-server --http --port 8765</code></pre>
+                <div class="workshop-label">Install and start</div>
+                <pre><code>cargo install citum-server
+citum-server                          # stdin/stdout JSON-RPC
+citum-server --http --port 8765       # HTTP mode (http feature)</code></pre>
             </div>
             <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
-                The HTTP server is behind the <code>citum-server/http</code> feature flag (axum).
-                See <a href="reference.html">Reference → JSON Schemas</a> for the
-                <code>server.json</code> schema describing the RPC surface, or browse
+                Methods: <code>format_document</code>, <code>render_citation</code>, <code>render_bibliography</code>,
+                <code>validate_style</code>. See the
+                <a href="guides/integrations/editor-plugin.html">editor / plugin recipe</a> for a working request,
+                response, and Node client. The HTTP server is behind the <code>citum-server/http</code> feature
+                flag (axum). For the full schema, see
+                <a href="reference.html">Reference &rarr; JSON Schemas</a> or browse
                 <a href="schemas/">docs/schemas/</a> directly.
             </p>
+        </section>
+
+        <section class="doc-section" id="interactive">
+            <div class="doc-section-header">
+                <h2>Interactive HTML</h2>
+                <p>
+                    Citum's HTML output is annotated with stable hooks
+                    (<code>.citum-citation</code>, <code>data-ref</code>,
+                    <code>.citum-bib-entry</code>). Including
+                    <code>citum-interactive.{css,js}</code> turns those annotations into a
+                    reading-aware experience: click a citation to jump to its bibliography
+                    entry, hover for a preview, and toggle between inline-numbered and
+                    footnote presentations. No build step, no framework, no JS API to wire
+                    up &mdash; just drop the two assets into your page.
+                </p>
+            </div>
+            <div class="workshop-block">
+                <div class="workshop-label">Drop-in include</div>
+                <pre><code>&lt;link rel="stylesheet" href="https://docs.citum.org/assets/citum-interactive.css"&gt;
+&lt;script src="https://docs.citum.org/assets/citum-interactive.js"&gt;&lt;/script&gt;</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                See the <a href="interactive-demo.html">live demo</a> for a runnable page,
+                and <a href="examples.html#web-interactivity">Examples &rarr; Web Interactivity</a>
+                for the underlying markup contract. The assets are MPL-2.0 and free to vendor
+                into your own site.
+            </p>
+        </section>
+
+        <section class="doc-section" id="word-processors">
+            <div class="doc-section-header">
+                <h2>Plugins for word processors</h2>
+                <p>
+                    Citum doesn't currently ship a Word, LibreOffice, Pages, or Google Docs plugin &mdash; but the
+                    integration shape is well-suited to it. The JSON-RPC server is the natural fit for desktop
+                    add-ins (one long-lived process per editor session); the WASM bridge is the natural fit for
+                    browser-based add-ons. If you're interested in building one, open a thread on
+                    <a href="https://github.com/citum/citum-core/discussions/734">GitHub Discussions</a> &mdash; we're
+                    happy to support the work.
+                </p>
+            </div>
         </section>
     </main>
 
@@ -209,7 +398,9 @@ cargo build --release
                     <a href="https://github.com/citum/citum-core">GitHub</a>
                 </div>
                 <div class="site-footer-note">&copy; 2026 Citum Project.</div>
-            </div>        <!-- LAYOUT_FOOTER_END -->
+            </div>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github.min.css">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js" defer onload="hljs.highlightAll();"></script>        <!-- LAYOUT_FOOTER_END -->
     </footer>
     <script src="assets/citum-interactive.js"></script>
 </body>

@@ -20,10 +20,10 @@
                 </a>
             </div>
             <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
-                <a class="site-nav-link" href="https://citum.org">&#8592; citum.org</a>
                 <a class="site-nav-link " href="index.html">Overview</a>
                 <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
                 <a class="site-nav-link " href="developer.html">Developer</a>
+                <a class="site-nav-link " href="interactive-demo.html">Demo</a>
                 <a class="site-nav-link " href="schemas/">Schemas</a>
                 <a class="site-nav-link " href="reports.html">Reports</a>
                 <a class="site-source-link" href="https://github.com/citum/citum-core">
@@ -38,10 +38,10 @@
             </button>
         </div>
         <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
-            <a class="site-nav-link" href="https://citum.org">&#8592; citum.org</a>
             <a class="site-nav-link " href="index.html">Overview</a>
             <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
             <a class="site-nav-link " href="developer.html">Developer</a>
+            <a class="site-nav-link " href="interactive-demo.html">Demo</a>
             <a class="site-nav-link " href="schemas/">Schemas</a>
             <a class="site-nav-link " href="reports.html">Reports</a>
             <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
@@ -100,23 +100,23 @@
                 <h2>Policies and architecture</h2>
             </div>
             <div class="doc-grid">
-                <a class="doc-card" href="policies/TYPE_ADDITION_POLICY.md">
+                <a class="doc-card" href="policies/type-addition-policy.html">
                     <h3>Type addition policy</h3>
                     <p>Active policy governing when and how new data-model and style-discriminated types are added.</p>
                 </a>
-                <a class="doc-card" href="architecture/DESIGN_PRINCIPLES.md">
+                <a class="doc-card" href="architecture/design-principles.html">
                     <h3>Design principles</h3>
                     <p>Explicit templates, typed data, processor boundaries, and the explicit-over-magic principle.</p>
                 </a>
-                <a class="doc-card" href="architecture/MIGRATION_STRATEGY_ANALYSIS.md">
+                <a class="doc-card" href="architecture/migration-strategy.html">
                     <h3>Migration strategy</h3>
                     <p>Current strategy for migrating CSL 1.0 styles into Citum: hybrid XML pipeline and LLM-authored templates.</p>
                 </a>
-                <a class="doc-card" href="architecture/ROADMAP.md">
-                    <h3>Roadmap</h3>
-                    <p>Strategic direction and milestone priorities.</p>
-                </a>
             </div>
+            <p style="margin-top: 1.5rem; color: var(--citum-muted); font-size: 0.92rem;">
+                For current work in progress and what's next, see
+                <a href="https://github.com/citum/citum-core/issues">issues</a> on GitHub.
+            </p>
         </section>
     </main>
     <footer style="padding: 3rem 0; border-top: 1px solid var(--citum-border); background: var(--citum-surface);">
@@ -135,7 +135,9 @@
                     <a href="https://github.com/citum/citum-core">GitHub</a>
                 </div>
                 <div class="site-footer-note">&copy; 2026 Citum Project.</div>
-            </div>        <!-- LAYOUT_FOOTER_END -->
+            </div>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github.min.css">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js" defer onload="hljs.highlightAll();"></script>        <!-- LAYOUT_FOOTER_END -->
     </footer>
     <script src="assets/citum-interactive.js"></script>
 </body>

@@ -15,6 +15,7 @@ const NAV_TEMPLATE = `
                 <a class="site-nav-link {{ACTIVE_DOCS}}" href="{{ROOT}}index.html">Overview</a>
                 <a class="site-nav-link {{ACTIVE_STYLE}}" href="{{ROOT}}guides/style-authoring/start.html">Style Authoring</a>
                 <a class="site-nav-link {{ACTIVE_DEVELOPER}}" href="{{ROOT}}developer.html">Developer</a>
+                <a class="site-nav-link {{ACTIVE_DEMO}}" href="{{ROOT}}interactive-demo.html">Demo</a>
                 <a class="site-nav-link {{ACTIVE_REFERENCE}}" href="{{ROOT}}schemas/">Schemas</a>
                 <a class="site-nav-link {{ACTIVE_REPORTS}}" href="{{ROOT}}reports.html">Reports</a>
                 <a class="site-source-link" href="https://github.com/citum/citum-core">
@@ -32,6 +33,7 @@ const NAV_TEMPLATE = `
             <a class="site-nav-link {{ACTIVE_DOCS}}" href="{{ROOT}}index.html">Overview</a>
             <a class="site-nav-link {{ACTIVE_STYLE}}" href="{{ROOT}}guides/style-authoring/start.html">Style Authoring</a>
             <a class="site-nav-link {{ACTIVE_DEVELOPER}}" href="{{ROOT}}developer.html">Developer</a>
+            <a class="site-nav-link {{ACTIVE_DEMO}}" href="{{ROOT}}interactive-demo.html">Demo</a>
             <a class="site-nav-link {{ACTIVE_REFERENCE}}" href="{{ROOT}}schemas/">Schemas</a>
             <a class="site-nav-link {{ACTIVE_REPORTS}}" href="{{ROOT}}reports.html">Reports</a>
             <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
@@ -52,7 +54,9 @@ const FOOTER_TEMPLATE = `
                     <a href="https://github.com/citum/citum-core">GitHub</a>
                 </div>
                 <div class="site-footer-note">&copy; 2026 Citum Project.</div>
-            </div>`;
+            </div>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github.min.css">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js" defer onload="hljs.highlightAll();"></script>`;
 
 const ACTIVE_CLASS = 'active';
 
@@ -90,6 +94,7 @@ function buildLayouts() {
             .replace(/{{ACTIVE_DOCS}}/g, activeFor(pageId, 'docs'))
             .replace(/{{ACTIVE_STYLE}}/g, activeFor(pageId, 'style'))
             .replace(/{{ACTIVE_DEVELOPER}}/g, activeFor(pageId, 'developer'))
+            .replace(/{{ACTIVE_DEMO}}/g, activeFor(pageId, 'demo'))
             .replace(/{{ACTIVE_REFERENCE}}/g, activeFor(pageId, 'reference'))
             .replace(/{{ACTIVE_REPORTS}}/g, activeFor(pageId, 'reports'));
 
