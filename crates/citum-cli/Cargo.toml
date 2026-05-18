@@ -6,7 +6,7 @@ license.workspace = true
 repository.workspace = true
 homepage.workspace = true
 description = "Citum CLI: render, validate, convert, and migrate citation styles, references, and documents"
-readme = "../../README.md"
+readme = "README.md"
 keywords = ["citation", "bibliography", "csl", "citeproc", "scholarly"]
 categories = ["command-line-utilities", "text-processing"]
 

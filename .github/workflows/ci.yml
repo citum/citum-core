@@ -81,8 +81,11 @@ jobs:
               - 'scripts/install.sh'
               - 'scripts/publish-crates.sh'
               - 'scripts/release-binary.sh'
-              - 'crates/citum-bindings/**'
-              - 'crates/citum-cli/Cargo.toml'
+              # Any publishable crate change can break `cargo publish` (e.g.
+              # `include_bytes!` paths that escape the crate dir, README
+              # paths outside the package, missing `description`). Trigger
+              # the dry-run job on any change inside crates/.
+              - 'crates/**'
 
   hygiene-docs:
     name: Hygiene Checks — Docs

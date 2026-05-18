@@ -5,6 +5,7 @@ edition.workspace = true
 authors = ["Bruce D'Arcus <bdarcus@gmail.com>"]
 license.workspace = true
 description = "Citum citation and bibliography processor"
+readme = "README.md"
 repository.workspace = true
 
 [lib]

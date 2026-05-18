@@ -14,11 +14,11 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 /// Returns `None` for locales not bundled with the binary.
 pub fn get_locale_bytes(id: &str) -> Option<&'static [u8]> {
     match id {
-        "en-US" => Some(include_bytes!("../../../../locales/en-US.yaml")),
-        "de-DE" => Some(include_bytes!("../../../../locales/de-DE.yaml")),
-        "es-ES" => Some(include_bytes!("../../../../locales/es-ES.yaml")),
-        "fr-FR" => Some(include_bytes!("../../../../locales/fr-FR.yaml")),
-        "tr-TR" => Some(include_bytes!("../../../../locales/tr-TR.yaml")),
+        "en-US" => Some(include_bytes!("../../embedded/locales/en-US.yaml")),
+        "de-DE" => Some(include_bytes!("../../embedded/locales/de-DE.yaml")),
+        "es-ES" => Some(include_bytes!("../../embedded/locales/es-ES.yaml")),
+        "fr-FR" => Some(include_bytes!("../../embedded/locales/fr-FR.yaml")),
+        "tr-TR" => Some(include_bytes!("../../embedded/locales/tr-TR.yaml")),
         _ => None,
     }
 }
@@ -32,10 +32,10 @@ pub const EMBEDDED_LOCALE_IDS: &[&str] = &["en-US", "de-DE", "es-ES", "fr-FR", "
 pub fn get_locale_override_bytes(id: &str) -> Option<&'static [u8]> {
     match id {
         "en-US-chicago" => Some(include_bytes!(
-            "../../../../locales/overrides/en-US-chicago.yaml"
+            "../../embedded/locales/overrides/en-US-chicago.yaml"
         )),
         "de-DE-chicago" => Some(include_bytes!(
-            "../../../../locales/overrides/de-DE-chicago.yaml"
+            "../../embedded/locales/overrides/de-DE-chicago.yaml"
         )),
         _ => None,
     }

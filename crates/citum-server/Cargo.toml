@@ -7,7 +7,7 @@ license.workspace = true
 description = "Citum JSON-RPC server for citation and bibliography processing"
 repository.workspace = true
 homepage.workspace = true
-readme = "../../README.md"
+readme = "README.md"
 keywords = ["citation", "bibliography", "csl", "citeproc", "json-rpc"]
 categories = ["command-line-utilities", "text-processing"]
 

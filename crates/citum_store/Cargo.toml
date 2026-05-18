@@ -6,7 +6,7 @@ license.workspace = true
 repository.workspace = true
 homepage.workspace = true
 description = "Citum style and reference storage layer — registry, cache, and resolver chain"
-readme = "../../README.md"
+readme = "README.md"
 keywords = ["citation", "csl", "storage", "registry"]
 categories = ["caching", "text-processing"]
 

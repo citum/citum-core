@@ -6,7 +6,7 @@ license.workspace = true
 repository.workspace = true
 homepage.workspace = true
 description = "Legacy CSL 1.0 XML and CSL-JSON parsers — infrastructure for the Citum migration pipeline"
-readme = "../../README.md"
+readme = "README.md"
 keywords = ["citation", "csl", "parser", "xml"]
 categories = ["parser-implementations", "text-processing"]
 

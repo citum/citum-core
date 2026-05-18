@@ -155,7 +155,7 @@ impl StyleRegistry {
     pub fn load_default() -> Self {
         DEFAULT_REGISTRY
             .get_or_init(|| {
-                let bytes = include_bytes!("../../../registry/default.yaml");
+                let bytes = include_bytes!("../embedded/registry/default.yaml");
                 let registry: Self = serde_yaml::from_slice(bytes)
                     .expect("embedded registry/default.yaml is valid YAML");
                 registry

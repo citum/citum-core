@@ -14,85 +14,85 @@ use crate::Style;
 fn get_style_bytes(name: &str) -> Option<&'static [u8]> {
     match name {
         "elsevier-harvard-core" => Some(include_bytes!(
-            "../../../../styles/embedded/elsevier-harvard-core.yaml"
+            "../../embedded/styles/elsevier-harvard-core.yaml"
         )),
         "elsevier-with-titles-core" => Some(include_bytes!(
-            "../../../../styles/embedded/elsevier-with-titles-core.yaml"
+            "../../embedded/styles/elsevier-with-titles-core.yaml"
         )),
         "elsevier-vancouver-core" => Some(include_bytes!(
-            "../../../../styles/embedded/elsevier-vancouver-core.yaml"
+            "../../embedded/styles/elsevier-vancouver-core.yaml"
         )),
         "springer-basic-author-date-core" => Some(include_bytes!(
-            "../../../../styles/embedded/springer-basic-author-date-core.yaml"
+            "../../embedded/styles/springer-basic-author-date-core.yaml"
         )),
         "springer-basic-brackets-core" => Some(include_bytes!(
-            "../../../../styles/embedded/springer-basic-brackets-core.yaml"
+            "../../embedded/styles/springer-basic-brackets-core.yaml"
         )),
         "springer-vancouver-brackets-core" => Some(include_bytes!(
-            "../../../../styles/embedded/springer-vancouver-brackets-core.yaml"
+            "../../embedded/styles/springer-vancouver-brackets-core.yaml"
         )),
         "taylor-and-francis-chicago-author-date-core" => Some(include_bytes!(
-            "../../../../styles/embedded/taylor-and-francis-chicago-author-date-core.yaml"
+            "../../embedded/styles/taylor-and-francis-chicago-author-date-core.yaml"
         )),
         "taylor-and-francis-council-of-science-editors-author-date-core" => Some(include_bytes!(
-            "../../../../styles/embedded/taylor-and-francis-council-of-science-editors-author-date-core.yaml"
+            "../../embedded/styles/taylor-and-francis-council-of-science-editors-author-date-core.yaml"
         )),
         "taylor-and-francis-national-library-of-medicine-core" => Some(include_bytes!(
-            "../../../../styles/embedded/taylor-and-francis-national-library-of-medicine-core.yaml"
+            "../../embedded/styles/taylor-and-francis-national-library-of-medicine-core.yaml"
         )),
         "chicago-shortened-notes-bibliography-core" => Some(include_bytes!(
-            "../../../../styles/embedded/chicago-shortened-notes-bibliography-core.yaml"
+            "../../embedded/styles/chicago-shortened-notes-bibliography-core.yaml"
         )),
-        "preset-bases/apa-7th" => Some(include_bytes!("../../../../styles/embedded/apa-7th.yaml")),
+        "preset-bases/apa-7th" => Some(include_bytes!("../../embedded/styles/apa-7th.yaml")),
         "preset-bases/chicago-author-date-18th" => Some(include_bytes!(
-            "../../../../styles/embedded/chicago-author-date-18th.yaml"
+            "../../embedded/styles/chicago-author-date-18th.yaml"
         )),
         "preset-bases/chicago-notes-18th" => Some(include_bytes!(
-            "../../../../styles/embedded/chicago-notes-18th.yaml"
+            "../../embedded/styles/chicago-notes-18th.yaml"
         )),
         "chicago-notes-18th" => Some(include_bytes!(
-            "../../../../styles/embedded/chicago-notes-18th.yaml"
+            "../../embedded/styles/chicago-notes-18th.yaml"
         )),
         "chicago-author-date-18th" => Some(include_bytes!(
-            "../../../../styles/embedded/chicago-author-date-18th.yaml"
+            "../../embedded/styles/chicago-author-date-18th.yaml"
         )),
-        "apa-7th" => Some(include_bytes!("../../../../styles/embedded/apa-7th.yaml")),
+        "apa-7th" => Some(include_bytes!("../../embedded/styles/apa-7th.yaml")),
         "elsevier-harvard" => Some(include_bytes!(
-            "../../../../styles/embedded/elsevier-harvard.yaml"
+            "../../embedded/styles/elsevier-harvard.yaml"
         )),
         "elsevier-with-titles" => Some(include_bytes!(
-            "../../../../styles/embedded/elsevier-with-titles.yaml"
+            "../../embedded/styles/elsevier-with-titles.yaml"
         )),
         "elsevier-vancouver" => Some(include_bytes!(
-            "../../../../styles/embedded/elsevier-vancouver.yaml"
+            "../../embedded/styles/elsevier-vancouver.yaml"
         )),
         "springer-basic-author-date" => Some(include_bytes!(
-            "../../../../styles/embedded/springer-basic-author-date.yaml"
+            "../../embedded/styles/springer-basic-author-date.yaml"
         )),
         "springer-basic-brackets" => Some(include_bytes!(
-            "../../../../styles/embedded/springer-basic-brackets.yaml"
+            "../../embedded/styles/springer-basic-brackets.yaml"
         )),
         "springer-vancouver-brackets" => Some(include_bytes!(
-            "../../../../styles/embedded/springer-vancouver-brackets.yaml"
+            "../../embedded/styles/springer-vancouver-brackets.yaml"
         )),
         "american-medical-association" => Some(include_bytes!(
-            "../../../../styles/embedded/american-medical-association.yaml"
+            "../../embedded/styles/american-medical-association.yaml"
         )),
-        "ieee" => Some(include_bytes!("../../../../styles/embedded/ieee.yaml")),
+        "ieee" => Some(include_bytes!("../../embedded/styles/ieee.yaml")),
         "taylor-and-francis-chicago-author-date" => Some(include_bytes!(
-            "../../../../styles/embedded/taylor-and-francis-chicago-author-date.yaml"
+            "../../embedded/styles/taylor-and-francis-chicago-author-date.yaml"
         )),
         "taylor-and-francis-council-of-science-editors-author-date" => Some(include_bytes!(
-            "../../../../styles/embedded/taylor-and-francis-council-of-science-editors-author-date.yaml"
+            "../../embedded/styles/taylor-and-francis-council-of-science-editors-author-date.yaml"
         )),
         "taylor-and-francis-national-library-of-medicine" => Some(include_bytes!(
-            "../../../../styles/embedded/taylor-and-francis-national-library-of-medicine.yaml"
+            "../../embedded/styles/taylor-and-francis-national-library-of-medicine.yaml"
         )),
         "chicago-shortened-notes-bibliography" => Some(include_bytes!(
-            "../../../../styles/embedded/chicago-shortened-notes-bibliography.yaml"
+            "../../embedded/styles/chicago-shortened-notes-bibliography.yaml"
         )),
         "modern-language-association" => Some(include_bytes!(
-            "../../../../styles/embedded/modern-language-association.yaml"
+            "../../embedded/styles/modern-language-association.yaml"
         )),
         _ => None,
     }
