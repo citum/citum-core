@@ -38,7 +38,7 @@ cat > "$PACKAGE_DIR/jsr.json" <<JSON
 {
   "name": "@citum/citum",
   "version": "$VERSION",
-  "license": "MIT OR Apache-2.0",
+  "license": "(MIT OR Apache-2.0)",
   "exports": {
     ".": "./citum_bindings.js"
   },

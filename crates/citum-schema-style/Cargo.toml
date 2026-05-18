@@ -4,6 +4,7 @@ version.workspace = true
 edition.workspace = true
 license.workspace = true
 description = "Citum style schema types and styling engine"
+readme = "README.md"
 repository.workspace = true
 
 [dependencies]
