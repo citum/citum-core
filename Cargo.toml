@@ -32,10 +32,9 @@ categories = ["text-processing"]
 [workspace.lints.rust]
 missing_docs = "deny"
 unsafe_code = "deny"
-# Features removed from citum-cli for the v1 crates.io publish (typst-pdf,
-# typescript) still appear in cfg-gated source as dead code; declare the
-# cfg names here so check-cfg doesn't warn on them workspace-wide.
-unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("typst-pdf", "typescript"))'] }
+# The removed citum-cli `typescript` feature still appears in cfg-gated
+# source as dead code; declare it so check-cfg stays quiet workspace-wide.
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(feature, values("typescript"))'] }
 
 [workspace.lints.rustdoc]
 bare_urls = "warn"

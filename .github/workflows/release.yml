@@ -17,9 +17,7 @@ on:
           - release-pr
 
 permissions:
-  pull-requests: write
-  contents: write
-  issues: write
+  contents: read
 
 jobs:
   # ── Step 1: Detect what changed and infer bump level ──────────────
@@ -75,6 +73,10 @@ jobs:
     needs: detect
     if: needs.detect.outputs.should-release == 'true'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -215,6 +217,8 @@ jobs:
       github.event.pull_request.merged == true &&
       github.event.pull_request.head.ref == 'release/next'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
         with:

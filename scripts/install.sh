@@ -71,6 +71,7 @@ resolve_version() {
 # ---------- main ------------------------------------------------------
 
 need_cmd curl
+need_cmd install
 need_cmd tar
 need_cmd uname
 
@@ -84,6 +85,11 @@ fi
 TARGET="$(detect_target)"
 VERSION="$(resolve_version)"
 VER_BARE="${VERSION#v}"
+
+EXE_SUFFIX=""
+case "$TARGET" in
+  *-pc-windows-*) EXE_SUFFIX=".exe" ;;
+esac
 
 TARBALL="citum-${VER_BARE}-${TARGET}.tar.gz"
 BASE_URL="https://github.com/${REPO}/releases/download/${VERSION}"
@@ -121,8 +127,8 @@ tar -xzf "${TMP}/${TARBALL}" -C "$TMP"
 STAGE="${TMP}/citum-${VER_BARE}-${TARGET}"
 
 mkdir -p "$INSTALL_DIR"
-install -m 0755 "${STAGE}/citum"        "${INSTALL_DIR}/citum"
-install -m 0755 "${STAGE}/citum-server" "${INSTALL_DIR}/citum-server"
+install -m 0755 "${STAGE}/citum${EXE_SUFFIX}"        "${INSTALL_DIR}/citum${EXE_SUFFIX}"
+install -m 0755 "${STAGE}/citum-server${EXE_SUFFIX}" "${INSTALL_DIR}/citum-server${EXE_SUFFIX}"
 
 say "installed citum and citum-server to ${INSTALL_DIR}"
 
