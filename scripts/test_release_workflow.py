@@ -65,8 +65,9 @@ class ReleaseWorkflowTests(unittest.TestCase):
             self.publish_crates_script,
         )
 
-    def test_jsr_package_license_uses_compound_spdx_expression(self) -> None:
-        self.assertIn('"license": "(MIT OR Apache-2.0)"', self.build_jsr_script)
+    def test_jsr_package_license_uses_jsr_supported_identifier(self) -> None:
+        self.assertIn('"license": "MIT"', self.build_jsr_script)
+        self.assertNotIn('"license": "(MIT OR Apache-2.0)"', self.build_jsr_script)
         self.assertNotIn('"license": "MIT OR Apache-2.0"', self.build_jsr_script)
 
     def test_publish_jsr_tag_job_uses_oidc_and_publishes(self) -> None:
@@ -79,11 +80,9 @@ class ReleaseWorkflowTests(unittest.TestCase):
         assert publish_jsr is not None
         block = publish_jsr.group("block")
 
-        self.assertIn(
-            "if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')",
-            block,
-        )
-        self.assertIn("needs: build", block)
+        self.assertIn("startsWith(github.ref, 'refs/tags/v')", block)
+        self.assertIn("inputs.command == 'publish-jsr'", block)
+        self.assertNotIn("needs: build", block)
         self.assertIn("id-token: write", block)
         self.assertIn("run: ./scripts/build-jsr-package.sh", block)
         self.assertIn("working-directory: target/jsr/citum", block)
@@ -93,6 +92,10 @@ class ReleaseWorkflowTests(unittest.TestCase):
             r"- name: Publish to JSR[\s\S]*?run: npx --yes jsr publish",
             "publish-jsr must include a real publish step after dry-run",
         )
+
+    def test_release_workflow_has_fast_manual_jsr_publish_recovery(self) -> None:
+        self.assertIn("- publish-jsr", self.workflow)
+        self.assertNotIn("- publish-crates", self.workflow)
 
     def test_crate_changelogs_are_absent(self) -> None:
         tracked = subprocess.run(
