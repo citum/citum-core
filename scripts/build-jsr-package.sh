@@ -30,7 +30,7 @@ wasm-pack build "$CRATE_DIR" \
   --release \
   --features full-wasm
 
-cp "$REPO_ROOT/README.md" "$PACKAGE_DIR/README.md"
+cp "$REPO_ROOT/crates/citum-bindings/README-JSR.md" "$PACKAGE_DIR/README.md"
 cp "$REPO_ROOT/LICENSE" "$PACKAGE_DIR/LICENSE"
 cp "$REPO_ROOT/LICENSE-APACHE" "$PACKAGE_DIR/LICENSE-APACHE"
 
