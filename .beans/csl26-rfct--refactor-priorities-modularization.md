@@ -1,11 +1,11 @@
 ---
 # csl26-rfct
 title: Codebase Modularization and Refactor Priorities
-status: todo
+status: in-progress
 type: milestone
 priority: normal
 created_at: 2026-05-16T14:30:00Z
-updated_at: 2026-05-16T23:31:58Z
+updated_at: 2026-05-18T10:48:53Z
 ---
 
 Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by refactor priority and grouped by modularization strategy.

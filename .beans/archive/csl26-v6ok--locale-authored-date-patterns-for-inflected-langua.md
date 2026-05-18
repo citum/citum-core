@@ -1,14 +1,14 @@
 ---
 # csl26-v6ok
 title: Locale-authored date patterns for inflected languages
-status: in-progress
+status: completed
 type: feature
 priority: normal
 tags:
     - dates
     - multilingual
 created_at: 2026-05-16T10:47:07Z
-updated_at: 2026-05-16T12:48:56Z
+updated_at: 2026-05-18T00:43:07Z
 ---
 
 ## Goal
@@ -33,7 +33,7 @@ Two `DateForm` variants only: `Full` and `MonthDay`. Other variants (`YearMonth`
 - [x] Add unit tests: en-US regression plus es-ES and eu-ES MF2 path plus missing-component fallback (7 new tests)
 - [x] Pre-commit gate: fmt clean, clippy clean, 1293/1293 tests pass
 - [x] Portfolio quality gate: 154 styles at fidelity 1.0, 0 warnings
-- [ ] Open PR, request Basque-speaker review for `eu-ES.yaml` content
+- [x] Open PR, request Basque-speaker review for `eu-ES.yaml` content
 
 ## Implementation note — Spanish bonus
 
