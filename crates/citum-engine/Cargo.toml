@@ -38,7 +38,7 @@ schema = ["dep:schemars", "citum-schema/schema", "citum-schema-data/schema"]
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }
-citum-io = { workspace = true }
+citum-io = { path = "../citum-io" }
 rstest = "0.26"
 tempfile = "3.8"
 tracing.workspace = true
