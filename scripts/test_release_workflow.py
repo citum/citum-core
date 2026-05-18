@@ -13,6 +13,8 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 WORKFLOW_PATH = REPO_ROOT / ".github/workflows/release.yml"
 RELEASE_CONFIG_PATH = REPO_ROOT / "release.toml"
 SCHEMA_LIB = REPO_ROOT / "crates/citum-schema-style/src/version.rs"
+PUBLISH_CRATES_SCRIPT = REPO_ROOT / "scripts/publish-crates.sh"
+BUILD_JSR_SCRIPT = REPO_ROOT / "scripts/build-jsr-package.sh"
 
 
 class ReleaseWorkflowTests(unittest.TestCase):
@@ -22,6 +24,8 @@ class ReleaseWorkflowTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
         cls.release_config = RELEASE_CONFIG_PATH.read_text(encoding="utf-8")
+        cls.publish_crates_script = PUBLISH_CRATES_SCRIPT.read_text(encoding="utf-8")
+        cls.build_jsr_script = BUILD_JSR_SCRIPT.read_text(encoding="utf-8")
 
     def test_release_branch_is_always_release_next(self) -> None:
         self.assertIn('echo "branch=release/next" >> "$GITHUB_OUTPUT"', self.workflow)
@@ -45,6 +49,50 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertNotIn('"git-cliff", "-o", "CHANGELOG.md"', self.release_config)
         self.assertIn("git rev-parse --show-toplevel", self.release_config)
         self.assertIn("$repo/CHANGELOG.md", self.release_config)
+
+    def test_publish_crates_dry_run_accepts_current_dependency_gap_wording(self) -> None:
+        """Cargo may report unpublished internal deps as version selection gaps."""
+        self.assertIn(
+            "failed to select a version for the requirement \\`$crate =",
+            self.publish_crates_script,
+        )
+        self.assertIn(
+            "candidate versions found which didn't match",
+            self.publish_crates_script,
+        )
+        self.assertIn(
+            "no matching package named \\`$crate\\` found",
+            self.publish_crates_script,
+        )
+
+    def test_jsr_package_license_uses_compound_spdx_expression(self) -> None:
+        self.assertIn('"license": "(MIT OR Apache-2.0)"', self.build_jsr_script)
+        self.assertNotIn('"license": "MIT OR Apache-2.0"', self.build_jsr_script)
+
+    def test_publish_jsr_tag_job_uses_oidc_and_publishes(self) -> None:
+        publish_jsr = re.search(
+            r"\n  publish-jsr:\n(?P<block>.*?)(?=\n  [a-zA-Z0-9_-]+:|\Z)",
+            self.workflow,
+            flags=re.DOTALL,
+        )
+        self.assertIsNotNone(publish_jsr)
+        assert publish_jsr is not None
+        block = publish_jsr.group("block")
+
+        self.assertIn(
+            "if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')",
+            block,
+        )
+        self.assertIn("needs: build", block)
+        self.assertIn("id-token: write", block)
+        self.assertIn("run: ./scripts/build-jsr-package.sh", block)
+        self.assertIn("working-directory: target/jsr/citum", block)
+        self.assertIn("run: npx --yes jsr publish --dry-run", block)
+        self.assertRegex(
+            block,
+            r"- name: Publish to JSR[\s\S]*?run: npx --yes jsr publish",
+            "publish-jsr must include a real publish step after dry-run",
+        )
 
     def test_crate_changelogs_are_absent(self) -> None:
         tracked = subprocess.run(
