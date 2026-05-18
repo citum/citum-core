@@ -153,17 +153,19 @@ mismatch aborts before any files are written.
 
 ### JSR first publish
 
-1. **JSR account and scope.** Sign in at https://jsr.io and create or
-   confirm the `citum` scope.
+1. **JSR account, scope, and package.** Sign in at https://jsr.io, then
+   open https://jsr.io/new. JSR creates scopes from the package-publish
+   form: in the **Scope** selector, choose the existing `citum` scope if
+   it is listed, or choose the create-new-scope option and enter `citum`.
+   Then set the package name to `citum`, producing `@citum/citum`.
+   This is not a token setup step.
 
-2. **Package.** Create or confirm package `@citum/citum`.
-
-3. **Trusted publishing.** In the JSR package settings, link the package
+2. **Trusted publishing.** In the JSR package settings, link the package
    to the GitHub repository `citum/citum-core` and allow publishing from
    the release workflow. The workflow uses GitHub OIDC (`id-token: write`)
    and does not need a JSR token secret.
 
-4. **First publish.** The tag workflow runs `scripts/build-jsr-package.sh`,
+3. **First publish.** The tag workflow runs `scripts/build-jsr-package.sh`,
    validates with `npx --yes jsr publish --dry-run`, then publishes from
    `target/jsr/citum`.
 
