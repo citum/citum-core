@@ -35,11 +35,10 @@ citum-resolver-api = { workspace = true }
 citum-server = { workspace = true, optional = true }
 url = { version = "2.5", features = ["serde"] }
 
-# Features intentionally removed for the v1 crates.io publish: `typst-pdf`
-# (depended on the unpublished `citum-pdf` crate) and `typescript` (depended
-# on the unpublished `citum-bindings` crate). The cfg-gated code paths
-# remain in src/ as dead code; check-cfg below silences warnings. `--pdf`
-# at runtime returns a clear error pointing users at `typst compile`.
+# Features intentionally removed for the v1 crates.io publish: `typescript`
+# depended on the unpublished `citum-bindings` crate. Its cfg-gated code path
+# remains in src/ as dead code; workspace check-cfg silences that warning.
+# `--pdf` always returns a clear error pointing users at `typst compile`.
 [features]
 default = []
 schema = ["dep:schemars", "citum-schema/schema", "dep:citum-server", "citum-server/schema-types"]
