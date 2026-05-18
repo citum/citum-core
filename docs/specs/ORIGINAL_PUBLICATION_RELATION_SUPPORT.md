@@ -42,7 +42,7 @@ The accessor methods in `InputReference` will be updated to match all variants.
 ### 3. Legacy CSL-JSON Migration
 The CSL-JSON to Citum conversion logic will be updated to read `original-title` from the structured `csl_legacy::csl_json::Reference.original_title` field and extract the remaining legacy `original-*` data (`original-author`, `original-date`, `original-publisher`, `original-publisher-place`) from the `extra` map, then populate the `original` struct.
 
-- **Files**: `crates/citum-schema-data/src/reference/conversion.rs`
+- **Files**: `crates/citum-schema-data/src/reference/conversion/`
 - **Entry points**: extend the specialized and legal conversion paths that currently return work/document variants without `original` support. In practice this means `from_patent_ref`, `from_dataset_ref`, `from_standard_ref`, `from_event_ref`, the legal converters (`from_legal_case_ref`, `from_statute_ref`, `from_regulation_ref`, `from_treaty_ref`, `from_document_ref` for `Brief`/`Hearing`), and the shared monograph-style path already used by `Software`.
 - **Normalization rule**: v1 intentionally normalizes migrated `original-*` metadata into an embedded `Monograph` via `relation_monograph`, even when the citing item is a patent, event, legal item, or audio-visual work.
 - **Preserved fields**: the normalized embedded original preserves only the fields expressible by legacy CSL `original-*` data in current inputs: `title`, `author`, `issued`/effective original date, `publisher`, and `publisher-place`.
