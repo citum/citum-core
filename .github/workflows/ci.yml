@@ -31,6 +31,7 @@ jobs:
       beans: ${{ steps.filter.outputs.beans }}
       infra: ${{ steps.filter.outputs.infra }}
       semver: ${{ steps.filter.outputs.semver }}
+      release: ${{ steps.filter.outputs.release }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -70,6 +71,18 @@ jobs:
               - 'crates/citum-engine/**'
               - 'crates/citum-cli/**'
               - 'crates/citum-bindings/**'
+            release:
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/release.yml'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+              - 'RELEASING.md'
+              - 'scripts/build-jsr-package.sh'
+              - 'scripts/install.sh'
+              - 'scripts/publish-crates.sh'
+              - 'scripts/release-binary.sh'
+              - 'crates/citum-bindings/**'
+              - 'crates/citum-cli/Cargo.toml'
 
   hygiene-docs:
     name: Hygiene Checks — Docs
@@ -141,6 +154,44 @@ jobs:
             scripts/test_infer_release_bump.py \
             scripts/test_coverage_analysis.py \
             scripts/test_release_workflow.py
+
+  release-dry-runs:
+    name: Release Dry Runs
+    needs: changes
+    if: ${{ needs.changes.outputs.release == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: release-dry-runs
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-pack
+
+      - name: Dry-run crates.io publish scripts
+        run: |
+          ./scripts/publish-crates.sh --dry-run
+          ./scripts/publish-crates.sh --dry-run --skip citum
+          ./scripts/publish-crates.sh --dry-run --only citum
+
+      - name: Build JSR package
+        run: ./scripts/build-jsr-package.sh
+
+      - name: Dry-run JSR publish
+        working-directory: target/jsr/citum
+        run: npx --yes jsr publish --dry-run
 
   hygiene-infra:
     name: Hygiene Checks — Infra

@@ -9,11 +9,12 @@ are marked explicitly.
 | Channel | Format | Audience |
 |---|---|---|
 | **crates.io** | 12 published crates (see list below) | Rust developers (`cargo install citum`, library users) |
+| **JSR** | `@citum/citum` WASM + TypeScript package | JavaScript, TypeScript, Deno, and browser integrations |
 | **GitHub Releases** | Cross-platform tarballs + `SHA256SUMS` + `install.sh` | End-users (`curl ... \| sh`), distro packagers |
 
 Out of scope for now (deliberately): Homebrew tap, npm wrapper, Docker
 image. Each can be added later as an additional job that consumes the
-GitHub Release artifacts already produced.
+GitHub Release artifacts or WASM package already produced.
 
 ### Published crates (12)
 
@@ -58,6 +59,8 @@ The release is automated end-to-end. Day-to-day, the work is:
      with tarballs + `SHA256SUMS` + `install.sh`
    - `publish-crates` (~5 min, gated on `build`) — runs
      `scripts/publish-crates.sh` against `CARGO_REGISTRY_TOKEN`
+   - `publish-jsr` (~5 min, gated on `build`) — builds the WASM/TypeScript
+     package and publishes `@citum/citum` to JSR using GitHub OIDC
 
 4. **Verify** (described in [§ Post-release verification](#post-release-verification)).
 
@@ -68,6 +71,7 @@ The release is automated end-to-end. Day-to-day, the work is:
 | `build` | `push: tags: ["v*"]` | ~15 min | Matrix: x86_64-musl, aarch64-musl, x86_64-darwin, aarch64-darwin, x86_64-windows. Uses `cross` for aarch64-musl. |
 | `release` | `needs: build` | ~1 min | Aggregates per-target `.sha256` into one `SHA256SUMS`; uploads tarballs + `install.sh` to GitHub Release. |
 | `publish-crates` | `needs: build` | ~5 min | Idempotent; safe to re-run from the Actions UI. |
+| `publish-jsr` | `needs: build` | ~5 min | Uses JSR trusted publishing via GitHub OIDC; no JSR token secret. |
 
 The pre-existing `detect` / `release-pr` / `auto-tag` jobs are gated
 on `pull_request` events and don't fire on tag push — there's no
@@ -88,6 +92,9 @@ curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.
 # Sanity:
 citum --version
 citum-server --version
+
+# JavaScript/WASM package:
+# Verify https://jsr.io/@citum/citum shows the new version.
 ```
 
 The install script verifies the SHA256 of the downloaded tarball
@@ -96,26 +103,39 @@ mismatch aborts before any files are written.
 
 ## First-time setup (one-time, before the very first release)
 
-1. **crates.io account.** Sign in at https://crates.io via GitHub.
+### crates.io first publish and `citum` name claim
 
-2. **`citum` crate name.** As of writing the `citum` name on crates.io
-   is squatted by a 2020 placeholder. Email `help@crates.io` citing
-   the `rust-lang/crates.io` policy on unused names to request reclaim.
-   If denied, rename `[package].name` in `crates/citum-cli/Cargo.toml`
-   to `citum-cli` — the binary stays named `citum` via the `[[bin]]`
-   block.
+1. **crates.io account.** Sign in at https://crates.io via GitHub and
+   verify the account email address.
 
-3. **API token.** crates.io → Account → API Tokens → Generate, with
-   scopes `publish-new` + `publish-update`. Save the value.
+2. **First-use API token.** crates.io → Account → API Tokens → Generate,
+   with scopes `publish-new` + `publish-update`. Save the value.
 
-4. **GitHub secret.** Repo Settings → Secrets and variables → Actions
+3. **GitHub secret.** Repo Settings → Secrets and variables → Actions
    → New repository secret named `CARGO_REGISTRY_TOKEN` (GitHub
    secret names accept only uppercase letters, digits, and
    underscores — no hyphens).
 
-5. **GitHub team.** Confirm `https://github.com/orgs/citum/teams/cargo-release`
-   exists (create if not). After the first publish completes, run
-   locally:
+4. **Pre-publish supporting crates.** Before the `citum` name becomes
+   available, publish every internal dependency in order:
+
+   ```sh
+   CARGO_REGISTRY_TOKEN=... ./scripts/publish-crates.sh --skip citum
+   ```
+
+5. **Claim `citum`.** At the availability window from crates.io support,
+   repeatedly attempt only the final CLI crate. The real source of truth
+   is `cargo publish`; do not rely on the web UI or API cache alone.
+
+   ```sh
+   until CARGO_REGISTRY_TOKEN=... ./scripts/publish-crates.sh --only citum; do
+     date
+     sleep 60
+   done
+   ```
+
+6. **GitHub team.** Confirm `https://github.com/orgs/citum/teams/cargo-release`
+   exists (create if not). After the first publish completes, run locally:
 
    ```sh
    for c in citum-edtf citum-resolver-api csl-legacy \
@@ -126,16 +146,33 @@ mismatch aborts before any files are written.
    done
    ```
 
-6. **Rotate the token.** After step 5, generate a fresh crates.io
+7. **Rotate the token.** Generate a fresh crates.io
    token scoped to just those 12 crate names (no `publish-new` —
    they all exist now), replace the GitHub secret, and revoke the
    original wide-scope token.
+
+### JSR first publish
+
+1. **JSR account and scope.** Sign in at https://jsr.io and create or
+   confirm the `citum` scope.
+
+2. **Package.** Create or confirm package `@citum/citum`.
+
+3. **Trusted publishing.** In the JSR package settings, link the package
+   to the GitHub repository `citum/citum-core` and allow publishing from
+   the release workflow. The workflow uses GitHub OIDC (`id-token: write`)
+   and does not need a JSR token secret.
+
+4. **First publish.** The tag workflow runs `scripts/build-jsr-package.sh`,
+   validates with `npx --yes jsr publish --dry-run`, then publishes from
+   `target/jsr/citum`.
 
 ## Recovery
 
 | Failure | Recovery |
 |---|---|
 | `publish-crates` partial fail | Re-run the job from the Actions UI. The script's idempotency check skips already-published versions. |
+| `publish-jsr` fail before publish | Fix the package build or JSR trusted-publishing settings, then re-run the job from the Actions UI. |
 | Bad release tarball | `gh release delete v<x.y.z> --cleanup-tag`, fix the issue, re-tag and let the workflow re-run. |
 | Bad crate published | `cargo yank --version <x.y.z> <crate>`. **Cannot un-yank with the same version**; bump to the next version and re-publish. |
 | Tag pushed before workflow updated | Delete the tag locally (`git tag -d v<x.y.z>`) and on remote (`git push origin :refs/tags/v<x.y.z>`); fix workflow; re-push. |
@@ -144,19 +181,32 @@ mismatch aborts before any files are written.
 
 ```sh
 ./scripts/publish-crates.sh --dry-run
+./scripts/publish-crates.sh --dry-run --skip citum
+./scripts/publish-crates.sh --dry-run --only citum
 ```
 
-Does no uploads. The leaf crates (`citum-edtf`, `citum-resolver-api`,
-`csl-legacy`) will succeed cleanly. Dependents fail with
-"no matching package … found" because their internal deps aren't on
-crates.io yet — that's expected in dry-run mode, and resolves in
-production where each successful publish makes the next dependent's
-dep available.
+Does no uploads. Before the first real publish, the leaf crates
+(`citum-edtf`, `citum-resolver-api`, `csl-legacy`) verify cleanly.
+Dependent crates report the expected "no matching package … found"
+registry gap for internal dependencies; the script treats that as a
+dry-run-only note and continues. In production, each successful publish
+makes the next dependent's version available.
+
+## Locally dry-run the JSR package
+
+```sh
+./scripts/build-jsr-package.sh
+cd target/jsr/citum
+npx --yes jsr publish --dry-run
+```
+
+The generated package is intentionally staged under `target/`; wasm-pack
+output is not committed.
 
 ## Locally dry-run a binary build
 
 ```sh
-./scripts/release-binary.sh x86_64-apple-darwin v0.51.0
+./scripts/release-binary.sh x86_64-apple-darwin v0.52.0
 ls release-out/x86_64-apple-darwin/
 ```
 
@@ -171,5 +221,5 @@ CITUM_INSTALL_DIR=/tmp/citum-test ./scripts/install.sh
 /tmp/citum-test/citum --version
 
 # Against a specific release:
-CITUM_VERSION=v0.51.0 CITUM_INSTALL_DIR=/tmp/citum-test ./scripts/install.sh
+CITUM_VERSION=v0.52.0 CITUM_INSTALL_DIR=/tmp/citum-test ./scripts/install.sh
 ```
