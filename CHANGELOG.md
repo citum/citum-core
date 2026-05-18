@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.51.0] - 2026-05-17
+## [0.52.0] - 2026-05-18
 
 ### Bug Fixes
 
@@ -58,6 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 **schema**
 
 - Resolve template v3 variants ([`bb9f3bb`](https://github.com/citum/citum-core/commit/bb9f3bbd2668c0bb96144cac49d82d77e4b95676))
+
+- Tolerant options + strict check ([`26d35f8`](https://github.com/citum/citum-core/commit/26d35f89dd5ed82d43f1b2edac9cc81d3171f78d))
 
 
 **server**
