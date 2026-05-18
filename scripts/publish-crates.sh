@@ -176,6 +176,10 @@ is_expected_dry_run_dependency_gap() {
     if grep -F "no matching package named \`$crate\` found" "$output_file" >/dev/null; then
       return 0
     fi
+    if grep -F "failed to select a version for the requirement \`$crate =" "$output_file" >/dev/null \
+      && grep -F "candidate versions found which didn't match" "$output_file" >/dev/null; then
+      return 0
+    fi
   done
   return 1
 }
@@ -204,7 +208,7 @@ for idx in "${!SELECTED_CRATES[@]}"; do
     status=$?
     if [[ "$DRY_RUN" != "" ]] && is_expected_dry_run_dependency_gap "$output_file"; then
       echo "    dry-run note: crates.io has not seen every internal dependency yet."
-      echo "    This is expected before the first ordered publish; real publish mode still fails here."
+      echo "    This is expected before the first ordered publish; real publish mode uploads crates in order."
       rm -f "$output_file"
       continue
     fi
