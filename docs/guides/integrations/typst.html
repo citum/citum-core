@@ -4,8 +4,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Citations in a static-site build | Citum Docs</title>
-    <meta name="description" content="Wire the citum CLI into a Makefile, npm script, or CI job to render Markdown with citations as part of your static-site build." />
+    <title>Publish to PDF with Typst | Citum Docs</title>
+    <meta name="description" content="Render citations and bibliography to Typst markup with Citum, then compile to PDF with the Typst CLI. Citum handles citation formatting; Typst handles layout." />
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="../../assets/citum-theme.css" />
 </head>
@@ -51,95 +51,119 @@
     <main class="doc-shell">
         <header class="doc-section-header">
             <span class="citum-kicker">Integration recipe</span>
-            <h1>Add citations to your static-site or docs build</h1>
+            <h1>Publish to PDF with Typst</h1>
             <p>
-                You have a directory of Markdown (or Djot) files with <code>[@key]</code> markers and one shared
-                bibliography. You want citations rendered as part of your existing build, not as a separate manual
-                step. This recipe wires <code>citum</code> into a Makefile &mdash; the same idea translates to npm
-                scripts, justfiles, or CI jobs.
+                Citum renders citations and bibliography entries to Typst markup (<code>-f typst</code>).
+                Pass that output to the Typst CLI to compile to PDF. Citum handles all citation
+                formatting &mdash; disambiguation, grouping, note behavior, link resolution &mdash;
+                and Typst handles page layout and font rendering.
+            </p>
+            <p style="color: var(--citum-muted); font-size: 0.92rem;">
+                Direct PDF compilation via <code>--pdf</code> is not available in the current
+                crates.io release (the helper crate is not yet published). The two-step workflow
+                below works with any standard Typst installation.
             </p>
         </header>
 
         <section class="doc-section">
             <div class="doc-section-header">
-                <h2>1. Install citum on the build machine</h2>
+                <h2>1. Install both tools</h2>
             </div>
             <div class="workshop-block">
+                <div class="workshop-label">Citum</div>
                 <pre><code>cargo install citum</code></pre>
             </div>
+            <div class="workshop-block" style="margin-top: 1rem;">
+                <div class="workshop-label">Typst CLI</div>
+                <pre><code># macOS / Linux via Homebrew
+brew install typst
+
+# Or via Cargo
+cargo install typst-cli</code></pre>
+            </div>
         </section>
 
         <section class="doc-section">
             <div class="doc-section-header">
-                <h2>2. One source file, one command</h2>
+                <h2>2. Render to Typst markup</h2>
                 <p>
-                    The unit is one input document plus one (or more) bibliography files. Output format is controlled
-                    by <code>-f</code>; output path by <code>-o</code>.
+                    Use <code>-f typst</code> to run Citum&rsquo;s full citation engine and emit
+                    a <code>.typ</code> file. Any Citum-supported input format (<code>.djot</code>,
+                    <code>.md</code>) and bibliography format (YAML, CSL-JSON, CBOR) work here.
                 </p>
             </div>
             <div class="workshop-block">
-                <pre><code>citum render doc content/post.md \
-  -I markdown \
-  -b references.json \
+                <pre><code>citum render doc manuscript.djot \
+  -b refs.json \
   -s apa-7th \
-  -f html \
-  -o public/post.html</code></pre>
+  -f typst \
+  -o paper.typ</code></pre>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>3. Compile to PDF</h2>
+                <p>
+                    Pass the generated <code>.typ</code> file to Typst. The resulting PDF includes
+                    internal citation-to-bibliography links and live DOI/URL links.
+                </p>
+            </div>
+            <div class="workshop-block">
+                <pre><code>typst compile paper.typ paper.pdf</code></pre>
             </div>
             <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
-                Pass <code>-b</code> multiple times to merge bibliographies. Use <code>-c citations.yaml</code> if
-                your citations live outside the document.
+                Combined in one shell line:
             </p>
-        </section>
-
-        <section class="doc-section">
-            <div class="doc-section-header">
-                <h2>3. Wire it into a Makefile</h2>
-                <p>
-                    A pattern rule keeps one citum invocation per source file. Add a dependency on
-                    <code>references.json</code> so any bibliography edit triggers a rebuild.
-                </p>
-            </div>
-            <div class="workshop-block">
-                <pre><code>STYLE := apa-7th
-REFS  := references.json
-SRC   := $(wildcard content/*.md)
-OUT   := $(patsubst content/%.md,public/%.html,$(SRC))
-
-public/%.html: content/%.md $(REFS)
-	@mkdir -p $(@D)
-	citum render doc $&lt; -I markdown -b $(REFS) -s $(STYLE) -f html -o $@
-
-build: $(OUT)
-.PHONY: build</code></pre>
+            <div class="workshop-block" style="margin-top: 0.5rem;">
+                <pre><code>citum render doc manuscript.djot -b refs.json -s apa-7th -f typst -o paper.typ \
+  &amp;&amp; typst compile paper.typ paper.pdf</code></pre>
             </div>
         </section>
 
         <section class="doc-section">
             <div class="doc-section-header">
-                <h2>Other build systems</h2>
-                <p>
-                    The shape is the same in every build tool: one shell invocation per document. For npm scripts,
-                    wrap the same command in a Node script that iterates the source directory. For CI, run
-                    <code>cargo install citum</code> in a setup step and call the Makefile target. For
-                    pre-rendering inside a static-site generator that already supports shortcodes or filters, call
-                    <code>citum render doc</code> per page and inject the output.
-                </p>
+                <h2>What you get</h2>
             </div>
+            <div class="workshop-block" style="padding: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                <div>
+                    <strong>Full Citum output rules</strong>
+                    <p style="margin-top: 0.5rem; color: var(--citum-muted); font-size: 0.92rem;">
+                        Citation disambiguation, bibliography grouping, name et-al, and note
+                        numbering all apply identically to the HTML and LaTeX paths. Typst is a
+                        rendering backend, not a bibliography engine.
+                    </p>
+                </div>
+                <div>
+                    <strong>Interactive PDF links</strong>
+                    <p style="margin-top: 0.5rem; color: var(--citum-muted); font-size: 0.92rem;">
+                        Internal citation-to-bibliography jumps and external DOI/URL links are
+                        embedded by Typst. Advanced hover behaviors and metadata popups are not
+                        currently part of the Typst output path.
+                    </p>
+                </div>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                Prefer a TeX-native document with <code>\cite{}</code> commands?
+                See the <a href="lualatex.html">LuaLaTeX integration</a> instead.
+            </p>
         </section>
 
         <section class="doc-section">
             <div class="doc-section-header">
                 <h2>Reproduce this recipe</h2>
                 <p>
-                    Fixture: <a href="fixtures/">guides/integrations/fixtures/</a> contains
-                    <code>manuscript.md</code> and <code>references.json</code>. Running the literal command above
-                    against those files produces well-formed HTML with citations and a bibliography &mdash; see the
-                    <a href="../../guides/style-authoring/advanced-examples.html">advanced examples</a> for more complex scenarios.
+                    Fixtures in <a href="fixtures/">guides/integrations/fixtures/</a>:
+                    <code>manuscript.djot</code> (source document) and
+                    <code>references.json</code> (CSL-JSON bibliography).
+                    Copy them locally and run the commands above.
                 </p>
             </div>
             <p>
-                Need live formatting from an editor or plugin instead of a build step? See
-                <a href="editor-plugin.html">Use Citum as a long-lived process</a>.
+                Rendering to HTML or LaTeX instead? See
+                <a href="djot.html">Write citations in Djot</a> for the full output-format
+                overview. Building in CI or a Makefile?
+                See <a href="static-site.html">Add citations to your static-site or docs build</a>.
             </p>
         </section>
     </main>

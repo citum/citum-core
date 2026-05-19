@@ -1,0 +1,388 @@
+<!-- PAGE_ID: style -->
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+        <title>Advanced Style Examples | Citum Docs</title>
+        <meta name="description" content="Worked examples for advanced Citum features: integral citations, archival references, EDTF dates, annotated bibliographies, and abbreviation maps." />
+        <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="../../assets/citum-theme.css">
+    </head>
+    <body>
+        <nav class="site-nav">
+            <!-- LAYOUT_NAV_START -->
+        <div class="site-nav-inner">
+            <div class="site-brand-wrap">
+                <a href="../../index.html" class="site-brand">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </a>
+            </div>
+            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
+                <a class="site-nav-link " href="../../index.html">Overview</a>
+                <a class="site-nav-link active" href="../../guides/style-authoring/start.html">Style Authoring</a>
+                <a class="site-nav-link " href="../../developer.html">Developer</a>
+                <a class="site-nav-link " href="../../interactive-demo.html">Demo</a>
+                <a class="site-nav-link " href="../../schemas/">Schemas</a>
+                <a class="site-nav-link " href="../../reports.html">Reports</a>
+                <a class="site-source-link" href="https://github.com/citum/citum-core">
+                    <svg aria-hidden="true" class="site-source-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+                <span class="mobile-nav-icon" aria-hidden="true">&#9776;</span>
+            </button>
+        </div>
+        <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
+            <a class="site-nav-link " href="../../index.html">Overview</a>
+            <a class="site-nav-link active" href="../../guides/style-authoring/start.html">Style Authoring</a>
+            <a class="site-nav-link " href="../../developer.html">Developer</a>
+            <a class="site-nav-link " href="../../interactive-demo.html">Demo</a>
+            <a class="site-nav-link " href="../../schemas/">Schemas</a>
+            <a class="site-nav-link " href="../../reports.html">Reports</a>
+            <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
+        </div>        <!-- LAYOUT_NAV_END -->
+        </nav>
+
+        <main class="doc-shell">
+            <header class="doc-section-header">
+                <h1>Advanced Style Examples</h1>
+                <p>
+                    Worked examples for features that go beyond basic bibliography rendering &mdash;
+                    integral citations with name memory, archival references, EDTF dates, annotated
+                    bibliographies, and abbreviation maps.
+                </p>
+            </header>
+
+            <section class="doc-section" id="advanced-citations">
+                <div class="doc-section-header">
+                    <h2>Advanced Citations</h2>
+                    <p>
+                        Styles use explicit <code>integral</code> and <code>non-integral</code> branches,
+                        per-mode contributor options, and document-scoped integral-name memory where
+                        the style opts in. See <a href="templates.html#citation-modes">Templates &rarr; Citation modes</a>
+                        for the full configuration reference.
+                    </p>
+                </div>
+
+                <div class="doc-section-header" style="margin-top: 2rem;">
+                    <h3>Integral vs non-integral (APA 7th)</h3>
+                </div>
+                <div class="workshop-block">
+                    <div class="workshop-label">Style YAML (excerpt)</div>
+                    <pre><code>citation:
+  non-integral:
+    wrap: parentheses
+    template:
+      - contributor: author
+        form: short
+      - date: issued
+        form: year
+  integral:
+    options:
+      contributors:
+        and: text</code></pre>
+                </div>
+                <div class="workshop-block" style="margin-top: 1rem;">
+                    <div class="workshop-label">Rendered output</div>
+                    <pre><code>Non-integral: (Kuhn, 1962)
+Integral:     Kuhn and Popper (1962)</code></pre>
+                </div>
+
+                <div class="doc-section-header" style="margin-top: 2rem;">
+                    <h3>Integral name memory (MLA default)</h3>
+                    <p>
+                        When <code>integral-names</code> is configured, the first narrative citation
+                        uses the full name form; subsequent citations in the same scope use the short form.
+                        The scope resets at a chapter boundary.
+                    </p>
+                </div>
+                <div class="workshop-block">
+                    <div class="workshop-label">Style YAML</div>
+                    <pre><code>options:
+  integral-names:
+    rule: full-then-short
+    scope: document
+    contexts: body-and-notes
+    subsequent-form: short
+
+citation:
+  integral:
+    template:
+      - contributor: author
+        form: long
+      - variable: locator
+        show-label: false
+        wrap: parentheses</code></pre>
+                </div>
+                <div class="workshop-block" style="margin-top: 1rem;">
+                    <div class="workshop-label">Rendered output</div>
+                    <pre><code>First mention:      John Smith (10)
+Later same scope:   Smith (12)
+After chapter reset: John Smith (14)</code></pre>
+                </div>
+
+                <div class="doc-section-header" style="margin-top: 2rem;">
+                    <h3>Document override from front matter</h3>
+                    <p>
+                        Document front matter can override style-level integral-name settings.
+                        Useful when a document requires tighter name tracking than the base style provides.
+                    </p>
+                </div>
+                <div class="workshop-block">
+                    <div class="workshop-label">Djot document front matter</div>
+                    <pre><code>---
+integral-names:
+  enabled: true
+  scope: chapter
+  contexts: body-and-notes
+---
+
+First narrative mention: [+@smith2010, p. 10]
+Later in same chapter:   [+@smith2010, p. 12]
+New chapter reset:       [+@smith2010, p. 14]</code></pre>
+                </div>
+            </section>
+
+            <section class="doc-section" id="archival-eprints">
+                <div class="doc-section-header">
+                    <h2>Archival references and eprints</h2>
+                    <p>
+                        Citum accepts structured <code>archive-info</code> for manuscripts and related
+                        records, and a structured <code>eprint</code> object for preprint-style identifiers.
+                        Legacy flat <code>archive</code> and <code>archive_location</code> fields still load
+                        for compatibility, but new inputs should use <code>archive-info</code>.
+                    </p>
+                </div>
+                <div class="workshop-block">
+                    <div class="workshop-label">Reference YAML</div>
+                    <pre><code>references:
+  - id: dead-sea-scrolls-demo
+    class: monograph
+    type: manuscript
+    title: "The Community Rule (1QS)"
+    issued: "-0099"
+    genre: "Manuscript scroll"
+    archive-info:
+      name: "Israel Antiquities Authority"
+      location: "Shrine of the Book"
+      place: "Jerusalem"
+
+  - id: archive-aware-preprint
+    class: monograph
+    type: preprint
+    title: "Archive-Aware Preprint"
+    issued: "2026-02"
+    url: "https://arxiv.org/abs/2602.01234"
+    archive-info:
+      name: "Houghton Library"
+      collection: "Ada Lovelace Papers"
+      collection-id: "MS Am 1280"
+      series: "Correspondence"
+      box: "12"
+      folder: "4"
+      item: "7"
+      place: "Cambridge, MA"
+    eprint:
+      id: "2602.01234"
+      server: "arxiv"
+      class: "cs.DL"</code></pre>
+                </div>
+                <div class="workshop-block" style="margin-top: 1rem;">
+                    <div class="workshop-label">Rendered output (Chicago notes style)</div>
+                    <pre><code>The Community Rule (1QS). Manuscript scroll, 100 BC,
+Israel Antiquities Authority, Shrine of the Book, Jerusalem.
+
+Archive-Aware Preprint. February 2026, Houghton Library,
+Ada Lovelace Papers, MS Am 1280, Series Correspondence,
+Box 12, Folder 4, Item 7, Cambridge, MA. arxiv:2602.01234 [cs.DL]</code></pre>
+                </div>
+                <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                    Historical EDTF years use astronomical numbering: <code>-0099</code> renders as
+                    <code>100 BC</code>. The <code>eprint.server</code> value is normalized; supported
+                    values include <code>arxiv</code>, <code>ssrn</code>, <code>biorxiv</code>,
+                    <code>zenodo</code>, and <code>hal</code>.
+                </p>
+                <div class="workshop-block" style="margin-top: 1rem;">
+                    <div class="workshop-label">Try it</div>
+                    <pre><code>citum render refs \
+  -b examples/archival-eprints.yaml \
+  -s examples/archive-eprint-demo-style.yaml \
+  -k archive-aware-preprint</code></pre>
+                </div>
+            </section>
+
+            <section class="doc-section" id="advanced-dates">
+                <div class="doc-section-header">
+                    <h2>Advanced dates (EDTF)</h2>
+                    <p>
+                        Citum uses <strong>EDTF (Extended Date/Time Format)</strong> as its primary date
+                        exchange format. EDTF strings preserve semantic nuances &mdash; approximate,
+                        uncertain, open-ended &mdash; that can be localized by the processor according to
+                        the style&rsquo;s locale.
+                    </p>
+                </div>
+                <div class="workshop-block">
+                    <div class="workshop-label">Date intervals (Level 0)</div>
+                    <pre><code>issued: "2023-05/2024-06"   # Closed interval
+issued: "2023-05/.."        # Open start
+issued: "../2023-05"        # Open end</code></pre>
+                </div>
+                <div class="workshop-block" style="margin-top: 1rem;">
+                    <div class="workshop-label">Uncertain and approximate (Level 1)</div>
+                    <pre><code>issued: "2004?"              # Uncertain year  → 2004?
+issued: "2004~"              # Approximate      → ca. 2004
+issued: "2004%"              # Both
+issued: "2004-06-11?"        # Uncertain day only</code></pre>
+                </div>
+                <div class="workshop-block" style="margin-top: 1rem;">
+                    <div class="workshop-label">Seasons (Level 1)</div>
+                    <pre><code>issued: "2023-21"            # Spring 2023
+issued: "2023-22"            # Summer 2023
+issued: "2023-23"            # Autumn 2023
+issued: "2023-24"            # Winter 2023</code></pre>
+                </div>
+                <div class="workshop-block" style="margin-top: 1rem;">
+                    <div class="workshop-label">Unspecified digits (Level 1)</div>
+                    <pre><code>issued: "199u"               # Some time in the 1990s
+issued: "2004-uu-uu"         # Some time in 2004, month/day unknown</code></pre>
+                </div>
+                <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                    Historical years use astronomical numbering: <code>-0099</code> = 100 BC.
+                    Locale determines how uncertainty modifiers (<code>?</code>, <code>~</code>)
+                    are rendered as text (&ldquo;?&rdquo;, &ldquo;ca.&rdquo;, &ldquo;circa&rdquo;, etc.).
+                </p>
+            </section>
+
+            <section class="doc-section" id="annotated-bibliography">
+                <div class="doc-section-header">
+                    <h2>Annotated bibliography</h2>
+                    <p>
+                        Attach reader-authored annotations to any bibliography without creating style
+                        variants. Annotations are passed as a separate YAML or JSON file mapping
+                        reference IDs to annotation text. The processor appends them after each entry.
+                    </p>
+                </div>
+                <div class="workshop-block">
+                    <div class="workshop-label">Render with annotations</div>
+                    <pre><code>citum render refs \
+  -b examples/annotated-bibliography/references.yaml \
+  -s apa-7th \
+  --annotations examples/annotated-bibliography/annotations.yaml</code></pre>
+                </div>
+                <div class="workshop-block" style="margin-top: 1rem;">
+                    <div class="workshop-label">Annotations file (YAML)</div>
+                    <pre><code>smith2019: >
+  A landmark work that fundamentally reshaped our understanding
+  of the field. Particularly useful for its comparative methodology.
+
+hawking1988: >
+  Accessible and intellectually ambitious. Balances rigour with
+  clarity for a general audience.</code></pre>
+                </div>
+                <div class="workshop-block" style="margin-top: 1rem;">
+                    <div class="workshop-label">Rendered output</div>
+                    <pre><code>Smith, J. (2019). Foundations of knowledge. Oxford University Press.
+
+    A landmark work that fundamentally reshaped our understanding of the
+    field. Particularly useful for its comparative methodology.
+
+Hawking, S. (1988). A brief history of time. Bantam Books.
+
+    Accessible and intellectually ambitious. Balances rigour with clarity
+    for a general audience.</code></pre>
+                </div>
+                <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                    Annotation text is parsed as Djot inline markup by default: <code>_italic_</code>,
+                    <code>*bold*</code>, and <code>[text]{.smallcaps}</code> are rendered into the target
+                    output format. To opt out, set <code>format: plain</code> in annotation style options.
+                </p>
+                <p style="margin-top: 0.75rem; color: var(--citum-muted); font-size: 0.92rem;">
+                    Annotations are document-scoped overlays intentionally separate from references. The
+                    same reference can carry different annotations in a course syllabus, a grant proposal,
+                    and a personal reading list &mdash; no style variants needed.
+                </p>
+                <div class="workshop-block" style="margin-top: 1rem;">
+                    <div class="workshop-label">Style HTML output with CSS</div>
+                    <pre><code>.citum-annotation {
+    font-style: italic;
+    padding-left: 1.5rem;
+    margin-top: 0.5rem;
+    color: #475569;
+}</code></pre>
+                </div>
+            </section>
+
+            <section class="doc-section" id="abbreviation-maps">
+                <div class="doc-section-header">
+                    <h2>Abbreviation maps</h2>
+                    <p>
+                        Substitute full rendered strings with abbreviations at document scope. Pass a YAML
+                        or JSON map at render time to replace journal titles, institutional names,
+                        corporate authors, and other strings. Substitution applies after rendering, so any
+                        style works without modification. See
+                        <a href="options.html#abbreviation-maps">Options &rarr; Document-level abbreviation maps</a>
+                        for full configuration.
+                    </p>
+                </div>
+                <div class="workshop-block">
+                    <div class="workshop-label">Abbreviations file (YAML)</div>
+                    <pre><code>Estates Gazette: EG
+"Lloyd's Law Reports": "Lloyd's Rep"
+"World Health Organization": WHO
+Nature Reviews Neuroscience: Nat Rev Neurosci</code></pre>
+                </div>
+                <div class="workshop-block" style="margin-top: 1rem;">
+                    <div class="workshop-label">Render with abbreviations</div>
+                    <pre><code>citum render refs \
+  -b examples/references.json \
+  -s ieee \
+  --abbreviation-map examples/abbrevs.yaml</code></pre>
+                </div>
+                <div class="workshop-block" style="margin-top: 1rem;">
+                    <div class="workshop-label">Before and after</div>
+                    <pre><code># Without map:
+Smith, J., et al. "Analysis of inheritance."
+Nature Reviews Neuroscience, vol. 24, no. 5, pp. 311–326, 2023.
+
+# With map:
+Smith, J., et al. "Analysis of inheritance."
+Nat Rev Neurosci, vol. 24, no. 5, pp. 311–326, 2023.</code></pre>
+                </div>
+                <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                    Keys are exact, case-sensitive rendered strings. What gets abbreviated: title fields
+                    (main title, container title, collection title), variable fields (publisher, archive,
+                    series), and contributor literal names. Abbreviations are document-scoped; keep them
+                    separate from the style so the same reference abbreviates differently in different
+                    contexts.
+                </p>
+            </section>
+        </main>
+
+        <footer style="padding: 3rem 0; border-top: 1px solid var(--citum-border); background: var(--citum-surface);">
+            <!-- LAYOUT_FOOTER_START -->
+            <div class="site-footer-inner">
+                <div class="site-brand site-brand-small">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </div>
+                <div class="site-footer-links">
+                    <a href="../../guides/style-authoring/start.html">Style Authoring</a>
+                    <a href="../../developer.html">Developer</a>
+                    <a href="../../schemas/">Schemas</a>
+                    <a href="../../reports.html">Reports</a>
+                    <a href="../../operating.html">Contributing</a>
+                    <a href="https://github.com/citum/citum-core">GitHub</a>
+                </div>
+                <div class="site-footer-note">&copy; 2026 Citum Project.</div>
+            </div>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github.min.css">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js" defer onload="hljs.highlightAll();"></script>        <!-- LAYOUT_FOOTER_END -->
+        </footer>
+        <script src="../../assets/citum-interactive.js"></script>
+    </body>
+</html>

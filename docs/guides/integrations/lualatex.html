@@ -4,8 +4,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Citations in a static-site build | Citum Docs</title>
-    <meta name="description" content="Wire the citum CLI into a Makefile, npm script, or CI job to render Markdown with citations as part of your static-site build." />
+    <title>Use Citum from LuaLaTeX | Citum Docs</title>
+    <meta name="description" content="Experimental: a LuaLaTeX citation workflow backed by the Citum Rust engine via C FFI or JSON-RPC. No Biber, no external bibliography tool — two lualatex passes replaces them." />
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="../../assets/citum-theme.css" />
 </head>
@@ -50,96 +50,118 @@
 
     <main class="doc-shell">
         <header class="doc-section-header">
-            <span class="citum-kicker">Integration recipe</span>
-            <h1>Add citations to your static-site or docs build</h1>
+            <span class="citum-kicker">Integration recipe &mdash; experimental (citum-labs)</span>
+            <h1>Use Citum from LuaLaTeX</h1>
             <p>
-                You have a directory of Markdown (or Djot) files with <code>[@key]</code> markers and one shared
-                bibliography. You want citations rendered as part of your existing build, not as a separate manual
-                step. This recipe wires <code>citum</code> into a Makefile &mdash; the same idea translates to npm
-                scripts, justfiles, or CI jobs.
+                An experimental LuaLaTeX citation workflow backed by the Citum Rust processor.
+                No Biber, no external bibliography tool &mdash; two <code>lualatex</code> passes
+                replace them. All Citum output rules (disambiguation, name formatting, et-al) apply
+                identically across all output paths.
+            </p>
+            <p style="color: var(--citum-muted); font-size: 0.92rem;">
+                <strong>Experimental:</strong> this integration lives in
+                <a href="https://github.com/citum/citum-labs">citum-labs</a>, not citum-core, and
+                currently targets macOS and Linux. APIs and behaviour may change. For a simpler
+                TeX-free PDF path, see the <a href="typst.html">Typst recipe</a>.
             </p>
         </header>
 
         <section class="doc-section">
             <div class="doc-section-header">
-                <h2>1. Install citum on the build machine</h2>
-            </div>
-            <div class="workshop-block">
-                <pre><code>cargo install citum</code></pre>
-            </div>
-        </section>
-
-        <section class="doc-section">
-            <div class="doc-section-header">
-                <h2>2. One source file, one command</h2>
+                <h2>How it works</h2>
                 <p>
-                    The unit is one input document plus one (or more) bibliography files. Output format is controlled
-                    by <code>-f</code>; output path by <code>-o</code>.
+                    The <code>citum.sty</code> package loads a Lua module (<code>citum.lua</code>)
+                    that calls the Citum processor via LuaJIT FFI. Disambiguation and bibliography
+                    rendering require two compilation passes, similar to BibTeX or Biber:
                 </p>
             </div>
             <div class="workshop-block">
-                <pre><code>citum render doc content/post.md \
-  -I markdown \
-  -b references.json \
-  -s apa-7th \
-  -f html \
-  -o public/post.html</code></pre>
+                <pre><code>Pass 1: collects citation keys → writes .citum.json cache
+Pass 2: renders final citations and bibliography using the cache</code></pre>
             </div>
             <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
-                Pass <code>-b</code> multiple times to merge bibliographies. Use <code>-c citations.yaml</code> if
-                your citations live outside the document.
+                If the Rust shared library is not found, the package automatically falls back to
+                JSON-RPC mode (connecting to a running <code>citum-server</code> instance). You can
+                also force RPC mode with the <code>rpc</code> package option.
             </p>
         </section>
 
         <section class="doc-section">
             <div class="doc-section-header">
-                <h2>3. Wire it into a Makefile</h2>
+                <h2>1. Build the shared library</h2>
                 <p>
-                    A pattern rule keeps one citum invocation per source file. Add a dependency on
-                    <code>references.json</code> so any bibliography edit triggers a rebuild.
+                    The LuaJIT FFI binding loads <code>libcitum_processor</code>, built from
+                    <code>crates/citum-bindings</code> in citum-core.
                 </p>
             </div>
             <div class="workshop-block">
-                <pre><code>STYLE := apa-7th
-REFS  := references.json
-SRC   := $(wildcard content/*.md)
-OUT   := $(patsubst content/%.md,public/%.html,$(SRC))
-
-public/%.html: content/%.md $(REFS)
-	@mkdir -p $(@D)
-	citum render doc $&lt; -I markdown -b $(REFS) -s $(STYLE) -f html -o $@
-
-build: $(OUT)
-.PHONY: build</code></pre>
+                <pre><code>cargo build -p citum-bindings --release
+# macOS: target/release/libcitum_processor.dylib
+# Linux: target/release/libcitum_processor.so</code></pre>
             </div>
         </section>
 
         <section class="doc-section">
             <div class="doc-section-header">
-                <h2>Other build systems</h2>
+                <h2>2. Load the package in your document</h2>
                 <p>
-                    The shape is the same in every build tool: one shell invocation per document. For npm scripts,
-                    wrap the same command in a Node script that iterates the source directory. For CI, run
-                    <code>cargo install citum</code> in a setup step and call the Makefile target. For
-                    pre-rendering inside a static-site generator that already supports shortcodes or filters, call
-                    <code>citum render doc</code> per page and inject the output.
+                    Place <code>citum.sty</code> and <code>citum.lua</code> from
+                    <a href="https://github.com/citum/citum-labs/tree/main/bindings/latex">citum-labs/bindings/latex/</a>
+                    alongside your document, then load the package with your style and bibliography.
                 </p>
             </div>
+            <div class="workshop-block">
+                <pre><code>\usepackage[style=apa-7th, bibfile=refs]{citum}
+
+% Non-integral (parenthetical)
+\cite[p.~10]{kuhn1962}               % → (Kuhn, 1962, p. 10)
+
+% Integral (narrative)
+\textcite{weinberg1971}              % → Weinberg and Freedman (1971)
+
+% Multi-key parenthetical
+\cites{kuhn1962, watson1953}         % → (Kuhn, 1962; Watson &amp; Crick, 1953)
+
+% Print bibliography
+\printbibliography</code></pre>
+            </div>
+        </section>
+
+        <section class="doc-section">
+            <div class="doc-section-header">
+                <h2>3. Compile (two passes)</h2>
+                <p>
+                    Point <code>CITUM_LIB_PATH</code> at the full path of the shared library and
+                    run <code>lualatex</code> twice.
+                </p>
+            </div>
+            <div class="workshop-block">
+                <pre><code>export CITUM_LIB_PATH=$(pwd)/target/release/libcitum_processor.dylib
+lualatex paper.tex   # pass 1: collects keys
+lualatex paper.tex   # pass 2: renders final output</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                On Linux replace <code>.dylib</code> with <code>.so</code>.
+                Set <code>CITUM_LUA_PATH</code> if <code>citum.lua</code> is not in the same
+                directory as <code>citum.sty</code>.
+            </p>
         </section>
 
         <section class="doc-section">
             <div class="doc-section-header">
                 <h2>Reproduce this recipe</h2>
                 <p>
-                    Fixture: <a href="fixtures/">guides/integrations/fixtures/</a> contains
-                    <code>manuscript.md</code> and <code>references.json</code>. Running the literal command above
-                    against those files produces well-formed HTML with citations and a bibliography &mdash; see the
-                    <a href="../../guides/style-authoring/advanced-examples.html">advanced examples</a> for more complex scenarios.
+                    A full working document with bibliography and all citation modes is in
+                    <a href="https://github.com/citum/citum-labs/tree/main/bindings/latex">citum-labs/bindings/latex/</a>
+                    (<code>citum-example.tex</code>, <code>example-refs.yaml</code>).
+                    The Lua binding source is in
+                    <a href="https://github.com/citum/citum-labs/tree/main/bindings/lua">citum-labs/bindings/lua/</a>.
                 </p>
             </div>
             <p>
-                Need live formatting from an editor or plugin instead of a build step? See
-                <a href="editor-plugin.html">Use Citum as a long-lived process</a>.
+                For a TeX-free PDF path, see the <a href="typst.html">Typst recipe</a>.
+                For C FFI usage from other languages, see
+                <a href="../../developer.html#ffi">Developer &rarr; C FFI</a>.
             </p>
         </section>
     </main>
