@@ -3,7 +3,7 @@ name = "citum-migrate"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "CSL 1.0 to Citum style migration library"
+description = "Standalone CSL 1.0 to Citum style migration library and tool"
 readme = "README.md"
 repository.workspace = true
 

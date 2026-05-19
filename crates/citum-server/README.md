@@ -21,7 +21,7 @@ echo '{"id":1,"method":"render_citation","params":{"style_path":"styles/embedded
 
 ### HTTP (feature-gated)
 
-Build with `--features http` to expose the same three methods over HTTP via
+Build with `--features http` to expose the same methods over HTTP via
 `axum`. Useful for the citum-hub live preview panel.
 
 ```sh
@@ -165,5 +165,5 @@ citum-server --version
 
 ## Dependencies
 
-Depends only on `citum-engine` and `citum-schema`. No legacy or migrate
-crates are pulled in.
+Depends on `citum-engine`, `citum-schema`, and `citum_store` for the standard
+resolver chain. No migrate crate is pulled in.
