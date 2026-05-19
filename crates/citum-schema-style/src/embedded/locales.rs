@@ -15,8 +15,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 pub fn get_locale_bytes(id: &str) -> Option<&'static [u8]> {
     match id {
         "en-US" => Some(include_bytes!("../../embedded/locales/en-US.yaml")),
+        "ar-AR" => Some(include_bytes!("../../embedded/locales/ar-AR.yaml")),
         "de-DE" => Some(include_bytes!("../../embedded/locales/de-DE.yaml")),
         "es-ES" => Some(include_bytes!("../../embedded/locales/es-ES.yaml")),
+        "eu-ES" => Some(include_bytes!("../../embedded/locales/eu-ES.yaml")),
         "fr-FR" => Some(include_bytes!("../../embedded/locales/fr-FR.yaml")),
         "tr-TR" => Some(include_bytes!("../../embedded/locales/tr-TR.yaml")),
         _ => None,
@@ -24,7 +26,9 @@ pub fn get_locale_bytes(id: &str) -> Option<&'static [u8]> {
 }
 
 /// All available embedded locale IDs.
-pub const EMBEDDED_LOCALE_IDS: &[&str] = &["en-US", "de-DE", "es-ES", "fr-FR", "tr-TR"];
+pub const EMBEDDED_LOCALE_IDS: &[&str] = &[
+    "en-US", "ar-AR", "de-DE", "es-ES", "eu-ES", "fr-FR", "tr-TR",
+];
 
 /// Raw YAML bytes for an embedded locale override by ID.
 ///

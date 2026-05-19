@@ -1190,6 +1190,29 @@ terms:
     }
 
     #[test]
+    fn embedded_locale_ids_include_all_bundled_locale_files() {
+        for id in [
+            "en-US", "ar-AR", "de-DE", "es-ES", "eu-ES", "fr-FR", "tr-TR",
+        ] {
+            assert!(
+                crate::embedded::EMBEDDED_LOCALE_IDS.contains(&id),
+                "{id} should be listed as an embedded locale"
+            );
+        }
+    }
+
+    #[test]
+    fn bundled_ar_ar_and_eu_es_locales_are_embedded_and_parseable() {
+        for id in ["ar-AR", "eu-ES"] {
+            let bytes = crate::embedded::get_locale_bytes(id).expect("locale should be embedded");
+            let yaml = std::str::from_utf8(bytes).expect("embedded locale should be utf-8");
+            let locale = Locale::from_yaml_str(yaml).expect("embedded locale should parse");
+
+            assert_eq!(locale.locale, id);
+        }
+    }
+
+    #[test]
     fn test_es_es_role_term_resolves_gendered_mf2_message() {
         let bytes = crate::embedded::get_locale_bytes("es-ES").expect("es-ES should be embedded");
         let yaml = std::str::from_utf8(bytes).expect("embedded locale should be utf-8");
