@@ -2,7 +2,8 @@
 
 Platform-aware storage layer for user-installed Citum styles and locales.
 Provides a `StoreResolver` that searches XDG data directories for custom
-styles, falling back to embedded builtins when nothing local matches.
+styles and locales, falling back to embedded builtins when nothing local
+matches.
 
 Supports YAML, JSON, and CBOR formats. With the `http` feature, the
 resolver chain can also fetch styles from remote registries on demand

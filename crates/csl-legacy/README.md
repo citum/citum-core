@@ -6,8 +6,8 @@ CSL document that downstream tools can analyze, transform, or convert.
 
 The primary consumer is [`citum-migrate`](https://crates.io/crates/citum-migrate),
 which uses this crate to read CSL 1.0 styles and convert them to equivalent
-Citum styles. End users moving styles from CSL 1.0 → Citum should use the
-`citum migrate` CLI rather than depending on this crate directly.
+Citum styles. Migration tooling is exposed through the standalone
+`citum-migrate` crate and binary, not through the primary `citum` CLI.
 
 ## Scope
 

@@ -5,10 +5,9 @@ the storage and resolution layer (filesystem, HTTP, git, etc.). Keeps the
 schema crate dependency-free of network/IO concerns while letting consumers
 swap resolver implementations.
 
-This crate is mostly traits and error types. End users typically don't
-depend on it directly — they pull in [`citum_store`](https://crates.io/crates/citum_store)
-or the full [`citum-engine`](https://crates.io/crates/citum-engine), both of
-which re-export the relevant pieces.
+This crate is mostly traits and error types. End users typically use
+[`citum_store`](https://crates.io/crates/citum_store) or higher-level engine
+APIs; resolver implementors should depend on this crate directly.
 
 ## Usage
 

@@ -12,9 +12,9 @@ The citum-core workspace. Read this first to orient — then descend into the re
 | # | Crate | Role |
 |---|---|---|
 | 1 | [`csl-legacy`](csl-legacy/CLAUDE.md) | CSL 1.0 XML parser — frozen, consumed by `citum-migrate`. |
-| 2 | [`citum-migrate`](citum-migrate/CLAUDE.md) | CSL 1.0 → Citum YAML converter. Plateau reached on automatic mode; hand-authoring is canonical for top parents. |
+| 2 | [`citum-migrate`](citum-migrate/CLAUDE.md) | Standalone CSL 1.0 -> Citum YAML migration crate/tool. Plateau reached on automatic mode; hand-authoring is canonical for top parents. |
 | 3 | [`citum-schema`](citum-schema/CLAUDE.md) | Facade re-exporting `citum-schema-style` + `citum-schema-data`. Real types in `citum-schema-style/`. |
-| 4 | `citum-schema-style` | Style model (~120K lib.rs): `Style`, `Template`, `Options`, `Locale`, `Renderer`, `Presets`, `Registry`. Navigate via jcodemunch. |
+| 4 | `citum-schema-style` | Modular style model: `Style`, `Template`, `Options`, `Locale`, `Renderer`, presets, registry, embedded styles/locales. Navigate via jcodemunch. |
 | 5 | `citum-schema-data` | Reference / data model accessors. |
 | 6 | [`citum-engine`](citum-engine/CLAUDE.md) | Rendering engine. Citation/bibliography output. Byte-for-byte targets vs citeproc-js / biblatex. |
 
@@ -23,7 +23,7 @@ The citum-core workspace. Read this first to orient — then descend into the re
 | Crate | Role |
 |---|---|
 | `citum-cli` | The `citum` binary. Schema gen lives behind `--features schema`. |
-| `citum-bindings` | Lua / Python / JS bindings consuming the C ABI from `citum-engine/src/ffi/`. |
+| `citum-bindings` | WASM/cdylib string API over `citum-engine`; optional TypeScript type export. |
 | `citum-server` | Long-running server surface. |
 | `citum-resolver-api` | API for reference resolution. |
 | `citum-pdf` | PDF rendering surface. |

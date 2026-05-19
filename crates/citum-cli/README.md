@@ -1,8 +1,8 @@
 # citum
 
 The **Citum** command-line tool: render citations and bibliographies,
-validate Citum-format styles and references, convert between bibliographic
-formats, and migrate legacy CSL 1.0 styles to Citum.
+check Citum-format styles and references, convert typed data files, and manage
+styles, locales, and registries.
 
 ## Installation
 
@@ -18,30 +18,35 @@ release; see [the GitHub releases page](https://github.com/citum/citum-core/rele
 Render a document with citations:
 
 ```sh
-citum render document.dj --style apa --bibliography refs.bib
+citum render doc manuscript.djot --style apa-7th --bibliography refs.yaml
 ```
 
-Convert a bibliography between formats:
+Convert a bibliography between reference formats:
 
 ```sh
-citum convert refs.bib --from biblatex --to citum-yaml > refs.yaml
+citum convert refs refs.bib --from biblatex --to citum-yaml -o refs.yaml
 ```
 
-Migrate a legacy CSL 1.0 style to Citum:
+Validate a Citum style and reference file:
 
 ```sh
-citum migrate apa.csl --output apa.yaml
+citum check --style apa-7th --bibliography refs.yaml
+citum check --style my-style.yaml --bibliography refs.yaml --json
 ```
 
-Validate a Citum style or reference file:
+Search or inspect bundled and installed styles:
 
 ```sh
-citum validate refs.yaml
-citum validate my-style.yaml
+citum style search chicago
+citum style info apa-7th
 ```
 
 Use `citum --help` for the full subcommand list, and `citum <subcommand> --help`
 for per-subcommand options.
+
+CSL 1.0 style migration is not a `citum` subcommand. Developer migration
+tooling lives in the separate
+[`citum-migrate`](https://crates.io/crates/citum-migrate) crate.
 
 ## Builtin styles
 
@@ -53,7 +58,9 @@ pick a builtin.
 
 Part of [Citum](https://github.com/citum/citum-core), a modern citation
 engine in Rust. The CLI wraps the underlying
-[`citum-engine`](https://crates.io/crates/citum-engine).
+[`citum-engine`](https://crates.io/crates/citum-engine),
+[`citum-io`](https://crates.io/crates/citum-io), and
+[`citum_store`](https://crates.io/crates/citum_store) crates.
 
 ## License
 

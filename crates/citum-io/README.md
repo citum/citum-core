@@ -1,7 +1,8 @@
 # citum-io
 
 I/O and format conversion library for Citum. Loads bibliographies and
-citations from external formats into Citum's internal types:
+citations into Citum's internal types, with explicit conversion helpers for
+legacy and interchange formats:
 
 | Format        | Read | Notes                                            |
 |---------------|:----:|--------------------------------------------------|
@@ -14,23 +15,31 @@ citations from external formats into Citum's internal types:
 
 ## Usage
 
-The high-level entry point loads a bibliography from any supported
-format, inferring the format from the file extension:
+The high-level rendering entry point loads native Citum bibliographies and
+CSL-JSON files, inferring the format from the file extension and JSON content:
 
 ```rust
 use citum_io::load_bibliography;
 use std::path::Path;
 
-let bibliography = load_bibliography(Path::new("library.bib"))?;
 let bibliography = load_bibliography(Path::new("library.json"))?;
 let bibliography = load_bibliography(Path::new("library.yaml"))?;
 ```
 
-For explicit format dispatch (or to check what format a path is), use
-`infer_refs_input_format(path)` to obtain a `RefsFormat`. Companion
-helpers exist for citations (`load_citations`) and combined
-bibliography/citation-set loading (`load_bibliography_with_sets`,
-`load_input_bibliography`).
+For BibLaTeX, RIS, and other explicit conversion flows, use
+`infer_refs_input_format(path)` and `load_input_bibliography(path, format)`:
+
+```rust
+use citum_io::{infer_refs_input_format, load_input_bibliography};
+use std::path::Path;
+
+let path = Path::new("library.bib");
+let format = infer_refs_input_format(path)?;
+let bibliography = load_input_bibliography(path, format)?;
+```
+
+Companion helpers exist for citations (`load_citations`) and combined
+bibliography/citation-set loading (`load_bibliography_with_sets`).
 
 ## Project
 

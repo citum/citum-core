@@ -3,7 +3,7 @@ name = "citum-schema"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Citum citation and bibliography data schema types"
+description = "Citum schema facade for citation data and styles"
 readme = "README.md"
 repository.workspace = true
 

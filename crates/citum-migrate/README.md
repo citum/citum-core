@@ -1,6 +1,8 @@
 # citum-migrate
 
-`citum-migrate` converts a CSL 1.0 style (`.csl`) into a Citum style (`.yaml`).
+`citum-migrate` is a standalone, best-effort migration tool and library for
+turning a CSL 1.0 style (`.csl`) into a Citum style (`.yaml`). It is separate
+from the primary `citum` CLI.
 
 The migration pipeline is now output-driven first:
 
@@ -176,12 +178,6 @@ style without review. Current expectations:
 - Citation fidelity is protected by guardrails and section-level XML fallback.
 - Note styles can still require manual review/tuning more often than
   author-date and numeric styles.
-
-As of **February 19, 2026**, a random stratified benchmark of 30 styles
-(author-date, numeric, note) showed:
-
-- Citation: XML 90.8% vs inferred 90.4% (-0.4pp)
-- Bibliography: XML 89.5% vs inferred 93.3% (+3.8pp)
 
 Use oracle validation for style-level acceptance:
 
