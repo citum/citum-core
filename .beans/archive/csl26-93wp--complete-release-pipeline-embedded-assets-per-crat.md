@@ -1,11 +1,11 @@
 ---
 # csl26-93wp
 title: 'Complete release pipeline: embedded assets, per-crate READMEs, JSR license'
-status: in-progress
+status: completed
 type: bug
 priority: high
 created_at: 2026-05-18T17:42:00Z
-updated_at: 2026-05-18T18:07:19Z
+updated_at: 2026-05-19T15:48:45Z
 blocked_by:
     - csl26-bfa9
 ---
@@ -106,3 +106,7 @@ After PR merges:
 
 - Yanking the four already-published v0.53.0 crates. crates.io is immutable; they get proper READMEs at v0.53.1.
 - Restructuring `styles/embedded/` to live inside the crate (rejected — 14+ external consumers; high churn for marginal gain).
+
+## Summary of Changes
+
+All five release-pipeline gaps addressed: embedded assets relocated into crate with workspace symlinks, per-crate READMEs written and wired in Cargo.toml, citum description confirmed present, JSR license parens added, CI dry-run job expanded. Crates published at v0.53.1.

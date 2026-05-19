@@ -1,0 +1,11 @@
+# A short paper
+
+Parenthetical: [@kuhn1962].
+
+Integral (Djot Citum syntax): [+@smith2010, p. 10] argues the point.
+
+Author suppressed: [-@watson1953, p. 737].
+
+Multi-cite: [@kuhn1962; @watson1953, ch. 2].
+
+[@hoyningen2015] revisits this theme.
