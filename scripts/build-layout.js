@@ -13,8 +13,9 @@ const NAV_TEMPLATE = `
             </div>
             <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
                 <a class="site-nav-link {{ACTIVE_DOCS}}" href="{{ROOT}}index.html">Overview</a>
+                <a class="site-nav-link {{ACTIVE_CAPABILITIES}}" href="{{ROOT}}examples.html">Capabilities</a>
                 <a class="site-nav-link {{ACTIVE_STYLE}}" href="{{ROOT}}guides/style-authoring/start.html">Style Authoring</a>
-                <a class="site-nav-link {{ACTIVE_DEVELOPER}}" href="{{ROOT}}developer.html">Developer</a>
+                <a class="site-nav-link {{ACTIVE_DEVELOPER}}" href="{{ROOT}}developer.html">Integrate</a>
                 <a class="site-nav-link {{ACTIVE_DEMO}}" href="{{ROOT}}interactive-demo.html">Demo</a>
                 <a class="site-nav-link {{ACTIVE_REFERENCE}}" href="{{ROOT}}schemas/">Schemas</a>
                 <a class="site-nav-link {{ACTIVE_REPORTS}}" href="{{ROOT}}reports.html">Reports</a>
@@ -31,8 +32,9 @@ const NAV_TEMPLATE = `
         </div>
         <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
             <a class="site-nav-link {{ACTIVE_DOCS}}" href="{{ROOT}}index.html">Overview</a>
+            <a class="site-nav-link {{ACTIVE_CAPABILITIES}}" href="{{ROOT}}examples.html">Capabilities</a>
             <a class="site-nav-link {{ACTIVE_STYLE}}" href="{{ROOT}}guides/style-authoring/start.html">Style Authoring</a>
-            <a class="site-nav-link {{ACTIVE_DEVELOPER}}" href="{{ROOT}}developer.html">Developer</a>
+            <a class="site-nav-link {{ACTIVE_DEVELOPER}}" href="{{ROOT}}developer.html">Integrate</a>
             <a class="site-nav-link {{ACTIVE_DEMO}}" href="{{ROOT}}interactive-demo.html">Demo</a>
             <a class="site-nav-link {{ACTIVE_REFERENCE}}" href="{{ROOT}}schemas/">Schemas</a>
             <a class="site-nav-link {{ACTIVE_REPORTS}}" href="{{ROOT}}reports.html">Reports</a>
@@ -47,7 +49,7 @@ const FOOTER_TEMPLATE = `
                 </div>
                 <div class="site-footer-links">
                     <a href="{{ROOT}}guides/style-authoring/start.html">Style Authoring</a>
-                    <a href="{{ROOT}}developer.html">Developer</a>
+                    <a href="{{ROOT}}developer.html">Integrate</a>
                     <a href="{{ROOT}}schemas/">Schemas</a>
                     <a href="{{ROOT}}reports.html">Reports</a>
                     <a href="{{ROOT}}operating.html">Contributing</a>
@@ -92,6 +94,7 @@ function buildLayouts() {
 
         const navHtml = NAV_TEMPLATE.replace(/{{ROOT}}/g, rootPrefix)
             .replace(/{{ACTIVE_DOCS}}/g, activeFor(pageId, 'docs'))
+            .replace(/{{ACTIVE_CAPABILITIES}}/g, activeFor(pageId, 'capabilities'))
             .replace(/{{ACTIVE_STYLE}}/g, activeFor(pageId, 'style'))
             .replace(/{{ACTIVE_DEVELOPER}}/g, activeFor(pageId, 'developer'))
             .replace(/{{ACTIVE_DEMO}}/g, activeFor(pageId, 'demo'))
