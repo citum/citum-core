@@ -1016,8 +1016,16 @@ a {
   }
 
   .doc-sidebar {
-    display: none;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.25rem;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
     position: static;
+  }
+
+  .doc-sidebar-title {
+    display: none;
   }
 
   .doc-shell {
