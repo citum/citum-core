@@ -1,0 +1,60 @@
+# Citum-native YAML reference list.
+# Illustrates Djot inline markup in title fields — see djot.html.
+# hoyningen2015 is invented for illustration purposes.
+references:
+  - id: kuhn1962
+    class: monograph
+    type: book
+    title: The Structure of Scientific Revolutions
+    author:
+      - family: Kuhn
+        given: Thomas S.
+    issued: "1962"
+    publisher:
+      name: University of Chicago Press
+      place: Chicago
+
+  - id: watson1953
+    class: serial-component
+    type: article
+    title: "Molecular Structure of Nucleic Acids: A Structure for Deoxyribose Nucleic Acid"
+    author:
+      - family: Watson
+        given: James D.
+      - family: Crick
+        given: Francis H. C.
+    issued: "1953-04-25"
+    pages: "737-738"
+    container:
+      class: serial
+      type: academic-journal
+      title: Nature
+      volume: "171"
+      issue: "4356"
+
+  - id: smith2010
+    class: monograph
+    type: book
+    title: "Nationalism: Theory, Ideology, History"
+    author:
+      - family: Smith
+        given: Anthony D.
+    issued: "2010"
+    publisher:
+      name: Polity
+
+  # Invented for illustration: title contains an embedded book title requiring italic markup.
+  - id: hoyningen2015
+    class: serial-component
+    type: article
+    title: "Kuhn's _The Structure of Scientific Revolutions_ Revisited"
+    author:
+      - family: Hoyningen-Huene
+        given: Paul
+    issued: "2015"
+    pages: "1-18"
+    container:
+      class: serial
+      type: academic-journal
+      title: Studies in History and Philosophy of Science
+      volume: "52"

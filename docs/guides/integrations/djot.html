@@ -4,8 +4,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Format a document on the CLI | Citum Docs</title>
-    <meta name="description" content="Render a Markdown or Djot manuscript with citations into HTML, LaTeX, Typst, or PDF using the citum CLI." />
+    <title>Write citations in Djot — Citum's native format | Citum Docs</title>
+    <meta name="description" content="Djot is Citum's default input format. It supports richer inline markup in reference fields than Pandoc Markdown and uses explicit citation syntax." />
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="../../assets/citum-theme.css" />
 </head>
@@ -51,11 +51,11 @@
     <main class="doc-shell">
         <header class="doc-section-header">
             <span class="citum-kicker">Integration recipe</span>
-            <h1>Format a Markdown or Djot document on the command line</h1>
+            <h1>Write citations in Djot &mdash; Citum&rsquo;s native format</h1>
             <p>
-                You have a manuscript with <code>[@key]</code> citations and a bibliography. You want HTML, LaTeX,
-                Typst, or PDF out. This is the same workflow you might know from Pandoc, with a different engine doing
-                the citation work.
+                Djot is the format Citum grew up with. It is the default input &mdash; no <code>-I</code> flag
+                required &mdash; and it supports inline markup in reference fields that the Markdown compatibility
+                mode does not.
             </p>
         </header>
 
@@ -73,22 +73,20 @@
 
         <section class="doc-section">
             <div class="doc-section-header">
-                <h2>2. Render to HTML</h2>
+                <h2>2. Your first Djot document</h2>
                 <p>
-                    Two ingredients: the manuscript and a bibliography. The bibliography can be CSL-JSON, Citum
-                    YAML/JSON, BibLaTeX, or RIS &mdash; Citum auto-detects from the extension.
+                    Citum uses the same bracketed citation syntax as Pandoc, with one difference: the integral
+                    (narrative) form uses a <code>+</code> prefix inside the brackets rather than a bare
+                    <code>@key</code> before them.
                 </p>
             </div>
-            <p style="margin-top: 0; margin-bottom: 1rem; padding: 0.6rem 1rem; border-left: 3px solid var(--citum-border); color: var(--citum-muted); font-size: 0.92rem;">
-                <strong>Using Djot?</strong> Djot is Citum&rsquo;s native format &mdash; no <code>-I</code> flag needed, and it supports rich inline markup in reference fields. &rarr; <a href="djot.html">Try the Djot format</a>
-            </p>
             <div class="workshop-block">
-                <div class="workshop-label">Manuscript (Markdown, Pandoc citation syntax)</div>
+                <div class="workshop-label">Manuscript (Djot, Citum citation syntax)</div>
                 <pre><code># A short paper
 
-Parenthetical citation: [@kuhn1962].
+Parenthetical: [@kuhn1962].
 
-Integral (Pandoc-style narrative): @smith2010 [p. 10] argues the point.
+Integral: [+@smith2010, p. 10] argues the point.
 
 Author suppressed: [-@watson1953, p. 737].
 
@@ -96,50 +94,79 @@ Multi-cite: [@kuhn1962; @watson1953, ch. 2].</code></pre>
             </div>
             <div class="workshop-block" style="margin-top: 1rem;">
                 <div class="workshop-label">Render</div>
-                <pre><code>citum render doc manuscript.md \
-  -I markdown \
+                <pre><code>citum render doc manuscript.djot \
   -b references.json \
   -s apa-7th \
   -f html \
   -o paper.html</code></pre>
             </div>
             <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
-                Drop <code>-I markdown</code> if you use Djot (the default). In Djot the integral form is
-                <code>[+@key]</code> instead of bare <code>@key</code>.
+                Djot is the default input format. No <code>-I</code> flag needed.
             </p>
         </section>
 
         <section class="doc-section">
             <div class="doc-section-header">
-                <h2>3. Other output formats</h2>
+                <h2>3. Rich inline markup in reference fields</h2>
+                <p>
+                    Djot inline markup &mdash; <code>_italic_</code>, <code>*bold*</code>,
+                    <code>[text](url)</code>, <code>[text]{.small-caps}</code> &mdash; is understood
+                    natively in the <code>title</code>, <code>note</code>, and <code>abstract</code>
+                    fields of Citum YAML references. This lets you encode an embedded book title,
+                    a linked URL in a note, or typographic emphasis exactly where it belongs in
+                    the data. The Markdown compatibility mode does not do this.
+                </p>
+                <p>
+                    The entry below has a journal article whose title contains an embedded book title.
+                    The <code>_..._</code> marks it for italic rendering within the article title.
+                </p>
             </div>
             <div class="workshop-block">
-                <pre><code># LaTeX
-citum render doc manuscript.md -I markdown -b references.json -s apa-7th -f latex -o paper.tex
-
-# Typst
-citum render doc manuscript.md -I markdown -b references.json -s apa-7th -f typst -o paper.typ
-
-# PDF (renders through Typst; requires the typst CLI on PATH)
-citum render doc manuscript.md -I markdown -b references.json -s apa-7th --pdf -o paper.pdf</code></pre>
+                <div class="workshop-label">refs-rich.yaml (Citum-native YAML, excerpt)</div>
+                <pre><code>  # title contains an embedded book title requiring italic markup
+  - id: hoyningen2015
+    class: serial-component
+    type: article
+    title: "Kuhn's _The Structure of Scientific Revolutions_ Revisited"
+    author:
+      - family: Hoyningen-Huene
+        given: Paul
+    issued: "2015"
+    pages: "1-18"
+    container:
+      class: serial
+      type: academic-journal
+      title: Studies in History and Philosophy of Science
+      volume: "52"</code></pre>
             </div>
+            <div class="workshop-block" style="margin-top: 1rem;">
+                <div class="workshop-label">Render</div>
+                <pre><code>citum render doc manuscript-rich.djot \
+  -b refs-rich.yaml \
+  -s chicago-notes-18th \
+  -f html \
+  -o paper.html</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                Chicago footnote output renders the title as
+                &ldquo;Kuhn&rsquo;s <em>The Structure of Scientific Revolutions</em> Revisited&rdquo; &mdash;
+                the embedded book title is italicised, the rest of the article title is not.
+            </p>
         </section>
 
         <section class="doc-section">
             <div class="doc-section-header">
-                <h2>4. Coming from BibTeX or CSL-JSON</h2>
-                <p>
-                    Convert an existing bibliography to Citum's native YAML once, then point at it. <code>citum
-                    render</code> reads BibLaTeX and CSL-JSON directly; converting first is only useful if you want
-                    to edit the references by hand.
-                </p>
+                <h2>4. Other output formats</h2>
             </div>
             <div class="workshop-block">
-                <pre><code># BibLaTeX -&gt; Citum YAML
-citum convert refs thesis.bib -o refs.yaml
+                <pre><code># LaTeX
+citum render doc manuscript.djot -b references.json -s apa-7th -f latex -o paper.tex
 
-# CSL-JSON array -&gt; Citum YAML
-citum convert refs legacy.json --from csl-json -o refs.yaml</code></pre>
+# Typst
+citum render doc manuscript.djot -b references.json -s apa-7th -f typst -o paper.typ
+
+# PDF (renders through Typst; requires the typst CLI on PATH)
+citum render doc manuscript.djot -b references.json -s apa-7th --pdf -o paper.pdf</code></pre>
             </div>
         </section>
 
@@ -147,17 +174,18 @@ citum convert refs legacy.json --from csl-json -o refs.yaml</code></pre>
             <div class="doc-section-header">
                 <h2>Reproduce this recipe</h2>
                 <p>
-                    The exact fixture used to verify these commands lives in
-                    <a href="fixtures/">guides/integrations/fixtures/</a>: <code>manuscript.md</code>,
-                    <code>manuscript.djot</code>, and <code>references.json</code>. Copy them locally and run any of
-                    the commands above.
+                    All fixtures live in <a href="fixtures/">guides/integrations/fixtures/</a>:
+                    <code>manuscript.djot</code> and <code>manuscript-rich.djot</code> (manuscripts),
+                    <code>references.json</code> (CSL-JSON bibliography),
+                    and <code>refs-rich.yaml</code> (Citum-native YAML with the markup example).
+                    Copy them locally and run any of the commands above.
                 </p>
             </div>
             <p>
+                Using Markdown instead? See
+                <a href="scholar-cli.html">Format a Markdown or Djot document on the command line</a>.
                 Need to wire this into a build pipeline? See
-                <a href="static-site.html">Add citations to your static-site or docs build</a>. Need live formatting
-                from an editor or plugin? See
-                <a href="editor-plugin.html">Use Citum as a long-lived process</a>.
+                <a href="static-site.html">Add citations to your static-site or docs build</a>.
             </p>
         </section>
     </main>

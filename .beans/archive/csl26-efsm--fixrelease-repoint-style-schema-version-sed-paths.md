@@ -5,7 +5,7 @@ status: completed
 type: bug
 priority: high
 created_at: 2026-05-17T18:34:24Z
-updated_at: 2026-05-17T18:34:24Z
+updated_at: 2026-05-19T15:48:46Z
 ---
 
 The schema modularization in commit a905d891 ("refactor(schema): modularize
@@ -40,26 +40,4 @@ the schema-bump step locally (`python3 scripts/bump.py schema patch
 
 ## Summary of Changes
 
-Repointed all `STYLE_SCHEMA_VERSION` call sites from
-`crates/citum-schema-style/src/lib.rs` to `src/version.rs`:
-
-- `.github/workflows/release.yml` — 4 occurrences (1 `git add` path,
-  2 `sed` source paths, 1 `grep -qE` pattern in the auto-tag job).
-- `scripts/bump.py` — 3 occurrences (constant on line 18 plus error
-  messages on lines 98 and 258; the line-258 reference was not listed
-  in the original bean but caught by post-edit grep).
-- `scripts/test_release_workflow.py` — 1 occurrence, mirroring the
-  one-line fix already shipped in PR #733 (commit 67707c4b) so this
-  PR is self-contained.
-
-Verified with `python3 -m unittest scripts.test_release_workflow
-scripts.test_infer_release_bump` (23/23 passing) and a full local
-dry-run of `python3 scripts/bump.py schema patch --yes --no-commit
---no-tag --no-validate` (succeeded; side-effect file writes reverted
-with `git checkout --` before commit).
-
-Note: `scripts/test_infer_release_bump.py:121` still passes a literal
-`"crates/citum-schema-style/src/lib.rs"` string as a sample non-artifact
-path; the `infer-release-bump.py` logic only pattern-matches the
-`docs/schemas/` prefix, so the test fixture is path-agnostic and was
-left as-is to avoid diff noise.
+Repointed all three call sites (release.yml lines 138/168/248, bump.py SCHEMA_STYLE_LIB, test_release_workflow.py) from src/lib.rs to src/version.rs in commit 886a666.
