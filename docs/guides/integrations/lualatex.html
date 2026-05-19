@@ -21,8 +21,9 @@
             </div>
             <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
                 <a class="site-nav-link " href="../../index.html">Overview</a>
+                <a class="site-nav-link " href="../../examples.html">Capabilities</a>
                 <a class="site-nav-link " href="../../guides/style-authoring/start.html">Style Authoring</a>
-                <a class="site-nav-link active" href="../../developer.html">Developer</a>
+                <a class="site-nav-link active" href="../../developer.html">Integrate</a>
                 <a class="site-nav-link " href="../../interactive-demo.html">Demo</a>
                 <a class="site-nav-link " href="../../schemas/">Schemas</a>
                 <a class="site-nav-link " href="../../reports.html">Reports</a>
@@ -39,8 +40,9 @@
         </div>
         <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
             <a class="site-nav-link " href="../../index.html">Overview</a>
+                <a class="site-nav-link " href="../../examples.html">Capabilities</a>
             <a class="site-nav-link " href="../../guides/style-authoring/start.html">Style Authoring</a>
-            <a class="site-nav-link active" href="../../developer.html">Developer</a>
+            <a class="site-nav-link active" href="../../developer.html">Integrate</a>
             <a class="site-nav-link " href="../../interactive-demo.html">Demo</a>
             <a class="site-nav-link " href="../../schemas/">Schemas</a>
             <a class="site-nav-link " href="../../reports.html">Reports</a>
@@ -48,7 +50,18 @@
         </div>        <!-- LAYOUT_NAV_END -->
     </nav>
 
-    <main class="doc-shell">
+    <div class="doc-sidebar-layout">
+<aside class="doc-sidebar" aria-label="Integration recipes">
+    <div class="doc-sidebar-title">Recipes</div>
+    <a class="doc-sidebar-link" href="scholar-cli.html">CLI / Scholar</a>
+    <a class="doc-sidebar-link" href="djot.html">Djot</a>
+    <a class="doc-sidebar-link" href="static-site.html">Static sites</a>
+    <a class="doc-sidebar-link" href="rust-library.html">Rust library</a>
+    <a class="doc-sidebar-link" href="editor-plugin.html">Editor plugin</a>
+    <a class="doc-sidebar-link" href="typst.html">Typst PDF</a>
+    <a class="doc-sidebar-link active" href="lualatex.html">LuaLaTeX</a>
+</aside>
+<main class="doc-shell">
         <header class="doc-section-header">
             <span class="citum-kicker">Integration recipe &mdash; experimental (citum-labs)</span>
             <h1>Use Citum from LuaLaTeX</h1>
@@ -165,6 +178,7 @@ lualatex paper.tex   # pass 2: renders final output</code></pre>
             </p>
         </section>
     </main>
+</div>
 
     <footer style="padding: 3rem 0; border-top: 1px solid var(--citum-border); background: var(--citum-surface);">
         <!-- LAYOUT_FOOTER_START -->
@@ -175,7 +189,7 @@ lualatex paper.tex   # pass 2: renders final output</code></pre>
                 </div>
                 <div class="site-footer-links">
                     <a href="../../guides/style-authoring/start.html">Style Authoring</a>
-                    <a href="../../developer.html">Developer</a>
+                    <a href="../../developer.html">Integrate</a>
                     <a href="../../schemas/">Schemas</a>
                     <a href="../../reports.html">Reports</a>
                     <a href="../../operating.html">Contributing</a>
