@@ -108,6 +108,10 @@
                     <h3>JSR (Deno / Node / browser)</h3>
                     <p>Import the engine from the JSR registry as <code>@citum/citum</code>. The simplest path for TypeScript / JavaScript projects on Deno, Node, or the browser &mdash; types included.</p>
                 </a>
+                <a class="doc-card" href="guides/integrations/typst.html">
+                    <h3>Typst PDF</h3>
+                    <p>Render citations with Citum and compile to PDF using embedded Typst Rust crates. No TeX, no FFI step &mdash; a pure Rust pipeline.</p>
+                </a>
                 <a class="doc-card" href="#ffi">
                     <h3>C FFI</h3>
                     <p>Call the engine from any language with a C FFI. Current bindings cover Lua (for LuaLaTeX). The shared library exports a stable C-compatible surface.</p>
@@ -154,7 +158,7 @@ citum style validate styles/my-style.yaml
 citum schema --out-dir ./schemas</code></pre>
             </div>
             <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
-                See <a href="examples.html">feature examples</a> for input and output samples across citation modes, bibliography grouping, multilingual terms, and output formats.
+                See <a href="guides/integrations/djot.html">Write citations in Djot</a> for a full end-to-end example, or the <a href="guides/integrations/typst.html">Typst</a> and <a href="guides/integrations/lualatex.html">LuaLaTeX</a> recipes for PDF publishing workflows. For CBOR binary performance, pass <code>-b data.cbor -s style.cbor</code> &mdash; compile YAML to CBOR first with <code>citum convert style styles/apa-7th.yaml -o apa-7th.cbor</code>.
             </p>
         </section>
 
@@ -308,10 +312,11 @@ cargo build --release
                 <div class="citum-panel" style="padding: 1.25rem; max-width: 36rem;">
                     <h3 style="font-family: var(--citum-font-sans); font-size: 1rem; letter-spacing: 0; margin: 0 0 0.5rem;">Lua / LuaLaTeX</h3>
                     <p style="color: var(--citum-muted); font-size: 0.88rem; line-height: 1.55; margin: 0;">
-                        Proof-of-concept bindings let a LuaLaTeX document call the Citum engine
-                        directly for citations and bibliography rendering. See
-                        <a href="https://github.com/citum/citum-labs/tree/main/bindings/lua">citum-labs/bindings/lua</a>
-                        for the binding source.
+                        Experimental bindings (citum-labs) let a LuaLaTeX document call the Citum
+                        engine for citations and bibliography rendering via LuaJIT FFI or JSON-RPC.
+                        Two-pass compilation; no Biber or external bibliography tool required. See the
+                        <a href="guides/integrations/lualatex.html">LuaLaTeX integration recipe</a>
+                        for package usage and build instructions.
                     </p>
                 </div>
             </div>
@@ -364,10 +369,8 @@ citum-server --http --port 8765       # HTTP mode (http feature)</code></pre>
 &lt;script src="https://docs.citum.org/assets/citum-interactive.js"&gt;&lt;/script&gt;</code></pre>
             </div>
             <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
-                See the <a href="interactive-demo.html">live demo</a> for a runnable page,
-                and <a href="examples.html#web-interactivity">Examples &rarr; Web Interactivity</a>
-                for the underlying markup contract. The assets are MPL-2.0 and free to vendor
-                into your own site.
+                See the <a href="interactive-demo.html">live demo</a> for a runnable page.
+                The assets are MPL-2.0 and free to vendor into your own site.
             </p>
         </section>
 
