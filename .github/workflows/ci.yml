@@ -338,5 +338,4 @@ jobs:
         continue-on-error: true
         run: |
           cargo semver-checks \
-            --workspace \
-            --baseline-rev ${{ github.event.pull_request.base.sha }}
+            --workspace
