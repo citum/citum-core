@@ -48,7 +48,106 @@ pub fn extract_title_config(style: &Style) -> Option<TitlesConfig> {
         has_config = true;
     }
 
-    if has_config { Some(config) } else { None }
+    if has_config {
+        compact_titles_config(&mut config);
+        Some(config)
+    } else {
+        None
+    }
+}
+
+/// Hoist rendering fields shared by every populated category to
+/// `titles.default`, then drop categories that become empty.
+///
+/// The engine treats `default` as the fallback when a per-category
+/// rendering is absent (see `crates/citum-engine/src/render/component.rs`),
+/// so collapsing the per-category duplicates keeps rendering identical
+/// while removing visual noise from the migrated YAML.
+fn compact_titles_config(config: &mut TitlesConfig) {
+    if config.default.is_some() {
+        return;
+    }
+
+    let populated: Vec<&TitleRendering> = [
+        config.component.as_ref(),
+        config.monograph.as_ref(),
+        config.container_monograph.as_ref(),
+        config.periodical.as_ref(),
+        config.serial.as_ref(),
+    ]
+    .into_iter()
+    .flatten()
+    .collect();
+
+    if populated.len() < 2 {
+        return;
+    }
+
+    let mut hoisted = TitleRendering::default();
+    let mut any_hoist = false;
+
+    macro_rules! hoist_field {
+        ($field:ident) => {
+            if let Some(first) = populated
+                .first()
+                .and_then(|rendering| rendering.$field.clone())
+            {
+                if populated
+                    .iter()
+                    .all(|rendering| rendering.$field.as_ref() == Some(&first))
+                {
+                    hoisted.$field = Some(first);
+                    any_hoist = true;
+                }
+            }
+        };
+    }
+
+    hoist_field!(text_case);
+    hoist_field!(emph);
+    hoist_field!(quote);
+    hoist_field!(strong);
+    hoist_field!(small_caps);
+
+    if !any_hoist {
+        return;
+    }
+
+    let strip = |rendering: &mut Option<TitleRendering>| {
+        let Some(inner) = rendering.as_mut() else {
+            return;
+        };
+        if hoisted.text_case.is_some() {
+            inner.text_case = None;
+        }
+        if hoisted.emph.is_some() {
+            inner.emph = None;
+        }
+        if hoisted.quote.is_some() {
+            inner.quote = None;
+        }
+        if hoisted.strong.is_some() {
+            inner.strong = None;
+        }
+        if hoisted.small_caps.is_some() {
+            inner.small_caps = None;
+        }
+        if !has_rendering_signal(inner)
+            && inner.prefix.is_none()
+            && inner.suffix.is_none()
+            && inner.locale_overrides.is_none()
+            && inner.unknown_fields.is_empty()
+        {
+            *rendering = None;
+        }
+    };
+
+    strip(&mut config.component);
+    strip(&mut config.monograph);
+    strip(&mut config.container_monograph);
+    strip(&mut config.periodical);
+    strip(&mut config.serial);
+    config.default = Some(hoisted);
 }
 
 fn scan_for_title_rendering(
