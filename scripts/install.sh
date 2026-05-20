@@ -42,9 +42,15 @@ detect_target() {
       esac ;;
     Darwin)
       case "$arch" in
-        x86_64)              echo "x86_64-apple-darwin" ;;
+        x86_64)
+          if command -v sysctl >/dev/null 2>&1 \
+            && [ "$(sysctl -in sysctl.proc_translated 2>/dev/null || printf 0)" = "1" ]; then
+            echo "aarch64-apple-darwin"
+          else
+            err "prebuilt Intel macOS binaries are no longer shipped; install from source with: cargo install citum --locked && cargo install citum-server --locked"
+          fi ;;
         arm64)               echo "aarch64-apple-darwin" ;;
-        *) err "unsupported macOS arch: $arch (supported: x86_64, arm64)" ;;
+        *) err "unsupported macOS arch: $arch (supported prebuilt arch: arm64)" ;;
       esac ;;
     MINGW*|MSYS*|CYGWIN*)    echo "x86_64-pc-windows-msvc" ;;
     *) err "unsupported OS: $os (supported: Linux, Darwin, Windows via Git Bash)" ;;
