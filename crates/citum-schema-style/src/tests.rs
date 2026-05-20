@@ -1463,3 +1463,128 @@ fn uri_extends_unsupported_scheme_returns_error() {
         "expected UriResolutionFailed for unsupported scheme, got {err:?}"
     );
 }
+
+#[test]
+fn style_loader_reports_components_typo_in_add_operation() {
+    let yaml = r#"
+bibliography:
+  template:
+  - title: primary
+  type-variants:
+    chapter:
+      add:
+      - after: { title: primary }
+        components:
+          variable: doi
+"#;
+    let err = Style::from_yaml_str(yaml).expect_err("components typo should fail");
+    let message = err.to_string();
+
+    assert!(
+        message.contains("bibliography.type-variants.chapter.add[0]"),
+        "message should include precise operation path: {message}"
+    );
+    assert!(
+        message.contains("unknown property \"components\" in TemplateAddOperation"),
+        "message should name the rejected property and operation type: {message}"
+    );
+    assert!(
+        message.contains("did you mean \"component\""),
+        "message should suggest the singular field: {message}"
+    );
+}
+
+#[test]
+fn style_loader_reports_invalid_nested_component_body_path() {
+    let yaml = r#"
+bibliography:
+  template:
+  - title: primary
+  type-variants:
+    chapter:
+      add:
+      - after: { title: primary }
+        component:
+          components:
+          - variable: doi
+"#;
+    let err = Style::from_yaml_str(yaml).expect_err("nested component body should fail");
+    let message = err.to_string();
+
+    assert!(
+        message.contains("bibliography.type-variants.chapter.add[0].component"),
+        "message should include precise nested component path: {message}"
+    );
+    assert!(
+        message.contains("unknown template component property \"components\""),
+        "message should name the invalid component property: {message}"
+    );
+    assert!(
+        message.contains("component must contain exactly one of contributor/date/title/number/variable/group/term"),
+        "message should enumerate valid component kinds: {message}"
+    );
+}
+
+#[test]
+fn style_loader_reports_unknown_template_component_key() {
+    let yaml = r#"
+bibliography:
+  template:
+  - components:
+    - variable: doi
+"#;
+    let err = Style::from_yaml_str(yaml).expect_err("unknown component key should fail");
+    let message = err.to_string();
+
+    assert!(
+        message.contains("bibliography.template[0]"),
+        "message should include template item path: {message}"
+    );
+    assert!(
+        message.contains("component must contain exactly one of contributor/date/title/number/variable/group/term"),
+        "message should enumerate valid component kinds: {message}"
+    );
+}
+
+#[test]
+fn style_loader_accepts_valid_recursive_template_surfaces() {
+    let yaml = r#"
+templates:
+  fallback-title:
+  - title: primary
+citation:
+  template:
+  - group:
+    - contributor: author
+      form: short
+    - date: issued
+      form: year
+      fallback:
+      - variable: doi
+  locales:
+  - locale: [en-US]
+    template:
+    - title: primary
+  integral:
+    template:
+    - contributor: author
+      form: short
+bibliography:
+  template:
+  - title: primary
+  type-variants:
+    chapter:
+    - title: parent-monograph
+    article-journal:
+      add:
+      - after: { title: primary }
+        component: { title: parent-serial, emph: true }
+  groups:
+  - id: cited
+    selector:
+      cited: visible
+    template:
+    - variable: doi
+"#;
+    Style::from_yaml_str(yaml).expect("valid recursive template surfaces should parse");
+}
