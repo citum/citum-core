@@ -142,8 +142,10 @@ impl StyleLineage {
         let current_style = load_current_style(repo_root, &style_id, exact_entry)?;
         let semantic_class = if let Some(entry) = exact_entry {
             map_style_kind(entry.kind.as_ref())
-        } else if alias_target.is_some() {
-            SemanticClass::Journal
+        } else if let Some(entry) = alias_target {
+            // An alias inherits the semantic class of its canonical target so
+            // `output_plan` can route Profile/Base/Journal aliases consistently.
+            map_style_kind(entry.kind.as_ref())
         } else if let Some(style) = current_style.as_ref() {
             if style.extends.is_some() {
                 SemanticClass::Journal
@@ -190,8 +192,8 @@ impl StyleLineage {
     pub fn apply_to_migrated_style(&self, style: Style) -> Result<Style, LineageError> {
         let MigrationOutputPlan::ExistingWrapper {
             parent_style_id,
+            implementation_form,
             preserve_template_deltas,
-            ..
         } = self.output_plan()
         else {
             return Ok(style);
@@ -199,6 +201,26 @@ impl StyleLineage {
         let Some(parent_style) = self.parent_style.as_ref() else {
             return Ok(style);
         };
+
+        // An alias is *defined* to be its canonical target; the converter's
+        // attempt to derive options/templates from the legacy CSL is best
+        // discarded in favor of the canonical style. Emit an info+extends
+        // shell so downstream tools resolve through the canonical entry
+        // rather than reading converter-derived deltas that are usually noise.
+        if implementation_form == ImplementationForm::Alias {
+            // Parse the canonical id back through serde so we hit the
+            // `StyleReference` untagged enum (Base variant for known builtin
+            // ids, Uri fallback otherwise) without depending on private
+            // constructors.
+            let extends: citum_schema::style_base::StyleReference =
+                serde_yaml::from_value(Value::String(parent_style_id))?;
+            return Ok(Style {
+                info: style.info,
+                extends: Some(extends),
+                raw_yaml: None,
+                ..Default::default()
+            });
+        }
 
         let exclude_template_paths = !preserve_template_deltas;
 
@@ -248,6 +270,17 @@ impl StyleLineage {
                     preserve_template_deltas: true,
                 }
             }
+            // A legacy CSL ID that aliases a registered Base/Profile/Journal
+            // should migrate to a thin wrapper that extends the canonical id,
+            // rather than duplicating the canonical style's templates.
+            (
+                SemanticClass::Base | SemanticClass::Profile | SemanticClass::Journal,
+                ImplementationForm::Alias,
+            ) => MigrationOutputPlan::ExistingWrapper {
+                parent_style_id,
+                implementation_form: self.implementation_form,
+                preserve_template_deltas: false,
+            },
             _ => MigrationOutputPlan::Standalone,
         }
     }
@@ -346,6 +379,18 @@ const TEMPLATE_BEARING_PATHS: [&[&str]; 9] = [
     &["bibliography", "type-variants"],
 ];
 
+// Paths whose mappings deserialize as an untagged `Preset | Explicit` enum.
+// A partial diff at one of these paths can produce a fragment that satisfies
+// neither variant (e.g. an `Explicit` `DateConfig` is missing required fields),
+// so emit the full child value as an atomic unit when it differs from parent.
+const ATOMIC_CONFIG_LEAVES: &[&str] =
+    &["dates", "contributors", "titles", "locators", "processing"];
+const ATOMIC_CONFIG_PARENTS: &[&[&str]] = &[
+    &["options"],
+    &["citation", "options"],
+    &["bibliography", "options"],
+];
+
 fn yaml_path_present(value: Option<&Value>, path: &[&str]) -> bool {
     let Some(mut current) = value else {
         return false;
@@ -387,6 +432,14 @@ fn diff_value(
                     continue;
                 }
 
+                if is_atomic_config_path(path) {
+                    if !parent_map.get(key).is_some_and(|p| p == child_value) {
+                        diff.insert(key.clone(), child_value.clone());
+                    }
+                    path.pop();
+                    continue;
+                }
+
                 match parent_map.get(key) {
                     Some(parent_value) => {
                         if let Some(child_diff) =
@@ -418,6 +471,22 @@ fn is_template_bearing_path(path: &[String]) -> bool {
             && candidate
                 .iter()
                 .zip(path.iter())
+                .all(|(expected, actual)| *expected == actual)
+    })
+}
+
+fn is_atomic_config_path(path: &[String]) -> bool {
+    let Some((leaf, parent)) = path.split_last() else {
+        return false;
+    };
+    if !ATOMIC_CONFIG_LEAVES.contains(&leaf.as_str()) {
+        return false;
+    }
+    ATOMIC_CONFIG_PARENTS.iter().any(|candidate| {
+        candidate.len() == parent.len()
+            && candidate
+                .iter()
+                .zip(parent.iter())
                 .all(|(expected, actual)| *expected == actual)
     })
 }
@@ -631,6 +700,62 @@ mod tests {
                 .and_then(|bibliography| bibliography.template.as_ref())
                 .is_none(),
             "config-wrapper profiles must not keep local bibliography templates"
+        );
+    }
+
+    #[test]
+    fn aliased_legacy_style_resolves_as_existing_wrapper() {
+        // `styles-legacy/apa.csl` declares its CSL ID as `apa`, which the
+        // registry exposes as an alias of the canonical `apa-7th` Base entry.
+        // The migration plan must route through `ExistingWrapper` so the
+        // converter emits `extends: apa-7th` instead of a duplicated standalone.
+        let lineage = StyleLineage::resolve("styles-legacy/apa.csl", &repo_root()).unwrap();
+        assert_eq!(lineage.semantic_class, SemanticClass::Base);
+        assert_eq!(lineage.implementation_form, ImplementationForm::Alias);
+        assert_eq!(lineage.parent_style_id.as_deref(), Some("apa-7th"));
+
+        let rewritten = lineage
+            .apply_to_migrated_style(minimal_migrated_style())
+            .unwrap();
+        assert_eq!(
+            rewritten.extends.as_ref().map(|base| base.key()),
+            Some("apa-7th"),
+        );
+        assert!(
+            rewritten
+                .bibliography
+                .as_ref()
+                .and_then(|bibliography| bibliography.template.as_ref())
+                .is_none(),
+            "alias wrapper should not duplicate the canonical style's templates",
+        );
+    }
+
+    #[test]
+    fn atomic_config_path_emits_full_child_value() {
+        // Diffs at `options.dates` (and similar untagged-enum config paths)
+        // must emit the full child mapping when it differs, because a partial
+        // mapping does not satisfy the `DateConfigEntry::Explicit` variant.
+        let child = serde_yaml::from_str::<Value>(
+            "options:\n  dates:\n    month: long\n    range-delimiter: \"\\u2013\"\n",
+        )
+        .unwrap();
+        let parent =
+            serde_yaml::from_str::<Value>("options:\n  dates:\n    month: long\n").unwrap();
+        let diff = diff_value(&child, &parent, &mut Vec::new(), false).unwrap();
+        let Value::Mapping(options) = diff.get(Value::String("options".to_string())).unwrap()
+        else {
+            panic!("expected options mapping in diff");
+        };
+        let dates = options.get(Value::String("dates".to_string())).unwrap();
+        assert_eq!(
+            dates,
+            child
+                .get(Value::String("options".to_string()))
+                .unwrap()
+                .get(Value::String("dates".to_string()))
+                .unwrap(),
+            "atomic config paths must emit the full child value",
         );
     }
 

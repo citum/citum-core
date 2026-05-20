@@ -69,14 +69,32 @@ pub fn detect_processing_mode(style: &Style) -> Option<Processing> {
             .map(SortEntry::resolve)
             .and_then(|sort| extract_group_from_sort(&sort));
 
-        return Some(Processing::Custom(ProcessingCustom {
+        let custom = ProcessingCustom {
             sort,
             group,
             disambiguate: Some(disamb),
-        }));
+        };
+        return Some(fold_to_named_processing(custom));
     }
 
     None
+}
+
+/// Substitute a `Processing::Custom` for the named variant whose
+/// canonical `config()` matches it. Keeps the migrated YAML idiomatic
+/// (`processing: author-date`) instead of dumping a `!custom` block when
+/// the derived config is just the named-variant default.
+fn fold_to_named_processing(custom: ProcessingCustom) -> Processing {
+    for candidate in [
+        Processing::AuthorDate,
+        Processing::Numeric,
+        Processing::Note,
+    ] {
+        if candidate.config() == custom {
+            return candidate;
+        }
+    }
+    Processing::Custom(custom)
 }
 
 fn nodes_have_author_date_signal(

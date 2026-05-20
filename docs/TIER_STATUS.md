@@ -225,6 +225,15 @@ node scripts/oracle-batch-aggregate.js styles-legacy/ \
   --json > scripts/report-data/oracle-top10-baseline.json
 ```
 
+## Converter-output SQI (citum-migrate)
+
+The post-publish converter quality wave (`csl26-f1u7`) tracks SQI on the
+output of `citum-migrate` separately from style-portfolio fidelity. Current
+numbers (corpus, mean, deltas) live in
+`docs/architecture/2026-05-20_MIGRATE_SQI_BASELINE.md`; subsequent wave PRs
+refresh that doc in place. Refresh locally with
+`node scripts/report-migrate-sqi.js`.
+
 ## Related
 
 - **beans:** `csl26-heqm` (top 10 at 100% fidelity), `csl26-gidg` (90% corpus match), `csl26-l2hg` (numeric triage), `csl26-iexw` (compound-numeric follow-on fidelity work)
