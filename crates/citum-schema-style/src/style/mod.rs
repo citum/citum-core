@@ -5,6 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 //! Style model, metadata, validation, and inheritance internals.
 
+mod diagnostics;
 mod metadata;
 mod model;
 mod overlay;

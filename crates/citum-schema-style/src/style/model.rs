@@ -95,6 +95,7 @@ impl Style {
     /// Returns a serde error if YAML parsing or deserialization fails.
     pub fn from_yaml_str(s: &str) -> Result<Self, serde_yaml::Error> {
         let raw: serde_yaml::Value = serde_yaml::from_str(s)?;
+        super::diagnostics::validate_raw_style(&raw).map_err(serde_yaml::Error::custom)?;
         let mut style: Style = serde_yaml::from_value(raw.clone())?;
         style.raw_yaml = Some(raw);
         style
@@ -111,6 +112,7 @@ impl Style {
     /// Returns a serde error if YAML parsing or deserialization fails.
     pub fn from_yaml_bytes(bytes: &[u8]) -> Result<Self, serde_yaml::Error> {
         let raw: serde_yaml::Value = serde_yaml::from_slice(bytes)?;
+        super::diagnostics::validate_raw_style(&raw).map_err(serde_yaml::Error::custom)?;
         let mut style: Style = serde_yaml::from_value(raw.clone())?;
         style.raw_yaml = Some(raw);
         style
