@@ -1,11 +1,11 @@
 ---
 # csl26-39tm
 title: Output-driven migration compression and alias UX evidence
-status: todo
+status: in-progress
 type: feature
 priority: high
 created_at: 2026-05-20T19:32:13Z
-updated_at: 2026-05-20T19:32:37Z
+updated_at: 2026-05-20T22:16:47Z
 parent: csl26-f1u7
 blocked_by:
     - csl26-kqji
