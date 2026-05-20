@@ -54,7 +54,7 @@ The release is automated end-to-end. Day-to-day, the work is:
    the `auto-tag` job, which pushes `v<x.y.z>` (and `schema-v<x.y.z>`
    when the schema changed). The tag push fans out to:
 
-   - `build` (~10–15 min, parallel matrix across 5 targets)
+   - `build` (~10–15 min, parallel matrix across 4 targets)
    - `release` (~1 min, gated on `build`) — creates the GitHub Release
      with tarballs + `SHA256SUMS` + `install.sh`
    - `publish-crates` (~5 min, gated on `build`) — runs
@@ -68,7 +68,7 @@ The release is automated end-to-end. Day-to-day, the work is:
 
 | Job | Trigger | Time | Notes |
 |---|---|---|---|
-| `build` | `push: tags: ["v*"]` | ~15 min | Matrix: x86_64-musl, aarch64-musl, x86_64-darwin, aarch64-darwin, x86_64-windows. Uses `cross` for aarch64-musl. |
+| `build` | `push: tags: ["v*"]` | ~15 min | Matrix: x86_64-musl, aarch64-musl, aarch64-darwin, x86_64-windows. Uses `cross` for aarch64-musl. |
 | `release` | `needs: build` | ~1 min | Aggregates per-target `.sha256` into one `SHA256SUMS`; uploads tarballs + `install.sh` to GitHub Release. |
 | `publish-crates` | `needs: build` | ~5 min | Idempotent; safe to re-run from the Actions UI. |
 | `publish-jsr` | `needs: build` | ~5 min | Uses JSR trusted publishing via GitHub OIDC; no JSR token secret. |
@@ -100,6 +100,14 @@ citum-server --version
 The install script verifies the SHA256 of the downloaded tarball
 against the release's `SHA256SUMS` before extracting; a checksum
 mismatch aborts before any files are written.
+
+GitHub Release tarballs support Apple Silicon macOS only. Intel macOS
+users should install from source:
+
+```sh
+cargo install citum --locked
+cargo install citum-server --locked
+```
 
 ## First-time setup (one-time, before the very first release)
 
@@ -208,8 +216,8 @@ output is not committed.
 ## Locally dry-run a binary build
 
 ```sh
-./scripts/release-binary.sh x86_64-apple-darwin v0.52.0
-ls release-out/x86_64-apple-darwin/
+./scripts/release-binary.sh aarch64-apple-darwin v0.52.0
+ls release-out/aarch64-apple-darwin/
 ```
 
 Produces the tarball + `.sha256` exactly as the CI matrix would. Useful

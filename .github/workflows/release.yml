@@ -286,9 +286,6 @@ jobs:
           - target: aarch64-unknown-linux-musl
             os: ubuntu-latest
             use_cross: "1"
-          - target: x86_64-apple-darwin
-            os: macos-latest  # arm64 host cross-builds x86_64 via Apple's universal linker
-            use_cross: "0"
           - target: aarch64-apple-darwin
             os: macos-latest
             use_cross: "0"

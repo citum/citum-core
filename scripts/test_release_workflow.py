@@ -13,6 +13,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 WORKFLOW_PATH = REPO_ROOT / ".github/workflows/release.yml"
 RELEASE_CONFIG_PATH = REPO_ROOT / "release.toml"
 SCHEMA_LIB = REPO_ROOT / "crates/citum-schema-style/src/version.rs"
+INSTALL_SCRIPT = REPO_ROOT / "scripts/install.sh"
 PUBLISH_CRATES_SCRIPT = REPO_ROOT / "scripts/publish-crates.sh"
 BUILD_JSR_SCRIPT = REPO_ROOT / "scripts/build-jsr-package.sh"
 JSR_README_SOURCE = REPO_ROOT / "crates/citum-bindings/README-JSR.md"
@@ -25,6 +26,7 @@ class ReleaseWorkflowTests(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
         cls.release_config = RELEASE_CONFIG_PATH.read_text(encoding="utf-8")
+        cls.install_script = INSTALL_SCRIPT.read_text(encoding="utf-8")
         cls.publish_crates_script = PUBLISH_CRATES_SCRIPT.read_text(encoding="utf-8")
         cls.build_jsr_script = BUILD_JSR_SCRIPT.read_text(encoding="utf-8")
         cls.jsr_readme_source = JSR_README_SOURCE.read_text(encoding="utf-8")
@@ -104,6 +106,19 @@ class ReleaseWorkflowTests(unittest.TestCase):
     def test_release_workflow_has_fast_manual_jsr_publish_recovery(self) -> None:
         self.assertIn("- publish-jsr", self.workflow)
         self.assertNotIn("- publish-crates", self.workflow)
+
+    def test_release_binary_matrix_drops_intel_macos_but_keeps_windows(self) -> None:
+        self.assertNotIn("target: x86_64-apple-darwin", self.workflow)
+        self.assertIn("target: aarch64-apple-darwin", self.workflow)
+        self.assertIn("target: x86_64-pc-windows-msvc", self.workflow)
+
+    def test_installer_does_not_map_intel_macos_to_missing_tarball(self) -> None:
+        self.assertNotIn('echo "x86_64-apple-darwin"', self.install_script)
+        self.assertIn("prebuilt Intel macOS binaries are no longer shipped", self.install_script)
+        self.assertIn("cargo install citum --locked", self.install_script)
+        self.assertIn("cargo install citum-server --locked", self.install_script)
+        self.assertIn('arm64)               echo "aarch64-apple-darwin"', self.install_script)
+        self.assertIn("sysctl.proc_translated", self.install_script)
 
     def test_crate_changelogs_are_absent(self) -> None:
         tracked = subprocess.run(
