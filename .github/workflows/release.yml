@@ -101,10 +101,7 @@ jobs:
         continue-on-error: true
         id: semver
         run: |
-          LAST_TAG=$(git tag --sort=-version:refname -l 'v*' | head -1)
-          if [ -z "$LAST_TAG" ]; then
-            echo "breaking=false" >> "$GITHUB_OUTPUT"
-          elif cargo semver-checks --workspace --baseline-rev "$LAST_TAG" 2>&1; then
+          if cargo semver-checks --workspace 2>&1; then
             echo "breaking=false" >> "$GITHUB_OUTPUT"
           else
             echo "breaking=true" >> "$GITHUB_OUTPUT"
