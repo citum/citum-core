@@ -1,11 +1,11 @@
 ---
 # csl26-kqji
 title: Descendant-of-preset-base wrapper rewrite (PR2)
-status: in-progress
+status: completed
 type: feature
 priority: high
 created_at: 2026-05-20T17:37:32Z
-updated_at: 2026-05-20T19:06:07Z
+updated_at: 2026-05-20T22:16:47Z
 parent: csl26-f1u7
 blocked_by:
     - csl26-e7yw
@@ -58,3 +58,14 @@ What PR1 did *not* touch:
 - Corpus mean SQI lifts measurably above PR1s `98.17` baseline (target: `>= 99.0`).
 - The long-tail neutral/negative deltas (`american-medical-association` `-0.27`, `institute-of-physics-numeric` `-0.27`) move into positive territory.
 - `docs/architecture/2026-05-20_MIGRATE_SQI_BASELINE.md` updated in place with new numbers and an observations entry for the descendant rewrite.
+
+## Summary of Changes
+
+Delivered as PR #766 (`feat(migrate): use template parent wrappers`, commit `d919e930`).
+
+- Extended `StyleLineage::resolve` to follow `<info><link rel="independent-parent">` hits to a canonical citum id even when no local YAML exists for the legacy id.
+- Added a `(_, DescendantOfBase)` arm in `output_plan` returning `ExistingWrapper { preserve_template_deltas: true }`, so descendants emit `extends: <parent>` plus diff-form template variants instead of standalone templates.
+- Added `chicago-notes` and `oscola` to the SQI scorecard sentinels.
+- Added a `pathologicalOutput` diagnostic to `report-migrate-sqi.js` for downstream consumers.
+
+Follow-up tracked in [[csl26-39tm]] (output-driven compression + alias UX evidence).
