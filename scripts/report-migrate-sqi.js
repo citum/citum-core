@@ -50,6 +50,8 @@ const SENTINELS = [
   'nature',
   'cell',
   'chicago-author-date',
+  'chicago-notes',
+  'oscola',
 ];
 
 // Mirrors the migrate-research lab corpus (session 4 corpus minus styles
@@ -61,6 +63,12 @@ const LAB_CORPUS = [
   'multidisciplinary-digital-publishing-institute',
   'taylor-and-francis-chicago-author-date',
 ];
+
+const DIAGNOSTIC_STYLES = [
+  'apa-6th-edition',
+];
+
+const PATHOLOGICAL_OUTPUT_LINES = 1500;
 
 function parseArgs(argv) {
   const args = {
@@ -174,7 +182,7 @@ function loadPublicStyle(styleName) {
   return reportCore.loadStyleYaml(styleName, stylePath);
 }
 
-function scoreYaml(loaded) {
+function scoreYaml(loaded, yamlText = null) {
   if (!loaded || !loaded.resolvedStyleData) {
     return { error: loaded?.error || 'no_yaml' };
   }
@@ -199,8 +207,67 @@ function scoreYaml(loaded) {
       diffVariantOperations: concision.diffVariantOperations,
       inheritedPreset: concision.inheritedPreset || null,
       hasRootExtends: Boolean(data.extends),
+      outputLines: yamlText ? countLines(yamlText) : null,
+      templateComponents: countTemplateComponents(data),
+      bibliographyTemplateComponents: countSectionTemplateComponents(data.bibliography),
+      bibliographyTypeVariantScopes: countTypeVariantScopes(data.bibliography),
+      citationTemplateComponents: countSectionTemplateComponents(data.citation),
+      citationTypeVariantScopes: countTypeVariantScopes(data.citation),
+      pathologicalOutput: yamlText ? countLines(yamlText) > PATHOLOGICAL_OUTPUT_LINES : false,
     },
   };
+}
+
+function countLines(text) {
+  return text.trimEnd().split(/\r?\n/).length;
+}
+
+function countTemplateComponents(styleData) {
+  return countSectionTemplateComponents(styleData?.citation)
+    + countSectionTemplateComponents(styleData?.bibliography)
+    + countSectionTypeVariantComponents(styleData?.citation)
+    + countSectionTypeVariantComponents(styleData?.bibliography);
+}
+
+function countSectionTemplateComponents(section) {
+  return countComponentList(section?.template);
+}
+
+function countSectionTypeVariantComponents(section) {
+  const variants = section?.['type-variants'];
+  if (!variants || typeof variants !== 'object') return 0;
+  let total = 0;
+  for (const variant of Object.values(variants)) {
+    if (Array.isArray(variant)) {
+      total += countComponentList(variant);
+    } else if (variant && typeof variant === 'object') {
+      total += countComponentList(variant.add?.map((op) => op.component));
+    }
+  }
+  return total;
+}
+
+function countTypeVariantScopes(section) {
+  const variants = section?.['type-variants'];
+  if (!variants || typeof variants !== 'object') return 0;
+  return Object.keys(variants).length;
+}
+
+function countComponentList(list) {
+  if (!Array.isArray(list)) return 0;
+  let total = 0;
+  for (const component of list) {
+    total += countComponent(component);
+  }
+  return total;
+}
+
+function countComponent(component) {
+  if (!component || typeof component !== 'object') return 0;
+  if (Array.isArray(component.group)) {
+    return 1 + countComponentList(component.group);
+  }
+  return 1;
 }
 
 function runOracle(styles) {
@@ -284,8 +351,8 @@ function buildMarkdown(report) {
   lines.push('');
   lines.push('## Per-style');
   lines.push('');
-  lines.push('| Style | Fidelity | Migrated SQI | Public SQI | Δ | Migrated dup/near/rep | Public dup/near/rep |');
-  lines.push('|---|---:|---:|---:|---:|---|---|');
+  lines.push('| Style | Fidelity | Migrated SQI | Public SQI | Δ | LOC | Migrated dup/near/rep | Public dup/near/rep |');
+  lines.push('|---|---:|---:|---:|---:|---:|---|---|');
   for (const row of report.results) {
     const fid = row.fidelity
       ? `${row.fidelity.citations?.passed ?? '-'}/${row.fidelity.citations?.total ?? '-'} • ${row.fidelity.bibliography?.passed ?? '-'}/${row.fidelity.bibliography?.total ?? '-'}`
@@ -301,10 +368,22 @@ function buildMarkdown(report) {
     const pubDiag = row.public?.diagnostics
       ? `${row.public.diagnostics.exactDuplicateScopes}/${row.public.diagnostics.nearDuplicateScopes}/${row.public.diagnostics.repeatedPatterns}`
       : '-';
-    lines.push(`| ${row.style} | ${fid} | ${mig} | ${pub} | ${delta} | ${migDiag} | ${pubDiag} |`);
+    const loc = row.migrated?.diagnostics?.outputLines ?? '-';
+    lines.push(`| ${row.style} | ${fid} | ${mig} | ${pub} | ${delta} | ${loc} | ${migDiag} | ${pubDiag} |`);
   }
   lines.push('');
-  lines.push('Columns: Migrated/Public SQI is a simple mean of `concision`, `fallbackRobustness`, and `presetUsage` (0–100). dup/near/rep counts come from `qualityBreakdown.subscores.concision` diagnostics in `report-core.js`.');
+  lines.push('Columns: Migrated/Public SQI is a simple mean of `concision`, `fallbackRobustness`, and `presetUsage` (0–100). LOC is migrated YAML output lines. dup/near/rep counts come from `qualityBreakdown.subscores.concision` diagnostics in `report-core.js`.');
+  if (report.diagnostics?.migratedOutputs?.length) {
+    lines.push('');
+    lines.push('## Output Diagnostics');
+    lines.push('');
+    lines.push('| Style | LOC | Template components | Bibliography template | Bibliography variants | Pathological |');
+    lines.push('|---|---:|---:|---:|---:|---|');
+    for (const row of report.diagnostics.migratedOutputs) {
+      const diag = row.migrated?.diagnostics;
+      lines.push(`| ${row.style} | ${diag?.outputLines ?? '-'} | ${diag?.templateComponents ?? '-'} | ${diag?.bibliographyTemplateComponents ?? '-'} | ${diag?.bibliographyTypeVariantScopes ?? '-'} | ${diag?.pathologicalOutput ? 'yes' : 'no'} |`);
+    }
+  }
   lines.push('');
   return lines.join('\n');
 }
@@ -333,7 +412,7 @@ function main() {
     } else {
       const { loaded, cleanup } = loadStyleFromYamlText(style, migrated.yaml);
       try {
-        row.migrated = scoreYaml(loaded);
+        row.migrated = scoreYaml(loaded, migrated.yaml);
       } finally {
         cleanup();
       }
@@ -361,12 +440,35 @@ function main() {
       delta: aggregateDelta(results),
     },
     results,
+    diagnostics: {
+      migratedOutputs: collectMigratedOutputDiagnostics(DIAGNOSTIC_STYLES),
+    },
   };
 
   const json = `${JSON.stringify(report, null, 2)}\n`;
   if (args.out) fs.writeFileSync(path.resolve(args.out), json);
   if (args.markdown) fs.writeFileSync(path.resolve(args.markdown), buildMarkdown(report));
   if (args.json || (!args.out && !args.markdown)) process.stdout.write(json);
+}
+
+function collectMigratedOutputDiagnostics(styles) {
+  const rows = [];
+  for (const style of styles) {
+    const row = { style };
+    const migrated = migrateStyleToYaml(style);
+    if (migrated.error) {
+      row.error = migrated;
+    } else {
+      const { loaded, cleanup } = loadStyleFromYamlText(style, migrated.yaml);
+      try {
+        row.migrated = scoreYaml(loaded, migrated.yaml);
+      } finally {
+        cleanup();
+      }
+    }
+    rows.push(row);
+  }
+  return rows;
 }
 
 try {

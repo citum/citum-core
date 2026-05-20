@@ -1,11 +1,11 @@
 ---
 # csl26-kqji
 title: Descendant-of-preset-base wrapper rewrite (PR2)
-status: draft
+status: in-progress
 type: feature
 priority: high
 created_at: 2026-05-20T17:37:32Z
-updated_at: 2026-05-20T17:48:02Z
+updated_at: 2026-05-20T19:06:07Z
 parent: csl26-f1u7
 blocked_by:
     - csl26-e7yw

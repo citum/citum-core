@@ -161,7 +161,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let enable_provenance = cli.debug_variable.is_some();
     let tracker = ProvenanceTracker::new(enable_provenance);
     let workspace_root = workspace_root_for_style_path(path);
-    let lineage = StyleLineage::resolve(path, &workspace_root)?;
+
+    let text = fs::read_to_string(path)?;
+    let doc = Document::parse(&text)?;
+    let legacy_style = parse_style(doc.root_element())?;
+
+    let lineage = StyleLineage::resolve(path, &workspace_root, &legacy_style.info.links)?;
 
     tracing::debug!("Migrating {path} to Citum...");
     tracing::debug!(
@@ -171,10 +176,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         lineage.parent_style_id.as_deref().unwrap_or("none")
     );
     log_migration_output_plan(&lineage);
-
-    let text = fs::read_to_string(path)?;
-    let doc = Document::parse(&text)?;
-    let legacy_style = parse_style(doc.root_element())?;
 
     let MigrationOptions {
         mut options,
