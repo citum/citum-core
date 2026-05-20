@@ -8,6 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use citum_schema::Style;
 use citum_schema::embedded;
 use citum_schema::registry::{StyleKind, StyleRegistry};
+use csl_legacy::model::InfoLink;
 use serde_yaml::{Mapping, Value};
 use std::fmt;
 use std::fs;
@@ -27,6 +28,7 @@ pub enum SemanticClass {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ImplementationForm {
     Alias,
+    TemplateDescendant,
     ConfigWrapper,
     StructuralWrapper,
     Standalone,
@@ -125,7 +127,11 @@ impl StyleLineage {
     ///
     /// Returns an error when the current style or its established parent cannot
     /// be read or parsed from repo-owned YAML.
-    pub fn resolve(input_path: &str, repo_root: &Path) -> Result<Self, LineageError> {
+    pub fn resolve(
+        input_path: &str,
+        repo_root: &Path,
+        legacy_links: &[InfoLink],
+    ) -> Result<Self, LineageError> {
         let style_id = Path::new(input_path)
             .file_stem()
             .and_then(|stem| stem.to_str())
@@ -138,6 +144,7 @@ impl StyleLineage {
             .styles
             .iter()
             .find(|entry| entry.aliases.iter().any(|alias| alias == &style_id));
+        let parent_link_target = resolve_parent_link_target(&registry, legacy_links);
 
         let current_style = load_current_style(repo_root, &style_id, exact_entry)?;
         let semantic_class = if let Some(entry) = exact_entry {
@@ -146,6 +153,8 @@ impl StyleLineage {
             // An alias inherits the semantic class of its canonical target so
             // `output_plan` can route Profile/Base/Journal aliases consistently.
             map_style_kind(entry.kind.as_ref())
+        } else if parent_link_target.is_some() {
+            SemanticClass::Journal
         } else if let Some(style) = current_style.as_ref() {
             if style.extends.is_some() {
                 SemanticClass::Journal
@@ -155,18 +164,32 @@ impl StyleLineage {
         } else {
             SemanticClass::Unknown
         };
-        let parent_style_id = current_style
+        let established_parent = current_style
             .as_ref()
             .and_then(|style| style.extends.as_ref())
             .map(|base| base.key().to_string())
             .or_else(|| alias_target.map(|entry| entry.id.clone()));
-        let parent_style = parent_style_id
-            .as_deref()
-            .map(|parent| load_style_by_id(repo_root, parent))
-            .transpose()?;
+        let mut parent_style_id = established_parent.clone().or(parent_link_target);
+        let parent_style = if let Some(parent) = parent_style_id.clone() {
+            match load_style_by_id(repo_root, &parent) {
+                Ok(style) => Some(style),
+                Err(err) if established_parent.is_none() => {
+                    parent_style_id = None;
+                    tracing::debug!(
+                        "Ignoring legacy parent link `{parent}` because no Citum parent style could be loaded: {err}"
+                    );
+                    None
+                }
+                Err(err) => return Err(err),
+            }
+        } else {
+            None
+        };
 
         let implementation_form = if current_style.is_none() && alias_target.is_some() {
             ImplementationForm::Alias
+        } else if current_style.is_none() && parent_style_id.is_some() {
+            ImplementationForm::TemplateDescendant
         } else if let Some(style) = current_style.as_ref() {
             derive_implementation_form(style)
         } else {
@@ -281,6 +304,14 @@ impl StyleLineage {
                 implementation_form: self.implementation_form,
                 preserve_template_deltas: false,
             },
+            (
+                SemanticClass::Base | SemanticClass::Profile | SemanticClass::Journal,
+                ImplementationForm::TemplateDescendant,
+            ) => MigrationOutputPlan::ExistingWrapper {
+                parent_style_id,
+                implementation_form: self.implementation_form,
+                preserve_template_deltas: true,
+            },
             _ => MigrationOutputPlan::Standalone,
         }
     }
@@ -343,6 +374,37 @@ fn load_style_by_id(repo_root: &Path, style_id: &str) -> Result<Style, LineageEr
 fn load_style_from_path(path: &Path) -> Result<Style, LineageError> {
     let yaml = fs::read_to_string(path)?;
     Ok(Style::from_yaml_str(&yaml)?)
+}
+
+fn resolve_parent_link_target(registry: &StyleRegistry, links: &[InfoLink]) -> Option<String> {
+    links.iter().find_map(|link| {
+        let rel = link.rel.as_deref()?;
+        if !matches!(rel, "template" | "independent-parent") {
+            return None;
+        }
+        let linked_id = zotero_style_id(&link.href)?;
+        resolve_registry_id(registry, linked_id)
+    })
+}
+
+fn zotero_style_id(href: &str) -> Option<&str> {
+    href.strip_prefix("http://www.zotero.org/styles/")
+        .or_else(|| href.strip_prefix("https://www.zotero.org/styles/"))
+        .filter(|id| !id.is_empty())
+}
+
+fn resolve_registry_id(registry: &StyleRegistry, style_id: &str) -> Option<String> {
+    registry
+        .styles
+        .iter()
+        .find(|entry| entry.id == style_id)
+        .or_else(|| {
+            registry
+                .styles
+                .iter()
+                .find(|entry| entry.aliases.iter().any(|alias| alias == style_id))
+        })
+        .map(|entry| entry.id.clone())
 }
 
 fn derive_implementation_form(style: &Style) -> ImplementationForm {
@@ -562,7 +624,7 @@ mod tests {
     #[test]
     fn resolves_embedded_profile_as_config_wrapper() {
         let lineage =
-            StyleLineage::resolve("styles-legacy/elsevier-harvard.csl", &repo_root()).unwrap();
+            StyleLineage::resolve("styles-legacy/elsevier-harvard.csl", &repo_root(), &[]).unwrap();
 
         assert_eq!(lineage.style_id, "elsevier-harvard");
         assert_eq!(lineage.semantic_class, SemanticClass::Profile);
@@ -589,6 +651,7 @@ mod tests {
         let lineage = StyleLineage::resolve(
             "styles-legacy/disability-and-rehabilitation.csl",
             &repo_root(),
+            &[],
         )
         .unwrap();
 
@@ -616,6 +679,7 @@ mod tests {
         let lineage = StyleLineage::resolve(
             "styles-legacy/american-society-of-mechanical-engineers.csl",
             &repo_root(),
+            &[],
         )
         .unwrap();
 
@@ -637,9 +701,12 @@ mod tests {
 
     #[test]
     fn resolves_unknown_style_as_unknown() {
-        let lineage =
-            StyleLineage::resolve("styles-legacy/definitely-unknown-style.csl", &repo_root())
-                .unwrap();
+        let lineage = StyleLineage::resolve(
+            "styles-legacy/definitely-unknown-style.csl",
+            &repo_root(),
+            &[],
+        )
+        .unwrap();
 
         assert_eq!(lineage.semantic_class, SemanticClass::Unknown);
         assert_eq!(lineage.implementation_form, ImplementationForm::Unknown);
@@ -676,7 +743,7 @@ mod tests {
     #[test]
     fn config_wrapper_output_sets_extends_and_strips_templates() {
         let lineage =
-            StyleLineage::resolve("styles-legacy/elsevier-harvard.csl", &repo_root()).unwrap();
+            StyleLineage::resolve("styles-legacy/elsevier-harvard.csl", &repo_root(), &[]).unwrap();
         let rewritten = lineage
             .apply_to_migrated_style(minimal_migrated_style())
             .unwrap();
@@ -709,7 +776,7 @@ mod tests {
         // registry exposes as an alias of the canonical `apa-7th` Base entry.
         // The migration plan must route through `ExistingWrapper` so the
         // converter emits `extends: apa-7th` instead of a duplicated standalone.
-        let lineage = StyleLineage::resolve("styles-legacy/apa.csl", &repo_root()).unwrap();
+        let lineage = StyleLineage::resolve("styles-legacy/apa.csl", &repo_root(), &[]).unwrap();
         assert_eq!(lineage.semantic_class, SemanticClass::Base);
         assert_eq!(lineage.implementation_form, ImplementationForm::Alias);
         assert_eq!(lineage.parent_style_id.as_deref(), Some("apa-7th"));
@@ -729,6 +796,53 @@ mod tests {
                 .is_none(),
             "alias wrapper should not duplicate the canonical style's templates",
         );
+    }
+
+    #[test]
+    fn template_descendant_resolves_canonical_parent_alias() {
+        let links = vec![InfoLink {
+            href: "http://www.zotero.org/styles/chicago-author-date".to_string(),
+            rel: Some("template".to_string()),
+        }];
+        let lineage =
+            StyleLineage::resolve("styles-legacy/anglia.csl", &repo_root(), &links).unwrap();
+
+        assert_eq!(lineage.semantic_class, SemanticClass::Journal);
+        assert_eq!(
+            lineage.implementation_form,
+            ImplementationForm::TemplateDescendant
+        );
+        assert_eq!(
+            lineage.parent_style_id.as_deref(),
+            Some("chicago-author-date-18th")
+        );
+        assert_eq!(
+            lineage.output_plan(),
+            MigrationOutputPlan::ExistingWrapper {
+                parent_style_id: "chicago-author-date-18th".to_string(),
+                implementation_form: ImplementationForm::TemplateDescendant,
+                preserve_template_deltas: true,
+            }
+        );
+    }
+
+    #[test]
+    fn unresolved_template_parent_preserves_standalone_output() {
+        let links = vec![InfoLink {
+            href: "http://www.zotero.org/styles/apa-6th-edition".to_string(),
+            rel: Some("template".to_string()),
+        }];
+        let lineage = StyleLineage::resolve(
+            "styles-legacy/effective-altruism-wiki.csl",
+            &repo_root(),
+            &links,
+        )
+        .unwrap();
+
+        assert_eq!(lineage.semantic_class, SemanticClass::Unknown);
+        assert_eq!(lineage.implementation_form, ImplementationForm::Unknown);
+        assert!(lineage.parent_style_id.is_none());
+        assert_eq!(lineage.output_plan(), MigrationOutputPlan::Standalone);
     }
 
     #[test]
@@ -764,6 +878,7 @@ mod tests {
         let lineage = StyleLineage::resolve(
             "styles-legacy/american-society-of-mechanical-engineers.csl",
             &repo_root(),
+            &[],
         )
         .unwrap();
         let rewritten = lineage
