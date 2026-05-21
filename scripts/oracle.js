@@ -376,6 +376,55 @@ function buildMigrateCommand(absStylePath, migrateOptions = {}, allFeatures = fa
   return parts.join(' ');
 }
 
+function expandCitationsForCitum(testCitations) {
+  const clustered = new Map();
+  const citations = [];
+
+  for (const cite of testCitations) {
+    if (!Array.isArray(cite.clusters)) {
+      citations.push(cite);
+      continue;
+    }
+
+    const clusterIds = [];
+    cite.clusters.forEach((cluster, index) => {
+      const clusterId = `${cite.id}__${cluster.id || index + 1}`;
+      clusterIds.push(clusterId);
+      citations.push({
+        ...cluster,
+        id: clusterId,
+        items: cluster.items || [],
+        'suppress-author': cluster['suppress-author'] === true,
+      });
+    });
+    clustered.set(cite.id, clusterIds);
+  }
+
+  return { citations, clustered };
+}
+
+function collapseClusteredCitumCitations(rendered, clustered) {
+  if (!clustered.size) {
+    return rendered;
+  }
+
+  const citations = { ...rendered.citations };
+  for (const [id, clusterIds] of clustered.entries()) {
+    citations[id] = clusterIds
+      .map((clusterId) => citations[clusterId])
+      .filter((part) => part != null)
+      .join(' | ');
+    for (const clusterId of clusterIds) {
+      delete citations[clusterId];
+    }
+  }
+
+  return {
+    ...rendered,
+    citations,
+  };
+}
+
 // Resolve an already-authored Citum YAML for a style name. Searches
 // `styles/<name>.yaml`, then `styles/embedded/<name>.yaml` (the canonical
 // parents shipped inside the citum binary), then a base-name prefix match
@@ -497,10 +546,14 @@ function renderWithCitumProcessor(stylePath, refsData, testItems, testCitations,
 
     const scope = cliOptions.scope || 'both';
     const bibliographyOnly = scope === 'bibliography';
+    const citumCitationInput = expandCitationsForCitum(testCitations);
 
     fs.writeFileSync(workspace.refsFile, JSON.stringify(refsDataForProcessor(refsData), null, 2));
     if (!bibliographyOnly) {
-      fs.writeFileSync(workspace.citationsFile, JSON.stringify(testCitations, null, 2));
+      fs.writeFileSync(
+        workspace.citationsFile,
+        JSON.stringify(citumCitationInput.citations, null, 2)
+      );
     }
 
     if (!citumStylePath) {
@@ -542,7 +595,10 @@ function renderWithCitumProcessor(stylePath, refsData, testItems, testCitations,
       return { error: `Processor failed: ${errorMsg}`, citations: { passed: 0, total: 0 }, bibliography: { passed: 0, total: 0 } };
     }
 
-    return parseCitumRenderOutput(output, testItems);
+    return collapseClusteredCitumCitations(
+      parseCitumRenderOutput(output, testItems),
+      citumCitationInput.clustered
+    );
   } finally {
     cleanupOracleTempWorkspace(workspace);
   }
@@ -616,7 +672,10 @@ function equivalentCitationText(oracleText, citumText, citationId, options = {})
 
 function collectCitationTypes(citation, testItems) {
   const types = new Set();
-  for (const item of citation.items || []) {
+  const items = Array.isArray(citation.clusters)
+    ? citation.clusters.flatMap((cluster) => cluster.items || [])
+    : citation.items || [];
+  for (const item of items) {
     const ref = testItems[item.id];
     if (ref && ref.type) {
       types.add(ref.type);
@@ -973,6 +1032,8 @@ module.exports = {
   parseArgs,
   parseCitumRenderOutput,
   refsDataForProcessor,
+  expandCitationsForCitum,
+  collapseClusteredCitumCitations,
   renderWithCitumProcessor,
   resolveAuthoredStylePath,
   runOracle,

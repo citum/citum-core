@@ -34,10 +34,17 @@ const { spawnSync } = require('child_process');
 
 const reportCore = require('./report-core.js');
 const { resolveAuthoredStylePath } = require('./oracle.js');
+const { normalizeText } = require('./oracle-utils.js');
 
 const WORKSPACE_ROOT = path.resolve(__dirname, '..');
 const LEGACY_DIR = path.join(WORKSPACE_ROOT, 'styles-legacy');
 const STYLES_DIR = path.join(WORKSPACE_ROOT, 'styles');
+const MINIMIZATION_CITATIONS_FIXTURE = path.join(
+  WORKSPACE_ROOT,
+  'tests',
+  'fixtures',
+  'citations-minimization.json'
+);
 
 const SENTINELS = [
   'apa',
@@ -219,17 +226,23 @@ function attemptMinimization(styleName) {
 /**
  * Run the migrate-batch oracle on a pre-built YAML by writing it to a temp
  * file named after the style and invoking `oracle.js` with that path.
- * Returns `{ citations: { passed, total }, bibliography: { passed, total } }`
- * or `null` if the oracle fails.
+ * Returns the parsed oracle section objects for `citations` and
+ * `bibliography`, including their `entries` arrays when present. Either
+ * section can be `null` if the oracle did not produce that section. Returns
+ * `null` when the oracle output cannot be parsed or lacks both sections.
  */
-function oracleForYaml(styleName, yamlText) {
+function oracleForYaml(styleName, yamlText, options = {}) {
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'citum-min-oracle-'));
   const yamlPath = path.join(tmpDir, `${styleName}.yaml`);
   try {
     fs.writeFileSync(yamlPath, yamlText);
+    const oracleArgs = [path.join(WORKSPACE_ROOT, 'scripts', 'oracle.js'), yamlPath, '--json'];
+    if (options.citationsFixture) {
+      oracleArgs.push('--citations-fixture', options.citationsFixture);
+    }
     const proc = spawnSync(
       'node',
-      [path.join(WORKSPACE_ROOT, 'scripts', 'oracle.js'), yamlPath, '--json'],
+      oracleArgs,
       { cwd: WORKSPACE_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
     );
     // oracle.js exits with status 1 whenever fidelity is below 100%, even
@@ -249,6 +262,41 @@ function oracleForYaml(styleName, yamlText) {
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
+}
+
+function sectionPassCount(section) {
+  return section?.passed ?? 0;
+}
+
+function normalizedEqual(left, right) {
+  if (typeof left !== 'string' || typeof right !== 'string') {
+    return false;
+  }
+  return normalizeText(left) === normalizeText(right);
+}
+
+function strictSectionEquivalent(section) {
+  if (!section || !Array.isArray(section.entries) || section.entries.length === 0) {
+    return false;
+  }
+  return section.entries.every((entry) => normalizedEqual(entry.oracle, entry.citum));
+}
+
+function evaluateMinimizationAcceptance({ baseOracle, minOracle, minLoc, baseLoc }) {
+  const strict = {
+    citations: strictSectionEquivalent(minOracle?.citations),
+    bibliography: strictSectionEquivalent(minOracle?.bibliography),
+  };
+  const passCountsHold = minOracle != null
+    && sectionPassCount(minOracle.citations) >= sectionPassCount(baseOracle?.citations)
+    && sectionPassCount(minOracle.bibliography) >= sectionPassCount(baseOracle?.bibliography);
+  const locImproves = minLoc < baseLoc;
+  return {
+    accepted: passCountsHold && locImproves && strict.citations && strict.bibliography,
+    strict,
+    passCountsHold,
+    locImproves,
+  };
 }
 
 function stripCustomYamlTags(yamlText) {
@@ -475,7 +523,7 @@ function buildMarkdown(report) {
     lines.push('');
     lines.push('## Compression candidates');
     lines.push('');
-    lines.push('Styles where the migrator discovered a candidate parent via the registry, a source CSL link, or a reverse `<info><link rel="template">` in an embedded canonical style. The scorecard tries the minimized wrapper form (`--family-candidate auto --minimize-wrapper`) for each candidate and accepts it only when oracle citation pass ≥ standalone AND bibliography pass ≥ standalone.');
+    lines.push('Styles where the migrator discovered a candidate parent via the registry, a source CSL link, or a reverse `<info><link rel="template">` in an embedded canonical style. The scorecard tries the minimized wrapper form (`--family-candidate auto --minimize-wrapper`) for each candidate and accepts it only when oracle citation pass ≥ standalone, bibliography pass ≥ standalone, LOC decreases, and every minimized citation/bibliography entry is strictly equivalent after normalization.');
     lines.push('');
     lines.push('| Style | Candidate parent | Discovery source | Standalone LOC → Minimized LOC | Standalone fidelity → Minimized fidelity | Accepted |');
     lines.push('|---|---|---|---:|---|:---:|');
@@ -565,11 +613,9 @@ function main() {
     ) {
       const min = attemptMinimization(style);
       if (min && min.yaml) {
-        const minOracle = oracleForYaml(style, min.yaml);
-        const baseCit = row.fidelity?.citations?.passed ?? 0;
-        const baseBib = row.fidelity?.bibliography?.passed ?? 0;
-        const minCit = minOracle?.citations?.passed ?? -1;
-        const minBib = minOracle?.bibliography?.passed ?? -1;
+        const strictFixtureOptions = { citationsFixture: MINIMIZATION_CITATIONS_FIXTURE };
+        const baseStrictOracle = oracleForYaml(style, migrated.yaml, strictFixtureOptions);
+        const minOracle = oracleForYaml(style, min.yaml, strictFixtureOptions);
         const minLoc = min.evidence?.emitted_output_lines ?? Number.MAX_SAFE_INTEGER;
         const baseLoc = row.evidence?.standalone_output_lines
           ?? row.migrated?.diagnostics?.outputLines
@@ -580,17 +626,23 @@ function main() {
         // converter did not promote the family candidate (e.g. mdpi's
         // template-link parent path bypasses the minimize branch); marking
         // those as compressed would be misleading.
-        const accepted = minOracle != null
-          && minCit >= baseCit
-          && minBib >= baseBib
-          && minLoc < baseLoc;
+        const acceptance = evaluateMinimizationAcceptance({
+          baseOracle: baseStrictOracle ?? row.fidelity,
+          minOracle,
+          minLoc,
+          baseLoc,
+        });
+        const accepted = acceptance.accepted;
         row.minimization = {
           attempted: true,
           accepted,
+          strict: acceptance.strict,
+          passCountsHold: acceptance.passCountsHold,
+          locImproves: acceptance.locImproves,
           standalone: {
             outputLines: row.migrated?.diagnostics?.outputLines ?? null,
-            citations: row.fidelity?.citations ?? null,
-            bibliography: row.fidelity?.bibliography ?? null,
+            citations: baseStrictOracle?.citations ?? row.fidelity?.citations ?? null,
+            bibliography: baseStrictOracle?.bibliography ?? row.fidelity?.bibliography ?? null,
           },
           minimized: {
             outputLines: min.evidence?.emitted_output_lines ?? null,
@@ -660,9 +712,17 @@ function collectMigratedOutputDiagnostics(styles) {
   return rows;
 }
 
-try {
-  main();
-} catch (err) {
-  console.error(`Error: ${err.message}`);
-  process.exit(1);
+if (require.main === module) {
+  try {
+    main();
+  } catch (err) {
+    console.error(`Error: ${err.message}`);
+    process.exit(1);
+  }
 }
+
+module.exports = {
+  evaluateMinimizationAcceptance,
+  normalizedEqual,
+  strictSectionEquivalent,
+};

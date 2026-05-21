@@ -12,6 +12,8 @@ const {
   normalizeFixtureItems,
   parseCitumRenderOutput,
   refsDataForProcessor,
+  expandCitationsForCitum,
+  collapseClusteredCitumCitations,
   resolveAuthoredStylePath,
 } = require('./oracle');
 const {
@@ -171,6 +173,39 @@ test('loadFixtures preserves raw wrapped fixtures for processor rendering', () =
   assert.ok(refsData.sets);
   assert.ok(testItems['zwart1983']);
   assert.ok(testItems['johnson2021-patent']);
+});
+
+test('clustered citation fixtures expand for Citum and collapse back to oracle id', () => {
+  const { citations, clustered } = expandCitationsForCitum([
+    {
+      id: 'apa-four-author-first-subsequent',
+      clusters: [
+        { id: 'first', items: [{ id: 'ITEM-29' }] },
+        { id: 'subsequent', items: [{ id: 'ITEM-29' }] },
+      ],
+    },
+  ]);
+
+  assert.deepEqual(citations.map((citation) => citation.id), [
+    'apa-four-author-first-subsequent__first',
+    'apa-four-author-first-subsequent__subsequent',
+  ]);
+  const collapsed = collapseClusteredCitumCitations(
+    {
+      citations: {
+        'apa-four-author-first-subsequent__first': '(Smith, Lee, Kumar, & Zhou, 2021)',
+        'apa-four-author-first-subsequent__subsequent': '(Smith et al, 2021)',
+      },
+      bibliography: [],
+    },
+    clustered
+  );
+
+  assert.equal(
+    collapsed.citations['apa-four-author-first-subsequent'],
+    '(Smith, Lee, Kumar, & Zhou, 2021) | (Smith et al, 2021)'
+  );
+  assert.equal(collapsed.citations['apa-four-author-first-subsequent__first'], undefined);
 });
 
 test('refsDataForProcessor preserves wrapped fixture sets', () => {
