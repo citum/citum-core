@@ -369,6 +369,39 @@ set -e
 [[ "$bean_pass_status" -eq 0 ]] || fail "expected bean hygiene to pass: $bean_pass_output"
 assert_contains "$bean_pass_output" "ok: bean hygiene passed"
 
+mock_wrapper_soft_stale="$TMP_ROOT/mock-wrapper-soft-stale.sh"
+cat >"$mock_wrapper_soft_stale" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+echo "Bean audit scope: open"
+echo
+echo "Open beans with advisory likely-stale matches on main:"
+echo "  - csl26-soft [todo] Advisory soft stale (csl26-soft.md)"
+if [[ "${IGNORE_SOFT_STALE:-0}" == "1" ]]; then
+  exit 0
+fi
+exit 1
+EOF
+chmod +x "$mock_wrapper_soft_stale"
+
+repo="$TMP_ROOT/bean-soft-stale-default"
+mkdir -p "$repo/scripts"
+set +e
+bean_soft_default_output=$(run_hygiene_script "$repo" "$mock_wrapper_soft_stale" 2>&1)
+bean_soft_default_status=$?
+set -e
+[[ "$bean_soft_default_status" -eq 0 ]] || fail "expected bean soft-stale hygiene to pass by default"
+assert_contains "$bean_soft_default_output" "ok: bean hygiene passed"
+
+repo="$TMP_ROOT/bean-soft-stale-strict"
+mkdir -p "$repo/scripts"
+set +e
+bean_soft_strict_output=$(IGNORE_SOFT_STALE=0 run_hygiene_script "$repo" "$mock_wrapper_soft_stale" 2>&1)
+bean_soft_strict_status=$?
+set -e
+[[ "$bean_soft_strict_status" -eq 1 ]] || fail "expected bean soft-stale hygiene to fail in strict mode"
+assert_contains "$bean_soft_strict_output" "ERROR: bean hygiene failed"
+
 mock_wrapper_fail="$TMP_ROOT/mock-wrapper-fail.sh"
 cat >"$mock_wrapper_fail" <<'EOF'
 #!/usr/bin/env bash
