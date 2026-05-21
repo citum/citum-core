@@ -5,6 +5,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 //! Migration-time style lineage and wrapper classification.
 
+use crate::evidence::{
+    EmittedForm, FamilyCandidate, MigrationEvidence, ParentDiscoverySource, RegistryAliasStatus,
+};
 use citum_schema::Style;
 use citum_schema::embedded;
 use citum_schema::registry::{StyleKind, StyleRegistry};
@@ -87,6 +90,27 @@ pub struct StyleLineage {
     pub implementation_form: ImplementationForm,
     /// Established parent style ID, if any.
     pub parent_style_id: Option<String>,
+    /// Registry alias target for the legacy ID, if any. Captured for the
+    /// migration evidence record so downstream tooling can distinguish a
+    /// "true alias" from a "discovered family ancestor".
+    pub registry_alias_target: Option<String>,
+    /// True when the legacy ID is itself a canonical registry entry (not an
+    /// alias). Used by the evidence record to surface
+    /// `RegistryAliasStatus::ExactMatch` precisely; checking
+    /// `registry_alias_target == style_id` cannot detect this because the
+    /// alias field is only populated when the legacy id is an alias OF some
+    /// other canonical entry.
+    pub registry_exact_match: bool,
+    /// Family-candidate parent discovered via a reverse `<info><link
+    /// rel="template">` in an embedded canonical style, when no other parent
+    /// link is available. Inert by default; the CLI promotes this into
+    /// `parent_style_id` only when explicitly opted in via
+    /// `--family-candidate`.
+    pub family_candidate: Option<String>,
+    /// Discovery source for `parent_style_id`, when set at resolve time.
+    /// Used by the evidence record to classify the parent precisely
+    /// (registry alias vs source CSL link vs local file extends).
+    pub parent_source: Option<ParentDiscoverySource>,
     parent_style: Option<Style>,
 }
 
@@ -144,7 +168,22 @@ impl StyleLineage {
             .styles
             .iter()
             .find(|entry| entry.aliases.iter().any(|alias| alias == &style_id));
-        let parent_link_target = resolve_parent_link_target(&registry, legacy_links);
+        let parent_link_hit = resolve_parent_link_target(&registry, legacy_links);
+        let parent_link_target = parent_link_hit.as_ref().map(|(id, _)| id.clone());
+        let parent_link_rel = parent_link_hit.as_ref().map(|(_, rel)| *rel);
+        // Reverse-template-link discovery: if no other parent has surfaced,
+        // scan embedded canonical styles for an `<info><link rel="template">`
+        // pointing back at this legacy ID. Such a link means a canonical
+        // style historically derived from this legacy file — making the
+        // canonical style a candidate ancestor for output-driven compression.
+        // Discovery is independent of routing: the candidate is recorded on
+        // `StyleLineage` but only acts on `output_plan` after explicit opt-in
+        // via `promote_family_candidate`.
+        let family_candidate = if parent_link_target.is_none() && alias_target.is_none() {
+            discover_reverse_template_parent(&registry, &style_id)
+        } else {
+            None
+        };
 
         let current_style = load_current_style(repo_root, &style_id, exact_entry)?;
         let semantic_class = if let Some(entry) = exact_entry {
@@ -164,17 +203,37 @@ impl StyleLineage {
         } else {
             SemanticClass::Unknown
         };
-        let established_parent = current_style
+        // Track *where* the parent came from so the evidence record can
+        // distinguish a registry alias from a CSL info-link from a local
+        // extends. Order mirrors the precedence in the next line.
+        let local_extends = current_style
             .as_ref()
             .and_then(|style| style.extends.as_ref())
-            .map(|base| base.key().to_string())
+            .map(|base| base.key().to_string());
+        let established_parent = local_extends
+            .clone()
             .or_else(|| alias_target.map(|entry| entry.id.clone()));
-        let mut parent_style_id = established_parent.clone().or(parent_link_target);
+        let mut parent_style_id = established_parent.clone().or(parent_link_target.clone());
+        let mut parent_source = if local_extends.is_some() {
+            Some(ParentDiscoverySource::LocalExtends)
+        } else if alias_target.is_some() {
+            Some(ParentDiscoverySource::RegistryAlias)
+        } else {
+            // `parent_link_rel` was captured by the same predicate that
+            // resolved `parent_link_target`, so the rel here is guaranteed
+            // to match the actual hit (not just the first matching rel in
+            // the legacy links list).
+            parent_link_rel.map(|rel| match rel {
+                ParentLinkRel::IndependentParent => ParentDiscoverySource::IndependentParentLink,
+                ParentLinkRel::Template => ParentDiscoverySource::TemplateLink,
+            })
+        };
         let parent_style = if let Some(parent) = parent_style_id.clone() {
             match load_style_by_id(repo_root, &parent) {
                 Ok(style) => Some(style),
                 Err(err) if established_parent.is_none() => {
                     parent_style_id = None;
+                    parent_source = None;
                     tracing::debug!(
                         "Ignoring legacy parent link `{parent}` because no Citum parent style could be loaded: {err}"
                     );
@@ -201,8 +260,138 @@ impl StyleLineage {
             semantic_class,
             implementation_form,
             parent_style_id,
+            registry_alias_target: alias_target.map(|entry| entry.id.clone()),
+            registry_exact_match: exact_entry.is_some(),
+            family_candidate,
+            parent_source,
             parent_style,
         })
+    }
+
+    /// Build a `MigrationEvidence` record summarizing the lineage decisions
+    /// for downstream consumers (SQI scorecard, future hub UX). The caller
+    /// supplies the standalone reference LOC and the emitted form details,
+    /// since those depend on running the full migration pipeline.
+    #[must_use]
+    pub fn build_evidence(
+        &self,
+        standalone_lines: usize,
+        emitted_form: EmittedForm,
+        emitted_lines: usize,
+        preserved_template_paths: Vec<String>,
+        discarded_template_paths: Vec<String>,
+    ) -> MigrationEvidence {
+        let registry_alias_status = if self.registry_exact_match {
+            RegistryAliasStatus::ExactMatch
+        } else if let Some(target) = self.registry_alias_target.clone() {
+            RegistryAliasStatus::Alias { target }
+        } else {
+            RegistryAliasStatus::None
+        };
+
+        let mut discovered_parents: Vec<FamilyCandidate> = Vec::new();
+        if let Some(alias) = self.registry_alias_target.clone() {
+            discovered_parents.push(FamilyCandidate {
+                canonical_id: alias,
+                source: ParentDiscoverySource::RegistryAlias,
+            });
+        }
+        if let Some(parent) = self.parent_style_id.clone()
+            && !discovered_parents
+                .iter()
+                .any(|candidate| candidate.canonical_id == parent)
+        {
+            // `parent_source` was set at resolve time to record exactly which
+            // mechanism produced `parent_style_id` (registry alias, source
+            // CSL link, local file extends, or reverse template link via
+            // promoted family candidate). Fall back to `TemplateLink` if a
+            // future code path forgets to set it.
+            let source = self
+                .parent_source
+                .clone()
+                .unwrap_or(ParentDiscoverySource::TemplateLink);
+            discovered_parents.push(FamilyCandidate {
+                canonical_id: parent,
+                source,
+            });
+        }
+        if let Some(candidate) = self.family_candidate.clone()
+            && !discovered_parents
+                .iter()
+                .any(|c| c.canonical_id == candidate)
+        {
+            discovered_parents.push(FamilyCandidate {
+                canonical_id: candidate,
+                source: ParentDiscoverySource::ReverseTemplateLink,
+            });
+        }
+
+        MigrationEvidence {
+            style_id: self.style_id.clone(),
+            registry_alias_status,
+            discovered_parents,
+            emitted_form,
+            preserved_template_paths,
+            discarded_template_paths,
+            standalone_output_lines: standalone_lines,
+            emitted_output_lines: emitted_lines,
+        }
+    }
+
+    /// Promote a discovered family-candidate parent into the active parent
+    /// slot, routing future `output_plan` calls through
+    /// `ExistingWrapper { preserve_template_deltas: true }`.
+    ///
+    /// This is opt-in (CLI: `--family-candidate auto|<id>`). When `override_id`
+    /// is `Some`, the supplied ID is used regardless of the discovered
+    /// candidate and the parent style is loaded directly from the registry.
+    /// When `None`, the previously discovered candidate (if any) is promoted.
+    ///
+    /// Returns `Ok(true)` if a candidate was successfully promoted (and the
+    /// parent style loaded), `Ok(false)` if no candidate was available, or an
+    /// error if the parent style could not be loaded.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the supplied or discovered parent style cannot be
+    /// resolved from repo-owned YAML or embedded registry.
+    pub fn promote_family_candidate(
+        &mut self,
+        repo_root: &Path,
+        override_id: Option<&str>,
+    ) -> Result<bool, LineageError> {
+        let candidate_id = match override_id {
+            Some(id) => id.to_string(),
+            None => match self.family_candidate.clone() {
+                Some(id) => id,
+                None => return Ok(false),
+            },
+        };
+        let parent_style = load_style_by_id(repo_root, &candidate_id)?;
+        // Inherit the parent's semantic class so `output_plan` reaches the
+        // `(Base|Profile|Journal, TemplateDescendant)` wrapper arm. Without
+        // this, a legacy style with no registry entry (`SemanticClass::Unknown`)
+        // would fall through to `Standalone` even after promotion.
+        let registry = StyleRegistry::load_default();
+        if let Some(entry) = registry.styles.iter().find(|e| e.id == candidate_id) {
+            self.semantic_class = map_style_kind(entry.kind.as_ref());
+        }
+        self.parent_style = Some(parent_style);
+        self.parent_style_id = Some(candidate_id.clone());
+        self.implementation_form = ImplementationForm::TemplateDescendant;
+        // Distinguish auto-promoted reverse-template candidates from
+        // caller-forced explicit overrides so the evidence sidecar reports
+        // the discovery source precisely. Also seed `family_candidate` for
+        // explicit overrides so the minimize path (`apply_to_migrated_style_
+        // minimized`) sees a promoted candidate regardless of which CLI
+        // form selected it.
+        if override_id.is_some() {
+            self.parent_source = Some(ParentDiscoverySource::ExplicitOverride);
+            self.family_candidate = Some(candidate_id);
+        } else {
+            self.parent_source = Some(ParentDiscoverySource::ReverseTemplateLink);
+        }
+        Ok(true)
     }
 
     /// Rewrite a standalone migrated style into wrapper form when the current
@@ -268,6 +457,54 @@ impl StyleLineage {
         let mut rebuilt: Style = serde_yaml::from_value(Value::Mapping(diff))?;
         rebuilt.raw_yaml = None;
         Ok(rebuilt)
+    }
+
+    /// Apply lineage routing to a migrated style with optional minimization.
+    ///
+    /// When `minimize` is true and the output plan is an ExistingWrapper for a
+    /// family-candidate parent, emit a minimal wrapper (info + extends only)
+    /// instead of the full diff. This is used by the evidence-driven compression
+    /// harness to derive output-driven minima gated by oracle equivalence.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the rewritten wrapper cannot be serialized or
+    /// deserialized as a valid `Style`.
+    pub fn apply_to_migrated_style_minimized(
+        &self,
+        style: Style,
+        minimize: bool,
+    ) -> Result<Style, LineageError> {
+        // If minimization is requested and a family-candidate parent has
+        // been promoted (either auto-discovered via reverse template link
+        // or caller-forced via `--family-candidate <id>`), emit the minimal
+        // form. Other parent sources (registry alias, source CSL link,
+        // local extends) keep their existing routing — those already go
+        // through purpose-built arms of `apply_to_migrated_style`.
+        let promoted = matches!(
+            self.parent_source,
+            Some(
+                ParentDiscoverySource::ReverseTemplateLink
+                    | ParentDiscoverySource::ExplicitOverride
+            )
+        );
+        if minimize && promoted && self.parent_style_id.is_some() {
+            let Some(parent_style_id) = self.parent_style_id.as_ref() else {
+                return Ok(style);
+            };
+            // Evidence-driven minimal wrapper: info + extends only, no diffs.
+            let extends: citum_schema::style_base::StyleReference =
+                serde_yaml::from_value(Value::String(parent_style_id.clone()))?;
+            return Ok(Style {
+                info: style.info,
+                extends: Some(extends),
+                raw_yaml: None,
+                ..Default::default()
+            });
+        }
+
+        // Fall back to standard diff-based wrapping.
+        self.apply_to_migrated_style(style)
     }
 
     /// Return the explicit migration artifact plan derived from repo truth.
@@ -376,15 +613,72 @@ fn load_style_from_path(path: &Path) -> Result<Style, LineageError> {
     Ok(Style::from_yaml_str(&yaml)?)
 }
 
-fn resolve_parent_link_target(registry: &StyleRegistry, links: &[InfoLink]) -> Option<String> {
+/// The relationship type of a parent link that resolved against the registry.
+/// Returned alongside the canonical id so the evidence record can classify
+/// the discovery source without re-scanning `legacy_links` (which would race
+/// the same first-link-wins resolution and risk misclassifying when an
+/// earlier href doesn't resolve).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ParentLinkRel {
+    Template,
+    IndependentParent,
+}
+
+fn resolve_parent_link_target(
+    registry: &StyleRegistry,
+    links: &[InfoLink],
+) -> Option<(String, ParentLinkRel)> {
     links.iter().find_map(|link| {
         let rel = link.rel.as_deref()?;
-        if !matches!(rel, "template" | "independent-parent") {
-            return None;
-        }
+        let parent_rel = match rel {
+            "template" => ParentLinkRel::Template,
+            "independent-parent" => ParentLinkRel::IndependentParent,
+            _ => return None,
+        };
         let linked_id = zotero_style_id(&link.href)?;
-        resolve_registry_id(registry, linked_id)
+        resolve_registry_id(registry, linked_id).map(|id| (id, parent_rel))
     })
+}
+
+/// Scan embedded canonical styles for a reverse `<info><link rel="template">`
+/// that targets `legacy_id`. When found, the embedded style is a candidate
+/// ancestor for output-driven compression of the legacy style.
+///
+/// Returns the canonical ID of the discovered parent, or `None` when no
+/// embedded style declares the legacy id as its template source.
+fn discover_reverse_template_parent(registry: &StyleRegistry, legacy_id: &str) -> Option<String> {
+    for entry in &registry.styles {
+        let Some(builtin) = entry.builtin.as_deref() else {
+            continue;
+        };
+        let Some(loaded) = embedded::get_embedded_style(builtin) else {
+            continue;
+        };
+        let Ok(style) = loaded else {
+            continue;
+        };
+        // CSL-derived styles store their original `<info><link>` entries under
+        // `info.source.links`. Native or biblatex-derived styles have no
+        // `info.source` and contribute no reverse template signal.
+        let Some(source) = style.info.source.as_ref() else {
+            continue;
+        };
+        for link in &source.links {
+            let Some(rel) = link.rel.as_deref() else {
+                continue;
+            };
+            if rel != "template" {
+                continue;
+            }
+            let Some(linked) = zotero_style_id(&link.href) else {
+                continue;
+            };
+            if linked == legacy_id {
+                return Some(entry.id.clone());
+            }
+        }
+    }
+    None
 }
 
 fn zotero_style_id(href: &str) -> Option<&str> {
@@ -896,6 +1190,142 @@ mod tests {
                 .and_then(|citation| citation.template.as_ref())
                 .is_some(),
             "structural wrappers should preserve local structural citation deltas"
+        );
+    }
+
+    #[test]
+    fn reverse_template_link_discovers_apa_7th_for_apa_6th_edition() {
+        // `styles/embedded/apa-7th.yaml` declares `apa-6th-edition` as its
+        // historical template source via `info.source.links`. Lineage
+        // resolution should surface this inertly as a family candidate when
+        // the legacy file has no other parent link of its own.
+        let lineage =
+            StyleLineage::resolve("styles-legacy/apa-6th-edition.csl", &repo_root(), &[]).unwrap();
+
+        assert!(
+            lineage.parent_style_id.is_none(),
+            "discovery must be inert by default; no parent promoted"
+        );
+        assert_eq!(
+            lineage.family_candidate.as_deref(),
+            Some("apa-7th"),
+            "expected reverse template link to surface apa-7th as family candidate"
+        );
+        // Without promotion, the output plan stays Standalone so the
+        // converter's default behavior is unchanged for callers that don't
+        // opt in via `--family-candidate`.
+        assert_eq!(lineage.output_plan(), MigrationOutputPlan::Standalone);
+    }
+
+    #[test]
+    fn promote_family_candidate_routes_through_template_descendant_wrapper() {
+        let mut lineage =
+            StyleLineage::resolve("styles-legacy/apa-6th-edition.csl", &repo_root(), &[]).unwrap();
+
+        let promoted = lineage
+            .promote_family_candidate(&repo_root(), None)
+            .expect("promotion should succeed when candidate is present");
+        assert!(promoted, "expected the discovered candidate to be promoted");
+        assert_eq!(lineage.parent_style_id.as_deref(), Some("apa-7th"));
+        assert_eq!(lineage.semantic_class, SemanticClass::Base);
+        assert_eq!(
+            lineage.output_plan(),
+            MigrationOutputPlan::ExistingWrapper {
+                parent_style_id: "apa-7th".to_string(),
+                implementation_form: ImplementationForm::TemplateDescendant,
+                preserve_template_deltas: true,
+            }
+        );
+    }
+
+    #[test]
+    fn promote_family_candidate_returns_false_when_no_candidate_discovered() {
+        let mut lineage = StyleLineage::resolve(
+            "styles-legacy/definitely-unknown-style.csl",
+            &repo_root(),
+            &[],
+        )
+        .unwrap();
+        let promoted = lineage
+            .promote_family_candidate(&repo_root(), None)
+            .expect("promotion should not error when no candidate is present");
+        assert!(
+            !promoted,
+            "promotion must return false when no candidate was discovered"
+        );
+        assert!(lineage.parent_style_id.is_none());
+    }
+
+    #[test]
+    fn build_evidence_reports_reverse_template_discovery() {
+        let lineage =
+            StyleLineage::resolve("styles-legacy/apa-6th-edition.csl", &repo_root(), &[]).unwrap();
+        let evidence = lineage.build_evidence(
+            5662,
+            crate::evidence::EmittedForm::Standalone,
+            5662,
+            Vec::new(),
+            Vec::new(),
+        );
+        assert_eq!(
+            evidence.registry_alias_status,
+            crate::evidence::RegistryAliasStatus::None
+        );
+        let candidate = evidence
+            .discovered_parents
+            .iter()
+            .find(|c| c.canonical_id == "apa-7th")
+            .expect("evidence should include apa-7th as a discovered parent");
+        assert_eq!(
+            candidate.source,
+            crate::evidence::ParentDiscoverySource::ReverseTemplateLink
+        );
+        assert!(!evidence.compressed());
+    }
+
+    #[test]
+    fn minimize_wrapper_emits_info_and_extends_only() {
+        // When promote_family_candidate is called and minimize is true,
+        // apply_to_migrated_style_minimized should emit only info + extends,
+        // dropping all template-bearing deltas.
+        let mut lineage =
+            StyleLineage::resolve("styles-legacy/apa-6th-edition.csl", &repo_root(), &[]).unwrap();
+
+        let promoted = lineage
+            .promote_family_candidate(&repo_root(), None)
+            .expect("promotion should succeed");
+        assert!(promoted);
+
+        let mut test_style = minimal_migrated_style();
+        test_style.info = citum_schema::StyleInfo {
+            title: Some("APA 6th Edition".to_string()),
+            id: Some("apa-6th-edition".to_string()),
+            ..Default::default()
+        };
+
+        let minimized = lineage
+            .apply_to_migrated_style_minimized(test_style.clone(), true)
+            .expect("minimization should succeed");
+
+        assert!(
+            minimized.extends.is_some(),
+            "minimized wrapper must have extends set"
+        );
+        // Verify the extends points to apa-7th by converting to YAML and back
+        let yaml_val = serde_yaml::to_value(&minimized.extends).unwrap();
+        let extends_str = yaml_val.as_str();
+        assert_eq!(
+            extends_str,
+            Some("apa-7th"),
+            "expected extends to reference apa-7th"
+        );
+        assert!(
+            minimized.bibliography.is_none(),
+            "minimized wrapper should not carry bibliography template diff"
+        );
+        assert!(
+            minimized.citation.is_none(),
+            "minimized wrapper should not carry citation template diff"
         );
     }
 }

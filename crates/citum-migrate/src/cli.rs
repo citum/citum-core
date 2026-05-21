@@ -15,6 +15,32 @@ pub(crate) struct CliArgs {
     pub(crate) live_infer_backend: template_resolver::LiveInferBackend,
     pub(crate) template_dir: Option<PathBuf>,
     pub(crate) min_template_confidence: f64,
+    /// Optional sidecar path for the machine-readable migration evidence
+    /// record. When set, the file is written alongside the migrated YAML.
+    /// Default off keeps the CLI surface deterministic for existing callers.
+    pub(crate) emit_evidence: Option<PathBuf>,
+    /// Family-candidate routing mode for styles where no parent link is
+    /// available in the source CSL. `Off` (default) preserves standalone
+    /// output; `Auto` promotes any reverse-template-link the lineage resolver
+    /// discovered; `Explicit(id)` forces the given canonical id.
+    pub(crate) family_candidate: FamilyCandidateMode,
+    /// When set alongside a promoted family-candidate parent, emit a minimal
+    /// wrapper form (info + extends only) instead of the full diff. Default
+    /// off preserves full diff behavior; used by the evidence-driven
+    /// compression harness to derive output-driven minima.
+    pub(crate) minimize_wrapper: bool,
+}
+
+/// CLI selection mode for `--family-candidate`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) enum FamilyCandidateMode {
+    /// Standalone migration only; do not promote any discovered candidate.
+    Off,
+    /// Promote whatever the lineage resolver discovered via reverse template
+    /// link scan.
+    Auto,
+    /// Force the supplied canonical id as the family-candidate parent.
+    Explicit(String),
 }
 
 fn parse_template_mode_arg(value: &str) -> template_resolver::TemplateMode {
@@ -34,6 +60,26 @@ fn parse_live_infer_backend_arg(value: &str) -> template_resolver::LiveInferBack
             tracing::debug!("Error: {msg}");
             std::process::exit(1);
         }
+    }
+}
+
+fn parse_path_arg(next: Option<&String>, flag: &str) -> PathBuf {
+    let Some(val) = next else {
+        tracing::debug!("Error: {flag} requires a path argument");
+        std::process::exit(1);
+    };
+    PathBuf::from(val)
+}
+
+fn parse_family_candidate_arg(next: Option<&String>) -> FamilyCandidateMode {
+    let Some(val) = next else {
+        tracing::debug!("Error: --family-candidate requires an argument (off|auto|<style-id>)");
+        std::process::exit(1);
+    };
+    match val.as_str() {
+        "off" => FamilyCandidateMode::Off,
+        "auto" => FamilyCandidateMode::Auto,
+        explicit => FamilyCandidateMode::Explicit(explicit.to_string()),
     }
 }
 
@@ -66,6 +112,9 @@ pub(crate) fn parse_cli_args(args: &[String]) -> CliArgs {
     let mut live_infer_backend = template_resolver::LiveInferBackend::Auto;
     let mut template_dir: Option<PathBuf> = None;
     let mut min_template_confidence = 0.70_f64;
+    let mut emit_evidence: Option<PathBuf> = None;
+    let mut family_candidate = FamilyCandidateMode::Off;
+    let mut minimize_wrapper = false;
 
     let mut iter = args.iter().skip(1).peekable();
     while let Some(arg) = iter.next() {
@@ -114,6 +163,13 @@ pub(crate) fn parse_cli_args(args: &[String]) -> CliArgs {
                     std::process::exit(1);
                 }
             }
+            "--emit-evidence" => emit_evidence = Some(parse_path_arg(iter.next(), arg)),
+            "--family-candidate" => {
+                family_candidate = parse_family_candidate_arg(iter.next());
+            }
+            "--minimize-wrapper" => {
+                minimize_wrapper = true;
+            }
             arg if !arg.starts_with('-') => {
                 path = arg.to_string();
             }
@@ -133,6 +189,9 @@ pub(crate) fn parse_cli_args(args: &[String]) -> CliArgs {
         live_infer_backend,
         template_dir,
         min_template_confidence,
+        emit_evidence,
+        family_candidate,
+        minimize_wrapper,
     }
 }
 
@@ -156,4 +215,13 @@ pub(super) fn print_help(program_name: &str) {
         "  --template-dir <path>           Override directory for hand-authored templates"
     );
     tracing::debug!("  --min-template-confidence <n>   Minimum inferred confidence [0.0, 1.0]");
+    tracing::debug!(
+        "  --emit-evidence <path>          Write machine-readable migration evidence JSON to <path>"
+    );
+    tracing::debug!(
+        "  --family-candidate <mode>       Route through discovered family parent: off|auto|<id>"
+    );
+    tracing::debug!(
+        "  --minimize-wrapper              Emit minimal wrapper (info + extends only) when promoting family-candidate"
+    );
 }

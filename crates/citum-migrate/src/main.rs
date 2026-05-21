@@ -14,13 +14,14 @@ use bib_postprocess::{
     is_inferred_bib_source, merge_inferred_type_templates, postprocess_inferred_bibliography,
 };
 use citation_validate::validate_and_normalize_inferred_citations;
-use cli::{CliArgs, parse_cli_args};
+use cli::{CliArgs, FamilyCandidateMode, parse_cli_args};
 use template_diff::{TypeTemplateMap, build_type_variants};
 
 use citum_migrate::{
     OptionsExtractor, analysis,
     compilation::{self, XmlCompilationOutput as XmlFallback},
     debug_output::DebugOutputFormatter,
+    evidence::EmittedForm,
     fixups::{
         ensure_numeric_locator_citation_component, ensure_personal_communication_omitted,
         move_group_wrap_to_citation_items, normalize_author_date_locator_citation_component,
@@ -166,7 +167,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let doc = Document::parse(&text)?;
     let legacy_style = parse_style(doc.root_element())?;
 
-    let lineage = StyleLineage::resolve(path, &workspace_root, &legacy_style.info.links)?;
+    let mut lineage = StyleLineage::resolve(path, &workspace_root, &legacy_style.info.links)?;
+    apply_family_candidate_routing(&mut lineage, &workspace_root, &cli.family_candidate, path)?;
 
     tracing::debug!("Migrating {path} to Citum...");
     tracing::debug!(
@@ -248,10 +250,150 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             citation_ibid_override,
         },
     );
-    let style = lineage.apply_to_migrated_style(standalone_style)?;
+    // Measure the standalone form first so the evidence record can report
+    // the compression delta without re-running the pipeline. Cheap: one YAML
+    // serialization of an in-memory value.
+    let standalone_lines = count_yaml_lines(&standalone_style)?;
+
+    let style = if cli.minimize_wrapper {
+        lineage.apply_to_migrated_style_minimized(standalone_style, true)?
+    } else {
+        lineage.apply_to_migrated_style(standalone_style)?
+    };
+    let emitted_lines = count_yaml_lines(&style)?;
+
+    if let Some(evidence_path) = cli.emit_evidence.as_deref() {
+        write_evidence_sidecar(
+            evidence_path,
+            &lineage,
+            standalone_lines,
+            emitted_lines,
+            cli.minimize_wrapper,
+        )?;
+    }
 
     output_style_and_debug(&style, cli.debug_variable.as_deref(), &tracker)?;
     Ok(())
+}
+
+/// Promote a discovered family-candidate parent into the lineage's active
+/// routing slot when the CLI mode requests it.
+fn apply_family_candidate_routing(
+    lineage: &mut StyleLineage,
+    workspace_root: &Path,
+    mode: &FamilyCandidateMode,
+    path: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    match mode {
+        FamilyCandidateMode::Off => {}
+        FamilyCandidateMode::Auto => {
+            let promoted = lineage.promote_family_candidate(workspace_root, None)?;
+            if !promoted {
+                tracing::debug!(
+                    "No family-candidate parent discovered for {path}; staying standalone."
+                );
+            }
+        }
+        FamilyCandidateMode::Explicit(id) => {
+            lineage.promote_family_candidate(workspace_root, Some(id))?;
+        }
+    }
+    Ok(())
+}
+
+/// Build the migration evidence record and write it as a JSON sidecar at the
+/// CLI-supplied path. Centralizes the sidecar policy so `main` stays compact.
+fn write_evidence_sidecar(
+    evidence_path: &Path,
+    lineage: &StyleLineage,
+    standalone_lines: usize,
+    emitted_lines: usize,
+    minimized: bool,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let emitted_form = describe_emitted_form(lineage, minimized);
+    // Classify which template-bearing scopes the wrapper retained vs
+    // inherited from the parent. The minimize path drops every
+    // template-bearing scope; the regular wrapper path either preserves
+    // them (`preserve_template_deltas: true`) or discards them
+    // (`preserve_template_deltas: false`). Standalone output has no
+    // template-bearing inheritance to report.
+    let (preserved, discarded) = classify_template_paths(&emitted_form);
+    let evidence = lineage.build_evidence(
+        standalone_lines,
+        emitted_form,
+        emitted_lines,
+        preserved,
+        discarded,
+    );
+    let json = serde_json::to_string_pretty(&evidence)?;
+    fs::write(evidence_path, json)?;
+    Ok(())
+}
+
+/// Snapshot of the dotted-path representation of the template-bearing scopes
+/// the migrator tracks. Mirrors `lineage::TEMPLATE_BEARING_PATHS` so the
+/// evidence record stays meaningful even when callers don't have direct
+/// access to that internal constant.
+const TEMPLATE_BEARING_PATH_LABELS: &[&str] = &[
+    "templates",
+    "citation.template",
+    "citation.type-variants",
+    "citation.integral.template",
+    "citation.integral.type-variants",
+    "citation.non-integral.template",
+    "citation.non-integral.type-variants",
+    "bibliography.template",
+    "bibliography.type-variants",
+];
+
+fn classify_template_paths(emitted: &EmittedForm) -> (Vec<String>, Vec<String>) {
+    let labels: Vec<String> = TEMPLATE_BEARING_PATH_LABELS
+        .iter()
+        .map(|s| (*s).to_string())
+        .collect();
+    match emitted {
+        EmittedForm::Standalone => (Vec::new(), Vec::new()),
+        EmittedForm::ExistingWrapper {
+            preserve_template_deltas,
+            minimized,
+            ..
+        } => {
+            if *minimized || !*preserve_template_deltas {
+                (Vec::new(), labels)
+            } else {
+                (labels, Vec::new())
+            }
+        }
+    }
+}
+
+/// Count the lines of a style's YAML serialization. Used as a cheap reference
+/// for the migration evidence record; counting on the in-memory value avoids
+/// re-reading the final emitted file.
+fn count_yaml_lines(style: &Style) -> Result<usize, Box<dyn std::error::Error>> {
+    let yaml = serde_yaml::to_string(style)?;
+    Ok(yaml.lines().count())
+}
+
+/// Translate the lineage's effective `MigrationOutputPlan` into the
+/// reviewer-facing `EmittedForm` enum used by the evidence record.
+fn describe_emitted_form(lineage: &StyleLineage, minimized: bool) -> EmittedForm {
+    match lineage.output_plan() {
+        MigrationOutputPlan::Standalone => EmittedForm::Standalone,
+        MigrationOutputPlan::ExistingWrapper {
+            parent_style_id,
+            preserve_template_deltas,
+            ..
+        } => EmittedForm::ExistingWrapper {
+            parent_style_id,
+            preserve_template_deltas,
+            minimized,
+        },
+        // Multi-artifact plans are not yet wired through `apply_to_migrated_style`;
+        // they remain rare and fall back to the standalone description for
+        // evidence reporting purposes.
+        _ => EmittedForm::Standalone,
+    }
 }
 
 /// Extracts style name from path and resolves templates.

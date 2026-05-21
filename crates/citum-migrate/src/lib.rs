@@ -20,6 +20,8 @@ pub mod compilation;
 pub mod compressor;
 /// Debug output formatting.
 pub mod debug_output;
+/// Machine-readable evidence describing migration lineage decisions.
+pub mod evidence;
 /// Post-migration template fixup helpers.
 pub mod fixups;
 /// Style metadata extraction.
