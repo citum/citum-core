@@ -69,7 +69,7 @@ pub(crate) struct Args {
     ///
     /// Rejects inferred fragments below this threshold; the migration then
     /// falls back to XML template compilation for that section.
-    #[arg(long, value_name = "N", default_value = "0.70")]
+    #[arg(long, value_name = "N", default_value = "0.70", value_parser = parse_confidence)]
     pub(crate) min_template_confidence: f64,
 
     /// Write machine-readable migration evidence JSON to PATH
@@ -112,6 +112,17 @@ impl FamilyCandidateMode {
             Some("auto") => Self::Auto,
             Some(id) => Self::Explicit(id.to_string()),
         }
+    }
+}
+
+fn parse_confidence(s: &str) -> Result<f64, String> {
+    let v: f64 = s
+        .parse()
+        .map_err(|_| format!("'{s}' is not a valid number"))?;
+    if (0.0..=1.0).contains(&v) {
+        Ok(v)
+    } else {
+        Err(format!("'{v}' is out of range; must be in [0.0, 1.0]"))
     }
 }
 
