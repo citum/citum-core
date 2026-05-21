@@ -41,6 +41,7 @@ const STYLES_DIR = path.join(WORKSPACE_ROOT, 'styles');
 
 const SENTINELS = [
   'apa',
+  'apa-6th-edition',
   'elsevier-harvard',
   'elsevier-with-titles',
   'elsevier-vancouver',
@@ -142,18 +143,112 @@ function migrateStyleToYaml(styleName) {
   if (!fs.existsSync(cslPath)) {
     return { error: 'missing_legacy_style', details: cslPath };
   }
-  const proc = spawnSync(
-    'cargo',
-    ['run', '-q', '--bin', 'citum-migrate', '--', cslPath],
-    { cwd: WORKSPACE_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
-  );
-  if (proc.status !== 0) {
-    return {
-      error: 'migrate_failed',
-      details: (proc.stderr || '').trim() || `exit=${proc.status}`,
-    };
+  const evidenceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'citum-evidence-'));
+  const evidenceTmp = path.join(evidenceDir, `${styleName}.evidence.json`);
+  try {
+    const proc = spawnSync(
+      'cargo',
+      [
+        'run', '-q', '--bin', 'citum-migrate', '--',
+        '--emit-evidence', evidenceTmp,
+        cslPath,
+      ],
+      { cwd: WORKSPACE_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
+    );
+    if (proc.status !== 0) {
+      return {
+        error: 'migrate_failed',
+        details: (proc.stderr || '').trim() || `exit=${proc.status}`,
+      };
+    }
+    let evidence = null;
+    try {
+      if (fs.existsSync(evidenceTmp)) {
+        evidence = JSON.parse(fs.readFileSync(evidenceTmp, 'utf8'));
+      }
+    } catch (err) {
+      // Non-fatal: scorecard still scores YAML even without an evidence sidecar.
+      evidence = { error: 'evidence_parse_failed', details: err.message };
+    }
+    return { yaml: proc.stdout, evidence };
+  } finally {
+    // Always clean up the evidence tmp dir, even on early-return error paths.
+    fs.rmSync(evidenceDir, { recursive: true, force: true });
   }
-  return { yaml: proc.stdout };
+}
+
+/**
+ * Attempt minimization for a style with a discovered family-candidate parent.
+ * Runs `citum-migrate --family-candidate auto --minimize-wrapper` and returns
+ * the minimized YAML + evidence. Caller is responsible for oracle-verifying
+ * the result before swapping it in. Returns null when the style has no
+ * candidate (no minimization possible) or migration fails.
+ */
+function attemptMinimization(styleName) {
+  const cslPath = path.join(LEGACY_DIR, `${styleName}.csl`);
+  if (!fs.existsSync(cslPath)) return null;
+  const evidenceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'citum-minev-'));
+  const evidenceTmp = path.join(evidenceDir, `${styleName}.evidence.json`);
+  try {
+    const proc = spawnSync(
+      'cargo',
+      [
+        'run', '-q', '--bin', 'citum-migrate', '--',
+        '--family-candidate', 'auto',
+        '--minimize-wrapper',
+        '--emit-evidence', evidenceTmp,
+        cslPath,
+      ],
+      { cwd: WORKSPACE_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
+    );
+    if (proc.status !== 0) return null;
+    let evidence = null;
+    try {
+      if (fs.existsSync(evidenceTmp)) {
+        evidence = JSON.parse(fs.readFileSync(evidenceTmp, 'utf8'));
+      }
+    } catch {
+      evidence = null;
+    }
+    return { yaml: proc.stdout, evidence };
+  } finally {
+    fs.rmSync(evidenceDir, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Run the migrate-batch oracle on a pre-built YAML by writing it to a temp
+ * file named after the style and invoking `oracle.js` with that path.
+ * Returns `{ citations: { passed, total }, bibliography: { passed, total } }`
+ * or `null` if the oracle fails.
+ */
+function oracleForYaml(styleName, yamlText) {
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'citum-min-oracle-'));
+  const yamlPath = path.join(tmpDir, `${styleName}.yaml`);
+  try {
+    fs.writeFileSync(yamlPath, yamlText);
+    const proc = spawnSync(
+      'node',
+      [path.join(WORKSPACE_ROOT, 'scripts', 'oracle.js'), yamlPath, '--json'],
+      { cwd: WORKSPACE_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
+    );
+    // oracle.js exits with status 1 whenever fidelity is below 100%, even
+    // when stdout contains a well-formed JSON report. Treat the run as
+    // successful as long as the stdout parses and carries the required
+    // citation/bibliography aggregates; surface failure only when the JSON
+    // itself is malformed or missing.
+    if (!proc.stdout) return null;
+    const parsed = JSON.parse(proc.stdout);
+    if (!parsed.citations && !parsed.bibliography) return null;
+    return {
+      citations: parsed.citations || null,
+      bibliography: parsed.bibliography || null,
+    };
+  } catch {
+    return null;
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
 }
 
 function stripCustomYamlTags(yamlText) {
@@ -373,6 +468,31 @@ function buildMarkdown(report) {
   }
   lines.push('');
   lines.push('Columns: Migrated/Public SQI is a simple mean of `concision`, `fallbackRobustness`, and `presetUsage` (0–100). LOC is migrated YAML output lines. dup/near/rep counts come from `qualityBreakdown.subscores.concision` diagnostics in `report-core.js`.');
+  const candidates = report.results.filter((row) =>
+    Array.isArray(row.evidence?.discovered_parents) && row.evidence.discovered_parents.length > 0
+  );
+  if (candidates.length > 0) {
+    lines.push('');
+    lines.push('## Compression candidates');
+    lines.push('');
+    lines.push('Styles where the migrator discovered a candidate parent via the registry, a source CSL link, or a reverse `<info><link rel="template">` in an embedded canonical style. The scorecard tries the minimized wrapper form (`--family-candidate auto --minimize-wrapper`) for each candidate and accepts it only when oracle citation pass ≥ standalone AND bibliography pass ≥ standalone.');
+    lines.push('');
+    lines.push('| Style | Candidate parent | Discovery source | Standalone LOC → Minimized LOC | Standalone fidelity → Minimized fidelity | Accepted |');
+    lines.push('|---|---|---|---:|---|:---:|');
+    for (const row of candidates) {
+      const candidate = row.evidence.discovered_parents[0];
+      const m = row.minimization;
+      const standaloneLoc = m?.standalone?.outputLines ?? row.evidence.standalone_output_lines ?? '-';
+      const minimizedLoc = m?.minimized?.outputLines ?? '-';
+      const fidShort = (fid) => fid
+        ? `${fid.citations?.passed ?? '-'}/${fid.citations?.total ?? '-'} • ${fid.bibliography?.passed ?? '-'}/${fid.bibliography?.total ?? '-'}`
+        : '-';
+      const standaloneFid = fidShort(m?.standalone);
+      const minimizedFid = fidShort(m?.minimized);
+      const accepted = m?.accepted === true ? '✓' : (m?.attempted ? '✗' : '–');
+      lines.push(`| ${row.style} | ${candidate.canonical_id} | ${candidate.source} | ${standaloneLoc} → ${minimizedLoc} | ${standaloneFid} → ${minimizedFid} | ${accepted} |`);
+    }
+  }
   if (report.diagnostics?.migratedOutputs?.length) {
     lines.push('');
     lines.push('## Output Diagnostics');
@@ -416,6 +536,9 @@ function main() {
       } finally {
         cleanup();
       }
+      if (migrated.evidence) {
+        row.evidence = migrated.evidence;
+      }
     }
     const publicLoaded = loadPublicStyle(style);
     row.public = scoreYaml(publicLoaded);
@@ -426,6 +549,72 @@ function main() {
         bibliography: fidelityRow.bibliography,
         error: fidelityRow.error || null,
       };
+    }
+    // Attempt evidence-driven wrapper minimization only for styles the
+    // converter currently emits as standalone with a discovered candidate
+    // parent. Styles already routed through `ExistingWrapper` at lineage
+    // time (registry aliases, descendant wrappers) need no further
+    // compression and would otherwise show as no-op minimization.
+    const isStandaloneEmission = row.evidence?.emitted_form === 'standalone';
+    if (
+      !args.skipFidelity
+      && !migrated.error
+      && isStandaloneEmission
+      && Array.isArray(row.evidence?.discovered_parents)
+      && row.evidence.discovered_parents.length > 0
+    ) {
+      const min = attemptMinimization(style);
+      if (min && min.yaml) {
+        const minOracle = oracleForYaml(style, min.yaml);
+        const baseCit = row.fidelity?.citations?.passed ?? 0;
+        const baseBib = row.fidelity?.bibliography?.passed ?? 0;
+        const minCit = minOracle?.citations?.passed ?? -1;
+        const minBib = minOracle?.bibliography?.passed ?? -1;
+        const minLoc = min.evidence?.emitted_output_lines ?? Number.MAX_SAFE_INTEGER;
+        const baseLoc = row.evidence?.standalone_output_lines
+          ?? row.migrated?.diagnostics?.outputLines
+          ?? Number.MAX_SAFE_INTEGER;
+        // Acceptance requires: fidelity holds (citations and bibliography
+        // pass counts do not regress), and the minimized form is actually
+        // smaller than standalone. Equal-size results indicate the
+        // converter did not promote the family candidate (e.g. mdpi's
+        // template-link parent path bypasses the minimize branch); marking
+        // those as compressed would be misleading.
+        const accepted = minOracle != null
+          && minCit >= baseCit
+          && minBib >= baseBib
+          && minLoc < baseLoc;
+        row.minimization = {
+          attempted: true,
+          accepted,
+          standalone: {
+            outputLines: row.migrated?.diagnostics?.outputLines ?? null,
+            citations: row.fidelity?.citations ?? null,
+            bibliography: row.fidelity?.bibliography ?? null,
+          },
+          minimized: {
+            outputLines: min.evidence?.emitted_output_lines ?? null,
+            citations: minOracle?.citations ?? null,
+            bibliography: minOracle?.bibliography ?? null,
+          },
+        };
+        if (accepted) {
+          // Swap row's reported migrated form to the minimized YAML so SQI
+          // and LOC reflect what the converter can actually emit.
+          const { loaded, cleanup } = loadStyleFromYamlText(style, min.yaml);
+          try {
+            row.migrated = scoreYaml(loaded, min.yaml);
+          } finally {
+            cleanup();
+          }
+          row.evidence = min.evidence;
+          row.fidelity = {
+            citations: minOracle.citations,
+            bibliography: minOracle.bibliography,
+            error: null,
+          };
+        }
+      }
     }
     results.push(row);
   }

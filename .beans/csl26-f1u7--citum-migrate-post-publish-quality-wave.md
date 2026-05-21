@@ -5,7 +5,7 @@ status: in-progress
 type: epic
 priority: high
 created_at: 2026-05-20T17:04:36Z
-updated_at: 2026-05-20T22:17:05Z
+updated_at: 2026-05-20T23:36:28Z
 ---
 
 Post-publish converter quality wave. Drive citum-migrate output toward high SQI while preserving 100% fidelity on the established portfolio gate. Strategy in `~/.claude/plans/with-crates-now-published-reflective-snowglobe.md`:
@@ -31,8 +31,9 @@ Each phase is one PR; this epic tracks the wave end-to-end. Sentinels in the PR1
 | PR1 | [[csl26-e7yw]] | completed | [#763](https://github.com/citum/citum-core/pull/763) — scorecard + alias-wrapper + atomic-config diff. Migrated mean SQI `93.57` -> `98.17`. |
 | PR2 | [[csl26-kqji]] | completed | [#766](https://github.com/citum/citum-core/pull/766) — descendant-of-preset-base wrapper rewrite. Adds template-parent routing in `lineage.rs` and `chicago-notes`/`oscola` sentinels. |
 | PR3 | [[csl26-39tm]] | in-progress | Output-driven compression + evidence emission. First target: apa-6th-edition (<1,500 LOC, no APA-7 aliasing). |
-| PR4 | (not yet filed) | — | Author a Vancouver / numeric-journal preset base and repeat the rewrite pass for the numeric cluster (`american-medical-association`, `karger`, `iop`, `thieme`, `mdpi`). |
-| PR5 | (not yet filed) | — | Auto-derive candidate family bases from cluster fingerprints. |
+| PR4 | [[csl26-ly8d]] | todo | Extend `--minimize-wrapper` to template-link and independent-parent-link candidates (mdpi, numeric cluster). PR3 already delivered the reverse-template-link case for apa-6th-edition. |
+| PR5 | (not yet filed) | — | Author a Vancouver / numeric-journal preset base and repeat the rewrite pass for the numeric cluster (`american-medical-association`, `karger`, `iop`, `thieme`, `mdpi`). |
+| PR6 | (not yet filed) | — | Auto-derive candidate family bases from cluster fingerprints. |
 
 ## Strategy doc
 
