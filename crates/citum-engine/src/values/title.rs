@@ -7,20 +7,25 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! and text-case transforms.
 
 use crate::reference::Reference;
-use crate::render::rich_text::render_djot_inline_with_transform;
+use crate::render::format::unicode_quote_marks;
+use crate::render::rich_text::{
+    InlineRenderContext, render_djot_inline_with_transform_and_context,
+};
 use crate::values::text_case::{self, apply_text_case, capitalize_first_word};
-use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
+use crate::values::{
+    ComponentValues, ProcHints, ProcValues, RenderOptions, effective_component_language,
+};
 use citum_schema::options::titles::TextCase;
 use citum_schema::reference::ClassExtension;
 use citum_schema::reference::types::{StructuredTitle, Subtitle, Title};
-use citum_schema::template::{TemplateTitle, TitleForm, TitleType};
+use citum_schema::template::{TemplateComponent, TemplateTitle, TitleForm, TitleType};
 
 /// Converts straight apostrophes and double quotes to curly quotes when the
 /// surrounding context is unambiguous.
 ///
 /// Ambiguous characters are preserved as straight quotes so titles containing
 /// measurements or other non-quotation uses do not get rewritten arbitrarily.
-fn smarten_title_quotes(input: &str) -> String {
+fn smarten_title_quotes_at_depth(input: &str, quote_depth: usize) -> String {
     let mut out = String::with_capacity(input.len());
     let mut it = input.char_indices().peekable();
     let mut prev: Option<char> = None;
@@ -44,30 +49,35 @@ fn smarten_title_quotes(input: &str) -> String {
 
         match ch {
             '\'' => {
+                let (open_quote, close_quote) = unicode_quote_marks(quote_depth + 1);
                 if (prev_is_alpha && next_is_alpha) || (prev_opens_quote && next_is_digit) {
                     out.push('\u{2019}');
                 } else if prev_opens_quote && next_is_alnum {
-                    out.push('\u{2018}');
+                    out.push_str(open_quote);
                     open_single_quotes += 1;
                 } else if (open_single_quotes > 0 || prev_is_alpha || prev_is_digit)
                     && next_closes_quote
                 {
-                    out.push('\u{2019}');
+                    out.push_str(close_quote);
                     open_single_quotes = open_single_quotes.saturating_sub(1);
                 } else {
                     out.push('\'');
                 }
             }
             '"' => {
+                let (open_quote, close_quote) =
+                    unicode_quote_marks(quote_depth + open_double_quotes);
                 if prev_opens_quote && next_is_alnum {
-                    out.push('\u{201C}');
+                    out.push_str(open_quote);
                     open_double_quotes += 1;
                 } else if open_double_quotes > 0 && prev_can_close_double_quote && next_closes_quote
                 {
-                    out.push('\u{201D}');
+                    let close_depth = quote_depth + open_double_quotes.saturating_sub(1);
+                    let (_, close_quote) = unicode_quote_marks(close_depth);
+                    out.push_str(close_quote);
                     open_double_quotes -= 1;
                 } else if prev_is_alpha && next_closes_quote {
-                    out.push('\u{201D}');
+                    out.push_str(close_quote);
                 } else {
                     out.push('"');
                 }
@@ -134,7 +144,7 @@ fn looks_like_djot_markup(value: &str) -> bool {
 ///
 /// The closure is used as the Djot text-leaf transform, so `.nocase` spans
 /// bypass it automatically via the rich-text renderer.
-fn make_case_transform(case: TextCase) -> impl FnMut(&str) -> String {
+fn make_case_transform(case: TextCase, quote_depth: usize) -> impl FnMut(&str) -> String {
     let mut seen_alpha = false;
     move |text: &str| {
         let cased = match case {
@@ -153,7 +163,7 @@ fn make_case_transform(case: TextCase) -> impl FnMut(&str) -> String {
             }
             _ => apply_text_case(text, case),
         };
-        smarten_title_quotes(&cased)
+        smarten_title_quotes_at_depth(&cased, quote_depth)
     }
 }
 
@@ -163,16 +173,27 @@ fn render_part_with_case<F: crate::render::format::OutputFormat<Output = String>
     value: &str,
     fmt: &F,
     case: Option<TextCase>,
+    quote_depth: usize,
 ) -> (String, bool) {
+    let context = InlineRenderContext { quote_depth };
     if looks_like_djot_markup(value) {
         match case {
-            Some(tc) => render_djot_inline_with_transform(value, fmt, make_case_transform(tc)),
-            None => render_djot_inline_with_transform(value, fmt, smarten_title_quotes),
+            Some(tc) => render_djot_inline_with_transform_and_context(
+                value,
+                fmt,
+                context,
+                make_case_transform(tc, quote_depth),
+            ),
+            None => {
+                render_djot_inline_with_transform_and_context(value, fmt, context, move |text| {
+                    smarten_title_quotes_at_depth(text, quote_depth)
+                })
+            }
         }
     } else {
         let result = match case {
-            Some(tc) => smarten_title_quotes(&apply_text_case(value, tc)),
-            None => smarten_title_quotes(value),
+            Some(tc) => smarten_title_quotes_at_depth(&apply_text_case(value, tc), quote_depth),
+            None => smarten_title_quotes_at_depth(value, quote_depth),
         };
         (result, false)
     }
@@ -187,8 +208,9 @@ fn render_structured_title<F: crate::render::format::OutputFormat<Output = Strin
     fmt: &F,
     case: Option<TextCase>,
     short: bool,
+    quote_depth: usize,
 ) -> (String, bool) {
-    let (main_rendered, has_link) = render_part_with_case(&st.main, fmt, case);
+    let (main_rendered, has_link) = render_part_with_case(&st.main, fmt, case, quote_depth);
     if short {
         return (main_rendered, has_link);
     }
@@ -207,7 +229,7 @@ fn render_structured_title<F: crate::render::format::OutputFormat<Output = Strin
     };
 
     for sub in subs {
-        let (sub_rendered, sub_link) = render_part_with_case(sub, fmt, subtitle_case);
+        let (sub_rendered, sub_link) = render_part_with_case(sub, fmt, subtitle_case, quote_depth);
         has_link |= sub_link;
         parts.push(sub_rendered);
     }
@@ -244,6 +266,24 @@ fn resolve_effective_text_case(
     None
 }
 
+fn effective_title_quote_depth(
+    template: &TemplateTitle,
+    reference: &Reference,
+    options: &RenderOptions<'_>,
+) -> usize {
+    let component = TemplateComponent::Title(template.clone());
+    let item_language = effective_component_language(reference, &component);
+    let mut rendering = crate::render::component::get_title_category_rendering(
+        &template.title,
+        options.ref_type.as_deref(),
+        item_language.as_deref(),
+        options.config,
+    )
+    .unwrap_or_default();
+    rendering.merge(&template.rendering);
+    usize::from(rendering.quote == Some(true))
+}
+
 /// Apply language-aware fallback: non-English → as-is for English-specific transforms.
 fn apply_language_fallback(case: TextCase, reference: &Reference) -> TextCase {
     let lang = reference.language();
@@ -261,19 +301,25 @@ impl ComponentValues for TemplateTitle {
             return None;
         }
 
+        let quote_depth = effective_title_quote_depth(self, reference, options);
+
         if matches!(self.form, Some(TitleForm::Short))
             && let Some(short_title) = parent_short_title(reference, &self.title)
             && !short_title.is_empty()
         {
             let (value, pre_formatted) = if looks_like_djot_markup(&short_title) {
-                let (v, _) = render_djot_inline_with_transform(
+                let (v, _) = render_djot_inline_with_transform_and_context(
                     &short_title,
                     &F::default(),
-                    smarten_title_quotes,
+                    InlineRenderContext { quote_depth },
+                    move |text| smarten_title_quotes_at_depth(text, quote_depth),
                 );
                 (v, true)
             } else {
-                (smarten_title_quotes(&short_title), false)
+                (
+                    smarten_title_quotes_at_depth(&short_title, quote_depth),
+                    false,
+                )
             };
             let value = crate::values::apply_abbreviation(value, options.abbreviation_map);
             return Some(ProcValues {
@@ -288,8 +334,13 @@ impl ComponentValues for TemplateTitle {
 
         let title = resolve_primary_title(reference, &self.title)?;
         let effective_case = resolve_effective_text_case(self, reference, options);
-        let (value, has_explicit_link, pre_formatted) =
-            render_title_variant::<F>(&title, self.form.as_ref(), effective_case, options);
+        let (value, has_explicit_link, pre_formatted) = render_title_variant::<F>(
+            &title,
+            self.form.as_ref(),
+            effective_case,
+            options,
+            quote_depth,
+        );
 
         if value.is_empty() {
             return None;
@@ -343,12 +394,14 @@ fn render_title_variant<F: crate::render::format::OutputFormat<Output = String>>
     form: Option<&TitleForm>,
     effective_case: Option<TextCase>,
     options: &RenderOptions<'_>,
+    quote_depth: usize,
 ) -> (String, bool, bool) {
     let fmt = F::default();
     match title {
         Title::Structured(st) => {
             let short = matches!(form, Some(TitleForm::Short));
-            let (value, has_link) = render_structured_title(st, &fmt, effective_case, short);
+            let (value, has_link) =
+                render_structured_title(st, &fmt, effective_case, short, quote_depth);
             let pre_formatted = if short {
                 looks_like_djot_markup(&st.main)
             } else {
@@ -367,13 +420,15 @@ fn render_title_variant<F: crate::render::format::OutputFormat<Output = String>>
                 preferred_script,
                 options.locale.locale.as_str(),
             );
-            let (rendered, has_link) = render_part_with_case(&value, &fmt, effective_case);
+            let (rendered, has_link) =
+                render_part_with_case(&value, &fmt, effective_case, quote_depth);
             let pre_formatted = looks_like_djot_markup(&value);
             (rendered, has_link, pre_formatted)
         }
         _ => {
             let value = title_text(title, form);
-            let (rendered, has_link) = render_part_with_case(&value, &fmt, effective_case);
+            let (rendered, has_link) =
+                render_part_with_case(&value, &fmt, effective_case, quote_depth);
             let pre_formatted = looks_like_djot_markup(&value);
             (rendered, has_link, pre_formatted)
         }

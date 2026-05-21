@@ -18,7 +18,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 mod tests {
     use crate::render::component::{ProcTemplateComponent, render_component_with_format};
     use crate::render::djot::Djot;
+    use crate::render::format::OutputFormat;
     use crate::render::html::Html;
+    use crate::render::latex::Latex;
+    use crate::render::plain::PlainText;
     use crate::render::typst::Typst;
     use citum_schema::{tc_contributor, tc_title, tc_variable};
 
@@ -78,6 +81,28 @@ mod tests {
 
         let result = render_component_with_format::<Djot>(&component);
         assert_eq!(result, "[_My Title_]{.citum-title}");
+    }
+
+    #[test]
+    fn test_unicode_formats_alternate_quote_depth() {
+        let plain = PlainText;
+        let html = Html;
+        let djot = Djot;
+        let typst = Typst;
+
+        assert_eq!(plain.quote_with_depth("outer".to_string(), 0), "“outer”");
+        assert_eq!(plain.quote_with_depth("inner".to_string(), 1), "‘inner’");
+        assert_eq!(html.quote_with_depth("inner".to_string(), 1), "‘inner’");
+        assert_eq!(djot.quote_with_depth("inner".to_string(), 1), "‘inner’");
+        assert_eq!(typst.quote_with_depth("inner".to_string(), 1), "‘inner’");
+    }
+
+    #[test]
+    fn test_latex_quote_depth_uses_tex_delimiters() {
+        let latex = Latex;
+
+        assert_eq!(latex.quote_with_depth("outer".to_string(), 0), "``outer''");
+        assert_eq!(latex.quote_with_depth("inner".to_string(), 1), "`inner'");
     }
 
     #[test]

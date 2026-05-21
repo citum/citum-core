@@ -7,6 +7,18 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 
 use citum_schema::template::WrapPunctuation;
 
+/// Return Unicode quote marks for a nesting depth.
+///
+/// Even depths use outer double quotes; odd depths use inner single quotes.
+#[must_use]
+pub fn unicode_quote_marks(depth: usize) -> (&'static str, &'static str) {
+    if depth.is_multiple_of(2) {
+        ("\u{201C}", "\u{201D}")
+    } else {
+        ("\u{2018}", "\u{2019}")
+    }
+}
+
 /// Extra attributes applied to semantic wrappers when a renderer supports them.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SemanticAttribute {
@@ -54,8 +66,24 @@ pub trait OutputFormat: Default + Clone {
     /// Render content as superscript text.
     fn superscript(&self, content: Self::Output) -> Self::Output;
 
-    /// Render content enclosed in quotation marks.
-    fn quote(&self, content: Self::Output) -> Self::Output;
+    /// Return the opening and closing quote delimiters for a nesting depth.
+    ///
+    /// Depth 0 is an outer quote pair, depth 1 is the first inner quote pair,
+    /// and deeper levels alternate between those two pairs.
+    fn quote_marks(&self, depth: usize) -> (&'static str, &'static str) {
+        unicode_quote_marks(depth)
+    }
+
+    /// Render content enclosed in quotation marks at a specific nesting depth.
+    fn quote_with_depth(&self, content: Self::Output, depth: usize) -> Self::Output {
+        let (open, close) = self.quote_marks(depth);
+        self.affix(open, content, close)
+    }
+
+    /// Render content enclosed in outer quotation marks.
+    fn quote(&self, content: Self::Output) -> Self::Output {
+        self.quote_with_depth(content, 0)
+    }
 
     /// Apply outer prefix and suffix strings to the content.
     ///
@@ -180,9 +208,6 @@ mod tests {
         }
         fn superscript(&self, content: Self::Output) -> Self::Output {
             format!("sup({content})")
-        }
-        fn quote(&self, content: Self::Output) -> Self::Output {
-            format!("quote({content})")
         }
         fn affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output {
             format!("{prefix}{content}{suffix}")

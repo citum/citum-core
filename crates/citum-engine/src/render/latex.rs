@@ -72,6 +72,14 @@ impl OutputFormat for Latex {
         format!(r"\textsuperscript{{{content}}}")
     }
 
+    fn quote_marks(&self, depth: usize) -> (&'static str, &'static str) {
+        if depth.is_multiple_of(2) {
+            ("``", "''")
+        } else {
+            ("`", "'")
+        }
+    }
+
     fn quote(&self, content: Self::Output) -> Self::Output {
         format!("``{content}''")
     }

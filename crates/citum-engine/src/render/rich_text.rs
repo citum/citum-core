@@ -8,6 +8,13 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use super::format::OutputFormat;
 use jotdown::{Attributes, Container, Event, Parser};
 
+/// Ambient context used while rendering inline rich text.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct InlineRenderContext {
+    /// Quote nesting depth inherited from an outer template wrapper.
+    pub quote_depth: usize,
+}
+
 #[derive(Default)]
 struct DjotFrame {
     children: Vec<String>,
@@ -30,6 +37,69 @@ impl DjotFrame {
     fn prev_opens_quote(&self) -> bool {
         self.last_char
             .is_none_or(|c| c.is_whitespace() || "([{\u{2018}\u{201C}'\"".contains(c))
+    }
+}
+
+fn opening_quote_depth(
+    context: InlineRenderContext,
+    current_depth: usize,
+    source_inner: bool,
+) -> usize {
+    if source_inner && current_depth <= context.quote_depth {
+        context.quote_depth + 1
+    } else {
+        current_depth
+    }
+}
+
+fn push_open_quote<F: OutputFormat<Output = String>>(frame: &mut DjotFrame, fmt: &F, depth: usize) {
+    let (open, _) = fmt.quote_marks(depth);
+    let logical_char = open.chars().next();
+    frame.push_rendered(fmt.text(open), logical_char);
+}
+
+fn push_close_quote<F: OutputFormat<Output = String>>(
+    frame: &mut DjotFrame,
+    fmt: &F,
+    depth: usize,
+) {
+    let (_, close) = fmt.quote_marks(depth);
+    let logical_char = close.chars().last();
+    frame.push_rendered(fmt.text(close), logical_char);
+}
+
+struct QuoteRenderState {
+    depth: usize,
+    stack: Vec<usize>,
+}
+
+impl QuoteRenderState {
+    fn new(context: InlineRenderContext) -> Self {
+        Self {
+            depth: context.quote_depth,
+            stack: Vec::new(),
+        }
+    }
+
+    fn render_event<F: OutputFormat<Output = String>>(
+        &mut self,
+        frame: &mut DjotFrame,
+        fmt: &F,
+        context: InlineRenderContext,
+        source_inner: bool,
+        opens_quote: bool,
+    ) {
+        if opens_quote {
+            let depth = opening_quote_depth(context, self.depth, source_inner);
+            push_open_quote(frame, fmt, depth);
+            self.stack.push(depth);
+            self.depth = depth + 1;
+        } else {
+            let fallback_depth = context.quote_depth + usize::from(source_inner);
+            let depth = self.stack.pop().unwrap_or(fallback_depth);
+            push_close_quote(frame, fmt, depth);
+            self.depth = self.stack.last().map_or(context.quote_depth, |d| d + 1);
+        }
     }
 }
 
@@ -89,13 +159,19 @@ fn handle_end_event<F: OutputFormat<Output = String>>(
     parent.has_explicit_link |= frame.has_explicit_link;
 }
 
-fn render_djot_inline_internal<F, G>(src: &str, fmt: &F, mut transform_text: G) -> (String, bool)
+fn render_djot_inline_internal<F, G>(
+    src: &str,
+    fmt: &F,
+    context: InlineRenderContext,
+    mut transform_text: G,
+) -> (String, bool)
 where
     F: OutputFormat<Output = String>,
     G: FnMut(&str) -> String,
 {
     let parser = Parser::new(src);
     let mut stack = vec![DjotFrame::default()];
+    let mut quote_state = QuoteRenderState::new(context);
 
     for event in parser {
         match event {
@@ -141,32 +217,22 @@ where
             }
             Event::LeftSingleQuote => {
                 if let Some(frame) = stack.last_mut() {
-                    frame.push_rendered(fmt.text("\u{2018}"), Some('\u{2018}'));
+                    quote_state.render_event(frame, fmt, context, true, true);
                 }
             }
             Event::RightSingleQuote => {
                 if let Some(frame) = stack.last_mut() {
-                    let quote = if frame.prev_opens_quote() {
-                        '\u{2018}'
-                    } else {
-                        '\u{2019}'
-                    };
-                    frame.push_rendered(fmt.text(&quote.to_string()), Some(quote));
+                    quote_state.render_event(frame, fmt, context, true, frame.prev_opens_quote());
                 }
             }
             Event::LeftDoubleQuote => {
                 if let Some(frame) = stack.last_mut() {
-                    frame.push_rendered(fmt.text("\u{201C}"), Some('\u{201C}'));
+                    quote_state.render_event(frame, fmt, context, false, true);
                 }
             }
             Event::RightDoubleQuote => {
                 if let Some(frame) = stack.last_mut() {
-                    let quote = if frame.prev_opens_quote() {
-                        '\u{201C}'
-                    } else {
-                        '\u{201D}'
-                    };
-                    frame.push_rendered(fmt.text(&quote.to_string()), Some(quote));
+                    quote_state.render_event(frame, fmt, context, false, frame.prev_opens_quote());
                 }
             }
             Event::Softbreak | Event::Hardbreak => {
@@ -199,7 +265,16 @@ where
 /// # Returns
 /// Formatted string with markup applied according to the `OutputFormat`'s methods
 pub fn render_djot_inline<F: OutputFormat<Output = String>>(src: &str, fmt: &F) -> String {
-    render_djot_inline_internal(src, fmt, str::to_string).0
+    render_djot_inline_internal(src, fmt, InlineRenderContext::default(), str::to_string).0
+}
+
+/// Render djot inline markup with an ambient inline rendering context.
+pub fn render_djot_inline_with_context<F: OutputFormat<Output = String>>(
+    src: &str,
+    fmt: &F,
+    context: InlineRenderContext,
+) -> String {
+    render_djot_inline_internal(src, fmt, context, str::to_string).0
 }
 
 /// Render djot inline markup while transforming text leaves and returning link metadata.
@@ -212,7 +287,21 @@ where
     F: OutputFormat<Output = String>,
     G: FnMut(&str) -> String,
 {
-    render_djot_inline_internal(src, fmt, transform_text)
+    render_djot_inline_internal(src, fmt, InlineRenderContext::default(), transform_text)
+}
+
+/// Render djot inline markup with text transforms and ambient context.
+pub(crate) fn render_djot_inline_with_transform_and_context<F, G>(
+    src: &str,
+    fmt: &F,
+    context: InlineRenderContext,
+    transform_text: G,
+) -> (String, bool)
+where
+    F: OutputFormat<Output = String>,
+    G: FnMut(&str) -> String,
+{
+    render_djot_inline_internal(src, fmt, context, transform_text)
 }
 
 /// Render org-mode inline markup by walking the orgize event stream.
@@ -347,7 +436,7 @@ mod tests {
     fn test_djot_nested_formatting_preserves_typst_markup() {
         let fmt = Typst;
         let result = render_djot_inline("_emphasized *bold* text_", &fmt);
-        assert_eq!(result, "_emphasized *bold* text_");
+        assert_eq!(result, "#emph[emphasized *bold* text]");
     }
 
     #[test]
@@ -356,7 +445,7 @@ mod tests {
         let result = render_djot_inline("[_linked emphasis_](https://example.com)", &fmt);
         assert_eq!(
             result,
-            r#"<a href="https://example.com"><i>linked emphasis</i></a>"#
+            r#"<a href="https://example.com"><em>linked emphasis</em></a>"#
         );
     }
 
@@ -365,6 +454,35 @@ mod tests {
         let fmt = PlainText;
         let result = render_djot_inline("_\"Parmenides\" dialogue_", &fmt);
         assert_eq!(result, "_“Parmenides” dialogue_");
+    }
+
+    #[test]
+    fn test_djot_quotes_with_ambient_quote_depth_use_inner_marks() {
+        let fmt = PlainText;
+        let result = render_djot_inline_with_context(
+            "\"Parmenides\" dialogue",
+            &fmt,
+            InlineRenderContext { quote_depth: 1 },
+        );
+        assert_eq!(result, "‘Parmenides’ dialogue");
+    }
+
+    #[test]
+    fn test_djot_nested_quotes_alternate_marks() {
+        let fmt = PlainText;
+        let result = render_djot_inline("\"outer \"inner\" claim\"", &fmt);
+        assert_eq!(result, "“outer ‘inner’ claim”");
+    }
+
+    #[test]
+    fn test_djot_quotes_inside_emphasis_use_ambient_quote_depth() {
+        let fmt = PlainText;
+        let result = render_djot_inline_with_context(
+            "_\"Parmenides\" dialogue_",
+            &fmt,
+            InlineRenderContext { quote_depth: 1 },
+        );
+        assert_eq!(result, "_‘Parmenides’ dialogue_");
     }
 
     #[test]
