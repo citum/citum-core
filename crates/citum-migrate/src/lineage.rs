@@ -6,7 +6,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 //! Migration-time style lineage and wrapper classification.
 
 use crate::evidence::{
-    EmittedForm, FamilyCandidate, MigrationEvidence, ParentDiscoverySource, RegistryAliasStatus,
+    EmittedForm, FamilyCandidate, MigrationEvidence, MinimizationDecisionAudit,
+    ParentDiscoverySource, RegistryAliasStatus,
 };
 use citum_schema::Style;
 use citum_schema::embedded;
@@ -278,6 +279,7 @@ impl StyleLineage {
         standalone_lines: usize,
         emitted_form: EmittedForm,
         emitted_lines: usize,
+        minimization_decision: MinimizationDecisionAudit,
         preserved_template_paths: Vec<String>,
         discarded_template_paths: Vec<String>,
     ) -> MigrationEvidence {
@@ -331,6 +333,7 @@ impl StyleLineage {
             registry_alias_status,
             discovered_parents,
             emitted_form,
+            minimization_decision,
             preserved_template_paths,
             discarded_template_paths,
             standalone_output_lines: standalone_lines,
@@ -1264,6 +1267,7 @@ mod tests {
             5662,
             crate::evidence::EmittedForm::Standalone,
             5662,
+            crate::evidence::MinimizationDecisionAudit::none(),
             Vec::new(),
             Vec::new(),
         );

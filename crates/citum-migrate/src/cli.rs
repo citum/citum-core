@@ -20,9 +20,10 @@ pub(crate) struct CliArgs {
     /// Default off keeps the CLI surface deterministic for existing callers.
     pub(crate) emit_evidence: Option<PathBuf>,
     /// Family-candidate routing mode for styles where no parent link is
-    /// available in the source CSL. `Off` (default) preserves standalone
-    /// output; `Auto` promotes any reverse-template-link the lineage resolver
-    /// discovered; `Explicit(id)` forces the given canonical id.
+    /// available in the source CSL. The default preserves standalone output;
+    /// `Off` explicitly disables promotion; `Auto` promotes any
+    /// reverse-template-link the lineage resolver discovered; `Explicit(id)`
+    /// forces the given canonical id.
     pub(crate) family_candidate: FamilyCandidateMode,
     /// When set alongside a promoted family-candidate parent, emit a minimal
     /// wrapper form (info + extends only) instead of the full diff. Default
@@ -34,6 +35,8 @@ pub(crate) struct CliArgs {
 /// CLI selection mode for `--family-candidate`.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) enum FamilyCandidateMode {
+    /// Default no-op routing; preserve standalone output.
+    Default,
     /// Standalone migration only; do not promote any discovered candidate.
     Off,
     /// Promote whatever the lineage resolver discovered via reverse template
@@ -113,7 +116,7 @@ pub(crate) fn parse_cli_args(args: &[String]) -> CliArgs {
     let mut template_dir: Option<PathBuf> = None;
     let mut min_template_confidence = 0.70_f64;
     let mut emit_evidence: Option<PathBuf> = None;
-    let mut family_candidate = FamilyCandidateMode::Off;
+    let mut family_candidate = FamilyCandidateMode::Default;
     let mut minimize_wrapper = false;
 
     let mut iter = args.iter().skip(1).peekable();
@@ -219,7 +222,7 @@ pub(super) fn print_help(program_name: &str) {
         "  --emit-evidence <path>          Write machine-readable migration evidence JSON to <path>"
     );
     tracing::debug!(
-        "  --family-candidate <mode>       Route through discovered family parent: off|auto|<id>"
+        "  --family-candidate <mode>       Family-candidate routing: off|auto|<id> (default: off)"
     );
     tracing::debug!(
         "  --minimize-wrapper              Emit minimal wrapper (info + extends only) when promoting family-candidate"

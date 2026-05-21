@@ -83,6 +83,61 @@ pub enum EmittedForm {
     },
 }
 
+/// Source of the minimization decision for this invocation.
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum MinimizationDecisionSource {
+    /// The caller explicitly disabled family-candidate routing.
+    ExplicitOff,
+    /// The caller explicitly requested family-candidate routing.
+    ExplicitFlags,
+    /// No checked or explicit decision was available.
+    None,
+}
+
+/// Outcome of the minimization decision for this invocation.
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum MinimizationDecisionOutcome {
+    /// The decision source selected a candidate parent for family routing.
+    ///
+    /// Check `emitted_form.minimized` to distinguish a minimized wrapper from
+    /// an explicitly promoted wrapper that still preserves migrated deltas.
+    Accepted,
+    /// The candidate was rejected and standalone output was preserved.
+    Rejected,
+    /// The decision source did not select any candidate.
+    NotSelected,
+}
+
+/// Audit trail for explicit wrapper minimization routing.
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct MinimizationDecisionAudit {
+    /// Source that controlled minimization routing.
+    pub source: MinimizationDecisionSource,
+    /// Decision outcome.
+    pub outcome: MinimizationDecisionOutcome,
+    /// Parent style id selected or rejected by the decision.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent_style_id: Option<String>,
+    /// Human-readable decision reason.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reason: Option<String>,
+}
+
+impl MinimizationDecisionAudit {
+    /// Build an audit entry for an invocation with no applicable decision.
+    #[must_use]
+    pub fn none() -> Self {
+        Self {
+            source: MinimizationDecisionSource::None,
+            outcome: MinimizationDecisionOutcome::NotSelected,
+            parent_style_id: None,
+            reason: Some("no minimization decision selected this style".to_string()),
+        }
+    }
+}
+
 /// Full evidence record for a single migration invocation.
 #[derive(Debug, Clone, Serialize)]
 pub struct MigrationEvidence {
@@ -95,6 +150,8 @@ pub struct MigrationEvidence {
     pub discovered_parents: Vec<FamilyCandidate>,
     /// The form the migration actually emitted.
     pub emitted_form: EmittedForm,
+    /// Audit trail for explicit minimization decisions.
+    pub minimization_decision: MinimizationDecisionAudit,
     /// Template-bearing paths whose diffs were preserved in the wrapper.
     /// Empty for standalone output or when `preserve_template_deltas=false`.
     pub preserved_template_paths: Vec<String>,
@@ -153,6 +210,7 @@ mod tests {
                 source: ParentDiscoverySource::ReverseTemplateLink,
             }],
             emitted_form: EmittedForm::Standalone,
+            minimization_decision: MinimizationDecisionAudit::none(),
             preserved_template_paths: Vec::new(),
             discarded_template_paths: Vec::new(),
             standalone_output_lines: 5662,

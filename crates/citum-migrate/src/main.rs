@@ -21,7 +21,10 @@ use citum_migrate::{
     OptionsExtractor, analysis,
     compilation::{self, XmlCompilationOutput as XmlFallback},
     debug_output::DebugOutputFormatter,
-    evidence::EmittedForm,
+    evidence::{
+        EmittedForm, MinimizationDecisionAudit, MinimizationDecisionOutcome,
+        MinimizationDecisionSource,
+    },
     fixups::{
         ensure_numeric_locator_citation_component, ensure_personal_communication_omitted,
         move_group_wrap_to_citation_items, normalize_author_date_locator_citation_component,
@@ -168,7 +171,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let legacy_style = parse_style(doc.root_element())?;
 
     let mut lineage = StyleLineage::resolve(path, &workspace_root, &legacy_style.info.links)?;
-    apply_family_candidate_routing(&mut lineage, &workspace_root, &cli.family_candidate, path)?;
+    let routing =
+        apply_family_candidate_routing(&mut lineage, &workspace_root, &cli.family_candidate, path)?;
 
     tracing::debug!("Migrating {path} to Citum...");
     tracing::debug!(
@@ -262,30 +266,65 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let emitted_lines = count_yaml_lines(&style)?;
 
-    if let Some(evidence_path) = cli.emit_evidence.as_deref() {
-        write_evidence_sidecar(
-            evidence_path,
-            &lineage,
-            standalone_lines,
-            emitted_lines,
-            cli.minimize_wrapper,
-        )?;
-    }
+    write_optional_evidence(
+        &cli,
+        &lineage,
+        standalone_lines,
+        emitted_lines,
+        cli.minimize_wrapper,
+        routing.audit,
+    )?;
 
     output_style_and_debug(&style, cli.debug_variable.as_deref(), &tracker)?;
     Ok(())
 }
 
+fn write_optional_evidence(
+    cli: &CliArgs,
+    lineage: &StyleLineage,
+    standalone_lines: usize,
+    emitted_lines: usize,
+    minimized: bool,
+    minimization_decision: MinimizationDecisionAudit,
+) -> Result<(), Box<dyn std::error::Error>> {
+    if let Some(evidence_path) = cli.emit_evidence.as_deref() {
+        write_evidence_sidecar(
+            evidence_path,
+            lineage,
+            standalone_lines,
+            emitted_lines,
+            minimized,
+            minimization_decision,
+        )?;
+    }
+    Ok(())
+}
+
+/// Effective family-candidate routing after applying explicit flags.
+struct FamilyCandidateRouting {
+    audit: MinimizationDecisionAudit,
+}
+
 /// Promote a discovered family-candidate parent into the lineage's active
-/// routing slot when the CLI mode requests it.
+/// routing slot when explicit flags request it.
 fn apply_family_candidate_routing(
     lineage: &mut StyleLineage,
     workspace_root: &Path,
     mode: &FamilyCandidateMode,
     path: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<FamilyCandidateRouting, Box<dyn std::error::Error>> {
     match mode {
-        FamilyCandidateMode::Off => {}
+        FamilyCandidateMode::Default => Ok(FamilyCandidateRouting {
+            audit: MinimizationDecisionAudit::none(),
+        }),
+        FamilyCandidateMode::Off => Ok(FamilyCandidateRouting {
+            audit: MinimizationDecisionAudit {
+                source: MinimizationDecisionSource::ExplicitOff,
+                outcome: MinimizationDecisionOutcome::NotSelected,
+                parent_style_id: None,
+                reason: Some("caller disabled family-candidate routing".to_string()),
+            },
+        }),
         FamilyCandidateMode::Auto => {
             let promoted = lineage.promote_family_candidate(workspace_root, None)?;
             if !promoted {
@@ -293,12 +332,31 @@ fn apply_family_candidate_routing(
                     "No family-candidate parent discovered for {path}; staying standalone."
                 );
             }
+            Ok(FamilyCandidateRouting {
+                audit: MinimizationDecisionAudit {
+                    source: MinimizationDecisionSource::ExplicitFlags,
+                    outcome: if promoted {
+                        MinimizationDecisionOutcome::Accepted
+                    } else {
+                        MinimizationDecisionOutcome::NotSelected
+                    },
+                    parent_style_id: lineage.parent_style_id.clone(),
+                    reason: Some("caller requested --family-candidate auto".to_string()),
+                },
+            })
         }
         FamilyCandidateMode::Explicit(id) => {
             lineage.promote_family_candidate(workspace_root, Some(id))?;
+            Ok(FamilyCandidateRouting {
+                audit: MinimizationDecisionAudit {
+                    source: MinimizationDecisionSource::ExplicitFlags,
+                    outcome: MinimizationDecisionOutcome::Accepted,
+                    parent_style_id: Some(id.clone()),
+                    reason: Some("caller forced a family-candidate parent".to_string()),
+                },
+            })
         }
     }
-    Ok(())
 }
 
 /// Build the migration evidence record and write it as a JSON sidecar at the
@@ -309,6 +367,7 @@ fn write_evidence_sidecar(
     standalone_lines: usize,
     emitted_lines: usize,
     minimized: bool,
+    minimization_decision: MinimizationDecisionAudit,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let emitted_form = describe_emitted_form(lineage, minimized);
     // Classify which template-bearing scopes the wrapper retained vs
@@ -322,6 +381,7 @@ fn write_evidence_sidecar(
         standalone_lines,
         emitted_form,
         emitted_lines,
+        minimization_decision,
         preserved,
         discarded,
     );
@@ -424,15 +484,20 @@ fn resolve_style_name_and_templates(
 
 fn workspace_root_for_style_path(path: &str) -> PathBuf {
     let style_path = Path::new(path);
-    if style_path.is_absolute() {
-        style_path
-            .ancestors()
-            .find(|p| p.join("Cargo.toml").exists())
-            .unwrap_or(style_path.parent().unwrap_or(Path::new(".")))
-            .to_path_buf()
+    let rooted_style_path = if style_path.is_absolute() {
+        style_path.to_path_buf()
     } else {
-        std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."))
-    }
+        std::env::current_dir()
+            .unwrap_or_else(|_| PathBuf::from("."))
+            .join(style_path)
+    };
+
+    let workspace_root = rooted_style_path
+        .ancestors()
+        .find(|p| p.join("Cargo.toml").exists())
+        .unwrap_or(rooted_style_path.parent().unwrap_or(Path::new(".")))
+        .to_path_buf();
+    fs::canonicalize(&workspace_root).unwrap_or(workspace_root)
 }
 
 #[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
@@ -717,6 +782,76 @@ mod tests {
         Citation, CslNode, Formatting, Group, Info, Layout, Sort as LegacySort,
         SortKey as LegacySortKey, Style as LegacyStyle, Text,
     };
+    use std::sync::{Mutex, OnceLock};
+
+    fn repo_root() -> PathBuf {
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .and_then(Path::parent)
+            .expect("crate should live under crates/citum-migrate")
+            .to_path_buf()
+    }
+
+    fn cwd_lock() -> std::sync::MutexGuard<'static, ()> {
+        static LOCK: OnceLock<Mutex<()>> = OnceLock::new();
+        LOCK.get_or_init(|| Mutex::new(()))
+            .lock()
+            .expect("cwd lock should not be poisoned")
+    }
+
+    #[test]
+    fn workspace_root_resolves_relative_paths_from_subdirectories() {
+        let _guard = cwd_lock();
+        let original_cwd = std::env::current_dir().expect("current dir should be available");
+        std::env::set_current_dir(repo_root().join("crates"))
+            .expect("test should enter repo subdirectory");
+
+        let workspace_root = workspace_root_for_style_path("../styles-legacy/apa-6th-edition.csl");
+
+        std::env::set_current_dir(original_cwd).expect("test should restore cwd");
+        assert_eq!(workspace_root, repo_root());
+    }
+
+    #[test]
+    fn explicit_off_preserves_standalone_output() {
+        let mut lineage =
+            StyleLineage::resolve("styles-legacy/apa-6th-edition.csl", &repo_root(), &[])
+                .expect("lineage should resolve");
+        let routing = apply_family_candidate_routing(
+            &mut lineage,
+            &repo_root(),
+            &FamilyCandidateMode::Off,
+            "styles-legacy/apa-6th-edition.csl",
+        )
+        .expect("explicit off should apply");
+
+        assert!(lineage.parent_style_id.is_none());
+        assert_eq!(
+            routing.audit.source,
+            MinimizationDecisionSource::ExplicitOff
+        );
+    }
+
+    #[test]
+    fn default_family_candidate_mode_preserves_standalone_output() {
+        let mut lineage =
+            StyleLineage::resolve("styles-legacy/apa-6th-edition.csl", &repo_root(), &[])
+                .expect("lineage should resolve");
+        let routing = apply_family_candidate_routing(
+            &mut lineage,
+            &repo_root(),
+            &FamilyCandidateMode::Default,
+            "styles-legacy/apa-6th-edition.csl",
+        )
+        .expect("default routing should apply");
+
+        assert!(lineage.parent_style_id.is_none());
+        assert_eq!(routing.audit.source, MinimizationDecisionSource::None);
+        assert_eq!(
+            routing.audit.outcome,
+            MinimizationDecisionOutcome::NotSelected
+        );
+    }
 
     fn legacy_sort(keys: &[&str]) -> LegacySort {
         LegacySort {

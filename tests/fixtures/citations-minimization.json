@@ -1,0 +1,28 @@
+[
+  {
+    "id": "apa-four-author-first-subsequent",
+    "items": [
+      {
+        "id": "ITEM-29"
+      }
+    ],
+    "clusters": [
+      {
+        "id": "first",
+        "items": [
+          {
+            "id": "ITEM-29"
+          }
+        ]
+      },
+      {
+        "id": "subsequent",
+        "items": [
+          {
+            "id": "ITEM-29"
+          }
+        ]
+      }
+    ]
+  }
+]

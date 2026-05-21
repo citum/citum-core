@@ -1,11 +1,11 @@
 ---
 # csl26-dqtx
 title: Reference corpus exposes APA 6 vs 7 semantic differences
-status: todo
+status: completed
 type: bug
 priority: critical
 created_at: 2026-05-21T00:14:54Z
-updated_at: 2026-05-21T00:15:11Z
+updated_at: 2026-05-21T00:49:40Z
 parent: csl26-f1u7
 blocking:
     - csl26-tjqn
@@ -51,3 +51,9 @@ Once the corpus exposes real differences, csl26-tjqn (default minimize) and csl2
 - Blocks: csl26-tjqn (cannot make auto-minimize the default until the oracle gate is trustworthy)
 - Blocks: csl26-ly8d (same reason — extending minimize to more parents amplifies the false-positive risk)
 - Reverses (partially): the apa-6th-edition row in `docs/architecture/2026-05-20_MIGRATE_SQI_BASELINE.md` and the corresponding compression-accepted ✓ in the scorecard. Once the corpus is expanded, the row should flip back to standalone (5,661 LOC) with the gap visibility coming from the *fixture coverage* rather than a fake 5-LOC win.
+
+
+
+## Resolution
+
+Implemented strict normalized-output minimization acceptance and expanded clustered citation coverage. APA 6 is rejected as an unsafe apa-7th wrapper candidate by scorecard evidence; no-flag migration remains standalone. The remaining 5,661-line standalone output is tracked separately as converter bloat in csl26-kd28.
