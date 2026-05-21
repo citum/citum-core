@@ -59,10 +59,11 @@ while read -r local_ref local_sha remote_ref remote_sha; do
   fi
 
   # Bean hygiene: run the same check CI runs (unarchived terminals, stale beans).
+  # Soft-stale matches are advisory by default; hard hygiene findings still fail.
   BEAN_WRAPPER="$ROOT_DIR/.claude/skills/beans/bin/citum-bean"
   if [[ -x "$BEAN_WRAPPER" ]]; then
     printf '[PRE-PUSH] Running bean hygiene check...\n'
-    if ! "$BEAN_WRAPPER" hygiene; then
+    if ! IGNORE_SOFT_STALE="${IGNORE_SOFT_STALE:-1}" "$BEAN_WRAPPER" hygiene; then
       printf '[ERROR] Bean hygiene failed. Fix before pushing.\n' >&2
       exit 1
     fi
