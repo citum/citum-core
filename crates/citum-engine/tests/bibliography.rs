@@ -3794,3 +3794,100 @@ fn given_grouped_html_bibliography_when_title_has_inline_djot_markup_then_markup
         "within-field Djot markup must not appear as literal underscores in HTML text content: {rendered}"
     );
 }
+
+fn quoted_title_style(grouped: bool) -> Style {
+    let mut style = Style {
+        info: StyleInfo {
+            title: Some("Quoted Title Test".to_string()),
+            id: Some("quoted-title-test".into()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                rendering: Rendering {
+                    quote: Some(true),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    if grouped {
+        style.bibliography.as_mut().unwrap().groups =
+            Some(vec![citum_schema::grouping::BibliographyGroup {
+                id: "all".to_string(),
+                heading: None,
+                selector: citum_schema::grouping::GroupSelector::default(),
+                sort: None,
+                template: None,
+                disambiguate: None,
+            }]);
+    }
+
+    style
+}
+
+fn title_with_inner_quotes_bibliography() -> IndexMap<String, InputReference> {
+    let mut bib = IndexMap::new();
+    bib.insert(
+        "art1".to_string(),
+        InputReference::SerialComponent(Box::new(SerialComponent {
+            id: Some("art1".into()),
+            r#type: SerialComponentType::Article,
+            title: Some(Title::Single("The \"Parmenides\" dialogue".to_string())),
+            issued: EdtfString("2022".to_string()),
+            ..Default::default()
+        })),
+    );
+    bib
+}
+
+#[test]
+fn given_quoted_title_with_inner_quotes_when_html_bibliography_rendered_then_inner_quotes_alternate()
+ {
+    announce_behavior(
+        "When a title component applies quote=true around a title containing inline quotes, the title renderer must render the inner quotes as nested quote marks before the component wrapper is applied.",
+    );
+
+    let processor = Processor::new(
+        quoted_title_style(false),
+        title_with_inner_quotes_bibliography(),
+    );
+    let rendered = processor.render_bibliography_with_format::<Html>();
+
+    assert!(
+        rendered.contains("“The ‘Parmenides’ dialogue”"),
+        "quoted title should alternate outer and inner quote marks: {rendered}"
+    );
+    assert!(
+        !rendered.contains("“The “Parmenides” dialogue”"),
+        "quoted title must not use outer quote marks for the nested title quote: {rendered}"
+    );
+}
+
+#[test]
+fn given_quoted_title_with_inner_quotes_when_grouped_html_bibliography_rendered_then_inner_quotes_alternate()
+ {
+    announce_behavior(
+        "Grouped bibliography rendering must preserve the same nested quote-depth context as normal bibliography rendering.",
+    );
+
+    let processor = Processor::new(
+        quoted_title_style(true),
+        title_with_inner_quotes_bibliography(),
+    );
+    let rendered = processor.render_grouped_bibliography_with_format::<Html>();
+
+    assert!(
+        rendered.contains("“The ‘Parmenides’ dialogue”"),
+        "grouped quoted title should alternate outer and inner quote marks: {rendered}"
+    );
+    assert!(
+        !rendered.contains("“The “Parmenides” dialogue”"),
+        "grouped quoted title must not use outer quote marks for the nested title quote: {rendered}"
+    );
+}
