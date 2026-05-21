@@ -4,7 +4,7 @@ Citum is a declarative, type-safe Rust implementation for managing and processin
 
 ## How to Contribute
 
-Citum follows an **AI-first development model** that values expertise over implementation speed. The most impactful contributions come from those who understand citation semantics:
+While the core of this project was developed unassisted in [2023](https://github.com/bdarcus/csln), Citum follows an **AI-first development model** that values expertise over implementation speed. The most impactful contributions come from those who understand citation semantics:
 
 **Domain Experts & Style Authors:**
 - Surface real-world gaps: describe formatting requirements or edge cases that current systems handle poorly
@@ -15,6 +15,19 @@ Citum follows an **AI-first development model** that values expertise over imple
 **Developers:**
 - Focus on core engine architecture (`citum_engine`), schema design (`citum_schema`), and agent tooling
 - Ensure all Rust code changes pass mandatory pre-commit checks before committing
+
+## AI & LLM Contributions
+
+Because Citum follows an AI-first development model, we rely heavily on LLMs and agentic workflows to build and maintain the project. However, to protect the structural integrity of the codebase and the time of our maintainers, we enforce a strict, zero-tolerance policy for AI "slop."
+
+We welcome AI assistance, but **you are solely responsible for the output.** If you use LLMs to draft, generate, or refactor code for a pull request, you must adhere to the following rules:
+
+1. **Absolute Accountability:** You are the author; the AI is your tool. You must completely understand every single line of Rust or YAML you submit. If you cannot explain the logic, defend the architectural trade-offs, or debug edge cases introduced by the model, the code does not belong in this repository.
+2. **Contextual Awareness (The CSL 1.0 Trap):** LLMs are heavily trained on legacy citation processors. Left unchecked, an LLM will frequently attempt to inject CSL 1.0 concepts (such as procedural `<choose>` branching or hardcoded conditionals) into Citum's declarative schema. **It is your responsibility to catch this.** Blindly copy-pasting AI output that violates our [Schema & Style Design Philosophy](#schema--style-design-philosophy) will result in a rejected PR.
+3. **No "Drive-By" Generative PRs:** Pull requests containing massive, AI-generated refactors or unrequested features will be closed unreviewed. If you intend to use an LLM to tackle a significant architectural change, open an issue to discuss the approach with maintainers *first*.
+4. **CI is the First Line of Defense (Not the Last):** We maintain rigorous git pre-commit hooks and a comprehensive CI pipeline precisely to guard against sloppy code and LLM hallucinations. An AI-assisted PR *must* have a green CI run before a maintainer will look at it. However, while our CI guarantees the code compiles, lints cleanly, and passes tests, it cannot verify architectural intent. A green CI does not excuse you from Rule 1.
+
+Contributors who repeatedly bypass pre-commit hooks, ignore CI failures on their PRs, or submit AI-generated code that violates our design principles—even if the tests pass—will have their PRs closed.
 
 ## Development Setup
 
