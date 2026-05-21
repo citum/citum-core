@@ -94,16 +94,19 @@ impl TemplateCompiler {
                                 .any(|b| !b.if_item_type.is_empty());
 
                         if has_type_condition {
-                            if c.if_item_type.contains(target_type)
-                                || (use_untyped_else_if_fallback && c.if_item_type.is_empty())
-                            {
+                            if c.if_item_type.contains(target_type) {
                                 components.extend(self.compile_for_type_inner(
                                     &c.then_branch,
                                     target_type,
                                     use_untyped_else_if_fallback,
                                 ));
                             } else {
-                                let mut fallback_branch = None;
+                                let mut fallback_branch =
+                                    if use_untyped_else_if_fallback && c.if_item_type.is_empty() {
+                                        Some(&c.then_branch)
+                                    } else {
+                                        None
+                                    };
                                 let mut found = false;
                                 for else_if in &c.else_if_branches {
                                     if else_if.if_item_type.contains(target_type) {

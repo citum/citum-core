@@ -6,6 +6,11 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
 use super::{CslnNode, ItemType, TemplateCompiler, TemplateComponent};
 use citum_schema::template::{NumberVariable, SimpleVariable};
 
+// The full-corpus scorecard currently has no bibliography root above 500
+// recursive components except the known APA 6 XML-fallback outlier. Keeping the
+// cutoff above normal styles confines branch-aware cleanup to pathological
+// output while preserving established migration shapes for the rest of the
+// corpus.
 const PATHOLOGICAL_BIBLIOGRAPHY_COMPONENTS: usize = 500;
 
 impl TemplateCompiler {
@@ -404,6 +409,26 @@ mod tests {
             compiler.compile_for_type_with_untyped_else_if_fallback(&nodes, &ItemType::Book);
 
         assert!(template_has_primary_title(&book_template));
+    }
+
+    #[test]
+    fn bibliography_type_templates_prefer_typed_else_if_over_untyped_if_fallback() {
+        let nodes = vec![condition_with_else_if(
+            vec![],
+            vec![variable_node(Variable::Publisher, 1)],
+            ElseIfBranch {
+                if_item_type: vec![ItemType::Book],
+                if_variables: vec![],
+                children: vec![variable_node(Variable::Title, 2)],
+            },
+        )];
+
+        let compiler = TemplateCompiler;
+        let book_template =
+            compiler.compile_for_type_with_untyped_else_if_fallback(&nodes, &ItemType::Book);
+
+        assert!(template_has_primary_title(&book_template));
+        assert!(!template_has_publisher(&book_template));
     }
 
     #[test]
