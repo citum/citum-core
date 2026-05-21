@@ -701,6 +701,7 @@ name = "citum-migrate"
 version = "0.54.0"
 dependencies = [
  "citum-schema",
+ "clap",
  "csl-legacy",
  "deno_core",
  "indexmap 2.14.0",
