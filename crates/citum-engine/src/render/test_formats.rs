@@ -33,7 +33,7 @@ mod tests {
         let result = render_component_with_format::<Html>(&component);
         assert_eq!(
             result,
-            r#"<span class="citum-title"><i>My Title</i></span>"#
+            r#"<span class="citum-title"><em>My Title</em></span>"#
         );
     }
 
@@ -64,7 +64,7 @@ mod tests {
         let result = render_component_with_format::<Html>(&component);
         assert_eq!(
             result,
-            r#"<span class="citum-title" data-index="2"><i>My Title</i></span>"#
+            r#"<span class="citum-title" data-index="2"><em>My Title</em></span>"#
         );
     }
 
@@ -161,7 +161,7 @@ mod tests {
         };
 
         let result = render_component_with_format::<Typst>(&component);
-        assert_eq!(result, "_My Title_");
+        assert_eq!(result, "#emph[My Title]");
     }
 
     #[test]

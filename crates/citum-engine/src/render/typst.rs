@@ -60,7 +60,7 @@ impl OutputFormat for Typst {
         if content.is_empty() {
             return content;
         }
-        format!("_{content}_")
+        format!("#emph[{content}]")
     }
 
     fn strong(&self, content: Self::Output) -> Self::Output {

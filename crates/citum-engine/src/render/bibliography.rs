@@ -566,9 +566,7 @@ mod tests {
         let result = refs_to_string_with_format::<Html>(entries, None, None);
         assert_eq!(
             result,
-            r#"<div class="citum-bibliography">
-<div class="citum-entry" id="ref-ref-1">Reference Content</div>
-</div>"#
+            "<div class=\"citum-bibliography\">\n<div class=\"citum-entry\" id=\"ref-ref-1\">Reference Content</div>\n</div>"
         );
     }
 

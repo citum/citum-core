@@ -57,7 +57,7 @@ impl OutputFormat for Latex {
     }
 
     fn emph(&self, content: Self::Output) -> Self::Output {
-        format!(r"\textit{{{content}}}")
+        format!(r"\emph{{{content}}}")
     }
 
     fn strong(&self, content: Self::Output) -> Self::Output {

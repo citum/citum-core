@@ -322,6 +322,6 @@ fn render_bibliography_typst_returns_labeled_markup() {
         .expect("content should be a string");
     assert_eq!(
         content,
-        "Hawking, S. (1988). _A Brief History of Time_ <ref-ITEM-2>"
+        "Hawking, S. (1988). #emph[A Brief History of Time] <ref-ITEM-2>"
     );
 }

@@ -1001,8 +1001,8 @@ fn djot_note_preserves_italic_markup_in_html_bibliography() {
 
     let output = Processor::new(style, bib).render_bibliography_with_format::<Html>();
     assert!(
-        output.contains("<i>italic</i>"),
-        "Djot _italic_ in note should render as <i>italic</i> in HTML, got: {output}"
+        output.contains("<em>italic</em>"),
+        "Djot _italic_ in note should render as <em>italic</em> in HTML, got: {output}"
     );
 }
 
@@ -1051,7 +1051,7 @@ fn djot_note_sentence_case_does_not_restart_across_markup_boundaries() {
 
     let output = Processor::new(style, bib).render_bibliography_with_format::<Html>();
     assert!(
-        output.contains("Foo <i>bar</i> baz"),
+        output.contains("Foo <em>bar</em> baz"),
         "Djot sentence case should not restart inside markup, got: {output}"
     );
 }
