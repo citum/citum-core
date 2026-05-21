@@ -55,6 +55,23 @@ impl TemplateCompiler {
         nodes: &[CslnNode],
         target_type: &ItemType,
     ) -> Vec<TemplateComponent> {
+        self.compile_for_type_inner(nodes, target_type, false)
+    }
+
+    pub(super) fn compile_for_type_with_untyped_else_if_fallback(
+        &self,
+        nodes: &[CslnNode],
+        target_type: &ItemType,
+    ) -> Vec<TemplateComponent> {
+        self.compile_for_type_inner(nodes, target_type, true)
+    }
+
+    fn compile_for_type_inner(
+        &self,
+        nodes: &[CslnNode],
+        target_type: &ItemType,
+        use_untyped_else_if_fallback: bool,
+    ) -> Vec<TemplateComponent> {
         let mut components = Vec::new();
 
         for node in nodes {
@@ -63,7 +80,11 @@ impl TemplateCompiler {
             } else {
                 match node {
                     CslnNode::Group(g) => {
-                        components.extend(self.compile_for_type(&g.children, target_type));
+                        components.extend(self.compile_for_type_inner(
+                            &g.children,
+                            target_type,
+                            use_untyped_else_if_fallback,
+                        ));
                     }
                     CslnNode::Condition(c) => {
                         // Check if this is a type-based condition
@@ -73,36 +94,63 @@ impl TemplateCompiler {
                                 .any(|b| !b.if_item_type.is_empty());
 
                         if has_type_condition {
-                            // Select the matching branch for target_type
-                            if c.if_item_type.contains(target_type) {
-                                components
-                                    .extend(self.compile_for_type(&c.then_branch, target_type));
+                            if c.if_item_type.contains(target_type)
+                                || (use_untyped_else_if_fallback && c.if_item_type.is_empty())
+                            {
+                                components.extend(self.compile_for_type_inner(
+                                    &c.then_branch,
+                                    target_type,
+                                    use_untyped_else_if_fallback,
+                                ));
                             } else {
-                                // Check else-if branches
+                                let mut fallback_branch = None;
                                 let mut found = false;
                                 for else_if in &c.else_if_branches {
                                     if else_if.if_item_type.contains(target_type) {
-                                        components.extend(
-                                            self.compile_for_type(&else_if.children, target_type),
-                                        );
+                                        components.extend(self.compile_for_type_inner(
+                                            &else_if.children,
+                                            target_type,
+                                            use_untyped_else_if_fallback,
+                                        ));
                                         found = true;
                                         break;
                                     }
+                                    if use_untyped_else_if_fallback
+                                        && else_if.if_item_type.is_empty()
+                                        && fallback_branch.is_none()
+                                    {
+                                        fallback_branch = Some(&else_if.children);
+                                    }
                                 }
                                 if !found {
-                                    // Fall back to else branch
-                                    if let Some(ref else_nodes) = c.else_branch {
-                                        components
-                                            .extend(self.compile_for_type(else_nodes, target_type));
+                                    if let Some(fallback_branch) = fallback_branch {
+                                        components.extend(self.compile_for_type_inner(
+                                            fallback_branch,
+                                            target_type,
+                                            use_untyped_else_if_fallback,
+                                        ));
+                                    } else if let Some(ref else_nodes) = c.else_branch {
+                                        components.extend(self.compile_for_type_inner(
+                                            else_nodes,
+                                            target_type,
+                                            use_untyped_else_if_fallback,
+                                        ));
                                     }
                                 }
                             }
                         } else {
                             // Not a type condition, use default compile behavior
-                            components.extend(self.compile_for_type(&c.then_branch, target_type));
+                            components.extend(self.compile_for_type_inner(
+                                &c.then_branch,
+                                target_type,
+                                use_untyped_else_if_fallback,
+                            ));
                             if let Some(ref else_nodes) = c.else_branch {
-                                let else_components =
-                                    self.compile_for_type(else_nodes, target_type);
+                                let else_components = self.compile_for_type_inner(
+                                    else_nodes,
+                                    target_type,
+                                    use_untyped_else_if_fallback,
+                                );
                                 for ec in else_components {
                                     if !components.iter().any(|c| self.same_variable(c, &ec)) {
                                         components.push(ec);

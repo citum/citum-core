@@ -109,6 +109,79 @@ impl TemplateCompiler {
         }
     }
 
+    pub(super) fn collect_bibliography_default_occurrences(
+        &self,
+        nodes: &[CslnNode],
+        inherited_wrap: &(
+            Option<citum_schema::template::WrapPunctuation>,
+            Option<String>,
+            Option<String>,
+        ),
+        context: &BranchContext,
+        occurrences: &mut Vec<ComponentOccurrence>,
+    ) {
+        let mut i = 0;
+
+        while i < nodes.len() {
+            #[allow(clippy::indexing_slicing, reason = "i < nodes.len()")]
+            let node = &nodes[i];
+
+            if let CslnNode::Text { value } = node
+                && i + 1 < nodes.len()
+                && {
+                    #[allow(clippy::indexing_slicing, reason = "i + 1 < nodes.len()")]
+                    let next = &nodes[i + 1];
+                    let merged = self.merge_text_lookahead(value, next, inherited_wrap);
+                    if let Some((component, source_order)) = merged {
+                        occurrences.push(ComponentOccurrence {
+                            component,
+                            context: context.clone(),
+                            source_order,
+                        });
+                        i += 2;
+                        true
+                    } else {
+                        false
+                    }
+                }
+            {
+                continue;
+            }
+
+            if let Some(mut component) = self.compile_node(node) {
+                if inherited_wrap.0.is_some() && matches!(&component, TemplateComponent::Date(_)) {
+                    self.apply_wrap_to_component(&mut component, inherited_wrap);
+                }
+                let source_order = self.extract_source_order(node);
+                occurrences.push(ComponentOccurrence {
+                    component,
+                    context: context.clone(),
+                    source_order,
+                });
+            } else {
+                match node {
+                    CslnNode::Group(g) => {
+                        self.collect_bibliography_default_group_occurrences(
+                            g,
+                            inherited_wrap,
+                            context,
+                            occurrences,
+                        );
+                    }
+                    CslnNode::Condition(c) => {
+                        self.collect_bibliography_default_condition_occurrences(
+                            c,
+                            inherited_wrap,
+                            occurrences,
+                        );
+                    }
+                    _ => {}
+                }
+            }
+            i += 1;
+        }
+    }
+
     fn collect_group_occurrences(
         &self,
         g: &citum_schema::legacy::GroupBlock,
@@ -181,6 +254,68 @@ impl TemplateCompiler {
         }
     }
 
+    fn collect_bibliography_default_group_occurrences(
+        &self,
+        g: &citum_schema::legacy::GroupBlock,
+        inherited_wrap: &(
+            Option<citum_schema::template::WrapPunctuation>,
+            Option<String>,
+            Option<String>,
+        ),
+        context: &BranchContext,
+        occurrences: &mut Vec<ComponentOccurrence>,
+    ) {
+        let group_wrap = Self::infer_wrap_from_affixes(&g.formatting.prefix, &g.formatting.suffix);
+        let effective_wrap = if group_wrap.0.is_some() {
+            group_wrap.clone()
+        } else {
+            inherited_wrap.clone()
+        };
+
+        let mut group_occurrences = Vec::new();
+        self.collect_bibliography_default_occurrences(
+            &g.children,
+            &effective_wrap,
+            context,
+            &mut group_occurrences,
+        );
+
+        let group_components: Vec<TemplateComponent> = group_occurrences
+            .iter()
+            .map(|o| o.component.clone())
+            .collect();
+        let has_term_node = group_components
+            .iter()
+            .any(|c| matches!(c, TemplateComponent::Term(_)));
+
+        let meaningful_delimiter = g
+            .delimiter
+            .as_ref()
+            .is_some_and(|d| matches!(d.as_str(), "" | "none" | ": " | " " | ", "));
+        let is_small_structural_group = group_components.len() >= 2 && group_components.len() <= 3;
+        let should_be_list = meaningful_delimiter
+            && is_small_structural_group
+            && group_wrap.0.is_none()
+            && !has_term_node;
+        let must_preserve_as_group = group_wrap.0.is_some() || has_term_node;
+
+        if (should_be_list || must_preserve_as_group) && !group_components.is_empty() {
+            let list = TemplateComponent::Group(TemplateGroup {
+                group: group_components,
+                delimiter: self.map_delimiter(&g.delimiter),
+                rendering: self.convert_formatting(&g.formatting),
+                ..Default::default()
+            });
+            occurrences.push(ComponentOccurrence {
+                component: list,
+                context: context.clone(),
+                source_order: g.source_order,
+            });
+        } else {
+            occurrences.extend(group_occurrences);
+        }
+    }
+
     fn collect_condition_occurrences(
         &self,
         c: &citum_schema::legacy::ConditionBlock,
@@ -217,6 +352,51 @@ impl TemplateCompiler {
         // ELSE branch: always default context
         if let Some(ref else_nodes) = c.else_branch {
             self.collect_occurrences(
+                else_nodes,
+                inherited_wrap,
+                &BranchContext::Default,
+                occurrences,
+            );
+        }
+    }
+
+    fn collect_bibliography_default_condition_occurrences(
+        &self,
+        c: &citum_schema::legacy::ConditionBlock,
+        inherited_wrap: &(
+            Option<citum_schema::template::WrapPunctuation>,
+            Option<String>,
+            Option<String>,
+        ),
+        occurrences: &mut Vec<ComponentOccurrence>,
+    ) {
+        if !condition_has_type_branch(c) {
+            self.collect_condition_occurrences(c, inherited_wrap, occurrences);
+            return;
+        }
+
+        if c.if_item_type.is_empty() {
+            self.collect_bibliography_default_occurrences(
+                &c.then_branch,
+                inherited_wrap,
+                &BranchContext::Default,
+                occurrences,
+            );
+        }
+
+        for else_if in &c.else_if_branches {
+            if else_if.if_item_type.is_empty() {
+                self.collect_bibliography_default_occurrences(
+                    &else_if.children,
+                    inherited_wrap,
+                    &BranchContext::Default,
+                    occurrences,
+                );
+            }
+        }
+
+        if let Some(ref else_nodes) = c.else_branch {
+            self.collect_bibliography_default_occurrences(
                 else_nodes,
                 inherited_wrap,
                 &BranchContext::Default,
@@ -336,4 +516,11 @@ impl TemplateCompiler {
         // Extract just the components (drop the ordering metadata)
         result.into_iter().map(|(comp, _)| comp).collect()
     }
+}
+
+fn condition_has_type_branch(c: &citum_schema::legacy::ConditionBlock) -> bool {
+    !c.if_item_type.is_empty()
+        || c.else_if_branches
+            .iter()
+            .any(|else_if| !else_if.if_item_type.is_empty())
 }
