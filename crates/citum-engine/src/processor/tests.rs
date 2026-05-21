@@ -1913,7 +1913,7 @@ fn test_chicago_title_preset_preserves_djot_markup_html() {
 
     assert!(
         result.contains(
-            r#"<span class="citum-title">“<i>Homo sapiens</i> and <b>modern</b> world”</span>"#
+            "<span class=\"citum-title\">\u{201C}<em>Homo sapiens</em> and <b>modern</b> world\u{201D}</span>"
         ),
         "Result: {result}"
     );
@@ -4186,7 +4186,7 @@ bibliography:
     let result = processor.render_bibliography_with_format::<Html>();
 
     assert_eq!(
-        result.matches("citum-bibliography").count(),
+        result.matches("<div class=\"citum-bibliography\">").count(),
         1,
         "merged HTML should have exactly one bibliography wrapper: {result}"
     );

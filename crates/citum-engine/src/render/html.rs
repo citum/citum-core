@@ -62,7 +62,7 @@ impl OutputFormat for Html {
         if content.is_empty() {
             return content;
         }
-        format!("<i>{content}</i>")
+        format!("<em>{content}</em>")
     }
 
     fn strong(&self, content: Self::Output) -> Self::Output {

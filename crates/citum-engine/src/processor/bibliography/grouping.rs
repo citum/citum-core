@@ -101,6 +101,24 @@ impl Processor {
             .collect()
     }
 
+    /// Returns `ProcEntry` stubs with only `id` populated, in sort order.
+    ///
+    /// Used for grouping paths that only need IDs for selector matching — avoids
+    /// the full PlainText render pass that `process_references` performs.
+    fn sorted_id_stubs(&self) -> Vec<ProcEntry> {
+        self.initialize_numeric_bibliography_numbers();
+        self.sort_references(self.bibliography.values().collect())
+            .into_iter()
+            .filter_map(|r| {
+                r.id().map(|id| ProcEntry {
+                    id: id.to_string(),
+                    template: vec![],
+                    metadata: ProcEntryMetadata::default(),
+                })
+            })
+            .collect()
+    }
+
     fn mark_group_members_assigned(assigned: &mut HashSet<String>, references: &[&Reference]) {
         for reference in references {
             if let Some(id) = reference.id() {
@@ -162,7 +180,7 @@ impl Processor {
 
     fn render_group_entries<F>(
         &self,
-        bibliography: &[ProcEntry],
+        _bibliography: &[ProcEntry],
         sorted_refs: Vec<&Reference>,
         group: &BibliographyGroup,
         local_hints: Option<&HashMap<String, ProcHints>>,
@@ -170,16 +188,8 @@ impl Processor {
     where
         F: OutputFormat<Output = String>,
     {
-        if local_hints.is_none() && group.template.is_none() {
-            return sorted_refs
-                .into_iter()
-                .filter_map(|reference| {
-                    let id = reference.id()?;
-                    bibliography.iter().find(|entry| entry.id == id).cloned()
-                })
-                .collect();
-        }
-
+        // Always process entries with format F so that group components (pre_formatted=true)
+        // contain markup in the target format rather than PlainText (_..._).
         let hints = local_hints.unwrap_or(&self.hints);
         let effective_style = self.effective_group_style(group);
         let bibliography_config = self.get_bibliography_config();
@@ -218,7 +228,7 @@ impl Processor {
                 .unwrap_or(index + 1);
 
             if let Some(mut processed) =
-                renderer.process_bibliography_entry(reference, entry_number)
+                renderer.process_bibliography_entry_with_format::<F>(reference, entry_number)
             {
                 if let Some(substitute_string) = substitute.as_deref()
                     && let Some(previous) = previous_reference
@@ -513,8 +523,7 @@ impl Processor {
     where
         F: OutputFormat<Output = String>,
     {
-        let processed = self.process_references();
-        let bibliography = processed.bibliography;
+        let bibliography = self.sorted_id_stubs();
         let fmt = F::default();
         let cited_ids = self.cited_ids.borrow();
         let evaluator = SelectorEvaluator::new(&cited_ids);
@@ -571,22 +580,21 @@ impl Processor {
     where
         F: OutputFormat<Output = String>,
     {
-        let processed = self.process_references();
-        let all_entries = processed.bibliography;
-
         if let Some(groups) = self
             .style
             .bibliography
             .as_ref()
             .and_then(|bibliography| bibliography.groups.as_ref())
         {
+            let id_stubs = self.sorted_id_stubs();
+            let selected = id_stubs
+                .iter()
+                .map(|e| e.id.clone())
+                .collect::<HashSet<_>>();
             return self.render_with_custom_groups_filtered::<F>(
-                &all_entries,
+                &id_stubs,
                 groups,
-                &all_entries
-                    .iter()
-                    .map(|e| e.id.clone())
-                    .collect::<HashSet<_>>(),
+                &selected,
                 annotations,
                 annotation_style,
             );
@@ -606,6 +614,7 @@ impl Processor {
             );
         }
 
+        let all_entries = self.process_references().bibliography;
         self.render_with_legacy_grouping::<F>(
             &self.merge_compound_entries::<F>(all_entries),
             annotations,
@@ -624,7 +633,7 @@ impl Processor {
     where
         F: OutputFormat<Output = String>,
     {
-        let all_entries = self.process_references().bibliography;
+        let all_entries = self.sorted_id_stubs();
         self.render_with_custom_groups::<F>(&all_entries, groups)
     }
 

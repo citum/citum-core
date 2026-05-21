@@ -3674,3 +3674,123 @@ groups:
         "# Primary Sources Section\n\nFirst Book\n\n# Secondary Sources Section\n\nAn Archival Manuscript"
     );
 }
+
+#[test]
+fn given_grouped_html_bibliography_when_journal_article_rendered_then_container_title_uses_html_italic()
+ {
+    announce_behavior(
+        "When a journal article is rendered in a grouped HTML bibliography, the container (journal) title must appear as <em>…</em>, not as Djot _…_ markup leaking from the PlainText fast-path.",
+    );
+
+    // APA-7 has emph:true for container (periodical) titles; add a catch-all group
+    // so the grouped rendering code path is exercised.
+    let mut style = load_style("styles/embedded/apa-7th.yaml");
+    style.bibliography.as_mut().unwrap().groups =
+        Some(vec![citum_schema::grouping::BibliographyGroup {
+            id: "all".to_string(),
+            heading: None,
+            selector: citum_schema::grouping::GroupSelector::default(),
+            sort: None,
+            template: None,
+            disambiguate: None,
+        }]);
+
+    let mut bib = IndexMap::new();
+    bib.insert(
+        "art1".to_string(),
+        InputReference::SerialComponent(Box::new(SerialComponent {
+            id: Some("art1".into()),
+            r#type: SerialComponentType::Article,
+            title: Some(Title::Single("A Study of Things".to_string())),
+            author: Some(Contributor::StructuredName(StructuredName {
+                family: "Smith".into(),
+                given: "John".into(),
+                suffix: None,
+                dropping_particle: None,
+                non_dropping_particle: None,
+            })),
+            issued: EdtfString("2020".to_string()),
+            container: Some(WorkRelation::Embedded(Box::new(InputReference::Serial(
+                Box::new(Serial {
+                    r#type: SerialType::AcademicJournal,
+                    title: Some(Title::Single("Journal of Testing".to_string())),
+                    ..Default::default()
+                }),
+            )))),
+            ..Default::default()
+        })),
+    );
+
+    let processor = Processor::new(style, bib);
+    let rendered = processor.render_grouped_bibliography_with_format::<Html>();
+
+    assert!(
+        rendered.contains("<em>Journal of Testing</em>"),
+        "grouped HTML bibliography should render container title with <em> tags, not Djot markup: {rendered}"
+    );
+    assert!(
+        !rendered.contains("_Journal of Testing_"),
+        "grouped HTML bibliography must not leak PlainText Djot markup into HTML output: {rendered}"
+    );
+}
+
+#[test]
+fn given_grouped_html_bibliography_when_title_has_inline_djot_markup_then_markup_is_rendered_as_html()
+ {
+    announce_behavior(
+        "When a bibliography entry's title contains inline Djot markup (e.g. _word_), \
+         a grouped HTML bibliography must render it as <em>word</em>, not as literal underscores.",
+    );
+
+    let mut style = load_style("styles/embedded/apa-7th.yaml");
+    style.bibliography.as_mut().unwrap().groups =
+        Some(vec![citum_schema::grouping::BibliographyGroup {
+            id: "all".to_string(),
+            heading: None,
+            selector: citum_schema::grouping::GroupSelector::default(),
+            sort: None,
+            template: None,
+            disambiguate: None,
+        }]);
+
+    let mut bib = IndexMap::new();
+    bib.insert(
+        "art1".to_string(),
+        InputReference::SerialComponent(Box::new(SerialComponent {
+            id: Some("art1".into()),
+            r#type: SerialComponentType::Article,
+            // Title with within-field Djot italic markup
+            title: Some(Title::Single("The Role of _in vitro_ Studies".to_string())),
+            author: Some(Contributor::StructuredName(StructuredName {
+                family: "Smith".into(),
+                given: "John".into(),
+                suffix: None,
+                dropping_particle: None,
+                non_dropping_particle: None,
+            })),
+            issued: EdtfString("2022".to_string()),
+            container: Some(WorkRelation::Embedded(Box::new(InputReference::Serial(
+                Box::new(Serial {
+                    r#type: SerialType::AcademicJournal,
+                    title: Some(Title::Single("Journal of Testing".to_string())),
+                    ..Default::default()
+                }),
+            )))),
+            ..Default::default()
+        })),
+    );
+
+    let processor = Processor::new(style, bib);
+    let rendered = processor.render_grouped_bibliography_with_format::<Html>();
+
+    assert!(
+        rendered.contains("<em>in vitro</em>"),
+        "within-field Djot italic in title must render as <em> in grouped HTML bibliography: {rendered}"
+    );
+    // The data-title attribute intentionally holds the raw input string; check that
+    // Djot underscores do not leak into rendered text content (outside attributes).
+    assert!(
+        !rendered.contains(">_in vitro_<"),
+        "within-field Djot markup must not appear as literal underscores in HTML text content: {rendered}"
+    );
+}
