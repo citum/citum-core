@@ -3,7 +3,7 @@
 **Status:** Active (provisional — revisit before 1.0)
 **Version:** 0.3
 **Date:** 2026-05-16
-**Related:** bean `csl26-2a0b`, bean `csl26-fuw7`, `docs/architecture/DESIGN_PRINCIPLES.md`, `docs/reference/SCHEMA_VERSIONING.md`, `docs/policies/ENUM_VOCABULARY_POLICY.md`, `docs/architecture/EXTENSIBILITY_STRATEGY.md`
+**Related:** bean `csl26-2a0b`, bean `csl26-fuw7`, `docs/architecture/DESIGN_PRINCIPLES.md`, `docs/reference/SCHEMA_VERSIONING.md`, `docs/policies/ENUM_VOCABULARY_POLICY.md`, `docs/architecture/EXTENSIBILITY_STRATEGY.md`, `STYLE_EDITIONS_AND_FAMILIES.md`
 
 > **Provisional contract.** The SoftDegrade/HardFail split below is the contract we are shipping pre-1.0 to learn from real-world use. The practical balance between forward-tolerance and producer-side strictness can only be evaluated in practice; treat this spec as load-bearing for engine implementation but reviewable before the 1.0 freeze.
 

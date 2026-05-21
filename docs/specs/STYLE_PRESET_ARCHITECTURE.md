@@ -4,7 +4,7 @@
 **Version:** 2.0
 **Date:** 2026-04-20
 **Bean:** `csl26-v961`
-**Related:** bean `csl26-zy07` (unblocked by this spec), bean `csl26-wp6y` (follow-up policy work), `LOCALE_MESSAGES.md`, `STYLE_TAXONOMY.md`
+**Related:** bean `csl26-zy07` (unblocked by this spec), bean `csl26-wp6y` (follow-up policy work), `LOCALE_MESSAGES.md`, `STYLE_TAXONOMY.md`, `STYLE_EDITIONS_AND_FAMILIES.md`
 
 ## Purpose
 
