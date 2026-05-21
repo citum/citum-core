@@ -12,6 +12,7 @@ name = "citum-migrate"
 path = "src/main.rs"
 
 [dependencies]
+clap = { version = "4.4", features = ["derive", "color"] }
 tracing.workspace = true
 csl-legacy = { workspace = true }
 citum-schema = { workspace = true }

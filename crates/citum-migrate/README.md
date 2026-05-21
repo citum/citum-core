@@ -31,31 +31,36 @@ hidden root plus wrapper pair. See
 ## CLI Usage
 
 ```bash
-cargo run --bin citum-migrate -- <style.csl> [flags]
+citum-migrate [STYLE.csl] [options]
 ```
 
 Example:
 
 ```bash
-cargo run --bin citum-migrate -- styles-legacy/apa.csl > styles/apa.yaml
+citum-migrate styles-legacy/apa.csl > styles/apa.yaml
 ```
 
-## Flags
+Run `citum-migrate --help` for the full option reference.
+
+## Options
 
 - `--template-source auto|hand|inferred|xml`
 - `--live-infer-backend auto|embedded|node`
 - `--template-dir <path>`
 - `--min-template-confidence <0.0..1.0>`
 - `--debug-variable <name>`
+- `--emit-evidence <path>`
+- `--family-candidate off|auto|<style-id>`
+- `--minimize-wrapper`
 
 ### `--template-source`
 
-- `auto` (default): hand-authored -> inferred cache/live -> XML fallback
-- `hand`: hand-authored only -> XML fallback
-- `inferred`: inferred cache only -> XML fallback
+- `auto` (default): hand-authored → inferred cache/live → XML fallback
+- `hand`: hand-authored only → XML fallback
+- `inferred`: inferred cache only → XML fallback
 - `xml`: XML templates only
 
-Important: `inferred` mode is cache-only and never runs live Node/citeproc-js inference.
+`inferred` mode is cache-only and never runs live Node/citeproc-js inference.
 
 ### `--live-infer-backend`
 
@@ -65,6 +70,27 @@ Important: `inferred` mode is cache-only and never runs live Node/citeproc-js in
 
 This flag only applies when `--template-source auto` needs live inference after
 cache lookup. Cache hits still win first.
+
+### `--emit-evidence`
+
+Write a machine-readable migration evidence JSON sidecar to the given path.
+Useful for auditing template selection decisions and compression outcomes.
+
+### `--family-candidate`
+
+Controls whether a discovered parent style is promoted into the lineage:
+
+- Omitted (default): preserve standalone output; no promotion attempted.
+- `off`: explicitly disable promotion even if a candidate is available.
+- `auto`: promote whatever the lineage resolver discovered via reverse
+  template-link scan.
+- `<style-id>`: force the given canonical ID as the family-candidate parent.
+
+### `--minimize-wrapper`
+
+When `--family-candidate` promotes a parent, emit only the minimal wrapper
+form (`info:` + `extends:`) instead of the full diff. Used by the
+evidence-driven compression harness to derive output-driven minima.
 
 ### What "hand-authored" means
 
@@ -119,7 +145,7 @@ For large-scale migration, precompute inferred templates once, then run Rust mig
 ./scripts/batch-infer.sh --styles "apa elsevier-harvard ieee"
 
 # 3) Migrate using cache-only inferred mode (no live Node inference)
-cargo run --bin citum-migrate -- styles-legacy/apa.csl --template-source inferred
+citum-migrate styles-legacy/apa.csl --template-source inferred
 ```
 
 ## Cache Artifact Format
@@ -162,7 +188,7 @@ Fragment shape:
 Example:
 
 ```bash
-cargo run --bin citum-migrate -- styles-legacy/apa.csl \
+citum-migrate styles-legacy/apa.csl \
   --template-source auto \
   --min-template-confidence 0.80
 ```

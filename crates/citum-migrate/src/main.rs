@@ -14,7 +14,8 @@ use bib_postprocess::{
     is_inferred_bib_source, merge_inferred_type_templates, postprocess_inferred_bibliography,
 };
 use citation_validate::validate_and_normalize_inferred_citations;
-use cli::{CliArgs, FamilyCandidateMode, parse_cli_args};
+use clap::Parser;
+use cli::{Args, FamilyCandidateMode};
 use template_diff::{TypeTemplateMap, build_type_variants};
 
 use citum_migrate::{
@@ -158,9 +159,9 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOut
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args: Vec<String> = std::env::args().collect();
-    let cli = parse_cli_args(&args);
+    let cli = Args::parse();
     let path = &cli.path;
+    let family_candidate = FamilyCandidateMode::from_arg(cli.family_candidate.as_deref());
 
     let enable_provenance = cli.debug_variable.is_some();
     let tracker = ProvenanceTracker::new(enable_provenance);
@@ -172,7 +173,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut lineage = StyleLineage::resolve(path, &workspace_root, &legacy_style.info.links)?;
     let routing =
-        apply_family_candidate_routing(&mut lineage, &workspace_root, &cli.family_candidate, path)?;
+        apply_family_candidate_routing(&mut lineage, &workspace_root, &family_candidate, path)?;
 
     tracing::debug!("Migrating {path} to Citum...");
     tracing::debug!(
@@ -280,7 +281,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 fn write_optional_evidence(
-    cli: &CliArgs,
+    cli: &Args,
     lineage: &StyleLineage,
     standalone_lines: usize,
     emitted_lines: usize,
@@ -459,7 +460,7 @@ fn describe_emitted_form(lineage: &StyleLineage, minimized: bool) -> EmittedForm
 /// Extracts style name from path and resolves templates.
 fn resolve_style_name_and_templates(
     path: &str,
-    cli: &CliArgs,
+    cli: &Args,
 ) -> (String, template_resolver::ResolvedTemplates) {
     let style_name = std::path::Path::new(path)
         .file_stem()
