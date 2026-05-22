@@ -163,13 +163,18 @@ mkdir -p "$INSTALL_DIR"
 for c in $SELECTED; do
   src="${STAGE}/${c}${EXE_SUFFIX}"
   if [ ! -f "$src" ]; then
-    # citum-migrate is not included in musl Linux tarballs because rusty_v8
+    # citum-migrate is intentionally absent from musl Linux tarballs: rusty_v8
     # (its embedded V8 dependency) does not publish prebuilt musl static libs.
-    if [ "$c" = "citum-migrate" ]; then
-      printf '%s\n' "citum-installer: warning: citum-migrate has no prebuilt binary for ${TARGET}."
-      printf '%s\n' "  Install from source: cargo install citum-migrate --locked"
-      continue
-    fi
+    # On all other targets this is a real packaging regression — fail fast.
+    case "$TARGET" in
+      *-linux-musl)
+        if [ "$c" = "citum-migrate" ]; then
+          printf '%s\n' "citum-installer: warning: citum-migrate has no prebuilt binary for ${TARGET}."
+          printf '%s\n' "  Install from source: cargo install citum-migrate --locked"
+          continue
+        fi
+        ;;
+    esac
     err "tarball is missing ${c}${EXE_SUFFIX} — release may pre-date this component"
   fi
   install -m 0755 "$src" "${INSTALL_DIR}/${c}${EXE_SUFFIX}"
