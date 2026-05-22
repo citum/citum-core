@@ -1,6 +1,6 @@
 /*
 SPDX-License-Identifier: MIT OR Apache-2.0
-SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
 //! Unified compilation pipeline from CSL 1.0 to Citum templates.

@@ -1,6 +1,6 @@
 /*
 SPDX-License-Identifier: MIT OR Apache-2.0
-SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
 //! `convert` subcommands: typed (style/locale/citations) and refs.
