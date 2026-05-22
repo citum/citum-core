@@ -23,6 +23,15 @@ VERSION="${2:?usage: release-binary.sh <target> <version>}"
 OUT_DIR="${OUT_DIR:-release-out}"
 USE_CROSS="${USE_CROSS:-0}"
 
+# citum-migrate embeds V8 via deno_core/rusty_v8. rusty_v8 does not publish
+# prebuilt musl static libs, so the build fails with a 404 on musl targets.
+# citum-migrate is a dev-time migration tool, not a container workload, so
+# shipping it only on targets where V8 prebuilts exist is the correct trade-off.
+case "$TARGET" in
+  *-linux-musl) INCLUDE_MIGRATE="0" ;;
+  *)             INCLUDE_MIGRATE="1" ;;
+esac
+
 # Strip the leading `v` from the version for the tarball name; this
 # matches the on-disk filename convention many install scripts assume.
 VER_BARE="${VERSION#v}"
@@ -38,14 +47,23 @@ esac
 # Build. `cross` for musl + aarch64-linux (host-tool mismatch); cargo for
 # all native targets. `--locked` is required (CI shouldn't update the
 # lockfile mid-release).
-echo "==> Building citum + citum-server + citum-migrate for ${TARGET}"
+MIGRATE_BIN=""
+[[ "$INCLUDE_MIGRATE" == "1" ]] && MIGRATE_BIN="--bin citum-migrate"
+
+if [[ "$INCLUDE_MIGRATE" == "1" ]]; then
+  echo "==> Building citum + citum-server + citum-migrate for ${TARGET}"
+else
+  echo "==> Building citum + citum-server for ${TARGET} (citum-migrate skipped: no V8 musl prebuilt)"
+fi
 if [[ "$USE_CROSS" == "1" ]]; then
+  # shellcheck disable=SC2086
   cross build --release --locked --target "$TARGET" \
-    --bin citum --bin citum-server --bin citum-migrate
+    --bin citum --bin citum-server $MIGRATE_BIN
 else
   rustup target add "$TARGET" 2>/dev/null || true
+  # shellcheck disable=SC2086
   cargo build --release --locked --target "$TARGET" \
-    --bin citum --bin citum-server --bin citum-migrate
+    --bin citum --bin citum-server $MIGRATE_BIN
 fi
 
 # Stage tarball contents in a dedicated dir; the dir-name becomes the
@@ -54,7 +72,8 @@ STAGE_PATH="${OUT_DIR}/${TARGET}/${STAGE_DIR}"
 mkdir -p "$STAGE_PATH"
 cp "target/${TARGET}/release/citum${EXE_SUFFIX}"         "$STAGE_PATH/"
 cp "target/${TARGET}/release/citum-server${EXE_SUFFIX}"  "$STAGE_PATH/"
-cp "target/${TARGET}/release/citum-migrate${EXE_SUFFIX}" "$STAGE_PATH/"
+[[ "$INCLUDE_MIGRATE" == "1" ]] && \
+  cp "target/${TARGET}/release/citum-migrate${EXE_SUFFIX}" "$STAGE_PATH/"
 cp README.md "$STAGE_PATH/"
 # Ship both licenses if present; otherwise a single LICENSE file works.
 for f in LICENSE LICENSE-MIT LICENSE-APACHE LICENSE.txt; do
@@ -67,7 +86,8 @@ case "$TARGET" in
   *-apple-darwin)
     strip "${STAGE_PATH}/citum${EXE_SUFFIX}"         2>/dev/null || true
     strip "${STAGE_PATH}/citum-server${EXE_SUFFIX}"  2>/dev/null || true
-    strip "${STAGE_PATH}/citum-migrate${EXE_SUFFIX}" 2>/dev/null || true
+    [[ "$INCLUDE_MIGRATE" == "1" ]] && \
+      strip "${STAGE_PATH}/citum-migrate${EXE_SUFFIX}" 2>/dev/null || true
     ;;
   *-pc-windows-*)
     # MSVC strip isn't relevant; binaries built without debug info.
@@ -75,7 +95,8 @@ case "$TARGET" in
   *)
     strip --strip-unneeded "${STAGE_PATH}/citum${EXE_SUFFIX}"         2>/dev/null || true
     strip --strip-unneeded "${STAGE_PATH}/citum-server${EXE_SUFFIX}"  2>/dev/null || true
-    strip --strip-unneeded "${STAGE_PATH}/citum-migrate${EXE_SUFFIX}" 2>/dev/null || true
+    [[ "$INCLUDE_MIGRATE" == "1" ]] && \
+      strip --strip-unneeded "${STAGE_PATH}/citum-migrate${EXE_SUFFIX}" 2>/dev/null || true
     ;;
 esac
 
