@@ -24,11 +24,6 @@ options:
   locators: note
   processing: author-date
   substitute: standard
-  integral-names:
-    rule: full-then-short
-    scope: document
-    contexts: body-and-notes
-    subsequent-form: short
   contributors: chicago
   dates: long
   titles: chicago

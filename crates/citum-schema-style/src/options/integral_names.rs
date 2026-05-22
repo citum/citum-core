@@ -79,6 +79,9 @@ pub enum IntegralNameRule {
     /// Render the first integral mention in scope in full, then shorten later mentions.
     #[default]
     FullThenShort,
+    /// Opt out of name-memory tracking; no first/subsequent distinction is applied and the
+    /// template's own contributor form is used unchanged for every integral citation.
+    ShortOnly,
 }
 
 /// The scope where integral citation name-memory resets.

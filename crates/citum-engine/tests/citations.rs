@@ -164,24 +164,39 @@ fn integral_name_state_overrides_processor_memory() {
     );
 }
 
-fn embedded_mla_enables_integral_name_memory() {
-    let style = citum_schema::embedded::get_embedded_style("mla")
-        .expect("mla style should be embedded")
-        .expect("mla style should parse");
-    let integral_names = style
-        .options
-        .and_then(|options| options.integral_names)
-        .expect("mla should enable integral-names");
-
-    assert_eq!(integral_names.rule, Some(IntegralNameRule::FullThenShort));
-    assert_eq!(integral_names.scope, Some(IntegralNameScope::Document));
-    assert_eq!(
-        integral_names.contexts,
-        Some(IntegralNameContexts::BodyAndNotes)
+fn short_only_rule_ignores_subsequent_name_state() {
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert(
+        "item1".to_string(),
+        make_book("item1", "Smith", "John", 2020, "Book A"),
     );
+    let mut style = build_integral_name_style();
+    style
+        .options
+        .as_mut()
+        .unwrap()
+        .integral_names
+        .as_mut()
+        .unwrap()
+        .rule = Some(IntegralNameRule::ShortOnly);
+    let processor = Processor::new(style, bibliography);
+
+    let subsequent = Citation {
+        mode: CitationMode::Integral,
+        items: vec![CitationItem {
+            id: "item1".to_string(),
+            integral_name_state: Some(IntegralNameState::Subsequent),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    // ShortOnly disables form rewriting — full name rendered regardless of state.
     assert_eq!(
-        integral_names.subsequent_form,
-        Some(IntegralNameForm::Short)
+        processor
+            .process_citation(&subsequent)
+            .expect("should render"),
+        "John Smith"
     );
 }
 
@@ -1461,11 +1476,11 @@ mod integral_name_memory {
     }
 
     #[test]
-    fn embedded_mla_enables_integral_name_memory() {
+    fn short_only_rule_ignores_subsequent_name_state() {
         announce_behavior(
-            "The embedded MLA style should enable document-scoped integral-name memory with full-then-short behavior.",
+            "A style with rule: short-only should render the full name even when the citation carries a Subsequent state.",
         );
-        super::embedded_mla_enables_integral_name_memory();
+        super::short_only_rule_ignores_subsequent_name_state();
     }
 }
 
