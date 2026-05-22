@@ -5,19 +5,27 @@
 #
 # Detects your platform, downloads the matching release tarball from
 # GitHub, verifies its SHA256 against the checksum manifest in the
-# same release, and installs the `citum` and `citum-server` binaries
-# to $CITUM_INSTALL_DIR (default $HOME/.local/bin).
+# same release, and installs the selected Citum binaries to
+# $CITUM_INSTALL_DIR (default $HOME/.local/bin).
 #
 # Environment overrides:
 #   CITUM_VERSION       — release tag (default: latest)
 #   CITUM_INSTALL_DIR   — install destination (default: $HOME/.local/bin)
 #   CITUM_REPO          — GitHub repo (default: citum/citum-core)
+#   CITUM_COMPONENTS    — comma-separated subset of {citum, citum-server,
+#                         citum-migrate}, or the alias `all` (default: citum)
+#
+# Examples:
+#   curl -fsSL .../install.sh | sh                                  # citum only
+#   curl -fsSL .../install.sh | CITUM_COMPONENTS=all sh             # everything
+#   curl -fsSL .../install.sh | CITUM_COMPONENTS=citum,citum-migrate sh
 
 set -eu
 
 REPO="${CITUM_REPO:-citum/citum-core}"
 VERSION="${CITUM_VERSION:-latest}"
 INSTALL_DIR="${CITUM_INSTALL_DIR:-$HOME/.local/bin}"
+COMPONENTS_RAW="${CITUM_COMPONENTS:-citum}"
 
 # ---------- helpers ---------------------------------------------------
 
@@ -88,6 +96,25 @@ elif command -v shasum    >/dev/null 2>&1; then SHASUM="shasum -a 256"
 else err "need sha256sum or shasum to verify the download"
 fi
 
+# Resolve component selection up front so bad input fails before any
+# network traffic. `all` is the only alias; everything else must be an
+# explicit binary name.
+case "$COMPONENTS_RAW" in
+  all) SELECTED="citum citum-server citum-migrate" ;;
+  *)   SELECTED=$(printf '%s' "$COMPONENTS_RAW" | tr ',' ' ') ;;
+esac
+# Normalize any whitespace (spaces, tabs, newlines a stray CI var might
+# carry) to single spaces and trim both ends — `tr` handles the squeeze,
+# `awk` handles trim portably without bashisms.
+SELECTED=$(printf '%s' "$SELECTED" | tr -s '[:space:]' ' ' | awk '{$1=$1; print}')
+[ -z "$SELECTED" ] && err "CITUM_COMPONENTS is empty (valid: citum, citum-server, citum-migrate, all)"
+for c in $SELECTED; do
+  case "$c" in
+    citum|citum-server|citum-migrate) ;;
+    *) err "unknown component: $c (valid: citum, citum-server, citum-migrate, all)" ;;
+  esac
+done
+
 TARGET="$(detect_target)"
 VERSION="$(resolve_version)"
 VER_BARE="${VERSION#v}"
@@ -100,7 +127,7 @@ esac
 TARBALL="citum-${VER_BARE}-${TARGET}.tar.gz"
 BASE_URL="https://github.com/${REPO}/releases/download/${VERSION}"
 
-say "installing citum ${VERSION} for ${TARGET}"
+say "installing citum ${VERSION} for ${TARGET} (components:$(printf ' %s' $SELECTED))"
 
 # Stage in a tempdir that's wiped on exit (even on error).
 TMP="$(mktemp -d 2>/dev/null || mktemp -d -t citum-install)"
@@ -133,10 +160,12 @@ tar -xzf "${TMP}/${TARBALL}" -C "$TMP"
 STAGE="${TMP}/citum-${VER_BARE}-${TARGET}"
 
 mkdir -p "$INSTALL_DIR"
-install -m 0755 "${STAGE}/citum${EXE_SUFFIX}"        "${INSTALL_DIR}/citum${EXE_SUFFIX}"
-install -m 0755 "${STAGE}/citum-server${EXE_SUFFIX}" "${INSTALL_DIR}/citum-server${EXE_SUFFIX}"
-
-say "installed citum and citum-server to ${INSTALL_DIR}"
+for c in $SELECTED; do
+  src="${STAGE}/${c}${EXE_SUFFIX}"
+  [ -f "$src" ] || err "tarball is missing ${c}${EXE_SUFFIX} — release may pre-date this component"
+  install -m 0755 "$src" "${INSTALL_DIR}/${c}${EXE_SUFFIX}"
+  say "installed ${c} -> ${INSTALL_DIR}/${c}${EXE_SUFFIX}"
+done
 
 # PATH check. If INSTALL_DIR isn't on PATH, point the user at the fix
 # in a way that copy-pastes cleanly into their shell rc file.
@@ -158,4 +187,6 @@ EOF
   ;;
 esac
 
-say "done. Run: citum --help"
+# Hint with whichever binary is first in the user's selection.
+FIRST="${SELECTED%% *}"
+say "done. Run: ${FIRST} --help"
