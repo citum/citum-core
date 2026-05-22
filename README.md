@@ -1,50 +1,72 @@
 # Citum
 
-Citum is a Rust-based, declarative citation styling system.
+Citum is a citation engine with a richer reference data model and style language than CSL 1.0 can express. It is delivered as a portable Rust library that runs on any surface — CLI, WASM, JSON-RPC server, or C FFI. Styles are declarative YAML, validated at load time, with rendering oracle-verified against the established CSL and biblatex ecosystems. See [capabilities](https://docs.citum.org/capabilities) for a full feature overview.
 
-It is the successor-focused evolution of CSL 1.0: styles are expressed as YAML templates and options, then rendered by a type-safe processor with oracle verification against `citeproc-js`.
+> **Researchers and style authors:** see [citum.org](https://citum.org) and [docs.citum.org](https://docs.citum.org) instead of this document.
+
+## Why Citum
+
+- **Richer reference and style model** — expressive reference types, dates, and relationships beyond what CSL 1.0 can represent; see [capabilities](https://docs.citum.org/capabilities)
+- **Declarative YAML styles** — human-readable, diff-friendly, and toolable; no procedural XML
+- **Type-safe schema** — styles are fully validated at load time; invalid styles are rejected, not silently misrendered
+- **Oracle-verified rendering** — parity targets against citeproc-js (CSL ecosystem) and biblatex; regressions caught automatically
+- **Deploy anywhere** — the same engine runs as a CLI binary, a WASM module, a JSON-RPC server, or via C FFI
+
+## Pipeline
+
+```
+References (JSON / YAML / BibLaTeX / RIS)
+         │
+         ▼
+   citum-schema  ←── Style (YAML)  ←── Locale (YAML)
+         │
+         ▼
+   citum-engine
+         │
+         ▼
+   HTML / plain text / LaTeX / Typst / Djot / …
+
+   CSL 1.0 XML ──► citum-migrate ──► Style (YAML)   (migration path)
+```
 
 ## Status
 
-Citum is in active development.
+Citum is in active development. The schema, engine, and CLI are the stable core; PDF output and some language bindings are experimental.
 
-For current, generated metrics, use these as source of truth:
+For live metrics — do not rely on any hardcoded numbers in this file:
 
 - Compatibility dashboard: [`citum.github.io/citum-core/compat.html`](https://citum.github.io/citum-core/compat.html)
-- Tier status snapshot: [`citum.github.io/citum-core/TIER_STATUS.md`](https://citum.github.io/citum-core/TIER_STATUS.md)
-- Core fidelity/SQI baseline: [`scripts/report-data/core-quality-baseline.json`](./scripts/report-data/core-quality-baseline.json)
 
-Do not treat hard-coded README percentages as canonical.
+## For App Developers
 
-## What Citum Includes
+Citum exposes multiple integration surfaces from the same engine:
 
-- `csl-legacy`: CSL 1.0 XML parser
-- `citum_schema`: schema/types and shared models (includes `citum-schema-data`, `citum-schema-style`)
-- `citum_engine`: citation and bibliography rendering engine
-- `citum_migrate`: CSL 1.0 -> Citum migration pipeline (hybrid)
-- `citum-cli`: main binary (`citum`) and subcommands
-- `citum_analyze`: corpus analysis tooling
-- `citum-bindings`: FFI and language bindings (JS/WASM)
-- `citum-edtf`: native EDTF date processing
-- `citum-pdf`: PDF generation via Typst
-- `citum-server`: stateless JSON-RPC server
-- `citum_store`: user-level persistent registry and store
+| Surface | Crate | Notes |
+|---|---|---|
+| WASM | `citum-bindings` | Node-compatible; see [citum-hub](https://github.com/citum/citum-hub) for the reference WASM integration |
+| JSON-RPC server | `citum-server` | Stateless HTTP/JSON-RPC; suitable for sidecar or hosted deployment |
+| C FFI | `citum-bindings` | Used by [citum-labs](https://github.com/citum/citum-labs) for Lua and Python bindings |
+| Rust library | `citum-engine` / `citum-schema` | Direct crate dependency |
 
-## Quick Start
+Rust API docs: [docs.rs/citum-engine](https://docs.rs/citum-engine). JS/TS bindings: [jsr.io/@citum](https://jsr.io/@citum).
+
+## For Contributors
+
+### Quick Start
 
 ```bash
 git clone https://github.com/citum/citum-core
 cd citum-core
-./scripts/bootstrap.sh minimal
+./scripts/bootstrap.sh minimal          # lean setup, no legacy corpora
 ./scripts/dev-env.sh cargo build --workspace
 ./scripts/dev-env.sh cargo test --workspace
 ```
 
-The default local setup is intentionally lean:
+`./scripts/bootstrap.sh full` fetches the `styles-legacy/` and `tests/csl-test-suite/` submodules needed for migration and oracle workflows.
 
-- `./scripts/bootstrap.sh minimal` installs script dependencies without fetching the legacy CSL corpora.
-- `./scripts/dev-env.sh <command>` keeps `CARGO_TARGET_DIR` outside the repo at `${XDG_CACHE_HOME:-$HOME/.cache}/citum-core/target`.
-- Run `./scripts/bootstrap.sh full` only when you need migration, oracle, or compatibility-report workflows that depend on `styles-legacy/` or `tests/csl-test-suite/`.
+`./scripts/dev-env.sh <cmd>` keeps `CARGO_TARGET_DIR` outside the repo at `${XDG_CACHE_HOME:-$HOME/.cache}/citum-core/target`.
+
+### Key Commands
 
 Render references:
 
@@ -54,194 +76,60 @@ cargo run --bin citum -- render refs \
   -s styles/apa-7th.yaml
 ```
 
-Render a document:
-
-```bash
-cargo run --bin citum -- render doc \
-  examples/document.djot \
-  -b examples/document-refs.json \
-  -s styles/apa-7th.yaml \
-  -f html
-```
-
-Validate inputs:
+Validate a style and references:
 
 ```bash
 cargo run --bin citum -- check \
   -s styles/apa-7th.yaml \
-  -b tests/fixtures/references-expanded.json \
-  -c tests/fixtures/citations-expanded.json
+  -b tests/fixtures/references-expanded.json
 ```
 
-Validate all production styles with the workspace binary:
+Validate all production styles:
 
 ```bash
 ./scripts/validate-production-styles.sh
 ```
 
-Convert formats:
+Convert reference formats:
 
 ```bash
-cargo run --bin citum -- convert style styles/apa-7th.yaml --output /tmp/apa-7th.cbor
-cargo run --bin citum -- convert refs tests/fixtures/references-expanded.json --output /tmp/refs.ris
-cargo run --bin citum -- convert refs /tmp/refs.ris --output /tmp/refs.json --to citum-json
+cargo run --bin citum -- convert refs tests/fixtures/references-expanded.json \
+  --output /tmp/refs.ris
 ```
 
 `convert refs` supports `citum-yaml`, `citum-json`, `citum-cbor`, `csl-json`, `biblatex`, and `ris`.
-RIS multiline field continuations are preserved during parsing, and CSL `issued` dates are emitted as year
-when parseable or `literal` otherwise to avoid dropping date semantics.
+Run `citum --help` for the full command surface.
 
-## CLI Surface
+### Crate Map
 
-`citum` currently exposes:
+See [`crates/README.md`](./crates/README.md) for the workspace layout and where work usually happens.
 
-- `render` (subcommands: `doc`, `refs`)
-- `check`
-- `convert` (subcommands: `refs`, `style`, `citations`, `locale`)
-- `registry` (subcommands: `list`, `add`, `remove`, `update`, `resolve`)
-- `style` (subcommands: `list`, `search`, `info`, `browse`, `add`, `remove`, `lint`, `cid`, `pin`, `validate`)
-- `locale` (subcommands: `list`, `add`, `remove`, `lint`)
-- `doctor`
-- `completions`
+### Pre-Commit Gate
 
-Schema generation is available with the feature-enabled build:
+Before committing `.rs`, `Cargo.toml`, or `Cargo.lock`:
 
 ```bash
-cargo run --bin citum --features schema -- schema style
-cargo run --bin citum --features schema -- schema --out-dir ./schemas
+./scripts/dev-env.sh cargo fmt --check
+./scripts/dev-env.sh cargo clippy --all-targets --all-features -- -D warnings
+./scripts/dev-env.sh cargo nextest run   # fallback: cargo test
 ```
 
-## Migration Workflow (Hybrid)
+Run `cargo fmt` (without `--check`) first if formatting is dirty, then re-check. Do not commit if any check fails.
 
-Citum migration combines output-driven template inference with XML extraction:
+### Commit Conventions
 
-1. Extract global options from CSL XML.
-2. Resolve citation and bibliography templates from inferred output artifacts (cache first, then live inference).
-3. Fall back to XML template compilation only when template artifacts are missing or rejected.
-4. Emit `extends:`-based wrapper styles when the target lineage matches a known profile or journal.
+Conventional Commits (`type(scope): subject`, lowercase, 50/72 rule). See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for allowed scopes, versioning signals, and PR workflow.
 
-Run a single-style migration (uses embedded Deno-based JS runtime for live inference):
+## Documentation
 
-```bash
-./scripts/bootstrap.sh full
-./scripts/dev-env.sh cargo run --bin citum-migrate -- styles-legacy/apa.csl
-```
-
-Prepare a batch inference cache (requires Node.js; allows subsequent Rust migrations without live JS):
-
-```bash
-./scripts/bootstrap.sh full
-./scripts/batch-infer.sh
-```
-
-Migrate using the cache-only inferred mode:
-
-```bash
-cargo run --bin citum-migrate -- styles-legacy/apa.csl --template-source inferred
-```
-
-Prepare high-fidelity authoring context:
-
-```bash
-./scripts/bootstrap.sh full
-./scripts/prep-migration.sh styles-legacy/apa.csl
-```
-
-Detailed migration docs:
-
-- [`crates/citum-migrate/README.md`](./crates/citum-migrate/README.md)
-- [`docs/architecture/MIGRATION_STRATEGY_ANALYSIS.md`](./docs/architecture/MIGRATION_STRATEGY_ANALYSIS.md)
-
-## Verification Workflow
-
-Single-style oracle checks:
-
-```bash
-./scripts/bootstrap.sh full
-node scripts/oracle.js styles-legacy/apa.csl
-node scripts/oracle-e2e.js styles-legacy/apa.csl
-```
-
-Top-style aggregate:
-
-```bash
-./scripts/bootstrap.sh full
-node scripts/oracle-batch-aggregate.js styles-legacy/ --top 10
-```
-
-Core fidelity + SQI gate:
-
-```bash
-./scripts/bootstrap.sh full
-node scripts/report-core.js > /tmp/core-report.json
-node scripts/check-core-quality.js \
-  --report /tmp/core-report.json \
-  --baseline scripts/report-data/core-quality-baseline.json
-```
-
-Production style validity gate:
-
-```bash
-./scripts/validate-production-styles.sh
-```
-
-During development, use `cargo run --bin citum -- ...` or
-`./scripts/validate-production-styles.sh` as the authoritative validation path.
-A globally installed `citum` binary may lag the current workspace build and can
-report stale style failures until it is rebuilt or reinstalled.
-
-## Repository Layout
-
-```text
-crates/
-  csl-legacy/
-  citum-schema-data/
-  citum-schema-style/
-  citum-schema/
-  citum-migrate/
-  citum-engine/
-  citum-analyze/
-  citum-cli/
-  citum-pdf/
-  citum-server/
-  citum-edtf/
-  citum_store/
-  citum-bindings/
-
-docs/
-styles/
-styles-legacy/      # Optional submodule; fetch with ./scripts/bootstrap.sh full
-scripts/
-tests/
-tests/csl-test-suite/  # Optional submodule; fetch with ./scripts/bootstrap.sh full
-```
-
-## Documentation Map
-
-- Rendering workflow: [`docs/guides/RENDERING_WORKFLOW.md`](./docs/guides/RENDERING_WORKFLOW.md)
-- Style tier tracking: [`docs/TIER_STATUS.md`](./docs/TIER_STATUS.md)
-- Design and architecture docs: [`docs/architecture/`](./docs/architecture/)
-- Web docs entry point: [`docs/index.html`](./docs/index.html)
-
-## Contributing
-
-- For roadmap/design context, start in [`docs/architecture/`](./docs/architecture/).
-- For rendering issues, follow [`docs/guides/RENDERING_WORKFLOW.md`](./docs/guides/RENDERING_WORKFLOW.md).
-- For local task tracking, see `.beans/` and project workflow docs.
-- Use `./scripts/bootstrap.sh minimal` for default setup and `./scripts/bootstrap.sh full` only for corpus-backed workflows.
-- Use `./scripts/dev-env.sh <command>` for local cargo commands to keep build artifacts out of the repo.
-
-If your change touches Rust code (`.rs`, `Cargo.toml`, `Cargo.lock`), run:
-
-```bash
-cargo fmt && cargo clippy --all-targets --all-features -- -D warnings && cargo nextest run
-```
-
-If `cargo nextest` is unavailable, use:
-
-```bash
-cargo fmt && cargo clippy --all-targets --all-features -- -D warnings && cargo test
-```
+| Resource | Location |
+|---|---|
+| Full user docs | [docs.citum.org](https://docs.citum.org) |
+| Architecture and design | [`docs/architecture/`](./docs/architecture/) |
+| Rendering workflow | [`docs/guides/RENDERING_WORKFLOW.md`](./docs/guides/RENDERING_WORKFLOW.md) |
+| Style authoring guide | [`docs/guides/style-author-guide.md`](./docs/guides/style-author-guide.md) |
+| Migration docs | [`crates/citum-migrate/README.md`](./crates/citum-migrate/README.md) |
+| Contributing | [`CONTRIBUTING.md`](./CONTRIBUTING.md) |
 
 ## License
 
