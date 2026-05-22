@@ -2694,6 +2694,11 @@
           "description": "Render the first integral mention in scope in full, then shorten later mentions.",
           "type": "string",
           "const": "full-then-short"
+        },
+        {
+          "description": "Opt out of name-memory tracking; no first/subsequent distinction is applied and the\ntemplate's own contributor form is used unchanged for every integral citation.",
+          "type": "string",
+          "const": "short-only"
         }
       ]
     },
