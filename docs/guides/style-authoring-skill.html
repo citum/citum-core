@@ -1,0 +1,175 @@
+<!-- PAGE_ID: style -->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI-Assisted Style Authoring | Citum Docs</title>
+    <meta name="description" content="Use the Citum AI skill to author, port, and validate Citum YAML styles with Claude Code or Codex — no local citum-core checkout required." />
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../assets/citum-theme.css">
+</head>
+<body>
+    <nav class="site-nav">
+        <!-- LAYOUT_NAV_START -->
+        <div class="site-nav-inner">
+            <div class="site-brand-wrap">
+                <a href="../index.html" class="site-brand">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </a>
+            </div>
+            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
+                <a class="site-nav-link " href="../index.html">Overview</a>
+                <a class="site-nav-link " href="../examples.html">Capabilities</a>
+                <a class="site-nav-link active" href="../guides/style-authoring/start.html">Style Authoring</a>
+                <a class="site-nav-link " href="../developer.html">Integrate</a>
+                <a class="site-nav-link " href="../interactive-demo.html">Demo</a>
+                <a class="site-nav-link " href="../schemas/">Schemas</a>
+                <a class="site-nav-link " href="../reports.html">Reports</a>
+                <a class="site-source-link" href="https://github.com/citum/citum-core">
+                    <svg aria-hidden="true" class="site-source-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+                <span class="mobile-nav-icon" aria-hidden="true">&#9776;</span>
+            </button>
+        </div>
+        <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
+            <a class="site-nav-link " href="../index.html">Overview</a>
+            <a class="site-nav-link " href="../examples.html">Capabilities</a>
+            <a class="site-nav-link active" href="../guides/style-authoring/start.html">Style Authoring</a>
+            <a class="site-nav-link " href="../developer.html">Integrate</a>
+            <a class="site-nav-link " href="../interactive-demo.html">Demo</a>
+            <a class="site-nav-link " href="../schemas/">Schemas</a>
+            <a class="site-nav-link " href="../reports.html">Reports</a>
+            <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
+        </div>        <!-- LAYOUT_NAV_END -->
+    </nav>
+
+    <main class="doc-shell">
+        <header class="doc-section-header">
+            <span class="citum-kicker">Style authoring</span>
+            <h1>AI-Assisted Style Authoring</h1>
+            <p>Author, port, and validate Citum styles with an AI agent — no local citum-core checkout required.</p>
+        </header>
+
+        <article class="doc-prose" style="max-width: 72ch;">
+
+            <h2 id="install">Install the skill</h2>
+
+            <p>The <code>citum/skills</code> package teaches Claude Code, Codex, and other
+            <code>skills</code>-compatible agents how to author Citum YAML styles correctly.
+            Install it with one command:</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-bash">npx skills add citum/skills</code></pre>
+            </div>
+
+            <p>Source and issue tracker: <a href="https://github.com/citum/skills">github.com/citum/skills</a>.</p>
+
+            <h2 id="what-it-does">What it does</h2>
+
+            <p>Style authoring is a domain AI agents get wrong in a predictable way.
+            Ask an agent to "create a Citum citation style" without guidance and it reaches
+            for what it knows: CSL's macro system — <code>&lt;macro&gt;</code> elements, name lists,
+            template references. None of that exists in Citum.</p>
+
+            <p>The skill addresses this by frontloading a <strong>Structural Model</strong> section that
+            explains how Citum actually works:</p>
+
+            <ul>
+                <li><strong>Style-level inheritance</strong> (<code>extends: apa-7th</code>): inherit an entire
+                compiled-in base style and override only what differs.</li>
+                <li><strong>Type-variant diffs</strong>: within <code>bibliography.type-variants</code>, each entry
+                is either a full component list or a structural diff — <code>modify</code>, <code>remove</code>,
+                and <code>add</code> operations keyed by component selectors.</li>
+            </ul>
+
+            <p>A selector like <code>match: {variable: doi}</code> targets a specific component in the
+            parent template. Getting it wrong produces a silent error, which is why the skill
+            also mandates a <strong>Research Parent</strong> phase: read the parent type's actual component
+            list before writing any selector.</p>
+
+            <h2 id="validation">Validation workflow</h2>
+
+            <p>Full CLI validation is available when <code>citum</code> is on your PATH.
+            The skill treats <code>citum check --strict</code> as the first gate — fast schema validation
+            that catches unknown fields before you spend time on rendering. Then
+            <code>citum render refs</code> confirms the output looks correct.</p>
+
+            <p>The skill works without a local citum-core checkout: it fetches the published
+            JSON Schema and reads example styles from GitHub. If you do have a local checkout,
+            the skill reads the style engine's source directly for more precise field guidance —
+            mainly useful for contributors working on the engine itself.</p>
+
+            <h2 id="porting">Porting from CSL</h2>
+
+            <p>To convert an existing <code>.csl</code> file, just ask the agent — the skill handles
+            the process. When <code>citum-migrate</code> is available, it uses the migrator to translate
+            the CSL XML automatically, then validates and cleans up the result. Without the
+            migrator it falls back to manual translation using the schema and existing styles
+            as reference.</p>
+
+            <p>One of the more useful outcomes of migration is a <em>minimal</em> result. If your CSL
+            style already maps to a format Citum knows — APA, Chicago, IEEE, and others — the
+            skill can often produce a short list of overrides rather than a full style definition:</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-bash">citum-migrate style.csl > style.yaml
+citum check -s style.yaml --strict</code></pre>
+            </div>
+
+            <h2 id="getting-started">Getting started</h2>
+
+            <p>Install <code>citum</code> and <code>citum-migrate</code>:</p>
+
+            <div class="workshop-block">
+                <pre><code class="language-bash">curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | CITUM_COMPONENTS=citum,citum-migrate sh</code></pre>
+            </div>
+
+            <p>Then add the skill and try one of these prompts:</p>
+
+            <ul>
+                <li><em>Create a Citum style for Chemical Communications — numeric, author initials, italic journal titles.</em></li>
+                <li><em>Extend apa-7th: remove page numbers from chapter entries.</em></li>
+                <li><em>Migrate ieee.csl to Citum and keep it minimal if it extends a known parent.</em></li>
+                <li><em>Validate my style.yaml and explain any errors.</em></li>
+            </ul>
+
+            <div class="callout tip">
+                <span aria-hidden="true">ℹ️</span>
+                <div><strong>Writing styles by hand?</strong>
+                Start with the <a href="style-authoring/start.html">Style Authoring guide</a> for a full
+                walkthrough of the YAML format, templates, options, and validation.</div>
+            </div>
+
+        </article>
+    </main>
+
+    <footer style="padding: 3rem 0; border-top: 1px solid var(--citum-border); background: var(--citum-surface);">
+        <!-- LAYOUT_FOOTER_START -->
+        <div class="site-footer-inner">
+            <div class="site-brand site-brand-small">
+                <div class="site-brand-mark"><span>C</span></div>
+                <span class="site-brand-name">Citum</span>
+            </div>
+            <div class="site-footer-links">
+                <a href="style-authoring/start.html">Style Authoring</a>
+                <a href="../developer.html">Integrate</a>
+                <a href="../schemas/">Schemas</a>
+                <a href="../reports.html">Reports</a>
+                <a href="../operating.html">Contributing</a>
+                <a href="https://github.com/citum/citum-core">GitHub</a>
+            </div>
+            <div class="site-footer-note">&copy; 2026 Citum Project.</div>
+        </div>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github.min.css">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js" defer onload="hljs.highlightAll();"></script>        <!-- LAYOUT_FOOTER_END -->
+    </footer>
+    <script src="../assets/citum-interactive.js"></script>
+</body>
+</html>

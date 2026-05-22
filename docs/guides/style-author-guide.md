@@ -1,6 +1,7 @@
 # Style Author Guide
 
 This guide is for people who write and maintain Citum styles.
+Prefer working with an AI agent? See the [AI-assisted authoring guide](style-authoring-skill.html) — the `citum/skills` package handles the workflow for you.
 
 ## [compare_arrows] How Citum Differs
 
