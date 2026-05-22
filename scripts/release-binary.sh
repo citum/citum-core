@@ -38,20 +38,23 @@ esac
 # Build. `cross` for musl + aarch64-linux (host-tool mismatch); cargo for
 # all native targets. `--locked` is required (CI shouldn't update the
 # lockfile mid-release).
-echo "==> Building citum + citum-server for ${TARGET}"
+echo "==> Building citum + citum-server + citum-migrate for ${TARGET}"
 if [[ "$USE_CROSS" == "1" ]]; then
-  cross build --release --locked --target "$TARGET" --bin citum --bin citum-server
+  cross build --release --locked --target "$TARGET" \
+    --bin citum --bin citum-server --bin citum-migrate
 else
   rustup target add "$TARGET" 2>/dev/null || true
-  cargo build --release --locked --target "$TARGET" --bin citum --bin citum-server
+  cargo build --release --locked --target "$TARGET" \
+    --bin citum --bin citum-server --bin citum-migrate
 fi
 
 # Stage tarball contents in a dedicated dir; the dir-name becomes the
 # top-level directory when users `tar xzf`.
 STAGE_PATH="${OUT_DIR}/${TARGET}/${STAGE_DIR}"
 mkdir -p "$STAGE_PATH"
-cp "target/${TARGET}/release/citum${EXE_SUFFIX}"        "$STAGE_PATH/"
-cp "target/${TARGET}/release/citum-server${EXE_SUFFIX}" "$STAGE_PATH/"
+cp "target/${TARGET}/release/citum${EXE_SUFFIX}"         "$STAGE_PATH/"
+cp "target/${TARGET}/release/citum-server${EXE_SUFFIX}"  "$STAGE_PATH/"
+cp "target/${TARGET}/release/citum-migrate${EXE_SUFFIX}" "$STAGE_PATH/"
 cp README.md "$STAGE_PATH/"
 # Ship both licenses if present; otherwise a single LICENSE file works.
 for f in LICENSE LICENSE-MIT LICENSE-APACHE LICENSE.txt; do
@@ -62,15 +65,17 @@ done
 # Best-effort: not every build env has strip available.
 case "$TARGET" in
   *-apple-darwin)
-    strip "${STAGE_PATH}/citum${EXE_SUFFIX}"        2>/dev/null || true
-    strip "${STAGE_PATH}/citum-server${EXE_SUFFIX}" 2>/dev/null || true
+    strip "${STAGE_PATH}/citum${EXE_SUFFIX}"         2>/dev/null || true
+    strip "${STAGE_PATH}/citum-server${EXE_SUFFIX}"  2>/dev/null || true
+    strip "${STAGE_PATH}/citum-migrate${EXE_SUFFIX}" 2>/dev/null || true
     ;;
   *-pc-windows-*)
     # MSVC strip isn't relevant; binaries built without debug info.
     ;;
   *)
-    strip --strip-unneeded "${STAGE_PATH}/citum${EXE_SUFFIX}"        2>/dev/null || true
-    strip --strip-unneeded "${STAGE_PATH}/citum-server${EXE_SUFFIX}" 2>/dev/null || true
+    strip --strip-unneeded "${STAGE_PATH}/citum${EXE_SUFFIX}"         2>/dev/null || true
+    strip --strip-unneeded "${STAGE_PATH}/citum-server${EXE_SUFFIX}"  2>/dev/null || true
+    strip --strip-unneeded "${STAGE_PATH}/citum-migrate${EXE_SUFFIX}" 2>/dev/null || true
     ;;
 esac
 

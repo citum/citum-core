@@ -137,6 +137,17 @@
             <div class="workshop-block">
                 <div class="workshop-label">Install (pre-built binary)</div>
                 <pre><code>curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | sh</code></pre>
+                <p style="margin-top: 0.75rem; color: var(--citum-muted); font-size: 0.92rem;">
+                    Installs <code>citum</code> by default. To pick a different subset, set
+                    <code>CITUM_COMPONENTS</code> to a comma-separated list of
+                    <code>citum</code>, <code>citum-server</code>, <code>citum-migrate</code>,
+                    or <code>all</code>:
+                </p>
+                <pre><code># everything
+curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | CITUM_COMPONENTS=all sh
+
+# citum + citum-migrate, no server
+curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | CITUM_COMPONENTS=citum,citum-migrate sh</code></pre>
             </div>
             <div class="workshop-block" style="margin-top: 1rem;">
                 <div class="workshop-label">Install (from source)</div>
