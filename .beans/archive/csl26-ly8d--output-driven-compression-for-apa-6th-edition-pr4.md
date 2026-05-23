@@ -1,11 +1,11 @@
 ---
 # csl26-ly8d
 title: Extend minimize-wrapper to all parent-link sources
-status: todo
+status: scrapped
 type: feature
 priority: high
 created_at: 2026-05-20T22:50:26Z
-updated_at: 2026-05-20T23:36:23Z
+updated_at: 2026-05-23T12:48:57Z
 parent: csl26-f1u7
 blocked_by:
     - csl26-39tm
@@ -25,3 +25,9 @@ Acceptance:
 Starting points:
 - `MigrationEvidence` records discovered candidates and emitted form; a future minimization expansion should report per-scope equivalence results.
 - Today's `apply_to_migrated_style` calls `diff_value` with `exclude_template_paths = !preserve_template_deltas`. For oracle-driven compression the equivalence check needs to run per template scope, not at the YAML-diff level — likely a new pass after `apply_to_migrated_style`.
+
+## Reasons for Scrapping
+
+Made obsolete by the strict equivalence gate landed in csl26-dqtx (PR #768). The scorecard already runs every discovered parent-link candidate through the gate — see the `multidisciplinary-digital-publishing-institute` row in `docs/architecture/2026-05-20_MIGRATE_SQI_BASELINE.md` (template-link source, `237 → 237 LOC, ✗`). Plumbing minimize through `parent_style_id` for additional non-reverse-template-link sources produces more rejections, not more LOC wins.
+
+Same rationale as csl26-tjqn: no sentinel candidate would change emitted output today. The productive next step is authoring new preset bases (PR5 in the original wave plan), not extending the minimize plumbing on the current corpus.
