@@ -42,3 +42,11 @@ Read first:
 Report the chosen cluster, semantic class, implementation form, selected parent if any,
 classification, before/after evidence, exact change made if any, and whether the pass
 should continue, stop, or escalate.
+
+## Self-Improvement
+
+When you reach a dead end not covered by the operating rules — a cluster pattern that
+doesn't fit the four classifications, a stop condition missing from the guides, or a
+migration artifact the evidence ladder doesn't anticipate — record the insight as a
+concrete bullet here and include the file update in the same commit or PR. Future
+research passes start with a richer surface.

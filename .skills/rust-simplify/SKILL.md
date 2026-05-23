@@ -41,3 +41,17 @@ Read first:
   passes and review the advisory findings.
 - Regenerate schemas if the touched files require it.
 - Report the exact checks you ran and the result.
+
+## Self-Improvement
+
+When you hit a recurring Rust smell not already caught by the audit script:
+
+1. If it can be expressed as a regex rule, add it to `scripts/audit-rust-review-smells.py`
+   as a new `Rule` entry in the `RULES` tuple — the script is the canonical home for
+   automatable patterns.
+2. If it's too contextual for a regex, add a short bullet to the Quality Pass section
+   above instead.
+
+For verification failure modes or jcodemunch quirks, add a bullet to the Verification
+section above. Include any file updates in the same commit. One concrete rule per
+observation — keep the scope tight.

@@ -41,3 +41,11 @@ Read first:
 - Keep waves bounded to one family or one clearly related cohort per PR.
 - Do not duplicate the shared decision rules or evidence ladder here.
 - Keep this skill focused on routing and host-facing behavior.
+
+## Self-Improvement
+
+When you encounter a routing case, semantic class, or implementation form not covered
+by the existing operating rules or the shared workflow docs, record the pattern here as
+a new bullet under "Operating Rules" and include the file update in the same commit.
+The goal is that each time style-evolve handles an edge case it couldn't resolve
+cleanly, that edge case becomes a covered case going forward.
