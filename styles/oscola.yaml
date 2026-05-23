@@ -122,7 +122,8 @@ bibliography:
   options:
     contributors:
       display-as-sort: all
-      name-form: full
+      name-form: initials
+      initialize-with: ""
       shorten:
         min: 4
         use-first: 1
