@@ -52,9 +52,9 @@ this without introducing a third crate (the spec's earlier
   (`StoreResolver`, `EmbeddedResolver`, `RegistryResolver`, `FileResolver`,
   `FileLocaleResolver`, `HttpResolver`, `GitResolver`, `CidResolver`,
   `ChainResolver`). `FileLocaleResolver` is the locale-only sibling of
-  `FileResolver`: it resolves `<base_dir>/<id>.{yaml,yml,json,cbor}` and is
-  prepended to the chain by `build_chain_with_file_locale_dir` when the
-  caller has a file-based style with a sibling `locales/` directory.
+  `FileResolver`: it probes `<base_dir>/<id>.{yaml,yml,json,cbor}` in that
+  order and is prepended to the chain by `build_chain_with_file_locale_dir`
+  when the caller has a file-based style with a sibling `locales/` directory.
 - `citum_store` resolvers map their richer `ResolverError` variants to
   schema-layer `ResolutionError` via `resolution_error_from_store_error`,
   preserving the typed `IntegrityFailure` and `VersionMismatch` cases.

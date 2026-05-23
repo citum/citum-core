@@ -90,20 +90,22 @@ impl StyleResolver for FileLocaleResolver {
     }
 
     fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
-        for format in StoreFormat::all() {
-            let path = self.base_dir.join(format!("{}.{}", id, format.extension()));
-            if path.is_file() {
-                let bytes = fs::read(&path)?;
-                return match format {
-                    StoreFormat::Yaml => Locale::from_yaml_str(&String::from_utf8_lossy(&bytes))
-                        .map_err(|e| ResolverError::YamlError(ToString::to_string(&e))),
-                    StoreFormat::Json => {
-                        serde_json::from_slice(&bytes).map_err(ResolverError::JsonError)
-                    }
-                    StoreFormat::Cbor => ciborium::de::from_reader(Cursor::new(&bytes))
-                        .map_err(|e| ResolverError::CborError(e.to_string())),
-                };
+        for ext in StoreFormat::all_extensions() {
+            let path = self.base_dir.join(format!("{id}.{ext}"));
+            if !path.is_file() {
+                continue;
             }
+            let bytes = fs::read(&path)?;
+            let format = StoreFormat::detect(&path).unwrap_or(StoreFormat::Yaml);
+            return match format {
+                StoreFormat::Yaml => Locale::from_yaml_str(&String::from_utf8_lossy(&bytes))
+                    .map_err(|e| ResolverError::YamlError(ToString::to_string(&e))),
+                StoreFormat::Json => {
+                    serde_json::from_slice(&bytes).map_err(ResolverError::JsonError)
+                }
+                StoreFormat::Cbor => ciborium::de::from_reader(Cursor::new(&bytes))
+                    .map_err(|e| ResolverError::CborError(e.to_string())),
+            };
         }
         Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
     }
@@ -1184,9 +1186,9 @@ impl StoreResolver {
             return self.load_item_at(&path);
         }
 
-        // Fallback: search all supported formats
-        for format in StoreFormat::all() {
-            let path = items_dir.join(format!("{}.{}", id, format.extension()));
+        // Fallback: probe every accepted extension (yaml + yml + json + cbor)
+        for ext in StoreFormat::all_extensions() {
+            let path = items_dir.join(format!("{id}.{ext}"));
             if path.is_file() {
                 return self.load_item_at(&path);
             }
@@ -1260,8 +1262,8 @@ impl StoreResolver {
 
         // Search and remove all matching files for this ID
         let mut found = false;
-        for format in StoreFormat::all() {
-            let path = items_dir.join(format!("{}.{}", id, format.extension()));
+        for ext in StoreFormat::all_extensions() {
+            let path = items_dir.join(format!("{id}.{ext}"));
             if path.exists() {
                 fs::remove_file(path)?;
                 found = true;

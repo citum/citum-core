@@ -39,18 +39,23 @@ A new `citum_store` crate provides:
 
 The store is format-agnostic at every read/write step:
 
-- **install** preserves the source file's extension. `citum locale add foo.cbor`
-  lands as `<data-dir>/locales/foo.cbor`; the file is not re-encoded.
-- **resolve** detects the format from the on-disk extension. The configured
-  `[store].format` is only a tiebreaker when multiple encodings of the same id
-  coexist (e.g. both `apa.yaml` and `apa.cbor`).
+- **install** preserves the source file's format. `citum locale add foo.cbor`
+  lands as `<data-dir>/locales/foo.cbor`; the file is not re-encoded. YAML is
+  the one normalization: `foo.yml` lands as `foo.yaml` because the canonical
+  extension for the YAML format is `yaml` (the resolver still probes both
+  `.yaml` and `.yml` when looking up by id, so hand-placed `.yml` files are
+  picked up too).
+- **resolve** detects the format from the on-disk extension and accepts
+  `yaml`, `yml`, `json`, and `cbor`. The configured `[store].format` is only
+  a tiebreaker when multiple encodings of the same id coexist (e.g. both
+  `apa.yaml` and `apa.cbor`).
 - **list** ignores the format and reports stems.
 
 In practice the global `[store].format` setting in `~/.config/citum/config.{yaml,toml}`
 is the only knob, and most users never touch it. A per-invocation `--store-format`
 flag would not change observable behavior, so it is intentionally not provided. If
 you want a different on-disk encoding for an existing file, convert it first
-(`citum convert locale foo.yaml --to cbor`) and then install the result.
+(`citum convert locale foo.yaml -o foo.cbor`) and then install the result.
 
 CBOR suits mobile and resource-constrained environments. JSON suits API/tooling
 workflows. YAML is the default for human authoring.

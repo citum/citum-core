@@ -97,8 +97,11 @@ pub(crate) fn create_processor(
         .map(str::to_owned)
         .or_else(|| style.info.default_locale.clone());
     if let Some(ref locale_id) = effective_locale {
-        let path = Path::new(style_input);
-        let style_is_file = path.exists() && path.is_file();
+        // `FileResolver` accepts both plain paths and `file://` URIs; normalize
+        // here so the file-locale branch fires for either spelling.
+        let style_path_str = style_input.strip_prefix("file://").unwrap_or(style_input);
+        let path = Path::new(style_path_str);
+        let style_is_file = path.is_file();
         // Build the resolver chain once. For file-based styles, prepend a
         // `FileLocaleResolver` rooted at the style's sibling `locales/` dir so
         // the long-standing on-disk lookup keeps working. For builtin aliases,
@@ -106,12 +109,12 @@ pub(crate) fn create_processor(
         // standard chain on a build error preserves resolution if HTTP/Git
         // setup fails on this host.
         let chain = if style_is_file {
-            build_chain_with_file_locale_dir(find_locales_dir(style_input))
+            build_chain_with_file_locale_dir(find_locales_dir(style_path_str))
                 .or_else(|_| build_standard_chain())
         } else {
             build_standard_chain()
         }
-        .map_err(|e| -> Box<dyn Error> { e.to_string().into() })?;
+        .map_err(|e| -> Box<dyn Error> { std::io::Error::other(e).into() })?;
         let mut locale = load_locale_or_default(&chain, locale_id);
         if locale_override.is_some() && locale.locale != *locale_id {
             return Err(std::io::Error::new(
@@ -130,8 +133,8 @@ pub(crate) fn create_processor(
             })
             .flatten()
         {
-            let locale_override = if path.exists() && path.is_file() {
-                load_locale_override_for_file_style(override_id, style_input)?
+            let locale_override = if style_is_file {
+                load_locale_override_for_file_style(override_id, style_path_str)?
                     .or_else(|| load_locale_override_builtin(override_id))
             } else {
                 load_locale_override_builtin(override_id)

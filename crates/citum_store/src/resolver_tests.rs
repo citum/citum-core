@@ -343,6 +343,16 @@ fn file_locale_resolver_finds_yaml() {
 }
 
 #[test]
+fn file_locale_resolver_finds_yml_alias() {
+    let dir = TempDir::new().expect("tempdir");
+    fs::write(dir.path().join("xx-XX.yml"), b"locale: xx-XX\n").unwrap();
+    let resolver = FileLocaleResolver::new(dir.path().to_path_buf());
+
+    let locale = resolver.resolve_locale("xx-XX").expect("resolve");
+    assert_eq!(locale.locale, "xx-XX");
+}
+
+#[test]
 fn file_locale_resolver_missing_returns_not_found() {
     let dir = TempDir::new().expect("tempdir");
     let resolver = FileLocaleResolver::new(dir.path().to_path_buf());

@@ -53,6 +53,16 @@ impl StoreFormat {
         &[StoreFormat::Yaml, StoreFormat::Json, StoreFormat::Cbor]
     }
 
+    /// All file extensions a resolver should probe when looking up an item by id.
+    ///
+    /// YAML appears twice (`yaml` and `yml`) because both are accepted; the
+    /// other formats have a single canonical extension. Use this when iterating
+    /// candidate filenames; use [`StoreFormat::detect`] on a found path to pick
+    /// the deserializer.
+    pub fn all_extensions() -> &'static [&'static str] {
+        &["yaml", "yml", "json", "cbor"]
+    }
+
     /// Detect format from path.
     pub fn detect(path: &Path) -> Option<StoreFormat> {
         Self::detect_from_extension(path)
