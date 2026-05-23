@@ -155,11 +155,28 @@ PROPAGATION_DELAY=10
 
 published_version_for() {
   # Query crates.io for the highest published version of a crate.
-  # Empty string if the crate doesn't exist or has no versions.
+  # Empty string only after exhausting retries; transient API failures
+  # (rate limits, brief outages) used to silently return empty here,
+  # which then caused the script to dry-run-publish every crate against
+  # the old crates.io copy and surface confusing compile errors on
+  # breaking changes. Retry with backoff to make CI deterministic.
   local crate="$1"
-  curl --silent --fail "https://crates.io/api/v1/crates/${crate}" \
-    | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("crate",{}).get("max_version",""))' \
-    2>/dev/null || echo ""
+  local attempt
+  local body
+  # crates.io API rejects requests without a User-Agent header.
+  local user_agent="citum-publish-crates/1.0 (https://github.com/citum/citum-core)"
+  for attempt in 1 2 3 4 5; do
+    body=$(curl --silent --fail --retry 3 --retry-delay 2 --max-time 15 \
+      -A "$user_agent" \
+      "https://crates.io/api/v1/crates/${crate}" 2>/dev/null) || body=""
+    if [[ "$body" != "" ]]; then
+      printf '%s' "$body" \
+        | python3 -c 'import json,sys; d=json.load(sys.stdin); print(d.get("crate",{}).get("max_version",""))' \
+        2>/dev/null && return 0
+    fi
+    sleep $(( attempt * 2 ))
+  done
+  echo ""
 }
 
 local_version_for() {
