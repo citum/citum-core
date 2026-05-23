@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 pub mod bibliography;
 pub mod contributors;
 pub mod dates;
-pub mod integral_names;
+pub mod integral_name_memory;
 pub mod localization;
 pub mod locators;
 pub mod multilingual;
@@ -27,9 +27,9 @@ pub use contributors::{
     RoleOptionsEntry, RoleRendering, ShortenListOptions,
 };
 pub use dates::{DateConfig, DateConfigEntry};
-pub use integral_names::{
-    IntegralNameConfig, IntegralNameContexts, IntegralNameForm, IntegralNameRule,
-    IntegralNameScope, ResolvedIntegralNameConfig, ShortNameDisplay,
+pub use integral_name_memory::{
+    IntegralNameContexts, IntegralNameMemoryConfig, IntegralNameScope,
+    ResolvedIntegralNameMemoryConfig, ShortNameDisplay, SubsequentNameForm,
 };
 pub use localization::{Localize, MonthFormat, Scope};
 pub use locators::{
@@ -137,7 +137,7 @@ pub struct Config {
     pub notes: Option<NoteConfig>,
     /// Integral citation name-memory behavior.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub integral_names: Option<IntegralNameConfig>,
+    pub integral_name_memory: Option<IntegralNameMemoryConfig>,
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -222,7 +222,7 @@ pub struct CitationOptions {
     pub notes: Option<NoteConfig>,
     /// Integral citation name-memory behavior.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub integral_names: Option<IntegralNameConfig>,
+    pub integral_name_memory: Option<IntegralNameMemoryConfig>,
     /// Label wrap policy applied to citation labels.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label_wrap: Option<LabelWrap>,
@@ -518,7 +518,7 @@ impl Config {
             locale_override,
             strip_periods,
             notes,
-            integral_names,
+            integral_name_memory,
             custom,
         );
 
@@ -573,7 +573,7 @@ impl CitationOptions {
             volume_pages_delimiter: self.volume_pages_delimiter.clone(),
             strip_periods: self.strip_periods,
             notes: self.notes.clone(),
-            integral_names: self.integral_names.clone(),
+            integral_name_memory: self.integral_name_memory.clone(),
             custom: self.custom.clone(),
             unknown_fields: std::collections::BTreeMap::new(),
         }
@@ -624,7 +624,7 @@ impl BibliographyOptions {
             volume_pages_delimiter: self.volume_pages_delimiter.clone(),
             strip_periods: self.strip_periods,
             notes: None,
-            integral_names: None,
+            integral_name_memory: None,
             custom: self.custom.clone(),
             unknown_fields: std::collections::BTreeMap::new(),
         }
@@ -733,7 +733,7 @@ impl<'de> Deserialize<'de> for Config {
             #[serde(skip_serializing_if = "Option::is_none")]
             notes: Option<NoteConfig>,
             #[serde(skip_serializing_if = "Option::is_none")]
-            integral_names: Option<IntegralNameConfig>,
+            integral_name_memory: Option<IntegralNameMemoryConfig>,
             #[serde(default)]
             profile: Option<serde_yaml::Value>,
             #[serde(skip_serializing_if = "Option::is_none")]
@@ -765,7 +765,7 @@ impl<'de> Deserialize<'de> for Config {
             volume_pages_delimiter: wire.volume_pages_delimiter,
             strip_periods: wire.strip_periods,
             notes: wire.notes,
-            integral_names: wire.integral_names,
+            integral_name_memory: wire.integral_name_memory,
             custom: wire.custom,
             unknown_fields: wire.unknown_fields,
         })

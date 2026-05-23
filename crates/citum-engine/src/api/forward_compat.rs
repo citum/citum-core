@@ -99,10 +99,10 @@ fn walk_config(out: &mut Vec<UnknownFieldPath>, base: &str, c: &Config) {
     if let Some(notes) = &c.notes {
         push_keys(out, &format!("{base}.notes"), notes.unknown_fields.keys());
     }
-    if let Some(integral) = &c.integral_names {
+    if let Some(integral) = &c.integral_name_memory {
         push_keys(
             out,
-            &format!("{base}.integral-names"),
+            &format!("{base}.integral-name-memory"),
             integral.unknown_fields.keys(),
         );
     }
@@ -146,10 +146,10 @@ fn walk_citation_options_nested(out: &mut Vec<UnknownFieldPath>, base: &str, co:
     if let Some(notes) = &co.notes {
         push_keys(out, &format!("{base}.notes"), notes.unknown_fields.keys());
     }
-    if let Some(integral) = &co.integral_names {
+    if let Some(integral) = &co.integral_name_memory {
         push_keys(
             out,
-            &format!("{base}.integral-names"),
+            &format!("{base}.integral-name-memory"),
             integral.unknown_fields.keys(),
         );
     }

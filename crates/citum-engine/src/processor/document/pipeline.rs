@@ -32,7 +32,7 @@ impl Processor {
     {
         let mut parsed = parser.parse_document(content, &self.locale);
         let owned_processor = self.processor_with_document_integral_name_override(
-            parsed.frontmatter_integral_names.as_ref(),
+            parsed.frontmatter_integral_name_memory.as_ref(),
         );
         let processor = owned_processor.as_ref().unwrap_or(self);
         let body = &content[parsed.body_start..];

@@ -1,5 +1,5 @@
 ---
-integral-names:
+integral-name-memory:
   enabled: true
   scope: chapter
   contexts: body-and-notes

@@ -159,13 +159,13 @@ pub fn format_document_with_style(
         if let Some(abbr_map) = opts.abbreviation_map.clone() {
             processor.abbreviation_map = Some(abbr_map);
         }
-        if opts.integral_names.is_some() {
+        if opts.integral_name_memory.is_some() {
             warnings.push(Warning {
                 level: WarningLevel::Warning,
-                code: "integral_names_not_applied".to_string(),
+                code: "integral_name_memory_not_applied".to_string(),
                 citation_id: None,
                 ref_id: None,
-                message: "document_options.integral_names is accepted but not yet wired through the processor; tracked in csl26-wq0y.".to_string(),
+                message: "document_options.integral_name_memory is accepted but not yet wired through the processor; tracked in csl26-wq0y.".to_string(),
             });
         }
     }

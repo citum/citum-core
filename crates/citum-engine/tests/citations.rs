@@ -32,8 +32,8 @@ use citum_schema::{
     grouping::{GroupSort, GroupSortEntry, GroupSortKey, SortKey as GroupSortKeyType},
     options::{
         AndOptions, Config, ContributorConfig, DelimiterPrecedesLast, DisplayAsSort,
-        IntegralNameConfig, IntegralNameContexts, IntegralNameForm, IntegralNameRule,
-        IntegralNameScope, NameForm, Processing, ProcessingCustom, ShortenListOptions,
+        IntegralNameContexts, IntegralNameMemoryConfig, IntegralNameScope, NameForm, Processing,
+        ProcessingCustom, ShortenListOptions, SubsequentNameForm,
     },
     reference::InputReference,
 };
@@ -94,11 +94,10 @@ fn build_integral_name_style() -> Style {
         },
         options: Some(Config {
             processing: Some(Processing::AuthorDate),
-            integral_names: Some(IntegralNameConfig {
-                rule: Some(IntegralNameRule::FullThenShort),
+            integral_name_memory: Some(IntegralNameMemoryConfig {
                 scope: Some(IntegralNameScope::Document),
                 contexts: Some(IntegralNameContexts::BodyAndNotes),
-                subsequent_form: Some(IntegralNameForm::Short),
+                subsequent_form: Some(SubsequentNameForm::Short),
                 short_name_display: None,
                 ..Default::default()
             }),
@@ -164,21 +163,14 @@ fn integral_name_state_overrides_processor_memory() {
     );
 }
 
-fn short_only_rule_ignores_subsequent_name_state() {
+fn absent_memory_block_does_not_rewrite_subsequent_name_state() {
     let mut bibliography = indexmap::IndexMap::new();
     bibliography.insert(
         "item1".to_string(),
         make_book("item1", "Smith", "John", 2020, "Book A"),
     );
     let mut style = build_integral_name_style();
-    style
-        .options
-        .as_mut()
-        .unwrap()
-        .integral_names
-        .as_mut()
-        .unwrap()
-        .rule = Some(IntegralNameRule::ShortOnly);
+    style.options.as_mut().unwrap().integral_name_memory = None;
     let processor = Processor::new(style, bibliography);
 
     let subsequent = Citation {
@@ -191,7 +183,6 @@ fn short_only_rule_ignores_subsequent_name_state() {
         ..Default::default()
     };
 
-    // ShortOnly disables form rewriting — full name rendered regardless of state.
     assert_eq!(
         processor
             .process_citation(&subsequent)
@@ -1476,11 +1467,11 @@ mod integral_name_memory {
     }
 
     #[test]
-    fn short_only_rule_ignores_subsequent_name_state() {
+    fn absent_memory_block_does_not_rewrite_subsequent_name_state() {
         announce_behavior(
-            "A style with rule: short-only should render the full name even when the citation carries a Subsequent state.",
+            "A style with no integral-name-memory block should leave Subsequent-state citations rendered in the integral template's natural form.",
         );
-        super::short_only_rule_ignores_subsequent_name_state();
+        super::absent_memory_block_does_not_rewrite_subsequent_name_state();
     }
 }
 

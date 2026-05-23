@@ -44,7 +44,7 @@ impl CitationParser for MarkdownParser {
             manual_note_labels: HashSet::new(),
             bibliography_blocks: Vec::new(),
             frontmatter_groups: None,
-            frontmatter_integral_names: None,
+            frontmatter_integral_name_memory: None,
             body_start: 0,
         }
     }

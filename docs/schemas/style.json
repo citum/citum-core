@@ -2447,11 +2447,11 @@
             }
           ]
         },
-        "integral-names": {
+        "integral-name-memory": {
           "description": "Integral citation name-memory behavior.",
           "anyOf": [
             {
-              "$ref": "#/$defs/IntegralNameConfig"
+              "$ref": "#/$defs/IntegralNameMemoryConfig"
             },
             {
               "type": "null"
@@ -4147,21 +4147,10 @@
         }
       ]
     },
-    "IntegralNameConfig": {
-      "description": "Integral citation name-memory configuration.",
+    "IntegralNameMemoryConfig": {
+      "description": "Integral citation name-memory policy.\n\nThe presence of this block enables full-then-short name memory for narrative\n(integral) citations. Absence disables it — there is no on/off field.",
       "type": "object",
       "properties": {
-        "rule": {
-          "description": "The name-memory rule to apply to integral citations.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/IntegralNameRule"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "scope": {
           "description": "Where the first-mention memory resets.",
           "anyOf": [
@@ -4188,7 +4177,7 @@
           "description": "The contributor form to use after the first mention in scope.",
           "anyOf": [
             {
-              "$ref": "#/$defs/IntegralNameForm"
+              "$ref": "#/$defs/SubsequentNameForm"
             },
             {
               "type": "null"
@@ -4196,7 +4185,7 @@
           ]
         },
         "short-name-display": {
-          "description": "How to display the short name on the first mention.",
+          "description": "How to display an organizational short name on the first integral mention.",
           "anyOf": [
             {
               "$ref": "#/$defs/ShortNameDisplay"
@@ -4208,21 +4197,6 @@
         }
       },
       "unevaluatedProperties": false
-    },
-    "IntegralNameRule": {
-      "description": "The supported integral citation name-memory rule.",
-      "oneOf": [
-        {
-          "description": "Render the first integral mention in scope in full, then shorten later mentions.",
-          "type": "string",
-          "const": "full-then-short"
-        },
-        {
-          "description": "Opt out of name-memory tracking; no first/subsequent distinction is applied and the\ntemplate's own contributor form is used unchanged for every integral citation.",
-          "type": "string",
-          "const": "short-only"
-        }
-      ]
     },
     "IntegralNameScope": {
       "description": "The scope where integral citation name-memory resets.",
@@ -4259,8 +4233,8 @@
         }
       ]
     },
-    "IntegralNameForm": {
-      "description": "The contributor form used after the first integral mention in scope.",
+    "SubsequentNameForm": {
+      "description": "The contributor form used after the first integral mention in scope.\n\n`Short` preserves non-dropping particles (\"van Beethoven\"); `FamilyOnly`\nstrips them (\"Beethoven\"). MLA-style narrative memory uses `Short`.",
       "oneOf": [
         {
           "description": "Use the short contributor form for subsequent mentions.",
@@ -4268,7 +4242,7 @@
           "const": "short"
         },
         {
-          "description": "Use family name only for subsequent mentions.",
+          "description": "Use family name only (without non-dropping particles) for subsequent mentions.",
           "type": "string",
           "const": "family-only"
         }
@@ -4619,11 +4593,11 @@
             }
           ]
         },
-        "integral-names": {
+        "integral-name-memory": {
           "description": "Integral citation name-memory behavior.",
           "anyOf": [
             {
-              "$ref": "#/$defs/IntegralNameConfig"
+              "$ref": "#/$defs/IntegralNameMemoryConfig"
             },
             {
               "type": "null"
