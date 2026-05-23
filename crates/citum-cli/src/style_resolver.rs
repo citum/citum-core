@@ -6,7 +6,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use citum_engine::Processor;
 use citum_io::LoadedBibliography;
 use citum_schema::{Locale, Style, locale::types::LocaleOverride};
-use citum_store::platform_config_dir;
+use citum_store::{
+    build_chain_with_file_locale_dir, build_standard_chain, load_locale_or_default,
+    platform_config_dir,
+};
 use serde::Deserialize;
 use std::error::Error;
 use std::fs;
@@ -95,19 +98,21 @@ pub(crate) fn create_processor(
         .or_else(|| style.info.default_locale.clone());
     if let Some(ref locale_id) = effective_locale {
         let path = Path::new(style_input);
-        let mut locale = if path.exists() && path.is_file() {
-            // File-based style: search for locale on disk, fall back to embedded.
-            let locales_dir = find_locales_dir(style_input);
-            let disk_locale = Locale::load(locale_id, &locales_dir);
-            if disk_locale.locale == *locale_id || locale_id == "en-US" {
-                disk_locale
-            } else {
-                load_locale_builtin(locale_id)
-            }
+        let style_is_file = path.exists() && path.is_file();
+        // Build the resolver chain once. For file-based styles, prepend a
+        // `FileLocaleResolver` rooted at the style's sibling `locales/` dir so
+        // the long-standing on-disk lookup keeps working. For builtin aliases,
+        // use the standard chain (user store → embedded). Falling back to the
+        // standard chain on a build error preserves resolution if HTTP/Git
+        // setup fails on this host.
+        let chain = if style_is_file {
+            build_chain_with_file_locale_dir(find_locales_dir(style_input))
+                .or_else(|_| build_standard_chain())
         } else {
-            // Builtin style: use embedded locale directly.
-            load_locale_builtin(locale_id)
-        };
+            build_standard_chain()
+        }
+        .map_err(|e| -> Box<dyn Error> { e.to_string().into() })?;
+        let mut locale = load_locale_or_default(&chain, locale_id);
         if locale_override.is_some() && locale.locale != *locale_id {
             return Err(std::io::Error::new(
                 std::io::ErrorKind::NotFound,
@@ -223,17 +228,6 @@ pub(crate) fn load_locale_override_for_file_style(
 ) -> Result<Option<LocaleOverride>, Box<dyn Error>> {
     let overrides_dir = find_locales_dir(style_path).join("overrides");
     load_locale_override_from_dir(override_id, &overrides_dir)
-}
-
-/// Load a locale from embedded bytes, falling back to en-US.
-pub(crate) fn load_locale_builtin(locale_id: &str) -> Locale {
-    if let Some(bytes) = citum_schema::embedded::get_locale_bytes(locale_id) {
-        let content = String::from_utf8_lossy(bytes);
-        Locale::from_yaml_str(&content).unwrap_or_else(|_| Locale::en_us())
-    } else {
-        // Locale not bundled — fall back to the hardcoded en-US default.
-        Locale::en_us()
-    }
 }
 
 pub(crate) fn load_locale_override_from_dir(

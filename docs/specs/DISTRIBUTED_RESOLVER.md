@@ -30,8 +30,10 @@ without requiring central coordination or manual file installation. Phase 1
 - Citum Hub web UI and API server implementation (citum-hub concern)
 - CSL 1.0 dependent-style bulk registry (citum-hub concern per STYLE_REGISTRY.md)
 - Network transport implementation details below the `reqwest` abstraction layer
-- Locale remote fetching (deferred follow-up; locale resolution follows the
-  same chain pattern)
+- Locale remote fetching (deferred follow-up; locale resolution already
+  follows the same chain pattern via `load_locale_or_default` — user store
+  and embedded layers participate, http/git layers are no-ops for locales
+  until remote fetching lands)
 
 ## Design
 
@@ -48,7 +50,11 @@ this without introducing a third crate (the spec's earlier
 - **`citum_store` defines a fuller `StyleResolver` trait** that adds
   `resolve_locale`, plus implements *both* traits on every concrete resolver
   (`StoreResolver`, `EmbeddedResolver`, `RegistryResolver`, `FileResolver`,
-  `HttpResolver`, `GitResolver`, `CidResolver`, `ChainResolver`).
+  `FileLocaleResolver`, `HttpResolver`, `GitResolver`, `CidResolver`,
+  `ChainResolver`). `FileLocaleResolver` is the locale-only sibling of
+  `FileResolver`: it resolves `<base_dir>/<id>.{yaml,yml,json,cbor}` and is
+  prepended to the chain by `build_chain_with_file_locale_dir` when the
+  caller has a file-based style with a sibling `locales/` directory.
 - `citum_store` resolvers map their richer `ResolverError` variants to
   schema-layer `ResolutionError` via `resolution_error_from_store_error`,
   preserving the typed `IntegrityFailure` and `VersionMismatch` cases.

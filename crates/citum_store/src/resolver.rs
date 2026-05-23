@@ -65,6 +65,50 @@ impl StyleResolver for FileResolver {
     }
 }
 
+/// A resolver that loads locales from `<base_dir>/<id>.{yaml,yml,json,cbor}`.
+///
+/// Use this to expose a sibling-`locales/` directory that lives next to a
+/// file-based style. Styles are not handled.
+pub struct FileLocaleResolver {
+    base_dir: PathBuf,
+}
+
+impl FileLocaleResolver {
+    /// Create a resolver rooted at `base_dir`.
+    #[must_use]
+    pub fn new(base_dir: PathBuf) -> Self {
+        Self { base_dir }
+    }
+}
+
+impl StyleResolver for FileLocaleResolver {
+    type Style = Style;
+    type Locale = Locale;
+
+    fn resolve_style(&self, uri: &str) -> Result<Style, ResolverError> {
+        Err(ResolverError::StyleNotFound(Cow::Owned(uri.to_string())))
+    }
+
+    fn resolve_locale(&self, id: &str) -> Result<Locale, ResolverError> {
+        for format in StoreFormat::all() {
+            let path = self.base_dir.join(format!("{}.{}", id, format.extension()));
+            if path.is_file() {
+                let bytes = fs::read(&path)?;
+                return match format {
+                    StoreFormat::Yaml => Locale::from_yaml_str(&String::from_utf8_lossy(&bytes))
+                        .map_err(|e| ResolverError::YamlError(ToString::to_string(&e))),
+                    StoreFormat::Json => {
+                        serde_json::from_slice(&bytes).map_err(ResolverError::JsonError)
+                    }
+                    StoreFormat::Cbor => ciborium::de::from_reader(Cursor::new(&bytes))
+                        .map_err(|e| ResolverError::CborError(e.to_string())),
+                };
+            }
+        }
+        Err(ResolverError::LocaleNotFound(Cow::Owned(id.to_string())))
+    }
+}
+
 /// A resolver that manages user-installed styles and locales in a platform data directory.
 pub struct StoreResolver {
     data_dir: PathBuf,
