@@ -60,8 +60,16 @@ test('parseArgs sets citum style and default snapshot path', () => {
 
   assert.equal(opts.style, 'alpha');
   assert.equal(opts.citumStyle, 'alpha');
+  assert.equal(opts.snapshotExplicit, false);
   assert.match(opts.snapshot, /tests\/snapshots\/biblatex\/alpha\.json$/);
   assert.equal(opts.output, '/tmp/alpha.yaml');
+});
+
+test('parseArgs tracks explicit snapshot paths', () => {
+  const opts = parseArgs(['--style', 'alpha', '--snapshot', '/tmp/custom.json']);
+
+  assert.equal(opts.snapshotExplicit, true);
+  assert.equal(opts.snapshot, '/tmp/custom.json');
 });
 
 test('mapEntriesToReferences uses cite order when supplied', () => {
@@ -118,7 +126,6 @@ test('buildScaffold emits parseable hand-finish YAML with numeric citation start
 
 test('runCli reports missing snapshot with generation guidance', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'biblatex-scaffold-test-'));
-  const snapshotPath = path.join(tempDir, 'missing.json');
   const fixturePath = path.join(tempDir, 'refs.json');
   fs.writeFileSync(fixturePath, JSON.stringify({ ITEM: makeRefs()[0] }), 'utf8');
 
@@ -131,7 +138,6 @@ test('runCli reports missing snapshot with generation guidance', () => {
   try {
     const status = runCli([
       '--style', 'alpha',
-      '--snapshot', snapshotPath,
       '--fixture', fixturePath,
       '--output', '-',
     ]);
@@ -143,4 +149,55 @@ test('runCli reports missing snapshot with generation guidance', () => {
   assert.match(stderr, /Biblatex snapshot not found/);
   assert.match(stderr, /scripts\/gen-biblatex-snapshot\.js --style alpha/);
   assert.match(stderr, /--generate-snapshot/);
+});
+
+test('runCli rejects generated custom snapshot paths with clear guidance', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'biblatex-scaffold-test-'));
+  const snapshotPath = path.join(tempDir, 'custom.json');
+
+  let stderr = '';
+  const originalWrite = process.stderr.write;
+  process.stderr.write = (chunk) => {
+    stderr += String(chunk);
+    return true;
+  };
+  try {
+    const status = runCli([
+      '--style', 'alpha',
+      '--snapshot', snapshotPath,
+      '--generate-snapshot',
+      '--output', '-',
+    ]);
+    assert.equal(status, 1);
+  } finally {
+    process.stderr.write = originalWrite;
+  }
+
+  assert.match(stderr, /Cannot generate a custom --snapshot path/);
+  assert.match(stderr, /Drop --snapshot and use --citum-style/);
+});
+
+test('runCli reports custom missing snapshots as read-only inputs', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'biblatex-scaffold-test-'));
+  const snapshotPath = path.join(tempDir, 'custom.json');
+
+  let stderr = '';
+  const originalWrite = process.stderr.write;
+  process.stderr.write = (chunk) => {
+    stderr += String(chunk);
+    return true;
+  };
+  try {
+    const status = runCli([
+      '--style', 'alpha',
+      '--snapshot', snapshotPath,
+      '--output', '-',
+    ]);
+    assert.equal(status, 1);
+  } finally {
+    process.stderr.write = originalWrite;
+  }
+
+  assert.match(stderr, /Custom --snapshot paths are read-only inputs/);
+  assert.match(stderr, /tests\/snapshots\/biblatex\/<citum-style>\.json/);
 });

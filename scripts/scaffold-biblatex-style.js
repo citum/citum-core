@@ -75,6 +75,7 @@ function parseArgs(argv = process.argv.slice(2)) {
     style: null,
     citumStyle: null,
     snapshot: null,
+    snapshotExplicit: false,
     fixture: DEFAULT_FIXTURE,
     output: '-',
     title: null,
@@ -99,7 +100,10 @@ function parseArgs(argv = process.argv.slice(2)) {
 
     if (arg === '--style') opts.style = nextValue();
     else if (arg === '--citum-style') opts.citumStyle = nextValue();
-    else if (arg === '--snapshot') opts.snapshot = path.resolve(nextValue());
+    else if (arg === '--snapshot') {
+      opts.snapshot = path.resolve(nextValue());
+      opts.snapshotExplicit = true;
+    }
     else if (arg === '--fixture') opts.fixture = path.resolve(nextValue());
     else if (arg === '--output') opts.output = nextValue();
     else if (arg === '--title') opts.title = nextValue();
@@ -174,6 +178,14 @@ function defaultSnapshotCommand(opts) {
 
 function ensureSnapshot(opts) {
   if (opts.forceSnapshot || (opts.generateSnapshot && !fs.existsSync(opts.snapshot))) {
+    if (opts.snapshotExplicit) {
+      throw new Error(
+        `Cannot generate a custom --snapshot path: ${repoRelative(opts.snapshot)}\n` +
+        'Snapshot generation writes to tests/snapshots/biblatex/<citum-style>.json. ' +
+        'Drop --snapshot and use --citum-style to choose that filename, or create the custom snapshot file first.'
+      );
+    }
+
     const args = [SNAPSHOT_GENERATOR, '--style', opts.style, '--citum-style', opts.citumStyle];
     if (opts.fixture) args.push('--fixture', opts.fixture);
     if (opts.bib) args.push('--bib', opts.bib);
@@ -197,6 +209,15 @@ function ensureSnapshot(opts) {
   }
 
   if (!fs.existsSync(opts.snapshot)) {
+    if (opts.snapshotExplicit) {
+      throw new Error(
+        `Biblatex snapshot not found: ${repoRelative(opts.snapshot)}\n` +
+        'Custom --snapshot paths are read-only inputs. Create that file first, ' +
+        'or drop --snapshot and use --citum-style with --generate-snapshot to generate ' +
+        'tests/snapshots/biblatex/<citum-style>.json.'
+      );
+    }
+
     throw new Error(
       `Biblatex snapshot not found: ${repoRelative(opts.snapshot)}\n` +
       `Generate it first:\n  ${defaultSnapshotCommand(opts)}\n` +

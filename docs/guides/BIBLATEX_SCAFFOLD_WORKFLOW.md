@@ -5,9 +5,11 @@ YAML file for a biblatex-benchmarked style without pretending that biblatex
 macro code has been converted.
 
 The script reads rendered bibliography output from
-`tests/snapshots/biblatex/*.json`, pairs it with the fixture used to produce
-that snapshot, and emits a schema-valid Citum style scaffold. It is a
-hand-finish aid only.
+`tests/snapshots/biblatex/*.json` and pairs it with a CSL JSON fixture. Use the
+same fixture that generated the snapshot; the default is
+`tests/fixtures/references-expanded.json` for both snapshot generation and
+scaffold generation. Pass `--fixture` when the snapshot came from a different
+fixture. It is a hand-finish aid only.
 
 ## Generate a Scaffold
 
@@ -50,6 +52,10 @@ node scripts/scaffold-biblatex-style.js \
 Use `--force-snapshot` when the snapshot should be refreshed even if it already
 exists. `--bib`, `--biblatex-opts`, and `--cite` are forwarded to
 `scripts/gen-biblatex-snapshot.js`.
+
+`--snapshot` is for reading an existing snapshot at a custom path. It cannot be
+combined with `--generate-snapshot` or `--force-snapshot`, because the snapshot
+generator writes to `tests/snapshots/biblatex/<citum-style>.json`.
 
 ## What It Infers
 
