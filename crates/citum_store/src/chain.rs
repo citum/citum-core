@@ -8,12 +8,12 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use crate::{
     StoreConfig, StoreResolver, platform_config_dir, platform_data_dir,
     resolver::{
-        ChainResolver, EmbeddedResolver, FileResolver, GitResolver, HttpResolver, RegistryResolver,
-        StyleResolver,
+        ChainResolver, EmbeddedResolver, FileLocaleResolver, FileResolver, GitResolver,
+        HttpResolver, RegistryResolver, ResolverError, StyleResolver,
     },
 };
 use citum_schema::{Locale, Style};
-use std::{error::Error, fs, path::Path};
+use std::{error::Error, fs, path::Path, path::PathBuf};
 
 type DynStyleResolver = dyn StyleResolver<Style = Style, Locale = Locale>;
 
@@ -26,6 +26,28 @@ type DynStyleResolver = dyn StyleResolver<Style = Style, Locale = Locale>;
 ///
 /// Returns an error if the current working directory cannot be determined.
 pub fn build_standard_chain() -> Result<ChainResolver, Box<dyn Error + Send + Sync>> {
+    Ok(ChainResolver::new(standard_resolvers()?))
+}
+
+/// Construct a `ChainResolver` that also looks up locales in `<style_dir>/locales/`
+/// before consulting the user store and embedded data.
+///
+/// Use when a style was loaded from a file path and you want the same
+/// sibling-`locales/` behavior the standalone-disk workflow had.
+///
+/// # Errors
+///
+/// Returns an error if the current working directory cannot be determined.
+pub fn build_chain_with_file_locale_dir(
+    locales_dir: PathBuf,
+) -> Result<ChainResolver, Box<dyn Error + Send + Sync>> {
+    let mut resolvers: Vec<Box<DynStyleResolver>> =
+        vec![Box::new(FileLocaleResolver::new(locales_dir))];
+    resolvers.extend(standard_resolvers()?);
+    Ok(ChainResolver::new(resolvers))
+}
+
+fn standard_resolvers() -> Result<Vec<Box<DynStyleResolver>>, Box<dyn Error + Send + Sync>> {
     let mut resolvers: Vec<Box<DynStyleResolver>> = vec![Box::new(FileResolver)];
 
     if let Some(data_dir) = platform_data_dir()
@@ -50,7 +72,28 @@ pub fn build_standard_chain() -> Result<ChainResolver, Box<dyn Error + Send + Sy
 
     resolvers.push(Box::new(EmbeddedResolver));
 
-    Ok(ChainResolver::new(resolvers))
+    Ok(resolvers)
+}
+
+/// Resolve `id` against `chain`, returning the embedded `en-US` baseline if
+/// the chain produces no locale.
+///
+/// Hosts that want strict error semantics should call
+/// [`ChainResolver::resolve_locale`] directly and inspect the error.
+#[must_use]
+pub fn load_locale_or_default(
+    chain: &dyn StyleResolver<Style = Style, Locale = Locale>,
+    id: &str,
+) -> Locale {
+    match chain.resolve_locale(id) {
+        Ok(locale) => locale,
+        Err(ResolverError::LocaleNotFound(_)) => Locale::en_us(),
+        // For other errors (read/parse failure on a found file) we still
+        // return the en-US baseline so a single bad file cannot brick the
+        // render path. Callers needing stricter behavior should use the
+        // chain directly.
+        Err(_) => Locale::en_us(),
+    }
 }
 
 #[derive(serde::Deserialize)]

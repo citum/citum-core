@@ -263,14 +263,26 @@ node scripts/report-core.js > /tmp/r.json && \
   --report /tmp/r.json \
   --baseline scripts/report-data/core-quality-baseline.json
 
-# 3. Smoke test against a real style
+# 3. Smoke test against a file-based style (sibling locales/ directory)
 cargo run --bin citum -- render refs \
   -b tests/fixtures/references-expanded.json \
-  -s styles/apa-7th.yaml --locale <your-locale>
+  -s styles/embedded/apa-7th.yaml --locale <your-locale>
+
+# 4. Smoke test against a builtin-alias style (via the user store)
+cargo run --bin citum -- locale add path/to/<your-locale>.yaml
+cargo run --bin citum -- render refs \
+  -b tests/fixtures/references-expanded.json \
+  -s apa --locale <your-locale>
 ```
 
+Step 4 installs the locale into the user data directory
+(`~/.local/share/citum/locales/` on Linux, `~/Library/Application Support/citum/locales/`
+on macOS) so the renderer can find it under any style — builtin or file-based.
+The resolution order is: sibling `locales/` (file-based styles only) → user
+store → embedded.
+
 `citum locale lint <file>` validates MF2 message structure before the render
-path needs to evaluate a locale.
+path needs to evaluate a locale. `citum locale remove <id>` uninstalls.
 
 ## Related
 

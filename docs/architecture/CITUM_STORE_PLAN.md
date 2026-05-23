@@ -35,21 +35,40 @@ A new `citum_store` crate provides:
     en-US.yaml
 ```
 
-### Format configuration
+### Format transparency
 
-The serialization format (YAML/JSON/CBOR) is configurable at three levels:
+The store is format-agnostic at every read/write step:
 
-1. **Global config** — `~/.config/citum/config.toml`: `store.format = "cbor"`
-2. **Per-invocation flag** — `citum render --store-format cbor ...`
-3. **Default** — YAML (human-readable, easiest for hand-authoring)
+- **install** preserves the source file's format. `citum locale add foo.cbor`
+  lands as `<data-dir>/locales/foo.cbor`; the file is not re-encoded. YAML is
+  the one normalization: `foo.yml` lands as `foo.yaml` because the canonical
+  extension for the YAML format is `yaml` (the resolver still probes both
+  `.yaml` and `.yml` when looking up by id, so hand-placed `.yml` files are
+  picked up too).
+- **resolve** detects the format from the on-disk extension and accepts
+  `yaml`, `yml`, `json`, and `cbor`. The configured `[store].format` is only
+  a tiebreaker when multiple encodings of the same id coexist (e.g. both
+  `apa.yaml` and `apa.cbor`).
+- **list** ignores the format and reports stems.
 
-CBOR is the recommended format for mobile and resource-constrained environments. JSON suits API/tooling workflows. YAML is the default for human authoring.
+In practice the global `[store].format` setting in `~/.config/citum/config.{yaml,toml}`
+is the only knob, and most users never touch it. A per-invocation `--store-format`
+flag would not change observable behavior, so it is intentionally not provided. If
+you want a different on-disk encoding for an existing file, convert it first
+(`citum convert locale foo.yaml -o foo.cbor`) and then install the result.
+
+CBOR suits mobile and resource-constrained environments. JSON suits API/tooling
+workflows. YAML is the default for human authoring.
 
 ### Resolution order
 
-`user store → embedded builtins`
+**Styles:** `file path → user store → http/git → registries → embedded builtins`
 
-No ambient CWD scan.
+**Locales (file-based style):** `sibling locales/ → user store → embedded`
+
+**Locales (builtin-alias style):** `user store → embedded`
+
+No ambient CWD scan for styles or locales when the input is a builtin alias.
 
 ## CLI surface
 
@@ -66,11 +85,15 @@ Hub search/query UX (rich discovery, fidelity info, popularity) is deferred to P
 
 ### Phase 1 — Core store (this epic)
 
-- [ ] `citum_store` crate: `StoreResolver`, `platform_data_dir`, YAML/JSON/CBOR loading
-- [ ] Format config: global `~/.config/citum/config.toml` + per-invocation flag
-- [ ] CLI integration: `-s apa-7th` checks user store before builtins
-- [ ] `citum store list` and `citum store install <path|slug>`
-- [ ] `citum store remove <name>` with confirmation
+- [x] `citum_store` crate: `StoreResolver`, `platform_data_dir`, YAML/JSON/CBOR loading
+- [x] Format config: global `~/.config/citum/config.{yaml,toml}` (per-invocation
+      flag deferred — format is already transparent end-to-end; see
+      "Format transparency" above)
+- [x] CLI integration: `-s apa-7th` checks user store before builtins
+- [x] Locale CLI integration: `-L <id>` consults the user store for both
+      builtin-alias and file-based styles via the shared resolver chain
+- [x] `citum store list` and `citum store install <path|slug>`
+- [x] `citum store remove <name>` with confirmation
 
 ### Phase 2 — Hub sync (pre-1.0)
 

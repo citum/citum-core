@@ -5,7 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Integration tests for `StoreResolver`.
 
-use crate::{StoreFormat, StoreResolver};
+use crate::{FileLocaleResolver, StoreFormat, StoreResolver, resolver::StyleResolver};
 use std::fs;
 use tempfile::TempDir;
 
@@ -330,4 +330,67 @@ fn resolver_error_variants_format_distinctly() {
         integrity.to_string(),
         "integrity failure for cid:bafkreiabc: expected bafkreiabc, got bafkreidef"
     );
+}
+
+#[test]
+fn file_locale_resolver_finds_yaml() {
+    let dir = TempDir::new().expect("tempdir");
+    fs::write(dir.path().join("xx-XX.yaml"), b"locale: xx-XX\n").unwrap();
+    let resolver = FileLocaleResolver::new(dir.path().to_path_buf());
+
+    let locale = resolver.resolve_locale("xx-XX").expect("resolve");
+    assert_eq!(locale.locale, "xx-XX");
+}
+
+#[test]
+fn file_locale_resolver_finds_yml_alias() {
+    let dir = TempDir::new().expect("tempdir");
+    fs::write(dir.path().join("xx-XX.yml"), b"locale: xx-XX\n").unwrap();
+    let resolver = FileLocaleResolver::new(dir.path().to_path_buf());
+
+    let locale = resolver.resolve_locale("xx-XX").expect("resolve");
+    assert_eq!(locale.locale, "xx-XX");
+}
+
+#[test]
+fn file_locale_resolver_missing_returns_not_found() {
+    let dir = TempDir::new().expect("tempdir");
+    let resolver = FileLocaleResolver::new(dir.path().to_path_buf());
+    assert!(resolver.resolve_locale("nope").is_err());
+}
+
+#[test]
+fn file_locale_resolver_does_not_resolve_styles() {
+    let dir = TempDir::new().expect("tempdir");
+    let resolver = FileLocaleResolver::new(dir.path().to_path_buf());
+    assert!(resolver.resolve_style("apa").is_err());
+}
+
+#[cfg(feature = "http")]
+#[test]
+fn load_locale_or_default_returns_en_us_on_miss() {
+    use crate::resolver::ChainResolver;
+
+    let dir = TempDir::new().expect("tempdir");
+    let chain = ChainResolver::new(vec![Box::new(FileLocaleResolver::new(
+        dir.path().to_path_buf(),
+    ))]);
+
+    let locale = crate::load_locale_or_default(&chain, "missing-locale");
+    assert_eq!(locale.locale, "en-US");
+}
+
+#[cfg(feature = "http")]
+#[test]
+fn load_locale_or_default_uses_first_match() {
+    use crate::resolver::ChainResolver;
+
+    let dir = TempDir::new().expect("tempdir");
+    fs::write(dir.path().join("xx-XX.yaml"), b"locale: xx-XX\n").unwrap();
+    let chain = ChainResolver::new(vec![Box::new(FileLocaleResolver::new(
+        dir.path().to_path_buf(),
+    ))]);
+
+    let locale = crate::load_locale_or_default(&chain, "xx-XX");
+    assert_eq!(locale.locale, "xx-XX");
 }

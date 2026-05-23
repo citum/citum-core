@@ -1,13 +1,13 @@
 ---
 # csl26-hqy5
 title: Custom locale file invocation for builtin styles
-status: todo
+status: completed
 type: feature
 priority: normal
 tags:
     - multilingual
 created_at: 2026-05-16T11:28:28Z
-updated_at: 2026-05-16T12:48:56Z
+updated_at: 2026-05-23T14:37:38Z
 ---
 
 ## Goal
@@ -27,10 +27,18 @@ This is awkward and was surfaced during the `csl26-v6ok` smoke test: a provision
 
 ## Todo
 
-- [ ] Decide between (1), (2), and "wait for `csl26-erwz`" — likely a small design note in `docs/specs/`
-- [ ] Implement chosen option in `crates/citum-cli/src/style_resolver.rs::load_locale_builtin` (or its caller in `setup_processor`)
-- [ ] Update `docs/guides/AUTHORING_LOCALES.md` "Verification" section so the smoke test works for both builtin- and file-path styles
-- [ ] Test: render with a non-embedded locale against a builtin-alias style
+- [x] Decided: route locale lookup through `citum_store::ChainResolver` (option 3, subsuming-via-erwz). No new flag needed; existing `citum locale add` + `-L <id>` Just Works.
+- [x] Implemented in `crates/citum-cli/src/style_resolver.rs` (`create_processor`); `load_locale_builtin` deleted in favor of `citum_store::load_locale_or_default`. New `FileLocaleResolver` carries the file-style sibling-`locales/` semantics into the chain.
+- [x] Updated `docs/guides/AUTHORING_LOCALES.md` §Verification with both file-path and builtin-alias smoke recipes.
+- [x] Unit tests in `crates/citum_store/src/resolver_tests.rs`; existing `create_processor` tests in `crates/citum-cli` still pass.
+
+## Summary of Changes
+
+- New `FileLocaleResolver` in `citum_store::resolver` resolves `<base_dir>/<id>.{yaml,yml,json,cbor}` for the file-style branch.
+- New `build_chain_with_file_locale_dir(dir)` and `load_locale_or_default(chain, id)` helpers in `citum_store::chain` give hosts a single chain-based locale entry point.
+- `create_processor` in `citum-cli` now builds the resolver chain once and calls `load_locale_or_default`, deleting the ad-hoc `load_locale_builtin` path. Builtin-alias styles consult the user store before falling back to embedded.
+- Error semantics unchanged: explicit `-L <id>` still errors if the chain produces a fallback ("locale not found: '<id>'").
+- Docs: `AUTHORING_LOCALES.md` smoke recipe covers both style input shapes; `CITUM_STORE_PLAN.md` and `DISTRIBUTED_RESOLVER.md` reflect the new resolver.
 
 ## Related
 

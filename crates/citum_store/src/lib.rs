@@ -34,7 +34,7 @@ pub mod resolver;
 mod resolver_tests;
 
 #[cfg(feature = "http")]
-pub use chain::build_standard_chain;
+pub use chain::{build_chain_with_file_locale_dir, build_standard_chain, load_locale_or_default};
 pub use config::StoreConfig;
 pub use format::StoreFormat;
 #[cfg(feature = "http")]
@@ -45,7 +45,8 @@ pub use resolver::{
     VerifyingResolver, fetch_and_verify_bytes,
 };
 pub use resolver::{
-    EmbeddedResolver, FileResolver, RegistryResolver, ResolverError, StoreResolver,
+    EmbeddedResolver, FileLocaleResolver, FileResolver, RegistryResolver, ResolverError,
+    StoreResolver,
 };
 
 use std::path::PathBuf;
