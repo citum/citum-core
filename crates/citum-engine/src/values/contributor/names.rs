@@ -303,7 +303,7 @@ pub fn format_names(
         ),
         short_name_display: options
             .config
-            .integral_names
+            .integral_name_memory
             .as_ref()
             .map(|c| c.resolve().short_name_display),
     };

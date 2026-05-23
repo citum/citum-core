@@ -43,7 +43,7 @@ const TOLERANT_TYPE_NAMES: &[&str] = &[
     "DateConfig",
     "Event",
     "Hearing",
-    "IntegralNameConfig",
+    "IntegralNameMemoryConfig",
     "LegalCase",
     "LocalizedTemplateSpec",
     "LocatorConfig",

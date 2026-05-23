@@ -61,8 +61,8 @@ impl CitationParser for DjotParser {
             frontmatter_groups: frontmatter
                 .as_ref()
                 .and_then(|frontmatter| frontmatter.bibliography.clone()),
-            frontmatter_integral_names: frontmatter
-                .and_then(|frontmatter| frontmatter.integral_names),
+            frontmatter_integral_name_memory: frontmatter
+                .and_then(|frontmatter| frontmatter.integral_name_memory),
             body_start,
         }
     }

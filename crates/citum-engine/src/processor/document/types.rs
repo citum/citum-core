@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use crate::Citation;
 use citum_schema::grouping::BibliographyGroup;
 use citum_schema::locale::Locale;
-use citum_schema::options::IntegralNameConfig;
+use citum_schema::options::IntegralNameMemoryConfig;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
@@ -43,9 +43,6 @@ pub struct DocumentIntegralNameOverride {
     /// Whether the integral-name policy is enabled for this document.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub enabled: Option<bool>,
-    /// The name-memory rule to apply.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub rule: Option<citum_schema::options::IntegralNameRule>,
     /// Where name-memory resets.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scope: Option<citum_schema::options::IntegralNameScope>,
@@ -54,22 +51,22 @@ pub struct DocumentIntegralNameOverride {
     pub contexts: Option<citum_schema::options::IntegralNameContexts>,
     /// The contributor form used after the first mention.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub subsequent_form: Option<citum_schema::options::IntegralNameForm>,
+    pub subsequent_form: Option<citum_schema::options::SubsequentNameForm>,
     /// How to display a short name on the first integral mention.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub short_name_display: Option<citum_schema::options::ShortNameDisplay>,
 }
 
 impl DocumentIntegralNameOverride {
-    pub(super) fn apply_to(&self, base: Option<&IntegralNameConfig>) -> Option<IntegralNameConfig> {
+    pub(super) fn apply_to(
+        &self,
+        base: Option<&IntegralNameMemoryConfig>,
+    ) -> Option<IntegralNameMemoryConfig> {
         if self.enabled == Some(false) {
             return None;
         }
 
         let mut result = base.cloned().unwrap_or_default();
-        if self.rule.is_some() {
-            result.rule = self.rule;
-        }
         if self.scope.is_some() {
             result.scope = self.scope;
         }
@@ -89,7 +86,7 @@ impl DocumentIntegralNameOverride {
 #[cfg(test)]
 mod tests {
     use super::DocumentIntegralNameOverride;
-    use citum_schema::options::{IntegralNameConfig, IntegralNameRule, ShortNameDisplay};
+    use citum_schema::options::{IntegralNameMemoryConfig, ShortNameDisplay};
 
     #[test]
     fn test_document_integral_name_override_deserializes_short_name_display() {
@@ -105,8 +102,7 @@ mod tests {
 
     #[test]
     fn test_document_integral_name_override_applies_short_name_display() {
-        let base = IntegralNameConfig {
-            rule: Some(IntegralNameRule::FullThenShort),
+        let base = IntegralNameMemoryConfig {
             short_name_display: Some(ShortNameDisplay::FullThenParenthetical),
             ..Default::default()
         };
@@ -118,12 +114,20 @@ mod tests {
         assert_eq!(
             override_config
                 .apply_to(Some(&base))
-                .map(|config| (config.short_name_display, config.rule)),
-            Some((
-                Some(ShortNameDisplay::ShortThenBracketed),
-                Some(IntegralNameRule::FullThenShort)
-            ))
+                .map(|config| config.short_name_display),
+            Some(Some(ShortNameDisplay::ShortThenBracketed))
         );
+    }
+
+    #[test]
+    fn test_document_integral_name_override_enabled_false_disables_block() {
+        let base = IntegralNameMemoryConfig::default();
+        let override_config = DocumentIntegralNameOverride {
+            enabled: Some(false),
+            ..Default::default()
+        };
+
+        assert!(override_config.apply_to(Some(&base)).is_none());
     }
 }
 
@@ -176,8 +180,8 @@ pub struct ParsedDocument {
     pub bibliography_blocks: Vec<BibliographyBlock>,
     /// Bibliography groups from YAML frontmatter.
     pub frontmatter_groups: Option<Vec<citum_schema::grouping::BibliographyGroup>>,
-    /// Integral-name override from YAML frontmatter.
-    pub frontmatter_integral_names: Option<DocumentIntegralNameOverride>,
+    /// Integral-name-memory override from YAML frontmatter.
+    pub frontmatter_integral_name_memory: Option<DocumentIntegralNameOverride>,
     /// Byte offset where the document body starts (past any frontmatter).
     pub body_start: usize,
 }

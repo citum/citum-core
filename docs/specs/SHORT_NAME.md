@@ -25,7 +25,8 @@ formatting options (`initialize-with`, `ContributorForm::Short`).
 ## Rendering Semantics
 
 Short-name rendering is gated on the integral citation name-memory system
-(`integral-names` style option, `rule: full-then-short`). When the rule is active:
+(the `integral-name-memory` style option). When the block is present, name memory
+is active and:
 
 | Integral name state | `short-name` present | Output |
 |---------------------|----------------------|--------|
@@ -39,12 +40,11 @@ In bibliography output, the full name is always used regardless of `short-name`.
 
 ## Style Option: `short-name-display`
 
-Placed under `integral-names` in the style options block:
+Placed under `integral-name-memory` in the style options block:
 
 ```yaml
 options:
-  integral-names:
-    rule: full-then-short
+  integral-name-memory:
     short-name-display: full-then-parenthetical  # default
 ```
 

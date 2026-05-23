@@ -9,7 +9,7 @@ use super::note_support::{NoteOccurrence, build_note_order_indices};
 use super::{CitationPlacement, CitationStructure, DocumentIntegralNameOverride, ParsedDocument};
 use crate::Citation;
 use crate::processor::Processor;
-use citum_schema::options::{IntegralNameContexts, IntegralNameRule, IntegralNameScope};
+use citum_schema::options::{IntegralNameContexts, IntegralNameScope};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
@@ -79,12 +79,12 @@ impl Processor {
         let base = style
             .options
             .as_ref()
-            .and_then(|options| options.integral_names.as_ref());
+            .and_then(|options| options.integral_name_memory.as_ref());
         let applied = override_config.apply_to(base);
         style
             .options
             .get_or_insert_with(Default::default)
-            .integral_names = applied;
+            .integral_name_memory = applied;
         // The style cloned from self.style is already resolved — bypass
         // into_resolved() to prevent a second preset application that would
         // restore null-cleared fields (e.g. type-variants: ~).
@@ -103,15 +103,12 @@ impl Processor {
     ) {
         let citation_config = self.get_citation_config();
         let Some(config) = citation_config
-            .integral_names
+            .integral_name_memory
             .as_ref()
-            .map(citum_schema::options::IntegralNameConfig::resolve)
+            .map(citum_schema::options::IntegralNameMemoryConfig::resolve)
         else {
             return;
         };
-        if !matches!(config.rule, IntegralNameRule::FullThenShort) {
-            return;
-        }
 
         let mut seen: HashMap<(String, String), SeenIntegralNameState> = HashMap::new();
         for (citation, context) in citations.iter_mut().zip(contexts.iter()) {

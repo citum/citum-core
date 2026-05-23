@@ -178,7 +178,7 @@ pub struct DocumentOptions {
     pub sort_partitioning: Option<citum_schema::options::BibliographySortPartitioning>,
     /// Document-level narrative citation rules.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub integral_names: Option<crate::processor::document::DocumentIntegralNameOverride>,
+    pub integral_name_memory: Option<crate::processor::document::DocumentIntegralNameOverride>,
     /// Whether to output semantic markup (HTML spans, Djot attributes).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub show_semantics: Option<bool>,

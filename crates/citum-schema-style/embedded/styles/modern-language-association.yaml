@@ -24,6 +24,9 @@ options:
   locators: note
   processing: author-date
   substitute: standard
+  integral-name-memory:
+    contexts: body-only
+    subsequent-form: short
   contributors: chicago
   dates: long
   titles: chicago

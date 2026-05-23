@@ -131,7 +131,7 @@
             }
           ]
         },
-        "integral_names": {
+        "integral_name_memory": {
           "description": "Document-level narrative citation rules.",
           "anyOf": [
             {
@@ -2629,17 +2629,6 @@
             "null"
           ]
         },
-        "rule": {
-          "description": "The name-memory rule to apply.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/IntegralNameRule"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
         "scope": {
           "description": "Where name-memory resets.",
           "anyOf": [
@@ -2666,7 +2655,7 @@
           "description": "The contributor form used after the first mention.",
           "anyOf": [
             {
-              "$ref": "#/$defs/IntegralNameForm"
+              "$ref": "#/$defs/SubsequentNameForm"
             },
             {
               "type": "null"
@@ -2686,21 +2675,6 @@
         }
       },
       "additionalProperties": false
-    },
-    "IntegralNameRule": {
-      "description": "The supported integral citation name-memory rule.",
-      "oneOf": [
-        {
-          "description": "Render the first integral mention in scope in full, then shorten later mentions.",
-          "type": "string",
-          "const": "full-then-short"
-        },
-        {
-          "description": "Opt out of name-memory tracking; no first/subsequent distinction is applied and the\ntemplate's own contributor form is used unchanged for every integral citation.",
-          "type": "string",
-          "const": "short-only"
-        }
-      ]
     },
     "IntegralNameScope": {
       "description": "The scope where integral citation name-memory resets.",
@@ -2737,8 +2711,8 @@
         }
       ]
     },
-    "IntegralNameForm": {
-      "description": "The contributor form used after the first integral mention in scope.",
+    "SubsequentNameForm": {
+      "description": "The contributor form used after the first integral mention in scope.\n\n`Short` preserves non-dropping particles (\"van Beethoven\"); `FamilyOnly`\nstrips them (\"Beethoven\"). MLA-style narrative memory uses `Short`.",
       "oneOf": [
         {
           "description": "Use the short contributor form for subsequent mentions.",
@@ -2746,7 +2720,7 @@
           "const": "short"
         },
         {
-          "description": "Use family name only for subsequent mentions.",
+          "description": "Use family name only (without non-dropping particles) for subsequent mentions.",
           "type": "string",
           "const": "family-only"
         }

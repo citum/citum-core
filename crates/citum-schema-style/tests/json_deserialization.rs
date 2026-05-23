@@ -17,7 +17,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 )]
 
 use citum_schema_style::citation::{CitationItem, IntegralNameState};
-use citum_schema_style::options::{IntegralNameContexts, IntegralNameRule, IntegralNameScope};
+use citum_schema_style::options::{IntegralNameContexts, IntegralNameScope};
 use citum_schema_style::reference::{ClassExtension, InputReference, Monograph};
 use citum_schema_style::{InputBibliography, Style};
 
@@ -153,13 +153,12 @@ fn test_input_bibliography_sets_round_trip() {
 }
 
 #[test]
-fn test_style_integral_names_round_trip() {
+fn test_style_integral_name_memory_round_trip() {
     let json = r#"{
         "version": "0.8.0",
         "info": { "title": "Test Style" },
         "options": {
-            "integral-names": {
-                "rule": "full-then-short",
+            "integral-name-memory": {
                 "scope": "chapter",
                 "contexts": "body-and-notes",
                 "subsequent-form": "short"
@@ -171,9 +170,8 @@ fn test_style_integral_names_round_trip() {
     let config = style
         .options
         .as_ref()
-        .and_then(|options| options.integral_names.as_ref())
-        .expect("integral-names should exist");
-    assert_eq!(config.rule, Some(IntegralNameRule::FullThenShort));
+        .and_then(|options| options.integral_name_memory.as_ref())
+        .expect("integral-name-memory should exist");
     assert_eq!(config.scope, Some(IntegralNameScope::Chapter));
     assert_eq!(config.contexts, Some(IntegralNameContexts::BodyAndNotes));
 
@@ -182,7 +180,7 @@ fn test_style_integral_names_round_trip() {
     assert!(
         reparsed
             .options
-            .and_then(|options| options.integral_names)
+            .and_then(|options| options.integral_name_memory)
             .is_some()
     );
 }

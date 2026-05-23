@@ -9,9 +9,8 @@ use crate::reference::{Bibliography, Reference};
 use crate::render::plain::PlainText;
 use crate::render::typst::Typst;
 use citum_schema::options::{
-    Config, IntegralNameConfig, IntegralNameContexts, IntegralNameForm, IntegralNameRule,
-    IntegralNameScope, NoteConfig, NoteMarkerOrder, NoteNumberPlacement, NoteQuotePlacement,
-    Processing,
+    Config, IntegralNameContexts, IntegralNameMemoryConfig, IntegralNameScope, NoteConfig,
+    NoteMarkerOrder, NoteNumberPlacement, NoteQuotePlacement, Processing, SubsequentNameForm,
 };
 use citum_schema::template::{
     ContributorForm, ContributorRole, DateForm, DateVariable, Rendering, TemplateComponent,
@@ -168,11 +167,10 @@ fn make_integral_name_style(scope: IntegralNameScope, contexts: IntegralNameCont
     Style {
         options: Some(Config {
             processing: Some(Processing::AuthorDate),
-            integral_names: Some(IntegralNameConfig {
-                rule: Some(IntegralNameRule::FullThenShort),
+            integral_name_memory: Some(IntegralNameMemoryConfig {
                 scope: Some(scope),
                 contexts: Some(contexts),
-                subsequent_form: Some(IntegralNameForm::Short),
+                subsequent_form: Some(SubsequentNameForm::Short),
                 short_name_display: None,
                 ..Default::default()
             }),
@@ -844,7 +842,7 @@ fn test_document_frontmatter_can_disable_integral_name_memory() {
     let parser = DjotParser;
 
     let content = r"---
-integral-names:
+integral-name-memory:
   enabled: false
 ---
 
@@ -871,7 +869,7 @@ fn test_document_frontmatter_can_override_integral_name_scope_for_typst() {
     let parser = DjotParser;
 
     let content = r"---
-integral-names:
+integral-name-memory:
   enabled: true
   scope: chapter
 ---
@@ -912,7 +910,7 @@ bibliography:
       literal: "Cited Works"
     selector:
       cited: visible
-integral-names:
+integral-name-memory:
   enabled: true
   scope: document
   contexts: body-and-notes

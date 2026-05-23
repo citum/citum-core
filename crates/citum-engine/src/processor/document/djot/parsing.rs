@@ -34,7 +34,7 @@ pub(crate) struct FootnoteDefinitionRange {
 #[serde(rename_all = "kebab-case")]
 pub(crate) struct DocumentFrontmatter {
     pub bibliography: Option<Vec<BibliographyGroup>>,
-    pub integral_names: Option<DocumentIntegralNameOverride>,
+    pub integral_name_memory: Option<DocumentIntegralNameOverride>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

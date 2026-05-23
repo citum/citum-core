@@ -8,8 +8,8 @@ use crate::Processor;
 use crate::processor::rendering::grouped::group_citation_items_by_author;
 use citum_schema::citation::{Citation, CitationItem, CitationMode, IntegralNameState};
 use citum_schema::options::{
-    Config, IntegralNameConfig, IntegralNameContexts, IntegralNameForm, IntegralNameRule,
-    IntegralNameScope, Processing,
+    Config, IntegralNameContexts, IntegralNameMemoryConfig, IntegralNameScope, Processing,
+    SubsequentNameForm,
 };
 use citum_schema::template::*;
 use citum_schema::{CitationSpec, Style, StyleInfo};
@@ -79,11 +79,10 @@ fn integral_name_style() -> Style {
         },
         options: Some(Config {
             processing: Some(Processing::AuthorDate),
-            integral_names: Some(IntegralNameConfig {
-                rule: Some(IntegralNameRule::FullThenShort),
+            integral_name_memory: Some(IntegralNameMemoryConfig {
                 scope: Some(IntegralNameScope::Document),
                 contexts: Some(IntegralNameContexts::BodyAndNotes),
-                subsequent_form: Some(IntegralNameForm::Short),
+                subsequent_form: Some(SubsequentNameForm::Short),
                 short_name_display: None,
                 ..Default::default()
             }),

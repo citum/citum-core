@@ -14,7 +14,7 @@ mod substitute;
 
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderContext, RenderOptions};
-use citum_schema::options::{IntegralNameForm, IntegralNameRule};
+use citum_schema::options::SubsequentNameForm;
 use citum_schema::template::{ContributorForm, ContributorRole, TemplateContributor};
 
 #[cfg(test)]
@@ -121,7 +121,8 @@ pub(super) fn format_role_term<F: crate::render::format::OutputFormat<Output = S
     fmt.text(&format!("{prefix}{term_str}{suffix}"))
 }
 
-/// Apply `FullThenShort` integral-citation subsequent-form rewrite to contributor form.
+/// Apply the integral-citation subsequent-form rewrite to a contributor on a
+/// `Subsequent` mention. No-op unless the style configures `integral-name-memory`.
 fn apply_integral_subsequent_form(
     component: &mut TemplateContributor,
     hints: &ProcHints,
@@ -142,22 +143,12 @@ fn apply_integral_subsequent_form(
     ) {
         return;
     }
-    if !options
-        .config
-        .integral_names
-        .as_ref()
-        .is_some_and(|cfg| matches!(cfg.resolve().rule, IntegralNameRule::FullThenShort))
-    {
+    let Some(memory) = options.config.integral_name_memory.as_ref() else {
         return;
-    }
-    let subsequent_form = options
-        .config
-        .integral_names
-        .as_ref()
-        .map_or(IntegralNameForm::Short, |cfg| cfg.resolve().subsequent_form);
-    component.form = match subsequent_form {
-        IntegralNameForm::Short => ContributorForm::Short,
-        IntegralNameForm::FamilyOnly => ContributorForm::FamilyOnly,
+    };
+    component.form = match memory.resolve().subsequent_form {
+        SubsequentNameForm::Short => ContributorForm::Short,
+        SubsequentNameForm::FamilyOnly => ContributorForm::FamilyOnly,
     };
 }
 
