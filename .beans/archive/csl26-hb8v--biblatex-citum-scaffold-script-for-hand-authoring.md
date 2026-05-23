@@ -1,11 +1,11 @@
 ---
 # csl26-hb8v
 title: biblatex → Citum scaffold script for hand-authoring biblatex-benchmarked styles
-status: todo
+status: completed
 type: task
 priority: low
 created_at: 2026-05-23T18:16:57Z
-updated_at: 2026-05-23T18:16:57Z
+updated_at: 2026-05-23T20:42:15Z
 ---
 
 Followup from csl26-8kod. Investigates a low-cost path to accelerate authoring of biblatex-benchmarked Citum styles without taking on a full biblatex .bbx/.cbx → Citum converter.
