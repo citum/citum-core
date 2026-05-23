@@ -30,6 +30,7 @@ const {
   compareText,
   normalizeText,
   parseComponents,
+  compareComponents,
   analyzeOrdering,
   findRefDataForEntry,
   loadLocale,
@@ -216,59 +217,6 @@ function createOracleTempWorkspace() {
 function cleanupOracleTempWorkspace(workspace) {
   if (!workspace?.dir) return;
   fs.rmSync(workspace.dir, { recursive: true, force: true });
-}
-
-/**
- * Compare two component sets and identify differences.
- */
-function compareComponents(oracleComp, citumComp, refData) {
-  const differences = [];
-  const matches = [];
-
-  const keys = ['contributors', 'year', 'title', 'containerTitle', 'volume',
-    'issue', 'pages', 'publisher', 'doi', 'edition', 'editors',
-    'translators', 'interviewers', 'recipients'];
-
-  for (const key of keys) {
-    const oracle = oracleComp[key];
-    const citum = citumComp[key];
-
-    // Skip if neither has this component
-    if (!oracle.found && !citum.found) continue;
-
-    if (oracle.found && citum.found) {
-      // Both have it - check if values match
-      if (oracle.value === citum.value ||
-        (typeof oracle.value === 'boolean' && oracle.value === citum.value)) {
-        matches.push({ component: key, status: 'match' });
-      } else {
-        // Values differ
-        differences.push({
-          component: key,
-          issue: 'value_mismatch',
-          expected: oracle.value,
-          found: citum.value,
-          detail: 'Value differs between oracle and Citum',
-        });
-      }
-    } else if (oracle.found && !citum.found) {
-      differences.push({
-        component: key,
-        issue: 'missing',
-        expected: oracle.value,
-        detail: `Missing in Citum output`
-      });
-    } else if (!oracle.found && citum.found) {
-      differences.push({
-        component: key,
-        issue: 'extra',
-        found: citum.value,
-        detail: `Extra in Citum output (not in oracle)`
-      });
-    }
-  }
-
-  return { differences, matches };
 }
 
 /**

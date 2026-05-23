@@ -1,14 +1,14 @@
 ---
 # csl26-8kod
 title: Components column coverage for biblatex-authority styles
-status: todo
+status: completed
 type: task
 priority: normal
 tags:
     - testing
     - migrate
 created_at: 2026-03-07T19:25:01Z
-updated_at: 2026-04-25T20:20:07Z
+updated_at: 2026-05-23T18:17:10Z
 ---
 
 The five compound-numeric styles (numeric-comp, chem-acs, angewandte-chemie, chem-rsc, chem-biochem) use biblatex as their benchmark authority. The biblatex oracle in report-core.js builds entries as { expected, actual, match } with no component-level breakdown, so computeComponentMatchRate() always returns null and the Components column in compat.html is empty for these styles.
@@ -30,3 +30,27 @@ Add a separate oracle pass for biblatex styles using the Citum JSON render outpu
 
 **Option D — Bibliography pass-rate proxy (rejected)**
 Fall back to treating entry.match as 1/1 per entry. Rejected: this duplicates the fidelity score and gives no additional signal about which components are passing or failing.
+
+
+
+## Summary of Changes
+
+Implemented **Option A** (post-hoc `parseComponents` on biblatex output strings) — the symmetric heuristic diff already used for citeproc-js-authority styles, applied to biblatex-authority styles. This makes the Components column apples-to-apples comparable across all benchmark sources.
+
+### Changes
+
+- `scripts/oracle-utils.js` — moved `compareComponents` here (from `oracle.js`) and exported it, so both oracle paths share a single source.
+- `scripts/oracle.js` — now imports `compareComponents` from `./oracle-utils` instead of defining it locally; re-export preserved.
+- `scripts/report-core.js` — `runBiblatexSnapshotOracle` now populates `entry.components` with `{matches, differences}` for mismatched entries, using fixture-aligned `refData`. `computeComponentMatchRate` is now exported.
+- `scripts/report-core.test.js` — added two focused tests covering populated-components scoring and the pre-fix null-baseline behaviour.
+
+### Verification
+
+- All 51 `report-core.test.js` tests pass; all 25 `oracle.test.js` tests pass.
+- All 5 biblatex-authority styles now produce a numeric `componentMatchRate` (previously `null`):
+  `angewandte-chemie`, `chem-acs`, `chem-biochem`, `chem-rsc`, `numeric-comp` → all 1.000 at current fidelity.
+- Quality gate green: 154 styles, fidelity=1.0, warnings=0.
+
+### Followup
+
+Filed [[csl26-hb8v]] — biblatex → Citum scaffold script (scaffold-only path; cf. independent-alternative analysis of a full converter).

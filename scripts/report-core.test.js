@@ -17,6 +17,7 @@ const { loadReportProvenance } = require('./lib/report-metadata');
 const {
   buildNoteStyleLookup,
   collectTemplateScopes,
+  computeComponentMatchRate,
   computeConcisionScore,
   computeFallbackRobustness,
   computePresetUsageScore,
@@ -1004,6 +1005,56 @@ test('expandCompoundBibEntries splits merged biblatex compound blocks', () => {
     '(3) Third entry.',
     '(4) Standalone entry.',
   ]);
+});
+
+test('computeComponentMatchRate scores biblatex entries with populated components', () => {
+  // Entry 1: text matches (counts as 11/11).
+  // Entry 2: text mismatch but components.{matches,differences} populated by
+  // the same heuristic used for citeproc-js styles — yields 3 matches / 4 total.
+  const oracleResult = {
+    bibliography: {
+      entries: [
+        { match: true },
+        {
+          match: false,
+          components: {
+            matches: [
+              { component: 'contributors', status: 'match' },
+              { component: 'title', status: 'match' },
+              { component: 'year', status: 'match' },
+            ],
+            differences: [
+              {
+                component: 'doi',
+                issue: 'missing',
+                expected: '10.1234/foo',
+                detail: 'Missing in Citum output',
+              },
+            ],
+          },
+        },
+      ],
+    },
+  };
+
+  const rate = computeComponentMatchRate(oracleResult);
+  // (11 + 3) / (11 + 4) = 14/15 ≈ 0.933
+  assert.equal(rate, 0.933);
+});
+
+test('computeComponentMatchRate returns null when no components are populated', () => {
+  // Mirrors the pre-fix biblatex behaviour: mismatched entries without
+  // entry.components produce no signal, total stays 0, result is null.
+  const oracleResult = {
+    bibliography: {
+      entries: [
+        { match: false },
+        { match: false },
+      ],
+    },
+  };
+
+  assert.equal(computeComponentMatchRate(oracleResult), null);
 });
 
 test('equivalentText tolerates near-match snapshot formatting without masking drift', () => {

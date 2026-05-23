@@ -49,6 +49,8 @@ const {
   compareText,
   normalizeText,
   textSimilarity,
+  parseComponents,
+  compareComponents,
 } = require('./oracle-utils');
 const { maybeDatasetErrorForFile } = require('./lib/dataset-guard');
 
@@ -1126,12 +1128,14 @@ async function runBiblatexSnapshotOracle(runtime, styleName, styleYamlPath, auth
       }
 
       try {
-        // Build ordered type list from the fixture so we can track per-type pass rates.
-        // The biblatex snapshot entries correspond positionally to fixture entries.
+        // Build ordered ref list from the fixture so we can track per-type pass
+        // rates and run per-position component diffs. The biblatex snapshot
+        // entries correspond positionally to fixture entries after expansion of
+        // compound blocks.
         const fixtureData = JSON.parse(fs.readFileSync(DEFAULT_REFS_FIXTURE, 'utf8'));
-        const fixtureTypes = Object.entries(fixtureData)
+        const fixtureRefs = Object.entries(fixtureData)
           .filter(([key]) => key !== 'comment')
-          .map(([, ref]) => (typeof ref === 'object' && ref !== null ? ref.type : null) || 'unknown');
+          .map(([, ref]) => (typeof ref === 'object' && ref !== null ? ref : null));
 
         const rendered = await renderCitumJson(runtime, styleYamlPath, DEFAULT_REFS_FIXTURE, 'bib');
         const actualEntries = rendered?.bibliography?.entries?.map((entry) => entry.text) || [];
@@ -1149,15 +1153,31 @@ async function runBiblatexSnapshotOracle(runtime, styleName, styleYamlPath, auth
           });
           const match = comparison.match;
           if (match) passed += 1;
-          entries.push({
+          const entryResult = {
             expected: comparison.expected,
             actual: comparison.actual,
             match,
             caseMismatch: comparison.caseMismatch,
-          });
+          };
+
+          // On mismatch, run the same symmetric component-diff heuristic used
+          // for citeproc-js styles so the Components column gets a comparable
+          // signal for biblatex-authority styles.
+          if (!match) {
+            const refData = fixtureRefs[i];
+            if (refData) {
+              const expectedComp = parseComponents(comparison.expected, refData);
+              const actualComp = parseComponents(comparison.actual, refData);
+              const { differences, matches } =
+                compareComponents(expectedComp, actualComp, refData);
+              entryResult.components = { matches, differences };
+            }
+          }
+
+          entries.push(entryResult);
 
           // Track per-type stats using the fixture entry at this position.
-          const refType = fixtureTypes[i] || 'unknown';
+          const refType = (fixtureRefs[i] && fixtureRefs[i].type) || 'unknown';
           const typeStats = citationsByType[refType] || { passed: 0, total: 0 };
           typeStats.total += 1;
           if (match) typeStats.passed += 1;
@@ -3739,6 +3759,7 @@ if (require.main === module) {
 module.exports = {
   buildNoteStyleLookup,
   collectTemplateScopes,
+  computeComponentMatchRate,
   computeConcisionScore,
   computeFallbackRobustness,
   computePresetUsageScore,
