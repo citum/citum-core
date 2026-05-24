@@ -91,7 +91,7 @@ See [CITUM_SERVER_MODE.md](./CITUM_SERVER_MODE.md) for the full server mode plan
 | `csln-edtf`      | `csln-edtf`      | Yes        | Potentially standalone         |
 | `citum_analyze`   | `citum-analyze`  | No         | Internal tooling               |
 | `csln` (bin)     | `citum`          | Yes (bin)  | CLI binary (from `citum-cli`) |
-| *(new)*          | `citum-server`   | Yes (bin)  | JSON-RPC + optional HTTP server; see [CITUM_SERVER_MODE.md](./CITUM_SERVER_MODE.md) |
+| *(new)*          | `citum-server`   | Yes (bin)  | JSON-RPC + default-enabled HTTP server; see [CITUM_SERVER_MODE.md](./CITUM_SERVER_MODE.md) |
 
 ### Target Workspace Layout
 
@@ -290,4 +290,4 @@ point a `citum/docs` repo fed by CI from `citum-core` becomes viable.
 | `csl26-p2lb` | Phase 2: Create citum/citum-labs repository        | 2      |
 | `csl26-srvr` | Phase 2: citum-server mode (epic)            | 2      |
 | `csl26-srpc` | Phase 2: Implement JSON-RPC stdin/stdout     | 2      |
-| `csl26-shtp` | Phase 2: HTTP feature (axum, feature-gated)  | 2      |
+| `csl26-shtp` | Phase 2: HTTP feature (axum, default-enabled) | 2      |

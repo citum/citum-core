@@ -349,14 +349,16 @@ cargo build --release
                 <div class="workshop-label">Install and start</div>
                 <pre><code>cargo install citum-server
 citum-server                          # stdin/stdout JSON-RPC
-citum-server --http --port 8765       # HTTP mode (http feature)</code></pre>
+citum-server --http --port 8765       # HTTP JSON-RPC</code></pre>
             </div>
             <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
                 Methods: <code>format_document</code>, <code>render_citation</code>, <code>render_bibliography</code>,
                 <code>validate_style</code>. See the
                 <a href="guides/integrations/editor-plugin.html">editor / plugin recipe</a> for a working request,
-                response, and Node client. The HTTP server is behind the <code>citum-server/http</code> feature
-                flag (axum). For the full schema, see
+                response, and Node client. The HTTP server is included in the default
+                <code>citum-server</code> build through the <code>citum-server/http</code> feature (axum);
+                use <code>cargo install citum-server --no-default-features</code> only for a stdio-only binary.
+                For the full schema, see
                 <a href="reference.html">Reference &rarr; JSON Schemas</a> or browse
                 <a href="schemas/">docs/schemas/</a> directly.
             </p>

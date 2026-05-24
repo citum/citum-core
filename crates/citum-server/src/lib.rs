@@ -13,8 +13,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //!
 //! The server supports two transport modes:
 //!
-//! - **stdio (default)**: Newline-delimited JSON-RPC on stdin/stdout. No runtime overhead.
-//! - **HTTP (optional, requires `http` feature)**: Exposes `/rpc` endpoint via axum.
+//! - **stdio (default)**: Newline-delimited JSON-RPC on stdin/stdout. No HTTP listener or Tokio runtime is created.
+//! - **HTTP (default feature)**: Exposes `/rpc` endpoint via axum.
 //!
 //! ## Example (stdio mode)
 //!
@@ -25,8 +25,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //!
 //! ## Features
 //!
-//! - `async`: Enable tokio runtime (required for HTTP)
-//! - `http`: Enable HTTP server (implies async)
+//! - `async`: Enable the Tokio runtime dependency used by HTTP transport
+//! - `http`: Enable HTTP server (implies async; enabled by default)
 
 /// Server error types and conversions.
 pub mod error;
