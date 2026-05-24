@@ -46,6 +46,10 @@ use std::fs;
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
+#[cfg(feature = "dhat-heap")]
+#[global_allocator]
+static ALLOC: dhat::Alloc = dhat::Alloc;
+
 /// All compiled template and option data needed to build the final Style.
 struct CompiledOutput {
     options: citum_schema::options::Config,
@@ -159,6 +163,9 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOut
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    #[cfg(feature = "dhat-heap")]
+    let _profiler = dhat::Profiler::new_heap();
+
     let cli = Args::parse();
     let path = &cli.path;
     let family_candidate = FamilyCandidateMode::from_arg(cli.family_candidate.as_deref());

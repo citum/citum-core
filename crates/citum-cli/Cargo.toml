@@ -34,6 +34,7 @@ citum_store = { workspace = true, features = ["http"] }
 citum-resolver-api = { workspace = true }
 citum-server = { workspace = true, optional = true }
 url = { version = "2.5", features = ["serde"] }
+dhat = { version = "0.3", optional = true }
 
 # Features intentionally removed for the v1 crates.io publish: `typescript`
 # depended on the unpublished `citum-bindings` crate. Its cfg-gated code path
@@ -42,6 +43,7 @@ url = { version = "2.5", features = ["serde"] }
 [features]
 default = []
 schema = ["dep:schemars", "citum-schema/schema", "dep:citum-server", "citum-server/schema-types"]
+dhat-heap = ["dep:dhat"]
 
 [lints]
 workspace = true
