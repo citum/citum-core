@@ -469,6 +469,7 @@ impl<'a> MacroInliner<'a> {
     }
 }
 
+/// Clones a group component with its children, used during macro inlining to avoid mutating the original.
 fn clone_group_with_children(group: &Group, children: Vec<CslNode>) -> Group {
     Group {
         delimiter: group.delimiter.clone(),
@@ -480,6 +481,7 @@ fn clone_group_with_children(group: &Group, children: Vec<CslNode>) -> Group {
     }
 }
 
+/// Clones a names component with its children for inline substitution.
 fn clone_names_with_children(names: &Names, children: Vec<CslNode>) -> Names {
     Names {
         variable: names.variable.clone(),
@@ -497,6 +499,7 @@ fn clone_names_with_children(names: &Names, children: Vec<CslNode>) -> Names {
     }
 }
 
+/// Clones a choose branch with its child components for inline substitution.
 fn clone_choose_branch_with_children(
     branch: &ChooseBranch,
     children: Vec<CslNode>,

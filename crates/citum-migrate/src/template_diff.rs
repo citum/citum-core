@@ -17,6 +17,7 @@ pub(crate) type TypeTemplateMap = indexmap::IndexMap<TypeSelector, Vec<TemplateC
 
 pub(crate) type TypeVariantMap = indexmap::IndexMap<TypeSelector, TemplateVariant>;
 
+/// Builds all template variants for a given reference type from a type-template map.
 pub(crate) fn build_type_variants(
     default_template: &[TemplateComponent],
     type_templates: TypeTemplateMap,
@@ -38,6 +39,7 @@ pub(crate) fn build_type_variants(
     variants
 }
 
+/// Extracts a single variant from a full template definition, computing a minimal diff if possible.
 pub(crate) fn template_variant_from_full_template(
     default_template: &[TemplateComponent],
     candidate_parents: &[(TypeSelector, Vec<TemplateComponent>)],
@@ -57,6 +59,7 @@ pub(crate) fn template_variant_from_full_template(
     }
 }
 
+/// Selects the lowest-weight diff across all computed variant diffs.
 fn derive_best_template_variant_diff(
     default_template: &[TemplateComponent],
     candidate_parents: &[(TypeSelector, Vec<TemplateComponent>)],
@@ -85,10 +88,12 @@ fn derive_best_template_variant_diff(
     best_diff
 }
 
+/// Assigns a numeric cost to a diff operation for selecting the lowest-weight variant diff.
 fn diff_operation_weight(diff: &TemplateVariantDiff) -> usize {
     diff.modify.len() + diff.remove.len() + diff.add.len()
 }
 
+/// Round-trip correctness check: applies the computed diff and verifies it reproduces the target.
 fn diff_resolves_to_template(
     default_template: &[TemplateComponent],
     candidate_parents: &[(TypeSelector, Vec<TemplateComponent>)],
@@ -109,6 +114,7 @@ fn diff_resolves_to_template(
     apply_template_variant_diff(&mut resolved, diff).is_some_and(|()| resolved == expected_template)
 }
 
+/// Computes a diff between a single template variant and the target template.
 fn derive_template_variant_diff(
     default_template: &[TemplateComponent],
     target_template: &[TemplateComponent],
@@ -189,10 +195,12 @@ fn derive_template_variant_diff(
     Some(diff)
 }
 
+/// Extracts the sequence of component keys from a template for LCS alignment.
 fn component_keys(template: &[TemplateComponent]) -> Option<Vec<String>> {
     template.iter().map(component_key).collect()
 }
 
+/// Builds a selector keyed on a component's type discriminant and identifying value (e.g. `variable: title`).
 pub(crate) fn component_selector(
     component: &TemplateComponent,
 ) -> Option<TemplateComponentSelector> {
@@ -202,12 +210,14 @@ pub(crate) fn component_selector(
     Some(TemplateComponentSelector { fields: selector })
 }
 
+/// Returns the unique key for a single template component.
 fn component_key(component: &TemplateComponent) -> Option<String> {
     let (key, value) = component_selector_value(component)?;
     let value = serde_json::to_string(&value).ok()?;
     Some(format!("{key}:{value}"))
 }
 
+/// Returns the value portion of a component selector.
 fn component_selector_value(
     component: &TemplateComponent,
 ) -> Option<(&'static str, serde_json::Value)> {
@@ -234,10 +244,13 @@ fn component_selector_value(
     }
 }
 
+/// Applies a variant diff to produce a modified template.
 fn apply_template_variant_diff(
     template: &mut Vec<TemplateComponent>,
     diff: &TemplateVariantDiff,
 ) -> Option<()> {
+    // Apply ops in dependency order: modify in place first, then remove, then insert.
+    // The `?` on each anchor lookup aborts early, preventing partial application.
     for op in &diff.modify {
         let index = find_unique_anchor(template, &op.match_selector)?;
         let component = template.get_mut(index)?;
@@ -255,6 +268,7 @@ fn apply_template_variant_diff(
     }
 
     for op in &diff.add {
+        // Exactly one of `before` or `after` must be set; any other combination is invalid.
         let (selector, insert_after) = match (&op.before, &op.after) {
             (Some(selector), None) => (selector, false),
             (None, Some(selector)) => (selector, true),
@@ -272,6 +286,7 @@ fn apply_template_variant_diff(
     Some(())
 }
 
+/// Finds a component key that appears exactly once in both sequences, usable as an LCS anchor.
 fn find_unique_anchor(
     template: &[TemplateComponent],
     selector: &TemplateComponentSelector,
@@ -287,6 +302,7 @@ fn find_unique_anchor(
     matches.next().is_none().then_some(first)
 }
 
+/// Returns the modified label form for a number component if it differs between default and target.
 fn modified_number_label_form(
     base: &TemplateComponent,
     target: &TemplateComponent,
@@ -301,6 +317,7 @@ fn modified_number_label_form(
     }
 }
 
+/// Returns true if the diff touches only rendering options, not structural layout.
 fn is_rendering_only_change(base: &TemplateComponent, target: &TemplateComponent) -> bool {
     let mut normalized_base = base.clone();
     let mut normalized_target = target.clone();
@@ -323,6 +340,7 @@ fn is_rendering_only_change(base: &TemplateComponent, target: &TemplateComponent
     normalized_base == normalized_target
 }
 
+/// Computes longest common subsequence index pairs used to align default and target template components.
 fn lcs_pairs(left: &[String], right: &[String]) -> Vec<(usize, usize)> {
     let mut lengths = vec![vec![0usize; right.len() + 1]; left.len() + 1];
 
