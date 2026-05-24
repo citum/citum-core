@@ -202,6 +202,8 @@ impl<'a> Renderer<'a> {
         )
     }
 
+    /// Generate an alphabetic or numeric sub-label (e.g., "a", "1") for a
+    /// reference member of a compound set.
     fn citation_sub_label_for_ref(&self, ref_id: &str) -> Option<String> {
         let compound = self
             .bibliography_config
@@ -251,6 +253,7 @@ impl<'a> Renderer<'a> {
         })
     }
 
+    /// Determine if compound subentries should be collapsed for this citation.
     fn should_collapse_compound_subentries(
         &self,
         mode: &citum_schema::citation::CitationMode,
@@ -265,6 +268,7 @@ impl<'a> Renderer<'a> {
             .is_some_and(|c| c.subentry && c.collapse_subentries)
     }
 
+    /// Determine if citation numbers should be collapsed into ranges.
     fn should_collapse_citation_numbers(
         &self,
         spec: &citum_schema::CitationSpec,
@@ -287,6 +291,7 @@ impl<'a> Renderer<'a> {
             )
     }
 
+    /// Heuristic for ensuring proper spacing after a citation prefix.
     fn normalize_prefix_spacing(prefix: &str) -> String {
         if !prefix.is_empty() && !prefix.ends_with(char::is_whitespace) {
             format!("{prefix} ")
@@ -313,6 +318,7 @@ impl<'a> Renderer<'a> {
         }
     }
 
+    /// Apply prefix and suffix spacing heuristics to a rendered string.
     fn affix_content<F>(
         &self,
         fmt: &F,
@@ -336,6 +342,7 @@ impl<'a> Renderer<'a> {
         }
     }
 
+    /// Pair rendered content with associated reference IDs to form a semantic chunk.
     fn build_citation_chunk<F>(
         &self,
         fmt: &F,
@@ -354,6 +361,7 @@ impl<'a> Renderer<'a> {
         }
     }
 
+    /// Create a template render request for a single citation item.
     fn citation_render_request<'b>(
         &self,
         item: &'b crate::reference::CitationItem,
@@ -376,6 +384,7 @@ impl<'a> Renderer<'a> {
         }
     }
 
+    /// Render a single item to a formatted string using a template.
     fn render_item_from_template_with_format<F>(
         &self,
         reference: &Reference,
@@ -397,6 +406,7 @@ impl<'a> Renderer<'a> {
             })
     }
 
+    /// Initialize render options for a citation.
     fn citation_render_options<'b>(
         &'b self,
         mode: citum_schema::citation::CitationMode,
@@ -421,8 +431,7 @@ impl<'a> Renderer<'a> {
 
     /// Render author + citation number for numeric integral citations.
     ///
-    /// This is used as a default for numeric styles in narrative mode (e.g., "Smith [1]").
-    /// It renders the author's short name followed by the citation number in brackets.
+    /// Default implementation for narrative citations in numeric styles (e.g., "Smith [1]").
     fn render_author_number_for_numeric_integral_with_format<F>(
         &self,
         reference: &Reference,
