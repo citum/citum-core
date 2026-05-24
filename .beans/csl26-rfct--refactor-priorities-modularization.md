@@ -5,7 +5,7 @@ status: in-progress
 type: milestone
 priority: normal
 created_at: 2026-05-16T14:30:00Z
-updated_at: 2026-05-24T00:17:28Z
+updated_at: 2026-05-24T05:45:00Z
 ---
 
 Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by refactor priority and grouped by modularization strategy.
@@ -32,9 +32,9 @@ Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by r
    - **Done:** Extracted embedded en-US data to `src/locale/embedded/en_us.rs` (per original target), the raw → Locale conversion to `src/locale/raw_conversion.rs`, and message-ID mappings + MF2 dispatch to `src/locale/message_ids.rs`. 1306/1306 workspace tests pass.
 5. [x] **`citum-schema-data/src/reference/conversion/` (2085 → 767 lines, -63%)**
    - **Done:** Split into `conversion/{legal,scholarly,media}.rs`; shared helpers, RefContext, and the `From<Reference> for InputReference` dispatch stay in `conversion/mod.rs`. Public re-export of `input_reference_from_legacy_edited_book` keeps the existing `citum_schema::reference::conversion::*` path byte-identical. 1306/1306 workspace tests pass.
-6. [ ] **`citum-migrate/src/upsampler.rs` (2064 lines)**
+6. [x] **`citum-migrate/src/upsampler.rs` (2064 lines → facade + upsampler/ modules)**
    - **Issues:** Complex citation position analysis intertwined with upsampling logic.
-   - **Target:** Extract `CitationPositionAnalysis` to `src/upsampler/position.rs`.
+   - **Done:** Extracted citation position analysis/rewrite logic to `src/upsampler/position.rs`, node mapping and scalar conversion helpers to `src/upsampler/mapping.rs`, and inline tests to `src/upsampler/tests.rs`; `upsampler.rs` is now a small facade with stable re-exports and Citum-facing node aliasing.
 7. [ ] **`citum-engine/src/processor/rendering/grouped/core.rs` (1708 lines)**
    - **Issues:** Highly specific rendering logic and classification helpers.
 8. [x] **`citum-io/src/lib.rs` (1622 lines)**
