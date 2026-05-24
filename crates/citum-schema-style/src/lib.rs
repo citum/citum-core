@@ -15,15 +15,8 @@ pub mod citation {
 /// Bibliographic reference data types.
 pub use citum_schema_data::reference;
 
-/// Renderer for converting processor output to different formats.
-pub mod renderer;
-pub use renderer::Renderer;
-
 /// Bibliography grouping and sorting specifications.
 pub mod grouping;
-/// Legacy CSL 1.0 compatibility types.
-#[allow(missing_docs, reason = "internal derives")]
-pub mod legacy;
 /// Locale-specific terms and translations.
 pub mod locale;
 /// Style configuration options.
@@ -78,13 +71,6 @@ pub use grouping::{
     BibliographyGroup, CitedStatus, FieldMatcher, GroupHeading, GroupSelector, GroupSort,
     GroupSortEntry, GroupSortKey, NameSortOrder, SortKey,
 };
-pub use legacy::{
-    AndTerm, ConditionBlock, CslnInfo, CslnLocale, CslnNode, CslnStyle, DateBlock, DateForm,
-    DateOptions, DatePartForm, DateParts, DelimiterPrecedes, ElseIfBranch, EtAlOptions,
-    EtAlSubsequent, FontStyle, FontVariant, FontWeight, FormattingOptions, GroupBlock, ItemType,
-    LabelForm, LabelOptions, NameAsSortOrder, NameMode, NamesBlock, NamesOptions, TermBlock,
-    TextDecoration, Variable, VariableBlock, VerticalAlign,
-};
 pub use locale::Locale;
 pub use options::TextCase;
 pub use options::{BibliographyOptions, CitationOptions, Config};
@@ -100,7 +86,8 @@ pub use template::{
     TemplateComponentSelector, TemplateContributor, TemplateDate, TemplateGroup,
     TemplateModifyOperation, TemplateNumber, TemplatePreset, TemplateReference,
     TemplateRemoveOperation, TemplateTerm, TemplateTitle, TemplateVariable, TemplateVariant,
-    TemplateVariantDiff, TemplateVariants, TypeSelector, WrapConfig, WrapPunctuation,
+    TemplateVariantDiff, TemplateVariants, TypeSelector, VerticalAlign, WrapConfig,
+    WrapPunctuation,
 };
 pub use version::*;
 

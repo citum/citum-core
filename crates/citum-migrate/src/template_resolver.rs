@@ -699,7 +699,7 @@ mod tests {
 
     #[test]
     fn test_invalid_json_returns_none() {
-        let dir = std::env::temp_dir().join("csln_test_invalid");
+        let dir = std::env::temp_dir().join("ir_test_invalid");
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("bad.json");
         std::fs::write(&path, "not valid json").unwrap();

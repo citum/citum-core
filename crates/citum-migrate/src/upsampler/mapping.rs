@@ -3,15 +3,16 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
-use super::{CitumNode, Upsampler, migrate_debug_enabled};
+use super::{Upsampler, migrate_debug_enabled};
+use crate::ir::{self, FormattingOptions, ItemType, Variable};
 use crate::upsampler::position::choose_has_position_condition;
-use citum_schema::{self as citum, FormattingOptions, ItemType, Variable};
+use citum_schema as citum;
 use csl_legacy::model::{self as legacy, CslNode as LNode};
 use std::collections::HashMap;
 
 impl Upsampler {
     /// Convert one legacy CSL node into a Citum schema node.
-    pub(super) fn map_node(&self, node: &LNode) -> Option<CitumNode> {
+    pub(super) fn map_node(&self, node: &LNode) -> Option<ir::Node> {
         match node {
             LNode::Text(t) => {
                 if let Some(var_str) = &t.variable
@@ -28,7 +29,7 @@ impl Upsampler {
                             t.macro_call_order
                         );
                     }
-                    return Some(CitumNode::Variable(citum::VariableBlock {
+                    return Some(ir::Node::Variable(ir::VariableBlock {
                         variable: var,
                         label: None,
                         formatting: self.map_formatting(
@@ -44,7 +45,7 @@ impl Upsampler {
                 }
                 if let Some(term) = &t.term {
                     if let Some(general_term) = citum::locale::Locale::parse_general_term(term) {
-                        return Some(CitumNode::Term(citum::TermBlock {
+                        return Some(ir::Node::Term(ir::TermBlock {
                             term: general_term,
                             form: self.map_term_form(t.form.as_deref()),
                             formatting: self.map_formatting(
@@ -62,16 +63,16 @@ impl Upsampler {
                     let prefix = t.prefix.as_deref().unwrap_or("");
                     let suffix = t.suffix.as_deref().unwrap_or("");
                     let text_cased = self.apply_text_case(term, t.text_case.as_deref());
-                    return Some(CitumNode::Text {
+                    return Some(ir::Node::Text {
                         value: format!("{prefix}{text_cased}{suffix}"),
                     });
                 }
                 if let Some(val) = &t.value {
-                    return Some(CitumNode::Text { value: val.clone() });
+                    return Some(ir::Node::Text { value: val.clone() });
                 }
                 None
             }
-            LNode::Group(g) => Some(CitumNode::Group(citum::GroupBlock {
+            LNode::Group(g) => Some(ir::Node::Group(ir::GroupBlock {
                 children: self.upsample_nodes(&g.children),
                 delimiter: g.delimiter.clone(),
                 formatting: self.map_formatting(&g.formatting, &g.prefix, &g.suffix, None, None),
@@ -89,8 +90,8 @@ impl Upsampler {
     fn apply_name_child_options(
         &self,
         n: &legacy::Names,
-        variable: &citum::Variable,
-        options: &mut citum::NamesOptions,
+        variable: &ir::Variable,
+        options: &mut ir::NamesOptions,
         et_al_min: &mut Option<usize>,
         et_al_use_first: &mut Option<usize>,
         et_al_term: &mut String,
@@ -99,30 +100,30 @@ impl Upsampler {
             match child {
                 LNode::Name(name) => {
                     options.mode = match name.form.as_deref() {
-                        Some("short") => Some(citum::NameMode::Short),
-                        Some("count") => Some(citum::NameMode::Count),
-                        _ => Some(citum::NameMode::Long),
+                        Some("short") => Some(ir::NameMode::Short),
+                        Some("count") => Some(ir::NameMode::Count),
+                        _ => Some(ir::NameMode::Long),
                     };
                     options.and = match name.and.as_deref() {
-                        Some("text") => Some(citum::AndTerm::Text),
-                        Some("symbol") => Some(citum::AndTerm::Symbol),
+                        Some("text") => Some(ir::AndTerm::Text),
+                        Some("symbol") => Some(ir::AndTerm::Symbol),
                         _ => None,
                     };
                     options.initialize_with = name.initialize_with.clone();
                     options.sort_separator = name.sort_separator.clone();
                     options.name_as_sort_order = match name.name_as_sort_order.as_deref() {
-                        Some("first") => Some(citum::NameAsSortOrder::First),
-                        Some("all") => Some(citum::NameAsSortOrder::All),
+                        Some("first") => Some(ir::NameAsSortOrder::First),
+                        Some("all") => Some(ir::NameAsSortOrder::All),
                         _ => None,
                     };
                     options.delimiter_precedes_last = match name.delimiter_precedes_last.as_deref()
                     {
-                        Some("contextual") => Some(citum::DelimiterPrecedes::Contextual),
+                        Some("contextual") => Some(ir::DelimiterPrecedes::Contextual),
                         Some("after-inverted-name") => {
-                            Some(citum::DelimiterPrecedes::AfterInvertedName)
+                            Some(ir::DelimiterPrecedes::AfterInvertedName)
                         }
-                        Some("always") => Some(citum::DelimiterPrecedes::Always),
-                        Some("never") => Some(citum::DelimiterPrecedes::Never),
+                        Some("always") => Some(ir::DelimiterPrecedes::Always),
+                        Some("never") => Some(ir::DelimiterPrecedes::Never),
                         _ => None,
                     };
 
@@ -135,7 +136,7 @@ impl Upsampler {
                     }
                 }
                 LNode::Label(label) => {
-                    options.label = Some(citum::LabelOptions {
+                    options.label = Some(ir::LabelOptions {
                         variable: variable.clone(),
                         form: self.map_label_form(&label.form),
                         pluralize: true,
@@ -169,7 +170,7 @@ impl Upsampler {
         }
     }
 
-    fn map_names(&self, n: &legacy::Names) -> Option<CitumNode> {
+    fn map_names(&self, n: &legacy::Names) -> Option<ir::Node> {
         let vars: Vec<&str> = n.variable.split_whitespace().collect();
         if vars.is_empty() {
             return None;
@@ -178,7 +179,7 @@ impl Upsampler {
         #[allow(clippy::indexing_slicing, reason = "vars is not empty")]
         let variable = self.map_variable(vars[0])?;
 
-        let mut options = citum::NamesOptions {
+        let mut options = ir::NamesOptions {
             delimiter: n.delimiter.clone(),
             ..Default::default()
         };
@@ -197,7 +198,7 @@ impl Upsampler {
             if n.et_al_subsequent_min.is_some() || n.et_al_subsequent_use_first.is_some() {
                 let fallback_min = et_al_min.unwrap_or(0) as u8;
                 let fallback_use_first = et_al_use_first.unwrap_or(0) as u8;
-                Some(Box::new(citum::EtAlSubsequent {
+                Some(Box::new(ir::EtAlSubsequent {
                     min: n.et_al_subsequent_min.map_or(fallback_min, |v| v as u8),
                     use_first: n
                         .et_al_subsequent_use_first
@@ -220,7 +221,7 @@ impl Upsampler {
         );
 
         if let Some(min) = et_al_min {
-            options.et_al = Some(citum::EtAlOptions {
+            options.et_al = Some(ir::EtAlOptions {
                 min: min as u8,
                 use_first: et_al_use_first.unwrap_or(1) as u8,
                 subsequent: et_al_subsequent,
@@ -236,7 +237,7 @@ impl Upsampler {
                 n.macro_call_order
             );
         }
-        Some(CitumNode::Names(citum::NamesBlock {
+        Some(ir::Node::Names(ir::NamesBlock {
             variable,
             options,
             formatting: FormattingOptions::default(),
@@ -244,9 +245,9 @@ impl Upsampler {
         }))
     }
 
-    fn map_number(&self, n: &legacy::Number) -> Option<CitumNode> {
+    fn map_number(&self, n: &legacy::Number) -> Option<ir::Node> {
         let variable = self.map_variable(&n.variable)?;
-        Some(CitumNode::Variable(citum::VariableBlock {
+        Some(ir::Node::Variable(ir::VariableBlock {
             variable,
             label: None,
             formatting: self.map_formatting(&n.formatting, &n.prefix, &n.suffix, None, None),
@@ -255,13 +256,13 @@ impl Upsampler {
         }))
     }
 
-    fn map_label(&self, l: &legacy::Label) -> Option<CitumNode> {
+    fn map_label(&self, l: &legacy::Label) -> Option<ir::Node> {
         if let Some(var_str) = &l.variable
             && let Some(var) = self.map_variable(var_str)
         {
-            return Some(CitumNode::Variable(citum::VariableBlock {
+            return Some(ir::Node::Variable(ir::VariableBlock {
                 variable: var.clone(),
-                label: Some(citum::LabelOptions {
+                label: Some(ir::LabelOptions {
                     variable: var,
                     form: self.map_label_form(&l.form),
                     pluralize: true,
@@ -281,11 +282,11 @@ impl Upsampler {
         None
     }
 
-    fn upsample_first_node(&self, nodes: &[LNode]) -> Option<CitumNode> {
+    fn upsample_first_node(&self, nodes: &[LNode]) -> Option<ir::Node> {
         self.upsample_nodes(nodes).into_iter().next()
     }
 
-    fn map_uncertain_date_choose(&self, choose: &legacy::Choose) -> Option<CitumNode> {
+    fn map_uncertain_date_choose(&self, choose: &legacy::Choose) -> Option<ir::Node> {
         choose.if_branch.is_uncertain_date.as_ref()?;
 
         choose
@@ -302,7 +303,7 @@ impl Upsampler {
                 // A bare uncertain-date branch means "emit this only for uncertain dates".
                 // Migration defaults to the common certain-date case, so the absence of an
                 // else branch should compile to no output rather than unconditional output.
-                Some(CitumNode::Group(citum::GroupBlock {
+                Some(ir::Node::Group(ir::GroupBlock {
                     children: vec![],
                     delimiter: None,
                     formatting: FormattingOptions::default(),
@@ -311,7 +312,7 @@ impl Upsampler {
             })
     }
 
-    fn map_position_choose_fallback(&self, choose: &legacy::Choose) -> Option<CitumNode> {
+    fn map_position_choose_fallback(&self, choose: &legacy::Choose) -> Option<ir::Node> {
         if !choose_has_position_condition(choose) {
             return None;
         }
@@ -345,16 +346,13 @@ impl Upsampler {
             .collect()
     }
 
-    fn map_negated_else_if_fallback(
-        &self,
-        branch: &legacy::ChooseBranch,
-    ) -> Option<Vec<CitumNode>> {
+    fn map_negated_else_if_fallback(&self, branch: &legacy::ChooseBranch) -> Option<Vec<ir::Node>> {
         (branch.match_mode.as_deref() == Some("none") && branch.type_.is_some())
             .then(|| self.upsample_nodes(&branch.children))
     }
 
-    fn map_else_if_branch(&self, branch: &legacy::ChooseBranch) -> citum::ElseIfBranch {
-        citum::ElseIfBranch {
+    fn map_else_if_branch(&self, branch: &legacy::ChooseBranch) -> ir::ElseIfBranch {
+        ir::ElseIfBranch {
             if_item_type: self.map_branch_item_types(branch.type_.as_deref()),
             if_variables: self.map_branch_variables(branch.variable.as_deref()),
             children: self.upsample_nodes(&branch.children),
@@ -364,8 +362,8 @@ impl Upsampler {
     fn resolve_condition_else_branch(
         &self,
         choose: &legacy::Choose,
-        negated_else_nodes: Option<Vec<CitumNode>>,
-    ) -> Option<Vec<CitumNode>> {
+        negated_else_nodes: Option<Vec<ir::Node>>,
+    ) -> Option<Vec<ir::Node>> {
         choose
             .else_branch
             .as_ref()
@@ -377,8 +375,8 @@ impl Upsampler {
         &self,
         choose: &legacy::Choose,
         if_match_none: bool,
-        else_branch: Option<Vec<CitumNode>>,
-    ) -> (Vec<CitumNode>, Option<Vec<CitumNode>>) {
+        else_branch: Option<Vec<ir::Node>>,
+    ) -> (Vec<ir::Node>, Option<Vec<ir::Node>>) {
         if if_match_none {
             let if_nodes = self.upsample_nodes(&choose.if_branch.children);
             (Vec::new(), else_branch.or(Some(if_nodes)))
@@ -388,7 +386,7 @@ impl Upsampler {
     }
 
     /// Convert a legacy conditional tree into a Citum condition or fallback node.
-    pub(super) fn map_choose(&self, c: &legacy::Choose) -> Option<CitumNode> {
+    pub(super) fn map_choose(&self, c: &legacy::Choose) -> Option<ir::Node> {
         // Handle is-uncertain-date condition specially: prefer else branch since most dates
         // aren't uncertain. Full EDTF support would handle this dynamically at render time.
         if let Some(node) = self.map_uncertain_date_choose(c) {
@@ -417,8 +415,8 @@ impl Upsampler {
         // condition), clear the type list — they act as broad defaults, not as
         // type-specific branches. This ensures compile_for_type selects them as
         // the else/fallback path for types not covered by positive branches.
-        let mut else_if_branches: Vec<citum::ElseIfBranch> = Vec::new();
-        let mut negated_else_nodes: Option<Vec<CitumNode>> = None;
+        let mut else_if_branches: Vec<ir::ElseIfBranch> = Vec::new();
+        let mut negated_else_nodes: Option<Vec<ir::Node>> = None;
 
         for branch in &c.else_if_branches {
             if let Some(fallback_nodes) = self.map_negated_else_if_fallback(branch) {
@@ -443,7 +441,7 @@ impl Upsampler {
         let (then_branch, else_branch) =
             self.resolve_condition_branches(c, if_match_none, else_branch);
 
-        Some(CitumNode::Condition(citum::ConditionBlock {
+        Some(ir::Node::Condition(ir::ConditionBlock {
             if_item_type,
             if_variables,
             then_branch,
@@ -495,7 +493,7 @@ impl Upsampler {
         }
     }
 
-    fn map_date(&self, d: &legacy::Date) -> Option<CitumNode> {
+    fn map_date(&self, d: &legacy::Date) -> Option<ir::Node> {
         let variable = self.map_variable(&d.variable)?;
         let mut year_form = None;
         let mut month_form = None;
@@ -517,17 +515,17 @@ impl Upsampler {
                 d.macro_call_order
             );
         }
-        Some(CitumNode::Date(citum::DateBlock {
+        Some(ir::Node::Date(ir::DateBlock {
             variable,
-            options: citum::DateOptions {
+            options: ir::DateOptions {
                 form: match d.form.as_deref() {
-                    Some("text") => Some(citum::DateForm::Text),
-                    Some("numeric") => Some(citum::DateForm::Numeric),
+                    Some("text") => Some(ir::DateForm::Text),
+                    Some("numeric") => Some(ir::DateForm::Numeric),
                     _ => None,
                 },
                 parts: match d.date_parts.as_deref() {
-                    Some("year") => Some(citum::DateParts::Year),
-                    Some("year-month") => Some(citum::DateParts::YearMonth),
+                    Some("year") => Some(ir::DateParts::Year),
+                    Some("year-month") => Some(ir::DateParts::YearMonth),
                     _ => None,
                 },
                 delimiter: d.delimiter.clone(),
@@ -540,19 +538,19 @@ impl Upsampler {
         }))
     }
 
-    fn map_date_part_form(&self, form: &Option<String>) -> Option<citum::DatePartForm> {
+    fn map_date_part_form(&self, form: &Option<String>) -> Option<ir::DatePartForm> {
         match form.as_deref() {
-            Some("numeric") => Some(citum::DatePartForm::Numeric),
-            Some("numeric-leading-zeros") => Some(citum::DatePartForm::NumericLeadingZeros),
-            Some("ordinal") => Some(citum::DatePartForm::Ordinal),
-            Some("long") => Some(citum::DatePartForm::Long),
-            Some("short") => Some(citum::DatePartForm::Short),
+            Some("numeric") => Some(ir::DatePartForm::Numeric),
+            Some("numeric-leading-zeros") => Some(ir::DatePartForm::NumericLeadingZeros),
+            Some("ordinal") => Some(ir::DatePartForm::Ordinal),
+            Some("long") => Some(ir::DatePartForm::Long),
+            Some("short") => Some(ir::DatePartForm::Short),
             _ => None,
         }
     }
 
     /// Collapse adjacent label and variable output into one Citum variable node.
-    pub(super) fn try_collapse_label_variable(&self, group: &legacy::Group) -> Option<CitumNode> {
+    pub(super) fn try_collapse_label_variable(&self, group: &legacy::Group) -> Option<ir::Node> {
         if group.children.len() == 2 {
             #[allow(clippy::indexing_slicing, reason = "group.children.len() == 2")]
             let first = &group.children[0];
@@ -564,9 +562,9 @@ impl Upsampler {
                 && l_var == t_var
                 && let Some(var) = self.map_variable(t_var)
             {
-                return Some(CitumNode::Variable(citum::VariableBlock {
+                return Some(ir::Node::Variable(ir::VariableBlock {
                     variable: var.clone(),
-                    label: Some(citum::LabelOptions {
+                    label: Some(ir::LabelOptions {
                         variable: var,
                         form: self.map_label_form(&l.form),
                         pluralize: true,
@@ -660,11 +658,11 @@ impl Upsampler {
         }
     }
 
-    fn map_label_form(&self, form: &Option<String>) -> citum::LabelForm {
+    fn map_label_form(&self, form: &Option<String>) -> ir::LabelForm {
         match form.as_deref() {
-            Some("short") => citum::LabelForm::Short,
-            Some("symbol") => citum::LabelForm::Symbol,
-            _ => citum::LabelForm::Long,
+            Some("short") => ir::LabelForm::Short,
+            Some("symbol") => ir::LabelForm::Symbol,
+            _ => ir::LabelForm::Long,
         }
     }
 
@@ -706,22 +704,22 @@ impl Upsampler {
     ) -> FormattingOptions {
         FormattingOptions {
             font_style: f.font_style.as_ref().map(|s| match s.as_str() {
-                "italic" => citum::FontStyle::Italic,
-                "oblique" => citum::FontStyle::Oblique,
-                _ => citum::FontStyle::Normal,
+                "italic" => ir::FontStyle::Italic,
+                "oblique" => ir::FontStyle::Oblique,
+                _ => ir::FontStyle::Normal,
             }),
             font_weight: f.font_weight.as_ref().map(|s| match s.as_str() {
-                "bold" => citum::FontWeight::Bold,
-                "light" => citum::FontWeight::Light,
-                _ => citum::FontWeight::Normal,
+                "bold" => ir::FontWeight::Bold,
+                "light" => ir::FontWeight::Light,
+                _ => ir::FontWeight::Normal,
             }),
             font_variant: f.font_variant.as_ref().map(|s| match s.as_str() {
-                "small-caps" => citum::FontVariant::SmallCaps,
-                _ => citum::FontVariant::Normal,
+                "small-caps" => ir::FontVariant::SmallCaps,
+                _ => ir::FontVariant::Normal,
             }),
             text_decoration: f.text_decoration.as_ref().map(|s| match s.as_str() {
-                "underline" => citum::TextDecoration::Underline,
-                _ => citum::TextDecoration::None,
+                "underline" => ir::TextDecoration::Underline,
+                _ => ir::TextDecoration::None,
             }),
             vertical_align: f.vertical_align.as_ref().map(|s| match s.as_str() {
                 "superscript" => citum::VerticalAlign::Superscript,

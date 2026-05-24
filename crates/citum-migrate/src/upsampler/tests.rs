@@ -16,6 +16,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 )]
 
 use super::*;
+use crate::ir;
 use csl_legacy::model::{Choose, ChooseBranch, CslNode, Formatting, Group, Text};
 
 fn literal_text(value: &str) -> CslNode {
@@ -79,12 +80,12 @@ fn group(children: Vec<CslNode>) -> CslNode {
     })
 }
 
-fn collect_text_values<'a>(nodes: &'a [CitumNode], output: &mut Vec<&'a str>) {
+fn collect_text_values<'a>(nodes: &'a [ir::Node], output: &mut Vec<&'a str>) {
     for node in nodes {
         match node {
-            CitumNode::Text { value } => output.push(value.as_str()),
-            CitumNode::Group(group) => collect_text_values(&group.children, output),
-            CitumNode::Condition(condition) => {
+            ir::Node::Text { value } => output.push(value.as_str()),
+            ir::Node::Group(group) => collect_text_values(&group.children, output),
+            ir::Node::Condition(condition) => {
                 collect_text_values(&condition.then_branch, output);
                 for branch in &condition.else_if_branches {
                     collect_text_values(&branch.children, output);
@@ -98,7 +99,7 @@ fn collect_text_values<'a>(nodes: &'a [CitumNode], output: &mut Vec<&'a str>) {
     }
 }
 
-fn text_values(nodes: &[CitumNode]) -> Vec<&str> {
+fn text_values(nodes: &[ir::Node]) -> Vec<&str> {
     let mut values = Vec::new();
     collect_text_values(nodes, &mut values);
     values
@@ -258,7 +259,7 @@ fn extract_position_templates_preserves_nested_non_position_choose() {
     assert!(!extracted.unsupported_mixed_conditions);
     assert!(matches!(
         extracted.subsequent.as_deref(),
-        Some([CitumNode::Condition(_)])
+        Some([ir::Node::Condition(_)])
     ));
 }
 
@@ -297,7 +298,7 @@ fn extract_position_templates_rewrites_position_type_branches_into_conditionals(
     assert!(!extracted.unsupported_mixed_conditions);
     assert!(matches!(
         extracted.first.as_deref(),
-        Some([CitumNode::Condition(condition)])
+        Some([ir::Node::Condition(condition)])
             if condition.if_variables.len() == 1
                 && condition.else_if_branches.len() == 2
                 && condition.else_if_branches.iter().all(|branch| branch.if_item_type.len() == 1)
@@ -353,8 +354,8 @@ fn extract_position_templates_preserves_non_position_siblings_in_mixed_subsequen
     assert!(!extracted.unsupported_mixed_conditions);
     assert!(matches!(
         extracted.subsequent.as_deref(),
-        Some([CitumNode::Group(group)])
-            if matches!(group.children.as_slice(), [_, CitumNode::Condition(_), _])
+        Some([ir::Node::Group(group)])
+            if matches!(group.children.as_slice(), [_, ir::Node::Condition(_), _])
     ));
     assert_eq!(
         text_values(
@@ -506,7 +507,7 @@ fn map_choose_drops_uncertain_date_markers_without_default_branch() {
         .expect("uncertain-date choose should map");
 
     match mapped {
-        CitumNode::Group(group) => assert!(group.children.is_empty()),
+        ir::Node::Group(group) => assert!(group.children.is_empty()),
         other => panic!("expected empty group fallback, got {other:?}"),
     }
 }
@@ -554,7 +555,7 @@ fn map_choose_uses_negated_else_if_as_effective_fallback() {
         .expect("choose should map");
 
     match mapped {
-        CitumNode::Condition(condition) => {
+        ir::Node::Condition(condition) => {
             assert!(condition.else_if_branches.is_empty());
             assert_eq!(text_values(&condition.then_branch), vec!["BOOK"]);
             assert_eq!(
@@ -599,7 +600,7 @@ fn map_choose_preserves_existing_else_over_negated_if_fallback() {
         .expect("choose should map");
 
     match mapped {
-        CitumNode::Condition(condition) => {
+        ir::Node::Condition(condition) => {
             assert!(condition.then_branch.is_empty());
             assert_eq!(
                 text_values(

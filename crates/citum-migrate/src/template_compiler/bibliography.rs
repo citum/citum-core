@@ -3,7 +3,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
-use super::{CslnNode, ItemType, TemplateCompiler, TemplateComponent};
+use super::{ItemType, Node, TemplateCompiler, TemplateComponent};
 use citum_schema::template::{NumberVariable, SimpleVariable};
 
 // The full-corpus scorecard currently has no bibliography root above 500
@@ -17,7 +17,7 @@ impl TemplateCompiler {
     #[must_use]
     pub fn compile_bibliography(
         &self,
-        nodes: &[CslnNode],
+        nodes: &[Node],
         _is_numeric: bool,
     ) -> Vec<TemplateComponent> {
         // DISABLED: Sorting was needed to work around HashMap's random iteration order.
@@ -37,7 +37,7 @@ impl TemplateCompiler {
     #[must_use]
     pub fn compile_bibliography_with_types(
         &self,
-        nodes: &[CslnNode],
+        nodes: &[Node],
         _is_numeric: bool,
     ) -> (
         Vec<TemplateComponent>,
@@ -92,7 +92,7 @@ impl TemplateCompiler {
         (default_template, type_templates)
     }
 
-    fn compile_bibliography_default(&self, nodes: &[CslnNode]) -> Vec<TemplateComponent> {
+    fn compile_bibliography_default(&self, nodes: &[Node]) -> Vec<TemplateComponent> {
         let no_wrap = (None, None, None);
         let mut occurrences = Vec::new();
         self.collect_bibliography_default_occurrences(
@@ -106,7 +106,7 @@ impl TemplateCompiler {
 
     pub(super) fn generate_selective_type_templates(
         &self,
-        nodes: &[CslnNode],
+        nodes: &[Node],
         default_template: &[TemplateComponent],
         deduplicate_exact_type_components: bool,
     ) -> indexmap::IndexMap<citum_schema::template::TypeSelector, Vec<TemplateComponent>> {
@@ -292,15 +292,12 @@ fn component_has_article_detail(component: &TemplateComponent) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use citum_schema::{
-        FormattingOptions, Variable,
-        legacy::{ConditionBlock, ElseIfBranch, VariableBlock},
-        template::{SimpleVariable, TemplateComponent, TitleType, TypeSelector},
-    };
+    use crate::ir::{ConditionBlock, ElseIfBranch, FormattingOptions, Variable, VariableBlock};
+    use citum_schema::template::{SimpleVariable, TemplateComponent, TitleType, TypeSelector};
     use std::collections::HashMap;
 
-    fn variable_node(variable: Variable, source_order: usize) -> CslnNode {
-        CslnNode::Variable(VariableBlock {
+    fn variable_node(variable: Variable, source_order: usize) -> Node {
+        Node::Variable(VariableBlock {
             variable,
             label: None,
             formatting: FormattingOptions::default(),
@@ -312,10 +309,10 @@ mod tests {
     fn first_condition(
         if_item_type: Vec<ItemType>,
         if_variables: Vec<Variable>,
-        then_branch: Vec<CslnNode>,
-        else_branch: Option<Vec<CslnNode>>,
-    ) -> CslnNode {
-        CslnNode::Condition(ConditionBlock {
+        then_branch: Vec<Node>,
+        else_branch: Option<Vec<Node>>,
+    ) -> Node {
+        Node::Condition(ConditionBlock {
             if_item_type,
             if_variables,
             then_branch,
@@ -326,10 +323,10 @@ mod tests {
 
     fn condition_with_else_if(
         if_item_type: Vec<ItemType>,
-        then_branch: Vec<CslnNode>,
+        then_branch: Vec<Node>,
         else_if_branch: ElseIfBranch,
-    ) -> CslnNode {
-        CslnNode::Condition(ConditionBlock {
+    ) -> Node {
+        Node::Condition(ConditionBlock {
             if_item_type,
             if_variables: vec![],
             then_branch,

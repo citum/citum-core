@@ -58,9 +58,9 @@ fn migration_drops_explicit_no_date_terms_when_issued_is_already_present() {
         .expect("bibliography should exist");
     let raw_bib = Upsampler::new().upsample_nodes(&flattened);
     let compressor = Compressor;
-    let csln_bib = compressor.compress_nodes(raw_bib);
+    let bib_ir = compressor.compress_nodes(raw_bib);
     let compiler = TemplateCompiler;
-    let template = compiler.compile_bibliography(&csln_bib, false);
+    let template = compiler.compile_bibliography(&bib_ir, false);
 
     assert!(template.iter().any(component_contains_issued_date));
     assert!(!template.iter().any(component_contains_no_date_term));

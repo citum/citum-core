@@ -55,6 +55,19 @@ pub type Template = Vec<TemplateComponent>;
 /// Type-specific template variants keyed by reference-type selector.
 pub type TemplateVariants = IndexMap<TypeSelector, TemplateVariant>;
 
+/// Vertical text alignment relative to the baseline.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum VerticalAlign {
+    /// Render at the baseline (default).
+    Baseline,
+    /// Render as superscript.
+    Superscript,
+    /// Render as subscript.
+    Subscript,
+}
+
 /// Rendering instructions applied to template components.
 ///
 /// These fields are flattened into parent structs, so in YAML you write:
@@ -85,7 +98,7 @@ pub struct Rendering {
     pub small_caps: Option<bool>,
     /// Vertical alignment to apply to rendered output.
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub vertical_align: Option<crate::VerticalAlign>,
+    pub vertical_align: Option<VerticalAlign>,
     /// Text to prepend to the rendered value (outside any wrap).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub prefix: Option<String>,

@@ -3,7 +3,8 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
-use super::{CitumNode, Upsampler, migrate_debug_enabled};
+use super::{Upsampler, migrate_debug_enabled};
+use crate::ir;
 use csl_legacy::model::{self as legacy, CslNode as LNode};
 
 /// Citation templates extracted from CSL `position` conditions.
@@ -13,11 +14,11 @@ use csl_legacy::model::{self as legacy, CslNode as LNode};
 #[derive(Debug, Clone, Default)]
 pub struct CitationPositionTemplates {
     /// Template nodes for the first/default citation form.
-    pub first: Option<Vec<CitumNode>>,
+    pub first: Option<Vec<ir::Node>>,
     /// Template nodes for subsequent non-immediate repeats.
-    pub subsequent: Option<Vec<CitumNode>>,
+    pub subsequent: Option<Vec<ir::Node>>,
     /// Template nodes for immediate repeats (`ibid`, `ibid-with-locator`).
-    pub ibid: Option<Vec<CitumNode>>,
+    pub ibid: Option<Vec<ir::Node>>,
     /// Whether the source tree mixed `position` with unsupported conditions.
     pub unsupported_mixed_conditions: bool,
 }
@@ -459,7 +460,7 @@ impl Upsampler {
         &self,
         legacy_nodes: &[LNode],
         target: CitationPositionTarget,
-    ) -> Result<Option<Vec<CitumNode>>, ()> {
+    ) -> Result<Option<Vec<ir::Node>>, ()> {
         let rewritten = self.rewrite_nodes_for_position(legacy_nodes, target)?;
         let upsampled = self.upsample_nodes(&rewritten);
         if upsampled.is_empty() {
@@ -474,7 +475,7 @@ impl Upsampler {
         legacy_nodes: &[LNode],
         should_extract: bool,
         target: CitationPositionTarget,
-    ) -> Result<Option<Vec<CitumNode>>, CitationPositionTemplates> {
+    ) -> Result<Option<Vec<ir::Node>>, CitationPositionTemplates> {
         if !should_extract {
             return Ok(None);
         }

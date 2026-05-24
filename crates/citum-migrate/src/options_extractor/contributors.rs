@@ -5,9 +5,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use citum_schema::options::{
     AndOptions, ContributorConfig, DelimiterPrecedesLast, DemoteNonDroppingParticle, DisplayAsSort,
-    NameForm, ShortenListOptions, Substitute as CslnSubstitute, SubstituteKey,
+    NameForm, ShortenListOptions, Substitute, SubstituteKey,
 };
-use csl_legacy::model::{CslNode, Names, Style, Substitute};
+use csl_legacy::model::{CslNode, Names, Style, Substitute as LegacySubstitute};
 use std::collections::{HashMap, HashSet};
 
 fn apply_initialize_with(config: &mut ContributorConfig, value: String) {
@@ -394,7 +394,7 @@ fn extract_from_names(names: &Names) -> Option<ContributorConfig> {
 /// Determines the fallback contributor order (author → editor → translator → title)
 /// used when rendering citations and bibliographies.
 #[must_use]
-pub fn extract_substitute_pattern(style: &Style) -> Option<CslnSubstitute> {
+pub fn extract_substitute_pattern(style: &Style) -> Option<Substitute> {
     let bib_macros = collect_bibliography_macros(style);
     let cit_macros = collect_citation_macros(style);
 
@@ -411,7 +411,7 @@ fn find_substitute_in_nodes(
     nodes: &[CslNode],
     style: &Style,
     target_macros: &HashSet<String>,
-) -> Option<CslnSubstitute> {
+) -> Option<Substitute> {
     for node in nodes {
         match node {
             CslNode::Names(n) => {
@@ -468,10 +468,10 @@ fn find_substitute_in_nodes(
     None
 }
 
-fn convert_substitute(sub: &Substitute, label_form: Option<&str>) -> CslnSubstitute {
-    let mut csln_sub = CslnSubstitute::default();
+fn convert_substitute(sub: &LegacySubstitute, label_form: Option<&str>) -> Substitute {
+    let mut output_sub = Substitute::default();
     if let Some(form) = label_form {
-        csln_sub.contributor_role_form = Some(form.to_string());
+        output_sub.contributor_role_form = Some(form.to_string());
     }
 
     let mut template = Vec::new();
@@ -499,9 +499,9 @@ fn convert_substitute(sub: &Substitute, label_form: Option<&str>) -> CslnSubstit
         }
     }
 
-    csln_sub.template = template;
-    csln_sub.overrides = overrides;
-    csln_sub
+    output_sub.template = template;
+    output_sub.overrides = overrides;
+    output_sub
 }
 
 fn extract_substitute_keys(nodes: &[CslNode]) -> Vec<SubstituteKey> {

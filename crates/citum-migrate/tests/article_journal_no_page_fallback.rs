@@ -63,9 +63,9 @@ fn migration_preserves_article_journal_detail_and_doi_components_for_exact_page_
         .expect("bibliography should exist");
     let raw_bib = Upsampler::new().upsample_nodes(&flattened);
     let compressor = Compressor;
-    let csln_bib = compressor.compress_nodes(raw_bib);
+    let bib_ir = compressor.compress_nodes(raw_bib);
     let compiler = TemplateCompiler;
-    let (_, type_templates) = compiler.compile_bibliography_with_types(&csln_bib, false);
+    let (_, type_templates) = compiler.compile_bibliography_with_types(&bib_ir, false);
 
     let template = type_templates
         .get(&TypeSelector::Single("article-journal".to_string()))
