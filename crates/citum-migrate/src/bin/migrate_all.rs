@@ -10,7 +10,7 @@ use csl_legacy::parser::parse_style;
 use roxmltree::Document;
 use std::fs;
 
-use citum_schema::CslnNode as CNode;
+use citum_migrate::ir::Node as CNode;
 use csl_legacy::model::CslNode as LNode;
 
 #[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
@@ -66,18 +66,18 @@ fn main() {
             let flattened_cit = inliner.inline_citation(&legacy_style);
 
             let upsampler = Upsampler::new();
-            let csln_bib = upsampler.upsample_nodes(&flattened_bib);
-            let csln_cit = upsampler.upsample_nodes(&flattened_cit);
+            let bib_ir = upsampler.upsample_nodes(&flattened_bib);
+            let cit_ir = upsampler.upsample_nodes(&flattened_cit);
 
             // Stats
             let input_count =
                 count_legacy_nodes(&flattened_bib) + count_legacy_nodes(&flattened_cit);
-            let output_count = count_csln_nodes(&csln_bib) + count_csln_nodes(&csln_cit);
+            let output_count = count_ir_nodes(&bib_ir) + count_ir_nodes(&cit_ir);
 
             total_input_nodes += input_count;
             total_output_nodes += output_count;
 
-            if csln_bib.is_empty() && csln_cit.is_empty() {
+            if bib_ir.is_empty() && cit_ir.is_empty() {
                 *error_types.entry("Empty Output".to_string()).or_insert(0) += 1;
                 failures += 1;
             } else {
@@ -150,19 +150,19 @@ fn count_legacy_nodes(nodes: &[LNode]) -> usize {
     count
 }
 
-fn count_csln_nodes(nodes: &[CNode]) -> usize {
+fn count_ir_nodes(nodes: &[CNode]) -> usize {
     let mut count = 0;
     for node in nodes {
         count += 1;
         match node {
-            CNode::Group(g) => count += count_csln_nodes(&g.children),
+            CNode::Group(g) => count += count_ir_nodes(&g.children),
             CNode::Condition(c) => {
-                count += count_csln_nodes(&c.then_branch);
+                count += count_ir_nodes(&c.then_branch);
                 for else_if in &c.else_if_branches {
-                    count += count_csln_nodes(&else_if.children);
+                    count += count_ir_nodes(&else_if.children);
                 }
                 if let Some(e) = &c.else_branch {
-                    count += count_csln_nodes(e);
+                    count += count_ir_nodes(e);
                 }
             }
             _ => {}

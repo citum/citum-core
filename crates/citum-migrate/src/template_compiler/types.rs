@@ -3,10 +3,10 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
-use super::{CslnNode, ItemType, TemplateCompiler, TemplateComponent};
+use super::{ItemType, Node, TemplateCompiler, TemplateComponent};
 
 impl TemplateCompiler {
-    pub(super) fn collect_types_with_branches(&self, nodes: &[CslnNode]) -> Vec<ItemType> {
+    pub(super) fn collect_types_with_branches(&self, nodes: &[Node]) -> Vec<ItemType> {
         let mut types = Vec::new();
         Self::collect_types_recursive(nodes, &mut types);
         types.sort_by_key(|t| self.item_type_to_string(t));
@@ -15,13 +15,13 @@ impl TemplateCompiler {
     }
 
     #[allow(dead_code, reason = "helper functions")]
-    pub(super) fn collect_types_recursive(nodes: &[CslnNode], types: &mut Vec<ItemType>) {
+    pub(super) fn collect_types_recursive(nodes: &[Node], types: &mut Vec<ItemType>) {
         for node in nodes {
             match node {
-                CslnNode::Group(g) => {
+                Node::Group(g) => {
                     Self::collect_types_recursive(&g.children, types);
                 }
-                CslnNode::Condition(c) => {
+                Node::Condition(c) => {
                     // Collect types from if branch
                     types.extend(c.if_item_type.clone());
 
@@ -52,7 +52,7 @@ impl TemplateCompiler {
     #[allow(dead_code, reason = "helper functions")]
     pub(super) fn compile_for_type(
         &self,
-        nodes: &[CslnNode],
+        nodes: &[Node],
         target_type: &ItemType,
     ) -> Vec<TemplateComponent> {
         self.compile_for_type_inner(nodes, target_type, false)
@@ -60,7 +60,7 @@ impl TemplateCompiler {
 
     pub(super) fn compile_for_type_with_untyped_else_if_fallback(
         &self,
-        nodes: &[CslnNode],
+        nodes: &[Node],
         target_type: &ItemType,
     ) -> Vec<TemplateComponent> {
         self.compile_for_type_inner(nodes, target_type, true)
@@ -68,7 +68,7 @@ impl TemplateCompiler {
 
     fn compile_for_type_inner(
         &self,
-        nodes: &[CslnNode],
+        nodes: &[Node],
         target_type: &ItemType,
         use_untyped_else_if_fallback: bool,
     ) -> Vec<TemplateComponent> {
@@ -79,14 +79,14 @@ impl TemplateCompiler {
                 components.push(component);
             } else {
                 match node {
-                    CslnNode::Group(g) => {
+                    Node::Group(g) => {
                         components.extend(self.compile_for_type_inner(
                             &g.children,
                             target_type,
                             use_untyped_else_if_fallback,
                         ));
                     }
-                    CslnNode::Condition(c) => {
+                    Node::Condition(c) => {
                         // Check if this is a type-based condition
                         let has_type_condition = !c.if_item_type.is_empty()
                             || c.else_if_branches

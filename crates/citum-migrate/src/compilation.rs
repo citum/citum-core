@@ -97,8 +97,8 @@ pub fn compile_from_xml(
 
     // 3. Compression (Pattern Recognition)
     let compressor = Compressor;
-    let csln_bib = compressor.compress_nodes(raw_bib.clone());
-    let csln_cit = compressor.compress_nodes(raw_cit.clone());
+    let bib_ir = compressor.compress_nodes(raw_bib.clone());
+    let cit_ir = compressor.compress_nodes(raw_cit.clone());
 
     // 4. Template Compilation
     let template_compiler = TemplateCompiler;
@@ -110,8 +110,8 @@ pub fn compile_from_xml(
     );
 
     let (mut new_bib, type_templates) =
-        template_compiler.compile_bibliography_with_types(&csln_bib, is_numeric);
-    let new_cit = template_compiler.compile_citation(&csln_cit);
+        template_compiler.compile_bibliography_with_types(&bib_ir, is_numeric);
+    let new_cit = template_compiler.compile_citation(&cit_ir);
 
     let citation_position_overrides = CitationPositionOverrides {
         subsequent: compile_citation_position_override(
@@ -170,7 +170,7 @@ pub fn compile_from_xml(
 fn compile_citation_position_override(
     compiler: &TemplateCompiler,
     compressor: &Compressor,
-    nodes: Option<Vec<citum_schema::CslnNode>>,
+    nodes: Option<Vec<crate::ir::Node>>,
 ) -> Option<Vec<TemplateComponent>> {
     let nodes = nodes?;
     let compressed = compressor.compress_nodes(nodes);

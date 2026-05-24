@@ -3,23 +3,23 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
-use citum_schema::{CslnNode, ItemType};
+use crate::ir::{self, ItemType};
 
 pub struct Compressor;
 
 impl Compressor {
     #[must_use]
-    pub fn compress_nodes(&self, nodes: Vec<CslnNode>) -> Vec<CslnNode> {
+    pub fn compress_nodes(&self, nodes: Vec<ir::Node>) -> Vec<ir::Node> {
         let mut compressed = Vec::new();
         for node in nodes {
             match node {
-                CslnNode::Condition(cond) => {
+                ir::Node::Condition(cond) => {
                     // Recurse first
                     let then_compressed = self.compress_nodes(cond.then_branch);
-                    let else_if_compressed: Vec<citum_schema::ElseIfBranch> = cond
+                    let else_if_compressed: Vec<ir::ElseIfBranch> = cond
                         .else_if_branches
                         .into_iter()
-                        .map(|branch| citum_schema::ElseIfBranch {
+                        .map(|branch| ir::ElseIfBranch {
                             if_item_type: branch.if_item_type,
                             if_variables: branch.if_variables,
                             children: self.compress_nodes(branch.children),
@@ -40,18 +40,18 @@ impl Compressor {
                     }
 
                     // Keep Condition if merge fails, but use compressed children
-                    let new_cond = citum_schema::ConditionBlock {
+                    let new_cond = crate::ir::ConditionBlock {
                         if_item_type: cond.if_item_type.clone(),
                         if_variables: cond.if_variables.clone(),
                         then_branch: then_compressed,
                         else_if_branches: else_if_compressed,
                         else_branch: else_compressed,
                     };
-                    compressed.push(CslnNode::Condition(new_cond));
+                    compressed.push(ir::Node::Condition(new_cond));
                 }
-                CslnNode::Group(mut group) => {
+                ir::Node::Group(mut group) => {
                     group.children = self.compress_nodes(group.children);
-                    compressed.push(CslnNode::Group(group));
+                    compressed.push(ir::Node::Group(group));
                 }
                 _ => compressed.push(node),
             }
@@ -62,9 +62,9 @@ impl Compressor {
     fn try_merge_branches(
         &self,
         if_types: &[ItemType],
-        then_nodes: &[CslnNode],
-        else_nodes: &Option<Vec<CslnNode>>,
-    ) -> Option<CslnNode> {
+        then_nodes: &[ir::Node],
+        else_nodes: &Option<Vec<ir::Node>>,
+    ) -> Option<ir::Node> {
         // Simple Case: 1 node in THEN, 1 node in ELSE (or empty ELSE)
         // And they are the SAME VARIABLE.
 
@@ -83,7 +83,7 @@ impl Compressor {
             #[allow(clippy::indexing_slicing, reason = "else_nodes.len() == 1")]
             let else_node = &else_nodes[0];
 
-            if let (CslnNode::Variable(v1), CslnNode::Variable(v2)) = (then_node, else_node)
+            if let (ir::Node::Variable(v1), ir::Node::Variable(v2)) = (then_node, else_node)
                 && v1.variable == v2.variable
             {
                 // MERGE!
@@ -103,12 +103,12 @@ impl Compressor {
 
                     // If base has font_style but override doesn't, clear it
                     if v2.formatting.font_style.is_some() && override_fmt.font_style.is_none() {
-                        override_fmt.font_style = Some(citum_schema::FontStyle::Normal);
+                        override_fmt.font_style = Some(crate::ir::FontStyle::Normal);
                     }
 
                     merged.overrides.insert(t.clone(), override_fmt);
                 }
-                return Some(CslnNode::Variable(merged));
+                return Some(ir::Node::Variable(merged));
             }
         } else {
             // Handle "Then vs Nothing" (e.g. only print Volume if Book)

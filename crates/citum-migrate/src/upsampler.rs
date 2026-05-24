@@ -3,7 +3,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
-use citum_schema as citum;
+use crate::ir;
 use csl_legacy::model::CslNode as LNode;
 use std::sync::OnceLock;
 
@@ -14,9 +14,6 @@ mod position;
 mod tests;
 
 pub use position::CitationPositionTemplates;
-
-/// Citum-facing alias for schema nodes emitted by the upsampler.
-pub type CitumNode = citum::CslnNode;
 
 /// Returns true when verbose migration debug logging is enabled.
 pub(super) fn migrate_debug_enabled() -> bool {
@@ -34,7 +31,8 @@ pub(super) fn migrate_debug_enabled() -> bool {
 }
 
 #[derive(Default)]
-/// Convert flattened legacy CSL nodes into Citum nodes and citation position variants.
+/// Converts a flattened legacy CSL 1.0 node list into migration IR nodes
+/// ([`ir::Node`]) and citation-position variants.
 pub struct Upsampler {
     provenance: Option<crate::ProvenanceTracker>,
     pub et_al_min: Option<usize>,
@@ -64,7 +62,7 @@ impl Upsampler {
 
     /// The entry point for converting a flattened legacy tree into Citum nodes.
     #[must_use]
-    pub fn upsample_nodes(&self, legacy_nodes: &[LNode]) -> Vec<CitumNode> {
+    pub fn upsample_nodes(&self, legacy_nodes: &[LNode]) -> Vec<ir::Node> {
         let mut citum_nodes = Vec::new();
         let mut i = 0;
 

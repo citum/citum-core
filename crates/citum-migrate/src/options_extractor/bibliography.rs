@@ -75,13 +75,13 @@ pub fn extract_bibliography_config(style: &Style) -> Option<BibliographyConfig> 
 
     // Sort extraction
     if let Some(sort) = &bib.sort
-        && let Some(csln_sort) = extract_sort_from_bibliography(sort)
+        && let Some(sort_ir) = extract_sort_from_bibliography(sort)
     {
         // Note: BibliographyConfig in citum_schema might not have a sort field if it's handled globally
         // For now, I'll assume it's NOT in BibliographyConfig and should be ignored or moved
         // to global config if necessary. The error said 'sort' is unknown on 'BibliographyConfig'.
         // I'll skip setting it on the config struct but keep the helper.
-        let _ = csln_sort;
+        let _ = sort_ir;
     }
 
     if has_config { Some(config) } else { None }
@@ -454,7 +454,7 @@ pub fn extract_bibliography_separator_from_layout(
 /// Converts CSL sort keys and order (ascending/descending) to the citum format.
 #[must_use]
 pub fn extract_sort_from_bibliography(sort: &LegacySort) -> Option<Sort> {
-    let mut csln_sort = Sort::default();
+    let mut sort_ir = Sort::default();
     for key in &sort.keys {
         let sort_key = match key.variable.as_deref() {
             Some("author" | "editor") => SortKey::Author,
@@ -464,16 +464,16 @@ pub fn extract_sort_from_bibliography(sort: &LegacySort) -> Option<Sort> {
             _ => continue,
         };
 
-        csln_sort.template.push(SortSpec {
+        sort_ir.template.push(SortSpec {
             key: sort_key,
             ascending: key.sort.as_deref() != Some("descending"),
         });
     }
 
-    if csln_sort.template.is_empty() {
+    if sort_ir.template.is_empty() {
         None
     } else {
-        Some(csln_sort)
+        Some(sort_ir)
     }
 }
 

@@ -3,7 +3,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
-use super::{CslnNode, Rendering, TemplateCompiler, TemplateComponent, TemplateGroup};
+use super::{Node, Rendering, TemplateCompiler, TemplateComponent, TemplateGroup};
 
 impl TemplateCompiler {
     pub(super) fn has_variable_recursive(
@@ -26,8 +26,8 @@ impl TemplateCompiler {
 
     /// Simplified compile that only takes `then_branch` (for citations).
     /// This avoids pulling in type-specific variations from else branches.
-    pub(super) fn compile_simple(&self, nodes: &[CslnNode]) -> Vec<TemplateComponent> {
-        use citum_schema::ItemType;
+    pub(super) fn compile_simple(&self, nodes: &[Node]) -> Vec<TemplateComponent> {
+        use crate::ir::ItemType;
         let mut components = Vec::new();
 
         for node in nodes {
@@ -35,10 +35,10 @@ impl TemplateCompiler {
                 components.push(component);
             } else {
                 match node {
-                    CslnNode::Group(g) => {
+                    Node::Group(g) => {
                         components.extend(self.compile_simple(&g.children));
                     }
-                    CslnNode::Condition(c) => {
+                    Node::Condition(c) => {
                         // For citations, prefer else_branch for uncommon type conditions
                         let uncommon_types = [
                             ItemType::PersonalCommunication,

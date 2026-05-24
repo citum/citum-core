@@ -3,18 +3,16 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
-//! Compiles legacy CslnNode trees into Citum TemplateComponents.
+//! Compiles legacy Node trees into Citum TemplateComponents.
 //!
 //! This is the final step in migration: converting the upsampled node tree
 //! into the clean, declarative TemplateComponent format.
 
-use citum_schema::{
-    CslnNode, FormattingOptions, ItemType, Variable,
-    template::{
-        ContributorForm, ContributorRole, DateForm, DateVariable, DelimiterPunctuation,
-        NumberVariable, Rendering, SimpleVariable, TemplateComponent, TemplateContributor,
-        TemplateDate, TemplateGroup, TemplateNumber, TemplateTitle, TemplateVariable, TitleType,
-    },
+use crate::ir::{FormattingOptions, ItemType, Node, Variable};
+use citum_schema::template::{
+    ContributorForm, ContributorRole, DateForm, DateVariable, DelimiterPunctuation, NumberVariable,
+    Rendering, SimpleVariable, TemplateComponent, TemplateContributor, TemplateDate, TemplateGroup,
+    TemplateNumber, TemplateTitle, TemplateVariable, TitleType,
 };
 use indexmap::IndexMap;
 use std::sync::OnceLock;
@@ -47,7 +45,7 @@ struct ComponentOccurrence {
     source_order: Option<usize>,
 }
 
-/// Compiles `CslnNode` trees into `TemplateComponents`.
+/// Compiles `Node` trees into `TemplateComponents`.
 pub struct TemplateCompiler;
 
 fn migrate_debug_enabled() -> bool {
@@ -65,13 +63,13 @@ fn migrate_debug_enabled() -> bool {
 }
 
 impl TemplateCompiler {
-    /// Compile a list of `CslnNodes` into `TemplateComponents`.
+    /// Compile a list of ``ir::Node`s` into `TemplateComponents`.
     ///
     /// Uses occurrence-based compilation to properly handle mutually exclusive
     /// conditional branches. Components are collected with their branch context,
     /// then merged with correct suppress semantics.
     #[must_use]
-    pub fn compile(&self, nodes: &[CslnNode]) -> Vec<TemplateComponent> {
+    pub fn compile(&self, nodes: &[Node]) -> Vec<TemplateComponent> {
         let no_wrap = (None, None, None);
         let mut occurrences = Vec::new();
         self.collect_occurrences(nodes, &no_wrap, &BranchContext::Default, &mut occurrences);
@@ -81,7 +79,7 @@ impl TemplateCompiler {
     /// Compile and sort for citation output (author first, then date).
     /// Uses simplified compile that skips else branches to avoid extra fields.
     #[must_use]
-    pub fn compile_citation(&self, nodes: &[CslnNode]) -> Vec<TemplateComponent> {
+    pub fn compile_citation(&self, nodes: &[Node]) -> Vec<TemplateComponent> {
         let mut components = self.compile_simple(nodes);
         self.sort_citation_components(&mut components);
         components

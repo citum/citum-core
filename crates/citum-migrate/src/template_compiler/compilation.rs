@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
 use super::{
-    BranchContext, ComponentOccurrence, CslnNode, IndexMap, TemplateCompiler, TemplateComponent,
+    BranchContext, ComponentOccurrence, IndexMap, Node, TemplateCompiler, TemplateComponent,
     TemplateGroup,
 };
 
@@ -16,7 +16,7 @@ impl TemplateCompiler {
     fn merge_text_lookahead(
         &self,
         text_value: &str,
-        next_node: &CslnNode,
+        next_node: &Node,
         inherited_wrap: &(
             Option<citum_schema::template::WrapPunctuation>,
             Option<String>,
@@ -45,7 +45,7 @@ impl TemplateCompiler {
 
     pub(super) fn collect_occurrences(
         &self,
-        nodes: &[CslnNode],
+        nodes: &[Node],
         inherited_wrap: &(
             Option<citum_schema::template::WrapPunctuation>,
             Option<String>,
@@ -61,7 +61,7 @@ impl TemplateCompiler {
             let node = &nodes[i];
 
             // Lookahead merge for Text nodes
-            if let CslnNode::Text { value } = node
+            if let Node::Text { value } = node
                 && i + 1 < nodes.len()
                 && {
                     #[allow(clippy::indexing_slicing, reason = "i + 1 < nodes.len()")]
@@ -96,10 +96,10 @@ impl TemplateCompiler {
                 });
             } else {
                 match node {
-                    CslnNode::Group(g) => {
+                    Node::Group(g) => {
                         self.collect_group_occurrences(g, inherited_wrap, context, occurrences);
                     }
-                    CslnNode::Condition(c) => {
+                    Node::Condition(c) => {
                         self.collect_condition_occurrences(c, inherited_wrap, occurrences);
                     }
                     _ => {}
@@ -111,7 +111,7 @@ impl TemplateCompiler {
 
     pub(super) fn collect_bibliography_default_occurrences(
         &self,
-        nodes: &[CslnNode],
+        nodes: &[Node],
         inherited_wrap: &(
             Option<citum_schema::template::WrapPunctuation>,
             Option<String>,
@@ -126,7 +126,7 @@ impl TemplateCompiler {
             #[allow(clippy::indexing_slicing, reason = "i < nodes.len()")]
             let node = &nodes[i];
 
-            if let CslnNode::Text { value } = node
+            if let Node::Text { value } = node
                 && i + 1 < nodes.len()
                 && {
                     #[allow(clippy::indexing_slicing, reason = "i + 1 < nodes.len()")]
@@ -160,7 +160,7 @@ impl TemplateCompiler {
                 });
             } else {
                 match node {
-                    CslnNode::Group(g) => {
+                    Node::Group(g) => {
                         self.collect_bibliography_default_group_occurrences(
                             g,
                             inherited_wrap,
@@ -168,7 +168,7 @@ impl TemplateCompiler {
                             occurrences,
                         );
                     }
-                    CslnNode::Condition(c) => {
+                    Node::Condition(c) => {
                         self.collect_bibliography_default_condition_occurrences(
                             c,
                             inherited_wrap,
@@ -184,7 +184,7 @@ impl TemplateCompiler {
 
     fn collect_group_occurrences(
         &self,
-        g: &citum_schema::legacy::GroupBlock,
+        g: &crate::ir::GroupBlock,
         inherited_wrap: &(
             Option<citum_schema::template::WrapPunctuation>,
             Option<String>,
@@ -256,7 +256,7 @@ impl TemplateCompiler {
 
     fn collect_bibliography_default_group_occurrences(
         &self,
-        g: &citum_schema::legacy::GroupBlock,
+        g: &crate::ir::GroupBlock,
         inherited_wrap: &(
             Option<citum_schema::template::WrapPunctuation>,
             Option<String>,
@@ -318,7 +318,7 @@ impl TemplateCompiler {
 
     fn collect_condition_occurrences(
         &self,
-        c: &citum_schema::legacy::ConditionBlock,
+        c: &crate::ir::ConditionBlock,
         inherited_wrap: &(
             Option<citum_schema::template::WrapPunctuation>,
             Option<String>,
@@ -362,7 +362,7 @@ impl TemplateCompiler {
 
     fn collect_bibliography_default_condition_occurrences(
         &self,
-        c: &citum_schema::legacy::ConditionBlock,
+        c: &crate::ir::ConditionBlock,
         inherited_wrap: &(
             Option<citum_schema::template::WrapPunctuation>,
             Option<String>,
@@ -518,7 +518,7 @@ impl TemplateCompiler {
     }
 }
 
-fn condition_has_type_branch(c: &citum_schema::legacy::ConditionBlock) -> bool {
+fn condition_has_type_branch(c: &crate::ir::ConditionBlock) -> bool {
     !c.if_item_type.is_empty()
         || c.else_if_branches
             .iter()

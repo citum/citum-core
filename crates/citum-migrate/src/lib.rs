@@ -26,6 +26,9 @@ pub mod evidence;
 pub mod fixups;
 /// Style metadata extraction.
 pub mod info_extractor;
+/// Intermediate representation produced from CSL 1.0 XML, consumed by the
+/// template compiler when emitting modern [`citum_schema`] types.
+pub mod ir;
 mod js_runtime;
 /// Migration-time lineage and wrapper classification.
 pub mod lineage;
@@ -39,7 +42,8 @@ pub mod provenance;
 pub mod template_compiler;
 /// Template resolution and preprocessing.
 pub mod template_resolver;
-/// Upsampler for style enhancement.
+/// Upsamples flattened legacy CSL 1.0 nodes into migration IR ([`ir::Node`])
+/// and citation-position variants ([`upsampler::CitationPositionTemplates`]).
 pub mod upsampler;
 
 pub use base_detector::{detect_contributor_preset, detect_date_preset, detect_title_preset};

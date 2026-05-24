@@ -4,27 +4,24 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
 use super::{
-    ContributorForm, ContributorRole, CslnNode, DateForm, DateVariable, NumberVariable,
-    SimpleVariable, TemplateCompiler, TemplateComponent, TemplateContributor, TemplateDate,
-    TemplateNumber, TemplateTitle, TemplateVariable, TitleType, Variable,
+    ContributorForm, ContributorRole, DateForm, DateVariable, Node, NumberVariable, SimpleVariable,
+    TemplateCompiler, TemplateComponent, TemplateContributor, TemplateDate, TemplateNumber,
+    TemplateTitle, TemplateVariable, TitleType, Variable,
 };
 
 impl TemplateCompiler {
-    pub(super) fn compile_node(&self, node: &CslnNode) -> Option<TemplateComponent> {
+    pub(super) fn compile_node(&self, node: &Node) -> Option<TemplateComponent> {
         match node {
-            CslnNode::Names(names) => self.compile_names(names),
-            CslnNode::Date(date) => self.compile_date(date),
-            CslnNode::Variable(var) => self.compile_variable(var),
-            CslnNode::Term(term) => self.compile_term(term),
+            Node::Names(names) => self.compile_names(names),
+            Node::Date(date) => self.compile_date(date),
+            Node::Variable(var) => self.compile_variable(var),
+            Node::Term(term) => self.compile_term(term),
             _ => None,
         }
     }
 
     /// Compile a Names block into a Contributor component.
-    pub(super) fn compile_names(
-        &self,
-        names: &citum_schema::NamesBlock,
-    ) -> Option<TemplateComponent> {
+    pub(super) fn compile_names(&self, names: &crate::ir::NamesBlock) -> Option<TemplateComponent> {
         // Try to map the primary variable to a role
         let primary_role = self.map_variable_to_role(&names.variable);
 
@@ -60,14 +57,14 @@ impl TemplateCompiler {
         };
 
         let form = match names.options.mode {
-            Some(citum_schema::NameMode::Short) => ContributorForm::Short,
-            Some(citum_schema::NameMode::Count) => ContributorForm::Short, // Map count to short
+            Some(crate::ir::NameMode::Short) => ContributorForm::Short,
+            Some(crate::ir::NameMode::Count) => ContributorForm::Short, // Map count to short
             _ => ContributorForm::Long,
         };
 
         let and = names.options.and.as_ref().map(|a| match a {
-            citum_schema::AndTerm::Text => citum_schema::options::AndOptions::Text,
-            citum_schema::AndTerm::Symbol => citum_schema::options::AndOptions::Symbol,
+            crate::ir::AndTerm::Text => citum_schema::options::AndOptions::Text,
+            crate::ir::AndTerm::Symbol => citum_schema::options::AndOptions::Symbol,
         });
 
         let shorten = names.options.et_al.as_ref().map(|et| {
@@ -77,13 +74,13 @@ impl TemplateCompiler {
                 use_last: None, // Legacy CSL 1.0 et-al doesn't have use_last
                 and_others: citum_schema::options::AndOtherOptions::EtAl,
                 delimiter_precedes_last: match names.options.delimiter_precedes_last {
-                    Some(citum_schema::DelimiterPrecedes::Always) => {
+                    Some(crate::ir::DelimiterPrecedes::Always) => {
                         citum_schema::options::DelimiterPrecedesLast::Always
                     }
-                    Some(citum_schema::DelimiterPrecedes::Never) => {
+                    Some(crate::ir::DelimiterPrecedes::Never) => {
                         citum_schema::options::DelimiterPrecedesLast::Never
                     }
-                    Some(citum_schema::DelimiterPrecedes::AfterInvertedName) => {
+                    Some(crate::ir::DelimiterPrecedes::AfterInvertedName) => {
                         citum_schema::options::DelimiterPrecedesLast::AfterInvertedName
                     }
                     _ => citum_schema::options::DelimiterPrecedesLast::Contextual,
@@ -99,10 +96,10 @@ impl TemplateCompiler {
         }
 
         let name_order = match &names.options.name_as_sort_order {
-            Some(citum_schema::NameAsSortOrder::First) => {
+            Some(crate::ir::NameAsSortOrder::First) => {
                 Some(citum_schema::template::NameOrder::FamilyFirstOnly)
             }
-            Some(citum_schema::NameAsSortOrder::All) => {
+            Some(crate::ir::NameAsSortOrder::All) => {
                 Some(citum_schema::template::NameOrder::FamilyFirst)
             }
             None => None,
@@ -142,15 +139,15 @@ impl TemplateCompiler {
     }
 
     /// Compile a Date block into a Date component.
-    pub(super) fn compile_date(&self, date: &citum_schema::DateBlock) -> Option<TemplateComponent> {
+    pub(super) fn compile_date(&self, date: &crate::ir::DateBlock) -> Option<TemplateComponent> {
         let date_var = self.map_variable_to_date(&date.variable)?;
 
         let form = match &date.options.parts {
-            Some(citum_schema::DateParts::Year) => DateForm::Year,
-            Some(citum_schema::DateParts::YearMonth) => DateForm::YearMonth,
+            Some(crate::ir::DateParts::Year) => DateForm::Year,
+            Some(crate::ir::DateParts::YearMonth) => DateForm::YearMonth,
             _ => match &date.options.form {
-                Some(citum_schema::DateForm::Numeric) => DateForm::Full,
-                Some(citum_schema::DateForm::Text) => DateForm::Full,
+                Some(crate::ir::DateForm::Numeric) => DateForm::Full,
+                Some(crate::ir::DateForm::Text) => DateForm::Full,
                 None => DateForm::Year,
             },
         };
@@ -176,7 +173,7 @@ impl TemplateCompiler {
     }
 
     /// Compile a Term block into a Term component.
-    pub(super) fn compile_term(&self, term: &citum_schema::TermBlock) -> Option<TemplateComponent> {
+    pub(super) fn compile_term(&self, term: &crate::ir::TermBlock) -> Option<TemplateComponent> {
         Some(TemplateComponent::Term(
             citum_schema::template::TemplateTerm {
                 term: term.term.clone(),
@@ -190,7 +187,7 @@ impl TemplateCompiler {
     /// Compile a Variable block into the appropriate component.
     pub(super) fn compile_variable(
         &self,
-        var: &citum_schema::VariableBlock,
+        var: &crate::ir::VariableBlock,
     ) -> Option<TemplateComponent> {
         // First, check if it's a contributor role
         if let Some(role) = self.map_variable_to_role(&var.variable) {

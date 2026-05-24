@@ -4,21 +4,20 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
 use super::{
-    CslnNode, DelimiterPunctuation, FormattingOptions, Rendering, TemplateCompiler,
-    TemplateComponent,
+    DelimiterPunctuation, FormattingOptions, Node, Rendering, TemplateCompiler, TemplateComponent,
 };
 
 impl TemplateCompiler {
     pub(super) fn map_label_form(
         &self,
-        form: &citum_schema::LabelForm,
+        form: &crate::ir::LabelForm,
     ) -> citum_schema::template::LabelForm {
         match form {
-            citum_schema::LabelForm::Long => citum_schema::template::LabelForm::Long,
-            citum_schema::LabelForm::Short => citum_schema::template::LabelForm::Short,
-            citum_schema::LabelForm::Symbol => citum_schema::template::LabelForm::Symbol,
+            crate::ir::LabelForm::Long => citum_schema::template::LabelForm::Long,
+            crate::ir::LabelForm::Short => citum_schema::template::LabelForm::Short,
+            crate::ir::LabelForm::Symbol => citum_schema::template::LabelForm::Symbol,
             // Verb and VerbShort don't exist in template::LabelForm, map to Long
-            citum_schema::LabelForm::Verb | citum_schema::LabelForm::VerbShort => {
+            crate::ir::LabelForm::Verb | crate::ir::LabelForm::VerbShort => {
                 citum_schema::template::LabelForm::Long
             }
         }
@@ -58,15 +57,15 @@ impl TemplateCompiler {
             emph: fmt
                 .font_style
                 .as_ref()
-                .map(|s| matches!(s, citum_schema::FontStyle::Italic)),
+                .map(|s| matches!(s, crate::ir::FontStyle::Italic)),
             strong: fmt
                 .font_weight
                 .as_ref()
-                .map(|w| matches!(w, citum_schema::FontWeight::Bold)),
+                .map(|w| matches!(w, crate::ir::FontWeight::Bold)),
             small_caps: fmt
                 .font_variant
                 .as_ref()
-                .map(|v| matches!(v, citum_schema::FontVariant::SmallCaps)),
+                .map(|v| matches!(v, crate::ir::FontVariant::SmallCaps)),
             vertical_align: fmt.vertical_align.clone(),
             quote: fmt.quotes,
             prefix,
@@ -221,28 +220,28 @@ impl TemplateCompiler {
         }
     }
 
-    /// Extracts the `source_order` from a `CslnNode`, if present.
+    /// Extracts the `source_order` from a `Node`, if present.
     /// Returns the order value or `usize::MAX` if not set (sorts last).
-    pub(super) fn extract_source_order(&self, node: &CslnNode) -> Option<usize> {
+    pub(super) fn extract_source_order(&self, node: &Node) -> Option<usize> {
         let order = match node {
-            CslnNode::Variable(v) => v.source_order,
-            CslnNode::Date(d) => d.source_order,
-            CslnNode::Names(n) => n.source_order,
-            CslnNode::Group(g) => g.source_order,
-            CslnNode::Term(t) => t.source_order,
+            Node::Variable(v) => v.source_order,
+            Node::Date(d) => d.source_order,
+            Node::Names(n) => n.source_order,
+            Node::Group(g) => g.source_order,
+            Node::Term(t) => t.source_order,
             _ => None,
         };
         if super::migrate_debug_enabled() {
             tracing::debug!(
                 "TemplateCompiler: extract_source_order({:?}) = {:?}",
                 match node {
-                    CslnNode::Variable(v) => format!("Variable({:?})", v.variable),
-                    CslnNode::Date(d) => format!("Date({:?})", d.variable),
-                    CslnNode::Names(n) => format!("Names({:?})", n.variable),
-                    CslnNode::Group(_) => "Group".to_string(),
-                    CslnNode::Text { value } => format!("Text({value})"),
-                    CslnNode::Condition(_) => "Condition".to_string(),
-                    CslnNode::Term(t) => format!("Term({:?})", t.term),
+                    Node::Variable(v) => format!("Variable({:?})", v.variable),
+                    Node::Date(d) => format!("Date({:?})", d.variable),
+                    Node::Names(n) => format!("Names({:?})", n.variable),
+                    Node::Group(_) => "Group".to_string(),
+                    Node::Text { value } => format!("Text({value})"),
+                    Node::Condition(_) => "Condition".to_string(),
+                    Node::Term(t) => format!("Term({:?})", t.term),
                 },
                 order
             );

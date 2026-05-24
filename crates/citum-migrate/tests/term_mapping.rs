@@ -16,8 +16,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
     reason = "Panicking is acceptable and often desired in test, benchmark, and example code."
 )]
 
+use citum_migrate::ir::Node;
 use citum_migrate::{TemplateCompiler, Upsampler};
-use citum_schema::CslnNode;
 use citum_schema::locale::{GeneralTerm, TermForm};
 use citum_schema::template::{NumberVariable, SimpleVariable, TemplateComponent};
 use csl_legacy::model::{CslNode, Formatting, Label, Names, Text};
@@ -48,15 +48,15 @@ fn test_upsample_term() {
     });
 
     let upsampler = Upsampler::new();
-    let csln_nodes = upsampler.upsample_nodes(&[legacy_node]);
+    let ir_nodes = upsampler.upsample_nodes(&[legacy_node]);
 
-    assert_eq!(csln_nodes.len(), 1);
-    match &csln_nodes[0] {
-        CslnNode::Term(term_block) => {
+    assert_eq!(ir_nodes.len(), 1);
+    match &ir_nodes[0] {
+        Node::Term(term_block) => {
             assert_eq!(term_block.term, GeneralTerm::In);
             assert_eq!(term_block.form, TermForm::Long);
         }
-        _ => panic!("Expected CslnNode::Term, got {:?}", csln_nodes[0]),
+        _ => panic!("Expected Node::Term, got {:?}", ir_nodes[0]),
     }
 }
 
@@ -82,16 +82,16 @@ fn test_upsample_term_with_form() {
     });
 
     let upsampler = Upsampler::new();
-    let csln_nodes = upsampler.upsample_nodes(&[legacy_node]);
+    let ir_nodes = upsampler.upsample_nodes(&[legacy_node]);
 
-    assert_eq!(csln_nodes.len(), 1);
-    match &csln_nodes[0] {
-        CslnNode::Text { value } => {
+    assert_eq!(ir_nodes.len(), 1);
+    match &ir_nodes[0] {
+        Node::Text { value } => {
             assert_eq!(value, "editor");
         }
         _ => panic!(
-            "Expected CslnNode::Text for unknown term, got {:?}",
-            csln_nodes[0]
+            "Expected Node::Text for unknown term, got {:?}",
+            ir_nodes[0]
         ),
     }
 }
@@ -118,14 +118,14 @@ fn test_upsample_term_preserves_strip_periods() {
     });
 
     let upsampler = Upsampler::new();
-    let csln_nodes = upsampler.upsample_nodes(&[legacy_node]);
+    let ir_nodes = upsampler.upsample_nodes(&[legacy_node]);
 
-    assert_eq!(csln_nodes.len(), 1);
-    match &csln_nodes[0] {
-        CslnNode::Term(term_block) => {
+    assert_eq!(ir_nodes.len(), 1);
+    match &ir_nodes[0] {
+        Node::Term(term_block) => {
             assert_eq!(term_block.formatting.strip_periods, Some(true));
         }
-        _ => panic!("Expected CslnNode::Term, got {:?}", csln_nodes[0]),
+        _ => panic!("Expected Node::Term, got {:?}", ir_nodes[0]),
     }
 }
 
@@ -147,18 +147,18 @@ fn test_upsample_label_preserves_strip_periods() {
     });
 
     let upsampler = Upsampler::new();
-    let csln_nodes = upsampler.upsample_nodes(&[legacy_node]);
+    let ir_nodes = upsampler.upsample_nodes(&[legacy_node]);
 
-    assert_eq!(csln_nodes.len(), 1);
-    match &csln_nodes[0] {
-        CslnNode::Variable(variable) => {
+    assert_eq!(ir_nodes.len(), 1);
+    match &ir_nodes[0] {
+        Node::Variable(variable) => {
             let label = variable
                 .label
                 .as_ref()
                 .expect("label metadata should exist");
             assert_eq!(label.formatting.strip_periods, Some(true));
         }
-        _ => panic!("Expected CslnNode::Variable, got {:?}", csln_nodes[0]),
+        _ => panic!("Expected Node::Variable, got {:?}", ir_nodes[0]),
     }
 }
 
@@ -185,8 +185,8 @@ fn test_upsample_strip_periods_preserves_none_and_false() {
         macro_call_order: None,
     })]);
     match &term_nodes[0] {
-        CslnNode::Term(term_block) => assert_eq!(term_block.formatting.strip_periods, None),
-        _ => panic!("Expected CslnNode::Term, got {:?}", term_nodes[0]),
+        Node::Term(term_block) => assert_eq!(term_block.formatting.strip_periods, None),
+        _ => panic!("Expected Node::Term, got {:?}", term_nodes[0]),
     }
 
     let label_nodes = upsampler.upsample_nodes(&[CslNode::Label(Label {
@@ -201,14 +201,14 @@ fn test_upsample_strip_periods_preserves_none_and_false() {
         formatting: Formatting::default(),
     })]);
     match &label_nodes[0] {
-        CslnNode::Variable(variable) => {
+        Node::Variable(variable) => {
             let label = variable
                 .label
                 .as_ref()
                 .expect("label metadata should exist");
             assert_eq!(label.formatting.strip_periods, Some(false));
         }
-        _ => panic!("Expected CslnNode::Variable, got {:?}", label_nodes[0]),
+        _ => panic!("Expected Node::Variable, got {:?}", label_nodes[0]),
     }
 }
 
