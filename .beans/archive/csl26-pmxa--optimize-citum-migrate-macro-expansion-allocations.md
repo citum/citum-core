@@ -1,14 +1,14 @@
 ---
 # csl26-pmxa
 title: Optimize citum-migrate macro expansion allocations
-status: todo
+status: completed
 type: task
 priority: normal
 tags:
     - performance
     - migrate
 created_at: 2026-05-24T14:32:34Z
-updated_at: 2026-05-24T14:44:07Z
+updated_at: 2026-05-24T18:20:43Z
 ---
 
 ## Goal

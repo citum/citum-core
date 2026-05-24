@@ -7,7 +7,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 #![allow(missing_docs, reason = "lib/crate")]
 
-use csl_legacy::model::{CslNode, Style};
+use csl_legacy::model::{Choose, ChooseBranch, CslNode, Group, Names, Style, Substitute};
 use std::collections::HashMap;
 
 /// CSL 1.0 analysis utilities.
@@ -58,18 +58,18 @@ pub use upsampler::Upsampler;
 /// Recursively expands CSL 1.0 macro references into their definitions.
 ///
 /// Handles nested macros and preserves rendering order across macro boundaries.
-pub struct MacroInliner {
-    macros: HashMap<String, Vec<CslNode>>,
+pub struct MacroInliner<'a> {
+    macros: HashMap<&'a str, &'a [CslNode]>,
     provenance: Option<ProvenanceTracker>,
 }
 
-impl MacroInliner {
+impl<'a> MacroInliner<'a> {
     /// Create a new macro inliner from a CSL 1.0 style.
     #[must_use]
-    pub fn new(style: &Style) -> Self {
+    pub fn new(style: &'a Style) -> Self {
         let mut macros = HashMap::new();
         for m in &style.macros {
-            macros.insert(m.name.clone(), m.children.clone());
+            macros.insert(m.name.as_str(), m.children.as_slice());
         }
         Self {
             macros,
@@ -81,10 +81,10 @@ impl MacroInliner {
     ///
     /// Tracks source locations to help debug migration issues.
     #[must_use]
-    pub fn with_provenance(style: &Style, provenance: ProvenanceTracker) -> Self {
+    pub fn with_provenance(style: &'a Style, provenance: ProvenanceTracker) -> Self {
         let mut macros = HashMap::new();
         for m in &style.macros {
-            macros.insert(m.name.clone(), m.children.clone());
+            macros.insert(m.name.as_str(), m.children.as_slice());
         }
         Self {
             macros,
@@ -120,12 +120,12 @@ impl MacroInliner {
     ///
     /// Nested macros inherit their parent's order.
     fn expand_macros_no_increment(&self, nodes: &[CslNode]) -> Vec<CslNode> {
-        let mut expanded = Vec::new();
+        let mut expanded = Vec::with_capacity(nodes.len());
         for node in nodes {
             match node {
                 CslNode::Text(text) if text.macro_name.is_some() => {
                     if let Some(name) = &text.macro_name {
-                        if let Some(macro_children) = self.macros.get(name) {
+                        if let Some(macro_children) = self.macros.get(name.as_str()) {
                             // Recursively expand nested macros without incrementing
                             let expanded_children = self.expand_macros_no_increment(macro_children);
                             expanded.extend(expanded_children);
@@ -135,31 +135,19 @@ impl MacroInliner {
                     }
                 }
                 CslNode::Group(group) => {
-                    let mut new_group = group.clone();
-                    new_group.children = self.expand_macros_no_increment(&group.children);
-                    expanded.push(CslNode::Group(new_group));
+                    let children = self.expand_macros_no_increment(&group.children);
+                    expanded.push(CslNode::Group(clone_group_with_children(group, children)));
                 }
                 CslNode::Names(names) => {
-                    let mut new_names = names.clone();
-                    new_names.children = self.expand_macros_no_increment(&names.children);
-                    expanded.push(CslNode::Names(new_names));
+                    let children = self.expand_macros_no_increment(&names.children);
+                    expanded.push(CslNode::Names(clone_names_with_children(names, children)));
                 }
                 CslNode::Choose(choose) => {
-                    let mut new_choose = choose.clone();
-                    new_choose.if_branch.children =
-                        self.expand_macros_no_increment(&choose.if_branch.children);
-                    for else_if in &mut new_choose.else_if_branches {
-                        else_if.children = self.expand_macros_no_increment(&else_if.children);
-                    }
-                    if let Some(ref else_branch) = new_choose.else_branch {
-                        new_choose.else_branch = Some(self.expand_macros_no_increment(else_branch));
-                    }
-                    expanded.push(CslNode::Choose(new_choose));
+                    expanded.push(CslNode::Choose(self.expand_choose_no_increment(choose)));
                 }
                 CslNode::Substitute(sub) => {
-                    let mut new_sub = sub.clone();
-                    new_sub.children = self.expand_macros_no_increment(&sub.children);
-                    expanded.push(CslNode::Substitute(new_sub));
+                    let children = self.expand_macros_no_increment(&sub.children);
+                    expanded.push(CslNode::Substitute(Substitute { children }));
                 }
                 _ => {
                     expanded.push(node.clone());
@@ -177,12 +165,12 @@ impl MacroInliner {
         nodes: &[CslNode],
         order_counter: &mut usize,
     ) -> Vec<CslNode> {
-        let mut expanded = Vec::new();
+        let mut expanded = Vec::with_capacity(nodes.len());
         for node in nodes {
             match node {
                 CslNode::Text(text) if text.macro_name.is_some() => {
                     if let Some(name) = &text.macro_name {
-                        if let Some(macro_children) = self.macros.get(name) {
+                        if let Some(macro_children) = self.macros.get(name.as_str()) {
                             // Check if this macro call has a pre-assigned order from the layout
                             let is_layout_macro = text.macro_call_order.is_some();
 
@@ -225,53 +213,75 @@ impl MacroInliner {
                 }
                 // For other nodes that have children, we must recurse into them
                 CslNode::Group(group) => {
-                    let mut new_group = group.clone();
-                    new_group.children =
-                        self.expand_nodes_with_order(&group.children, order_counter);
-                    expanded.push(CslNode::Group(new_group));
+                    let children = self.expand_nodes_with_order(&group.children, order_counter);
+                    expanded.push(CslNode::Group(clone_group_with_children(group, children)));
                 }
                 CslNode::Names(names) => {
-                    let mut new_names = names.clone();
-                    new_names.children =
-                        self.expand_nodes_with_order(&names.children, order_counter);
-                    expanded.push(CslNode::Names(new_names));
+                    let children = self.expand_nodes_with_order(&names.children, order_counter);
+                    expanded.push(CslNode::Names(clone_names_with_children(names, children)));
                 }
                 CslNode::Choose(choose) => {
-                    let mut new_choose = choose.clone();
-                    // For macro order tracking, we want sequential orders across ALL branches.
-                    // This tracks the SOURCE order of macro calls, not runtime execution order.
-                    // At runtime only one branch executes, but we need to track where each
-                    // macro appeared in the CSL 1.0 source.
-
-                    new_choose.if_branch.children =
-                        self.expand_nodes_with_order(&choose.if_branch.children, order_counter);
-
-                    for (branch, new_branch) in choose
-                        .else_if_branches
-                        .iter()
-                        .zip(new_choose.else_if_branches.iter_mut())
-                    {
-                        new_branch.children =
-                            self.expand_nodes_with_order(&branch.children, order_counter);
-                    }
-
-                    if let Some(ref else_children) = choose.else_branch {
-                        new_choose.else_branch =
-                            Some(self.expand_nodes_with_order(else_children, order_counter));
-                    }
-
-                    expanded.push(CslNode::Choose(new_choose));
+                    expanded.push(CslNode::Choose(
+                        self.expand_choose_with_order(choose, order_counter),
+                    ));
                 }
                 CslNode::Substitute(sub) => {
-                    let mut new_sub = sub.clone();
-                    new_sub.children = self.expand_nodes_with_order(&sub.children, order_counter);
-                    expanded.push(CslNode::Substitute(new_sub));
+                    let children = self.expand_nodes_with_order(&sub.children, order_counter);
+                    expanded.push(CslNode::Substitute(Substitute { children }));
                 }
                 // Nodes with no children or that don't call macros directly
                 _ => expanded.push(node.clone()),
             }
         }
         expanded
+    }
+
+    fn expand_choose_no_increment(&self, choose: &Choose) -> Choose {
+        let if_children = self.expand_macros_no_increment(&choose.if_branch.children);
+        let else_if_branches = choose
+            .else_if_branches
+            .iter()
+            .map(|branch| {
+                let children = self.expand_macros_no_increment(&branch.children);
+                clone_choose_branch_with_children(branch, children)
+            })
+            .collect();
+        let else_branch = choose
+            .else_branch
+            .as_ref()
+            .map(|children| self.expand_macros_no_increment(children));
+
+        Choose {
+            if_branch: clone_choose_branch_with_children(&choose.if_branch, if_children),
+            else_if_branches,
+            else_branch,
+        }
+    }
+
+    fn expand_choose_with_order(&self, choose: &Choose, order_counter: &mut usize) -> Choose {
+        // For macro order tracking, we want sequential orders across ALL branches.
+        // This tracks the SOURCE order of macro calls, not runtime execution order.
+        // At runtime only one branch executes, but we need to track where each
+        // macro appeared in the CSL 1.0 source.
+        let if_children = self.expand_nodes_with_order(&choose.if_branch.children, order_counter);
+        let else_if_branches = choose
+            .else_if_branches
+            .iter()
+            .map(|branch| {
+                let children = self.expand_nodes_with_order(&branch.children, order_counter);
+                clone_choose_branch_with_children(branch, children)
+            })
+            .collect();
+        let else_branch = choose
+            .else_branch
+            .as_ref()
+            .map(|children| self.expand_nodes_with_order(children, order_counter));
+
+        Choose {
+            if_branch: clone_choose_branch_with_children(&choose.if_branch, if_children),
+            else_if_branches,
+            else_branch,
+        }
     }
 
     /// Assigns `macro_call_order` only if not already set.
@@ -456,5 +466,49 @@ impl MacroInliner {
     #[must_use]
     pub fn inline_citation(&self, style: &Style) -> Vec<CslNode> {
         self.expand_nodes(&style.citation.layout.children)
+    }
+}
+
+fn clone_group_with_children(group: &Group, children: Vec<CslNode>) -> Group {
+    Group {
+        delimiter: group.delimiter.clone(),
+        prefix: group.prefix.clone(),
+        suffix: group.suffix.clone(),
+        children,
+        macro_call_order: group.macro_call_order,
+        formatting: group.formatting.clone(),
+    }
+}
+
+fn clone_names_with_children(names: &Names, children: Vec<CslNode>) -> Names {
+    Names {
+        variable: names.variable.clone(),
+        delimiter: names.delimiter.clone(),
+        delimiter_precedes_et_al: names.delimiter_precedes_et_al.clone(),
+        et_al_min: names.et_al_min,
+        et_al_use_first: names.et_al_use_first,
+        et_al_subsequent_min: names.et_al_subsequent_min,
+        et_al_subsequent_use_first: names.et_al_subsequent_use_first,
+        prefix: names.prefix.clone(),
+        suffix: names.suffix.clone(),
+        children,
+        macro_call_order: names.macro_call_order,
+        formatting: names.formatting.clone(),
+    }
+}
+
+fn clone_choose_branch_with_children(
+    branch: &ChooseBranch,
+    children: Vec<CslNode>,
+) -> ChooseBranch {
+    ChooseBranch {
+        match_mode: branch.match_mode.clone(),
+        type_: branch.type_.clone(),
+        variable: branch.variable.clone(),
+        is_numeric: branch.is_numeric.clone(),
+        is_uncertain_date: branch.is_uncertain_date.clone(),
+        locator: branch.locator.clone(),
+        position: branch.position.clone(),
+        children,
     }
 }
