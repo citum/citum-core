@@ -17,6 +17,7 @@ use citum_schema::locale::Locale;
 use citum_schema::options::{Config, bibliography::BibliographyConfig};
 use citum_schema::template::TemplateComponent;
 use indexmap::IndexMap;
+use std::borrow::Cow;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 
@@ -125,7 +126,7 @@ impl TemplateComponentTracker {
             return false;
         };
         let base = key_base(var_key);
-        self.rendered_vars.contains(var_key) || self.substituted_bases.contains(&base)
+        self.rendered_vars.contains(var_key) || self.substituted_bases.contains(base.as_ref())
     }
 
     fn mark_rendered(&mut self, var_key: Option<String>, substituted_key: Option<&str>) {
@@ -134,7 +135,8 @@ impl TemplateComponentTracker {
         }
         if let Some(substituted_key) = substituted_key {
             self.rendered_vars.insert(substituted_key.to_string());
-            self.substituted_bases.insert(key_base(substituted_key));
+            self.substituted_bases
+                .insert(key_base(substituted_key).into_owned());
         }
     }
 }
@@ -600,11 +602,11 @@ impl<'a> Renderer<'a> {
     }
 }
 
-fn key_base(key: &str) -> String {
+fn key_base(key: &str) -> Cow<'_, str> {
     let mut parts = key.splitn(3, ':');
     match (parts.next(), parts.next()) {
-        (Some(kind), Some(var)) => format!("{kind}:{var}"),
-        _ => key.to_string(),
+        (Some(kind), Some(var)) => Cow::Owned(format!("{kind}:{var}")),
+        _ => Cow::Borrowed(key),
     }
 }
 
@@ -616,37 +618,48 @@ fn key_base(key: &str) -> String {
 #[must_use]
 pub fn get_variable_key(component: &TemplateComponent) -> Option<String> {
     use citum_schema::template::Rendering;
+    use std::fmt::Write;
 
-    fn context_suffix(rendering: &Rendering) -> String {
+    fn push_context_suffix(key: &mut String, rendering: &Rendering) {
         match (&rendering.prefix, &rendering.suffix) {
-            (Some(p), Some(s)) => format!(":{p}_{s}"),
-            (Some(p), None) => format!(":{p}"),
-            (None, Some(s)) => format!(":{s}"),
-            (None, None) => String::new(),
+            (Some(prefix), Some(suffix)) => {
+                key.push(':');
+                key.push_str(prefix);
+                key.push('_');
+                key.push_str(suffix);
+            }
+            (Some(prefix), None) => {
+                key.push(':');
+                key.push_str(prefix);
+            }
+            (None, Some(suffix)) => {
+                key.push(':');
+                key.push_str(suffix);
+            }
+            (None, None) => {}
         }
     }
 
-    fn make_key(kind: &str, value: impl std::fmt::Debug, ctx: String) -> Option<String> {
-        Some(format!("{kind}:{value:?}{ctx}"))
+    fn make_key(kind: &str, value: impl std::fmt::Debug, rendering: &Rendering) -> Option<String> {
+        let mut key = String::new();
+        write!(&mut key, "{kind}:{value:?}").ok()?;
+        push_context_suffix(&mut key, rendering);
+        Some(key)
     }
 
     match component {
-        TemplateComponent::Contributor(c) => {
-            make_key("contributor", &c.contributor, context_suffix(&c.rendering))
-        }
-        TemplateComponent::Date(d) => make_key("date", &d.date, context_suffix(&d.rendering)),
-        TemplateComponent::Variable(v) => {
-            make_key("variable", &v.variable, context_suffix(&v.rendering))
-        }
+        TemplateComponent::Contributor(c) => make_key("contributor", &c.contributor, &c.rendering),
+        TemplateComponent::Date(d) => make_key("date", &d.date, &d.rendering),
+        TemplateComponent::Variable(v) => make_key("variable", &v.variable, &v.rendering),
         TemplateComponent::Title(t) => {
-            let form_part = t.form.as_ref().map_or(String::new(), |f| format!(":{f:?}"));
-            Some(format!(
-                "title:{:?}{form_part}{}",
-                t.title,
-                context_suffix(&t.rendering)
-            ))
+            let mut key = format!("title:{:?}", t.title);
+            if let Some(form) = &t.form {
+                write!(&mut key, ":{form:?}").ok()?;
+            }
+            push_context_suffix(&mut key, &t.rendering);
+            Some(key)
         }
-        TemplateComponent::Number(n) => make_key("number", &n.number, context_suffix(&n.rendering)),
+        TemplateComponent::Number(n) => make_key("number", &n.number, &n.rendering),
         TemplateComponent::Group(_) => None,
         _ => None,
     }

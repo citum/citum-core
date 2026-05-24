@@ -1,14 +1,14 @@
 ---
 # csl26-rtak
 title: Reduce render template allocation and key-string churn
-status: todo
+status: completed
 type: task
 priority: normal
 tags:
     - engine
     - performance
 created_at: 2026-05-24T14:32:34Z
-updated_at: 2026-05-24T14:44:07Z
+updated_at: 2026-05-24T18:15:31Z
 ---
 
 ## Goal
