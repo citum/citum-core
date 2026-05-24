@@ -5,7 +5,7 @@ status: in-progress
 type: milestone
 priority: normal
 created_at: 2026-05-16T14:30:00Z
-updated_at: 2026-05-18T11:22:45Z
+updated_at: 2026-05-24T00:17:28Z
 ---
 
 Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by refactor priority and grouped by modularization strategy.
@@ -37,7 +37,7 @@ Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by r
    - **Target:** Extract `CitationPositionAnalysis` to `src/upsampler/position.rs`.
 7. [ ] **`citum-engine/src/processor/rendering/grouped/core.rs` (1708 lines)**
    - **Issues:** Highly specific rendering logic and classification helpers.
-8. [ ] **`citum-io/src/lib.rs` (1622 lines)**
+8. [x] **`citum-io/src/lib.rs` (1622 lines)**
    - **Issues:** Multiple format handlers (BibLaTeX, RIS, JSON).
    - **Target:** Move format-specific logic to `src/formats/`.
 
@@ -69,3 +69,16 @@ Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by r
 ## Strategic Recommendation
 
 Prioritize Tier 1 and Tier 2 refactors, specifically focusing on `citum-schema-style/src/lib.rs` and `citum-cli/src/commands.rs`, as these are the primary entry points and experience the most frequent changes, leading to high friction in PR reviews and local development.
+
+## Summary of Changes (2026-05-23)
+
+### Item 8 — citum-io/src/lib.rs
+- Extracted four format-specific submodules under src/formats/:
+  native.rs, csl_json.rs, ris.rs, output.rs
+- lib.rs reduced from 1622 to ~345 non-test lines (-79%)
+- DRY: unified duplicate load_hybrid_json_reference into
+  parse_hybrid_json_reference
+- Performance: eliminated two String allocations per call in
+  hybrid JSON class/type routing (now uses &str comparison)
+- Idiom: moved validate_compound_sets import to module level;
+  replaced verbose if/else with .then_some() in merge path
