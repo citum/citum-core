@@ -13,7 +13,14 @@ mod style_resolver;
 mod table;
 mod typst_pdf;
 
+#[cfg(feature = "dhat-heap")]
+#[global_allocator]
+static ALLOC: dhat::Alloc = dhat::Alloc;
+
 fn main() {
+    #[cfg(feature = "dhat-heap")]
+    let _profiler = dhat::Profiler::new_heap();
+
     if let Err(e) = commands::run() {
         eprintln!("\nError: {e}");
         std::process::exit(1);

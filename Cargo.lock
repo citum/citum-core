@@ -9,6 +9,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fe438c63458706e03479442743baae6c88256498e6431708f6dfc520a26515d3"
 
 [[package]]
+name = "addr2line"
+version = "0.25.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1b5d307320b3181d6d7954e663bd7c774a838b8220fe0593c86d9fb09f498b4b"
+dependencies = [
+ "gimli",
+]
+
+[[package]]
 name = "adler2"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -232,6 +241,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "be5eb007b7cacc6c660343e96f650fedf4b5a77512399eb952ca6642cf8d13f7"
 
 [[package]]
+name = "backtrace"
+version = "0.3.76"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb531853791a215d7c62a30daf0dde835f381ab5de4589cfe7c649d2cbe92bd6"
+dependencies = [
+ "addr2line",
+ "cfg-if",
+ "libc",
+ "miniz_oxide",
+ "object",
+ "rustc-demangle",
+ "windows-link",
+]
+
+[[package]]
 name = "base-x"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -301,7 +325,7 @@ dependencies = [
  "proc-macro2",
  "quote",
  "regex",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "shlex",
  "syn",
 ]
@@ -605,6 +629,7 @@ dependencies = [
  "clap_complete",
  "comfy-table",
  "crossterm",
+ "dhat",
  "ratatui",
  "schemars",
  "serde",
@@ -704,6 +729,7 @@ dependencies = [
  "clap",
  "csl-legacy",
  "deno_core",
+ "dhat",
  "indexmap 2.14.0",
  "roxmltree 0.21.1",
  "serde",
@@ -942,7 +968,7 @@ checksum = "3c963350b2b08aa4b725d7802593245380ab53dacfedcaa971385fc33306c0d4"
 dependencies = [
  "comemo-macros",
  "parking_lot",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "siphasher",
  "slab",
 ]
@@ -1454,6 +1480,22 @@ dependencies = [
  "quote",
  "rustc_version",
  "syn",
+]
+
+[[package]]
+name = "dhat"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "98cd11d84628e233de0ce467de10b8633f4ddaecafadefc86e13b84b8739b827"
+dependencies = [
+ "backtrace",
+ "lazy_static",
+ "mintex",
+ "parking_lot",
+ "rustc-hash 1.1.0",
+ "serde",
+ "serde_json",
+ "thousands",
 ]
 
 [[package]]
@@ -1986,6 +2028,12 @@ dependencies = [
  "color_quant",
  "weezl",
 ]
+
+[[package]]
+name = "gimli"
+version = "0.32.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e629b9b98ef3dd8afe6ca2bd0f89306cec16d43d907889945bc5d6687f2f13c7"
 
 [[package]]
 name = "gix"
@@ -3050,7 +3098,7 @@ dependencies = [
  "log",
  "moxcms 0.7.11",
  "phf",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "siphasher",
  "skrifa",
  "smallvec",
@@ -3080,7 +3128,7 @@ dependencies = [
  "flate2",
  "kurbo 0.12.0",
  "log",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "smallvec",
  "zune-jpeg 0.4.21",
 ]
@@ -3926,7 +3974,7 @@ dependencies = [
  "pdf-writer",
  "png 0.17.16",
  "rayon",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "rustybuzz",
  "siphasher",
  "skrifa",
@@ -4179,6 +4227,12 @@ dependencies = [
  "adler2",
  "simd-adler32",
 ]
+
+[[package]]
+name = "mintex"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c505b3e17ed6b70a7ed2e67fbb2c560ee327353556120d6e72f5232b6880d536"
 
 [[package]]
 name = "mio"
@@ -4739,7 +4793,7 @@ dependencies = [
  "pin-project-lite",
  "quinn-proto",
  "quinn-udp",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "rustls",
  "socket2",
  "thiserror",
@@ -4760,7 +4814,7 @@ dependencies = [
  "lru-slab",
  "rand 0.9.4",
  "ring",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "rustls",
  "rustls-pki-types",
  "slab",
@@ -5222,6 +5276,18 @@ dependencies = [
  "arrayvec",
  "num-traits",
 ]
+
+[[package]]
+name = "rustc-demangle"
+version = "0.1.27"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b50b8869d9fc858ce7266cce0194bd74df58b9d0e3f6df3a9fc8eb470d95c09d"
+
+[[package]]
+name = "rustc-hash"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "08d43f7aa6b08d49f382cde6a7982047c3426db949b1424bc4b7ec9ae12c6ce2"
 
 [[package]]
 name = "rustc-hash"
@@ -5770,7 +5836,7 @@ dependencies = [
  "data-encoding",
  "debugid",
  "if_chain",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "serde",
  "serde_json",
  "unicode-id-start",
@@ -5911,7 +5977,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cb6895a12ac5599bb6057362f00e8a3cf1daab4df33f553a55690a44e4fed8d0"
 dependencies = [
  "kurbo 0.12.0",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "skrifa",
  "write-fonts",
 ]
@@ -6093,6 +6159,12 @@ dependencies = [
  "quote",
  "syn",
 ]
+
+[[package]]
+name = "thousands"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3bf63baf9f5039dadc247375c29eb13706706cfde997d0330d05aa63a77d8820"
 
 [[package]]
 name = "time"
@@ -6479,7 +6551,7 @@ checksum = "1f6511ee598476f4f322b4d13891083d96dbacb8f9c2b908604c7094ba390653"
 dependencies = [
  "comemo",
  "ecow",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "typst-eval",
  "typst-html",
  "typst-layout",
@@ -6506,7 +6578,7 @@ dependencies = [
  "comemo",
  "ecow",
  "indexmap 2.14.0",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "stacker",
  "toml 0.8.23",
  "typst-library",
@@ -6527,7 +6599,7 @@ dependencies = [
  "comemo",
  "ecow",
  "palette",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "time",
  "typst-assets",
  "typst-library",
@@ -6576,7 +6648,7 @@ dependencies = [
  "icu_segmenter",
  "kurbo 0.12.0",
  "memchr",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "rustybuzz",
  "smallvec",
  "ttf-parser",
@@ -6630,7 +6702,7 @@ dependencies = [
  "regex-syntax",
  "roxmltree 0.20.0",
  "rust_decimal",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "rustybuzz",
  "serde",
  "serde_json",
@@ -6685,7 +6757,7 @@ dependencies = [
  "infer",
  "krilla",
  "krilla-svg",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "serde",
  "smallvec",
  "typst-assets",
@@ -6727,7 +6799,7 @@ dependencies = [
  "hayro",
  "hayro-svg",
  "image",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "ttf-parser",
  "typst-assets",
  "typst-library",
@@ -6745,7 +6817,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a95d9192060e23b1e491b0b94dff676acddc92a4d672aeb8ca3890a5a734e879"
 dependencies = [
  "ecow",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "serde",
  "toml 0.8.23",
  "typst-timing",
@@ -6777,7 +6849,7 @@ dependencies = [
  "once_cell",
  "portable-atomic",
  "rayon",
- "rustc-hash",
+ "rustc-hash 2.1.2",
  "siphasher",
  "thin-vec",
  "unicode-math-class",
