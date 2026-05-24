@@ -10,7 +10,7 @@ repository.workspace = true
 
 [lib]
 name = "citum_engine"
-crate-type = ["rlib"]
+crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 citum-schema = { workspace = true, features = ["legacy-convert"] }
