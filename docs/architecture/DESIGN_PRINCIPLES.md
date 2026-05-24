@@ -178,7 +178,7 @@ reached through several product surfaces.
 
 - **Batch and interactive modes are both first-class.** The CLI supports
   document and reference workflows; `citum-server` provides long-running
-  JSON-RPC over stdio and optional HTTP for low-latency clients.
+  JSON-RPC over stdio and default-enabled HTTP for low-latency clients.
 - **Rendering targets share semantics.** Plain text, HTML, Djot, LaTeX, and
   Typst renderers should differ in markup representation, not in citation
   logic.

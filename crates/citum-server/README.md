@@ -1,8 +1,8 @@
 # citum-server
 
 Long-running server process for real-time citation formatting. Wraps
-`citum-engine` behind a newline-delimited JSON-RPC interface, with an optional
-HTTP mode for web app integrations.
+`citum-engine` behind a newline-delimited JSON-RPC interface, with HTTP mode
+for web app integrations.
 
 ## Transports
 
@@ -19,13 +19,15 @@ echo '{"id":1,"method":"render_citation","params":{"style_path":"styles/embedded
 # {"id":1,"result":"(Hawking, 1988)"}
 ```
 
-### HTTP (feature-gated)
+### HTTP (default-enabled feature)
 
-Build with `--features http` to expose the same methods over HTTP via
-`axum`. Useful for the citum-hub live preview panel.
+Default builds expose the same methods over HTTP via `axum`. Useful for the
+citum-hub live preview panel. Install with
+`cargo install citum-server --no-default-features` only when you need a
+stdio-only binary.
 
 ```sh
-cargo run -p citum-server --features http -- --http --port 9000
+cargo run -p citum-server -- --http --port 9000
 ```
 
 ```sh
@@ -145,8 +147,8 @@ However, the `refs` and `citations` parameters always expect data objects, not p
 
 | Feature | Default | Description |
 |---|---|---|
-| `async` | off | Required for non-blocking I/O. Wraps `Processor` in `tokio::task::spawn_blocking` |
-| `http` | off | Enables axum HTTP server; **requires and automatically enables `async`** |
+| `async` | on | Enables the Tokio runtime dependency used by HTTP transport |
+| `http` | on | Enables axum HTTP server; **requires and automatically enables `async`** |
 | `schema` | off | Enables `/rpc/schema` endpoint; **requires and automatically enables `http` and `async`** |
 
 ## Usage
@@ -156,7 +158,11 @@ However, the `refs` and `citations` parameters always expect data objects, not p
 citum-server
 
 # HTTP mode
-cargo build --features http && citum-server --http --port 9000
+citum-server --http --port 9000
+
+# stdio-only binary
+cargo build -p citum-server --no-default-features
+cargo install citum-server --no-default-features
 
 # Options
 citum-server --help

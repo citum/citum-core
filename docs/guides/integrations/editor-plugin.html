@@ -83,8 +83,10 @@
 citum-server      # reads JSON-RPC from stdin, writes responses to stdout</code></pre>
             </div>
             <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
-                Use <code>citum-server --http --port 8765</code> to enable HTTP mode (requires the <code>http</code>
-                feature). For editor plugins, stdin/stdout is the simpler integration; it sidesteps port
+                Use <code>citum-server --http --port 8765</code> to enable HTTP mode. Default
+                <code>citum-server</code> builds include the <code>http</code> feature; use
+                <code>cargo install citum-server --no-default-features</code> only for a stdio-only binary. For editor plugins,
+                stdin/stdout is the simpler integration; it sidesteps port
                 allocation, CORS, and process discovery.
             </p>
         </section>

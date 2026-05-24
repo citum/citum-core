@@ -30,10 +30,10 @@ The server mode is implemented as a dedicated `citum-server` binary crate in the
 
 | Component | Status | Purpose |
 |-----------|--------|---------|
-| `crates/citum-server/Cargo.toml` | DONE | Crate manifest; deps on engine + schema only; optional async/http features |
+| `crates/citum-server/Cargo.toml` | DONE | Crate manifest; deps on engine + schema only; default-enabled async/http features |
 | `crates/citum-server/src/main.rs` | DONE | Entry point; arg parsing (mode flag: `--http`, `--port`) |
 | `crates/citum-server/src/rpc.rs` | DONE | JSON-RPC stdin/stdout handler |
-| `crates/citum-server/src/http.rs` | DONE | HTTP handler (feature-gated behind `http`) |
+| `crates/citum-server/src/http.rs` | DONE | HTTP handler (behind the default-enabled `http` feature) |
 
 ---
 
@@ -136,6 +136,5 @@ different deployment targets:
 |---------------|----------------------------------------------------|-------|
 | `csl26-srvr`  | citum-server mode (epic)                           | 2     |
 | `csl26-srpc`  | Implement JSON-RPC stdin/stdout handler            | 2     |
-| `csl26-shtp`  | Implement HTTP feature (axum, feature-gated)       | 2     |
+| `csl26-shtp`  | Implement HTTP feature (axum, default-enabled)     | 2     |
 | `csl26-stat`  | Consider optional stateful mode for citum-server   | 3     |
-

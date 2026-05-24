@@ -38,9 +38,9 @@ schemars = { version = "1.2.1", features = ["derive"], optional = true }
 tower = { version = "0.5", features = ["util"] }
 
 [features]
-default = []
-async = ["tokio"]
-http = ["async", "axum"]
+default = ["http"]
+async = ["dep:tokio"]
+http = ["async", "dep:axum"]
 schema-types = ["dep:schemars", "citum-engine/schema"]
 schema = ["http", "schema-types"]
 
