@@ -258,10 +258,20 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
     annotations: Option<&HashMap<String, String>>,
     annotation_style: Option<&AnnotationStyle>,
 ) -> String {
-    let fmt = F::default();
-    let mut rendered_entries = Vec::new();
+    refs_to_string_slice_with_format::<F>(&proc_entries, annotations, annotation_style)
+}
 
-    for entry in &proc_entries {
+/// Render borrowed processed templates into a final bibliography string using a specific format.
+#[must_use]
+pub fn refs_to_string_slice_with_format<F: OutputFormat<Output = String>>(
+    proc_entries: &[ProcEntry],
+    annotations: Option<&HashMap<String, String>>,
+    annotation_style: Option<&AnnotationStyle>,
+) -> String {
+    let fmt = F::default();
+    let mut rendered_entries = Vec::with_capacity(proc_entries.len());
+
+    for entry in proc_entries {
         let mut entry_output = render_entry_body_with_format::<F>(entry);
         let proc_template = &entry.template;
 
@@ -302,18 +312,13 @@ pub fn refs_to_string_with_format<F: OutputFormat<Output = String>>(
                     // This is a bit tricky as ProcEntry doesn't have the reference.
                     // But we can look it up from the bibliography if we had access to it.
                     // For now, let's see if any component in the template has a URL resolved.
-                    proc_template.iter().find_map(|c| c.url.clone())
+                    proc_template.iter().find_map(|c| c.url.as_deref())
                 } else {
                     None
                 }
             });
 
-        rendered_entries.push(fmt.entry(
-            &entry.id,
-            entry_output,
-            entry_url.as_deref(),
-            &entry.metadata,
-        ));
+        rendered_entries.push(fmt.entry(&entry.id, entry_output, entry_url, &entry.metadata));
     }
 
     fmt.finish(fmt.bibliography(rendered_entries))

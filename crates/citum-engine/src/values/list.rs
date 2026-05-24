@@ -23,48 +23,45 @@ impl ComponentValues for TemplateGroup {
         let fmt = F::default();
 
         // Collect values from all items, applying their rendering
-        let values: Vec<F::Output> = self
-            .group
-            .iter()
-            .filter_map(|item| {
-                let v = item.values::<F>(reference, hints, options)?;
-                if v.value.is_empty() {
-                    return None;
-                }
+        let mut values = Vec::with_capacity(self.group.len());
+        for item in &self.group {
+            let Some(v) = item.values::<F>(reference, hints, options) else {
+                continue;
+            };
+            if v.value.is_empty() {
+                continue;
+            }
 
-                // Track if we have any "meaningful" content (not just a term)
-                if !is_term_based(item) {
-                    has_content = true;
-                }
+            // Track if we have any "meaningful" content (not just a term)
+            if !is_term_based(item) {
+                has_content = true;
+            }
 
-                // Use the central rendering logic to apply global config, local settings, and overrides
-                let proc_item = crate::render::ProcTemplateComponent {
-                    template_component: item.clone(),
-                    template_index: options.current_template_index,
-                    value: v.value,
-                    prefix: v.prefix,
-                    suffix: v.suffix,
-                    url: v.url,
-                    ref_type: Some(reference.ref_type().clone()),
-                    config: Some(options.config.clone()),
-                    bibliography_config: options.bibliography_config.clone(),
-                    item_language: crate::values::effective_component_language(reference, item),
-                    sentence_initial: false,
-                    pre_formatted: v.pre_formatted,
-                };
+            // Use the central rendering logic to apply global config, local settings, and overrides
+            let proc_item = crate::render::ProcTemplateComponent {
+                template_component: item.clone(),
+                template_index: options.current_template_index,
+                value: v.value,
+                prefix: v.prefix,
+                suffix: v.suffix,
+                url: v.url,
+                ref_type: Some(reference.ref_type().clone()),
+                config: Some(options.config.clone()),
+                bibliography_config: options.bibliography_config.clone(),
+                item_language: crate::values::effective_component_language(reference, item),
+                sentence_initial: false,
+                pre_formatted: v.pre_formatted,
+            };
 
-                let rendered = crate::render::render_component_with_format_and_renderer::<F>(
-                    &proc_item,
-                    &fmt,
-                    options.show_semantics,
-                );
-                if rendered.is_empty() {
-                    None
-                } else {
-                    Some(rendered)
-                }
-            })
-            .collect();
+            let rendered = crate::render::render_component_with_format_and_renderer::<F>(
+                &proc_item,
+                &fmt,
+                options.show_semantics,
+            );
+            if !rendered.is_empty() {
+                values.push(rendered);
+            }
+        }
 
         if values.is_empty() || !has_content {
             return None;

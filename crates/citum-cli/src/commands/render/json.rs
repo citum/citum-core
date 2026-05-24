@@ -118,8 +118,8 @@ where
             .into_iter()
             .filter(|entry| filter.contains(entry.id.as_str()))
             .map(|entry| {
-                let text = citum_engine::render::refs_to_string_with_format::<F>(
-                    vec![entry.clone()],
+                let text = citum_engine::render::refs_to_string_slice_with_format::<F>(
+                    std::slice::from_ref(&entry),
                     ctx.annotations,
                     Some(ctx.annotation_style),
                 );

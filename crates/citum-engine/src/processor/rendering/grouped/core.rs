@@ -848,23 +848,25 @@ impl Renderer<'_> {
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let mut tracker = TemplateComponentTracker::default();
-        template
-            .iter()
-            .enumerate()
-            .filter_map(|(template_index, component)| {
-                let mut component_options = options.clone();
-                component_options.current_template_index =
-                    self.inject_ast_indices.then_some(template_index);
-                let ctx = TemplateRenderContext {
-                    reference,
-                    ref_type,
-                    options: &component_options,
-                    hint,
-                    template_index,
-                };
+        let mut components = Vec::with_capacity(template.len());
+        let mut component_options = options.clone();
+        for (template_index, component) in template.iter().enumerate() {
+            component_options.current_template_index =
+                self.inject_ast_indices.then_some(template_index);
+            let ctx = TemplateRenderContext {
+                reference,
+                ref_type,
+                options: &component_options,
+                hint,
+                template_index,
+            };
+            if let Some(component) =
                 self.render_template_component_with_format::<F>(&ctx, component, &mut tracker)
-            })
-            .collect()
+            {
+                components.push(component);
+            }
+        }
+        components
     }
 
     fn build_template_render_hint(
@@ -1002,7 +1004,7 @@ impl Renderer<'_> {
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let mut has_meaningful_content = false;
-        let mut values = Vec::new();
+        let mut values = Vec::with_capacity(group.group.len());
 
         for item in &group.group {
             let Some(rendered) =

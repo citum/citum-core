@@ -45,7 +45,9 @@ pub mod typst;
 )]
 mod test_formats;
 
-pub use bibliography::{refs_to_string, refs_to_string_with_format};
+pub use bibliography::{
+    refs_to_string, refs_to_string_slice_with_format, refs_to_string_with_format,
+};
 pub use citation::{citation_to_string, citation_to_string_with_format};
 pub use component::{
     ProcEntry, ProcTemplate, ProcTemplateComponent, render_component,
