@@ -3,7 +3,43 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
+use super::{CitumNode, Upsampler, migrate_debug_enabled};
 use csl_legacy::model::{self as legacy, CslNode as LNode};
+
+/// Citation templates extracted from CSL `position` conditions.
+///
+/// These templates populate Citum citation position overrides: first/default,
+/// subsequent, and immediate-repeat citation forms.
+#[derive(Debug, Clone, Default)]
+pub struct CitationPositionTemplates {
+    /// Template nodes for the first/default citation form.
+    pub first: Option<Vec<CitumNode>>,
+    /// Template nodes for subsequent non-immediate repeats.
+    pub subsequent: Option<Vec<CitumNode>>,
+    /// Template nodes for immediate repeats (`ibid`, `ibid-with-locator`).
+    pub ibid: Option<Vec<CitumNode>>,
+    /// Whether the source tree mixed `position` with unsupported conditions.
+    pub unsupported_mixed_conditions: bool,
+}
+
+fn unsupported_position_templates() -> CitationPositionTemplates {
+    CitationPositionTemplates {
+        unsupported_mixed_conditions: true,
+        ..Default::default()
+    }
+}
+
+fn unsupported_position_result<T>(result: Result<T, ()>) -> Result<T, CitationPositionTemplates> {
+    result.map_err(|()| unsupported_position_templates())
+}
+
+impl CitationPositionTemplates {
+    /// Returns true when at least one position-specific override is available.
+    #[must_use]
+    pub fn has_overrides(&self) -> bool {
+        self.subsequent.is_some() || self.ibid.is_some()
+    }
+}
 
 /// Citation position variant selected while rewriting legacy CSL position trees.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -201,7 +237,7 @@ fn analyze_fast_path_branch(
                 return false;
             };
             if *saw {
-                if super::migrate_debug_enabled() {
+                if migrate_debug_enabled() {
                     tracing::debug!(
                         "Upsampler: conflicting {token}-position branches at {branch_label}."
                     );
@@ -267,7 +303,7 @@ fn analyze_position_choose(choose: &legacy::Choose, analysis: &mut CitationPosit
                 return;
             };
             if pure_position_branch && *saw {
-                if super::migrate_debug_enabled() {
+                if migrate_debug_enabled() {
                     tracing::debug!(
                         "Upsampler: conflicting {token}-position branches at {branch_label}."
                     );
@@ -366,4 +402,278 @@ pub(super) fn select_position_branch_children(
     fallback_branch
         .or(choose.else_branch.as_deref())
         .unwrap_or(&[])
+}
+
+impl Upsampler {
+    /// Extract position-scoped citation templates from legacy CSL `choose` trees.
+    ///
+    /// Pure position-only trees still use direct branch selection. Mixed trees
+    /// are specialized by stripping `position` from matching branches while
+    /// preserving their remaining predicates and non-position sibling content.
+    #[must_use]
+    pub fn extract_citation_position_templates(
+        &self,
+        legacy_nodes: &[LNode],
+    ) -> CitationPositionTemplates {
+        let analysis = analyze_citation_positions(legacy_nodes);
+
+        if !analysis.has_position_chooses() {
+            return CitationPositionTemplates::default();
+        }
+
+        if analysis.has_unsupported_mixed_conditions() {
+            return unsupported_position_templates();
+        }
+
+        let Ok(first) =
+            self.extract_position_variant_if(legacy_nodes, true, CitationPositionTarget::First)
+        else {
+            return unsupported_position_templates();
+        };
+
+        let Ok(subsequent) = self.extract_position_variant_if(
+            legacy_nodes,
+            analysis.has_explicit_subsequent(),
+            CitationPositionTarget::Subsequent,
+        ) else {
+            return unsupported_position_templates();
+        };
+
+        let Ok(ibid) = self.extract_position_variant_if(
+            legacy_nodes,
+            analysis.has_explicit_ibid(),
+            CitationPositionTarget::IbidAny,
+        ) else {
+            return unsupported_position_templates();
+        };
+
+        CitationPositionTemplates {
+            first,
+            subsequent,
+            ibid,
+            unsupported_mixed_conditions: false,
+        }
+    }
+
+    fn upsample_position_variant(
+        &self,
+        legacy_nodes: &[LNode],
+        target: CitationPositionTarget,
+    ) -> Result<Option<Vec<CitumNode>>, ()> {
+        let rewritten = self.rewrite_nodes_for_position(legacy_nodes, target)?;
+        let upsampled = self.upsample_nodes(&rewritten);
+        if upsampled.is_empty() {
+            Ok(None)
+        } else {
+            Ok(Some(upsampled))
+        }
+    }
+
+    fn extract_position_variant_if(
+        &self,
+        legacy_nodes: &[LNode],
+        should_extract: bool,
+        target: CitationPositionTarget,
+    ) -> Result<Option<Vec<CitumNode>>, CitationPositionTemplates> {
+        if !should_extract {
+            return Ok(None);
+        }
+
+        unsupported_position_result(self.upsample_position_variant(legacy_nodes, target))
+    }
+
+    fn rewrite_nodes_for_position(
+        &self,
+        legacy_nodes: &[LNode],
+        target: CitationPositionTarget,
+    ) -> Result<Vec<LNode>, ()> {
+        let mut rewritten = Vec::new();
+
+        for node in legacy_nodes {
+            if let Some(rewritten_container) = self.rewrite_child_container(node, target)? {
+                rewritten.push(rewritten_container);
+                continue;
+            }
+
+            match node {
+                LNode::Choose(choose) if choose_has_position_condition(choose) => {
+                    if choose_uses_position_fast_path(choose) {
+                        let selected = select_position_branch_children(choose, target);
+                        rewritten.extend(self.rewrite_nodes_for_position(selected, target)?);
+                    } else {
+                        rewritten.extend(self.rewrite_mixed_position_choose(choose, target)?);
+                    }
+                }
+                LNode::Choose(choose) => {
+                    rewritten.push(self.rewrite_non_position_choose(choose, target)?);
+                }
+                _ => rewritten.push(node.clone()),
+            }
+        }
+
+        Ok(rewritten)
+    }
+
+    fn rewrite_child_container(
+        &self,
+        node: &LNode,
+        target: CitationPositionTarget,
+    ) -> Result<Option<LNode>, ()> {
+        let rewritten = match node {
+            LNode::Group(group) => {
+                let mut rewritten_group = group.clone();
+                rewritten_group.children =
+                    self.rewrite_nodes_for_position(&group.children, target)?;
+                Some(LNode::Group(rewritten_group))
+            }
+            LNode::Names(names) => {
+                let mut rewritten_names = names.clone();
+                rewritten_names.children =
+                    self.rewrite_nodes_for_position(&names.children, target)?;
+                Some(LNode::Names(rewritten_names))
+            }
+            LNode::Substitute(substitute) => {
+                let mut rewritten_substitute = substitute.clone();
+                rewritten_substitute.children =
+                    self.rewrite_nodes_for_position(&substitute.children, target)?;
+                Some(LNode::Substitute(rewritten_substitute))
+            }
+            _ => None,
+        };
+
+        Ok(rewritten)
+    }
+
+    fn rewrite_choose_branch_children(
+        &self,
+        branch: &legacy::ChooseBranch,
+        target: CitationPositionTarget,
+    ) -> Result<legacy::ChooseBranch, ()> {
+        let mut rewritten_branch = branch.clone();
+        rewritten_branch.children = self.rewrite_nodes_for_position(&branch.children, target)?;
+        Ok(rewritten_branch)
+    }
+
+    fn rewrite_non_position_choose(
+        &self,
+        choose: &legacy::Choose,
+        target: CitationPositionTarget,
+    ) -> Result<LNode, ()> {
+        let mut rewritten_choose = choose.clone();
+        rewritten_choose.if_branch =
+            self.rewrite_choose_branch_children(&choose.if_branch, target)?;
+        rewritten_choose.else_if_branches = choose
+            .else_if_branches
+            .iter()
+            .map(|branch| self.rewrite_choose_branch_children(branch, target))
+            .collect::<Result<Vec<_>, _>>()?;
+        rewritten_choose.else_branch = choose
+            .else_branch
+            .as_ref()
+            .map(|branch| self.rewrite_nodes_for_position(branch, target))
+            .transpose()?;
+        Ok(LNode::Choose(rewritten_choose))
+    }
+
+    fn rewrite_mixed_position_branch(
+        &self,
+        branch: &legacy::ChooseBranch,
+        target: CitationPositionTarget,
+    ) -> Result<Option<legacy::ChooseBranch>, ()> {
+        let Some(position) = &branch.position else {
+            return self
+                .rewrite_choose_branch_children(branch, target)
+                .map(Some);
+        };
+
+        let matched_target =
+            position
+                .split_whitespace()
+                .try_fold(false, |matched_target, token| {
+                    if !is_supported_position_token(token) {
+                        return Err(());
+                    }
+                    Ok(matched_target || target.matches_token(token))
+                })?;
+
+        if !matched_target {
+            return Ok(None);
+        }
+
+        let mut rewritten_branch = self.rewrite_choose_branch_children(branch, target)?;
+        rewritten_branch.position = None;
+        Ok(Some(rewritten_branch))
+    }
+
+    fn assemble_rewritten_position_choose(
+        &self,
+        mut rewritten_branches: Vec<legacy::ChooseBranch>,
+        rewritten_else: Option<Vec<LNode>>,
+    ) -> Result<Vec<LNode>, ()> {
+        let unconditional_positions = rewritten_branches
+            .iter()
+            .enumerate()
+            .filter_map(|(index, branch)| {
+                branch_is_effectively_unconditional(branch).then_some(index)
+            })
+            .collect::<Vec<_>>();
+
+        if unconditional_positions.len() + usize::from(rewritten_else.is_some()) > 1 {
+            return Err(());
+        }
+
+        if rewritten_branches.is_empty() {
+            return Ok(rewritten_else.unwrap_or_default());
+        }
+
+        if let Some(index) = unconditional_positions.first().copied() {
+            if index == 0 {
+                return Ok(rewritten_branches.remove(0).children);
+            }
+
+            let else_branch = rewritten_branches.remove(index).children;
+            let mut branches = rewritten_branches.into_iter();
+            let Some(if_branch) = branches.next() else {
+                return Ok(else_branch);
+            };
+
+            return Ok(vec![LNode::Choose(legacy::Choose {
+                if_branch,
+                else_if_branches: branches.collect(),
+                else_branch: Some(else_branch),
+            })]);
+        }
+
+        let mut branches = rewritten_branches.into_iter();
+        let Some(if_branch) = branches.next() else {
+            return Ok(rewritten_else.unwrap_or_default());
+        };
+
+        Ok(vec![LNode::Choose(legacy::Choose {
+            if_branch,
+            else_if_branches: branches.collect(),
+            else_branch: rewritten_else,
+        })])
+    }
+
+    fn rewrite_mixed_position_choose(
+        &self,
+        choose: &legacy::Choose,
+        target: CitationPositionTarget,
+    ) -> Result<Vec<LNode>, ()> {
+        let mut rewritten_branches = Vec::new();
+
+        for branch in std::iter::once(&choose.if_branch).chain(choose.else_if_branches.iter()) {
+            if let Some(rewritten_branch) = self.rewrite_mixed_position_branch(branch, target)? {
+                rewritten_branches.push(rewritten_branch);
+            }
+        }
+
+        let rewritten_else = choose
+            .else_branch
+            .as_ref()
+            .map(|branch| self.rewrite_nodes_for_position(branch, target))
+            .transpose()?;
+        self.assemble_rewritten_position_choose(rewritten_branches, rewritten_else)
+    }
 }
