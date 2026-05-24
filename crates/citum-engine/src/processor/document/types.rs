@@ -58,6 +58,11 @@ pub struct DocumentIntegralNameOverride {
 }
 
 impl DocumentIntegralNameOverride {
+    /// Apply this frontmatter override to a base integral-name configuration.
+    ///
+    /// Returns `None` if the override explicitly disables the policy. Otherwise,
+    /// returns a new configuration where non-null fields from the override
+    /// supersede fields from the base.
     pub(super) fn apply_to(
         &self,
         base: Option<&IntegralNameMemoryConfig>,

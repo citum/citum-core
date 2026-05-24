@@ -61,6 +61,9 @@ impl Processor {
     /// Process sorted references and apply subsequent-author substitution.
     ///
     /// Returns bibliography entries with optional author substitution applied.
+    ///
+    /// This is the core iterator for bibliography rendering, handling the choice
+    /// between entry-specific rendering and subsequent-author placeholders.
     fn process_sorted_refs<'a, I, F>(
         &self,
         sorted_refs: I,
@@ -204,6 +207,11 @@ impl Processor {
     }
 
     /// Render a selected bibliography subset to a string with annotations.
+    ///
+    /// Orchestrates the choice between:
+    /// 1. Custom bibliography groups (selectors and headings).
+    /// 2. Automatic sort partitioning with sections (headings only).
+    /// 3. Standard flat rendering.
     pub fn render_selected_bibliography_with_format_and_annotations<F, I>(
         &self,
         item_ids: I,

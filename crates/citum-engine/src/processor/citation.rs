@@ -19,6 +19,10 @@ use citum_schema::template::DelimiterPunctuation;
 use indexmap::IndexMap;
 use std::collections::HashMap;
 
+/// Join rendered integral (narrative) groups with localized conjunctions.
+///
+/// Uses the locale's "and" term to join groups according to document grammar
+/// rules (e.g., "A and B" or "A, B, and C" with optional serial comma).
 fn join_integral_groups(rendered_groups: Vec<String>, locale: &Locale) -> String {
     match rendered_groups.len() {
         0 => String::new(),
@@ -47,6 +51,10 @@ fn join_integral_groups(rendered_groups: Vec<String>, locale: &Locale) -> String
 }
 
 impl Processor {
+    /// Determine the text-case policy for a citation at the start of a note.
+    ///
+    /// Only applies for note-based styles when a repeated-citation position (Ibid)
+    /// is at the start of the note and has no user-supplied or spec-defined prefix.
     fn sentence_initial_note_start_text_case(
         &self,
         citation: &Citation,
@@ -74,6 +82,10 @@ impl Processor {
         }
     }
 
+    /// Resolve the citation specification based on the citation's document position.
+    ///
+    /// Delegates to the style's citation spec to handle ibid, subsequent, or first
+    /// position overrides.
     fn resolve_positioned_citation_spec(
         &self,
         citation: &Citation,
@@ -84,6 +96,10 @@ impl Processor {
         )
     }
 
+    /// Register cited reference IDs and ensure numeric labels are initialized.
+    ///
+    /// This maintains the set of all references cited in the document and ensures
+    /// that numeric styles have a stable numbering map.
     fn track_cited_ids_and_init_numbers(&self, citation: &Citation) {
         self.initialize_numeric_citation_numbers();
         let mut cited_ids = self.cited_ids.borrow_mut();
@@ -92,6 +108,7 @@ impl Processor {
         }
     }
 
+    /// Resolve the final effective citation spec for a given mode and position.
     fn resolve_effective_citation_spec(&self, citation: &Citation) -> citum_schema::CitationSpec {
         self.resolve_positioned_citation_spec(citation)
             .into_owned()
@@ -99,6 +116,7 @@ impl Processor {
             .into_owned()
     }
 
+    /// Resolve intra-item and inter-citation delimiters for a citation spec.
     fn resolve_citation_delimiters<'a>(
         &self,
         effective_spec: &'a citum_schema::CitationSpec,
@@ -267,6 +285,10 @@ impl Processor {
         (Some(merged_set), Some(merged_idx), Some(merged_sets))
     }
 
+    /// Render the core content of a citation, handling sorting and grouping.
+    ///
+    /// This is the main orchestration point for template rendering, compound data
+    /// resolution, and mode-specific (integral vs non-integral) formatting.
     fn render_citation_content<F>(
         &self,
         citation: &Citation,
@@ -366,6 +388,10 @@ impl Processor {
         )
     }
 
+    /// Apply user-supplied prefix and suffix from the citation input.
+    ///
+    /// Automatically adds a trailing space to the prefix and a leading space to
+    /// the suffix if they are not already present and not empty.
     fn apply_citation_input_affixes<F>(
         &self,
         citation: &Citation,
@@ -399,6 +425,10 @@ impl Processor {
         fmt.affix(&formatted_prefix, content, &formatted_suffix)
     }
 
+    /// Apply style-defined wrapping and affixes to the rendered citation output.
+    ///
+    /// Handles `wrap` logic (inner prefixes/suffixes and punctuation) based on
+    /// the citation mode and position.
     fn apply_spec_wrap_and_affixes<F>(
         &self,
         citation: &Citation,

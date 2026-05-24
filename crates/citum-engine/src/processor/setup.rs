@@ -51,6 +51,9 @@ impl Default for Processor {
 }
 
 impl Processor {
+    /// Core internal constructor path.
+    ///
+    /// Resolves the style presets before initializing the processor.
     fn build_processor(
         style: Style,
         bibliography: Bibliography,
@@ -99,6 +102,7 @@ impl Processor {
         processor
     }
 
+    /// Validate compound sets against the bibliography.
     fn try_validate_compound_sets(
         bibliography: &Bibliography,
         compound_sets: IndexMap<String, Vec<String>>,
@@ -107,6 +111,7 @@ impl Processor {
             .map(Option::unwrap_or_default)
     }
 
+    /// Validate compound sets, falling back to an empty map on error.
     fn validate_compound_sets_or_default(
         bibliography: &Bibliography,
         compound_sets: IndexMap<String, Vec<String>>,
@@ -114,6 +119,10 @@ impl Processor {
         Self::try_validate_compound_sets(bibliography, compound_sets).unwrap_or_default()
     }
 
+    /// Build flat reverse-lookup maps for compound sets.
+    ///
+    /// Maps reference IDs to their parent set ID and their 0-based position
+    /// within that set.
     fn build_compound_set_indexes(
         sets: &IndexMap<String, Vec<String>>,
     ) -> (HashMap<String, String>, HashMap<String, usize>) {
@@ -146,6 +155,7 @@ impl Processor {
             })
     }
 
+    /// Check whether the style uses numeric bibliography rendering.
     fn is_numeric_bibliography_style(&self) -> bool {
         self.get_bibliography_config()
             .processing
@@ -155,6 +165,9 @@ impl Processor {
             })
     }
 
+    /// Resolve the effective bibliography sort specification.
+    ///
+    /// Accounts for style overrides and preset defaults.
     fn resolved_bibliography_sort(&self) -> Option<citum_schema::grouping::GroupSort> {
         if let Some(sort_spec) = self
             .style
@@ -198,6 +211,7 @@ impl Processor {
         self.initialize_numeric_numbers(self.sort_bibliography_number_order());
     }
 
+    /// Initialize citation numbers if the map is currently empty.
     fn initialize_numeric_numbers(&self, ordered_ids: Vec<String>) {
         if !self.citation_numbers.borrow().is_empty() {
             return;
@@ -206,6 +220,7 @@ impl Processor {
         self.initialize_numeric_citation_numbers_from_ordered_ids(ordered_ids);
     }
 
+    /// Calculate the document-wide reference order for citation numbering.
     fn sort_citation_number_order(&self) -> Vec<String> {
         self.sort_references(self.bibliography.values().collect())
             .into_iter()
@@ -214,6 +229,7 @@ impl Processor {
             .collect()
     }
 
+    /// Calculate the reference order for bibliography numbering.
     fn sort_bibliography_number_order(&self) -> Vec<String> {
         self.sort_references(self.bibliography.values().collect())
             .into_iter()
@@ -222,7 +238,10 @@ impl Processor {
             .collect()
     }
 
-    /// Assign numeric citation numbers from a pre-resolved reference order.
+    /// Assign stable numeric labels to references based on a document order.
+    ///
+    /// Also populates compound groups for numeric styles that enable compound
+    /// numbering.
     fn initialize_numeric_citation_numbers_from_ordered_ids(&self, ordered_ids: Vec<String>) {
         let mut numbers = self.citation_numbers.borrow_mut();
         if !numbers.is_empty() {

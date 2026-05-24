@@ -21,6 +21,7 @@ use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 
 impl Processor {
+    /// Resolve a localized or literal group heading.
     pub(super) fn resolve_group_heading(&self, heading: &GroupHeading) -> Option<String> {
         match heading {
             GroupHeading::Literal { literal } => Some(literal.clone()),
@@ -33,6 +34,14 @@ impl Processor {
         }
     }
 
+    /// Resolve a localized heading map based on the processor locale.
+    ///
+    /// Matches in order:
+    /// 1. Exact locale (e.g., "en-GB")
+    /// 2. Primary language (e.g., "en")
+    /// 3. Style default locale
+    /// 4. en-US fallback
+    /// 5. First alphabetically defined key
     fn resolve_localized_heading(&self, localized: &HashMap<String, String>) -> Option<String> {
         fn language_tag(locale: &str) -> &str {
             locale.split('-').next().unwrap_or(locale)
@@ -69,6 +78,7 @@ impl Processor {
             .map(|(_locale, value)| value.clone())
     }
 
+    /// Resolve a bibliography partition heading.
     fn resolve_partition_heading(&self, heading: &BibliographyPartitionHeading) -> Option<String> {
         match heading {
             BibliographyPartitionHeading::Literal { literal } => Some(literal.clone()),
@@ -83,6 +93,7 @@ impl Processor {
         }
     }
 
+    /// Find unassigned bibliography entries that match a group's selector.
     fn collect_matching_group_refs<'a>(
         &'a self,
         bibliography: &'a [ProcEntry],
@@ -119,6 +130,7 @@ impl Processor {
             .collect()
     }
 
+    /// Mark references as assigned to a bibliography group.
     fn mark_group_members_assigned(assigned: &mut HashSet<String>, references: &[&Reference]) {
         for reference in references {
             if let Some(id) = reference.id() {
@@ -127,6 +139,9 @@ impl Processor {
         }
     }
 
+    /// Calculate disambiguation hints locally within a bibliography group.
+    ///
+    /// Only calculates hints if the group specifies local disambiguation scope.
     fn build_group_local_hints(
         &self,
         sorted_refs: &[&Reference],
@@ -163,6 +178,7 @@ impl Processor {
         Some(disambiguator.calculate_hints())
     }
 
+    /// Resolve the effective style to use for a bibliography group.
     fn effective_group_style<'a>(
         &'a self,
         group: &'a BibliographyGroup,
@@ -178,6 +194,7 @@ impl Processor {
         }
     }
 
+    /// Render bibliography entries for a specific group.
     fn render_group_entries<F>(
         &self,
         _bibliography: &[ProcEntry],
@@ -252,6 +269,7 @@ impl Processor {
         entries
     }
 
+    /// Append a rendered bibliography group to the output string.
     fn append_rendered_group<F>(
         &self,
         result: &mut String,
@@ -283,6 +301,7 @@ impl Processor {
         ));
     }
 
+    /// Append a rendered bibliography partition to the output string.
     fn append_rendered_partition<F>(
         &self,
         result: &mut String,
@@ -310,6 +329,7 @@ impl Processor {
         ));
     }
 
+    /// Orchestrate the rendering of automatic bibliography partitions with headings.
     pub(super) fn render_with_partition_sections<F>(
         &self,
         sorted_refs: Vec<&Reference>,
@@ -347,6 +367,7 @@ impl Processor {
         fmt.finish(result)
     }
 
+    /// Render all entries using custom bibliography grouping.
     pub(super) fn render_with_custom_groups<F>(
         &self,
         all_entries: &[ProcEntry],
@@ -359,6 +380,12 @@ impl Processor {
         self.render_with_custom_groups_filtered::<F>(all_entries, groups, &selected, None, None)
     }
 
+    /// Render a filtered subset of entries using custom bibliography grouping.
+    ///
+    /// This uses a two-pass grouping strategy:
+    /// 1. Collect and render all populated groups.
+    /// 2. Determine if heading suppression applies (only one group populated).
+    /// 3. Append groups and any remaining unassigned entries.
     pub(super) fn render_with_custom_groups_filtered<F>(
         &self,
         all_entries: &[ProcEntry],
@@ -444,6 +471,7 @@ impl Processor {
         fmt.finish(result)
     }
 
+    /// Append unassigned bibliography entries to the output string.
     fn append_unassigned_entries_filtered<F>(
         &self,
         result: &mut String,
@@ -485,6 +513,7 @@ impl Processor {
         ));
     }
 
+    /// Render bibliography using legacy (cited/uncited) grouping.
     fn render_with_legacy_grouping<F>(
         &self,
         bibliography: &[ProcEntry],
@@ -514,6 +543,7 @@ impl Processor {
         fmt.finish(result)
     }
 
+    /// Render a standalone bibliography block for a group.
     fn render_bibliography_for_group<F>(
         &self,
         group: &BibliographyGroup,

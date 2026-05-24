@@ -16,6 +16,11 @@ use crate::processor::Processor;
 
 impl Processor {
     /// Process citations in a document and append a bibliography.
+    ///
+    /// This is the primary document-level entry point. It:
+    /// 1. Parses the source document using the provided adapter.
+    /// 2. Resolves frontmatter overrides for the integral-name policy.
+    /// 3. Chooses a bibliography orchestration path based on frontmatter and document blocks.
     #[allow(
         clippy::string_slice,
         reason = "parser-guaranteed boundaries and indices"
@@ -54,6 +59,7 @@ impl Processor {
         processor.process_document_with_default_bibliography::<P, F>(body, parsed, parser, format)
     }
 
+    /// Orchestrate document processing with custom frontmatter bibliography groups.
     fn process_document_with_frontmatter_groups<P, F>(
         &self,
         body: &str,
@@ -80,6 +86,7 @@ impl Processor {
         )
     }
 
+    /// Orchestrate document processing with explicit bibliography blocks.
     fn process_document_with_bibliography_blocks<P, F>(
         &self,
         body: &str,
@@ -98,6 +105,7 @@ impl Processor {
         self.finalize_document_output(parser, format, rendered)
     }
 
+    /// Orchestrate document processing with the default trailing bibliography.
     fn process_document_with_default_bibliography<P, F>(
         &self,
         body: &str,
@@ -118,6 +126,7 @@ impl Processor {
         )
     }
 
+    /// Generic helper for rendering document body + trailing bibliography.
     fn render_document_with_trailing_bibliography<P, F, B>(
         &self,
         body: &str,
@@ -137,6 +146,10 @@ impl Processor {
         self.finalize_document_output(parser, format, rendered)
     }
 
+    /// Render the citation-annotated document body.
+    ///
+    /// Governs the choice between note-style and inline-style processing,
+    /// and handles HTML placeholder registration for format finalization.
     fn render_document_body<F>(
         &self,
         content: &str,
@@ -171,6 +184,7 @@ impl Processor {
         }
     }
 
+    /// Splice rendered citations into document markup for non-note styles.
     #[allow(
         clippy::string_slice,
         reason = "parser-guaranteed boundaries and indices"
@@ -196,6 +210,7 @@ impl Processor {
         result
     }
 
+    /// Splice HTML-rendered citations into document markup using placeholders.
     #[allow(
         clippy::string_slice,
         reason = "parser-guaranteed boundaries and indices"
@@ -223,6 +238,7 @@ impl Processor {
         result
     }
 
+    /// Replace bibliography block placeholders with rendered content.
     fn replace_document_bibliography_blocks<F>(
         &self,
         rendered: &mut RenderedDocumentBody,
@@ -244,6 +260,7 @@ impl Processor {
         }
     }
 
+    /// Perform final document rewrites and resolve HTML placeholders.
     fn finalize_document_output<P>(
         &self,
         parser: &P,

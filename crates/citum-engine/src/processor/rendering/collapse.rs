@@ -9,6 +9,12 @@ use super::Renderer;
 use crate::values::range::{ConsecutiveSegment, consecutive_segments};
 
 impl Renderer<'_> {
+    /// Collapse consecutive numeric citation chunks into ranges (e.g., "1–3").
+    ///
+    /// Only applies when:
+    /// - The chunk contains exactly one reference ID.
+    /// - The chunk content is just the citation number.
+    /// - The citation numbers are consecutive.
     #[allow(clippy::indexing_slicing, reason = "loop-guaranteed indices")]
     pub(super) fn collapse_numeric_citation_chunks(
         &self,
@@ -79,6 +85,12 @@ impl Renderer<'_> {
         collapsed
     }
 
+    /// Collapse consecutive compound sub-labels into ranges (e.g., "1a-c").
+    ///
+    /// Only applies for alphabetic sub-labels when:
+    /// - The chunks belong to the same numeric citation (same number).
+    /// - The chunks belong to the same compound set.
+    /// - The sub-labels are consecutive.
     #[allow(clippy::indexing_slicing, reason = "loop-guaranteed indices")]
     pub(super) fn collapse_compound_citation_chunks(
         &self,
