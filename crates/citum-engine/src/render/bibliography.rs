@@ -12,16 +12,17 @@ use crate::render::format::OutputFormat;
 use crate::render::plain::PlainText;
 use crate::render::rich_text::{render_djot_inline, render_org_inline};
 
-/// Check if a character is a final punctuation mark (not a space).
-/// This distinguishes between intentional component suffixes and separator duplication.
+/// Returns true if the character is a sentence-ending or clause-ending punctuation mark.
 fn is_final_punctuation(c: char) -> bool {
     matches!(c, '.' | ',' | ':' | ';' | '!' | '?')
 }
 
+/// Returns true if the character ends a sentence (period, question mark, exclamation).
 fn is_sentence_ending_punctuation(c: char) -> bool {
     matches!(c, '.' | '!' | '?')
 }
 
+/// Extracts the visible (non-markup) text content from a rendered fragment.
 fn visible_text(input: &str) -> String {
     let mut output = String::with_capacity(input.len());
     let mut in_tag = false;
@@ -38,10 +39,12 @@ fn visible_text(input: &str) -> String {
     output
 }
 
+/// Returns the first character of the visible (tag-stripped) text, which may be whitespace.
 fn first_visible_char(input: &str) -> Option<char> {
     visible_text(input).chars().next()
 }
 
+/// Returns the last non-whitespace visible character, used for punctuation deduplication.
 fn last_visible_non_space_char(input: &str) -> Option<char> {
     visible_text(input)
         .chars()
@@ -49,6 +52,7 @@ fn last_visible_non_space_char(input: &str) -> Option<char> {
         .find(|ch| !ch.is_whitespace())
 }
 
+/// Returns true if the rendered output ends with sentence-ending punctuation, used to suppress trailing period addition.
 fn ends_with_sentence_ending_visible_punctuation(input: &str) -> bool {
     let visible = visible_text(input);
     let mut chars = visible.chars().rev().filter(|ch| !ch.is_whitespace());

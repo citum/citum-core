@@ -13,6 +13,7 @@ use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_schema::template::{DelimiterPunctuation, TemplateGroup};
 
 impl ComponentValues for TemplateGroup {
+    /// Returns the resolved list of component values for rendering.
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
         &self,
         reference: &Reference,
@@ -85,7 +86,7 @@ impl ComponentValues for TemplateGroup {
     }
 }
 
-/// Check if a component is purely term-based or a list of such.
+/// Returns true if the component value is derived from a locale term rather than a data field.
 fn is_term_based(component: &citum_schema::template::TemplateComponent) -> bool {
     use citum_schema::template::TemplateComponent;
     match component {
