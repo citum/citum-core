@@ -5,13 +5,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Template variant diff computation for bibliography type-variant generation.
 
-use citum_schema::{
-    BibliographySpec, Style,
-    template::{
-        Rendering, TemplateAddOperation, TemplateComponent, TemplateComponentSelector,
-        TemplateModifyOperation, TemplateRemoveOperation, TemplateVariant, TemplateVariantDiff,
-        TypeSelector,
-    },
+use citum_schema::template::{
+    Rendering, TemplateAddOperation, TemplateComponent, TemplateComponentSelector,
+    TemplateModifyOperation, TemplateRemoveOperation, TemplateVariant, TemplateVariantDiff,
+    TypeSelector,
 };
 use std::collections::BTreeMap;
 
@@ -44,7 +41,7 @@ pub(crate) fn build_type_variants(
 pub(crate) fn template_variant_from_full_template(
     default_template: &[TemplateComponent],
     candidate_parents: &[(TypeSelector, Vec<TemplateComponent>)],
-    selector: &TypeSelector,
+    _selector: &TypeSelector,
     target_template: Vec<TemplateComponent>,
 ) -> TemplateVariant {
     let Some(diff) =
@@ -53,13 +50,7 @@ pub(crate) fn template_variant_from_full_template(
         return TemplateVariant::Full(target_template);
     };
 
-    if diff_resolves_to_template(
-        default_template,
-        candidate_parents,
-        selector,
-        &diff,
-        &target_template,
-    ) {
+    if diff_resolves_to_template(default_template, candidate_parents, &diff, &target_template) {
         TemplateVariant::Diff(diff)
     } else {
         TemplateVariant::Full(target_template)
@@ -101,35 +92,21 @@ fn diff_operation_weight(diff: &TemplateVariantDiff) -> usize {
 fn diff_resolves_to_template(
     default_template: &[TemplateComponent],
     candidate_parents: &[(TypeSelector, Vec<TemplateComponent>)],
-    selector: &TypeSelector,
     diff: &TemplateVariantDiff,
     expected_template: &[TemplateComponent],
 ) -> bool {
-    let mut variants = TypeVariantMap::new();
-    for (parent_selector, parent_template) in candidate_parents {
-        variants.insert(
-            parent_selector.clone(),
-            TemplateVariant::Full(parent_template.clone()),
-        );
-    }
-    variants.insert(selector.clone(), TemplateVariant::Diff(diff.clone()));
-    let style = Style {
-        bibliography: Some(BibliographySpec {
-            template: Some(default_template.to_vec()),
-            type_variants: Some(variants),
-            ..Default::default()
-        }),
-        ..Default::default()
-    };
+    let mut resolved = diff
+        .extends
+        .as_ref()
+        .and_then(|extends| {
+            candidate_parents
+                .iter()
+                .find(|(selector, _)| selector == extends)
+                .map(|(_, template)| template.clone())
+        })
+        .unwrap_or_else(|| default_template.to_vec());
 
-    style
-        .try_into_resolved()
-        .ok()
-        .and_then(|style| style.bibliography)
-        .and_then(|bibliography| bibliography.type_variants)
-        .and_then(|variants| variants.get(selector).cloned())
-        .and_then(TemplateVariant::into_template)
-        .is_some_and(|resolved| resolved == expected_template)
+    apply_template_variant_diff(&mut resolved, diff).is_some_and(|()| resolved == expected_template)
 }
 
 fn derive_template_variant_diff(
@@ -213,34 +190,101 @@ fn derive_template_variant_diff(
 }
 
 fn component_keys(template: &[TemplateComponent]) -> Option<Vec<String>> {
-    template
-        .iter()
-        .map(|component| serde_json::to_string(&component_selector(component)?.fields).ok())
-        .collect()
+    template.iter().map(component_key).collect()
 }
 
 pub(crate) fn component_selector(
     component: &TemplateComponent,
 ) -> Option<TemplateComponentSelector> {
-    let serde_json::Value::Object(fields) = serde_json::to_value(component).ok()? else {
-        return None;
-    };
-    for key in [
-        "contributor",
-        "date",
-        "title",
-        "number",
-        "variable",
-        "term",
-        "group",
-    ] {
-        if let Some(value) = fields.get(key) {
-            let mut selector = BTreeMap::new();
-            selector.insert(key.to_string(), value.clone());
-            return Some(TemplateComponentSelector { fields: selector });
+    let (key, value) = component_selector_value(component)?;
+    let mut selector = BTreeMap::new();
+    selector.insert(key.to_string(), value);
+    Some(TemplateComponentSelector { fields: selector })
+}
+
+fn component_key(component: &TemplateComponent) -> Option<String> {
+    let (key, value) = component_selector_value(component)?;
+    let value = serde_json::to_string(&value).ok()?;
+    Some(format!("{key}:{value}"))
+}
+
+fn component_selector_value(
+    component: &TemplateComponent,
+) -> Option<(&'static str, serde_json::Value)> {
+    match component {
+        TemplateComponent::Contributor(inner) => Some((
+            "contributor",
+            serde_json::to_value(&inner.contributor).ok()?,
+        )),
+        TemplateComponent::Date(inner) => Some(("date", serde_json::to_value(&inner.date).ok()?)),
+        TemplateComponent::Title(inner) => {
+            Some(("title", serde_json::to_value(&inner.title).ok()?))
         }
+        TemplateComponent::Number(inner) => {
+            Some(("number", serde_json::to_value(&inner.number).ok()?))
+        }
+        TemplateComponent::Variable(inner) => {
+            Some(("variable", serde_json::to_value(&inner.variable).ok()?))
+        }
+        TemplateComponent::Term(inner) => Some(("term", serde_json::to_value(&inner.term).ok()?)),
+        TemplateComponent::Group(inner) => {
+            Some(("group", serde_json::to_value(&inner.group).ok()?))
+        }
+        _ => None,
     }
-    None
+}
+
+fn apply_template_variant_diff(
+    template: &mut Vec<TemplateComponent>,
+    diff: &TemplateVariantDiff,
+) -> Option<()> {
+    for op in &diff.modify {
+        let index = find_unique_anchor(template, &op.match_selector)?;
+        let component = template.get_mut(index)?;
+        if let Some(label_form) = op.label_form.clone()
+            && let TemplateComponent::Number(number) = component
+        {
+            number.label_form = Some(label_form);
+        }
+        component.rendering_mut().merge(&op.rendering);
+    }
+
+    for op in &diff.remove {
+        let index = find_unique_anchor(template, &op.match_selector)?;
+        template.remove(index);
+    }
+
+    for op in &diff.add {
+        let (selector, insert_after) = match (&op.before, &op.after) {
+            (Some(selector), None) => (selector, false),
+            (None, Some(selector)) => (selector, true),
+            _ => return None,
+        };
+        let anchor_index = find_unique_anchor(template, selector)?;
+        let insert_at = if insert_after {
+            anchor_index.saturating_add(1)
+        } else {
+            anchor_index
+        };
+        template.insert(insert_at, op.component.clone());
+    }
+
+    Some(())
+}
+
+fn find_unique_anchor(
+    template: &[TemplateComponent],
+    selector: &TemplateComponentSelector,
+) -> Option<usize> {
+    if selector.is_empty() {
+        return None;
+    }
+    let mut matches = template
+        .iter()
+        .enumerate()
+        .filter_map(|(index, component)| selector.matches(component).then_some(index));
+    let first = matches.next()?;
+    matches.next().is_none().then_some(first)
 }
 
 fn modified_number_label_form(
