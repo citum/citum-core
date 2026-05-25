@@ -416,24 +416,79 @@ pub(crate) fn scan_bibliography_blocks(content: &str) -> Vec<BibliographyBlock> 
 fn extract_group_from_attrs(_class: &str, attrs: Attributes) -> BibliographyGroup {
     let mut title: Option<String> = None;
     let mut ref_type: Option<String> = None;
+    let mut not_ref_type: Option<String> = None;
 
     for (kind, value) in attrs {
         if let Some(key) = kind.key() {
             match key {
                 "title" => title = Some(value.to_string()),
                 "type" => ref_type = Some(value.to_string()),
+                "not-type" | "exclude-type" => not_ref_type = Some(value.to_string()),
                 _ => {}
             }
         }
     }
 
+    let mut selector = GroupSelector {
+        ref_type: ref_type.as_deref().map(parse_type_selector),
+        ..Default::default()
+    };
+
+    if let Some(not_ref_type) = not_ref_type {
+        selector.not = Some(Box::new(GroupSelector {
+            ref_type: Some(parse_type_selector(&not_ref_type)),
+            ..Default::default()
+        }));
+    }
+
     BibliographyGroup {
         id: "default".to_string(),
         heading: title.map(|literal| GroupHeading::Literal { literal }),
-        selector: GroupSelector {
-            ref_type: ref_type.map(TypeSelector::Single),
-            ..Default::default()
-        },
+        selector,
         ..Default::default()
+    }
+}
+
+fn parse_type_selector(value: &str) -> TypeSelector {
+    match value.parse::<TypeSelector>() {
+        Ok(selector) => selector,
+        Err(err) => match err {},
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::scan_bibliography_blocks;
+    use citum_schema::grouping::GroupHeading;
+    use citum_schema::template::TypeSelector;
+
+    #[test]
+    fn bibliography_block_attrs_parse_negated_type_selector() {
+        let blocks = scan_bibliography_blocks(
+            r#"{ not-type="manuscript" title="Secondary Sources" }
+::: bibliography
+:::
+"#,
+        );
+
+        assert_eq!(blocks.len(), 1);
+        let Some(block) = blocks.first() else {
+            return;
+        };
+        assert_eq!(
+            block.group.heading,
+            Some(GroupHeading::Literal {
+                literal: "Secondary Sources".to_string(),
+            })
+        );
+        assert_eq!(
+            block
+                .group
+                .selector
+                .not
+                .as_ref()
+                .and_then(|selector| selector.ref_type.as_ref()),
+            Some(&TypeSelector::Single("manuscript".to_string()))
+        );
     }
 }
