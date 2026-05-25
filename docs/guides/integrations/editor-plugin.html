@@ -99,7 +99,8 @@ citum-server      # reads JSON-RPC from stdin, writes responses to stdout</code>
                     <code>{ "id", "method", "params" }</code>; responses echo the <code>id</code> and carry either
                     <code>result</code> or <code>error</code>. The most useful method for editor integration is
                     <code>format_document</code>, which renders an entire document's citations and bibliography in
-                    one round-trip.
+                    one round-trip. This example uses the embedded APA 7th style id, so it does not depend on the
+                    client's working directory.
                 </p>
             </div>
             <div class="workshop-block">
@@ -128,7 +129,10 @@ citum-server      # reads JSON-RPC from stdin, writes responses to stdout</code>
           { "id": "smith2010", "locator": { "label": "page", "value": "10" } }
         ]
       }
-    ]
+    ],
+    "document_options": {
+      "show_semantics": true
+    }
   }
 }</code></pre>
             </div>
@@ -150,8 +154,8 @@ citum-server      # reads JSON-RPC from stdin, writes responses to stdout</code>
 }</code></pre>
             </div>
             <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
-                <code>style</code> is a tagged union: <code>{"kind":"id","value":"apa-7th"}</code> for a registry
-                id, <code>{"kind":"path","value":"/abs/style.yaml"}</code> for a local file,
+                <code>style</code> is a tagged union: <code>{"kind":"id","value":"apa-7th"}</code> for an
+                embedded or installed style id, <code>{"kind":"path","value":"/abs/style.yaml"}</code> for a local file,
                 <code>{"kind":"yaml","value":"..."}</code> for inline YAML, or
                 <code>{"kind":"uri","value":"https://..."}</code> for a remote URL.
                 Reference objects use the native Citum schema with a <code>class</code> discriminator. To send

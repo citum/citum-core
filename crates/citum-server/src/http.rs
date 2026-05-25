@@ -71,7 +71,7 @@ async fn rpc_methods() -> impl IntoResponse {
             "method": "format_document",
             "description": "Format all citations and bibliography in a document.",
             "required": ["style", "refs", "citations"],
-            "optional": ["output_format"]
+            "optional": ["output_format", "locale", "document_options"]
         }
     ]))
 }
@@ -364,5 +364,16 @@ mod tests {
         assert!(methods.contains(&"render_bibliography"));
         assert!(methods.contains(&"validate_style"));
         assert!(methods.contains(&"format_document"));
+
+        let format_document = body
+            .as_array()
+            .expect("should be array")
+            .iter()
+            .find(|method| method["method"] == "format_document")
+            .expect("format_document descriptor should exist");
+        assert_eq!(
+            format_document["optional"],
+            serde_json::json!(["output_format", "locale", "document_options"])
+        );
     }
 }
