@@ -8,7 +8,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! `citum-server` runs `citum-engine` behind a process boundary for clients
 //! that need a standalone renderer instead of linking the engine directly.
 //! The crate supports stdio JSON-RPC in every build and an optional axum HTTP
-//! transport behind the `http` feature.
+//! transport behind the `http` feature. Both transports expose the same
+//! JSON-RPC method surface; only the framing changes.
 //!
 //! See [`rpc`] for the request envelope, method surface, and stdio transport
 //! details.
