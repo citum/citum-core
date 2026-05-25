@@ -3,6 +3,8 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
+//! Bulk maintenance tool for refreshing migrated style metadata.
+
 #![allow(missing_docs, reason = "bin")]
 
 use citum_migrate::InfoExtractor;

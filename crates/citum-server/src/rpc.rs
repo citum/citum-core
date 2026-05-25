@@ -3,6 +3,57 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
+//! JSON-RPC request handling for the stdio transport.
+//!
+//! This module defines the request envelope shared by the stdio entrypoint
+//! and the HTTP handler, plus the dispatcher that maps method names to the
+//! renderer and validator operations.
+//!
+//! ## JSON-RPC envelope
+//!
+//! Requests use `{ "id", "method", "params" }`. Successful responses echo
+//! the request ID and include `result`; failures echo the request ID when
+//! available and include `error`.
+//!
+//! ## Methods
+//!
+//! | Method | Required params | Optional params | Result |
+//! |---|---|---|---|
+//! | `render_citation` | `style_path`, `refs`, `citation` | `output_format`, `inject_ast_indices` | rendered citation string |
+//! | `render_bibliography` | `style_path`, `refs` | `output_format`, `inject_ast_indices` | rendered bibliography object |
+//! | `validate_style` | `style_path` | none | validation object |
+//! | `format_document` | `style`, `refs`, `citations` | `output_format`, `locale`, `document_options` | `{formatted_citations, bibliography, warnings}` |
+//!
+//! `refs` uses native Citum reference data. Dates are EDTF strings such as
+//! `"1988"`, not CSL-JSON `date-parts` objects.
+//!
+//! `render_citation`, `render_bibliography`, and `validate_style` accept
+//! `style_path`, a string path to a local Citum YAML style. `format_document`
+//! accepts the richer `style` object, for example
+//! `{ "kind": "path", "value": "styles/embedded/apa-7th.yaml" }`.
+//!
+//! ## `format_document` result
+//!
+//! `format_document` returns one document-level result object with three
+//! top-level fields:
+//!
+//! - `formatted_citations`: one rendered citation object per input citation.
+//! - `bibliography`: the rendered bibliography object, including `format`,
+//!   `content`, and `entries`.
+//! - `warnings`: non-fatal diagnostics produced while evaluating the style.
+//!
+//! Clients should read bibliography output from `result.bibliography`, not
+//! from `result.formatted_citations`.
+//!
+//! ## Stdio example
+//!
+//! From the Citum repository root:
+//!
+//! ```text
+//! printf '%s\n' '{"id":1,"method":"render_citation","params":{"style_path":"styles/embedded/apa-7th.yaml","refs":{"hawking1988":{"id":"hawking1988","class":"monograph","type":"book","title":"A Brief History of Time","author":[{"family":"Hawking","given":"Stephen"}],"issued":"1988"}},"citation":{"id":"cite-1","items":[{"id":"hawking1988"}]}}}' \
+//!   | cargo run -q -p citum-server
+//! ```
+
 use crate::error::ServerError;
 use citum_engine::{
     Bibliography, Citation, DocumentOptions, Processor, StyleInput,

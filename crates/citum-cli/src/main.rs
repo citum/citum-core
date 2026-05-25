@@ -3,6 +3,11 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
+//! Entry point for the `citum` command-line interface.
+//!
+//! This binary wires the top-level CLI commands and delegates their work to
+//! the library crates.
+
 #![allow(missing_docs, reason = "bin")]
 
 mod args;
