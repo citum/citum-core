@@ -15,7 +15,7 @@ use std::path::Path;
 ///
 /// Returns an error in the v1 published build: bundled PDF compilation
 /// requires the `citum-pdf` crate, which is not yet on crates.io. Users
-/// can install Typst separately (https://typst.app/docs/) and run
+/// can install Typst separately (<https://typst.app/docs/>) and run
 /// `typst compile <source.typ>` on the output of
 /// `citum render doc … -f typst`.
 pub fn compile_document_to_pdf(

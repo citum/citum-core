@@ -3,6 +3,31 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
+//! Optional HTTP transport for the JSON-RPC server.
+//!
+//! The HTTP server exposes `POST /rpc` for JSON-RPC requests, `GET /rpc` as a
+//! method hint, and `GET /rpc/methods` as a static descriptor list. When the
+//! `schema` feature is enabled, `GET /rpc/schema` also exposes the schema
+//! mirror used by the HTTP API.
+//!
+//! Responses follow the same JSON-RPC shape as the stdio transport, including
+//! the document-level `format_document` result with `formatted_citations`,
+//! `bibliography`, and `warnings`.
+//!
+//! The server binds to `127.0.0.1` and is intended for local use. If you need
+//! to expose it beyond the local machine, put it behind authentication and
+//! transport security.
+//!
+//! ## Example
+//!
+//! ```text
+//! cargo run -q -p citum-server -- --http --port 9000
+//!
+//! curl -s http://localhost:9000/rpc \
+//!   -H 'Content-Type: application/json' \
+//!   -d '{"id":2,"method":"format_document","params":{"style":{"kind":"path","value":"styles/embedded/apa-7th.yaml"},"output_format":"html","refs":{"smith2010":{"id":"smith2010","class":"monograph","type":"book","title":"Nationalism: Theory, Ideology, History","author":[{"family":"Smith","given":"Anthony D."}],"issued":"2010","publisher":{"name":"Polity"}}},"citations":[{"id":"cite-1","items":[{"id":"smith2010","locator":{"label":"page","value":"10"}}]}],"document_options":{"show_semantics":true}}}'
+//! ```
+
 use crate::rpc::{RpcRequest, dispatch};
 use axum::{
     Json, Router,

@@ -9,12 +9,12 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! impl dispatches by `ref_type` to a per-category converter in one of the
 //! submodules:
 //!
-//! - [`legal`] — `legal-case`, `statute`, `regulation`, `treaty`, `standard`,
+//! - `legal` — `legal-case`, `statute`, `regulation`, `treaty`, `standard`,
 //!   `patent`, `bill`, `hearing`
-//! - [`scholarly`] — `book`, `chapter`, `article-journal`, `article`,
+//! - `scholarly` — `book`, `chapter`, `article-journal`, `article`,
 //!   `paper-conference`, `dataset`, `event`, etc.; plus the standalone
 //!   `input_reference_from_legacy_edited_book` re-exported below
-//! - [`media`] — `software`, `motion_picture`, `song`
+//! - `media` — `software`, `motion_picture`, `song`
 //!
 //! Shared helpers (`legacy_*`, `relation_*`, `build_title`, …) and the
 //! `RefContext` struct that bundles the fields every converter pre-extracts
