@@ -16,7 +16,7 @@ const NAV_TEMPLATE = `
                 <a class="site-nav-link {{ACTIVE_CAPABILITIES}}" href="{{ROOT}}examples.html">Capabilities</a>
                 <a class="site-nav-link {{ACTIVE_STYLE}}" href="{{ROOT}}guides/style-authoring/start.html">Style Authoring</a>
                 <a class="site-nav-link {{ACTIVE_DEVELOPER}}" href="{{ROOT}}developer.html">Integrate</a>
-                <a class="site-nav-link {{ACTIVE_DEMO}}" href="{{ROOT}}interactive-demo.html">Demo</a>
+                <a class="site-nav-link {{ACTIVE_DEMO}}" href="{{ROOT}}demo.html">Demo</a>
                 <a class="site-nav-link {{ACTIVE_REFERENCE}}" href="{{ROOT}}schemas/">Schemas</a>
                 <a class="site-nav-link {{ACTIVE_REPORTS}}" href="{{ROOT}}reports.html">Reports</a>
                 <a class="site-source-link" href="https://github.com/citum/citum-core">
@@ -35,7 +35,7 @@ const NAV_TEMPLATE = `
             <a class="site-nav-link {{ACTIVE_CAPABILITIES}}" href="{{ROOT}}examples.html">Capabilities</a>
             <a class="site-nav-link {{ACTIVE_STYLE}}" href="{{ROOT}}guides/style-authoring/start.html">Style Authoring</a>
             <a class="site-nav-link {{ACTIVE_DEVELOPER}}" href="{{ROOT}}developer.html">Integrate</a>
-            <a class="site-nav-link {{ACTIVE_DEMO}}" href="{{ROOT}}interactive-demo.html">Demo</a>
+            <a class="site-nav-link {{ACTIVE_DEMO}}" href="{{ROOT}}demo.html">Demo</a>
             <a class="site-nav-link {{ACTIVE_REFERENCE}}" href="{{ROOT}}schemas/">Schemas</a>
             <a class="site-nav-link {{ACTIVE_REPORTS}}" href="{{ROOT}}reports.html">Reports</a>
             <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
