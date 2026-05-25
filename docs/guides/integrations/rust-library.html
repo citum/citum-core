@@ -171,23 +171,23 @@ assert_eq!(processor.process_citation(&citation).unwrap(), "(Kuhn, 1962)");</cod
                 <h2>3. Load style and references from disk</h2>
                 <p>
                     Most real applications keep styles and bibliographies in files. The engine reads YAML styles
-                    natively, and the native bibliography format deserializes directly into <code>Bibliography</code>
-                    via serde &mdash; no separate parser needed.
+                    natively, and <code>format_document</code> accepts references through <code>RefsInput</code>
+                    as a local path, inline YAML, inline JSON, or a legacy bare JSON map.
                 </p>
             </div>
             <div class="workshop-block">
-                <pre><code>use citum_engine::{Bibliography, StyleInput};
+                <pre><code>use citum_engine::{RefsInput, StyleInput};
 use std::fs;
 
 // Style: YAML on disk, inline string, or a registry id (id/uri variants need
 // the citum-server resolver chain; path/yaml resolve locally).
 let style = StyleInput::Path("apa-7th.yaml".to_string());
 
-// References: native Citum JSON deserializes straight into Bibliography.
-// For BibLaTeX or CSL-JSON inputs, convert first with `citum convert refs`
-// or pull in the citum-io crate.
-let refs: Bibliography =
-    serde_json::from_str(&fs::read_to_string("references-native.json")?)?;</code></pre>
+// References: native Citum JSON maps can be passed through RefsInput::Json.
+// For BibLaTeX or CSL-JSON inputs, convert first with `citum convert refs`.
+let refs = RefsInput::Json(
+    serde_json::from_str(&fs::read_to_string("references-native.json")?)?
+);</code></pre>
             </div>
         </section>
 

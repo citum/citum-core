@@ -33,8 +33,9 @@ support used by sorting and rendering. Optional features:
 Most integrations should start with the document-level API:
 
 - `format_document` resolves a local style from `StyleInput::Path` or
-  `StyleInput::Yaml`, then formats ordered citation occurrences and a
-  bibliography.
+  `StyleInput::Yaml`, and bibliography data from `RefsInput::Path`,
+  `RefsInput::Yaml`, or `RefsInput::Json`, then formats ordered citation
+  occurrences and a bibliography.
 - `format_document_with_style` takes an already resolved `Style` as its first
   argument, plus the same `FormatDocumentRequest` shape. Use this when your
   application has its own style resolver, registry, cache, or embedded style
@@ -51,26 +52,23 @@ application already parses a document into citation occurrences, prefer
 
 ## Quick Start
 
-This example uses the document-level API with a local Citum style file and
-`citum-io` for bibliography loading. `citum-io::load_bibliography` supports
-Citum YAML, Citum JSON, Citum CBOR, and CSL-JSON bibliography files.
+This example uses the document-level API with local Citum YAML files.
+`RefsInput::Path` reads and parses the bibliography file at request time;
+`RefsInput::Yaml` and `RefsInput::Json` accept inline data when loading from
+a path is not convenient.
 
 ```rust,no_run
 use citum_engine::{
-    format_document, Bibliography, CitationOccurrence, CitationOccurrenceItem,
-    FormatDocumentRequest, OutputFormatKind, StyleInput,
+    format_document, CitationOccurrence, CitationOccurrenceItem,
+    FormatDocumentRequest, OutputFormatKind, RefsInput, StyleInput,
 };
-use citum_io::load_bibliography;
-use std::path::Path;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let refs: Bibliography = load_bibliography(Path::new("references.json"))?;
-
     let request = FormatDocumentRequest {
-        style: StyleInput::Path("styles/apa-7th.yaml".to_string()),
+        style: StyleInput::Path("styles/embedded/apa-7th.yaml".to_string()),
         locale: None,
         output_format: OutputFormatKind::Html,
-        refs,
+        refs: RefsInput::Path("references.yaml".to_string()),
         citations: vec![CitationOccurrence {
             id: "cite-1".to_string(),
             items: vec![CitationOccurrenceItem {
@@ -122,7 +120,7 @@ The document-level API expects:
 | Input | Type | Notes |
 |---|---|---|
 | Style | `StyleInput`; optionally a separate resolved `Style` | `format_document` resolves local path or inline YAML values from `request.style`. `format_document_with_style` uses its explicit `Style` argument, but the request still includes a `style` field. |
-| References | `Bibliography` | An `IndexMap` keyed by reference ID, containing Citum input references. |
+| References | `RefsInput` | Local bibliography path, inline YAML, inline JSON, or legacy bare JSON map. |
 | Citations | `Vec<CitationOccurrence>` | Ordered as they appear in the document so note positions and repeated citations can be processed. |
 | Output format | `OutputFormatKind` | `plain`, `html`, `djot`, `latex`, or `typst`. |
 

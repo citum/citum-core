@@ -11,6 +11,12 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //!
 //! The processor is designed to be pluggable with different renderers and supports
 //! advanced features like disambiguation, sorting, and localization.
+//!
+//! For document-level integrations, use [`format_document`] with a
+//! [`FormatDocumentRequest`]. The request carries a [`StyleInput`] and
+//! [`RefsInput`], so callers can pass local style paths, inline style YAML, local
+//! bibliography paths, inline bibliography YAML, or inline JSON references
+//! without constructing a [`Processor`] directly.
 
 //! # Example
 //!
@@ -106,8 +112,8 @@ pub mod values;
 pub use api::{
     BibliographyEntry, CitationOccurrence, CitationOccurrenceItem, DocumentOptions, EntryMetadata,
     FormatDocumentError, FormatDocumentRequest, FormatDocumentResult, FormattedBibliography,
-    FormattedCitation, OutputFormatKind, StyleInput, Warning, WarningLevel, format_document,
-    format_document_with_style,
+    FormattedCitation, OutputFormatKind, RefsInput, StyleInput, Warning, WarningLevel,
+    format_document, format_document_with_style,
 };
 pub use citum_schema::options::{Config, Processing};
 pub use citum_schema::reference::{

@@ -146,7 +146,7 @@ pub struct FormatDocumentParams {
     pub locale: Option<String>,
     /// Output format (plain, html, djot, latex, typst). Defaults to plain.
     pub output_format: Option<OutputFormat>,
-    /// Bibliography (references) as a map of reference objects.
+    /// Bibliography input as `RefsInput`: path, YAML, JSON, or legacy bare map.
     pub refs: serde_json::Value,
     /// Ordered citations as they appear in the document.
     pub citations: serde_json::Value,

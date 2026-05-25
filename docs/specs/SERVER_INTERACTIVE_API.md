@@ -75,7 +75,7 @@ All methods that accept a style use a `StyleInput` union to avoid adapter-specif
 {"kind": "uri", "value": "https://hub.citum.org/styles/apa-7th.yaml"}
 
 // Path — server resolves from local filesystem
-{"kind": "path", "value": "styles/apa-7th.yaml"}
+{"kind": "path", "value": "styles/embedded/apa-7th.yaml"}
 
 // Inline YAML — WASM and HTTP callers may supply the style body directly
 {"kind": "yaml", "value": "---\ninfo:\n  title: ..."}
@@ -274,7 +274,7 @@ Modelled on Pandoc citeproc: one call, all inputs, all outputs. Works in stdio, 
 | `style` | `StyleInput` | yes | Style reference (see above) |
 | `locale` | string | no | BCP 47 locale override (e.g. `"en-US"`) |
 | `output_format` | string | no | One of `plain` (default), `html`, `djot`, `latex`, `typst` |
-| `refs` | object | yes | Bibliography: reference ID → reference object |
+| `refs` | `RefsInput` | yes | Bibliography input: tagged path, YAML, JSON, or legacy bare JSON map |
 | `citations` | array | yes | Ordered `CitationOccurrence` items (document order) |
 | `document_options` | `DocumentOptions` | no | Document-level rendering config (see above) |
 

@@ -20,8 +20,11 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! | `validate_style` | `style_path` | none | validation object |
 //! | `format_document` | `style`, `refs`, `citations` | `output_format`, `locale`, `document_options` | `{formatted_citations, bibliography, warnings}` |
 //!
-//! `refs` uses native Citum reference data. Dates are EDTF strings such as
-//! `"1988"`, not CSL-JSON `date-parts` objects.
+//! `refs` in `render_citation` and `render_bibliography` is an inline JSON map
+//! of native Citum reference objects. `refs` in `format_document` accepts
+//! `citum-engine`'s tagged [`citum_engine::RefsInput`] shape, including local
+//! bibliography paths, inline YAML, inline JSON, and legacy bare JSON maps.
+//! Dates are EDTF strings such as `"1988"`, not CSL-JSON `date-parts` objects.
 //!
 //! `render_citation`, `render_bibliography`, and `validate_style` accept
 //! `style_path`, a string path to a local Citum YAML style. `format_document`
