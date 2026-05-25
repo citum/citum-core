@@ -20,7 +20,10 @@ mod common;
 use citum_schema::reference::ClassExtension;
 use common::*;
 
-use citum_engine::{Processor, render::html::Html, render::plain::PlainText};
+use citum_engine::{
+    Processor, render::html::Html, render::latex::Latex, render::plain::PlainText,
+    render::typst::Typst,
+};
 use citum_schema::{
     BibliographySpec, CitationSpec, Style, StyleInfo,
     options::{
@@ -1522,6 +1525,48 @@ fn build_editor_verb_prefix_style(title_suffix: Option<&str>) -> Style {
     }
 }
 
+/// Format selector for rstest-parameterized format tests.
+enum TestOutputFormat {
+    Plain,
+    Html,
+    Latex,
+    Typst,
+}
+
+fn render_bibliography_in_format(processor: &Processor, fmt: TestOutputFormat) -> String {
+    match fmt {
+        TestOutputFormat::Plain => processor.render_bibliography_with_format::<PlainText>(),
+        TestOutputFormat::Html => processor.render_bibliography_with_format::<Html>(),
+        TestOutputFormat::Latex => processor.render_bibliography_with_format::<Latex>(),
+        TestOutputFormat::Typst => processor.render_bibliography_with_format::<Typst>(),
+    }
+}
+
+fn build_sentence_initial_emph_group_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Sentence Initial Emph Group Test".to_string()),
+            id: Some("sentence-initial-emph-group-test".into()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    rendering: Rendering {
+                        emph: Some(true),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                })],
+                ..Default::default()
+            })]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
 fn make_editor_substitute_bibliography() -> indexmap::IndexMap<String, InputReference> {
     citum_schema::bib_map![
         "ancient-tale" => make_editor_only_book(
@@ -2924,6 +2969,40 @@ fn mid_sentence_editor_verb_prefix_remains_lowercase_in_bibliography() {
     assert!(
         result.contains("Collected Essays: edited by Jacob Grimm"),
         "mid-sentence editor labels should stay lowercase: {result}"
+    );
+}
+
+#[rstest]
+#[case::plain(TestOutputFormat::Plain, "_the", "_The collected essays_")]
+#[case::html(TestOutputFormat::Html, "<Em>the", "<em>The collected essays</em>")]
+#[case::latex(TestOutputFormat::Latex, "\\Emph{the", "\\emph{The collected essays}")]
+#[case::typst(TestOutputFormat::Typst, "#Emph[the", "#emph[The collected essays]")]
+fn given_pre_formatted_emph_group_as_sentence_initial_when_rendering_bibliography_then_markup_is_not_corrupted(
+    #[case] format: TestOutputFormat,
+    #[case] must_not_contain: &str,
+    #[case] must_contain: &str,
+) {
+    let style = build_sentence_initial_emph_group_style();
+    let mut bib = IndexMap::new();
+    bib.insert(
+        "item".to_string(),
+        InputReference::Monograph(Box::new(Monograph {
+            id: Some("item".into()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single("the collected essays".to_string())),
+            ..Default::default()
+        })),
+    );
+    let processor = Processor::new(style, bib);
+    let rendered = render_bibliography_in_format(&processor, format);
+
+    assert!(
+        rendered.contains(must_contain),
+        "sentence-initial group should capitalize first word without corrupting markup: {rendered}"
+    );
+    assert!(
+        !rendered.contains(must_not_contain),
+        "sentence-initial group must not corrupt markup tag names: {rendered}"
     );
 }
 

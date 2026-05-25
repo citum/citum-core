@@ -137,6 +137,106 @@ pub(crate) fn capitalize_first_word(text: &str) -> String {
     result
 }
 
+/// Capitalize the first alphabetic character of the string, skipping over
+/// HTML tags, LaTeX command prefixes, and Typst command prefixes.
+///
+/// Use this variant when the input may already contain rendered markup from a
+/// pre-formatted component. For plain-text input, behaviour is identical to
+/// [`capitalize_first_word`].
+pub(crate) fn capitalize_first_word_markup_aware(text: &str) -> String {
+    let bytes = text.as_bytes();
+    let len = bytes.len();
+    let mut i = 0;
+
+    while i < len {
+        let Some(&b) = bytes.get(i) else { break };
+
+        // Skip HTML tag: <...>
+        // `i` always points to an ASCII byte here, so the slice is on a char boundary.
+        if b == b'<'
+            && let Some(end) = text.get(i..).and_then(|s| s.find('>'))
+        {
+            i += end + 1;
+            continue;
+        }
+
+        // Skip LaTeX command prefix: \letters{ or \letters[...]{
+        if b == b'\\' {
+            let cmd_start = i + 1;
+            let cmd_len = bytes
+                .get(cmd_start..)
+                .unwrap_or_default()
+                .iter()
+                .take_while(|&&c| c.is_ascii_alphabetic())
+                .count();
+            if cmd_len > 0 {
+                let after_cmd = cmd_start + cmd_len;
+                // Skip optional [...]
+                let after_opt = if bytes.get(after_cmd) == Some(&b'[') {
+                    text.get(after_cmd..)
+                        .and_then(|s| s.find(']'))
+                        .map(|e| after_cmd + e + 1)
+                        .unwrap_or(after_cmd)
+                } else {
+                    after_cmd
+                };
+                if bytes.get(after_opt) == Some(&b'{') {
+                    i = after_opt + 1;
+                    continue;
+                }
+            }
+        }
+
+        // Skip Typst command prefix: #letters[
+        if b == b'#' {
+            let cmd_start = i + 1;
+            let cmd_len = bytes
+                .get(cmd_start..)
+                .unwrap_or_default()
+                .iter()
+                .take_while(|&&c| c.is_ascii_alphabetic())
+                .count();
+            if cmd_len > 0 {
+                let after_cmd = cmd_start + cmd_len;
+                if bytes.get(after_cmd) == Some(&b'[') {
+                    i = after_cmd + 1;
+                    continue;
+                }
+            }
+        }
+
+        // Decode the next Unicode character. `i` is always on a char boundary:
+        // the markup-skip branches only advance past ASCII bytes.
+        let ch = text.get(i..).and_then(|s| s.chars().next()).unwrap_or('\0');
+        if ch.is_alphabetic() {
+            let ch_len = ch.len_utf8();
+            let mut result = String::with_capacity(text.len());
+            result.push_str(text.get(..i).unwrap_or_default());
+            for upper in ch.to_uppercase() {
+                result.push(upper);
+            }
+            result.push_str(text.get(i + ch_len..).unwrap_or_default());
+            return result;
+        }
+
+        i += ch.len_utf8().max(1);
+    }
+
+    text.to_string()
+}
+
+/// Apply a text-case transform to a pre-formatted string that may contain
+/// rendered markup.
+///
+/// Delegates to [`capitalize_first_word_markup_aware`] for `CapitalizeFirst`;
+/// all other cases fall back to [`apply_text_case`].
+pub(crate) fn apply_text_case_markup_aware(text: &str, case: TextCase) -> String {
+    match case {
+        TextCase::CapitalizeFirst => capitalize_first_word_markup_aware(text),
+        _ => apply_text_case(text, case),
+    }
+}
+
 // English title-case stop words (articles, short conjunctions, short prepositions).
 const TITLE_CASE_STOP_WORDS: &[&str] = &[
     "a", "an", "and", "as", "at", "but", "by", "for", "from", "in", "nor", "of", "on", "or", "so",
@@ -274,6 +374,76 @@ mod tests {
     #[test]
     fn test_capitalize_first_word_already_upper() {
         assert_eq!(capitalize_first_word("Hello"), "Hello");
+    }
+
+    // --- capitalize_first_word_markup_aware ---
+
+    #[test]
+    fn test_capitalize_markup_aware_plain_text() {
+        assert_eq!(
+            capitalize_first_word_markup_aware("the collected essays"),
+            "The collected essays"
+        );
+    }
+
+    #[test]
+    fn test_capitalize_markup_aware_html_tag() {
+        assert_eq!(
+            capitalize_first_word_markup_aware("<em>the collected essays</em>"),
+            "<em>The collected essays</em>"
+        );
+    }
+
+    #[test]
+    fn test_capitalize_markup_aware_html_nested_tags() {
+        assert_eq!(
+            capitalize_first_word_markup_aware(r#"<span class="x"><em>the title</em></span>"#),
+            r#"<span class="x"><em>The title</em></span>"#
+        );
+    }
+
+    #[test]
+    fn test_capitalize_markup_aware_latex_command() {
+        assert_eq!(
+            capitalize_first_word_markup_aware(r"\emph{the collected essays}"),
+            r"\emph{The collected essays}"
+        );
+    }
+
+    #[test]
+    fn test_capitalize_markup_aware_latex_number_not_corrupted() {
+        // Regression: \emph{521} must not become \Emph{521}
+        assert_eq!(
+            capitalize_first_word_markup_aware(r"\emph{521}"),
+            r"\emph{521}"
+        );
+    }
+
+    #[test]
+    fn test_capitalize_markup_aware_typst_command() {
+        assert_eq!(
+            capitalize_first_word_markup_aware("#emph[the collected essays]"),
+            "#emph[The collected essays]"
+        );
+    }
+
+    #[test]
+    fn test_capitalize_markup_aware_plain_underscore_delimiters() {
+        // PlainText emph uses _..._; _ is non-alphabetic so this was already safe
+        assert_eq!(
+            capitalize_first_word_markup_aware("_the collected essays_"),
+            "_The collected essays_"
+        );
+    }
+
+    #[test]
+    fn test_capitalize_markup_aware_empty_string() {
+        assert_eq!(capitalize_first_word_markup_aware(""), "");
+    }
+
+    #[test]
+    fn test_capitalize_markup_aware_all_markup_no_text() {
+        assert_eq!(capitalize_first_word_markup_aware("<em></em>"), "<em></em>");
     }
 
     // --- to_sentence_case ---
