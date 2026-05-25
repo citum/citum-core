@@ -1,0 +1,130 @@
+# Demo reference list for docs/demo.html and bindings/latex/demo/citum-example.tex
+# All entries are entirely fabricated for illustration purposes.
+# Exception: harrington1891 is loosely modelled on archival ms. conventions.
+references:
+
+  # Monograph — cited twice (name memory: full → abbreviated in note styles)
+  - id: chen2017
+    class: monograph
+    type: book
+    title: "The Social Life of References: Knowledge-Making in Collaborative Science"
+    author:
+      - family: Chen
+        given: Mei
+    issued: "2017"
+    publisher:
+      name: MIT Press
+      place: Cambridge, MA
+
+  # Second monograph by same author — shows multi-work disambiguation
+  - id: chen2020
+    class: monograph
+    type: book
+    title: "Citation and Authority: Epistemic Practices in the Digital Age"
+    author:
+      - family: Chen
+        given: Mei
+    issued: "2020"
+    publisher:
+      name: MIT Press
+      place: Cambridge, MA
+
+  # Classic monograph — non-integral use
+  - id: webb1968
+    class: monograph
+    type: book
+    title: "The Footnote as Institution: A History of Scholarly Reference"
+    author:
+      - family: Webb
+        given: Margaret L.
+    issued: "1968"
+    publisher:
+      name: Oxford University Press
+      place: Oxford
+
+  # Multilingual — Japanese journal article with English translation
+  - id: tanaka_yuki2019
+    class: serial-component
+    type: article
+    language: ja
+    title: "引用の社会的機能：学術知識の構築における参照実践"
+    title-translated: "The Social Function of Citation: Reference Practices in the Construction of Academic Knowledge"
+    author:
+      - family: 田中
+        given: 由紀
+        family-romanized: Tanaka
+        given-romanized: Yuki
+      - family: 鈴木
+        given: 春人
+        family-romanized: Suzuki
+        given-romanized: Haruto
+    issued: "2019"
+    pages: "45-78"
+    container:
+      class: serial
+      type: academic-journal
+      language: ja
+      title: "科学社会学研究"
+      title-translated: "Studies in Science and Technology"
+      volume: "37"
+      issue: "2"
+
+  # Multilingual — Spanish book chapter; EDTF approximate date
+  - id: garcia2022
+    class: serial-component
+    type: chapter
+    language: es
+    title: "Prácticas de citación en la ciencia latinoamericana"
+    title-translated: "Citation Practices in Latin American Science"
+    author:
+      - family: García-Reyes
+        given: Isabel
+      - family: Montoya
+        given: Claudia P.
+    issued: "2022~"   # EDTF Level 1: approximate date
+    pages: "112-138"
+    container:
+      class: monograph
+      type: book
+      title: "Epistemologías del Sur: Perspectivas desde América Latina"
+      editor:
+        - family: Restrepo
+          given: Eduardo
+      publisher:
+        name: CLACSO
+        place: Buenos Aires
+
+  # Archival manuscript — EDTF uncertain date + archive-info
+  # Primary source in the primary/secondary bibliography split
+  - id: harrington1891
+    class: monograph
+    type: manuscript
+    title: "Notes on Bibliographic Method and the Organisation of Learned References"
+    author:
+      - family: Harrington
+        given: R. L.
+    issued: "1891?"   # EDTF Level 1: uncertain date
+    archive-info:
+      name: "British Library"
+      location: "Manuscripts Reading Room"
+      place: "London"
+      collection: "Harrington Papers"
+      shelfmark: "MS Add. 47903, ff. 12–34"
+
+  # Preprint — eprint with arXiv identifier
+  - id: okafor2024
+    class: monograph
+    type: report
+    title: "Network Topology of Academic Citation: A Large-Scale Computational Analysis"
+    author:
+      - family: Okafor
+        given: Nnamdi
+      - family: Ferreira
+        given: Beatriz
+      - family: Park
+        given: Jiyeon
+    issued: "2024-01"
+    eprint:
+      id: "2401.05832"
+      type: arXiv
+      category: "cs.DL"

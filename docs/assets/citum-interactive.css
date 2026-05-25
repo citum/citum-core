@@ -21,6 +21,11 @@
   --citum-transition-speed: 0.3s;
 }
 
+/* Article prose */
+.content p + p {
+  text-indent: 1.5em;
+}
+
 /* Citations */
 .citum-citation {
   color: var(--citum-citation-color);
