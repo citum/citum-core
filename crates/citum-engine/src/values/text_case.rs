@@ -149,14 +149,15 @@ pub(crate) fn capitalize_first_word_markup_aware(text: &str) -> String {
     let mut i = 0;
 
     while i < len {
-        let b = bytes[i];
+        let Some(&b) = bytes.get(i) else { break };
 
         // Skip HTML tag: <...>
-        if b == b'<' {
-            if let Some(end) = text[i..].find('>') {
-                i += end + 1;
-                continue;
-            }
+        // `i` always points to an ASCII byte here, so the slice is on a char boundary.
+        if b == b'<'
+            && let Some(end) = text.get(i..).and_then(|s| s.find('>'))
+        {
+            i += end + 1;
+            continue;
         }
 
         // Skip LaTeX command prefix: \letters{ or \letters[...]{
@@ -172,8 +173,8 @@ pub(crate) fn capitalize_first_word_markup_aware(text: &str) -> String {
                 let after_cmd = cmd_start + cmd_len;
                 // Skip optional [...]
                 let after_opt = if bytes.get(after_cmd) == Some(&b'[') {
-                    text[after_cmd..]
-                        .find(']')
+                    text.get(after_cmd..)
+                        .and_then(|s| s.find(']'))
                         .map(|e| after_cmd + e + 1)
                         .unwrap_or(after_cmd)
                 } else {
@@ -204,16 +205,17 @@ pub(crate) fn capitalize_first_word_markup_aware(text: &str) -> String {
             }
         }
 
-        // Decode the next Unicode character starting at byte i.
-        let ch = text[i..].chars().next().unwrap_or('\0');
+        // Decode the next Unicode character. `i` is always on a char boundary:
+        // the markup-skip branches only advance past ASCII bytes.
+        let ch = text.get(i..).and_then(|s| s.chars().next()).unwrap_or('\0');
         if ch.is_alphabetic() {
             let ch_len = ch.len_utf8();
             let mut result = String::with_capacity(text.len());
-            result.push_str(&text[..i]);
+            result.push_str(text.get(..i).unwrap_or_default());
             for upper in ch.to_uppercase() {
                 result.push(upper);
             }
-            result.push_str(&text[i + ch_len..]);
+            result.push_str(text.get(i + ch_len..).unwrap_or_default());
             return result;
         }
 
