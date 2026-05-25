@@ -2807,7 +2807,7 @@ function generateHtmlHeader(report) {
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
                     href="index.html">Docs</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
-                    href="interactive-demo.html">Demo</a>
+                    href="demo.html">Demo</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
                     href="examples.html">Examples</a>
                 <a class="text-sm font-medium hover:text-primary transition-colors text-slate-600"
@@ -2827,7 +2827,7 @@ function generateHtmlHeader(report) {
             <div class="flex flex-col gap-3 text-sm font-medium text-slate-700">
                 <a class="hover:text-primary transition-colors" href="https://citum.org">Home</a>
                 <a class="hover:text-primary transition-colors" href="index.html">Docs</a>
-                <a class="hover:text-primary transition-colors" href="interactive-demo.html">Demo</a>
+                <a class="hover:text-primary transition-colors" href="demo.html">Demo</a>
                 <a class="hover:text-primary transition-colors" href="examples.html">Examples</a>
                 <a class="hover:text-primary transition-colors" href="guides/style-author-guide.html">Style Guide</a>
                 <a class="text-primary font-semibold" href="reports.html">Reports</a>
