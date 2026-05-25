@@ -19,7 +19,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! Integration tests for the JSON-RPC dispatcher.
 //!
 //! Uses a real Citum style (apa-7th.yaml) and minimal inline reference data
-//! to exercise all three methods without touching stdin/stdout.
+//! to exercise all four methods without touching stdin/stdout.
 
 use citum_server::rpc::{RpcRequest, dispatch};
 use serde_json::json;
@@ -256,6 +256,70 @@ fn render_citation_typst_returns_internal_link_markup() {
         citation.contains("#link(<ref-ITEM-2>)"),
         "typst citation should contain an internal link: {citation}"
     );
+}
+
+// --- format_document ---
+
+#[test]
+fn format_document_returns_citations_bibliography_and_warnings() {
+    let req = make_request(
+        15,
+        "format_document",
+        json!({
+            "style": {
+                "kind": "path",
+                "value": apa_style_path()
+            },
+            "output_format": "html",
+            "refs": hawking_refs(),
+            "citations": [{
+                "id": "cite-1",
+                "items": [{"id": "ITEM-2"}]
+            }],
+            "document_options": {
+                "show_semantics": true
+            }
+        }),
+    );
+
+    let result = dispatch(req).expect("dispatch should succeed");
+    assert_eq!(result["id"], 15);
+
+    let payload = &result["result"];
+    assert!(
+        payload["formatted_citations"].is_array(),
+        "document result should include formatted_citations: {payload}"
+    );
+    assert!(
+        payload["bibliography"].is_object(),
+        "document result should include bibliography: {payload}"
+    );
+    assert!(
+        payload["warnings"].is_array(),
+        "document result should include warnings: {payload}"
+    );
+
+    let formatted_citations = payload["formatted_citations"]
+        .as_array()
+        .expect("formatted_citations should be an array");
+    assert_eq!(formatted_citations.len(), 1);
+    assert_eq!(formatted_citations[0]["id"], "cite-1");
+
+    let bibliography = &payload["bibliography"];
+    assert_eq!(bibliography["format"], "html");
+    let content = bibliography["content"]
+        .as_str()
+        .expect("bibliography.content should be a string");
+    assert!(
+        content.contains(r#"<div class="citum-bibliography">"#),
+        "bibliography.content should contain rendered bibliography markup: {content}"
+    );
+
+    let entries = bibliography["entries"]
+        .as_array()
+        .expect("bibliography.entries should be an array");
+    assert_eq!(entries.len(), 1);
+    assert_eq!(entries[0]["id"], "ITEM-2");
 }
 
 // --- error handling ---

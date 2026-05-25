@@ -22,6 +22,9 @@
           { "id": "smith2010", "locator": { "label": "page", "value": "10" } }
         ]
       }
-    ]
+    ],
+    "document_options": {
+      "show_semantics": true
+    }
   }
 }
