@@ -95,6 +95,21 @@ fn resolve_transliteration<'a>(
     None
 }
 
+fn resolve_translation<'a>(
+    translations: &'a std::collections::HashMap<citum_schema::reference::LangID, String>,
+    style_locale: &str,
+) -> Option<&'a str> {
+    translations
+        .get(style_locale)
+        .or_else(|| {
+            style_locale
+                .split(['-', '_'])
+                .next()
+                .and_then(|base| translations.get(base))
+        })
+        .map(String::as_str)
+}
+
 /// Resolve a multilingual string based on style configuration.
 ///
 /// Applies BCP 47 fallback logic:
@@ -147,10 +162,8 @@ pub fn resolve_multilingual_string(
 
                 MultilingualMode::Translated => {
                     // Try to match style locale
-                    complex
-                        .translations
-                        .get(style_locale)
-                        .cloned()
+                    resolve_translation(&complex.translations, style_locale)
+                        .map(ToString::to_string)
                         .unwrap_or_else(|| complex.original.clone())
                 }
 
@@ -162,7 +175,7 @@ pub fn resolve_multilingual_string(
                         preferred_script,
                     );
 
-                    let translation = complex.translations.get(style_locale);
+                    let translation = resolve_translation(&complex.translations, style_locale);
 
                     match (trans, translation) {
                         (Some(t), Some(tr)) => format!("{t} [{tr}]"),

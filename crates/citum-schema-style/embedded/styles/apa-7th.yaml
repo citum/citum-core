@@ -64,7 +64,7 @@ options:
       text-case: as-is
   multilingual:
     title-mode: combined
-    name-mode: primary
+    name-mode: transliterated
     preferred-script: Latn
   page-range-format: expanded
   punctuation-in-quote: true

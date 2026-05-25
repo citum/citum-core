@@ -47,25 +47,41 @@ references:
     class: serial-component
     type: article
     language: ja
-    title: "引用の社会的機能：学術知識の構築における参照実践"
-    title-translated: "The Social Function of Citation: Reference Practices in the Construction of Academic Knowledge"
+    title:
+      original: "引用の社会的機能：学術知識の構築における参照実践"
+      lang: ja
+      transliterations:
+        ja-Latn: "In'yo no shakaiteki kino: Gakujutsu chishiki no kochiku ni okeru sansho jissen"
+      translations:
+        en: "The Social Function of Citation: Reference Practices in the Construction of Academic Knowledge"
     author:
-      - family: 田中
-        given: 由紀
-        family-romanized: Tanaka
-        given-romanized: Yuki
-      - family: 鈴木
-        given: 春人
-        family-romanized: Suzuki
-        given-romanized: Haruto
+      - original:
+          family: 田中
+          given: 由紀
+        lang: ja
+        transliterations:
+          ja-Latn:
+            family: Tanaka
+            given: Yuki
+      - original:
+          family: 鈴木
+          given: 春人
+        lang: ja
+        transliterations:
+          ja-Latn:
+            family: Suzuki
+            given: Haruto
     issued: "2019"
     pages: "45-78"
     container:
       class: serial
       type: academic-journal
       language: ja
-      title: "科学社会学研究"
-      title-translated: "Studies in Science and Technology"
+      title:
+        original: "科学社会学研究"
+        lang: ja
+        transliterations:
+          ja-Latn: "Kagaku Shakai-gaku Kenkyu"
       volume: "37"
       issue: "2"
 
@@ -126,5 +142,5 @@ references:
     issued: "2024-01"
     eprint:
       id: "2401.05832"
-      type: arXiv
-      category: "cs.DL"
+      server: arXiv
+      class: "cs.DL"
