@@ -28,7 +28,7 @@ use std::collections::HashMap;
 
 use super::{
     BibliographyEntry, CitationOccurrence, DocumentOptions, EntryMetadata, FormattedBibliography,
-    FormattedCitation, OutputFormatKind, StyleInput, Warning, WarningLevel,
+    FormattedCitation, OutputFormatKind, RefsInput, StyleInput, Warning, WarningLevel,
 };
 
 /// A request to format a complete document's citations and bibliography.
@@ -45,8 +45,8 @@ pub struct FormatDocumentRequest {
     /// when omitted from the request.
     #[serde(default)]
     pub output_format: OutputFormatKind,
-    /// Bibliography (references indexed by ID).
-    pub refs: Bibliography,
+    /// Reference input as a local path, inline YAML, inline JSON, or legacy bare map.
+    pub refs: RefsInput,
     /// Ordered citations as they appear in the document.
     pub citations: Vec<CitationOccurrence>,
     /// Optional document-level configuration.
@@ -73,6 +73,10 @@ pub enum FormatDocumentError {
     StyleParse(String),
     /// Failed to read or locate the style file.
     StylePath(String),
+    /// Failed to read a local refs input path.
+    RefsInputPath(String),
+    /// Failed to parse refs input data.
+    RefsInputParse(String),
     /// The processor encountered an error during rendering.
     Processing(ProcessorError),
 }
@@ -83,6 +87,8 @@ impl std::fmt::Display for FormatDocumentError {
             Self::UnresolvedInput(msg) => write!(f, "Unresolved style input: {}", msg),
             Self::StyleParse(msg) => write!(f, "Style parse error: {}", msg),
             Self::StylePath(msg) => write!(f, "Style path error: {}", msg),
+            Self::RefsInputPath(msg) => write!(f, "Refs input path error: {}", msg),
+            Self::RefsInputParse(msg) => write!(f, "Refs input parse error: {}", msg),
             Self::Processing(err) => write!(f, "Processing error: {}", err),
         }
     }
@@ -145,7 +151,8 @@ pub fn format_document_with_style(
         });
     }
 
-    let mut processor = Processor::new(style, request.refs);
+    let bibliography = request.refs.resolve_local()?;
+    let mut processor = Processor::new(style, bibliography);
     warnings.extend(unknown_reference_class_warnings(&processor.bibliography));
     warnings.extend(unknown_enum_warnings(&processor));
 
@@ -555,7 +562,7 @@ mod tests {
         }
     }
 
-    fn make_test_bibliography() -> Bibliography {
+    fn make_test_bibliography() -> RefsInput {
         let mut refs = Bibliography::new();
         refs.insert(
             "smith2020".to_string(),
@@ -567,7 +574,7 @@ mod tests {
                 ..Default::default()
             })),
         );
-        refs
+        RefsInput::Json(serde_json::to_value(refs).unwrap())
     }
 
     #[test]
@@ -663,7 +670,7 @@ mod tests {
             style: StyleInput::Yaml("dummy".to_string()),
             locale: None,
             output_format: OutputFormatKind::Plain,
-            refs,
+            refs: RefsInput::Json(serde_json::to_value(refs).unwrap()),
             citations: vec![citation_occ],
             document_options: None,
         };
@@ -716,7 +723,7 @@ mod tests {
             style: StyleInput::Yaml(yaml_style),
             locale: None,
             output_format: OutputFormatKind::Plain,
-            refs,
+            refs: RefsInput::Json(serde_json::to_value(refs).unwrap()),
             citations: vec![citation_occ],
             document_options: None,
         };
@@ -734,7 +741,7 @@ mod tests {
             style: StyleInput::Uri("https://example.com/style.yaml".to_string()),
             locale: None,
             output_format: OutputFormatKind::Plain,
-            refs: Bibliography::new(),
+            refs: RefsInput::Json(serde_json::Value::Object(Default::default())),
             citations: vec![],
             document_options: None,
         };

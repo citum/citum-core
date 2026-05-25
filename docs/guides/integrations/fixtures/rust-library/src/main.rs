@@ -8,8 +8,8 @@ use std::error::Error;
 use std::fs;
 
 use citum_engine::{
-    format_document, Bibliography, CitationOccurrence, CitationOccurrenceItem,
-    FormatDocumentRequest, OutputFormatKind, StyleInput,
+    format_document, CitationOccurrence, CitationOccurrenceItem, FormatDocumentRequest,
+    OutputFormatKind, RefsInput, StyleInput,
 };
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -18,11 +18,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     //    resolver chain that lives in citum-server.)
     let style = StyleInput::Path("apa-7th.yaml".to_string());
 
-    // 2. Load references in Citum's native JSON format. The native format
-    //    deserializes directly into a Bibliography (IndexMap<String, Reference>).
-    //    For BibLaTeX or CSL-JSON inputs, use the citum-io crate to convert.
-    let refs_json = fs::read_to_string("references-native.json")?;
-    let refs: Bibliography = serde_json::from_str(&refs_json)?;
+    // 2. Load references in Citum's native JSON format. RefsInput::Json accepts
+    //    the inline reference map. For BibLaTeX or CSL-JSON inputs, convert first.
+    let refs_json: serde_json::Value = serde_json::from_str(&fs::read_to_string(
+        "references-native.json",
+    )?)?;
+    let refs = RefsInput::Json(refs_json);
 
     // 3. Describe the citations in document order. Your own pipeline owns the
     //    job of scanning Markdown / Djot / AST for citation keys; citum only

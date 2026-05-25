@@ -63,8 +63,10 @@ Errors echo the request ID when available and include `error`:
 }
 ```
 
-`refs` uses native Citum reference data. Dates are EDTF strings such as
-`"1988"`, not CSL-JSON `date-parts` objects.
+`refs` in `render_citation` and `render_bibliography` is an inline JSON map of
+reference objects. `refs` in `format_document` accepts a tagged input object —
+see the `refs` input section below. Reference data uses native Citum schema.
+Dates are EDTF strings such as `"1988"`, not CSL-JSON `date-parts` objects.
 
 ## Method Summary
 
@@ -233,37 +235,68 @@ The response `result` has the same top-level shape over HTTP and stdio:
 Clients should read bibliography output from `result.bibliography`, not from
 `result.formatted_citations`.
 
+## `refs` Input for `format_document`
+
+The `refs` field in `format_document` accepts a tagged input object, mirroring
+the `style` field. These are alternative shapes, not one combined JSON value:
+
+```json
+{ "kind": "path",  "value": "/abs/path/to/refs.yaml" }
+```
+
+```json
+{ "kind": "yaml",  "value": "hawking1988:\n  id: hawking1988\n  ..." }
+```
+
+```json
+{ "kind": "json",  "value": { "hawking1988": { ... } } }
+```
+
+A bare JSON object (no `kind` key) is also accepted as `{"kind": "json"}` for
+backward compatibility.
+
+`path` and `yaml` have the server read and parse the bibliography file; `json`
+passes inline reference data directly. Use `path` when the server and client
+share a filesystem (e.g., when called via pipe from a LuaLaTeX document).
+
 ## Loading Local Files
 
-The server resolves local style paths because style loading is part of its job.
-Reference and citation data must be sent as JSON values in `params`; they are
-not loaded from paths by the server.
+Style and bibliography files on the same filesystem can be referenced by path
+in both `style` and `refs`:
 
-If your client stores references and citations in local files, assemble the
-HTTP request body on the client side before posting it to `/rpc`:
+```sh
+printf '%s\n' '{
+  "id": 4,
+  "method": "format_document",
+  "params": {
+    "style":        { "kind": "path", "value": "styles/embedded/apa-7th.yaml" },
+    "refs":         { "kind": "path", "value": "examples/document-refs-native.json" },
+    "output_format": "html",
+    "citations":    [{ "id": "cite-1", "items": [{ "id": "kuhn1962" }] }]
+  }
+}' | cargo run -q -p citum-server
+```
+
+For HTTP clients that prefer inline data, assemble the request with `jq`:
 
 ```sh
 jq -n \
   --arg style_path "styles/embedded/apa-7th.yaml" \
   --slurpfile refs examples/document-refs-native.json \
   --slurpfile citations examples/document-citations.json \
-  --slurpfile options examples/document-options.json \
   '{
     id: 4,
     method: "format_document",
     params: {
       style: { kind: "path", value: $style_path },
-      refs: $refs[0],
+      refs:  { kind: "json", value: $refs[0] },
       citations: $citations[0],
-      document_options: $options[0],
       output_format: "html"
     }
   }' | curl -s http://localhost:9000/rpc \
     -H 'Content-Type: application/json' \
     -d @-
 ```
-
-Those example files exist at the workspace-level `examples/` directory.
 
 ## Discovery
 

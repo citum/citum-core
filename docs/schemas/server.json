@@ -2892,7 +2892,7 @@
         ]
       },
       "refs": {
-        "description": "Bibliography (references) as a map of reference objects."
+        "description": "Bibliography input as `RefsInput`: path, YAML, JSON, or legacy bare map."
       },
       "citations": {
         "description": "Ordered citations as they appear in the document."
