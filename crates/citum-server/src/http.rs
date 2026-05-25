@@ -3,7 +3,9 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
-//! Optional HTTP transport for the JSON-RPC server.
+//! Default HTTP transport for the JSON-RPC server.
+//!
+//! This module is compiled when the default-on `http` feature is enabled.
 //!
 //! The HTTP server exposes `POST /rpc` for JSON-RPC requests, `GET /rpc` as a
 //! method hint, and `GET /rpc/methods` as a static descriptor list. When the

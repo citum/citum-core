@@ -15,22 +15,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! the request ID and include `result`; failures echo the request ID when
 //! available and include `error`.
 //!
-//! ## Methods
-//!
-//! | Method | Required params | Optional params | Result |
-//! |---|---|---|---|
-//! | `render_citation` | `style_path`, `refs`, `citation` | `output_format`, `inject_ast_indices` | rendered citation string |
-//! | `render_bibliography` | `style_path`, `refs` | `output_format`, `inject_ast_indices` | rendered bibliography object |
-//! | `validate_style` | `style_path` | none | validation object |
-//! | `format_document` | `style`, `refs`, `citations` | `output_format`, `locale`, `document_options` | `{formatted_citations, bibliography, warnings}` |
-//!
-//! `refs` uses native Citum reference data. Dates are EDTF strings such as
-//! `"1988"`, not CSL-JSON `date-parts` objects.
-//!
-//! `render_citation`, `render_bibliography`, and `validate_style` accept
-//! `style_path`, a string path to a local Citum YAML style. `format_document`
-//! accepts the richer `style` object, for example
-//! `{ "kind": "path", "value": "styles/embedded/apa-7th.yaml" }`.
+//! See the crate-level documentation for the shared method table exposed by
+//! both transports.
 //!
 //! ## `format_document` result
 //!

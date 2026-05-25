@@ -7,19 +7,32 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //!
 //! `citum-server` runs `citum-engine` behind a process boundary for clients
 //! that need a standalone renderer instead of linking the engine directly.
-//! The crate supports stdio JSON-RPC in every build and an optional axum HTTP
-//! transport behind the `http` feature. Both transports expose the same
+//! The crate supports stdio JSON-RPC in every build and an axum HTTP transport
+//! through the default-on `http` feature. Both transports expose the same
 //! JSON-RPC method surface; only the framing changes.
 //!
-//! See [`rpc`] for the request envelope, method surface, and stdio transport
-//! details.
-#![cfg_attr(
-    feature = "http",
-    doc = "See [`http`] for the feature-gated HTTP transport."
-)]
+//! ## Methods
+//!
+//! | Method | Required params | Optional params | Result |
+//! |---|---|---|---|
+//! | `render_citation` | `style_path`, `refs`, `citation` | `output_format`, `inject_ast_indices` | rendered citation string |
+//! | `render_bibliography` | `style_path`, `refs` | `output_format`, `inject_ast_indices` | rendered bibliography object |
+//! | `validate_style` | `style_path` | none | validation object |
+//! | `format_document` | `style`, `refs`, `citations` | `output_format`, `locale`, `document_options` | `{formatted_citations, bibliography, warnings}` |
+//!
+//! `refs` uses native Citum reference data. Dates are EDTF strings such as
+//! `"1988"`, not CSL-JSON `date-parts` objects.
+//!
+//! `render_citation`, `render_bibliography`, and `validate_style` accept
+//! `style_path`, a string path to a local Citum YAML style. `format_document`
+//! accepts the richer `style` object, for example
+//! `{ "kind": "path", "value": "styles/embedded/apa-7th.yaml" }`.
+//!
+//! See [`rpc`] for the request envelope and stdio transport details.
+#![cfg_attr(feature = "http", doc = "See [`http`] for the default HTTP transport.")]
 #![cfg_attr(
     not(feature = "http"),
-    doc = "The `http` module documents the optional HTTP transport when the feature is enabled."
+    doc = "The HTTP transport is unavailable in this build because the `http` feature is disabled."
 )]
 //!
 //! ## Features
@@ -35,7 +48,7 @@ pub mod error;
 pub mod rpc;
 
 #[cfg(feature = "http")]
-/// Optional HTTP transport built on axum.
+/// Default HTTP transport built on axum.
 pub mod http;
 
 pub use error::ServerError;
