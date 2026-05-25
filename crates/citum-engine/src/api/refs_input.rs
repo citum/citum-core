@@ -5,7 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Refs input resolution type for interactive APIs.
 
-use crate::reference::Bibliography;
+use crate::reference::{Bibliography, Reference};
 use serde::{Deserialize, Serialize};
 
 /// A refs input that can be resolved locally or by an external resolver.
@@ -161,27 +161,26 @@ impl RefsInput {
     pub fn resolve_local(&self) -> Result<Bibliography, crate::api::FormatDocumentError> {
         match self {
             RefsInput::Path(path) => {
-                let yaml_bytes = std::fs::read(path).map_err(|e| {
+                let bytes = std::fs::read(path).map_err(|e| {
                     crate::api::FormatDocumentError::RefsInputPath(format!(
                         "Failed to read refs input from '{}': {}",
                         path, e
                     ))
                 })?;
-                serde_yaml::from_slice::<Bibliography>(&yaml_bytes).map_err(|e| {
+                let yaml_str = String::from_utf8_lossy(&bytes);
+                parse_yaml_bibliography(&yaml_str).map_err(|e| {
                     crate::api::FormatDocumentError::RefsInputParse(format!(
                         "Failed to parse refs input from '{}': {}",
                         path, e
                     ))
                 })
             }
-            RefsInput::Yaml(yaml_str) => {
-                serde_yaml::from_str::<Bibliography>(yaml_str).map_err(|e| {
-                    crate::api::FormatDocumentError::RefsInputParse(format!(
-                        "Failed to parse inline YAML refs input: {}",
-                        e
-                    ))
-                })
-            }
+            RefsInput::Yaml(yaml_str) => parse_yaml_bibliography(yaml_str).map_err(|e| {
+                crate::api::FormatDocumentError::RefsInputParse(format!(
+                    "Failed to parse inline YAML refs input: {}",
+                    e
+                ))
+            }),
             RefsInput::Json(json_val) => serde_json::from_value::<Bibliography>(json_val.clone())
                 .map_err(|e| {
                     crate::api::FormatDocumentError::RefsInputParse(format!(
@@ -191,6 +190,35 @@ impl RefsInput {
                 }),
         }
     }
+}
+
+fn parse_yaml_bibliography(yaml_str: &str) -> Result<Bibliography, String> {
+    let native_err = match serde_yaml::from_str::<citum_schema::InputBibliography>(yaml_str) {
+        Ok(input) => return Ok(bibliography_from_references(input.references)),
+        Err(e) => e,
+    };
+
+    if let Ok(bibliography) = serde_yaml::from_str::<Bibliography>(yaml_str) {
+        return Ok(bibliography);
+    }
+
+    if let Ok(references) = serde_yaml::from_str::<Vec<Reference>>(yaml_str) {
+        return Ok(bibliography_from_references(references));
+    }
+
+    Err(format!(
+        "tried native `references:` bibliography, flat id-to-reference map, and reference sequence: {native_err}"
+    ))
+}
+
+fn bibliography_from_references(references: Vec<Reference>) -> Bibliography {
+    references
+        .into_iter()
+        .filter_map(|reference| {
+            let id = reference.id()?.to_string();
+            Some((id, reference))
+        })
+        .collect()
 }
 
 #[cfg(test)]
@@ -212,6 +240,31 @@ mod tests {
         let result = input.resolve_local();
         assert!(result.is_ok());
         assert!(result.unwrap().contains_key("test_ref"));
+    }
+
+    #[test]
+    fn refs_input_path_reads_native_input_bibliography() {
+        let mut tmp = NamedTempFile::new().expect("Failed to create temp file");
+        let yaml_content = "info:\n  title: Test Bibliography\nreferences:\n  - id: test_ref\n    class: monograph\n    type: book\n    title: Test\n    issued: '2024'\n";
+        tmp.write_all(yaml_content.as_bytes())
+            .expect("Failed to write temp file");
+        tmp.flush().expect("Failed to flush temp file");
+
+        let input = RefsInput::Path(tmp.path().to_string_lossy().to_string());
+        let result = input
+            .resolve_local()
+            .expect("native bibliography should parse");
+        assert!(result.contains_key("test_ref"));
+    }
+
+    #[test]
+    fn refs_input_yaml_reads_native_input_bibliography() {
+        let yaml_content = "info:\n  title: Test Bibliography\nreferences:\n  - id: test_ref\n    class: monograph\n    type: book\n    title: Test\n    issued: '2024'\n";
+        let input = RefsInput::Yaml(yaml_content.to_string());
+        let result = input
+            .resolve_local()
+            .expect("native bibliography should parse");
+        assert!(result.contains_key("test_ref"));
     }
 
     #[test]
