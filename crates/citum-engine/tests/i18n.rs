@@ -38,7 +38,10 @@ use citum_schema::{
     reference::types::{
         Collection, CollectionComponent, MultilingualComplex, MultilingualString, Title,
     },
-    reference::{EdtfString, InputReference, Monograph, MonographType, WorkRelation},
+    reference::{
+        EdtfString, InputReference, Monograph, MonographType, Serial, SerialComponent,
+        SerialComponentType, SerialType, WorkRelation,
+    },
     template::{
         ContributorForm, ContributorRole, DateForm, NameOrder, Rendering, TemplateContributor,
         TemplateDate, TemplateTitle, TitleType,
@@ -315,6 +318,32 @@ fn given_translated_mode_when_resolving_then_the_requested_locale_translation_is
     assert_eq!(result, "Guerre et Paix");
 }
 
+fn given_translated_mode_with_region_locale_when_resolving_then_the_base_language_translation_is_used()
+ {
+    let complex = MultilingualComplex {
+        original: "引用の社会的機能".to_string(),
+        lang: Some("ja".into()),
+        transliterations: HashMap::new(),
+        translations: {
+            let mut map = HashMap::new();
+            map.insert("en".into(), "The Social Function of Citation".to_string());
+            map
+        },
+    };
+
+    let ml_string = MultilingualString::Complex(complex);
+
+    let result = resolve_multilingual_string(
+        &ml_string,
+        Some(&MultilingualMode::Translated),
+        None,
+        None,
+        "en-US",
+    );
+
+    assert_eq!(result, "The Social Function of Citation");
+}
+
 fn given_combined_mode_when_transliteration_and_translation_exist_then_both_are_combined() {
     let complex = MultilingualComplex {
         original: "战争与和平".to_string(),
@@ -345,6 +374,42 @@ fn given_combined_mode_when_transliteration_and_translation_exist_then_both_are_
     );
 
     assert_eq!(result, "Zhànzhēng yǔ Hépíng [War and Peace]");
+}
+
+fn given_combined_mode_with_preferred_script_and_region_locale_then_transliteration_and_base_translation_are_combined()
+ {
+    let complex = MultilingualComplex {
+        original: "引用の社会的機能".to_string(),
+        lang: Some("ja".into()),
+        transliterations: {
+            let mut map = HashMap::new();
+            map.insert(
+                "ja-Latn".to_string(),
+                "In'yo no shakaiteki kino".to_string(),
+            );
+            map
+        },
+        translations: {
+            let mut map = HashMap::new();
+            map.insert("en".into(), "The Social Function of Citation".to_string());
+            map
+        },
+    };
+
+    let ml_string = MultilingualString::Complex(complex);
+
+    let result = resolve_multilingual_string(
+        &ml_string,
+        Some(&MultilingualMode::Combined),
+        None,
+        Some(&"Latn".to_string()),
+        "en-US",
+    );
+
+    assert_eq!(
+        result,
+        "In'yo no shakaiteki kino [The Social Function of Citation]"
+    );
 }
 
 fn given_combined_mode_without_transliteration_when_resolving_then_original_and_translation_are_combined()
@@ -998,6 +1063,95 @@ fn given_mixed_language_titles_when_rendering_the_bibliography_then_field_langua
     );
 }
 
+fn given_apa_multilingual_title_mode_when_rendering_a_japanese_article_then_titles_are_romanized() {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("APA Multilingual Title Test".to_string()),
+            default_locale: Some("en-US".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            multilingual: Some(MultilingualConfig {
+                title_mode: Some(MultilingualMode::Combined),
+                name_mode: Some(MultilingualMode::Transliterated),
+                preferred_script: Some("Latn".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                citum_schema::template::TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    rendering: Rendering {
+                        suffix: Some(". ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+                citum_schema::template::TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::ParentSerial,
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let reference = InputReference::SerialComponent(Box::new(SerialComponent {
+        id: Some("tanaka_yuki2019".into()),
+        r#type: SerialComponentType::Article,
+        title: Some(Title::Multilingual(MultilingualComplex {
+            original: "引用の社会的機能：学術知識の構築における参照実践".to_string(),
+            lang: Some("ja".into()),
+            transliterations: HashMap::from([(
+                "ja-Latn".to_string(),
+                "In'yo no shakaiteki kino: Gakujutsu chishiki no kochiku ni okeru sansho jissen"
+                    .to_string(),
+            )]),
+            translations: HashMap::from([(
+                "en".into(),
+                "The Social Function of Citation: Reference Practices in the Construction of Academic Knowledge"
+                    .to_string(),
+            )]),
+        })),
+        issued: EdtfString("2019".to_string()),
+        container: Some(WorkRelation::Embedded(Box::new(InputReference::Serial(
+            Box::new(Serial {
+                r#type: SerialType::AcademicJournal,
+                title: Some(Title::Multilingual(MultilingualComplex {
+                    original: "科学社会学研究".to_string(),
+                    lang: Some("ja".into()),
+                    transliterations: HashMap::from([(
+                        "ja-Latn".to_string(),
+                        "Kagaku Shakai-gaku Kenkyu".to_string(),
+                    )]),
+                    translations: HashMap::new(),
+                })),
+                ..Default::default()
+            }),
+        )))),
+        language: Some("ja".into()),
+        ..Default::default()
+    }));
+
+    let bibliography = indexmap::IndexMap::from([("tanaka_yuki2019".to_string(), reference)]);
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_bibliography();
+
+    assert_eq!(
+        rendered,
+        "In’yo no shakaiteki kino: Gakujutsu chishiki no kochiku ni okeru sansho jissen [The Social Function of Citation: Reference Practices in the Construction of Academic Knowledge]. Kagaku Shakai-gaku Kenkyu"
+    );
+    assert!(
+        !rendered.chars().any(|c| {
+            ('\u{3040}'..='\u{30ff}').contains(&c) || ('\u{4e00}'..='\u{9fff}').contains(&c)
+        }),
+        "rendered bibliography should not contain Japanese scripts: {rendered}"
+    );
+}
+
 mod string_resolution {
     use super::announce_behavior;
 
@@ -1050,11 +1204,27 @@ mod string_resolution {
     }
 
     #[test]
+    fn translated_mode_falls_back_to_base_language_for_region_locale() {
+        announce_behavior(
+            "Translated mode should use a base-language translation when the style locale has a region subtag.",
+        );
+        super::given_translated_mode_with_region_locale_when_resolving_then_the_base_language_translation_is_used();
+    }
+
+    #[test]
     fn combined_mode_uses_transliteration_and_translation_when_both_exist() {
         announce_behavior(
             "Combined mode should join the transliteration with the locale translation when both exist.",
         );
         super::given_combined_mode_when_transliteration_and_translation_exist_then_both_are_combined();
+    }
+
+    #[test]
+    fn combined_mode_uses_preferred_script_and_base_language_translation() {
+        announce_behavior(
+            "Combined mode should join a preferred-script transliteration with a base-language translation.",
+        );
+        super::given_combined_mode_with_preferred_script_and_region_locale_then_transliteration_and_base_translation_are_combined();
     }
 
     #[test]
@@ -1151,6 +1321,14 @@ mod multilingual_rendering {
             "Mixed-language titles should format each field according to its field-language override.",
         );
         super::given_mixed_language_titles_when_rendering_the_bibliography_then_field_languages_drive_the_title_formatting_overrides();
+    }
+
+    #[test]
+    fn apa_multilingual_title_mode_romanizes_japanese_article_and_journal_titles() {
+        announce_behavior(
+            "APA combined title mode should romanize Japanese article and journal titles while adding the article-title translation.",
+        );
+        super::given_apa_multilingual_title_mode_when_rendering_a_japanese_article_then_titles_are_romanized();
     }
 }
 

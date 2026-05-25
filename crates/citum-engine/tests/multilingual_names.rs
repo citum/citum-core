@@ -143,3 +143,76 @@ fn substring_script_preference_matches_containing_transliteration() {
 
     assert_eq!(resolved[0].family, Some("Pushkin-Special".to_string()));
 }
+
+/// Transliterated mode with preferred-script Latn picks the romanized name for a CJK contributor.
+/// Mirrors the APA context where the style-level multilingual name mode is transliterated.
+#[test]
+fn transliterated_mode_with_preferred_script_latn_returns_romanized_cjk_name() {
+    let mut transliterations = HashMap::new();
+    transliterations.insert(
+        "ja-Latn".to_string(),
+        StructuredName {
+            family: MultilingualString::Simple("Tanaka".to_string()),
+            given: MultilingualString::Simple("Yuki".to_string()),
+            ..Default::default()
+        },
+    );
+
+    let contributor = Contributor::Multilingual(MultilingualName {
+        original: StructuredName {
+            family: MultilingualString::Simple("田中".to_string()),
+            given: MultilingualString::Simple("由紀".to_string()),
+            ..Default::default()
+        },
+        lang: None,
+        transliterations,
+        translations: HashMap::new(),
+    });
+
+    let resolved = resolve_multilingual_name(
+        &contributor,
+        Some(&MultilingualMode::Transliterated),
+        None,
+        Some(&"Latn".to_string()),
+        "en-US",
+    );
+
+    assert_eq!(resolved[0].family, Some("Tanaka".to_string()));
+    assert_eq!(resolved[0].given, Some("Yuki".to_string()));
+}
+
+/// Primary mode keeps native script regardless of preferred-script — bibliography behavior.
+#[test]
+fn primary_mode_keeps_native_cjk_script_ignoring_preferred_script() {
+    let mut transliterations = HashMap::new();
+    transliterations.insert(
+        "ja-Latn".to_string(),
+        StructuredName {
+            family: MultilingualString::Simple("Tanaka".to_string()),
+            given: MultilingualString::Simple("Yuki".to_string()),
+            ..Default::default()
+        },
+    );
+
+    let contributor = Contributor::Multilingual(MultilingualName {
+        original: StructuredName {
+            family: MultilingualString::Simple("田中".to_string()),
+            given: MultilingualString::Simple("由紀".to_string()),
+            ..Default::default()
+        },
+        lang: None,
+        transliterations,
+        translations: HashMap::new(),
+    });
+
+    let resolved = resolve_multilingual_name(
+        &contributor,
+        Some(&MultilingualMode::Primary),
+        None,
+        Some(&"Latn".to_string()),
+        "en-US",
+    );
+
+    assert_eq!(resolved[0].family, Some("田中".to_string()));
+    assert_eq!(resolved[0].given, Some("由紀".to_string()));
+}
