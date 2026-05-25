@@ -121,8 +121,14 @@ impl Renderer<'_> {
                     // No explicit prefix: the role label (e.g. "edited by ") is baked
                     // into the rendered value.  Capitalize the first word so that
                     // sentence-initial contributors read "Edited by …" not "edited by …".
-                    component.value =
-                        crate::values::text_case::apply_text_case(&component.value, case);
+                    component.value = if component.pre_formatted {
+                        crate::values::text_case::apply_text_case_markup_aware(
+                            &component.value,
+                            case,
+                        )
+                    } else {
+                        crate::values::text_case::apply_text_case(&component.value, case)
+                    };
                 }
             }
             // Pre-formatted group components — capitalize the first word of the
@@ -130,7 +136,10 @@ impl Renderer<'_> {
             TemplateComponent::Group(_) => {
                 let case =
                     crate::values::text_case::resolve_text_case(TextCase::CapitalizeFirst, locale);
-                component.value = crate::values::text_case::apply_text_case(&component.value, case);
+                // Groups are always pre-formatted (rendered markup); use the markup-aware
+                // variant so HTML tags and LaTeX/Typst command prefixes are not corrupted.
+                component.value =
+                    crate::values::text_case::apply_text_case_markup_aware(&component.value, case);
             }
             TemplateComponent::Term(_) if self.is_note_start_term_component(component) => {
                 if let Some(case) = note_start_text_case {
