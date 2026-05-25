@@ -33,6 +33,14 @@ fn apa_style_path() -> String {
     )
 }
 
+/// Absolute path to a native Citum YAML bibliography fixture.
+fn chicago_bib_path() -> String {
+    format!(
+        "{}/../../examples/chicago-bib.yaml",
+        env!("CARGO_MANIFEST_DIR")
+    )
+}
+
 /// Minimal bibliography: one book (Hawking 1988) in native Citum schema format.
 /// `issued` is a plain EDTF string; `author` is a `ContributorList`.
 fn hawking_refs() -> serde_json::Value {
@@ -320,6 +328,47 @@ fn format_document_returns_citations_bibliography_and_warnings() {
         .expect("bibliography.entries should be an array");
     assert_eq!(entries.len(), 1);
     assert_eq!(entries[0]["id"], "ITEM-2");
+}
+
+#[test]
+fn format_document_accepts_refs_path_native_bibliography() {
+    let req = make_request(
+        16,
+        "format_document",
+        json!({
+            "style": {
+                "kind": "path",
+                "value": apa_style_path()
+            },
+            "output_format": "plain",
+            "refs": {
+                "kind": "path",
+                "value": chicago_bib_path()
+            },
+            "citations": [{
+                "id": "cite-1",
+                "items": [{"id": "biss"}]
+            }]
+        }),
+    );
+
+    let result = dispatch(req).expect("dispatch should succeed");
+    assert_eq!(result["id"], 16);
+
+    let payload = &result["result"];
+    let formatted_citations = payload["formatted_citations"]
+        .as_array()
+        .expect("formatted_citations should be an array");
+    assert_eq!(formatted_citations.len(), 1);
+    assert_eq!(formatted_citations[0]["id"], "cite-1");
+
+    let entries = payload["bibliography"]["entries"]
+        .as_array()
+        .expect("bibliography.entries should be an array");
+    assert!(
+        entries.iter().any(|entry| entry["id"] == "biss"),
+        "bibliography should include the path-loaded reference: {payload}"
+    );
 }
 
 // --- error handling ---
