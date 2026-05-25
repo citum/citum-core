@@ -1,0 +1,69 @@
+{.citum-demo-notice}
+**Note**: This is an entirely artificial document created for the purpose of illustrating
+Citum citation rendering features. All arguments, references, and authors are fabricated.
+No scholarly claims are made.
+
+---
+
+**Features illustrated**: integral and non-integral citations; name memory (Chen, cited
+across two works); multilingual sources (Japanese, Spanish); EDTF dates (approximate:
+`2022~`; uncertain: `1891?`); archival reference with `archive-info`; preprint with
+`eprint` identifier. The companion reference file is `docs/demo-refs.yaml`.
+
+Citation syntax below uses `@key` for integral (narrative) form and `[@key]` for
+non-integral (parenthetical) form, as a hypothetical Citum djot preprocessor would
+accept. Actual rendering uses the citum-core API directly.
+
+---
+
+# The Infrastructure of Scholarly Memory
+
+Scholarly citation serves as the primary mechanism through which academic knowledge
+is organized, attributed, and transmitted. As @chen2017 has argued, the practices
+surrounding citation reflect deeper epistemological commitments about what counts
+as knowledge and who produces it. The formal apparatus of bibliographic reference
+— the footnote, the parenthetical, the numbered list — constitutes what Webb
+[@webb1968] called "the footnote as institution," embedding social relations within
+the seemingly neutral mechanics of scholarly communication.
+
+The production of this apparatus is not confined to Anglophone scholarship.
+@tanaka_yuki2019 demonstrate that citation practices in Japanese science studies
+reflect distinct epistemological conventions, including different assumptions about
+authorial authority and collective knowledge-making. Parallel observations emerge
+from Spanish-language scholarship, where the relationship between citation and
+institutional context differs in ways that challenge Anglocentric models of
+attribution [@garcia2022].
+
+These questions have a longer history than recent digital debates might suggest.
+@harrington1891 observed — in manuscript notes preserved at the British Library —
+that bibliographic method was already contested among Victorian scholars of natural
+history, who disagreed fundamentally about whether a citation should indicate
+provenance, priority, or deference. @chen2017 [ch. 3] traces a direct line from
+these Victorian anxieties to contemporary algorithmic citation metrics; the impulse
+to quantify scholarly influence has deep institutional roots.
+
+More recent work challenges the assumption that citation reflects merit rather than
+network position. @chen2020 extends this analysis to the digital transition, arguing
+that platform architectures reproduce and amplify existing hierarchies of credibility.
+@okafor2024 provide large-scale empirical support for this claim, showing through
+computational analysis of citation networks that topological centrality correlates
+more strongly with institutional affiliation than with measured scholarly impact.
+
+Together, this body of evidence suggests that citation is less a neutral epistemic
+tool than a cultural technology whose workings differ across languages, institutions,
+and time periods. Understanding that variability requires attention to both the fine
+structure of individual references — their dates, languages, formats, and archival
+contexts — and the aggregate patterns they produce across documents and disciplines.
+
+## Primary Sources
+
+- @harrington1891
+
+## Secondary Sources
+
+- @chen2017
+- @chen2020
+- @garcia2022
+- @okafor2024
+- @tanaka_yuki2019
+- @webb1968

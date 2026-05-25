@@ -1,0 +1,426 @@
+<!-- PAGE_ID: citation-modes -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta name="description" content="Integral and non-integral citation modes across author-date, numeric, note-based, and label citation style classes — illustrated with identical input.">
+    <title>Citation Modes | Citum</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="assets/citum-theme.css">
+    <style>
+        .cite-mode-pair {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin: 1.25rem 0;
+        }
+        @media (max-width: 680px) {
+            .cite-mode-pair { grid-template-columns: 1fr; }
+        }
+        .cite-mode-block {
+            border: 1px solid var(--citum-border);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .cite-mode-block .workshop-label {
+            border-radius: 0;
+            border-bottom: 1px solid var(--citum-border);
+        }
+        .cite-mode-prose {
+            padding: 0.9rem 1rem;
+            font-size: 0.95rem;
+            line-height: 1.65;
+            font-family: 'Newsreader', serif;
+        }
+        .cite-mode-prose .cite {
+            color: var(--citum-blue, #2a94d6);
+            font-style: normal;
+        }
+        .cite-mode-prose .cite-num {
+            vertical-align: super;
+            font-size: 0.75em;
+            color: var(--citum-blue, #2a94d6);
+            font-variant-numeric: tabular-nums;
+        }
+        .cite-mode-prose sup.fn {
+            font-size: 0.7em;
+            vertical-align: super;
+            color: var(--citum-blue, #2a94d6);
+        }
+        .cite-mode-prose .fn-note {
+            margin-top: 0.75rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--citum-border);
+            font-size: 0.8rem;
+            color: var(--citum-muted);
+        }
+        .cite-mode-prose .cite-label {
+            color: var(--citum-blue, #2a94d6);
+            font-variant-numeric: tabular-nums;
+        }
+        .ref-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+            margin: 1rem 0 0.5rem;
+        }
+        .ref-table th {
+            text-align: left;
+            padding: 0.35rem 0.75rem;
+            background: var(--citum-paper-deep, #f5f2eb);
+            border-bottom: 2px solid var(--citum-border);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .ref-table td {
+            padding: 0.35rem 0.75rem;
+            border-bottom: 1px solid var(--citum-border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+        }
+        .ref-table tr:last-child td { border-bottom: none; }
+        .ref-table .td-label { color: var(--citum-muted); font-family: inherit; font-size: 0.85rem; }
+        .notice {
+            background: var(--citum-blue-soft, #eef6fc);
+            border-left: 3px solid var(--citum-blue, #2a94d6);
+            border-radius: 4px;
+            padding: 0.7rem 1rem;
+            font-size: 0.9rem;
+            color: var(--citum-muted, #555);
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="site-nav" aria-label="Site">
+    <!-- LAYOUT_NAV_START -->
+        <div class="site-nav-inner">
+            <div class="site-brand-wrap">
+                <a href="index.html" class="site-brand">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </a>
+            </div>
+            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
+                <a class="site-nav-link " href="index.html">Overview</a>
+                <a class="site-nav-link active" href="examples.html">Capabilities</a>
+                <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
+                <a class="site-nav-link " href="developer.html">Integrate</a>
+                <a class="site-nav-link " href="demo.html">Demo</a>
+                <a class="site-nav-link " href="schemas/">Schemas</a>
+                <a class="site-nav-link " href="reports.html">Reports</a>
+                <a class="site-source-link" href="https://github.com/citum/citum-core">
+                    <svg aria-hidden="true" class="site-source-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+                <span class="mobile-nav-icon" aria-hidden="true">&#9776;</span>
+            </button>
+        </div>
+        <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
+            <a class="site-nav-link " href="index.html">Overview</a>
+            <a class="site-nav-link active" href="examples.html">Capabilities</a>
+            <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
+            <a class="site-nav-link " href="developer.html">Integrate</a>
+            <a class="site-nav-link " href="demo.html">Demo</a>
+            <a class="site-nav-link " href="schemas/">Schemas</a>
+            <a class="site-nav-link " href="reports.html">Reports</a>
+            <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
+        </div>        <!-- LAYOUT_NAV_END -->
+    </nav>
+
+    <main class="doc-shell">
+        <header class="doc-section-header">
+            <span class="citum-kicker">Capabilities</span>
+            <h1>Integral and non-integral citations</h1>
+            <p>
+                Every Citum style declares separate templates for <strong>integral</strong>
+                (narrative) and <strong>non-integral</strong> (parenthetical) citation forms.
+                The same input data renders differently depending on whether the author name
+                is grammatically part of the sentence.
+            </p>
+            <p>
+                This page shows the same two-citation passage rendered by four classes of
+                citation style: author-date, numeric and note-based (combined, since the
+                integral/non-integral logic is identical), and label.
+            </p>
+        </header>
+
+        <div class="notice">
+            <strong>Illustration only.</strong> The passage text and references below are
+            entirely artificial. See <a href="demo.html">the full demo</a> for a richer
+            example with multilingual sources, EDTF dates, and archival references.
+        </div>
+
+        <!-- Shared reference data -->
+        <section class="doc-section" id="shared-references">
+            <div class="doc-section-header">
+                <h2>Input</h2>
+                <p>The same two references are used across all style-class sections below.</p>
+            </div>
+            <table class="ref-table">
+                <thead>
+                    <tr>
+                        <th>Key</th>
+                        <th>Author(s)</th>
+                        <th>Year</th>
+                        <th>Title</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>chen2017</td>
+                        <td>Chen, M.</td>
+                        <td>2017</td>
+                        <td class="td-label">The Social Life of References</td>
+                        <td class="td-label">book</td>
+                    </tr>
+                    <tr>
+                        <td>okafor2024</td>
+                        <td>Okafor, N.; Ferreira, B.; Park, J.</td>
+                        <td>2024</td>
+                        <td class="td-label">Network Topology of Academic Citation</td>
+                        <td class="td-label">report (preprint)</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p style="margin-top:0.75rem;color:var(--citum-muted);font-size:0.9rem;">
+                Full YAML definition: <a href="demo-refs.yaml"><code>docs/demo-refs.yaml</code></a>
+            </p>
+        </section>
+
+        <!-- 1. Author-date -->
+        <section class="doc-section" id="author-date">
+            <div class="doc-section-header">
+                <h2>Author-date</h2>
+                <p>
+                    Representative style: <strong>APA 7th</strong>.
+                    The in-text citation carries the author surname and year.
+                    Integral form folds the author name into the sentence;
+                    non-integral places author and year in parentheses.
+                </p>
+            </div>
+
+            <div class="cite-mode-pair">
+                <div class="cite-mode-block">
+                    <div class="workshop-label">Integral (narrative)</div>
+                    <div class="cite-mode-prose">
+                        The mechanisms by which academic knowledge is attributed
+                        have attracted renewed scholarly attention.
+                        <span class="cite">Chen (2017)</span>
+                        has argued that citation practices encode social hierarchies
+                        as much as intellectual ones. More recently,
+                        <span class="cite">Okafor et al. (2024)</span>
+                        provided computational evidence for this view at scale.
+                    </div>
+                </div>
+                <div class="cite-mode-block">
+                    <div class="workshop-label">Non-integral (parenthetical)</div>
+                    <div class="cite-mode-prose">
+                        The mechanisms by which academic knowledge is attributed
+                        have attracted renewed scholarly attention.
+                        Citation practices encode social hierarchies as much as
+                        intellectual ones
+                        <span class="cite">(Chen, 2017)</span>.
+                        Computational evidence for this view has recently been
+                        provided at scale
+                        <span class="cite">(Okafor et al., 2024)</span>.
+                    </div>
+                </div>
+            </div>
+
+            <div class="workshop-block">
+                <div class="workshop-label">Rendered citation forms &mdash; APA 7th</div>
+<pre><code>Integral             Chen (2017)          Okafor et al. (2024)
+Integral + locator   Chen (2017, p. 42)   Okafor et al. (2024, p. 8)
+Non-integral         (Chen, 2017)         (Okafor et al., 2024)
+Non-integral + loc   (Chen, 2017, p. 42)  (Okafor et al., 2024, p. 8)</code></pre>
+            </div>
+        </section>
+
+        <!-- 2. Numeric + Note-based -->
+        <section class="doc-section" id="numeric-note">
+            <div class="doc-section-header">
+                <h2>Numeric and note-based</h2>
+                <p>
+                    These two classes share the same integral/non-integral logic: the citation
+                    marker (a number or a note reference) can appear either adjacent to the
+                    author name (integral) or anchored to the clause end (non-integral).
+                    The difference is purely in marker form: a bracketed integer
+                    <code>[1]</code> for numeric styles, a superscript note reference
+                    <sup>1</sup> for note-based styles.
+                </p>
+                <p>
+                    Representative styles: <strong>IEEE</strong> (numeric),
+                    <strong>Chicago Notes</strong> (note-based).
+                </p>
+            </div>
+
+            <div class="cite-mode-pair">
+                <div class="cite-mode-block">
+                    <div class="workshop-label">Integral — numeric (IEEE)</div>
+                    <div class="cite-mode-prose">
+                        The mechanisms by which academic knowledge is attributed
+                        have attracted renewed scholarly attention.
+                        Chen <span class="cite">[1]</span>
+                        has argued that citation practices encode social hierarchies
+                        as much as intellectual ones. More recently,
+                        Okafor et al. <span class="cite">[2]</span>
+                        provided computational evidence for this view at scale.
+                    </div>
+                </div>
+                <div class="cite-mode-block">
+                    <div class="workshop-label">Non-integral — numeric (IEEE)</div>
+                    <div class="cite-mode-prose">
+                        The mechanisms by which academic knowledge is attributed
+                        have attracted renewed scholarly attention.
+                        Citation practices encode social hierarchies as much as
+                        intellectual ones <span class="cite">[1]</span>.
+                        Computational evidence for this view has recently been
+                        provided at scale <span class="cite">[2]</span>.
+                    </div>
+                </div>
+            </div>
+
+            <div class="cite-mode-pair">
+                <div class="cite-mode-block">
+                    <div class="workshop-label">Integral — note-based (Chicago)</div>
+                    <div class="cite-mode-prose">
+                        The mechanisms by which academic knowledge is attributed
+                        have attracted renewed scholarly attention.
+                        Chen<sup class="fn">1</sup>
+                        has argued that citation practices encode social hierarchies
+                        as much as intellectual ones. More recently,
+                        Okafor et al.<sup class="fn">2</sup>
+                        provided computational evidence for this view at scale.
+                        <div class="fn-note">
+                            <sup>1</sup> Chen Mei, <em>The Social Life of References</em> (MIT Press, 2017), p.&thinsp;12.<br>
+                            <sup>2</sup> Nnamdi Okafor, Beatriz Ferreira, and Jiyeon Park, &#8220;Network Topology of Academic Citation,&#8221; arXiv:2401.05832 (2024).
+                        </div>
+                    </div>
+                </div>
+                <div class="cite-mode-block">
+                    <div class="workshop-label">Non-integral — note-based (Chicago)</div>
+                    <div class="cite-mode-prose">
+                        The mechanisms by which academic knowledge is attributed
+                        have attracted renewed scholarly attention.
+                        Citation practices encode social hierarchies as much as
+                        intellectual ones.<sup class="fn">1</sup>
+                        Computational evidence for this view has recently been
+                        provided at scale.<sup class="fn">2</sup>
+                        <div class="fn-note">
+                            <sup>1</sup> Chen, <em>Social Life of References</em>, 12.<br>
+                            <sup>2</sup> Okafor, Ferreira, and Park, &#8220;Network Topology,&#8221; 2401.05832.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="workshop-block">
+                <div class="workshop-label">Name memory in note styles</div>
+<pre><code>First note:     Chen Mei, The Social Life of References (MIT Press, 2017), p. 12.
+Later note:     Chen, Social Life of References, 42.   ← abbreviated (name memory)</code></pre>
+            </div>
+        </section>
+
+        <!-- 3. Label -->
+        <section class="doc-section" id="label">
+            <div class="doc-section-header">
+                <h2>Label-based</h2>
+                <p>
+                    Representative style: alphanumeric (e.g., <strong>ACM</strong>,
+                    <strong>alpha</strong>). The citation marker is a short mnemonic
+                    derived from author surnames and year rather than an assigned integer.
+                    Integral and non-integral placement follow the same logic as other
+                    classes: either adjacent to the author name or at the clause end.
+                </p>
+            </div>
+
+            <div class="cite-mode-pair">
+                <div class="cite-mode-block">
+                    <div class="workshop-label">Integral</div>
+                    <div class="cite-mode-prose">
+                        The mechanisms by which academic knowledge is attributed
+                        have attracted renewed scholarly attention.
+                        Chen <span class="cite">[Che17]</span>
+                        has argued that citation practices encode social hierarchies
+                        as much as intellectual ones. More recently,
+                        Okafor et al. <span class="cite">[OFP24]</span>
+                        provided computational evidence for this view at scale.
+                    </div>
+                </div>
+                <div class="cite-mode-block">
+                    <div class="workshop-label">Non-integral</div>
+                    <div class="cite-mode-prose">
+                        The mechanisms by which academic knowledge is attributed
+                        have attracted renewed scholarly attention.
+                        Citation practices encode social hierarchies as much as
+                        intellectual ones <span class="cite">[Che17]</span>.
+                        Computational evidence for this view has recently been
+                        provided at scale <span class="cite">[OFP24]</span>.
+                    </div>
+                </div>
+            </div>
+
+            <div class="workshop-block">
+                <div class="workshop-label">Rendered citation forms &mdash; label (alpha)</div>
+<pre><code>Integral       Chen [Che17]          Okafor et al. [OFP24]
+Non-integral   [Che17]               [OFP24]</code></pre>
+            </div>
+        </section>
+
+        <!-- See also -->
+        <section class="doc-section" id="see-also">
+            <div class="doc-section-header">
+                <h2>Related</h2>
+            </div>
+            <ul>
+                <li>&rarr; <a href="examples.html#citation-modes">Capabilities &mdash; Citation modes</a>: full feature overview including name memory</li>
+                <li>&rarr; <a href="guides/style-authoring/templates.html#citation-modes">Template reference</a>: how to author <code>integral</code> and <code>non-integral</code> templates in a style file</li>
+                <li>&rarr; <a href="demo.html">Interactive demo</a>: bidirectional linking, sidebar layout, and all demo-refs features together</li>
+            </ul>
+        </section>
+    </main>
+
+    <footer class="py-12 px-6 border-t border-slate-200 bg-white/50">
+        <!-- LAYOUT_FOOTER_START -->
+            <div class="site-footer-inner">
+                <div class="site-brand site-brand-small">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </div>
+                <div class="site-footer-links">
+                    <a href="guides/style-authoring/start.html">Style Authoring</a>
+                    <a href="developer.html">Integrate</a>
+                    <a href="schemas/">Schemas</a>
+                    <a href="reports.html">Reports</a>
+                    <a href="operating.html">Contributing</a>
+                    <a href="https://github.com/citum/citum-core">GitHub</a>
+                </div>
+                <div class="site-footer-note">&copy; 2026 Citum Project.</div>
+            </div>
+        <!-- LAYOUT_FOOTER_END -->
+    </footer>
+
+    <script>
+        const navToggle = document.querySelector('[data-nav-toggle]');
+        const mobileMenu = document.querySelector('[data-mobile-menu]');
+        if (navToggle && mobileMenu) {
+            navToggle.addEventListener('click', () => {
+                const expanded = navToggle.getAttribute('aria-expanded') === 'true';
+                navToggle.setAttribute('aria-expanded', String(!expanded));
+                mobileMenu.classList.toggle('hidden', expanded);
+            });
+        }
+    </script>
+</body>
+</html>

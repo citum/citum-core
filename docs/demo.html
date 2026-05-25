@@ -1,0 +1,384 @@
+<!-- PAGE_ID: demo -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Citum | Demo</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
+  <link
+      href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap"
+      rel="stylesheet" />
+  <script>
+      tailwind.config = {
+          darkMode: "class",
+          theme: {
+              extend: {
+                  colors: {
+                      "primary": "#2a94d6",
+                      "background-light": "#fdfbf7",
+                      "accent-cream": "#f5f2eb",
+                  },
+                  fontFamily: {
+                      "display": ["Libre Franklin", "sans-serif"],
+                      "mono": ["JetBrains Mono", "monospace"]
+                  },
+                  borderRadius: {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+                  },
+              },
+          },
+      }
+  </script>
+  <style type="text/tailwindcss">
+    .glass-nav {
+        background: rgba(253, 251, 247, 0.85);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(42, 148, 214, 0.1);
+    }
+    body {
+      font-family: 'Libre Franklin', sans-serif;
+      line-height: 1.6;
+      color: var(--citum-ink);
+      background: var(--citum-paper);
+    }
+    .font-mono {
+        font-family: 'JetBrains Mono', monospace;
+    }
+    .container-demo {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    header {
+      border-bottom: 1px solid var(--citum-border);
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+    }
+    .config-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--citum-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 4px;
+      background: var(--citum-blue-soft);
+      transition: all 0.2s;
+    }
+    .config-link:hover {
+      background: var(--citum-paper-deep);
+      color: var(--citum-ink-strong);
+    }
+    .controls {
+      background: var(--citum-paper-deep);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .demo-container {
+      transition: all 0.3s ease;
+    }
+    h1 { margin-bottom: 0.5rem; }
+    .subtitle { color: #666; font-size: 1.1rem; }
+
+    /* Layout toggles */
+    .btn {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--citum-border);
+      background: var(--citum-surface);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn.active {
+      background: var(--citum-blue);
+      color: oklch(0.985 0.008 238);
+      border-color: var(--citum-blue);
+    }
+
+    /* Demo notice */
+    .demo-notice {
+      background: var(--citum-blue-soft, #eef6fc);
+      border-left: 3px solid var(--citum-blue, #2a94d6);
+      border-radius: 4px;
+      padding: 0.75rem 1rem;
+      font-size: 0.9rem;
+      color: var(--citum-muted, #555);
+      margin-bottom: 2rem;
+    }
+    .demo-notice strong {
+      color: var(--citum-ink, #222);
+    }
+    .feature-tags {
+      margin-top: 0.5rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .feature-tag {
+      background: white;
+      border: 1px solid var(--citum-border, #ddd);
+      border-radius: 12px;
+      padding: 0.15rem 0.6rem;
+      font-size: 0.8rem;
+      color: var(--citum-muted, #555);
+    }
+  </style>
+    <link rel="stylesheet" href="assets/citum-theme.css">
+  <link rel="stylesheet" href="assets/citum-interactive.css">
+</head>
+<body class="bg-background-light text-slate-700">
+
+  <!-- Navigation -->
+  <!-- LAYOUT_NAV_START -->
+        <div class="site-nav-inner">
+            <div class="site-brand-wrap">
+                <a href="index.html" class="site-brand">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </a>
+            </div>
+            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
+                <a class="site-nav-link " href="index.html">Overview</a>
+                <a class="site-nav-link " href="examples.html">Capabilities</a>
+                <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
+                <a class="site-nav-link " href="developer.html">Integrate</a>
+                <a class="site-nav-link active" href="demo.html">Demo</a>
+                <a class="site-nav-link " href="schemas/">Schemas</a>
+                <a class="site-nav-link " href="reports.html">Reports</a>
+                <a class="site-source-link" href="https://github.com/citum/citum-core">
+                    <svg aria-hidden="true" class="site-source-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+                <span class="mobile-nav-icon" aria-hidden="true">&#9776;</span>
+            </button>
+        </div>
+        <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
+            <a class="site-nav-link " href="index.html">Overview</a>
+            <a class="site-nav-link " href="examples.html">Capabilities</a>
+            <a class="site-nav-link " href="guides/style-authoring/start.html">Style Authoring</a>
+            <a class="site-nav-link " href="developer.html">Integrate</a>
+            <a class="site-nav-link active" href="demo.html">Demo</a>
+            <a class="site-nav-link " href="schemas/">Schemas</a>
+            <a class="site-nav-link " href="reports.html">Reports</a>
+            <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
+        </div>        <!-- LAYOUT_NAV_END -->
+
+  <div class="container-demo pt-24">
+    <div class="flex justify-end mb-4">
+      <a href="developer.html#interactive" class="config-link">
+        <span class="material-icons" style="font-size: 1rem;">settings</span>
+        View Configuration
+      </a>
+    </div>
+
+    <header>
+      <h1>The Infrastructure of Scholarly Memory</h1>
+      <p class="subtitle">How citation practices construct scholarly knowledge across languages, times, and media.</p>
+    </header>
+
+    <div class="demo-notice">
+      <strong>Illustration only.</strong> This is an entirely artificial document created to
+      demonstrate Citum citation rendering. All arguments, references, and authors are
+      fabricated. No scholarly claims are made.
+      <div class="feature-tags">
+        <span class="feature-tag">integral &amp; non-integral</span>
+        <span class="feature-tag">name memory</span>
+        <span class="feature-tag">multilingual (ja, es)</span>
+        <span class="feature-tag">EDTF dates (2022~, 1891?)</span>
+        <span class="feature-tag">archival + archive-info</span>
+        <span class="feature-tag">preprint + eprint</span>
+        <span class="feature-tag">primary / secondary bibliography</span>
+      </div>
+    </div>
+
+    <div class="controls">
+      <span>Layout:</span>
+      <button class="btn active" id="btn-classic">Classic (Bottom)</button>
+      <button class="btn" id="btn-sidebar">Modern Sidebar</button>
+    </div>
+
+  <div id="demo-root" class="demo-container">
+    <article class="content">
+      <p>
+        Scholarly citation serves as the primary mechanism through which academic knowledge
+        is organized, attributed, and transmitted. As
+        <span class="citum-citation" data-ref="chen2017">Chen (2017)</span>
+        has argued, the practices surrounding citation reflect deeper epistemological
+        commitments about what counts as knowledge and who produces it. The formal apparatus
+        of bibliographic reference — the footnote, the parenthetical, the numbered list —
+        constitutes what
+        <span class="citum-citation" data-ref="webb1968">Webb (1968)</span>
+        called &#8220;the footnote as institution,&#8221; embedding social relations within
+        the seemingly neutral mechanics of scholarly communication.
+      </p>
+
+      <p>
+        The production of this apparatus is not confined to Anglophone scholarship.
+        <span class="citum-citation" data-ref="tanaka_yuki2019">Tanaka and Suzuki (2019)</span>
+        demonstrate that citation practices in Japanese science studies reflect distinct
+        epistemological conventions, including different assumptions about authorial authority
+        and collective knowledge-making. Parallel observations emerge from Spanish-language
+        scholarship, where the relationship between citation and institutional context differs
+        in ways that challenge Anglocentric models of attribution
+        <span class="citum-citation" data-ref="garcia2022">(Garc&#237;a-Reyes &amp; Montoya, ca.&thinsp;2022)</span>.
+      </p>
+
+      <p>
+        These questions have a longer history than recent digital debates might suggest.
+        <span class="citum-citation" data-ref="harrington1891">Harrington (1891?)</span>
+        observed — in manuscript notes preserved at the British Library — that bibliographic
+        method was already contested among Victorian scholars of natural history, who
+        disagreed fundamentally about whether a citation should indicate provenance,
+        priority, or deference.
+        <span class="citum-citation" data-ref="chen2017">Chen (2017, ch.&thinsp;3)</span>
+        traces a direct line from these Victorian anxieties to contemporary algorithmic
+        citation metrics; the impulse to quantify scholarly influence has deep institutional
+        roots.
+      </p>
+
+      <p>
+        More recent work challenges the assumption that citation reflects merit rather than
+        network position.
+        <span class="citum-citation" data-ref="chen2020">Chen (2020)</span>
+        extends this analysis to the digital transition, arguing that platform architectures
+        reproduce and amplify existing hierarchies of credibility.
+        <span class="citum-citation" data-ref="okafor2024">Okafor et al. (2024)</span>
+        provide large-scale empirical support for this claim, showing through computational
+        analysis of citation networks that topological centrality correlates more strongly
+        with institutional affiliation than with measured scholarly impact.
+      </p>
+
+      <p>
+        Together, this body of evidence suggests that citation is less a neutral epistemic
+        tool than a cultural technology whose workings differ across languages, institutions,
+        and time periods. Understanding that variability requires attention to both the fine
+        structure of individual references — their dates, languages, formats, and archival
+        contexts — and the aggregate patterns they produce across documents and disciplines.
+      </p>
+    </article>
+
+    <section class="citum-bibliography">
+      <h3>Primary Sources</h3>
+
+      <div class="citum-entry" id="ref-harrington1891"
+           data-author="Harrington, R. L." data-year="1891?" data-title="Notes on Bibliographic Method">
+        <span class="citum-author">Harrington, R. L.</span>
+        <span class="citum-date">(1891?).</span>
+        <span class="citum-title">Notes on bibliographic method and the organisation of learned references</span>
+        [Manuscript]. MS Add.&thinsp;47903, ff.&thinsp;12&#8211;34.
+        British Library, Manuscripts Reading Room, London.
+      </div>
+
+      <h3>Secondary Sources</h3>
+
+      <div class="citum-entry" id="ref-chen2017"
+           data-author="Chen, M." data-year="2017" data-title="The Social Life of References">
+        <span class="citum-author">Chen, M.</span>
+        <span class="citum-date">(2017).</span>
+        <em class="citum-title">The social life of references: Knowledge-making in collaborative science.</em>
+        MIT Press.
+      </div>
+
+      <div class="citum-entry" id="ref-chen2020"
+           data-author="Chen, M." data-year="2020" data-title="Citation and Authority">
+        <span class="citum-author">Chen, M.</span>
+        <span class="citum-date">(2020).</span>
+        <em class="citum-title">Citation and authority: Epistemic practices in the digital age.</em>
+        MIT Press.
+      </div>
+
+      <div class="citum-entry" id="ref-garcia2022"
+           data-author="García-Reyes &amp; Montoya" data-year="ca. 2022" data-title="Prácticas de citación en la ciencia latinoamericana">
+        <span class="citum-author">Garc&#237;a-Reyes, I., &amp; Montoya, C.&thinsp;P.</span>
+        <span class="citum-date">(ca.&thinsp;2022).</span>
+        Pr&#225;cticas de citaci&#243;n en la ciencia latinoamericana
+        [Citation practices in Latin American science].
+        In E. Restrepo (Ed.),
+        <em class="citum-container-title">Epistemolog&#237;as del Sur: Perspectivas desde Am&#233;rica Latina</em>
+        (pp.&thinsp;112&#8211;138). CLACSO.
+      </div>
+
+      <div class="citum-entry" id="ref-okafor2024"
+           data-author="Okafor, Ferreira &amp; Park" data-year="2024" data-title="Network Topology of Academic Citation">
+        <span class="citum-author">Okafor, N., Ferreira, B., &amp; Park, J.</span>
+        <span class="citum-date">(2024, January).</span>
+        <em class="citum-title">Network topology of academic citation: A large-scale computational analysis.</em>
+        arXiv:2401.05832 [cs.DL].
+      </div>
+
+      <div class="citum-entry" id="ref-tanaka_yuki2019"
+           data-author="田中 &amp; 鈴木" data-year="2019" data-title="引用の社会的機能">
+        <span class="citum-author">&#30000;&#20013;, &#30001;&#32000;, &amp; &#40658;&#26408;, &#26149;&#20154;.</span>
+        <span class="citum-date">(2019).</span>
+        &#24341;&#29992;&#12398;&#31038;&#20250;&#30340;&#26178;&#35251;&#65306;&#23398;&#34899;&#30693;&#35672;&#12398;&#27083;&#31689;&#12395;&#12362;&#12369;&#12427;&#21442;&#29031;&#23455;&#36341;
+        [The social function of citation: Reference practices in the construction of academic knowledge].
+        <em class="citum-container-title">&#31185;&#23398;&#31038;&#20250;&#23398;&#30740;&#31350;,</em>
+        <em>37</em>(2), 45&#8211;78.
+      </div>
+
+      <div class="citum-entry" id="ref-webb1968"
+           data-author="Webb, M. L." data-year="1968" data-title="The Footnote as Institution">
+        <span class="citum-author">Webb, M.&thinsp;L.</span>
+        <span class="citum-date">(1968).</span>
+        <em class="citum-title">The footnote as institution: A history of scholarly reference.</em>
+        Oxford University Press.
+      </div>
+    </section>
+  </div>
+  </div>
+
+    <!-- Footer -->
+    <footer class="py-12 px-6 border-t border-slate-200 bg-white/50">
+        <!-- LAYOUT_FOOTER_START -->
+            <div class="site-footer-inner">
+                <div class="site-brand site-brand-small">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </div>
+                <div class="site-footer-links">
+                    <a href="guides/style-authoring/start.html">Style Authoring</a>
+                    <a href="developer.html">Integrate</a>
+                    <a href="schemas/">Schemas</a>
+                    <a href="reports.html">Reports</a>
+                    <a href="operating.html">Contributing</a>
+                    <a href="https://github.com/citum/citum-core">GitHub</a>
+                </div>
+                <div class="site-footer-note">&copy; 2026 Citum Project.</div>
+            </div>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github.min.css">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js" defer onload="hljs.highlightAll();"></script>        <!-- LAYOUT_FOOTER_END -->
+    </footer>
+
+  <script src="assets/citum-interactive.js"></script>
+  <script>
+    const root = document.getElementById('demo-root');
+    const btnClassic = document.getElementById('btn-classic');
+    const btnSidebar = document.getElementById('btn-sidebar');
+
+    btnClassic.addEventListener('click', () => {
+      root.classList.remove('citum-with-sidebar');
+      btnClassic.classList.add('active');
+      btnSidebar.classList.remove('active');
+    });
+
+    btnSidebar.addEventListener('click', () => {
+      root.classList.add('citum-with-sidebar');
+      btnSidebar.classList.add('active');
+      btnClassic.classList.remove('active');
+    });
+  </script>
+</body>
+</html>
