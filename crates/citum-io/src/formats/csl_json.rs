@@ -5,25 +5,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! CSL-JSON bibliography load and write helpers.
 
-use std::fs;
-use std::path::Path;
-
-use citum_engine::ProcessorError;
-use citum_schema::InputBibliography;
-use citum_schema::reference::{ClassExtension, InputReference};
+use citum_schema::reference::InputReference;
 use csl_legacy::csl_json::{DateVariable, Name, Reference as LegacyReference, StringOrNumber};
-
-/// Load a CSL-JSON bibliography file.
-pub(crate) fn load_csl_json_bibliography(path: &Path) -> Result<InputBibliography, ProcessorError> {
-    let bytes = fs::read(path)?;
-    let refs: Vec<LegacyReference> = serde_json::from_slice(&bytes)
-        .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
-    let references = refs.into_iter().map(InputReference::from).collect();
-    Ok(InputBibliography {
-        references,
-        ..Default::default()
-    })
-}
 
 /// Convert an [`InputReference`] to a CSL-JSON [`LegacyReference`].
 pub(crate) fn input_reference_to_csl_json(reference: &InputReference) -> LegacyReference {
@@ -47,13 +30,13 @@ pub(crate) fn input_reference_to_csl_json(reference: &InputReference) -> LegacyR
     r.publisher = reference.publisher().map(|p| p.name.to_string());
 
     match reference.extension() {
-        ClassExtension::Monograph(m) => {
+        citum_schema::reference::ClassExtension::Monograph(m) => {
             r.ref_type = "book".to_string();
             r.isbn.clone_from(&m.isbn);
             r.url = m.url.as_ref().map(std::string::ToString::to_string);
             r.edition = reference.edition().map(StringOrNumber::String);
         }
-        ClassExtension::SerialComponent(s) => {
+        citum_schema::reference::ClassExtension::SerialComponent(s) => {
             r.ref_type = "article-journal".to_string();
             r.container_title = reference.container_title().map(|t| t.to_string());
             r.page.clone_from(&s.pages);
@@ -65,7 +48,7 @@ pub(crate) fn input_reference_to_csl_json(reference: &InputReference) -> LegacyR
                 .map(|v| StringOrNumber::String(v.to_string()));
             r.url = s.url.as_ref().map(std::string::ToString::to_string);
         }
-        ClassExtension::CollectionComponent(c) => {
+        citum_schema::reference::ClassExtension::CollectionComponent(c) => {
             r.ref_type = "chapter".to_string();
             r.container_title = reference.container_title().map(|t| t.to_string());
             r.page = c.pages.as_ref().map(std::string::ToString::to_string);

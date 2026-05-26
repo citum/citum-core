@@ -1,16 +1,14 @@
 [package]
-name = "citum-io"
+name = "citum-refs"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "Citum I/O and format conversion library"
+description = "Citum reference data loading and parsing"
 readme = "README.md"
 repository.workspace = true
 
 [dependencies]
 citum-schema = { workspace = true, features = ["legacy-convert"] }
-citum-engine = { workspace = true }
-citum-refs = { workspace = true }
 csl-legacy = { workspace = true }
 biblatex = "0.11"
 serde = { version = "1.0", features = ["derive"] }
@@ -18,6 +16,7 @@ serde_json = "1.0"
 serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
 ciborium = "0.2"
 indexmap = { version = "2.2.6", features = ["serde"] }
+thiserror = "2.0"
 url = { version = "2.5", features = ["serde"] }
 
 [lints]
