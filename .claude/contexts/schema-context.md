@@ -40,6 +40,6 @@ cargo run --bin citum -- schema > citum.schema.json
 ```
 
 ## Reference Docs
-- [STYLE_ALIASING.md](../../docs/architecture/design/STYLE_ALIASING.md)
-- [PUNCTUATION_NORMALIZATION.md](../../docs/architecture/design/PUNCTUATION_NORMALIZATION.md)
+- [STYLE_ALIASING.md](../../docs/specs/STYLE_ALIASING.md)
+- [PUNCTUATION_NORMALIZATION.md](../../docs/specs/PUNCTUATION_NORMALIZATION.md)
 - [PRIOR_ART.md](../../docs/architecture/PRIOR_ART.md)

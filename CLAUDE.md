@@ -76,8 +76,9 @@ All new or modified **public Rust items** need `///` doc comments (one clear sen
 
 | Kind | Directory |
 |---|---|
-| Execution plans / snapshots | `docs/architecture/` (date-stamped) |
 | Feature / design specs | `docs/specs/` (use template) |
+| Operational audit records | `docs/architecture/audits/` (date-stamped) |
+| Architectural decisions | `docs/architecture/` |
 | Active behavioral rules | `docs/policies/` |
 | Operational how-tos | `docs/guides/` |
 | Reference lookups | `docs/reference/` |

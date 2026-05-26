@@ -29,7 +29,7 @@ Working on the citation and bibliography **rendering engine**.
 
 ## Reference Docs
 - [RENDERING_WORKFLOW.md](../../docs/RENDERING_WORKFLOW.md)
-- [PUNCTUATION_NORMALIZATION.md](../../docs/architecture/design/PUNCTUATION_NORMALIZATION.md)
+- [PUNCTUATION_NORMALIZATION.md](../../docs/specs/PUNCTUATION_NORMALIZATION.md)
 
 ## Recent Changes
 - 2026-02-09: feat: add structured html output for bibliography

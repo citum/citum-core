@@ -36,7 +36,7 @@ The bibliography rendering shows a higher overhead (~70%). This is likely due to
 
 ## Compliance with Success Metrics
 
-According to `docs/architecture/design/WASM_SUPPORT.md`:
+According to `docs/specs/WASM_SUPPORT.md`:
 
 - [x] **Performance within 3x native:** WASM is ~1.2x to 1.7x native.
 - [x] **Deterministic performance:** No significant outliers or GC pauses observed in p99 metrics.

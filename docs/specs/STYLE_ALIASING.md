@@ -1,5 +1,8 @@
 # Style Aliasing and Presets Design
 
+**Status:** Active
+**Date:** 2026-02-15
+
 ## Problem Statement
 
 The CSL 1.0 ecosystem contains **7,987 dependent styles** that alias approximately **300 parent styles**. Analysis shows that the top 10 parent styles cover **60% of all dependent styles**:

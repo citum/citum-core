@@ -44,4 +44,4 @@ cargo fmt && cargo clippy --all-targets --all-features -- -D warnings && cargo t
 
 ## Reference Docs
 - [RENDERING_WORKFLOW.md](../../docs/RENDERING_WORKFLOW.md) — detailed workflow guide
-- [TEST_STRATEGY.md](../../docs/architecture/design/TEST_STRATEGY.md) — testing philosophy
+- [TEST_STRATEGY.md](../../docs/guides/TEST_STRATEGY.md) — testing philosophy

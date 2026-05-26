@@ -84,10 +84,10 @@ conversion:
 
 | Document | Recommended treatment | Why |
 |---------|------------------------|-----|
-| `docs/architecture/design/TYPE_SYSTEM_ARCHITECTURE.md` | Keep as architecture; later add a separate spec if needed | It is still rationale and option analysis, not a clean normative contract |
-| `docs/architecture/design/LEGAL_CITATIONS.md` | Likely spec candidate | It may be the de facto contract for legal-reference behavior |
+| `docs/specs/TYPE_SYSTEM_ARCHITECTURE.md` | Moved to specs (2026-05-26) | Rationale + option analysis for the type model |
+| `docs/specs/LEGAL_CITATIONS.md` | Moved to specs (2026-05-26) | De facto contract for legal-reference behavior |
 | `docs/architecture/MULTILINGUAL.md` | Likely split | It appears broad enough to separate rationale from implementable behavior |
-| `docs/architecture/design/BIBLIOGRAPHY_GROUPING.md` | Likely spec candidate | It likely describes processor behavior that should be testable |
+| `docs/specs/BIBLIOGRAPHY_GROUPING.md` | Moved to specs (2026-05-26) | Describes processor behavior that should be testable |
 | `docs/architecture/CITUM_STORE_PLAN.md` | Likely spec candidate | It appears feature-oriented if the store remains active roadmap work |
 
 ## Working Rule for New Docs

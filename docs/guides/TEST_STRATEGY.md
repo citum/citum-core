@@ -1,5 +1,8 @@
 # Test Strategy: Oracle vs Citum-Native
 
+**Status:** Active
+**Date:** 2026-02-15
+
 ## Current Approach: Oracle Tests
 
 **Purpose**: Validate CSL 1.0 backward compatibility

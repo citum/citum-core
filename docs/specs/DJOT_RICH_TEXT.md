@@ -8,6 +8,33 @@
 
 Specifies djot inline markup processing for title, annotation, note, and abstract fields in the Citum engine.
 
+## Math Policy
+
+Mathematical notation in citation fields should use **Unicode only**. This follows John MacFarlane's analysis ([CSL schema issue #278](https://github.com/citation-style-language/schema/issues/278#issuecomment-650402841)): practical cases (H₂O, p53, isotopes) are representable in Unicode; full math (integrals, matrices) does not belong in citation fields by design. LaTeX or MathML markup in reference fields is out of scope. Authors should use Unicode precomposed characters; styles and processors must not interpret TeX fragments.
+
+## Title Markup: Known Cases
+
+### Title-within-title
+
+A book title containing an embedded article title, or vice versa: `_Some Embedded Book_`. The embedded title italicises if context is not already italic, de-italicises inside an italic context (Chicago rule). Quote nesting uses locale-dependent quotation marks; this is a locale/style config concern, not a field markup concern.
+
+### Case protection (`.nocase`)
+
+The primary driver for title markup is preventing sentence-case transformation from destroying content that must stay uppercase:
+
+| Case | Example |
+|---|---|
+| Acronyms | `DNA`, `NASA`, `pH`, `mRNA` |
+| Proper nouns | `Paris`, `Alzheimer`, `Google` |
+| Chemical names | `NaCl`, `HCl` |
+| Embedded titles | Any proper noun acting as a title |
+
+Citum's equivalent of CSL `<span class="nocase">` uses djot span attributes: `{.nocase}[DNA]`. This is the **highest-value** markup use case for titles.
+
+### Smallcaps in titles
+
+Rare; mostly style-driven (some styles render `BCE`/`CE` in smallcaps). Djot span: `{.smallcaps}[BCE]`.
+
 ## Scope
 
 In scope: inline djot markup (bold, italic, links, code) in title strings, annotation strings, note fields, and abstract fields.
@@ -56,6 +83,12 @@ Quote toggling is likewise renderer-owned. `OutputFormat` exposes depth-aware qu
 - [x] Schema regenerated and staged (`docs/schemas/bib.json` and `docs/schemas/style.json`).
 - [x] Component-level quoted titles alternate inner quote marks for normal and grouped bibliography rendering.
 - [x] Djot inline rendering alternates nested quote marks using ambient quote depth.
+
+## Non-Goals
+
+- LaTeX or MathML interpretation in reference fields
+- Full djot block-level rendering for field values
+- General title/text-case semantics (`.nocase` transformation engine — tracked in csl26-wv5o)
 
 ## Changelog
 - 2026-05-21: Added inline rendering context for nested emphasis and quote toggling.

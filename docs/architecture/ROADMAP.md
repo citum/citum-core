@@ -209,7 +209,7 @@
 ### 2026-02-08: Type System Architecture Finalized
 **Decision:** Hybrid model (structural for academic, flat for legal/domain-specific)
 **Rationale:** Balances data efficiency with style clarity using 4-factor test.
-**Refs:** ./architecture/design/TYPE_SYSTEM_ARCHITECTURE.md, ./architecture/design/TYPE_ADDITION_POLICY.md
+**Refs:** ../specs/TYPE_SYSTEM_ARCHITECTURE.md, ../policies/TYPE_ADDITION_POLICY.md
 
 ## References
 

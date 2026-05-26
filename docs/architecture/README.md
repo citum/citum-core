@@ -14,10 +14,10 @@ current task.
 
 ## Tier B: Active Specialized Design
 
-1. [`design/TYPE_SYSTEM_ARCHITECTURE.md`](./design/TYPE_SYSTEM_ARCHITECTURE.md)
-2. [`design/STYLE_ALIASING.md`](./design/STYLE_ALIASING.md)
-3. [`design/BIBLIOGRAPHY_GROUPING.md`](./design/BIBLIOGRAPHY_GROUPING.md)
-4. [`design/LEGAL_CITATIONS.md`](./design/LEGAL_CITATIONS.md)
+1. [`../specs/TYPE_SYSTEM_ARCHITECTURE.md`](../specs/TYPE_SYSTEM_ARCHITECTURE.md)
+2. [`../specs/STYLE_ALIASING.md`](../specs/STYLE_ALIASING.md)
+3. [`../specs/BIBLIOGRAPHY_GROUPING.md`](../specs/BIBLIOGRAPHY_GROUPING.md)
+4. [`../specs/LEGAL_CITATIONS.md`](../specs/LEGAL_CITATIONS.md)
 5. [`CITUM_MODULARIZATION.md`](./CITUM_MODULARIZATION.md)
 6. [`CITUM_FULL_MIGRATION_EXECUTION_PLAN_2026-02-26.md`](./CITUM_FULL_MIGRATION_EXECUTION_PLAN_2026-02-26.md)
 7. [`../adjudication/DIVERGENCE_REGISTER.md`](../adjudication/DIVERGENCE_REGISTER.md) - audit trail of intentional behavioral departures from CSL/citeproc
@@ -34,6 +34,11 @@ These are point-in-time execution records, not canonical status:
 6. [`MIGRATE_ENHANCE_WAVE2_HANDOFF_2026-02-21.md`](./MIGRATE_ENHANCE_WAVE2_HANDOFF_2026-02-21.md)
 7. [`MIGRATE_ENHANCE_WAVE3_HANDOFF_2026-02-21.md`](./MIGRATE_ENHANCE_WAVE3_HANDOFF_2026-02-21.md)
 8. [`ARCHITECTURAL_SOUNDNESS_2026-02-25.md`](./ARCHITECTURAL_SOUNDNESS_2026-02-25.md)
+9. [`STYLE_EDITOR_VISION.md`](./STYLE_EDITOR_VISION.md) - product vision for a web-based style editor (aspirational)
+
+## Audits (`audits/`)
+
+Dated operational records — quality audits, SQI baselines, security scans, performance reports. Not canonical status; consult when investigating a specific past audit. See [`audits/`](./audits/) for the full list.
 
 ## Usage Rule
 
