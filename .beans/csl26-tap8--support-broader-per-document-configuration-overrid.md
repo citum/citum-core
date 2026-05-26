@@ -8,7 +8,7 @@ tags:
     - engine
     - schema
 created_at: 2026-05-01T14:26:15Z
-updated_at: 2026-05-26T22:16:35Z
+updated_at: 2026-05-26T23:14:08Z
 ---
 
 Extend the document frontmatter parsing to support broader configuration
@@ -33,3 +33,5 @@ these on a per-document basis without modifying the style.
 ## Spec
 
 docs/specs/PER_DOCUMENT_CONFIG_OVERRIDES.md
+
+## Implementation Plan\n- [ ] Commit 1: DocumentOptionsOverride struct + frontmatter parsing\n- [ ] Commit 2: Apply overrides in pipeline\n- [ ] Commit 3: CLI --locale flag

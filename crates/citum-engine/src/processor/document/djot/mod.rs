@@ -23,8 +23,12 @@ pub struct DjotParser;
 impl CitationParser for DjotParser {
     fn parse_document(&self, content: &str, locale: &Locale) -> ParsedDocument {
         // Try to parse frontmatter and get remaining content
-        let (frontmatter, remaining_content) = parse_frontmatter(content);
+        let (frontmatter_result, remaining_content) = parse_frontmatter(content);
         let body_start = content.len() - remaining_content.len();
+        let (frontmatter, frontmatter_error) = match frontmatter_result {
+            Ok(fm) => (fm, None),
+            Err(e) => (None, Some(e)),
+        };
 
         let (manual_note_references, manual_note_labels, footnote_definitions) =
             scan_manual_notes(remaining_content);
@@ -53,12 +57,25 @@ impl CitationParser for DjotParser {
         let bibliography_blocks = scan_bibliography_blocks(remaining_content);
 
         let frontmatter_groups = frontmatter.as_ref().and_then(|fm| fm.bibliography.clone());
+        let frontmatter_options = frontmatter.as_ref().and_then(|fm| fm.options.clone());
+        // Legacy top-level fields are superseded by their `options.*` counterparts.
         let frontmatter_integral_name_memory = frontmatter
             .as_ref()
-            .and_then(|fm| fm.integral_name_memory.clone());
+            .and_then(|fm| fm.integral_name_memory.clone())
+            .filter(|_| {
+                frontmatter_options
+                    .as_ref()
+                    .and_then(|o| o.integral_name_memory.as_ref())
+                    .is_none()
+            });
         let frontmatter_org_abbreviation_memory = frontmatter
-            .as_ref()
-            .and_then(|fm| fm.org_abbreviation_memory.clone());
+            .and_then(|fm| fm.org_abbreviation_memory)
+            .filter(|_| {
+                frontmatter_options
+                    .as_ref()
+                    .and_then(|o| o.org_abbreviation_memory.as_ref())
+                    .is_none()
+            });
         ParsedDocument {
             citations,
             manual_note_order,
@@ -68,6 +85,8 @@ impl CitationParser for DjotParser {
             frontmatter_groups,
             frontmatter_integral_name_memory,
             frontmatter_org_abbreviation_memory,
+            frontmatter_options,
+            frontmatter_error,
             body_start,
         }
     }
