@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use super::djot::parsing::parse_frontmatter;
 use super::{CitationParser, CitationPlacement, CitationStructure, ParsedCitation, ParsedDocument};
 use crate::{Citation, CitationItem};
-use citum_schema::citation::{normalize_locator_text, CitationMode};
+use citum_schema::citation::{CitationMode, normalize_locator_text};
 use citum_schema::locale::Locale;
 use std::collections::HashSet;
 
@@ -277,11 +277,7 @@ fn cite_key_len(input: &str) -> Option<usize> {
         .last()
         .unwrap_or(0);
 
-    if len == 0 {
-        None
-    } else {
-        Some(len)
-    }
+    if len == 0 { None } else { Some(len) }
 }
 
 fn normalize_prefix(prefix: &str) -> Option<String> {

@@ -6,10 +6,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! High-level document-processing orchestration.
 
 use super::output::{
-    append_document_bibliography, bibliography_block_placeholder,
-    render_document_bibliography_block_replacement, rewrite_document_markup_for_typst,
-    rewrite_group_headings_for_document, stage_document_bibliography_blocks,
-    HtmlPlaceholderRegistry, RenderedDocumentBody,
+    HtmlPlaceholderRegistry, RenderedDocumentBody, append_document_bibliography,
+    bibliography_block_placeholder, render_document_bibliography_block_replacement,
+    rewrite_document_markup_for_typst, rewrite_group_headings_for_document,
+    stage_document_bibliography_blocks,
 };
 use super::{BibliographyBlock, CitationParser, DocumentFormat, ParsedDocument};
 use crate::processor::Processor;
@@ -37,7 +37,12 @@ impl Processor {
     {
         let mut parsed = parser.parse_document(content, &self.locale);
 
-        // `options.integral-name-memory` takes precedence over the legacy top-level field.
+        if let Some(err) = &parsed.frontmatter_error {
+            eprintln!("citum: error: frontmatter parse error: {err}");
+            std::process::exit(1);
+        }
+
+        // `options.*` fields take precedence over the legacy top-level fields.
         let effective_integral_override = parsed
             .frontmatter_options
             .as_ref()
@@ -46,11 +51,12 @@ impl Processor {
         let owned_integral =
             self.processor_with_document_integral_name_override(effective_integral_override);
 
-        // Apply org-abbreviation-memory override from the options block.
+        // `options.org-abbreviation-memory` takes precedence over the legacy top-level field.
         let effective_org_override = parsed
             .frontmatter_options
             .as_ref()
-            .and_then(|o| o.org_abbreviation_memory.as_ref());
+            .and_then(|o| o.org_abbreviation_memory.as_ref())
+            .or(parsed.frontmatter_org_abbreviation_memory.as_ref());
         let owned_org = {
             let base = owned_integral.as_ref().unwrap_or(self);
             base.processor_with_document_org_abbreviation_override(effective_org_override)
