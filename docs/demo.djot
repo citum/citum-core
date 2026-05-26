@@ -1,8 +1,9 @@
 ---
-integral-name-memory:
-  enabled: true
-  scope: document
-  contexts: body-and-notes
+options:
+  integral-name-memory:
+    enabled: true
+    scope: document
+    contexts: body-and-notes
 ---
 
 {.citum-demo-notice}
@@ -12,10 +13,11 @@ No scholarly claims are made.
 
 ---
 
-**Features illustrated**: integral and non-integral citations; name memory (Chen, cited
-across two works); multilingual sources (Japanese, Spanish); EDTF dates (approximate:
-`2022~`; uncertain: `1891?`); archival reference with `archive-info`; preprint with
-`eprint` identifier. The companion reference file is `docs/demo-refs.yaml`.
+**Features illustrated**: integral and non-integral citations; per-document integral
+name memory via `options.integral-name-memory` (Chen, cited across two works, rendered
+in short form on repeat); multilingual sources (Japanese, Spanish); EDTF dates
+(approximate: `2022~`; uncertain: `1891?`); archival reference with `archive-info`;
+preprint with `eprint` identifier. The companion reference file is `docs/demo-refs.yaml`.
 
 ---
 
