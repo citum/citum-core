@@ -1,17 +1,17 @@
 # Citum Multilingual Support Design
 
-**Status**: Draft
+**Status**: Active
 **Authors**: @dstyleplan
-**Date**: 2026-02-11
+**Date**: 2026-05-26
 
-**Normative specs:** [`../specs/MULTILINGUAL_NAMES.md`](../specs/MULTILINGUAL_NAMES.md),
-[`../specs/MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](../specs/MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md)
+**Normative specs:** [`MULTILINGUAL_NAMES.md`](./MULTILINGUAL_NAMES.md),
+[`MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](./MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md)
 
 ## Overview
 
 This document outlines the architectural design for adding "elegant" multilingual support to Citum. The goal is to move away from procedural macros and toward a declarative, type-safe system that handles parallel metadata for high-fidelity citations.
 
-## core Principles
+## Core Principles
 
 1.  **High-Fidelity Data**: Store original, transliterated, and translated versions of metadata fields side-by-side.
 2.  **Declarative Style**: Styles request a specific "view" of the data (e.g., "transliterated [translated]") rather than implementing complex logic.
@@ -162,7 +162,6 @@ Transliteration keys use BCP 47 language tags with script and variant subtags to
 3. Fallback to `original` field
 
 Future: `preferred-transliteration` style option will allow explicit method selection.
-```
 
 ## 2. Style Configuration
 
@@ -171,15 +170,13 @@ A new global configuration section `multilingual` will be added to the Citum sty
 ```yaml
 options:
   multilingual:
-    # Preferred view for titles:
-    # - primary: Use original script
-    # - transliterated: Prefer transliteration
-    # - translated: Use translation matching style locale
-    # - combined: "original [translation]" pattern
+    # Preferred view for titles.
+    # The value is a mode key or a combined pattern such as "transliterated [translated]".
+    # See the style schema for the authoritative grammar.
     title-mode: "transliterated [translated]"
 
-    # Preferred view for names:
-    # - primary, transliterated, translated, combined
+    # Preferred view for names.
+    # See the style schema for the authoritative value set.
     name-mode: "transliterated"
 
     # Preferred script for transliterations (e.g., "Latn", "Cyrl")
@@ -198,17 +195,21 @@ options:
 
 ... [existing resolution logic] ...
 
-### 3.2 Script-Aware Ordering
+### 3.2 Script-Aware Name Rendering
 
-For contributors, the processor must be script-aware to handle ordering (Given Family vs Family Given) and delimiters.
+For contributors, the processor inspects the rendered given/family name parts to determine the active script, then applies script-specific ordering and separators from `options.multilingual.scripts`.
 
-1.  **Detection**: Determine the script of the resolved name (e.g., Latin vs CJK).
-2.  **Ordering**:
-    *   If CJK and `use-native-ordering` is true, use `FamilyGiven`.
-    *   If Latin, use `Given Family` (unless `sort-order` is requested).
-3.  **Delimiters**: Use script-appropriate delimiters for contributor lists (e.g., "・" for Japanese lists).
+**Detection** uses the `unicode_script` crate, which covers all Unicode planes including CJK Unified Ideographs Extension B+ (U+20000 and above). Common or inherited punctuation does not force a script match. The supported script key set and matching order (exact key → ISO 15924 alias → group key → `cjk` umbrella) is specified in [`MULTILINGUAL_NAMES.md`](./MULTILINGUAL_NAMES.md).
 
-### 3.2 Locale Separation
+**Ordering**: `use-native-ordering: true` on a matched script config renders family-first when the template has not explicitly requested another order. Template-level `name-order` and contributor sort settings remain authoritative and override `use-native-ordering`.
+
+**Separators**: `delimiter` joins visible name parts in non-inverted rendering. `sort-separator` joins family and given when the name is inverted; it is a distinct field and is overridden by any component-level `sort-separator` attribute. The style config block example at the top of §2 shows `cjk: delimiter: ""` (no inter-part space) — per-script keys such as `katakana` can add a `・` delimiter and `、` sort-separator for that specific script.
+
+Mixed-script names (e.g., family in Han, given in Katakana) collapse to the `cjk` umbrella unless the mix is purely Hiragana + Katakana, which resolves to `kana`. Dominance-based selection for other mixes is deferred.
+
+If no matching script config exists, existing behavior is preserved: non-inverted names use spaces and inverted names use the normal contributor `sort-separator` fallback.
+
+### 3.3 Locale Separation
 
 The processor must distinguish between:
 *   **Data Language**: The language of the source metadata (e.g., Russian).
