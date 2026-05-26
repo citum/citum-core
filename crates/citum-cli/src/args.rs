@@ -612,6 +612,10 @@ pub(crate) struct RenderDocArgs {
     #[arg(long)]
     pub(crate) typst_keep_source: bool,
 
+    /// Locale ID (e.g. "de-DE", "fr-FR") to override the style's default locale
+    #[arg(short = 'L', long)]
+    pub(crate) locale: Option<String>,
+
     /// Disable semantic classes (HTML spans, Djot attributes)
     #[arg(long)]
     pub(crate) no_semantics: bool,

@@ -53,15 +53,25 @@ pub(super) fn run_render_doc(args: RenderDocArgs) -> CliResult {
         );
     }
 
+    // Read document first so we can extract frontmatter locale for processor setup.
+    let doc_content = fs::read_to_string(&args.input)?;
+
+    // CLI --locale takes precedence over frontmatter options.locale.
+    // Avoid cloning args.locale: only call extract_frontmatter_locale when needed.
+    let fm_locale = args
+        .locale
+        .is_none()
+        .then(|| extract_frontmatter_locale(&doc_content))
+        .flatten();
+    let effective_locale = args.locale.as_deref().or(fm_locale.as_deref());
+
     let processor = create_processor(
         style_obj,
         bibliography,
         &args.style,
         args.no_semantics,
-        None,
+        effective_locale,
     )?;
-
-    let doc_content = fs::read_to_string(&args.input)?;
     let output = match args.input_format {
         InputFormat::Djot => render_doc_with_output_format(
             &processor,
@@ -307,6 +317,44 @@ fn render_refs_json(
     }
 }
 
+/// Extract the `options.locale` field from document YAML frontmatter, if present.
+///
+/// Returns `None` when the document has no frontmatter, the frontmatter has no
+/// `options:` block, or `options.locale` is absent. Parsing errors are silently
+/// ignored — the engine will fall back to the style's default locale.
+fn extract_frontmatter_locale(content: &str) -> Option<String> {
+    use serde::Deserialize;
+
+    #[derive(Deserialize)]
+    struct FrontmatterOptions {
+        locale: Option<String>,
+    }
+
+    #[derive(Deserialize)]
+    struct MinimalFrontmatter {
+        options: Option<FrontmatterOptions>,
+    }
+
+    let trimmed = content.trim_start();
+    if !trimmed.starts_with("---") {
+        return None;
+    }
+    #[allow(clippy::string_slice, reason = "'---' is 1-byte ASCII")]
+    let after_opening = &trimmed[3..];
+    // Use "\n---" so embedded "---" in YAML values (e.g. abstract: "foo---bar")
+    // does not falsely close the frontmatter block.
+    let closing_pos = after_opening.find("\n---").map(|p| p + 1)?;
+    #[allow(
+        clippy::string_slice,
+        reason = "closing_pos is '\\n' offset + 1, which lands on ASCII '-'"
+    )]
+    let frontmatter_str = &after_opening[..closing_pos];
+    serde_yaml::from_str::<MinimalFrontmatter>(frontmatter_str)
+        .ok()?
+        .options?
+        .locale
+}
+
 #[cfg(test)]
 #[allow(
     clippy::unwrap_used,
@@ -547,6 +595,44 @@ grammar-options:
         assert_eq!(
             parsed.legacy_term_aliases.get("page").map(String::as_str),
             Some("term.page-label")
+        );
+    }
+
+    #[test]
+    fn test_extract_frontmatter_locale_present() {
+        let content = "---\noptions:\n  locale: de-DE\n---\nBody text.";
+        assert_eq!(
+            extract_frontmatter_locale(content),
+            Some(String::from("de-DE"))
+        );
+    }
+
+    #[test]
+    fn test_extract_frontmatter_locale_absent_options() {
+        let content = "---\ntitle: My Doc\n---\nBody text.";
+        assert!(extract_frontmatter_locale(content).is_none());
+    }
+
+    #[test]
+    fn test_extract_frontmatter_locale_no_frontmatter() {
+        let content = "No frontmatter here.";
+        assert!(extract_frontmatter_locale(content).is_none());
+    }
+
+    #[test]
+    fn test_extract_frontmatter_locale_options_without_locale() {
+        let content = "---\noptions:\n  bibliography:\n    label-mode: numeric\n---\nBody.";
+        assert!(extract_frontmatter_locale(content).is_none());
+    }
+
+    #[test]
+    fn test_extract_frontmatter_locale_embedded_dashes_in_value() {
+        // Regression: inline "---" inside a YAML value must not be treated as
+        // the closing fence. The correct closing "---" is on its own line.
+        let content = "---\ntitle: \"pre---post\"\noptions:\n  locale: fr-FR\n---\nBody.";
+        assert_eq!(
+            extract_frontmatter_locale(content),
+            Some(String::from("fr-FR"))
         );
     }
 }
