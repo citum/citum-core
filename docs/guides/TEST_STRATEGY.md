@@ -45,7 +45,7 @@ cargo nextest run --test citations
 6. **Structured name particles** - More nuanced than CSL JSON
 
 **Implementation plan** (deferred):
-1. Create `tests/fixtures/csln-native-references.yaml` (or .json - serde supports both)
+1. Create a native references fixture file under `tests/fixtures/` (yaml or json — serde supports both)
 2. Build separate test harness (no oracle comparison - we ARE the reference)
 3. Test Citum-specific rendering against expected outputs
 4. Document intentional divergences from CSL 1.0
