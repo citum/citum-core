@@ -34,58 +34,26 @@ jobs:
       release: ${{ steps.filter.outputs.release }}
     steps:
       - uses: actions/checkout@v6
-      - uses: dorny/paths-filter@v3
-        id: filter
         with:
-          filters: |
-            rust:
-              - 'crates/**'
-              - 'Cargo.toml'
-              - 'Cargo.lock'
-              - 'rust-toolchain.toml'
-              - 'styles/**'
-            docs:
-              - '**.md'
-              - 'docs/**'
-              - 'CONTRIBUTING.md'
-              - 'examples/**'
-              - '.github/**'
-            scripts:
-              - 'scripts/**'
-              - 'examples/**'
-            beans:
-              - 'registry/**'
-              - 'locales/**'
-              - 'templates/**'
-              - '.beans.yml'
-              - '.beans/**'
-            infra:
-              - 'scripts/**'
-              - 'crates/**'
-            semver:
-              - 'crates/csl-legacy/**'
-              - 'crates/citum-schema-data/**'
-              - 'crates/citum-schema-style/**'
-              - 'crates/citum-schema/**'
-              - 'crates/citum-migrate/**'
-              - 'crates/citum-engine/**'
-              - 'crates/citum-cli/**'
-              - 'crates/citum-bindings/**'
-            release:
-              - '.github/workflows/ci.yml'
-              - '.github/workflows/release.yml'
-              - 'Cargo.toml'
-              - 'Cargo.lock'
-              - 'RELEASING.md'
-              - 'scripts/build-jsr-package.sh'
-              - 'scripts/install.sh'
-              - 'scripts/publish-crates.sh'
-              - 'scripts/release-binary.sh'
-              # Any publishable crate change can break `cargo publish` (e.g.
-              # `include_bytes!` paths that escape the crate dir, README
-              # paths outside the package, missing `description`). Trigger
-              # the dry-run job on any change inside crates/.
-              - 'crates/**'
+          fetch-depth: 0
+      - name: Detect changed paths
+        id: filter
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+          else
+            CHANGED=$(git diff --name-only HEAD^ HEAD 2>/dev/null || git diff --name-only HEAD)
+          fi
+          has() { echo "$CHANGED" | grep -qE "$1" && echo "true" || echo "false"; }
+          {
+            echo "rust=$(has '^(crates/|Cargo\.toml$|Cargo\.lock$|rust-toolchain\.toml$|styles/)')"
+            echo "docs=$(has '\.md$|^(docs/|CONTRIBUTING\.md$|examples/|\.github/)')"
+            echo "scripts=$(has '^(scripts/|examples/)')"
+            echo "beans=$(has '^(registry/|locales/|templates/|\.beans\.yml$|\.beans/)')"
+            echo "infra=$(has '^(scripts/|crates/)')"
+            echo "semver=$(has '^crates/(csl-legacy|citum-schema-data|citum-schema-style|citum-schema|citum-migrate|citum-engine|citum-cli|citum-bindings)/')"
+            echo "release=$(has '^(\.github/workflows/(ci|release)\.yml$|Cargo\.toml$|Cargo\.lock$|RELEASING\.md$|scripts/(build-jsr-package|install|publish-crates|release-binary)\.sh$|crates/)')"
+          } >> "$GITHUB_OUTPUT"
 
   hygiene-docs:
     name: Hygiene Checks — Docs

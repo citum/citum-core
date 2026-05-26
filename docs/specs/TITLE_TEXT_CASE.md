@@ -4,7 +4,7 @@
 **Version:** 1.0
 **Date:** 2026-03-11
 **Supersedes:** none
-**Related:** `csl26-wv5o`, `csl26-suz3`, `docs/architecture/DJOT_RICH_TEXT.md`
+**Related:** `csl26-wv5o`, `csl26-suz3`, `docs/specs/DJOT_RICH_TEXT.md`
 
 ## Purpose
 
