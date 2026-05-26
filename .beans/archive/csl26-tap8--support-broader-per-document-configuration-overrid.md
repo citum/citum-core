@@ -1,14 +1,14 @@
 ---
 # csl26-tap8
 title: Support broader per-document configuration overrides
-status: in-progress
+status: completed
 type: task
 priority: normal
 tags:
     - engine
     - schema
 created_at: 2026-05-01T14:26:15Z
-updated_at: 2026-05-26T23:14:08Z
+updated_at: 2026-05-26T23:32:49Z
 ---
 
 Extend the document frontmatter parsing to support broader configuration
@@ -34,4 +34,16 @@ these on a per-document basis without modifying the style.
 
 docs/specs/PER_DOCUMENT_CONFIG_OVERRIDES.md
 
-## Implementation Plan\n- [ ] Commit 1: DocumentOptionsOverride struct + frontmatter parsing\n- [ ] Commit 2: Apply overrides in pipeline\n- [ ] Commit 3: CLI --locale flag
+## Implementation Plan\n- [x] Commit 1: DocumentOptionsOverride struct + frontmatter parsing\n- [x] Commit 2: Apply overrides in pipeline\n- [x] Commit 3: CLI --locale flag
+
+
+## Summary of Changes
+
+- `DocumentBibliographyOverride` and `DocumentOptionsOverride` structs with serde
+  kebab-case + deny_unknown_fields; schema feature-gated JsonSchema derives.
+- `Style::apply_scoped_options()` public method bridges engine → schema crate.
+- `DocumentFrontmatter.options` field wired through `ParsedDocument.frontmatter_options`.
+- Legacy `integral-name-memory:` suppressed when `options.integral-name-memory` is set.
+- Pipeline applies bibliography overrides via `processor_with_bibliography_override`.
+- CLI `--locale` / `-L` flag on `render doc`; frontmatter `options.locale` is the fallback.
+- 9 new unit tests covering deserialization, apply, and precedence behaviour.
