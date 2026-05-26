@@ -131,6 +131,36 @@ jobs:
         if: steps.config.outputs.create_pr == 'true'
         run: git checkout -B "${{ steps.config.outputs.branch }}"
 
+      - name: Generate changelog
+        run: |
+          LAST_TAG=$(git tag --sort=-version:refname -l 'v*' | head -1)
+          CURRENT=$(python3 - <<'PY'
+          import re, pathlib
+          text = pathlib.Path("Cargo.toml").read_text()
+          m = re.search(r'^\[workspace\.package\].*?^version\s*=\s*"([^"]+)"', text, re.DOTALL|re.MULTILINE)
+          if not m:
+              raise SystemExit("workspace package version not found")
+          print(m.group(1))
+          PY
+          )
+          LEVEL="${{ steps.resolve.outputs.level }}"
+          NEW_VERSION=$(python3 -c "
+          v = '$CURRENT'.split('.')
+          if '$LEVEL' == 'major':
+              v[0] = str(int(v[0]) + 1); v[1] = '0'; v[2] = '0'
+          elif '$LEVEL' == 'minor':
+              v[1] = str(int(v[1]) + 1); v[2] = '0'
+          else:
+              v[2] = str(int(v[2]) + 1)
+          print('.'.join(v))
+          ")
+          RANGE="${LAST_TAG:+${LAST_TAG}..}HEAD"
+          git cliff $RANGE --tag "v${NEW_VERSION}" --prepend CHANGELOG.md
+          git add CHANGELOG.md
+          if ! git diff --cached --quiet; then
+            git commit -m "docs: update changelog for v${NEW_VERSION}"
+          fi
+
       - name: Bump schema version (if schema changed)
         if: needs.detect.outputs.schema-changed == 'true'
         run: |

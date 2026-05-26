@@ -4,10 +4,3 @@ dependent-version = "upgrade"
 tag-prefix = "v"
 tag-message = "v{{version}}"
 pre-release-commit-message = "chore: release v{{version}}\n\nAutomated workspace version bump for v{{version}}."
-pre-release-hook = [
-  "bash",
-  "-c",
-  "repo=$(git rev-parse --show-toplevel) && git-cliff --config \"$repo/cliff.toml\" -o \"$repo/CHANGELOG.md\" --tag \"$1\"",
-  "update-root-changelog",
-  "v{{version}}",
-]
