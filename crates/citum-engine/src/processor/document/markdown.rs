@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use super::djot::parsing::parse_frontmatter;
 use super::{CitationParser, CitationPlacement, CitationStructure, ParsedCitation, ParsedDocument};
 use crate::{Citation, CitationItem};
-use citum_schema::citation::{CitationMode, normalize_locator_text};
+use citum_schema::citation::{normalize_locator_text, CitationMode};
 use citum_schema::locale::Locale;
 use std::collections::HashSet;
 
@@ -27,14 +27,31 @@ impl Default for MarkdownParser {
 
 impl CitationParser for MarkdownParser {
     fn parse_document(&self, content: &str, locale: &Locale) -> ParsedDocument {
-        let (frontmatter, body) = parse_frontmatter(content);
+        let (frontmatter_result, body) = parse_frontmatter(content);
         let body_start = content.len() - body.len();
+        let (frontmatter, frontmatter_error) = match frontmatter_result {
+            Ok(fm) => (fm, None),
+            Err(e) => (None, Some(e)),
+        };
+        let frontmatter_options = frontmatter.as_ref().and_then(|fm| fm.options.clone());
+        // Legacy top-level fields are superseded by their `options.*` counterparts.
         let frontmatter_integral_name_memory = frontmatter
             .as_ref()
-            .and_then(|fm| fm.integral_name_memory.clone());
+            .and_then(|fm| fm.integral_name_memory.clone())
+            .filter(|_| {
+                frontmatter_options
+                    .as_ref()
+                    .and_then(|o| o.integral_name_memory.as_ref())
+                    .is_none()
+            });
         let frontmatter_org_abbreviation_memory = frontmatter
-            .as_ref()
-            .and_then(|fm| fm.org_abbreviation_memory.clone());
+            .and_then(|fm| fm.org_abbreviation_memory)
+            .filter(|_| {
+                frontmatter_options
+                    .as_ref()
+                    .and_then(|o| o.org_abbreviation_memory.as_ref())
+                    .is_none()
+            });
 
         let citations = find_citations(body, locale)
             .into_iter()
@@ -56,6 +73,8 @@ impl CitationParser for MarkdownParser {
             frontmatter_groups: None,
             frontmatter_integral_name_memory,
             frontmatter_org_abbreviation_memory,
+            frontmatter_options,
+            frontmatter_error,
             body_start,
         }
     }
@@ -258,7 +277,11 @@ fn cite_key_len(input: &str) -> Option<usize> {
         .last()
         .unwrap_or(0);
 
-    if len == 0 { None } else { Some(len) }
+    if len == 0 {
+        None
+    } else {
+        Some(len)
+    }
 }
 
 fn normalize_prefix(prefix: &str) -> Option<String> {

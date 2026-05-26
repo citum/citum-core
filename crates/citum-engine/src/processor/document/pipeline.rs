@@ -6,10 +6,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! High-level document-processing orchestration.
 
 use super::output::{
-    HtmlPlaceholderRegistry, RenderedDocumentBody, append_document_bibliography,
-    bibliography_block_placeholder, render_document_bibliography_block_replacement,
-    rewrite_document_markup_for_typst, rewrite_group_headings_for_document,
-    stage_document_bibliography_blocks,
+    append_document_bibliography, bibliography_block_placeholder,
+    render_document_bibliography_block_replacement, rewrite_document_markup_for_typst,
+    rewrite_group_headings_for_document, stage_document_bibliography_blocks,
+    HtmlPlaceholderRegistry, RenderedDocumentBody,
 };
 use super::{BibliographyBlock, CitationParser, DocumentFormat, ParsedDocument};
 use crate::processor::Processor;
@@ -19,7 +19,7 @@ impl Processor {
     ///
     /// This is the primary document-level entry point. It:
     /// 1. Parses the source document using the provided adapter.
-    /// 2. Resolves frontmatter overrides for the integral-name policy.
+    /// 2. Resolves frontmatter overrides (integral-name policy, bibliography options).
     /// 3. Chooses a bibliography orchestration path based on frontmatter and document blocks.
     #[allow(
         clippy::string_slice,
@@ -36,14 +36,44 @@ impl Processor {
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let mut parsed = parser.parse_document(content, &self.locale);
-        let owned_integral = self.processor_with_document_integral_name_override(
-            parsed.frontmatter_integral_name_memory.as_ref(),
-        );
-        let base = owned_integral.as_ref().unwrap_or(self);
-        let owned_org = base.processor_with_document_org_abbreviation_override(
-            parsed.frontmatter_org_abbreviation_memory.as_ref(),
-        );
-        let processor = owned_org.as_ref().unwrap_or(base);
+
+        // `options.integral-name-memory` takes precedence over the legacy top-level field.
+        let effective_integral_override = parsed
+            .frontmatter_options
+            .as_ref()
+            .and_then(|o| o.integral_name_memory.as_ref())
+            .or(parsed.frontmatter_integral_name_memory.as_ref());
+        let owned_integral =
+            self.processor_with_document_integral_name_override(effective_integral_override);
+
+        // Apply org-abbreviation-memory override from the options block.
+        let effective_org_override = parsed
+            .frontmatter_options
+            .as_ref()
+            .and_then(|o| o.org_abbreviation_memory.as_ref());
+        let owned_org = {
+            let base = owned_integral.as_ref().unwrap_or(self);
+            base.processor_with_document_org_abbreviation_override(effective_org_override)
+        };
+
+        // Apply bibliography overrides from the options block.
+        let owned_bib = parsed
+            .frontmatter_options
+            .as_ref()
+            .filter(|o| o.bibliography.is_some())
+            .map(|options| {
+                let base = owned_org
+                    .as_ref()
+                    .or(owned_integral.as_ref())
+                    .unwrap_or(self);
+                base.processor_with_bibliography_override(options)
+            });
+
+        let processor = owned_bib
+            .as_ref()
+            .or(owned_org.as_ref())
+            .or(owned_integral.as_ref())
+            .unwrap_or(self);
         let body = &content[parsed.body_start..];
         if let Some(groups) = parsed.frontmatter_groups.take() {
             return processor.process_document_with_frontmatter_groups::<P, F>(

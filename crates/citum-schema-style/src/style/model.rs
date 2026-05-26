@@ -104,6 +104,17 @@ impl Style {
         Ok(style)
     }
 
+    /// Apply scoped citation and bibliography option overrides to this style.
+    ///
+    /// Translates typed option values (label mode, label wrap, repeated-author
+    /// rendering, date position, title terminator) into concrete template mutations.
+    /// Call this after mutating `bibliography.options` at runtime — e.g. after
+    /// applying per-document overrides — so that template state stays consistent
+    /// with the option values.
+    pub fn apply_scoped_options(&mut self) {
+        crate::options::scoped::apply_scoped_style_options(self);
+    }
+
     /// Parse a Citum style from YAML bytes, preserving raw YAML for
     /// null-aware overlay merging during preset resolution.
     ///

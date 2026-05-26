@@ -17,8 +17,9 @@ mod types;
 
 pub(crate) use types::ManualNoteReference;
 pub use types::{
-    BibliographyBlock, CitationParser, CitationPlacement, CitationStructure, DocumentFormat,
-    DocumentIntegralNameOverride, ParsedCitation, ParsedDocument,
+    BibliographyBlock, CitationParser, CitationPlacement, CitationStructure,
+    DocumentBibliographyOverride, DocumentFormat, DocumentIntegralNameOverride,
+    DocumentOptionsOverride, DocumentSortPartitioningOverride, ParsedCitation, ParsedDocument,
 };
 
 #[cfg(test)]

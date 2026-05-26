@@ -5,8 +5,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Djot-specific parsing logic using winnow.
 
-use super::super::types::{DocumentIntegralNameOverride, DocumentOrgAbbreviationOverride};
-use super::super::{CitationStructure, ManualNoteReference, ParsedCitation};
+use super::super::{
+    CitationStructure, DocumentIntegralNameOverride, DocumentOptionsOverride, ManualNoteReference,
+    ParsedCitation,
+};
 use super::BibliographyBlock;
 use crate::{Citation, CitationItem};
 use citum_schema::citation::{CitationMode, normalize_locator_text};
@@ -34,7 +36,8 @@ pub(crate) struct FootnoteDefinitionRange {
 pub(crate) struct DocumentFrontmatter {
     pub bibliography: Option<Vec<BibliographyGroup>>,
     pub integral_name_memory: Option<DocumentIntegralNameOverride>,
-    pub org_abbreviation_memory: Option<DocumentOrgAbbreviationOverride>,
+    pub org_abbreviation_memory: Option<super::super::DocumentOrgAbbreviationOverride>,
+    pub options: Option<DocumentOptionsOverride>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -361,12 +364,22 @@ impl ScopeTracker {
 }
 
 /// Parse YAML frontmatter from content.
-/// Returns (frontmatter, `remaining_content`).
+///
+/// Returns `(result, remaining_content)` where `result` is:
+/// - `Ok(None)` when no `---` block is present
+/// - `Ok(Some(fm))` on a successful parse
+/// - `Err(msg)` when a `---` block is present but fails to deserialize (e.g.
+///   unknown field rejected by `deny_unknown_fields`)
+///
+/// Callers must surface the error; they must not silently proceed without
+/// frontmatter data when the user authored an invalid block.
 #[allow(clippy::string_slice, reason = "'---' is 1-byte ASCII")]
-pub(crate) fn parse_frontmatter(content: &str) -> (Option<DocumentFrontmatter>, &str) {
+pub(crate) fn parse_frontmatter(
+    content: &str,
+) -> (Result<Option<DocumentFrontmatter>, String>, &str) {
     let trimmed = content.trim_start();
     if !trimmed.starts_with("---") {
-        return (None, content);
+        return (Ok(None), content);
     }
 
     let after_opening = &trimmed[3..];
@@ -374,16 +387,12 @@ pub(crate) fn parse_frontmatter(content: &str) -> (Option<DocumentFrontmatter>, 
         let frontmatter_content = &after_opening[..closing_pos];
         let remaining = &after_opening[closing_pos + 3..].trim_start();
 
-        let parsed = match serde_yaml::from_str::<DocumentFrontmatter>(frontmatter_content) {
-            Ok(fm) => Some(fm),
-            Err(e) => {
-                eprintln!("citum: warning: frontmatter parse error: {e}");
-                None
-            }
-        };
-        (parsed, remaining)
+        let result = serde_yaml::from_str::<DocumentFrontmatter>(frontmatter_content)
+            .map(Some)
+            .map_err(|e| e.to_string());
+        (result, remaining)
     } else {
-        (None, content)
+        (Ok(None), content)
     }
 }
 

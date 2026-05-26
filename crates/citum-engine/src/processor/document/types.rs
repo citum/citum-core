@@ -8,8 +8,17 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use crate::Citation;
 use citum_schema::grouping::BibliographyGroup;
 use citum_schema::locale::Locale;
+use citum_schema::options::bibliography::{
+    BibliographyPartitionHeading, BibliographyPartitionKind, BibliographyPartitionMode,
+    BibliographySortPartitioning,
+};
+use citum_schema::options::scoped::{
+    BibliographyLabelMode, BibliographyLabelWrap, RepeatedAuthorRendering,
+};
 use citum_schema::options::{IntegralNameMemoryConfig, OrgAbbreviationMemoryConfig};
+use citum_schema::Style;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::collections::HashSet;
 
 /// Describes where a parsed citation appears in the source document.
@@ -82,28 +91,24 @@ impl DocumentIntegralNameOverride {
     }
 }
 
-/// Document-level org-abbreviation override parsed from frontmatter.
+/// Document-level org-abbreviation-memory override parsed from frontmatter.
 #[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct DocumentOrgAbbreviationOverride {
-    /// Whether org-abbreviation is enabled for this document.
+    /// Whether org-abbreviation-memory is enabled for this document.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub enabled: Option<bool>,
-    /// Where the first-mention memory resets.
+    /// Where name-memory resets.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scope: Option<citum_schema::options::IntegralNameScope>,
-    /// Which document contexts participate.
+    /// Which document contexts participate in the policy.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub contexts: Option<citum_schema::options::IntegralNameContexts>,
-    /// How to display a short name on the first integral mention.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub short_name_display: Option<citum_schema::options::ShortNameDisplay>,
 }
 
 impl DocumentOrgAbbreviationOverride {
-    /// Apply this frontmatter override to a base org-abbreviation configuration.
-    #[allow(dead_code, reason = "Infrastructure for org-abbreviation support")]
+    /// Apply this override to a base org-abbreviation-memory config.
     pub(super) fn apply_to(
         &self,
         base: Option<&OrgAbbreviationMemoryConfig>,
@@ -118,9 +123,6 @@ impl DocumentOrgAbbreviationOverride {
         if self.contexts.is_some() {
             result.contexts = self.contexts;
         }
-        if self.short_name_display.is_some() {
-            result.short_name_display = self.short_name_display;
-        }
         Some(result)
     }
 }
@@ -128,41 +130,8 @@ impl DocumentOrgAbbreviationOverride {
 #[cfg(test)]
 #[allow(clippy::unwrap_used, reason = "tests")]
 mod tests {
-    use super::{DocumentIntegralNameOverride, DocumentOrgAbbreviationOverride};
-    use citum_schema::options::{
-        IntegralNameMemoryConfig, OrgAbbreviationMemoryConfig, ShortNameDisplay,
-    };
-
-    #[test]
-    fn test_document_org_abbreviation_override_deserializes_short_name_display() {
-        assert_eq!(
-            serde_yaml::from_str::<DocumentOrgAbbreviationOverride>(
-                "short-name-display: short-then-bracketed"
-            )
-            .ok()
-            .map(|config| config.short_name_display),
-            Some(Some(ShortNameDisplay::ShortThenBracketed))
-        );
-    }
-
-    #[test]
-    fn test_document_org_abbreviation_override_applies_short_name_display() {
-        let base = OrgAbbreviationMemoryConfig {
-            short_name_display: Some(ShortNameDisplay::FullThenParenthetical),
-            ..Default::default()
-        };
-        let override_config = DocumentOrgAbbreviationOverride {
-            short_name_display: Some(ShortNameDisplay::ShortThenBracketed),
-            ..Default::default()
-        };
-
-        assert_eq!(
-            override_config
-                .apply_to(Some(&base))
-                .map(|config| config.short_name_display),
-            Some(Some(ShortNameDisplay::ShortThenBracketed))
-        );
-    }
+    use super::DocumentIntegralNameOverride;
+    use citum_schema::options::{IntegralNameMemoryConfig, ShortNameDisplay};
 
     #[test]
     fn test_document_integral_name_override_enabled_false_disables_block() {
@@ -173,6 +142,194 @@ mod tests {
         };
 
         assert!(override_config.apply_to(Some(&base)).is_none());
+    }
+
+    #[test]
+    fn test_document_bibliography_override_deserializes_label_mode() {
+        use super::DocumentBibliographyOverride;
+        use citum_schema::options::scoped::BibliographyLabelMode;
+
+        let parsed: DocumentBibliographyOverride =
+            serde_yaml::from_str("label-mode: numeric").unwrap();
+        assert_eq!(parsed.label_mode, Some(BibliographyLabelMode::Numeric));
+        assert!(parsed.repeated_author_rendering.is_none());
+        assert!(parsed.sort_partitioning.is_none());
+    }
+
+    #[test]
+    fn test_document_bibliography_override_deserializes_repeated_author() {
+        use super::DocumentBibliographyOverride;
+        use citum_schema::options::scoped::RepeatedAuthorRendering;
+
+        let parsed: DocumentBibliographyOverride =
+            serde_yaml::from_str("repeated-author-rendering: dash").unwrap();
+        assert_eq!(
+            parsed.repeated_author_rendering,
+            Some(RepeatedAuthorRendering::Dash)
+        );
+    }
+
+    #[test]
+    fn test_document_options_override_deserializes_locale_and_bibliography() {
+        use super::{DocumentBibliographyOverride, DocumentOptionsOverride};
+        use citum_schema::options::scoped::BibliographyLabelWrap;
+
+        let yaml = "locale: de-DE\nbibliography:\n  label-wrap: brackets\n";
+        let parsed: DocumentOptionsOverride = serde_yaml::from_str(yaml).unwrap();
+        assert_eq!(parsed.locale.as_deref(), Some("de-DE"));
+        assert_eq!(
+            parsed.bibliography,
+            Some(DocumentBibliographyOverride {
+                label_wrap: Some(BibliographyLabelWrap::Brackets),
+                ..Default::default()
+            })
+        );
+        assert!(parsed.integral_name_memory.is_none());
+    }
+
+    #[test]
+    fn test_document_options_override_empty_is_default() {
+        use super::DocumentOptionsOverride;
+
+        let parsed: DocumentOptionsOverride = serde_yaml::from_str("{}").unwrap();
+        assert_eq!(parsed, DocumentOptionsOverride::default());
+    }
+
+    #[test]
+    fn test_document_options_override_unknown_field_errors() {
+        use super::DocumentOptionsOverride;
+
+        assert!(serde_yaml::from_str::<DocumentOptionsOverride>("unknown-field: true").is_err());
+    }
+}
+
+/// Sparse per-document sort-partitioning overlay.
+///
+/// Absent fields inherit the style's existing sort-partitioning values.
+/// When `by` is absent and the style has no sort-partitioning configured,
+/// the override is a no-op.
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct DocumentSortPartitioningOverride {
+    /// Partition key source. Required when no style-level partitioning exists.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub by: Option<BibliographyPartitionKind>,
+    /// Whether partitioning affects sorting, visible sections, or both.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mode: Option<BibliographyPartitionMode>,
+    /// Preferred partition order. Unlisted partitions sort after listed ones.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub order: Vec<String>,
+    /// Optional headings for visible partition sections.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub headings: HashMap<String, BibliographyPartitionHeading>,
+}
+
+/// Per-document bibliography presentation overrides.
+///
+/// All fields are optional. Absent fields inherit the style's defaults.
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct DocumentBibliographyOverride {
+    /// Sparse multilingual bibliography partitioning override.
+    ///
+    /// Non-`None` fields are merged into the style's existing sort-partitioning;
+    /// absent fields are inherited. When `by` is absent and the style has no
+    /// sort-partitioning, the field is a no-op.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sort_partitioning: Option<DocumentSortPartitioningOverride>,
+    /// Repeated-author rendering mode.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub repeated_author_rendering: Option<RepeatedAuthorRendering>,
+    /// Bibliography label mode.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub label_mode: Option<BibliographyLabelMode>,
+    /// Bibliography label wrap punctuation.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub label_wrap: Option<BibliographyLabelWrap>,
+}
+
+/// Per-document presentation overrides parsed from frontmatter `options:` block.
+///
+/// Eligible options are those that control how output looks without requiring the
+/// processor to re-walk citations for disambiguation or sorting. All fields are
+/// optional; absent fields inherit the style's defaults.
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct DocumentOptionsOverride {
+    /// BCP 47 locale ID to use as the base locale for this document.
+    ///
+    /// Replaces the style's default locale entirely. Handled in the CLI layer;
+    /// `apply_to` does not touch locale.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub locale: Option<String>,
+    /// Integral-name-memory override. Takes precedence over the legacy top-level
+    /// `integral-name-memory:` frontmatter field when both are present.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub integral_name_memory: Option<DocumentIntegralNameOverride>,
+    /// Org-abbreviation-memory override.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub org_abbreviation_memory: Option<DocumentOrgAbbreviationOverride>,
+    /// Bibliography presentation overrides.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub bibliography: Option<DocumentBibliographyOverride>,
+}
+
+impl DocumentOptionsOverride {
+    /// Apply bibliography overrides from this override block to a resolved style.
+    ///
+    /// Writes non-`None` bibliography fields into `style.bibliography.options`,
+    /// then calls `apply_scoped_options` to propagate changes into the style's
+    /// templates. Locale and integral-name-memory are handled by the pipeline
+    /// and CLI layers respectively.
+    pub(super) fn apply_bibliography_to(&self, style: &mut Style) {
+        let Some(bib_override) = &self.bibliography else {
+            return;
+        };
+        let bib = style.bibliography.get_or_insert_with(Default::default);
+        let opts = bib.options.get_or_insert_with(Default::default);
+        if let Some(sp_override) = &bib_override.sort_partitioning {
+            match opts.sort_partitioning.as_mut() {
+                Some(existing) => {
+                    if let Some(by) = sp_override.by {
+                        existing.by = by;
+                    }
+                    if let Some(mode) = sp_override.mode {
+                        existing.mode = mode;
+                    }
+                    if !sp_override.order.is_empty() {
+                        existing.order = sp_override.order.clone();
+                    }
+                    if !sp_override.headings.is_empty() {
+                        existing.headings = sp_override.headings.clone();
+                    }
+                }
+                None => {
+                    if let Some(by) = sp_override.by {
+                        opts.sort_partitioning = Some(BibliographySortPartitioning {
+                            by,
+                            mode: sp_override.mode.unwrap_or_default(),
+                            order: sp_override.order.clone(),
+                            headings: sp_override.headings.clone(),
+                            unknown_fields: Default::default(),
+                        });
+                    }
+                }
+            }
+        }
+        if let Some(rar) = bib_override.repeated_author_rendering {
+            opts.repeated_author_rendering = Some(rar);
+        }
+        if let Some(lm) = bib_override.label_mode {
+            opts.label_mode = Some(lm);
+        }
+        if let Some(lw) = bib_override.label_wrap {
+            opts.label_wrap = Some(lw);
+        }
+        style.apply_scoped_options();
     }
 }
 
@@ -227,8 +384,22 @@ pub struct ParsedDocument {
     pub frontmatter_groups: Option<Vec<citum_schema::grouping::BibliographyGroup>>,
     /// Integral-name-memory override from YAML frontmatter (legacy top-level field).
     pub frontmatter_integral_name_memory: Option<DocumentIntegralNameOverride>,
-    /// Org-abbreviation-memory override from YAML frontmatter.
+    /// Org-abbreviation-memory override from YAML frontmatter (legacy top-level field).
+    ///
+    /// Superseded by `options.org_abbreviation_memory` when both are present.
     pub frontmatter_org_abbreviation_memory: Option<DocumentOrgAbbreviationOverride>,
+    /// Full options override from YAML frontmatter `options:` block.
+    ///
+    /// When `options.integral_name_memory` is `Some`, it takes precedence over
+    /// the legacy top-level `frontmatter_integral_name_memory`.
+    /// When `options.org_abbreviation_memory` is `Some`, it takes precedence over
+    /// the legacy top-level `frontmatter_org_abbreviation_memory`.
+    pub frontmatter_options: Option<DocumentOptionsOverride>,
+    /// Non-empty when the frontmatter `---` block failed to deserialize.
+    ///
+    /// The pipeline treats this as a hard error: it prints the message and
+    /// exits rather than proceeding silently without frontmatter data.
+    pub frontmatter_error: Option<String>,
     /// Byte offset where the document body starts (past any frontmatter).
     pub body_start: usize,
 }
