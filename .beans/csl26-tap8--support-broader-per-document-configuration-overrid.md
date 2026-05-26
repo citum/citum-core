@@ -1,14 +1,14 @@
 ---
 # csl26-tap8
 title: Support broader per-document configuration overrides
-status: todo
+status: in-progress
 type: task
 priority: normal
 tags:
     - engine
     - schema
 created_at: 2026-05-01T14:26:15Z
-updated_at: 2026-05-01T14:26:15Z
+updated_at: 2026-05-26T22:16:35Z
 ---
 
 Extend the document frontmatter parsing to support broader configuration
@@ -30,4 +30,6 @@ these on a per-document basis without modifying the style.
 - Update `Processor` (likely in `setup.rs`) to merge document-level
   configuration overrides into the style's default configuration.
 
+## Spec
 
+docs/specs/PER_DOCUMENT_CONFIG_OVERRIDES.md
