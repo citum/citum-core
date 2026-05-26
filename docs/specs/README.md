@@ -53,6 +53,7 @@ to make sure the document should be a spec rather than architecture or policy.
 
 | File | Feature |
 |------|---------|
+| [`MULTILINGUAL_NAMES.md`](./MULTILINGUAL_NAMES.md) | Script-specific contributor name assembly |
 | [`DISTRIBUTED_RESOLVER.md`](./DISTRIBUTED_RESOLVER.md) | Federated registry and distributed resolver architecture (Phases 2–3) |
 | [`CLI_UX_REDESIGN.md`](./CLI_UX_REDESIGN.md) | Clean command model for style discovery, registry management, and CLI validation UX |
 | [`PROFILE_DOCUMENTARY_VERIFICATION.md`](./PROFILE_DOCUMENTARY_VERIFICATION.md) | Verification model for profile styles using external authority |
