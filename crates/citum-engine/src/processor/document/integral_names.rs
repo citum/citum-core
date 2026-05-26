@@ -7,8 +7,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 #[rustfmt::skip]
 use super::note_support::{NoteOccurrence, build_note_order_indices};
-use super::types::{DocumentIntegralNameOverride, DocumentOrgAbbreviationOverride};
-use super::{CitationPlacement, CitationStructure, ParsedDocument};
+use super::{
+    CitationPlacement, CitationStructure, DocumentIntegralNameOverride, DocumentOptionsOverride,
+    DocumentOrgAbbreviationOverride, ParsedDocument,
+};
 use crate::reference::Contributor;
 use crate::{Citation, Processor};
 use citum_schema::options::{IntegralNameContexts, IntegralNameScope};
@@ -127,6 +129,24 @@ impl Processor {
         ))
     }
 
+    /// Build a new processor with bibliography overrides from a `DocumentOptionsOverride` applied.
+    ///
+    /// Writes non-`None` bibliography option fields into a cloned style and
+    /// calls `apply_scoped_options` so that template mutations stay consistent.
+    pub(super) fn processor_with_bibliography_override(
+        &self,
+        options: &DocumentOptionsOverride,
+    ) -> Self {
+        let mut style = self.style.clone();
+        options.apply_bibliography_to(&mut style);
+        Self::build_processor_pre_resolved(
+            style,
+            self.bibliography.clone(),
+            self.locale.clone(),
+            self.compound_sets.clone(),
+        )
+    }
+
     fn annotate_name_states_for_kind(
         &self,
         citations: &mut [Citation],
@@ -157,7 +177,6 @@ impl Processor {
             };
 
             for item in &mut citation.items {
-                // Skip if this item's author type doesn't match the kind
                 let is_org = first_author_is_org(&self.bibliography, &item.id);
                 match kind {
                     AnnotateKind::Personal if is_org => continue,
@@ -165,7 +184,6 @@ impl Processor {
                     _ => {}
                 }
 
-                // Skip items with an explicit override already set
                 let state_already_set = match kind {
                     AnnotateKind::Personal => item.integral_name_state.is_some(),
                     AnnotateKind::OrgAbbreviation => item.org_abbreviation_state.is_some(),
@@ -267,28 +285,6 @@ impl Processor {
     }
 }
 
-/// Returns a name-based tracking key for integral name-memory state.
-///
-/// Uses the first author's family name so that two works by the same author
-/// share a single First/Subsequent slot, regardless of citation key.
-/// Falls back to `item_id` when no author or family name is available.
-fn first_author_key_for_item(bibliography: &crate::Bibliography, item_id: &str) -> String {
-    bibliography
-        .get(item_id)
-        .and_then(|r| r.author())
-        .and_then(|c| contributor_first_family(&c))
-        .unwrap_or_else(|| item_id.to_string())
-}
-
-fn contributor_first_family(contributor: &Contributor) -> Option<String> {
-    match contributor {
-        Contributor::StructuredName(n) => Some(n.family.to_string()),
-        Contributor::Multilingual(m) => Some(m.original.family.to_string()),
-        Contributor::SimpleName(n) => Some(n.name.to_string()),
-        Contributor::ContributorList(l) => l.0.first().and_then(contributor_first_family),
-    }
-}
-
 fn personal_author_key_for_item(bibliography: &crate::Bibliography, item_id: &str) -> String {
     bibliography
         .get(item_id)
@@ -313,6 +309,28 @@ fn contributor_personal_key(contributor: &Contributor) -> Option<String> {
         }
         Contributor::SimpleName(n) => Some(n.name.to_string()),
         Contributor::ContributorList(l) => l.0.first().and_then(contributor_personal_key),
+    }
+}
+
+/// Returns a name-based tracking key for integral name-memory state.
+///
+/// Uses the first author's family name so that two works by the same author
+/// share a single First/Subsequent slot, regardless of citation key.
+/// Falls back to `item_id` when no author or family name is available.
+fn first_author_key_for_item(bibliography: &crate::Bibliography, item_id: &str) -> String {
+    bibliography
+        .get(item_id)
+        .and_then(|r| r.author())
+        .and_then(|c| contributor_first_family(&c))
+        .unwrap_or_else(|| item_id.to_string())
+}
+
+fn contributor_first_family(contributor: &Contributor) -> Option<String> {
+    match contributor {
+        Contributor::StructuredName(n) => Some(n.family.to_string()),
+        Contributor::Multilingual(m) => Some(m.original.family.to_string()),
+        Contributor::SimpleName(n) => Some(n.name.to_string()),
+        Contributor::ContributorList(l) => l.0.first().and_then(contributor_first_family),
     }
 }
 

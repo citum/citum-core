@@ -6,6 +6,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! Shared document-processing types and parser contracts.
 
 use crate::Citation;
+use citum_schema::Style;
 use citum_schema::grouping::BibliographyGroup;
 use citum_schema::locale::Locale;
 use citum_schema::options::bibliography::{
@@ -16,7 +17,6 @@ use citum_schema::options::scoped::{
     BibliographyLabelMode, BibliographyLabelWrap, RepeatedAuthorRendering,
 };
 use citum_schema::options::{IntegralNameMemoryConfig, OrgAbbreviationMemoryConfig};
-use citum_schema::Style;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -131,7 +131,7 @@ impl DocumentOrgAbbreviationOverride {
 #[allow(clippy::unwrap_used, reason = "tests")]
 mod tests {
     use super::DocumentIntegralNameOverride;
-    use citum_schema::options::{IntegralNameMemoryConfig, ShortNameDisplay};
+    use citum_schema::options::IntegralNameMemoryConfig;
 
     #[test]
     fn test_document_integral_name_override_enabled_false_disables_block() {
