@@ -12,10 +12,8 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use citum_engine::processor::validate_compound_sets;
 use citum_schema::InputBibliography;
 use csl_legacy::csl_json::Reference as LegacyReference;
-use indexmap::IndexMap;
 
 pub use citum_engine::api::{AnnotationFormat, AnnotationStyle};
 use citum_engine::render::format::OutputFormat;
@@ -25,37 +23,15 @@ use citum_engine::{Bibliography, Citation, ProcessorError};
 pub mod biblatex;
 pub(crate) mod formats;
 
+// Re-export from citum-refs for backward compatibility.
+pub use citum_refs::LoadedRefs as LoadedBibliography;
+pub use citum_refs::RefsFormat;
+
 // Re-export private format helpers so the inline test module can reach them via `use super::*`.
 #[cfg(test)]
 pub(crate) use formats::{
     loaded_from_input_bibliography, parse_json_bibliography, parse_yaml_bibliography,
 };
-
-/// Bibliography formats supported by reusable reference conversion helpers.
-#[derive(Copy, Clone, Debug, PartialEq, Eq)]
-pub enum RefsFormat {
-    /// Native Citum bibliography encoded as YAML.
-    CitumYaml,
-    /// Native Citum bibliography encoded as JSON.
-    CitumJson,
-    /// Native Citum bibliography encoded as CBOR.
-    CitumCbor,
-    /// Legacy CSL-JSON bibliography.
-    CslJson,
-    /// BibLaTeX `.bib` bibliography.
-    Biblatex,
-    /// RIS bibliography.
-    Ris,
-}
-
-/// Bibliography data loaded from input, including optional compound sets.
-#[derive(Debug, Clone, Default)]
-pub struct LoadedBibliography {
-    /// Parsed bibliography references keyed by ID.
-    pub references: Bibliography,
-    /// Optional compound sets keyed by set ID.
-    pub sets: Option<IndexMap<String, Vec<String>>>,
-}
 
 /// Render a free-text reference field with djot inline markup.
 ///
@@ -146,17 +122,7 @@ pub fn load_annotations(path: &Path) -> Result<HashMap<String, String>, Processo
 /// Returns an error when the file cannot be read, cannot be parsed, or
 /// compound sets are invalid.
 pub fn load_bibliography_with_sets(path: &Path) -> Result<LoadedBibliography, ProcessorError> {
-    let bytes = fs::read(path)?;
-    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
-
-    match ext {
-        "cbor" => formats::parse_cbor_bibliography(&bytes),
-        "json" => formats::parse_json_bibliography(&bytes),
-        _ => {
-            let content = String::from_utf8_lossy(&bytes);
-            formats::parse_yaml_bibliography(&content)
-        }
-    }
+    citum_refs::load_refs_with_sets(path).map_err(ProcessorError::from)
 }
 
 /// Load a bibliography from a file given its path.
@@ -182,39 +148,7 @@ pub fn load_bibliography(path: &Path) -> Result<Bibliography, ProcessorError> {
 /// Returns an error when no paths are supplied, any file cannot be loaded, or
 /// merged compound sets are invalid.
 pub fn load_merged_bibliography(paths: &[PathBuf]) -> Result<LoadedBibliography, ProcessorError> {
-    if paths.is_empty() {
-        return Err(ProcessorError::ParseError(
-            "BIBLIOGRAPHY".to_string(),
-            "At least one bibliography path is required.".to_string(),
-        ));
-    }
-
-    let mut merged = Bibliography::new();
-    let mut merged_sets = IndexMap::<String, Vec<String>>::new();
-    for path in paths {
-        let loaded = load_bibliography_with_sets(path)?;
-        for (id, reference) in loaded.references {
-            merged.insert(id, reference);
-        }
-        if let Some(sets) = loaded.sets {
-            for (set_id, members) in sets {
-                if merged_sets.insert(set_id.clone(), members).is_some() {
-                    return Err(ProcessorError::ParseError(
-                        "BIBLIOGRAPHY".to_string(),
-                        format!("Duplicate compound set id while merging: {set_id}"),
-                    ));
-                }
-            }
-        }
-    }
-
-    let validated_sets =
-        validate_compound_sets((!merged_sets.is_empty()).then_some(merged_sets), &merged)?;
-
-    Ok(LoadedBibliography {
-        references: merged,
-        sets: validated_sets,
-    })
+    citum_refs::load_merged_refs(paths).map_err(ProcessorError::from)
 }
 
 /// Load and concatenate one or more citation files.
@@ -238,16 +172,7 @@ pub fn load_merged_citations(paths: &[PathBuf]) -> Result<Vec<Citation>, Process
 ///
 /// Returns an error when a JSON input cannot be read or parsed for detection.
 pub fn infer_refs_input_format(path: &Path) -> Result<RefsFormat, ProcessorError> {
-    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
-    let fmt = match ext.to_ascii_lowercase().as_str() {
-        "yaml" | "yml" => RefsFormat::CitumYaml,
-        "cbor" => RefsFormat::CitumCbor,
-        "bib" => RefsFormat::Biblatex,
-        "ris" => RefsFormat::Ris,
-        "json" => detect_json_refs_format(path)?,
-        _ => RefsFormat::CitumYaml,
-    };
-    Ok(fmt)
+    citum_refs::infer_refs_input_format(path).map_err(ProcessorError::from)
 }
 
 /// Infer a bibliography output format from a path.
@@ -255,36 +180,7 @@ pub fn infer_refs_input_format(path: &Path) -> Result<RefsFormat, ProcessorError
 /// Unknown extensions default to native Citum YAML.
 #[must_use]
 pub fn infer_refs_output_format(path: &Path) -> RefsFormat {
-    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
-    match ext.to_ascii_lowercase().as_str() {
-        "yaml" | "yml" => RefsFormat::CitumYaml,
-        "cbor" => RefsFormat::CitumCbor,
-        "bib" => RefsFormat::Biblatex,
-        "ris" => RefsFormat::Ris,
-        "json" => RefsFormat::CitumJson,
-        _ => RefsFormat::CitumYaml,
-    }
-}
-
-fn detect_json_refs_format(path: &Path) -> Result<RefsFormat, ProcessorError> {
-    let bytes = fs::read(path)?;
-    let value: serde_json::Value = serde_json::from_slice(&bytes)
-        .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
-    let array = value.as_array();
-    let is_citum_array = array.is_some_and(|items| items.iter().any(|v| v.get("class").is_some()));
-    let is_csl_array = array.is_some_and(|items| {
-        items.iter().any(|v| {
-            v.get("id").is_some()
-                && v.get("type").is_some()
-                && (v.get("title").is_some() || v.get("author").is_some())
-        })
-    });
-    let is_citum_object = value.get("references").is_some();
-    if is_csl_array && !is_citum_array && !is_citum_object {
-        Ok(RefsFormat::CslJson)
-    } else {
-        Ok(RefsFormat::CitumJson)
-    }
+    citum_refs::infer_refs_output_format(path)
 }
 
 /// Load bibliography input in a specified native or legacy reference format.
@@ -296,23 +192,11 @@ pub fn load_input_bibliography(
     path: &Path,
     format: RefsFormat,
 ) -> Result<InputBibliography, ProcessorError> {
-    match format {
-        RefsFormat::CitumYaml => {
-            let bytes = fs::read(path)?;
-            formats::deserialize_any(&bytes, "yaml")
-        }
-        RefsFormat::CitumJson => {
-            let bytes = fs::read(path)?;
-            formats::load_citum_json_bibliography(&bytes)
-        }
-        RefsFormat::CitumCbor => {
-            let bytes = fs::read(path)?;
-            formats::deserialize_any(&bytes, "cbor")
-        }
-        RefsFormat::CslJson => formats::load_csl_json_bibliography(path),
-        RefsFormat::Biblatex => formats::load_biblatex_bibliography(path),
-        RefsFormat::Ris => formats::load_ris_bibliography(path),
+    // BibLaTeX loading is handled locally in citum-io to avoid circular dependencies with citum-refs.
+    if format == RefsFormat::Biblatex {
+        return formats::biblatex::load_biblatex_bibliography(path);
     }
+    citum_refs::load_input_refs(path, format).map_err(ProcessorError::from)
 }
 
 /// Write bibliography input to a specified native or legacy reference format.

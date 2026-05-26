@@ -7,18 +7,23 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use std::path::Path;
 
-use citum_engine::ProcessorError;
 use citum_schema::InputBibliography;
 use citum_schema::reference::InputReference;
 use csl_legacy::csl_json::{DateVariable, Name, Reference as LegacyReference, StringOrNumber};
 
+use crate::RefsError;
+
 /// Load a RIS bibliography from a file path.
-pub(crate) fn load_ris_bibliography(path: &Path) -> Result<InputBibliography, ProcessorError> {
+///
+/// # Errors
+///
+/// Returns an error when the file cannot be read or parsed as RIS.
+pub fn load_ris(path: &Path) -> Result<InputBibliography, RefsError> {
     let src = std::fs::read_to_string(path)?;
     parse_ris(&src)
 }
 
-fn parse_ris(input: &str) -> Result<InputBibliography, ProcessorError> {
+fn parse_ris(input: &str) -> Result<InputBibliography, RefsError> {
     let mut references = Vec::<InputReference>::new();
     let mut current = Vec::<(String, String)>::new();
 

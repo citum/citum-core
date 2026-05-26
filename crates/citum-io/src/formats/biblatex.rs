@@ -16,6 +16,9 @@ use citum_schema::InputBibliography;
 /// # Errors
 ///
 /// Returns an error when the file cannot be read or parsed as BibLaTeX.
+///
+/// Note: BibLaTeX loading is kept in citum-io to avoid circular dependencies with citum-refs.
+/// The conversion logic uses `crate::biblatex::input_reference_from_biblatex`.
 pub(crate) fn load_biblatex_bibliography(path: &Path) -> Result<InputBibliography, ProcessorError> {
     let src = fs::read_to_string(path)?;
     let bibliography = ::biblatex::Bibliography::parse(&src)

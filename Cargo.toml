@@ -14,6 +14,7 @@ members = [
     "crates/citum_store",
     "crates/citum-bindings",
     "crates/citum-resolver-api",
+    "crates/citum-refs",
     "crates/citum-io"
 ]
 resolver = "2"
@@ -117,6 +118,7 @@ citum-schema-style = { path = "crates/citum-schema-style", version = "0.57.0" }
 citum-schema = { path = "crates/citum-schema", version = "0.57.0" }
 csl-legacy = { path = "crates/csl-legacy", version = "0.57.0" }
 citum-engine = { path = "crates/citum-engine", version = "0.57.0" }
+citum-refs = { path = "crates/citum-refs", version = "0.57.0" }
 citum-io = { path = "crates/citum-io", version = "0.57.0" }
 citum-migrate = { path = "crates/citum-migrate", version = "0.57.0" }
 citum_store = { path = "crates/citum_store", version = "0.57.0" }

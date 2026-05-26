@@ -32,3 +32,12 @@ pub enum ProcessorError {
     #[error("Parse error ({0}): {1}")]
     ParseError(String, String),
 }
+
+impl From<citum_refs::RefsError> for ProcessorError {
+    fn from(e: citum_refs::RefsError) -> Self {
+        match e {
+            citum_refs::RefsError::FileIO(io) => ProcessorError::FileIO(io),
+            citum_refs::RefsError::ParseError(name, msg) => ProcessorError::ParseError(name, msg),
+        }
+    }
+}
