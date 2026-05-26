@@ -715,7 +715,7 @@ This means the component extraction is incomplete. The structured oracle only ch
 
 - **[WORKFLOW_ANALYSIS.md](./WORKFLOW_ANALYSIS.md)**: Detailed analysis of bottlenecks and improvement plan
 - **[../reference/STYLE_PRIORITY.md](./../reference/STYLE_PRIORITY.md)**: Which styles to prioritize based on dependent counts
-- **[TEST_STRATEGY.md](../architecture/design/TEST_STRATEGY.md)**: Oracle vs Citum-native testing approach
+- **[TEST_STRATEGY.md](./TEST_STRATEGY.md)**: Oracle vs Citum-native testing approach
 - **[CLAUDE.md](../../CLAUDE.md)**: Test commands and autonomous workflow whitelist
 
 ## Future Improvements

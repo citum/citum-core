@@ -27,7 +27,7 @@ Generate the local CSL-to-Citum migration behavior report with `./scripts/migrat
 ## Architecture (Entry)
 
 Use [`architecture/README.md`](./architecture/README.md) to navigate active
-architecture/design docs versus historical snapshots.
+architecture docs versus historical snapshots and audits.
 
 ## Specifications & Policies
 

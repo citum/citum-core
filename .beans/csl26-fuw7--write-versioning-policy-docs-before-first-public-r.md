@@ -9,14 +9,14 @@ tags:
     - dx
     - forward-compat
 created_at: 2026-02-24T17:28:17Z
-updated_at: 2026-05-16T14:13:59Z
+updated_at: 2026-05-26T11:56:06Z
 parent: csl26-li63
 ---
 
 Before any public release or first external user, finish the normative
 versioning docs that sit above the operational release automation:
 
-1. `docs/architecture/design/VERSIONING.md` — the compatibility contract for
+1. `docs/specs/VERSIONING.md` — the compatibility contract for
    style authors and tool builders, covering major/minor schema changes, the
    deprecation policy (2-version window), the `citum-migrate` command
    specification, and how `deny_unknown_fields` interacts with forward

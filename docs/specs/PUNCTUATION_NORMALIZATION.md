@@ -1,5 +1,8 @@
 # Punctuation Normalization Design
 
+**Status:** Draft
+**Date:** 2026-02-15
+
 ## Current State
 
 Citum currently handles punctuation placement with:

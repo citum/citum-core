@@ -1,6 +1,7 @@
 # Type System Architecture: Structural vs Flat Types
 
-**Status:** Open Question
+**Status:** Draft
+**Date:** 2026-02-14
 **Bean:** csl26-[to be created]
 **Triggered By:** Legal citations PR (csl26-rmoi, PR #164)
 **Date:** 2026-02-14

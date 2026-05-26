@@ -3,7 +3,7 @@
 **Status:** Active
 **Version:** 1.0
 **Date:** 2026-03-20
-**Related:** bean `csl26-j5rz`, `docs/architecture/design/STYLE_ALIASING.md`
+**Related:** bean `csl26-j5rz`, `docs/specs/STYLE_ALIASING.md`
 
 ## Purpose
 
