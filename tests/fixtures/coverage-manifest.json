@@ -667,7 +667,7 @@
         "YAML bibliography parsing parity"
       ],
       "used_by": [
-        "docs/architecture/design/LEGAL_CITATIONS.md"
+        "docs/specs/LEGAL_CITATIONS.md"
       ],
       "ci_status": "advisory",
       "notes": "YAML companion fixture retained for schema/examples and manual parity checks."
