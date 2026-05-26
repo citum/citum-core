@@ -11,6 +11,7 @@ use citum_schema::options::{
     AndOptions, AndOtherOptions, DemoteNonDroppingParticle, DisplayAsSort, ShortenListOptions,
 };
 use citum_schema::template::{ContributorForm, NameOrder};
+use unicode_script::{Script, UnicodeScript};
 
 /// Configuration for formatting a single name.
 pub(crate) struct NameFormatContext<'a> {
@@ -21,6 +22,9 @@ pub(crate) struct NameFormatContext<'a> {
     pub(crate) name_form: Option<NameForm>,
     pub(crate) demote_ndp: Option<&'a DemoteNonDroppingParticle>,
     pub(crate) sort_separator: Option<&'a String>,
+    pub(crate) component_sort_separator: Option<&'a String>,
+    pub(crate) script_configs:
+        Option<&'a std::collections::HashMap<String, citum_schema::options::ScriptConfig>>,
     pub(crate) integral_name_state: Option<citum_schema::citation::IntegralNameState>,
     pub(crate) use_integral_short_name: bool,
     pub(crate) short_name_display: Option<citum_schema::options::ShortNameDisplay>,
@@ -296,6 +300,12 @@ pub fn format_names(
         sort_separator: overrides
             .sort_separator
             .or_else(|| config.and_then(|c| c.sort_separator.as_ref())),
+        component_sort_separator: overrides.sort_separator,
+        script_configs: options
+            .config
+            .multilingual
+            .as_ref()
+            .map(|multilingual| &multilingual.scripts),
         integral_name_state: hints.integral_name_state,
         use_integral_short_name: matches!(
             options.mode,
@@ -433,67 +443,221 @@ fn initialize_given_name(
     result.trim().to_string()
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum NameAssemblyOrder {
+    GivenFirst,
+    NativeFamilyFirst,
+    Inverted,
+}
+
+#[derive(Debug, Default)]
+struct NameScriptFlags {
+    has_han: bool,
+    has_hiragana: bool,
+    has_katakana: bool,
+    has_hangul: bool,
+}
+
+impl NameScriptFlags {
+    fn record(&mut self, value: &str) {
+        for ch in value.chars() {
+            match ch.script() {
+                Script::Han => self.has_han = true,
+                Script::Hiragana => self.has_hiragana = true,
+                Script::Katakana => self.has_katakana = true,
+                Script::Hangul => self.has_hangul = true,
+                _ => {}
+            }
+        }
+    }
+
+    fn cjk_script_count(&self) -> usize {
+        usize::from(self.has_han)
+            + usize::from(self.has_hiragana)
+            + usize::from(self.has_katakana)
+            + usize::from(self.has_hangul)
+    }
+
+    fn candidate_keys(&self) -> Vec<&'static str> {
+        let count = self.cjk_script_count();
+        if count == 0 {
+            return Vec::new();
+        }
+        // Mixed kana (Hiragana + Katakana, no Han/Hangul) matches "kana" before "cjk".
+        if count > 1
+            && !self.has_han
+            && !self.has_hangul
+            && (self.has_hiragana || self.has_katakana)
+        {
+            return vec!["kana", "Hrkt", "cjk"];
+        }
+        if count > 1 {
+            return vec!["cjk"];
+        }
+        if self.has_katakana {
+            return vec!["katakana", "Kana", "Hrkt", "kana", "cjk"];
+        }
+        if self.has_hiragana {
+            return vec!["hiragana", "Hira", "Hrkt", "kana", "cjk"];
+        }
+        if self.has_han {
+            return vec!["han", "Hani", "cjk"];
+        }
+        if self.has_hangul {
+            return vec!["hangul", "Hang", "cjk"];
+        }
+        Vec::new()
+    }
+}
+
+fn script_config_for_name<'a>(
+    name: &crate::reference::FlatName,
+    ctx: &'a NameFormatContext<'a>,
+) -> Option<&'a citum_schema::options::ScriptConfig> {
+    let configs = ctx.script_configs?;
+    if configs.is_empty() {
+        return None;
+    }
+
+    let mut flags = NameScriptFlags::default();
+    for part in [
+        name.family.as_deref(),
+        name.given.as_deref(),
+        name.dropping_particle.as_deref(),
+        name.non_dropping_particle.as_deref(),
+        name.suffix.as_deref(),
+    ]
+    .into_iter()
+    .flatten()
+    {
+        flags.record(part);
+    }
+
+    flags
+        .candidate_keys()
+        .into_iter()
+        .find_map(|key| configs.get(key))
+}
+
 /// Assemble a long-form name from its computed parts.
 ///
-/// When `inverted` is true uses "Family, Given" order; otherwise "Given Family".
+/// Inverted order uses "Family, Given"; native family-first uses family-first
+/// display order without sort punctuation.
 fn assemble_long_name(
     family_part: String,
     given_part: String,
     particle_part: String,
     suffix: &str,
-    inverted: bool,
+    order: NameAssemblyOrder,
+    name_part_delimiter: &str,
     sort_separator: &str,
 ) -> String {
-    if inverted {
-        // "Family, Given" format
-        // Family Part + sort_separator + Given Part + Particle Part + Suffix
-        let mut suffix_part = String::new();
-        if !given_part.is_empty() {
-            suffix_part.push_str(&given_part);
-        }
-        if !particle_part.is_empty() {
-            if !suffix_part.is_empty() {
-                suffix_part.push(' ');
-            }
-            suffix_part.push_str(&particle_part);
-        }
-        if !suffix.is_empty() {
-            if !suffix_part.is_empty() {
-                suffix_part.push(' ');
-            }
-            suffix_part.push_str(suffix);
-        }
-
-        if suffix_part.is_empty() {
-            family_part
-        } else {
-            format!("{family_part}{sort_separator}{suffix_part}")
-        }
-    } else {
-        // "Given Family" format
-        // Given Part + Particle Part + Family Part + Suffix
-        let mut parts = Vec::new();
-        if !given_part.is_empty() {
-            parts.push(given_part);
-        }
-        if !particle_part.is_empty() {
-            parts.push(particle_part);
-        }
-        if !family_part.is_empty() {
-            if let Some(last) = parts.last_mut()
-                && last.ends_with('-')
-            {
-                last.push_str(&family_part);
-            } else {
-                parts.push(family_part);
-            }
-        }
-        if !suffix.is_empty() {
-            parts.push(suffix.to_string());
-        }
-
-        parts.join(" ")
+    match order {
+        NameAssemblyOrder::Inverted => assemble_inverted_long_name(
+            family_part,
+            given_part,
+            particle_part,
+            suffix,
+            sort_separator,
+        ),
+        NameAssemblyOrder::NativeFamilyFirst => assemble_native_family_first_long_name(
+            family_part,
+            given_part,
+            particle_part,
+            suffix,
+            name_part_delimiter,
+        ),
+        NameAssemblyOrder::GivenFirst => assemble_given_first_long_name(
+            family_part,
+            given_part,
+            particle_part,
+            suffix,
+            name_part_delimiter,
+        ),
     }
+}
+
+fn assemble_inverted_long_name(
+    family_part: String,
+    given_part: String,
+    particle_part: String,
+    suffix: &str,
+    sort_separator: &str,
+) -> String {
+    let mut suffix_part = String::new();
+    if !given_part.is_empty() {
+        suffix_part.push_str(&given_part);
+    }
+    if !particle_part.is_empty() {
+        if !suffix_part.is_empty() {
+            suffix_part.push(' ');
+        }
+        suffix_part.push_str(&particle_part);
+    }
+    if !suffix.is_empty() {
+        if !suffix_part.is_empty() {
+            suffix_part.push(' ');
+        }
+        suffix_part.push_str(suffix);
+    }
+
+    if suffix_part.is_empty() {
+        family_part
+    } else {
+        format!("{family_part}{sort_separator}{suffix_part}")
+    }
+}
+
+fn assemble_native_family_first_long_name(
+    family_part: String,
+    given_part: String,
+    particle_part: String,
+    suffix: &str,
+    name_part_delimiter: &str,
+) -> String {
+    let mut parts = Vec::new();
+    if !family_part.is_empty() {
+        parts.push(family_part);
+    }
+    if !particle_part.is_empty() {
+        parts.push(particle_part);
+    }
+    if !given_part.is_empty() {
+        parts.push(given_part);
+    }
+    if !suffix.is_empty() {
+        parts.push(suffix.to_string());
+    }
+    parts.join(name_part_delimiter)
+}
+
+fn assemble_given_first_long_name(
+    family_part: String,
+    given_part: String,
+    particle_part: String,
+    suffix: &str,
+    name_part_delimiter: &str,
+) -> String {
+    let mut parts = Vec::new();
+    if !given_part.is_empty() {
+        parts.push(given_part);
+    }
+    if !particle_part.is_empty() {
+        parts.push(particle_part);
+    }
+    if !family_part.is_empty() {
+        if let Some(last) = parts.last_mut()
+            && last.ends_with('-')
+        {
+            last.push_str(&family_part);
+        } else {
+            parts.push(family_part);
+        }
+    }
+    if !suffix.is_empty() {
+        parts.push(suffix.to_string());
+    }
+    parts.join(name_part_delimiter)
 }
 
 fn format_literal_name(literal: &str, short: Option<&str>, ctx: &NameFormatContext) -> String {
@@ -516,6 +680,55 @@ fn format_literal_name(literal: &str, short: Option<&str>, ctx: &NameFormatConte
         }
     }
     literal.to_string()
+}
+
+fn is_inverted_name_order(index: usize, ctx: &NameFormatContext) -> bool {
+    match ctx.name_order {
+        Some(NameOrder::GivenFirst) => false,
+        Some(NameOrder::FamilyFirst) => match ctx.display_as_sort {
+            Some(DisplayAsSort::First) => index == 0,
+            _ => true,
+        },
+        Some(NameOrder::FamilyFirstOnly) => index == 0,
+        None => match ctx.display_as_sort {
+            Some(DisplayAsSort::All) => true,
+            Some(DisplayAsSort::First) => index == 0,
+            _ => false,
+        },
+    }
+}
+
+fn name_assembly_order(
+    inverted: bool,
+    script_config: Option<&citum_schema::options::ScriptConfig>,
+    ctx: &NameFormatContext,
+) -> NameAssemblyOrder {
+    if inverted {
+        return NameAssemblyOrder::Inverted;
+    }
+    let native_family_first =
+        ctx.name_order.is_none() && script_config.is_some_and(|config| config.use_native_ordering);
+    if native_family_first {
+        NameAssemblyOrder::NativeFamilyFirst
+    } else {
+        NameAssemblyOrder::GivenFirst
+    }
+}
+
+fn sort_separator_for_name<'a>(
+    script_config: Option<&'a citum_schema::options::ScriptConfig>,
+    ctx: &'a NameFormatContext<'a>,
+) -> &'a str {
+    ctx.component_sort_separator
+        .map_or_else(
+            || {
+                script_config
+                    .and_then(|config| config.sort_separator.as_deref())
+                    .or_else(|| ctx.sort_separator.map(std::string::String::as_str))
+            },
+            |separator| Some(separator.as_str()),
+        )
+        .unwrap_or(", ")
 }
 
 /// Format a single name.
@@ -544,23 +757,13 @@ pub(crate) fn format_single_name(
     let dp = name.dropping_particle.as_deref().unwrap_or("");
     let ndp = name.non_dropping_particle.as_deref().unwrap_or("");
     let suffix = name.suffix.as_deref().unwrap_or("");
+    let script_config = script_config_for_name(name, ctx);
 
     // Determine if we should invert (Family, Given).
     // `display-as-sort: first` in the config limits inversion to the first name
     // even when the template requests `name-order: family-first` for all names.
-    let inverted = match ctx.name_order {
-        Some(NameOrder::GivenFirst) => false,
-        Some(NameOrder::FamilyFirst) => match ctx.display_as_sort {
-            Some(DisplayAsSort::First) => index == 0,
-            _ => true,
-        },
-        Some(NameOrder::FamilyFirstOnly) => index == 0,
-        None => match ctx.display_as_sort {
-            Some(DisplayAsSort::All) => true,
-            Some(DisplayAsSort::First) => index == 0,
-            _ => false,
-        },
-    };
+    let inverted = is_inverted_name_order(index, ctx);
+    let assembly_order = name_assembly_order(inverted, script_config, ctx);
 
     // Determine effective form
     let effective_form = if expand_given_names && matches!(form, ContributorForm::Short) {
@@ -627,13 +830,17 @@ pub(crate) fn format_single_name(
                 particle_part.push_str(ndp);
             }
 
-            let sep = ctx.sort_separator.map_or(", ", std::string::String::as_str);
+            let name_part_delimiter = script_config
+                .and_then(|config| config.delimiter.as_deref())
+                .unwrap_or(" ");
+            let sep = sort_separator_for_name(script_config, ctx);
             assemble_long_name(
                 family_part,
                 given_part,
                 particle_part,
                 suffix,
-                inverted,
+                assembly_order,
+                name_part_delimiter,
                 sep,
             )
         }

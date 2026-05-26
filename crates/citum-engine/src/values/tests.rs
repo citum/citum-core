@@ -154,6 +154,8 @@ fn make_name_format_context<'a>(
         name_form,
         demote_ndp,
         sort_separator,
+        component_sort_separator: None,
+        script_configs: None,
         integral_name_state: None,
         use_integral_short_name: true,
         short_name_display: None,
@@ -2969,6 +2971,275 @@ fn test_sort_separator_space() {
     let result_default =
         contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
     assert_eq!(result_default, "Smith, J");
+}
+
+#[test]
+fn katakana_names_use_script_delimiter_in_original_order() {
+    let name = FlatName {
+        family: Some("ジャクソン".to_string()),
+        given: Some("マイケル".to_string()),
+        ..Default::default()
+    };
+    let scripts = std::collections::HashMap::from([(
+        "katakana".to_string(),
+        ScriptConfig {
+            delimiter: Some("・".to_string()),
+            ..Default::default()
+        },
+    )]);
+    let mut ctx =
+        make_name_format_context(None, None, None, None, Some(NameForm::Full), None, None);
+    ctx.script_configs = Some(&scripts);
+
+    let result = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
+
+    assert_eq!(result, "マイケル・ジャクソン");
+}
+
+#[test]
+fn katakana_names_use_script_sort_separator_when_inverted() {
+    let name = FlatName {
+        family: Some("ジャクソン".to_string()),
+        given: Some("マイケル".to_string()),
+        ..Default::default()
+    };
+    let scripts = std::collections::HashMap::from([(
+        "katakana".to_string(),
+        ScriptConfig {
+            delimiter: Some("・".to_string()),
+            sort_separator: Some("、".to_string()),
+            ..Default::default()
+        },
+    )]);
+    let mut ctx = make_name_format_context(
+        Some(DisplayAsSort::All),
+        None,
+        None,
+        None,
+        Some(NameForm::Full),
+        None,
+        None,
+    );
+    ctx.script_configs = Some(&scripts);
+
+    let result = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
+
+    assert_eq!(result, "ジャクソン、マイケル");
+}
+
+/// Reproduces the forum use-case verbatim:
+///   マイケル・ジャクソン  (original order)
+///   ジャクソン、マイケル  (inverted order)
+/// Both outputs come from the same style config with one `katakana` entry.
+#[test]
+fn katakana_name_renders_correctly_in_both_orders() {
+    let name = FlatName {
+        family: Some("ジャクソン".to_string()),
+        given: Some("マイケル".to_string()),
+        ..Default::default()
+    };
+    let scripts = std::collections::HashMap::from([(
+        "katakana".to_string(),
+        ScriptConfig {
+            delimiter: Some("・".to_string()),
+            sort_separator: Some("、".to_string()),
+            ..Default::default()
+        },
+    )]);
+
+    let mut ctx_original =
+        make_name_format_context(None, None, None, None, Some(NameForm::Full), None, None);
+    ctx_original.script_configs = Some(&scripts);
+    let original =
+        contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx_original, false);
+
+    let mut ctx_inverted = make_name_format_context(
+        Some(DisplayAsSort::All),
+        None,
+        None,
+        None,
+        Some(NameForm::Full),
+        None,
+        None,
+    );
+    ctx_inverted.script_configs = Some(&scripts);
+    let inverted =
+        contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx_inverted, false);
+
+    assert_eq!(original, "マイケル・ジャクソン");
+    assert_eq!(inverted, "ジャクソン、マイケル");
+}
+
+#[test]
+fn native_cjk_names_use_native_ordering_without_space() {
+    let name = FlatName {
+        family: Some("北川".to_string()),
+        given: Some("善太郎".to_string()),
+        ..Default::default()
+    };
+    let scripts = std::collections::HashMap::from([(
+        "cjk".to_string(),
+        ScriptConfig {
+            use_native_ordering: true,
+            delimiter: Some(String::new()),
+            ..Default::default()
+        },
+    )]);
+    let mut ctx =
+        make_name_format_context(None, None, None, None, Some(NameForm::Full), None, None);
+    ctx.script_configs = Some(&scripts);
+
+    let result = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
+
+    assert_eq!(result, "北川善太郎");
+}
+
+#[test]
+fn latin_names_ignore_unmatched_script_separators() {
+    let name = FlatName {
+        family: Some("Jackson".to_string()),
+        given: Some("Michael".to_string()),
+        ..Default::default()
+    };
+    let scripts = std::collections::HashMap::from([(
+        "katakana".to_string(),
+        ScriptConfig {
+            delimiter: Some("・".to_string()),
+            sort_separator: Some("、".to_string()),
+            ..Default::default()
+        },
+    )]);
+    let mut ctx =
+        make_name_format_context(None, None, None, None, Some(NameForm::Full), None, None);
+    ctx.script_configs = Some(&scripts);
+
+    let result = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
+
+    assert_eq!(result, "Michael Jackson");
+}
+
+#[test]
+fn component_sort_separator_overrides_script_sort_separator() {
+    let name = FlatName {
+        family: Some("ジャクソン".to_string()),
+        given: Some("マイケル".to_string()),
+        ..Default::default()
+    };
+    let scripts = std::collections::HashMap::from([(
+        "katakana".to_string(),
+        ScriptConfig {
+            sort_separator: Some("、".to_string()),
+            ..Default::default()
+        },
+    )]);
+    let component_separator = " / ".to_string();
+    let mut ctx = make_name_format_context(
+        Some(DisplayAsSort::All),
+        None,
+        None,
+        None,
+        Some(NameForm::Full),
+        None,
+        None,
+    );
+    ctx.script_configs = Some(&scripts);
+    ctx.component_sort_separator = Some(&component_separator);
+
+    let result = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
+
+    assert_eq!(result, "ジャクソン / マイケル");
+}
+
+#[test]
+fn mixed_kana_names_match_kana_config() {
+    // Family in Hiragana, given in Katakana — mixed kana should resolve to "kana" key.
+    let name = FlatName {
+        family: Some("やまだ".to_string()), // hiragana
+        given: Some("タロウ".to_string()),  // katakana
+        ..Default::default()
+    };
+    let scripts = std::collections::HashMap::from([(
+        "kana".to_string(),
+        ScriptConfig {
+            delimiter: Some("・".to_string()),
+            ..Default::default()
+        },
+    )]);
+    let mut ctx =
+        make_name_format_context(None, None, None, None, Some(NameForm::Full), None, None);
+    ctx.script_configs = Some(&scripts);
+
+    let result = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
+
+    assert_eq!(result, "タロウ・やまだ");
+}
+
+#[test]
+fn explicit_name_order_overrides_use_native_ordering() {
+    let name = FlatName {
+        family: Some("北川".to_string()),
+        given: Some("善太郎".to_string()),
+        ..Default::default()
+    };
+    let scripts = std::collections::HashMap::from([(
+        "cjk".to_string(),
+        ScriptConfig {
+            use_native_ordering: true,
+            delimiter: Some(String::new()),
+            ..Default::default()
+        },
+    )]);
+    let order = NameOrder::GivenFirst;
+    let mut ctx = make_name_format_context(
+        None,
+        Some(&order),
+        None,
+        None,
+        Some(NameForm::Full),
+        None,
+        None,
+    );
+    ctx.script_configs = Some(&scripts);
+
+    let result = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
+
+    // Explicit given-first order wins over script use-native-ordering.
+    assert_eq!(result, "善太郎北川");
+}
+
+#[test]
+fn native_ordering_applies_when_display_as_sort_is_set() {
+    // display-as-sort: first inverts only the first name (index 0).
+    // For a subsequent name (index 1) that is not inverted, use-native-ordering must
+    // still apply — the global display_as_sort setting must not suppress it.
+    let name = FlatName {
+        family: Some("北川".to_string()),
+        given: Some("善太郎".to_string()),
+        ..Default::default()
+    };
+    let scripts = std::collections::HashMap::from([(
+        "cjk".to_string(),
+        ScriptConfig {
+            use_native_ordering: true,
+            delimiter: Some(String::new()),
+            ..Default::default()
+        },
+    )]);
+    let mut ctx = make_name_format_context(
+        Some(DisplayAsSort::First),
+        None,
+        None,
+        None,
+        Some(NameForm::Full),
+        None,
+        None,
+    );
+    ctx.script_configs = Some(&scripts);
+
+    // Index 1 — not inverted by display-as-sort:first; native ordering must apply.
+    let result = contributor::format_single_name(&name, &ContributorForm::Long, 1, &ctx, false);
+
+    assert_eq!(result, "北川善太郎");
 }
 
 /// Tests the behavior of `preferred_transliteration_exact_match`.
