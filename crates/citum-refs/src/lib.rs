@@ -9,6 +9,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! BibLaTeX, RIS) without depending on `citum-engine`. Both `citum-engine` and
 //! `citum-io` depend on this crate; surface crates (`citum-server`,
 //! `citum-bindings`) may depend on it directly.
+//!
+//! BibLaTeX parsing is provided via [`formats::biblatex::load_biblatex`] and the
+//! conversion helpers in [`biblatex`].
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -16,6 +19,7 @@ use std::path::{Path, PathBuf};
 use indexmap::IndexMap;
 use thiserror::Error;
 
+pub mod biblatex;
 pub mod formats;
 
 pub use citum_schema::InputBibliography;
@@ -181,12 +185,13 @@ pub fn load_merged_refs(paths: &[PathBuf]) -> Result<LoadedRefs, RefsError> {
         }
         if let Some(sets) = loaded.sets {
             for (set_id, members) in sets {
-                if merged_sets.insert(set_id.clone(), members).is_some() {
+                if merged_sets.contains_key(&set_id) {
                     return Err(RefsError::ParseError(
                         "BIBLIOGRAPHY".to_string(),
                         format!("Duplicate compound set id while merging: {set_id}"),
                     ));
                 }
+                merged_sets.insert(set_id, members);
             }
         }
     }

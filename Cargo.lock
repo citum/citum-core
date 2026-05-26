@@ -710,7 +710,6 @@ dependencies = [
 name = "citum-io"
 version = "0.57.0"
 dependencies = [
- "biblatex",
  "ciborium",
  "citum-engine",
  "citum-refs",
