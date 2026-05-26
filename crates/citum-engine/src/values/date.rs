@@ -590,6 +590,12 @@ fn format_single_date(
                 return None;
             }
             let month = extract_month(date, &locale.dates.months.long);
+            let month_opt = (!month.is_empty()).then_some(month.as_str());
+            if let Some(rendered) =
+                locale.resolve_date_pattern("pattern.date-year-month", Some(&year), month_opt, None)
+            {
+                return Some(rendered);
+            }
             if month.is_empty() {
                 Some(year)
             } else {
@@ -659,6 +665,15 @@ fn format_single_date(
             }
             let month = extract_month(date, &locale.dates.months.long);
             let day = date.day();
+            let month_opt = (!month.is_empty()).then_some(month.as_str());
+            if let Some(rendered) = locale.resolve_date_pattern(
+                "pattern.date-year-month-day",
+                Some(&year),
+                month_opt,
+                day,
+            ) {
+                return Some(rendered);
+            }
             match (month.is_empty(), day) {
                 (true, _) => Some(year),
                 (false, None) => Some(format!("{year}, {month}")),
@@ -672,6 +687,15 @@ fn format_single_date(
             }
             let month = extract_month(date, &locale.dates.months.short);
             let day = date.day();
+            let month_opt = (!month.is_empty()).then_some(month.as_str());
+            if let Some(rendered) = locale.resolve_date_pattern(
+                "pattern.date-day-month-abbr-year",
+                Some(&year),
+                month_opt,
+                day,
+            ) {
+                return Some(rendered);
+            }
             match (month.is_empty(), day) {
                 (true, _) => Some(year),
                 (false, None) => Some(format!("{month} {year}")),
@@ -685,6 +709,15 @@ fn format_single_date(
             }
             let month = extract_month(date, &locale.dates.months.short);
             let day = date.day();
+            let month_opt = (!month.is_empty()).then_some(month.as_str());
+            if let Some(rendered) = locale.resolve_date_pattern(
+                "pattern.date-month-abbr-day-year",
+                Some(&year),
+                month_opt,
+                day,
+            ) {
+                return Some(rendered);
+            }
             match (month.is_empty(), day) {
                 (true, _) => Some(year),
                 (false, None) => Some(format!("{month} {year}")),
@@ -1199,6 +1232,128 @@ mod locale_pattern_tests {
     #[test]
     fn eu_es_month_day_uses_locale_pattern() {
         assert_eq!(month_day(&eu_es(), "2023-01-12"), "urtarrilaren 12a");
+    }
+
+    fn year_month(locale: &Locale, edtf: &str) -> String {
+        format_single_date(
+            &EdtfString(edtf.to_string()),
+            &DateForm::YearMonth,
+            locale,
+            None,
+        )
+        .expect("date should render")
+    }
+
+    fn year_month_day(locale: &Locale, edtf: &str) -> String {
+        format_single_date(
+            &EdtfString(edtf.to_string()),
+            &DateForm::YearMonthDay,
+            locale,
+            None,
+        )
+        .expect("date should render")
+    }
+
+    fn day_month_abbr_year(locale: &Locale, edtf: &str) -> String {
+        format_single_date(
+            &EdtfString(edtf.to_string()),
+            &DateForm::DayMonthAbbrYear,
+            locale,
+            None,
+        )
+        .expect("date should render")
+    }
+
+    fn month_abbr_day_year(locale: &Locale, edtf: &str) -> String {
+        format_single_date(
+            &EdtfString(edtf.to_string()),
+            &DateForm::MonthAbbrDayYear,
+            locale,
+            None,
+        )
+        .expect("date should render")
+    }
+
+    #[test]
+    fn en_us_year_month_unchanged_by_pattern_machinery() {
+        // en-US has no pattern.date-year-month, so hardcoded assembly must hold.
+        assert_eq!(year_month(&en_us(), "2023-01"), "January 2023");
+    }
+
+    #[test]
+    fn en_us_year_month_day_unchanged_by_pattern_machinery() {
+        assert_eq!(year_month_day(&en_us(), "2023-01-12"), "2023, January 12");
+    }
+
+    #[test]
+    fn en_us_day_month_abbr_year_unchanged_by_pattern_machinery() {
+        assert_eq!(day_month_abbr_year(&en_us(), "2023-01-12"), "12 Jan. 2023");
+    }
+
+    #[test]
+    fn en_us_month_abbr_day_year_unchanged_by_pattern_machinery() {
+        assert_eq!(month_abbr_day_year(&en_us(), "2023-01-12"), "Jan. 12, 2023");
+    }
+
+    #[test]
+    fn es_es_year_month_uses_locale_pattern() {
+        // Spanish: month before year connected with "de".
+        assert_eq!(year_month(&es_es(), "2023-01"), "enero de 2023");
+    }
+
+    #[test]
+    fn eu_es_year_month_uses_locale_pattern() {
+        // Basque: year-first genitive shape. PROVISIONAL — see locales/eu-ES.yaml.
+        assert_eq!(year_month(&eu_es(), "2023-01"), "2023ko urtarrila");
+    }
+
+    #[test]
+    fn year_month_missing_month_falls_back_to_year() {
+        // Year-only EDTF: no month to pattern-assemble, returns year alone.
+        assert_eq!(year_month(&es_es(), "2023"), "2023");
+    }
+
+    #[test]
+    fn es_es_year_month_day_uses_locale_pattern() {
+        // Spanish: year first, then day/month connected with "de".
+        assert_eq!(year_month_day(&es_es(), "2023-01-12"), "2023, 12 de enero");
+    }
+
+    #[test]
+    fn es_es_year_month_day_missing_day_falls_back() {
+        // Pattern requires $day; evaluator returns None, falls back to
+        // hardcoded "{year}, {month}".
+        assert_eq!(year_month_day(&es_es(), "2023-01"), "2023, enero");
+    }
+
+    #[test]
+    fn es_es_day_month_abbr_year_uses_locale_pattern() {
+        // Spanish abbreviated form: "12 ene. de 2023" via pattern.
+        assert_eq!(
+            day_month_abbr_year(&es_es(), "2023-01-12"),
+            "12 ene. de 2023"
+        );
+    }
+
+    #[test]
+    fn es_es_day_month_abbr_year_missing_day_falls_back() {
+        // Pattern requires $day; falls back to hardcoded "{month} {year}".
+        assert_eq!(day_month_abbr_year(&es_es(), "2023-01"), "ene. 2023");
+    }
+
+    #[test]
+    fn es_es_month_abbr_day_year_uses_locale_pattern() {
+        // Spanish abbreviated form: "ene. 12 de 2023" via pattern.
+        assert_eq!(
+            month_abbr_day_year(&es_es(), "2023-01-12"),
+            "ene. 12 de 2023"
+        );
+    }
+
+    #[test]
+    fn es_es_month_abbr_day_year_missing_day_falls_back() {
+        // Pattern requires $day; falls back to hardcoded "{month} {year}".
+        assert_eq!(month_abbr_day_year(&es_es(), "2023-01"), "ene. 2023");
     }
 
     #[test]

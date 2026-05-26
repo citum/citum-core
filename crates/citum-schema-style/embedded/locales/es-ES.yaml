@@ -299,6 +299,10 @@ messages:
   # Mirrors the long-form already declared in `date-formats.bib-default`.
   pattern.date-full: "{$day} de {$month} de {$year}"
   pattern.date-month-day: "{$day} de {$month}"
+  pattern.date-year-month: "{$month} de {$year}"
+  pattern.date-year-month-day: "{$year}, {$day} de {$month}"
+  pattern.date-day-month-abbr-year: "{$day} {$month} de {$year}"
+  pattern.date-month-abbr-day-year: "{$month} {$day} de {$year}"
   date.open-ended: "presente"
 
 date-formats:

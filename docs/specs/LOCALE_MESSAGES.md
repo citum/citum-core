@@ -231,26 +231,26 @@ All message IDs are dot-namespaced strings:
 | `pattern.` | Compositional phrase templates | `pattern.page-range`, `pattern.retrieved-from`, `pattern.date-full` |
 | `date.` | Date-specific terms not in `dateFormats` | `date.open-ended` |
 
-#### Reserved `pattern.date-*` IDs
+#### Supported `pattern.date-*` IDs
 
-One reserved ID per engine `DateForm` variant. Today the engine consumes the
-two marked **Active**; the others are reserved so locale authors can write
-forward-compatible files. Reserved-but-unconsumed IDs are silently ignored
-(the engine falls through to the hardcoded English assembly).
+One ID per engine `DateForm` variant. All six are **Active** —
+the engine consults each pattern before falling through to hardcoded English
+assembly when the locale does not author the ID.
 
 | Message ID | Variables | `DateForm` | Status |
 |---|---|---|---|
 | `pattern.date-full` | `$year`, `$month`, `$day` | `Full` | **Active** |
 | `pattern.date-month-day` | `$month`, `$day` | `MonthDay` | **Active** |
-| `pattern.date-year-month` | `$year`, `$month` | `YearMonth` | Reserved |
-| `pattern.date-year-month-day` | `$year`, `$month`, `$day` | `YearMonthDay` | Reserved |
-| `pattern.date-day-month-abbr-year` | `$year`, `$month`, `$day` | `DayMonthAbbrYear` | Reserved |
-| `pattern.date-month-abbr-day-year` | `$year`, `$month`, `$day` | `MonthAbbrDayYear` | Reserved |
+| `pattern.date-year-month` | `$year`, `$month` | `YearMonth` | **Active** |
+| `pattern.date-year-month-day` | `$year`, `$month`, `$day` | `YearMonthDay` | **Active** |
+| `pattern.date-day-month-abbr-year` | `$year`, `$month`, `$day` | `DayMonthAbbrYear` | **Active** |
+| `pattern.date-month-abbr-day-year` | `$year`, `$month`, `$day` | `MonthAbbrDayYear` | **Active** |
 
 A pattern that references a missing component (e.g. `pattern.date-full` uses
 `{$day}` but the input date has no day) returns `None` from the evaluator,
-and the engine falls back to its hardcoded assembly. Authors who need a
-no-day form should author `pattern.date-year-month` once that ID is wired.
+and the engine falls back to its hardcoded assembly. For inflected locales
+needing year-month-only output, author `pattern.date-year-month` (see
+`es-ES.yaml` and `eu-ES.yaml` for examples).
 
 Legacy CSL-style term keys (`page`, `et_al`, `no_date`, …) remain accessible
 via the `legacyTermAliases` map on `LocalePreset`, which redirects old keys to
