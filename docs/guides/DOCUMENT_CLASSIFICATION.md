@@ -86,7 +86,7 @@ conversion:
 |---------|------------------------|-----|
 | `docs/specs/TYPE_SYSTEM_ARCHITECTURE.md` | Moved to specs (2026-05-26) | Rationale + option analysis for the type model |
 | `docs/specs/LEGAL_CITATIONS.md` | Moved to specs (2026-05-26) | De facto contract for legal-reference behavior |
-| `docs/architecture/MULTILINGUAL.md` | Likely split | It appears broad enough to separate rationale from implementable behavior |
+| `docs/specs/MULTILINGUAL.md` | Moved to specs (2026-05-26) | Normative design spec; now co-located with MULTILINGUAL_NAMES.md |
 | `docs/specs/BIBLIOGRAPHY_GROUPING.md` | Moved to specs (2026-05-26) | Describes processor behavior that should be testable |
 | `docs/architecture/CITUM_STORE_PLAN.md` | Likely spec candidate | It appears feature-oriented if the store remains active roadmap work |
 

@@ -360,7 +360,7 @@ csl26-group (COMPLETED)
 
 ## References
 
-- `/Users/brucedarcus/Code/csl26/docs/architecture/MULTILINGUAL.md`
+- `../specs/MULTILINGUAL.md`
 - `/Users/brucedarcus/Code/citum/citum-core/docs/specs/BIBLIOGRAPHY_GROUPING.md`
 - `/Users/brucedarcus/Code/csl26/docs/architecture/DISAMBIGUATION_MULTILINGUAL_GROUPING.md`
 - `/Users/brucedarcus/Code/csl26/crates/citum-schema-style/src/options/multilingual.rs`

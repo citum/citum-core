@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Date:** 2026-05-26
-**Related:** [`../architecture/MULTILINGUAL.md`](../architecture/MULTILINGUAL.md), [`../architecture/NAME_FORMATTING.md`](../architecture/NAME_FORMATTING.md), [`MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](./MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md)
+**Related:** [`MULTILINGUAL.md`](./MULTILINGUAL.md), [`../architecture/NAME_FORMATTING.md`](../architecture/NAME_FORMATTING.md), [`MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](./MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md)
 
 ## Purpose
 
