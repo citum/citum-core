@@ -55,7 +55,10 @@ pub struct ScriptConfig {
     /// Whether to use native ordering for this script (e.g., FamilyGiven for CJK).
     #[serde(default)]
     pub use_native_ordering: bool,
-    /// Custom delimiter for this script.
+    /// Custom delimiter between name parts for this script.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub delimiter: Option<String>,
+    /// Custom delimiter between family and given name when this script is inverted.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sort_separator: Option<String>,
 }

@@ -53,7 +53,6 @@ to make sure the document should be a spec rather than architecture or policy.
 
 | File | Feature |
 |------|---------|
-| [`MULTILINGUAL_NAMES.md`](./MULTILINGUAL_NAMES.md) | Script-specific contributor name assembly |
 | [`DISTRIBUTED_RESOLVER.md`](./DISTRIBUTED_RESOLVER.md) | Federated registry and distributed resolver architecture (Phases 2–3) |
 | [`CLI_UX_REDESIGN.md`](./CLI_UX_REDESIGN.md) | Clean command model for style discovery, registry management, and CLI validation UX |
 | [`PROFILE_DOCUMENTARY_VERIFICATION.md`](./PROFILE_DOCUMENTARY_VERIFICATION.md) | Verification model for profile styles using external authority |
@@ -89,6 +88,7 @@ to make sure the document should be a spec rather than architecture or policy.
 | [`MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](./MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md) | Sort and section multilingual bibliographies by script or language |
 | [`MIGRATE_RESEARCH_RICH_INPUTS.md`](./MIGRATE_RESEARCH_RICH_INPUTS.md) | Bounded rich-input workflow for migrate-research passes |
 | [`MIXED_CONDITION_NOTE_POSITION_TREES.md`](./MIXED_CONDITION_NOTE_POSITION_TREES.md) | Migration of legacy choose trees with mixed position predicates |
+| [`MULTILINGUAL_NAMES.md`](./MULTILINGUAL_NAMES.md) | Script-specific contributor name assembly |
 | [`NON_STANDARD_NUMBERING_AND_LOCATOR_KINDS.md`](./NON_STANDARD_NUMBERING_AND_LOCATOR_KINDS.md) | Representation of domain-specific numbering and locator labels |
 | [`NOTE_POSITION_AUDIT.md`](./NOTE_POSITION_AUDIT.md) | Audit layer for note-style repeated-citation behavior |
 | [`NOTE_SHORTENING_POLICY.md`](./NOTE_SHORTENING_POLICY.md) | Normative contract for repeated-note and shortened-note behavior |

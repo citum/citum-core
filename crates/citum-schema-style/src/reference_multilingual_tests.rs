@@ -69,12 +69,21 @@ multilingual:
     cjk:
       use-native-ordering: true
       delimiter: ""
+    katakana:
+      delimiter: "・"
+      sort-separator: "、"
 "#;
         let config: Config = serde_yaml::from_str(yaml).unwrap();
         let mlt = config.multilingual.unwrap();
         assert_eq!(mlt.title_mode, Some(MultilingualMode::Transliterated));
         assert_eq!(mlt.name_mode, Some(MultilingualMode::Combined));
         assert!(mlt.scripts.get("cjk").unwrap().use_native_ordering);
+        assert_eq!(
+            mlt.scripts
+                .get("katakana")
+                .and_then(|script| script.sort_separator.as_deref()),
+            Some("、")
+        );
     }
 
     #[test]
