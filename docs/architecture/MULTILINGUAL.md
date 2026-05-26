@@ -4,6 +4,9 @@
 **Authors**: @dstyleplan
 **Date**: 2026-02-11
 
+**Normative specs:** [`../specs/MULTILINGUAL_NAMES.md`](../specs/MULTILINGUAL_NAMES.md),
+[`../specs/MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](../specs/MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md)
+
 ## Overview
 
 This document outlines the architectural design for adding "elegant" multilingual support to Citum. The goal is to move away from procedural macros and toward a declarative, type-safe system that handles parallel metadata for high-fidelity citations.
