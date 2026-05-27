@@ -208,8 +208,10 @@ impl CitationSpec {
                 merged.integral = None;
                 merged.non_integral = None;
 
-                if spec.options.is_some() {
-                    merged.options = spec.options.clone();
+                match (&mut merged.options, &spec.options) {
+                    (Some(base), Some(mode)) => base.merge(mode),
+                    (None, Some(mode)) => merged.options = Some(mode.clone()),
+                    _ => {}
                 }
                 if spec.template_ref.is_some() {
                     merged.template_ref = spec.template_ref.clone();
@@ -283,8 +285,10 @@ impl CitationSpec {
                 merged.subsequent = None;
                 merged.ibid = None;
 
-                if spec.options.is_some() {
-                    merged.options = spec.options.clone();
+                match (&mut merged.options, &spec.options) {
+                    (Some(base), Some(mode)) => base.merge(mode),
+                    (None, Some(mode)) => merged.options = Some(mode.clone()),
+                    _ => {}
                 }
                 if spec.template_ref.is_some() {
                     merged.template_ref = spec.template_ref.clone();

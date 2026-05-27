@@ -593,6 +593,50 @@ impl CitationOptions {
     pub fn merged_with(&self, base: &Config) -> Config {
         Config::merged(base, &self.to_config())
     }
+
+    /// Merge `other` into `self`, with `other` taking precedence for each field.
+    pub fn merge(&mut self, other: &CitationOptions) {
+        crate::merge_options!(
+            self,
+            other,
+            processing,
+            localize,
+            multilingual,
+            dates,
+            titles,
+            locators,
+            page_range_format,
+            links,
+            volume_pages_delimiter,
+            strip_periods,
+            notes,
+            integral_name_memory,
+            org_abbreviation_memory,
+            label_wrap,
+            group_delimiter,
+            custom,
+        );
+
+        if let Some(other_substitute) = &other.substitute {
+            if let Some(this_substitute) = &self.substitute {
+                self.substitute = Some(SubstituteConfig::merged(this_substitute, other_substitute));
+            } else {
+                self.substitute = Some(other_substitute.clone());
+            }
+        }
+
+        if let Some(other_contributors) = &other.contributors {
+            if let Some(this_contributors) = &mut self.contributors {
+                this_contributors.merge(other_contributors);
+            } else {
+                self.contributors = Some(other_contributors.clone());
+            }
+        }
+
+        if other.punctuation_in_quote {
+            self.punctuation_in_quote = true;
+        }
+    }
 }
 
 impl BibliographyOptions {
