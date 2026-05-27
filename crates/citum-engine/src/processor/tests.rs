@@ -5063,3 +5063,84 @@ fn test_dynamic_group_no_op_for_author_date_style() {
         "author-date should not produce compound sub-labels, got: {rendered}"
     );
 }
+
+/// Integral citations must use "and" (text) while non-integral must use "&" (symbol).
+///
+/// APA style defines `and: symbol` globally and `citation.integral.options.contributors.and: text`.
+/// Both modes were rendering "&" before the fix because mode-specific options were not applied
+/// to the Renderer's config.
+#[test]
+fn test_integral_vs_non_integral_conjunction() {
+    use citum_schema::citation::CitationMode;
+    use citum_schema::options::CitationOptions;
+
+    let mut style = make_style();
+    // Global options already have `and: Symbol` from make_style().
+    // Add integral-specific override: `and: Text`.
+    if let Some(citation) = style.citation.as_mut() {
+        citation.integral = Some(Box::new(CitationSpec {
+            options: Some(CitationOptions {
+                contributors: Some(ContributorConfig {
+                    and: Some(AndOptions::Text),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }));
+    }
+
+    let mut bib = make_bibliography();
+    // Add a two-author book so the conjunction is exercised.
+    bib.insert(
+        "smith2020".to_string(),
+        Reference::from(LegacyReference {
+            id: "smith2020".to_string(),
+            ref_type: "book".to_string(),
+            author: Some(vec![
+                Name::new("Smith", "John"),
+                Name::new("Jones", "Alice"),
+            ]),
+            title: Some("A Two-Author Book".to_string()),
+            issued: Some(DateVariable::year(2020)),
+            ..Default::default()
+        }),
+    );
+
+    let processor = Processor::new(style, bib);
+    let item = CitationItem {
+        id: "smith2020".to_string(),
+        ..Default::default()
+    };
+
+    let integral_cit = Citation {
+        mode: CitationMode::Integral,
+        items: vec![item.clone()],
+        ..Default::default()
+    };
+    let non_integral_cit = Citation {
+        mode: CitationMode::NonIntegral,
+        items: vec![item],
+        ..Default::default()
+    };
+
+    let integral = processor.process_citation(&integral_cit).unwrap();
+    let non_integral = processor.process_citation(&non_integral_cit).unwrap();
+
+    assert!(
+        integral.contains(" and "),
+        "integral citation must use 'and', got: {integral}"
+    );
+    assert!(
+        !integral.contains(" & "),
+        "integral citation must not use '&', got: {integral}"
+    );
+    assert!(
+        non_integral.contains(" & "),
+        "non-integral citation must use '&', got: {non_integral}"
+    );
+    assert!(
+        !non_integral.contains(" and "),
+        "non-integral citation must not use 'and', got: {non_integral}"
+    );
+}

@@ -318,6 +318,14 @@ impl Processor {
         let effective_compound_sets = dyn_sets_owned.as_ref().unwrap_or(&self.compound_sets);
 
         let citation_config = self.get_citation_config();
+        let citation_config = match effective_spec.options.as_ref() {
+            Some(mode_options) => {
+                let mut config = citation_config.into_owned();
+                config.merge(&mode_options.to_config());
+                std::borrow::Cow::Owned(config)
+            }
+            None => citation_config,
+        };
         let renderer = Renderer::new(
             RendererResources {
                 style: &self.style,
