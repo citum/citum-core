@@ -106,6 +106,13 @@ fn walk_config(out: &mut Vec<UnknownFieldPath>, base: &str, c: &Config) {
             integral.unknown_fields.keys(),
         );
     }
+    if let Some(org) = &c.org_abbreviation_memory {
+        push_keys(
+            out,
+            &format!("{base}.org-abbreviation-memory"),
+            org.unknown_fields.keys(),
+        );
+    }
 }
 
 fn walk_locator_config(out: &mut Vec<UnknownFieldPath>, base: &str, lc: &LocatorConfig) {
@@ -151,6 +158,13 @@ fn walk_citation_options_nested(out: &mut Vec<UnknownFieldPath>, base: &str, co:
             out,
             &format!("{base}.integral-name-memory"),
             integral.unknown_fields.keys(),
+        );
+    }
+    if let Some(org) = &co.org_abbreviation_memory {
+        push_keys(
+            out,
+            &format!("{base}.org-abbreviation-memory"),
+            org.unknown_fields.keys(),
         );
     }
 }
@@ -206,5 +220,36 @@ where
             path: path.to_string(),
             keys: collected,
         });
+    }
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used, reason = "tests")]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    #[rstest]
+    #[case(
+        "info:\n  title: Test\noptions:\n  org-abbreviation-memory:\n    future-key: true\n",
+        "top-level options"
+    )]
+    #[case(
+        "info:\n  title: Test\ncitation:\n  options:\n    org-abbreviation-memory:\n      future-key: true\n",
+        "citation options"
+    )]
+    fn collect_unknown_fields_reports_org_abbreviation_memory(
+        #[case] yaml: &str,
+        #[case] location: &str,
+    ) {
+        let style = citum_schema::Style::from_yaml_str(yaml).unwrap();
+        let paths = collect_unknown_field_paths(&style);
+        let found = paths
+            .iter()
+            .any(|p| p.path.contains("org-abbreviation-memory"));
+        assert!(
+            found,
+            "expected org-abbreviation-memory path in {location} unknown fields, got: {paths:?}"
+        );
     }
 }

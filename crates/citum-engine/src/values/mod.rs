@@ -467,6 +467,8 @@ pub struct ProcHints {
     pub position: Option<citum_schema::citation::Position>,
     /// Explicit integral citation name-memory state for this rendered item.
     pub integral_name_state: Option<citum_schema::citation::IntegralNameState>,
+    /// Explicit org-abbreviation state for this rendered item.
+    pub org_abbreviation_state: Option<citum_schema::citation::IntegralNameState>,
 }
 
 /// Context for rendering (citation vs bibliography).

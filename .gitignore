@@ -60,3 +60,4 @@ docs/guides/style-author-guide.html
 
 .claude/scheduled_tasks.lock
 clippy_errors.log
+.mcp.json

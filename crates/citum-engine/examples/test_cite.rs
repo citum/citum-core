@@ -48,6 +48,7 @@ fn main() {
             prefix: None,
             suffix: None,
             integral_name_state: None,
+            org_abbreviation_state: None,
         }],
     };
 

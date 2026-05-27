@@ -104,6 +104,9 @@ pub struct CitationOccurrenceItem {
     /// Explicit integral (narrative) name state override.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub integral_name_state: Option<IntegralNameState>,
+    /// Explicit org-abbreviation state override.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub org_abbreviation_state: Option<IntegralNameState>,
 }
 
 impl From<CitationOccurrenceItem> for citum_schema::data::citation::CitationItem {
@@ -114,6 +117,7 @@ impl From<CitationOccurrenceItem> for citum_schema::data::citation::CitationItem
             prefix: item.prefix,
             suffix: item.suffix,
             integral_name_state: item.integral_name_state,
+            org_abbreviation_state: item.org_abbreviation_state,
         }
     }
 }

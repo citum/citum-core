@@ -2458,6 +2458,17 @@
             }
           ]
         },
+        "org-abbreviation-memory": {
+          "description": "Organizational name abbreviation expansion policy.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OrgAbbreviationMemoryConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "custom": {
           "description": "Custom user-defined fields for extensions.",
           "type": [
@@ -4190,17 +4201,6 @@
               "type": "null"
             }
           ]
-        },
-        "short-name-display": {
-          "description": "How to display an organizational short name on the first integral mention.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ShortNameDisplay"
-            },
-            {
-              "type": "null"
-            }
-          ]
         }
       },
       "unevaluatedProperties": false
@@ -4255,16 +4255,65 @@
         }
       ]
     },
+    "OrgAbbreviationMemoryConfig": {
+      "description": "Organizational name abbreviation expansion policy.\n\nThe presence of this block enables first-mention expansion of org names —\n\"World Health Organization (WHO)\" on first mention, \"WHO\" thereafter.\nAbsence disables org abbreviation entirely.",
+      "type": "object",
+      "properties": {
+        "scope": {
+          "description": "Where the first-mention memory resets.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IntegralNameScope"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "contexts": {
+          "description": "Which document contexts participate in org-abbreviation tracking.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IntegralNameContexts"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "short-name-display": {
+          "description": "How to display an organizational short name on the first integral mention.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ShortNameDisplay"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
     "ShortNameDisplay": {
       "description": "How to display a contributor's short name on the first integral mention.",
       "oneOf": [
         {
-          "description": "Render \"Full Name (Short)\" on first mention (default).",
+          "description": "\"Full Name (Short)\" on first mention (default). For narrative/integral context.",
           "type": "string",
           "const": "full-then-parenthetical"
         },
         {
-          "description": "Render \"Short [Full Name]\" on first mention.",
+          "description": "`\"Full Name [Short]\"` on first mention. For parenthetical context (already inside parens).",
+          "type": "string",
+          "const": "full-then-bracketed"
+        },
+        {
+          "description": "\"Short (Full Name)\" on first mention.",
+          "type": "string",
+          "const": "short-then-parenthetical"
+        },
+        {
+          "description": "\"Short [Full Name]\" on first mention.",
           "type": "string",
           "const": "short-then-bracketed"
         }
@@ -4605,6 +4654,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/IntegralNameMemoryConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "org-abbreviation-memory": {
+          "description": "Organizational name abbreviation expansion policy.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/OrgAbbreviationMemoryConfig"
             },
             {
               "type": "null"

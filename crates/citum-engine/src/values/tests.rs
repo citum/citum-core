@@ -157,8 +157,10 @@ fn make_name_format_context<'a>(
         component_sort_separator: None,
         script_configs: None,
         integral_name_state: None,
+        org_abbreviation_state: None,
         use_integral_short_name: true,
         short_name_display: None,
+        subsequent_form: None,
     }
 }
 
@@ -173,7 +175,7 @@ fn make_literal_name_with_short_name() -> FlatName {
 #[test]
 fn given_literal_short_name_when_first_integral_mention_then_parenthetical_form_renders() {
     let mut ctx = make_name_format_context(None, None, None, None, None, None, None);
-    ctx.integral_name_state = Some(citum_schema::citation::IntegralNameState::First);
+    ctx.org_abbreviation_state = Some(citum_schema::citation::IntegralNameState::First);
     ctx.short_name_display = Some(ShortNameDisplay::FullThenParenthetical);
 
     let result = super::contributor::format_single_name(
@@ -190,7 +192,7 @@ fn given_literal_short_name_when_first_integral_mention_then_parenthetical_form_
 #[test]
 fn given_literal_short_name_when_subsequent_integral_mention_then_short_form_renders() {
     let mut ctx = make_name_format_context(None, None, None, None, None, None, None);
-    ctx.integral_name_state = Some(citum_schema::citation::IntegralNameState::Subsequent);
+    ctx.org_abbreviation_state = Some(citum_schema::citation::IntegralNameState::Subsequent);
     ctx.short_name_display = Some(ShortNameDisplay::FullThenParenthetical);
 
     let result = super::contributor::format_single_name(
@@ -207,7 +209,7 @@ fn given_literal_short_name_when_subsequent_integral_mention_then_short_form_ren
 #[test]
 fn given_short_then_bracketed_option_when_first_integral_mention_then_bracketed_form_renders() {
     let mut ctx = make_name_format_context(None, None, None, None, None, None, None);
-    ctx.integral_name_state = Some(citum_schema::citation::IntegralNameState::First);
+    ctx.org_abbreviation_state = Some(citum_schema::citation::IntegralNameState::First);
     ctx.short_name_display = Some(ShortNameDisplay::ShortThenBracketed);
 
     let result = super::contributor::format_single_name(
@@ -224,7 +226,7 @@ fn given_short_then_bracketed_option_when_first_integral_mention_then_bracketed_
 #[test]
 fn given_non_integral_context_when_integral_name_state_is_set_then_literal_short_name_is_ignored() {
     let mut ctx = make_name_format_context(None, None, None, None, None, None, None);
-    ctx.integral_name_state = Some(citum_schema::citation::IntegralNameState::Subsequent);
+    ctx.org_abbreviation_state = Some(citum_schema::citation::IntegralNameState::Subsequent);
     ctx.use_integral_short_name = false;
     ctx.short_name_display = Some(ShortNameDisplay::FullThenParenthetical);
 

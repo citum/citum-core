@@ -26,8 +26,10 @@ pub(crate) struct NameFormatContext<'a> {
     pub(crate) script_configs:
         Option<&'a std::collections::HashMap<String, citum_schema::options::ScriptConfig>>,
     pub(crate) integral_name_state: Option<citum_schema::citation::IntegralNameState>,
+    pub(crate) org_abbreviation_state: Option<citum_schema::citation::IntegralNameState>,
     pub(crate) use_integral_short_name: bool,
     pub(crate) short_name_display: Option<citum_schema::options::ShortNameDisplay>,
+    pub(crate) subsequent_form: Option<citum_schema::options::SubsequentNameForm>,
 }
 
 /// Per-call template overrides passed to [`format_names`].
@@ -260,6 +262,10 @@ fn apply_et_al(
 /// violating that invariant can trigger indexing or `unwrap()` panics in later
 /// formatting branches.
 #[must_use]
+#[allow(
+    clippy::too_many_lines,
+    reason = "linear context-building pipeline; no clean split point"
+)]
 pub fn format_names(
     names: &[crate::reference::FlatName],
     form: &ContributorForm,
@@ -307,15 +313,21 @@ pub fn format_names(
             .as_ref()
             .map(|multilingual| &multilingual.scripts),
         integral_name_state: hints.integral_name_state,
+        org_abbreviation_state: hints.org_abbreviation_state,
         use_integral_short_name: matches!(
             options.mode,
             citum_schema::citation::CitationMode::Integral
         ),
         short_name_display: options
             .config
-            .integral_name_memory
+            .org_abbreviation_memory
             .as_ref()
             .map(|c| c.resolve().short_name_display),
+        subsequent_form: options
+            .config
+            .integral_name_memory
+            .as_ref()
+            .map(|c| c.resolve().subsequent_form),
     };
 
     let delimiter = config.and_then(|c| c.delimiter.as_deref()).unwrap_or(", ");
@@ -664,11 +676,17 @@ fn format_literal_name(literal: &str, short: Option<&str>, ctx: &NameFormatConte
     if ctx.use_integral_short_name
         && let Some(short) = short
     {
-        match ctx.integral_name_state {
+        match ctx.org_abbreviation_state {
             Some(citum_schema::citation::IntegralNameState::First) => {
                 return match ctx.short_name_display {
                     Some(citum_schema::options::ShortNameDisplay::ShortThenBracketed) => {
                         format!("{short} [{literal}]")
+                    }
+                    Some(citum_schema::options::ShortNameDisplay::ShortThenParenthetical) => {
+                        format!("{short} ({literal})")
+                    }
+                    Some(citum_schema::options::ShortNameDisplay::FullThenBracketed) => {
+                        format!("{literal} [{short}]")
                     }
                     _ => format!("{literal} ({short})"),
                 };
@@ -765,8 +783,29 @@ pub(crate) fn format_single_name(
     let inverted = is_inverted_name_order(index, ctx);
     let assembly_order = name_assembly_order(inverted, script_config, ctx);
 
-    // Determine effective form
-    let effective_form = if expand_given_names && matches!(form, ContributorForm::Short) {
+    // Determine effective form; integral name-memory overrides template form
+    // so first mentions render full name and subsequent mentions render short.
+    // Only applies when a memory config is active (subsequent_form is Some).
+    let effective_form = if ctx.use_integral_short_name && ctx.subsequent_form.is_some() {
+        match ctx.integral_name_state {
+            Some(citum_schema::citation::IntegralNameState::First) => &ContributorForm::Long,
+            Some(citum_schema::citation::IntegralNameState::Subsequent) => {
+                match ctx.subsequent_form {
+                    Some(citum_schema::options::SubsequentNameForm::FamilyOnly) => {
+                        &ContributorForm::FamilyOnly
+                    }
+                    _ => &ContributorForm::Short,
+                }
+            }
+            _ => {
+                if expand_given_names && matches!(form, ContributorForm::Short) {
+                    &ContributorForm::Long
+                } else {
+                    form
+                }
+            }
+        }
+    } else if expand_given_names && matches!(form, ContributorForm::Short) {
         &ContributorForm::Long
     } else {
         form

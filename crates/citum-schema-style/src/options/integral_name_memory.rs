@@ -24,9 +24,6 @@ pub struct IntegralNameMemoryConfig {
     /// The contributor form to use after the first mention in scope.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub subsequent_form: Option<SubsequentNameForm>,
-    /// How to display an organizational short name on the first integral mention.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub short_name_display: Option<ShortNameDisplay>,
     /// Forward-compat: captures unknown keys when an older engine reads a
     /// style produced by a newer schema. Empty by default; treated as a
     /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
@@ -51,9 +48,6 @@ impl IntegralNameMemoryConfig {
         if other.subsequent_form.is_some() {
             self.subsequent_form = other.subsequent_form;
         }
-        if other.short_name_display.is_some() {
-            self.short_name_display = other.short_name_display;
-        }
     }
 
     /// Resolve the effective integral-name-memory config with defaults filled in.
@@ -62,7 +56,6 @@ impl IntegralNameMemoryConfig {
             scope: self.scope.unwrap_or_default(),
             contexts: self.contexts.unwrap_or_default(),
             subsequent_form: self.subsequent_form.unwrap_or_default(),
-            short_name_display: self.short_name_display.unwrap_or_default(),
         }
     }
 }
@@ -113,10 +106,14 @@ pub enum SubsequentNameForm {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum ShortNameDisplay {
-    /// Render "Full Name (Short)" on first mention (default).
+    /// "Full Name (Short)" on first mention (default). For narrative/integral context.
     #[default]
     FullThenParenthetical,
-    /// Render "Short [Full Name]" on first mention.
+    /// `"Full Name [Short]"` on first mention. For parenthetical context (already inside parens).
+    FullThenBracketed,
+    /// "Short (Full Name)" on first mention.
+    ShortThenParenthetical,
+    /// "Short [Full Name]" on first mention.
     ShortThenBracketed,
 }
 
@@ -146,6 +143,67 @@ pub struct ResolvedIntegralNameMemoryConfig {
     pub contexts: IntegralNameContexts,
     /// The contributor form used after the first mention.
     pub subsequent_form: SubsequentNameForm,
+}
+
+/// Organizational name abbreviation expansion policy.
+///
+/// The presence of this block enables first-mention expansion of org names —
+/// "World Health Organization (WHO)" on first mention, "WHO" thereafter.
+/// Absence disables org abbreviation entirely.
+#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub struct OrgAbbreviationMemoryConfig {
+    /// Where the first-mention memory resets.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scope: Option<IntegralNameScope>,
+    /// Which document contexts participate in org-abbreviation tracking.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub contexts: Option<IntegralNameContexts>,
+    /// How to display an organizational short name on the first integral mention.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub short_name_display: Option<ShortNameDisplay>,
+    /// Forward-compat: captures unknown keys from newer schema versions.
+    #[serde(
+        flatten,
+        default,
+        skip_serializing_if = "std::collections::BTreeMap::is_empty"
+    )]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
+}
+
+impl OrgAbbreviationMemoryConfig {
+    /// Merge another org-abbreviation config into this one.
+    pub fn merge(&mut self, other: &OrgAbbreviationMemoryConfig) {
+        if other.scope.is_some() {
+            self.scope = other.scope;
+        }
+        if other.contexts.is_some() {
+            self.contexts = other.contexts;
+        }
+        if other.short_name_display.is_some() {
+            self.short_name_display = other.short_name_display;
+        }
+    }
+
+    /// Resolve the effective org-abbreviation config with defaults filled in.
+    pub fn resolve(&self) -> ResolvedOrgAbbreviationMemoryConfig {
+        ResolvedOrgAbbreviationMemoryConfig {
+            scope: self.scope.unwrap_or_default(),
+            contexts: self.contexts.unwrap_or_default(),
+            short_name_display: self.short_name_display.unwrap_or_default(),
+        }
+    }
+}
+
+/// Org-abbreviation-memory configuration with defaults resolved.
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub struct ResolvedOrgAbbreviationMemoryConfig {
+    /// The active scope boundary.
+    pub scope: IntegralNameScope,
+    /// The active context participation mode.
+    pub contexts: IntegralNameContexts,
     /// How to display short names on first mention.
     pub short_name_display: ShortNameDisplay,
 }

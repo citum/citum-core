@@ -736,6 +736,7 @@ impl Renderer<'_> {
                 position: None,
                 note_start_text_case: None,
                 integral_name_state: None,
+                org_abbreviation_state: None,
             },
         )
     }
@@ -779,6 +780,7 @@ impl Renderer<'_> {
                 position: params.position.cloned(),
                 note_start_text_case: params.note_start_text_case,
                 integral_name_state: params.integral_name_state,
+                org_abbreviation_state: params.org_abbreviation_state,
             },
         )
     }
@@ -803,6 +805,7 @@ impl Renderer<'_> {
             position,
             note_start_text_case,
             integral_name_state,
+            org_abbreviation_state,
         } = request;
         let ref_type = reference.ref_type();
         let options = RenderOptions {
@@ -824,6 +827,7 @@ impl Renderer<'_> {
             citation_number,
             position,
             integral_name_state,
+            org_abbreviation_state,
         );
         let mut components =
             self.render_template_components::<F>(reference, &ref_type, &options, &hint, template);
@@ -876,6 +880,7 @@ impl Renderer<'_> {
         citation_number: usize,
         position: Option<citum_schema::citation::Position>,
         integral_name_state: Option<citum_schema::citation::IntegralNameState>,
+        org_abbreviation_state: Option<citum_schema::citation::IntegralNameState>,
     ) -> ProcHints {
         let default_hint = ProcHints::default();
         let base_hint = self
@@ -894,6 +899,7 @@ impl Renderer<'_> {
             },
             position,
             integral_name_state,
+            org_abbreviation_state,
             ..base_hint.clone()
         }
     }

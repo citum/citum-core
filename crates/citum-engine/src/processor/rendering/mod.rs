@@ -112,6 +112,8 @@ pub struct TemplateRenderRequest<'a> {
     pub note_start_text_case: Option<citum_schema::NoteStartTextCase>,
     /// Integral name state for name formatting.
     pub integral_name_state: Option<citum_schema::citation::IntegralNameState>,
+    /// Org abbreviation state for org-name formatting.
+    pub org_abbreviation_state: Option<citum_schema::citation::IntegralNameState>,
 }
 
 #[derive(Default)]
@@ -381,6 +383,7 @@ impl<'a> Renderer<'a> {
             position: position.cloned(),
             note_start_text_case,
             integral_name_state: item.integral_name_state,
+            org_abbreviation_state: item.org_abbreviation_state,
         }
     }
 

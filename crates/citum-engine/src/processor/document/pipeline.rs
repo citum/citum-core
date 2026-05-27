@@ -36,10 +36,14 @@ impl Processor {
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let mut parsed = parser.parse_document(content, &self.locale);
-        let owned_processor = self.processor_with_document_integral_name_override(
+        let owned_integral = self.processor_with_document_integral_name_override(
             parsed.frontmatter_integral_name_memory.as_ref(),
         );
-        let processor = owned_processor.as_ref().unwrap_or(self);
+        let base = owned_integral.as_ref().unwrap_or(self);
+        let owned_org = base.processor_with_document_org_abbreviation_override(
+            parsed.frontmatter_org_abbreviation_memory.as_ref(),
+        );
+        let processor = owned_org.as_ref().unwrap_or(base);
         let body = &content[parsed.body_start..];
         if let Some(groups) = parsed.frontmatter_groups.take() {
             return processor.process_document_with_frontmatter_groups::<P, F>(

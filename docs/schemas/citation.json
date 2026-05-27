@@ -158,6 +158,17 @@
               "type": "null"
             }
           ]
+        },
+        "org-abbreviation-state": {
+          "description": "Explicit org-abbreviation state override for this item.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IntegralNameState"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [

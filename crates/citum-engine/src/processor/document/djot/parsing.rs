@@ -5,9 +5,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Djot-specific parsing logic using winnow.
 
-use super::super::{
-    CitationStructure, DocumentIntegralNameOverride, ManualNoteReference, ParsedCitation,
-};
+use super::super::types::{DocumentIntegralNameOverride, DocumentOrgAbbreviationOverride};
+use super::super::{CitationStructure, ManualNoteReference, ParsedCitation};
 use super::BibliographyBlock;
 use crate::{Citation, CitationItem};
 use citum_schema::citation::{CitationMode, normalize_locator_text};
@@ -30,11 +29,12 @@ pub(crate) struct FootnoteDefinitionRange {
     pub content: Range<usize>,
 }
 
-#[derive(Debug, Default, Deserialize)]
+#[derive(Debug, Default, Clone, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) struct DocumentFrontmatter {
     pub bibliography: Option<Vec<BibliographyGroup>>,
     pub integral_name_memory: Option<DocumentIntegralNameOverride>,
+    pub org_abbreviation_memory: Option<DocumentOrgAbbreviationOverride>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -374,10 +374,14 @@ pub(crate) fn parse_frontmatter(content: &str) -> (Option<DocumentFrontmatter>, 
         let frontmatter_content = &after_opening[..closing_pos];
         let remaining = &after_opening[closing_pos + 3..].trim_start();
 
-        (
-            serde_yaml::from_str::<DocumentFrontmatter>(frontmatter_content).ok(),
-            remaining,
-        )
+        let parsed = match serde_yaml::from_str::<DocumentFrontmatter>(frontmatter_content) {
+            Ok(fm) => Some(fm),
+            Err(e) => {
+                eprintln!("citum: warning: frontmatter parse error: {e}");
+                None
+            }
+        };
+        (parsed, remaining)
     } else {
         (None, content)
     }
