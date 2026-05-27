@@ -94,6 +94,56 @@ Named presets control name formatting without spelling out every field:
 | `numeric` | Numeric months | 1/15/2024 |
 | `iso` | ISO 8601, no EDTF markers | 2024-01-15 |
 
+### Name Memory
+
+Two independent memory features track how author names are displayed across a document, reducing repetition after first mention.
+
+#### `integral-name-memory` (personal names)
+
+Tracks structured personal authors (given + family name). On first integral citation the full name is shown; on subsequent citations only the family name appears. Applies to `StructuredName` and `Multilingual` contributors — `SimpleName` (organisations) is excluded.
+
+```yaml
+options:
+  integral-name-memory:
+    scope: document   # document | chapter | section
+    contexts: body-only  # body-only | body-and-notes
+```
+
+Tracking key is `given|family|suffix`, so two authors who share a surname (e.g. "Jane Smith" and "John Smith") are tracked independently and each receives "First" on their debut.
+
+#### `org-abbreviation-memory` (organisation short names)
+
+Tracks `SimpleName` contributors that carry a `short-name` field. **Off by default** — the feature activates only when `org-abbreviation-memory` is present in style options or document frontmatter.
+
+```yaml
+options:
+  org-abbreviation-memory:
+    scope: document
+    contexts: body-only
+    display: full-then-parenthetical  # see variants below
+```
+
+| `display` variant | First mention | Subsequent |
+|---|---|---|
+| `full-then-parenthetical` (default) | `World Health Organization (WHO)` | `WHO` |
+| `full-then-bracketed` | `World Health Organization [WHO]` | `WHO` |
+| `short-then-parenthetical` | `WHO (World Health Organization)` | `WHO` |
+| `short-then-bracketed` | `WHO [World Health Organization]` | `WHO` |
+
+#### Per-document overrides
+
+Both features can be overridden per-document in frontmatter without changing the style file:
+
+```yaml
+---
+options:
+  integral-name-memory:
+    scope: section
+  org-abbreviation-memory:
+    display: full-then-bracketed
+---
+```
+
 ## [layers] Template Components
 
 ### Contributor

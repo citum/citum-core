@@ -32,7 +32,12 @@ use citum_io::load_bibliography;
 use citum_schema::{
     BibliographySpec, Locale, Style, StyleInfo,
     options::{
-        BibliographyOptions, Config, Disambiguation, LocatorPreset, Processing, ProcessingCustom,
+        BibliographyOptions, Config, Disambiguation, LocatorPreset, OrgAbbreviationMemoryConfig,
+        Processing, ProcessingCustom,
+    },
+    reference::{
+        Contributor, EdtfString, InputReference as Reference, Monograph, MonographType, SimpleName,
+        Title,
     },
 };
 
@@ -214,6 +219,139 @@ fn given_example_mla_document_when_rendered_as_plain_text_then_integral_name_mem
     );
 }
 
+fn given_two_authors_with_same_surname_when_both_cited_integrally_then_each_gets_first_form() {
+    let mut style = load_style("styles/embedded/modern-language-association.yaml");
+    style
+        .options
+        .get_or_insert_with(Config::default)
+        .integral_name_memory = Some(citum_schema::options::IntegralNameMemoryConfig {
+        contexts: Some(citum_schema::options::IntegralNameContexts::BodyOnly),
+        subsequent_form: Some(citum_schema::options::SubsequentNameForm::Short),
+        ..Default::default()
+    });
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "john-smith".to_string(),
+        Reference::Monograph(Box::new(Monograph {
+            id: Some("john-smith".into()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single("Book One".to_string())),
+            author: Some(Contributor::StructuredName(
+                citum_schema::reference::StructuredName {
+                    family: citum_schema::reference::MultilingualString::Simple(
+                        "Smith".to_string(),
+                    ),
+                    given: citum_schema::reference::MultilingualString::Simple("John".to_string()),
+                    suffix: None,
+                    dropping_particle: None,
+                    non_dropping_particle: None,
+                },
+            )),
+            issued: EdtfString("2010".to_string()),
+            ..Default::default()
+        })),
+    );
+    bib.insert(
+        "jane-smith".to_string(),
+        Reference::Monograph(Box::new(Monograph {
+            id: Some("jane-smith".into()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single("Book Two".to_string())),
+            author: Some(Contributor::StructuredName(
+                citum_schema::reference::StructuredName {
+                    family: citum_schema::reference::MultilingualString::Simple(
+                        "Smith".to_string(),
+                    ),
+                    given: citum_schema::reference::MultilingualString::Simple("Jane".to_string()),
+                    suffix: None,
+                    dropping_particle: None,
+                    non_dropping_particle: None,
+                },
+            )),
+            issued: EdtfString("2015".to_string()),
+            ..Default::default()
+        })),
+    );
+
+    let processor = citum_engine::Processor::new(style, bib);
+    let parser = DjotParser;
+    let doc = "[+@john-smith] wrote the first book. [+@jane-smith] wrote the second.";
+
+    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
+        doc,
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    // Both authors share surname "Smith" but are different people.
+    // The second author's first integral mention must NOT be marked Subsequent.
+    // A family-name-only tracking key conflates them — "Jane Smith" appears as
+    // just "Smith" instead of "Jane Smith".
+    assert!(
+        output.contains("John Smith"),
+        "first Smith should show full given+family name: {output}"
+    );
+    assert!(
+        output.contains("Jane Smith"),
+        "second Smith should show full given+family name (not just 'Smith'): {output}"
+    );
+}
+
+fn given_org_with_short_name_when_org_abbreviation_memory_configured_and_cited_integrally_twice_then_first_shows_full_then_subsequent_shows_short()
+ {
+    let mut style = load_style("styles/embedded/modern-language-association.yaml");
+    style
+        .options
+        .get_or_insert_with(Config::default)
+        .org_abbreviation_memory = Some(OrgAbbreviationMemoryConfig {
+        contexts: Some(citum_schema::options::IntegralNameContexts::BodyOnly),
+        ..Default::default()
+    });
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "who2020".to_string(),
+        Reference::Monograph(Box::new(Monograph {
+            id: Some("who2020".into()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single("World Health Report".to_string())),
+            author: Some(Contributor::SimpleName(SimpleName {
+                name: citum_schema::reference::MultilingualString::Simple(
+                    "World Health Organization".to_string(),
+                ),
+                short_name: Some("WHO".to_string()),
+                location: None,
+            })),
+            issued: EdtfString("2020".to_string()),
+            ..Default::default()
+        })),
+    );
+
+    let processor = citum_engine::Processor::new(style, bib);
+    let parser = DjotParser;
+    // Two integral citations to the same org.
+    let doc = "[+@who2020] released a report. Later, [+@who2020] followed up.";
+
+    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
+        doc,
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    // First integral mention: full name + abbreviation in parens.
+    assert!(
+        output.contains("World Health Organization (WHO)"),
+        "first mention should show full name then abbreviation: {output}"
+    );
+    // Subsequent mention: abbreviation only.
+    assert!(
+        !output.contains("World Health Organization (WHO) released")
+            || output.contains("WHO followed"),
+        "second mention should use short form only: {output}"
+    );
+}
+
 fn given_example_apa_document_when_rendered_as_plain_text_then_integral_citations_include_locators()
 {
     let processor = example_document_processor("styles/embedded/apa-7th.yaml");
@@ -226,11 +364,12 @@ fn given_example_apa_document_when_rendered_as_plain_text_then_integral_citation
         DocumentFormat::Plain,
     );
 
-    assert!(output.contains("First narrative mention: Smith (2010, p. 10)"));
+    // APA abbreviates given names: "A. D. Smith" (Long form, first integral mention)
+    assert!(output.contains("First narrative mention: A. D. Smith (2010, p. 10)"));
     assert!(output.contains("Later in the same chapter: Smith (2010, p. 12)"));
-    assert!(output.contains("Integral with locator: Kuhn (1962, p. 10) argues"));
+    assert!(output.contains("Integral with locator: T. S. Kuhn (1962, p. 10) argues"));
     assert!(output.contains(
-        "[^narrative-note]: Before the prose introduces him, Smith (2010, p. 3) already appears in a note."
+        "[^narrative-note]: Before the prose introduces him, A. D. Smith (2010, p. 3) already appears in a note."
     ));
     assert!(output.contains("Suppress author with locator: (1962, p. 10)."));
 }
@@ -248,11 +387,15 @@ fn given_example_chicago_note_document_when_rendered_as_plain_text_then_integral
         DocumentFormat::Plain,
     );
 
+    // Note-style in-text anchors show surname only; first-mention Long form applies to
+    // note content. Smith's first body cite is IbidWithLocator (follows note cite),
+    // so the fallback renders surname. Kuhn is Subsequent-position but first integral
+    // mention → Long form → full name in anchor.
     assert!(output.contains("First narrative mention: Smith[^citum-auto-5] surveys"));
     assert!(output.contains("Later in the same chapter: Smith[^citum-auto-6] narrows"));
-    assert!(output.contains("Integral with locator: Kuhn[^citum-auto-7] argues"));
+    assert!(output.contains("Integral with locator: Thomas S. Kuhn[^citum-auto-7] argues"));
     assert!(
-        output.contains("[^narrative-note]: Before the prose introduces him, Smith ("),
+        output.contains("[^narrative-note]: Before the prose introduces him, Smith, Anthony D."),
         "manual note should preserve the authored anchor: {output}"
     );
     assert!(
@@ -801,6 +944,22 @@ mod example_documents {
             "The MLA plain-text example should shorten repeated narrative citations after the first integral mention.",
         );
         super::given_example_mla_document_when_rendered_as_plain_text_then_integral_name_memory_is_visible();
+    }
+
+    #[test]
+    fn two_authors_with_same_surname_both_get_first_form() {
+        announce_behavior(
+            "Two different integral authors sharing a family name must each render in full (First) form on their own first mention.",
+        );
+        super::given_two_authors_with_same_surname_when_both_cited_integrally_then_each_gets_first_form();
+    }
+
+    #[test]
+    fn org_abbreviation_memory_renders_full_then_short_on_first_and_short_on_subsequent() {
+        announce_behavior(
+            "With org-abbreviation-memory configured, the first integral mention of an org shows full name + abbreviation; subsequent shows abbreviation only.",
+        );
+        super::given_org_with_short_name_when_org_abbreviation_memory_configured_and_cited_integrally_twice_then_first_shows_full_then_subsequent_shows_short();
     }
 
     #[test]

@@ -595,6 +595,9 @@ pub struct CitationItem {
     /// Explicit integral name-memory state override for this item.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub integral_name_state: Option<IntegralNameState>,
+    /// Explicit org-abbreviation state override for this item.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub org_abbreviation_state: Option<IntegralNameState>,
 }
 
 impl CitationItem {

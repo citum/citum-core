@@ -5,6 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Markdown document parsing for Pandoc-style citations.
 
+use super::djot::parsing::parse_frontmatter;
 use super::{CitationParser, CitationPlacement, CitationStructure, ParsedCitation, ParsedDocument};
 use crate::{Citation, CitationItem};
 use citum_schema::citation::{CitationMode, normalize_locator_text};
@@ -26,11 +27,20 @@ impl Default for MarkdownParser {
 
 impl CitationParser for MarkdownParser {
     fn parse_document(&self, content: &str, locale: &Locale) -> ParsedDocument {
-        let citations = find_citations(content, locale)
+        let (frontmatter, body) = parse_frontmatter(content);
+        let body_start = content.len() - body.len();
+        let frontmatter_integral_name_memory = frontmatter
+            .as_ref()
+            .and_then(|fm| fm.integral_name_memory.clone());
+        let frontmatter_org_abbreviation_memory = frontmatter
+            .as_ref()
+            .and_then(|fm| fm.org_abbreviation_memory.clone());
+
+        let citations = find_citations(body, locale)
             .into_iter()
             .map(|(start, end, citation)| ParsedCitation {
-                start,
-                end,
+                start: body_start + start,
+                end: body_start + end,
                 citation,
                 placement: CitationPlacement::InlineProse,
                 structure: CitationStructure::default(),
@@ -44,8 +54,9 @@ impl CitationParser for MarkdownParser {
             manual_note_labels: HashSet::new(),
             bibliography_blocks: Vec::new(),
             frontmatter_groups: None,
-            frontmatter_integral_name_memory: None,
-            body_start: 0,
+            frontmatter_integral_name_memory,
+            frontmatter_org_abbreviation_memory,
+            body_start,
         }
     }
 }

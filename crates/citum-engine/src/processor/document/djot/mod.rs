@@ -5,7 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Djot document parsing and HTML conversion adapter.
 
-mod parsing;
+pub(crate) mod parsing;
 
 use super::{BibliographyBlock, CitationParser, CitationPlacement, ParsedDocument};
 use citum_schema::locale::Locale;
@@ -52,17 +52,22 @@ impl CitationParser for DjotParser {
         // Scan for inline bibliography blocks in remaining content
         let bibliography_blocks = scan_bibliography_blocks(remaining_content);
 
+        let frontmatter_groups = frontmatter.as_ref().and_then(|fm| fm.bibliography.clone());
+        let frontmatter_integral_name_memory = frontmatter
+            .as_ref()
+            .and_then(|fm| fm.integral_name_memory.clone());
+        let frontmatter_org_abbreviation_memory = frontmatter
+            .as_ref()
+            .and_then(|fm| fm.org_abbreviation_memory.clone());
         ParsedDocument {
             citations,
             manual_note_order,
             manual_note_references,
             manual_note_labels,
             bibliography_blocks,
-            frontmatter_groups: frontmatter
-                .as_ref()
-                .and_then(|frontmatter| frontmatter.bibliography.clone()),
-            frontmatter_integral_name_memory: frontmatter
-                .and_then(|frontmatter| frontmatter.integral_name_memory),
+            frontmatter_groups,
+            frontmatter_integral_name_memory,
+            frontmatter_org_abbreviation_memory,
             body_start,
         }
     }

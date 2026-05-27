@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use crate::Citation;
 use citum_schema::grouping::BibliographyGroup;
 use citum_schema::locale::Locale;
-use citum_schema::options::IntegralNameMemoryConfig;
+use citum_schema::options::{IntegralNameMemoryConfig, OrgAbbreviationMemoryConfig};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
@@ -52,9 +52,6 @@ pub struct DocumentIntegralNameOverride {
     /// The contributor form used after the first mention.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub subsequent_form: Option<citum_schema::options::SubsequentNameForm>,
-    /// How to display a short name on the first integral mention.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub short_name_display: Option<citum_schema::options::ShortNameDisplay>,
 }
 
 impl DocumentIntegralNameOverride {
@@ -81,6 +78,46 @@ impl DocumentIntegralNameOverride {
         if self.subsequent_form.is_some() {
             result.subsequent_form = self.subsequent_form;
         }
+        Some(result)
+    }
+}
+
+/// Document-level org-abbreviation override parsed from frontmatter.
+#[derive(Debug, Clone, Default, Deserialize, Serialize, PartialEq)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct DocumentOrgAbbreviationOverride {
+    /// Whether org-abbreviation is enabled for this document.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub enabled: Option<bool>,
+    /// Where the first-mention memory resets.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scope: Option<citum_schema::options::IntegralNameScope>,
+    /// Which document contexts participate.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub contexts: Option<citum_schema::options::IntegralNameContexts>,
+    /// How to display a short name on the first integral mention.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub short_name_display: Option<citum_schema::options::ShortNameDisplay>,
+}
+
+impl DocumentOrgAbbreviationOverride {
+    /// Apply this frontmatter override to a base org-abbreviation configuration.
+    #[allow(dead_code, reason = "Infrastructure for org-abbreviation support")]
+    pub(super) fn apply_to(
+        &self,
+        base: Option<&OrgAbbreviationMemoryConfig>,
+    ) -> Option<OrgAbbreviationMemoryConfig> {
+        if self.enabled == Some(false) {
+            return None;
+        }
+        let mut result = base.cloned().unwrap_or_default();
+        if self.scope.is_some() {
+            result.scope = self.scope;
+        }
+        if self.contexts.is_some() {
+            result.contexts = self.contexts;
+        }
         if self.short_name_display.is_some() {
             result.short_name_display = self.short_name_display;
         }
@@ -89,14 +126,17 @@ impl DocumentIntegralNameOverride {
 }
 
 #[cfg(test)]
+#[allow(clippy::unwrap_used, reason = "tests")]
 mod tests {
-    use super::DocumentIntegralNameOverride;
-    use citum_schema::options::{IntegralNameMemoryConfig, ShortNameDisplay};
+    use super::{DocumentIntegralNameOverride, DocumentOrgAbbreviationOverride};
+    use citum_schema::options::{
+        IntegralNameMemoryConfig, OrgAbbreviationMemoryConfig, ShortNameDisplay,
+    };
 
     #[test]
-    fn test_document_integral_name_override_deserializes_short_name_display() {
+    fn test_document_org_abbreviation_override_deserializes_short_name_display() {
         assert_eq!(
-            serde_yaml::from_str::<DocumentIntegralNameOverride>(
+            serde_yaml::from_str::<DocumentOrgAbbreviationOverride>(
                 "short-name-display: short-then-bracketed"
             )
             .ok()
@@ -106,12 +146,12 @@ mod tests {
     }
 
     #[test]
-    fn test_document_integral_name_override_applies_short_name_display() {
-        let base = IntegralNameMemoryConfig {
+    fn test_document_org_abbreviation_override_applies_short_name_display() {
+        let base = OrgAbbreviationMemoryConfig {
             short_name_display: Some(ShortNameDisplay::FullThenParenthetical),
             ..Default::default()
         };
-        let override_config = DocumentIntegralNameOverride {
+        let override_config = DocumentOrgAbbreviationOverride {
             short_name_display: Some(ShortNameDisplay::ShortThenBracketed),
             ..Default::default()
         };
@@ -185,8 +225,10 @@ pub struct ParsedDocument {
     pub bibliography_blocks: Vec<BibliographyBlock>,
     /// Bibliography groups from YAML frontmatter.
     pub frontmatter_groups: Option<Vec<citum_schema::grouping::BibliographyGroup>>,
-    /// Integral-name-memory override from YAML frontmatter.
+    /// Integral-name-memory override from YAML frontmatter (legacy top-level field).
     pub frontmatter_integral_name_memory: Option<DocumentIntegralNameOverride>,
+    /// Org-abbreviation-memory override from YAML frontmatter.
+    pub frontmatter_org_abbreviation_memory: Option<DocumentOrgAbbreviationOverride>,
     /// Byte offset where the document body starts (past any frontmatter).
     pub body_start: usize,
 }

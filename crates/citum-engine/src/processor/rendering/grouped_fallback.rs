@@ -52,4 +52,6 @@ pub struct TemplateRenderParams<'a> {
     pub note_start_text_case: Option<citum_schema::NoteStartTextCase>,
     /// Whether the author was rendered in integral form in the prose anchor.
     pub integral_name_state: Option<citum_schema::citation::IntegralNameState>,
+    /// Org abbreviation state for org-name formatting.
+    pub org_abbreviation_state: Option<citum_schema::citation::IntegralNameState>,
 }

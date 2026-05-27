@@ -28,8 +28,9 @@ pub use contributors::{
 };
 pub use dates::{DateConfig, DateConfigEntry};
 pub use integral_name_memory::{
-    IntegralNameContexts, IntegralNameMemoryConfig, IntegralNameScope,
-    ResolvedIntegralNameMemoryConfig, ShortNameDisplay, SubsequentNameForm,
+    IntegralNameContexts, IntegralNameMemoryConfig, IntegralNameScope, OrgAbbreviationMemoryConfig,
+    ResolvedIntegralNameMemoryConfig, ResolvedOrgAbbreviationMemoryConfig, ShortNameDisplay,
+    SubsequentNameForm,
 };
 pub use localization::{Localize, MonthFormat, Scope};
 pub use locators::{
@@ -138,6 +139,9 @@ pub struct Config {
     /// Integral citation name-memory behavior.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub integral_name_memory: Option<IntegralNameMemoryConfig>,
+    /// Organizational name abbreviation expansion policy.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub org_abbreviation_memory: Option<OrgAbbreviationMemoryConfig>,
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -223,6 +227,9 @@ pub struct CitationOptions {
     /// Integral citation name-memory behavior.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub integral_name_memory: Option<IntegralNameMemoryConfig>,
+    /// Organizational name abbreviation expansion policy.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub org_abbreviation_memory: Option<OrgAbbreviationMemoryConfig>,
     /// Label wrap policy applied to citation labels.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label_wrap: Option<LabelWrap>,
@@ -519,6 +526,7 @@ impl Config {
             strip_periods,
             notes,
             integral_name_memory,
+            org_abbreviation_memory,
             custom,
         );
 
@@ -574,6 +582,7 @@ impl CitationOptions {
             strip_periods: self.strip_periods,
             notes: self.notes.clone(),
             integral_name_memory: self.integral_name_memory.clone(),
+            org_abbreviation_memory: self.org_abbreviation_memory.clone(),
             custom: self.custom.clone(),
             unknown_fields: std::collections::BTreeMap::new(),
         }
@@ -625,6 +634,7 @@ impl BibliographyOptions {
             strip_periods: self.strip_periods,
             notes: None,
             integral_name_memory: None,
+            org_abbreviation_memory: None,
             custom: self.custom.clone(),
             unknown_fields: std::collections::BTreeMap::new(),
         }
@@ -734,6 +744,8 @@ impl<'de> Deserialize<'de> for Config {
             notes: Option<NoteConfig>,
             #[serde(skip_serializing_if = "Option::is_none")]
             integral_name_memory: Option<IntegralNameMemoryConfig>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            org_abbreviation_memory: Option<OrgAbbreviationMemoryConfig>,
             #[serde(default)]
             profile: Option<serde_yaml::Value>,
             #[serde(skip_serializing_if = "Option::is_none")]
@@ -766,6 +778,7 @@ impl<'de> Deserialize<'de> for Config {
             strip_periods: wire.strip_periods,
             notes: wire.notes,
             integral_name_memory: wire.integral_name_memory,
+            org_abbreviation_memory: wire.org_abbreviation_memory,
             custom: wire.custom,
             unknown_fields: wire.unknown_fields,
         })
