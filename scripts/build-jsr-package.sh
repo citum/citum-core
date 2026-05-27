@@ -24,11 +24,13 @@ fi
 rm -rf "$PACKAGE_DIR"
 mkdir -p "$PACKAGE_DIR"
 
-wasm-pack build "$CRATE_DIR" \
-  --target web \
-  --out-dir "$PACKAGE_DIR" \
-  --release \
-  --features full-wasm
+CARGO_PROFILE_RELEASE_OPT_LEVEL=z \
+CARGO_PROFILE_RELEASE_CODEGEN_UNITS=1 \
+  wasm-pack build "$CRATE_DIR" \
+    --target web \
+    --out-dir "$PACKAGE_DIR" \
+    --release \
+    --features full-wasm
 
 cp "$REPO_ROOT/crates/citum-bindings/README-JSR.md" "$PACKAGE_DIR/README.md"
 cp "$REPO_ROOT/LICENSE" "$PACKAGE_DIR/LICENSE"
@@ -36,7 +38,7 @@ cp "$REPO_ROOT/LICENSE-APACHE" "$PACKAGE_DIR/LICENSE-APACHE"
 
 cat > "$PACKAGE_DIR/jsr.json" <<JSON
 {
-  "name": "@citum/citum",
+  "name": "@citum/engine",
   "version": "$VERSION",
   "license": "MIT",
   "exports": {
