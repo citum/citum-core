@@ -137,3 +137,8 @@ opt-level = 3
 lto = "fat"
 strip = true
 panic = "abort"
+
+[profile.wasm-release]
+inherits = "release"
+opt-level = "z"
+codegen-units = 1
