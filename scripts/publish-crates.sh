@@ -90,6 +90,7 @@ CRATES=(
   citum-schema-data
   citum-schema-style
   citum-schema
+  citum-refs
   citum-engine
   citum-io
   citum_store
