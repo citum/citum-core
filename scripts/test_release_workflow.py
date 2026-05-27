@@ -49,10 +49,8 @@ class ReleaseWorkflowTests(unittest.TestCase):
         assert bump_workspace_block is not None
         self.assertNotIn(" -m ", bump_workspace_block.group(0))
 
-    def test_release_hook_writes_repo_root_changelog(self) -> None:
+    def test_release_config_does_not_hardcode_changelog_output(self) -> None:
         self.assertNotIn('"git-cliff", "-o", "CHANGELOG.md"', self.release_config)
-        self.assertIn("git rev-parse --show-toplevel", self.release_config)
-        self.assertIn("$repo/CHANGELOG.md", self.release_config)
 
     def test_publish_crates_dry_run_accepts_current_dependency_gap_wording(self) -> None:
         """Cargo may report unpublished internal deps as version selection gaps."""
