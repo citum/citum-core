@@ -77,7 +77,7 @@ class ReleaseWorkflowTests(unittest.TestCase):
     def test_jsr_package_uses_package_specific_readme(self) -> None:
         self.assertIn("crates/citum-bindings/README-JSR.md", self.build_jsr_script)
         self.assertNotIn('cp "$REPO_ROOT/README.md"', self.build_jsr_script)
-        self.assertIn("# @citum/citum", self.jsr_readme_source)
+        self.assertIn("# @citum/engine", self.jsr_readme_source)
         self.assertIn("Package metadata is `MIT` for JSR compatibility", self.jsr_readme_source)
 
     def test_publish_jsr_tag_job_uses_oidc_and_publishes(self) -> None:

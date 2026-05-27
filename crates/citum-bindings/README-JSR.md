@@ -1,4 +1,4 @@
-# @citum/citum
+# @citum/engine
 
 WebAssembly and TypeScript bindings for the Citum citation renderer.
 
@@ -10,7 +10,7 @@ format a document in JavaScript.
 ## Install
 
 ```bash
-deno add jsr:@citum/citum
+deno add jsr:@citum/engine
 ```
 
 ```ts
@@ -21,7 +21,7 @@ import init, {
   renderBibliography,
   renderCitation,
   validateStyle,
-} from "jsr:@citum/citum";
+} from "jsr:@citum/engine";
 
 await init();
 ```
