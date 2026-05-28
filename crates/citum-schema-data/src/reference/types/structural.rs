@@ -58,17 +58,47 @@ fn collect_contributors_by_role(
         .map(|entry| &entry.contributor)
         .collect();
 
-    match matching.len() {
-        0 => None,
-        1 =>
-        {
-            #[allow(clippy::indexing_slicing, reason = "matching.len() == 1")]
-            Some(matching[0].clone())
-        }
+    match matching.as_slice() {
+        [] => None,
+        [single] => Some((*single).clone()),
         _ => Some(Contributor::ContributorList(ContributorList(
             matching.into_iter().cloned().collect(),
         ))),
     }
+}
+
+/// Per-role contributor views derived from the unified contributors vec.
+struct ContributorViews {
+    author: Option<Contributor>,
+    editor: Option<Contributor>,
+    translator: Option<Contributor>,
+}
+
+/// Fold shorthand fields into the contributors vec and re-derive per-role views.
+///
+/// Pass `None` for roles the calling type does not have (e.g. Collection has
+/// no author shorthand). Each view is derived from the folded contributors list
+/// and will be `None` when that role has no entries.
+fn reconcile_contributors(
+    contributors: Vec<ContributorEntry>,
+    author: Option<Contributor>,
+    editor: Option<Contributor>,
+    translator: Option<Contributor>,
+) -> (Vec<ContributorEntry>, ContributorViews) {
+    let folded = fold_contributors(
+        contributors,
+        &[
+            (ContributorRole::Author, author.as_ref()),
+            (ContributorRole::Editor, editor.as_ref()),
+            (ContributorRole::Translator, translator.as_ref()),
+        ],
+    );
+    let views = ContributorViews {
+        author: collect_contributors_by_role(&folded, &ContributorRole::Author),
+        editor: collect_contributors_by_role(&folded, &ContributorRole::Editor),
+        translator: collect_contributors_by_role(&folded, &ContributorRole::Translator),
+    };
+    (folded, views)
 }
 
 /// A monograph, such as a book or a report, is a monolithic work published or produced as a complete entity.
@@ -299,26 +329,17 @@ struct MonographDeser {
 
 impl From<MonographDeser> for Monograph {
     fn from(raw: MonographDeser) -> Self {
-        let contributors = fold_contributors(
-            raw.contributors,
-            &[
-                (ContributorRole::Author, raw.author.as_ref()),
-                (ContributorRole::Editor, raw.editor.as_ref()),
-                (ContributorRole::Translator, raw.translator.as_ref()),
-            ],
-        );
-        let author = collect_contributors_by_role(&contributors, &ContributorRole::Author);
-        let editor = collect_contributors_by_role(&contributors, &ContributorRole::Editor);
-        let translator = collect_contributors_by_role(&contributors, &ContributorRole::Translator);
+        let (contributors, views) =
+            reconcile_contributors(raw.contributors, raw.author, raw.editor, raw.translator);
         let mut monograph = Self {
             id: raw.id,
             r#type: raw.r#type,
             title: raw.title,
             short_title: raw.short_title,
             container: raw.container,
-            author,
-            editor,
-            translator,
+            author: views.author,
+            editor: views.editor,
+            translator: views.translator,
             contributors,
             created: raw.created,
             issued: raw.issued,
@@ -553,23 +574,16 @@ struct CollectionDeser {
 
 impl From<CollectionDeser> for Collection {
     fn from(raw: CollectionDeser) -> Self {
-        let contributors = fold_contributors(
-            raw.contributors,
-            &[
-                (ContributorRole::Editor, raw.editor.as_ref()),
-                (ContributorRole::Translator, raw.translator.as_ref()),
-            ],
-        );
-        let editor = collect_contributors_by_role(&contributors, &ContributorRole::Editor);
-        let translator = collect_contributors_by_role(&contributors, &ContributorRole::Translator);
+        let (contributors, views) =
+            reconcile_contributors(raw.contributors, None, raw.editor, raw.translator);
         let mut collection = Self {
             id: raw.id,
             r#type: raw.r#type,
             title: raw.title,
             short_title: raw.short_title,
             container: raw.container,
-            editor,
-            translator,
+            editor: views.editor,
+            translator: views.translator,
             contributors,
             created: raw.created,
             issued: raw.issued,
@@ -791,21 +805,14 @@ struct CollectionComponentDeser {
 
 impl From<CollectionComponentDeser> for CollectionComponent {
     fn from(raw: CollectionComponentDeser) -> Self {
-        let contributors = fold_contributors(
-            raw.contributors,
-            &[
-                (ContributorRole::Author, raw.author.as_ref()),
-                (ContributorRole::Translator, raw.translator.as_ref()),
-            ],
-        );
-        let author = collect_contributors_by_role(&contributors, &ContributorRole::Author);
-        let translator = collect_contributors_by_role(&contributors, &ContributorRole::Translator);
+        let (contributors, views) =
+            reconcile_contributors(raw.contributors, raw.author, None, raw.translator);
         let mut component = Self {
             id: raw.id,
             r#type: raw.r#type,
             title: raw.title,
-            author,
-            translator,
+            author: views.author,
+            translator: views.translator,
             contributors,
             created: raw.created,
             issued: raw.issued,
@@ -1049,21 +1056,14 @@ struct SerialComponentDeser {
 
 impl From<SerialComponentDeser> for SerialComponent {
     fn from(raw: SerialComponentDeser) -> Self {
-        let contributors = fold_contributors(
-            raw.contributors,
-            &[
-                (ContributorRole::Author, raw.author.as_ref()),
-                (ContributorRole::Translator, raw.translator.as_ref()),
-            ],
-        );
-        let author = collect_contributors_by_role(&contributors, &ContributorRole::Author);
-        let translator = collect_contributors_by_role(&contributors, &ContributorRole::Translator);
+        let (contributors, views) =
+            reconcile_contributors(raw.contributors, raw.author, None, raw.translator);
         let mut component = Self {
             id: raw.id,
             r#type: raw.r#type,
             title: raw.title,
-            author,
-            translator,
+            author: views.author,
+            translator: views.translator,
             contributors,
             created: raw.created,
             issued: raw.issued,
@@ -1206,19 +1206,15 @@ struct SerialDeser {
 
 impl From<SerialDeser> for Serial {
     fn from(raw: SerialDeser) -> Self {
-        let contributors = fold_contributors(
-            raw.contributors,
-            &[(ContributorRole::Editor, raw.editor.as_ref())],
-        );
-        let editor = collect_contributors_by_role(&contributors, &ContributorRole::Editor);
-
+        let (contributors, views) =
+            reconcile_contributors(raw.contributors, None, raw.editor, None);
         Self {
             id: raw.id,
             r#type: raw.r#type,
             title: raw.title,
             short_title: raw.short_title,
             container: raw.container,
-            editor,
+            editor: views.editor,
             contributors,
             publisher: raw.publisher,
             url: raw.url,
