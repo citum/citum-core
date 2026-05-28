@@ -1,11 +1,11 @@
 ---
 # csl26-rfct
 title: Codebase Modularization and Refactor Priorities
-status: in-progress
+status: completed
 type: milestone
 priority: normal
 created_at: 2026-05-16T14:30:00Z
-updated_at: 2026-05-28T23:33:00Z
+updated_at: 2026-05-28T23:54:53Z
 ---
 
 Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by refactor priority and grouped by modularization strategy.
@@ -35,8 +35,7 @@ Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by r
 6. [x] **`citum-migrate/src/upsampler.rs` (2064 lines → facade + upsampler/ modules)**
    - **Issues:** Complex citation position analysis intertwined with upsampling logic.
    - **Done:** Extracted citation position analysis/rewrite logic to `src/upsampler/position.rs`, node mapping and scalar conversion helpers to `src/upsampler/mapping.rs`, and inline tests to `src/upsampler/tests.rs`; `upsampler.rs` is now a small facade with stable re-exports and Citum-facing node aliasing.
-7. [ ] **`citum-engine/src/processor/rendering/grouped/core.rs` (1708 lines)**
-   - **Issues:** Highly specific rendering logic and classification helpers.
+7. [x] **`citum-engine/src/processor/rendering/grouped/core.rs` (1708 lines → 1154 lines, extracted to 3 modules) — done via csl26-9f7g**
 8. [x] **`citum-io/src/lib.rs` (1622 lines)**
    - **Issues:** Multiple format handlers (BibLaTeX, RIS, JSON).
    - **Target:** Move format-specific logic to `src/formats/`.
@@ -82,3 +81,7 @@ Prioritize Tier 1 and Tier 2 refactors, specifically focusing on `citum-schema-s
   hybrid JSON class/type routing (now uses &str comparison)
 - Idiom: moved validate_compound_sets import to module level;
   replaced verbose if/else with .then_some() in merge path
+
+## Summary of Changes
+
+Tiers 1 and 2 (items 1–8) are all complete — each tracked as a separate bean. Item 7 (grouped/core.rs) was done in csl26-9f7g but not formally linked. Tier 3/4 items (10–25) remain as informal backlog; they will be addressed on-demand via new beans when prioritized.
