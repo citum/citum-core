@@ -52,10 +52,54 @@
 
 /* Bibliography */
 .citum-bibliography {
-  margin-top: 3rem;
   line-height: 1.6;
-  border-top: 1px solid #eee;
+}
+
+/* When the engine wraps Primary/Secondary blocks in a parent <section id="Bibliography">,
+   the separator lives on that container; inner .citum-bibliography blocks are seamless. */
+#Bibliography {
+  margin-top: 3rem;
   padding-top: 2rem;
+  border-top: 1px solid #eee;
+}
+
+#Bibliography .citum-bibliography {
+  margin-top: 0;
+  border-top: none;
+  padding-top: 0;
+}
+
+/* Subsection labels (Primary Sources / Secondary Sources) */
+#Bibliography h2 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--citum-muted, #666);
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+/* "Reproduce This Rendering" block (outside #demo-root) */
+.demo-reproduce {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #eee;
+}
+
+.demo-reproduce h3 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--citum-muted, #666);
+  margin-bottom: 0.5rem;
+}
+
+.demo-reproduce pre {
+  background: var(--citum-paper-deep, #f5f2eb);
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  overflow-x: auto;
 }
 
 .citum-entry {
@@ -88,26 +132,25 @@
     margin: 0 auto;
   }
   
-  .citum-with-sidebar .citum-bibliography {
+  /* The engine's second grid child is <section id="Bibliography">, not .citum-bibliography */
+  .citum-with-sidebar #Bibliography {
     margin-top: 0;
+    border-top: none;
     position: sticky;
     top: 2rem;
     max-height: calc(100vh - 4rem);
     overflow-y: auto;
-    padding-right: 1.5rem;
+    padding: 0 1.5rem 1rem 2rem;
     border: 1px solid var(--citum-border, oklch(0.88 0.024 238));
     border-radius: 12px;
-    border-top: none;
-    padding-top: 0;
-    padding-left: 2rem;
     scrollbar-width: thin;
     scrollbar-color: #ddd transparent;
   }
-  
-  .citum-with-sidebar .citum-bibliography::-webkit-scrollbar {
+
+  .citum-with-sidebar #Bibliography::-webkit-scrollbar {
     width: 6px;
   }
-  .citum-with-sidebar .citum-bibliography::-webkit-scrollbar-thumb {
+  .citum-with-sidebar #Bibliography::-webkit-scrollbar-thumb {
     background-color: #ddd;
     border-radius: 10px;
   }
