@@ -1,14 +1,14 @@
 ---
 # csl26-zlvp
 title: 'External style authoring: agent skill + hub UI wizard'
-status: todo
+status: completed
 type: feature
 priority: deferred
 tags:
     - style
     - dx
 created_at: 2026-03-16T20:11:54Z
-updated_at: 2026-04-25T20:20:07Z
+updated_at: 2026-05-28T23:53:33Z
 blocked_by:
     - csl26-fuw7
 ---
@@ -54,3 +54,7 @@ The external skill should use `docs/schemas/style.json` (hosted URL) as its prim
 For multi-agent compatibility: skill body should be pure Markdown instructions with no Claude-specific tool assumptions. Inline examples are better than tool-call sequences.
 
 The hub wizard idea is the highest user-value item but also the most work (needs API + frontend + LLM plumbing). Phase 2 (standalone skill) is the right first step and is independently useful.
+
+## Summary of Changes
+
+Phase 2 (external agent skill) shipped in the `citum/skills` repo — the standalone skill is live. Phase 3 (citum-hub UI wizard) is a separate future effort that belongs in citum-hub, not this repo. This bean is closed; a follow-up bean should be opened in citum-hub for the wizard work when that repo is ready.

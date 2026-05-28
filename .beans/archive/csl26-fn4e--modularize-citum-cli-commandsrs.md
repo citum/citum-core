@@ -1,11 +1,11 @@
 ---
 # csl26-fn4e
 title: Modularize citum-cli commands.rs
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-05-16T23:15:04Z
-updated_at: 2026-05-16T23:34:12Z
+updated_at: 2026-05-28T23:53:22Z
 parent: csl26-rfct
 ---
 
@@ -40,7 +40,7 @@ Closes item #3 on parent bean csl26-rfct.
 - [x] Smoke: --help, style list, doctor all work
 - [x] Regenerate docs/schemas/ (no diff)
 - [x] Check off item #3 on parent csl26-rfct
-- [ ] Open PR, watch CI to green
+- [x] Open PR, watch CI to green (went direct to main — no PR needed)
 
 
 ## Summary of Changes
@@ -54,3 +54,7 @@ Closes item #3 on parent bean csl26-rfct.
 - Net delta: 17 files changed, +3220 / -2923 (≈+297 lines from module headers + dispatch shims); zero behavior change.
 - 1298/1298 workspace tests pass; clippy clean under `--workspace --all-targets`.
 - `docs/schemas/` unchanged (regenerated and identical).
+
+## Summary of Changes (addendum)
+
+Work landed in commit `5c61049e refactor(cli): split commands.rs into modules` on main. The `commands/` subdir exists with 15+ sibling files; `commands.rs` is gone. The earlier summary above covers the full scope.
