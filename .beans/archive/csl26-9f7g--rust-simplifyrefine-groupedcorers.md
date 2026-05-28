@@ -1,11 +1,11 @@
 ---
 # csl26-9f7g
 title: Rust simplify+refine pass on engine grouped/core.rs
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-05-17T00:42:49Z
-updated_at: 2026-05-17T07:49:10Z
+updated_at: 2026-05-28T23:21:04Z
 ---
 
 Coupled simplify + refine pass on grouped/core.rs (1708 lines, 5 clippy::too_many_arguments suppressions, 8+ overlong fns). Plan: ~/.claude/plans/look-for-opportunities-for-modular-bubble.md
@@ -17,3 +17,5 @@ Coupled simplify + refine pass on grouped/core.rs (1708 lines, 5 clippy::too_man
 - [x] Commit 3: split overlong functions in remaining core.rs
 - [x] Verify quality-gate baseline + oracle no-diff on apa.csl (154 styles fidelity=1.0, apa.csl 51/51 match)
 - [x] Open PR refactor/grouped-core-simplify-refine — #731 https://github.com/citum/citum-core/pull/731
+
+## Summary of Changes\n\nAll todos completed via PR #731. grouped/core.rs reduced 1708 → 1154 lines: extracted template_policy.rs, component_predicates.rs, sentence_initial.rs; bundled GroupRenderParams + TemplateRenderContext; removed 5 too_many_arguments allows.
