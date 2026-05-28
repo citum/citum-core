@@ -69,15 +69,26 @@
   padding-top: 0;
 }
 
+/* "Bibliography" section title */
+#Bibliography > h1 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--citum-ink-strong, #1a1a2e);
+  margin-bottom: 1.5rem;
+}
+
 /* Subsection labels (Primary Sources / Secondary Sources) */
 #Bibliography h2 {
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--citum-muted, #666);
+  letter-spacing: 0.08em;
+  color: var(--citum-muted, #888);
   margin-top: 1.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid #eee;
 }
 
 /* "Reproduce This Rendering" block (outside #demo-root) */
