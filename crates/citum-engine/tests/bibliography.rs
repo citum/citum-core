@@ -3970,3 +3970,105 @@ fn given_quoted_title_with_inner_quotes_when_grouped_html_bibliography_rendered_
         "grouped quoted title must not use outer quote marks for the nested title quote: {rendered}"
     );
 }
+
+#[test]
+fn given_multilingual_ref_when_rendering_html_then_data_attrs_match_displayed_form() {
+    use citum_schema::reference::contributor::MultilingualName;
+    use citum_schema::reference::types::LangID;
+
+    // Style mirrors apa-7th multilingual config: combined titles, transliterated names
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Multilingual Metadata Test".to_string()),
+            id: Some("multilingual-metadata-test".into()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            multilingual: Some(MultilingualConfig {
+                title_mode: Some(MultilingualMode::Combined),
+                name_mode: Some(MultilingualMode::Transliterated),
+                preferred_script: Some("Latn".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            })]),
+            groups: Some(vec![citum_schema::grouping::BibliographyGroup {
+                id: "all".to_string(),
+                heading: None,
+                selector: citum_schema::grouping::GroupSelector::default(),
+                sort: None,
+                template: None,
+                disambiguate: None,
+            }]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let mut bib = IndexMap::new();
+    bib.insert(
+        "tanaka2019".to_string(),
+        InputReference::SerialComponent(Box::new(SerialComponent {
+            id: Some("tanaka2019".into()),
+            r#type: SerialComponentType::Article,
+            title: Some(Title::Multilingual(MultilingualComplex {
+                original: "引用の社会的機能：学術知識の構築における参照実践".to_string(),
+                lang: None,
+                transliterations: HashMap::from([(
+                    "ja-Latn".to_string(),
+                    "In'yo no shakaiteki kino: Gakujutsu chishiki".to_string(),
+                )]),
+                translations: HashMap::from([(
+                    LangID("en".to_string()),
+                    "The Social Function of Citation: Reference Practices in Academic Knowledge"
+                        .to_string(),
+                )]),
+            })),
+            author: Some(Contributor::ContributorList(
+                citum_schema::reference::ContributorList(vec![Contributor::Multilingual(
+                    MultilingualName {
+                        original: StructuredName {
+                            family: "田中".into(),
+                            given: "由紀".into(),
+                            ..Default::default()
+                        },
+                        lang: None,
+                        transliterations: HashMap::from([(
+                            "ja-Latn".to_string(),
+                            StructuredName {
+                                family: "Tanaka".into(),
+                                given: "Yuki".into(),
+                                ..Default::default()
+                            },
+                        )]),
+                        translations: HashMap::default(),
+                    },
+                )]),
+            )),
+            issued: EdtfString("2019".to_string()),
+            container: None,
+            ..Default::default()
+        })),
+    );
+
+    let processor = Processor::new(style, bib);
+    let rendered = processor.render_grouped_bibliography_with_format::<Html>();
+
+    // data-title must be set to the combined (transliterated [translated]) form on the attribute
+    assert!(
+        rendered.contains(
+            r#"data-title="In'yo no shakaiteki kino: Gakujutsu chishiki [The Social Function of Citation: Reference Practices in Academic Knowledge]""#
+        ),
+        "data-title attribute must use combined transliterated+translated form, not original CJK: {rendered}"
+    );
+    // data-author must use the transliterated family name
+    assert!(
+        rendered.contains(r#"data-author="Tanaka" data-year="2019""#),
+        "data-author must use transliterated name, not original CJK: {rendered}"
+    );
+}

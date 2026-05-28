@@ -14,7 +14,10 @@ use crate::processor::rendering::{CompoundRenderData, Renderer, RendererResource
 use crate::reference::{Bibliography, Reference};
 use crate::render::ProcEntry;
 use crate::render::format::{OutputFormat, ProcEntryMetadata};
-use crate::values::{ProcHints, RenderContext, RenderOptions, format_contributors_short};
+use crate::values::{
+    ProcHints, RenderContext, RenderOptions, format_contributors_short, resolve_multilingual_name,
+    resolve_multilingual_string,
+};
 use citum_schema::grouping::{BibliographyGroup, DisambiguationScope, GroupHeading};
 use citum_schema::options::{BibliographyPartitionHeading, BibliographySortPartitioning};
 use std::borrow::Cow;
@@ -704,14 +707,37 @@ impl Processor {
             abbreviation_map: self.abbreviation_map.as_ref(),
         };
 
+        let ml = bibliography_config.multilingual.as_ref();
+        let preferred_transliteration = ml.and_then(|m| m.preferred_transliteration.as_deref());
+        let preferred_script = ml.and_then(|m| m.preferred_script.as_ref());
+
         ProcEntryMetadata {
-            author: reference
-                .author()
-                .map(|authors| format_contributors_short(&authors.to_names_vec(), &options)),
+            author: reference.author().map(|author| {
+                let names = resolve_multilingual_name(
+                    &author,
+                    ml.and_then(|m| m.name_mode.as_ref()),
+                    preferred_transliteration,
+                    preferred_script,
+                    &self.locale.locale,
+                );
+                format_contributors_short(&names, &options)
+            }),
             year: reference
                 .csl_issued_date()
                 .map(|issued| issued.year().clone()),
-            title: reference.title().map(|title| title.to_string()),
+            title: reference.title().map(|title| {
+                use citum_schema::reference::types::{MultilingualString, Title};
+                match &title {
+                    Title::Multilingual(m) => resolve_multilingual_string(
+                        &MultilingualString::Complex(m.clone()),
+                        ml.and_then(|ml| ml.title_mode.as_ref()),
+                        preferred_transliteration,
+                        preferred_script,
+                        &self.locale.locale,
+                    ),
+                    _ => title.to_string(),
+                }
+            }),
         }
     }
 
