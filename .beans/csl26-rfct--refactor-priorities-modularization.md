@@ -5,7 +5,7 @@ status: in-progress
 type: milestone
 priority: normal
 created_at: 2026-05-16T14:30:00Z
-updated_at: 2026-05-24T05:45:00Z
+updated_at: 2026-05-28T23:33:00Z
 ---
 
 Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by refactor priority and grouped by modularization strategy.
@@ -44,7 +44,7 @@ Analysis of Rust source files (excluding tests) exceeding 800 lines, ranked by r
 ### Tier 3: Oversized Modules (1000 - 1500 lines)
 *Moderate priority for logical splitting.*
 
-9. **`citum-schema-data/src/reference/types/structural.rs` (1508 lines)**
+9. [x] **`citum-schema-data/src/reference/types/structural.rs` (1508 → 1504; contributor DRY + clippy idiom; PR #831)**
 10. **`citum-schema-style/src/template.rs` (1469 lines)**
 11. **`citum-migrate/src/main.rs` (1324 lines)**
 12. **`citum-engine/src/processor/disambiguation.rs` (1326 lines)**
