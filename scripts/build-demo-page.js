@@ -190,6 +190,15 @@ const TEMPLATE = `<!-- PAGE_ID: demo -->
     h1 { margin-bottom: 0.5rem; }
     .subtitle { color: #666; font-size: 1.1rem; }
 
+    /* Bibliography section heading — larger than body, scoped to demo page */
+    #Bibliography > h1 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--citum-ink-strong, #1a1a2e);
+      margin-bottom: 1rem;
+    }
+
     /* Layout toggles */
     .btn {
       padding: 0.5rem 1rem;
