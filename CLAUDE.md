@@ -44,6 +44,8 @@ cargo fmt --check && cargo clippy --all-targets --all-features -- -D warnings &&
 ```
 Run `cargo fmt` first if needed, then re-check. **Do not commit if any check fails.** Docs (`.md`) and styles (`.yaml`) skip checks.
 
+This command is the authoritative gate for this repo. The global "never call `cargo` directly — use `~/.claude/scripts/verify.sh`" rule does **not** apply here: the generic adapter is weaker (it swallows clippy warnings, skips `cargo fmt --check`, and runs `cargo test` instead of `nextest`). Run the gate above verbatim.
+
 If `crates/citum-cli/` or `crates/citum-schema*/` changed, regenerate schemas in the same commit:
 ```bash
 cargo run --bin citum --features schema -- schema --out-dir docs/schemas && git add docs/schemas/
@@ -110,6 +112,8 @@ Style tasks: `/style-evolve` (`upgrade`, `migrate`, `create`). Rust quality: `/r
 ## Git Workflow
 
 Branch protection on `main` — all changes via PR. Branch **before** committing when a PR is planned. Pre-commit gate above is required for Rust.
+
+**First action in any fresh clone:** run `scripts/install-hooks.sh` (sets `core.hooksPath .githooks`). The tracked hooks enforce the commit-msg 50/72 + conventional format, bean hygiene, and the pre-push Rust gate *locally* — without them, those checks fail only in CI.
 
 **After every push on a PR branch:** `gh pr checks <PR> --watch`. If failing, `gh run view <run-id> --log-failed`. Task is not done until CI passes.
 
