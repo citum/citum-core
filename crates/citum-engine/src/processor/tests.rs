@@ -970,7 +970,6 @@ fn test_disambiguation_givenname() {
                 names: true,
                 add_givenname: true,
                 year_suffix: true,
-                ignore: None,
             }),
         })),
         contributors: Some(ContributorConfig {
@@ -1069,7 +1068,6 @@ fn test_disambiguation_add_names() {
                 names: true, // disambiguate-add-names
                 add_givenname: false,
                 year_suffix: true,
-                ignore: None,
             }),
         })),
         contributors: Some(ContributorConfig {
@@ -1189,7 +1187,6 @@ fn test_disambiguation_combined_expansion() {
                 names: true,
                 add_givenname: true,
                 year_suffix: true,
-                ignore: None,
             }),
         })),
         contributors: Some(ContributorConfig {

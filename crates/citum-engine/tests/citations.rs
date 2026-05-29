@@ -254,7 +254,6 @@ fn disambiguation_two_level_author_collisions_get_distinct_suffixes() {
                 year_suffix: true,
                 names: true,
                 add_givenname: false,
-                ignore: None,
             }),
             ..Default::default()
         })),
@@ -494,7 +493,6 @@ fn subsequent_et_al_thresholds_shorten_the_repeat_citation() {
                     year_suffix: false,
                     names: false,
                     add_givenname: false,
-                    ignore: None,
                 }),
                 ..Default::default()
             })),
@@ -867,7 +865,7 @@ fn sorting_empty_dates_pushes_undated_items_to_the_end() {
     );
 }
 
-// --- APA §8.15 Reprint Disambiguation (Case A) ---
+// --- APA §8.15 Reprint Disambiguation ---
 
 /// APA §8.15: three reprints — two originally 1926, one originally 1927 — all
 /// published 1967. Year-suffix must follow the *published* year only, giving
@@ -958,95 +956,6 @@ citation:
     // (1926/1927). All three entries are in one collision group (keyed on issued year
     // only), so none is left without a suffix — unlike citeproc-js which would omit
     // the suffix on the 1927 entry because its rendered string differs.
-    assert_eq!(result, "Freud, (1926/1967a), (1926/1967b), (1927/1967c)");
-}
-
-// --- disambiguate.ignore (Case B) ---
-
-/// `disambiguate.ignore: [original-published]` is a documented no-op: Citum
-/// already keys its collision gate on the `issued` year only, so excluding
-/// `original-published` cannot change the output. This renders the Case A
-/// reprint scenario *with* the `ignore` option set and asserts byte-identical
-/// output to the Case A baseline — making the no-op contract a regression guard
-/// against a future change that wires the flag into the collision key.
-fn disambiguate_ignore_original_published_is_noop() {
-    use citum_schema::reference::InputReference;
-
-    let make_reprint = |id: &str, orig_year: i32, title: &str| -> InputReference {
-        let json = serde_json::json!({
-            "id": id,
-            "type": "book",
-            "title": title,
-            "author": [{ "family": "Freud", "given": "Sigmund" }],
-            "issued": { "date-parts": [[1967]] },
-            "original-date": { "date-parts": [[orig_year]] }
-        });
-        let legacy: csl_legacy::csl_json::Reference =
-            serde_json::from_value(json).expect("reprint json parse");
-        legacy.into()
-    };
-
-    let refs = vec![
-        make_reprint("reprint-a", 1926, "Abriss der Psychoanalyse"),
-        make_reprint("reprint-b", 1926, "Begriffsbestimmung"),
-        make_reprint("reprint-c", 1927, "Zukunft einer Illusion"),
-    ];
-
-    // Identical to the Case A style, plus `ignore: [original-published]`.
-    let style: citum_schema::Style = serde_yaml::from_str(
-        r"
-info:
-  title: APA Reprint Ignore No-op Test
-  id: test-apa-reprint-ignore
-options:
-  processing:
-    disambiguate:
-      year-suffix: true
-      names: false
-      add-givenname: false
-      ignore:
-        - original-published
-citation:
-  multi-cite-delimiter: ' '
-  template:
-    - group:
-      - date: original-published
-        form: year
-      - date: issued
-        form: year
-      delimiter: /
-      wrap:
-        punctuation: parentheses
-",
-    )
-    .expect("reprint style parse");
-
-    let mut bibliography = indexmap::IndexMap::new();
-    for item in &refs {
-        if let Some(id) = item.id() {
-            bibliography.insert(id.to_string(), item.clone());
-        }
-    }
-
-    let processor = Processor::new(style, bibliography);
-    let citation = citum_schema::citation::Citation {
-        items: refs
-            .iter()
-            .filter_map(|r| r.id())
-            .map(|id| citum_schema::citation::CitationItem {
-                id: id.to_string(),
-                ..Default::default()
-            })
-            .collect(),
-        mode: citum_schema::citation::CitationMode::NonIntegral,
-        ..Default::default()
-    };
-
-    let result = processor
-        .process_citation(&citation)
-        .expect("Failed to process reprint citation with ignore option");
-
-    // Byte-identical to the Case A baseline: the option changed nothing.
     assert_eq!(result, "Freud, (1926/1967a), (1926/1967b), (1927/1967c)");
 }
 
@@ -1757,16 +1666,6 @@ mod disambiguation {
              issued year only, producing (1926/1967a) (1926/1967b) (1927/1967c).",
         );
         super::apa_reprint_issued_year_only_suffix();
-    }
-
-    #[test]
-    fn disambiguate_ignore_original_published_is_a_documented_noop() {
-        announce_behavior(
-            "Setting `disambiguate.ignore: [original-published]` must not change output — Citum \
-             already keys the collision gate on the issued year only, so the option is a \
-             documented no-op.",
-        );
-        super::disambiguate_ignore_original_published_is_noop();
     }
 }
 

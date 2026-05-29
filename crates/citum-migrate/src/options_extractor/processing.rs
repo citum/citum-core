@@ -61,7 +61,6 @@ pub fn detect_processing_mode(style: &Style) -> Option<Processing> {
             // Author-date styles commonly rely on year suffixes; keep this true
             // unless legacy style explicitly disables it.
             year_suffix: style.citation.disambiguate_add_year_suffix.unwrap_or(true),
-            ignore: None,
         };
 
         let sort = style.citation.sort.as_ref().and_then(extract_sort);
