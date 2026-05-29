@@ -689,6 +689,68 @@ impl BibliographyOptions {
     pub fn merged_with(&self, base: &Config) -> Config {
         Config::merged(base, &self.to_config())
     }
+
+    /// Merge `other` into `self`, with `other` taking precedence for each field.
+    pub fn merge(&mut self, other: &BibliographyOptions) {
+        crate::merge_options!(
+            self,
+            other,
+            processing,
+            localize,
+            multilingual,
+            dates,
+            titles,
+            page_range_format,
+            links,
+            volume_pages_delimiter,
+            strip_periods,
+            article_journal,
+            subsequent_author_substitute,
+            subsequent_author_substitute_rule,
+            hanging_indent,
+            entry_suffix,
+            separator,
+            compound_numeric,
+            sort_partitioning,
+            label_mode,
+            label_wrap,
+            date_position,
+            title_terminator,
+            repeated_author_rendering,
+            custom,
+        );
+
+        self.merge_shared_fields(other);
+    }
+
+    fn merge_shared_fields(&mut self, other: &BibliographyOptions) {
+        if let Some(other_substitute) = &other.substitute {
+            if let Some(this_substitute) = &self.substitute {
+                self.substitute = Some(SubstituteConfig::merged(this_substitute, other_substitute));
+            } else {
+                self.substitute = Some(other_substitute.clone());
+            }
+        }
+
+        if let Some(other_contributors) = &other.contributors {
+            if let Some(this_contributors) = &mut self.contributors {
+                this_contributors.merge(other_contributors);
+            } else {
+                self.contributors = Some(other_contributors.clone());
+            }
+        }
+
+        if other.punctuation_in_quote {
+            self.punctuation_in_quote = true;
+        }
+        if other.suppress_period_after_url {
+            self.suppress_period_after_url = true;
+        }
+
+        for (key, value) in &other.unknown_fields {
+            self.unknown_fields.insert(key.clone(), value.clone());
+        }
+    }
 }
 
 /// Deserialize contributor config from either a preset name or explicit config.
