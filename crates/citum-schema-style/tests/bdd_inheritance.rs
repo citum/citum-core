@@ -276,3 +276,231 @@ bibliography:
     // Component 1: doi (strong: true from top)
     assert_eq!(template[1].rendering().strong, Some(true));
 }
+
+#[test]
+fn test_overlay_preserves_base_type_variant_keys_not_in_overlay() {
+    // Regression guard: overlay with only one type-variant key must not drop
+    // base type-variant keys that are absent from the overlay.
+    let base_yaml = r#"
+version: "0.44.0"
+info: { id: base }
+bibliography:
+  template:
+    - title: primary
+  type-variants:
+    book:
+      - title: primary
+      - variable: publisher
+    article-journal:
+      - title: primary
+      - variable: doi
+"#;
+    let overlay_yaml = r#"
+extends: base
+info: { id: overlay }
+bibliography:
+  type-variants:
+    book:
+      modify:
+        - match: { title: primary }
+          emph: true
+"#;
+
+    let base = Style::from_yaml_str(base_yaml).unwrap();
+    let overlay = Style::from_yaml_str(overlay_yaml).unwrap();
+
+    struct R(Style);
+    impl citum_resolver_api::StyleResolver for R {
+        type Style = Style;
+        type Locale = citum_schema_style::locale::Locale;
+        fn resolve_style(&self, _: &str) -> Result<Style, citum_schema_style::ResolverError> {
+            Ok(self.0.clone())
+        }
+        fn resolve_locale(
+            &self,
+            id: &str,
+        ) -> Result<Self::Locale, citum_schema_style::ResolverError> {
+            Err(citum_schema_style::ResolverError::LocaleNotFound(
+                std::borrow::Cow::Owned(id.to_string()),
+            ))
+        }
+    }
+
+    let mut visited = HashSet::new();
+    let resolved = overlay
+        .try_into_resolved_recursive_with(Some(&R(base)), &mut visited)
+        .unwrap();
+
+    let variants = resolved
+        .bibliography
+        .as_ref()
+        .unwrap()
+        .type_variants
+        .as_ref()
+        .unwrap();
+
+    // The overlay only touched `book` — `article-journal` from base must survive.
+    assert!(
+        variants.contains_key(&TypeSelector::Single("article-journal".into())),
+        "base article-journal variant dropped by overlay"
+    );
+    assert!(
+        variants.contains_key(&TypeSelector::Single("book".into())),
+        "book variant missing after overlay"
+    );
+}
+
+// Regression tests: explicit `field: ~` in overlay must clear the inherited Option value.
+// The typed merge_options! treats None as "absent"; these tests guard that raw_yaml
+// null-inspection clears the base before merge_options! runs.
+
+fn make_resolver(
+    base: Style,
+) -> impl citum_resolver_api::StyleResolver<Style = Style, Locale = citum_schema_style::locale::Locale>
+{
+    struct R(Style);
+    impl citum_resolver_api::StyleResolver for R {
+        type Style = Style;
+        type Locale = citum_schema_style::locale::Locale;
+        fn resolve_style(&self, _: &str) -> Result<Style, citum_schema_style::ResolverError> {
+            Ok(self.0.clone())
+        }
+        fn resolve_locale(
+            &self,
+            id: &str,
+        ) -> Result<Self::Locale, citum_schema_style::ResolverError> {
+            Err(citum_schema_style::ResolverError::LocaleNotFound(
+                std::borrow::Cow::Owned(id.to_string()),
+            ))
+        }
+    }
+    R(base)
+}
+
+#[test]
+fn test_explicit_null_clears_citation_flat_field() {
+    let base_yaml = r#"
+version: "0.44.0"
+info: { id: base }
+citation:
+  prefix: "("
+  suffix: ")"
+"#;
+    let overlay_yaml = r#"
+extends: base
+info: { id: overlay }
+citation:
+  prefix: ~
+"#;
+    let base = Style::from_yaml_str(base_yaml).unwrap();
+    let overlay = Style::from_yaml_str(overlay_yaml).unwrap();
+    let mut visited = HashSet::new();
+    let resolved = overlay
+        .try_into_resolved_recursive_with(Some(&make_resolver(base)), &mut visited)
+        .unwrap();
+
+    let cit = resolved.citation.as_ref().unwrap();
+    assert!(
+        cit.prefix.is_none(),
+        "explicit `prefix: ~` did not clear inherited prefix"
+    );
+    assert_eq!(
+        cit.suffix.as_deref(),
+        Some(")"),
+        "suffix not in overlay must survive"
+    );
+}
+
+#[test]
+fn test_explicit_null_clears_citation_options() {
+    let base_yaml = r#"
+version: "0.44.0"
+info: { id: base }
+citation:
+  options: {}
+"#;
+    let overlay_yaml = r#"
+extends: base
+info: { id: overlay }
+citation:
+  options: ~
+"#;
+    let base = Style::from_yaml_str(base_yaml).unwrap();
+    // Verify base has non-None options before resolution.
+    assert!(
+        base.citation.as_ref().unwrap().options.is_some(),
+        "base must have citation.options for this test"
+    );
+
+    let overlay = Style::from_yaml_str(overlay_yaml).unwrap();
+    let mut visited = HashSet::new();
+    let resolved = overlay
+        .try_into_resolved_recursive_with(Some(&make_resolver(base)), &mut visited)
+        .unwrap();
+
+    assert!(
+        resolved.citation.as_ref().unwrap().options.is_none(),
+        "explicit `citation.options: ~` did not clear inherited options"
+    );
+}
+
+#[test]
+fn test_explicit_null_clears_bibliography_template() {
+    let base_yaml = r#"
+version: "0.44.0"
+info: { id: base }
+bibliography:
+  template:
+    - title: primary
+    - variable: doi
+"#;
+    let overlay_yaml = r#"
+extends: base
+info: { id: overlay }
+bibliography:
+  template: ~
+"#;
+    let base = Style::from_yaml_str(base_yaml).unwrap();
+    let overlay = Style::from_yaml_str(overlay_yaml).unwrap();
+    let mut visited = HashSet::new();
+    let resolved = overlay
+        .try_into_resolved_recursive_with(Some(&make_resolver(base)), &mut visited)
+        .unwrap();
+
+    assert!(
+        resolved.bibliography.as_ref().unwrap().template.is_none(),
+        "explicit `bibliography.template: ~` did not clear inherited template"
+    );
+}
+
+#[test]
+fn test_explicit_null_clears_bibliography_options() {
+    let base_yaml = r#"
+version: "0.44.0"
+info: { id: base }
+bibliography:
+  options: {}
+"#;
+    let overlay_yaml = r#"
+extends: base
+info: { id: overlay }
+bibliography:
+  options: ~
+"#;
+    let base = Style::from_yaml_str(base_yaml).unwrap();
+    assert!(
+        base.bibliography.as_ref().unwrap().options.is_some(),
+        "base must have bibliography.options for this test"
+    );
+
+    let overlay = Style::from_yaml_str(overlay_yaml).unwrap();
+    let mut visited = HashSet::new();
+    let resolved = overlay
+        .try_into_resolved_recursive_with(Some(&make_resolver(base)), &mut visited)
+        .unwrap();
+
+    assert!(
+        resolved.bibliography.as_ref().unwrap().options.is_none(),
+        "explicit `bibliography.options: ~` did not clear inherited options"
+    );
+}
