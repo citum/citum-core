@@ -121,6 +121,7 @@ fn bench_disambiguation(c: &mut Criterion) {
                 names: false,
                 add_givenname: false,
                 year_suffix: true,
+                ignore: None,
             }),
             ..Default::default()
         })),
@@ -186,6 +187,7 @@ fn make_custom_config(names: bool, add_givenname: bool, year_suffix: bool) -> Co
                 names,
                 add_givenname,
                 year_suffix,
+                ignore: None,
             }),
         })),
         ..Default::default()
