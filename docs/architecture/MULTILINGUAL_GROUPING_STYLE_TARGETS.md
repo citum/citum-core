@@ -362,7 +362,7 @@ csl26-group (COMPLETED)
 
 - `../specs/MULTILINGUAL.md`
 - `/Users/brucedarcus/Code/citum/citum-core/docs/specs/BIBLIOGRAPHY_GROUPING.md`
-- `/Users/brucedarcus/Code/csl26/docs/architecture/DISAMBIGUATION_MULTILINGUAL_GROUPING.md`
+- [`docs/specs/DISAMBIGUATION.md`](../specs/DISAMBIGUATION.md)
 - `/Users/brucedarcus/Code/csl26/crates/citum-schema-style/src/options/multilingual.rs`
 - `/Users/brucedarcus/Code/csl26/crates/citum-schema-style/src/grouping.rs`
 - `/Users/brucedarcus/Code/csl26/crates/citum-engine/src/grouping/selector.rs`

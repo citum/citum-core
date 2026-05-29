@@ -53,6 +53,7 @@ to make sure the document should be a spec rather than architecture or policy.
 
 | File | Feature |
 |------|---------|
+| [`DISAMBIGUATION.md`](./DISAMBIGUATION.md) | Collision-key model, strategy cascade, multilingual/group disambiguation, and Case B ignore-option design |
 | [`DISTRIBUTED_RESOLVER.md`](./DISTRIBUTED_RESOLVER.md) | Federated registry and distributed resolver architecture (Phases 2–3) |
 | [`PER_DOCUMENT_CONFIG_OVERRIDES.md`](./PER_DOCUMENT_CONFIG_OVERRIDES.md) | Eligible options and syntax for per-document configuration overrides |
 | [`CLI_UX_REDESIGN.md`](./CLI_UX_REDESIGN.md) | Clean command model for style discovery, registry management, and CLI validation UX |

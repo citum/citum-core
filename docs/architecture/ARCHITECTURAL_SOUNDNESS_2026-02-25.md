@@ -58,7 +58,7 @@ These are well-understood open scope items, not architectural problems:
 ### 4. Disambiguation at full CSL 1.0 fidelity
 - Year-suffix and basic author disambiguation work
 - Full CSL 1.0 (add-names, add-givenname, choose-based) not complete
-- Tracked in [DISAMBIGUATION_IMPLEMENTATION_PLAN.md](./DISAMBIGUATION_IMPLEMENTATION_PLAN.md)
+- Design: [`docs/specs/DISAMBIGUATION.md`](../specs/DISAMBIGUATION.md); 11/11 native tests passing as of 2026-05-29
 
 ### 5. Legal citation support
 - LEGAL_CITATIONS.md design document exists
@@ -107,4 +107,4 @@ Tracked as bean `csl26-inputref-wart`.
 - [DESIGN_PRINCIPLES.md](./DESIGN_PRINCIPLES.md) — Section 3 (deny_unknown_fields trade-off)
 - [PRIOR_ART.md](./PRIOR_ART.md)
 - [ROADMAP.md](./ROADMAP.md)
-- [DISAMBIGUATION_IMPLEMENTATION_PLAN.md](./DISAMBIGUATION_IMPLEMENTATION_PLAN.md)
+- [`docs/specs/DISAMBIGUATION.md`](../specs/DISAMBIGUATION.md)

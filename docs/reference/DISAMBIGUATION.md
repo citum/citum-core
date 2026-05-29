@@ -1,5 +1,7 @@
 # Disambiguation in Citum
 
+> **Normative design:** [`docs/specs/DISAMBIGUATION.md`](../specs/DISAMBIGUATION.md)
+
 Disambiguation is the process of modifying citation output when
 multiple references produce identical rendered strings. CSL 1.0 provides
 several strategies to resolve these ambiguities.
