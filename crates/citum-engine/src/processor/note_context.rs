@@ -119,7 +119,7 @@ impl Processor {
         }
 
         let mut next_note = 1_u32;
-        citations
+        let normalized: Vec<Citation> = citations
             .iter()
             .cloned()
             .map(|mut citation| {
@@ -133,6 +133,21 @@ impl Processor {
                 }
                 citation
             })
-            .collect()
+            .collect();
+
+        // Build first-occurrence note number map: id → note_number of first cite.
+        // Clear first so repeated calls (e.g. reprocessing after insertion/reordering)
+        // don't accumulate stale entries from prior runs.
+        let mut first_note = self.first_note_by_id.borrow_mut();
+        first_note.clear();
+        for citation in &normalized {
+            if let Some(note_number) = citation.note_number {
+                for item in &citation.items {
+                    first_note.entry(item.id.clone()).or_insert(note_number);
+                }
+            }
+        }
+
+        normalized
     }
 }

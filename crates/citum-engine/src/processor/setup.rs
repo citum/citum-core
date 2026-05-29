@@ -46,6 +46,7 @@ impl Default for Processor {
             show_semantics: true,
             inject_ast_indices: false,
             abbreviation_map: None,
+            first_note_by_id: RefCell::new(HashMap::new()),
         }
     }
 }
@@ -95,6 +96,7 @@ impl Processor {
             show_semantics: true,
             inject_ast_indices: false,
             abbreviation_map: None,
+            first_note_by_id: RefCell::new(HashMap::new()),
         };
 
         // Pre-calculate hints for disambiguation.

@@ -297,7 +297,9 @@ impl ComponentValues for TemplateTitle {
         hints: &ProcHints,
         options: &RenderOptions<'_>,
     ) -> Option<ProcValues<F::Output>> {
-        if self.disambiguate_only == Some(true) && hints.group_length <= 1 {
+        if self.disambiguate_only == Some(true)
+            && (hints.group_length <= 1 || hints.suppress_disambiguation_title)
+        {
             return None;
         }
 

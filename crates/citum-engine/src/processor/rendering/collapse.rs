@@ -246,6 +246,7 @@ mod tests {
             inject_ast_indices: false,
             filtered_to_original_index: RefCell::new(None),
             abbreviation_map: None,
+            first_note_by_id: None,
         }
     }
 

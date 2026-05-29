@@ -919,6 +919,10 @@ pub enum NumberVariable {
     NumberOfPages,
     NumberOfVolumes,
     CitationNumber,
+    /// First-occurrence note number for the cited reference (note styles only).
+    /// Populated from the document processor; omitted (not rendered) when the
+    /// citation is not in a subsequent position or no first-note number is available.
+    FirstReferenceNoteNumber,
     CitationLabel,
     Number,
     DocketNumber,
@@ -946,6 +950,7 @@ impl NumberVariable {
             Self::NumberOfPages => Cow::Borrowed("number-of-pages"),
             Self::NumberOfVolumes => Cow::Borrowed("number-of-volumes"),
             Self::CitationNumber => Cow::Borrowed("citation-number"),
+            Self::FirstReferenceNoteNumber => Cow::Borrowed("first-reference-note-number"),
             Self::CitationLabel => Cow::Borrowed("citation-label"),
             Self::Number => Cow::Borrowed("number"),
             Self::DocketNumber => Cow::Borrowed("docket-number"),
@@ -974,6 +979,7 @@ impl NumberVariable {
             "number-of-pages" => Self::NumberOfPages,
             "number-of-volumes" => Self::NumberOfVolumes,
             "citation-number" => Self::CitationNumber,
+            "first-reference-note-number" => Self::FirstReferenceNoteNumber,
             "citation-label" => Self::CitationLabel,
             "number" => Self::Number,
             "docket-number" => Self::DocketNumber,
