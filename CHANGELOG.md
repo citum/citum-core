@@ -5,6 +5,75 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.59.0] - 2026-05-29
+
+### Bug Fixes
+
+**ci**
+
+- Add citum-refs to publish-crates order ([`0b7b654`](https://github.com/citum/citum-core/commit/0b7b654d80a9312075501bc7a09c9f35918dd439))
+
+
+**demo**
+
+- Style bibliography section headings ([`480b6c4`](https://github.com/citum/citum-core/commit/480b6c4f050dd5705e0589ab9e444111136d0f12))
+
+- Split bib heading styles; enlarge h1 ([`e4df8d8`](https://github.com/citum/citum-core/commit/e4df8d86b304bf96d8012fab58da7e3f23ef2abc))
+
+- Enlarge page title h1 to 2rem ([`59d5d1f`](https://github.com/citum/citum-core/commit/59d5d1f94baddd1d64c1244f048b7f913478d2c5))
+
+
+**engine**
+
+- Apply mode options to Renderer ([`c4c78e1`](https://github.com/citum/citum-core/commit/c4c78e16313e512e00c443150860035afed3a284))
+
+- Resolve multilingual data-* attrs ([`e50702d`](https://github.com/citum/citum-core/commit/e50702dc1e190f6fb97a9086d6131105574c1e67))
+
+
+
+### Documentation
+
+**demo**
+
+- Generate page from djot via engine ([`4d367e9`](https://github.com/citum/citum-core/commit/4d367e9f35ae029d2f6619cbc82e165614ebbc6e))
+
+
+**spec**
+
+- Consolidate disambiguation spec ([`3b7ac2f`](https://github.com/citum/citum-core/commit/3b7ac2fc9865bdf55245c61aab3b5e334a986278))
+
+
+
+### Features
+
+**engine**
+
+- Year-suffix issued date only ([`94cb79d`](https://github.com/citum/citum-core/commit/94cb79d45391a458a987ed188be0aa21992fa25e))
+
+- Suppress disambig title in xref ([`84b0070`](https://github.com/citum/citum-core/commit/84b00701d3d7c864580f885432c6ff39d0852f2d))
+
+
+**schema**
+
+- Add disambiguate.ignore option ([`73f4b70`](https://github.com/citum/citum-core/commit/73f4b70463846cd9195411e29aef00e30f05c6c0))
+
+
+
+### Performance
+
+**schema**
+
+- Typed merge_style_overlay ([`98495bd`](https://github.com/citum/citum-core/commit/98495bd4d78909f9ef815e2d6e78c554159bc306))
+
+
+
+### Refactor
+
+**schema**
+
+- Dry structural from deser impls ([`b54ba09`](https://github.com/citum/citum-core/commit/b54ba09bb05fdbc81b9e7d8591a312d47a9b40e6))
+
+
 ## [0.58.0] - 2026-05-27
 
 ### Bug Fixes
