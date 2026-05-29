@@ -254,6 +254,7 @@ fn disambiguation_two_level_author_collisions_get_distinct_suffixes() {
                 year_suffix: true,
                 names: true,
                 add_givenname: false,
+                ignore: None,
             }),
             ..Default::default()
         })),
@@ -493,6 +494,7 @@ fn subsequent_et_al_thresholds_shorten_the_repeat_citation() {
                     year_suffix: false,
                     names: false,
                     add_givenname: false,
+                    ignore: None,
                 }),
                 ..Default::default()
             })),
@@ -863,6 +865,100 @@ fn sorting_empty_dates_pushes_undated_items_to_the_end() {
         result,
         "BookD 1999; BookB 2000; BookA n.d.; BookC n.d.; BookE n.d."
     );
+}
+
+// --- APA §8.15 Reprint Disambiguation (Case A) ---
+
+/// APA §8.15: three reprints — two originally 1926, one originally 1927 — all
+/// published 1967. Year-suffix must follow the *published* year only, giving
+/// `(1926/1967a) (1926/1967b) (1927/1967c)`.
+///
+/// Verifies that `compute_disamb_suffix` is gated to the `issued` component and
+/// never applied to `original-published`.
+fn apa_reprint_issued_year_only_suffix() {
+    use citum_schema::reference::InputReference;
+
+    // Three CSL-JSON reprints: same author, all issued 1967, original years differ.
+    // Titles chosen so both 1926 originals sort before the 1927 one (A < B < Z).
+    let make_reprint = |id: &str, orig_year: i32, title: &str| -> InputReference {
+        let json = serde_json::json!({
+            "id": id,
+            "type": "book",
+            "title": title,
+            "author": [{ "family": "Freud", "given": "Sigmund" }],
+            "issued": { "date-parts": [[1967]] },
+            "original-date": { "date-parts": [[orig_year]] }
+        });
+        let legacy: csl_legacy::csl_json::Reference =
+            serde_json::from_value(json).expect("reprint json parse");
+        legacy.into()
+    };
+
+    let refs = vec![
+        make_reprint("reprint-a", 1926, "Abriss der Psychoanalyse"),
+        make_reprint("reprint-b", 1926, "Begriffsbestimmung"),
+        make_reprint("reprint-c", 1927, "Zukunft einer Illusion"),
+    ];
+
+    // Style built from YAML — renders (original-published-year/issued-year) for each cite.
+    // The slash group delimiter and parentheses wrap produce e.g. `(1926/1967a)`.
+    let style: citum_schema::Style = serde_yaml::from_str(
+        r"
+info:
+  title: APA Reprint Suffix Test
+  id: test-apa-reprint
+options:
+  processing:
+    disambiguate:
+      year-suffix: true
+      names: false
+      add-givenname: false
+citation:
+  multi-cite-delimiter: ' '
+  template:
+    - group:
+      - date: original-published
+        form: year
+      - date: issued
+        form: year
+      delimiter: /
+      wrap:
+        punctuation: parentheses
+",
+    )
+    .expect("reprint style parse");
+
+    let mut bibliography = indexmap::IndexMap::new();
+    for item in &refs {
+        if let Some(id) = item.id() {
+            bibliography.insert(id.to_string(), item.clone());
+        }
+    }
+
+    let processor = Processor::new(style, bibliography);
+    let citation = citum_schema::citation::Citation {
+        items: refs
+            .iter()
+            .filter_map(|r| r.id())
+            .map(|id| citum_schema::citation::CitationItem {
+                id: id.to_string(),
+                ..Default::default()
+            })
+            .collect(),
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        ..Default::default()
+    };
+
+    let result = processor
+        .process_citation(&citation)
+        .expect("Failed to process APA reprint citation");
+
+    // Three reprints all get a year-suffix: (1926/1967a), (1926/1967b), (1927/1967c).
+    // The suffix attaches to the issued year (1967), not the original-published year
+    // (1926/1927). All three entries are in one collision group (keyed on issued year
+    // only), so none is left without a suffix — unlike citeproc-js which would omit
+    // the suffix on the 1927 entry because its rendered string differs.
+    assert_eq!(result, "Freud, (1926/1967a), (1926/1967b), (1927/1967c)");
 }
 
 // --- Note Style Position Scenarios ---
@@ -1563,6 +1659,15 @@ mod disambiguation {
             "Year suffix generation should continue past z without resetting or truncating.",
         );
         super::disambiguation_suffixes_continue_past_z();
+    }
+
+    #[test]
+    fn apa_reprint_year_suffix_attaches_to_issued_year_only() {
+        announce_behavior(
+            "APA §8.15 reprints with different original-dates should receive year-suffix on the \
+             issued year only, producing (1926/1967a) (1926/1967b) (1927/1967c).",
+        );
+        super::apa_reprint_issued_year_only_suffix();
     }
 }
 

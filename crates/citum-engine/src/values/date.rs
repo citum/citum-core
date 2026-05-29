@@ -788,8 +788,13 @@ impl ComponentValues for TemplateDate {
         // Apply uncertainty and approximation markers
         let formatted = formatted.map(|value| apply_date_markers(value, &date, date_config));
 
-        // Handle disambiguation suffix (a, b, c...)
-        let disamb_suffix = compute_disamb_suffix(&date, &effective_form, hints, options, &fmt);
+        // Handle disambiguation suffix (a, b, c...).
+        // Year-suffix is keyed off the issued year only; suppress it for other date
+        // components (e.g. original-published) so a reprint template renders
+        // `(1926/1967a)` rather than `(1926a/1967a)`.
+        let disamb_suffix = matches!(self.date, TemplateDateVar::Issued)
+            .then(|| compute_disamb_suffix(&date, &effective_form, hints, options, &fmt))
+            .flatten();
 
         formatted.map(|value| {
             let (value, suffix) = if let Some(ref suffix) = disamb_suffix {

@@ -324,6 +324,7 @@ pub fn build_author_date_style(
             year_suffix: disambiguate_year_suffix,
             names: disambiguate_names,
             add_givenname: disambiguate_givenname,
+            ignore: None,
         })
     } else {
         None

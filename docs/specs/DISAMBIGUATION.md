@@ -25,7 +25,7 @@ document is the design authority.
 - Year-suffix assignment, including the issued-year-only keying rule (Case A)
 - Multilingual-aware key generation
 - Group-aware suffix assignment and the `disambiguate: locally` option
-- The `disambiguate.ignore` option design for generalized signature exclusion (Case B — design locked, implementation deferred)
+- The `disambiguate.ignore` option for generalized signature exclusion (Case B — implemented)
 
 **Out of scope:**
 - Short-title-for-disambiguation combined with `first-reference-note-number` cross-refs (tracked separately as a follow-up bean)
@@ -133,14 +133,14 @@ instantiated per group rather than globally. Consequences:
 Without `disambiguate: locally`, disambiguation runs globally across the full
 bibliography.
 
-### 6. `disambiguate.ignore` — generalized signature exclusion (design, not yet implemented)
+### 6. `disambiguate.ignore` — generalized signature exclusion
 
 CSL schema maintainers proposed a per-element template attribute
 `ignore-for-disambiguation="true"` ([schema#452](https://github.com/citation-style-language/schema/issues/452)). Citum's approach is an
 **option** that names which reference variables are excluded from the collision
 signature, keeping the template language declarative.
 
-Proposed option (in `Disambiguation` struct,
+Option (in `Disambiguation` struct,
 `crates/citum-schema-style/src/options/processing.rs`):
 
 ```yaml
@@ -148,26 +148,19 @@ citation:
   options:
     disambiguate:
       year-suffix: true
-      ignore: [original-date]   # variables excluded from collision key
+      ignore: [original-published]   # variables excluded from collision key
 ```
 
 Semantics: any variable listed under `ignore` is not consulted when building
-`build_group_key`. Practically, the initial implementation targets `original-date`
+`build_group_key`. Practically, the initial implementation targets `original-published`
 as the only meaningful value (it is the only variable that current citeproc-js
 conflates into its collision gate).
 
-The `ignore` list is checked inside `build_group_key` before year key
-construction; if `original-date` is listed, `csl_issued_date()` is still used
+The `ignore` list is checked inside `calculate_hints` before the collision key is
+built; if `original-published` is listed, `csl_issued_date()` is still used
 (Citum's default) and the option becomes a no-op — the option's primary value is
 as an explicit, self-documenting override for migrated CSL styles that shipped
 with a workaround.
-
-**Implementation path (deferred):**
-1. Add `ignore: Option<Vec<ReferenceVariable>>` to `Disambiguation` in
-   `crates/citum-schema-style/src/options/processing.rs:393`.
-2. Thread into `DisambiguationFlags` and plumb to `build_group_key`.
-3. Regenerate JSON schemas (`cargo run --bin citum --features schema -- schema
-   --out-dir docs/schemas`).
 
 #### Sub-case: short-title + `first-reference-note-number` (open question)
 
@@ -216,9 +209,9 @@ Tracked as `csl26-xrc5`; **not** addressed by the `ignore` option above.
 - [x] 11/11 native disambiguation tests passing
 - [x] Group-aware suffix restart implemented (`disambiguate: locally`)
 - [x] Multilingual key generation respects display mode
-- [ ] Native fixture asserting `(1926/1967a) (1926/1967b) (1927/1967c)` for the APA §8.15 reprint scenario
-- [ ] `disambiguate.ignore` option implemented and schema regenerated
-- [ ] `disambiguate.ignore` covered by tests
+- [x] Native fixture asserting `(1926/1967a) (1926/1967b) (1927/1967c)` for the APA §8.15 reprint scenario
+- [x] `disambiguate.ignore` option implemented and schema regenerated
+- [x] `disambiguate.ignore` covered by tests
 
 ## Changelog
 
