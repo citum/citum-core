@@ -54,6 +54,8 @@ pub struct Renderer<'a> {
     pub filtered_to_original_index: RefCell<Option<Vec<usize>>>,
     /// Document-level abbreviation map for post-render substitution.
     pub abbreviation_map: Option<&'a crate::api::AbbreviationMap>,
+    /// First note number per reference id (populated by normalize_note_context).
+    pub first_note_by_id: Option<&'a RefCell<HashMap<String, u32>>>,
 }
 
 /// Borrowed compound-set context for rendering.
@@ -114,6 +116,8 @@ pub struct TemplateRenderRequest<'a> {
     pub integral_name_state: Option<citum_schema::citation::IntegralNameState>,
     /// Org abbreviation state for org-name formatting.
     pub org_abbreviation_state: Option<citum_schema::citation::IntegralNameState>,
+    /// First note number for this reference (note styles, subsequent position).
+    pub first_reference_note_number: Option<u32>,
 }
 
 #[derive(Default)]
@@ -158,6 +162,8 @@ pub struct RendererResources<'a> {
     pub config: &'a Config,
     /// The active bibliography-only configuration.
     pub bibliography_config: Option<BibliographyConfig>,
+    /// First note number per reference id (note styles; `None` for bibliography rendering).
+    pub first_note_by_id: Option<&'a RefCell<HashMap<String, u32>>>,
 }
 
 impl<'a> Renderer<'a> {
@@ -186,6 +192,7 @@ impl<'a> Renderer<'a> {
             inject_ast_indices,
             filtered_to_original_index: RefCell::new(None),
             abbreviation_map,
+            first_note_by_id: resources.first_note_by_id,
         }
     }
 
@@ -384,6 +391,10 @@ impl<'a> Renderer<'a> {
             note_start_text_case,
             integral_name_state: item.integral_name_state,
             org_abbreviation_state: item.org_abbreviation_state,
+            first_reference_note_number: self
+                .first_note_by_id
+                .as_ref()
+                .and_then(|m| m.borrow().get(&item.id).copied()),
         }
     }
 

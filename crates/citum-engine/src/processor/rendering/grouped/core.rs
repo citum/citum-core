@@ -52,6 +52,19 @@ struct TemplateRenderContext<'a> {
     template_index: usize,
 }
 
+/// Inputs for [`Renderer::build_template_render_hint`]. Bundles the
+/// per-citation state that would otherwise push the method past the clippy
+/// argument-count limit.
+struct HintInputs<'a> {
+    reference: &'a Reference,
+    context: RenderContext,
+    citation_number: usize,
+    position: Option<citum_schema::citation::Position>,
+    integral_name_state: Option<citum_schema::citation::IntegralNameState>,
+    org_abbreviation_state: Option<citum_schema::citation::IntegralNameState>,
+    first_reference_note_number: Option<u32>,
+}
+
 impl Renderer<'_> {
     fn strip_redundant_leading_group_punctuation<'a>(
         &self,
@@ -737,6 +750,7 @@ impl Renderer<'_> {
                 note_start_text_case: None,
                 integral_name_state: None,
                 org_abbreviation_state: None,
+                first_reference_note_number: None,
             },
         )
     }
@@ -781,6 +795,7 @@ impl Renderer<'_> {
                 note_start_text_case: params.note_start_text_case,
                 integral_name_state: params.integral_name_state,
                 org_abbreviation_state: params.org_abbreviation_state,
+                first_reference_note_number: None,
             },
         )
     }
@@ -806,6 +821,7 @@ impl Renderer<'_> {
             note_start_text_case,
             integral_name_state,
             org_abbreviation_state,
+            first_reference_note_number,
         } = request;
         let ref_type = reference.ref_type();
         let options = RenderOptions {
@@ -821,14 +837,24 @@ impl Renderer<'_> {
             current_template_index: None,
             abbreviation_map: self.abbreviation_map,
         };
-        let hint = self.build_template_render_hint(
+        // Only carry the first-reference note number (and its suppression side-effect)
+        // when the template actually renders it.  Suppressing a `disambiguate-only`
+        // title without emitting the note number as a replacement identifier would
+        // silently reintroduce ambiguity for colliding works.
+        let effective_first_ref_note = if template_uses_first_ref_note_number(template) {
+            first_reference_note_number
+        } else {
+            None
+        };
+        let hint = self.build_template_render_hint(HintInputs {
             reference,
-            options.context,
+            context: options.context,
             citation_number,
             position,
             integral_name_state,
             org_abbreviation_state,
-        );
+            first_reference_note_number: effective_first_ref_note,
+        });
         let mut components =
             self.render_template_components::<F>(reference, &ref_type, &options, &hint, template);
 
@@ -873,20 +899,22 @@ impl Renderer<'_> {
         components
     }
 
-    fn build_template_render_hint(
-        &self,
-        reference: &Reference,
-        context: RenderContext,
-        citation_number: usize,
-        position: Option<citum_schema::citation::Position>,
-        integral_name_state: Option<citum_schema::citation::IntegralNameState>,
-        org_abbreviation_state: Option<citum_schema::citation::IntegralNameState>,
-    ) -> ProcHints {
+    fn build_template_render_hint(&self, inputs: HintInputs<'_>) -> ProcHints {
+        let HintInputs {
+            reference,
+            context,
+            citation_number,
+            position,
+            integral_name_state,
+            org_abbreviation_state,
+            first_reference_note_number,
+        } = inputs;
         let default_hint = ProcHints::default();
         let base_hint = self
             .hints
             .get(reference.id().as_deref().unwrap_or_default())
             .unwrap_or(&default_hint);
+        let is_subsequent = matches!(position, Some(citum_schema::citation::Position::Subsequent));
         ProcHints {
             citation_number: (citation_number > 0).then_some(citation_number),
             citation_sub_label: if context == RenderContext::Citation {
@@ -900,6 +928,12 @@ impl Renderer<'_> {
             position,
             integral_name_state,
             org_abbreviation_state,
+            first_reference_note_number: if is_subsequent {
+                first_reference_note_number
+            } else {
+                None
+            },
+            suppress_disambiguation_title: is_subsequent && first_reference_note_number.is_some(),
             ..base_hint.clone()
         }
     }
@@ -1139,6 +1173,22 @@ impl Renderer<'_> {
         );
         self.render_item_from_template_with_format::<F>(reference, request, item_request.delimiter)
     }
+}
+
+/// Return `true` when `template` (or any nested group) contains a
+/// `number: first-reference-note-number` component.
+///
+/// Used to gate `suppress_disambiguation_title`: if the style's template does
+/// not render the note-number identifier, there is nothing to replace the
+/// suppressed title and ambiguity would silently be reintroduced.
+pub(super) fn template_uses_first_ref_note_number(template: &[TemplateComponent]) -> bool {
+    template.iter().any(|c| match c {
+        TemplateComponent::Number(n) => {
+            n.number == citum_schema::template::NumberVariable::FirstReferenceNoteNumber
+        }
+        TemplateComponent::Group(g) => template_uses_first_ref_note_number(&g.group),
+        _ => false,
+    })
 }
 
 pub(super) fn filter_author_from_template(

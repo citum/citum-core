@@ -501,6 +501,7 @@ impl Processor {
                 locale: &self.locale,
                 config: self.get_config(),
                 bibliography_config: Some(self.get_bibliography_options().into_owned()),
+                first_note_by_id: Some(&self.first_note_by_id),
             },
             &self.hints,
             &self.citation_numbers,

@@ -961,6 +961,95 @@ citation:
     assert_eq!(result, "Freud, (1926/1967a), (1926/1967b), (1927/1967c)");
 }
 
+// --- disambiguate.ignore (Case B) ---
+
+/// `disambiguate.ignore: [original-published]` is a documented no-op: Citum
+/// already keys its collision gate on the `issued` year only, so excluding
+/// `original-published` cannot change the output. This renders the Case A
+/// reprint scenario *with* the `ignore` option set and asserts byte-identical
+/// output to the Case A baseline — making the no-op contract a regression guard
+/// against a future change that wires the flag into the collision key.
+fn disambiguate_ignore_original_published_is_noop() {
+    use citum_schema::reference::InputReference;
+
+    let make_reprint = |id: &str, orig_year: i32, title: &str| -> InputReference {
+        let json = serde_json::json!({
+            "id": id,
+            "type": "book",
+            "title": title,
+            "author": [{ "family": "Freud", "given": "Sigmund" }],
+            "issued": { "date-parts": [[1967]] },
+            "original-date": { "date-parts": [[orig_year]] }
+        });
+        let legacy: csl_legacy::csl_json::Reference =
+            serde_json::from_value(json).expect("reprint json parse");
+        legacy.into()
+    };
+
+    let refs = vec![
+        make_reprint("reprint-a", 1926, "Abriss der Psychoanalyse"),
+        make_reprint("reprint-b", 1926, "Begriffsbestimmung"),
+        make_reprint("reprint-c", 1927, "Zukunft einer Illusion"),
+    ];
+
+    // Identical to the Case A style, plus `ignore: [original-published]`.
+    let style: citum_schema::Style = serde_yaml::from_str(
+        r"
+info:
+  title: APA Reprint Ignore No-op Test
+  id: test-apa-reprint-ignore
+options:
+  processing:
+    disambiguate:
+      year-suffix: true
+      names: false
+      add-givenname: false
+      ignore:
+        - original-published
+citation:
+  multi-cite-delimiter: ' '
+  template:
+    - group:
+      - date: original-published
+        form: year
+      - date: issued
+        form: year
+      delimiter: /
+      wrap:
+        punctuation: parentheses
+",
+    )
+    .expect("reprint style parse");
+
+    let mut bibliography = indexmap::IndexMap::new();
+    for item in &refs {
+        if let Some(id) = item.id() {
+            bibliography.insert(id.to_string(), item.clone());
+        }
+    }
+
+    let processor = Processor::new(style, bibliography);
+    let citation = citum_schema::citation::Citation {
+        items: refs
+            .iter()
+            .filter_map(|r| r.id())
+            .map(|id| citum_schema::citation::CitationItem {
+                id: id.to_string(),
+                ..Default::default()
+            })
+            .collect(),
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        ..Default::default()
+    };
+
+    let result = processor
+        .process_citation(&citation)
+        .expect("Failed to process reprint citation with ignore option");
+
+    // Byte-identical to the Case A baseline: the option changed nothing.
+    assert_eq!(result, "Freud, (1926/1967a), (1926/1967b), (1927/1967c)");
+}
+
 // --- Note Style Position Scenarios ---
 
 fn chicago_notes_immediate_repeat_renders_compact_ibid() {
@@ -1669,6 +1758,16 @@ mod disambiguation {
         );
         super::apa_reprint_issued_year_only_suffix();
     }
+
+    #[test]
+    fn disambiguate_ignore_original_published_is_a_documented_noop() {
+        announce_behavior(
+            "Setting `disambiguate.ignore: [original-published]` must not change output — Citum \
+             already keys the collision gate on the issued year only, so the option is a \
+             documented no-op.",
+        );
+        super::disambiguate_ignore_original_published_is_noop();
+    }
 }
 
 mod contributor_scoping {
@@ -1830,6 +1929,26 @@ mod note_style_positions {
         );
         super::grouped_integral_mode_displays_first_author_only();
     }
+
+    #[test]
+    fn disambiguate_only_title_suppressed_when_first_ref_note_number_is_present() {
+        announce_behavior(
+            "In a note style, a `disambiguate-only` title should be suppressed in a subsequent \
+             citation when a first-reference-note-number is available — the note number \
+             already identifies the work.",
+        );
+        super::disambiguate_only_title_suppressed_in_note_cross_ref_position();
+    }
+
+    #[test]
+    fn disambiguate_only_title_kept_when_template_lacks_first_ref_note_number() {
+        announce_behavior(
+            "In a note style, a `disambiguate-only` title must be retained in a subsequent \
+             citation when the template does not render a first-reference-note-number — \
+             suppressing it would reintroduce ambiguity with no replacement identifier.",
+        );
+        super::disambiguate_only_title_kept_when_template_lacks_note_number();
+    }
 }
 
 mod annotated_html_preview {
@@ -1909,5 +2028,180 @@ fn test_personal_communication_citation_rendering_is_style_driven() {
     assert_eq!(
         output,
         "(J. Oglethorpe, personal communication, January 13, 1733)"
+    );
+}
+
+/// Two same-author, same-year works (disambiguated by title in first cite).
+/// A subsequent citation carries a `first-reference-note-number` — the note
+/// number supersedes the disambiguating short title, which must be suppressed.
+fn disambiguate_only_title_suppressed_in_note_cross_ref_position() {
+    // Note style: subsequent form shows Author + disambiguate_only title.
+    // When a first-reference-note-number is available, the title is suppressed.
+    let style: citum_schema::Style = serde_yaml::from_str(
+        r"
+info:
+  title: Note Disambig-Only Test
+  id: test-note-disambig-only
+options:
+  processing: note
+citation:
+  template:
+    - contributor: author
+      form: short
+    - title: primary
+      form: short
+      disambiguate-only: true
+  delimiter: ', '
+  subsequent:
+    template:
+      - contributor: author
+        form: short
+      - title: primary
+        form: short
+        disambiguate-only: true
+      - number: first-reference-note-number
+        prefix: 'see n. '
+    delimiter: ', '
+",
+    )
+    .expect("style parse");
+
+    // Two books: same author, same year → disambiguation assigns short titles
+    let bib = citum_schema::bib_map![
+        "rome" => make_book("rome", "Smith", "John", 2020, "A History of Rome"),
+        "greece" => make_book("greece", "Smith", "John", 2020, "A History of Greece"),
+    ];
+
+    let processor = Processor::new(style, bib);
+
+    let citations = vec![
+        // Note 1: first cite of Rome
+        citum_schema::citation::Citation {
+            items: vec![citum_schema::citation::CitationItem {
+                id: "rome".to_string(),
+                ..Default::default()
+            }],
+            note_number: Some(1),
+            ..Default::default()
+        },
+        // Note 2: first cite of Greece
+        citum_schema::citation::Citation {
+            items: vec![citum_schema::citation::CitationItem {
+                id: "greece".to_string(),
+                ..Default::default()
+            }],
+            note_number: Some(2),
+            ..Default::default()
+        },
+        // Note 3: subsequent cite of Rome — should NOT show short title
+        citum_schema::citation::Citation {
+            items: vec![citum_schema::citation::CitationItem {
+                id: "rome".to_string(),
+                ..Default::default()
+            }],
+            note_number: Some(3),
+            position: Some(citum_schema::citation::Position::Subsequent),
+            ..Default::default()
+        },
+    ];
+
+    let results = processor
+        .process_citations(&citations)
+        .expect("citations should render");
+
+    assert_eq!(results.len(), 3, "expected three rendered citations");
+    // First cites carry the disambiguating title; the subsequent cite drops it
+    // in favour of the note-number identifier ("see n. 1").
+    assert_eq!(
+        results,
+        vec![
+            "Smith, A History of Rome".to_string(),
+            "Smith, A History of Greece".to_string(),
+            "Smith, see n. 1".to_string(),
+        ]
+    );
+}
+
+/// Regression guard for the over-suppression fix: when the subsequent template
+/// does *not* render `first-reference-note-number`, suppressing the
+/// `disambiguate-only` title would silently reintroduce ambiguity. The title
+/// must therefore be kept. Mirrors the suppression fixture above but with the
+/// `number: first-reference-note-number` component removed.
+fn disambiguate_only_title_kept_when_template_lacks_note_number() {
+    let style: citum_schema::Style = serde_yaml::from_str(
+        r"
+info:
+  title: Note Disambig-Only No-Number Test
+  id: test-note-disambig-only-no-number
+options:
+  processing: note
+citation:
+  template:
+    - contributor: author
+      form: short
+    - title: primary
+      form: short
+      disambiguate-only: true
+  delimiter: ', '
+  subsequent:
+    template:
+      - contributor: author
+        form: short
+      - title: primary
+        form: short
+        disambiguate-only: true
+    delimiter: ', '
+",
+    )
+    .expect("style parse");
+
+    let bib = citum_schema::bib_map![
+        "rome" => make_book("rome", "Smith", "John", 2020, "A History of Rome"),
+        "greece" => make_book("greece", "Smith", "John", 2020, "A History of Greece"),
+    ];
+
+    let processor = Processor::new(style, bib);
+
+    let citations = vec![
+        citum_schema::citation::Citation {
+            items: vec![citum_schema::citation::CitationItem {
+                id: "rome".to_string(),
+                ..Default::default()
+            }],
+            note_number: Some(1),
+            ..Default::default()
+        },
+        citum_schema::citation::Citation {
+            items: vec![citum_schema::citation::CitationItem {
+                id: "greece".to_string(),
+                ..Default::default()
+            }],
+            note_number: Some(2),
+            ..Default::default()
+        },
+        // Note 3: subsequent cite of Rome. Without a note-number identifier the
+        // disambiguating title MUST be retained.
+        citum_schema::citation::Citation {
+            items: vec![citum_schema::citation::CitationItem {
+                id: "rome".to_string(),
+                ..Default::default()
+            }],
+            note_number: Some(3),
+            position: Some(citum_schema::citation::Position::Subsequent),
+            ..Default::default()
+        },
+    ];
+
+    let results = processor
+        .process_citations(&citations)
+        .expect("citations should render");
+
+    assert_eq!(
+        results,
+        vec![
+            "Smith, A History of Rome".to_string(),
+            "Smith, A History of Greece".to_string(),
+            "Smith, A History of Rome".to_string(),
+        ]
     );
 }

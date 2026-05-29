@@ -469,6 +469,13 @@ pub struct ProcHints {
     pub integral_name_state: Option<citum_schema::citation::IntegralNameState>,
     /// Explicit org-abbreviation state for this rendered item.
     pub org_abbreviation_state: Option<citum_schema::citation::IntegralNameState>,
+    /// First note number in which this reference was cited (note styles only).
+    /// Set for subsequent-position citations; `None` otherwise.
+    pub first_reference_note_number: Option<u32>,
+    /// When true, suppress a `disambiguate_only` title component.
+    /// Set when `first_reference_note_number` is present — the note number
+    /// already identifies the work; the disambiguating short title is redundant.
+    pub suppress_disambiguation_title: bool,
 }
 
 /// Context for rendering (citation vs bibliography).

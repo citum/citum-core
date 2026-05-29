@@ -73,6 +73,9 @@ fn resolve_number_value(
         NumberVariable::PrintingNumber => {
             reference.numbering_value(&citum_schema::reference::NumberingType::Printing)
         }
+        NumberVariable::FirstReferenceNoteNumber => {
+            hints.first_reference_note_number.map(|n| n.to_string())
+        }
         NumberVariable::CitationNumber => hints.citation_number.map(|n| {
             if options.context == crate::values::RenderContext::Citation
                 && let Some(sub_label) = &hints.citation_sub_label

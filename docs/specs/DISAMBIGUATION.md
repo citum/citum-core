@@ -1,6 +1,6 @@
 # Disambiguation Specification
 
-**Status:** Draft
+**Status:** Active
 **Date:** 2026-05-29
 **Related:** [`docs/reference/DISAMBIGUATION.md`](../reference/DISAMBIGUATION.md),
 [`docs/specs/MULTILINGUAL.md`](./MULTILINGUAL.md),
@@ -28,7 +28,6 @@ document is the design authority.
 - The `disambiguate.ignore` option for generalized signature exclusion (Case B — implemented)
 
 **Out of scope:**
-- Short-title-for-disambiguation combined with `first-reference-note-number` cross-refs (tracked separately as a follow-up bean)
 - Rendering specifics (see [`docs/reference/DISAMBIGUATION.md`](../reference/DISAMBIGUATION.md))
 
 ## Design
@@ -162,7 +161,7 @@ built; if `original-published` is listed, `csl_issued_date()` is still used
 as an explicit, self-documenting override for migrated CSL styles that shipped
 with a workaround.
 
-#### Sub-case: short-title + `first-reference-note-number` (open question)
+#### Sub-case: short-title + `first-reference-note-number`
 
 A note style may add a short title *only* to resolve a collision, but that same
 title should not appear in `first-reference-note-number` cross-ref citations,
@@ -174,23 +173,16 @@ where the note number is already sufficient identification.
 |---|---|
 | First cite of *Rome* | Smith, *Rome*, 2020, 45. |
 | First cite of *Greece* | Smith, *Greece*, 2020, 67. |
-| Later short cite of *Rome* — desired | Smith, see n. 1. |
-| Later short cite of *Rome* — current gap | Smith, *Rome*, see n. 1. ← title redundant |
+| Later short cite of *Rome* | Smith, see n. 1. |
 
-Neither CSL nor Citum currently have a way to express "show short title when
-disambiguating AND suppress it in cross-ref position." The note number and the
-disambiguation title are produced by independent layers with no joint policy.
+**Implementation:** `ProcHints.suppress_disambiguation_title` is set when a
+subsequent-position citation has a `first_reference_note_number` (populated by
+`normalize_note_context` from the `first_note_by_id` map on `Processor`).
+The renderer in `values/title.rs` checks this flag and suppresses any template
+title component with `disambiguate_only: true`. The first-reference note number
+itself is available as `number: first-reference-note-number` in templates.
 
-**Implementation sketch:** a new `show_short_title` variant on `ProcHints` (set
-by the disambiguator when name/year strategies fail). The renderer emits the
-short title when the hint is set. The cross-ref rendering path
-(`processor/document/note_support.rs`) would need to check position context and
-suppress `show_short_title` hints when a `first-reference-note-number` is
-present — the note number supersedes the title as the identifier. This requires
-`ProcHints` to carry a position-aware suppression flag, or the note-number
-assignment pass to clear `show_short_title` on affected citations after the fact.
-
-Tracked as `csl26-xrc5`; **not** addressed by the `ignore` option above.
+Implemented in csl26-xrc5.
 
 ## Implementation Notes
 
@@ -200,7 +192,7 @@ Tracked as `csl26-xrc5`; **not** addressed by the `ignore` option above.
 - `DisambiguationFlags` (derived from `Disambiguation` struct) is the only
   per-style knob passed into the disambiguator; it must not grow to include
   rendering concerns.
-- 11/11 native disambiguation tests in `crates/citum-engine/tests/citations.rs`
+- 12/12 native disambiguation tests in `crates/citum-engine/tests/citations.rs`
   (the `citations` nextest target) pass as of 2026-05-29.
 
 ## Acceptance Criteria
@@ -217,3 +209,4 @@ Tracked as `csl26-xrc5`; **not** addressed by the `ignore` option above.
 
 - 2026-05-29: Initial version. Consolidates `DISAMBIGUATION_IMPLEMENTATION_PLAN.md` (now deleted)
   and `DISAMBIGUATION_MULTILINGUAL_GROUPING.md` (now deleted); adds Case A and Case B design.
+- 2026-05-29: All acceptance criteria implemented; status set to Active.

@@ -42,6 +42,7 @@ impl Processor {
                 locale: &self.locale,
                 config: &bibliography_shared_config,
                 bibliography_config: Some(bibliography_config),
+                first_note_by_id: None,
             },
             &self.hints,
             &self.citation_numbers,

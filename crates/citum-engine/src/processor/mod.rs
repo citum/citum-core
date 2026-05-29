@@ -117,6 +117,9 @@ pub struct Processor {
     pub inject_ast_indices: bool,
     /// Document-level abbreviation map for post-render substitution.
     pub abbreviation_map: Option<crate::api::AbbreviationMap>,
+    /// First note number in which each reference was cited (note styles only).
+    /// Populated during `normalize_note_context`; keyed by reference ID.
+    pub first_note_by_id: RefCell<HashMap<String, u32>>,
 }
 
 /// Processed output containing citations and bibliography.
