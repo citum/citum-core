@@ -223,7 +223,6 @@ impl Processing {
                     names: true,
                     add_givenname: true,
                     year_suffix: true,
-                    ignore: None,
                 }),
             },
             Processing::Numeric => ProcessingCustom {
@@ -238,7 +237,6 @@ impl Processing {
                     names: true,
                     add_givenname: false,
                     year_suffix: false,
-                    ignore: None,
                 }),
             },
             Processing::Label(_) => ProcessingCustom {
@@ -248,7 +246,6 @@ impl Processing {
                     names: false,
                     add_givenname: false,
                     year_suffix: true,
-                    ignore: None,
                 }),
             },
             Processing::Custom(custom) => custom.clone(),
@@ -401,15 +398,6 @@ pub struct Disambiguation {
     pub add_givenname: bool,
     /// Whether to append year suffixes (a, b, c, ...) for multiple works from the same author-year.
     pub year_suffix: bool,
-    /// Date variables excluded from the collision-key signature.
-    ///
-    /// Citum already keys disambiguation on `issued` only, so listing
-    /// `original-published` here is a documented no-op — useful as an
-    /// explicit, self-documenting override in styles migrated from CSL
-    /// that relied on citeproc-js conflating the rendered string with the
-    /// collision key.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub ignore: Option<Vec<crate::template::DateVariable>>,
 }
 
 impl Default for Disambiguation {
@@ -418,7 +406,6 @@ impl Default for Disambiguation {
             names: true,
             add_givenname: false,
             year_suffix: false,
-            ignore: None,
         }
     }
 }
@@ -691,51 +678,5 @@ mod tests {
         assert_eq!(resolved.template.len(), 1);
         assert_eq!(resolved.template[0].key, SortKey::Title);
         assert!(!resolved.template[0].ascending);
-    }
-
-    /// `disambiguate.ignore: [original-published]` round-trips losslessly through
-    /// every wire format the engine consumes: YAML (style source), JSON (web/FFI
-    /// boundary), and CBOR (compiled-style cache).
-    #[test]
-    fn test_disambiguation_ignore_original_published_roundtrips() {
-        use crate::template::DateVariable;
-
-        let yaml = "year-suffix: true\nnames: false\nadd-givenname: false\nignore:\n  - original-published\n";
-        let parsed: Disambiguation = serde_yaml::from_str(yaml).expect("parse YAML");
-        assert!(parsed.year_suffix);
-        assert_eq!(
-            parsed.ignore.as_deref(),
-            Some([DateVariable::OriginalPublished].as_slice()),
-            "ignore should parse from YAML"
-        );
-
-        // YAML round-trip.
-        let yaml_out = serde_yaml::to_string(&parsed).expect("serialize YAML");
-        let from_yaml: Disambiguation = serde_yaml::from_str(&yaml_out).expect("re-parse YAML");
-        assert_eq!(from_yaml, parsed, "YAML round-trip must preserve ignore");
-
-        // JSON round-trip.
-        let json_out = serde_json::to_string(&parsed).expect("serialize JSON");
-        let from_json: Disambiguation = serde_json::from_str(&json_out).expect("parse JSON");
-        assert_eq!(from_json, parsed, "JSON round-trip must preserve ignore");
-
-        // CBOR round-trip.
-        let mut cbor_out = Vec::new();
-        ciborium::ser::into_writer(&parsed, &mut cbor_out).expect("serialize CBOR");
-        let from_cbor: Disambiguation =
-            ciborium::de::from_reader(cbor_out.as_slice()).expect("parse CBOR");
-        assert_eq!(from_cbor, parsed, "CBOR round-trip must preserve ignore");
-    }
-
-    /// `disambiguate.ignore` defaults to `None` and is omitted from serialization.
-    #[test]
-    fn test_disambiguation_ignore_defaults_none() {
-        let disambig = Disambiguation::default();
-        assert!(disambig.ignore.is_none());
-        let serialized = serde_yaml::to_string(&disambig).expect("serialize");
-        assert!(
-            !serialized.contains("ignore"),
-            "ignore should be omitted: {serialized}"
-        );
     }
 }
