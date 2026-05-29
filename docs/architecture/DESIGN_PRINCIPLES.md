@@ -81,7 +81,7 @@ after-the-fact rendering patch.
   or locale data.
 
 See also: [`MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](../specs/MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md),
-[`DISAMBIGUATION_MULTILINGUAL_GROUPING.md`](./DISAMBIGUATION_MULTILINGUAL_GROUPING.md).
+[`DISAMBIGUATION.md`](../specs/DISAMBIGUATION.md).
 
 ## 4. Styles Are Declarative Contracts
 
