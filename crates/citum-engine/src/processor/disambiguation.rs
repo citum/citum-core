@@ -58,12 +58,15 @@ pub struct Disambiguator<'a> {
     group_sort: Option<&'a GroupSort>,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Default)]
 struct DisambiguationFlags {
     add_names: bool,
     add_givenname: bool,
     year_suffix: bool,
     is_label_mode: bool,
+    /// `original-published` listed in `disambiguate.ignore`; documented no-op —
+    /// Citum already keys on `issued` only.
+    ignore_original_date: bool,
 }
 
 struct GroupDisambiguationContext<'a> {
@@ -166,6 +169,10 @@ impl<'a> Disambiguator<'a> {
         // Always populate title_key when year-suffix disambiguation is active so that
         // sort_group_for_year_suffix can use it as a stable tie-breaker regardless of
         // whether a group_sort is configured.
+        // `ignore_original_date` is checked here to document the no-op:
+        // build_group_key already keys on issued year only, so listing
+        // original-published in `disambiguate.ignore` has no additional effect.
+        let _ = flags.ignore_original_date;
         let needs_title_key = flags.year_suffix;
         let cache = self.build_reference_cache(&refs, needs_title_key);
         let grouped = self.group_references(&refs, &cache);
@@ -207,6 +214,11 @@ impl<'a> Disambiguator<'a> {
                 .processing
                 .as_ref()
                 .is_some_and(|p| matches!(p, citum_schema::options::Processing::Label(_))),
+            ignore_original_date: disamb_config.as_ref().is_some_and(|d| {
+                d.ignore.as_deref().is_some_and(|vars| {
+                    vars.contains(&citum_schema::template::DateVariable::OriginalPublished)
+                })
+            }),
         }
     }
 
@@ -1038,6 +1050,7 @@ mod tests {
                         names: false,
                         add_givenname: false,
                         year_suffix: true,
+                        ignore: None,
                     }),
                     ..Default::default()
                 })),
@@ -1082,6 +1095,7 @@ mod tests {
                     names: false,
                     add_givenname: true,
                     year_suffix: false,
+                    ignore: None,
                 }),
                 ..Default::default()
             })),
@@ -1113,6 +1127,7 @@ mod tests {
                         names: false,
                         add_givenname: true,
                         year_suffix: false,
+                        ignore: None,
                     }),
                     ..Default::default()
                 })),
@@ -1157,6 +1172,7 @@ mod tests {
                     names: false,
                     add_givenname: true,
                     year_suffix: false,
+                    ignore: None,
                 }),
                 ..Default::default()
             })),
@@ -1174,6 +1190,7 @@ mod tests {
                     names: false,
                     add_givenname: false,
                     year_suffix: true,
+                    ignore: None,
                 }),
                 ..Default::default()
             })),
@@ -1207,6 +1224,7 @@ mod tests {
                     names: true,
                     add_givenname: true,
                     year_suffix: true,
+                    ignore: None,
                 }),
                 ..Default::default()
             })),
@@ -1258,6 +1276,7 @@ mod tests {
                     names: true,
                     add_givenname: false,
                     year_suffix: true,
+                    ignore: None,
                 }),
                 ..Default::default()
             })),

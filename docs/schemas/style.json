@@ -2911,6 +2911,16 @@
         "year-suffix": {
           "description": "Whether to append year suffixes (a, b, c, ...) for multiple works from the same author-year.",
           "type": "boolean"
+        },
+        "ignore": {
+          "description": "Date variables excluded from the collision-key signature.\n\nCitum already keys disambiguation on `issued` only, so listing\n`original-published` here is a documented no-op — useful as an\nexplicit, self-documenting override in styles migrated from CSL\nthat relied on citeproc-js conflating the rendered string with the\ncollision key.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/DateVariable"
+          }
         }
       },
       "required": [
