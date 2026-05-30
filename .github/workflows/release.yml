@@ -125,9 +125,11 @@ jobs:
         id: config
         run: |
           # All releases flow through a release PR on release/next.
-          echo "branch=release/next" >> "$GITHUB_OUTPUT"
-          echo "create_pr=true" >> "$GITHUB_OUTPUT"
-          echo "push_tags=false" >> "$GITHUB_OUTPUT"
+          {
+            echo "branch=release/next"
+            echo "create_pr=true"
+            echo "push_tags=false"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Create release branch
         if: steps.config.outputs.create_pr == 'true'
@@ -157,7 +159,7 @@ jobs:
           print('.'.join(v))
           ")
           RANGE="${LAST_TAG:+${LAST_TAG}..}HEAD"
-          git cliff $RANGE --tag "v${NEW_VERSION}" --prepend CHANGELOG.md
+          git cliff "$RANGE" --tag "v${NEW_VERSION}" --prepend CHANGELOG.md
           git add CHANGELOG.md
           if ! git diff --cached --quiet; then
             git commit \
