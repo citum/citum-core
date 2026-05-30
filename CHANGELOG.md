@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.60.0] - 2026-05-30
+
+### Bug Fixes
+
+**engine**
+
+- Convert body markup for typst/latex ([`f278031`](https://github.com/citum/citum-core/commit/f2780312a20bddc92732f85b662709e281418a23))
+
+- Fix inline code fences and escaping ([`d095c8f`](https://github.com/citum/citum-core/commit/d095c8f6d3d8722c6c54b1e5b49841c45af61bff))
+
+- Convert markdown body markup to html ([`31b0503`](https://github.com/citum/citum-core/commit/31b05033476e14ca30459a603aa43c1b13b03954))
+
+
 ## [0.59.0] - 2026-05-29
 
 ### Bug Fixes
