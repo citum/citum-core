@@ -176,7 +176,8 @@ impl OutputFormat for Latex {
     }
 
     fn inline_code(&self, content: Self::Output) -> Self::Output {
-        format!("\\texttt{{{content}}}")
+        // \texttt is not verbatim; escape LaTeX specials in the raw code content.
+        format!("\\texttt{{{}}}", self.text(&content))
     }
 
     fn strikeout(&self, content: Self::Output) -> Self::Output {

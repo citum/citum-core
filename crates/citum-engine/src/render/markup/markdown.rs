@@ -100,16 +100,15 @@ pub(crate) fn render_markdown_body<F: OutputFormat<Output = String>>(
                 }
             },
             Event::Text(text) => {
-                if renderer.in_code_block() {
+                if renderer.in_raw_context() {
                     renderer.push_raw_text(text.to_string());
                 } else {
                     renderer.push_text(text.to_string());
                 }
             }
             Event::Code(code) => {
-                // Inline code: render via the format's inline_code method.
-                let escaped = fmt.text(&code);
-                let output = fmt.inline_code(escaped);
+                // Pass raw code content; inline_code impls handle escaping.
+                let output = fmt.inline_code(code.to_string());
                 renderer.push_output(output);
             }
             Event::SoftBreak => {

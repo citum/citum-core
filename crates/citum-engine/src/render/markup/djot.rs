@@ -62,7 +62,7 @@ pub(crate) fn render_djot_body<F: OutputFormat<Output = String>>(body: &str, fmt
                 renderer.end_container();
             }
             jotdown::Event::Str(s) => {
-                if renderer.in_code_block() {
+                if renderer.in_raw_context() {
                     renderer.push_raw_text(s.to_string());
                 } else {
                     renderer.push_text(s.to_string());
