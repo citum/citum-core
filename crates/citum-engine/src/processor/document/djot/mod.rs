@@ -95,6 +95,15 @@ impl CitationParser for DjotParser {
     fn finalize_html_output(&self, rendered: &str) -> String {
         djot_to_html(rendered)
     }
+
+    /// Convert Djot markup to the target terminal format (Typst, LaTeX) after
+    /// citation placeholder tokens have been spliced in.
+    fn render_body_markup<F>(&self, body: &str, fmt: &F) -> String
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        crate::render::markup::render_djot_body(body, fmt)
+    }
 }
 
 /// Determine the citation placement within the document.

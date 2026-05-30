@@ -142,7 +142,7 @@ impl Processor {
         let parsed_staged = parser.parse_document(&staged, &self.locale);
         let mut rendered = self.render_document_body::<F>(&staged, parsed_staged, format);
         self.replace_document_bibliography_blocks::<F>(&mut rendered, &blocks, format);
-        self.finalize_document_output(parser, format, rendered)
+        self.finalize_document_output::<P, F>(parser, format, rendered)
     }
 
     /// Orchestrate document processing with the default trailing bibliography.
@@ -183,13 +183,15 @@ impl Processor {
         let mut rendered = self.render_document_body::<F>(body, parsed, format);
         let bibliography = render_bibliography(self);
         append_document_bibliography(&mut rendered, format, bibliography);
-        self.finalize_document_output(parser, format, rendered)
+        self.finalize_document_output::<P, F>(parser, format, rendered)
     }
 
     /// Render the citation-annotated document body.
     ///
     /// Governs the choice between note-style and inline-style processing,
-    /// and handles HTML placeholder registration for format finalization.
+    /// and handles placeholder registration for format finalization.
+    /// HTML and terminal formats (Typst, LaTeX) both use the placeholder path
+    /// so that body markup can be converted after citations are spliced in.
     fn render_document_body<F>(
         &self,
         content: &str,
@@ -209,6 +211,35 @@ impl Processor {
             return RenderedDocumentBody {
                 content,
                 placeholders: Some(placeholders),
+                trailing: None,
+            };
+        }
+
+        // Terminal formats (Typst, LaTeX) need the same placeholder flow so
+        // the body markup can be converted to the target format after citations
+        // are replaced with NUL-token placeholders.
+        if matches!(format, DocumentFormat::Typst | DocumentFormat::Latex) {
+            let mut placeholders = HtmlPlaceholderRegistry::default();
+            // Note styles emit raw footnote syntax that the body markup
+            // converter doesn't understand; fall back to the passthrough path
+            // and let the caller handle conversion separately if needed.
+            let content = if self.is_note_style() {
+                self.process_note_document::<F>(content, parsed)
+            } else {
+                self.process_inline_document_with_placeholders::<F>(
+                    content,
+                    parsed,
+                    &mut placeholders,
+                )
+            };
+            return RenderedDocumentBody {
+                content,
+                placeholders: if self.is_note_style() {
+                    None
+                } else {
+                    Some(placeholders)
+                },
+                trailing: None,
             };
         }
 
@@ -221,7 +252,44 @@ impl Processor {
         RenderedDocumentBody {
             content,
             placeholders: None,
+            trailing: None,
         }
+    }
+
+    /// Splice `F`-rendered citations into document markup using NUL placeholders.
+    ///
+    /// Mirrors `process_inline_document_html` but renders citations using the
+    /// generic format `F` (e.g. Typst or LaTeX) instead of HTML. The
+    /// surrounding body markup still contains the source syntax at this point;
+    /// `finalize_document_output` converts it after placeholder substitution.
+    #[allow(
+        clippy::string_slice,
+        reason = "parser-guaranteed boundaries and indices"
+    )]
+    fn process_inline_document_with_placeholders<F>(
+        &self,
+        content: &str,
+        parsed: ParsedDocument,
+        placeholders: &mut HtmlPlaceholderRegistry,
+    ) -> String
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let mut result = String::new();
+        let mut last_idx = 0;
+        let normalized = self.normalize_integral_name_citations(&parsed);
+
+        for (parsed, citation) in parsed.citations.iter().zip(normalized) {
+            result.push_str(&content[last_idx..parsed.start]);
+            match self.process_citation_with_format::<F>(&citation) {
+                Ok(rendered) => result.push_str(&placeholders.push_inline(rendered)),
+                Err(_) => result.push_str(&content[parsed.start..parsed.end]),
+            }
+            last_idx = parsed.end;
+        }
+
+        result.push_str(&content[last_idx..]);
+        result
     }
 
     /// Splice rendered citations into document markup for non-note styles.
@@ -300,8 +368,14 @@ impl Processor {
         }
     }
 
-    /// Perform final document rewrites and resolve HTML placeholders.
-    fn finalize_document_output<P>(
+    /// Perform final document rewrites and resolve placeholders.
+    ///
+    /// For HTML: converts body markup via `finalize_html_output` then
+    /// substitutes citation placeholder tokens.
+    /// For Typst/LaTeX: converts body markup via `render_body_markup::<F>`
+    /// then substitutes citation placeholder tokens.
+    /// For other formats: returns the spliced content as-is.
+    fn finalize_document_output<P, F>(
         &self,
         parser: &P,
         format: DocumentFormat,
@@ -309,18 +383,37 @@ impl Processor {
     ) -> String
     where
         P: CitationParser,
+        F: crate::render::format::OutputFormat<Output = String>,
     {
-        let result = rewrite_document_markup_for_typst(rendered.content, format);
-        match rendered.placeholders {
-            Some(placeholders) => placeholders.apply(parser.finalize_html_output(&result)),
-            None => match format {
-                DocumentFormat::Html => parser.finalize_html_output(&result),
-                DocumentFormat::Djot
-                | DocumentFormat::Markdown
-                | DocumentFormat::Plain
-                | DocumentFormat::Latex
-                | DocumentFormat::Typst => result,
-            },
+        let mut result = if let Some(placeholders) = rendered.placeholders {
+            let fmt = F::default();
+            let converted = match format {
+                DocumentFormat::Html => parser.finalize_html_output(&rendered.content),
+                DocumentFormat::Typst | DocumentFormat::Latex => {
+                    parser.render_body_markup(&rendered.content, &fmt)
+                }
+                _ => rendered.content,
+            };
+            placeholders.apply(converted)
+        } else {
+            // Passthrough path (Plain, Djot, Markdown, note-style Typst/LaTeX).
+            // Keep the heading-rewrite for Typst in case headings came from
+            // bibliography group labels rather than body markup.
+            let content = rewrite_document_markup_for_typst(rendered.content, format);
+            match format {
+                DocumentFormat::Html => parser.finalize_html_output(&content),
+                _ => content,
+            }
+        };
+        // Append any trailing content (e.g. Typst/LaTeX bibliography) that was
+        // deferred so it would not pass through the body markup converter.
+        // Trim the body's trailing whitespace first: the markup renderer may
+        // have added paragraph-separator newlines that would otherwise double
+        // the leading newlines of the bibliography heading.
+        if let Some(tail) = rendered.trailing {
+            let trimmed = result.trim_end_matches('\n');
+            result = format!("{trimmed}{tail}");
         }
+        result
     }
 }

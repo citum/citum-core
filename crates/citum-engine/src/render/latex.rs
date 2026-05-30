@@ -120,6 +120,76 @@ impl OutputFormat for Latex {
         format!(r"\href{{{url}}}{{{content}}}")
     }
 
+    // ── Block-level body markup methods ────────────────────────────────────
+
+    fn paragraph(&self, content: Self::Output) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!("{content}\n\n")
+    }
+
+    fn block_quote(&self, content: Self::Output) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        let trimmed = content.trim_end();
+        format!("\\begin{{quote}}\n{trimmed}\n\\end{{quote}}\n\n")
+    }
+
+    fn bullet_list(&self, items: Vec<Self::Output>) -> Self::Output {
+        if items.is_empty() {
+            return String::new();
+        }
+        let body = items
+            .iter()
+            .map(|item| format!("  \\item {}", item.trim()))
+            .collect::<Vec<_>>()
+            .join("\n");
+        format!("\\begin{{itemize}}\n{body}\n\\end{{itemize}}\n\n")
+    }
+
+    fn ordered_list(&self, items: Vec<Self::Output>) -> Self::Output {
+        if items.is_empty() {
+            return String::new();
+        }
+        let body = items
+            .iter()
+            .map(|item| format!("  \\item {}", item.trim()))
+            .collect::<Vec<_>>()
+            .join("\n");
+        format!("\\begin{{enumerate}}\n{body}\n\\end{{enumerate}}\n\n")
+    }
+
+    fn heading(&self, level: u8, content: Self::Output) -> Self::Output {
+        let cmd = match level {
+            1 => "\\section",
+            2 => "\\subsection",
+            3 => "\\subsubsection",
+            _ => "\\paragraph",
+        };
+        format!("{cmd}{{{content}}}\n\n")
+    }
+
+    fn code_block(&self, _lang: Option<&str>, content: Self::Output) -> Self::Output {
+        format!("\\begin{{verbatim}}\n{content}\\end{{verbatim}}\n\n")
+    }
+
+    fn inline_code(&self, content: Self::Output) -> Self::Output {
+        format!("\\texttt{{{content}}}")
+    }
+
+    fn strikeout(&self, content: Self::Output) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!("\\sout{{{content}}}")
+    }
+
+    fn hard_break(&self) -> Self::Output {
+        "\\\\\n".to_string()
+    }
+
     fn bibliography(&self, entries: Vec<Self::Output>) -> Self::Output {
         entries.join("\\par\\vspace{0.5em}")
     }

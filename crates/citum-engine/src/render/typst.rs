@@ -153,6 +153,71 @@ impl OutputFormat for Typst {
         normalized
     }
 
+    // ── Block-level body markup methods ────────────────────────────────────
+
+    fn paragraph(&self, content: Self::Output) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!("{content}\n\n")
+    }
+
+    fn block_quote(&self, content: Self::Output) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        let trimmed = content.trim_end();
+        format!("#quote(block: true)[\n{trimmed}\n]\n\n")
+    }
+
+    fn bullet_list(&self, items: Vec<Self::Output>) -> Self::Output {
+        if items.is_empty() {
+            return String::new();
+        }
+        let body = items
+            .iter()
+            .map(|item| format!("- {}", item.trim()))
+            .collect::<Vec<_>>()
+            .join("\n");
+        format!("{body}\n\n")
+    }
+
+    fn ordered_list(&self, items: Vec<Self::Output>) -> Self::Output {
+        if items.is_empty() {
+            return String::new();
+        }
+        let body = items
+            .iter()
+            .map(|item| format!("+ {}", item.trim()))
+            .collect::<Vec<_>>()
+            .join("\n");
+        format!("{body}\n\n")
+    }
+
+    fn heading(&self, level: u8, content: Self::Output) -> Self::Output {
+        let marks = "=".repeat(level.max(1) as usize);
+        format!("{marks} {content}\n\n")
+    }
+
+    fn code_block(&self, _lang: Option<&str>, content: Self::Output) -> Self::Output {
+        format!("```\n{content}```\n\n")
+    }
+
+    fn inline_code(&self, content: Self::Output) -> Self::Output {
+        format!("`{content}`")
+    }
+
+    fn strikeout(&self, content: Self::Output) -> Self::Output {
+        if content.is_empty() {
+            return content;
+        }
+        format!("#strike[{content}]")
+    }
+
+    fn hard_break(&self) -> Self::Output {
+        "\\\n".to_string()
+    }
+
     fn bibliography(&self, entries: Vec<Self::Output>) -> Self::Output {
         self.join(entries, "\n\n")
     }

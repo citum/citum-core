@@ -426,6 +426,22 @@ pub trait CitationParser {
         rendered.to_owned()
     }
 
+    /// Convert raw document body markup (with NUL citation placeholder tokens)
+    /// to the target output format.
+    ///
+    /// Called after citations have been replaced with NUL placeholder tokens.
+    /// The default implementation returns the body unchanged (passthrough),
+    /// which is correct for formats that have a downstream markup processor
+    /// (HTML via `finalize_html_output`) or that emit verbatim markup (Plain,
+    /// Djot, Markdown). Format-specific adapters that perform markup-to-target
+    /// conversion for Typst/LaTeX must override this method.
+    fn render_body_markup<F>(&self, body: &str, _fmt: &F) -> String
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        body.to_owned()
+    }
+
     /// Find and extract citations from a document string.
     ///
     /// Returns a list of `(start_index, end_index, citation_model)` tuples.

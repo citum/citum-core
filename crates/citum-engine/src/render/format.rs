@@ -110,6 +110,61 @@ pub trait OutputFormat: Default + Clone {
     /// reader-supplied notes.
     fn annotation(&self, content: Self::Output) -> Self::Output;
 
+    // ── Block-level methods (used by the body markup renderer) ─────────────
+    // Defaults produce plain passthrough so existing format impls need not change.
+
+    /// Render a paragraph block.
+    fn paragraph(&self, content: Self::Output) -> Self::Output {
+        content
+    }
+
+    /// Render a block quotation.
+    fn block_quote(&self, content: Self::Output) -> Self::Output {
+        content
+    }
+
+    /// Render an unordered (bullet) list from pre-rendered item strings.
+    fn bullet_list(&self, items: Vec<Self::Output>) -> Self::Output {
+        self.join(items, "\n")
+    }
+
+    /// Render an ordered (numbered) list from pre-rendered item strings.
+    fn ordered_list(&self, items: Vec<Self::Output>) -> Self::Output {
+        self.join(items, "\n")
+    }
+
+    /// Render a list item.
+    fn list_item(&self, content: Self::Output) -> Self::Output {
+        content
+    }
+
+    /// Render a heading at the given level (1 = top-level).
+    fn heading(&self, _level: u8, content: Self::Output) -> Self::Output {
+        content
+    }
+
+    /// Render a fenced or indented code block with an optional language hint.
+    ///
+    /// `content` is the raw (unescaped) code text.
+    fn code_block(&self, _lang: Option<&str>, content: Self::Output) -> Self::Output {
+        content
+    }
+
+    /// Render inline code.
+    fn inline_code(&self, content: Self::Output) -> Self::Output {
+        content
+    }
+
+    /// Render strikethrough text.
+    fn strikeout(&self, content: Self::Output) -> Self::Output {
+        content
+    }
+
+    /// Render a hard line break.
+    fn hard_break(&self) -> Self::Output {
+        self.text(" ")
+    }
+
     /// Apply a semantic identifier plus optional attributes to the content.
     ///
     /// Formats that do not support extra attributes can ignore them and reuse
