@@ -61,7 +61,7 @@ jobs:
 
       - name: Configure environment
         run: |
-          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> "$GITHUB_ENV"
           sccache --start-server
 
       - name: Install script dependencies
