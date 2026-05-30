@@ -39,6 +39,23 @@ impl Typst {
         }
         escaped
     }
+
+    /// Return the length of the longest consecutive backtick run in `s`.
+    fn longest_backtick_run(s: &str) -> usize {
+        let mut max = 0usize;
+        let mut cur = 0usize;
+        for ch in s.chars() {
+            if ch == '`' {
+                cur += 1;
+                if cur > max {
+                    max = cur;
+                }
+            } else {
+                cur = 0;
+            }
+        }
+        max
+    }
 }
 
 impl OutputFormat for Typst {
@@ -199,12 +216,15 @@ impl OutputFormat for Typst {
         format!("{marks} {content}\n\n")
     }
 
-    fn code_block(&self, _lang: Option<&str>, content: Self::Output) -> Self::Output {
-        format!("```\n{content}```\n\n")
+    fn code_block(&self, lang: Option<&str>, content: Self::Output) -> Self::Output {
+        let fence = "`".repeat(Self::longest_backtick_run(&content).max(2) + 1);
+        let lang_tag = lang.unwrap_or("");
+        format!("{fence}{lang_tag}\n{content}{fence}\n\n")
     }
 
     fn inline_code(&self, content: Self::Output) -> Self::Output {
-        format!("`{content}`")
+        let ticks = "`".repeat(Self::longest_backtick_run(&content) + 1);
+        format!("{ticks}{content}{ticks}")
     }
 
     fn strikeout(&self, content: Self::Output) -> Self::Output {

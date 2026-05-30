@@ -171,10 +171,13 @@ impl<'a, F: OutputFormat<Output = String>> MarkupRenderer<'a, F> {
             .unwrap_or_default()
     }
 
-    /// Return whether the current (innermost) frame is a code block.
-    pub(crate) fn in_code_block(&self) -> bool {
+    /// Return whether the current (innermost) frame is a raw context.
+    ///
+    /// Both `CodeBlock` and `InlineCode` hold literal content that must not
+    /// flow through the format's text-escaping path.
+    pub(crate) fn in_raw_context(&self) -> bool {
         self.stack
             .last()
-            .is_some_and(|f| matches!(f.kind, FrameKind::CodeBlock { .. }))
+            .is_some_and(|f| matches!(f.kind, FrameKind::CodeBlock { .. } | FrameKind::InlineCode))
     }
 }
