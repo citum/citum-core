@@ -55,6 +55,11 @@ impl HtmlPlaceholderRegistry {
 pub(super) struct RenderedDocumentBody {
     pub(super) content: String,
     pub(super) placeholders: Option<HtmlPlaceholderRegistry>,
+    /// Raw content to append after markup conversion and placeholder substitution.
+    ///
+    /// Used by terminal formats (Typst, LaTeX) to attach already-rendered
+    /// bibliography text that must not go through the body markup converter.
+    pub(super) trailing: Option<String>,
 }
 
 pub(super) fn stage_document_bibliography_blocks(
@@ -84,9 +89,20 @@ pub(super) fn append_document_bibliography(
         return;
     }
 
-    rendered
-        .content
-        .push_str(document_bibliography_heading(format));
+    let heading = document_bibliography_heading(format);
+
+    // For terminal formats (Typst, LaTeX) that use the placeholder path, the
+    // bibliography is already rendered in the target format and must NOT go
+    // through the body markup converter. Store it in `trailing` so it is
+    // appended after markup conversion in `finalize_document_output`.
+    if rendered.placeholders.is_some()
+        && matches!(format, DocumentFormat::Typst | DocumentFormat::Latex)
+    {
+        rendered.trailing = Some(format!("{heading}{bibliography}"));
+        return;
+    }
+
+    rendered.content.push_str(heading);
     if let Some(placeholders) = rendered.placeholders.as_mut() {
         rendered
             .content

@@ -25,6 +25,7 @@ citum-edtf = { workspace = true, features = ["serde"] }
 indexmap = { version = "2.2.6", features = ["serde"] }
 winnow = "1.0"
 jotdown = "0.10"
+pulldown-cmark = "0.13"
 orgize = "0.9"
 icu_collator = { version = "2.2.0", features = ["compiled_data"], optional = true }
 icu_locale = { version = "2.2.0", optional = true }

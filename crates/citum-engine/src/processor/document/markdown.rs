@@ -26,6 +26,15 @@ impl Default for MarkdownParser {
 }
 
 impl CitationParser for MarkdownParser {
+    /// Convert Markdown body markup to the target terminal format (Typst, LaTeX)
+    /// after citation placeholder tokens have been spliced in.
+    fn render_body_markup<F>(&self, body: &str, fmt: &F) -> String
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        crate::render::markup::render_markdown_body(body, fmt)
+    }
+
     fn parse_document(&self, content: &str, locale: &Locale) -> ParsedDocument {
         let (frontmatter_result, body) = parse_frontmatter(content);
         let body_start = content.len() - body.len();

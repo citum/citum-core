@@ -1290,3 +1290,144 @@ mod grouped_bibliography {
         super::given_an_english_locale_variant_when_group_headings_are_localized_then_the_language_tag_fallback_is_used();
     }
 }
+
+// --- Body markup conversion for terminal formats (#824) ---
+
+fn given_markdown_block_quote_when_rendered_as_typst_then_quote_block_is_emitted() {
+    let processor = example_document_processor("styles/embedded/apa-7th.yaml");
+    let parser = MarkdownParser;
+    let document = concat!(
+        "> This is a block quote with *italic* text,\n",
+        "> and **strong** text. So is __this__.\n",
+    );
+
+    let output = processor.process_document::<_, citum_engine::render::typst::Typst>(
+        document,
+        &parser,
+        DocumentFormat::Typst,
+    );
+
+    assert!(
+        output.contains("#quote(block: true)"),
+        "markdown block quote should produce Typst #quote(block: true), got: {output}"
+    );
+    assert!(
+        output.contains("#emph[italic]"),
+        "markdown *italic* should produce Typst #emph[…], got: {output}"
+    );
+    assert!(
+        !output.starts_with('>'),
+        "raw markdown block-quote syntax should not appear in Typst output, got: {output}"
+    );
+}
+
+fn given_djot_block_quote_when_rendered_as_typst_then_quote_block_is_emitted() {
+    let processor = example_document_processor("styles/embedded/apa-7th.yaml");
+    let parser = DjotParser;
+    let document = concat!(
+        "> This is a block quote with _italic_ text,\n",
+        "> and *bold*.\n",
+    );
+
+    let output = processor.process_document::<_, citum_engine::render::typst::Typst>(
+        document,
+        &parser,
+        DocumentFormat::Typst,
+    );
+
+    assert!(
+        output.contains("#quote(block: true)"),
+        "djot block quote should produce Typst #quote(block: true), got: {output}"
+    );
+    assert!(
+        output.contains("#emph[italic]"),
+        "djot _italic_ should produce Typst #emph[…], got: {output}"
+    );
+}
+
+fn given_markdown_block_quote_when_rendered_as_latex_then_quote_environment_is_emitted() {
+    let processor = example_document_processor("styles/embedded/apa-7th.yaml");
+    let parser = MarkdownParser;
+    let document = concat!(
+        "> This is a block quote with *italic* text\n",
+        "> and **strong** text.\n",
+    );
+
+    let output = processor.process_document::<_, citum_engine::render::latex::Latex>(
+        document,
+        &parser,
+        DocumentFormat::Latex,
+    );
+
+    assert!(
+        output.contains("\\begin{quote}"),
+        "markdown block quote should produce LaTeX \\begin{{quote}}, got: {output}"
+    );
+    assert!(
+        output.contains("\\emph{italic}"),
+        "markdown *italic* should produce LaTeX \\emph{{}}, got: {output}"
+    );
+    assert!(
+        output.contains("\\textbf{strong}"),
+        "markdown **strong** should produce LaTeX \\textbf{{}}, got: {output}"
+    );
+}
+
+fn given_markdown_citation_inside_prose_when_rendered_as_typst_then_citation_and_markup_both_appear()
+ {
+    let processor = example_document_processor("styles/embedded/apa-7th.yaml");
+    let parser = MarkdownParser;
+    let document = "A paragraph with *emphasis* and a citation [@kuhn1962].";
+
+    let output = processor.process_document::<_, citum_engine::render::typst::Typst>(
+        document,
+        &parser,
+        DocumentFormat::Typst,
+    );
+
+    assert!(
+        output.contains("#emph[emphasis]"),
+        "markdown *emphasis* in paragraph should produce Typst #emph[…], got: {output}"
+    );
+    assert!(
+        output.contains("Kuhn") && output.contains("1962"),
+        "citation should render in Typst output, got: {output}"
+    );
+}
+
+mod body_markup_terminal_formats {
+    use super::announce_behavior;
+
+    #[test]
+    fn markdown_block_quote_renders_as_typst_quote_block() {
+        announce_behavior(
+            "A Markdown block quote rendered to Typst should produce #quote(block: true) with inline emphasis correctly mapped — not raw '>' syntax (fixes #824).",
+        );
+        super::given_markdown_block_quote_when_rendered_as_typst_then_quote_block_is_emitted();
+    }
+
+    #[test]
+    fn djot_block_quote_renders_as_typst_quote_block() {
+        announce_behavior(
+            "A Djot block quote rendered to Typst should produce #quote(block: true) with correctly mapped inline markup.",
+        );
+        super::given_djot_block_quote_when_rendered_as_typst_then_quote_block_is_emitted();
+    }
+
+    #[test]
+    fn markdown_block_quote_renders_as_latex_quote_environment() {
+        announce_behavior(
+            "A Markdown block quote rendered to LaTeX should produce a \\begin{quote} environment with \\emph and \\textbf for inline markup.",
+        );
+        super::given_markdown_block_quote_when_rendered_as_latex_then_quote_environment_is_emitted(
+        );
+    }
+
+    #[test]
+    fn markdown_citation_in_prose_renders_alongside_converted_markup() {
+        announce_behavior(
+            "A Markdown paragraph with a citation and inline emphasis rendered to Typst should produce both a converted citation and #emph[…] markup.",
+        );
+        super::given_markdown_citation_inside_prose_when_rendered_as_typst_then_citation_and_markup_both_appear();
+    }
+}
