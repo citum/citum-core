@@ -3,6 +3,10 @@ name: Compat Report
 on:
   push:
     branches: ["main"]
+  pull_request:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/compat-report.yml"
   schedule:
     - cron: "0 6 * * *"
   workflow_dispatch:
@@ -12,11 +16,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  report:
-    name: Generate and Deploy Docs
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
+    name: Build Docs
     runs-on: ubuntu-latest
     env:
       CARGO_TERM_COLOR: always
@@ -25,8 +26,6 @@ jobs:
       SCCACHE_DIR: /home/runner/.cache/sccache
     permissions:
       contents: read
-      pages: write
-      id-token: write
 
     steps:
       - name: Checkout
@@ -84,17 +83,27 @@ jobs:
           ./scripts/migration-test-report.sh
           cp target/migration-behavior-report.html docs/migration-behavior-report.html
 
-      - name: Setup Pages
-        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b  # v5
-
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa  # v3
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@7b1f4a764d45c48632c6b24a0339c27f5614fb0b  # v4
         with:
           path: ./docs
 
+      - name: Display sccache stats
+        run: sccache --show-stats
+
+  deploy:
+    name: Deploy to GitHub Pages
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e  # v4
-
-      - name: Display sccache stats
-        run: sccache --show-stats
