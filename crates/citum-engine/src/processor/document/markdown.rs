@@ -26,6 +26,28 @@ impl Default for MarkdownParser {
 }
 
 impl CitationParser for MarkdownParser {
+    /// Convert Markdown body markup to HTML after citation splicing.
+    ///
+    /// NUL placeholder tokens (`\x00CITUMHTML…TOKEN…\x00`) are temporarily
+    /// re-encoded as HTML comments before the Markdown parser runs, because
+    /// pulldown-cmark normalises `\x00` to U+FFFD. The comments survive the
+    /// conversion verbatim and are swapped back so that the caller's
+    /// `HtmlPlaceholderRegistry::apply()` can still locate them.
+    fn finalize_html_output(&self, rendered: &str) -> String {
+        use pulldown_cmark::{Options, html};
+
+        let (remapped, token_map) = remap_nul_tokens(rendered);
+        let parser = pulldown_cmark::Parser::new_ext(&remapped, Options::ENABLE_STRIKETHROUGH);
+        let mut out = String::new();
+        html::push_html(&mut out, parser);
+
+        // Restore original NUL tokens so HtmlPlaceholderRegistry::apply() works.
+        for (comment, original) in token_map {
+            out = out.replace(&comment, &original);
+        }
+        out
+    }
+
     /// Convert Markdown body markup to the target terminal format (Typst, LaTeX)
     /// after citation placeholder tokens have been spliced in.
     fn render_body_markup<F>(&self, body: &str, fmt: &F) -> String
@@ -304,6 +326,42 @@ fn is_valid_textual_start(content: &str, start: usize) -> bool {
     !matches!(prev, Some(ch) if ch.is_alphanumeric() || matches!(ch, '_' | '-' | '.' | '/' | '@'))
 }
 
+/// Re-encode NUL placeholder tokens as HTML comments and return a mapping.
+///
+/// pulldown-cmark normalises `\x00` to U+FFFD, which would corrupt the
+/// `HtmlPlaceholderRegistry` tokens. Replacing them with HTML comments
+/// (`<!--CITUM-TOKEN-N-->`) before parsing lets them pass through as
+/// `InlineHtml` or `Html` events and survive the conversion intact.
+/// The returned pairs map each comment back to the original token so the
+/// caller can restore them after `push_html` runs.
+fn remap_nul_tokens(s: &str) -> (String, Vec<(String, String)>) {
+    let mut result = String::with_capacity(s.len());
+    let mut map: Vec<(String, String)> = Vec::new();
+    let mut outside = true;
+    let mut token_body = String::new();
+    for ch in s.chars() {
+        if ch == '\x00' {
+            if outside {
+                // Opening NUL: start accumulating the token body.
+                token_body.clear();
+            } else {
+                // Closing NUL: emit the comment placeholder.
+                let idx = map.len();
+                let comment = format!("<!--CITUM-TOKEN-{idx}-->");
+                let original = format!("\x00{token_body}\x00");
+                result.push_str(&comment);
+                map.push((comment, original));
+            }
+            outside = !outside;
+        } else if outside {
+            result.push(ch);
+        } else {
+            token_body.push(ch);
+        }
+    }
+    (result, map)
+}
+
 #[cfg(test)]
 #[allow(
     clippy::unwrap_used,
@@ -413,12 +471,46 @@ mod tests {
     }
 
     #[test]
-    fn test_markdown_finalize_html_output_is_passthrough() {
-        // MarkdownParser does not perform any markup-to-HTML conversion; the
-        // caller is responsible for rendering CommonMark. The trait default
-        // returns the input unchanged.
+    fn given_markdown_body_when_finalize_html_output_then_markup_is_converted_to_html() {
         let parser = MarkdownParser;
-        let input = "**bold** and _em_ and [@key].";
-        assert_eq!(parser.finalize_html_output(input), input);
+        let input = "**bold** and _em_ text.";
+        let output = parser.finalize_html_output(input);
+        assert!(
+            output.contains("<strong>bold</strong>"),
+            "expected <strong>bold</strong> in: {output}"
+        );
+        assert!(
+            output.contains("<em>em</em>"),
+            "expected <em>em</em> in: {output}"
+        );
+    }
+
+    #[test]
+    fn given_markdown_with_nul_tokens_when_finalize_html_output_then_tokens_survive_conversion() {
+        let parser = MarkdownParser;
+        // NUL tokens stand in for spliced citation HTML; they must survive the
+        // pulldown-cmark pass so HtmlPlaceholderRegistry::apply() can substitute them.
+        let token = "\x00CITUMHTMLINLINETOKEN0\x00";
+        let input = format!("Some prose with {token} inline.");
+        let output = parser.finalize_html_output(&input);
+        assert!(
+            output.contains(token),
+            "NUL token must survive pulldown-cmark conversion; output: {output}"
+        );
+    }
+
+    #[test]
+    fn given_markdown_blockquote_when_finalize_html_output_then_blockquote_element_emitted() {
+        let parser = MarkdownParser;
+        let input = "> block quote with *italic* text";
+        let output = parser.finalize_html_output(input);
+        assert!(
+            output.contains("<blockquote>"),
+            "expected <blockquote> in: {output}"
+        );
+        assert!(
+            output.contains("<em>italic</em>"),
+            "expected <em>italic</em> in: {output}"
+        );
     }
 }
