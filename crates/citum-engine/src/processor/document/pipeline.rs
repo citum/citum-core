@@ -35,6 +35,8 @@ impl Processor {
         P: CitationParser,
         F: crate::render::format::OutputFormat<Output = String>,
     {
+        let content = super::grid_table::flatten_grid_tables(content);
+        let content = content.as_ref();
         let mut parsed = parser.parse_document(content, &self.locale);
 
         if let Some(err) = &parsed.frontmatter_error {

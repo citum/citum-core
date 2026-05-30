@@ -8,6 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 pub mod djot;
 pub mod markdown;
 
+mod grid_table;
 mod integral_names;
 mod note_support;
 mod notes;

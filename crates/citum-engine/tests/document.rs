@@ -1431,3 +1431,199 @@ mod body_markup_terminal_formats {
         super::given_markdown_citation_inside_prose_when_rendered_as_typst_then_citation_and_markup_both_appear();
     }
 }
+
+// --- Pandoc grid-table flattening (#845) ---
+//
+// Grid tables (+---------+----------+) are not understood by jotdown or
+// pulldown-cmark.  The pre-parser flattens them into sequential block markup
+// so that block quotes, emphasis, and other structure survive into all output
+// formats without producing invalid syntax.
+
+fn grid_table_with_block_quotes() -> &'static str {
+    concat!(
+        "+----------------------+---------------------+\n",
+        "| > *italic* left cell | > **bold** right    |\n",
+        "+----------------------+---------------------+\n",
+    )
+}
+
+fn given_markdown_grid_table_when_rendered_as_typst_then_block_quotes_appear() {
+    let processor = example_document_processor("styles/embedded/apa-7th.yaml");
+    let parser = MarkdownParser;
+    let output = processor.process_document::<_, citum_engine::render::typst::Typst>(
+        grid_table_with_block_quotes(),
+        &parser,
+        DocumentFormat::Typst,
+    );
+    assert!(
+        output.contains("#quote(block: true)"),
+        "grid-table cell block quote should produce Typst #quote(block: true), got: {output}"
+    );
+    assert!(
+        output.contains("#emph[italic]"),
+        "markdown *italic* inside grid cell should produce #emph[…], got: {output}"
+    );
+    // Typst::strong() uses the native markup shorthand `*…*`, not the function form.
+    assert!(
+        output.contains("*bold*"),
+        "markdown **bold** inside grid cell should produce Typst *bold*, got: {output}"
+    );
+    assert!(
+        !output.contains('+'),
+        "grid border characters should not appear in Typst output, got: {output}"
+    );
+    assert!(
+        !output.contains("**bold**"),
+        "raw markdown strong should not leak into Typst output, got: {output}"
+    );
+}
+
+fn given_djot_grid_table_when_rendered_as_typst_then_block_quotes_appear() {
+    let processor = example_document_processor("styles/embedded/apa-7th.yaml");
+    let parser = DjotParser;
+    // Djot uses _italic_ and *bold*.
+    let document = concat!(
+        "+----------------------+---------------------+\n",
+        "| > _italic_ left cell | > *bold* right      |\n",
+        "+----------------------+---------------------+\n",
+    );
+    let output = processor.process_document::<_, citum_engine::render::typst::Typst>(
+        document,
+        &parser,
+        DocumentFormat::Typst,
+    );
+    assert!(
+        output.contains("#quote(block: true)"),
+        "djot grid-table cell block quote should produce Typst #quote(block: true), got: {output}"
+    );
+    assert!(
+        output.contains("#emph[italic]"),
+        "djot _italic_ inside grid cell should produce #emph[…], got: {output}"
+    );
+    assert!(
+        !output.contains('+'),
+        "grid border characters should not appear in Typst output, got: {output}"
+    );
+}
+
+fn given_markdown_grid_table_when_rendered_as_latex_then_block_quotes_appear() {
+    let processor = example_document_processor("styles/embedded/apa-7th.yaml");
+    let parser = MarkdownParser;
+    let output = processor.process_document::<_, citum_engine::render::latex::Latex>(
+        grid_table_with_block_quotes(),
+        &parser,
+        DocumentFormat::Latex,
+    );
+    assert!(
+        output.contains("\\begin{quote}"),
+        "grid-table cell block quote should produce LaTeX \\begin{{quote}}, got: {output}"
+    );
+    assert!(
+        output.contains("\\emph{italic}"),
+        "markdown *italic* inside grid cell should produce \\emph{{…}}, got: {output}"
+    );
+    assert!(
+        output.contains("\\textbf{bold}"),
+        "markdown **bold** inside grid cell should produce \\textbf{{…}}, got: {output}"
+    );
+    assert!(
+        !output.contains('+'),
+        "grid border characters should not appear in LaTeX output, got: {output}"
+    );
+}
+
+fn given_djot_grid_table_when_rendered_as_html_then_block_quotes_appear() {
+    let processor = example_document_processor("styles/embedded/apa-7th.yaml");
+    let parser = DjotParser;
+    let document = concat!(
+        "+----------------------+---------------------+\n",
+        "| > _italic_ left cell | > *bold* right      |\n",
+        "+----------------------+---------------------+\n",
+    );
+    let output = processor.process_document::<_, citum_engine::render::html::Html>(
+        document,
+        &parser,
+        DocumentFormat::Html,
+    );
+    assert!(
+        output.contains("<blockquote>"),
+        "djot grid-table cell block quote should produce <blockquote>, got: {output}"
+    );
+    assert!(
+        output.contains("<em>"),
+        "djot _italic_ inside grid cell should produce <em>, got: {output}"
+    );
+    assert!(
+        !output.contains("+--"),
+        "grid border characters should not appear in HTML output, got: {output}"
+    );
+}
+
+fn given_prose_without_grid_table_when_processed_then_content_is_unchanged() {
+    let processor = example_document_processor("styles/embedded/apa-7th.yaml");
+    let parser = MarkdownParser;
+    let prose = "Just a plain paragraph with *emphasis*.\n";
+    let output = processor.process_document::<_, citum_engine::render::typst::Typst>(
+        prose,
+        &parser,
+        DocumentFormat::Typst,
+    );
+    assert!(
+        output.contains("#emph[emphasis]"),
+        "plain prose emphasis should still render correctly, got: {output}"
+    );
+    assert!(
+        !output.contains('+'),
+        "no grid artifacts should appear in non-table prose, got: {output}"
+    );
+}
+
+mod grid_table_flattening {
+    use super::announce_behavior;
+
+    #[test]
+    fn markdown_grid_table_block_quotes_render_as_typst_quote_blocks() {
+        announce_behavior(
+            "A Markdown grid table containing block quotes should produce Typst \
+             #quote(block: true) blocks with converted inline markup — not raw \
+             '+'/'+' grid scaffolding (fixes #845).",
+        );
+        super::given_markdown_grid_table_when_rendered_as_typst_then_block_quotes_appear();
+    }
+
+    #[test]
+    fn djot_grid_table_block_quotes_render_as_typst_quote_blocks() {
+        announce_behavior(
+            "A Djot grid table containing block quotes should produce Typst \
+             #quote(block: true) blocks with converted inline markup.",
+        );
+        super::given_djot_grid_table_when_rendered_as_typst_then_block_quotes_appear();
+    }
+
+    #[test]
+    fn markdown_grid_table_block_quotes_render_as_latex_quote_environment() {
+        announce_behavior(
+            "A Markdown grid table containing block quotes should produce a LaTeX \
+             \\begin{quote} environment with \\emph and \\textbf for inline markup.",
+        );
+        super::given_markdown_grid_table_when_rendered_as_latex_then_block_quotes_appear();
+    }
+
+    #[test]
+    fn djot_grid_table_block_quotes_render_as_html_blockquote() {
+        announce_behavior(
+            "A Djot grid table containing block quotes should produce HTML <blockquote> \
+             elements with <em> for inline markup — no raw grid characters in output.",
+        );
+        super::given_djot_grid_table_when_rendered_as_html_then_block_quotes_appear();
+    }
+
+    #[test]
+    fn prose_without_grid_table_is_unaffected() {
+        announce_behavior(
+            "Plain prose that contains no grid table should pass through the \
+             preprocessor unchanged and render normally.",
+        );
+        super::given_prose_without_grid_table_when_processed_then_content_is_unchanged();
+    }
+}

@@ -90,6 +90,26 @@ Quote toggling is likewise renderer-owned. `OutputFormat` exposes depth-aware qu
 - Full djot block-level rendering for field values
 - General title/text-case semantics (`.nocase` transformation engine — tracked in csl26-wv5o)
 
+## Document Body: Grid-Table Flattening
+
+Pandoc *grid tables* (border rows matching `+---+---+`, content rows matching
+`| … | … |`) are not understood by `jotdown` or `pulldown-cmark`. If left
+as-is, the raw `+`, `|`, and mid-line `>` characters appear verbatim in
+rendered output, producing invalid Typst ("`no text within stars`" warnings)
+and garbled HTML (issue #845).
+
+A **raw-text preprocessor** (`processor::document::grid_table`) runs before
+any parser and flattens grid tables into sequential block markup:
+
+- Each cell's lines are reassembled into a contiguous block (so `| > quote\n| > line2\n` becomes `> quote\n> line2`).
+- Cells are emitted row-major (left-to-right), separated by a blank line.
+- Block structure (block quotes, lists, emphasis) is fully preserved.
+- Only the two-dimensional *layout* is dropped — this is an intentional **graceful flatten**, not full table rendering.
+- Pipe tables remain inline-only (cells are short inline text, not block-level containers); no change to their handling.
+
+True table layout (Typst `#table(…)`, LaTeX `tabular`) is a separate follow-up.
+
 ## Changelog
+- 2026-05-30: Added Pandoc grid-table flattening (graceful flatten, Typst+LaTeX+HTML, fixes #845).
 - 2026-05-21: Added inline rendering context for nested emphasis and quote toggling.
 - 2026-04-26: Initial version (Phase 2 implementation).
