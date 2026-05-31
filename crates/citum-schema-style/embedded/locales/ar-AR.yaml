@@ -53,6 +53,16 @@ roles:
       singular: تر.
     verb: ترجمة
 
+locators:
+  page:
+    long:
+      singular: صفحة
+      plural: صفحات
+    short:
+      singular: ص.
+      plural: ص.
+    gender: feminine
+
 messages:
   # NOTE: Using personal nouns (مُحَرِّر/مُتَرْجِم) for gendered forms.
   # Fallback to verbal nouns (تحقيق/ترجمة) for neutral or unknown groups, consistent with standard Arabic CSL.

@@ -97,8 +97,14 @@ roles:
     verb-short: réal. par
   editor:
     long:
-      singular: éditeur
-      plural: éditeurs
+      singular:
+        masculine: éditeur
+        feminine: éditrice
+        common: éditeur
+      plural:
+        masculine: éditeurs
+        feminine: éditrices
+        common: éditeurs
     short:
       singular: éd.
       plural: éd.
