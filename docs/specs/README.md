@@ -151,6 +151,7 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 | Spec | Status | Tests |
 |------|--------|-------|
 | [`DOCUMENT_INPUT_PARSER_BOUNDARY.md`](./DOCUMENT_INPUT_PARSER_BOUNDARY.md) — boundary between format parsers and shared processing pipeline | Active | `document.rs`, `io.rs` |
+| [`PANDOC_MARKDOWN_CITATIONS.md`](./PANDOC_MARKDOWN_CITATIONS.md) — Pandoc-style citation marker support for Markdown documents | Completed | `document.rs::markdown_documents` |
 | [`FIDELITY_RICH_INPUTS.md`](./FIDELITY_RICH_INPUTS.md) — fidelity pipeline support for relational benchmark inputs | Active | `document.rs`, `io.rs` |
 | [`FORWARD_COMPATIBILITY.md`](./FORWARD_COMPATIBILITY.md) — forward-compatibility guarantees across schema versions | Active | `forward_compatibility.rs` |
 | [`SERVER_INTERACTIVE_API.md`](./SERVER_INTERACTIVE_API.md) — document-batch and session APIs for server and WASM | Draft | `crates/citum-server/tests/rpc.rs` |
@@ -181,6 +182,8 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 | [`PER_DOCUMENT_CONFIG_OVERRIDES.md`](./PER_DOCUMENT_CONFIG_OVERRIDES.md) — eligible options and syntax for per-document configuration overrides | Draft | `bibliography.rs::local_overrides` |
 | [`SCHEMA_SPLIT_AND_CONVERT_NAMESPACE.md`](./SCHEMA_SPLIT_AND_CONVERT_NAMESPACE.md) — crate-level schema split and CLI conversion namespace | Active | `crates/citum-schema/tests/` |
 | [`PROFILE_DOCUMENTARY_VERIFICATION.md`](./PROFILE_DOCUMENTARY_VERIFICATION.md) — verification model for profile styles using external authority | Draft | — |
+| [`JOURNAL_PROFILE_TAXONOMY_AUDIT.md`](./JOURNAL_PROFILE_TAXONOMY_AUDIT.md) — audit of journal-profile taxonomy and authority rules | Completed | — |
+| [`CONFIG_ONLY_PROFILE_OVERRIDES.md`](./CONFIG_ONLY_PROFILE_OVERRIDES.md) — alternative configuration-only profile override model | Superseded | — |
 
 ### Platform & Infra
 
@@ -192,17 +195,3 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 | [`CLI_UX_REDESIGN.md`](./CLI_UX_REDESIGN.md) — clean command model for style discovery, registry management, and CLI validation UX | Draft | — |
 | [`AUTHORING_AGENT_SKILL.md`](./AUTHORING_AGENT_SKILL.md) — Citum Authoring Agent Skill specification for AI-assisted style authoring | Active | — |
 
----
-
-### Completed
-
-| Spec | Feature |
-|------|---------|
-| [`JOURNAL_PROFILE_TAXONOMY_AUDIT.md`](./JOURNAL_PROFILE_TAXONOMY_AUDIT.md) | Audit of journal-profile taxonomy and authority rules |
-| [`PANDOC_MARKDOWN_CITATIONS.md`](./PANDOC_MARKDOWN_CITATIONS.md) | Pandoc-style citation marker support for Markdown documents |
-
-### Superseded
-
-| Spec | Feature |
-|------|---------|
-| [`CONFIG_ONLY_PROFILE_OVERRIDES.md`](./CONFIG_ONLY_PROFILE_OVERRIDES.md) | Alternative configuration-only profile override model |
