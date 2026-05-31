@@ -175,12 +175,17 @@ added to the citation context.
 - [x] Year-suffix collision key uses only `issued` year (no original-date gate)
 - [x] All native disambiguation tests passing
 - [x] Group-aware suffix restart implemented (`disambiguate: locally`)
-- [ ] Multilingual key generation respects display mode
+- [x] Multilingual key generation respects display mode
 - [x] Native fixture asserting `(1926/1967a) (1926/1967b) (1927/1967c)` for the APA §8.15 reprint scenario
 - [x] Short-title suppression via `first-reference-note-number` implemented and tested
 
 ## Changelog
 
+- 2026-05-31: Implemented `render_name_for_disambiguation` (csl26-54jn). Flattens
+  contributors via `resolve_multilingual_name` so the collision key matches the style's
+  active display mode (transliterated/translated/primary). Covered by
+  `test_multilingual_key_generation_respects_display_mode` in
+  `crates/citum-engine/src/processor/disambiguation.rs`. All acceptance criteria now met.
 - 2026-05-31: Test soundness audit (csl26-ucs3). Corrected `[x]` → `[ ]` for
   multilingual key generation — `render_name_for_disambiguation` not yet
   implemented; `disambiguation.rs` always reads `Contributor::Multilingual.original`.

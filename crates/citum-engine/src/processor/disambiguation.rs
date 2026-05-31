@@ -216,9 +216,9 @@ impl<'a> Disambiguator<'a> {
         let mut cache = HashMap::with_capacity(refs.len());
 
         for reference in refs {
-            let names = reference
-                .author()
-                .map_or_else(Vec::new, |authors| authors.to_names_vec());
+            let names = reference.author().map_or_else(Vec::new, |authors| {
+                self.render_name_for_disambiguation(&authors)
+            });
             let author_key = self.build_author_key(&names);
             let group_key = self.build_group_key(reference, &author_key);
             let title_key = needs_title_key.then(|| {
@@ -698,6 +698,23 @@ impl<'a> Disambiguator<'a> {
         }
 
         groups
+    }
+
+    /// Flattens a contributor to names using the style's active multilingual display
+    /// mode, so the collision key reflects the same surface form the style renders
+    /// (DISAMBIGUATION.md §4). Monolingual contributors fall through to the original.
+    fn render_name_for_disambiguation(
+        &self,
+        contributor: &citum_schema::reference::Contributor,
+    ) -> Vec<crate::reference::FlatName> {
+        let ml = self.config.multilingual.as_ref();
+        crate::values::resolve_multilingual_name(
+            contributor,
+            ml.and_then(|m| m.name_mode.as_ref()),
+            ml.and_then(|m| m.preferred_transliteration.as_deref()),
+            ml.and_then(|m| m.preferred_script.as_ref()),
+            &self.locale.locale,
+        )
     }
 
     /// Generates a normalized author string used for grouping and et-al detection.
@@ -1322,5 +1339,106 @@ mod tests {
         assert_eq!(first.group_key, second.group_key);
         assert!(!first.group_key.contains(':'));
         assert_ne!(first.group_index, second.group_index);
+    }
+
+    /// Build a reference whose author is `Contributor::Multilingual` with distinct
+    /// `original` but a shared `transliterations` entry keyed by `translit_tag`.
+    fn make_multilingual_ref(
+        id: &str,
+        original_family: &str,
+        translit_family: &str,
+        translit_tag: &str,
+        year: i32,
+    ) -> Reference {
+        use citum_schema::reference::contributor::MultilingualName;
+        use std::collections::HashMap;
+
+        let mut transliterations = HashMap::new();
+        transliterations.insert(
+            translit_tag.to_string(),
+            StructuredName {
+                family: MultilingualString::Simple(translit_family.to_string()),
+                given: MultilingualString::Simple("A.".to_string()),
+                ..Default::default()
+            },
+        );
+        Reference::Monograph(Box::new(Monograph {
+            id: Some(id.into()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single(format!("Title {id}"))),
+            author: Some(Contributor::Multilingual(MultilingualName {
+                original: StructuredName {
+                    family: MultilingualString::Simple(original_family.to_string()),
+                    given: MultilingualString::Simple("A.".to_string()),
+                    ..Default::default()
+                },
+                lang: Some("ja".into()),
+                transliterations,
+                translations: HashMap::new(),
+            })),
+            issued: EdtfString(year.to_string()),
+            ..Default::default()
+        }))
+    }
+
+    /// DISAMBIGUATION.md §4: when display mode is `Transliterated`, two references
+    /// whose transliterations collide must produce the same author key (→ one
+    /// collision group). When mode is `Primary` (distinct originals), keys must differ.
+    #[test]
+    fn test_multilingual_key_generation_respects_display_mode() {
+        use citum_schema::options::MultilingualConfig;
+        use citum_schema::options::MultilingualMode;
+
+        // Two distinct Japanese authors that share the same romanisation.
+        // Original families differ ("田中" vs "谷中"), but transliteration is "Tanaka".
+        let r1 = make_multilingual_ref("r1", "田中", "Tanaka", "ja-Latn", 2020);
+        let r2 = make_multilingual_ref("r2", "谷中", "Tanaka", "ja-Latn", 2020);
+
+        let mut bib = Bibliography::new();
+        bib.insert("r1".to_string(), r1);
+        bib.insert("r2".to_string(), r2);
+
+        let locale = Locale::en_us();
+
+        // --- case 1: Transliterated mode → same key (collision) ---
+        let config_translit = Config {
+            multilingual: Some(MultilingualConfig {
+                name_mode: Some(MultilingualMode::Transliterated),
+                preferred_transliteration: Some(vec!["ja-Latn".to_string()]),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        let cache_translit = Disambiguator::new(&bib, &config_translit, &locale)
+            .build_reference_cache(&[bib.get("r1").unwrap(), bib.get("r2").unwrap()], false);
+
+        let ck_r1 = Disambiguator::reference_cache_key(bib.get("r1").unwrap());
+        let ck_r2 = Disambiguator::reference_cache_key(bib.get("r2").unwrap());
+        let ak_r1 = &cache_translit[&ck_r1].author_key;
+        let ak_r2 = &cache_translit[&ck_r2].author_key;
+
+        assert_eq!(
+            ak_r1, ak_r2,
+            "transliterated mode: colliding transliterations must produce the same author key"
+        );
+        assert_eq!(
+            ak_r1, "tanaka",
+            "key should be the lowercased transliteration"
+        );
+
+        // --- case 2: Primary mode → distinct keys (no collision) ---
+        let config_primary = Config::default(); // multilingual: None → falls through to original
+
+        let cache_primary = Disambiguator::new(&bib, &config_primary, &locale)
+            .build_reference_cache(&[bib.get("r1").unwrap(), bib.get("r2").unwrap()], false);
+
+        let ak_r1_primary = &cache_primary[&ck_r1].author_key;
+        let ak_r2_primary = &cache_primary[&ck_r2].author_key;
+
+        assert_ne!(
+            ak_r1_primary, ak_r2_primary,
+            "primary mode: distinct originals must produce different author keys"
+        );
     }
 }
