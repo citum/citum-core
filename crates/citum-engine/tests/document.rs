@@ -746,6 +746,44 @@ fn given_markdown_integral_note_citation_when_rendered_with_a_note_style_then_a_
     );
 }
 
+fn given_markdown_citation_inside_manual_footnote_when_rendered_with_note_style_then_it_renders_in_place()
+ {
+    // When the user writes their own [^n]: block containing a citation,
+    // the citation should render inline inside that definition (ManualFootnote
+    // placement) rather than generating a second auto-footnote.
+    let processor =
+        example_document_processor("styles/embedded/chicago-shortened-notes-bibliography.yaml");
+    let parser = MarkdownParser;
+    let document = "See note[^1].\n\n[^1]: Early work [@kuhn1962] supports this.";
+
+    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
+        document,
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    // The manual footnote anchor must appear in prose.
+    assert!(
+        output.contains("[^1]"),
+        "manual footnote reference should appear in prose: {output}"
+    );
+    // The rendered citation should appear inside the footnote definition, not
+    // as a separate auto-generated note.
+    assert!(
+        output.contains("[^1]: Early work"),
+        "footnote definition body should be preserved: {output}"
+    );
+    assert!(
+        output.contains("Kuhn") || output.contains("Structure"),
+        "citation inside manual footnote should be rendered in place: {output}"
+    );
+    // No auto-generated note should be created for this citation.
+    assert!(
+        !output.contains("[^citum-auto-"),
+        "no auto-footnote should be generated for a ManualFootnote citation: {output}"
+    );
+}
+
 // --- Grouped Bibliography Scenarios ---
 
 fn given_grouped_primary_and_secondary_sources_when_rendered_then_both_group_headings_and_entries_appear()

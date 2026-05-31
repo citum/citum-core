@@ -7,16 +7,24 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use super::djot::parsing::parse_frontmatter;
 use super::{CitationParser, CitationPlacement, CitationStructure, ParsedCitation, ParsedDocument};
+use crate::processor::document::ManualNoteReference;
 use crate::{Citation, CitationItem};
 use citum_schema::citation::{CitationMode, normalize_locator_text};
 use citum_schema::locale::Locale;
 use std::collections::HashSet;
+use std::ops::Range;
+
+/// Byte range of a manual footnote definition in the document body.
+///
+/// Used to classify citations found inside `[^label]: …` blocks as
+/// [`CitationPlacement::ManualFootnote`] rather than
+/// [`CitationPlacement::InlineProse`].
+struct FootnoteRange {
+    label: String,
+    content: Range<usize>,
+}
 
 /// A parser for Markdown documents with Pandoc-style citation syntax.
-///
-/// This parser currently supports inline prose citations and maps them into the
-/// shared document-processing pipeline. Markdown-specific footnotes, document
-/// metadata, and inline bibliography blocks remain future work.
 pub struct MarkdownParser;
 
 impl Default for MarkdownParser {
@@ -37,7 +45,10 @@ impl CitationParser for MarkdownParser {
         use pulldown_cmark::{Options, html};
 
         let (remapped, token_map) = remap_nul_tokens(rendered);
-        let parser = pulldown_cmark::Parser::new_ext(&remapped, Options::ENABLE_STRIKETHROUGH);
+        let parser = pulldown_cmark::Parser::new_ext(
+            &remapped,
+            Options::ENABLE_STRIKETHROUGH | Options::ENABLE_FOOTNOTES | Options::ENABLE_TABLES,
+        );
         let mut out = String::new();
         html::push_html(&mut out, parser);
 
@@ -84,22 +95,54 @@ impl CitationParser for MarkdownParser {
                     .is_none()
             });
 
+        let (raw_note_refs, manual_note_labels, footnote_ranges) = scan_manual_notes_markdown(body);
+
+        // Adjust footnote reference offsets and build deduped note order.
+        let mut seen_labels = HashSet::new();
+        let mut manual_note_order = Vec::new();
+        let manual_note_references: Vec<ManualNoteReference> = raw_note_refs
+            .into_iter()
+            .map(|r| ManualNoteReference {
+                label: r.label.clone(),
+                start: body_start + r.start,
+            })
+            .inspect(|r| {
+                if seen_labels.insert(r.label.clone()) {
+                    manual_note_order.push(r.label.clone());
+                }
+            })
+            .collect();
+
+        // Adjust footnote definition ranges by the body offset.
+        let adjusted_ranges: Vec<FootnoteRange> = footnote_ranges
+            .into_iter()
+            .map(|fr| FootnoteRange {
+                label: fr.label,
+                content: (body_start + fr.content.start)..(body_start + fr.content.end),
+            })
+            .collect();
+
         let citations = find_citations(body, locale)
             .into_iter()
-            .map(|(start, end, citation)| ParsedCitation {
-                start: body_start + start,
-                end: body_start + end,
-                citation,
-                placement: CitationPlacement::InlineProse,
-                structure: CitationStructure::default(),
+            .map(|(start, end, citation)| {
+                let abs_start = body_start + start;
+                let abs_end = body_start + end;
+                let placement = footnote_placement(abs_start, abs_end, &adjusted_ranges);
+                ParsedCitation {
+                    start: abs_start,
+                    end: abs_end,
+                    citation,
+                    placement,
+                    structure: CitationStructure::default(),
+                }
             })
             .collect();
 
         ParsedDocument {
             citations,
-            manual_note_order: Vec::new(),
-            manual_note_references: Vec::new(),
-            manual_note_labels: HashSet::new(),
+            manual_note_order,
+            manual_note_references,
+            manual_note_labels,
             bibliography_blocks: Vec::new(),
             frontmatter_groups: None,
             frontmatter_integral_name_memory,
@@ -109,6 +152,72 @@ impl CitationParser for MarkdownParser {
             body_start,
         }
     }
+}
+
+/// Scan a Markdown document body for manual footnote references and definitions.
+///
+/// Uses pulldown-cmark with `ENABLE_FOOTNOTES` to find:
+/// - `[^label]` references in prose → [`ManualNoteReference`] entries
+/// - `[^label]: …` definition blocks → [`FootnoteRange`] entries whose byte
+///   ranges cover the entire definition in the source text
+///
+/// The returned triple mirrors the contract of the Djot parser's
+/// `scan_manual_notes`, enabling the shared pipeline to classify citations
+/// found inside footnote definitions as [`CitationPlacement::ManualFootnote`].
+fn scan_manual_notes_markdown(
+    content: &str,
+) -> (
+    Vec<ManualNoteReference>,
+    HashSet<String>,
+    Vec<FootnoteRange>,
+) {
+    use pulldown_cmark::{Event, Options, Parser, Tag, TagEnd};
+
+    let opts = Options::ENABLE_FOOTNOTES | Options::ENABLE_STRIKETHROUGH;
+    let mut manual_note_references = Vec::new();
+    let mut manual_note_labels = HashSet::new();
+    let mut footnote_ranges = Vec::new();
+    let mut footnote_stack: Vec<(String, usize)> = Vec::new();
+
+    for (event, range) in Parser::new_ext(content, opts).into_offset_iter() {
+        match event {
+            Event::FootnoteReference(label) if footnote_stack.is_empty() => {
+                manual_note_references.push(ManualNoteReference {
+                    label: label.to_string(),
+                    start: range.start,
+                });
+                manual_note_labels.insert(label.to_string());
+            }
+            Event::Start(Tag::FootnoteDefinition(label)) => {
+                manual_note_labels.insert(label.to_string());
+                footnote_stack.push((label.to_string(), range.start));
+            }
+            Event::End(TagEnd::FootnoteDefinition) => {
+                if let Some((open_label, content_start)) = footnote_stack.pop() {
+                    footnote_ranges.push(FootnoteRange {
+                        label: open_label,
+                        content: content_start..range.end,
+                    });
+                }
+            }
+            _ => {}
+        }
+    }
+
+    (manual_note_references, manual_note_labels, footnote_ranges)
+}
+
+/// Determine the citation placement given the byte range of a citation
+/// and the set of footnote definition ranges in the document.
+fn footnote_placement(start: usize, end: usize, ranges: &[FootnoteRange]) -> CitationPlacement {
+    ranges
+        .iter()
+        .find(|fr| fr.content.start <= start && end <= fr.content.end)
+        .map_or(CitationPlacement::InlineProse, |fr| {
+            CitationPlacement::ManualFootnote {
+                label: fr.label.clone(),
+            }
+        })
 }
 
 #[allow(
@@ -512,5 +621,89 @@ mod tests {
             output.contains("<em>italic</em>"),
             "expected <em>italic</em> in: {output}"
         );
+    }
+
+    #[test]
+    fn given_markdown_pipe_table_when_finalize_html_output_then_table_element_emitted() {
+        let parser = MarkdownParser;
+        let input = "| A | B |\n|---|---|\n| 1 | 2 |";
+        let output = parser.finalize_html_output(input);
+        assert!(
+            output.contains("<table>"),
+            "pipe table should render as <table>: {output}"
+        );
+    }
+
+    #[test]
+    fn given_markdown_footnote_def_when_finalize_html_output_then_footnote_rendered() {
+        let parser = MarkdownParser;
+        let input = "Text[^1].\n\n[^1]: A note.";
+        let output = parser.finalize_html_output(input);
+        assert!(
+            output.contains("footnote") || output.contains("fn1"),
+            "footnote definition should produce HTML footnote markup: {output}"
+        );
+    }
+
+    #[test]
+    fn given_citation_inside_footnote_def_when_parse_document_then_placement_is_manual_footnote() {
+        let parser = MarkdownParser;
+        // The citation [@kuhn1962] appears inside a footnote definition, not in prose.
+        let doc = "See note[^1].\n\n[^1]: See [@kuhn1962].";
+        let parsed = parser.parse_document(doc, &Locale::en_us());
+
+        assert_eq!(parsed.citations.len(), 1, "one citation expected");
+        assert!(
+            matches!(
+                parsed.citations[0].placement,
+                CitationPlacement::ManualFootnote { .. }
+            ),
+            "citation inside [^n]: block should be ManualFootnote, got: {:?}",
+            parsed.citations[0].placement
+        );
+        assert!(
+            parsed.manual_note_labels.contains("1"),
+            "footnote label '1' should be tracked: {:?}",
+            parsed.manual_note_labels
+        );
+        assert_eq!(parsed.manual_note_order, vec!["1".to_string()]);
+    }
+
+    #[test]
+    fn given_citation_in_prose_when_parse_document_then_placement_is_inline_prose() {
+        let parser = MarkdownParser;
+        let doc = "As shown by [@kuhn1962], the method works.\n\n[^1]: Unrelated note.";
+        let parsed = parser.parse_document(doc, &Locale::en_us());
+
+        assert_eq!(parsed.citations.len(), 1);
+        assert!(
+            matches!(
+                parsed.citations[0].placement,
+                CitationPlacement::InlineProse
+            ),
+            "prose citation should be InlineProse: {:?}",
+            parsed.citations[0].placement
+        );
+    }
+
+    #[test]
+    fn given_multiple_footnotes_when_parse_document_then_note_order_is_first_reference_order() {
+        let parser = MarkdownParser;
+        let doc = "First[^b] then[^a].\n\n[^a]: [@kuhn1962].\n\n[^b]: [@smith2010].";
+        let parsed = parser.parse_document(doc, &Locale::en_us());
+
+        // Note order follows the order references appear in prose, not definition order.
+        assert_eq!(
+            parsed.manual_note_order,
+            vec!["b".to_string(), "a".to_string()]
+        );
+        assert_eq!(parsed.citations.len(), 2);
+        for c in &parsed.citations {
+            assert!(
+                matches!(c.placement, CitationPlacement::ManualFootnote { .. }),
+                "both citations are inside footnote definitions: {:?}",
+                c.placement
+            );
+        }
     }
 }
