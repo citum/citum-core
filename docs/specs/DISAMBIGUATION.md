@@ -175,12 +175,16 @@ added to the citation context.
 - [x] Year-suffix collision key uses only `issued` year (no original-date gate)
 - [x] All native disambiguation tests passing
 - [x] Group-aware suffix restart implemented (`disambiguate: locally`)
-- [x] Multilingual key generation respects display mode
+- [ ] Multilingual key generation respects display mode
 - [x] Native fixture asserting `(1926/1967a) (1926/1967b) (1927/1967c)` for the APA §8.15 reprint scenario
 - [x] Short-title suppression via `first-reference-note-number` implemented and tested
 
 ## Changelog
 
+- 2026-05-31: Test soundness audit (csl26-ucs3). Corrected `[x]` → `[ ]` for
+  multilingual key generation — `render_name_for_disambiguation` not yet
+  implemented; `disambiguation.rs` always reads `Contributor::Multilingual.original`.
+  See `docs/architecture/audits/2026-05-31_DISAMBIGUATION_TEST_SOUNDNESS.md`.
 - 2026-05-29: Initial version. Consolidates `DISAMBIGUATION_IMPLEMENTATION_PLAN.md` (now deleted)
   and `DISAMBIGUATION_MULTILINGUAL_GROUPING.md` (now deleted).
 - 2026-05-29: All acceptance criteria implemented; status set to Active.

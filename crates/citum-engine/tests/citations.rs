@@ -342,8 +342,11 @@ fn disambiguation_same_year_articles_increment_suffixes() {
     run_test_case_native(&input, &citation_items, expected, "citation");
 }
 
-/// Test given name expansion for authors with duplicate family names.
-fn disambiguation_duplicate_family_names_expand_given_names_only_where_needed() {
+/// Guard against spurious given-name expansion: when all family-name collisions
+/// are already resolved by different issued years, `add_givenname` must not add
+/// initials or given names. The three Asthma refs differ in year (1885 vs 1980)
+/// so they form distinct collision groups; no given-name expansion is triggered.
+fn disambiguation_no_spurious_givenname_expansion_when_years_differ() {
     let input = vec![
         make_book_multi_author(
             "ITEM-1",
@@ -355,13 +358,39 @@ fn disambiguation_duplicate_family_names_expand_given_names_only_where_needed() 
         make_book("ITEM-3", "Asthma", "Albert", 1885, "Book C"),
     ];
     let citation_items = vec![vec!["ITEM-1", "ITEM-2", "ITEM-3"]];
-    // Sorted by author (Asthma, then Bronchitis) and year (1885, then 1980)
+    // Sorted by author (Asthma, then Bronchitis) and year (1885, then 1980).
+    // No given-name expansion: the 1885 and 1980 Asthma groups are distinct.
     let expected = "Asthma, (1885); Asthma, Asthma, (1980); Bronchitis, (1995)";
 
     run_test_case_native_with_options(common::TestCaseOptions {
         input: &input,
         citation_items: &citation_items,
         expected,
+        mode: "citation",
+        disambiguate_year_suffix: false,
+        disambiguate_names: false,
+        disambiguate_givenname: true,
+        et_al_min: None,
+        et_al_use_first: None,
+    });
+}
+
+/// Positive §2 given-name expansion: two same-year books whose authors share a
+/// family name but have different given names must have initials injected only
+/// for the ambiguous pair; a third non-colliding author stays unexpanded.
+fn disambiguation_givenname_expansion_resolves_same_year_family_name_collision() {
+    let input = vec![
+        make_book("ITEM-A", "Smith", "Alice", 2000, "Book A"),
+        make_book("ITEM-B", "Smith", "Bob", 2000, "Book B"),
+        make_book("ITEM-C", "Jones", "Carol", 2000, "Book C"),
+    ];
+    let citation_items = vec![vec!["ITEM-A", "ITEM-B", "ITEM-C"]];
+
+    run_test_case_native_with_options(common::TestCaseOptions {
+        input: &input,
+        citation_items: &citation_items,
+        // Jones is unambiguous — stays bare. Both Smiths expand to initials.
+        expected: "Jones, (2000); A Smith, (2000); B Smith, (2000)",
         mode: "citation",
         disambiguate_year_suffix: false,
         disambiguate_names: false,
@@ -470,6 +499,30 @@ T Smith, (2000); T Smith, (2000)";
     });
 }
 
+/// When given-name expansion cannot resolve a collision (identical given name and
+/// family name, different works), the cascade must fall through to year-suffix.
+fn disambiguation_year_suffix_fallback_when_givenname_expansion_fails() {
+    let input = vec![
+        make_book("ITEM-4", "Smith", "Ted", 2000, "Book D"),
+        make_book("ITEM-5", "Smith", "Ted", 2000, "Book E"),
+    ];
+    let citation_items = vec![vec!["ITEM-4", "ITEM-5"]];
+
+    run_test_case_native_with_options(common::TestCaseOptions {
+        input: &input,
+        citation_items: &citation_items,
+        // Same author/given-name on both items → no initials injected; year suffixes
+        // are still assigned because the family-name collision group is unresolved.
+        expected: "Smith, (2000a), (2000b)",
+        mode: "citation",
+        disambiguate_year_suffix: true,
+        disambiguate_names: false,
+        disambiguate_givenname: true,
+        et_al_min: None,
+        et_al_use_first: None,
+    });
+}
+
 /// Test subsequent et-al: first cite shows full list; repeat cite applies `subsequent_min/use_first`.
 fn subsequent_et_al_thresholds_shorten_the_repeat_citation() {
     use citum_schema::options::{Disambiguation, Processing, ProcessingCustom, ShortenListOptions};
@@ -550,32 +603,23 @@ fn subsequent_et_al_thresholds_shorten_the_repeat_citation() {
         .expect("citations should render");
 
     // First cite: all 3 authors visible (no et al.)
-    assert!(
-        results[0].contains("Doe") && results[0].contains("Smith") && results[0].contains("Jones"),
-        "First citation should show all authors, got: {}",
-        results[0]
-    );
-    assert!(
-        !results[0].contains("et al"),
-        "First citation should not use et al., got: {}",
-        results[0]
+    assert_eq!(
+        results[0], "Doe, Smith, Jones, (2020)",
+        "First citation should show all three authors without et al."
     );
 
-    // Subsequent cite: only 1 author + et al. (subsequent_use_first=1)
-    assert!(
-        results[1].contains("et al"),
-        "Subsequent citation should use et al., got: {}",
-        results[1]
-    );
-    assert!(
-        !results[1].contains("Smith") && !results[1].contains("Jones"),
-        "Subsequent citation should hide Smith and Jones, got: {}",
-        results[1]
+    // Subsequent cite: abbreviated to 1 author + et al. (subsequent_use_first=1)
+    assert_eq!(
+        results[1], "Doe et al., (2020)",
+        "Subsequent citation should collapse to one author + et al."
     );
 }
 
-/// Test year suffix + et-al with varying author list lengths.
-fn subsequent_et_al_configuration_uses_the_subsequent_form_on_repeat() {
+/// Year-suffix assignment under et-al truncation: when two distinct multi-author
+/// lists are both collapsed to the same et-al prefix, the collision group still
+/// receives distinct suffixes. Non-citation-order suffix assignment is verified
+/// (2000b before 2000a because title B sorts before title A under the sort key).
+fn disambiguation_year_suffix_assigned_when_et_al_truncation_leaves_collision() {
     let input = vec![
         make_article_multi_author(
             "ITEM-1",
@@ -675,8 +719,9 @@ fn citation_scoped_contributor_shorten_applies_without_component_override() {
     );
 }
 
-/// Test conditional disambiguation with identical author-year pairs.
-fn disambiguation_conditions_expand_only_the_marked_items() {
+/// Two works with identical two-author list and same issued year: both receive
+/// year suffixes (a, b) sorted by title. Complements the single-author cases.
+fn disambiguation_identical_two_author_year_pair_receives_year_suffixes() {
     let input = vec![
         make_book_multi_author(
             "ITEM-1",
@@ -862,6 +907,56 @@ fn sorting_empty_dates_pushes_undated_items_to_the_end() {
     assert_eq!(
         result,
         "BookD 1999; BookB 2000; BookA n.d.; BookC n.d.; BookE n.d."
+    );
+}
+
+// --- Multilingual contributor disambiguation (§4) ---
+
+/// Verifies that `Contributor::Multilingual` entries participate in the
+/// collision-key path. Two refs share the same *original* family name and issued
+/// year → both receive a year suffix.
+///
+/// NOTE: The spec §4 specifies that when a style uses a non-`primary` display
+/// mode (transliteration, translation), the key should be built from the
+/// *displayed* name variant so transliteration-level collisions are caught.
+/// That path (`render_name_for_disambiguation`) is not yet implemented —
+/// `to_names_vec()` always reads `original`. A future test should add two refs
+/// whose originals differ but whose transliterations collide and assert they
+/// also receive year suffixes.
+fn disambiguation_multilingual_contributors_collide_on_original_family_name() {
+    let a = common::make_multilingual_book(common::MultilingualBookParams {
+        id: "ml-a",
+        original_family: "김",
+        original_given: "철수",
+        lang: "ko",
+        translit_script: "Latn",
+        translit_family: "Kim",
+        translit_given: "Cheolsu",
+        year: 2020,
+        title: "Book A",
+    });
+    let b = common::make_multilingual_book(common::MultilingualBookParams {
+        id: "ml-b",
+        original_family: "김",
+        original_given: "영희",
+        lang: "ko",
+        translit_script: "Latn",
+        translit_family: "Kim",
+        translit_given: "Yeonghui",
+        year: 2020,
+        title: "Book B",
+    });
+
+    let input = vec![a, b];
+    let citation_items = vec![vec!["ml-a", "ml-b"]];
+
+    // The collision key uses the original Korean family name "김"; both entries
+    // form one group and receive year suffixes.
+    run_test_case_native(
+        &input,
+        &citation_items,
+        "김, (2020a); 김, (2020b)",
+        "citation",
     );
 }
 
@@ -1596,11 +1691,19 @@ mod disambiguation {
     }
 
     #[test]
-    fn duplicate_family_names_expand_given_names_only_where_needed() {
+    fn no_spurious_givenname_expansion_when_years_differ() {
         announce_behavior(
-            "Family-name collisions should expand given names only for the ambiguous items.",
+            "When same-family-name refs already differ by year, add_givenname must not introduce spurious given-name expansion.",
         );
-        super::disambiguation_duplicate_family_names_expand_given_names_only_where_needed();
+        super::disambiguation_no_spurious_givenname_expansion_when_years_differ();
+    }
+
+    #[test]
+    fn givenname_expansion_resolves_same_year_family_name_collision() {
+        announce_behavior(
+            "Two same-year authors with the same family name but different given names must have initials injected for the ambiguous pair; unrelated authors stay unexpanded.",
+        );
+        super::disambiguation_givenname_expansion_resolves_same_year_family_name_collision();
     }
 
     #[test]
@@ -1628,6 +1731,14 @@ mod disambiguation {
     }
 
     #[test]
+    fn year_suffix_fallback_when_givenname_expansion_fails() {
+        announce_behavior(
+            "When given-name expansion cannot resolve a collision (same given name and family name), year-suffix must be applied as the next cascade step.",
+        );
+        super::disambiguation_year_suffix_fallback_when_givenname_expansion_fails();
+    }
+
+    #[test]
     fn subsequent_et_al_thresholds_shorten_the_repeat_citation() {
         announce_behavior(
             "Subsequent-citation et al. thresholds should shorten a repeat citation more aggressively than the first cite.",
@@ -1636,19 +1747,19 @@ mod disambiguation {
     }
 
     #[test]
-    fn subsequent_et_al_configuration_uses_the_subsequent_form_on_repeat() {
+    fn year_suffix_assigned_when_et_al_truncation_leaves_collision() {
         announce_behavior(
-            "Repeat citations should honor the subsequent et al. configuration instead of reusing first-citation name expansion.",
+            "When et-al truncation collapses distinct author lists to the same prefix, the resulting collision group should still receive distinct year suffixes in title sort order.",
         );
-        super::subsequent_et_al_configuration_uses_the_subsequent_form_on_repeat();
+        super::disambiguation_year_suffix_assigned_when_et_al_truncation_leaves_collision();
     }
 
     #[test]
-    fn conditions_expand_only_the_marked_items() {
+    fn identical_two_author_year_pair_receives_year_suffixes() {
         announce_behavior(
-            "Conditional disambiguation should expand only the specifically marked citation items.",
+            "Two works sharing the same two-author list and issued year should each receive a year suffix.",
         );
-        super::disambiguation_conditions_expand_only_the_marked_items();
+        super::disambiguation_identical_two_author_year_pair_receives_year_suffixes();
     }
 
     #[test]
@@ -1657,6 +1768,14 @@ mod disambiguation {
             "Year suffix generation should continue past z without resetting or truncating.",
         );
         super::disambiguation_suffixes_continue_past_z();
+    }
+
+    #[test]
+    fn multilingual_contributors_collide_on_original_family_name() {
+        announce_behavior(
+            "Multilingual contributors with matching original family names and the same issued year must form a collision group and receive year suffixes.",
+        );
+        super::disambiguation_multilingual_contributors_collide_on_original_family_name();
     }
 
     #[test]
