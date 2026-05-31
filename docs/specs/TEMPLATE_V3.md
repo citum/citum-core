@@ -1,6 +1,6 @@
 # Template Schema v3 Specification
 
-**Status:** Draft
+**Status:** Active
 **Version:** 0.3
 **Date:** 2026-05-05
 **Supersedes:** `docs/specs/TEMPLATE_V2.md`

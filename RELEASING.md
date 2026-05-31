@@ -9,7 +9,7 @@ are marked explicitly.
 | Channel | Format | Audience |
 |---|---|---|
 | **crates.io** | 12 published crates (see list below) | Rust developers (`cargo install citum`, library users) |
-| **JSR** | `@citum/citum` WASM + TypeScript package | JavaScript, TypeScript, Deno, and browser integrations |
+| **JSR** | `@citum/engine` WASM + TypeScript package | JavaScript, TypeScript, Deno, and browser integrations |
 | **GitHub Releases** | Cross-platform tarballs + `SHA256SUMS` + `install.sh` | End-users (`curl ... \| sh`), distro packagers |
 
 Out of scope for now (deliberately): Homebrew tap, npm wrapper, Docker
@@ -60,7 +60,7 @@ The release is automated end-to-end. Day-to-day, the work is:
    - `publish-crates` (~5 min, gated on `build`) — runs
      `scripts/publish-crates.sh` against `CARGO_REGISTRY_TOKEN`
    - `publish-jsr` (~5 min, gated on `build`) — builds the WASM/TypeScript
-     package and publishes `@citum/citum` to JSR using GitHub OIDC
+     package and publishes `@citum/engine` to JSR using GitHub OIDC
 
 4. **Verify** (described in [§ Post-release verification](#post-release-verification)).
 
@@ -94,7 +94,7 @@ citum --version
 citum-server --version
 
 # JavaScript/WASM package:
-# Verify https://jsr.io/@citum/citum shows the new version.
+# Verify https://jsr.io/@citum/engine shows the new version.
 ```
 
 The install script verifies the SHA256 of the downloaded tarball
@@ -165,7 +165,7 @@ cargo install citum-server --locked
    open https://jsr.io/new. JSR creates scopes from the package-publish
    form: in the **Scope** selector, choose the existing `citum` scope if
    it is listed, or choose the create-new-scope option and enter `citum`.
-   Then set the package name to `citum`, producing `@citum/citum`.
+   Then set the package name to `engine`, producing `@citum/engine`.
    This is not a token setup step.
 
 2. **Trusted publishing.** In the JSR package settings, link the package

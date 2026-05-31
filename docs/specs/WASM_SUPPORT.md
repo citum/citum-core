@@ -1,339 +1,122 @@
-# WebAssembly Support Architecture
+# WebAssembly Support Specification
 
-**Status:** Design Phase (Deferred)
-**Bean:** csl26-qf4k
-**Author:** Deep architecture analysis
-**Date:** 2026-02-15
+**Status:** Active
+**Date:** 2026-05-31
+**Supersedes:** previous "Design Phase (Deferred)" architecture document
+**Related:** `crates/citum-bindings/`, `scripts/build-jsr-package.sh`,
+  `.github/workflows/release.yml`, `RELEASING.md`
 
-## Problem Statement
+## Purpose
 
-Citum processor is a pure Rust citation engine with no I/O dependencies, making it an ideal candidate for WebAssembly compilation. However, WASM support requires:
+Document Citum's shipped WebAssembly and TypeScript publication strategy. Citum
+exposes its citation engine to JavaScript/TypeScript consumers via a wasm-bindgen
+build of `crates/citum-bindings`, published as `@citum/engine` on JSR. This spec
+is the design authority for the public JS/TS API surface, the build pipeline, and
+the downstream integration point in citum-hub.
 
-1. **Browser integration** - JavaScript bindings for web-based citation processing
-2. **Cross-platform deployment** - Desktop/mobile plugins without native compilation
-3. **Serverless edge** - Cloudflare Workers, Deno Deploy, AWS Lambda with WASM runtime
-4. **Bundle size optimization** - Target <250 KB gzipped for fast browser loading
+## Scope
 
-The challenge: How do we expose Citum's synchronous, type-safe API to JavaScript ecosystems while maintaining zero-cost abstractions and deterministic performance?
+**In scope:** the `citum-bindings` wasm feature set, exported JS API, build
+pipeline (`build-jsr-package.sh`), JSR publication, and the citum-hub wasm-bridge
+as a downstream reference consumer.
 
-## Key Insight: WASM Beyond Browsers
+**Out of scope:** native FFI bindings (citum-labs), WASM runtimes other than the
+web target, bundle-size optimizations not yet implemented, and browser integration
+testing infrastructure.
 
-WASM is not just a browser technology—it's a universal compilation target for sandboxed execution:
+## Design
 
-**Desktop Contexts:**
-- Plugin systems (VS Code extensions, Obsidian plugins, Zotero plugins)
-- Cross-platform apps (Tauri/Electron) wanting embedded citation processing
-- Any app embedding citation engine without per-platform native compilation
+### Feature flags
 
-**Mobile Contexts:**
-- React Native apps (hermes-wasm)
-- Flutter apps (wasm_interop)
-- Hybrid mobile frameworks (Ionic, Capacitor)
+`crates/citum-bindings/Cargo.toml` exposes three composable WASM feature flags:
 
-**Serverless/Edge:**
-- Cloudflare Workers, Deno Deploy (WASM-native)
-- AWS Lambda with WASM runtime
-- Python/Node.js apps wanting sandboxed execution
+| Feature | Contents |
+|---|---|
+| `wasm` | wasm-bindgen bindings only; minimal bundle |
+| `small-wasm` | alias for `wasm` |
+| `full-wasm` | `wasm` + `icu` (locale-aware collation via ICU4X) |
 
-**Key Benefit:** Compile once, run anywhere with WASM runtime—avoids native compilation complexity.
+The JSR release build uses `full-wasm` for correct Unicode collation. Consumers
+wanting a smaller bundle can use `small-wasm` and accept ASCII-only collation
+fallback.
 
-## Design Solution: Three-Tier WASM Strategy
+### Exported JavaScript API
 
-### Tier 1: Core WASM Compatibility
+All public functions are feature-gated with
+`#[cfg_attr(feature = "wasm", wasm_bindgen(js_name = "..."))]`
+in `crates/citum-bindings/src/lib.rs`:
 
-**Purpose:** Ensure citum_engine compiles to wasm32-unknown-unknown without code changes.
+| JS name | Rust fn | Description |
+|---|---|---|
+| `getStyleMetadata` | `get_style_metadata` | Parse a YAML style and return metadata as JSON |
+| `materializeStyle` | `materialize_style` | Resolve inheritance and return a fully-materialized style JSON |
+| `renderCitation` | `render_citation` | Render a citation cluster from style YAML + refs JSON |
+| `renderBibliography` | `render_bibliography` | Render a bibliography from style YAML + refs JSON |
+| `validateStyle` | `validate_style` | Validate a YAML style; returns `Ok(())` or an error string |
+| `formatDocument` | `format_document` | Full document-batch rendering from a JSON request |
 
-**Approach:**
-1. Add `crate-type = ["cdylib", "rlib"]` to citum_engine Cargo.toml
-2. Feature-gate filesystem I/O (already minimal—only in CLI crates)
-3. Audit dependencies for no_std/WASM support
-4. Add wasm32-unknown-unknown to CI build matrix
+`export_typescript` is native-only (used by the schema generation toolchain).
 
-**Dependency Validation:**
-- ✅ winnow - Pure parser, no I/O
-- ✅ serde/serde_json/serde_yaml - WASM-compatible
-- ✅ indexmap - no_std support
-- ✅ jotdown - Renderer trait abstraction (PRIOR_ART.md #105)
-- ⚠️ regex - Works in WASM but large binary size (needs size optimization)
+### Build pipeline
 
-**Success Criteria:**
-- `cargo build --target wasm32-unknown-unknown` succeeds
-- All tests pass in WASM environment (wasm-pack test)
+`scripts/build-jsr-package.sh` is the authoritative build script:
 
-### Tier 2: JavaScript Bindings
+1. Runs `wasm-pack build crates/citum-bindings --target web --features full-wasm`.
+2. Stages output under `target/jsr/citum/` alongside `README-JSR.md` (renamed
+   to `README.md`) and a generated `jsr.json`.
+3. `jsr.json` sets `"name": "@citum/engine"` and lists the four wasm-bindgen
+   artefacts: `citum_bindings.js`, `citum_bindings.d.ts`,
+   `citum_bindings_bg.wasm`, `citum_bindings_bg.wasm.d.ts`.
 
-**Purpose:** Expose type-safe, ergonomic JavaScript API for citation processing.
+The `target/jsr/` directory is gitignored; the package is built fresh on every
+release tag.
 
-**Approach:** Create `csln_wasm` crate with wasm-bindgen bindings.
+### Publication
 
-**API Design (Synchronous Only):**
-```rust
-use wasm_bindgen::prelude::*;
+`@citum/engine` is published to `jsr.io/@citum/engine` via GitHub OIDC trusted
+publishing in the `publish-jsr` job of `.github/workflows/release.yml`. No JSR
+token is stored in CI secrets; publication is gated on a successful `build` job.
 
-#[wasm_bindgen]
-pub struct WasmProcessor {
-    style: Style,
-    references: Vec<Reference>,
-}
-
-#[wasm_bindgen]
-impl WasmProcessor {
-    /// Create processor from style YAML and references JSON
-    #[wasm_bindgen(constructor)]
-    pub fn new(style_yaml: &str, refs_json: &str) -> Result<WasmProcessor, JsValue>;
-
-    /// Process a single citation
-    #[wasm_bindgen(js_name = processCitation)]
-    pub fn process_citation(&self, citation_json: &str) -> Result<String, JsValue>;
-
-    /// Generate bibliography
-    #[wasm_bindgen(js_name = processBibliography)]
-    pub fn process_bibliography(&self) -> Result<String, JsValue>;
-
-    /// Get available reference types
-    #[wasm_bindgen(js_name = referenceTypes)]
-    pub fn reference_types() -> Vec<String>;
-}
+```bash
+# Install
+deno add jsr:@citum/engine
 ```
 
-**Error Handling:**
-```rust
-#[wasm_bindgen]
-pub enum WasmErrorKind {
-    ParseError,          // YAML/JSON parse failure
-    ReferenceError,      // Invalid reference structure
-    TemplateError,       // Style template issue
-}
+### citum-hub wasm-bridge (downstream reference)
 
-impl From<ProcessorError> for JsValue {
-    fn from(err: ProcessorError) -> Self {
-        // Structured error translation for JavaScript
-        let obj = js_sys::Object::new();
-        js_sys::Reflect::set(&obj, &"kind".into(), &err.kind().to_string().into());
-        js_sys::Reflect::set(&obj, &"message".into(), &err.to_string().into());
-        obj.into()
-    }
-}
-```
+`citum-hub/server/crates/wasm-bridge` is a Hub-specific adapter crate that
+depends on `citum-bindings` (with `wasm` + `legacy-convert` features) and the
+Hub's `intent-engine`. It is built with `wasm-pack --target nodejs` for the Hub
+server and exposes three additional Hub-specific functions: `decide`,
+`generate_style`, `render_intent_citation`. It is **not** part of the public
+`@citum/engine` API.
 
-**TypeScript Definitions:**
-```typescript
-// Generated by wasm-bindgen
-export class WasmProcessor {
-  constructor(style_yaml: string, refs_json: string);
-  processCitation(citation_json: string): string;
-  processBibliography(): string;
-  static referenceTypes(): string[];
-}
+## Implementation Notes
 
-export enum WasmErrorKind {
-  ParseError = "ParseError",
-  ReferenceError = "ReferenceError",
-  TemplateError = "TemplateError",
-}
-```
+- `wasm-opt` is disabled in the citum-hub wasm-bridge release profile but
+  enabled with size flags in `citum-bindings`
+  (`-Oz --enable-bulk-memory --enable-simd --strip-debug`).
+- TypeScript definitions are generated automatically by wasm-bindgen and
+  included in the JSR package.
+- `full-wasm` includes ICU4X for locale-aware bibliography sorting; `small-wasm`
+  falls back to bytewise comparison.
 
-**Rationale for Synchronous API:**
-- Citation processing is fast (<10ms per reference)
-- No I/O, network, or blocking operations
-- Matches native Citum API design
-- Avoids async overhead in JavaScript
+## Acceptance Criteria
 
-**Success Criteria:**
-- TypeScript definitions validated (tsc --noEmit)
-- Browser integration tests pass (Playwright)
-- Error messages clear and actionable
+- [x] `crates/citum-bindings` compiles to `wasm32-unknown-unknown` with
+      `full-wasm` feature.
+- [x] All six JS API functions exported with correct camelCase JS names.
+- [x] TypeScript definitions generated and included in the JSR package.
+- [x] `@citum/engine` published to JSR via trusted publishing (no stored token).
+- [x] `deno add jsr:@citum/engine` installs successfully.
+- [ ] End-to-end integration test: `formatDocument` called from Deno with a real
+      style + bibliography returns correct output.
+- [ ] Browser integration tests (Chrome, Firefox, Safari) via web target.
 
-### Tier 3: Bundle Optimization
+## Changelog
 
-**Purpose:** Minimize WASM bundle size for fast browser loading.
-
-**Approach:**
-1. **Cargo.toml optimization:**
-   ```toml
-   [profile.release]
-   opt-level = "z"           # Optimize for size
-   lto = true                # Link-time optimization
-   codegen-units = 1         # Single codegen unit for smaller binary
-   strip = true              # Strip debug symbols
-   panic = "abort"           # Smaller panic handling
-   ```
-
-2. **wasm-opt post-processing:**
-   ```bash
-   wasm-opt -Oz -o output.wasm input.wasm
-   ```
-
-3. **Feature flags for optional locales:**
-   ```toml
-   [features]
-   default = ["locale-en"]
-   locale-en = []
-   locale-de = []
-   locale-fr = []
-   # ... other locales
-   ```
-
-4. **Lazy loading for large data:**
-   - Load locales on-demand via JavaScript fetch
-   - Cache in IndexedDB for subsequent loads
-
-**Size Targets:**
-- Minimal (en-US only): <150 KB gzipped
-- Standard (5 locales): <250 KB gzipped
-- Full (all locales): <500 KB gzipped
-
-**Success Criteria:**
-- Bundle size meets targets
-- Lazy locale loading works
-- No runtime performance regression vs native
-
-## Implementation Roadmap
-
-### Phase 1: WASM Compatibility (1 week)
-1. Add `crate-type = ["cdylib", "rlib"]` to citum_engine
-2. Create csln_wasm crate with basic wasm-bindgen setup
-3. Add wasm32-unknown-unknown to CI (.github/workflows/ci.yml)
-4. Validate all dependencies compile to WASM
-5. Run test suite in WASM environment
-
-### Phase 2: JavaScript Bindings (2 weeks)
-1. Implement WasmProcessor with new(), process_citation(), process_bibliography()
-2. Add error translation (ProcessorError → JsValue)
-3. Generate TypeScript definitions
-4. Create browser integration tests (Playwright)
-5. Write example HTML demo page
-
-### Phase 3: Bundle Optimization (1 week)
-1. Enable LTO + opt-level="z" in release profile
-2. Add wasm-opt post-processing to build script
-3. Implement feature flags for locales
-4. Benchmark bundle sizes (minimal/standard/full)
-5. Add lazy locale loading example
-
-### Phase 4: npm Package (1 week)
-1. Create @csln/processor-wasm package structure
-2. Add package.json with TypeScript types
-3. Set up automated publishing (GitHub Actions)
-4. Write integration guide (../../WASM_INTEGRATION.md)
-5. Publish to npm registry
-
-### Phase 5: Verification (1 week)
-1. Port oracle.js verification to browser
-2. Run APA 7th test suite in WASM
-3. Benchmark native vs WASM performance
-4. Test in multiple browsers (Chrome, Firefox, Safari)
-5. Update STYLE_EDITOR_VISION.md with implementation status
-
-**Total Effort:** 6 weeks (deferred until API stable)
-
-## Compliance with Project Principles
-
-### 1. Explicit Over Magic
-- WASM API mirrors native Rust API design
-- No hidden browser-specific optimizations
-- Error handling explicit and structured
-
-### 2. Declarative Templates
-- WASM processor uses same style YAML as native
-- No WASM-specific template syntax
-- Portable styles between native and WASM
-
-### 3. Code-as-Schema
-- wasm-bindgen generates TypeScript definitions from Rust types
-- Single source of truth for API surface
-- Type safety preserved across language boundary
-
-### 4. Graceful Degradation
-- Locale loading fails gracefully (fallback to en-US)
-- Large bundle sizes degrade to lazy loading
-- WASM-unsupported browsers fall back to native or polyfill
-
-### 5. No Configuration Burden
-- Single new() constructor, minimal API surface
-- Same YAML/JSON inputs as native
-- No WASM-specific configuration
-
-## Persona Evaluation
-
-### Style Author
-- WASM deployment transparent (same YAML styles)
-- Browser preview uses WASM backend
-- No WASM-specific authoring required
-
-### Web Developer
-- Clean JavaScript API with TypeScript definitions
-- npm package with zero-config setup
-- Error messages clear and actionable
-
-### Systems Architect
-- Pure Rust implementation, zero-cost abstractions
-- Deterministic performance (no GC pauses)
-- Well-documented WASM compilation process
-
-### Domain Expert
-- WASM backend invisible (same citation output)
-- Browser-based tools "just work"
-- No installation required for web demos
-
-## Trigger Conditions for Implementation
-
-WASM support should be implemented when **any** of these conditions are met:
-
-1. **API Stability:** 10+ parent styles fully working (validates API design)
-2. **Feature Completeness:** Core features stable (disambiguation, page ranges, locales)
-3. **Integration Need:** Style editor work begins (STYLE_EDITOR_VISION.md #159)
-4. **External Request:** Zotero web, Obsidian plugin, or other integration request
-5. **Web Demo:** Need browser-based demonstration for project visibility
-
-**Current Status:** DEFERRED—blocked by Bean csl26-m3lb (hybrid migration strategy)
-
-## References
-
-- **citeproc-rs WASM** - PRIOR_ART.md Section 5.5 (WASM-first architecture)
-- **jotdown renderer** - PRIOR_ART.md #105 (trait-based output abstraction)
-- **STYLE_EDITOR_VISION.md** - Requires /preview/citation and /preview/bibliography endpoints (#159)
-- **wasm-bindgen Guide** - https://rustwasm.github.io/../../wasm-bindgen/
-- **wasm-pack** - https://rustwasm.github.io/../../wasm-pack/
-
-## Open Questions
-
-1. **Async API?** Should we provide optional async API for large bibliographies (>1000 refs)? Rationale: blocking main thread for long operations.
-2. **Streaming Output?** For large bibliographies, should we stream results incrementally? Rationale: progressive rendering in UI.
-3. **Multi-threading?** Should we support multi-threaded WASM via rayon + web workers? Rationale: parallel citation processing.
-4. **Locale CDN?** Should we host locales on CDN for lazy loading? Rationale: avoid bundling all locales in every app.
-
-## Success Metrics
-
-**Tier 1 (WASM Compatibility):**
-- [ ] citum_engine compiles to wasm32-unknown-unknown
-- [ ] All tests pass in WASM environment
-- [ ] Zero code changes to core processor
-
-**Tier 2 (JavaScript Bindings):**
-- [ ] TypeScript definitions validated
-- [ ] Browser integration tests pass (Chrome, Firefox, Safari)
-- [ ] Error messages clear and actionable
-- [ ] Example HTML demo page works
-
-**Tier 3 (Bundle Optimization):**
-- [ ] Minimal bundle <150 KB gzipped
-- [ ] Standard bundle <250 KB gzipped
-- [ ] Lazy locale loading works
-- [ ] Performance within 3x native
-
-**Tier 4 (npm Package):**
-- [ ] @csln/processor-wasm published to npm
-- [ ] Integration guide complete (../../WASM_INTEGRATION.md)
-- [ ] Automated publishing via GitHub Actions
-
-**Tier 5 (Verification):**
-- [x] APA 7th oracle tests pass in WASM
-- [x] Performance benchmark report (native vs WASM) — see [WASM_BENCHMARK_REPORT.md](./WASM_BENCHMARK_REPORT.md)
-- [ ] STYLE_EDITOR_VISION.md updated with implementation status
-
-## Conclusion
-
-WASM support extends Citum processor to browser, desktop, mobile, and serverless contexts without code duplication or native compilation complexity. By deferring implementation until API stability (10+ parent styles working), we avoid premature optimization while preserving WASM-compatible design patterns.
-
-The three-tier strategy (compatibility → bindings → optimization) provides clear milestones and allows incremental deployment. When trigger conditions are met, implementation follows a well-defined 6-week roadmap with measurable success criteria.
+- 2026-05-31: Rewrite. Supersedes the "Design Phase (Deferred)" document that
+  proposed `csln_wasm` crate, `@csln/processor-wasm` on npm, and a three-tier
+  future roadmap. Documents the shipped `@citum/engine` on JSR, the
+  `citum-bindings` feature-flag model, and citum-hub wasm-bridge as a downstream
+  consumer.
