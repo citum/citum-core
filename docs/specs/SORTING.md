@@ -142,9 +142,10 @@ behavior. Bibliography-specific sort tests: `mod sorting` in
 
 ## Open Work
 
-- `EXPLICIT_DEFAULT_SORTING.md` tracks the implementation of `Processing::default_citation_sort_policy()`
-  and the formalization of `CitationSortPolicy::ExplicitOnly` as a public API (currently
-  behavior-only, not an enum value).
+- `EXPLICIT_DEFAULT_SORTING.md` tracks any remaining cleanup around
+  `Processing::default_citation_sort_policy()` and `CitationSortPolicy::ExplicitOnly`.
+  Both are already public (`processing.rs:162`, `processing.rs:207`) and re-exported
+  from `options/mod.rs`; the spec's implementation steps are effectively complete.
 - Per-script partitioning (`sort-partitioning`) acceptance criteria are tracked in
   `MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`.
 

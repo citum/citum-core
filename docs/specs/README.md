@@ -68,7 +68,7 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 
 | Spec | Status | Tests |
 |------|--------|-------|
-| [`DISAMBIGUATION.md`](./DISAMBIGUATION.md) — collision-key model, strategy cascade, multilingual/group disambiguation, APA §8.15 reprint keying | Draft | `citations.rs::disambiguation` |
+| [`DISAMBIGUATION.md`](./DISAMBIGUATION.md) — collision-key model, strategy cascade, multilingual/group disambiguation, APA §8.15 reprint keying | Active | `citations.rs::disambiguation` |
 | [`CITE_SITE_COMPOUND_GROUPING.md`](./CITE_SITE_COMPOUND_GROUPING.md) — cite-site compound grouping and position-aware overrides | Active | `citations.rs::sorting_and_grouping` |
 | [`INTEGRAL_NAME_MEMORY.md`](./INTEGRAL_NAME_MEMORY.md) — durable author-display state across citation clusters | Active | `citations.rs::integral_name_memory` |
 | [`PERSONAL_COMMUNICATION_CITATION.md`](./PERSONAL_COMMUNICATION_CITATION.md) — rendering of personal communications across style families | Active | `citations.rs::contributor_scoping` |
@@ -124,7 +124,7 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 | Spec | Status | Tests |
 |------|--------|-------|
 | [`TYPE_REFACTOR_v3.md`](./TYPE_REFACTOR_v3.md) — unified type system refactor for high-fidelity work modeling | Active | `metadata.rs`, `domain_fixtures.rs` |
-| [`TYPE_SYSTEM_ARCHITECTURE.md`](./TYPE_SYSTEM_ARCHITECTURE.md) — overall type system architecture and classification hierarchy | Active | `crates/citum-schema/tests/` |
+| [`TYPE_SYSTEM_ARCHITECTURE.md`](./TYPE_SYSTEM_ARCHITECTURE.md) — overall type system architecture and classification hierarchy | Draft | `crates/citum-schema/tests/` |
 | [`INPUT_REFERENCE_CLASS_DISCRIMINATOR.md`](./INPUT_REFERENCE_CLASS_DISCRIMINATOR.md) — discriminated union for reference-class dispatch | Active | `crates/citum-schema/tests/` |
 | [`GENERALIZED_RELATIONAL_CONTAINER_MODEL.md`](./GENERALIZED_RELATIONAL_CONTAINER_MODEL.md) — recursive relational container model replacing flat variables | Active | `metadata.rs` |
 | [`DATE_MODEL.md`](./DATE_MODEL.md) — refined date model for created vs. issued distinction | Active | `metadata.rs` |
@@ -138,10 +138,10 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 | Spec | Status | Tests |
 |------|--------|-------|
 | [`TEMPLATE_V2.md`](./TEMPLATE_V2.md) — simplified Template Schema v2 with group-first composition | Active | `bibliography.rs`, `citations.rs` |
-| [`TEMPLATE_V3.md`](./TEMPLATE_V3.md) — Template Schema v3 extensions | Active | `bibliography.rs`, `citations.rs` |
+| [`TEMPLATE_V3.md`](./TEMPLATE_V3.md) — Template Schema v3 extensions | Draft | `bibliography.rs`, `citations.rs` |
 | [`TITLE_TEXT_CASE.md`](./TITLE_TEXT_CASE.md) — modeling and applying title-like text-case transformations | Active | `bibliography.rs` |
 | [`TITLE_NAME_INFLECTION.md`](./TITLE_NAME_INFLECTION.md) — grammatical inflection of title-adjacent names | Active | `bibliography.rs` |
-| [`PUNCTUATION_NORMALIZATION.md`](./PUNCTUATION_NORMALIZATION.md) — normalization of punctuation at rendered output boundaries | Active | `bibliography.rs`, `citations.rs` |
+| [`PUNCTUATION_NORMALIZATION.md`](./PUNCTUATION_NORMALIZATION.md) — normalization of punctuation at rendered output boundaries | Draft | `bibliography.rs`, `citations.rs` |
 | [`DJOT_RICH_TEXT.md`](./DJOT_RICH_TEXT.md) — Djot as the rich-text markup substrate for note/abstract fields | Active | `document.rs::djot_adapter` |
 | [`SHORT_NAME.md`](./SHORT_NAME.md) — short-name rendering for abbreviated contributor identifiers | Active | `bibliography.rs::title_short_resolution` |
 | [`ABBREVIATION_MAP.md`](./ABBREVIATION_MAP.md) — abbreviation lookup map for journal and publisher names | Active | `bibliography.rs` |
@@ -190,8 +190,8 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 | Spec | Status | Tests |
 |------|--------|-------|
 | [`LANGUAGE_BINDINGS.md`](./LANGUAGE_BINDINGS.md) — multi-language type bindings for canonical data shapes | Active | `crates/citum-bindings/tests/` |
-| [`WASM_SUPPORT.md`](./WASM_SUPPORT.md) — WASM build targets and embedding model | Active | — |
-| [`DISTRIBUTED_RESOLVER.md`](./DISTRIBUTED_RESOLVER.md) — federated registry and distributed resolver architecture (Phases 2–3) | Draft | — |
-| [`CLI_UX_REDESIGN.md`](./CLI_UX_REDESIGN.md) — clean command model for style discovery, registry management, and CLI validation UX | Draft | — |
+| [`WASM_SUPPORT.md`](./WASM_SUPPORT.md) — WASM build targets and embedding model | Draft | — |
+| [`DISTRIBUTED_RESOLVER.md`](./DISTRIBUTED_RESOLVER.md) — federated registry and distributed resolver architecture (Phases 2–3) | Active | — |
+| [`CLI_UX_REDESIGN.md`](./CLI_UX_REDESIGN.md) — clean command model for style discovery, registry management, and CLI validation UX | Active | — |
 | [`AUTHORING_AGENT_SKILL.md`](./AUTHORING_AGENT_SKILL.md) — Citum Authoring Agent Skill specification for AI-assisted style authoring | Active | — |
 
