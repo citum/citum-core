@@ -91,6 +91,11 @@ pub(crate) enum OutputFormat {
     Plain,
     Html,
     Djot,
+    /// CommonMark (Markdown) output — citations rendered inline, body markup
+    /// passed through verbatim. Suitable for piping to pandoc or any
+    /// CommonMark-aware formatter. Note styles emit `[^n]` footnote syntax
+    /// (Pandoc/GFM extension — use `pandoc --from commonmark+footnotes`).
+    Markdown,
     Latex,
     Typst,
 }
@@ -101,6 +106,7 @@ impl std::fmt::Display for OutputFormat {
             OutputFormat::Plain => write!(f, "plain"),
             OutputFormat::Html => write!(f, "html"),
             OutputFormat::Djot => write!(f, "djot"),
+            OutputFormat::Markdown => write!(f, "markdown"),
             OutputFormat::Latex => write!(f, "latex"),
             OutputFormat::Typst => write!(f, "typst"),
         }

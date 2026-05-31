@@ -13,6 +13,7 @@ use crate::render::djot::Djot;
 use crate::render::format::OutputFormat;
 use crate::render::html::Html;
 use crate::render::latex::Latex;
+use crate::render::markdown::Markdown;
 use crate::render::plain::PlainText;
 use crate::render::typst::Typst;
 use citum_schema::Style;
@@ -126,6 +127,10 @@ pub fn format_document(
 /// # Errors
 ///
 /// Returns an error if rendering fails.
+#[allow(
+    clippy::too_many_lines,
+    reason = "match arms grow one-to-one with format variants"
+)]
 pub fn format_document_with_style(
     style: Style,
     request: FormatDocumentRequest,
@@ -208,6 +213,7 @@ pub fn format_document_with_style(
         OutputFormatKind::Djot => format_by_kind::<Djot>(&processor, &citations)?,
         OutputFormatKind::Latex => format_by_kind::<Latex>(&processor, &citations)?,
         OutputFormatKind::Typst => format_by_kind::<Typst>(&processor, &citations)?,
+        OutputFormatKind::Markdown => format_by_kind::<Markdown>(&processor, &citations)?,
     };
 
     // Process bibliography
@@ -233,6 +239,11 @@ pub fn format_document_with_style(
             request.document_options.as_ref(),
         )?,
         OutputFormatKind::Typst => format_bibliography::<Typst>(
+            &processor,
+            request.output_format,
+            request.document_options.as_ref(),
+        )?,
+        OutputFormatKind::Markdown => format_bibliography::<Markdown>(
             &processor,
             request.output_format,
             request.document_options.as_ref(),

@@ -1055,6 +1055,102 @@ mod note_flow {
     }
 }
 
+fn given_markdown_document_with_pipe_table_when_rendered_as_markdown_then_body_passes_through_verbatim()
+ {
+    // A GFM pipe table, a fenced code block, and a citation in prose — body
+    // markup must survive verbatim; only the [@key] marker is replaced.
+    let processor = example_document_processor("styles/embedded/apa-7th.yaml");
+    let parser = MarkdownParser;
+    let pipe_table = "| Column A | Column B |\n|----------|----------|\n| cell 1   | cell 2   |";
+    let code_block = "```rust\nfn hello() {}\n```";
+    let document =
+        format!("# Introduction\n\nAs argued in [@kuhn1962].\n\n{pipe_table}\n\n{code_block}\n");
+
+    let output = processor.process_document::<_, citum_engine::render::markdown::Markdown>(
+        &document,
+        &parser,
+        DocumentFormat::Markdown,
+    );
+
+    // Pipe table lines must be unchanged.
+    assert!(
+        output.contains("| Column A | Column B |"),
+        "pipe table header missing: {output}"
+    );
+    assert!(
+        output.contains("|----------|----------|"),
+        "pipe table separator missing: {output}"
+    );
+    assert!(
+        output.contains("| cell 1   | cell 2   |"),
+        "pipe table row missing: {output}"
+    );
+
+    // Fenced code block must be unchanged.
+    assert!(
+        output.contains("```rust\nfn hello() {}\n```"),
+        "fenced code block missing or modified: {output}"
+    );
+
+    // Citation marker replaced with rendered inline text.
+    assert!(
+        !output.contains("[@kuhn1962]"),
+        "raw citation marker should be replaced: {output}"
+    );
+    assert!(
+        output.contains("As argued in (Kuhn, 1962)."),
+        "rendered citation should replace the marker with the full APA cite: {output}"
+    );
+
+    // Bibliography heading present.
+    assert!(
+        output.contains("# Bibliography"),
+        "bibliography heading missing: {output}"
+    );
+}
+
+fn given_note_style_markdown_document_when_rendered_as_markdown_then_commonmark_footnote_syntax_is_emitted()
+ {
+    // Note styles emit [^label] anchors in prose and [^label]: … definitions
+    // at the end — the CommonMark+footnotes extension used by Pandoc/GFM.
+    let processor =
+        example_document_processor("styles/embedded/chicago-shortened-notes-bibliography.yaml");
+    let parser = MarkdownParser;
+    let document = "First claim [@kuhn1962]. Second claim [@smith2010].";
+
+    let output = processor.process_document::<_, citum_engine::render::markdown::Markdown>(
+        document,
+        &parser,
+        DocumentFormat::Markdown,
+    );
+
+    // Footnote anchors in prose.
+    assert!(
+        output.contains("[^citum-auto-1]"),
+        "first footnote anchor missing: {output}"
+    );
+    assert!(
+        output.contains("[^citum-auto-2]"),
+        "second footnote anchor missing: {output}"
+    );
+
+    // Footnote definitions with rendered content (CommonMark emphasis).
+    assert!(
+        output.contains("[^citum-auto-1]:"),
+        "first footnote definition missing: {output}"
+    );
+    assert!(
+        output.contains("[^citum-auto-2]:"),
+        "second footnote definition missing: {output}"
+    );
+
+    // No raw citation markers remain.
+    assert!(
+        !output.contains("[@kuhn1962]") && !output.contains("[@smith2010]"),
+        "raw citation markers should be replaced: {output}"
+    );
+}
+
 mod markdown_documents {
     use super::announce_behavior;
 
