@@ -138,7 +138,7 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 | Spec | Status | Tests |
 |------|--------|-------|
 | [`TEMPLATE_V2.md`](./TEMPLATE_V2.md) — simplified Template Schema v2 with group-first composition | Active | `bibliography.rs`, `citations.rs` |
-| [`TEMPLATE_V3.md`](./TEMPLATE_V3.md) — Template Schema v3 extensions | Draft | `bibliography.rs`, `citations.rs` |
+| [`TEMPLATE_V3.md`](./TEMPLATE_V3.md) — Template Schema v3 extensions | Active | `bibliography.rs`, `citations.rs` |
 | [`TITLE_TEXT_CASE.md`](./TITLE_TEXT_CASE.md) — modeling and applying title-like text-case transformations | Active | `bibliography.rs` |
 | [`TITLE_NAME_INFLECTION.md`](./TITLE_NAME_INFLECTION.md) — grammatical inflection of title-adjacent names | Active | `bibliography.rs` |
 | [`PUNCTUATION_NORMALIZATION.md`](./PUNCTUATION_NORMALIZATION.md) — normalization of punctuation at rendered output boundaries | Draft | `bibliography.rs`, `citations.rs` |
@@ -190,7 +190,7 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 | Spec | Status | Tests |
 |------|--------|-------|
 | [`LANGUAGE_BINDINGS.md`](./LANGUAGE_BINDINGS.md) — multi-language type bindings for canonical data shapes | Active | `crates/citum-bindings/tests/` |
-| [`WASM_SUPPORT.md`](./WASM_SUPPORT.md) — WASM build targets and embedding model | Draft | — |
+| [`WASM_SUPPORT.md`](./WASM_SUPPORT.md) — WASM build targets and embedding model | Active | — |
 | [`DISTRIBUTED_RESOLVER.md`](./DISTRIBUTED_RESOLVER.md) — federated registry and distributed resolver architecture (Phases 2–3) | Active | — |
 | [`CLI_UX_REDESIGN.md`](./CLI_UX_REDESIGN.md) — clean command model for style discovery, registry management, and CLI validation UX | Active | — |
 | [`AUTHORING_AGENT_SKILL.md`](./AUTHORING_AGENT_SKILL.md) — Citum Authoring Agent Skill specification for AI-assisted style authoring | Active | — |
