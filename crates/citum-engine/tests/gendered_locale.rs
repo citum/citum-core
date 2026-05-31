@@ -13,7 +13,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
     reason = "Panicking is acceptable and often desired in test, benchmark, and example code."
 )]
 
-//! Snapshot coverage for gendered locale term resolution.
+//! Regression coverage for gendered locale term resolution.
 //!
 //! These tests exercise `MaybeGendered<T>` dispatch on role labels and locator
 //! terms across French (fr-FR) and Arabic (ar-AR) locales, and confirm that

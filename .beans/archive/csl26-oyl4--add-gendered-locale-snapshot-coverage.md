@@ -28,9 +28,9 @@ The model and runtime work landed in csl26-y3kj. This bean tracks only the remai
 
 ## Summary of Changes
 
-- **fr-FR.yaml**: Expanded  from plain strings to  with , , and  variants (/, /).
-- **ar-AR.yaml**: Added  with Arabic text (صفحة/صفحات) and  lexical gender marker.
+- **fr-FR.yaml**: Expanded `roles.editor.long` from plain strings to gendered singular/plural values with masculine/feminine/common variants (éditeur/éditrice, éditeurs/éditrices).
+- **ar-AR.yaml**: Added `locators.page` with Arabic text (صفحة/صفحات) and a `gender: feminine` lexical gender marker.
 - **tests/gendered_locale.rs**: New focused test file with three tests:
-  -  — verifies MaybeGendered dispatch on fr-FR editor role (all four gender × number combinations).
-  -  — verifies ar-AR page locator text, feminine lexical gender field, and MF2-driven masculine/feminine/neutral editor dispatch.
-  -  — verifies fr-FR common fallback and en-US page term are unaffected.
+  - `french_gendered_editor_role_label` — verifies MaybeGendered dispatch on the fr-FR editor role (gender × number combinations).
+  - `arabic_gendered_page_locator_and_role` — verifies ar-AR page locator text, feminine lexical gender field, and MF2-driven masculine/feminine/neutral editor dispatch.
+  - `plain_locale_fixtures_unchanged` — verifies fr-FR common fallback and en-US page terms are unaffected.
