@@ -137,7 +137,8 @@ input order if their IDs are also equal.
 ## Test Anchor
 
 `crates/citum-engine/tests/sort_oracle.rs` — end-to-end bibliography and citation sort
-behavior. Bibliography sort sub-module: `crates/citum-engine/tests/bibliography.rs::sorting`.
+behavior. Bibliography-specific sort tests: `mod sorting` in
+`crates/citum-engine/tests/bibliography.rs`.
 
 ## Open Work
 
