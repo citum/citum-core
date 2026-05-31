@@ -856,24 +856,33 @@ fn given_group_local_disambiguation_when_rendering_multilingual_groups_then_year
         DocumentFormat::Plain,
     );
 
+    // Split on the known group headings to get per-group bibliography text.
+    let vi_block = output
+        .split("# Vietnamese Sources")
+        .nth(1)
+        .and_then(|s| s.split("# Western Sources").next())
+        .unwrap_or_else(|| panic!("Vietnamese Sources section missing: {output}"));
+    let en_block = output
+        .split("# Western Sources")
+        .nth(1)
+        .unwrap_or_else(|| panic!("Western Sources section missing: {output}"));
+
+    // Each group must have both 2020a and 2020b — suffixes restart at 'a' per group.
     assert!(
-        output.contains("# Vietnamese Sources"),
-        "missing vietnamese heading: {output}"
+        vi_block.contains("2020a") && vi_block.contains("2020b"),
+        "Vietnamese group should have both 2020a and 2020b: {vi_block}"
     );
     assert!(
-        output.contains("# Western Sources"),
-        "missing western heading: {output}"
+        en_block.contains("2020a") && en_block.contains("2020b"),
+        "Western group should have both 2020a and 2020b: {en_block}"
     );
 
-    // With per-group local disambiguation, each group should restart at 2020a.
-    // Count only bibliography output because in-text citations can include extra suffixes.
-    let bibliography_only = output
-        .split("# Bibliography")
-        .nth(1)
-        .unwrap_or_default()
-        .to_string();
-    let count_2020a = bibliography_only.matches("2020a").count();
-    assert_eq!(count_2020a, 2, "expected 2020a in both groups: {output}");
+    // Suffixes must not bleed across the boundary: neither group should contain
+    // a suffix that belongs to the other (i.e. no 2020c or 2020d anywhere).
+    assert!(
+        !output.contains("2020c") && !output.contains("2020d"),
+        "No cross-group suffix leakage expected: {output}"
+    );
 }
 
 fn given_juris_m_legal_grouping_when_rendered_then_headings_follow_the_expected_legal_hierarchy() {
