@@ -11,7 +11,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //!
 //! ## Modules
 //! - `format`: Defines the core [`crate::render::format::OutputFormat`] trait.
-//! - `plain`, `html`, `djot`, `latex`, `typst`: Concrete renderer implementations.
+//! - `plain`, `html`, `djot`, `markdown`, `latex`, `typst`: Concrete renderer implementations.
 //! - `component`: Logic for rendering individual template components.
 //! - `citation`: Logic for joining components into full citations.
 //! - `bibliography`: Logic for rendering bibliographies.
@@ -26,6 +26,7 @@ pub mod djot;
 pub mod format;
 pub mod html;
 pub mod latex;
+pub mod markdown;
 pub(crate) mod markup;
 pub mod org;
 pub mod plain;

@@ -15,6 +15,7 @@ use crate::reference::{Bibliography, Citation, Reference};
 use crate::render::djot::Djot;
 use crate::render::html::Html;
 use crate::render::latex::Latex;
+use crate::render::markdown::Markdown;
 use crate::render::plain::PlainText;
 use crate::render::typst::Typst;
 use citum_schema::Style;
@@ -62,6 +63,7 @@ fn parse_output_format(format: &str) -> Result<&'static str, ()> {
         "djot" => Ok("djot"),
         "typst" => Ok("typst"),
         "plain" => Ok("plain"),
+        "markdown" => Ok("markdown"),
         other => {
             set_error(format!("Unsupported output format: {other}"));
             Err(())
@@ -566,6 +568,7 @@ pub unsafe extern "C" fn citum_render_citations_json(
         "latex" => processor.process_citations_with_format::<Latex>(&citations),
         "djot" => processor.process_citations_with_format::<Djot>(&citations),
         "typst" => processor.process_citations_with_format::<Typst>(&citations),
+        "markdown" => processor.process_citations_with_format::<Markdown>(&citations),
         _ => processor.process_citations_with_format::<PlainText>(&citations),
     };
 

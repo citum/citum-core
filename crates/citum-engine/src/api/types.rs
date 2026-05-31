@@ -53,6 +53,8 @@ pub enum OutputFormatKind {
     Latex,
     /// Typst markup.
     Typst,
+    /// CommonMark/Markdown markup.
+    Markdown,
 }
 
 /// Controls how annotation text is rendered in an annotated bibliography.

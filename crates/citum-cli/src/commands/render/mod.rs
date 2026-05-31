@@ -17,7 +17,9 @@ use crate::output::write_output;
 use crate::style_resolver::{create_processor, load_any_style};
 use crate::typst_pdf;
 use citum_engine::processor::document::{djot::DjotParser, markdown::MarkdownParser};
-use citum_engine::render::{djot::Djot, html::Html, latex::Latex, plain::PlainText, typst::Typst};
+use citum_engine::render::{
+    djot::Djot, html::Html, latex::Latex, markdown::Markdown, plain::PlainText, typst::Typst,
+};
 use citum_engine::{Citation, DocumentFormat, Processor};
 use citum_io::{
     AnnotationFormat, AnnotationStyle, load_annotations, load_merged_bibliography,
@@ -200,6 +202,9 @@ fn render_doc_with_output_format(
                 OutputFormat::Djot => {
                     Ok(processor.process_document::<_, Djot>(content, &parser, doc_format))
                 }
+                OutputFormat::Markdown => {
+                    Ok(processor.process_document::<_, Markdown>(content, &parser, doc_format))
+                }
                 OutputFormat::Latex => {
                     Ok(processor.process_document::<_, Latex>(content, &parser, doc_format))
                 }
@@ -220,6 +225,9 @@ fn render_doc_with_output_format(
                 OutputFormat::Djot => {
                     Ok(processor.process_document::<_, Djot>(content, &parser, doc_format))
                 }
+                OutputFormat::Markdown => {
+                    Ok(processor.process_document::<_, Markdown>(content, &parser, doc_format))
+                }
                 OutputFormat::Latex => {
                     Ok(processor.process_document::<_, Latex>(content, &parser, doc_format))
                 }
@@ -237,6 +245,7 @@ fn to_document_format(output_format: OutputFormat) -> Result<DocumentFormat, Box
         OutputFormat::Plain => Ok(DocumentFormat::Plain),
         OutputFormat::Html => Ok(DocumentFormat::Html),
         OutputFormat::Djot => Ok(DocumentFormat::Djot),
+        OutputFormat::Markdown => Ok(DocumentFormat::Markdown),
         OutputFormat::Latex => Ok(DocumentFormat::Latex),
         OutputFormat::Typst => Ok(DocumentFormat::Typst),
     }
@@ -282,6 +291,10 @@ fn render_refs_human(
             print_human_safe::<Djot>(ctx, show_cite, show_bib, citations, show_keys)
                 .map_err(std::convert::Into::into)
         }
+        OutputFormat::Markdown => {
+            print_human_safe::<Markdown>(ctx, show_cite, show_bib, citations, show_keys)
+                .map_err(std::convert::Into::into)
+        }
         OutputFormat::Latex => {
             print_human_safe::<Latex>(ctx, show_cite, show_bib, citations, show_keys)
                 .map_err(std::convert::Into::into)
@@ -312,6 +325,9 @@ fn render_refs_json(
         }
         OutputFormat::Html => print_json_with_format::<Html>(ctx, show_cite, show_bib, citations),
         OutputFormat::Djot => print_json_with_format::<Djot>(ctx, show_cite, show_bib, citations),
+        OutputFormat::Markdown => {
+            print_json_with_format::<Markdown>(ctx, show_cite, show_bib, citations)
+        }
         OutputFormat::Latex => print_json_with_format::<Latex>(ctx, show_cite, show_bib, citations),
         OutputFormat::Typst => print_json_with_format::<Typst>(ctx, show_cite, show_bib, citations),
     }
@@ -376,6 +392,7 @@ mod tests {
         assert_eq!(OutputFormat::Plain.to_string(), "plain");
         assert_eq!(OutputFormat::Html.to_string(), "html");
         assert_eq!(OutputFormat::Djot.to_string(), "djot");
+        assert_eq!(OutputFormat::Markdown.to_string(), "markdown");
         assert_eq!(OutputFormat::Latex.to_string(), "latex");
         assert_eq!(OutputFormat::Typst.to_string(), "typst");
     }
