@@ -96,19 +96,21 @@ citation:
     - variable: locator
       prefix: ", "
   template:
-  - contributor: author
-    form: short
-    shorten:
-      min: 3
-      use-first: 1
-      and-others: et-al
-  - date: issued
-    form: year
+  - group:
+    - contributor: author
+      form: short
+      shorten:
+        min: 3
+        use-first: 1
+        and-others: et-al
+    - date: issued
+      form: year
+    delimiter: " "
   - variable: locator
     prefix: ", "
   wrap:
     punctuation: parentheses
-  delimiter: " "
+  delimiter: none
   multi-cite-delimiter: "; "
 bibliography:
   options:

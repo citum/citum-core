@@ -1207,6 +1207,85 @@ mod markdown_documents {
         );
         super::given_markdown_integral_note_citation_when_rendered_with_a_note_style_then_a_generated_note_is_emitted();
     }
+
+    #[test]
+    fn markdown_output_passes_pipe_table_and_code_block_through_verbatim() {
+        announce_behavior(
+            "Markdown output format must pass block-level markup (pipe tables, fenced code blocks) through verbatim while replacing citation markers with rendered inline text.",
+        );
+        super::given_markdown_document_with_pipe_table_when_rendered_as_markdown_then_body_passes_through_verbatim();
+    }
+
+    #[test]
+    fn note_style_markdown_output_emits_commonmark_footnote_syntax() {
+        announce_behavior(
+            "A note-style document rendered as Markdown output should emit [^n] anchors in prose and [^n]: … definitions, following the CommonMark+footnotes extension used by Pandoc and GFM.",
+        );
+        super::given_note_style_markdown_document_when_rendered_as_markdown_then_commonmark_footnote_syntax_is_emitted();
+    }
+
+    #[test]
+    fn citation_inside_manual_footnote_renders_in_place_not_as_auto_note() {
+        announce_behavior(
+            "A citation found inside a user-authored [^n]: footnote definition should render inline within that definition rather than generating a separate auto-footnote.",
+        );
+        super::given_markdown_citation_inside_manual_footnote_when_rendered_with_note_style_then_it_renders_in_place();
+    }
+
+    #[test]
+    fn chicago_author_date_markdown_citation_has_no_spurious_space() {
+        announce_behavior(
+            "Chicago author-date Markdown citation with locator renders as '(Kuhn 1962, 5)'.",
+        );
+        super::given_chicago_author_date_markdown_citation_when_rendered_then_no_spurious_space_before_locator();
+    }
+
+    #[test]
+    fn chicago_author_date_suppressed_citation_has_no_spurious_space() {
+        announce_behavior(
+            "Suppress-author Chicago author-date Markdown citation with locator renders as '(1962, 5)'.",
+        );
+        super::given_chicago_author_date_markdown_suppressed_citation_when_rendered_then_no_spurious_space();
+    }
+}
+
+// --- Chicago author-date Markdown rendering (#844) ---
+
+fn given_chicago_author_date_markdown_citation_when_rendered_then_no_spurious_space_before_locator()
+{
+    let processor = example_document_processor("styles/embedded/chicago-author-date-18th.yaml");
+    let parser = MarkdownParser;
+
+    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
+        "See [@kuhn1962, p. 5].",
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    // Chicago author-date should render "(Kuhn 1962, 5)" — author, year, locator, no
+    // spurious space before the comma.
+    assert!(
+        output.contains("(Kuhn 1962, 5)"),
+        "expected '(Kuhn 1962, 5)' in parenthetical citation: {output}"
+    );
+}
+
+fn given_chicago_author_date_markdown_suppressed_citation_when_rendered_then_no_spurious_space() {
+    let processor = example_document_processor("styles/embedded/chicago-author-date-18th.yaml");
+    let parser = MarkdownParser;
+
+    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
+        "See [-@kuhn1962, p. 5].",
+        &parser,
+        DocumentFormat::Plain,
+    );
+
+    // Suppress-author form should render "(1962, 5)" — year + locator, no author, no
+    // spurious space before the comma.
+    assert!(
+        output.contains("(1962, 5)"),
+        "expected '(1962, 5)' in suppress-author citation: {output}"
+    );
 }
 
 // --- Djot Adapter & Pipeline Tests ---
