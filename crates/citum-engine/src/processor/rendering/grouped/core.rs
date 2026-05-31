@@ -454,14 +454,15 @@ impl Renderer<'_> {
         let mut group_delimiter: Option<String> = None;
         for (index, item) in group.iter().enumerate() {
             let state = self.resolve_item_render_state(item, params.spec)?;
-            let (filtered_template, leading_affix) = filter_author_from_template(&state.template);
+            let (filtered_template, leading_affix, strip_item_delimiter) =
+                filter_author_from_template(&state.template);
             if group_delimiter.is_none() {
                 group_delimiter = leading_affix
                     .as_ref()
                     .filter(|value| !value.is_empty())
                     .cloned();
             }
-            let item_delimiter = if leading_affix.is_some() {
+            let item_delimiter = if strip_item_delimiter {
                 ""
             } else {
                 params.intra_delimiter
@@ -1193,12 +1194,44 @@ pub(super) fn template_uses_first_ref_note_number(template: &[TemplateComponent]
 
 pub(super) fn filter_author_from_template(
     template: &[TemplateComponent],
-) -> (Vec<TemplateComponent>, Option<String>) {
+) -> (Vec<TemplateComponent>, Option<String>, bool) {
     let mut filtered: Vec<TemplateComponent> =
         template.iter().filter_map(strip_author_component).collect();
-    let leading_affix = filtered.first().and_then(leading_group_affix);
+    let stripped_leading_affix = filtered.first().and_then(leading_group_affix);
+    let leading_affix = stripped_leading_affix.clone().or_else(|| {
+        filtered
+            .first()
+            .and_then(|_| template.first().and_then(author_group_delimiter_affix))
+    });
     if let Some(first) = filtered.first_mut() {
         strip_leading_group_affixes(first);
     }
-    (filtered, leading_affix)
+    (filtered, leading_affix, stripped_leading_affix.is_some())
+}
+
+fn author_group_delimiter_affix(component: &TemplateComponent) -> Option<String> {
+    let TemplateComponent::Group(group) = component else {
+        return None;
+    };
+    group
+        .group
+        .first()
+        .is_some_and(component_starts_with_author)
+        .then_some(group.delimiter.as_ref())
+        .flatten()
+        .map(citum_schema::template::DelimiterPunctuation::to_string_with_space)
+        .filter(|delimiter| !delimiter.is_empty())
+}
+
+fn component_starts_with_author(component: &TemplateComponent) -> bool {
+    match component {
+        TemplateComponent::Contributor(contributor) => {
+            contributor.contributor == citum_schema::template::ContributorRole::Author
+        }
+        TemplateComponent::Group(group) => group
+            .group
+            .first()
+            .is_some_and(component_starts_with_author),
+        _ => false,
+    }
 }

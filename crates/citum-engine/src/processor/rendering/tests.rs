@@ -8,8 +8,8 @@ use crate::Processor;
 use crate::processor::rendering::grouped::group_citation_items_by_author;
 use citum_schema::citation::{Citation, CitationItem, CitationMode, IntegralNameState};
 use citum_schema::options::{
-    Config, IntegralNameContexts, IntegralNameMemoryConfig, IntegralNameScope, Processing,
-    SubsequentNameForm,
+    Config, IntegralNameContexts, IntegralNameMemoryConfig, IntegralNameScope, LocatorPreset,
+    Processing, SubsequentNameForm,
 };
 use citum_schema::template::*;
 use citum_schema::{CitationSpec, Style, StyleInfo};
@@ -64,6 +64,102 @@ fn grouped_author_date_style() -> Style {
                 }),
             ]),
             wrap: Some(WrapPunctuation::Parentheses.into()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn explicit_author_year_group_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Explicit Author Year Group".to_string()),
+            id: Some("explicit-author-year-group".into()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::AuthorDate),
+            locators: Some(LocatorPreset::Note.config()),
+            ..Default::default()
+        }),
+        citation: Some(CitationSpec {
+            template: Some(vec![
+                TemplateComponent::Group(TemplateGroup {
+                    group: vec![
+                        TemplateComponent::Contributor(TemplateContributor {
+                            contributor: ContributorRole::Author,
+                            form: ContributorForm::Short,
+                            rendering: Rendering::default(),
+                            ..Default::default()
+                        }),
+                        TemplateComponent::Date(TemplateDate {
+                            date: citum_schema::template::DateVariable::Issued,
+                            form: DateForm::Year,
+                            rendering: Rendering::default(),
+                            ..Default::default()
+                        }),
+                    ],
+                    delimiter: Some(DelimiterPunctuation::Space),
+                    rendering: Rendering::default(),
+                    custom: None,
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Locator,
+                    rendering: Rendering {
+                        prefix: Some(", ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+            ]),
+            wrap: Some(WrapPunctuation::Parentheses.into()),
+            delimiter: Some("".to_string()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn explicit_author_year_group_with_locator_delimiter_style() -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Explicit Author Year Group With Locator Delimiter".to_string()),
+            id: Some("explicit-author-year-group-with-locator-delimiter".into()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::AuthorDate),
+            ..Default::default()
+        }),
+        citation: Some(CitationSpec {
+            template: Some(vec![
+                TemplateComponent::Group(TemplateGroup {
+                    group: vec![
+                        TemplateComponent::Contributor(TemplateContributor {
+                            contributor: ContributorRole::Author,
+                            form: ContributorForm::Short,
+                            rendering: Rendering::default(),
+                            ..Default::default()
+                        }),
+                        TemplateComponent::Date(TemplateDate {
+                            date: citum_schema::template::DateVariable::Issued,
+                            form: DateForm::Year,
+                            rendering: Rendering::default(),
+                            ..Default::default()
+                        }),
+                    ],
+                    delimiter: Some(DelimiterPunctuation::Space),
+                    rendering: Rendering::default(),
+                    custom: None,
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Locator,
+                    rendering: Rendering::default(),
+                    ..Default::default()
+                }),
+            ]),
+            wrap: Some(WrapPunctuation::Parentheses.into()),
+            delimiter: Some(", ".to_string()),
             ..Default::default()
         }),
         ..Default::default()
@@ -411,6 +507,69 @@ fn grouped_author_date_preserves_later_item_prefixes() {
             .process_citation(&citation)
             .expect("grouped citation should preserve later item prefixes"),
         "(Kuhn, 1962, see 1963)"
+    );
+}
+
+#[test]
+fn explicit_author_year_group_uses_group_delimiter_after_author_strip() {
+    let mut bibliography = Bibliography::new();
+    bibliography.insert(
+        "item1".to_string(),
+        make_reference("item1", "book", Some(("Kuhn", "Thomas")), 1962, "Book A"),
+    );
+    let processor = Processor::new(explicit_author_year_group_style(), bibliography);
+
+    let citation = Citation {
+        items: vec![CitationItem {
+            id: "item1".to_string(),
+            locator: Some(citum_schema::citation::CitationLocator::single(
+                citum_schema::citation::LocatorType::Page,
+                "5",
+            )),
+            ..Default::default()
+        }],
+        mode: CitationMode::NonIntegral,
+        ..Default::default()
+    };
+
+    assert_eq!(
+        processor
+            .process_citation(&citation)
+            .expect("explicit author-year group should render"),
+        "(Kuhn 1962, 5)"
+    );
+}
+
+#[test]
+fn explicit_author_year_group_keeps_tail_delimiter_for_locator() {
+    let mut bibliography = Bibliography::new();
+    bibliography.insert(
+        "item1".to_string(),
+        make_reference("item1", "book", Some(("Kuhn", "Thomas")), 1962, "Book A"),
+    );
+    let processor = Processor::new(
+        explicit_author_year_group_with_locator_delimiter_style(),
+        bibliography,
+    );
+
+    let citation = Citation {
+        items: vec![CitationItem {
+            id: "item1".to_string(),
+            locator: Some(citum_schema::citation::CitationLocator::single(
+                citum_schema::citation::LocatorType::Page,
+                "5",
+            )),
+            ..Default::default()
+        }],
+        mode: CitationMode::NonIntegral,
+        ..Default::default()
+    };
+
+    assert_eq!(
+        processor
+            .process_citation(&citation)
+            .expect("explicit author-year group should render locator"),
+        "(Kuhn 1962, p. 5)"
     );
 }
 
