@@ -5,6 +5,65 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.61.0] - 2026-06-01
+
+### Bug Fixes
+
+**engine**
+
+- Honor grouped author-date delimiter ([`03f7be0`](https://github.com/citum/citum-core/commit/03f7be0680b17e01457ec67567764de0c2730cf8))
+
+- Dedup across fenced-div bib blocks ([`9130123`](https://github.com/citum/citum-core/commit/9130123268a649ce6f52f9d7654dac3c1118c863))
+
+
+**styles**
+
+- Chicago author-date locator ([`e46afc4`](https://github.com/citum/citum-core/commit/e46afc4a0e6eddc106e925a398874bc5bc04d293))
+
+
+
+### Documentation
+
+**spec**
+
+- Update markdown pandoc workflow ([`086db76`](https://github.com/citum/citum-core/commit/086db768bd0064f70b7623428012cdc7fb0c4a8d))
+
+- Add capability index + SORTING.md ([`e3e258e`](https://github.com/citum/citum-core/commit/e3e258eec8029fc7a42d3fbb4af223d7df9a3ded))
+
+- Fold completed rows + fix alint ([`fcf1e73`](https://github.com/citum/citum-core/commit/fcf1e73a30c27eefaf44b8b409ab7f413c3fc9c0))
+
+- Fix 7 status mismatches + SORTING note ([`f3ed853`](https://github.com/citum/citum-core/commit/f3ed8539f82ed303bf1881b9ce3c09f716af2d94))
+
+- Fix WASM + TEMPLATE_V3 vs reality ([`5080d78`](https://github.com/citum/citum-core/commit/5080d782ba96102805b6ac42bf1e209cc79dd8d1))
+
+
+
+### Features
+
+**engine**
+
+- Add markdown output format ([`89b5142`](https://github.com/citum/citum-core/commit/89b5142ce02b817dc57936e866e1fcbabdbd913c))
+
+- Markdown footnote placement ([`ec5110e`](https://github.com/citum/citum-core/commit/ec5110eabf2039767a3852b925722946d56bb413))
+
+- Multilingual disambiguation key ([`3452db0`](https://github.com/citum/citum-core/commit/3452db03c7b51acd019a7716b6cff54c80f6fc65))
+
+- Add format_document_with_resolver ([`8e2ce23`](https://github.com/citum/citum-core/commit/8e2ce23b9633649e4b7bebe2eb55eac27b2d7eee))
+
+
+
+### Testing
+
+**engine**
+
+- Harden disambiguation test soundness ([`aa7af75`](https://github.com/citum/citum-core/commit/aa7af75828cd5459a2d9e4ea8c2bffff8f707071))
+
+
+**locale**
+
+- Add MaybeGendered snapshot coverage ([`787780d`](https://github.com/citum/citum-core/commit/787780d36d9fe6c923061bc62aaec3a0fade31cd))
+
+
 ## [0.60.0] - 2026-05-30
 
 ### Bug Fixes
