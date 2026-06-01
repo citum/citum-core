@@ -22,7 +22,8 @@ A Rust CSL implementation funded by Zotero, now unmaintained. Key architectural 
 3. **Modular crate structure**: `csl` (parsing), `db` (state), `proc` (processing), `io` (formats)
 4. **Disambiguation graph**: Visual graph-based approach to cite ambiguity resolution
 
-**Potential code to borrow** (MPL-2.0 licensed, same as Citum):
+**Ideas to study — do not copy code.** citeproc-rs is MPL-2.0. Citum is `MIT OR Apache-2.0`. These licenses are incompatible for direct code vendoring (MPL-2.0 is file-level copyleft). The following areas are valuable for clean-room design inspiration:
+
 - Name parsing/formatting logic
 - Disambiguation algorithms
 - Locale merging/fallback
@@ -37,10 +38,10 @@ A Rust CSL implementation funded by Zotero, now unmaintained. Key architectural 
 
 ## Citum-Specific Design Goals
 
-From project issues, Citum has additional design goals not fully addressed by prior art:
+These goals were identified early in the project. Each item now links to the spec or implementation where it has been realized.
 
-### Presets (#89)
-Pervasive presets that bundle common configurations, avoiding macro complexity:
+### Presets
+Pervasive presets that bundle common configurations, avoiding macro complexity. Realized — see [`docs/specs/STYLE_PRESET_ARCHITECTURE.md`](../specs/STYLE_PRESET_ARCHITECTURE.md) (Active).
 
 ```yaml
 title: ABC Journal
@@ -55,8 +56,8 @@ citation:
 
 **Rationale**: Most styles are variations on a few base patterns. Presets reduce authoring friction.
 
-### Hyperlinks (#155)
-Declarative link configuration:
+### Hyperlinks
+Declarative link configuration — still in design; no spec yet.
 
 ```yaml
 links:
@@ -66,15 +67,17 @@ links:
 
 **Prior art**: CSL Appendix VI discusses links but lacks declarative control.
 
-### Djot Integration (#86)
+### Djot Integration
 Use Djot (a markdown dialect) for:
 1. Document markup with citations
 2. Rich text within fields (titles with math, emphasis)
 
+Realized — see [`docs/specs/DJOT_RICH_TEXT.md`](../specs/DJOT_RICH_TEXT.md) (Active).
+
 **Rationale**: Cleaner than CSL 1.0's embedded HTML; aligns with modern markup.
 
-### Pluggable Renderers (#105)
-Trait-based output renderers (HTML, RTF, LaTeX, Typst, Djot):
+### Pluggable Renderers
+Trait-based output renderers (HTML, RTF, LaTeX, Typst, Djot). Implemented — see `crates/citum-engine/src/render/` (HTML, LaTeX, Markdown, Djot, and format-neutral markup modules).
 
 ```rust
 pub trait Renderer {
@@ -147,7 +150,8 @@ CSL-M allows multiple `<cs:layout>` elements with locale targeting:
 
 **Use case**: Japanese academic bibliography citing both English and Japanese sources with appropriate conventions for each.
 
-**Citum approach** (proposed):
+**Citum approach**: Realized — see [`docs/specs/MULTILINGUAL.md`](../specs/MULTILINGUAL.md) (Active).
+
 ```yaml
 bibliography:
   locales:
@@ -180,16 +184,18 @@ Both systems support language tagging at the entry level:
 - Matched against `locale` attribute on layouts
 - Affects which locale terms are used
 
-**Citum approach**: Add `language` to CSL-JSON input, use for:
+**Citum approach**: Realized. Add `language` to CSL-JSON input; used for:
 1. Selecting locale-specific templates
 2. Applying locale terms
 3. Sorting collation
+
+See [`docs/specs/MULTILINGUAL.md`](../specs/MULTILINGUAL.md) and [`docs/specs/UNICODE_BIBLIOGRAPHY_SORTING.md`](../specs/UNICODE_BIBLIOGRAPHY_SORTING.md).
 
 ---
 
 ### 4. Legal Citation Extensions (CSL-M)
 
-CSL-M adds essential legal features:
+CSL-M adds essential legal features. Citum support is in design — see [`docs/specs/LEGAL_CITATIONS.md`](../specs/LEGAL_CITATIONS.md) (Design Phase).
 
 #### Extended Types
 | Type | Use Case |
@@ -237,7 +243,7 @@ Features:
 - Open ranges: `1990/..` (ongoing)
 - Precision levels: year, month, day
 
-**Citum**: See `docs/specs/EDTF_HISTORICAL_ERA_RENDERING.md` for the current historical-era rendering contract and tracked follow-up work.
+**Citum**: Realized — see [`docs/specs/EDTF_HISTORICAL_ERA_RENDERING.md`](../specs/EDTF_HISTORICAL_ERA_RENDERING.md) (Active) for the historical-era rendering contract and tracked follow-up work.
 
 ---
 
@@ -257,7 +263,8 @@ Plus explicit override fields:
 - `sorttitle` - ditto
 - `sortyear` - ditto
 
-**Citum approach** (from Issue #61):
+**Citum approach**: Realized — see [`docs/specs/SORTING.md`](../specs/SORTING.md) (Active).
+
 ```yaml
 sort:
   shorten-names: true
@@ -292,6 +299,8 @@ Renders: "WHO (World Health Organization)"
 - `use-first`, `use-last` - truncate hierarchy
 - `institution-parts` - long, short, short-long, long-short
 - `if-short` - conditional on abbreviation availability
+
+See also [`docs/specs/MULTILINGUAL_NAMES.md`](../specs/MULTILINGUAL_NAMES.md).
 
 ---
 
@@ -349,7 +358,7 @@ CSL-M's deprecated `alt-*` extensions (`alt-title`, `alt-container-title`) were 
 
 ### Batch vs Interactive Processing
 
-Citum needs to support both modes (per CLAUDE.md "Hybrid Processing Architecture"):
+Citum supports both modes. See [`docs/architecture/CITUM_SERVER_MODE.md`](CITUM_SERVER_MODE.md) and [`docs/specs/SERVER_INTERACTIVE_API.md`](../specs/SERVER_INTERACTIVE_API.md) (Draft) for the interactive path design.
 
 | Mode | Use Case | Characteristics |
 |------|----------|-----------------|
@@ -364,9 +373,9 @@ Citum needs to support both modes (per CLAUDE.md "Hybrid Processing Architecture
 **Trade-offs**:
 - Salsa adds complexity and compile time
 - Batch processing may not benefit from incrementality
-- Consider: JSON server mode (like Haskell citeproc) as middle ground
+- JSON server mode (like Haskell citeproc) is the chosen middle ground — specced as the interactive API
 
-**Recommendation**: Start with batch-optimized architecture. Add incremental layer later if needed for interactive use cases. The salsa code in citeproc-rs can inform that future work.
+**Current status**: Batch-optimized architecture is shipped. Interactive/server mode is specced and in design; see the specs above for trade-off analysis.
 
 ---
 
@@ -375,5 +384,5 @@ Citum needs to support both modes (per CLAUDE.md "Hybrid Processing Architecture
 - [CSL 1.0.2 Specification](https://docs.citationstyles.org/en/stable/specification.html)
 - [CSL-M Extensions](https://citeproc-js.readthedocs.io/en/latest/csl-m/)
 - [biblatex Manual](https://ctan.org/pkg/biblatex)
-- [citeproc-rs](https://github.com/zotero/citeproc-rs) - Rust CSL impl (unmaintained, MPL-2.0)
-- Citum Issues: #61 (sorting), #64 (biblatex), #66 (multilingual), #86 (djot), #89 (presets), #105 (renderers), #155 (links)
+- [citeproc-rs](https://github.com/zotero/citeproc-rs) — Rust CSL impl (unmaintained, MPL-2.0; study only — license-incompatible with Citum)
+- Citum specs: [STYLE_PRESET_ARCHITECTURE](../specs/STYLE_PRESET_ARCHITECTURE.md) · [DJOT_RICH_TEXT](../specs/DJOT_RICH_TEXT.md) · [SORTING](../specs/SORTING.md) · [MULTILINGUAL](../specs/MULTILINGUAL.md) · [LEGAL_CITATIONS](../specs/LEGAL_CITATIONS.md) · [EDTF_HISTORICAL_ERA_RENDERING](../specs/EDTF_HISTORICAL_ERA_RENDERING.md) · [DISAMBIGUATION](../specs/DISAMBIGUATION.md) · [SERVER_INTERACTIVE_API](../specs/SERVER_INTERACTIVE_API.md)
