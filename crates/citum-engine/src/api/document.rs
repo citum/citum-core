@@ -80,6 +80,8 @@ pub enum FormatDocumentError {
     RefsInputParse(String),
     /// The processor encountered an error during rendering.
     Processing(ProcessorError),
+    /// Style inheritance (`extends`) could not be resolved.
+    StyleResolution(String),
 }
 
 impl std::fmt::Display for FormatDocumentError {
@@ -91,6 +93,7 @@ impl std::fmt::Display for FormatDocumentError {
             Self::RefsInputPath(msg) => write!(f, "Refs input path error: {}", msg),
             Self::RefsInputParse(msg) => write!(f, "Refs input parse error: {}", msg),
             Self::Processing(err) => write!(f, "Processing error: {}", err),
+            Self::StyleResolution(msg) => write!(f, "Style resolution error: {}", msg),
         }
     }
 }
@@ -117,6 +120,36 @@ pub fn format_document(
 ) -> Result<FormatDocumentResult, FormatDocumentError> {
     let style = request.style.resolve_local()?;
     format_document_with_style(style, request)
+}
+
+/// Format a document, resolving the style through an injected resolver.
+///
+/// `Yaml` is parsed inline; `Id`, `Uri`, and `Path` are delegated to
+/// `resolver.resolve_style`. This lets WASM/FFI callers supply their own
+/// resolver chain without pre-resolving the style themselves.
+///
+/// # Errors
+///
+/// Returns an error if the resolver fails, the style cannot be parsed, or
+/// if rendering fails.
+pub fn format_document_with_resolver(
+    request: FormatDocumentRequest,
+    resolver: &citum_schema::StyleResolver,
+) -> Result<FormatDocumentResult, FormatDocumentError> {
+    let style = match &request.style {
+        StyleInput::Yaml(_) => request.style.resolve_local()?,
+        StyleInput::Id(value) | StyleInput::Uri(value) | StyleInput::Path(value) => resolver
+            .resolve_style(value)
+            .map_err(|e| FormatDocumentError::UnresolvedInput(e.to_string()))?,
+    };
+    // Fully resolve any `extends` chain via the injected resolver, then clear
+    // `extends` so the processor's later `into_resolved()` call needs no
+    // resolver. Mirrors `citum-server`'s `load_style`.
+    let mut resolved = style
+        .try_into_resolved_with(Some(resolver))
+        .map_err(|e| FormatDocumentError::StyleResolution(e.to_string()))?;
+    resolved.extends = None;
+    format_document_with_style(resolved, request)
 }
 
 /// Format a document using an already-resolved style.
@@ -767,5 +800,76 @@ mod tests {
             }
             _ => panic!("Expected UnresolvedInput error"),
         }
+    }
+
+    /// A minimal resolver that returns a fixed style for any ID.
+    struct MockResolver(Style);
+
+    impl citum_resolver_api::StyleResolver for MockResolver {
+        type Style = Style;
+        type Locale = citum_schema::locale::Locale;
+
+        fn resolve_style(&self, _uri: &str) -> Result<Style, citum_schema::ResolverError> {
+            Ok(self.0.clone())
+        }
+
+        fn resolve_locale(
+            &self,
+            id: &str,
+        ) -> Result<citum_schema::locale::Locale, citum_schema::ResolverError> {
+            Err(citum_schema::ResolverError::LocaleNotFound(
+                std::borrow::Cow::Owned(id.to_string()),
+            ))
+        }
+    }
+
+    #[test]
+    fn format_document_with_resolver_injects_style_for_id_input() {
+        let style = make_test_style();
+        let resolver = MockResolver(style);
+        let refs = make_test_bibliography();
+
+        let citation_occ = CitationOccurrence {
+            id: "c1".to_string(),
+            items: vec![CitationOccurrenceItem {
+                id: "smith2020".to_string(),
+                locator: None,
+                prefix: None,
+                suffix: None,
+                integral_name_state: None,
+                org_abbreviation_state: None,
+            }],
+            mode: None,
+            note_number: None,
+            suppress_author: None,
+            grouped: None,
+            prefix: None,
+            suffix: None,
+        };
+
+        let request = FormatDocumentRequest {
+            style: StyleInput::Id("any-id".to_string()),
+            locale: None,
+            output_format: OutputFormatKind::Plain,
+            refs,
+            citations: vec![citation_occ],
+            document_options: None,
+        };
+
+        // Without a resolver, the same Id input must be rejected.
+        match format_document(request.clone()) {
+            Err(FormatDocumentError::UnresolvedInput(_)) => {}
+            other => panic!("expected UnresolvedInput without resolver, got: {other:?}"),
+        }
+
+        // With the injected resolver it must succeed.
+        let result = format_document_with_resolver(request, &resolver);
+        assert!(result.is_ok(), "expected Ok, got: {:?}", result.err());
+        let res = result.unwrap();
+        assert_eq!(res.formatted_citations.len(), 1);
+        assert!(
+            !res.formatted_citations[0].text.is_empty(),
+            "formatted citation text should not be empty"
+        );
     }
 }

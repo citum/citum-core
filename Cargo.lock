@@ -684,6 +684,7 @@ dependencies = [
  "citum-edtf",
  "citum-io",
  "citum-refs",
+ "citum-resolver-api",
  "citum-schema",
  "citum-schema-data",
  "criterion",

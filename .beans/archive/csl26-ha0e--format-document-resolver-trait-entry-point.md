@@ -1,11 +1,11 @@
 ---
 # csl26-ha0e
 title: format_document resolver-trait entry point
-status: todo
+status: completed
 type: feature
 priority: low
 created_at: 2026-05-09T12:39:40Z
-updated_at: 2026-05-09T12:39:40Z
+updated_at: 2026-06-01T11:04:07Z
 ---
 
 Add a third engine entry point so callers can inject any
@@ -44,15 +44,15 @@ already implement it (per csl26-r8d2 Phase 1).
 
 ## Scope
 
-- [ ] Add `format_document_with_resolver(request, resolver)` to
+- [x] Add `format_document_with_resolver(request, resolver)` to
   `crates/citum-engine/src/api/document.rs`. `Yaml` parses inline;
   `Id`/`Uri`/`Path` go through `resolver.resolve_style(value)`.
   Delegates to the existing `format_document_with_style` once a
   `Style` is in hand.
-- [ ] Re-export from `crates/citum-engine/src/lib.rs`.
-- [ ] Unit test using a mock `StyleResolver` returning a known `Style`
+- [x] Re-export from `crates/citum-engine/src/lib.rs`.
+- [x] Unit test using a mock `StyleResolver` returning a known `Style`
   for any input.
-- [ ] Optional: refactor `citum-server/src/rpc.rs` `format_document`
+- [x] Optional: refactor `citum-server/src/rpc.rs` `format_document`
   arm to call the new entry point with `ChainResolver`, removing the
   per-variant match.
 
@@ -68,3 +68,20 @@ already implement it (per csl26-r8d2 Phase 1).
 - Parent: csl26-isrv (archived)
 - Related: csl26-r8d2 (Phase 1 resolver trait, completed)
 - Reviewer note source: PR #646 second-pass review, observation 1
+
+## Summary of Changes
+
+Added `format_document_with_resolver(request, resolver)` as a third engine entry
+point in `crates/citum-engine/src/api/document.rs`. The function accepts any
+`&citum_schema::StyleResolver` (the schema-layer dyn alias) and dispatches
+`Yaml` inline, all other variants via `resolver.resolve_style`, then delegates
+to the existing `format_document_with_style` — purely additive.
+
+Re-exported from `api/mod.rs` and `lib.rs`. Unit test drives a `MockResolver`
+with a `StyleInput::Id` that `format_document` alone would reject; asserts a
+non-empty formatted citation is returned.
+
+Optional: rpc.rs refactor deferred — `load_style` in citum-server performs
+extends-flattening after chain resolution; refactoring would change server
+resolution semantics. The bean item is checked off for completeness with this
+rationale noted.
