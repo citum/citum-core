@@ -48,12 +48,24 @@ impl<'de> Deserialize<'de> for RefsInput {
         let v = serde_json::Value::deserialize(deserializer)?;
 
         if let Some(object) = v.as_object() {
-            let tagged_kind = object
-                .get("kind")
-                .and_then(|k| k.as_str())
-                .filter(|k| matches!(*k, "path" | "yaml" | "json" | "biblatex"));
-            if tagged_kind.is_none() || object.get("value").is_none() {
-                return Ok(RefsInput::Json(v));
+            // If the object has a string "kind" and a "value" field it is a
+            // tagged-union wrapper — validate the kind rather than silently
+            // treating an unrecognised kind as a legacy bare-map, which would
+            // produce a confusing downstream parse error.
+            let kind_str = object.get("kind").and_then(|k| k.as_str());
+            let has_value = object.contains_key("value");
+            match (kind_str, has_value) {
+                (Some(k), true) => {
+                    if !matches!(k, "path" | "yaml" | "json" | "biblatex") {
+                        return Err(serde::de::Error::unknown_variant(
+                            k,
+                            &["path", "yaml", "json", "biblatex"],
+                        ));
+                    }
+                    // Recognised kind — fall through to dispatch below.
+                }
+                // No string kind, or no value field: legacy bare refs map.
+                _ => return Ok(RefsInput::Json(v)),
             }
         } else {
             return Err(serde::de::Error::custom(
@@ -461,5 +473,17 @@ mod tests {
         let json_str = serde_json::to_string(&input).expect("serialize");
         assert!(json_str.contains("\"kind\":\"biblatex\""));
         assert!(json_str.contains("@book{key"));
+    }
+
+    #[test]
+    fn refs_input_deserialize_unknown_kind_returns_error() {
+        let json_str = r#"{"kind":"csl-json","value":"..."}"#;
+        let result = serde_json::from_str::<RefsInput>(json_str);
+        assert!(result.is_err());
+        let msg = result.unwrap_err().to_string();
+        assert!(
+            msg.contains("csl-json"),
+            "error should name the unknown variant: {msg}"
+        );
     }
 }
