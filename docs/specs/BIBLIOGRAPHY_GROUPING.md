@@ -398,43 +398,6 @@ groups:
 
 **Processor precedence:** User-defined groups > Style-defined groups > Flat bibliography
 
-## Implementation Roadmap
-
-1. **Schema Extension** (2 days)
-   - Add types to `citum_schema/src/lib.rs`
-   - Generate JSON schema
-   - Add tests for YAML parsing
-
-2. **Selector Logic** (3 days)
-   - Create `citum_engine/src/grouping/selector.rs`
-   - Implement predicate evaluation
-   - Add unit tests for selector matching
-
-3. **Group Sorting** (4 days)
-   - Extend sorting with type-order and name-order variants
-   - Refactor `sort_references` to accept sort specification
-   - Add integration tests
-
-4. **Processor Integration** (3 days)
-   - Refactor `render_grouped_bibliography_with_format`
-   - Add fallback logic for ungrouped items
-   - Preserve backward compatibility
-
-5. **Legal Use Case** (2 days)
-   - Create `styles/bluebook-legal.yaml`
-   - Test type hierarchy with legal fixtures
-   - Validate against Bluebook manual
-
-6. **Multilingual Use Case** (2 days)
-   - Create `styles/multilingual-academic.yaml`
-   - Test per-group sorting with Vietnamese/English fixtures
-   - Validate collation rules
-
-7. **Documentation** (2 days)
-   - Style authoring guide for grouping
-   - Migration guide from hardcoded logic
-   - Update CLAUDE.md with grouping patterns
-
 ## Prior Art
 
 ### biblatex

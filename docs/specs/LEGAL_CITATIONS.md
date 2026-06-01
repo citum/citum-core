@@ -176,7 +176,6 @@ Obergefell v. Hodges, 135 S. Ct. 2584, 2604, 192 L. Ed. 2d 609 (2015).
 ### Phase 1: Core Legal Types (Tier 1)
 
 **Priority:** Medium (Feature Roadmap)
-**Effort:** 2-3 weeks
 
 1. **Add legal reference types to `citum-schema-style/src/reference/types.rs`:**
    ```rust
@@ -237,7 +236,6 @@ Obergefell v. Hodges, 135 S. Ct. 2584, 2604, 192 L. Ed. 2d 609 (2015).
 ### Phase 2: Legal Specialist Features (Tier 2)
 
 **Priority:** Low (after Phase 1 validated)
-**Effort:** 3-4 weeks
 
 1. **Create jurisdiction hierarchy system** (`citum-schema-style/src/legal/jurisdiction.rs`):
    ```rust
