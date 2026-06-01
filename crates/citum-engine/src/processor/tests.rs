@@ -3847,6 +3847,7 @@ fn test_document_bibliography_block_selects_members_before_compound_merge() {
     let processor = make_grouped_compound_selection_processor("other", "selected");
     let rendered = processor.render_document_bibliography_block::<crate::render::plain::PlainText>(
         &make_selected_bibliography_group(),
+        &mut std::collections::HashSet::new(),
     );
 
     assert_eq!(rendered.heading.as_deref(), Some("Selected"));
@@ -3864,6 +3865,47 @@ fn test_document_bibliography_block_selects_members_before_compound_merge() {
         !rendered.body.contains("a)") && !rendered.body.contains("b)"),
         "document bibliography block should keep split entries as singletons: {}",
         rendered.body
+    );
+}
+
+#[test]
+fn test_multi_bibliography_block_excludes_first_block_entries() {
+    use citum_schema::grouping::{BibliographyGroup, GroupSelector};
+
+    let processor = make_grouped_compound_selection_processor("other", "selected");
+    let catchall = BibliographyGroup {
+        id: "catchall".to_string(),
+        heading: None,
+        selector: GroupSelector::default(),
+        sort: None,
+        template: None,
+        disambiguate: None,
+    };
+
+    let mut assigned = std::collections::HashSet::new();
+    let block1 = processor.render_document_bibliography_block::<crate::render::plain::PlainText>(
+        &make_selected_bibliography_group(),
+        &mut assigned,
+    );
+    let block2 = processor.render_document_bibliography_block::<crate::render::plain::PlainText>(
+        &catchall,
+        &mut assigned,
+    );
+
+    assert!(
+        block1.body.contains("Sibling Article"),
+        "first block should render the selected entry: {}",
+        block1.body
+    );
+    assert!(
+        !block2.body.contains("Sibling Article"),
+        "second block must not repeat entry already placed in first block: {}",
+        block2.body
+    );
+    assert!(
+        block2.body.contains("Leader Article"),
+        "second block should render unassigned entries: {}",
+        block2.body
     );
 }
 

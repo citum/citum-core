@@ -43,13 +43,9 @@ appears in full again here.
 ## In-Document Bibliography Grouping
 
 Citum supports `::: bibliography :::` fenced divs to place and filter
-bibliography sections inline. Each block renders independently; the
-default appended bibliography is suppressed when any block is present.
-
-### Unfiltered (all references)
-
-::: bibliography
-:::
+bibliography sections inline. Entries are assigned to blocks in order;
+later blocks exclude entries already placed by earlier ones.
+The default appended bibliography is suppressed when any block is present.
 
 ### Filtered by type
 
@@ -58,5 +54,10 @@ default appended bibliography is suppressed when any block is present.
 :::
 
 { type="book" title="Books" }
+::: bibliography
+:::
+
+### Remaining references
+
 ::: bibliography
 :::

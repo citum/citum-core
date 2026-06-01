@@ -355,9 +355,11 @@ impl Processor {
     ) where
         F: crate::render::format::OutputFormat<Output = String>,
     {
+        let mut assigned = std::collections::HashSet::<String>::new();
         for (index, block) in blocks.iter().enumerate() {
             let placeholder = bibliography_block_placeholder(index);
-            let rendered_group = self.render_document_bibliography_block::<F>(&block.group);
+            let rendered_group =
+                self.render_document_bibliography_block::<F>(&block.group, &mut assigned);
             let replacement = render_document_bibliography_block_replacement(
                 rendered.placeholders.as_mut(),
                 format,
