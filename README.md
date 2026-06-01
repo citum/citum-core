@@ -125,7 +125,7 @@ Conventional Commits (`type(scope): subject`, lowercase, 50/72 rule). See [`CONT
 | Resource | Location |
 |---|---|
 | Full user docs | [docs.citum.org](https://docs.citum.org) |
-| Architecture and design | [`docs/architecture/`](./docs/architecture/) |
+| Specifications | [`docs/specs/`](./docs/specs/) |
 | Rendering workflow | [`docs/guides/RENDERING_WORKFLOW.md`](./docs/guides/RENDERING_WORKFLOW.md) |
 | Style authoring guide | [`docs/guides/style-author-guide.md`](./docs/guides/style-author-guide.md) |
 | Migration docs | [`crates/citum-migrate/README.md`](./crates/citum-migrate/README.md) |
