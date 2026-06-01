@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.61.1] - 2026-06-01
+
+### Bug Fixes
+
+**docs**
+
+- Update jsr package name ([`aff4854`](https://github.com/citum/citum-core/commit/aff4854081083173051e1ac7114a39c7ceadae82))
+
+- Capabilties link ([`9f91a6b`](https://github.com/citum/citum-core/commit/9f91a6bdecf4bdb8cf77bb4f2270ac6763ec40b9))
+
+- The other capabilities link ([`78ef5cf`](https://github.com/citum/citum-core/commit/78ef5cfe58dad2935177df0df989abb39b876543))
+
+- Point to specs/ rather than arch ([`68e5685`](https://github.com/citum/citum-core/commit/68e56855119ddd772808ceab6c13ef7f55fe2abd))
+
+
+**engine**
+
+- Document bib restricted to cited refs ([`545328c`](https://github.com/citum/citum-core/commit/545328c52669a5ca7ae6cf341315439c23ceae87))
+
+
+
+### Documentation
+
 ## [0.61.0] - 2026-06-01
 
 ### Bug Fixes
