@@ -83,7 +83,7 @@
                 </a>
                 <a class="doc-card" href="#jsr">
                     <h3>&hellip;a Deno, Node, or browser app</h3>
-                    <p>Import <code>@citum/citum</code> from JSR and call <code>renderBibliography</code> / <code>renderCitation</code> directly. TypeScript types included; the WASM is cached after first load.</p>
+                    <p>Import <code>@citum/engine</code> from JSR and call <code>renderBibliography</code> / <code>renderCitation</code> directly. TypeScript types included; the WASM is cached after first load.</p>
                 </a>
                 <a class="doc-card" href="guides/style-authoring/start.html">
                     <h3>&hellip;a house style for a publisher or journal</h3>
@@ -108,7 +108,7 @@
                 </a>
                 <a class="doc-card" href="#jsr">
                     <h3>JSR (Deno / Node / browser)</h3>
-                    <p>Import the engine from the JSR registry as <code>@citum/citum</code>. The simplest path for TypeScript / JavaScript projects on Deno, Node, or the browser &mdash; types included.</p>
+                    <p>Import the engine from the JSR registry as <code>@citum/engine</code>. The simplest path for TypeScript / JavaScript projects on Deno, Node, or the browser &mdash; types included.</p>
                 </a>
                 <a class="doc-card" href="guides/integrations/typst.html">
                     <h3>Typst PDF</h3>
@@ -219,7 +219,7 @@ let result = format_document(FormatDocumentRequest {
                 <h2>JSR (Deno / Node / browser)</h2>
                 <p>
                     The engine is published to the JSR registry as
-                    <a href="https://jsr.io/@citum/citum"><code>@citum/citum</code></a>.
+                    <a href="https://jsr.io/@citum/engine"><code>@citum/engine</code></a>.
                     It wraps the WASM bridge below, packaged for direct <code>import</code>
                     from Deno, Node, or the browser with TypeScript types included.
                     Best fit for Deno and Node, where the ~5 MB WASM is downloaded once
@@ -232,19 +232,19 @@ let result = format_document(FormatDocumentRequest {
             </div>
             <div class="workshop-block">
                 <div class="workshop-label">Deno</div>
-                <pre><code>import init, { renderBibliography, renderCitation } from "jsr:@citum/citum";
+                <pre><code>import init, { renderBibliography, renderCitation } from "jsr:@citum/engine";
 await init();</code></pre>
             </div>
             <div class="workshop-block" style="margin-top: 1rem;">
                 <div class="workshop-label">Node 20+ (ESM)</div>
                 <pre><code># In your project
-npx jsr add @citum/citum</code></pre>
-                <pre style="margin-top: 0.5rem;"><code>import init, { renderBibliography, renderCitation } from "@citum/citum";
+npx jsr add @citum/engine</code></pre>
+                <pre style="margin-top: 0.5rem;"><code>import init, { renderBibliography, renderCitation } from "@citum/engine";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 
 // Node's fetch can't load file:// URLs, so feed init() the wasm bytes
-const jsUrl = import.meta.resolve("@citum/citum");
+const jsUrl = import.meta.resolve("@citum/engine");
 const wasmUrl = jsUrl.replace("citum_bindings.js", "citum_bindings_bg.wasm");
 await init({ module_or_path: await readFile(fileURLToPath(wasmUrl)) });</code></pre>
             </div>
