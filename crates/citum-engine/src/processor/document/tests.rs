@@ -924,3 +924,53 @@ First [+@item1]. Later [+@item1]."#;
         "First John Doe. Later Doe.\n\n# Bibliography\n\n# Cited Works\n\nJohn Doe (2020)\n\nJane Smith (2010)"
     );
 }
+
+/// Build `make_author_date_style` with a catch-all `bibliography.groups` entry so
+/// that document rendering exercises the groups code path.
+fn make_grouped_author_date_style() -> Style {
+    let mut style = make_author_date_style();
+    style.bibliography.as_mut().unwrap().groups =
+        Some(vec![citum_schema::grouping::BibliographyGroup {
+            id: "all".to_string(),
+            heading: None,
+            selector: citum_schema::grouping::GroupSelector::default(),
+            sort: None,
+            template: None,
+            disambiguate: None,
+        }]);
+    style
+}
+
+#[test]
+fn test_grouped_style_document_with_no_citations_omits_bibliography() {
+    // Regression: `render doc` against a style with `bibliography.groups` must
+    // not emit a bibliography when the document contains no citations.
+    let bib = make_test_bib();
+    let processor = Processor::new(make_grouped_author_date_style(), bib);
+    let parser = DjotParser;
+
+    let content = "Some text with no citations.";
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert_eq!(result, "Some text with no citations.");
+}
+
+#[test]
+fn test_grouped_style_document_bibliography_contains_only_cited_references() {
+    // Regression: when the document cites only one reference, the trailing
+    // bibliography must contain only that reference — not all loaded references.
+    let bib = make_test_bib();
+    let processor = Processor::new(make_grouped_author_date_style(), bib);
+    let parser = DjotParser;
+
+    // item1 (Doe 2020) is cited; item2 (Smith 2010) must not appear.
+    let content = "Text [@item1].";
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    assert_eq!(
+        result,
+        "Text (Doe, 2020).\n\n# Bibliography\n\nJohn Doe (2020)"
+    );
+}
