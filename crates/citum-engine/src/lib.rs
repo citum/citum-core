@@ -113,7 +113,7 @@ pub use api::{
     BibliographyEntry, CitationOccurrence, CitationOccurrenceItem, DocumentOptions, EntryMetadata,
     FormatDocumentError, FormatDocumentRequest, FormatDocumentResult, FormattedBibliography,
     FormattedCitation, OutputFormatKind, RefsInput, StyleInput, Warning, WarningLevel,
-    format_document, format_document_with_style,
+    format_document, format_document_with_resolver, format_document_with_style,
 };
 pub use citum_schema::options::{Config, Processing};
 pub use citum_schema::reference::{
