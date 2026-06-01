@@ -12,14 +12,16 @@ use citum_schema::InputBibliography;
 
 use crate::RefsError;
 
-/// Load a BibLaTeX bibliography from a file path.
+/// Parse BibLaTeX bibliography content from an in-memory string.
+///
+/// This is the core parsing primitive; [`load_biblatex`] delegates to it after
+/// reading the file.
 ///
 /// # Errors
 ///
-/// Returns an error when the file cannot be read or parsed as BibLaTeX.
-pub fn load_biblatex(path: &Path) -> Result<InputBibliography, RefsError> {
-    let src = fs::read_to_string(path)?;
-    let bibliography = ::biblatex::Bibliography::parse(&src)
+/// Returns an error when `src` cannot be parsed as valid BibLaTeX.
+pub fn parse_biblatex_str(src: &str) -> Result<InputBibliography, RefsError> {
+    let bibliography = ::biblatex::Bibliography::parse(src)
         .map_err(|e| RefsError::ParseError("BibLaTeX".to_string(), e.to_string()))?;
     let references = bibliography
         .iter()
@@ -29,4 +31,14 @@ pub fn load_biblatex(path: &Path) -> Result<InputBibliography, RefsError> {
         references,
         ..Default::default()
     })
+}
+
+/// Load a BibLaTeX bibliography from a file path.
+///
+/// # Errors
+///
+/// Returns an error when the file cannot be read or parsed as BibLaTeX.
+pub fn load_biblatex(path: &Path) -> Result<InputBibliography, RefsError> {
+    let src = fs::read_to_string(path)?;
+    parse_biblatex_str(&src)
 }

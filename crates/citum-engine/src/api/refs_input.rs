@@ -10,17 +10,33 @@ use serde::{Deserialize, Serialize};
 
 /// A refs input that can be resolved locally or by an external resolver.
 ///
-/// This union type allows callers to supply reference data by local YAML file path,
-/// inline YAML, or inline JSON (current API). Enables citum-server and bindings to
-/// accept references from files (e.g., via pipe transport from LaTeX).
+/// This union type allows callers to supply reference data by local file path,
+/// inline YAML, inline JSON, or inline BibLaTeX. Enables citum-server and
+/// bindings to accept references from files (e.g., via pipe transport from
+/// LaTeX or Emacs).
+///
+/// Supported tagged-object shapes over JSON/RPC:
+///
+/// ```json
+/// {"kind": "path",     "value": "/abs/path/refs.yaml"}
+/// {"kind": "path",     "value": "/abs/path/refs.bib"}  // .bib detected by extension
+/// {"kind": "yaml",     "value": "references:\n  - id: …"}
+/// {"kind": "json",     "value": {"id": { … }}}
+/// {"kind": "biblatex", "value": "@book{key, title={…}, …}"}
+/// ```
 #[derive(Debug, Clone)]
 pub enum RefsInput {
-    /// Local filesystem path to a YAML refs file.
+    /// Local filesystem path to a refs file.
+    ///
+    /// YAML/JSON/CBOR extensions are loaded as native Citum refs; `.bib`
+    /// extensions are parsed as BibLaTeX.
     Path(String),
     /// Inline YAML refs string.
     Yaml(String),
     /// Inline JSON map of reference objects.
     Json(serde_json::Value),
+    /// Inline BibLaTeX (`.bib`) content.
+    Biblatex(String),
 }
 
 impl<'de> Deserialize<'de> for RefsInput {
@@ -35,7 +51,7 @@ impl<'de> Deserialize<'de> for RefsInput {
             let tagged_kind = object
                 .get("kind")
                 .and_then(|k| k.as_str())
-                .filter(|k| matches!(*k, "path" | "yaml" | "json"));
+                .filter(|k| matches!(*k, "path" | "yaml" | "json" | "biblatex"));
             if tagged_kind.is_none() || object.get("value").is_none() {
                 return Ok(RefsInput::Json(v));
             }
@@ -45,7 +61,7 @@ impl<'de> Deserialize<'de> for RefsInput {
             ));
         }
 
-        // Tagged union: {"kind": "path"|"yaml"|"json", "value": ...}
+        // Tagged union: {"kind": "path"|"yaml"|"json"|"biblatex", "value": ...}
         let kind = v
             .get("kind")
             .and_then(|k| k.as_str())
@@ -56,23 +72,25 @@ impl<'de> Deserialize<'de> for RefsInput {
             .ok_or_else(|| serde::de::Error::missing_field("value"))?;
 
         match kind {
-            "path" | "yaml" => {
+            "path" | "yaml" | "biblatex" => {
                 let s = value
                     .as_str()
                     .ok_or_else(|| {
-                        serde::de::Error::custom("'value' must be a string for path/yaml refs")
+                        serde::de::Error::custom(
+                            "'value' must be a string for path/yaml/biblatex refs",
+                        )
                     })?
                     .to_string();
-                if kind == "path" {
-                    Ok(RefsInput::Path(s))
-                } else {
-                    Ok(RefsInput::Yaml(s))
+                match kind {
+                    "path" => Ok(RefsInput::Path(s)),
+                    "yaml" => Ok(RefsInput::Yaml(s)),
+                    _ => Ok(RefsInput::Biblatex(s)),
                 }
             }
             "json" => Ok(RefsInput::Json(value.clone())),
             k => Err(serde::de::Error::unknown_variant(
                 k,
-                &["path", "yaml", "json"],
+                &["path", "yaml", "json", "biblatex"],
             )),
         }
     }
@@ -98,6 +116,10 @@ impl Serialize for RefsInput {
                 map.serialize_entry("kind", "json")?;
                 map.serialize_entry("value", v)?;
             }
+            RefsInput::Biblatex(s) => {
+                map.serialize_entry("kind", "biblatex")?;
+                map.serialize_entry("value", s)?;
+            }
         }
         map.end()
     }
@@ -120,7 +142,7 @@ impl schemars::JsonSchema for RefsInput {
                     "properties": {
                         "kind": {
                             "type": "string",
-                            "enum": ["path", "yaml"]
+                            "enum": ["path", "yaml", "biblatex"]
                         },
                         "value": {
                             "type": "string"
@@ -153,7 +175,10 @@ impl schemars::JsonSchema for RefsInput {
 }
 
 impl RefsInput {
-    /// Resolve refs input locally from Path, Yaml, or Json variants.
+    /// Resolve refs input locally from Path, Yaml, Json, or Biblatex variants.
+    ///
+    /// For `Path` inputs, `.bib` files are parsed as BibLaTeX; all other
+    /// extensions are parsed as native Citum YAML/JSON/CBOR.
     ///
     /// # Errors
     ///
@@ -161,6 +186,18 @@ impl RefsInput {
     pub fn resolve_local(&self) -> Result<Bibliography, crate::api::FormatDocumentError> {
         match self {
             RefsInput::Path(path) => {
+                let p = std::path::Path::new(path);
+                if p.extension()
+                    .is_some_and(|ext| ext.eq_ignore_ascii_case("bib"))
+                {
+                    let input = citum_refs::formats::biblatex::load_biblatex(p).map_err(|e| {
+                        crate::api::FormatDocumentError::RefsInputParse(format!(
+                            "Failed to parse BibLaTeX refs from '{}': {}",
+                            path, e
+                        ))
+                    })?;
+                    return Ok(bibliography_from_references(input.references));
+                }
                 let bytes = std::fs::read(path).map_err(|e| {
                     crate::api::FormatDocumentError::RefsInputPath(format!(
                         "Failed to read refs input from '{}': {}",
@@ -188,6 +225,16 @@ impl RefsInput {
                         e
                     ))
                 }),
+            RefsInput::Biblatex(src) => {
+                let input =
+                    citum_refs::formats::biblatex::parse_biblatex_str(src).map_err(|e| {
+                        crate::api::FormatDocumentError::RefsInputParse(format!(
+                            "Failed to parse inline BibLaTeX refs input: {}",
+                            e
+                        ))
+                    })?;
+                Ok(bibliography_from_references(input.references))
+            }
         }
     }
 }
@@ -368,5 +415,51 @@ mod tests {
         let json_str = serde_json::to_string(&input).expect("serialize");
         assert!(json_str.contains("\"kind\":\"path\""));
         assert!(json_str.contains("\"/tmp/bib.yaml\""));
+    }
+
+    #[test]
+    fn refs_input_deserialize_tagged_biblatex() {
+        let bib_src = "@book{hawking1988, title = {A Brief History of Time}, author = {Hawking, Stephen}, date = {1988}}";
+        let json_str = format!(
+            r#"{{"kind":"biblatex","value":{}}}"#,
+            serde_json::to_string(bib_src).unwrap()
+        );
+        let input: RefsInput = serde_json::from_str(&json_str).expect("deserialize biblatex");
+        match input {
+            RefsInput::Biblatex(s) => assert!(s.contains("hawking1988")),
+            _ => panic!("Expected Biblatex variant"),
+        }
+    }
+
+    #[test]
+    fn refs_input_biblatex_resolves_locally() {
+        let bib_src = "@book{hawking1988, title = {A Brief History of Time}, author = {Hawking, Stephen}, date = {1988}}";
+        let input = RefsInput::Biblatex(bib_src.to_string());
+        let result = input.resolve_local().expect("biblatex should parse");
+        assert!(result.contains_key("hawking1988"));
+    }
+
+    #[test]
+    fn refs_input_path_bib_extension_parses_biblatex() {
+        let bib_content = "@article{doe2024, title = {Test Article}, author = {Doe, Jane}, journaltitle = {Journal of Tests}, date = {2024}}";
+        let mut tmp = tempfile::Builder::new()
+            .suffix(".bib")
+            .tempfile()
+            .expect("Failed to create temp .bib file");
+        tmp.write_all(bib_content.as_bytes())
+            .expect("Failed to write temp file");
+        tmp.flush().expect("Failed to flush temp file");
+
+        let input = RefsInput::Path(tmp.path().to_string_lossy().to_string());
+        let result = input.resolve_local().expect(".bib path should parse");
+        assert!(result.contains_key("doe2024"));
+    }
+
+    #[test]
+    fn refs_input_serialize_biblatex() {
+        let input = RefsInput::Biblatex("@book{key, title = {T}}".to_string());
+        let json_str = serde_json::to_string(&input).expect("serialize");
+        assert!(json_str.contains("\"kind\":\"biblatex\""));
+        assert!(json_str.contains("@book{key"));
     }
 }
