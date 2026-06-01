@@ -616,6 +616,37 @@ impl Processor {
     where
         F: OutputFormat<Output = String>,
     {
+        self.render_grouped_bibliography_inner::<F>(false, annotations, annotation_style)
+    }
+
+    /// Render the trailing document bibliography, restricted to cited references.
+    ///
+    /// Equivalent to [`Self::render_grouped_bibliography_with_format`] but
+    /// intersects every branch's candidate set with `self.cited_ids` so that
+    /// references not cited in the document are excluded — matching
+    /// standard citeproc semantics for document rendering.
+    pub(crate) fn render_grouped_document_bibliography_with_format<F>(&self) -> String
+    where
+        F: OutputFormat<Output = String>,
+    {
+        self.render_grouped_bibliography_inner::<F>(true, None, None)
+    }
+
+    /// Shared implementation for grouped bibliography rendering.
+    ///
+    /// When `restrict_to_cited` is `true`, each branch limits its candidate
+    /// set to references present in `self.cited_ids`. When `false`, all
+    /// loaded references are eligible (the original all-refs behaviour used
+    /// by standalone `render refs`, FFI, and tests).
+    fn render_grouped_bibliography_inner<F>(
+        &self,
+        restrict_to_cited: bool,
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
+    ) -> String
+    where
+        F: OutputFormat<Output = String>,
+    {
         if let Some(groups) = self
             .style
             .bibliography
@@ -623,10 +654,19 @@ impl Processor {
             .and_then(|bibliography| bibliography.groups.as_ref())
         {
             let id_stubs = self.sorted_id_stubs();
-            let selected = id_stubs
-                .iter()
-                .map(|e| e.id.clone())
-                .collect::<HashSet<_>>();
+            let selected = if restrict_to_cited {
+                let cited = self.cited_ids.borrow();
+                id_stubs
+                    .iter()
+                    .filter(|e| cited.contains(&e.id))
+                    .map(|e| e.id.clone())
+                    .collect::<HashSet<_>>()
+            } else {
+                id_stubs
+                    .iter()
+                    .map(|e| e.id.clone())
+                    .collect::<HashSet<_>>()
+            };
             return self.render_with_custom_groups_filtered::<F>(
                 &id_stubs,
                 groups,
@@ -641,7 +681,12 @@ impl Processor {
             && crate::sort_partitioning::should_render_sections(partitioning)
         {
             self.initialize_numeric_bibliography_numbers();
-            let sorted_refs = self.sort_references(self.bibliography.values().collect());
+            let mut refs: Vec<&Reference> = self.bibliography.values().collect();
+            if restrict_to_cited {
+                let cited = self.cited_ids.borrow();
+                refs.retain(|r| r.id().as_deref().is_some_and(|id| cited.contains(id)));
+            }
+            let sorted_refs = self.sort_references(refs);
             return self.render_with_partition_sections::<F>(
                 sorted_refs,
                 partitioning,
