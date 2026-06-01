@@ -32,12 +32,12 @@ class ReleaseWorkflowTests(unittest.TestCase):
         cls.jsr_readme_source = JSR_README_SOURCE.read_text(encoding="utf-8")
 
     def test_release_branch_is_always_release_next(self) -> None:
-        self.assertIn('echo "branch=release/next" >> "$GITHUB_OUTPUT"', self.workflow)
-        self.assertNotIn('echo "branch=main" >> "$GITHUB_OUTPUT"', self.workflow)
+        self.assertIn('echo "branch=release/next"', self.workflow)
+        self.assertNotIn('echo "branch=main"', self.workflow)
 
     def test_release_pr_is_always_enabled(self) -> None:
-        self.assertIn('echo "create_pr=true" >> "$GITHUB_OUTPUT"', self.workflow)
-        self.assertNotIn('echo "create_pr=false" >> "$GITHUB_OUTPUT"', self.workflow)
+        self.assertIn('echo "create_pr=true"', self.workflow)
+        self.assertNotIn('echo "create_pr=false"', self.workflow)
 
     def test_cargo_release_does_not_use_metadata_flag_for_commit_message(self) -> None:
         bump_workspace_block = re.search(

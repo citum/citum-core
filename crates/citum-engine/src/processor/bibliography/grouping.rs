@@ -553,6 +553,7 @@ impl Processor {
         group: &BibliographyGroup,
         annotations: Option<&HashMap<String, String>>,
         annotation_style: Option<&AnnotationStyle>,
+        assigned: &mut HashSet<String>,
     ) -> String
     where
         F: OutputFormat<Output = String>,
@@ -564,7 +565,8 @@ impl Processor {
         let sorter = GroupSorter::new(&self.locale);
 
         let matching_refs =
-            self.collect_matching_group_refs(&bibliography, &HashSet::new(), &evaluator, group);
+            self.collect_matching_group_refs(&bibliography, assigned, &evaluator, group);
+        Self::mark_group_members_assigned(assigned, &matching_refs);
 
         if matching_refs.is_empty() {
             return fmt.finish(String::new());
@@ -678,6 +680,7 @@ impl Processor {
     pub(crate) fn render_document_bibliography_block<F>(
         &self,
         group: &BibliographyGroup,
+        assigned: &mut HashSet<String>,
     ) -> RenderedBibliographyGroup
     where
         F: OutputFormat<Output = String>,
@@ -687,7 +690,7 @@ impl Processor {
             .heading
             .take()
             .and_then(|group_heading| self.resolve_group_heading(&group_heading));
-        let body = self.render_bibliography_for_group::<F>(&headingless, None, None);
+        let body = self.render_bibliography_for_group::<F>(&headingless, None, None, assigned);
 
         RenderedBibliographyGroup { heading, body }
     }
