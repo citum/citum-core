@@ -1,6 +1,6 @@
 # Citum
 
-Citum is a citation engine with a richer reference data model and style language than CSL 1.0 can express. It is delivered as a portable Rust library that runs on any surface — CLI, WASM, JSON-RPC server, or C FFI. Styles are declarative YAML, validated at load time, with rendering oracle-verified against the established CSL and biblatex ecosystems. See [capabilities](https://docs.citum.org/capabilities) for a full feature overview.
+Citum is a citation engine with a richer reference data model and style language than CSL 1.0 can express. It is delivered as a portable Rust library that runs on any surface — CLI, WASM, JSON-RPC server, or C FFI. Styles are declarative YAML, validated at load time, with rendering oracle-verified against the established CSL and biblatex ecosystems. See [capabilities](https://docs.citum.org/examples.html) for a full feature overview.
 
 > **Researchers and style authors:** see [citum.org](https://citum.org) and [docs.citum.org](https://docs.citum.org) instead of this document.
 
