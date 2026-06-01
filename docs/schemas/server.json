@@ -2866,7 +2866,7 @@
         ]
       },
       "refs": {
-        "description": "Bibliography input as `RefsInput`: path, YAML, JSON, or legacy bare map."
+        "description": "Bibliography input as `RefsInput`: path (YAML/JSON/CBOR or `.bib`), inline YAML,\ninline JSON, inline BibLaTeX (`{\"kind\":\"biblatex\",\"value\":\"@book{…}\"}`) or legacy bare map."
       },
       "citations": {
         "description": "Ordered citations as they appear in the document."
