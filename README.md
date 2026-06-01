@@ -6,7 +6,7 @@ Citum is a citation engine with a richer reference data model and style language
 
 ## Why Citum
 
-- **Richer reference and style model** — expressive reference types, dates, and relationships beyond what CSL 1.0 can represent; see [capabilities](https://docs.citum.org/capabilities)
+- **Richer reference and style model** — expressive reference types, dates, and relationships beyond what CSL 1.0 can represent; see [capabilities](https://docs.citum.org/examples.html)
 - **Declarative YAML styles** — human-readable, diff-friendly, and toolable; no procedural XML
 - **Type-safe schema** — styles are fully validated at load time; invalid styles are rejected, not silently misrendered
 - **Oracle-verified rendering** — parity targets against citeproc-js (CSL ecosystem) and biblatex; regressions caught automatically
