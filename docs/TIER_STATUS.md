@@ -221,7 +221,7 @@ node scripts/check-testing-infra.js
 
 # Refresh pinned top-10 oracle baseline (dedicated baseline PR only)
 node scripts/oracle-batch-aggregate.js styles-legacy/ \
-  --styles apa,elsevier-with-titles,elsevier-harvard,elsevier-vancouver,springer-vancouver-brackets,springer-basic-author-date,springer-basic-brackets,springer-socpsych-author-date,american-medical-association,taylor-and-francis-chicago-author-date \
+  --styles apa,elsevier-harvard,elsevier-with-titles,springer-basic-author-date,ieee,elsevier-vancouver,american-medical-association,nature,cell,chicago-author-date \
   --json > scripts/report-data/oracle-top10-baseline.json
 ```
 
