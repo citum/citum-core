@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:43.674Z",
+  "generated_at": "2026-06-02T14:22:48.572Z",
   "style": "din-1505-2-alphanumeric",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "4e44b0461eb3be7e",
   "citations": {
     "single-item": "[Kuhn62]",
@@ -23,18 +23,24 @@
     "report-single": "[Worl23]",
     "thesis-single": "[Chen19]",
     "webpage-single": "[Stat23]",
-    "no-date-single": "[Fort00]"
+    "no-date-single": "[Fort00]",
+    "disambiguate-givenname": "[John20a, John20b]",
+    "subsequent-author-consecutive": "[Chen22, Chen24]"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Adam97] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Adams, John</span>: Letter to James Smith, 1797</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Beng23] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Bengio, Yoshua</span>: The Future of Artificial Intelligence.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Brow54] </div><div class=\"csl-right-inline\"><i>Brown v. Board of Education</i>. Bd. 347, 1954</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Chen19] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Chen, Wei</span>: <i>Neural Networks for Natural Language Understanding</i>, Stanford University, phd-thesis, 2019</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Chen22] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Chen, Wei</span>: Urban Heat Island Mitigation Strategies. In: <i>Urban Climate</i> Bd. 15 (2022), S. 1–18</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Chen24] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Chen, Wei</span>: Urban Heat Island Measurement Techniques. In: <i>Urban Climate</i> Bd. 18 (2024), S. 45–62</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Eric06] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Ericsson, K. Anders</span>: The Role of Deliberate Practice. In: <span style=\"font-variant:small-caps;\">Ericsson, K. A.</span> ; <span style=\"font-variant:small-caps;\">Charness, N.</span> ; <span style=\"font-variant:small-caps;\">Feltovich, P. J.</span> ; <span style=\"font-variant:small-caps;\">Hoffman, R. R.</span> (Hrsg.): <i>The Cambridge Handbook of Expertise and Expert Performance</i> : Cambridge University Press, 2006, S. 683–703</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Fort00] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Forthcoming, A.</span>: <i>Foundations of Declarative Bibliography</i>. Cambridge : University Press</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Garc19a] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Garcia, Maria</span>: Methods for Robust Climate Attribution. In: <i>Annual Review of Climate Science</i> Bd. 4 (2019), S. 55–80</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Garc19b] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Garcia, Maria</span>: Methods for Probabilistic Climate Attribution. In: <i>Annual Review of Climate Science</i> Bd. 4 (2019), S. 81–104</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Hawk88] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Hawking, Stephen</span>: <i>A Brief History of Time</i>. New York : Bantam Dell Publishing Group, 1988</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[John20a] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Johnson, Alice</span>: Quantitative Methods in Sociology. In: <i>Sociological Review</i> Bd. 68 (2020), S. 23–45</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[John20b] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Johnson, Brian</span>: Qualitative Methods in Sociology. In: <i>Sociological Review</i> Bd. 68 (2020), S. 89–112</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[JoLe21] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Johnson, David</span> ; <span style=\"font-variant:small-caps;\">Lee, Sarah</span>: Method for Efficient Data Compression.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Kafk15] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Kafka, Franz</span> ; <span style=\"font-variant:small-caps;\">Wyllie, D.</span> (Übers.): <i>Metamorphosis</i>. Leipzig : Kurt Wolff Verlag, 1915</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Kuhn62] </div><div class=\"csl-right-inline\"><span style=\"font-variant:small-caps;\">Kuhn, Thomas S.</span>: The Structure of Scientific Revolutions. In: <i>International Encyclopedia of Unified Science</i> Bd. 2. Chicago, University of Chicago Press (1962), Nr. 2</div>\n  </div>\n",

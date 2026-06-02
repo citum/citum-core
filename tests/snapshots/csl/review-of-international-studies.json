@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:16.629Z",
+  "generated_at": "2026-06-02T14:23:29.356Z",
   "style": "review-of-international-studies",
-  "fixture_hash": "2c87efef734f50d2",
+  "fixture_hash": "17c1d1d2b5e334dd",
   "csl_hash": "1728d138a711ea93",
   "citations": {
     "single-item-1": "Thomas S. Kuhn, “The Structure of Scientific Revolutions,” International Encyclopedia of Unified Science, 2:2 (1962a).",
@@ -16,7 +16,7 @@
     "single-item-8": "Thomas S. Kuhn, “Scientific Paradigms and Normal Science,” Philosophy of Science, 37:1 (1970b), pp. 1–13.",
     "single-item-9": "John Smith and Mary Anderson, “Climate Change and Extreme Weather Events,” Nature Climate Change, 10 (2020), pp. 850–5.",
     "single-item-10": "Jane Smith and Robert Williams, “Machine Learning for Climate Prediction,” Environmental Research Letters, 15:11 (2020), p. 114042.",
-    "single-item-11": "Wei Chen, “Neural Networks for Natural Language Understanding,” (2019).",
+    "single-item-11": "Wei Chen, “Neural Networks for Natural Language Understanding,” (2019a).",
     "single-item-12": "Tomas Mikolov, Ilya Sutskever, Kai Chen, Greg Corrado, and Jeff Dean, ““Distributed Representations of Words and Phrases,”” Proceedings of NIPS 2013 (2013), pp. 3111–9.",
     "single-item-13": "State of JS Team, “The State of JavaScript 2023,” available at: {https://stateofjs.com/2023} accessed 15 January 2024.",
     "single-item-14": "Harry T. Reis and Charles M. Judd (eds), Handbook of Research Methods in Social Psychology (Cambridge: Cambridge University Press, 2000).",

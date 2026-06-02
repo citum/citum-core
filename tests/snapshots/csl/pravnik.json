@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:15.360Z",
+  "generated_at": "2026-06-02T14:23:27.825Z",
   "style": "pravnik",
-  "fixture_hash": "2c87efef734f50d2",
+  "fixture_hash": "17c1d1d2b5e334dd",
   "csl_hash": "576dafa551f7cb54",
   "citations": {
     "single-item-1": "KUHN, Thomas S. The Structure of Scientific Revolutions. <i>International Encyclopedia of Unified Science</i>. 1962, vol. 2, no. 2.",
@@ -50,6 +50,10 @@
     "  <div class=\"csl-entry\">GARCIA, Maria. Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i>. 2019, vol. 4, pp. 55–80.</div>\n",
     "  <div class=\"csl-entry\">HAWKING, Stephen. <i>A Brief History of Time</i>. New York: Bantam Dell Publishing Group, 1988.</div>\n",
     "  <div class=\"csl-entry\">CHEN, Wei. <i>Neural Networks for Natural Language Understanding</i>. 2019, phd-thesis, Stanford University.</div>\n",
+    "  <div class=\"csl-entry\">CHEN, Wei. Urban Heat Island Measurement Techniques. <i>Urban Climate</i>. 2024, vol. 18, pp. 45–62.</div>\n",
+    "  <div class=\"csl-entry\">CHEN, Wei. Urban Heat Island Mitigation Strategies. <i>Urban Climate</i>. 2022, vol. 15, pp. 1–18.</div>\n",
+    "  <div class=\"csl-entry\">JOHNSON, Alice. Quantitative Methods in Sociology. <i>Sociological Review</i>. 2020, vol. 68, pp. 23–45.</div>\n",
+    "  <div class=\"csl-entry\">JOHNSON, Brian. Qualitative Methods in Sociology. <i>Sociological Review</i>. 2020, vol. 68, pp. 89–112.</div>\n",
     "  <div class=\"csl-entry\">JOHNSON, David – LEE, Sarah. <i>Method for Efficient Data Compression</i>. 2021.</div>\n",
     "  <div class=\"csl-entry\">KAFKA, Franz. <i>Metamorphosis</i>. Leipzig: Kurt Wolff Verlag, 1915.</div>\n",
     "  <div class=\"csl-entry\">KUHN, Thomas S. Scientific Paradigms and Normal Science. <i>Philosophy of Science</i>. 1970, vol. 37, no. 1, pp. 1–13.</div>\n",

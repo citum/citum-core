@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:48.733Z",
+  "generated_at": "2026-06-02T14:22:54.929Z",
   "style": "geriatrie-et-psychologie-neuropsychiatrie-du-vieillissement",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "71a8d42f5b6bc5d1",
   "citations": {
     "single-item": "[1]",
@@ -23,7 +23,9 @@
     "report-single": "[5]",
     "thesis-single": "[11]",
     "webpage-single": "[13]",
-    "no-date-single": "[33]"
+    "no-date-single": "[33]",
+    "disambiguate-givenname": "[35,36]",
+    "subsequent-author-consecutive": "[37,38]"
   },
   "bibliography": [
     "  <div class=\"csl-entry\"><b>1</b>. Kuhn TS. The Structure of Scientific Revolutions. <i>International Encyclopedia of Unified Science</i> 1962 ; 2.</div>\n",
@@ -59,6 +61,10 @@
     "  <div class=\"csl-entry\"><b>31</b>. Garcia M. Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i> 2019 ; 4 : 55–80.</div>\n",
     "  <div class=\"csl-entry\"><b>32</b>. Garcia M. Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i> 2019 ; 4 : 81–104.</div>\n",
     "  <div class=\"csl-entry\"><b>33</b>. Forthcoming A. <i>Foundations of Declarative Bibliography</i>. Cambridge : University Press, n.d.</div>\n",
-    "  <div class=\"csl-entry\"><b>34</b>. Adams J. Letter to James Smith 1797.</div>\n"
+    "  <div class=\"csl-entry\"><b>34</b>. Adams J. Letter to James Smith 1797.</div>\n",
+    "  <div class=\"csl-entry\"><b>35</b>. Johnson A. Quantitative Methods in Sociology. <i>Sociological Review</i> 2020 ; 68 : 23–45.</div>\n",
+    "  <div class=\"csl-entry\"><b>36</b>. Johnson B. Qualitative Methods in Sociology. <i>Sociological Review</i> 2020 ; 68 : 89–112.</div>\n",
+    "  <div class=\"csl-entry\"><b>37</b>. Chen W. Urban Heat Island Mitigation Strategies. <i>Urban Climate</i> 2022 ; 15 : 1–18.</div>\n",
+    "  <div class=\"csl-entry\"><b>38</b>. Chen W. Urban Heat Island Measurement Techniques. <i>Urban Climate</i> 2024 ; 18 : 45–62.</div>\n"
   ]
 }

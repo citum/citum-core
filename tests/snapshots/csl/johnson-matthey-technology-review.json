@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:55.143Z",
+  "generated_at": "2026-06-02T14:23:03.121Z",
   "style": "johnson-matthey-technology-review",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "f483182e991fd37d",
   "citations": {
     "single-item": "(1)",
@@ -23,7 +23,9 @@
     "report-single": "(5)",
     "thesis-single": "(11)",
     "webpage-single": "(13)",
-    "no-date-single": "(33)"
+    "no-date-single": "(33)",
+    "disambiguate-givenname": "(35, 36)",
+    "subsequent-author-consecutive": "(37, 38)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">1. T. S. Kuhn, <i>International Encyclopedia of Unified Science</i>, 1962, <b>2</b>, (2), LINK https://doi.org/10.1234/example</div>\n",
@@ -59,6 +61,10 @@
     "  <div class=\"csl-entry\">31. M. Garcia, <i>Annual Review of Climate Science</i>, 2019, <b>4</b>, 55 LINK https://doi.org/10.5555/arcs.2019.4.55</div>\n",
     "  <div class=\"csl-entry\">32. M. Garcia, <i>Annual Review of Climate Science</i>, 2019, <b>4</b>, 81 LINK https://doi.org/10.5555/arcs.2019.4.81</div>\n",
     "  <div class=\"csl-entry\">33. A. Forthcoming, “Foundations of Declarative Bibliography,” University Press, Cambridge</div>\n",
-    "  <div class=\"csl-entry\">34. J. Adams, “Letter to James Smith,” 1797</div>\n"
+    "  <div class=\"csl-entry\">34. J. Adams, “Letter to James Smith,” 1797</div>\n",
+    "  <div class=\"csl-entry\">35. A. Johnson, <i>Sociological Review</i>, 2020, <b>68</b>, 23</div>\n",
+    "  <div class=\"csl-entry\">36. B. Johnson, <i>Sociological Review</i>, 2020, <b>68</b>, 89</div>\n",
+    "  <div class=\"csl-entry\">37. W. Chen, <i>Urban Climate</i>, 2022, <b>15</b>, 1 LINK https://doi.org/10.5555/uc.2022.15.1</div>\n",
+    "  <div class=\"csl-entry\">38. W. Chen, <i>Urban Climate</i>, 2024, <b>18</b>, 45 LINK https://doi.org/10.5555/uc.2024.18.45</div>\n"
   ]
 }

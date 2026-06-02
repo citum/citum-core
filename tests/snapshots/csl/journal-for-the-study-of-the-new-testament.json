@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:55.257Z",
+  "generated_at": "2026-06-02T14:23:03.256Z",
   "style": "journal-for-the-study-of-the-new-testament",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "aa9a758d6e99f709",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -23,17 +23,23 @@
     "report-single": "(World Bank 2023)",
     "thesis-single": "(Chen 2019)",
     "webpage-single": "(State of JS Team 2023)",
-    "no-date-single": "(Forthcoming n.d.)"
+    "no-date-single": "(Forthcoming n.d.)",
+    "disambiguate-givenname": "(Brian Johnson 2020; Alice Johnson 2020)",
+    "subsequent-author-consecutive": "(Chen 2022, 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Adams, John</div>\n\n    <div class=\"csl-left-margin\">1797</div><div class=\"csl-right-inline\">“Letter to James Smith,” .</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Bengio, Yoshua</div>\n\n    <div class=\"csl-left-margin\">2023</div><div class=\"csl-right-inline\">“The Future of Artificial Intelligence,” (video-interview). Available at: https://example.com/interview.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Chen, Wei</div>\n\n    <div class=\"csl-left-margin\">2019</div><div class=\"csl-right-inline\"><i>Neural Networks for Natural Language Understanding</i> (phd-thesis; Stanford University).</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">2022</div><div class=\"csl-right-inline\">“Urban Heat Island Mitigation Strategies,” <i>Urban Climate</i> 15: 1–18.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">2024</div><div class=\"csl-right-inline\">“Urban Heat Island Measurement Techniques,” <i>Urban Climate</i> 18: 45–62.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Ericsson, K. Anders</div>\n\n    <div class=\"csl-left-margin\">2006</div><div class=\"csl-right-inline\">“The Role of Deliberate Practice,” in K. Anders Ericsson, Neil Charness, Paul J. Feltovich, et al. (eds.), <i>The Cambridge Handbook of Expertise and Expert Performance</i> (Cambridge University Press): 683–703.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Forthcoming, A.</div>\n\n    <div class=\"csl-left-margin\">n.d.</div><div class=\"csl-right-inline\"><i>Foundations of Declarative Bibliography</i> (Cambridge: University Press).</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Garcia, Maria</div>\n\n    <div class=\"csl-left-margin\">2019a</div><div class=\"csl-right-inline\">“Methods for Probabilistic Climate Attribution,” <i>Annual Review of Climate Science</i> 4: 81–104.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">2019b</div><div class=\"csl-right-inline\">“Methods for Robust Climate Attribution,” <i>Annual Review of Climate Science</i> 4: 55–80.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Hawking, Stephen</div>\n\n    <div class=\"csl-left-margin\">1988</div><div class=\"csl-right-inline\"><i>A Brief History of Time</i> (New York: Bantam Dell Publishing Group).</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Johnson, Alice</div>\n\n    <div class=\"csl-left-margin\">2020</div><div class=\"csl-right-inline\">“Quantitative Methods in Sociology,” <i>Sociological Review</i> 68: 23–45.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Johnson, Brian</div>\n\n    <div class=\"csl-left-margin\">2020</div><div class=\"csl-right-inline\">“Qualitative Methods in Sociology,” <i>Sociological Review</i> 68: 89–112.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Johnson, David, and Sarah Lee</div>\n\n    <div class=\"csl-left-margin\">2021</div><div class=\"csl-right-inline\">“Method for Efficient Data Compression,” .</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><i>Journal of Theoretical Psychology</i></div>\n\n    <div class=\"csl-left-margin\">2018</div><div class=\"csl-right-inline\">“The Role of Theory in Research,” 28.3: 201–15.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Kafka, Franz</div>\n\n    <div class=\"csl-left-margin\">1915</div><div class=\"csl-right-inline\"><i>Metamorphosis</i> (trans. David Wyllie) (Leipzig: Kurt Wolff Verlag).</div>\n  </div>\n",

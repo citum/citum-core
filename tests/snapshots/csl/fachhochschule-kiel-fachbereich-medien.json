@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:46.842Z",
+  "generated_at": "2026-06-02T14:22:52.643Z",
   "style": "fachhochschule-kiel-fachbereich-medien",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "2293cb4402faebae",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -23,15 +23,21 @@
     "report-single": "(World Bank 2023)",
     "thesis-single": "(Chen 2019)",
     "webpage-single": "(State of JS Team 2023)",
-    "no-date-single": "(Forthcoming o. J.)"
+    "no-date-single": "(Forthcoming o. J.)",
+    "disambiguate-givenname": "(A. Johnson 2020;B. Johnson 2020)",
+    "subsequent-author-consecutive": "(Chen 2022; 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">Chen, Wei (2019): <i>Neural Networks for Natural Language Understanding</i>. phd-thesis, .</div>\n",
+    "  <div class=\"csl-entry\">Chen, Wei (2022): Urban Heat Island Mitigation Strategies, in: <i>Urban Climate</i> 15, S. 1–18.</div>\n",
+    "  <div class=\"csl-entry\">Chen, Wei (2024): Urban Heat Island Measurement Techniques, in: <i>Urban Climate</i> 18, S. 45–62.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. Anders (2006): The Role of Deliberate Practice, in: K. Anders Ericsson/Neil Charness/Paul J. Feltovich/Robert R. Hoffman (Hrsg.): <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, S. 683–703.</div>\n",
     "  <div class=\"csl-entry\">Forthcoming, A. (o. J.): <i>Foundations of Declarative Bibliography</i>, Cambridge: University Press.</div>\n",
     "  <div class=\"csl-entry\">Garcia, Maria (2019a): Methods for Probabilistic Climate Attribution, in: <i>Annual Review of Climate Science</i> 4, S. 81–104.</div>\n",
     "  <div class=\"csl-entry\">Garcia, Maria (2019b): Methods for Robust Climate Attribution, in: <i>Annual Review of Climate Science</i> 4, S. 55–80.</div>\n",
     "  <div class=\"csl-entry\">Hawking, Stephen (1988): <i>A Brief History of Time</i>, New York: Bantam Dell Publishing Group.</div>\n",
+    "  <div class=\"csl-entry\">Johnson, Alice (2020): Quantitative Methods in Sociology, in: <i>Sociological Review</i> 68, S. 23–45.</div>\n",
+    "  <div class=\"csl-entry\">Johnson, Brian (2020): Qualitative Methods in Sociology, in: <i>Sociological Review</i> 68, S. 89–112.</div>\n",
     "  <div class=\"csl-entry\">Kafka, Franz (1915): <i>Metamorphosis</i>, Leipzig: Kurt Wolff Verlag.</div>\n",
     "  <div class=\"csl-entry\">Kuhn, Thomas S. (1962): The Structure of Scientific Revolutions, in: <i>International Encyclopedia of Unified Science</i> 2, 2, .</div>\n",
     "  <div class=\"csl-entry\">Kuhn, Thomas S. (1970): Scientific Paradigms and Normal Science, in: <i>Philosophy of Science</i> 37, 1, S. 1–13.</div>\n",

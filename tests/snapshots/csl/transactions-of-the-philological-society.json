@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:24.536Z",
+  "generated_at": "2026-06-02T14:23:38.898Z",
   "style": "transactions-of-the-philological-society",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "d5e9cf803cc01f4f",
   "citations": {
     "single-item": "(<span style=\"baseline\">Kuhn 1962</span>)",
@@ -23,18 +23,24 @@
     "report-single": "(<span style=\"baseline\">World Bank 2023</span>)",
     "thesis-single": "(<span style=\"baseline\">Chen 2019</span>)",
     "webpage-single": "(<span style=\"baseline\">State of JS Team 2023</span>)",
-    "no-date-single": "(<span style=\"baseline\">Forthcoming n.d.</span>)"
+    "no-date-single": "(<span style=\"baseline\">Forthcoming n.d.</span>)",
+    "disambiguate-givenname": "(<span style=\"baseline\">Johnson 2020a</span>, <span style=\"baseline\">2020b</span>)",
+    "subsequent-author-consecutive": "(<span style=\"baseline\">Chen 2022</span>, <span style=\"baseline\">2024</span>)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Adams, John</span></span>, 1797. ‘Letter to James Smith.’</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Bengio, Yoshua</span></span>, 2023. ‘The Future of Artificial Intelligence.’ https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Brown v. Board of Education</span>, 1954. , vol. 347. 483.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Chen, Wei</span></span>, 2019. <i>Neural Networks for Natural Language Understanding</i>. phd-thesis. Stanford University.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Chen, Wei</span></span>, 2022. ‘Urban Heat Island Mitigation Strategies,’ <i>Urban Climate</i> 15. 1–18. https://doi.org/10.5555/uc.2022.15.1.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Chen, Wei</span></span>, 2024. ‘Urban Heat Island Measurement Techniques,’ <i>Urban Climate</i> 18. 45–62. https://doi.org/10.5555/uc.2024.18.45.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Ericsson, K. Anders</span></span>, 2006. ‘The Role of Deliberate Practice,’ in <span style=\"baseline\">K. Anders Ericsson, Neil Charness, Paul J. Feltovich, &#38; Robert R. Hoffman (eds.)</span>, <i>The Cambridge Handbook of Expertise and Expert Performance</i>. Cambridge University Press. 683–703.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Forthcoming, A.</span></span>, n.d. <i>Foundations of Declarative Bibliography</i>. Cambridge: University Press.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Garcia, Maria</span></span>, 2019a. ‘Methods for Robust Climate Attribution,’ <i>Annual Review of Climate Science</i> 4. 55–80. https://doi.org/10.5555/arcs.2019.4.55.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Garcia, Maria</span></span>, 2019b. ‘Methods for Probabilistic Climate Attribution,’ <i>Annual Review of Climate Science</i> 4. 81–104. https://doi.org/10.5555/arcs.2019.4.81.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Hawking, Stephen</span></span>, 1988. <i>A Brief History of Time</i>. New York: Bantam Dell Publishing Group.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Johnson, Alice</span></span>, 2020a. ‘Quantitative Methods in Sociology,’ <i>Sociological Review</i> 68. 23–45.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Johnson, Brian</span></span>, 2020b. ‘Qualitative Methods in Sociology,’ <i>Sociological Review</i> 68. 89–112.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Johnson, David</span> &#38; <span style=\"font-variant:small-caps;\">Sarah Lee</span></span>, 2021. ‘Method for Efficient Data Compression.’</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Kafka, Franz</span></span>, 1915. <i>Metamorphosis</i>. Leipzig: Kurt Wolff Verlag.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Kuhn, Thomas S.</span></span>, 1962. ‘The Structure of Scientific Revolutions,’ <i>International Encyclopedia of Unified Science</i> 2(2). https://doi.org/10.1234/example.</div>\n",

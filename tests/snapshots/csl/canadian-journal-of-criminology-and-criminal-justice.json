@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:14.519Z",
+  "generated_at": "2026-06-02T14:22:15.018Z",
   "style": "canadian-journal-of-criminology-and-criminal-justice",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "281a775a22729277",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -23,18 +23,24 @@
     "report-single": "(World Bank 2023)",
     "thesis-single": "(Chen 2019)",
     "webpage-single": "(State of JS Team 2023)",
-    "no-date-single": "(Forthcoming)"
+    "no-date-single": "(Forthcoming)",
+    "disambiguate-givenname": "(Johnson 2020a; Johnson 2020b)",
+    "subsequent-author-consecutive": "(Chen 2022; Chen 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Adams, John</b></div>\n<b>1797 Letter to James Smith</b>. Adams Papers, reel 45. Massachusetts Historical Society. Boston, MA.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Bengio, Yoshua</b></div>\n<b>2023 The Future of Artificial Intelligence</b>. Interview by Stephen ColbertVideo-interview. https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Brown v. Board of Education</b></div>\n<b>1954</b>. U.S. Reports. Vol. 347.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Chen, Wei</b></div>\n<b>2019 <i>Neural Networks for Natural Language Understanding</i></b>. Stanford University phd-thesis.</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Chen, Wei</b></div>\n<b>2022 Urban Heat Island Mitigation Strategies</b>. Urban Climate 15:1–18. https://doi.org/10.5555/uc.2022.15.1.</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Chen, Wei</b></div>\n<b>2024 Urban Heat Island Measurement Techniques</b>. Urban Climate 18:45–62. https://doi.org/10.5555/uc.2024.18.45.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Ericsson, K. Anders</b></div>\n<b>2006 The Role of Deliberate Practice</b>. In K. Anders Ericsson, Neil Charness, Paul J. Feltovich &#38; Robert R. Hoffman, eds. The Cambridge Handbook of Expertise and Expert Performance. Cambridge University Press.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Forthcoming, A.</b></div>\n<b>Foundations of Declarative Bibliography</b>. Cambridge: University Press.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Garcia, Maria</b></div>\n<b>2019a Methods for Robust Climate Attribution</b>. Annual Review of Climate Science 4:55–80. https://doi.org/10.5555/arcs.2019.4.55.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Garcia, Maria</b></div>\n<b>2019b Methods for Probabilistic Climate Attribution</b>. Annual Review of Climate Science 4:81–104. https://doi.org/10.5555/arcs.2019.4.81.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Hawking, Stephen</b></div>\n<b>1988 A Brief History of Time</b>. New York: Bantam Dell Publishing Group.</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Johnson, Alice</b></div>\n<b>2020a Quantitative Methods in Sociology</b>. Sociological Review 68:23–45.</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Johnson, Brian</b></div>\n<b>2020b Qualitative Methods in Sociology</b>. Sociological Review 68:89–112.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Johnson, David &#38; Sarah Lee</b></div>\n<b>2021 Method for Efficient Data Compression</b>.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Kafka, Franz</b></div>\n<b>1915 Metamorphosis</b>. (Trans.) David Wyllie. Leipzig: Kurt Wolff Verlag.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><b>Kuhn, Thomas S.</b></div>\n<b>1962 The Structure of Scientific Revolutions</b>. International Encyclopedia of Unified Science. Chicago: University of Chicago Press 2(2). https://doi.org/10.1234/example.</div>\n",

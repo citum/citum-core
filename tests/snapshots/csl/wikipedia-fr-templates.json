@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:29.234Z",
+  "generated_at": "2026-06-02T14:23:44.541Z",
   "style": "wikipedia-fr-templates",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "d169ad577a4bc950",
   "citations": {
     "single-item": "&#60;ref&#62;{{article |auteurs=Thomas S. Kuhn |périodique=International Encyclopedia of Unified Science |titre=The Structure of Scientific Revolutions |lieu=Chicago |éditeur=University of Chicago Press |volume=2 | numéro=2 |date= 1962 |doi=10.1234/example}}&#60;/ref&#62;",
@@ -23,15 +23,21 @@
     "report-single": "&#60;ref&#62;{{ouvrage |auteurs=World Bank |titre=World Development Report 2023 |lieu=Washington, DC |éditeur=World Bank Group |date= 2023}}&#60;/ref&#62;",
     "thesis-single": "&#60;ref&#62;{{ouvrage |auteurs=Wei Chen |titre=Neural Networks for Natural Language Understanding |éditeur=Stanford University |date= 2019}}&#60;/ref&#62;",
     "webpage-single": "&#60;ref&#62;{{lien web |url=https://stateofjs.com/2023 |auteurs=State of JS Team |titre=The State of JavaScript 2023 |date= 2023 |consulté le=15 janvier 2024}}&#60;/ref&#62;",
-    "no-date-single": "&#60;ref&#62;{{ouvrage |auteurs=A. Forthcoming |titre=Foundations of Declarative Bibliography |lieu=Cambridge |éditeur=University Press}}&#60;/ref&#62;"
+    "no-date-single": "&#60;ref&#62;{{ouvrage |auteurs=A. Forthcoming |titre=Foundations of Declarative Bibliography |lieu=Cambridge |éditeur=University Press}}&#60;/ref&#62;",
+    "disambiguate-givenname": "&#60;ref&#62;{{article |auteurs=Alice Johnson |périodique=Sociological Review |titre=Quantitative Methods in Sociology |volume=68 |date= 2020 |passage=23‑45}}&#60;/ref&#62;&#60;ref&#62;{{article |auteurs=Brian Johnson |périodique=Sociological Review |titre=Qualitative Methods in Sociology |volume=68 |date= 2020 |passage=89‑112}}&#60;/ref&#62;",
+    "subsequent-author-consecutive": "&#60;ref&#62;{{article |auteurs=Wei Chen |périodique=Urban Climate |titre=Urban Heat Island Mitigation Strategies |volume=15 |date= 2022 |doi=10.5555/uc.2022.15.1 |passage=1‑18}}&#60;/ref&#62;&#60;ref&#62;{{article |auteurs=Wei Chen |périodique=Urban Climate |titre=Urban Heat Island Measurement Techniques |volume=18 |date= 2024 |doi=10.5555/uc.2024.18.45 |passage=45‑62}}&#60;/ref&#62;"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">{{ouvrage |auteurs=Wei Chen |titre=Neural Networks for Natural Language Understanding |éditeur=Stanford University |date= 2019}}</div>\n",
+    "  <div class=\"csl-entry\">{{article |auteurs=Wei Chen |périodique=Urban Climate |titre=Urban Heat Island Mitigation Strategies |volume=15 |date= 2022 |doi=10.5555/uc.2022.15.1 |passage=1‑18}}</div>\n",
+    "  <div class=\"csl-entry\">{{article |auteurs=Wei Chen |périodique=Urban Climate |titre=Urban Heat Island Measurement Techniques |volume=18 |date= 2024 |doi=10.5555/uc.2024.18.45 |passage=45‑62}}</div>\n",
     "  <div class=\"csl-entry\">{{ouvrage |auteurs=Sandra Díaz ({{dir.}}), United Nations Environment Programme |titre=State of the World’s Biodiversity |lieu=Nairobi |éditeur=UNEP |date= 2019}}</div>\n",
     "  <div class=\"csl-entry\">{{ouvrage |auteurs=A. Forthcoming |titre=Foundations of Declarative Bibliography |lieu=Cambridge |éditeur=University Press}}</div>\n",
     "  <div class=\"csl-entry\">{{article |auteurs=Maria Garcia |périodique=Annual Review of Climate Science |titre=Methods for Robust Climate Attribution |volume=4 |date= 2019 |doi=10.5555/arcs.2019.4.55 |passage=55‑80}}</div>\n",
     "  <div class=\"csl-entry\">{{article |auteurs=Maria Garcia |périodique=Annual Review of Climate Science |titre=Methods for Probabilistic Climate Attribution |volume=4 |date= 2019 |doi=10.5555/arcs.2019.4.81 |passage=81‑104}}</div>\n",
     "  <div class=\"csl-entry\">{{ouvrage |auteurs=Stephen Hawking |titre=A Brief History of Time |lieu=New York |éditeur=Bantam Dell Publishing Group |année= 1988}}</div>\n",
+    "  <div class=\"csl-entry\">{{article |auteurs=Alice Johnson |périodique=Sociological Review |titre=Quantitative Methods in Sociology |volume=68 |date= 2020 |passage=23‑45}}</div>\n",
+    "  <div class=\"csl-entry\">{{article |auteurs=Brian Johnson |périodique=Sociological Review |titre=Qualitative Methods in Sociology |volume=68 |date= 2020 |passage=89‑112}}</div>\n",
     "  <div class=\"csl-entry\">{{ouvrage |langue=en |auteurs=Franz Kafka |titre=Metamorphosis |lieu=Leipzig |éditeur=Kurt Wolff Verlag |année= 1915}}</div>\n",
     "  <div class=\"csl-entry\">{{article |auteurs=Thomas S. Kuhn |périodique=International Encyclopedia of Unified Science |titre=The Structure of Scientific Revolutions |lieu=Chicago |éditeur=University of Chicago Press |volume=2 | numéro=2 |date= 1962 |doi=10.1234/example}}</div>\n",
     "  <div class=\"csl-entry\">{{article |auteurs=Thomas S. Kuhn |périodique=Philosophy of Science |titre=Scientific Paradigms and Normal Science |volume=37 | numéro=1 |date= 1970 |doi=10.1086/288273 |passage=1‑13}}</div>\n",

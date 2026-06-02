@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:00.234Z",
+  "generated_at": "2026-06-02T14:23:10.214Z",
   "style": "le-mouvement-social",
-  "fixture_hash": "2c87efef734f50d2",
+  "fixture_hash": "17c1d1d2b5e334dd",
   "csl_hash": "a133feb74ae45b3e",
   "citations": {
     "single-item-1": "T.S. <span style=\"font-variant:small-caps;\">Kuhn</span>, « The Structure of Scientific Revolutions », <i>International Encyclopedia of Unified Science</i>, 1962.",
@@ -44,12 +44,16 @@
   "bibliography": [
     "  <div class=\"csl-entry\">J. <span style=\"font-variant:small-caps;\">Adams</span>, « Letter to James Smith », 1797.</div>\n",
     "  <div class=\"csl-entry\">Y. <span style=\"font-variant:small-caps;\">Bengio</span>, « The Future of Artificial Intelligence ».</div>\n",
+    "  <div class=\"csl-entry\">W. <span style=\"font-variant:small-caps;\">Chen</span>, « Urban Heat Island Measurement Techniques », <i>Urban Climate</i>, 2024, p. 45‑62.</div>\n",
+    "  <div class=\"csl-entry\">W. <span style=\"font-variant:small-caps;\">Chen</span>, « Urban Heat Island Mitigation Strategies », <i>Urban Climate</i>, 2022, p. 1‑18.</div>\n",
     "  <div class=\"csl-entry\">W. <span style=\"font-variant:small-caps;\">Chen</span>, <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\">K.A. <span style=\"font-variant:small-caps;\">Ericsson</span>, « The Role of Deliberate Practice », in K.A. <span style=\"font-variant:small-caps;\">Ericsson</span>, N. <span style=\"font-variant:small-caps;\">Charness</span>, P.J. <span style=\"font-variant:small-caps;\">Feltovich</span> et R.R. <span style=\"font-variant:small-caps;\">Hoffman</span> (dir.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, 2006, p. 683‑703.</div>\n",
     "  <div class=\"csl-entry\">A. <span style=\"font-variant:small-caps;\">Forthcoming</span>, <i>Foundations of Declarative Bibliography</i>, Cambridge, University Press.</div>\n",
     "  <div class=\"csl-entry\">M. <span style=\"font-variant:small-caps;\">Garcia</span>, « Methods for Robust Climate Attribution », <i>Annual Review of Climate Science</i>, 2019, p. 55‑80.</div>\n",
     "  <div class=\"csl-entry\">M. <span style=\"font-variant:small-caps;\">Garcia</span>, « Methods for Probabilistic Climate Attribution », <i>Annual Review of Climate Science</i>, 2019, p. 81‑104.</div>\n",
     "  <div class=\"csl-entry\">S. <span style=\"font-variant:small-caps;\">Hawking</span>, <i>A Brief History of Time</i>, New York, Bantam Dell Publishing Group, 1988.</div>\n",
+    "  <div class=\"csl-entry\">A. <span style=\"font-variant:small-caps;\">Johnson</span>, « Quantitative Methods in Sociology », <i>Sociological Review</i>, 2020, p. 23‑45.</div>\n",
+    "  <div class=\"csl-entry\">B. <span style=\"font-variant:small-caps;\">Johnson</span>, « Qualitative Methods in Sociology », <i>Sociological Review</i>, 2020, p. 89‑112.</div>\n",
     "  <div class=\"csl-entry\">D. <span style=\"font-variant:small-caps;\">Johnson</span> et S. <span style=\"font-variant:small-caps;\">Lee</span>, « Method for Efficient Data Compression ».</div>\n",
     "  <div class=\"csl-entry\">F. <span style=\"font-variant:small-caps;\">Kafka</span>, <i>Metamorphosis</i>, traduit par David <span style=\"font-variant:small-caps;\">Wyllie</span>, Leipzig, Kurt Wolff Verlag, 1915.</div>\n",
     "  <div class=\"csl-entry\">T.S. <span style=\"font-variant:small-caps;\">Kuhn</span>, « Scientific Paradigms and Normal Science », <i>Philosophy of Science</i>, 1970, p. 1‑13.</div>\n",

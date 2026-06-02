@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:53.162Z",
+  "generated_at": "2026-06-02T14:23:00.687Z",
   "style": "international-atomic-energy-agency",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "05972f27a1fd96d7",
   "citations": {
     "single-item": "[1]",
@@ -23,7 +23,9 @@
     "report-single": "[5]",
     "thesis-single": "[11]",
     "webpage-single": "[13]",
-    "no-date-single": "[33]"
+    "no-date-single": "[33]",
+    "disambiguate-givenname": "[35, 36]",
+    "subsequent-author-consecutive": "[37, 38]"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[1]</div><div class=\"csl-right-inline\">KUHN, T.S., The Structure of Scientific Revolutions, International Encyclopedia of Unified Science <b>2</b> 2 (1962).</div>\n  </div>\n",
@@ -59,6 +61,10 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[31]</div><div class=\"csl-right-inline\">GARCIA, M., Methods for Robust Climate Attribution, Annual Review of Climate Science <b>4</b> (2019) 55.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[32]</div><div class=\"csl-right-inline\">GARCIA, M., Methods for Probabilistic Climate Attribution, Annual Review of Climate Science <b>4</b> (2019) 81.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33]</div><div class=\"csl-right-inline\">FORTHCOMING, A., Foundations of Declarative Bibliography, University Press, Cambridge.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[34]</div><div class=\"csl-right-inline\">ADAMS, J., Letter to James Smith, (1797).</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[34]</div><div class=\"csl-right-inline\">ADAMS, J., Letter to James Smith, (1797).</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[35]</div><div class=\"csl-right-inline\">JOHNSON, A., Quantitative Methods in Sociology, Sociological Review <b>68</b> (2020) 23.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[36]</div><div class=\"csl-right-inline\">JOHNSON, B., Qualitative Methods in Sociology, Sociological Review <b>68</b> (2020) 89.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[37]</div><div class=\"csl-right-inline\">CHEN, W., Urban Heat Island Mitigation Strategies, Urban Climate <b>15</b> (2022) 1.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[38]</div><div class=\"csl-right-inline\">CHEN, W., Urban Heat Island Measurement Techniques, Urban Climate <b>18</b> (2024) 45.</div>\n  </div>\n"
   ]
 }

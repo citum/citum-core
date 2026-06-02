@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:50.945Z",
+  "generated_at": "2026-06-02T14:22:57.993Z",
   "style": "histoire-at-politique",
-  "fixture_hash": "2c87efef734f50d2",
+  "fixture_hash": "17c1d1d2b5e334dd",
   "csl_hash": "98d74ab3a60ea35c",
   "citations": {
     "single-item-1": "Thomas S. Kuhn, « The Structure of Scientific Revolutions », <i>International Encyclopedia of Unified Science</i>,  vol. 2, n<sup>o</sup> 2, 1962.",
@@ -44,12 +44,16 @@
   "bibliography": [
     "  <div class=\"csl-entry\">Adams John, « Letter to James Smith », 1797.</div>\n",
     "  <div class=\"csl-entry\">Bengio Yoshua, « The Future of Artificial Intelligence ».</div>\n",
+    "  <div class=\"csl-entry\">Chen Wei, « Urban Heat Island Measurement Techniques », <i>Urban Climate</i>,  vol. 18, 2024, p. 45‑62.</div>\n",
+    "  <div class=\"csl-entry\">Chen Wei, « Urban Heat Island Mitigation Strategies », <i>Urban Climate</i>,  vol. 15, 2022, p. 1‑18.</div>\n",
     "  <div class=\"csl-entry\">Chen Wei, <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\">Ericsson K. Anders, « The Role of Deliberate Practice », dans K. Anders Ericsson, Neil Charness, Paul J. Feltovich et Robert R. Hoffman (dir.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, 2006, p. 683‑703.</div>\n",
     "  <div class=\"csl-entry\">Forthcoming A., <i>Foundations of Declarative Bibliography</i>, Cambridge, University Press.</div>\n",
     "  <div class=\"csl-entry\">Garcia Maria, « Methods for Robust Climate Attribution », <i>Annual Review of Climate Science</i>,  vol. 4, 2019, p. 55‑80.</div>\n",
     "  <div class=\"csl-entry\">Garcia Maria, « Methods for Probabilistic Climate Attribution », <i>Annual Review of Climate Science</i>,  vol. 4, 2019, p. 81‑104.</div>\n",
     "  <div class=\"csl-entry\">Hawking Stephen, <i>A Brief History of Time</i>, New York, Bantam Dell Publishing Group, 1988.</div>\n",
+    "  <div class=\"csl-entry\">Johnson Alice, « Quantitative Methods in Sociology », <i>Sociological Review</i>,  vol. 68, 2020, p. 23‑45.</div>\n",
+    "  <div class=\"csl-entry\">Johnson Brian, « Qualitative Methods in Sociology », <i>Sociological Review</i>,  vol. 68, 2020, p. 89‑112.</div>\n",
     "  <div class=\"csl-entry\">Johnson David et Lee Sarah, « Method for Efficient Data Compression ».</div>\n",
     "  <div class=\"csl-entry\">Kafka Franz, <i>Metamorphosis</i>, traduit par David <span style=\"font-variant:small-caps;\">Wyllie</span>, Leipzig, Kurt Wolff Verlag, 1915.</div>\n",
     "  <div class=\"csl-entry\">Kuhn Thomas S., « Scientific Paradigms and Normal Science », <i>Philosophy of Science</i>,  vol. 37, n<sup>o</sup> 1, 1970, p. 1‑13.</div>\n",

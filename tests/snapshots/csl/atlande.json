@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:11.542Z",
+  "generated_at": "2026-06-02T14:22:11.039Z",
   "style": "atlande",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "88fda4dd33a1134e",
   "citations": {
     "single-item": "<span style=\"text-decoration:none;\">[<span style=\"text-decoration:none;\"><span style=\"font-variant:small-caps;\">Kuhn</span></span>, 1962]</span>",
@@ -23,17 +23,23 @@
     "report-single": "<span style=\"text-decoration:none;\">[<span style=\"text-decoration:none;\"><span style=\"font-variant:small-caps;\">World Bank</span></span>, 2023]</span>",
     "thesis-single": "<span style=\"text-decoration:none;\">[<span style=\"text-decoration:none;\"><span style=\"font-variant:small-caps;\">Chen</span></span>, 2019]</span>",
     "webpage-single": "<span style=\"text-decoration:none;\">[<span style=\"text-decoration:none;\"><span style=\"font-variant:small-caps;\">State of JS Team</span></span>, 2023]</span>",
-    "no-date-single": "<span style=\"text-decoration:none;\">[<span style=\"text-decoration:none;\"><span style=\"font-variant:small-caps;\">Forthcoming</span></span>]</span>"
+    "no-date-single": "<span style=\"text-decoration:none;\">[<span style=\"text-decoration:none;\"><span style=\"font-variant:small-caps;\">Forthcoming</span></span>]</span>",
+    "disambiguate-givenname": "<span style=\"text-decoration:none;\">[<span style=\"text-decoration:none;\"><span style=\"font-variant:small-caps;\">Johnson, Alice</span></span>, 2020 ; <span style=\"text-decoration:none;\"><span style=\"font-variant:small-caps;\">Johnson, Brian</span></span>, 2020]</span>",
+    "subsequent-author-consecutive": "<span style=\"text-decoration:none;\">[<span style=\"text-decoration:none;\"><span style=\"font-variant:small-caps;\">Chen</span></span>, 2022 ; <span style=\"text-decoration:none;\"><span style=\"font-variant:small-caps;\">Chen</span></span>, 2024]</span>"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">Massachusetts Historical Society, Adams Papers, reel 45, <i>Letter to James Smith</i>, 1797.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span>, Yoshua, « The Future of Artificial Intelligence », 2023.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei, « Urban Heat Island Measurement Techniques », <i>Urban Climate</i>, vol. 18, 2024, p. 45‑62.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei, « Urban Heat Island Mitigation Strategies », <i>Urban Climate</i>, vol. 15, 2022, p. 1‑18.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei, <i>Neural Networks for Natural Language Understanding</i>, thèse doctorale, Stanford University, s.l., 2019.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span>, K. Anders, « The Role of Deliberate Practice », dans Ericsson, K. Anders et al. (dir.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, s.l., Cambridge University Press, 2006, p. 683‑703.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Forthcoming</span>, A., <i>Foundations of Declarative Bibliography</i>, Cambridge, University Press.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Garcia</span>, Maria, « Methods for Robust Climate Attribution », <i>Annual Review of Climate Science</i>, vol. 4, 2019a, p. 55‑80.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Garcia</span>, Maria, « Methods for Probabilistic Climate Attribution », <i>Annual Review of Climate Science</i>, vol. 4, 2019b, p. 81‑104.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Hawking</span>, Stephen, <i>A Brief History of Time</i>, New York, Bantam Dell Publishing Group, 1988.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span>, Alice, « Quantitative Methods in Sociology », <i>Sociological Review</i>, vol. 68, 2020, p. 23‑45.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span>, Brian, « Qualitative Methods in Sociology », <i>Sociological Review</i>, vol. 68, 2020, p. 89‑112.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span>, David et <span style=\"font-variant:small-caps;\">Lee</span>, Sarah, « Method for Efficient Data Compression », 2021.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Kafka</span>, Franz, <i>Metamorphosis</i>, trad. par Wyllie David, Leipzig, Kurt Wolff Verlag, 1915.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Kuhn</span>, Thomas S., « Scientific Paradigms and Normal Science », <i>Philosophy of Science</i>, vol. 37, n<sup>o</sup> 1, 1970, p. 1‑13.</div>\n",

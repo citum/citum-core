@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:43.724Z",
+  "generated_at": "2026-06-02T14:22:48.633Z",
   "style": "din-1505-2",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "d662f562ef397cc2",
   "citations": {
     "single-item": "(<span style=\"font-variant:small-caps;\">Kuhn</span>, 1962)",
@@ -23,17 +23,23 @@
     "report-single": "(<span style=\"font-variant:small-caps;\">World Bank</span>, 2023)",
     "thesis-single": "(<span style=\"font-variant:small-caps;\">Chen</span>, 2019)",
     "webpage-single": "(<span style=\"font-variant:small-caps;\">State of JS Team</span>, 2023)",
-    "no-date-single": "(<span style=\"font-variant:small-caps;\">Forthcoming</span>)"
+    "no-date-single": "(<span style=\"font-variant:small-caps;\">Forthcoming</span>)",
+    "disambiguate-givenname": "(<span style=\"font-variant:small-caps;\">Johnson</span>, 2020aa, 2020bb)",
+    "subsequent-author-consecutive": "(<span style=\"font-variant:small-caps;\">Chen</span>, 2022, 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams, John</span>: Letter to James Smith, 1797</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio, Yoshua</span>: The Future of Artificial Intelligence.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen, Wei</span>: <i>Neural Networks for Natural Language Understanding</i>, Stanford University, phd-thesis, 2019</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen, Wei</span>: Urban Heat Island Mitigation Strategies. In: <i>Urban Climate</i> Bd. 15 (2022), S. 1–18</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen, Wei</span>: Urban Heat Island Measurement Techniques. In: <i>Urban Climate</i> Bd. 18 (2024), S. 45–62</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson, K. Anders</span>: The Role of Deliberate Practice. In: <span style=\"font-variant:small-caps;\">Ericsson, K. A.</span> ; <span style=\"font-variant:small-caps;\">Charness, N.</span> ; <span style=\"font-variant:small-caps;\">Feltovich, P. J.</span> ; <span style=\"font-variant:small-caps;\">Hoffman, R. R.</span> (Hrsg.): <i>The Cambridge Handbook of Expertise and Expert Performance</i> : Cambridge University Press, 2006, S. 683–703</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Forthcoming, A.</span>: <i>Foundations of Declarative Bibliography</i>. Cambridge : University Press</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Garcia, Maria</span>: Methods for Probabilistic Climate Attribution. In: <i>Annual Review of Climate Science</i> Bd. 4 (2019a), S. 81–104</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Garcia, Maria</span>: Methods for Robust Climate Attribution. In: <i>Annual Review of Climate Science</i> Bd. 4 (2019b), S. 55–80</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Hawking, Stephen</span>: <i>A Brief History of Time</i>. New York : Bantam Dell Publishing Group, 1988</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson, Alice</span>: Quantitative Methods in Sociology. In: <i>Sociological Review</i> Bd. 68 (2020a), S. 23–45</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson, Brian</span>: Qualitative Methods in Sociology. In: <i>Sociological Review</i> Bd. 68 (2020b), S. 89–112</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson, David</span> ; <span style=\"font-variant:small-caps;\">Lee, Sarah</span>: Method for Efficient Data Compression.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Kafka, Franz</span> ; <span style=\"font-variant:small-caps;\">Wyllie, D.</span> (Übers.): <i>Metamorphosis</i>. Leipzig : Kurt Wolff Verlag, 1915</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Kuhn, Thomas S.</span>: The Structure of Scientific Revolutions. In: <i>International Encyclopedia of Unified Science</i> Bd. 2. Chicago, University of Chicago Press (1962), Nr. 2</div>\n",

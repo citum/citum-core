@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:48.754Z",
+  "generated_at": "2026-06-02T14:22:54.955Z",
   "style": "german-council-of-economic-experts",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "cc04f7688b875647",
   "citations": {
     "single-item": "(Kuhn, <span style=\"baseline\">1962</span>)",
@@ -23,17 +23,23 @@
     "report-single": "(World Bank, <span style=\"baseline\">2023</span>)",
     "thesis-single": "(Chen, <span style=\"baseline\">2019</span>)",
     "webpage-single": "(State of JS Team, <span style=\"baseline\">2023</span>)",
-    "no-date-single": "(Forthcoming)"
+    "no-date-single": "(Forthcoming)",
+    "disambiguate-givenname": "(Johnson, A., <span style=\"baseline\">2020</span>; Johnson, B., <span style=\"baseline\">2020</span>)",
+    "subsequent-author-consecutive": "(Chen, <span style=\"baseline\">2022</span>, <span style=\"baseline\">2024</span>)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">Adams, J. (<span style=\"baseline\">1797</span>), Letter to James Smith, mimeo.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y. (<span style=\"baseline\">2023</span>), The Future of Artificial Intelligence, 10. November.</div>\n",
+    "  <div class=\"csl-entry\">Chen, W. (<span style=\"baseline\">2024</span>), Urban Heat Island Measurement Techniques, Urban Climate 18, 45–62.</div>\n",
+    "  <div class=\"csl-entry\">Chen, W. (<span style=\"baseline\">2022</span>), Urban Heat Island Mitigation Strategies, Urban Climate 15, 1–18.</div>\n",
     "  <div class=\"csl-entry\">Chen, W. (<span style=\"baseline\">2019</span>), Neural Networks for Natural Language Understanding.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K.A. (<span style=\"baseline\">2006</span>), The Role of Deliberate Practice, in: Ericsson, K.A., N. Charness, P.J. Feltovich and R.R. Hoffman (eds.), The Cambridge Handbook of Expertise and Expert Performance, Cambridge University Press, 683–703.</div>\n",
     "  <div class=\"csl-entry\">Forthcoming, A., Foundations of Declarative Bibliography, University Press, Cambridge.</div>\n",
     "  <div class=\"csl-entry\">Garcia, M. (<span style=\"baseline\">2019</span><span style=\"baseline\">a</span>), Methods for Robust Climate Attribution, Annual Review of Climate Science 4, 55–80.</div>\n",
     "  <div class=\"csl-entry\">Garcia, M. (<span style=\"baseline\">2019</span><span style=\"baseline\">b</span>), Methods for Probabilistic Climate Attribution, Annual Review of Climate Science 4, 81–104.</div>\n",
     "  <div class=\"csl-entry\">Hawking, S. (<span style=\"baseline\">1988</span>), A Brief History of Time, Bantam Dell Publishing Group, New York.</div>\n",
+    "  <div class=\"csl-entry\">Johnson, A. (<span style=\"baseline\">2020</span>), Quantitative Methods in Sociology, Sociological Review 68, 23–45.</div>\n",
+    "  <div class=\"csl-entry\">Johnson, B. (<span style=\"baseline\">2020</span>), Qualitative Methods in Sociology, Sociological Review 68, 89–112.</div>\n",
     "  <div class=\"csl-entry\">Johnson, D. and S. Lee (<span style=\"baseline\">2021</span>), Method for Efficient Data Compression.</div>\n",
     "  <div class=\"csl-entry\">Kafka, F. (<span style=\"baseline\">1915</span>), Metamorphosis, trans. by. D. Wyllie, Kurt Wolff Verlag, Leipzig.</div>\n",
     "  <div class=\"csl-entry\">Kuhn, T.S. (<span style=\"baseline\">1970</span>), Scientific Paradigms and Normal Science, Philosophy of Science 37 (1), 1–13.</div>\n",

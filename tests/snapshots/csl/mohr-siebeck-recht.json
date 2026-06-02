@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:04.386Z",
+  "generated_at": "2026-06-02T14:23:15.673Z",
   "style": "mohr-siebeck-recht",
-  "fixture_hash": "2c87efef734f50d2",
+  "fixture_hash": "17c1d1d2b5e334dd",
   "csl_hash": "d846560f64ce5acd",
   "citations": {
     "single-item-1": "<i>Kuhn</i>, International Encyclopedia of Unified Science 1962.",
@@ -42,11 +42,15 @@
     "note-disambiguate-year-suffix": "<i>Garcia</i>, Annual Review of Climate Science 2019; <i>Garcia</i>, Annual Review of Climate Science 2019."
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><i><i>Chen, Wei</i></i>: Urban Heat Island Mitigation Strategies, Urban Climate 2022, 1–18.</div>\n",
+    "  <div class=\"csl-entry\"><i><i>Chen, Wei</i></i>: Urban Heat Island Measurement Techniques, Urban Climate 2024, 45–62.</div>\n",
     "  <div class=\"csl-entry\"><i><i>Ericsson, K. Anders</i></i>: The Role of Deliberate Practice, in: Ericsson/Charness/Feltovich/Hoffman (Hrsg.): The Cambridge Handbook of Expertise and Expert Performance, 2006, 683–703.</div>\n",
     "  <div class=\"csl-entry\"><i>Forthcoming, A.</i>: Foundations of Declarative Bibliography, Cambridge </div>\n",
     "  <div class=\"csl-entry\"><i><i>Garcia, Maria</i></i>: Methods for Robust Climate Attribution, Annual Review of Climate Science 2019, 55–80.</div>\n",
     "  <div class=\"csl-entry\"><i><i>Garcia, Maria</i></i>: Methods for Probabilistic Climate Attribution, Annual Review of Climate Science 2019, 81–104.</div>\n",
     "  <div class=\"csl-entry\"><i>Hawking, Stephen</i>: A Brief History of Time, New York 1988.</div>\n",
+    "  <div class=\"csl-entry\"><i><i>Johnson, Alice</i></i>: Quantitative Methods in Sociology, Sociological Review 2020, 23–45.</div>\n",
+    "  <div class=\"csl-entry\"><i><i>Johnson, Brian</i></i>: Qualitative Methods in Sociology, Sociological Review 2020, 89–112.</div>\n",
     "  <div class=\"csl-entry\"><i>Kafka, Franz</i>: Metamorphosis, Leipzig 1915.</div>\n",
     "  <div class=\"csl-entry\"><i><i>Kuhn, Thomas S.</i></i>: The Structure of Scientific Revolutions, International Encyclopedia of Unified Science 1962, </div>\n",
     "  <div class=\"csl-entry\"><i><i>Kuhn, Thomas S.</i></i>: Scientific Paradigms and Normal Science, Philosophy of Science 1970, 1–13.</div>\n",

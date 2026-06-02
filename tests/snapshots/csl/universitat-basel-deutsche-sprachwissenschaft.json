@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:26.258Z",
+  "generated_at": "2026-06-02T14:23:40.951Z",
   "style": "universitat-basel-deutsche-sprachwissenschaft",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "2b1ff79d4c71f41f",
   "citations": {
     "single-item": "(<span style=\"font-variant:small-caps;\">Kuhn</span>, 1962)",
@@ -23,17 +23,23 @@
     "report-single": "(<span style=\"font-variant:small-caps;\">World Bank</span>, 2023)",
     "thesis-single": "(<span style=\"font-variant:small-caps;\">Chen</span>, 2019)",
     "webpage-single": "(<span style=\"font-variant:small-caps;\">State of JS Team</span>, 2023)",
-    "no-date-single": "(<span style=\"font-variant:small-caps;\">Forthcoming</span>, n.d.)"
+    "no-date-single": "(<span style=\"font-variant:small-caps;\">Forthcoming</span>, n.d.)",
+    "disambiguate-givenname": "(Alice <span style=\"font-variant:small-caps;\">Johnson</span>, 2020; Brian <span style=\"font-variant:small-caps;\">Johnson</span>, 2020)",
+    "subsequent-author-consecutive": "(<span style=\"font-variant:small-caps;\">Chen</span>, 2022, 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Adams</span>, John (1797). <i>Letter to James Smith</i>.</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Bengio</span>, Yoshua (2023, November 10). The Future of Artificial Intelligence. video-interview.</div>\n Retrieved from https://example.com/interview</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei (2019). <i>Neural Networks for Natural Language Understanding</i> (phd-thesis). Stanford University.</div>\n</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei (2022). Urban Heat Island Mitigation Strategies. In: <i>Urban Climate</i>, <i>15</i>, 1–18.</div>\n https://doi.org/10.5555/uc.2022.15.1</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei (2024). Urban Heat Island Measurement Techniques. In: <i>Urban Climate</i>, <i>18</i>, 45–62.</div>\n https://doi.org/10.5555/uc.2024.18.45</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Ericsson</span>, K. Anders (2006). The Role of Deliberate Practice. In: K. A. Ericsson, N. Charness, P. J. Feltovich, and R. R. Hoffman (Eds.), <i>The Cambridge Handbook of Expertise and Expert Performance</i> (pp. 683–703). Cambridge University Press.</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Forthcoming</span>, A. (n.d.). <i>Foundations of Declarative Bibliography</i>. Cambridge: University Press.</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Garcia</span>, Maria (2019a). Methods for Probabilistic Climate Attribution. In: <i>Annual Review of Climate Science</i>, <i>4</i>, 81–104.</div>\n https://doi.org/10.5555/arcs.2019.4.81</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Garcia</span>, Maria (2019b). Methods for Robust Climate Attribution. In: <i>Annual Review of Climate Science</i>, <i>4</i>, 55–80.</div>\n https://doi.org/10.5555/arcs.2019.4.55</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Hawking</span>, Stephen (1988). <i>A Brief History of Time</i>. New York: Bantam Dell Publishing Group.</div>\n</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Johnson</span>, Alice (2020). Quantitative Methods in Sociology. In: <i>Sociological Review</i>, <i>68</i>, 23–45.</div>\n</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Johnson</span>, Brian (2020). Qualitative Methods in Sociology. In: <i>Sociological Review</i>, <i>68</i>, 89–112.</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Johnson</span>, David and <span style=\"font-variant:small-caps;\">Lee</span>, Sarah (2021, July 13). Method for Efficient Data Compression.</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Kafka</span>, Franz (1915). <i>Metamorphosis</i> (<span style=\"font-variant:small-caps;\">Wyllie</span>, David, Trans.). Leipzig: Kurt Wolff Verlag.</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><span style=\"font-variant:small-caps;\">Kuhn</span>, Thomas S. (1962). The Structure of Scientific Revolutions. In: <i>International Encyclopedia of Unified Science</i>, <i>2</i>(2).</div>\n https://doi.org/10.1234/example</div>\n",

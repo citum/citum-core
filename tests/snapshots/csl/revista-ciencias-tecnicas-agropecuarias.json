@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:16.789Z",
+  "generated_at": "2026-06-02T14:23:29.524Z",
   "style": "revista-ciencias-tecnicas-agropecuarias",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "ed81a13452356f3f",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -23,17 +23,23 @@
     "report-single": "(World Bank, 2023)",
     "thesis-single": "(Chen, 2019)",
     "webpage-single": "(State of JS Team, 2023)",
-    "no-date-single": "(Forthcoming, [s.f])"
+    "no-date-single": "(Forthcoming, [s.f])",
+    "disambiguate-givenname": "(Johnson, 2020a; 2020b)",
+    "subsequent-author-consecutive": "(Chen, 2022; 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">ADAMS, J.: ¨Letter to James Smith¨, Massachusetts Historical Society, Adams Papers, reel 45, 1797. </div>\n",
     "  <div class=\"csl-entry\">BENGIO, Y.: <i>The Future of Artificial Intelligence</i>, <i>[en línea] </i>entr. Stephen Colbert, 2023. <i>Disponible en: https://example.com/interview</i> </div>\n",
     "  <div class=\"csl-entry\">CHEN, W.: <i>Neural Networks for Natural Language Understanding</i>, Tesis (en opción al phd-thesis), Stanford University, 2019. </div>\n",
+    "  <div class=\"csl-entry\">CHEN, W.: ¨Urban Heat Island Mitigation Strategies¨, <i>[en línea] </i><i>Urban Climate</i>, DOI-10.5555/uc.2022.15.1, 15: 1–18, 2022. </div>\n",
+    "  <div class=\"csl-entry\">CHEN, W.: ¨Urban Heat Island Measurement Techniques¨, <i>[en línea] </i><i>Urban Climate</i>, DOI-10.5555/uc.2024.18.45, 18: 45–62, 2024. </div>\n",
     "  <div class=\"csl-entry\">ERICSSON, K.A.: ¨The Role of Deliberate Practice¨, edit. K. Anders Ericsson, Neil Charness, Paul J. Feltovich, and Robert R. Hoffman, <i>The Cambridge Handbook of Expertise and Expert Performance</i>, pp. 683–703, Ed. Cambridge University Press, 2006. </div>\n",
     "  <div class=\"csl-entry\">FORTHCOMING, A.: <i>Foundations of Declarative Bibliography</i>, Ed. University Press, Cambridge, </div>\n",
     "  <div class=\"csl-entry\">GARCIA, M.: ¨Methods for Probabilistic Climate Attribution¨, <i>[en línea] </i><i>Annual Review of Climate Science</i>, DOI-10.5555/arcs.2019.4.81, 4: 81–104, 2019a. </div>\n",
     "  <div class=\"csl-entry\">GARCIA, M.: ¨Methods for Robust Climate Attribution¨, <i>[en línea] </i><i>Annual Review of Climate Science</i>, DOI-10.5555/arcs.2019.4.55, 4: 55–80, 2019b. </div>\n",
     "  <div class=\"csl-entry\">HAWKING, S.: <i>A Brief History of Time</i>, Ed. Bantam Dell Publishing Group, New York, 1988. </div>\n",
+    "  <div class=\"csl-entry\">JOHNSON, A.: ¨Quantitative Methods in Sociology¨, <i>Sociological Review</i>, 68: 23–45, 2020a. </div>\n",
+    "  <div class=\"csl-entry\">JOHNSON, B.: ¨Qualitative Methods in Sociology¨, <i>Sociological Review</i>, 68: 89–112, 2020b. </div>\n",
     "  <div class=\"csl-entry\">JOHNSON, D.: ; LEE, S.: <i>Method for Efficient Data Compression</i>, US 11,043,211 B2, Vig. 13 de July de 2021. </div>\n",
     "  <div class=\"csl-entry\">KAFKA, F.: <i>Metamorphosis</i>,  trad. David Wyllie, Ed. Kurt Wolff Verlag, Leipzig, 1915. </div>\n",
     "  <div class=\"csl-entry\">KUHN, T.S.: ¨The Structure of Scientific Revolutions¨, <i>[en línea] </i><i>International Encyclopedia of Unified Science</i>, DOI-10.1234/example, 2(2), 1962. </div>\n",

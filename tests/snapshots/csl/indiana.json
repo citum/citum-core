@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:52.070Z",
+  "generated_at": "2026-06-02T14:22:59.344Z",
   "style": "indiana",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "75c7a1cb630cbfcc",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -23,18 +23,24 @@
     "report-single": "(World Bank 2023)",
     "thesis-single": "(Chen 2019)",
     "webpage-single": "(State of JS Team 2023)",
-    "no-date-single": "(Forthcoming n.d.)"
+    "no-date-single": "(Forthcoming n.d.)",
+    "disambiguate-givenname": "(A. Johnson 2020; B. Johnson 2020)",
+    "subsequent-author-consecutive": "(Chen 2022, 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Adams, J.</div>\n1797 <i>Letter to James Smith</i>.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Bengio, Y.</div>\n2023 (10. November) The Future of Artificial Intelligence. .</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Brown v. Board of Education. </div>\n, 347 U.S. Reports 483. (U.S. Supreme Court May 17, 1954).</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Chen, W.</div>\n2019 Neural Networks for Natural Language Understanding (phd-thesis).</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Chen, W.</div>\n2022 Urban Heat Island Mitigation Strategies. <i>Urban Climate</i>. 15: 1–18.</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Chen, W.</div>\n2024 Urban Heat Island Measurement Techniques. <i>Urban Climate</i>. 18: 45–62.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Ericsson, K.A.</div>\n2006 The Role of Deliberate Practice. In: Ericsson, K. Anders, Charness, Neil, Feltovich, Paul J. &#38; Hoffman, Robert R. (eds.): <i>The Cambridge Handbook of Expertise and Expert Performance</i>. Cambridge University Press, 683–703.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Forthcoming, A.</div>\n (n.d.) <i>Foundations of Declarative Bibliography</i>. Cambridge: University Press.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Garcia, M.</div>\n2019a Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i>. 4: 55–80.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Garcia, M.</div>\n2019b Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i>. 4: 81–104.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Hawking, S.</div>\n1988 <i>A Brief History of Time</i>. New York: Bantam Dell Publishing Group.</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Johnson, A.</div>\n2020 Quantitative Methods in Sociology. <i>Sociological Review</i>. 68: 23–45.</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Johnson, B.</div>\n2020 Qualitative Methods in Sociology. <i>Sociological Review</i>. 68: 89–112.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Johnson, D. &#38; S. Lee</div>\n2021 (13. July) Method for Efficient Data Compression.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Kafka, F.</div>\n1915 <i>Metamorphosis</i>. (D. Wyllie, Trans.). Leipzig: Kurt Wolff Verlag.</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Kuhn, T.S.</div>\n1962 The Structure of Scientific Revolutions. <i>International Encyclopedia of Unified Science</i>. 2(2).</div>\n",

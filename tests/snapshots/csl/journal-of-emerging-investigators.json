@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:56.350Z",
+  "generated_at": "2026-06-02T14:23:04.691Z",
   "style": "journal-of-emerging-investigators",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "97d3fe50ff9419d3",
   "citations": {
     "single-item": "(citation1)",
@@ -23,7 +23,9 @@
     "report-single": "(citation5)",
     "thesis-single": "(citation11)",
     "webpage-single": "(citation13)",
-    "no-date-single": "(citation33)"
+    "no-date-single": "(citation33)",
+    "disambiguate-givenname": "(citation35; citation36)",
+    "subsequent-author-consecutive": "(citation37; citation38)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">1) Kuhn, Thomas S. “The Structure of Scientific Revolutions.” <i>International Encyclopedia of Unified Science</i>, vol. 2, no. 2, 1962, https://doi.org/10.1234/example.</div>\n",
@@ -59,6 +61,10 @@
     "  <div class=\"csl-entry\">31) Garcia, Maria. “Methods for Robust Climate Attribution.” <i>Annual Review of Climate Science</i>, vol. 4, 2019, pp. 55–80, https://doi.org/10.5555/arcs.2019.4.55.</div>\n",
     "  <div class=\"csl-entry\">32) ---. “Methods for Probabilistic Climate Attribution.” <i>Annual Review of Climate Science</i>, vol. 4, 2019, pp. 81–104, https://doi.org/10.5555/arcs.2019.4.81.</div>\n",
     "  <div class=\"csl-entry\">33) Forthcoming, A. <i>Foundations of Declarative Bibliography</i>. University Press.</div>\n",
-    "  <div class=\"csl-entry\">34) Adams, John. <i>Letter to James Smith</i>. 1797. Massachusetts Historical Society, Boston, MA, Adams Papers, reel 45.</div>\n"
+    "  <div class=\"csl-entry\">34) Adams, John. <i>Letter to James Smith</i>. 1797. Massachusetts Historical Society, Boston, MA, Adams Papers, reel 45.</div>\n",
+    "  <div class=\"csl-entry\">35) Johnson, Alice. “Quantitative Methods in Sociology.” <i>Sociological Review</i>, vol. 68, 2020, pp. 23–45.</div>\n",
+    "  <div class=\"csl-entry\">36) Johnson, Brian. “Qualitative Methods in Sociology.” <i>Sociological Review</i>, vol. 68, 2020, pp. 89–112.</div>\n",
+    "  <div class=\"csl-entry\">37) Chen, Wei. “Urban Heat Island Mitigation Strategies.” <i>Urban Climate</i>, vol. 15, 2022, pp. 1–18, https://doi.org/10.5555/uc.2022.15.1.</div>\n",
+    "  <div class=\"csl-entry\">38) ---. “Urban Heat Island Measurement Techniques.” <i>Urban Climate</i>, vol. 18, 2024, pp. 45–62, https://doi.org/10.5555/uc.2024.18.45.</div>\n"
   ]
 }

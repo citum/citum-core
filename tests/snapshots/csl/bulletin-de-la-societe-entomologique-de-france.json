@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:13.906Z",
+  "generated_at": "2026-06-02T14:22:14.336Z",
   "style": "bulletin-de-la-societe-entomologique-de-france",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "c75eec4517f03208",
   "citations": {
     "single-item": "(<span style=\"font-variant:small-caps;\">Kuhn</span>, 1962)",
@@ -23,17 +23,23 @@
     "report-single": "(<span style=\"font-variant:small-caps;\">World Bank</span>, 2023)",
     "thesis-single": "(<span style=\"font-variant:small-caps;\">Chen</span>, 2019)",
     "webpage-single": "(<span style=\"font-variant:small-caps;\">State of JS Team</span>, 2023)",
-    "no-date-single": "(<span style=\"font-variant:small-caps;\">Forthcoming</span>, s. d.)"
+    "no-date-single": "(<span style=\"font-variant:small-caps;\">Forthcoming</span>, s. d.)",
+    "disambiguate-givenname": "(<span style=\"font-variant:small-caps;\">Johnson</span>, 2020a ; <span style=\"font-variant:small-caps;\">Johnson</span>, 2020b)",
+    "subsequent-author-consecutive": "(<span style=\"font-variant:small-caps;\">Chen</span>, 2022 ; <span style=\"font-variant:small-caps;\">Chen</span>, 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\"><span style=\"font-variant:small-caps;\">Adams</span> J.</span>, 1797. – Letter to James Smith. .</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\"><span style=\"font-variant:small-caps;\">Bengio</span> Y.</span>, 2023. – The Future of Artificial Intelligence. .</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\"><span style=\"font-variant:small-caps;\">Chen</span> W.</span>, 2019. – <i>Neural Networks for Natural Language Understanding</i>. Stanford University.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">–––</span>., 2022. – Urban Heat Island Mitigation Strategies. <i>Urban Climate</i>, <b>15</b> : 1‑18 doi : 10.5555/uc.2022.15.1.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">–––</span>., 2024. – Urban Heat Island Measurement Techniques. <i>Urban Climate</i>, <b>18</b> : 45‑62 doi : 10.5555/uc.2024.18.45.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\"><span style=\"font-variant:small-caps;\">Ericsson</span> K. A.</span>, 2006. – <i>The Role of Deliberate Practice</i>. Dans : Ericsson KA, Charness N, Feltovich PJ, Hoffman RR. <i>The Cambridge Handbook of Expertise and Expert Performance</i>. Cambridge University Press, p. 683‑703.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\"><span style=\"font-variant:small-caps;\">Forthcoming</span> A.</span>, <i>Foundations of Declarative Bibliography</i>. Cambridge : University Press.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\"><span style=\"font-variant:small-caps;\">Garcia</span> M.</span>, 2019a. – Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i>, <b>4</b> : 55‑80 doi : 10.5555/arcs.2019.4.55.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">–––</span>., 2019b. – Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i>, <b>4</b> : 81‑104 doi : 10.5555/arcs.2019.4.81.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\"><span style=\"font-variant:small-caps;\">Hawking</span> S.</span>, 1988. – <i>A Brief History of Time</i>. New York : Bantam Dell Publishing Group.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\"><span style=\"font-variant:small-caps;\">Johnson</span> A.</span>, 2020a. – Quantitative Methods in Sociology. <i>Sociological Review</i>, <b>68</b> : 23‑45.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\"><span style=\"font-variant:small-caps;\">Johnson</span> B.</span>, 2020b. – Qualitative Methods in Sociology. <i>Sociological Review</i>, <b>68</b> : 89‑112.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\"><span style=\"font-variant:small-caps;\">Johnson</span> D. &#38; <span style=\"font-variant:small-caps;\">Lee</span> S.</span>, 2021. – Method for Efficient Data Compression. .</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\"><span style=\"font-variant:small-caps;\">Kafka</span> F.</span>, 1915. – <i>Metamorphosis</i>. Leipzig : Kurt Wolff Verlag.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\"><span style=\"font-variant:small-caps;\">Kuhn</span> T. S.</span>, 1962. – The Structure of Scientific Revolutions. <i>International Encyclopedia of Unified Science</i>, <b>2</b> (2)  doi : 10.1234/example.</div>\n",

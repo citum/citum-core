@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:04.853Z",
+  "generated_at": "2026-06-02T14:23:16.258Z",
   "style": "national-archives-of-australia",
-  "fixture_hash": "2c87efef734f50d2",
+  "fixture_hash": "17c1d1d2b5e334dd",
   "csl_hash": "216f257f908d18d1",
   "citations": {
     "single-item-1": "[CSL STYLE ERROR: reference with no printed form.]",
@@ -63,6 +63,8 @@
     "  <div class=\"csl-entry\">National Archives of Australia: “Methods for Probabilistic Climate Attribution,” 2019.</div>\n",
     "  <div class=\"csl-entry\">National Archives of Australia: “Methods for Robust Climate Attribution,” 2019.</div>\n",
     "  <div class=\"csl-entry\">National Archives of Australia: “Neural Networks for Natural Language Understanding,” 2019.</div>\n",
+    "  <div class=\"csl-entry\">National Archives of Australia: “Qualitative Methods in Sociology,” 2020.</div>\n",
+    "  <div class=\"csl-entry\">National Archives of Australia: “Quantitative Methods in Sociology,” 2020.</div>\n",
     "  <div class=\"csl-entry\">National Archives of Australia: “Renaissance Art and Culture,” 2022.</div>\n",
     "  <div class=\"csl-entry\">National Archives of Australia: “Scientific Paradigms and Normal Science,” 1970.</div>\n",
     "  <div class=\"csl-entry\">National Archives of Australia: “State of the World’s Biodiversity,” 2019.</div>\n",
@@ -75,6 +77,8 @@
     "  <div class=\"csl-entry\">National Archives of Australia: “The State of JavaScript 2023,” 2023.</div>\n",
     "  <div class=\"csl-entry\">National Archives of Australia: “The Structure of Scientific Revolutions,” 1962.</div>\n",
     "  <div class=\"csl-entry\">National Archives of Australia: “The Universe in a Nutshell,” 1980.</div>\n",
+    "  <div class=\"csl-entry\">National Archives of Australia: “Urban Heat Island Measurement Techniques,” 2024.</div>\n",
+    "  <div class=\"csl-entry\">National Archives of Australia: “Urban Heat Island Mitigation Strategies,” 2022.</div>\n",
     "  <div class=\"csl-entry\">National Archives of Australia: “World Development Report 2023,” 2023.</div>\n"
   ]
 }

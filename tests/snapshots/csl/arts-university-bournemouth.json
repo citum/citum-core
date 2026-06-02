@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:10.893Z",
+  "generated_at": "2026-06-02T14:22:10.317Z",
   "style": "arts-university-bournemouth",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "a77588016d9453ff",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -23,7 +23,9 @@
     "report-single": "(World Bank, 2023)",
     "thesis-single": "(Chen, 2019)",
     "webpage-single": "(State of JS Team, 2023)",
-    "no-date-single": "(Forthcoming, n.d.)"
+    "no-date-single": "(Forthcoming, n.d.)",
+    "disambiguate-givenname": "(A. Johnson, 2020; B. Johnson, 2020)",
+    "subsequent-author-consecutive": "(Chen, 2024, 2022)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">Adams, J. (1797). Letter to James Smith.</div>\n",
@@ -31,11 +33,15 @@
     "  <div class=\"csl-entry\">Anon (2018). The Role of Theory in Research. <i>Journal of Theoretical Psychology</i>. Vol. 28 No. 3. pp. 201–215.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y. (2023). The Future of Artificial Intelligence. video-interview [online]. Available from: https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">Chen, W. (2019). Neural Networks for Natural Language Understanding. phd-thesis. Stanford University.</div>\n",
+    "  <div class=\"csl-entry\">Chen, W. (2022). Urban Heat Island Mitigation Strategies. <i>Urban Climate</i>. Vol. 15. pp. 1–18 [online]. https://doi.org/10.5555/uc.2022.15.1.</div>\n",
+    "  <div class=\"csl-entry\">Chen, W. (2024). Urban Heat Island Measurement Techniques. <i>Urban Climate</i>. Vol. 18. pp. 45–62 [online]. https://doi.org/10.5555/uc.2024.18.45.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K.A. (2006). The Role of Deliberate Practice. In Ericsson, K.A., Charness, N., Feltovich, P.J., and Hoffman, R.R. (eds.). <i>The Cambridge Handbook of Expertise and Expert Performance</i>. Cambridge University Press. pp. 683–703.</div>\n",
     "  <div class=\"csl-entry\">Forthcoming, A. (n.d.). <i>Foundations of Declarative Bibliography</i>. Cambridge: University Press.</div>\n",
     "  <div class=\"csl-entry\">Garcia, M. (2019a). Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i>. Vol. 4. pp. 55–80 [online]. https://doi.org/10.5555/arcs.2019.4.55.</div>\n",
     "  <div class=\"csl-entry\">Garcia, M. (2019b). Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i>. Vol. 4. pp. 81–104 [online]. https://doi.org/10.5555/arcs.2019.4.81.</div>\n",
     "  <div class=\"csl-entry\">Hawking, S. (1988). <i>A Brief History of Time</i>. New York: Bantam Dell Publishing Group.</div>\n",
+    "  <div class=\"csl-entry\">Johnson, A. (2020). Quantitative Methods in Sociology. <i>Sociological Review</i>. Vol. 68. pp. 23–45.</div>\n",
+    "  <div class=\"csl-entry\">Johnson, B. (2020). Qualitative Methods in Sociology. <i>Sociological Review</i>. Vol. 68. pp. 89–112.</div>\n",
     "  <div class=\"csl-entry\">Johnson, D. and Lee, S. (2021). Method for Efficient Data Compression.</div>\n",
     "  <div class=\"csl-entry\">Kafka, F. (1915). <i>Metamorphosis</i> (trans., D. Wyllie). Leipzig: Kurt Wolff Verlag.</div>\n",
     "  <div class=\"csl-entry\">Kuhn, T.S. (1962). The Structure of Scientific Revolutions. <i>International Encyclopedia of Unified Science</i>. Chicago: University of Chicago Press. Vol. 2 No. 2 [online]. https://doi.org/10.1234/example.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:14.264Z",
+  "generated_at": "2026-06-02T14:23:26.461Z",
   "style": "petit-chicago-author-date",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "7235dd5b2b173cfb",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -23,18 +23,24 @@
     "report-single": "(World Bank, 2023)",
     "thesis-single": "(Chen, 2019)",
     "webpage-single": "(State of JS Team, 2023)",
-    "no-date-single": "(Forthcoming)"
+    "no-date-single": "(Forthcoming)",
+    "disambiguate-givenname": "(Alice Johnson, 2020 ; Brian Johnson, 2020)",
+    "subsequent-author-consecutive": "(Chen, 2022 ; Chen, 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span>, John. <i>Letter to James Smith</i>, 1797.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span>, Yoshua. <i>The Future of Artificial Intelligence</i>, video-interview, 10 November 2023. En ligne au : &#60;https://example.com/interview&#62;.</div>\n",
     "  <div class=\"csl-entry\"><i>Brown v. Board of Education</i>, U.S. Reports, 347, 17 May 1954, p. 483.</div>\n",
-    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei. <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, 2019.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei. “Urban Heat Island Measurement Techniques,” <i>Urban Climate</i>, vol. 18, 2024, p. 45–62. &#60;https://doi.org/10.5555/uc.2024.18.45&#62;.</div>\n",
+    "  <div class=\"csl-entry\">———. “Urban Heat Island Mitigation Strategies,” <i>Urban Climate</i>, vol. 15, 2022, p. 1–18. &#60;https://doi.org/10.5555/uc.2022.15.1&#62;.</div>\n",
+    "  <div class=\"csl-entry\">———. <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span>, K. Anders. “The Role of Deliberate Practice,” dans <span style=\"font-variant:small-caps;\">Ericsson</span>, K. Anders, Neil <span style=\"font-variant:small-caps;\">Charness</span>, Paul J. <span style=\"font-variant:small-caps;\">Feltovich</span> and Robert R. <span style=\"font-variant:small-caps;\">Hoffman</span> (dir.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, 2006, p. 683–703.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Forthcoming</span>, A. <i>Foundations of Declarative Bibliography</i>, Cambridge, University Press.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Garcia</span>, Maria. “Methods for Probabilistic Climate Attribution,” <i>Annual Review of Climate Science</i>, vol. 4, 2019a, p. 81–104. &#60;https://doi.org/10.5555/arcs.2019.4.81&#62;.</div>\n",
     "  <div class=\"csl-entry\">———. “Methods for Robust Climate Attribution,” <i>Annual Review of Climate Science</i>, vol. 4, 2019b, p. 55–80. &#60;https://doi.org/10.5555/arcs.2019.4.55&#62;.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Hawking</span>, Stephen. <i>A Brief History of Time</i>, New York, Bantam Dell Publishing Group, 1988.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span>, Alice. “Quantitative Methods in Sociology,” <i>Sociological Review</i>, vol. 68, 2020, p. 23–45.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span>, Brian. “Qualitative Methods in Sociology,” <i>Sociological Review</i>, vol. 68, 2020, p. 89–112.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span>, David and Sarah <span style=\"font-variant:small-caps;\">Lee</span>. <i>Method for Efficient Data Compression</i>, 13 July 2021.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Kafka</span>, Franz. <i>Metamorphosis</i>, traduit par David <span style=\"font-variant:small-caps;\">Wyllie</span>, Leipzig, Kurt Wolff Verlag, 1915.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Kuhn</span>, Thomas S. “Scientific Paradigms and Normal Science,” <i>Philosophy of Science</i>, vol. 37, n<sup>o</sup>1, 1970, p. 1–13. &#60;https://doi.org/10.1086/288273&#62;.</div>\n",

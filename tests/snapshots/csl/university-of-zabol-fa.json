@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:27.986Z",
+  "generated_at": "2026-06-02T14:23:43.048Z",
   "style": "university-of-zabol-fa",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "23632d4af7a2bb5e",
   "citations": {
     "single-item": ")Kuhn، 1962(",
@@ -23,17 +23,23 @@
     "report-single": ")World Bank، 2023(",
     "thesis-single": ")Chen، 2019(",
     "webpage-single": ")State of JS Team، 2023(",
-    "no-date-single": ")Forthcoming، بدون تاریخ("
+    "no-date-single": ")Forthcoming، بدون تاریخ(",
+    "disambiguate-givenname": ")Johnson، a–2020، b–2020(",
+    "subsequent-author-consecutive": ")Chen، 2022، 2024("
   },
   "bibliography": [
     "  <div class=\"csl-entry\"><b><b>Adams، J.</b></b> 1797. <span style=\"text-decoration:none;\"><span style=\"text-decoration:none;\"><i>Letter to James Smith</i></span></span>.</div>\n",
     "  <div class=\"csl-entry\"><b><b>Bengio، Y.</b></b> 2023. <span style=\"text-decoration:none;\"><span style=\"text-decoration:none;\"><i>The Future of Artificial Intelligence</i></span></span>.</div>\n",
     "  <div class=\"csl-entry\"><b><b>Chen، W.</b></b> 2019. Neural Networks for Natural Language Understanding. phd-thesis. Stanford University.</div>\n",
+    "  <div class=\"csl-entry\"><b><b>Chen، W.</b></b> 2022. Urban Heat Island Mitigation Strategies. <i>Urban Climate</i>، 15: 1–18.</div>\n",
+    "  <div class=\"csl-entry\"><b><b>Chen، W.</b></b> 2024. Urban Heat Island Measurement Techniques. <i>Urban Climate</i>، 18: 45–62.</div>\n",
     "  <div class=\"csl-entry\"><b><b>Ericsson، K.A.</b></b> 2006. The Role of Deliberate Practice. در: <b>Ericsson، K.A.، Charness، N.، Feltovich، P.J. و Hoffman، R.R. (ویراستاران)</b>. <i>The Cambridge Handbook of Expertise and Expert Performance</i>. Cambridge University Press، صفحات 683–703.</div>\n",
     "  <div class=\"csl-entry\"><b><b>Forthcoming، A.</b></b> بدون تاریخ. <span style=\"text-decoration:none;\"><span style=\"text-decoration:none;\"><i>Foundations of Declarative Bibliography</i></span></span>. Cambridge: University Press.</div>\n",
     "  <div class=\"csl-entry\"><b><b>Garcia، M.</b></b> a–2019. Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i>، 4: 81–104.</div>\n",
     "  <div class=\"csl-entry\"><b><b>Garcia، M.</b></b> b–2019. Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i>، 4: 55–80.</div>\n",
     "  <div class=\"csl-entry\"><b><b>Hawking، S.</b></b> 1988. <span style=\"text-decoration:none;\"><span style=\"text-decoration:none;\"><i>A Brief History of Time</i></span></span>. New York: Bantam Dell Publishing Group.</div>\n",
+    "  <div class=\"csl-entry\"><b><b>Johnson، B.</b></b> a–2020. Qualitative Methods in Sociology. <i>Sociological Review</i>، 68: 89–112.</div>\n",
+    "  <div class=\"csl-entry\"><b><b>Johnson، A.</b></b> b–2020. Quantitative Methods in Sociology. <i>Sociological Review</i>، 68: 23–45.</div>\n",
     "  <div class=\"csl-entry\"><b><b>Johnson، D. و Lee، S.</b></b> 2021. <span style=\"text-decoration:none;\"><i>Method for Efficient Data Compression</i></span>.</div>\n",
     "  <div class=\"csl-entry\"><b><b>Kuhn، T.S.</b></b> 1962. The Structure of Scientific Revolutions. <i>International Encyclopedia of Unified Science</i>، 2(2).</div>\n",
     "  <div class=\"csl-entry\"><b><b>Kuhn، T.S.</b></b> 1970. Scientific Paradigms and Normal Science. <i>Philosophy of Science</i>، 37(1): 1–13.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:51.741Z",
+  "generated_at": "2026-06-02T14:22:58.951Z",
   "style": "idojaras-quarterly-journal-of-the-hungarian-meteorological-service",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "88ccb855d8ae4ffe",
   "citations": {
     "single-item": "(<i>Kuhn</i>, 1962)",
@@ -23,18 +23,24 @@
     "report-single": "(<i>World Bank</i>, 2023)",
     "thesis-single": "(<i>Chen</i>, 2019)",
     "webpage-single": "(<i>State of JS Team</i>, 2023)",
-    "no-date-single": "(<i>Forthcoming</i>, n.d.)"
+    "no-date-single": "(<i>Forthcoming</i>, n.d.)",
+    "disambiguate-givenname": "(<i>A. Johnson</i>, 2020; <i>B. Johnson</i>, 2020)",
+    "subsequent-author-consecutive": "(<i>Chen</i>, 2022, 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\"><i>Adams, J.</i>, 1797: Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\"><i>Bengio, Y.</i>, 2023: The Future of Artificial Intelligence.</div>\n",
     "  <div class=\"csl-entry\"><i><i>Brown v. Board of Education</i></i>, 1954: , U.S. Reports.</div>\n",
     "  <div class=\"csl-entry\"><i>Chen, W.</i>, 2019: Neural Networks for Natural Language Understanding. phd-thesis. Stanford University.</div>\n",
+    "  <div class=\"csl-entry\"><i>Chen, W.</i>, 2022: Urban Heat Island Mitigation Strategies. <i>Urban Climate</i>, <i>15</i>, 1–18. doi:10.5555/uc.2022.15.1</div>\n",
+    "  <div class=\"csl-entry\"><i>Chen, W.</i>, 2024: Urban Heat Island Measurement Techniques. <i>Urban Climate</i>, <i>18</i>, 45–62. doi:10.5555/uc.2024.18.45</div>\n",
     "  <div class=\"csl-entry\"><i>Ericsson, K.A.</i>, 2006: The Role of Deliberate Practice, In: The Cambridge Handbook of Expertise and Expert Performance (eds. Ericsson, K.A., Charness, N., Feltovich, P.J., and Hoffman, R.R.). Cambridge University Press, 683–703.</div>\n",
     "  <div class=\"csl-entry\"><i>Forthcoming, A.</i>, n.d.: <i>Foundations of Declarative Bibliography</i>. University Press, Cambridge.</div>\n",
     "  <div class=\"csl-entry\"><i>Garcia, M.</i>, 2019a: Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i>, <i>4</i>, 55–80. doi:10.5555/arcs.2019.4.55</div>\n",
     "  <div class=\"csl-entry\"><i>Garcia, M.</i>, 2019b: Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i>, <i>4</i>, 81–104. doi:10.5555/arcs.2019.4.81</div>\n",
     "  <div class=\"csl-entry\"><i>Hawking, S.</i>, 1988: <i>A Brief History of Time</i>. Bantam Dell Publishing Group, New York.</div>\n",
+    "  <div class=\"csl-entry\"><i>Johnson, A.</i>, 2020: Quantitative Methods in Sociology. <i>Sociological Review</i>, <i>68</i>, 23–45.</div>\n",
+    "  <div class=\"csl-entry\"><i>Johnson, B.</i>, 2020: Qualitative Methods in Sociology. <i>Sociological Review</i>, <i>68</i>, 89–112.</div>\n",
     "  <div class=\"csl-entry\"><i>Johnson, D., and Lee, S.</i>, 2021: Method for Efficient Data Compression. US 11,043,211 B2.</div>\n",
     "  <div class=\"csl-entry\"><i>Kafka, F.</i>, 1915: <i>Metamorphosis</i>. Kurt Wolff Verlag, Leipzig.</div>\n",
     "  <div class=\"csl-entry\"><i>Kuhn, T.S.</i>, 1962: The Structure of Scientific Revolutions. <i>International Encyclopedia of Unified Science</i>, <i>2</i>. doi:10.1234/example</div>\n",

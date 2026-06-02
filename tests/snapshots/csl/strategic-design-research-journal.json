@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:20.248Z",
+  "generated_at": "2026-06-02T14:23:33.810Z",
   "style": "strategic-design-research-journal",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "324c147bbaf68fa6",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -23,7 +23,9 @@
     "report-single": "(World Bank, 2023)",
     "thesis-single": "(Chen, 2019)",
     "webpage-single": "(State of JS Team, 2023)",
-    "no-date-single": "(Forthcoming, in press)"
+    "no-date-single": "(Forthcoming, in press)",
+    "disambiguate-givenname": "(A. Johnson, 2020; B. Johnson, 2020)",
+    "subsequent-author-consecutive": "(Chen, 2022, 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\"><span style=\"text-decoration:none;\"><span style=\"baseline\">ADAMS J.</span> 1797. <i>Letter to James Smith</i>. </span></div>\n",
@@ -31,11 +33,15 @@
     "  <div class=\"csl-entry\"><span style=\"text-decoration:none;\">ANONYMOUS 2018. The Role of Theory in Research. <i>Journal of Theoretical Psychology</i>, <b>28</b>(3):201–215. </span></div>\n",
     "  <div class=\"csl-entry\"><span style=\"text-decoration:none;\"><span style=\"baseline\">BENGIO Y.</span> 2023. The Future of Artificial Intelligence, 10 November 2023. </span></div>\n",
     "  <div class=\"csl-entry\"><span style=\"text-decoration:none;\"><span style=\"baseline\">CHEN W.</span> 2019. Neural Networks for Natural Language Understanding. Phd-thesis, Stanford University. </span></div>\n",
+    "  <div class=\"csl-entry\"><span style=\"text-decoration:none;\"><span style=\"baseline\">CHEN W.</span> 2022. Urban Heat Island Mitigation Strategies. <i>Urban Climate</i>, <b>15</b>1–18. https://doi.org/10.5555/uc.2022.15.1.</span></div>\n",
+    "  <div class=\"csl-entry\"><span style=\"text-decoration:none;\"><span style=\"baseline\">CHEN W.</span> 2024. Urban Heat Island Measurement Techniques. <i>Urban Climate</i>, <b>18</b>45–62. https://doi.org/10.5555/uc.2024.18.45.</span></div>\n",
     "  <div class=\"csl-entry\"><span style=\"text-decoration:none;\"><span style=\"baseline\">ERICSSON KA.</span> 2006. The Role of Deliberate Practice. <i>In</i>: ERICSSON KA, CHARNESS N, FELTOVICH PJ and HOFFMAN RR (eds.) <i>The Cambridge Handbook of Expertise and Expert Performance</i>. Cambridge University Press. </span></div>\n",
     "  <div class=\"csl-entry\"><span style=\"text-decoration:none;\"><span style=\"baseline\">FORTHCOMING A.</span> in press. <i>Foundations of Declarative Bibliography</i>. Cambridge, University Press. </span></div>\n",
     "  <div class=\"csl-entry\"><span style=\"text-decoration:none;\"><span style=\"baseline\">GARCIA M.</span> 2019a. Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i>, <b>4</b>81–104. https://doi.org/10.5555/arcs.2019.4.81.</span></div>\n",
     "  <div class=\"csl-entry\"><span style=\"text-decoration:none;\"><span style=\"baseline\">GARCIA M.</span> 2019b. Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i>, <b>4</b>55–80. https://doi.org/10.5555/arcs.2019.4.55.</span></div>\n",
     "  <div class=\"csl-entry\"><span style=\"text-decoration:none;\"><span style=\"baseline\">HAWKING S.</span> 1988. <i>A Brief History of Time</i>. New York, Bantam Dell Publishing Group. </span></div>\n",
+    "  <div class=\"csl-entry\"><span style=\"text-decoration:none;\"><span style=\"baseline\">JOHNSON A.</span> 2020. Quantitative Methods in Sociology. <i>Sociological Review</i>, <b>68</b>23–45. </span></div>\n",
+    "  <div class=\"csl-entry\"><span style=\"text-decoration:none;\"><span style=\"baseline\">JOHNSON B.</span> 2020. Qualitative Methods in Sociology. <i>Sociological Review</i>, <b>68</b>89–112. </span></div>\n",
     "  <div class=\"csl-entry\"><span style=\"text-decoration:none;\"><span style=\"baseline\">JOHNSON D.; LEE S.</span> 2021. Method for Efficient Data Compression. US 11,043,211 B2. July 13. </span></div>\n",
     "  <div class=\"csl-entry\"><span style=\"text-decoration:none;\"><span style=\"baseline\">KAFKA F.</span> 1915. <i>Metamorphosis</i>. Trans. David WYLLIE. Leipzig, Kurt Wolff Verlag. </span></div>\n",
     "  <div class=\"csl-entry\"><span style=\"text-decoration:none;\"><span style=\"baseline\">KUHN TS.</span> 1962. The Structure of Scientific Revolutions. <i>International Encyclopedia of Unified Science</i>, Chicago, University of Chicago Press, <b>2</b>(2):. https://doi.org/10.1234/example.</span></div>\n",
