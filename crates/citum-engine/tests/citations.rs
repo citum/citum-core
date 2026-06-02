@@ -121,6 +121,93 @@ fn build_integral_name_style() -> Style {
     }
 }
 
+fn build_author_date_style_with_givenname_rule(rule: GivennameRule) -> Style {
+    let mut style = common::build_author_date_style(true, true, true, Some(3), Some(1));
+
+    if let Some(options) = style.options.as_mut()
+        && let Some(Processing::Custom(custom)) = options.processing.as_mut()
+        && let Some(disambiguate) = custom.disambiguate.as_mut()
+    {
+        disambiguate.givenname_rule = rule;
+    }
+
+    style
+}
+
+fn by_cite_scope_fixture() -> Vec<InputReference> {
+    vec![
+        make_book_multi_author(
+            "ASTHMA-A",
+            vec![
+                ("Asthma", "Albert"),
+                ("Bronchitis", "Brandon"),
+                ("Cold", "Crispin"),
+            ],
+            1990,
+            "Book A",
+        ),
+        make_book_multi_author(
+            "ASTHMA-B",
+            vec![
+                ("Asthma", "Albert"),
+                ("Bronchitis", "Edward"),
+                ("Cold", "Crispin"),
+            ],
+            1990,
+            "Book B",
+        ),
+        make_book_multi_author(
+            "DROPSY-A",
+            vec![
+                ("Dropsy", "Devon"),
+                ("Enteritis", "Edward"),
+                ("Fever", "Xavier"),
+            ],
+            2000,
+            "Book C",
+        ),
+        make_book_multi_author(
+            "DROPSY-B",
+            vec![
+                ("Dropsy", "Devon"),
+                ("Enteritis", "Frank"),
+                ("Fever", "Yves"),
+            ],
+            2000,
+            "Book D",
+        ),
+    ]
+}
+
+fn processor_for_givenname_rule(rule: GivennameRule) -> Processor {
+    let mut bibliography = indexmap::IndexMap::new();
+    for reference in by_cite_scope_fixture() {
+        let id = reference.id().expect("fixture reference id").to_string();
+        bibliography.insert(id, reference);
+    }
+
+    Processor::new(
+        build_author_date_style_with_givenname_rule(rule),
+        bibliography,
+    )
+}
+
+fn process_citation_ids(processor: &Processor, ids: &[&str]) -> String {
+    processor
+        .process_citation(&Citation {
+            items: ids
+                .iter()
+                .map(|id| CitationItem {
+                    id: (*id).to_string(),
+                    ..Default::default()
+                })
+                .collect(),
+            mode: CitationMode::NonIntegral,
+            ..Default::default()
+        })
+        .expect("citation should render")
+}
+
 fn integral_name_state_overrides_processor_memory() {
     let mut bibliography = indexmap::IndexMap::new();
     bibliography.insert(
@@ -399,6 +486,73 @@ fn disambiguation_givenname_expansion_resolves_same_year_family_name_collision()
         et_al_min: None,
         et_al_use_first: None,
     });
+}
+
+fn disambiguation_by_cite_givenname_expansion_is_citation_local() {
+    let processor = processor_for_givenname_rule(GivennameRule::ByCite);
+
+    let asthma = process_citation_ids(&processor, &["ASTHMA-A", "ASTHMA-B"]);
+    let dropsy = process_citation_ids(&processor, &["DROPSY-A"]);
+
+    assert_eq!(
+        asthma,
+        "A Asthma, B Bronchitis, et al., (1990); A Asthma, E Bronchitis, et al., (1990)"
+    );
+    assert_eq!(dropsy, "Dropsy et al., (2000)");
+}
+
+fn disambiguation_all_names_givenname_expansion_remains_global() {
+    let processor = processor_for_givenname_rule(GivennameRule::AllNames);
+
+    let dropsy = process_citation_ids(&processor, &["DROPSY-A"]);
+
+    assert_eq!(dropsy, "D Dropsy, E Enteritis, et al., (2000)");
+}
+
+fn disambiguation_by_cite_solo_cite_from_collision_group() {
+    let processor = processor_for_givenname_rule(GivennameRule::ByCite);
+
+    // ASTHMA-A is in a global collision group with ASTHMA-B, but cited alone here.
+    // The scoped bibliography has len < 2 so no collision exists in this cite's scope.
+    let solo = process_citation_ids(&processor, &["ASTHMA-A"]);
+
+    assert_eq!(solo, "Asthma et al., (1990)");
+}
+
+fn disambiguation_by_cite_mixed_groups_in_same_citation() {
+    let processor = processor_for_givenname_rule(GivennameRule::ByCite);
+
+    // ASTHMA-A and ASTHMA-B collide within this citation; DROPSY-A is alone in scope.
+    let mixed = process_citation_ids(&processor, &["ASTHMA-A", "ASTHMA-B", "DROPSY-A"]);
+
+    assert_eq!(
+        mixed,
+        "A Asthma, B Bronchitis, et al., (1990); A Asthma, E Bronchitis, et al., (1990); Dropsy et al., (2000)"
+    );
+}
+
+fn disambiguation_all_names_co_citation() {
+    let processor = processor_for_givenname_rule(GivennameRule::AllNames);
+
+    // Both DROPSY works collide globally; citing them together must expand both.
+    let co = process_citation_ids(&processor, &["DROPSY-A", "DROPSY-B"]);
+
+    assert_eq!(
+        co,
+        "D Dropsy, E Enteritis, et al., (2000); D Dropsy, F Enteritis, et al., (2000)"
+    );
+}
+
+fn disambiguation_primary_name_givenname_expansion() {
+    let processor = processor_for_givenname_rule(GivennameRule::PrimaryName);
+
+    // primary-name must expand the first author's given name and leave non-primary authors unexpanded.
+    let asthma = process_citation_ids(&processor, &["ASTHMA-A", "ASTHMA-B"]);
+
+    assert_eq!(
+        asthma,
+        "A Asthma, Bronchitis, et al., (1990); A Asthma, Bronchitis, et al., (1990)"
+    );
 }
 
 /// Test et-al expansion success: Name expansion disambiguates conflicting references.
@@ -1706,6 +1860,54 @@ mod disambiguation {
             "Two same-year authors with the same family name but different given names must have initials injected for the ambiguous pair; unrelated authors stay unexpanded.",
         );
         super::disambiguation_givenname_expansion_resolves_same_year_family_name_collision();
+    }
+
+    #[test]
+    fn by_cite_givenname_expansion_is_citation_local() {
+        announce_behavior(
+            "By-cite given-name disambiguation should expand only names needed by the current citation.",
+        );
+        super::disambiguation_by_cite_givenname_expansion_is_citation_local();
+    }
+
+    #[test]
+    fn all_names_givenname_expansion_remains_global() {
+        announce_behavior(
+            "All-names given-name disambiguation should keep document-wide expansion for affected name groups.",
+        );
+        super::disambiguation_all_names_givenname_expansion_remains_global();
+    }
+
+    #[test]
+    fn by_cite_solo_cite_from_collision_group_stays_unexpanded() {
+        announce_behavior(
+            "A solo by-cite citation of a reference that is in a global collision group must not expand — no collision exists in this citation's scope.",
+        );
+        super::disambiguation_by_cite_solo_cite_from_collision_group();
+    }
+
+    #[test]
+    fn by_cite_mixed_groups_expand_colliders_not_solos() {
+        announce_behavior(
+            "When a by-cite citation mixes two colliding references with a third unrelated reference, only the colliding pair expands; the solo reference stays unexpanded.",
+        );
+        super::disambiguation_by_cite_mixed_groups_in_same_citation();
+    }
+
+    #[test]
+    fn all_names_co_citation_expands_both_colliders() {
+        announce_behavior(
+            "Citing two globally-colliding references together under all-names must expand both.",
+        );
+        super::disambiguation_all_names_co_citation();
+    }
+
+    #[test]
+    fn primary_name_givenname_expansion_expands_first_author_only() {
+        announce_behavior(
+            "primary-name rule must expand the first author's given name; when that does not resolve the collision, year-suffix must be applied.",
+        );
+        super::disambiguation_primary_name_givenname_expansion();
     }
 
     #[test]

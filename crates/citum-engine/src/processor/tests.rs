@@ -969,7 +969,7 @@ fn test_disambiguation_givenname() {
             disambiguate: Some(Disambiguation {
                 names: true,
                 add_givenname: true,
-                givenname_rule: GivennameRule::default(),
+                givenname_rule: GivennameRule::AllNames,
                 year_suffix: true,
             }),
         })),
@@ -1188,7 +1188,7 @@ fn test_disambiguation_combined_expansion() {
             disambiguate: Some(Disambiguation {
                 names: true,
                 add_givenname: true,
-                givenname_rule: GivennameRule::default(),
+                givenname_rule: GivennameRule::AllNames,
                 year_suffix: true,
             }),
         })),

@@ -1110,7 +1110,7 @@ mod tests {
                 disambiguate: Some(Disambiguation {
                     names: false,
                     add_givenname: true,
-                    givenname_rule: GivennameRule::default(),
+                    givenname_rule: GivennameRule::AllNames,
                     year_suffix: false,
                 }),
                 ..Default::default()
@@ -1142,7 +1142,7 @@ mod tests {
                     disambiguate: Some(Disambiguation {
                         names: false,
                         add_givenname: true,
-                        givenname_rule: GivennameRule::default(),
+                        givenname_rule: GivennameRule::AllNames,
                         year_suffix: false,
                     }),
                     ..Default::default()
