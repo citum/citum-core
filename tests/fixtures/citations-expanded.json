@@ -197,5 +197,27 @@
         "id": "ITEM-33"
       }
     ]
+  },
+  {
+    "id": "disambiguate-givenname",
+    "items": [
+      {
+        "id": "ITEM-35"
+      },
+      {
+        "id": "ITEM-36"
+      }
+    ]
+  },
+  {
+    "id": "subsequent-author-consecutive",
+    "items": [
+      {
+        "id": "ITEM-37"
+      },
+      {
+        "id": "ITEM-38"
+      }
+    ]
   }
 ]

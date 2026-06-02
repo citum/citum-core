@@ -13,11 +13,13 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 const DEFAULTS = {
   maxConcisionDrop: 8,
   maxPresetDrop: 10,
   strictWarnings: false,
+  crossEntryAudit: false,
 };
 
 function parseArgs(argv) {
@@ -27,6 +29,7 @@ function parseArgs(argv) {
     maxConcisionDrop: DEFAULTS.maxConcisionDrop,
     maxPresetDrop: DEFAULTS.maxPresetDrop,
     strictWarnings: DEFAULTS.strictWarnings,
+    crossEntryAudit: DEFAULTS.crossEntryAudit,
   };
 
   for (let i = 0; i < argv.length; i += 1) {
@@ -41,6 +44,8 @@ function parseArgs(argv) {
       args.maxPresetDrop = Number(argv[++i]);
     } else if (arg === '--strict-warnings') {
       args.strictWarnings = true;
+    } else if (arg === '--cross-entry-audit') {
+      args.crossEntryAudit = true;
     } else if (arg === '-h' || arg === '--help') {
       printUsage();
       process.exit(0);
@@ -100,6 +105,46 @@ function run() {
     annotateError(error.message);
     printUsage();
     process.exit(2);
+  }
+
+  // Optional cross-entry parity audit (subsequent-author-substitute + disambiguation)
+  if (args.crossEntryAudit) {
+    const auditScript = path.resolve(__dirname, 'audit-cross-entry-parity.js');
+    try {
+      const auditOutput = execFileSync(process.execPath, [auditScript, '--json'], {
+        encoding: 'utf8',
+      });
+      const auditResult = JSON.parse(auditOutput);
+      if (auditResult.summary.offenders > 0) {
+        for (const offender of auditResult.offenders) {
+          for (const issue of offender.issues) {
+            annotateError(`Cross-entry parity [${offender.styleId}]: ${issue}`);
+          }
+        }
+        process.exit(1);
+      }
+      console.log(
+        `Cross-entry parity audit passed (${auditResult.summary.checked} checked, 0 offenders)`
+      );
+    } catch (err) {
+      if (err.status === 1 && err.stdout) {
+        // audit exited 1 = offenders found — parse JSON and emit per-issue annotations
+        try {
+          const auditResult = JSON.parse(err.stdout);
+          for (const offender of auditResult.offenders || []) {
+            for (const issue of offender.issues || []) {
+              annotateError(`Cross-entry parity [${offender.styleId}]: ${issue}`);
+            }
+          }
+        } catch (_parseErr) {
+          // stdout was not JSON — fall back to raw output
+          annotateError(`Cross-entry parity audit failed: ${err.stdout}`);
+        }
+        process.exit(1);
+      }
+      annotateError(`Failed to run cross-entry parity audit: ${err.message}`);
+      process.exit(2);
+    }
   }
 
   let report;

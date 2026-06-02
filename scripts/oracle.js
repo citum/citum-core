@@ -48,7 +48,9 @@ const STRICT_CITATION_IDS = new Set([
   'et-al-single-long-list',
   'disambiguate-add-names-et-al',
   'disambiguate-year-suffix',
+  'disambiguate-givenname',
   'et-al-with-locator',
+  'subsequent-author-consecutive',
 ]);
 
 function parseArgs() {

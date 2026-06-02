@@ -432,5 +432,51 @@
     "archive-place": "Boston, MA",
     "archive_location": "Adams Papers, reel 45",
     "issued": { "date-parts": [[1797]] }
+  },
+  "ITEM-35": {
+    "id": "ITEM-35",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Quantitative Methods in Sociology",
+    "author": [{ "family": "Johnson", "given": "Alice" }],
+    "issued": { "date-parts": [[2020]] },
+    "container-title": "Sociological Review",
+    "volume": "68",
+    "page": "23-45"
+  },
+  "ITEM-36": {
+    "id": "ITEM-36",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Qualitative Methods in Sociology",
+    "author": [{ "family": "Johnson", "given": "Brian" }],
+    "issued": { "date-parts": [[2020]] },
+    "container-title": "Sociological Review",
+    "volume": "68",
+    "page": "89-112"
+  },
+  "ITEM-37": {
+    "id": "ITEM-37",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Urban Heat Island Mitigation Strategies",
+    "author": [{ "family": "Chen", "given": "Wei" }],
+    "issued": { "date-parts": [[2022]] },
+    "container-title": "Urban Climate",
+    "volume": "15",
+    "page": "1-18",
+    "DOI": "10.5555/uc.2022.15.1"
+  },
+  "ITEM-38": {
+    "id": "ITEM-38",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Urban Heat Island Measurement Techniques",
+    "author": [{ "family": "Chen", "given": "Wei" }],
+    "issued": { "date-parts": [[2024]] },
+    "container-title": "Urban Climate",
+    "volume": "18",
+    "page": "45-62",
+    "DOI": "10.5555/uc.2024.18.45"
   }
 }
