@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:13.936Z",
+  "generated_at": "2026-06-02T14:22:14.372Z",
   "style": "bulletin-du-centre-detudes-medievales-dauxerre",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "83cb02db18768c29",
   "citations": {
     "single-item": "<sup>1</sup>",
@@ -23,7 +23,9 @@
     "report-single": "<sup>5</sup>",
     "thesis-single": "<sup>11</sup>",
     "webpage-single": "<sup>13</sup>",
-    "no-date-single": "<sup>33</sup>"
+    "no-date-single": "<sup>33</sup>",
+    "disambiguate-givenname": "<sup>35,36</sup>",
+    "subsequent-author-consecutive": "<sup>37,38</sup>"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">1 <span style=\"font-variant:small-caps;\">T. S. Kuhn</span>, « The Structure of Scientific Revolutions », in <i>International Encyclopedia of Unified Science</i> [En ligne], 2, 2. </div>\n",
@@ -59,6 +61,10 @@
     "  <div class=\"csl-entry\">31 <span style=\"font-variant:small-caps;\">M. Garcia</span>, « Methods for Robust Climate Attribution », in <i>Annual Review of Climate Science</i> [En ligne], 4, p. 55‑80. </div>\n",
     "  <div class=\"csl-entry\">32 <span style=\"font-variant:small-caps;\">M. Garcia</span>, « Methods for Probabilistic Climate Attribution », in <i>Annual Review of Climate Science</i> [En ligne], 4, p. 81‑104. </div>\n",
     "  <div class=\"csl-entry\">33 <span style=\"font-variant:small-caps;\">A. Forthcoming</span>, <i>Foundations of Declarative Bibliography</i>, Cambridge, [s.d.]. </div>\n",
-    "  <div class=\"csl-entry\">34 <span style=\"font-variant:small-caps;\">J. Adams</span>, <i>Letter to James Smith</i>, [s.l.] , 1797. </div>\n"
+    "  <div class=\"csl-entry\">34 <span style=\"font-variant:small-caps;\">J. Adams</span>, <i>Letter to James Smith</i>, [s.l.] , 1797. </div>\n",
+    "  <div class=\"csl-entry\">35 <span style=\"font-variant:small-caps;\">A. Johnson</span>, « Quantitative Methods in Sociology », in <i>Sociological Review</i>, 68, p. 23‑45. </div>\n",
+    "  <div class=\"csl-entry\">36 <span style=\"font-variant:small-caps;\">B. Johnson</span>, « Qualitative Methods in Sociology », in <i>Sociological Review</i>, 68, p. 89‑112. </div>\n",
+    "  <div class=\"csl-entry\">37 <span style=\"font-variant:small-caps;\">W. Chen</span>, « Urban Heat Island Mitigation Strategies », in <i>Urban Climate</i> [En ligne], 15, p. 1‑18. </div>\n",
+    "  <div class=\"csl-entry\">38 <span style=\"font-variant:small-caps;\">W. Chen</span>, « Urban Heat Island Measurement Techniques », in <i>Urban Climate</i> [En ligne], 18, p. 45‑62. </div>\n"
   ]
 }

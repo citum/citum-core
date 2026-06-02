@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:44.575Z",
+  "generated_at": "2026-06-02T14:22:49.827Z",
   "style": "electrophoresis",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "260eb7022a36c7b3",
   "citations": {
     "single-item": "<span style=\"baseline\">[<span style=\"baseline\">1</span>]</span>",
@@ -23,7 +23,9 @@
     "report-single": "<span style=\"baseline\">[<span style=\"baseline\">5</span>]</span>",
     "thesis-single": "<span style=\"baseline\">[<span style=\"baseline\">11</span>]</span>",
     "webpage-single": "<span style=\"baseline\">[<span style=\"baseline\">13</span>]</span>",
-    "no-date-single": "<span style=\"baseline\">[<span style=\"baseline\">33</span>]</span>"
+    "no-date-single": "<span style=\"baseline\">[<span style=\"baseline\">33</span>]</span>",
+    "disambiguate-givenname": "<span style=\"baseline\">[<span style=\"baseline\">35</span>,<span style=\"baseline\">36</span>]</span>",
+    "subsequent-author-consecutive": "<span style=\"baseline\">[<span style=\"baseline\">37</span>,<span style=\"baseline\">38</span>]</span>"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[1] </div><div class=\"csl-right-inline\">Kuhn, T. S. <i>International Encyclopedia of Unified Science</i> 1962, <i>2</i>.</div>\n  </div>\n",
@@ -59,6 +61,10 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[31] </div><div class=\"csl-right-inline\">Garcia, M. <i>Annual Review of Climate Science</i> 2019, <i>4</i>, 55–80.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[32] </div><div class=\"csl-right-inline\">Garcia, M. <i>Annual Review of Climate Science</i> 2019, <i>4</i>, 81–104.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33] </div><div class=\"csl-right-inline\">Forthcoming, A. <i>Foundations of Declarative Bibliography</i>, University Press, Cambridge.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[34] </div><div class=\"csl-right-inline\">Adams, J. Letter to James Smith 1797.</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[34] </div><div class=\"csl-right-inline\">Adams, J. Letter to James Smith 1797.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[35] </div><div class=\"csl-right-inline\">Johnson, A. <i>Sociological Review</i> 2020, <i>68</i>, 23–45.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[36] </div><div class=\"csl-right-inline\">Johnson, B. <i>Sociological Review</i> 2020, <i>68</i>, 89–112.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[37] </div><div class=\"csl-right-inline\">Chen, W. <i>Urban Climate</i> 2022, <i>15</i>, 1–18.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[38] </div><div class=\"csl-right-inline\">Chen, W. <i>Urban Climate</i> 2024, <i>18</i>, 45–62.</div>\n  </div>\n"
   ]
 }

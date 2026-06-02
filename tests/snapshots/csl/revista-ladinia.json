@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:16.962Z",
+  "generated_at": "2026-06-02T14:23:29.736Z",
   "style": "revista-ladinia",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "307124490bd6a312",
   "citations": {
     "single-item": "(<span style=\"font-variant:small-caps;\">Kuhn</span> 1962)",
@@ -23,17 +23,23 @@
     "report-single": "(<span style=\"font-variant:small-caps;\">World Bank</span> 2023)",
     "thesis-single": "(<span style=\"font-variant:small-caps;\">Chen</span> 2019)",
     "webpage-single": "(<span style=\"font-variant:small-caps;\">State of JS Team</span> 2023)",
-    "no-date-single": "(<span style=\"font-variant:small-caps;\">Forthcoming</span>)"
+    "no-date-single": "(<span style=\"font-variant:small-caps;\">Forthcoming</span>)",
+    "disambiguate-givenname": "(<span style=\"font-variant:small-caps;\">Johnson</span>, A. 2020, <span style=\"font-variant:small-caps;\">Johnson</span>, B. 2020)",
+    "subsequent-author-consecutive": "(<span style=\"font-variant:small-caps;\">Chen</span> 2022, 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span>, John: <i>Letter to James Smith</i>, 1797.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span>, Yoshua: <i>The Future of Artificial Intelligence</i>, 2023.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei: <i>Neural Networks for Natural Language Understanding</i>, 2019.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei: <i>Urban Heat Island Mitigation Strategies</i>, in: “Urban Climate,” 15, 2022, 1–18.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei: <i>Urban Heat Island Measurement Techniques</i>, in: “Urban Climate,” 18, 2024, 45–62.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span>, K. Anders: <i>The Role of Deliberate Practice</i>, in: <span style=\"font-variant:small-caps;\">Ericsson</span>, K. Anders et al. (eds.), The Cambridge Handbook of Expertise and Expert Performance, 2006, 683–703.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Forthcoming</span>, A.: <i>Foundations of Declarative Bibliography</i>, Cambridge.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Garcia</span>, Maria: <i>Methods for Probabilistic Climate Attribution</i>, in: “Annual Review of Climate Science,” 4, 2019a, 81–104.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Garcia</span>, Maria: <i>Methods for Robust Climate Attribution</i>, in: “Annual Review of Climate Science,” 4, 2019b, 55–80.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Hawking</span>, Stephen: <i>A Brief History of Time</i>, New York 1988.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span>, Alice: <i>Quantitative Methods in Sociology</i>, in: “Sociological Review,” 68, 2020, 23–45.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span>, Brian: <i>Qualitative Methods in Sociology</i>, in: “Sociological Review,” 68, 2020, 89–112.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span>, David/<span style=\"font-variant:small-caps;\">Lee</span>, Sarah: <i>Method for Efficient Data Compression</i>, 2021.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Kafka</span>, Franz: <i>Metamorphosis</i>, <span style=\"font-variant:small-caps;\">Wyllie</span>, David (translator), Leipzig 1915.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Kuhn</span>, Thomas S.: <i>The Structure of Scientific Revolutions</i>, in: “International Encyclopedia of Unified Science,” 2, Chicago 1962.</div>\n",

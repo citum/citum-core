@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:54.359Z",
+  "generated_at": "2026-06-02T14:23:02.189Z",
   "style": "iso690-author-date-de",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "08ca9ad0c945a3c4",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -23,18 +23,24 @@
     "report-single": "(World Bank 2023)",
     "thesis-single": "(Chen 2019)",
     "webpage-single": "(State of JS Team 2023)",
-    "no-date-single": "(Forthcoming [kein Datum])"
+    "no-date-single": "(Forthcoming [kein Datum])",
+    "disambiguate-givenname": "(Alice Johnson 2020; Brian Johnson 2020)",
+    "subsequent-author-consecutive": "(Chen 2022; 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">ADAMS, John, 1797. <i>Letter to James Smith</i></div>\n<div class=\"csl-right-inline\">Massachusetts Historical Society: Adams Papers, reel 45</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">BENGIO, Yoshua, 2023. <i>The Future of Artificial Intelligence</i> [online]. video-interview. 10 November 2023. Verfügbar unter: https://example.com/interview</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\"><i>Brown v. Board of Education</i>, 1954.</div>\n </div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">CHEN, Wei, 2019. <i>Neural Networks for Natural Language Understanding</i>. phd-thesis. Stanford University</div>\n</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">CHEN, Wei, 2022. Urban Heat Island Mitigation Strategies. <i>Urban Climate</i>. 2022. Bd. 15, S. 1–18. DOI 10.5555/uc.2022.15.1</div>\n</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">CHEN, Wei, 2024. Urban Heat Island Measurement Techniques. <i>Urban Climate</i>. 2024. Bd. 18, S. 45–62. DOI 10.5555/uc.2024.18.45</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">ERICSSON, K. Anders, 2006. The Role of Deliberate Practice. In: K. Anders ERICSSON, Neil CHARNESS, Paul J. FELTOVICH und Robert R. HOFFMAN (Hrsg.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>. Cambridge University Press. S. 683–703</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">FORTHCOMING, A., [kein Datum]. <i>Foundations of Declarative Bibliography</i>. Cambridge: University Press</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">GARCIA, Maria, 2019a. Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i>. 2019. Bd. 4, S. 55–80. DOI 10.5555/arcs.2019.4.55</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">GARCIA, Maria, 2019b. Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i>. 2019. Bd. 4, S. 81–104. DOI 10.5555/arcs.2019.4.81</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">HAWKING, Stephen, 1988. <i>A Brief History of Time</i>. New York: Bantam Dell Publishing Group</div>\n</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">JOHNSON, Alice, 2020. Quantitative Methods in Sociology. <i>Sociological Review</i>. 2020. Bd. 68, S. 23–45</div>\n</div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">JOHNSON, Brian, 2020. Qualitative Methods in Sociology. <i>Sociological Review</i>. 2020. Bd. 68, S. 89–112</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">JOHNSON, David und Sarah LEE, 2021. Method for Efficient Data Compression. US 11,043,211 B2. 13 Juli 2021</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">KAFKA, Franz, 1915. <i>Metamorphosis</i>. Leipzig: Kurt Wolff Verlag</div>\n</div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">KUHN, Thomas S., 1962. The Structure of Scientific Revolutions. <i>International Encyclopedia of Unified Science</i>. 1962. Bd. 2, Nr. 2. DOI 10.1234/example</div>\n</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:14.017Z",
+  "generated_at": "2026-06-02T14:23:26.180Z",
   "style": "pediatric-anesthesia",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "af91c00e5961c79b",
   "citations": {
     "single-item": "<sup>1</sup>",
@@ -23,7 +23,9 @@
     "report-single": "<sup>5</sup>",
     "thesis-single": "<sup>11</sup>",
     "webpage-single": "<sup>13</sup>",
-    "no-date-single": "<sup>33</sup>"
+    "no-date-single": "<sup>33</sup>",
+    "disambiguate-givenname": "<sup>35,36</sup>",
+    "subsequent-author-consecutive": "<sup>37,38</sup>"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\"><sup>1</sup></div><div class=\"csl-right-inline\">Kuhn TS. The Structure of Scientific Revolutions. International Encyclopedia of Unified Science. Chicago: University of Chicago Press; 1962;2(2).</div>\n   </div>\n",
@@ -59,6 +61,10 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\"><sup>31</sup></div><div class=\"csl-right-inline\">Garcia M. Methods for Robust Climate Attribution. Annual Review of Climate Science. 2019;4:55–80.</div>\n   </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\"><sup>32</sup></div><div class=\"csl-right-inline\">Garcia M. Methods for Probabilistic Climate Attribution. Annual Review of Climate Science. 2019;4:81–104.</div>\n   </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\"><sup>33</sup></div><div class=\"csl-right-inline\">Forthcoming A. Foundations of Declarative Bibliography. Cambridge: University Press;</div>\n   </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\"><sup>34</sup></div><div class=\"csl-right-inline\">Adams J. Letter to James Smith. 1797.</div>\n   </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\"><sup>34</sup></div><div class=\"csl-right-inline\">Adams J. Letter to James Smith. 1797.</div>\n   </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\"><sup>35</sup></div><div class=\"csl-right-inline\">Johnson A. Quantitative Methods in Sociology. Sociological Review. 2020;68:23–45.</div>\n   </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\"><sup>36</sup></div><div class=\"csl-right-inline\">Johnson B. Qualitative Methods in Sociology. Sociological Review. 2020;68:89–112.</div>\n   </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\"><sup>37</sup></div><div class=\"csl-right-inline\">Chen W. Urban Heat Island Mitigation Strategies. Urban Climate. 2022;15:1–18.</div>\n   </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\"><sup>38</sup></div><div class=\"csl-right-inline\">Chen W. Urban Heat Island Measurement Techniques. Urban Climate. 2024;18:45–62.</div>\n   </div>\n"
   ]
 }

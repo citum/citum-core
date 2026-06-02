@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:49.215Z",
+  "generated_at": "2026-06-02T14:22:55.696Z",
   "style": "hamburg-school-of-food-science",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "69cc141f7cc4510b",
   "citations": {
     "single-item": "(<b><span style=\"baseline\"><span style=\"font-weight:normal;\">KUHN</span></span></b>, 1962)",
@@ -23,18 +23,24 @@
     "report-single": "(<b><span style=\"baseline\"><span style=\"font-weight:normal;\">WORLD BANK</span></span></b>, 2023)",
     "thesis-single": "(<b><span style=\"baseline\"><span style=\"font-weight:normal;\">CHEN</span></span></b>, 2019)",
     "webpage-single": "(<b><span style=\"baseline\"><span style=\"font-weight:normal;\">STATE OF JS TEAM</span></span></b>, 2023)",
-    "no-date-single": "(<b><span style=\"baseline\"><span style=\"font-weight:normal;\">FORTHCOMING</span></span></b>, o. J.)"
+    "no-date-single": "(<b><span style=\"baseline\"><span style=\"font-weight:normal;\">FORTHCOMING</span></span></b>, o. J.)",
+    "disambiguate-givenname": "(<b><span style=\"baseline\"><span style=\"font-weight:normal;\">JOHNSON</span></span></b>, 2020a, 2020b)",
+    "subsequent-author-consecutive": "(<b><span style=\"baseline\"><span style=\"font-weight:normal;\">CHEN</span></span></b>, 2022, 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">Adams, J.: Letter to James Smith.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Y.: The Future of Artificial Intelligence.</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education, : , U.S. Reports 1954.</div>\n",
     "  <div class=\"csl-entry\">Chen, W.: Neural Networks for Natural Language Understanding (phd-thesis), .</div>\n",
+    "  <div class=\"csl-entry\">Chen, W.: Urban Heat Island Mitigation Strategies, Urban Climate, <span style=\"text-decoration:underline;\">15</span>, 1–18 (2022).</div>\n",
+    "  <div class=\"csl-entry\">Chen, W.: Urban Heat Island Measurement Techniques, Urban Climate, <span style=\"text-decoration:underline;\">18</span>, 45–62 (2024).</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. A.: The Role of Deliberate Practice. In: Ericsson, K.A., Charness, N., Feltovich, P.J., Hoffman, R.R.: The Cambridge Handbook of Expertise and Expert Performance. Cambridge University Press, 2006.</div>\n",
     "  <div class=\"csl-entry\">Forthcoming, A.: Foundations of Declarative Bibliography, University Press, Cambridge o. J.</div>\n",
     "  <div class=\"csl-entry\">Garcia, M.: Methods for Robust Climate Attribution, Annual Review of Climate Science, <span style=\"text-decoration:underline;\">4</span>, 55–80 (2019a).</div>\n",
     "  <div class=\"csl-entry\">Garcia, M.: Methods for Probabilistic Climate Attribution, Annual Review of Climate Science, <span style=\"text-decoration:underline;\">4</span>, 81–104 (2019b).</div>\n",
     "  <div class=\"csl-entry\">Hawking, S.: A Brief History of Time, Bantam Dell Publishing Group, New York 1988.</div>\n",
+    "  <div class=\"csl-entry\">Johnson, A.: Quantitative Methods in Sociology, Sociological Review, <span style=\"text-decoration:underline;\">68</span>, 23–45 (2020a).</div>\n",
+    "  <div class=\"csl-entry\">Johnson, B.: Qualitative Methods in Sociology, Sociological Review, <span style=\"text-decoration:underline;\">68</span>, 89–112 (2020b).</div>\n",
     "  <div class=\"csl-entry\">Johnson, D., Lee, S.: Method for Efficient Data Compression.</div>\n",
     "  <div class=\"csl-entry\">Kafka, F.: Metamorphosis, Kurt Wolff Verlag, Leipzig 1915.</div>\n",
     "  <div class=\"csl-entry\">Kuhn, T. S.: The Structure of Scientific Revolutions, International Encyclopedia of Unified Science, <span style=\"text-decoration:underline;\">2</span> (1962).</div>\n",

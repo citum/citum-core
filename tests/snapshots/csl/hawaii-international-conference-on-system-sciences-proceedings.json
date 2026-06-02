@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:50.533Z",
+  "generated_at": "2026-06-02T14:22:57.437Z",
   "style": "hawaii-international-conference-on-system-sciences-proceedings",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "f952e25cce978232",
   "citations": {
     "single-item": "[1]",
@@ -23,7 +23,9 @@
     "report-single": "[5]",
     "thesis-single": "[11]",
     "webpage-single": "[13]",
-    "no-date-single": "[33]"
+    "no-date-single": "[33]",
+    "disambiguate-givenname": "[35, 36]",
+    "subsequent-author-consecutive": "[37, 38]"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">[1] Kuhn, T.S., “The Structure of Scientific Revolutions”, <i>International Encyclopedia of Unified Science</i> <i>2</i>(2), 1962.</div>\n",
@@ -59,6 +61,10 @@
     "  <div class=\"csl-entry\">[31] Garcia, M., “Methods for Robust Climate Attribution”, <span style=\"font-style:normal;\"><i>Annual Review of Climate Science</i> <i>4</i></span>, 2019, pp. 55–80.</div>\n",
     "  <div class=\"csl-entry\">[32] Garcia, M., “Methods for Probabilistic Climate Attribution”, <span style=\"font-style:normal;\"><i>Annual Review of Climate Science</i> <i>4</i></span>, 2019, pp. 81–104.</div>\n",
     "  <div class=\"csl-entry\">[33] Forthcoming, A., <i>Foundations of Declarative Bibliography</i>, University Press, Cambridge.</div>\n",
-    "  <div class=\"csl-entry\">[34] Adams, J., “Letter to James Smith”, 1797.</div>\n"
+    "  <div class=\"csl-entry\">[34] Adams, J., “Letter to James Smith”, 1797.</div>\n",
+    "  <div class=\"csl-entry\">[35] Johnson, A., “Quantitative Methods in Sociology”, <span style=\"font-style:normal;\"><i>Sociological Review</i> <i>68</i></span>, 2020, pp. 23–45.</div>\n",
+    "  <div class=\"csl-entry\">[36] Johnson, B., “Qualitative Methods in Sociology”, <span style=\"font-style:normal;\"><i>Sociological Review</i> <i>68</i></span>, 2020, pp. 89–112.</div>\n",
+    "  <div class=\"csl-entry\">[37] Chen, W., “Urban Heat Island Mitigation Strategies”, <span style=\"font-style:normal;\"><i>Urban Climate</i> <i>15</i></span>, 2022, pp. 1–18.</div>\n",
+    "  <div class=\"csl-entry\">[38] Chen, W., “Urban Heat Island Measurement Techniques”, <span style=\"font-style:normal;\"><i>Urban Climate</i> <i>18</i></span>, 2024, pp. 45–62.</div>\n"
   ]
 }

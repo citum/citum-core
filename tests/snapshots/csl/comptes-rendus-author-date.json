@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:42.121Z",
+  "generated_at": "2026-06-02T14:22:46.526Z",
   "style": "comptes-rendus-author-date",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "58ec21461e9f3d29",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -23,17 +23,23 @@
     "report-single": "(World Bank, 2023)",
     "thesis-single": "(Chen, 2019)",
     "webpage-single": "(State of JS Team, 2023)",
-    "no-date-single": "(Forthcoming, n.d.)"
+    "no-date-single": "(Forthcoming, n.d.)",
+    "disambiguate-givenname": "(A. Johnson, 2020; B. Johnson, 2020)",
+    "subsequent-author-consecutive": "(Chen, 2022, 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">Adams, John, “Letter to James Smith” (1797), Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua, “The Future of Artificial Intelligence” (November 10, 2023). Online at https://example.com/interview (MISSING ACCESSED DATE).</div>\n",
+    "  <div class=\"csl-entry\">Chen, Wei, “Urban Heat Island Measurement Techniques”, <i>Urban Climate</i> <b>18</b> (2024), pp. 45–62. https://doi.org/10.5555/uc.2024.18.45.</div>\n",
+    "  <div class=\"csl-entry\">Chen, Wei, “Urban Heat Island Mitigation Strategies”, <i>Urban Climate</i> <b>15</b> (2022), pp. 1–18. https://doi.org/10.5555/uc.2022.15.1.</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei, <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University: MISSING UNIVERSITY/SCHOOL LOCATION, 2019.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. Anders, “The Role of Deliberate Practice” in <i>The Cambridge Handbook of Expertise and Expert Performance</i> (Ericsson, K. Anders, Neil Charness, Paul J. Feltovich and Robert R. Hoffman, eds.), Cambridge University Press: MISSING PUBLISHER PLACE, 2006, pp. 683–703.</div>\n",
     "  <div class=\"csl-entry\">Forthcoming, A., <i>Foundations of Declarative Bibliography</i>, University Press: Cambridge, MISSING PUBLICATION/RELEASE/DEFENSE YEAR.</div>\n",
     "  <div class=\"csl-entry\">Garcia, Maria, “Methods for Robust Climate Attribution”, <i>Annual Review of Climate Science</i> <b>4</b> (2019a), pp. 55–80. https://doi.org/10.5555/arcs.2019.4.55.</div>\n",
     "  <div class=\"csl-entry\">Garcia, Maria, “Methods for Probabilistic Climate Attribution”, <i>Annual Review of Climate Science</i> <b>4</b> (2019b), pp. 81–104. https://doi.org/10.5555/arcs.2019.4.81.</div>\n",
     "  <div class=\"csl-entry\">Hawking, Stephen, <i>A Brief History of Time</i>, Bantam Dell Publishing Group: New York, 1988.</div>\n",
+    "  <div class=\"csl-entry\">Johnson, Alice, “Quantitative Methods in Sociology”, <i>Sociological Review</i> <b>68</b> (2020), pp. 23–45. MISSING DOI.</div>\n",
+    "  <div class=\"csl-entry\">Johnson, Brian, “Qualitative Methods in Sociology”, <i>Sociological Review</i> <b>68</b> (2020), pp. 89–112. MISSING DOI.</div>\n",
     "  <div class=\"csl-entry\">Johnson, David and Sarah Lee, <i>Method for Efficient Data Compression</i>, MISSING PATENT STATUS, US 11,043,211 B2, 2021.</div>\n",
     "  <div class=\"csl-entry\">Kafka, Franz, <i>Metamorphosis</i>, Kurt Wolff Verlag: Leipzig, 1915.</div>\n",
     "  <div class=\"csl-entry\">Kuhn, Thomas S., “Scientific Paradigms and Normal Science”, <i>Philosophy of Science</i> <b>37</b> (1970), no. 1, pp. 1–13. https://doi.org/10.1086/288273.</div>\n",

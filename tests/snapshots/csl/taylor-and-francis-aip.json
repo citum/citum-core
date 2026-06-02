@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:20.968Z",
+  "generated_at": "2026-06-02T14:23:34.726Z",
   "style": "taylor-and-francis-aip",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "cf301fc87e50fca8",
   "citations": {
     "single-item": "[1]",
@@ -23,7 +23,9 @@
     "report-single": "[5]",
     "thesis-single": "[11]",
     "webpage-single": "[13]",
-    "no-date-single": "[33]"
+    "no-date-single": "[33]",
+    "disambiguate-givenname": "[35],[36]",
+    "subsequent-author-consecutive": "[37],[38]"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">[1] T.S. Kuhn, International Encyclopedia of Unified Science <b>2</b>, (1962).</div>\n",
@@ -59,6 +61,10 @@
     "  <div class=\"csl-entry\">[31] M. Garcia, Annual Review of Climate Science <b>4</b>, 55 (2019).</div>\n",
     "  <div class=\"csl-entry\">[32] M. Garcia, Annual Review of Climate Science <b>4</b>, 81 (2019).</div>\n",
     "  <div class=\"csl-entry\">[33] A. Forthcoming, <i>Foundations of Declarative Bibliography</i> (University Press, Cambridge, n.d.).</div>\n",
-    "  <div class=\"csl-entry\">[34] J. Adams, (1797).</div>\n"
+    "  <div class=\"csl-entry\">[34] J. Adams, (1797).</div>\n",
+    "  <div class=\"csl-entry\">[35] A. Johnson, Sociological Review <b>68</b>, 23 (2020).</div>\n",
+    "  <div class=\"csl-entry\">[36] B. Johnson, Sociological Review <b>68</b>, 89 (2020).</div>\n",
+    "  <div class=\"csl-entry\">[37] W. Chen, Urban Climate <b>15</b>, 1 (2022).</div>\n",
+    "  <div class=\"csl-entry\">[38] W. Chen, Urban Climate <b>18</b>, 45 (2024).</div>\n"
   ]
 }

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:24.602Z",
+  "generated_at": "2026-06-02T14:23:38.974Z",
   "style": "transplantation",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "d5ef2f55d90b8a54",
   "citations": {
     "single-item": "(1)",
@@ -23,7 +23,9 @@
     "report-single": "(5)",
     "thesis-single": "(11)",
     "webpage-single": "(13)",
-    "no-date-single": "(33)"
+    "no-date-single": "(33)",
+    "disambiguate-givenname": "(35,36)",
+    "subsequent-author-consecutive": "(37,38)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">1. </div><div class=\"csl-right-inline\"><span style=\"baseline\">Kuhn TS</span>. The Structure of Scientific Revolutions. <i><i>International Encyclopedia of Unified Science</i> </i>1962; 2.</div>\n   </div>\n",
@@ -59,6 +61,10 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">31. </div><div class=\"csl-right-inline\"><span style=\"baseline\">Garcia M</span>. Methods for Robust Climate Attribution. <i><i>Annual Review of Climate Science</i> </i>2019; 4: 55.</div>\n   </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">32. </div><div class=\"csl-right-inline\"><span style=\"baseline\">Garcia M</span>. Methods for Probabilistic Climate Attribution. <i><i>Annual Review of Climate Science</i> </i>2019; 4: 81.</div>\n   </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">33. </div><div class=\"csl-right-inline\"><span style=\"baseline\">Forthcoming A</span>. Foundations of Declarative Bibliography. Cambridge: University Press,</div>\n   </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">34. </div><div class=\"csl-right-inline\"><span style=\"baseline\">Adams J</span>. Letter to James Smith. 1797;</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">34. </div><div class=\"csl-right-inline\"><span style=\"baseline\">Adams J</span>. Letter to James Smith. 1797;</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">35. </div><div class=\"csl-right-inline\"><span style=\"baseline\">Johnson A</span>. Quantitative Methods in Sociology. <i><i>Sociological Review</i> </i>2020; 68: 23.</div>\n   </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">36. </div><div class=\"csl-right-inline\"><span style=\"baseline\">Johnson B</span>. Qualitative Methods in Sociology. <i><i>Sociological Review</i> </i>2020; 68: 89.</div>\n   </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">37. </div><div class=\"csl-right-inline\"><span style=\"baseline\">Chen W</span>. Urban Heat Island Mitigation Strategies. <i><i>Urban Climate</i> </i>2022; 15: 1.</div>\n   </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">38. </div><div class=\"csl-right-inline\"><span style=\"baseline\">Chen W</span>. Urban Heat Island Measurement Techniques. <i><i>Urban Climate</i> </i>2024; 18: 45.</div>\n   </div>\n"
   ]
 }

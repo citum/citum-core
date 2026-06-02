@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:24.071Z",
+  "generated_at": "2026-06-02T14:23:38.366Z",
   "style": "the-university-of-tokyo-law-review",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "7a80dddfaa34fa83",
   "citations": {
     "single-item": "Thomas S. Kuhn 「The Structure of Scientific Revolutions」 International Encyclopedia of Unified Science 2巻 2号 (1962)。",
@@ -23,17 +23,23 @@
     "report-single": "「World Development Report 2023」。",
     "thesis-single": "「Neural Networks for Natural Language Understanding」。",
     "webpage-single": "State of JS Team 「The State of JavaScript 2023」 2023年 (https://stateofjs.com/2023,2024年1月15日最終閲覧)。",
-    "no-date-single": "A. Forthcoming 『Foundations of Declarative Bibliography』 (University Press, 。"
+    "no-date-single": "A. Forthcoming 『Foundations of Declarative Bibliography』 (University Press, 。",
+    "disambiguate-givenname": "Alice Johnson 「Quantitative Methods in Sociology」 Sociological Review 68巻 23–45頁 (2020)。Brian Johnson 「Qualitative Methods in Sociology」 Sociological Review 68巻 89–112頁 (2020)。",
+    "subsequent-author-consecutive": "Wei Chen 「Urban Heat Island Mitigation Strategies」 Urban Climate 15巻 1–18頁 (2022)。Wei Chen 「Urban Heat Island Measurement Techniques」 Urban Climate 18巻 45–62頁 (2024)。"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">「Letter to James Smith」</div>\n",
     "  <div class=\"csl-entry\">「The Future of Artificial Intelligence」</div>\n",
     "  <div class=\"csl-entry\">「Neural Networks for Natural Language Understanding」</div>\n",
+    "  <div class=\"csl-entry\">Wei Chen 「Urban Heat Island Mitigation Strategies」 Urban Climate 15巻 1–18頁 (2022)</div>\n",
+    "  <div class=\"csl-entry\">Wei Chen 「Urban Heat Island Measurement Techniques」 Urban Climate 18巻 45–62頁 (2024)</div>\n",
     "  <div class=\"csl-entry\">「The Role of Deliberate Practice」</div>\n",
     "  <div class=\"csl-entry\">A. Forthcoming 『Foundations of Declarative Bibliography』 (University Press, </div>\n",
     "  <div class=\"csl-entry\">Maria Garcia 「Methods for Robust Climate Attribution」 Annual Review of Climate Science 4巻 55–80頁 (2019)</div>\n",
     "  <div class=\"csl-entry\">Maria Garcia 「Methods for Probabilistic Climate Attribution」 Annual Review of Climate Science 4巻 81–104頁 (2019)</div>\n",
     "  <div class=\"csl-entry\">Stephen Hawking 『A Brief History of Time』 (Bantam Dell Publishing Group, 1988)</div>\n",
+    "  <div class=\"csl-entry\">Alice Johnson 「Quantitative Methods in Sociology」 Sociological Review 68巻 23–45頁 (2020)</div>\n",
+    "  <div class=\"csl-entry\">Brian Johnson 「Qualitative Methods in Sociology」 Sociological Review 68巻 89–112頁 (2020)</div>\n",
     "  <div class=\"csl-entry\">「Method for Efficient Data Compression」</div>\n",
     "  <div class=\"csl-entry\">Franz Kafka 『Metamorphosis』 (Kurt Wolff Verlag, 1915)</div>\n",
     "  <div class=\"csl-entry\">Thomas S. Kuhn 「The Structure of Scientific Revolutions」 International Encyclopedia of Unified Science 2巻 2号 (1962)</div>\n",

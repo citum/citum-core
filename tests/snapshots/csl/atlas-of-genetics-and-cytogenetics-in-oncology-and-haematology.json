@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:11.559Z",
+  "generated_at": "2026-06-02T14:22:11.064Z",
   "style": "atlas-of-genetics-and-cytogenetics-in-oncology-and-haematology",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "4768c20ab8fa34d7",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -23,7 +23,9 @@
     "report-single": "(World Bank, 2023)",
     "thesis-single": "(Chen, 2019)",
     "webpage-single": "(State of JS Team, 2023)",
-    "no-date-single": "(Forthcoming, n.d.)"
+    "no-date-single": "(Forthcoming, n.d.)",
+    "disambiguate-givenname": "(A. Johnson, 2020; B. Johnson, 2020)",
+    "subsequent-author-consecutive": "(Chen, 2022, 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">The Structure of Scientific Revolutions.\n\n    <div class=\"csl-block\">Kuhn TS.</div>\n\n\n    <div class=\"csl-block\">International Encyclopedia of Unified Science. 1962 ; 2(2).</div>\n</div>\n",
@@ -59,6 +61,10 @@
     "  <div class=\"csl-entry\">Methods for Robust Climate Attribution.\n\n    <div class=\"csl-block\">Garcia M.</div>\n\n\n    <div class=\"csl-block\">Annual Review of Climate Science. 2019a ; 4 : 55–80.</div>\n</div>\n",
     "  <div class=\"csl-entry\">Methods for Probabilistic Climate Attribution.\n\n    <div class=\"csl-block\">Garcia M.</div>\n\n\n    <div class=\"csl-block\">Annual Review of Climate Science. 2019b ; 4 : 81–104.</div>\n</div>\n",
     "  <div class=\"csl-entry\">Foundations of Declarative Bibliography.\n\n    <div class=\"csl-block\">Forthcoming A.</div>\n\n\n    <div class=\"csl-block\">Cambridge: University Press; n.d.</div>\n</div>\n",
-    "  <div class=\"csl-entry\">Letter to James Smith.\n\n    <div class=\"csl-block\">Adams J.</div>\n\n\n    <div class=\"csl-block\">1797.</div>\n</div>\n"
+    "  <div class=\"csl-entry\">Letter to James Smith.\n\n    <div class=\"csl-block\">Adams J.</div>\n\n\n    <div class=\"csl-block\">1797.</div>\n</div>\n",
+    "  <div class=\"csl-entry\">Quantitative Methods in Sociology.\n\n    <div class=\"csl-block\">Johnson A.</div>\n\n\n    <div class=\"csl-block\">Sociological Review. 2020 ; 68 : 23–45.</div>\n</div>\n",
+    "  <div class=\"csl-entry\">Qualitative Methods in Sociology.\n\n    <div class=\"csl-block\">Johnson B.</div>\n\n\n    <div class=\"csl-block\">Sociological Review. 2020 ; 68 : 89–112.</div>\n</div>\n",
+    "  <div class=\"csl-entry\">Urban Heat Island Mitigation Strategies.\n\n    <div class=\"csl-block\">Chen W.</div>\n\n\n    <div class=\"csl-block\">Urban Climate. 2022 ; 15 : 1–18.</div>\n</div>\n",
+    "  <div class=\"csl-entry\">Urban Heat Island Measurement Techniques.\n\n    <div class=\"csl-block\">Chen W.</div>\n\n\n    <div class=\"csl-block\">Urban Climate. 2024 ; 18 : 45–62.</div>\n</div>\n"
   ]
 }

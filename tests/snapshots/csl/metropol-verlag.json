@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:01.781Z",
+  "generated_at": "2026-06-02T14:23:12.375Z",
   "style": "metropol-verlag",
-  "fixture_hash": "2c87efef734f50d2",
+  "fixture_hash": "17c1d1d2b5e334dd",
   "csl_hash": "89cc1dc8719a22ac",
   "citations": {
     "single-item-1": "Thomas S. Kuhn, The Structure of Scientific Revolutions, in: International Encyclopedia of Unified Science 2 (1962) 2, University of Chicago Press, Chicago.",
@@ -44,12 +44,16 @@
   "bibliography": [
     "  <div class=\"csl-entry\">Adams, John, Letter to James Smith, (1797), Massachusetts Historical Society, Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua, The Future of Artificial Intelligence, Interview geführt von Stephen Colbert, (2023).</div>\n",
+    "  <div class=\"csl-entry\">Chen, Wei, Urban Heat Island Measurement Techniques, in, Urban Climate 18 (2024), S. 45–62.</div>\n",
+    "  <div class=\"csl-entry\">Chen, Wei, Urban Heat Island Mitigation Strategies, in, Urban Climate 15 (2022), S. 1–18.</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei, Neural Networks for Natural Language Understanding, phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. Anders, The Role of Deliberate Practice, in: K. Anders Ericsson u. a. (Hrsg.), The Cambridge Handbook of Expertise and Expert Performance, 2006, S. 683–703.</div>\n",
     "  <div class=\"csl-entry\">Forthcoming, A., Foundations of Declarative Bibliography, Cambridge o. D.</div>\n",
     "  <div class=\"csl-entry\">Garcia, Maria, Methods for Robust Climate Attribution, in, Annual Review of Climate Science 4 (2019), S. 55–80.</div>\n",
     "  <div class=\"csl-entry\">Garcia, Maria, Methods for Probabilistic Climate Attribution, in, Annual Review of Climate Science 4 (2019), S. 81–104.</div>\n",
     "  <div class=\"csl-entry\">Hawking, Stephen, A Brief History of Time, New York 1988.</div>\n",
+    "  <div class=\"csl-entry\">Johnson, Alice, Quantitative Methods in Sociology, in, Sociological Review 68 (2020), S. 23–45.</div>\n",
+    "  <div class=\"csl-entry\">Johnson, Brian, Qualitative Methods in Sociology, in, Sociological Review 68 (2020), S. 89–112.</div>\n",
     "  <div class=\"csl-entry\">Johnson, David/Lee, Sarah, Method for Efficient Data Compression.</div>\n",
     "  <div class=\"csl-entry\">Kafka, Franz, Metamorphosis, Leipzig 1915.</div>\n",
     "  <div class=\"csl-entry\">Kuhn, Thomas S., Scientific Paradigms and Normal Science, in, Philosophy of Science 37 (1970) 1, S. 1–13.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:17.100Z",
+  "generated_at": "2026-06-02T14:23:29.924Z",
   "style": "revista-virtual-de-quimica",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "9685152c6ecffd07",
   "citations": {
     "single-item": "<sup>1</sup>",
@@ -23,7 +23,9 @@
     "report-single": "<sup>5</sup>",
     "thesis-single": "<sup>11</sup>",
     "webpage-single": "<sup>13</sup>",
-    "no-date-single": "<sup>33</sup>"
+    "no-date-single": "<sup>33</sup>",
+    "disambiguate-givenname": "<sup>35,36</sup>",
+    "subsequent-author-consecutive": "<sup>37,38</sup>"
   },
   "bibliography": [
     "  <div class=\"csl-entry\"><sup>1</sup> Kuhn, T. S. The Structure of Scientific Revolutions. <i>International Encyclopedia of Unified Science</i> <b>1962</b>, <i>2</i>, https://doi.org/10.1234/example.</div>\n",
@@ -59,6 +61,10 @@
     "  <div class=\"csl-entry\"><sup>31</sup> Garcia, M. Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i> <b>2019</b>, <i>4</i>, 55. https://doi.org/10.5555/arcs.2019.4.55.</div>\n",
     "  <div class=\"csl-entry\"><sup>32</sup> Garcia, M. Methods for Probabilistic Climate Attribution. <i>Annual Review of Climate Science</i> <b>2019</b>, <i>4</i>, 81. https://doi.org/10.5555/arcs.2019.4.81.</div>\n",
     "  <div class=\"csl-entry\"><sup>33</sup> Forthcoming, A. <i>Foundations of Declarative Bibliography</i> University Press: Cambridge, n.d.</div>\n",
-    "  <div class=\"csl-entry\"><sup>34</sup> Adams, J. Letter to James Smith. <b>1797</b>.</div>\n"
+    "  <div class=\"csl-entry\"><sup>34</sup> Adams, J. Letter to James Smith. <b>1797</b>.</div>\n",
+    "  <div class=\"csl-entry\"><sup>35</sup> Johnson, A. Quantitative Methods in Sociology. <i>Sociological Review</i> <b>2020</b>, <i>68</i>, 23.</div>\n",
+    "  <div class=\"csl-entry\"><sup>36</sup> Johnson, B. Qualitative Methods in Sociology. <i>Sociological Review</i> <b>2020</b>, <i>68</i>, 89.</div>\n",
+    "  <div class=\"csl-entry\"><sup>37</sup> Chen, W. Urban Heat Island Mitigation Strategies. <i>Urban Climate</i> <b>2022</b>, <i>15</i>, 1. https://doi.org/10.5555/uc.2022.15.1.</div>\n",
+    "  <div class=\"csl-entry\"><sup>38</sup> Chen, W. Urban Heat Island Measurement Techniques. <i>Urban Climate</i> <b>2024</b>, <i>18</i>, 45. https://doi.org/10.5555/uc.2024.18.45.</div>\n"
   ]
 }

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:12.000Z",
+  "generated_at": "2026-06-02T14:22:11.747Z",
   "style": "ayer",
-  "fixture_hash": "2c87efef734f50d2",
+  "fixture_hash": "17c1d1d2b5e334dd",
   "csl_hash": "53d36908d746afd0",
   "citations": {
     "single-item-1": "Thomas S. <span style=\"font-variant:small-caps;\">Kuhn</span>: “The Structure of Scientific Revolutions”, <i>International Encyclopedia of Unified Science</i>, 2, 2 (1962).",
@@ -75,6 +75,10 @@
     "  <div class=\"csl-entry\">Maria <span style=\"font-variant:small-caps;\">Garcia</span>, “Methods for Robust Climate Attribution”, <i>Annual Review of Climate Science</i> 4 (2019), pp. 55–80.</div>\n",
     "  <div class=\"csl-entry\">Maria <span style=\"font-variant:small-caps;\">Garcia</span>, “Methods for Probabilistic Climate Attribution”, <i>Annual Review of Climate Science</i> 4 (2019), pp. 81–104.</div>\n",
     "  <div class=\"csl-entry\">A. <span style=\"font-variant:small-caps;\">Forthcoming</span>, <i>Foundations of Declarative Bibliography</i>, Cambridge, University Press.</div>\n",
-    "  <div class=\"csl-entry\">John <span style=\"font-variant:small-caps;\">Adams</span>, “Letter to James Smith”, 1797. , Adams Papers, reel 45, Massachusetts Historical Society, Boston, MA.</div>\n"
+    "  <div class=\"csl-entry\">John <span style=\"font-variant:small-caps;\">Adams</span>, “Letter to James Smith”, 1797. , Adams Papers, reel 45, Massachusetts Historical Society, Boston, MA.</div>\n",
+    "  <div class=\"csl-entry\">Alice <span style=\"font-variant:small-caps;\">Johnson</span>, “Quantitative Methods in Sociology”, <i>Sociological Review</i> 68 (2020), pp. 23–45.</div>\n",
+    "  <div class=\"csl-entry\">Brian <span style=\"font-variant:small-caps;\">Johnson</span>, “Qualitative Methods in Sociology”, <i>Sociological Review</i> 68 (2020), pp. 89–112.</div>\n",
+    "  <div class=\"csl-entry\">Wei <span style=\"font-variant:small-caps;\">Chen</span>, “Urban Heat Island Mitigation Strategies”, <i>Urban Climate</i> 15 (2022), pp. 1–18.</div>\n",
+    "  <div class=\"csl-entry\">Wei <span style=\"font-variant:small-caps;\">Chen</span>, “Urban Heat Island Measurement Techniques”, <i>Urban Climate</i> 18 (2024), pp. 45–62.</div>\n"
   ]
 }

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:12.434Z",
+  "generated_at": "2026-06-02T14:22:12.322Z",
   "style": "bibliothecae-it",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "beebf3f4028ff9f7",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -23,18 +23,24 @@
     "report-single": "(World Bank 2023)",
     "thesis-single": "(Chen 2019)",
     "webpage-single": "(State of JS Team 2023)",
-    "no-date-single": "(Forthcoming no date)"
+    "no-date-single": "(Forthcoming no date)",
+    "disambiguate-givenname": "(Johnson 2020a; 2020b)",
+    "subsequent-author-consecutive": "(Chen 2022; 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">Adams 1797 = John Adams, Letter to James Smith. 1797.</div>\n",
     "  <div class=\"csl-entry\">Bengio 2023 = Yoshua Bengio, The Future of Artificial Intelligence. 2023.</div>\n",
     "  <div class=\"csl-entry\">Brown v. Board of Education 1954, 1954, 347, p. 483.</div>\n",
     "  <div class=\"csl-entry\">Chen 2019 = Wei Chen, <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, 2019.</div>\n",
+    "  <div class=\"csl-entry\">Chen 2022 = Wei Chen, <i>Urban Heat Island Mitigation Strategies</i>, “Urban Climate,” 15 (2022), p. 1–18.</div>\n",
+    "  <div class=\"csl-entry\">Chen 2024 = Wei Chen, <i>Urban Heat Island Measurement Techniques</i>, “Urban Climate,” 18 (2024), p. 45–62.</div>\n",
     "  <div class=\"csl-entry\">Ericsson 2006 = K. Anders Ericsson, <i>The Role of Deliberate Practice</i>, in <i>The Cambridge Handbook of Expertise and Expert Performance</i>, edited by K. Anders Ericsson, Neil Charness, Paul J. Feltovich,  Robert R. Hoffman, Cambridge University Press, 2006, p. 683–703.</div>\n",
     "  <div class=\"csl-entry\">Forthcoming no date = A. Forthcoming, <i>Foundations of Declarative Bibliography</i>, Cambridge, University Press, no date.</div>\n",
     "  <div class=\"csl-entry\">Garcia 2019a = Maria Garcia, <i>Methods for Probabilistic Climate Attribution</i>, “Annual Review of Climate Science,” 4 (2019), p. 81–104.</div>\n",
     "  <div class=\"csl-entry\">Garcia 2019b = Maria Garcia, <i>Methods for Robust Climate Attribution</i>, “Annual Review of Climate Science,” 4 (2019), p. 55–80.</div>\n",
     "  <div class=\"csl-entry\">Hawking 1988 = Stephen Hawking, <i>A Brief History of Time</i>, New York, Bantam Dell Publishing Group, 1988.</div>\n",
+    "  <div class=\"csl-entry\">Johnson 2020a = Alice Johnson, <i>Quantitative Methods in Sociology</i>, “Sociological Review,” 68 (2020), p. 23–45.</div>\n",
+    "  <div class=\"csl-entry\">Johnson 2020b = Brian Johnson, <i>Qualitative Methods in Sociology</i>, “Sociological Review,” 68 (2020), p. 89–112.</div>\n",
     "  <div class=\"csl-entry\">Johnson 2021 = David Johnson, Sarah Lee, Method for Efficient Data Compression. 2021.</div>\n",
     "  <div class=\"csl-entry\">Kafka 1915 = Franz Kafka, <i>Metamorphosis</i>, Leipzig, Kurt Wolff Verlag, 1915.</div>\n",
     "  <div class=\"csl-entry\">Kuhn 1962 = Thomas S. Kuhn, <i>The Structure of Scientific Revolutions</i>, “International Encyclopedia of Unified Science,” 2 (1962), 2.</div>\n",

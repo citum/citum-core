@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:14.445Z",
+  "generated_at": "2026-06-02T14:22:14.932Z",
   "style": "campus-adventiste-du-saleve-faculte-adventiste-de-theologie",
-  "fixture_hash": "2c87efef734f50d2",
+  "fixture_hash": "17c1d1d2b5e334dd",
   "csl_hash": "e9daf1447f145a80",
   "citations": {
     "single-item-1": "Thomas S. <span style=\"font-variant:small-caps;\">Kuhn</span>, « The Structure of Scientific Revolutions », <i>International Encyclopedia of Unified Science</i> 2 (1962/<span style=\"text-decoration:none;\">2</span>), University of Chicago Press.",
@@ -44,12 +44,16 @@
   "bibliography": [
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span> John, « Letter to James Smith », 1797. Massachusetts Historical Society, Adams Papers, reel 45.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span> Yoshua, <i>The Future of Artificial Intelligence</i> [en ligne], 10 novembre 2023, entretien réalisé par Stephen <span style=\"font-variant:small-caps;\">Colbert</span>, video-interview., disponible sur &#60;<span style=\"text-decoration:none;\">https://example.com/interview</span>&#62;.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> Wei, « Urban Heat Island Measurement Techniques », <i>Urban Climate</i> 18 (2024), p. 45‑62.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> Wei, « Urban Heat Island Mitigation Strategies », <i>Urban Climate</i> 15 (2022), p. 1‑18.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> Wei, <i>Neural Networks for Natural Language Understanding</i>, phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span> K. Anders, « The Role of Deliberate Practice », in K. Anders <span style=\"font-variant:small-caps;\">Ericsson</span>, Neil <span style=\"font-variant:small-caps;\">Charness</span>, Paul J. <span style=\"font-variant:small-caps;\">Feltovich</span> et Robert R. <span style=\"font-variant:small-caps;\">Hoffman</span> (éd.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>Cambridge University Press, 2006, p. 683‑703.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Forthcoming</span> A., <i>Foundations of Declarative Bibliography</i>, Cambridge, University Press.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Garcia</span> Maria, « Methods for Robust Climate Attribution », <i>Annual Review of Climate Science</i> 4 (2019), p. 55‑80.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Garcia</span> Maria, « Methods for Probabilistic Climate Attribution », <i>Annual Review of Climate Science</i> 4 (2019), p. 81‑104.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Hawking</span> Stephen, <i>A Brief History of Time</i>, New York, Bantam Dell Publishing Group, 1988.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span> Alice, « Quantitative Methods in Sociology », <i>Sociological Review</i> 68 (2020), p. 23‑45.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span> Brian, « Qualitative Methods in Sociology », <i>Sociological Review</i> 68 (2020), p. 89‑112.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span> David, <span style=\"font-variant:small-caps;\">Lee</span> Sarah, « Method for Efficient Data Compression », 13 juillet 2021.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Kafka</span> Franz, <i>Metamorphosis</i>, trad. <span style=\"font-variant:small-caps;\">Wyllie</span> David, Leipzig, Kurt Wolff Verlag, 1915.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Kuhn</span> Thomas S., « Scientific Paradigms and Normal Science », <i>Philosophy of Science</i> 37 (1970/<span style=\"text-decoration:none;\">1</span>), p. 1‑13.</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:17.168Z",
+  "generated_at": "2026-06-02T14:23:30.026Z",
   "style": "revue-archeologique-du-centre-de-la-france",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "2b4f24a17b4d6829",
   "citations": {
     "single-item": "(<span style=\"font-variant:small-caps;\">Kuhn</span> 1962)",
@@ -23,18 +23,24 @@
     "report-single": "(<span style=\"font-variant:small-caps;\">World Bank</span> 2023)",
     "thesis-single": "(<span style=\"font-variant:small-caps;\">Chen</span> 2019)",
     "webpage-single": "(<span style=\"font-variant:small-caps;\">State of JS Team</span> 2023)",
-    "no-date-single": "(<span style=\"font-variant:small-caps;\">Forthcoming</span> [s.d.])"
+    "no-date-single": "(<span style=\"font-variant:small-caps;\">Forthcoming</span> [s.d.])",
+    "disambiguate-givenname": "(<span style=\"font-variant:small-caps;\">Johnson A.</span> 2020 ; <span style=\"font-variant:small-caps;\">Johnson B.</span> 2020)",
+    "subsequent-author-consecutive": "(<span style=\"font-variant:small-caps;\">Chen</span> 2022 ; <span style=\"font-variant:small-caps;\">Chen</span> 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span> 1797\n\n    <div class=\"csl-block\">Adams J. - <i>Letter to James Smith</i>, lieu de consultation : Massachusetts Historical Society,</div>\n </div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio</span> 2023\n\n    <div class=\"csl-block\">Bengio Y. - <i>The Future of Artificial Intelligence</i> [En ligne], 10 novembre 2023.</div>\n</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> 2019\n\n    <div class=\"csl-block\">Chen W. - <i>Neural Networks for Natural Language Understanding</i>, phd-thesis. Stanford University, [s.l.] , </div>\n</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> 2022\n\n    <div class=\"csl-block\">Chen W. - Urban Heat Island Mitigation Strategies, <i>Urban Climate</i> [En ligne], 15 : 1‑18.</div>\n</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span> 2024\n\n    <div class=\"csl-block\">Chen W. - Urban Heat Island Measurement Techniques, <i>Urban Climate</i> [En ligne], 18 : 45‑62.</div>\n</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson</span> 2006\n\n    <div class=\"csl-block\">Ericsson K. A. - The Role of Deliberate Practice, <i>in</i> : Ericsson K. A., Charness N., Feltovich P. J. et Hoffman R. R. (dir.), <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press, [s.l.] ,  p. 683‑703.</div>\n</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Forthcoming</span> [s.d.]\n\n    <div class=\"csl-block\">Forthcoming A. - <i>Foundations of Declarative Bibliography</i>, University Press, Cambridge,</div>\n </div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Garcia</span> 2019 a\n\n    <div class=\"csl-block\">Garcia M. - Methods for Robust Climate Attribution, <i>Annual Review of Climate Science</i> [En ligne], 4 : 55‑80.</div>\n</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Garcia</span> 2019 b\n\n    <div class=\"csl-block\">Garcia M. - Methods for Probabilistic Climate Attribution, <i>Annual Review of Climate Science</i> [En ligne], 4 : 81‑104.</div>\n</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Hawking</span> 1988\n\n    <div class=\"csl-block\">Hawking S. - <i>A Brief History of Time</i>, Bantam Dell Publishing Group, New York,</div>\n </div>\n",
-    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span> et <span style=\"font-variant:small-caps;\">Lee</span> 2021\n\n    <div class=\"csl-block\">Johnson D. et Lee S. - <i>Method for Efficient Data Compression</i>, US 11,043,211 B2. 13 juillet 2021.</div>\n</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson A.</span> 2020\n\n    <div class=\"csl-block\">Johnson A. - Quantitative Methods in Sociology, <i>Sociological Review</i>, 68 : 23‑45.</div>\n</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson B.</span> 2020\n\n    <div class=\"csl-block\">Johnson B. - Qualitative Methods in Sociology, <i>Sociological Review</i>, 68 : 89‑112.</div>\n</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson D.</span> et <span style=\"font-variant:small-caps;\">Lee</span> 2021\n\n    <div class=\"csl-block\">Johnson D. et Lee S. - <i>Method for Efficient Data Compression</i>, US 11,043,211 B2. 13 juillet 2021.</div>\n</div>\n",
     "  <div class=\"csl-entry\"><i>Journal of Theoretical Psychology</i>, 28, 3, 2018\n\n    <div class=\"csl-block\">The Role of Theory in Research, <i>Journal of Theoretical Psychology</i>, 28, 3 : 201‑215.</div>\n</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Kafka</span> 1915\n\n    <div class=\"csl-block\">Kafka F. - <i>Metamorphosis</i>, Kurt Wolff Verlag, Leipzig,</div>\n </div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Kuhn</span> 1962\n\n    <div class=\"csl-block\">Kuhn T. S. - The Structure of Scientific Revolutions, <i>International Encyclopedia of Unified Science</i> [En ligne], 2, 2</div>\n</div>\n",

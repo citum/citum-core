@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:18.896Z",
+  "generated_at": "2026-06-02T14:23:32.100Z",
   "style": "societe-archeologique-de-bordeaux",
-  "fixture_hash": "2c87efef734f50d2",
+  "fixture_hash": "17c1d1d2b5e334dd",
   "csl_hash": "068d3a89545727b2",
   "citations": {
     "single-item-1": "Kuhn 1962",
@@ -43,11 +43,15 @@
   },
   "bibliography": [
     "  <div class=\"csl-entry\">Chen, Wei. <i><i>Neural Networks for Natural Language Understanding</i></i>, phd-thesis, Stanford University, 2019.</div>\n",
+    "  <div class=\"csl-entry\">—. « Urban Heat Island Mitigation Strategies, <i>Urban Climate</i>, 2022, 15, 1‑18.</div>\n",
+    "  <div class=\"csl-entry\">—. « Urban Heat Island Measurement Techniques, <i>Urban Climate</i>, 2024, 18, 45‑62.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. Anders. « The Role of Deliberate Practice » , <i>in</i> : Ericsson K. Anders, Charness Neil, Feltovich Paul J., et Hoffman Robert R. (dir.), <i>The Cambridge Handbook of Expertise and Expert Performance</i> , 2006, p. 683‑703.</div>\n",
     "  <div class=\"csl-entry\">Forthcoming, A. <i>Foundations of Declarative Bibliography</i>, Cambridge, University Press, s. d.</div>\n",
     "  <div class=\"csl-entry\">Garcia, Maria. « Methods for Probabilistic Climate Attribution, <i>Annual Review of Climate Science</i>, 2019a, 4, 81‑104.</div>\n",
     "  <div class=\"csl-entry\">—. « Methods for Robust Climate Attribution, <i>Annual Review of Climate Science</i>, 2019b, 4, 55‑80.</div>\n",
     "  <div class=\"csl-entry\">Hawking, Stephen. <i>A Brief History of Time</i>, New York, Bantam Dell Publishing Group, 1988.</div>\n",
+    "  <div class=\"csl-entry\">Johnson, Alice. « Quantitative Methods in Sociology, <i>Sociological Review</i>, 2020a, 68, 23‑45.</div>\n",
+    "  <div class=\"csl-entry\">Johnson, Brian. « Qualitative Methods in Sociology, <i>Sociological Review</i>, 2020b, 68, 89‑112.</div>\n",
     "  <div class=\"csl-entry\">Kafka, Franz. <i>Metamorphosis</i>, Leipzig, Kurt Wolff Verlag, 1915.</div>\n",
     "  <div class=\"csl-entry\">Kuhn, Thomas S. « The Structure of Scientific Revolutions, <i>International Encyclopedia of Unified Science</i>, 1962, 2, 2.</div>\n",
     "  <div class=\"csl-entry\">—. « Scientific Paradigms and Normal Science, <i>Philosophy of Science</i>, 1970, 37, 1, 1‑13.</div>\n",

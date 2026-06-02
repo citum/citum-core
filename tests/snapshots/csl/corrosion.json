@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:42.464Z",
+  "generated_at": "2026-06-02T14:22:46.929Z",
   "style": "corrosion",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "1ec874a5d8e0c535",
   "citations": {
     "single-item": "<sup>1</sup>",
@@ -23,7 +23,9 @@
     "report-single": "<sup>5</sup>",
     "thesis-single": "<sup>11</sup>",
     "webpage-single": "<sup>13</sup>",
-    "no-date-single": "<sup>33</sup>"
+    "no-date-single": "<sup>33</sup>",
+    "disambiguate-givenname": "<sup>35,36</sup>",
+    "subsequent-author-consecutive": "<sup>37,38</sup>"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">1. </div><div class=\"csl-right-inline\">Kuhn, T.S., <i>International Encyclopedia of Unified Science</i> 2 (1962).</div>\n  </div>\n",
@@ -59,6 +61,10 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">31. </div><div class=\"csl-right-inline\">Garcia, M., <i>Annual Review of Climate Science</i> 4 (2019): pp. 55–80.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">32. </div><div class=\"csl-right-inline\">Garcia, M., <i>Annual Review of Climate Science</i> 4 (2019): pp. 81–104.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">33. </div><div class=\"csl-right-inline\">Forthcoming, A., <i>Foundations of Declarative Bibliography</i> (Cambridge: University Press, n.d.).</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">34. </div><div class=\"csl-right-inline\">Adams, J., “Letter to James Smith” (1797).</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">34. </div><div class=\"csl-right-inline\">Adams, J., “Letter to James Smith” (1797).</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">35. </div><div class=\"csl-right-inline\">Johnson, A., <i>Sociological Review</i> 68 (2020): pp. 23–45.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">36. </div><div class=\"csl-right-inline\">Johnson, B., <i>Sociological Review</i> 68 (2020): pp. 89–112.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">37. </div><div class=\"csl-right-inline\">Chen, W., <i>Urban Climate</i> 15 (2022): pp. 1–18.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">38. </div><div class=\"csl-right-inline\">Chen, W., <i>Urban Climate</i> 18 (2024): pp. 45–62.</div>\n  </div>\n"
   ]
 }

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:42.594Z",
+  "generated_at": "2026-06-02T14:22:47.103Z",
   "style": "crustaceana",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "888436e37f8c2c8d",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -23,7 +23,9 @@
     "report-single": "(World Bank, 2023)",
     "thesis-single": "(Chen, 2019)",
     "webpage-single": "(State of JS Team, 2023)",
-    "no-date-single": "(Forthcoming, n.d.))"
+    "no-date-single": "(Forthcoming, n.d.))",
+    "disambiguate-givenname": "(Johnson, 2020a; b)",
+    "subsequent-author-consecutive": "(Chen, 2022, 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Adams</span>, J.</span>, 1797. Letter to James Smith.</div>\n",
@@ -31,11 +33,15 @@
     "  <div class=\"csl-entry\">Anonymous, 2018. The Role of Theory in Research. Journal of Theoretical Psychology, <b>28</b>: 201–215</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Bengio</span>, Y.</span>, 2023. The Future of Artificial Intelligence</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Chen</span>, W.</span>, 2019. Neural Networks for Natural Language Understanding. phd-thesis. Stanford University</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Chen</span>, W.</span>, 2022. Urban Heat Island Mitigation Strategies. Urban Climate, <b>15</b>: 1–18. https://doi.org/10.5555/uc.2022.15.1</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Chen</span>, W.</span>, 2024. Urban Heat Island Measurement Techniques. Urban Climate, <b>18</b>: 45–62. https://doi.org/10.5555/uc.2024.18.45</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Ericsson</span>, K. A.</span>, 2006. The Role of Deliberate Practice. In: K. A. <span style=\"font-variant:small-caps;\">Ericsson</span>, N. <span style=\"font-variant:small-caps;\">Charness</span>, P. J. <span style=\"font-variant:small-caps;\">Feltovich</span>, &#38; R. R. <span style=\"font-variant:small-caps;\">Hoffman</span> (eds.): The Cambridge Handbook of Expertise and Expert Performance. 683–703. (Cambridge University Press).</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Forthcoming</span>, A.</span>, Foundations of Declarative Bibliography. (University Press, Cambridge).</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Garcia</span>, M.</span>, 2019a. Methods for Probabilistic Climate Attribution. Annual Review of Climate Science, <b>4</b>: 81–104. https://doi.org/10.5555/arcs.2019.4.81</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Garcia</span>, M.</span>, 2019b. Methods for Robust Climate Attribution. Annual Review of Climate Science, <b>4</b>: 55–80. https://doi.org/10.5555/arcs.2019.4.55</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Hawking</span>, S.</span>, 1988. A Brief History of Time. (Bantam Dell Publishing Group, New York).</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Johnson</span>, A.</span>, 2020a. Quantitative Methods in Sociology. Sociological Review, <b>68</b>: 23–45</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Johnson</span>, B.</span>, 2020b. Qualitative Methods in Sociology. Sociological Review, <b>68</b>: 89–112</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Johnson</span>, D. &#38; S. <span style=\"font-variant:small-caps;\">Lee</span></span>, 2021. Method for Efficient Data Compression</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Kafka</span>, F.</span>, 1915. Metamorphosis. (Kurt Wolff Verlag, Leipzig).</div>\n",
     "  <div class=\"csl-entry\"><span style=\"baseline\"><span style=\"font-variant:small-caps;\">Kuhn</span>, T. S.</span>, 1962. The Structure of Scientific Revolutions. International Encyclopedia of Unified Science, <b>2</b>. https://doi.org/10.1234/example</div>\n",

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:42.016Z",
+  "generated_at": "2026-06-02T14:22:46.400Z",
   "style": "common-market-law-review",
-  "fixture_hash": "2c87efef734f50d2",
+  "fixture_hash": "17c1d1d2b5e334dd",
   "csl_hash": "d6b2bd75d40d640a",
   "citations": {
     "single-item-1": "Kuhn, “The Structure of Scientific Revolutions,” 2 <i>International Encyclopedia of Unified Science</i> (1962).",
@@ -26,7 +26,7 @@
     "single-item-18": "<i>Vasari</i>, Renaissance Art and Culture, Encyclopedia of World History, 2022.",
     "single-item-19": "<i>NASA Goddard Institute for Space Studies</i>, Global Temperature Anomalies 1880-2023, 2024.",
     "single-item-20": "Brown v. Board of Education.",
-    "single-item-21": "<i>Johnson and Lee, S.</i>, Method for Efficient Data Compression, 07/13/2021.",
+    "single-item-21": "<i>Johnson, D. and Lee, S.</i>, Method for Efficient Data Compression, 07/13/2021.",
     "single-item-22": "<i>Lumière</i>, The Arrival of a Train at La Ciotat Station, 1896.",
     "single-item-23": "<i>Sagan</i>, The Universe in a Nutshell, Cosmos: A Spacetime Odyssey, 09/28/1980.",
     "single-item-24": "<i>Bengio</i>, The Future of Artificial Intelligence, 11/10/2023.",

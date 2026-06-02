@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:21.623Z",
+  "generated_at": "2026-06-02T14:23:35.552Z",
   "style": "technische-universitat-dresden-finanzwirtschaft-und-finanzdienstleistungen-author-date",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "13f53f3b5bf8b426",
   "citations": {
     "single-item": " (<span style=\"font-variant:small-caps;\">Kuhn</span>, 1962)",
@@ -23,7 +23,9 @@
     "report-single": " (<span style=\"font-variant:small-caps;\">World Bank</span>, 2023)",
     "thesis-single": " (<span style=\"font-variant:small-caps;\">Chen</span>, 2019)",
     "webpage-single": " (<span style=\"font-variant:small-caps;\">State of JS Team</span>, 2023)",
-    "no-date-single": " (<span style=\"font-variant:small-caps;\">Forthcoming</span>, n.d.)"
+    "no-date-single": " (<span style=\"font-variant:small-caps;\">Forthcoming</span>, n.d.)",
+    "disambiguate-givenname": " (<span style=\"font-variant:small-caps;\">A. Johnson</span>, 2020; <span style=\"font-variant:small-caps;\">B. Johnson</span>, 2020)",
+    "subsequent-author-consecutive": " (<span style=\"font-variant:small-caps;\">Chen</span>, 2022; <span style=\"font-variant:small-caps;\">Chen</span>, 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams, John</span>, 1797: Letter to James Smith,.</div>\n",
@@ -31,11 +33,15 @@
     "  <div class=\"csl-entry\">Anon, 2018: The Role of Theory in Research, in: Journal of Theoretical Psychology, vol. 28, no. 3, pp. 201–215.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Bengio, Yoshua</span>, 2023: The Future of Artificial Intelligence, in: 11/10/2023, available at: https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen, Wei</span>, 2019: Neural Networks for Natural Language Understanding, phd-thesis, Stanford University.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen, Wei</span>, 2024: Urban Heat Island Measurement Techniques, in: Urban Climate, vol. 18, pp. 45–62.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen, Wei</span>, 2022: Urban Heat Island Mitigation Strategies, in: Urban Climate, vol. 15, pp. 1–18.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Ericsson, K. Anders</span>, 2006: The Role of Deliberate Practice, in: <span style=\"font-variant:small-caps;\">Ericsson, K. Anders</span>; <span style=\"font-variant:small-caps;\">Charness, Neil</span>; <span style=\"font-variant:small-caps;\">Feltovich, Paul J.</span>; <span style=\"font-variant:small-caps;\">Hoffman, Robert R.</span> (eds.): The Cambridge Handbook of Expertise and Expert Performance, Cambridge University Press, pp. 683–703.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Forthcoming, A.</span>, Foundations of Declarative Bibliography, Cambridge: University Press.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Garcia, Maria</span>, 2019a: Methods for Probabilistic Climate Attribution, in: Annual Review of Climate Science, vol. 4, pp. 81–104.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Garcia, Maria</span>, 2019b: Methods for Robust Climate Attribution, in: Annual Review of Climate Science, vol. 4, pp. 55–80.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Hawking, Stephen</span>, 1988: A Brief History of Time, New York: Bantam Dell Publishing Group.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson, Alice</span>, 2020: Quantitative Methods in Sociology, in: Sociological Review, vol. 68, pp. 23–45.</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson, Brian</span>, 2020: Qualitative Methods in Sociology, in: Sociological Review, vol. 68, pp. 89–112.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson, David</span>; <span style=\"font-variant:small-caps;\">Lee, Sarah</span>, 2021: Method for Efficient Data Compression,.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Kafka, Franz</span>, 1915: Metamorphosis, Leipzig: Kurt Wolff Verlag.</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Kuhn, Thomas S.</span>, 1970: Scientific Paradigms and Normal Science, in: Philosophy of Science, vol. 37, no. 1, pp. 1–13.</div>\n",

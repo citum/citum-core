@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:13.681Z",
+  "generated_at": "2026-06-02T14:23:25.791Z",
   "style": "padagogische-hochschule-vorarlberg",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "564fbfbeb1ace568",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -23,17 +23,23 @@
     "report-single": "(World Bank2023)",
     "thesis-single": "(Chen 2019)",
     "webpage-single": "(State of JS Team2023, Internet)",
-    "no-date-single": "(Forthcoming o. J.)"
+    "no-date-single": "(Forthcoming o. J.)",
+    "disambiguate-givenname": "(A. Johnson 2020; B. Johnson 2020)",
+    "subsequent-author-consecutive": "(Chen 2022, 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">Adams, John:  Letter to James Smith o. J.,  1797</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua:  The Future of Artificial Intelligence o. J.,  2023</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei:  Neural Networks for Natural Language Understanding o. J., Stanford University, o. O. 2019</div>\n",
+    "  <div class=\"csl-entry\">Chen, Wei: Urban Heat Island Measurement Techniques. In: Urban Climate 18 (2024), , S. 45–62</div>\n",
+    "  <div class=\"csl-entry\">Chen, Wei: Urban Heat Island Mitigation Strategies. In: Urban Climate 15 (2022), , S. 1–18</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. Anders: The Role of Deliberate Practice. In: The Cambridge Handbook of Expertise and Expert Performance. Cambridge University Press, o. O. . Ericsson, K. Anders u. a. (Hrsg.).  2006, S. 683–703</div>\n",
     "  <div class=\"csl-entry\">Forthcoming, A.: Foundations of Declarative Bibliography. University Press, Cambridge o. J.</div>\n",
     "  <div class=\"csl-entry\">Garcia, Maria: Methods for Probabilistic Climate Attribution. In: Annual Review of Climate Science 4 (2019), (a), , S. 81–104</div>\n",
     "  <div class=\"csl-entry\">Garcia, Maria: Methods for Robust Climate Attribution. In: Annual Review of Climate Science 4 (2019), (b), , S. 55–80</div>\n",
     "  <div class=\"csl-entry\">Hawking, Stephen: A Brief History of Time. Bantam Dell Publishing Group, New York 1988</div>\n",
+    "  <div class=\"csl-entry\">Johnson, Alice: Quantitative Methods in Sociology. In: Sociological Review 68 (2020), , S. 23–45</div>\n",
+    "  <div class=\"csl-entry\">Johnson, Brian: Qualitative Methods in Sociology. In: Sociological Review 68 (2020), , S. 89–112</div>\n",
     "  <div class=\"csl-entry\">Johnson, David: /Lee, Sarah:  Method for Efficient Data Compression o. J.,  2021</div>\n",
     "  <div class=\"csl-entry\">Kafka, Franz: Metamorphosis. Kurt Wolff Verlag, Leipzig 1915</div>\n",
     "  <div class=\"csl-entry\">Kuhn, Thomas S.: Scientific Paradigms and Normal Science. In: Philosophy of Science 37 (1970), 1, S. 1–13</div>\n",

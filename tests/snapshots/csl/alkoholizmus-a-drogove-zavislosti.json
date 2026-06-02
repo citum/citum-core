@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:06.039Z",
+  "generated_at": "2026-06-02T14:22:04.537Z",
   "style": "alkoholizmus-a-drogove-zavislosti",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "2e15280049e93e85",
   "citations": {
     "single-item": "(Kuhn, 1962)",
@@ -23,17 +23,23 @@
     "report-single": "(World Bank, 2023)",
     "thesis-single": "(Chen, 2019)",
     "webpage-single": "(State of JS Team, 2023)",
-    "no-date-single": "(Forthcoming)"
+    "no-date-single": "(Forthcoming)",
+    "disambiguate-givenname": "(Johnson, 2020, , 2020)",
+    "subsequent-author-consecutive": "(Chen, 2022, , 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\"><i><span style=\"font-style:normal;\"><i>Adams, J.</i></span>: <span style=\"font-style:normal;\">Letter to James Smith</span></i>. 1797.</div>\n",
     "  <div class=\"csl-entry\"><i><span style=\"font-style:normal;\"><i>Bengio, Y.</i></span>: <span style=\"font-style:normal;\">The Future of Artificial Intelligence</span></i>. 2023.</div>\n",
     "  <div class=\"csl-entry\"><i><span style=\"font-style:normal;\"><i>Chen, W.</i></span>: <span style=\"font-style:normal;\">Neural Networks for Natural Language Understanding</span></i>. phd-thesis, Stanford University. 2019.</div>\n",
+    "  <div class=\"csl-entry\"><i><span style=\"font-style:normal;\"><i>Chen, W.</i></span>: <span style=\"font-style:normal;\">Urban Heat Island Mitigation Strategies</span></i>. Urban Climate, 15, 2022, s. 1–18</div>\n",
+    "  <div class=\"csl-entry\"><i><span style=\"font-style:normal;\"><i>Chen, W.</i></span>: <span style=\"font-style:normal;\">Urban Heat Island Measurement Techniques</span></i>. Urban Climate, 18, 2024, s. 45–62</div>\n",
     "  <div class=\"csl-entry\"><i><span style=\"font-style:normal;\"><i>Ericsson, K. A.</i></span>: <span style=\"font-style:normal;\">The Role of Deliberate Practice</span></i>. In: Ericsson, K. A. – Charness, N. – Feltovich, P. J. – Hoffman, R. R.: The Cambridge Handbook of Expertise and Expert Performance. Cambridge University Press, 2006. s. 683–703</div>\n",
     "  <div class=\"csl-entry\"><i><span style=\"font-style:normal;\"><i>Forthcoming, A.</i></span>: <span style=\"font-style:normal;\">Foundations of Declarative Bibliography</span></i>. Cambridge: University Press,</div>\n",
     "  <div class=\"csl-entry\"><i><span style=\"font-style:normal;\"><i>Garcia, M.</i></span>: <span style=\"font-style:normal;\">Methods for Robust Climate Attribution</span></i>. Annual Review of Climate Science, 4, 2019, s. 55–80</div>\n",
     "  <div class=\"csl-entry\"><i><span style=\"font-style:normal;\"><i>Garcia, M.</i></span>: <span style=\"font-style:normal;\">Methods for Probabilistic Climate Attribution</span></i>. Annual Review of Climate Science, 4, 2019, s. 81–104</div>\n",
     "  <div class=\"csl-entry\"><i><span style=\"font-style:normal;\"><i>Hawking, S.</i></span>: <span style=\"font-style:normal;\">A Brief History of Time</span></i>. New York: Bantam Dell Publishing Group, 1988.</div>\n",
+    "  <div class=\"csl-entry\"><i><span style=\"font-style:normal;\"><i>Johnson, A.</i></span>: <span style=\"font-style:normal;\">Quantitative Methods in Sociology</span></i>. Sociological Review, 68, 2020, s. 23–45</div>\n",
+    "  <div class=\"csl-entry\"><i><span style=\"font-style:normal;\"><i>Johnson, B.</i></span>: <span style=\"font-style:normal;\">Qualitative Methods in Sociology</span></i>. Sociological Review, 68, 2020, s. 89–112</div>\n",
     "  <div class=\"csl-entry\"><i><span style=\"font-style:normal;\"><i>Johnson, D. – Lee, S.</i></span>: <span style=\"font-style:normal;\">Method for Efficient Data Compression</span></i>. Patent US 11,043,211 B2, 2021.</div>\n",
     "  <div class=\"csl-entry\"><i><span style=\"font-style:normal;\"><i>Kafka, F.</i></span>: <span style=\"font-style:normal;\">Metamorphosis</span></i>. Leipzig: Kurt Wolff Verlag, 1915.</div>\n",
     "  <div class=\"csl-entry\"><i><span style=\"font-style:normal;\"><i>Kuhn, T. S.</i></span>: <span style=\"font-style:normal;\">The Structure of Scientific Revolutions</span></i>. International Encyclopedia of Unified Science, Chicago: University of Chicago Press, 2, 1962, 2, doi: 10.1234/example</div>\n",

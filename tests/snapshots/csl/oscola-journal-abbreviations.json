@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:11.343Z",
+  "generated_at": "2026-06-02T14:23:23.212Z",
   "style": "oscola-journal-abbreviations",
-  "fixture_hash": "2c87efef734f50d2",
+  "fixture_hash": "17c1d1d2b5e334dd",
   "csl_hash": "e1f60b5d2526678f",
   "citations": {
     "single-item-1": "Thomas S Kuhn, “The Structure of Scientific Revolutions” (1962) 2 International Encyclopedia of Unified Science.",
@@ -44,12 +44,16 @@
   "bibliography": [
     "  <div class=\"csl-entry\">Adams J, “Letter to James Smith” (1797)</div>\n",
     "  <div class=\"csl-entry\">Chen W, “Neural Networks for Natural Language Understanding” (phd-thesis, Stanford University 2019)</div>\n",
+    "  <div class=\"csl-entry\">——, “Urban Heat Island Mitigation Strategies” (2022) 15 Urban Climate 1</div>\n",
+    "  <div class=\"csl-entry\">——, “Urban Heat Island Measurement Techniques” (2024) 18 Urban Climate 45</div>\n",
     "  <div class=\"csl-entry\">Colbert S, Interview with Yoshua Bengio, “The Future of Artificial Intelligence” (November 10, 2023) video-interview &#60;https://example.com/interview&#62;</div>\n",
     "  <div class=\"csl-entry\">Ericsson KA, “The Role of Deliberate Practice” in K Anders Ericsson and others (eds), <i>The Cambridge Handbook of Expertise and Expert Performance</i> (Cambridge University Press 2006)</div>\n",
     "  <div class=\"csl-entry\">Forthcoming A, <i>Foundations of Declarative Bibliography</i> (University Press)</div>\n",
     "  <div class=\"csl-entry\">Garcia M, “Methods for Probabilistic Climate Attribution” (2019) 4 Annual Review of Climate Science 81</div>\n",
     "  <div class=\"csl-entry\">——, “Methods for Robust Climate Attribution” (2019) 4 Annual Review of Climate Science 55</div>\n",
     "  <div class=\"csl-entry\">Hawking S, <i>A Brief History of Time</i> (Bantam Dell Publishing Group 1988)</div>\n",
+    "  <div class=\"csl-entry\">Johnson A, “Quantitative Methods in Sociology” (2020) 68 Sociological Review 23</div>\n",
+    "  <div class=\"csl-entry\">Johnson B, “Qualitative Methods in Sociology” (2020) 68 Sociological Review 89</div>\n",
     "  <div class=\"csl-entry\">Johnson D and Lee S, “Method for Efficient Data Compression”</div>\n",
     "  <div class=\"csl-entry\">Kafka F, <i>Metamorphosis</i> (David Wyllie tr, Kurt Wolff Verlag 1915)</div>\n",
     "  <div class=\"csl-entry\">Kuhn TS, “The Structure of Scientific Revolutions” (1962) 2 International Encyclopedia of Unified Science</div>\n",

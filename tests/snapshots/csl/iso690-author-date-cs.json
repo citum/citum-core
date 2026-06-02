@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:54.337Z",
+  "generated_at": "2026-06-02T14:23:02.163Z",
   "style": "iso690-author-date-cs",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "60c6804c96c4d981",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -23,7 +23,9 @@
     "report-single": "(World Bank 2023)",
     "thesis-single": "(Chen 2019)",
     "webpage-single": "(State of JS Team 2023)",
-    "no-date-single": "(Forthcoming [no date])"
+    "no-date-single": "(Forthcoming [no date])",
+    "disambiguate-givenname": "(Johnson 2020a; 2020b)",
+    "subsequent-author-consecutive": "(Chen 2022; 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">ADAMS, John, 1797. <i>Letter to James Smith</i>.</div>\n",
@@ -36,6 +38,10 @@
     "  <div class=\"csl-entry\">GARCIA, Maria, 2019b. Methods for Robust Climate Attribution. <i>Annual Review of Climate Science</i>. Online. <b>4</b>, 55–80. Available at: doi:10.5555/arcs.2019.4.55</div>\n",
     "  <div class=\"csl-entry\">HAWKING, Stephen, 1988. <i>A Brief History of Time</i>. New York: Bantam Dell Publishing Group.</div>\n",
     "  <div class=\"csl-entry\">CHEN, Wei, 2019. <i>Neural Networks for Natural Language Understanding</i>. No publisher. phd-thesis. Stanford University.</div>\n",
+    "  <div class=\"csl-entry\">CHEN, Wei, 2022. Urban Heat Island Mitigation Strategies. <i>Urban Climate</i>. Online. <b>15</b>, 1–18. Available at: doi:10.5555/uc.2022.15.1</div>\n",
+    "  <div class=\"csl-entry\">CHEN, Wei, 2024. Urban Heat Island Measurement Techniques. <i>Urban Climate</i>. Online. <b>18</b>, 45–62. Available at: doi:10.5555/uc.2024.18.45</div>\n",
+    "  <div class=\"csl-entry\">JOHNSON, Alice, 2020a. Quantitative Methods in Sociology. <i>Sociological Review</i>. <b>68</b>, 23–45.</div>\n",
+    "  <div class=\"csl-entry\">JOHNSON, Brian, 2020b. Qualitative Methods in Sociology. <i>Sociological Review</i>. <b>68</b>, 89–112.</div>\n",
     "  <div class=\"csl-entry\">JOHNSON, David and Sarah LEE, 2021. Method for Efficient Data Compression. US 11,043,211 B2. 13. July 2021.</div>\n",
     "  <div class=\"csl-entry\">KAFKA, Franz, 1915. <i>Metamorphosis</i>. Trans. David WYLLIE. Leipzig: Kurt Wolff Verlag.</div>\n",
     "  <div class=\"csl-entry\">KUHN, Thomas S., 1962. The Structure of Scientific Revolutions. <i>International Encyclopedia of Unified Science</i>. Online. <b>2</b>(2). Available at: doi:10.1234/example</div>\n",

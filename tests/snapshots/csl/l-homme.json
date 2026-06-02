@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:59.859Z",
+  "generated_at": "2026-06-02T14:23:09.753Z",
   "style": "l-homme",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "d03d1fbc7757fb54",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -23,17 +23,23 @@
     "report-single": "(World Bank 2023)",
     "thesis-single": "(Chen 2019)",
     "webpage-single": "(State of JS Team 2023)",
-    "no-date-single": "(Forthcoming)"
+    "no-date-single": "(Forthcoming)",
+    "disambiguate-givenname": "(Johnson 2020a, 2020b)",
+    "subsequent-author-consecutive": "(Chen 2022, 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Adams, John </div>\n\n    <div class=\"csl-left-margin\">1797 <i>Letter to James Smith</i>. .</div></div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Bengio, Yoshua </div>\n\n    <div class=\"csl-left-margin\">2023 <i>The Future of Artificial Intelligence</i>. .</div></div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Chen, Wei </div>\n\n    <div class=\"csl-left-margin\">2019 <i><i>Neural Networks for Natural Language Understanding</i></i>, phd-thesis, Stanford University.</div></div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">2022 « Urban Heat Island Mitigation Strategies », <i>Urban Climate</i> 15 : 1‑18.</div></div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">2024 « Urban Heat Island Measurement Techniques », <i>Urban Climate</i> 18 : 45‑62.</div></div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Ericsson, K. Anders </div>\n\n    <div class=\"csl-left-margin\">2006 « The Role of Deliberate Practice », <i>in</i> K. Anders Ericsson, Neil Charness, Paul J. Feltovich, et Robert R. Hoffman, dir., <i>The Cambridge Handbook of Expertise and Expert Performance</i>, Cambridge University Press : 683‑703.</div></div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Forthcoming, A. </div>\n\n    <div class=\"csl-left-margin\"><i>Foundations of Declarative Bibliography</i>. Cambridge, University Press.</div></div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Garcia, Maria </div>\n\n    <div class=\"csl-left-margin\">2019a « Methods for Robust Climate Attribution », <i>Annual Review of Climate Science</i> 4 : 55‑80.</div></div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">2019b « Methods for Probabilistic Climate Attribution », <i>Annual Review of Climate Science</i> 4 : 81‑104.</div></div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Hawking, Stephen </div>\n\n    <div class=\"csl-left-margin\">1988 <i>A Brief History of Time</i>. New York, Bantam Dell Publishing Group.</div></div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Johnson, Alice </div>\n\n    <div class=\"csl-left-margin\">2020a « Quantitative Methods in Sociology », <i>Sociological Review</i> 68 : 23‑45.</div></div>\n",
+    "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Johnson, Brian </div>\n\n    <div class=\"csl-left-margin\">2020b « Qualitative Methods in Sociology », <i>Sociological Review</i> 68 : 89‑112.</div></div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Johnson, David et Lee, Sarah </div>\n\n    <div class=\"csl-left-margin\">2021 <i>Method for Efficient Data Compression</i>. .</div></div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Kafka, Franz </div>\n\n    <div class=\"csl-left-margin\">1915 <i>Metamorphosis</i>. Leipzig, Kurt Wolff Verlag.</div></div>\n",
     "  <div class=\"csl-entry\">\n\n    <div class=\"csl-block\">Kuhn, Thomas S. </div>\n\n    <div class=\"csl-left-margin\">1962 « The Structure of Scientific Revolutions », <i>International Encyclopedia of Unified Science</i> 2 (2).</div></div>\n",

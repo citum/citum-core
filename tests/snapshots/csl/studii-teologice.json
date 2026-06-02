@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:20.467Z",
+  "generated_at": "2026-06-02T14:23:34.069Z",
   "style": "studii-teologice",
-  "fixture_hash": "2c87efef734f50d2",
+  "fixture_hash": "17c1d1d2b5e334dd",
   "csl_hash": "c65c80dcf36c0aaa",
   "citations": {
     "single-item-1": "Thomas S. <span style=\"font-variant:small-caps;\">Kuhn</span>, “The Structure of Scientific Revolutions,” in: <i>International Encyclopedia of Unified Science</i>, 2, 2 (1962), University of Chicago Press, Chicago.",
@@ -75,6 +75,10 @@
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Garcia</span>, Maria, “Methods for Robust Climate Attribution,” in: <i>Annual Review of Climate Science</i>, 4 (2019).</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Garcia</span>, Maria, “Methods for Probabilistic Climate Attribution,” in: <i>Annual Review of Climate Science</i>, 4 (2019).</div>\n",
     "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Forthcoming</span>, A., <i>Foundations of Declarative Bibliography</i>, University Press, Cambridge.</div>\n",
-    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span>, John, “Letter to James Smith.”</div>\n"
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Adams</span>, John, “Letter to James Smith.”</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span>, Alice, “Quantitative Methods in Sociology,” in: <i>Sociological Review</i>, 68 (2020).</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Johnson</span>, Brian, “Qualitative Methods in Sociology,” in: <i>Sociological Review</i>, 68 (2020).</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei, “Urban Heat Island Mitigation Strategies,” in: <i>Urban Climate</i>, 15 (2022).</div>\n",
+    "  <div class=\"csl-entry\"><span style=\"font-variant:small-caps;\">Chen</span>, Wei, “Urban Heat Island Measurement Techniques,” in: <i>Urban Climate</i>, 18 (2024).</div>\n"
   ]
 }

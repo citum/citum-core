@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:06.337Z",
+  "generated_at": "2026-06-02T14:22:04.873Z",
   "style": "american-institute-of-physics",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "673dae8c6c921251",
   "citations": {
     "single-item": "<sup>1</sup>",
@@ -23,7 +23,9 @@
     "report-single": "<sup>5</sup>",
     "thesis-single": "<sup>11</sup>",
     "webpage-single": "<sup>13</sup>",
-    "no-date-single": "<sup>33</sup>"
+    "no-date-single": "<sup>33</sup>",
+    "disambiguate-givenname": "<sup>35,36</sup>",
+    "subsequent-author-consecutive": "<sup>37,38</sup>"
   },
   "bibliography": [
     "  <div class=\"csl-entry\"><sup>1</sup> T.S. Kuhn, “The Structure of Scientific Revolutions,” International Encyclopedia of Unified Science <b>2</b>(2), (1962).</div>\n",
@@ -59,6 +61,10 @@
     "  <div class=\"csl-entry\"><sup>31</sup> M. Garcia, “Methods for Robust Climate Attribution,” Annual Review of Climate Science <b>4</b>, 55–80 (2019).</div>\n",
     "  <div class=\"csl-entry\"><sup>32</sup> M. Garcia, “Methods for Probabilistic Climate Attribution,” Annual Review of Climate Science <b>4</b>, 81–104 (2019).</div>\n",
     "  <div class=\"csl-entry\"><sup>33</sup> A. Forthcoming, <i>Foundations of Declarative Bibliography</i> (University Press, Cambridge, n.d.).</div>\n",
-    "  <div class=\"csl-entry\"><sup>34</sup> J. Adams, “Letter to James Smith,” (1797).</div>\n"
+    "  <div class=\"csl-entry\"><sup>34</sup> J. Adams, “Letter to James Smith,” (1797).</div>\n",
+    "  <div class=\"csl-entry\"><sup>35</sup> A. Johnson, “Quantitative Methods in Sociology,” Sociological Review <b>68</b>, 23–45 (2020).</div>\n",
+    "  <div class=\"csl-entry\"><sup>36</sup> B. Johnson, “Qualitative Methods in Sociology,” Sociological Review <b>68</b>, 89–112 (2020).</div>\n",
+    "  <div class=\"csl-entry\"><sup>37</sup> W. Chen, “Urban Heat Island Mitigation Strategies,” Urban Climate <b>15</b>, 1–18 (2022).</div>\n",
+    "  <div class=\"csl-entry\"><sup>38</sup> W. Chen, “Urban Heat Island Measurement Techniques,” Urban Climate <b>18</b>, 45–62 (2024).</div>\n"
   ]
 }

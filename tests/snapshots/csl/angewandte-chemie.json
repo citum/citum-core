@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:07.257Z",
+  "generated_at": "2026-06-02T14:22:05.871Z",
   "style": "angewandte-chemie",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "b0698de02612f3b0",
   "citations": {
     "single-item": "<sup>[1]</sup>",
@@ -23,7 +23,9 @@
     "report-single": "<sup>[5]</sup>",
     "thesis-single": "<sup>[11]</sup>",
     "webpage-single": "<sup>[13]</sup>",
-    "no-date-single": "<sup>[33]</sup>"
+    "no-date-single": "<sup>[33]</sup>",
+    "disambiguate-givenname": "<sup>[35,36]</sup>",
+    "subsequent-author-consecutive": "<sup>[37,38]</sup>"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[1]</div><div class=\"csl-right-inline\">T. S. Kuhn, “The Structure of Scientific Revolutions” <i>International Encyclopedia of Unified Science</i> <b>1962</b>, <i>2</i>, DOI 10.1234/example.</div>\n  </div>\n",
@@ -59,6 +61,10 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[31]</div><div class=\"csl-right-inline\">M. Garcia, “Methods for Robust Climate Attribution” <i>Annual Review of Climate Science</i> <b>2019</b>, <i>4</i>, 55–80.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[32]</div><div class=\"csl-right-inline\">M. Garcia, “Methods for Probabilistic Climate Attribution” <i>Annual Review of Climate Science</i> <b>2019</b>, <i>4</i>, 81–104.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[33]</div><div class=\"csl-right-inline\">A. Forthcoming, <i>Foundations of Declarative Bibliography</i>, University Press, Cambridge, <b>n.d.</b></div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[34]</div><div class=\"csl-right-inline\">J. Adams <b>1797</b>.</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[34]</div><div class=\"csl-right-inline\">J. Adams <b>1797</b>.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[35]</div><div class=\"csl-right-inline\">A. Johnson, “Quantitative Methods in Sociology” <i>Sociological Review</i> <b>2020</b>, <i>68</i>, 23–45.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[36]</div><div class=\"csl-right-inline\">B. Johnson, “Qualitative Methods in Sociology” <i>Sociological Review</i> <b>2020</b>, <i>68</i>, 89–112.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[37]</div><div class=\"csl-right-inline\">W. Chen, “Urban Heat Island Mitigation Strategies” <i>Urban Climate</i> <b>2022</b>, <i>15</i>, 1–18.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[38]</div><div class=\"csl-right-inline\">W. Chen, “Urban Heat Island Measurement Techniques” <i>Urban Climate</i> <b>2024</b>, <i>18</i>, 45–62.</div>\n  </div>\n"
   ]
 }

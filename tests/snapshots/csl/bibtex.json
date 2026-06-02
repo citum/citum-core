@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:12.566Z",
+  "generated_at": "2026-06-02T14:22:12.471Z",
   "style": "bibtex",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "aaf7f5281bfb378c",
   "citations": {
     "single-item": "Kuhn_1962",
@@ -23,17 +23,23 @@
     "report-single": "World Bank_2023",
     "thesis-single": "Chen_2019",
     "webpage-single": "State of JS Team_2023",
-    "no-date-single": "Forthcoming"
+    "no-date-single": "Forthcoming",
+    "disambiguate-givenname": "Johnson_2020a, 2020b",
+    "subsequent-author-consecutive": "Chen_2022, 2024"
   },
   "bibliography": [
     "  <div class=\"csl-entry\"> @unpublished{Adams_1797, title={Letter to James Smith}, archiveLocation={Adams Papers, reel 45}, author={Adams, John}, year={1797} }</div>\n",
     "  <div class=\"csl-entry\"> @misc{Bengio_2023, type={video-interview}, title={The Future of Artificial Intelligence}, url={https://example.com/interview}, author={Bengio, Yoshua}, year={2023}, month=nov }</div>\n",
     "  <div class=\"csl-entry\"> @phdthesis{Chen_2019, type={phd-thesis}, title={Neural Networks for Natural Language Understanding}, school={Stanford University}, author={Chen, Wei}, year={2019} }</div>\n",
+    "  <div class=\"csl-entry\"> @article{Chen_2022, title={Urban Heat Island Mitigation Strategies}, volume={15}, DOI={10.5555/uc.2022.15.1}, journal={Urban Climate}, author={Chen, Wei}, year={2022}, pages={1–18} }</div>\n",
+    "  <div class=\"csl-entry\"> @article{Chen_2024, title={Urban Heat Island Measurement Techniques}, volume={18}, DOI={10.5555/uc.2024.18.45}, journal={Urban Climate}, author={Chen, Wei}, year={2024}, pages={45–62} }</div>\n",
     "  <div class=\"csl-entry\"> @inbook{Ericsson_2006, title={The Role of Deliberate Practice}, booktitle={The Cambridge Handbook of Expertise and Expert Performance}, publisher={Cambridge University Press}, author={Ericsson, K. Anders}, editor={Ericsson, K. Anders and Charness, Neil and Feltovich, Paul J. and Hoffman, Robert R.}, year={2006}, pages={683–703} }</div>\n",
     "  <div class=\"csl-entry\"> @book{Forthcoming, address={Cambridge}, title={Foundations of Declarative Bibliography}, publisher={University Press}, author={Forthcoming, A.} }</div>\n",
     "  <div class=\"csl-entry\"> @article{Garcia_2019a, title={Methods for Robust Climate Attribution}, volume={4}, DOI={10.5555/arcs.2019.4.55}, journal={Annual Review of Climate Science}, author={Garcia, Maria}, year={2019}, pages={55–80} }</div>\n",
     "  <div class=\"csl-entry\"> @article{Garcia_2019b, title={Methods for Probabilistic Climate Attribution}, volume={4}, DOI={10.5555/arcs.2019.4.81}, journal={Annual Review of Climate Science}, author={Garcia, Maria}, year={2019}, pages={81–104} }</div>\n",
     "  <div class=\"csl-entry\"> @book{Hawking_1988, address={New York}, title={A Brief History of Time}, publisher={Bantam Dell Publishing Group}, author={Hawking, Stephen}, year={1988} }</div>\n",
+    "  <div class=\"csl-entry\"> @article{Johnson_2020a, title={Quantitative Methods in Sociology}, volume={68}, journal={Sociological Review}, author={Johnson, Alice}, year={2020}, pages={23–45} }</div>\n",
+    "  <div class=\"csl-entry\"> @article{Johnson_2020b, title={Qualitative Methods in Sociology}, volume={68}, journal={Sociological Review}, author={Johnson, Brian}, year={2020}, pages={89–112} }</div>\n",
     "  <div class=\"csl-entry\"> @misc{Johnson_Lee_2021, title={Method for Efficient Data Compression}, number={US 11,043,211 B2}, author={Johnson, David and Lee, Sarah}, year={2021}, month=july }</div>\n",
     "  <div class=\"csl-entry\"> @book{Kafka_1915, address={Leipzig}, title={Metamorphosis}, publisher={Kurt Wolff Verlag}, author={Kafka, Franz}, editor={Wyllie, David}, year={1915}, language={en} }</div>\n",
     "  <div class=\"csl-entry\"> @article{Kuhn_1962, address={Chicago}, title={The Structure of Scientific Revolutions}, volume={2}, DOI={10.1234/example}, number={2}, journal={International Encyclopedia of Unified Science}, publisher={University of Chicago Press}, author={Kuhn, Thomas S.}, year={1962} }</div>\n",

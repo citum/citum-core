@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:05.267Z",
+  "generated_at": "2026-06-02T14:23:16.772Z",
   "style": "neue-juristische-wochenschrift",
-  "fixture_hash": "2c87efef734f50d2",
+  "fixture_hash": "17c1d1d2b5e334dd",
   "csl_hash": "d23ac486863f8133",
   "citations": {
     "single-item-1": "<i>Kuhn</i>, 1962",
@@ -42,11 +42,15 @@
     "note-disambiguate-year-suffix": "<i>Garcia</i>, 2019, 55; <i>Garcia</i>, 2019, 81"
   },
   "bibliography": [
+    "  <div class=\"csl-entry\"><i>Chen</i>, Urban Heat Island Mitigation Strategies, 2022, 1</div>\n",
+    "  <div class=\"csl-entry\"><i>Chen</i>, Urban Heat Island Measurement Techniques, 2024, 45</div>\n",
     "  <div class=\"csl-entry\"><i>Ericsson</i>, in: The Cambridge Handbook of Expertise and Expert Performance, 2006, 683</div>\n",
     "  <div class=\"csl-entry\"><i>Forthcoming</i>, Foundations of Declarative Bibliography, </div>\n",
     "  <div class=\"csl-entry\"><i>Garcia</i>, Methods for Robust Climate Attribution, 2019, 55</div>\n",
     "  <div class=\"csl-entry\"><i>Garcia</i>, Methods for Probabilistic Climate Attribution, 2019, 81</div>\n",
     "  <div class=\"csl-entry\"><i>Hawking</i>, A Brief History of Time, 1988</div>\n",
+    "  <div class=\"csl-entry\"><i>Johnson</i>, Quantitative Methods in Sociology, 2020, 23</div>\n",
+    "  <div class=\"csl-entry\"><i>Johnson</i>, Qualitative Methods in Sociology, 2020, 89</div>\n",
     "  <div class=\"csl-entry\"><i>Kafka</i>, Metamorphosis, 1915</div>\n",
     "  <div class=\"csl-entry\"><i>Kuhn</i>, The Structure of Scientific Revolutions, 1962</div>\n",
     "  <div class=\"csl-entry\"><i>Kuhn</i>, Scientific Paradigms and Normal Science, 1970, 1</div>\n",

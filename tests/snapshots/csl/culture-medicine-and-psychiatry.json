@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:02:42.815Z",
+  "generated_at": "2026-06-02T14:22:47.402Z",
   "style": "culture-medicine-and-psychiatry",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "538435f5e51a3f02",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -23,7 +23,9 @@
     "report-single": "(World Bank 2023)",
     "thesis-single": "(Chen 2019)",
     "webpage-single": "(State of JS Team 2023)",
-    "no-date-single": "(Forthcoming)"
+    "no-date-single": "(Forthcoming)",
+    "disambiguate-givenname": "(Alice Johnson 2020; Brian Johnson 2020)",
+    "subsequent-author-consecutive": "(Chen 2022; Chen 2024)"
   },
   "bibliography": [
     "  <div class=\"csl-entry\">Adams, John 1797 Letter to James Smith. Adams Papers, reel 45. Massachusetts Historical Society. Boston, MA.</div>\n",
@@ -31,11 +33,15 @@
     "  <div class=\"csl-entry\">Anon. 2018 The Role of Theory in Research. Journal of Theoretical Psychology 28(3): 201–215.</div>\n",
     "  <div class=\"csl-entry\">Bengio, Yoshua 2023 The Future of Artificial Intelligence. Interview by Stephen Colbert. Video-interview. Retrieved. from https://example.com/interview.</div>\n",
     "  <div class=\"csl-entry\">Chen, Wei 2019 Neural Networks for Natural Language Understanding. Phd-thesis, Stanford University.</div>\n",
+    "  <div class=\"csl-entry\">2022 Urban Heat Island Mitigation Strategies. Urban Climate 15: 1–18.</div>\n",
+    "  <div class=\"csl-entry\">2024 Urban Heat Island Measurement Techniques. Urban Climate 18: 45–62.</div>\n",
     "  <div class=\"csl-entry\">Ericsson, K. Anders 2006 The Role of Deliberate Practice. <i>In</i> The Cambridge Handbook of Expertise and Expert Performance. K. Anders Ericsson, Neil Charness, Paul J. Feltovich, and Robert R. Hoffman, eds., pp. 683–703. Cambridge University Press.</div>\n",
     "  <div class=\"csl-entry\">Forthcoming, A. Foundations of Declarative Bibliography. Cambridge: University Press.</div>\n",
     "  <div class=\"csl-entry\">Garcia, Maria 2019a Methods for Robust Climate Attribution. Annual Review of Climate Science 4: 55–80.</div>\n",
     "  <div class=\"csl-entry\">2019b Methods for Probabilistic Climate Attribution. Annual Review of Climate Science 4: 81–104.</div>\n",
     "  <div class=\"csl-entry\">Hawking, Stephen 1988 A Brief History of Time. New York: Bantam Dell Publishing Group.</div>\n",
+    "  <div class=\"csl-entry\">Johnson, Alice 2020 Quantitative Methods in Sociology. Sociological Review 68: 23–45.</div>\n",
+    "  <div class=\"csl-entry\">Johnson, Brian 2020 Qualitative Methods in Sociology. Sociological Review 68: 89–112.</div>\n",
     "  <div class=\"csl-entry\">Johnson, David, and Sarah Lee 2021 Method for Efficient Data Compression.</div>\n",
     "  <div class=\"csl-entry\">Kafka, Franz 1915 Metamorphosis. Trans. David Wyllie. Leipzig: Kurt Wolff Verlag.</div>\n",
     "  <div class=\"csl-entry\">Kuhn, Thomas S. 1962 The Structure of Scientific Revolutions. International Encyclopedia of Unified Science 2(2).</div>\n",

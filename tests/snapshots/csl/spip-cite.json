@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-04-19T14:03:19.720Z",
+  "generated_at": "2026-06-02T14:23:33.139Z",
   "style": "spip-cite",
-  "fixture_hash": "15d373b85a564791",
+  "fixture_hash": "0b1a38b458cc400a",
   "csl_hash": "687812ae6df6131b",
   "citations": {
     "single-item": "(Kuhn, Thomas S. 1962) ",
@@ -23,7 +23,9 @@
     "report-single": "(World Bank 2023) ",
     "thesis-single": "(Chen, Wei 2019) ",
     "webpage-single": "(State of JS Team 2023) ",
-    "no-date-single": "(Forthcoming, A. "
+    "no-date-single": "(Forthcoming, A. ",
+    "disambiguate-givenname": "(Johnson, Alice 2020) (Johnson, Brian 2020) ",
+    "subsequent-author-consecutive": "(Chen, Wei 2022) (Chen, Wei 2024) "
   },
   "bibliography": [
     "  <div class=\"csl-entry\">&#60;cite|journal|title=The Structure of Scientific Revolutions           |authors=Kuhn, Thomas S.            |journal=International Encyclopedia of Unified Science          |year=1962          |volume=2         |issues=2       |doi=10.1234/example          &#62;</div>\n",
@@ -59,6 +61,10 @@
     "  <div class=\"csl-entry\">&#60;cite|journal|title=Methods for Robust Climate Attribution           |authors=Garcia, Maria            |journal=Annual Review of Climate Science          |year=2019          |volume=4        |page=55–80       |doi=10.5555/arcs.2019.4.55          &#62;</div>\n",
     "  <div class=\"csl-entry\">&#60;cite|journal|title=Methods for Probabilistic Climate Attribution           |authors=Garcia, Maria            |journal=Annual Review of Climate Science          |year=2019          |volume=4        |page=81–104       |doi=10.5555/arcs.2019.4.81          &#62;</div>\n",
     "  <div class=\"csl-entry\">&#60;cite|book|title=Foundations of Declarative Bibliography           |authors=Forthcoming, A.             |publisher=University Press            |place=Cambridge       &#62;</div>\n",
-    "  <div class=\"csl-entry\">&#60;cite|book|title=Letter to James Smith           |authors=Adams, John          |year=1797       &#62;</div>\n"
+    "  <div class=\"csl-entry\">&#60;cite|book|title=Letter to James Smith           |authors=Adams, John          |year=1797       &#62;</div>\n",
+    "  <div class=\"csl-entry\">&#60;cite|journal|title=Quantitative Methods in Sociology           |authors=Johnson, Alice            |journal=Sociological Review          |year=2020          |volume=68        |page=23–45          &#62;</div>\n",
+    "  <div class=\"csl-entry\">&#60;cite|journal|title=Qualitative Methods in Sociology           |authors=Johnson, Brian            |journal=Sociological Review          |year=2020          |volume=68        |page=89–112          &#62;</div>\n",
+    "  <div class=\"csl-entry\">&#60;cite|journal|title=Urban Heat Island Mitigation Strategies           |authors=Chen, Wei            |journal=Urban Climate          |year=2022          |volume=15        |page=1–18       |doi=10.5555/uc.2022.15.1          &#62;</div>\n",
+    "  <div class=\"csl-entry\">&#60;cite|journal|title=Urban Heat Island Measurement Techniques           |authors=Chen, Wei            |journal=Urban Climate          |year=2024          |volume=18        |page=45–62       |doi=10.5555/uc.2024.18.45          &#62;</div>\n"
   ]
 }
