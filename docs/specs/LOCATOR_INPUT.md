@@ -1,7 +1,7 @@
 # Locator Input Specification
 
 **Status:** Active
-**Version:** 1.0
+**Version:** 1.1
 **Date:** 2026-06-02
 **Related:** bean csl26-j007, bean csl26-8sty,
 `crates/citum-schema-data/src/citation.rs`,
@@ -44,25 +44,25 @@ each open question.
 
 All three input surfaces collapse to the same in-memory type:
 
-```
+```rust
 CitationLocator = Single(LocatorSegment)
                | Compound { segments: Vec<LocatorSegment> }   // ≥2 segments
 ```
 
 (`crates/citum-schema-data/src/citation.rs`, `CitationLocator`, line ~460)
 
-```
+```rust
 LocatorSegment = { label: LocatorType, value: LocatorValue }
 ```
 
-```
+```rust
 LocatorValue = Text(String)                    // plurality by heuristic
              | Explicit { value: String, plural: bool }  // explicit override
 ```
 
 (`citation.rs` ~376)
 
-```
+```rust
 LocatorType = Page | Chapter | Section | … | Custom(String)
 ```
 
@@ -184,120 +184,102 @@ See **Option B** below for the tradeoffs of reviving it.
 
 ---
 
-## Open questions / ergonomic options
+## Decisions and options
 
-Each option is written as a named choice to facilitate a decision without
-requiring another investigation pass.
+### A — Plural-detection heuristic — **decided: A1**
 
-### Option group A — Plural-detection heuristic
+**Decision:** tighten the heuristic so a hyphen/en-dash is only treated as a
+range indicator when it sits between digit-or-roman-numeral sequences:
 
-**A0 — Do nothing (status quo)**
-
-Keep `contains(-|–|,|&)` as-is. Simple, ≈95% correct for typical page
-references. The `Explicit` escape hatch is available for structured input.
-
-*Cost:* Identifiers like `"figure A-3"` or `"sec. 3-2"` will silently select
-the plural term on the structured path if the author forgets to use `Explicit`.
-On the prose path there is no escape — such a locator always gets the wrong
-term.
-
-**A1 — Tighten the heuristic (recommended)**
-
-Only treat a hyphen/en-dash as a range indicator when it sits between
-digit-or-roman-numeral sequences, e.g.:
-
-```
+```text
 is_plural ≡ value matches /\d\s*[–-]\s*\d/
           ∨ value contains ','
           ∨ value contains '&'
 ```
 
 This keeps `"42–45"`, `"1, 3, 5"`, and `"A & B"` plural while making
-`"figure A-3"` and `"sec. 3-2"` singular without any author override.
+`"figure A-3"` and `"sec. 3-2"` singular without any author override. No
+schema change; the `Explicit { plural }` override is still available for
+edge cases this regex doesn't cover.
 
-*Scope:* one-line change in `LocatorValue::is_plural`; no schema changes; add
-a test case for `"A-3"` and `"sec. 3-2"`.
+*Known gap:* all-letter roman-numeral ranges (`"xii–xv"`) would read as
+singular under this rule. If that proves a real-world problem, extend the
+pattern to cover `[a-z]+\s*[–-]\s*[a-z]+` runs — but that risks being
+over-broad, so defer until a concrete case surfaces.
 
-*Risk:* roman-numeral ranges (`"xii–xv"`) would regress to singular unless the
-regex also covers `[a-z]+\s*[–-]\s*[a-z]+` runs (arguably over-broad).
-
-**A2 — Unify plurality and range detection**
-
-Move the range-detection logic from `apply_range_format` into `LocatorValue`
-so `is_plural` and "is a range" are the same computation. Eliminates the
-classes of cases where they disagree.
-
-*Scope:* crosses a crate boundary (`citum-schema-data` → `citum-engine`);
-either move `PageRangeFormat` down or add a crate dependency. More invasive
-than A1. Best revisited after a concrete disagreement is found in practice.
-
-**A3 — Prose-path override syntax**
-
-Add author-facing syntax to override plurality inside a Djot/Pandoc locator
-string, since `Explicit { plural }` is unreachable from prose today. Possible
-forms:
-
-```djot
-[@key, fig. A-3!s]   # '!s' = force singular
-[@key, pp. 3-2!p]   # '!p' = force plural (redundant here, illustrative)
-```
-
-*Scope:* requires changes to `normalize_locator_text` + the Djot parser. Large
-enough to warrant its own bean. Not recommended for this spec cycle.
+*Deferred options (no decision):*
+- **A2** — unify `is_plural` and the engine's `apply_range_format` so the
+  two checks cannot disagree. Crosses a crate boundary; revisit if a
+  real inconsistency is found.
+- **A3** — prose-path override syntax (`[@key, fig. A-3!s]`), since
+  `Explicit { plural }` is unreachable from Djot/Pandoc today. Large enough
+  for its own bean.
 
 ---
 
-### Option group B — Compact map syntax
+### B — Compact map syntax — **decided: B0 (leave reverted)**
 
-**B0 — Leave reverted (recommended)**
+The compact map form (`page: "23"` / `line: "13"`) that was prototyped in
+csl26-j007 remains reverted. The current `{label, value}` single and
+`{segments: […]}` compound forms are the only structured input. Costs of
+reviving it (schema ambiguity, no place for `Explicit`, ordering fragility)
+outweigh the hand-authoring convenience.
 
-Keep the current `{label, value}` + `{segments: […]}` forms as the only
-structured input. The compound form requires the explicit `segments` wrapper,
-which is slightly verbose for hand-authoring but unambiguous and schema-clean.
+---
 
-**B1 — Revive compact map**
+### C — Single-to-compound authoring friction (open)
 
-Re-implement `LocatorsInput` accepting:
+Adding a second locator segment to a citation currently requires restructuring
+the YAML, not just appending an element. Concretely:
+
+```yaml
+# Single locator — a flat object
+locator:
+  label: page
+  value: "23"
+
+# Compound locator — must switch to a completely different shape
+locator:
+  segments:
+    - label: chapter
+      value: "3"
+    - label: page
+      value: "23"
+```
+
+There is no "just add another item" path. `segments` with a single element is
+*rejected* by `CitationLocator::compound` (enforces ≥2), so you cannot use the
+list form as a uniform container regardless of count.
+
+Two options if this friction warrants addressing:
+
+**C1 — Accept a bare list as input.** Allow `locator:` to be a YAML sequence
+as well as an object. A one-element list normalises to `Single`; two or more
+become `Compound`. Authors then always write a list and just append:
 
 ```yaml
 locator:
-  page: "23"
-  line: "13"
+  - label: page
+    value: "23"
+# → going compound is just adding an element, no restructuring needed
+locator:
+  - label: chapter
+    value: "3"
+  - label: page
+    value: "23"
 ```
 
-alongside the existing verbose forms (untagged enum).
+*Cost:* a third variant in `CitationLocatorRepr` (currently `Single |
+Compound`); slightly more complex deserialiser; the flat shorthand still works
+in parallel.
 
-*Advantages:* marginally shorter for hand-authored compound locators.
+**C2 — Normalise single-element `segments`.** Smaller change: accept
+`segments: [{…}]` (one item) and silently coerce it to `Single` instead of
+rejecting it. Does not help with the flat-object-vs-list authoring mismatch
+but does remove the hard error on one-element `segments`.
 
-*Costs:*
-
-1. **Ambiguity at the schema level.** An object could be either a `Single`
-   (`{label, value}`) or a compact map (`{page: "23"}`). Serde's `#[serde(untagged)]`
-   distinguishes them by field names, but this is fragile — a future field
-   added to `LocatorSegment` with the same name as a locator type would cause a
-   silent mismatch.
-2. **No place for `Explicit`** in the map form. `{page: "A-3"}` can only produce
-   `LocatorValue::Text`. Authors needing a plural override would have to fall back
-   to the verbose list form anyway.
-3. **Ordering.** `IndexMap` preserves insertion order for serialisation, but
-   the map form still cannot express segment-level ordering as clearly as the
-   explicit `segments` list.
-
-*Verdict:* B1's ergonomic gain is modest. Recommend B0 unless a concrete
-user-workflow need surfaces.
-
----
-
-### Option group C — Single vs compound structural asymmetry
-
-The single form omits the wrapper; the compound form requires `segments`. This
-is intentional (the single form is the ergonomic shorthand; compound is
-deliberately explicit). No open action.
-
-One future option (out of scope here) is a unified form that normalises
-`segments: [{…}]` (one element) to `Single` at deserialisation, removing the
-enforcement that `compound()` ≥ 2. This would be a non-breaking change since
-the schema currently rejects single-element `segments`.
+*No decision yet.* File a bean if single-to-compound transitions prove
+friction-heavy in practice.
 
 ---
 
@@ -321,11 +303,14 @@ new implementation.*
 - [x] Heuristic documented with known false-positive example.
 - [x] Prose-path limitation (no `Explicit` override) documented.
 - [x] Compact-map history recorded.
-- [x] Options A0–A3, B0–B1, C documented with tradeoffs.
-- [ ] User selects preferred option(s) from each group; beans filed for any
-      non-A0/B0 choices.
+- [x] Decisions recorded: A1 (tighten heuristic), B0 (compact map stays reverted).
+- [x] Option C (single-to-compound friction) documented with concrete examples and options.
+- [ ] Bean filed to implement A1 heuristic tightening in `LocatorValue::is_plural`.
 
 ## Changelog
 
+- v1.1 (2026-06-02): Record decisions (A1, B0). Rewrite Option C with concrete
+  YAML examples illustrating the single-to-compound restructuring friction;
+  add C1 (bare list) and C2 (normalise single-element segments) as named options.
 - v1.0 (2026-06-02): Initial version. Spec covers shipped behaviour as of
   commit `2757aa3c` and subsequent refactors through `74920ed0`.
