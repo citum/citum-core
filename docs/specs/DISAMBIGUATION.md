@@ -101,8 +101,8 @@ Specifies which author positions receive given-name expansion. The field lives o
 
 | CSL value | Engine scope | Notes |
 |---|---|---|
-| `by-cite` *(default)* | expand all positions | **diverges from spec** — see §2.1.1 |
-| `all-names` | expand all positions | same as current `by-cite` engine behavior |
+| `by-cite` *(default)* | citation-local expansion overlay | see §2.1.1 |
+| `all-names` | global expansion | all affected citations use the expanded form consistently |
 | `all-names-with-initials` | expand all positions | initials vs full controlled by contributor config `initialize-with` |
 | `primary-name` | expand **first author only** | required by Chicago author-date |
 | `primary-name-with-initials` | expand **first author only** | required by APA 7; initials via contributor config |
@@ -111,32 +111,26 @@ Specifies which author positions receive given-name expansion. The field lives o
 config's `initialize-with` / `name-form` settings, not by this rule. The rule
 controls only *which positions* are eligible for expansion.
 
-#### 2.1.1 `by-cite` divergence (csl26-lvib)
+#### 2.1.1 `by-cite` citation-local expansion (csl26-lvib)
 
-**CSL spec** (1.0.1+): `by-cite` is per-cite and minimal. For each rendered
-citation, the engine expands only the minimum given-name subset needed to
-disambiguate *that specific cite* from the others currently in scope. Two
-cites of colliding works may expand different subsets of their name lists —
-only what is strictly necessary for each.
+`by-cite` is applied at citation render time, not by mutating the processor's
+global disambiguation hints. The renderer clones the global hint map for the
+current citation, clears global given-name expansion for the references in that
+citation, then overlays the name-expansion fields computed from only the current
+citation's references. Year suffixes, group order, citation numbers, note
+position, and bibliography rendering continue to use the global hints.
 
-**Current engine**: `apply_group_hints` processes the full bibliography as a
-single collision group and sets `expand_given_names: true` on every reference
-in the group. This is effectively `all-names` behavior — any work involved in
-*any* same-author-same-year collision gets given-name expansion globally,
-regardless of whether the specific citation in context actually needs it.
+`all-names` and `all-names-with-initials` deliberately keep the global hint map:
+if a name is expanded for disambiguation anywhere in the document, all rendered
+uses of that affected reference receive the expanded form. This makes `by-cite`
+and `all-names` observably different on fixtures where a reference belongs to a
+global collision group but appears alone, or outside the citation that needs
+expansion.
 
-**Practical impact**: Low for typical documents. The divergence is visible
-when a colliding author also appears in non-colliding cites: CSL `by-cite`
-would leave the non-colliding cite unexpanded; the current engine expands it.
-No major style's oracle currently catches this gap because all tested styles
-use `by-cite` as a default that has no observable effect when only one form
-of the name appears.
-
-**Implementation path** (bean csl26-lvib): the disambiguator would need to
-shift from bibliography-wide collision groups to a per-citation rendering pass
-that lazily computes the minimal expansion set for each cite in context.
-This is a non-trivial engine refactor — deferred until a concrete style
-failure demonstrates the need.
+The current hint model still expresses given-name expansion as all eligible
+rendered positions or primary-name-only; it does not store an arbitrary mask of
+individual name positions. The `by-cite` implementation therefore scopes the
+decision to the current citation and preserves the existing position model.
 
 ### 3. Year-suffix assignment ordering
 
@@ -225,13 +219,21 @@ added to the citation context.
 - [x] Short-title suppression via `first-reference-note-number` implemented and tested
 - [x] `givenname-disambiguation-rule` field exists on `Disambiguation`; `primary-name` and
   `primary-name-with-initials` restrict expansion to the first author only (csl26-4ada)
+- [x] `by-cite` given-name expansion is citation-local and distinguishable from
+  `all-names` global expansion (csl26-lvib)
+- [x] Upstream CSL disambiguation fixtures that distinguish `by-cite` and
+  `all-names` are tracked in the disambiguation fixture generator
 
 ## Changelog
 
+- 2026-06-02: Implemented `by-cite` citation-local given-name expansion
+  (csl26-lvib). Citation rendering now overlays current-citation name-expansion
+  hints for `GivennameRule::ByCite`, while `all-names` keeps global expansion.
+  Added native regressions distinguishing `by-cite` from `all-names` and tracked
+  the relevant CSL disambiguation fixtures in `tests/fixtures/update_disambiguation_tests.py`.
 - 2026-06-02: Added §2.1 `givenname-disambiguation-rule` (csl26-4ada). Documents
-  `GivennameRule` enum (5 CSL values), engine's two-scope collapse
-  (primary vs all), and `by-cite` per-cite minimal-subset as a documented
-  divergence. Added acceptance criterion for primary-name scoping.
+  `GivennameRule` enum (5 CSL values), engine scoping behavior, and acceptance
+  criterion for primary-name scoping.
 - 2026-05-31: Implemented `render_name_for_disambiguation` (csl26-54jn). Flattens
   contributors via `resolve_multilingual_name` so the collision key matches the style's
   active display mode (transliterated/translated/primary). Covered by
@@ -240,7 +242,8 @@ added to the citation context.
 - 2026-05-31: Test soundness audit (csl26-ucs3). Corrected `[x]` → `[ ]` for
   multilingual key generation — `render_name_for_disambiguation` not yet
   implemented; `disambiguation.rs` always reads `Contributor::Multilingual.original`.
-  See `docs/architecture/audits/2026-05-31_DISAMBIGUATION_TEST_SOUNDNESS.md`.
+  The follow-up implementation is recorded in the 2026-05-31 csl26-54jn changelog
+  entry above.
 - 2026-05-29: Initial version. Consolidates `DISAMBIGUATION_IMPLEMENTATION_PLAN.md` (now deleted)
   and `DISAMBIGUATION_MULTILINGUAL_GROUPING.md` (now deleted).
 - 2026-05-29: All acceptance criteria implemented; status set to Active.

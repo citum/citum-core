@@ -99,6 +99,7 @@ citation:
 - **by-cite**: Apply given names only within each citation
 - **all-names**: Apply to all uses of the name (ensures consistency
   across document)
+- **primary-name**: Apply given names only to the first author position
 
 ### Example
 
@@ -114,6 +115,11 @@ Smith, John (1980)
 Smith, Jane (1985)
 Smith, Jane (1985)
 ```
+
+In Citum, `by-cite` is implemented as a citation-local hint overlay. A reference
+that belongs to a global collision group can render unexpanded when it appears in
+a citation that does not need given-name expansion. `all-names` keeps global
+expansion for every affected reference.
 
 ## Group-Aware Disambiguation
 
@@ -238,7 +244,7 @@ Reference → [Render] → String
 
 ## Test Case Reference
 
-### Current Test Cases (11 total)
+### Current Test Cases (15 total)
 
 1. `disambiguate_YearSuffixAndSort` - Year suffix with bibliography
    sort
@@ -251,11 +257,19 @@ Reference → [Render] → String
 6. `disambiguate_AddNamesFailure` - Name expansion insufficient
 7. `disambiguate_ByCiteGivennameShortFormInitializeWith` - Initials
    in by-cite mode
-8. `disambiguate_BasedOnEtAlSubsequent` - Et-al with subsequent names
-9. `disambiguate_ByCiteDisambiguateCondition` - Conditional
+8. `disambiguate_ByCiteMinimalGivennameExpandMinimalNames` -
+   Citation-local by-cite expansion
+9. `disambiguate_ByCiteGivennameExpandCrossNestedNames` - Nested
+   by-cite name expansion
+10. `disambiguate_ByCiteBaseNameCountOnFailureIfYearSuffixAvailable` -
+    By-cite base-name counting with year-suffix fallback
+11. `disambiguate_AllNamesBaseNameCountOnFailureIfYearSuffixAvailable` -
+    All-names base-name counting with year-suffix fallback
+12. `disambiguate_BasedOnEtAlSubsequent` - Et-al with subsequent names
+13. `disambiguate_ByCiteDisambiguateCondition` - Conditional
    rendering when disambiguate=true
-10. `disambiguate_FailWithYearSuffix` - Fallback behavior
-11. `disambiguate_YearSuffixFiftyTwoEntries` - Large-scale year
+14. `disambiguate_FailWithYearSuffix` - Fallback behavior
+15. `disambiguate_YearSuffixFiftyTwoEntries` - Large-scale year
     suffix wrapping
 
 ## Related Reading
