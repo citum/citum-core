@@ -132,32 +132,29 @@ regardless. For different-family-same-year collisions APA uses initials. In
 practice our engine produces correct output, but the APA-specific ordering is
 not explicitly encoded.
 
-### Schema Gap: `givenname_rule` missing from `Disambiguation`
+### Schema Gap: `givenname_rule` — Resolved (csl26-4ada)
 
-The `Disambiguation` struct in `citum-schema-style/src/options/processing.rs`
-has:
+**Resolved in csl26-4ada.** `Disambiguation` now has:
 
 ```rust
 pub struct Disambiguation {
     pub names: bool,
-    pub add_givenname: bool,   // on/off only
+    pub add_givenname: bool,
     pub year_suffix: bool,
+    pub givenname_rule: GivennameRule,  // added in csl26-4ada
 }
 ```
 
-There is no `givenname_rule` field mapping to
-`givenname-disambiguation-rule`. The engine therefore always applies
-givenname expansion to all positions (`all-names` behavior). Correct
-per-spec behavior for:
+`GivennameRule` models all five CSL values (`by-cite` default, `all-names`,
+`all-names-with-initials`, `primary-name`, `primary-name-with-initials`). The
+engine collapses them to two scopes: `primary-name` and
+`primary-name-with-initials` expand only the first author; all other values
+expand all positions (current behavior). Initials vs full given name continues
+to be driven by the contributor config's `initialize-with` / `name-form`
+settings. The `by-cite` per-cite minimal-subset algorithm is a documented
+divergence deferred to a future follow-up.
 
-- **APA 7**: requires `primary-name-with-initials`
-- **Chicago author-date**: requires `primary-name` (full given name of first
-  author only)
-
-In practice, formatting (initials vs full) is driven by the contributor
-config's `initialize-with` / `name-form` settings, which is why the oracle
-passes. But the *scoping* (which author positions trigger expansion) is not
-enforced. **Filed as a follow-up** (see bean csl26-gvrule or similar).
+See `docs/specs/DISAMBIGUATION.md` §2.1 for the full rule table.
 
 ### `subsequent-author-substitute` Semantics
 
@@ -202,10 +199,9 @@ CMoS 18 §14.67 specifies the dash for identical groups only.
   default produces correct output because givenname expansion on identical
   authors has no effect, so year-suffix is reached anyway. Initials are
   rendered via the contributor config's `initialize-with: ". "`.
-- **Schema gap**: `Disambiguation` has no `givenname_rule` field; the engine
-  applies expansion to all positions rather than primary-name-only. In
-  practice this is masked by the contributor config formatting, but it could
-  produce incorrect results if a style renders multiple name forms.
+- **Schema gap**: resolved in csl26-4ada — `GivennameRule::PrimaryNameWithInitials`
+  restricts expansion to the first author; initials vs full still driven by
+  contributor config `initialize-with`.
 
 ### Chicago Manual of Style 18th ed., author-date (`styles/experimental/chicago-author-date.yaml`)
 
@@ -218,8 +214,9 @@ CMoS 18 §14.67 specifies the dash for identical groups only.
   of first (primary) author for same-family collisions (givenname rule:
   `primary-name`). The contributor config `initialize-with` must NOT be set
   (or be empty) to render full given names, unlike APA.
-- **Schema gap**: same as APA — `primary-name` scoping not enforced; engine
-  uses `all-names` behavior.
+- **Schema gap**: resolved in csl26-4ada — `GivennameRule::PrimaryName`
+  restricts expansion to the first author; initials vs full still driven by
+  contributor config.
 
 ---
 

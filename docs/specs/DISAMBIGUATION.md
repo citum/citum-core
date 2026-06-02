@@ -79,8 +79,8 @@ first that resolves every collision in the group:
 1. **Et-al expansion** (`names: true`) — reveal additional names beyond the
    et-al threshold.
 2. **Given-name expansion** (`add_givenname: true`) — add initials or full given
-   names when family-name collisions remain. Controlled by
-   `givenname-disambiguation-rule: by-cite | all-names`.
+   names when family-name collisions remain. Scoping controlled by
+   `givenname-disambiguation-rule` (see §2.1).
 3. **Year suffix** (`year_suffix: true`) — append a letter sequence (a–z, aa–az,
    …) to the issued year.
 
@@ -92,6 +92,51 @@ applied to those sub-groups independently.
 Implemented in `apply_group_hints` →
 `try_apply_name_partitions` / `try_apply_givenname_resolution` /
 `apply_year_suffix`.
+
+### 2.1 `givenname-disambiguation-rule`
+
+Specifies which author positions receive given-name expansion. The field lives on
+`Disambiguation` in `citum-schema-style/src/options/processing.rs` as
+`givenname_rule: GivennameRule`. Default: `by-cite`.
+
+| CSL value | Engine scope | Notes |
+|---|---|---|
+| `by-cite` *(default)* | expand all positions | **diverges from spec** — see §2.1.1 |
+| `all-names` | expand all positions | same as current `by-cite` engine behavior |
+| `all-names-with-initials` | expand all positions | initials vs full controlled by contributor config `initialize-with` |
+| `primary-name` | expand **first author only** | required by Chicago author-date |
+| `primary-name-with-initials` | expand **first author only** | required by APA 7; initials via contributor config |
+
+**Key invariant:** initials vs full given name is always driven by the contributor
+config's `initialize-with` / `name-form` settings, not by this rule. The rule
+controls only *which positions* are eligible for expansion.
+
+#### 2.1.1 `by-cite` divergence (csl26-lvib)
+
+**CSL spec** (1.0.1+): `by-cite` is per-cite and minimal. For each rendered
+citation, the engine expands only the minimum given-name subset needed to
+disambiguate *that specific cite* from the others currently in scope. Two
+cites of colliding works may expand different subsets of their name lists —
+only what is strictly necessary for each.
+
+**Current engine**: `apply_group_hints` processes the full bibliography as a
+single collision group and sets `expand_given_names: true` on every reference
+in the group. This is effectively `all-names` behavior — any work involved in
+*any* same-author-same-year collision gets given-name expansion globally,
+regardless of whether the specific citation in context actually needs it.
+
+**Practical impact**: Low for typical documents. The divergence is visible
+when a colliding author also appears in non-colliding cites: CSL `by-cite`
+would leave the non-colliding cite unexpanded; the current engine expands it.
+No major style's oracle currently catches this gap because all tested styles
+use `by-cite` as a default that has no observable effect when only one form
+of the name appears.
+
+**Implementation path** (bean csl26-lvib): the disambiguator would need to
+shift from bibliography-wide collision groups to a per-citation rendering pass
+that lazily computes the minimal expansion set for each cite in context.
+This is a non-trivial engine refactor — deferred until a concrete style
+failure demonstrates the need.
 
 ### 3. Year-suffix assignment ordering
 
@@ -178,9 +223,15 @@ added to the citation context.
 - [x] Multilingual key generation respects display mode
 - [x] Native fixture asserting `(1926/1967a) (1926/1967b) (1927/1967c)` for the APA §8.15 reprint scenario
 - [x] Short-title suppression via `first-reference-note-number` implemented and tested
+- [ ] `givenname-disambiguation-rule` field exists on `Disambiguation`; `primary-name` and
+  `primary-name-with-initials` restrict expansion to the first author only (csl26-4ada)
 
 ## Changelog
 
+- 2026-06-02: Added §2.1 `givenname-disambiguation-rule` (csl26-4ada). Documents
+  `GivennameRule` enum (5 CSL values), engine's two-scope collapse
+  (primary vs all), and `by-cite` per-cite minimal-subset as a documented
+  divergence. Added acceptance criterion for primary-name scoping.
 - 2026-05-31: Implemented `render_name_for_disambiguation` (csl26-54jn). Flattens
   contributors via `resolve_multilingual_name` so the collision key matches the style's
   active display mode (transliterated/translated/primary). Covered by
