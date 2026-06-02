@@ -24,6 +24,7 @@ use citum_io::load_bibliography;
 use citum_schema::{
     CitationSpec, Style, StyleInfo,
     citation::{Citation, CitationItem, CitationMode},
+    options::GivennameRule,
     reference::{
         Contributor, ContributorList, EdtfString, InputReference as Reference, Monograph,
         MonographType, MultilingualString, Serial, SerialComponent, SerialComponentType,
@@ -324,6 +325,7 @@ pub fn build_author_date_style(
             year_suffix: disambiguate_year_suffix,
             names: disambiguate_names,
             add_givenname: disambiguate_givenname,
+            givenname_rule: GivennameRule::default(),
         })
     } else {
         None

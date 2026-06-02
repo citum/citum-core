@@ -335,7 +335,11 @@ pub fn format_names(
     let formatted_first: Vec<String> = first_names
         .iter()
         .enumerate()
-        .map(|(i, name)| format_single_name(name, form, i, &ctx, hints.expand_given_names))
+        .map(|(i, name)| {
+            let expand =
+                hints.expand_given_names && !(hints.expand_given_names_primary_only && i > 0);
+            format_single_name(name, form, i, &ctx, expand)
+        })
         .collect();
 
     let formatted_last: Vec<String> = last_names
@@ -343,7 +347,9 @@ pub fn format_names(
         .enumerate()
         .map(|(i, name)| {
             let original_idx = names.len() - last_names.len() + i;
-            format_single_name(name, form, original_idx, &ctx, hints.expand_given_names)
+            let expand = hints.expand_given_names
+                && !(hints.expand_given_names_primary_only && original_idx > 0);
+            format_single_name(name, form, original_idx, &ctx, expand)
         })
         .collect();
 

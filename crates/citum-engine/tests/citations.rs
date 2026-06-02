@@ -31,7 +31,7 @@ use citum_schema::{
     citation::{Citation, CitationItem, CitationMode, IntegralNameState},
     grouping::{GroupSort, GroupSortEntry, GroupSortKey, SortKey as GroupSortKeyType},
     options::{
-        AndOptions, Config, ContributorConfig, DelimiterPrecedesLast, DisplayAsSort,
+        AndOptions, Config, ContributorConfig, DelimiterPrecedesLast, DisplayAsSort, GivennameRule,
         IntegralNameContexts, IntegralNameMemoryConfig, IntegralNameScope, NameForm, Processing,
         ProcessingCustom, ShortenListOptions, SubsequentNameForm,
     },
@@ -254,6 +254,7 @@ fn disambiguation_two_level_author_collisions_get_distinct_suffixes() {
                 year_suffix: true,
                 names: true,
                 add_givenname: false,
+                givenname_rule: GivennameRule::default(),
             }),
             ..Default::default()
         })),
@@ -546,6 +547,7 @@ fn subsequent_et_al_thresholds_shorten_the_repeat_citation() {
                     year_suffix: false,
                     names: false,
                     add_givenname: false,
+                    givenname_rule: GivennameRule::default(),
                 }),
                 ..Default::default()
             })),

@@ -359,6 +359,7 @@ mod tests {
                 disambiguate_add_year_suffix: None,
                 disambiguate_add_names: None,
                 disambiguate_add_givenname: None,
+                disambiguate_givenname_rule: None,
             },
             bibliography: bibliography_children.map(|children| csl_legacy::model::Bibliography {
                 layout: Layout {

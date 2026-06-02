@@ -4,7 +4,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
 use citum_schema::options::{
-    Disambiguation, Group, Processing, ProcessingCustom, Sort, SortEntry, SortKey, SortSpec,
+    Disambiguation, GivennameRule, Group, Processing, ProcessingCustom, Sort, SortEntry, SortKey,
+    SortSpec,
 };
 use citum_schema::presets::SortPreset;
 use csl_legacy::model::{CslNode, Style};
@@ -55,9 +56,18 @@ pub fn detect_processing_mode(style: &Style) -> Option<Processing> {
         // Legacy CSL defaults are effectively "no extra names / no extra given
         // names" unless explicitly requested. Defaulting to names=true here
         // causes over-disambiguation and suppresses expected et-al behavior.
+        let givenname_rule = match style.citation.disambiguate_givenname_rule.as_deref() {
+            Some("primary-name") => GivennameRule::PrimaryName,
+            Some("primary-name-with-initials") => GivennameRule::PrimaryNameWithInitials,
+            Some("all-names-with-initials") => GivennameRule::AllNamesWithInitials,
+            Some("all-names") => GivennameRule::AllNames,
+            _ => GivennameRule::default(), // by-cite default
+        };
+
         let disamb = Disambiguation {
             names: style.citation.disambiguate_add_names.unwrap_or(false),
             add_givenname: style.citation.disambiguate_add_givenname.unwrap_or(false),
+            givenname_rule,
             // Author-date styles commonly rely on year suffixes; keep this true
             // unless legacy style explicitly disables it.
             year_suffix: style.citation.disambiguate_add_year_suffix.unwrap_or(true),

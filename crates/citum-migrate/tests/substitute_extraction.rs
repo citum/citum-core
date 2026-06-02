@@ -145,6 +145,7 @@ fn test_extract_type_conditional_substitute() {
             disambiguate_add_year_suffix: None,
             disambiguate_add_names: None,
             disambiguate_add_givenname: None,
+            disambiguate_givenname_rule: None,
         },
         bibliography: None,
     };

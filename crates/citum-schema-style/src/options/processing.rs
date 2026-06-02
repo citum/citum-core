@@ -222,6 +222,7 @@ impl Processing {
                 disambiguate: Some(Disambiguation {
                     names: true,
                     add_givenname: true,
+                    givenname_rule: GivennameRule::default(),
                     year_suffix: true,
                 }),
             },
@@ -236,6 +237,7 @@ impl Processing {
                 disambiguate: Some(Disambiguation {
                     names: true,
                     add_givenname: false,
+                    givenname_rule: GivennameRule::default(),
                     year_suffix: false,
                 }),
             },
@@ -245,6 +247,7 @@ impl Processing {
                 disambiguate: Some(Disambiguation {
                     names: false,
                     add_givenname: false,
+                    givenname_rule: GivennameRule::default(),
                     year_suffix: true,
                 }),
             },
@@ -384,6 +387,32 @@ impl<'de> Deserialize<'de> for Processing {
     }
 }
 
+/// Controls which author positions receive given-name expansion during disambiguation.
+///
+/// Maps to CSL's `givenname-disambiguation-rule` attribute on `<citation>`.
+/// The engine collapses these to two scopes: `PrimaryName` and
+/// `PrimaryNameWithInitials` expand only the first (primary) author; all other
+/// values expand all positions. Initials vs full form is always driven by the
+/// contributor config's `initialize-with` / `name-form` settings.
+#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+#[non_exhaustive]
+pub enum GivennameRule {
+    /// Disambiguate per-cite with a minimal subset of names (CSL 1.0.1 default).
+    /// Engine behaviour: expand all positions (per-cite minimal-subset deferred).
+    #[default]
+    ByCite,
+    /// Expand given names for all name positions.
+    AllNames,
+    /// Expand given names (initials form) for all name positions.
+    AllNamesWithInitials,
+    /// Expand given name of the first (primary) author only.
+    PrimaryName,
+    /// Expand given name (initials form) of the first (primary) author only.
+    PrimaryNameWithInitials,
+}
+
 /// Disambiguation settings.
 ///
 /// Controls how ambiguous citations are disambiguated in the output.
@@ -396,6 +425,9 @@ pub struct Disambiguation {
     /// Whether to add given names to disambiguate similarly-named authors.
     #[serde(default)]
     pub add_givenname: bool,
+    /// Which author positions receive given-name expansion.
+    #[serde(default)]
+    pub givenname_rule: GivennameRule,
     /// Whether to append year suffixes (a, b, c, ...) for multiple works from the same author-year.
     pub year_suffix: bool,
 }
@@ -405,6 +437,7 @@ impl Default for Disambiguation {
         Self {
             names: true,
             add_givenname: false,
+            givenname_rule: GivennameRule::default(),
             year_suffix: false,
         }
     }
@@ -646,6 +679,7 @@ mod tests {
         let disambig = Disambiguation::default();
         assert!(disambig.names);
         assert!(!disambig.add_givenname);
+        assert_eq!(disambig.givenname_rule, GivennameRule::ByCite);
         assert!(!disambig.year_suffix);
     }
 

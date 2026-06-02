@@ -2908,6 +2908,11 @@
           "type": "boolean",
           "default": false
         },
+        "givenname-rule": {
+          "description": "Which author positions receive given-name expansion.",
+          "$ref": "#/$defs/GivennameRule",
+          "default": "by-cite"
+        },
         "year-suffix": {
           "description": "Whether to append year suffixes (a, b, c, ...) for multiple works from the same author-year.",
           "type": "boolean"
@@ -2916,6 +2921,36 @@
       "required": [
         "names",
         "year-suffix"
+      ]
+    },
+    "GivennameRule": {
+      "description": "Controls which author positions receive given-name expansion during disambiguation.\n\nMaps to CSL's `givenname-disambiguation-rule` attribute on `<citation>`.\nThe engine collapses these to two scopes: `PrimaryName` and\n`PrimaryNameWithInitials` expand only the first (primary) author; all other\nvalues expand all positions. Initials vs full form is always driven by the\ncontributor config's `initialize-with` / `name-form` settings.",
+      "oneOf": [
+        {
+          "description": "Disambiguate per-cite with a minimal subset of names (CSL 1.0.1 default).\nEngine behaviour: expand all positions (per-cite minimal-subset deferred).",
+          "type": "string",
+          "const": "by-cite"
+        },
+        {
+          "description": "Expand given names for all name positions.",
+          "type": "string",
+          "const": "all-names"
+        },
+        {
+          "description": "Expand given names (initials form) for all name positions.",
+          "type": "string",
+          "const": "all-names-with-initials"
+        },
+        {
+          "description": "Expand given name of the first (primary) author only.",
+          "type": "string",
+          "const": "primary-name"
+        },
+        {
+          "description": "Expand given name (initials form) of the first (primary) author only.",
+          "type": "string",
+          "const": "primary-name-with-initials"
+        }
       ]
     },
     "Localize": {

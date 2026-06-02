@@ -39,8 +39,8 @@ pub use locators::{
 };
 pub use multilingual::{MultilingualConfig, MultilingualMode, ScriptConfig};
 pub use processing::{
-    CitationSortPolicy, Disambiguation, Group, LabelConfig, LabelParams, LabelPreset, Processing,
-    ProcessingCustom, Sort, SortEntry, SortKey, SortSpec,
+    CitationSortPolicy, Disambiguation, GivennameRule, Group, LabelConfig, LabelParams,
+    LabelPreset, Processing, ProcessingCustom, Sort, SortEntry, SortKey, SortSpec,
 };
 pub use scoped::{
     BibliographyLabelMode, BibliographyLabelWrap, CitationGroupDelimiter, DatePosition, LabelWrap,
