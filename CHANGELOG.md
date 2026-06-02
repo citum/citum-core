@@ -5,6 +5,55 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.62.0] - 2026-06-02
+
+### Bug Fixes
+
+**engine**
+
+- Implement by-cite givenname expansion ([`b0fb8ca`](https://github.com/citum/citum-core/commit/b0fb8cac47bedaf9d0b84f4b80e9b0cfbc4a1558))
+
+- Primary-name falls to suffix on tie ([`daf2748`](https://github.com/citum/citum-core/commit/daf2748fd7ce0d25cfc5392e0c9bf194b9376faa))
+
+
+**styles**
+
+- Chicago em-dash + cross-entry infra ([`b91dd61`](https://github.com/citum/citum-core/commit/b91dd616c22a25eef6391595437dd132934f8b01))
+
+
+
+### Documentation
+
+**spec**
+
+- Cross-entry fidelity + givenname gap ([`c9b5565`](https://github.com/citum/citum-core/commit/c9b5565ffa9ba5406523f9fd331035dfde200c62))
+
+- Align givenname-disambiguation-rule ([`03b9463`](https://github.com/citum/citum-core/commit/03b9463200f6994b1d7558413349c633aa2a4415))
+
+
+
+### Features
+
+**engine**
+
+- Add biblatex refs input variant ([`b4e088d`](https://github.com/citum/citum-core/commit/b4e088de4498ec008f892a3358bbe040accb0386))
+
+
+**schema**
+
+- Givenname-disambiguation-rule ([`327252a`](https://github.com/citum/citum-core/commit/327252a0bf3d50b26a8effeb784e735e8a0453a9))
+
+
+
+### Testing
+
+**report**
+
+- Regen oracle snapshots for fixtures ([`430dc6f`](https://github.com/citum/citum-core/commit/430dc6f49ee578f1ee4d8f13ac629ec72f3d5bb5))
+
+- Refresh oracle baseline ([`9178e9c`](https://github.com/citum/citum-core/commit/9178e9c3a1652a741d40b671be2ddc0c302c80ca))
+
+
 ## [0.61.1] - 2026-06-01
 
 ### Bug Fixes
