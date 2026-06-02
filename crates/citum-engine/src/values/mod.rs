@@ -184,9 +184,72 @@ pub fn resolve_multilingual_string(
                         (None, None) => complex.original.clone(),
                     }
                 }
+
+                MultilingualMode::Pattern(segments) => resolve_multilingual_pattern(
+                    segments,
+                    &complex.original,
+                    &complex.transliterations,
+                    &complex.translations,
+                    preferred_transliteration,
+                    preferred_script,
+                    style_locale,
+                ),
             }
         }
     }
+}
+
+/// Render a [`MultilingualMode::Pattern`] against a complex multilingual string.
+///
+/// Each segment is resolved to its text; segments that are empty or identical to
+/// the previous non-empty segment are skipped (dedup).  The surviving segments are
+/// joined by a single space.
+fn resolve_multilingual_pattern(
+    segments: &[citum_schema::options::MultilingualSegment],
+    original: &str,
+    transliterations: &std::collections::HashMap<String, String>,
+    translations: &std::collections::HashMap<citum_schema::reference::types::LangID, String>,
+    preferred_transliteration: Option<&[String]>,
+    preferred_script: Option<&String>,
+    style_locale: &str,
+) -> String {
+    use citum_schema::options::{MultilingualView, SegmentWrap};
+    let mut parts: Vec<String> = Vec::with_capacity(segments.len());
+    let mut last_text: Option<String> = None;
+
+    for seg in segments {
+        let text: Option<String> = match &seg.view {
+            MultilingualView::Original => Some(original.to_string()),
+            MultilingualView::Transliterated => resolve_transliteration(
+                transliterations,
+                preferred_transliteration,
+                preferred_script,
+            )
+            .map(ToString::to_string),
+            MultilingualView::Translated => {
+                resolve_translation(translations, style_locale).map(ToString::to_string)
+            }
+        };
+
+        let Some(text) = text else { continue };
+        if text.is_empty() {
+            continue;
+        }
+        // Skip duplicate: if this text is identical to the previous segment (e.g. when
+        // transliteration falls back to the same value as original).
+        if last_text.as_deref() == Some(text.as_str()) {
+            continue;
+        }
+
+        let wrapped = match &seg.wrap {
+            SegmentWrap::None => text.clone(),
+            other => other.apply(&text),
+        };
+        last_text = Some(text);
+        parts.push(wrapped);
+    }
+
+    parts.join(" ")
 }
 
 /// Resolve the effective language for one logical field scope on a reference.
@@ -329,6 +392,12 @@ pub fn resolve_multilingual_name(
                 }
                 // Combined mode for names defaults to transliterated (parenthetical combo not common for names)
                 MultilingualMode::Combined => {
+                    select_by_transliteration(m, preferred_transliteration, preferred_script)
+                }
+                // Pattern mode for names: use the first non-original view (romanized).
+                // Names are always shown in a single script; multi-view name strings are
+                // not idiomatic in any major style guide.
+                MultilingualMode::Pattern(_) => {
                     select_by_transliteration(m, preferred_transliteration, preferred_script)
                 }
             };

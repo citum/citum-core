@@ -62,10 +62,7 @@ options:
       emph: true
     serial:
       text-case: as-is
-  multilingual:
-    title-mode: combined
-    name-mode: transliterated
-    preferred-script: Latn
+  multilingual: romanized-translated
   page-range-format: expanded
   punctuation-in-quote: true
 citation:

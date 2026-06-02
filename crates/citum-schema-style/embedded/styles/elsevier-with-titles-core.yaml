@@ -17,6 +17,7 @@ info:
     - href: http://www.elsevier.com/journals/journal-of-hazardous-materials/0304-3894/guide-for-authors#68001
       rel: documentation
 options:
+  multilingual: romanized-translated
   substitute:
     contributor-role-form: short
     template:

@@ -1,0 +1,613 @@
+{
+  "$defs": {
+    "EvaluationConfig": {
+      "description": "Runtime evaluation options for a locale.\n\nDeclares which message syntax the `messages` map uses and controls\nevaluator selection. May grow with additional fields (custom function\ndeclarations, evaluator hints) without breaking existing locale files.",
+      "properties": {
+        "message-syntax": {
+          "$ref": "#/$defs/MessageSyntax",
+          "default": "static",
+          "description": "Message syntax used in this locale's `messages` map."
+        }
+      },
+      "type": "object"
+    },
+    "GrammarOptions": {
+      "description": "Grammar options that vary by language or regional convention.",
+      "properties": {
+        "close-inner-quote": {
+          "default": "’",
+          "description": "Closing inner (nested) quotation mark character.",
+          "type": "string"
+        },
+        "close-quote": {
+          "default": "”",
+          "description": "Closing outer quotation mark character.",
+          "type": "string"
+        },
+        "nbsp-before-colon": {
+          "default": false,
+          "description": "Whether to use a non-breaking space before colon/question mark (French style).",
+          "type": "boolean"
+        },
+        "open-inner-quote": {
+          "default": "‘",
+          "description": "Opening inner (nested) quotation mark character.",
+          "type": "string"
+        },
+        "open-quote": {
+          "default": "“",
+          "description": "Opening outer quotation mark character.",
+          "type": "string"
+        },
+        "page-range-delimiter": {
+          "default": "–",
+          "description": "Delimiter between page range endpoints.",
+          "type": "string"
+        },
+        "punctuation-in-quote": {
+          "default": false,
+          "description": "Whether to place periods/commas inside closing quotation marks (American style).",
+          "type": "boolean"
+        },
+        "serial-comma": {
+          "default": false,
+          "description": "Whether to use a serial (Oxford) comma before the final list item.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "GrammaticalGender": {
+      "description": "Grammatical gender used for locale agreement and term selection.",
+      "oneOf": [
+        {
+          "const": "masculine",
+          "description": "Masculine grammatical gender.",
+          "type": "string"
+        },
+        {
+          "const": "feminine",
+          "description": "Feminine grammatical gender.",
+          "type": "string"
+        },
+        {
+          "const": "neuter",
+          "description": "Neuter grammatical gender.",
+          "type": "string"
+        },
+        {
+          "const": "common",
+          "description": "Common or shared grammatical gender.",
+          "type": "string"
+        }
+      ]
+    },
+    "MessageSyntax": {
+      "description": "Message syntax variant active in a locale file.\n\nControls which `MessageEvaluator` implementation the engine selects at\nlocale-load time.",
+      "oneOf": [
+        {
+          "const": "static",
+          "description": "Plain text only; parameterized messages are not evaluated.",
+          "type": "string"
+        },
+        {
+          "const": "mf2",
+          "description": "ICU Message Format 2 evaluation (requires `Mf2MessageEvaluator`).",
+          "type": "string"
+        }
+      ]
+    },
+    "NumberFormats": {
+      "description": "Number formatting options for a locale.",
+      "properties": {
+        "decimal-separator": {
+          "default": ".",
+          "description": "Decimal separator (e.g., \".\" for en-US, \",\" for de-DE).",
+          "type": "string"
+        },
+        "minimum-digits": {
+          "default": 1,
+          "description": "Minimum digits to display.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "thousands-separator": {
+          "default": ",",
+          "description": "Thousands separator (e.g., \",\" for en-US, \".\" for de-DE).",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "RawDateTerms": {
+      "description": "Raw date terms for YAML parsing.",
+      "properties": {
+        "ad": {
+          "default": null,
+          "description": "Localized era suffix for positive years in BC/AD profile (e.g., \"AD\").",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "am": {
+          "default": null,
+          "description": "Localized ante meridiem marker.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bc": {
+          "default": null,
+          "description": "Localized era suffix for negative years in BC/AD profile (e.g., \"BC\").",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bce": {
+          "default": null,
+          "description": "Localized era suffix for negative years in BCE/CE profile (e.g., \"BCE\").",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "before-era": {
+          "default": null,
+          "description": "Localized era suffix for year zero and negative years.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ce": {
+          "default": null,
+          "description": "Localized era suffix for positive years in BCE/CE profile (e.g., \"CE\").",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "months": {
+          "$ref": "#/$defs/RawMonthNames",
+          "default": {
+            "long": [],
+            "short": []
+          },
+          "description": "Localized month names."
+        },
+        "open-ended-term": {
+          "default": null,
+          "description": "Localized term for open-ended date ranges.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pm": {
+          "default": null,
+          "description": "Localized post meridiem marker.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "seasons": {
+          "default": [],
+          "description": "Localized season names in display order.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "timezone-utc": {
+          "default": null,
+          "description": "Localized label for UTC.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "uncertainty-term": {
+          "default": null,
+          "description": "Localized term for uncertain dates.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "RawGenderedString": {
+      "anyOf": [
+        {
+          "description": "Plain string value.",
+          "type": "string"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Gender-specific values.",
+          "minProperties": 1,
+          "properties": {
+            "common": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "feminine": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "masculine": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "neuter": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        }
+      ],
+      "description": "A raw string that may include gender-specific variants."
+    },
+    "RawLocatorTerm": {
+      "description": "Raw locator term with optional lexical gender.",
+      "properties": {
+        "gender": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GrammaticalGender"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Lexical gender used for noun agreement."
+        },
+        "long": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawTermValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Long-form locator term."
+        },
+        "short": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawTermValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Short-form locator term."
+        },
+        "symbol": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawTermValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Symbol-form locator term."
+        }
+      },
+      "type": "object"
+    },
+    "RawMonthNames": {
+      "description": "Raw month names for YAML parsing.",
+      "properties": {
+        "long": {
+          "default": [],
+          "description": "Full month names.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "short": {
+          "default": [],
+          "description": "Abbreviated month names.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "type": "object"
+    },
+    "RawRoleTerm": {
+      "description": "Raw role term with form-keyed values.",
+      "properties": {
+        "long": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawTermValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Long-form role term."
+        },
+        "short": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawTermValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Short-form role term."
+        },
+        "verb": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawTermValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Verb-form role term."
+        },
+        "verb-short": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawTermValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Short verb-form role term."
+        }
+      },
+      "type": "object"
+    },
+    "RawTermValue": {
+      "anyOf": [
+        {
+          "description": "Simple string value.",
+          "type": "string"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Singular/plural forms.",
+          "properties": {
+            "plural": {
+              "$ref": "#/$defs/RawGenderedString"
+            },
+            "singular": {
+              "$ref": "#/$defs/RawGenderedString"
+            }
+          },
+          "required": [
+            "singular",
+            "plural"
+          ],
+          "type": "object"
+        },
+        {
+          "additionalProperties": false,
+          "description": "Gender-specific values.",
+          "minProperties": 1,
+          "properties": {
+            "common": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "feminine": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "masculine": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "neuter": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "type": "object"
+        },
+        {
+          "additionalProperties": {
+            "$ref": "#/$defs/RawTermValue"
+          },
+          "description": "Form-keyed value (for terms with long/short or nested forms).",
+          "type": "object"
+        }
+      ],
+      "description": "A term value that can be a simple string or have singular/plural forms."
+    },
+    "RawVocab": {
+      "description": "Raw vocab maps for genre and medium display text.",
+      "properties": {
+        "genre": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Genre canonical key → display string.",
+          "type": "object"
+        },
+        "medium": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Medium canonical key → display string.",
+          "type": "object"
+        }
+      },
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Raw locale format for YAML parsing.\nThis is a simpler format that uses string keys for terms.",
+  "properties": {
+    "date-formats": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Named date format presets: symbolic name → CLDR date pattern (v2 locales only).",
+      "type": "object"
+    },
+    "dates": {
+      "$ref": "#/$defs/RawDateTerms",
+      "default": {
+        "ad": null,
+        "am": null,
+        "bc": null,
+        "bce": null,
+        "before-era": null,
+        "ce": null,
+        "months": {
+          "long": [],
+          "short": []
+        },
+        "open-ended-term": null,
+        "pm": null,
+        "seasons": [],
+        "timezone-utc": null,
+        "uncertainty-term": null
+      },
+      "description": "Date-related terms."
+    },
+    "evaluation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EvaluationConfig"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Runtime evaluation options (message syntax, evaluator hints)."
+    },
+    "grammar-options": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/GrammarOptions"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Grammar toggles that vary by language."
+    },
+    "legacy-term-aliases": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "Backwards-compatibility aliases: old CSL term key → new message ID.",
+      "type": "object"
+    },
+    "locale": {
+      "description": "The locale identifier (e.g., \"en-US\", \"de-DE\").",
+      "type": "string"
+    },
+    "locale-schema-version": {
+      "description": "Schema version. Absent or \"1\" uses the legacy term-map path.\n\"2\" activates the new messages/dateFormats/grammarOptions path.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "locators": {
+      "additionalProperties": {
+        "$ref": "#/$defs/RawLocatorTerm"
+      },
+      "default": {},
+      "description": "Locator terms keyed by locator name.",
+      "type": "object"
+    },
+    "messages": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "ICU Message Format 1 messages keyed by message ID (v2 locales only).",
+      "type": "object"
+    },
+    "number-formats": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/NumberFormats"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Locale-level number formatting options."
+    },
+    "roles": {
+      "additionalProperties": {
+        "$ref": "#/$defs/RawRoleTerm"
+      },
+      "default": {},
+      "description": "Role terms keyed by role name.",
+      "type": "object"
+    },
+    "terms": {
+      "additionalProperties": {
+        "$ref": "#/$defs/RawTermValue"
+      },
+      "default": {},
+      "description": "General terms keyed by term name.",
+      "type": "object"
+    },
+    "vocab": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RawVocab"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Vocabulary maps for genre and medium display text."
+    }
+  },
+  "required": [
+    "locale"
+  ],
+  "title": "RawLocale",
+  "type": "object"
+}

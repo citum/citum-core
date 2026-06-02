@@ -2338,10 +2338,10 @@
           ]
         },
         "multilingual": {
-          "description": "Multilingual rendering defaults.",
+          "description": "Multilingual rendering defaults. Accepts a preset name (e.g., `\"romanized-translated\"`,\n`\"romanized-only\"`) or an explicit configuration block.",
           "anyOf": [
             {
-              "$ref": "#/$defs/MultilingualConfig"
+              "$ref": "#/$defs/MultilingualConfigEntry"
             },
             {
               "type": "null"
@@ -2973,6 +2973,34 @@
         "per-item"
       ]
     },
+    "MultilingualConfigEntry": {
+      "description": "Entry for `options.multilingual`: either a preset name or an explicit config block.\n\nStyle YAML can use a short preset name:\n```yaml\noptions:\n  multilingual: romanized-translated\n```\nor a full explicit block:\n```yaml\noptions:\n  multilingual:\n    title-mode: combined\n    name-mode: transliterated\n    preferred-script: Latn\n```",
+      "anyOf": [
+        {
+          "description": "A named preset (`\"romanized-translated\"` or `\"romanized-only\"`).",
+          "$ref": "#/$defs/MultilingualPreset"
+        },
+        {
+          "description": "An explicit multilingual configuration block.",
+          "$ref": "#/$defs/MultilingualConfig"
+        }
+      ]
+    },
+    "MultilingualPreset": {
+      "description": "Multilingual rendering policy presets.\n\nEach preset encodes the romanization and translation conventions for a major\ncitation style or style family when rendering references in an English-language\ncontext.  Style YAML authors can write a bare preset name:\n\n```yaml\noptions:\n  multilingual: romanized-translated\n```\n\nand Citum resolves it to the full [`MultilingualConfig`] at load time.\n\nPreset names describe the **rendering behavior**, not a specific style family.\nFor CJK-inclusive 3-way views (e.g. `romanized original [translated]`) use an\nexplicit `pattern:` block instead — that display is something these styles\n*allow*, not something they mandate by default.",
+      "oneOf": [
+        {
+          "description": "Romanize titles and append an English translation in brackets.\n\nTitle pattern: `romanized [translated]` (= `Combined` mode).\nNames: romanized.  Script: `Latn`.\n\nAppropriate for APA, Chicago, MLA, Harvard, Vancouver, AMA, NLM, CSE,\nand most other English-language styles.  All of these styles require\nromanized names and romanized titles; translation is recommended or\nrequired for non-English titles; original-script display is a house\noption that styles *allow* but do not mandate.",
+          "type": "string",
+          "const": "romanized-translated"
+        },
+        {
+          "description": "Romanize titles and names only — no translation appended.\n\nTitle pattern: romanized form only (= `Transliterated` mode).\nNames: romanized.  Script: `Latn`.\n\nAppropriate for IEEE and numeric styles where the translation bracket\nis typically omitted.",
+          "type": "string",
+          "const": "romanized-only"
+        }
+      ]
+    },
     "MultilingualConfig": {
       "description": "Multilingual rendering options.",
       "type": "object",
@@ -3044,9 +3072,82 @@
           "const": "translated"
         },
         {
-          "description": "Combine multiple views (e.g., \"transliterated \\[translated\\]\").\nFor now, this is a placeholder for more complex formatting strings.",
+          "description": "Combine transliteration and translation: `romanized [translated]`.\nEquivalent to `Pattern([transliterated, {translated, brackets}])`.",
           "type": "string",
           "const": "combined"
+        },
+        {
+          "description": "Ordered sequence of views joined by spaces.\n\nUse this when a style requires more than two views — e.g. Chicago's\n`romanized original [translated]` or MLA's `original [translated]`.\nEach segment specifies a view and an optional bracket wrap.\nSegments whose resolved text is empty or identical to the previous\nsegment are silently skipped (dedup).\n\nYAML form:\n```yaml\ntitle-mode:\n  pattern:\n    - view: transliterated\n    - view: original\n    - view: translated\n      wrap: brackets\n```",
+          "type": "object",
+          "properties": {
+            "pattern": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/MultilingualSegment"
+              }
+            }
+          },
+          "required": [
+            "pattern"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "MultilingualSegment": {
+      "description": "A single view segment in a `MultilingualMode::Pattern`.",
+      "type": "object",
+      "properties": {
+        "view": {
+          "description": "Which textual view to render for this segment.",
+          "$ref": "#/$defs/MultilingualView"
+        },
+        "wrap": {
+          "description": "Optional wrapping applied around the resolved text.",
+          "$ref": "#/$defs/SegmentWrap"
+        }
+      },
+      "required": [
+        "view"
+      ]
+    },
+    "MultilingualView": {
+      "description": "Which textual representation of a multilingual field to use in a pattern segment.",
+      "oneOf": [
+        {
+          "description": "The original text as stored in the data.",
+          "type": "string",
+          "const": "original"
+        },
+        {
+          "description": "The transliterated (romanized) form.",
+          "type": "string",
+          "const": "transliterated"
+        },
+        {
+          "description": "The translation matching the style locale.",
+          "type": "string",
+          "const": "translated"
+        }
+      ]
+    },
+    "SegmentWrap": {
+      "description": "Bracket wrapping applied to a pattern segment.",
+      "oneOf": [
+        {
+          "description": "No wrapping.",
+          "type": "string",
+          "const": "none"
+        },
+        {
+          "description": "Wrap in square brackets: `[text]`.",
+          "type": "string",
+          "const": "brackets"
+        },
+        {
+          "description": "Wrap in parentheses: `(text)`.",
+          "type": "string",
+          "const": "parentheses"
         }
       ]
     },
@@ -4575,10 +4676,10 @@
           ]
         },
         "multilingual": {
-          "description": "Multilingual rendering defaults.",
+          "description": "Multilingual rendering defaults. Accepts a preset name (e.g., `\"romanized-translated\"`,\n`\"romanized-only\"`) or an explicit configuration block.",
           "anyOf": [
             {
-              "$ref": "#/$defs/MultilingualConfig"
+              "$ref": "#/$defs/MultilingualConfigEntry"
             },
             {
               "type": "null"
@@ -5417,10 +5518,10 @@
           ]
         },
         "multilingual": {
-          "description": "Multilingual rendering defaults.",
+          "description": "Multilingual rendering defaults. Accepts a preset name (e.g., `\"romanized-translated\"`,\n`\"romanized-only\"`) or an explicit configuration block.",
           "anyOf": [
             {
-              "$ref": "#/$defs/MultilingualConfig"
+              "$ref": "#/$defs/MultilingualConfigEntry"
             },
             {
               "type": "null"

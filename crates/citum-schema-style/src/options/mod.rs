@@ -16,6 +16,7 @@ pub mod processing;
 pub mod scoped;
 pub mod substitute;
 
+pub use crate::presets::{MultilingualConfigEntry, MultilingualPreset};
 pub use bibliography::{
     ArticleJournalBibliographyConfig, ArticleJournalNoPageFallback, BibliographyConfig,
     BibliographyPartitionHeading, BibliographyPartitionKind, BibliographyPartitionMode,
@@ -37,7 +38,10 @@ pub use locators::{
     LabelForm, LabelRepeat, LocatorConfig, LocatorConfigEntry, LocatorKindConfig, LocatorPattern,
     LocatorPreset, TypeClass,
 };
-pub use multilingual::{MultilingualConfig, MultilingualMode, ScriptConfig};
+pub use multilingual::{
+    MultilingualConfig, MultilingualMode, MultilingualSegment, MultilingualView, ScriptConfig,
+    SegmentWrap,
+};
 pub use processing::{
     CitationSortPolicy, Disambiguation, GivennameRule, Group, LabelConfig, LabelParams,
     LabelPreset, Processing, ProcessingCustom, Sort, SortEntry, SortKey, SortSpec,
@@ -75,8 +79,14 @@ pub struct Config {
     /// Localization settings.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub localize: Option<Localize>,
-    /// Multilingual rendering defaults.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Multilingual rendering defaults. Accepts a preset name (e.g., `"romanized-translated"`,
+    /// `"romanized-only"`) or an explicit configuration block.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_multilingual_config",
+        default
+    )]
+    #[cfg_attr(feature = "schema", schemars(with = "Option<MultilingualConfigEntry>"))]
     pub multilingual: Option<MultilingualConfig>,
     /// Contributor formatting defaults. Accepts a preset name (e.g., "apa")
     /// or explicit configuration.
@@ -171,8 +181,14 @@ pub struct CitationOptions {
     /// Localization settings.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub localize: Option<Localize>,
-    /// Multilingual rendering defaults.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Multilingual rendering defaults. Accepts a preset name (e.g., `"romanized-translated"`,
+    /// `"romanized-only"`) or an explicit configuration block.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_multilingual_config",
+        default
+    )]
+    #[cfg_attr(feature = "schema", schemars(with = "Option<MultilingualConfigEntry>"))]
     pub multilingual: Option<MultilingualConfig>,
     /// Contributor formatting defaults.
     #[serde(
@@ -265,8 +281,14 @@ pub struct BibliographyOptions {
     /// Localization settings.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub localize: Option<Localize>,
-    /// Multilingual rendering defaults.
-    #[serde(skip_serializing_if = "Option::is_none")]
+    /// Multilingual rendering defaults. Accepts a preset name (e.g., `"romanized-translated"`,
+    /// `"romanized-only"`) or an explicit configuration block.
+    #[serde(
+        skip_serializing_if = "Option::is_none",
+        deserialize_with = "deserialize_multilingual_config",
+        default
+    )]
+    #[cfg_attr(feature = "schema", schemars(with = "Option<MultilingualConfigEntry>"))]
     pub multilingual: Option<MultilingualConfig>,
     /// Contributor formatting defaults.
     #[serde(
@@ -794,6 +816,17 @@ where
     Ok(value.map(|entry| entry.resolve()))
 }
 
+/// Deserialize multilingual config from either a preset name or an explicit block.
+fn deserialize_multilingual_config<'de, D>(
+    deserializer: D,
+) -> Result<Option<MultilingualConfig>, D::Error>
+where
+    D: serde::Deserializer<'de>,
+{
+    let value: Option<crate::presets::MultilingualConfigEntry> = Option::deserialize(deserializer)?;
+    Ok(value.map(|entry| entry.resolve()))
+}
+
 impl<'de> Deserialize<'de> for Config {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
@@ -810,7 +843,11 @@ impl<'de> Deserialize<'de> for Config {
             locale_override: Option<String>,
             #[serde(skip_serializing_if = "Option::is_none")]
             localize: Option<Localize>,
-            #[serde(skip_serializing_if = "Option::is_none")]
+            #[serde(
+                skip_serializing_if = "Option::is_none",
+                deserialize_with = "deserialize_multilingual_config",
+                default
+            )]
             multilingual: Option<MultilingualConfig>,
             #[serde(
                 skip_serializing_if = "Option::is_none",
@@ -1231,5 +1268,70 @@ locale-override: en-US-chicago
         let cfg: NoteConfig = serde_yaml::from_str(yaml).unwrap();
         assert!(cfg.unknown_fields.contains_key("future-key"));
         assert_eq!(cfg.punctuation, Some(NoteQuotePlacement::Inside));
+    }
+
+    #[test]
+    fn test_multilingual_preset_romanized_translated_parses_and_resolves() {
+        // `romanized-translated` resolves to Combined title mode (romanized [translated])
+        let yaml = r#"multilingual: romanized-translated"#;
+        let config: Config = serde_yaml::from_str(yaml).unwrap();
+        let ml = config.multilingual.unwrap();
+        assert_eq!(ml.title_mode, Some(MultilingualMode::Combined));
+        assert_eq!(ml.name_mode, Some(MultilingualMode::Transliterated));
+        assert_eq!(ml.preferred_script.as_deref(), Some("Latn"));
+    }
+
+    #[test]
+    fn test_multilingual_preset_romanized_only_parses_and_resolves() {
+        // `romanized-only` resolves to Transliterated title mode (no translation)
+        let yaml = r#"multilingual: romanized-only"#;
+        let config: Config = serde_yaml::from_str(yaml).unwrap();
+        let ml = config.multilingual.unwrap();
+        assert_eq!(ml.title_mode, Some(MultilingualMode::Transliterated));
+        assert_eq!(ml.name_mode, Some(MultilingualMode::Transliterated));
+        assert_eq!(ml.preferred_script.as_deref(), Some("Latn"));
+    }
+
+    #[test]
+    fn test_multilingual_explicit_block_transliterated_roundtrips() {
+        // Verify a Transliterated explicit block survives YAML serialize→deserialize.
+        let yaml = r#"
+multilingual:
+  title-mode: transliterated
+  preferred-script: Latn
+"#;
+        let config: Config = serde_yaml::from_str(yaml).unwrap();
+        let ml = config.multilingual.clone().unwrap();
+        assert_eq!(ml.title_mode, Some(MultilingualMode::Transliterated));
+        assert_eq!(ml.preferred_script.as_deref(), Some("Latn"));
+
+        let yaml2 = serde_yaml::to_string(&config).unwrap();
+        let config2: Config = serde_yaml::from_str(&yaml2).unwrap();
+        assert_eq!(config2.multilingual, config.multilingual);
+    }
+
+    #[test]
+    fn test_multilingual_pattern_block_roundtrips() {
+        // Exercises the externally-tagged `{pattern: [...]}` YAML path — the case that
+        // breaks under serde_yaml's untagged+enum limitation without the custom Deserialize.
+        let yaml = r#"
+multilingual:
+  title-mode:
+    pattern:
+      - view: original
+      - view: translated
+        wrap: brackets
+"#;
+        let config: Config = serde_yaml::from_str(yaml).unwrap();
+        let ml = config.multilingual.clone().unwrap();
+        assert!(
+            matches!(ml.title_mode, Some(MultilingualMode::Pattern(_))),
+            "expected Pattern mode, got {:?}",
+            ml.title_mode
+        );
+
+        let yaml2 = serde_yaml::to_string(&config).unwrap();
+        let config2: Config = serde_yaml::from_str(&yaml2).unwrap();
+        assert_eq!(config2.multilingual, config.multilingual);
     }
 }

@@ -1,0 +1,125 @@
+{
+  "$defs": {
+    "RegistryEntry": {
+      "description": "A single entry in a style registry.",
+      "properties": {
+        "aliases": {
+          "default": [],
+          "description": "Short aliases that resolve to this entry (default empty).",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "builtin": {
+          "description": "Name of an embedded style (present for the default registry).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "description": {
+          "description": "Human-readable description.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "fields": {
+          "default": [],
+          "description": "Subject/domain classification tags (default empty).",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "id": {
+          "description": "Canonical style ID, must match the key used in `get_embedded_style`.",
+          "type": "string"
+        },
+        "kind": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StyleKind"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Tier classification (base, profile, journal, independent)."
+        },
+        "path": {
+          "description": "Relative path to a YAML file (used in local registries).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "description": "Human-readable title from the style metadata.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "HTTP URL to a YAML style file.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "StyleKind": {
+      "description": "Tier classification for a style in the registry.",
+      "oneOf": [
+        {
+          "const": "base",
+          "description": "Complete style that serves as an inheritance root.",
+          "type": "string"
+        },
+        {
+          "const": "profile",
+          "description": "Organizational adaptation of a base style (publisher, society, standards body).",
+          "type": "string"
+        },
+        {
+          "const": "journal",
+          "description": "Pure alias pointing to a profile or base style.",
+          "type": "string"
+        },
+        {
+          "const": "independent",
+          "description": "Standalone style with no aliases and no inheritance role.",
+          "type": "string"
+        }
+      ]
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A registry of citation styles with alias resolution.",
+  "properties": {
+    "styles": {
+      "description": "List of style entries in the registry.",
+      "items": {
+        "$ref": "#/$defs/RegistryEntry"
+      },
+      "type": "array"
+    },
+    "version": {
+      "description": "Version identifier for the registry format.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "version",
+    "styles"
+  ],
+  "title": "StyleRegistry",
+  "type": "object"
+}

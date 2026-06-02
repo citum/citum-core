@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": {
+    "type": "string"
+  },
+  "description": "Document-level map from full rendered strings to their abbreviations.\n\nKeys are the full rendered string (exact, case-sensitive). Values are the\nreplacement abbreviation. Applied after value extraction, before output.\n\nAccepts both `abbreviation-map` (YAML frontmatter) and `abbreviation_map` forms.",
+  "title": "AbbreviationMap",
+  "type": "object"
+}
