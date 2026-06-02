@@ -1,11 +1,11 @@
 ---
 # csl26-xio1
 title: Extract Biblatex and external input conversions to dedicated I/O crate
-status: done
+status: completed
 type: task
 priority: normal
 created_at: 2026-05-09T00:00:00Z
-updated_at: 2026-05-09T00:00:00Z
+updated_at: 2026-06-02T10:49:35Z
 ---
 
 Currently, `InputReference::from_biblatex()` lives within `citum-engine`. To maintain 
@@ -27,3 +27,7 @@ rendering logic, while I/O and format conversion should be decoupled.
 Decoupling I/O from the core engine reduces the engine's dependency tree and 
 allows format-specific conversion logic to evolve independently of the rendering 
 pipeline.
+
+## Summary of Changes
+
+Work completed in c0016cec. Created citum-io crate; moved BibLaTeX mapping and RIS/JSON/YAML loading logic from citum-engine. Decoupled citum-engine from biblatex and ciborium dependencies. Updated CLI and tests.

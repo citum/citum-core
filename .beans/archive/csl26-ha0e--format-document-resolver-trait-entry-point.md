@@ -5,7 +5,7 @@ status: completed
 type: feature
 priority: low
 created_at: 2026-05-09T12:39:40Z
-updated_at: 2026-06-01T11:04:07Z
+updated_at: 2026-06-02T10:49:51Z
 ---
 
 Add a third engine entry point so callers can inject any
@@ -85,3 +85,7 @@ Optional: rpc.rs refactor deferred — `load_style` in citum-server performs
 extends-flattening after chain resolution; refactoring would change server
 resolution semantics. The bean item is checked off for completeness with this
 rationale noted.
+
+## Summary of Changes
+
+Work completed in 8e2ce23b. Added format_document_with_resolver to crates/citum-engine/src/api/document.rs, re-exported from crate root, with unit test using a mock StyleResolver. The optional rpc.rs refactor was deferred.
