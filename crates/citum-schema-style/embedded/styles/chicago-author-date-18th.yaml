@@ -31,6 +31,7 @@ info:
   short-name: "Chicago Author-Date"
   edition: "18th edition"
 options:
+  multilingual: romanized-translated
   locators: note
   processing:
     disambiguate:

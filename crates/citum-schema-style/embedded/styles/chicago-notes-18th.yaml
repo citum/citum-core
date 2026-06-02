@@ -33,6 +33,7 @@ info:
   short-name: "Chicago Notes"
   edition: "18th edition"
 options:
+  multilingual: romanized-translated
   processing: note
   substitute: editor-translator-short
   contributors:

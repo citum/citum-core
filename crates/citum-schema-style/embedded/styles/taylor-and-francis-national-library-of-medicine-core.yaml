@@ -17,6 +17,7 @@ info:
     - href: https://files.taylorandfrancis.com/tf_NLM.pdf
       rel: documentation
 options:
+  multilingual: romanized-translated
   substitute: editor-long
   processing: numeric
   contributors: numeric-medium

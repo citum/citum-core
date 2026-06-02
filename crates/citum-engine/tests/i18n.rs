@@ -1144,12 +1144,335 @@ fn given_apa_multilingual_title_mode_when_rendering_a_japanese_article_then_titl
         rendered,
         "In’yo no shakaiteki kino: Gakujutsu chishiki no kochiku ni okeru sansho jissen [The Social Function of Citation: Reference Practices in the Construction of Academic Knowledge]. Kagaku Shakai-gaku Kenkyu"
     );
-    assert!(
-        !rendered.chars().any(|c| {
-            ('\u{3040}'..='\u{30ff}').contains(&c) || ('\u{4e00}'..='\u{9fff}').contains(&c)
+}
+
+// ── End-to-end: Chicago + MLA multilingual rendering ─────────────────────────
+
+/// Pattern mode: 3-way Japanese title (romanized + original + [translation]).
+///
+/// Verifies that `Transliterated` → `Original` → `Translated(brackets)` segment order
+/// produces `romanized 原文 [translation]` and that the smart-quote transform is applied
+/// to the transliterated text (ASCII `'` → U+2019 RIGHT SINGLE QUOTATION MARK).
+fn chicago_pattern_renders_three_way_japanese_title() {
+    use citum_schema::options::{
+        MultilingualMode, MultilingualSegment, MultilingualView, SegmentWrap,
+    };
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Chicago Pattern Test".to_string()),
+            default_locale: Some("en-US".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            multilingual: Some(MultilingualConfig {
+                title_mode: Some(MultilingualMode::Pattern(vec![
+                    MultilingualSegment {
+                        view: MultilingualView::Transliterated,
+                        wrap: SegmentWrap::None,
+                    },
+                    MultilingualSegment {
+                        view: MultilingualView::Original,
+                        wrap: SegmentWrap::None,
+                    },
+                    MultilingualSegment {
+                        view: MultilingualView::Translated,
+                        wrap: SegmentWrap::Brackets,
+                    },
+                ])),
+                name_mode: Some(MultilingualMode::Transliterated),
+                preferred_script: Some("Latn".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
         }),
-        "rendered bibliography should not contain Japanese scripts: {rendered}"
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![citum_schema::template::TemplateComponent::Title(
+                TemplateTitle {
+                    title: TitleType::Primary,
+                    rendering: Rendering {
+                        suffix: Some(". ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+            )]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let reference = InputReference::SerialComponent(Box::new(SerialComponent {
+        id: Some("suzuki2020".into()),
+        r#type: SerialComponentType::Article,
+        title: Some(Title::Multilingual(MultilingualComplex {
+            original: "引用の社会的機能".to_string(),
+            lang: Some("ja".into()),
+            transliterations: HashMap::from([(
+                "ja-Latn".to_string(),
+                "In'yo no shakaiteki kino".to_string(),
+            )]),
+            translations: HashMap::from([(
+                "en".into(),
+                "The Social Function of Citation".to_string(),
+            )]),
+        })),
+        issued: EdtfString("2020".to_string()),
+        language: Some("ja".into()),
+        ..Default::default()
+    }));
+
+    let bibliography = indexmap::IndexMap::from([("suzuki2020".to_string(), reference)]);
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_bibliography();
+
+    // Smart-quote: ASCII `'` between alphabetic chars → U+2019 (curly apostrophe).
+    assert_eq!(
+        rendered,
+        "In\u{2019}yo no shakaiteki kino 引用の社会的機能 [The Social Function of Citation]. "
     );
+}
+
+/// Pattern mode: 2-segment Chinese title (original + [translation]), no romanization.
+///
+/// Verifies that a `Original` → `Translated(brackets)` pattern renders `原文 [translation]`
+/// and that no romanized form leaks through (transliteration data is present in the
+/// fixture but the pattern does not request it).
+fn mla_pattern_renders_original_and_translation_chinese_title() {
+    use citum_schema::options::{
+        MultilingualMode, MultilingualSegment, MultilingualView, SegmentWrap,
+    };
+    let style = Style {
+        info: StyleInfo {
+            title: Some("MLA Pattern Test".to_string()),
+            default_locale: Some("en-US".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            multilingual: Some(MultilingualConfig {
+                title_mode: Some(MultilingualMode::Pattern(vec![
+                    MultilingualSegment {
+                        view: MultilingualView::Original,
+                        wrap: SegmentWrap::None,
+                    },
+                    MultilingualSegment {
+                        view: MultilingualView::Translated,
+                        wrap: SegmentWrap::Brackets,
+                    },
+                ])),
+                name_mode: Some(MultilingualMode::Transliterated),
+                preferred_script: Some("Latn".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![citum_schema::template::TemplateComponent::Title(
+                TemplateTitle {
+                    title: TitleType::Primary,
+                    rendering: Rendering {
+                        suffix: Some(". ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                },
+            )]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let reference = InputReference::SerialComponent(Box::new(SerialComponent {
+        id: Some("wang2021".into()),
+        r#type: SerialComponentType::Article,
+        title: Some(Title::Multilingual(MultilingualComplex {
+            original: "战争与和平".to_string(),
+            lang: Some("zh".into()),
+            transliterations: HashMap::from([(
+                "zh-Latn-pinyin".to_string(),
+                "Zhànzhēng yǔ Hépíng".to_string(),
+            )]),
+            translations: HashMap::from([("en".into(), "War and Peace".to_string())]),
+        })),
+        issued: EdtfString("2021".to_string()),
+        language: Some("zh".into()),
+        ..Default::default()
+    }));
+
+    let bibliography = indexmap::IndexMap::from([("wang2021".to_string(), reference)]);
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_bibliography();
+
+    // No romanized segment in this pattern — the transliteration is present in the
+    // fixture data but must not appear in the output.
+    assert_eq!(rendered, "战争与和平 [War and Peace]. ");
+}
+
+// ── Pattern mode helpers ──────────────────────────────────────────────────────
+
+fn given_mla_pattern_mode_when_original_and_translation_exist_then_original_precedes_bracketed_translation()
+ {
+    use citum_schema::options::{
+        MultilingualMode, MultilingualSegment, MultilingualView, SegmentWrap,
+    };
+    let complex = MultilingualComplex {
+        original: "战争与和平".to_string(),
+        lang: Some("zh".into()),
+        transliterations: HashMap::new(), // MLA may omit transliteration
+        translations: {
+            let mut map = HashMap::new();
+            map.insert("en".into(), "War and Peace".to_string());
+            map
+        },
+    };
+    let ml_string = MultilingualString::Complex(complex);
+    let mode = MultilingualMode::Pattern(vec![
+        MultilingualSegment {
+            view: MultilingualView::Original,
+            wrap: SegmentWrap::None,
+        },
+        MultilingualSegment {
+            view: MultilingualView::Translated,
+            wrap: SegmentWrap::Brackets,
+        },
+    ]);
+    let result = resolve_multilingual_string(&ml_string, Some(&mode), None, None, "en");
+    assert_eq!(result, "战争与和平 [War and Peace]");
+}
+
+fn given_chicago_pattern_mode_when_all_three_views_exist_then_romanized_original_translation_are_joined()
+ {
+    use citum_schema::options::{
+        MultilingualMode, MultilingualSegment, MultilingualView, SegmentWrap,
+    };
+    let complex = MultilingualComplex {
+        original: "战争与和平".to_string(),
+        lang: Some("zh".into()),
+        transliterations: {
+            let mut map = HashMap::new();
+            map.insert(
+                "zh-Latn-pinyin".to_string(),
+                "Zhànzhēng yǔ Hépíng".to_string(),
+            );
+            map
+        },
+        translations: {
+            let mut map = HashMap::new();
+            map.insert("en".into(), "War and Peace".to_string());
+            map
+        },
+    };
+    let ml_string = MultilingualString::Complex(complex);
+    let mode = MultilingualMode::Pattern(vec![
+        MultilingualSegment {
+            view: MultilingualView::Transliterated,
+            wrap: SegmentWrap::None,
+        },
+        MultilingualSegment {
+            view: MultilingualView::Original,
+            wrap: SegmentWrap::None,
+        },
+        MultilingualSegment {
+            view: MultilingualView::Translated,
+            wrap: SegmentWrap::Brackets,
+        },
+    ]);
+    let result = resolve_multilingual_string(
+        &ml_string,
+        Some(&mode),
+        Some(&["zh-Latn-pinyin".to_string()]),
+        None,
+        "en",
+    );
+    assert_eq!(result, "Zhànzhēng yǔ Hépíng 战争与和平 [War and Peace]");
+}
+
+fn given_pattern_mode_when_transliteration_equals_original_then_duplicate_is_suppressed() {
+    use citum_schema::options::{
+        MultilingualMode, MultilingualSegment, MultilingualView, SegmentWrap,
+    };
+    // When the transliteration falls back to or happens to match the original,
+    // the dedup logic should suppress the second occurrence.
+    let complex = MultilingualComplex {
+        original: "Tokyo".to_string(),
+        lang: Some("ja".into()),
+        transliterations: {
+            let mut map = HashMap::new();
+            map.insert("ja-Latn".to_string(), "Tokyo".to_string()); // same as original
+            map
+        },
+        translations: {
+            let mut map = HashMap::new();
+            map.insert("en".into(), "Tokyo (East Capital)".to_string());
+            map
+        },
+    };
+    let ml_string = MultilingualString::Complex(complex);
+    let mode = MultilingualMode::Pattern(vec![
+        MultilingualSegment {
+            view: MultilingualView::Transliterated,
+            wrap: SegmentWrap::None,
+        },
+        MultilingualSegment {
+            view: MultilingualView::Original,
+            wrap: SegmentWrap::None,
+        },
+        MultilingualSegment {
+            view: MultilingualView::Translated,
+            wrap: SegmentWrap::Brackets,
+        },
+    ]);
+    let result = resolve_multilingual_string(
+        &ml_string,
+        Some(&mode),
+        Some(&["ja-Latn".to_string()]),
+        None,
+        "en",
+    );
+    // "Tokyo" appears once (dedup suppresses original); translation is still shown
+    assert_eq!(result, "Tokyo [Tokyo (East Capital)]");
+}
+
+fn given_pattern_mode_when_translation_is_missing_then_missing_segment_is_skipped() {
+    use citum_schema::options::{
+        MultilingualMode, MultilingualSegment, MultilingualView, SegmentWrap,
+    };
+    let complex = MultilingualComplex {
+        original: "引用の社会的機能".to_string(),
+        lang: Some("ja".into()),
+        transliterations: {
+            let mut map = HashMap::new();
+            map.insert(
+                "ja-Latn".to_string(),
+                "In'yo no shakaiteki kino".to_string(),
+            );
+            map
+        },
+        translations: HashMap::new(), // no English translation available
+    };
+    let ml_string = MultilingualString::Complex(complex);
+    let mode = MultilingualMode::Pattern(vec![
+        MultilingualSegment {
+            view: MultilingualView::Transliterated,
+            wrap: SegmentWrap::None,
+        },
+        MultilingualSegment {
+            view: MultilingualView::Original,
+            wrap: SegmentWrap::None,
+        },
+        MultilingualSegment {
+            view: MultilingualView::Translated,
+            wrap: SegmentWrap::Brackets,
+        },
+    ]);
+    let result = resolve_multilingual_string(
+        &ml_string,
+        Some(&mode),
+        None,
+        Some(&"Latn".to_string()),
+        "en",
+    );
+    // Translation segment is absent → only romanized + original
+    assert_eq!(result, "In'yo no shakaiteki kino 引用の社会的機能");
 }
 
 mod string_resolution {
@@ -1233,6 +1556,39 @@ mod string_resolution {
             "Combined mode should fall back to original text plus translation when no transliteration exists.",
         );
         super::given_combined_mode_without_transliteration_when_resolving_then_original_and_translation_are_combined();
+    }
+
+    #[test]
+    fn mla_pattern_mode_shows_original_then_bracketed_translation() {
+        announce_behavior(
+            "MLA Pattern mode should render the original CJK title followed by the English translation in brackets.",
+        );
+        super::given_mla_pattern_mode_when_original_and_translation_exist_then_original_precedes_bracketed_translation();
+    }
+
+    #[test]
+    fn chicago_pattern_mode_shows_three_way_romanized_original_translation() {
+        announce_behavior(
+            "Chicago Pattern mode should render romanized + original CJK + [English translation] in that order.",
+        );
+        super::given_chicago_pattern_mode_when_all_three_views_exist_then_romanized_original_translation_are_joined();
+    }
+
+    #[test]
+    fn pattern_mode_deduplicates_segments_with_identical_text() {
+        announce_behavior(
+            "Pattern mode should suppress a segment whose text is identical to the immediately preceding segment.",
+        );
+        super::given_pattern_mode_when_transliteration_equals_original_then_duplicate_is_suppressed(
+        );
+    }
+
+    #[test]
+    fn pattern_mode_skips_missing_segment_without_error() {
+        announce_behavior(
+            "Pattern mode should silently skip segments for which no text is available.",
+        );
+        super::given_pattern_mode_when_translation_is_missing_then_missing_segment_is_skipped();
     }
 }
 
@@ -1329,6 +1685,24 @@ mod multilingual_rendering {
             "APA combined title mode should romanize Japanese article and journal titles while adding the article-title translation.",
         );
         super::given_apa_multilingual_title_mode_when_rendering_a_japanese_article_then_titles_are_romanized();
+    }
+
+    #[test]
+    fn chicago_pattern_renders_three_way_japanese_title() {
+        announce_behavior(
+            "Pattern mode [Transliterated, Original, Translated(brackets)] renders \
+             'romanized original [translation]' for a Japanese title, with smart-quote applied to the transliteration.",
+        );
+        super::chicago_pattern_renders_three_way_japanese_title();
+    }
+
+    #[test]
+    fn mla_pattern_renders_original_and_translation_chinese_title() {
+        announce_behavior(
+            "Pattern mode [Original, Translated(brackets)] renders 'original [translation]' \
+             for a Chinese title; the transliteration present in the fixture must not appear.",
+        );
+        super::mla_pattern_renders_original_and_translation_chinese_title();
     }
 }
 
@@ -1445,11 +1819,9 @@ fn chicago_german_override_localizes_editor_verb() {
     let processor = Processor::with_locale(style, bib, locale);
     let output = processor.render_bibliography();
 
-    // In de-DE-chicago, role.editor.verb is "hg. von"
-    assert!(
-        output.contains("hg. von Editor Name"),
-        "Output should contain localized editor verb: {}",
-        output
+    assert_eq!(
+        output,
+        "Name, Autor. 2024. \u{201c}Kapitel.\u{201d} hg. von Editor Name, _Sammelband_."
     );
 }
 
@@ -1467,10 +1839,9 @@ fn german_override_localizes_translator_verb_when_role_preset_requests_it() {
     let processor = Processor::with_locale(style, bib, locale);
     let output = processor.render_bibliography();
 
-    assert!(
-        output.contains("übers. von Ubersetzer Name"),
-        "Output should contain localized translator verb: {}",
-        output
+    assert_eq!(
+        output,
+        "Autor Name. 2024. _Das Buch_. übers. von Ubersetzer Name"
     );
 }
 

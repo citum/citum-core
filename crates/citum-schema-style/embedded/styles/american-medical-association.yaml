@@ -20,6 +20,7 @@ info:
   short-name: "AMA"
   edition: "11th edition"
 options:
+  multilingual: romanized-translated
   locators:
     strip-label-periods: true
   substitute: editor-short

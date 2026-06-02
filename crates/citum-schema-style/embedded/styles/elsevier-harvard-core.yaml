@@ -18,6 +18,7 @@ info:
       rel: documentation
   short-name: "Elsevier Harvard"
 options:
+  multilingual: romanized-translated
   processing:
     sort:
       template:

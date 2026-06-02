@@ -28,6 +28,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! 3. Skip presets entirely and specify everything explicitly
 
 use crate::grouping::{GroupSort, GroupSortKey, SortKey as GroupSortKey_};
+use crate::options::multilingual::{MultilingualConfig, MultilingualMode};
 use crate::options::{
     AndOptions, ContributorConfig, DateConfig, DelimiterPrecedesLast, DemoteNonDroppingParticle,
     DisplayAsSort, MonthFormat, NameForm, ShortenListOptions, Sort, SortKey, SortSpec, Substitute,
@@ -760,6 +761,149 @@ impl SubstitutePreset {
                 unknown_fields: std::collections::BTreeMap::new(),
             },
         }
+    }
+}
+
+/// Multilingual rendering policy presets.
+///
+/// Each preset encodes the romanization and translation conventions for a major
+/// citation style or style family when rendering references in an English-language
+/// context.  Style YAML authors can write a bare preset name:
+///
+/// ```yaml
+/// options:
+///   multilingual: romanized-translated
+/// ```
+///
+/// and Citum resolves it to the full [`MultilingualConfig`] at load time.
+///
+/// Preset names describe the **rendering behavior**, not a specific style family.
+/// For CJK-inclusive 3-way views (e.g. `romanized original [translated]`) use an
+/// explicit `pattern:` block instead — that display is something these styles
+/// *allow*, not something they mandate by default.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+#[non_exhaustive]
+pub enum MultilingualPreset {
+    /// Romanize titles and append an English translation in brackets.
+    ///
+    /// Title pattern: `romanized [translated]` (= `Combined` mode).
+    /// Names: romanized.  Script: `Latn`.
+    ///
+    /// Appropriate for APA, Chicago, MLA, Harvard, Vancouver, AMA, NLM, CSE,
+    /// and most other English-language styles.  All of these styles require
+    /// romanized names and romanized titles; translation is recommended or
+    /// required for non-English titles; original-script display is a house
+    /// option that styles *allow* but do not mandate.
+    RomanizedTranslated,
+    /// Romanize titles and names only — no translation appended.
+    ///
+    /// Title pattern: romanized form only (= `Transliterated` mode).
+    /// Names: romanized.  Script: `Latn`.
+    ///
+    /// Appropriate for IEEE and numeric styles where the translation bracket
+    /// is typically omitted.
+    RomanizedOnly,
+}
+
+impl MultilingualPreset {
+    /// Resolve this preset into a concrete [`MultilingualConfig`].
+    pub fn config(self) -> MultilingualConfig {
+        match self {
+            MultilingualPreset::RomanizedTranslated => MultilingualConfig {
+                title_mode: Some(MultilingualMode::Combined),
+                name_mode: Some(MultilingualMode::Transliterated),
+                preferred_script: Some("Latn".to_string()),
+                ..Default::default()
+            },
+            MultilingualPreset::RomanizedOnly => MultilingualConfig {
+                title_mode: Some(MultilingualMode::Transliterated),
+                name_mode: Some(MultilingualMode::Transliterated),
+                preferred_script: Some("Latn".to_string()),
+                ..Default::default()
+            },
+        }
+    }
+}
+
+/// Entry for `options.multilingual`: either a preset name or an explicit config block.
+///
+/// Style YAML can use a short preset name:
+/// ```yaml
+/// options:
+///   multilingual: romanized-translated
+/// ```
+/// or a full explicit block:
+/// ```yaml
+/// options:
+///   multilingual:
+///     title-mode: combined
+///     name-mode: transliterated
+///     preferred-script: Latn
+/// ```
+#[derive(Debug, Clone, Serialize, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(untagged)]
+pub enum MultilingualConfigEntry {
+    /// A named preset (`"romanized-translated"` or `"romanized-only"`).
+    Preset(MultilingualPreset),
+    /// An explicit multilingual configuration block.
+    Explicit(Box<MultilingualConfig>),
+}
+
+impl MultilingualConfigEntry {
+    /// Resolve this entry into a concrete [`MultilingualConfig`].
+    pub fn resolve(self) -> MultilingualConfig {
+        match self {
+            MultilingualConfigEntry::Preset(p) => p.config(),
+            MultilingualConfigEntry::Explicit(c) => *c,
+        }
+    }
+}
+
+/// Custom deserializer for [`MultilingualConfigEntry`].
+///
+/// Accepts either a bare preset name (`"romanized-translated"`, `"romanized-only"`) or a full
+/// `MultilingualConfig` map block. A hand-written visitor is used instead of
+/// `#[serde(untagged)]` because the untagged mechanism wraps inner
+/// deserializers in a content-based buffer that converts externally-tagged
+/// YAML maps (like `{pattern: [...]}`) into serde enum inputs — and those
+/// inputs cannot be re-dispatched through `deserialize_any`, causing a
+/// *"untagged and internally tagged enums do not support enum input"* error
+/// on serialization roundtrips.
+impl<'de> serde::Deserialize<'de> for MultilingualConfigEntry {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        struct EntryVisitor;
+
+        impl<'de> serde::de::Visitor<'de> for EntryVisitor {
+            type Value = MultilingualConfigEntry;
+
+            fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                write!(f, "a multilingual preset name or an explicit config block")
+            }
+
+            fn visit_str<E: serde::de::Error>(self, v: &str) -> Result<Self::Value, E> {
+                let preset =
+                    MultilingualPreset::deserialize(serde::de::value::StrDeserializer::new(v))?;
+                Ok(MultilingualConfigEntry::Preset(preset))
+            }
+
+            fn visit_map<A: serde::de::MapAccess<'de>>(
+                self,
+                map: A,
+            ) -> Result<Self::Value, A::Error> {
+                let config = MultilingualConfig::deserialize(
+                    serde::de::value::MapAccessDeserializer::new(map),
+                )?;
+                Ok(MultilingualConfigEntry::Explicit(Box::new(config)))
+            }
+        }
+
+        deserializer.deserialize_any(EntryVisitor)
     }
 }
 

@@ -1,0 +1,4122 @@
+{
+  "$defs": {
+    "ArchiveInfo": {
+      "description": "Structured archival location metadata for unpublished and archival material.\n\nModels the hierarchical location of an item within an archive, following\ncommon archival description standards (DACS, ISAD(G), EAD).",
+      "properties": {
+        "box": {
+          "description": "Box number within the collection.\n\nUses raw identifier syntax `r#box`, which serde serializes as `\"box\"` transparently.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "collection": {
+          "description": "Name of the collection within the archive.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "collection-id": {
+          "description": "Identifier for the collection (call number, accession number, etc.).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "folder": {
+          "description": "Folder number within the box.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "item": {
+          "description": "Item identifier within the folder.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "location": {
+          "description": "Display override for the archival location (shelfmark, call number, or complex location string).\n\nWhen present, overrides the structured fields for display. Acts as the legacy\n`archive_location` fallback for complex shelfmarks that don't fit the structured model.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/MultilingualString"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Name of the archive or repository holding the material.\n\nUses `MultilingualString` to support international institution names\n(e.g., 国立国会図書館 / National Diet Library)."
+        },
+        "place": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Place"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Geographic location (city/country) of the archive.\n\nParallel to `SimpleName.location`; both carry geographic-place semantics."
+        },
+        "series": {
+          "description": "Name of the series within the collection.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "description": "URL for the archival item (e.g. digitized finding aid or item page).",
+          "format": "uri",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "AudioVisualType": {
+      "description": "Discriminates audio-visual subtypes for style-directed formatting.",
+      "oneOf": [
+        {
+          "const": "film",
+          "description": "A film or motion picture (default).",
+          "type": "string"
+        },
+        {
+          "const": "episode",
+          "description": "A single episode of a TV series, podcast, or web series.",
+          "type": "string"
+        },
+        {
+          "const": "recording",
+          "description": "A recording (music video, concert, etc.).",
+          "type": "string"
+        },
+        {
+          "const": "broadcast",
+          "description": "A broadcast program.",
+          "type": "string"
+        }
+      ]
+    },
+    "CollectionType": {
+      "description": "Discriminates collection subtypes for style-directed formatting.",
+      "oneOf": [
+        {
+          "const": "anthology",
+          "description": "A curated anthology of independent works (e.g., short stories, essays).",
+          "type": "string"
+        },
+        {
+          "const": "proceedings",
+          "description": "Published proceedings of a conference or symposium.",
+          "type": "string"
+        },
+        {
+          "const": "edited-book",
+          "description": "A book assembled from contributions by multiple authors under an editor.",
+          "type": "string"
+        },
+        {
+          "const": "edited-volume",
+          "description": "An edited volume that may span multiple books or a series.",
+          "type": "string"
+        }
+      ]
+    },
+    "Contributor": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SimpleName"
+        },
+        {
+          "$ref": "#/$defs/StructuredName"
+        },
+        {
+          "$ref": "#/$defs/MultilingualName"
+        },
+        {
+          "$ref": "#/$defs/ContributorList"
+        }
+      ],
+      "description": "A contributor can be a single string, a structured name, or a list of contributors."
+    },
+    "ContributorEntry": {
+      "description": "A single entry in a reference's contributors list.",
+      "properties": {
+        "contributor": {
+          "$ref": "#/$defs/Contributor",
+          "description": "The contributor (name, organization, or list)."
+        },
+        "gender": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContributorGender"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The grammatical gender used for role-label agreement."
+        },
+        "role": {
+          "$ref": "#/$defs/ContributorRole",
+          "description": "The role this contributor plays in relation to the work."
+        }
+      },
+      "required": [
+        "role",
+        "contributor"
+      ],
+      "type": "object"
+    },
+    "ContributorGender": {
+      "description": "Grammatical gender carried on contributor records for role-label agreement.",
+      "oneOf": [
+        {
+          "const": "masculine",
+          "description": "Masculine grammatical gender.",
+          "type": "string"
+        },
+        {
+          "const": "feminine",
+          "description": "Feminine grammatical gender.",
+          "type": "string"
+        },
+        {
+          "const": "neuter",
+          "description": "Neuter grammatical gender.",
+          "type": "string"
+        },
+        {
+          "const": "common",
+          "description": "Common or shared grammatical gender.",
+          "type": "string"
+        }
+      ]
+    },
+    "ContributorList": {
+      "description": "A list of contributors.",
+      "items": {
+        "$ref": "#/$defs/Contributor"
+      },
+      "type": "array"
+    },
+    "ContributorRole": {
+      "description": "A contributor role for use in the unified contributors list.",
+      "oneOf": [
+        {
+          "enum": [
+            "author",
+            "editor",
+            "translator",
+            "director",
+            "performer",
+            "composer",
+            "illustrator",
+            "narrator",
+            "host",
+            "guest",
+            "interviewer",
+            "recipient",
+            "compiler",
+            "producer",
+            "writer"
+          ],
+          "type": "string"
+        }
+      ]
+    },
+    "EdtfString": {
+      "description": "An EDTF string.",
+      "type": "string"
+    },
+    "EprintInfo": {
+      "description": "Preprint server identifier following the biblatex eprint model.\n\nUsed on all three reference classes (Monograph, CollectionComponent, SerialComponent)\nbecause journal articles routinely carry arXiv or similar identifiers.",
+      "properties": {
+        "class": {
+          "description": "Subject class or category used by the server (e.g. \"cs.CL\").",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "The identifier on the preprint server (e.g. \"2301.00001\").",
+          "type": "string"
+        },
+        "server": {
+          "description": "The preprint server name in canonical lowercase form.\n\nProducers may supply mixed-case values such as \"arXiv\" or \"SSRN\";\nimplementations should treat the field case-insensitively and compare\nor normalize on the lowercase form.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "server"
+      ],
+      "type": "object"
+    },
+    "InputBibliographyInfo": {
+      "description": "Metadata for an input bibliography.",
+      "properties": {
+        "author": {
+          "description": "Creator or maintainer of the bibliography dataset.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "description": "Human-readable title for the bibliography dataset.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "InputReference": {
+      "oneOf": [
+        {
+          "description": "A monograph, such as a book or a report, is a monolithic work published or produced as a complete entity.",
+          "properties": {
+            "abstract-text": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "ads-bibcode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "archive": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "archive-info": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ArchiveInfo"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "archive-location": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "author": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "available-date": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "class": {
+              "const": "monograph",
+              "type": "string"
+            },
+            "container": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "contributors": {
+              "items": {
+                "$ref": "#/$defs/ContributorEntry"
+              },
+              "type": "array"
+            },
+            "created": {
+              "$ref": "#/$defs/EdtfString",
+              "default": ""
+            },
+            "doi": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "duration": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "edition": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "editor": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "eprint": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EprintInfo"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "type": "object"
+            },
+            "genre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "isbn": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issue": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "$ref": "#/$defs/EdtfString",
+              "default": ""
+            },
+            "keywords": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "medium": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "numbering": {
+              "items": {
+                "$ref": "#/$defs/Numbering"
+              },
+              "type": "array"
+            },
+            "original": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "part-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "printing-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "publisher": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Publisher"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "references": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "scale": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "short-title": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "size": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "status": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "supplement-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "translator": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": {
+              "$ref": "#/$defs/MonographType"
+            },
+            "url": {
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "volume": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "A component of a larger monograph, such as a chapter in a book.",
+          "properties": {
+            "abstract-text": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "archive-info": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ArchiveInfo"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "author": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "class": {
+              "const": "collection-component",
+              "type": "string"
+            },
+            "container": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "contributors": {
+              "items": {
+                "$ref": "#/$defs/ContributorEntry"
+              },
+              "type": "array"
+            },
+            "created": {
+              "$ref": "#/$defs/EdtfString",
+              "default": ""
+            },
+            "doi": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "edition": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "eprint": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EprintInfo"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "type": "object"
+            },
+            "genre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "issue": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "$ref": "#/$defs/EdtfString",
+              "default": ""
+            },
+            "keywords": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "medium": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "numbering": {
+              "items": {
+                "$ref": "#/$defs/Numbering"
+              },
+              "type": "array"
+            },
+            "original": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "pages": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/NumOrStr"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "part-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "printing-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "status": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "supplement-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "translator": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": {
+              "$ref": "#/$defs/MonographComponentType"
+            },
+            "url": {
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "volume": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "A component of a larger serial publication; for example a journal or newspaper article.\nThe parent serial is referenced by its ID.",
+          "properties": {
+            "abstract-text": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "ads-bibcode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "archive-info": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ArchiveInfo"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "author": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "available-date": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "class": {
+              "const": "serial-component",
+              "type": "string"
+            },
+            "container": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "contributors": {
+              "items": {
+                "$ref": "#/$defs/ContributorEntry"
+              },
+              "type": "array"
+            },
+            "created": {
+              "$ref": "#/$defs/EdtfString",
+              "default": ""
+            },
+            "doi": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "edition": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "eprint": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EprintInfo"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "type": "object"
+            },
+            "genre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "issue": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "$ref": "#/$defs/EdtfString",
+              "default": ""
+            },
+            "keywords": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "medium": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "numbering": {
+              "items": {
+                "$ref": "#/$defs/Numbering"
+              },
+              "type": "array"
+            },
+            "original": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "pages": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "part-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "printing-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "reviewed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "section": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "status": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "supplement-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "translator": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": {
+              "$ref": "#/$defs/SerialComponentType"
+            },
+            "url": {
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "volume": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "A collection of works, such as an anthology or proceedings.",
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "class": {
+              "const": "collection",
+              "type": "string"
+            },
+            "container": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "contributors": {
+              "items": {
+                "$ref": "#/$defs/ContributorEntry"
+              },
+              "type": "array"
+            },
+            "created": {
+              "$ref": "#/$defs/EdtfString",
+              "default": ""
+            },
+            "edition": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "editor": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "event": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "type": "object"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "isbn": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issue": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "$ref": "#/$defs/EdtfString",
+              "default": ""
+            },
+            "keywords": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "numbering": {
+              "items": {
+                "$ref": "#/$defs/Numbering"
+              },
+              "type": "array"
+            },
+            "part-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "printing-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "publisher": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Publisher"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "short-title": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "supplement-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "translator": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": {
+              "$ref": "#/$defs/CollectionType"
+            },
+            "url": {
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "volume": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "A serial publication (journal, magazine, etc.).",
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "class": {
+              "const": "serial",
+              "type": "string"
+            },
+            "container": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "contributors": {
+              "items": {
+                "$ref": "#/$defs/ContributorEntry"
+              },
+              "type": "array"
+            },
+            "editor": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "type": "object"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "issn": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "publisher": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Publisher"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "short-title": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": {
+              "$ref": "#/$defs/SerialType"
+            },
+            "url": {
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "A legal case (court decision).",
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Date the URL was accessed."
+            },
+            "authority": {
+              "description": "Court or authority (e.g., \"U.S. Supreme Court\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "class": {
+              "const": "legal-case",
+              "type": "string"
+            },
+            "created": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Creation or origination date of the legal work."
+            },
+            "doi": {
+              "description": "DOI identifier.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "description": "Per-field language overrides.",
+              "type": "object"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Unique identifier for this reference."
+            },
+            "issued": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Decision date"
+            },
+            "keywords": {
+              "description": "Keywords or subject tags.",
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "BCP 47 language of the document."
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Freeform note."
+            },
+            "original": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Original work or publication from which this case record derives."
+            },
+            "page": {
+              "description": "First page of case in reporter",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "reporter": {
+              "description": "Reporter abbreviation (e.g., \"U.S.\", \"F.2d\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Case name (e.g., \"Brown v. Board of Education\")"
+            },
+            "url": {
+              "description": "URL for the case.",
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "volume": {
+              "description": "Reporter volume",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "A statute or legislative act.",
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Date the URL was accessed."
+            },
+            "authority": {
+              "description": "Legislative body (e.g., \"U.S. Congress\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "chapter-number": {
+              "description": "Optional chapter or session identifier.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "class": {
+              "const": "statute",
+              "type": "string"
+            },
+            "code": {
+              "description": "Code abbreviation (e.g., \"U.S.C.\", \"Pub. L.\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "created": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Creation or origination date of the statute."
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "description": "Per-field language overrides.",
+              "type": "object"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Unique identifier for this reference."
+            },
+            "issued": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Enactment or publication date"
+            },
+            "keywords": {
+              "description": "Keywords or subject tags.",
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "BCP 47 language of the document."
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Freeform note."
+            },
+            "number": {
+              "description": "Statute or public-law number when present.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "original": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Original work or publication from which this statute derives."
+            },
+            "page": {
+              "description": "Page or entry locator for session laws and registers.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "section": {
+              "description": "Section or page number",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Statute name (e.g., \"Civil Rights Act of 1964\")"
+            },
+            "url": {
+              "description": "URL for the statute.",
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "volume": {
+              "description": "Code volume",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "An international treaty or agreement.",
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Date the URL was accessed."
+            },
+            "author": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Parties to the treaty"
+            },
+            "class": {
+              "const": "treaty",
+              "type": "string"
+            },
+            "created": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Creation or origination date of the treaty text."
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "description": "Per-field language overrides.",
+              "type": "object"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Unique identifier for this reference."
+            },
+            "issued": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Signing or ratification date"
+            },
+            "keywords": {
+              "description": "Keywords or subject tags.",
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "BCP 47 language of the document."
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Freeform note."
+            },
+            "original": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Original work or publication from which this treaty derives."
+            },
+            "page": {
+              "description": "Page or treaty number",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "reporter": {
+              "description": "Treaty series abbreviation (e.g., \"U.N.T.S.\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Treaty name (e.g., \"Treaty of Versailles\")"
+            },
+            "url": {
+              "description": "URL for the treaty.",
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "volume": {
+              "description": "Treaty series volume",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "A legislative or administrative hearing.",
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Date the URL was accessed."
+            },
+            "authority": {
+              "description": "Legislative body conducting the hearing (e.g., \"U.S. Senate Committee on Finance\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "class": {
+              "const": "hearing",
+              "type": "string"
+            },
+            "created": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Creation or origination date of the hearing record."
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "description": "Per-field language overrides.",
+              "type": "object"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Unique identifier for this reference."
+            },
+            "issued": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Hearing date"
+            },
+            "keywords": {
+              "description": "Keywords or subject tags.",
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "BCP 47 language of the document."
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Freeform note."
+            },
+            "original": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Original work or publication from which this hearing record derives."
+            },
+            "session-number": {
+              "description": "Session or congress number",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Hearing title"
+            },
+            "url": {
+              "description": "URL for the hearing record.",
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "An administrative regulation.",
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Date the URL was accessed."
+            },
+            "authority": {
+              "description": "Regulatory authority (e.g., \"EPA\", \"Federal Register\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "class": {
+              "const": "regulation",
+              "type": "string"
+            },
+            "code": {
+              "description": "Code abbreviation (e.g., \"C.F.R.\", \"Fed. Reg.\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "created": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Creation or origination date of the regulation text."
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "description": "Per-field language overrides.",
+              "type": "object"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Unique identifier for this reference."
+            },
+            "issued": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Publication or effective date"
+            },
+            "keywords": {
+              "description": "Keywords or subject tags.",
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "BCP 47 language of the document."
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Freeform note."
+            },
+            "original": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Original work or publication from which this regulation derives."
+            },
+            "section": {
+              "description": "Section or page number",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Regulation title"
+            },
+            "url": {
+              "description": "URL for the regulation.",
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "volume": {
+              "description": "Code volume",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "A legal brief or filing.",
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Date the URL was accessed."
+            },
+            "author": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Author/filer of the brief"
+            },
+            "authority": {
+              "description": "Court (e.g., \"U.S. Supreme Court\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "class": {
+              "const": "brief",
+              "type": "string"
+            },
+            "created": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Creation or origination date of the brief."
+            },
+            "docket-number": {
+              "description": "Docket number",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "description": "Per-field language overrides.",
+              "type": "object"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Unique identifier for this reference."
+            },
+            "issued": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Filing date"
+            },
+            "keywords": {
+              "description": "Keywords or subject tags.",
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "BCP 47 language of the document."
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Freeform note."
+            },
+            "original": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Original work or publication from which this brief derives."
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Brief title or case name"
+            },
+            "url": {
+              "description": "URL for the brief.",
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "A classic work (Aristotle, Bible, etc.) with standard citation forms.",
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "author": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "class": {
+              "const": "classic",
+              "type": "string"
+            },
+            "container": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "created": {
+              "$ref": "#/$defs/EdtfString",
+              "default": ""
+            },
+            "edition": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "editor": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "type": "object"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "issue": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "issued": {
+              "$ref": "#/$defs/EdtfString",
+              "default": ""
+            },
+            "keywords": {
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "numbering": {
+              "items": {
+                "$ref": "#/$defs/Numbering"
+              },
+              "type": "array"
+            },
+            "original": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "part-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "printing-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "publisher": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Publisher"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "supplement-number": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "translator": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "url": {
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "volume": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "A patent.",
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Date the URL was accessed."
+            },
+            "application-number": {
+              "description": "Application number",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "assignee": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Assignee (patent holder)"
+            },
+            "author": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Inventor(s)"
+            },
+            "authority": {
+              "description": "Patent office (e.g., \"U.S. Patent and Trademark Office\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "class": {
+              "const": "patent",
+              "type": "string"
+            },
+            "created": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Creation or origination date of the patented work."
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "description": "Per-field language overrides.",
+              "type": "object"
+            },
+            "filing-date": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filing date"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Unique identifier for this reference."
+            },
+            "issued": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Issue/grant date"
+            },
+            "jurisdiction": {
+              "description": "Jurisdiction (e.g., \"US\", \"EP\", \"JP\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "keywords": {
+              "description": "Keywords or subject tags.",
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "BCP 47 language of the document."
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Freeform note."
+            },
+            "original": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Original work or publication from which this patent derives."
+            },
+            "patent-number": {
+              "description": "Patent number (e.g., \"U.S. Patent No. 7,347,809\")",
+              "type": "string"
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Patent title"
+            },
+            "url": {
+              "description": "URL for the patent.",
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "patent-number",
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "A research dataset.",
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Date the URL was accessed."
+            },
+            "author": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Dataset author(s)/creator(s)"
+            },
+            "class": {
+              "const": "dataset",
+              "type": "string"
+            },
+            "created": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Creation or origination date of the dataset."
+            },
+            "doi": {
+              "description": "DOI identifier.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "description": "Per-field language overrides.",
+              "type": "object"
+            },
+            "format": {
+              "description": "File format. Prefer IANA media types (e.g., `\"text/csv\"`) or common\nabbreviations (e.g., `\"NetCDF\"`, `\"HDF5\"`) where no IANA type exists.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Unique identifier for this reference."
+            },
+            "issued": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Publication/release date"
+            },
+            "keywords": {
+              "description": "Keywords or subject tags.",
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "BCP 47 language of the dataset."
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Freeform note."
+            },
+            "original": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Original work or publication from which this dataset derives."
+            },
+            "publisher": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Publisher"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Publisher or repository (e.g., \"Zenodo\", \"Dryad\")"
+            },
+            "repository": {
+              "description": "Repository or archive name",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "size": {
+              "description": "Dataset size (e.g., \"2.4 GB\", \"150,000 records\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Dataset title"
+            },
+            "url": {
+              "description": "URL for the dataset.",
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "version": {
+              "description": "Version number",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "A technical standard or specification.",
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Date the URL was accessed."
+            },
+            "authority": {
+              "description": "Standards organization (e.g., \"ISO\", \"ANSI\", \"IEEE\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "class": {
+              "const": "standard",
+              "type": "string"
+            },
+            "created": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Creation or origination date of the standard."
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "description": "Per-field language overrides.",
+              "type": "object"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Unique identifier for this reference."
+            },
+            "issued": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Publication date"
+            },
+            "keywords": {
+              "description": "Keywords or subject tags.",
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "BCP 47 language of the document."
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Freeform note."
+            },
+            "original": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Original work or publication from which this standard derives."
+            },
+            "publisher": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Publisher"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Publisher (usually same as authority)"
+            },
+            "standard-number": {
+              "description": "Standard number (e.g., \"ISO 8601\", \"IEEE 754-2008\")",
+              "type": "string"
+            },
+            "status": {
+              "description": "Publication status. Canonical controlled-vocabulary values: `\"published\"`, `\"draft\"`, `\"withdrawn\"`.\nSee `docs/policies/ENUM_VOCABULARY_POLICY.md` for matching rules.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Standard title"
+            },
+            "url": {
+              "description": "URL for the standard.",
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "standard-number",
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "Software or source code.",
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Date the URL was accessed."
+            },
+            "author": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Contributor"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Author(s)/developer(s)"
+            },
+            "class": {
+              "const": "software",
+              "type": "string"
+            },
+            "created": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Creation or origination date of the software work."
+            },
+            "doi": {
+              "description": "DOI identifier.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "description": "Per-field language overrides.",
+              "type": "object"
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Unique identifier for this reference."
+            },
+            "issued": {
+              "$ref": "#/$defs/EdtfString",
+              "description": "Release date"
+            },
+            "keywords": {
+              "description": "Keywords or subject tags.",
+              "items": {
+                "type": "string"
+              },
+              "type": [
+                "array",
+                "null"
+              ]
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "BCP 47 language of the software documentation."
+            },
+            "license": {
+              "description": "SPDX license identifier preferred (e.g., `\"MIT\"`, `\"GPL-3.0-only\"`, `\"Apache-2.0\"`).\nSee <https://spdx.org/licenses/> for the authoritative identifier list.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Freeform note."
+            },
+            "original": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Original work or publication from which this software derives."
+            },
+            "platform": {
+              "description": "Platform (e.g., \"Windows\", \"macOS\", \"Linux\", \"cross-platform\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "publisher": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Publisher"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Publisher or repository (e.g., \"GitHub\", \"Zenodo\")"
+            },
+            "repository": {
+              "description": "Repository URL",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Software title"
+            },
+            "url": {
+              "description": "URL for the software.",
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "version": {
+              "description": "Version number (e.g., \"4.1.0\", \"v2.3.1\")",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "Event metadata for conferences, performances, broadcasts, and recordings.",
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Date the URL was accessed."
+            },
+            "available-date": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Date the event became or will become publicly available."
+            },
+            "class": {
+              "const": "event",
+              "type": "string"
+            },
+            "container": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Immediate container (e.g., broadcast program, proceedings volume)."
+            },
+            "contributors": {
+              "description": "Unified contributor list with explicit role tags.",
+              "items": {
+                "$ref": "#/$defs/ContributorEntry"
+              },
+              "type": "array"
+            },
+            "date": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Event date."
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "description": "Per-field language overrides.",
+              "type": "object"
+            },
+            "genre": {
+              "description": "Event genre (e.g., `\"conference\"`, `\"performance\"`, `\"broadcast\"`, `\"talk\"`).",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Unique identifier for this reference."
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "BCP 47 language of the event."
+            },
+            "location": {
+              "description": "Event location (city, venue).",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "network": {
+              "description": "Broadcaster, network, or streaming platform.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Freeform note."
+            },
+            "original": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Original work or publication from which this event derives."
+            },
+            "series": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Recurring event series (e.g., annual conference series)."
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Event name (e.g., conference title, performance name)."
+            },
+            "url": {
+              "description": "URL for the event.",
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        },
+        {
+          "description": "An audio-visual work: film, TV episode, recording, or broadcast.\n\nThis is a work-like reference class. It represents the creative work\nwhen that work is the citee, not a fully modeled release hierarchy.",
+          "properties": {
+            "accessed": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "class": {
+              "const": "audio-visual",
+              "type": "string"
+            },
+            "container": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "contributors": {
+              "items": {
+                "$ref": "#/$defs/ContributorEntry"
+              },
+              "type": "array"
+            },
+            "created": {
+              "$ref": "#/$defs/EdtfString",
+              "default": ""
+            },
+            "field-languages": {
+              "additionalProperties": {
+                "$ref": "#/$defs/LangID"
+              },
+              "type": "object"
+            },
+            "genre": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RefID"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "issued": {
+              "$ref": "#/$defs/EdtfString",
+              "default": ""
+            },
+            "language": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/LangID"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "medium": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "note": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RichText"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "number": {
+              "description": "Catalog or episode number shorthand (normalized into `numbering`).",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "numbering": {
+              "items": {
+                "$ref": "#/$defs/Numbering"
+              },
+              "type": "array"
+            },
+            "original": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "platform": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "publisher": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Publisher"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "short-title": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Title"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "type": {
+              "$ref": "#/$defs/AudioVisualType",
+              "default": "film"
+            },
+            "url": {
+              "format": "uri",
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "class"
+          ],
+          "type": "object",
+          "unevaluatedProperties": false
+        }
+      ],
+      "unevaluatedProperties": false
+    },
+    "LangID": {
+      "description": "BCP 47 language tag (e.g., `\"en\"`, `\"de\"`, `\"ja\"`).",
+      "type": "string"
+    },
+    "MonographComponentType": {
+      "description": "Discriminates monograph-component subtypes for style-directed formatting.",
+      "oneOf": [
+        {
+          "const": "chapter",
+          "description": "A chapter within a book or edited volume.",
+          "type": "string"
+        },
+        {
+          "const": "document",
+          "description": "A document component that does not fit a more specific subtype.",
+          "type": "string"
+        }
+      ]
+    },
+    "MonographType": {
+      "description": "Discriminates monograph subtypes for style-directed formatting.",
+      "oneOf": [
+        {
+          "const": "book",
+          "description": "A book or monograph (default).",
+          "type": "string"
+        },
+        {
+          "const": "manual",
+          "description": "A technical manual or user guide.",
+          "type": "string"
+        },
+        {
+          "const": "report",
+          "description": "A technical or institutional report.",
+          "type": "string"
+        },
+        {
+          "const": "thesis",
+          "description": "An academic thesis or dissertation.",
+          "type": "string"
+        },
+        {
+          "const": "webpage",
+          "description": "A webpage or standalone web document.",
+          "type": "string"
+        },
+        {
+          "const": "post",
+          "description": "A standalone post (e.g., social media, forum).",
+          "type": "string"
+        },
+        {
+          "const": "interview",
+          "description": "An interview treated as a standalone monographic source.",
+          "type": "string"
+        },
+        {
+          "const": "manuscript",
+          "description": "An unpublished manuscript or archival document.",
+          "type": "string"
+        },
+        {
+          "const": "preprint",
+          "description": "A preprint hosted on a preprint server (arXiv, bioRxiv, SSRN, etc.).\n\nThe preprint server has a custodial relationship with the work (hosting and\npreservation), not an editorial one. This parallels an archived manuscript\nheld by a repository.",
+          "type": "string"
+        },
+        {
+          "const": "personal-communication",
+          "description": "A letter, email, or other personal communication.",
+          "type": "string"
+        },
+        {
+          "const": "document",
+          "description": "A generic standalone document that does not fit a more specific subtype.",
+          "type": "string"
+        }
+      ]
+    },
+    "MultilingualComplex": {
+      "description": "Complex multilingual representation with original, transliterations, and translations.\n\nAllows capturing the original text in its native script, along with transliterations\n(phonetic representations in different scripts) and translations (semantic equivalents\nin different languages). This is essential for accurately rendering bibliographies in\nmultilingual and non-Latin-script contexts.",
+      "properties": {
+        "lang": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "ISO 639/BCP 47 language code for the original text."
+        },
+        "original": {
+          "description": "The text in its original script and language.",
+          "type": "string"
+        },
+        "translations": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Translations of the text into other languages.\n\nKeys are ISO 639/BCP 47 language codes (e.g., \"en\" for English, \"fr\" for French).\nValues are the translated text.",
+          "type": "object"
+        },
+        "transliterations": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "Transliterations/Transcriptions of the original text into other scripts.\n\nKeys are typically script codes (e.g., \"Latn\" for Latin) or full BCP 47 tags.\nValues are the transliterated or transcribed text.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "original"
+      ],
+      "type": "object"
+    },
+    "MultilingualName": {
+      "description": "Holistic multilingual name representation.",
+      "properties": {
+        "lang": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LangID"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "ISO 639/BCP 47 language code for the original name."
+        },
+        "original": {
+          "$ref": "#/$defs/StructuredName",
+          "description": "The name in its original script."
+        },
+        "translations": {
+          "additionalProperties": {
+            "$ref": "#/$defs/StructuredName"
+          },
+          "description": "Translations of the name.",
+          "type": "object"
+        },
+        "transliterations": {
+          "additionalProperties": {
+            "$ref": "#/$defs/StructuredName"
+          },
+          "description": "Transliterations/Transcriptions of the name.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "original"
+      ],
+      "type": "object"
+    },
+    "MultilingualString": {
+      "anyOf": [
+        {
+          "description": "A simple string in a single language.",
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/MultilingualComplex",
+          "description": "A complex multilingual string with original, transliterations, and translations."
+        }
+      ],
+      "description": "A string that can be represented in multiple languages and scripts.\n\nThis is an enum that supports both simple strings and complex multilingual representations.\nUse `Simple` for basic strings and `Complex` when you need to track original language,\ntransliterations, and translations."
+    },
+    "NumOrStr": {
+      "anyOf": [
+        {
+          "description": "A numeric value.",
+          "format": "int64",
+          "type": "integer"
+        },
+        {
+          "description": "A string value.",
+          "type": "string"
+        }
+      ],
+      "description": "A value that could be either a number or a string.\n\nUsed for fields that may contain numeric or string values, such as issue numbers,\nvolume numbers, or similar identifiers that can be formatted as either type.\nThe `Display` implementation shows the value in its appropriate form."
+    },
+    "Numbering": {
+      "description": "A numbering identifier for a work (e.g., volume, issue, number).",
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/NumberingType",
+          "description": "The type of the numbering."
+        },
+        "value": {
+          "description": "The value of the numbering (e.g., \"4\", \"B\").",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type",
+        "value"
+      ],
+      "type": "object"
+    },
+    "NumberingType": {
+      "description": "Known numbering kind keyword or custom kebab-case identifier.",
+      "type": "string"
+    },
+    "Place": {
+      "description": "Geographic place name used for publication and archive locations.",
+      "type": "string"
+    },
+    "Publisher": {
+      "anyOf": [
+        {
+          "properties": {
+            "name": {
+              "$ref": "#/$defs/MultilingualString"
+            },
+            "place": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Place"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "name"
+          ],
+          "type": "object"
+        },
+        {
+          "$ref": "#/$defs/Contributor"
+        },
+        {
+          "$ref": "#/$defs/MultilingualString"
+        },
+        {
+          "type": "string"
+        }
+      ],
+      "description": "A publisher or production company.\n\nPublisher is always a corporate entity — a person is never a publisher\nin the bibliographic sense."
+    },
+    "RefID": {
+      "description": "Unique identifier for a reference item.",
+      "type": "string"
+    },
+    "RichText": {
+      "anyOf": [
+        {
+          "description": "Plain text with no inline markup.",
+          "type": "string"
+        },
+        {
+          "description": "Djot inline markup.",
+          "properties": {
+            "djot": {
+              "description": "Djot inline markup source.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "djot"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "Inline markup for freeform text fields (note, abstract).\n\nSerializes from a plain string or a `{ djot: \"...\" }` object."
+    },
+    "SerialComponentType": {
+      "description": "Discriminates serial-component subtypes for style-directed formatting.",
+      "oneOf": [
+        {
+          "const": "article",
+          "description": "A peer-reviewed or editorial article in a journal, magazine, or newspaper.",
+          "type": "string"
+        },
+        {
+          "const": "post",
+          "description": "A post within an online serial (blog, news site, social feed).",
+          "type": "string"
+        },
+        {
+          "const": "review",
+          "description": "A review published in a serial (book review, film review, etc.).",
+          "type": "string"
+        }
+      ]
+    },
+    "SerialType": {
+      "description": "Types of serial publications.",
+      "oneOf": [
+        {
+          "const": "academic-journal",
+          "description": "An academic peer-reviewed journal.",
+          "type": "string"
+        },
+        {
+          "const": "blog",
+          "description": "A blog or personal website updated periodically.",
+          "type": "string"
+        },
+        {
+          "const": "magazine",
+          "description": "A general-interest magazine.",
+          "type": "string"
+        },
+        {
+          "const": "newspaper",
+          "description": "A newspaper.",
+          "type": "string"
+        },
+        {
+          "const": "newsletter",
+          "description": "A newsletter.",
+          "type": "string"
+        },
+        {
+          "const": "proceedings",
+          "description": "A conference proceedings serial.",
+          "type": "string"
+        },
+        {
+          "const": "podcast",
+          "description": "A podcast.",
+          "type": "string"
+        },
+        {
+          "const": "broadcast-program",
+          "description": "A broadcast program (radio, television).",
+          "type": "string"
+        }
+      ]
+    },
+    "SimpleName": {
+      "description": "A simple name is just a string, with an optional location.",
+      "properties": {
+        "location": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Place"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Geographic place associated with the name."
+        },
+        "name": {
+          "$ref": "#/$defs/MultilingualString",
+          "description": "Institutional or organization name."
+        },
+        "short-name": {
+          "description": "Short form of the name (e.g., abbreviation or shortened form).",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
+    "StructuredName": {
+      "description": "A structured name is a name broken down into its constituent parts.",
+      "properties": {
+        "dropping-particle": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "family": {
+          "$ref": "#/$defs/MultilingualString"
+        },
+        "given": {
+          "$ref": "#/$defs/MultilingualString"
+        },
+        "non-dropping-particle": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suffix": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "given",
+        "family"
+      ],
+      "type": "object"
+    },
+    "StructuredTitle": {
+      "description": "Where title parts are meaningful, use this struct; Citum processors will not parse title strings.",
+      "properties": {
+        "full": {
+          "description": "Full rendered title string (optional override).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "main": {
+          "description": "Main title component.",
+          "type": "string"
+        },
+        "sub": {
+          "$ref": "#/$defs/Subtitle",
+          "description": "Subtitle component."
+        }
+      },
+      "required": [
+        "main",
+        "sub"
+      ],
+      "type": "object"
+    },
+    "Subtitle": {
+      "anyOf": [
+        {
+          "description": "A single subtitle string.",
+          "type": "string"
+        },
+        {
+          "description": "Multiple subtitle strings.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      ],
+      "description": "The subtitle can either be a string, as is the common case, or a vector of strings."
+    },
+    "Title": {
+      "anyOf": [
+        {
+          "description": "A title in a single language.",
+          "type": "string"
+        },
+        {
+          "$ref": "#/$defs/StructuredTitle",
+          "description": "A structured title."
+        },
+        {
+          "$ref": "#/$defs/MultilingualComplex",
+          "description": "A complex multilingual title."
+        },
+        {
+          "description": "A title in multiple languages.",
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "$ref": "#/$defs/LangID"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "type": "array"
+          },
+          "type": "array"
+        },
+        {
+          "description": "A structured title in multiple languages.",
+          "items": {
+            "maxItems": 2,
+            "minItems": 2,
+            "prefixItems": [
+              {
+                "$ref": "#/$defs/LangID"
+              },
+              {
+                "$ref": "#/$defs/StructuredTitle"
+              }
+            ],
+            "type": "array"
+          },
+          "type": "array"
+        },
+        {
+          "description": "An abbreviated title (shorthand, full).",
+          "maxItems": 2,
+          "minItems": 2,
+          "prefixItems": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "type": "array"
+        }
+      ],
+      "description": "A title can be a single string, a structured title, or a multilingual title."
+    },
+    "WorkRelation": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RefID",
+          "description": "The target work is referenced by its ID (resolved at render time)."
+        },
+        {
+          "$ref": "#/$defs/InputReference",
+          "description": "The target work is embedded inline."
+        }
+      ],
+      "description": "A relation to another bibliographic entity.\n\nUntagged in serde to allow either an inline object or a string ID reference.\nUsed for both hierarchical (`container`) and associative (`original`, `reviewed`, `series`) links."
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A collection of bibliographic references with optional metadata.",
+  "properties": {
+    "custom": {
+      "additionalProperties": true,
+      "description": "Custom user-defined fields for extensions.",
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "info": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/InputBibliographyInfo"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "Bibliography metadata."
+    },
+    "references": {
+      "description": "The list of references.",
+      "items": {
+        "$ref": "#/$defs/InputReference"
+      },
+      "type": "array"
+    },
+    "sets": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "description": "Optional compound entry sets keyed by set id.\n\nEach set id maps to an ordered list of reference ids that should be treated\nas one compound numeric group when `compound-numeric` is enabled by style.",
+      "type": [
+        "object",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "references"
+  ],
+  "title": "InputBibliography",
+  "type": "object"
+}

@@ -6,6 +6,7 @@ info:
 
 extends: chicago-author-date-18th
 options:
+  multilingual: romanized-translated
   page-range-format: expanded
   contributors:
     role:

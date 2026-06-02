@@ -33,6 +33,7 @@ info:
   edition: "18th edition"
   default-locale: en-US
 options:
+  multilingual: romanized-translated
   locale-override: en-US-chicago
   processing: note
   contributors:

@@ -17,6 +17,7 @@ info:
       rel: documentation
   short-name: "IEEE"
 options:
+  multilingual: romanized-only
   substitute: editor-translator-short
   processing: numeric
   contributors:

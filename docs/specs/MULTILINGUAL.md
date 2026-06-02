@@ -165,19 +165,50 @@ Future: `preferred-transliteration` style option will allow explicit method sele
 
 ## 2. Style Configuration
 
-A new global configuration section `multilingual` will be added to the Citum style schema.
+The `multilingual` key under `options` controls romanization and translation policy for
+the style.  It accepts either a **preset name** or an **explicit configuration block**.
+
+### 2.1 Preset names
+
+Preset names describe the **rendering behavior**, not a specific style family.
+They are the preferred way to configure multilingual rendering in embedded styles.
+
+```yaml
+options:
+  multilingual: romanized-translated   # or: romanized-only
+```
+
+| Preset | Title rendering | Name rendering | Typical use |
+|---|---|---|---|
+| `romanized-translated` | `romanized [translated]` (= `combined`) | romanized | APA, Chicago, MLA, Harvard, Vancouver, AMA, NLM, CSE |
+| `romanized-only` | romanized only | romanized | IEEE and numeric styles |
+
+All major English-language styles *require* romanized names and titles and *recommend*
+a translation bracket for non-English titles.  Showing original-script text alongside
+romanization is something these styles *allow* as a house option, not something they
+mandate.  Use an explicit `pattern:` block (§2.3) to opt in to CJK-inclusive rendering.
+
+### 2.2 Explicit configuration
+
+For cases where no preset matches, a full block can be provided:
 
 ```yaml
 options:
   multilingual:
     # Preferred view for titles.
-    # The value is a mode key or a combined pattern such as "transliterated [translated]".
-    # See the style schema for the authoritative grammar.
-    title-mode: "transliterated [translated]"
+    # Simple modes: primary | transliterated | translated | combined
+    title-mode: combined          # combined = "romanized [translated]"
+
+    # For three-way views use the pattern form:
+    # title-mode:
+    #   pattern:
+    #     - view: transliterated
+    #     - view: original
+    #     - view: translated
+    #       wrap: brackets       # none | brackets | parentheses
 
     # Preferred view for names.
-    # See the style schema for the authoritative value set.
-    name-mode: "transliterated"
+    name-mode: transliterated
 
     # Preferred script for transliterations (e.g., "Latn", "Cyrl")
     preferred-script: "Latn"
@@ -188,6 +219,14 @@ options:
         use-native-ordering: true # FamilyGiven for CJK
         delimiter: ""            # No space between Family/Given
 ```
+
+### 2.3 Pattern mode
+
+`Pattern` is an ordered list of view segments joined by spaces.  It is used for styles
+like Chicago (`romanized original [translation]`) or MLA (`original [translation]`) that
+combine more than two views.  Segments whose resolved text is empty or identical to the
+previous segment are silently skipped (dedup), so missing transliterations do not produce
+duplicate text.
 
 ## 3. Processor Logic
 

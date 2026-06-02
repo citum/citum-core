@@ -16,6 +16,7 @@ info:
       rel: documentation
   short-name: "Vancouver"
 options:
+  multilingual: romanized-translated
   substitute:
     contributor-role-form: long
     template:

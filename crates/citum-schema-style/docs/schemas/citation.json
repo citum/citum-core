@@ -1,0 +1,264 @@
+{
+  "$defs": {
+    "Citation": {
+      "description": "A citation containing one or more references.",
+      "properties": {
+        "grouped": {
+          "description": "If true, the entire citation is a single dynamic compound set.\n\nThe first item acts as the head and subsequent items are merged as tails\nin the bibliography. Ignored for non-numeric (compound-numeric) styles.\nItem order is preserved and sorting is suppressed when this flag is set.",
+          "type": "boolean"
+        },
+        "id": {
+          "description": "The citation ID (optional, for tracking).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "items": {
+          "description": "The citation items (references being cited).",
+          "items": {
+            "$ref": "#/$defs/CitationItem"
+          },
+          "type": "array"
+        },
+        "mode": {
+          "$ref": "#/$defs/CitationMode",
+          "description": "Citation mode: integral (narrative) vs non-integral (parenthetical).\nOnly relevant for author-date styles."
+        },
+        "note-number": {
+          "description": "Note number for footnote/endnote styles.\nAssigned by the document processor, not the citation processor.",
+          "format": "uint32",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "position": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Position"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Position of this citation in the document flow.\nDetected automatically by the processor or set explicitly by the caller."
+        },
+        "prefix": {
+          "description": "Prefix text before all citation items.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suffix": {
+          "description": "Suffix text after all citation items.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suppress-author": {
+          "description": "Suppress the author name across all items in this citation.\nUsed when the author is already named in the prose: \"Smith argues (2020)\".\nApplies uniformly to all items — per-item suppression is not supported\nbecause mixed-visibility citations are typographically incoherent.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "items"
+      ],
+      "type": "object"
+    },
+    "CitationItem": {
+      "description": "A single citation item referencing a bibliography entry.",
+      "properties": {
+        "id": {
+          "description": "The reference ID (citekey).",
+          "type": "string"
+        },
+        "integral-name-state": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IntegralNameState"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Explicit integral name-memory state override for this item."
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CitationLocator"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Canonical locator value for pinpoint citations."
+        },
+        "org-abbreviation-state": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IntegralNameState"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Explicit org-abbreviation state override for this item."
+        },
+        "prefix": {
+          "description": "Prefix text before this item",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suffix": {
+          "description": "Suffix text after this item",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "CitationLocator": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/LocatorSegment"
+        },
+        {
+          "properties": {
+            "segments": {
+              "items": {
+                "$ref": "#/$defs/LocatorSegment"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "segments"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "CitationMode": {
+      "description": "Citation mode for author-date styles.\n\nDetermines how the author name is rendered relative to the citation.",
+      "oneOf": [
+        {
+          "const": "integral",
+          "description": "Author inline in text: \"Smith (2020) argues...\"\nAlso known as \"narrative\" or \"in-text\" citations.",
+          "type": "string"
+        },
+        {
+          "const": "non-integral",
+          "description": "Author in parentheses: \"(Smith, 2020)\"\nThe default mode for most citations.",
+          "type": "string"
+        }
+      ]
+    },
+    "IntegralNameState": {
+      "description": "Explicit integral citation name-memory state for one citation item.",
+      "oneOf": [
+        {
+          "const": "first",
+          "description": "Render this item as the first integral mention in scope.",
+          "type": "string"
+        },
+        {
+          "const": "subsequent",
+          "description": "Render this item as a subsequent integral mention in scope.",
+          "type": "string"
+        }
+      ]
+    },
+    "LocatorSegment": {
+      "description": "A single segment of a compound locator.\n\nPairs a locator type with its value, e.g. `{ label: chapter, value: \"3\" }`.",
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/LocatorType",
+          "description": "The locator type for this segment."
+        },
+        "value": {
+          "$ref": "#/$defs/LocatorValue",
+          "description": "The locator value (e.g., \"3\", \"42-45\")."
+        }
+      },
+      "required": [
+        "label",
+        "value"
+      ],
+      "type": "object"
+    },
+    "LocatorType": {
+      "description": "Known locator label keyword or custom kebab-case identifier.",
+      "type": "string"
+    },
+    "LocatorValue": {
+      "anyOf": [
+        {
+          "description": "Plain string value with heuristic plural detection.",
+          "type": "string"
+        },
+        {
+          "description": "Explicit value with manual plural override.",
+          "properties": {
+            "plural": {
+              "description": "Whether this locator is plural.",
+              "type": "boolean"
+            },
+            "value": {
+              "description": "The locator value string.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "value",
+            "plural"
+          ],
+          "type": "object"
+        }
+      ],
+      "description": "A locator value that supports both plain strings and explicit plurality.\n\nPlain strings use heuristic plural detection (checking for `-`, `–`, `,`, `&`).\nUse the explicit form to override when the heuristic fails (e.g., \"figure A-3\"\nshould be singular despite containing a hyphen)."
+    },
+    "Position": {
+      "description": "Position of a citation in the document flow.\n\nIndicates where this citation appears relative to previous citations\nof the same item(s). Used for note-based styles to detect ibid and\nsubsequent citations, and for author-date styles to apply position-specific\nformatting rules (e.g., short forms after first citation).",
+      "oneOf": [
+        {
+          "const": "first",
+          "description": "First citation of an item.",
+          "type": "string"
+        },
+        {
+          "const": "subsequent",
+          "description": "Subsequent citation of an item (non-consecutive).",
+          "type": "string"
+        },
+        {
+          "const": "ibid",
+          "description": "Same item cited immediately before, no locator on either.",
+          "type": "string"
+        },
+        {
+          "const": "ibid-with-locator",
+          "description": "Same item cited immediately before, with different locator.",
+          "type": "string"
+        }
+      ]
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "items": {
+    "$ref": "#/$defs/Citation"
+  },
+  "title": "Array_of_Citation",
+  "type": "array"
+}

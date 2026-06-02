@@ -17,6 +17,7 @@ info:
     - href: http://www.tandf.co.uk/journals/authors/style/reference/tf_CSE.pdf
       rel: documentation
 options:
+  multilingual: romanized-translated
   processing:
     sort:
       template:
