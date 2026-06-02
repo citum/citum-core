@@ -219,6 +219,8 @@ added to the citation context.
 - [x] Short-title suppression via `first-reference-note-number` implemented and tested
 - [x] `givenname-disambiguation-rule` field exists on `Disambiguation`; `primary-name` and
   `primary-name-with-initials` restrict expansion to the first author only (csl26-4ada)
+- [x] `primary-name` falls back to year-suffix when primary-author expansion cannot resolve
+  the collision (identical primary authors); et-al expansion retained alongside suffix (csl26-wu1l)
 - [x] `by-cite` given-name expansion is citation-local and distinguishable from
   `all-names` global expansion (csl26-lvib)
 - [x] Upstream CSL disambiguation fixtures that distinguish `by-cite` and
@@ -226,6 +228,15 @@ added to the citation context.
 
 ## Changelog
 
+- 2026-06-02: Fixed `primary-name` cascade fallback (csl26-wu1l). When the primary
+  author's given name cannot resolve a collision (identical primary authors), the engine
+  now falls back to year-suffix while retaining the et-al expansion that was found.
+  Fixed `try_apply_combined_resolution` and the `try_apply_name_partitions` subgroup path
+  in `processor/disambiguation.rs` to validate expansion under primary-only rendering
+  before committing; added a new `primary_only` flag to `check_givenname_resolution` /
+  `append_givenname_resolution_key`. Added unit test
+  `test_primary_name_identical_primary_falls_back_to_year_suffix` and integration tests
+  for both the fallback and success paths.
 - 2026-06-02: Implemented `by-cite` citation-local given-name expansion
   (csl26-lvib). Citation rendering now overlays current-citation name-expansion
   hints for `GivennameRule::ByCite`, while `all-names` keeps global expansion.
