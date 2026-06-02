@@ -546,13 +546,38 @@ fn disambiguation_all_names_co_citation() {
 fn disambiguation_primary_name_givenname_expansion() {
     let processor = processor_for_givenname_rule(GivennameRule::PrimaryName);
 
-    // primary-name must expand the first author's given name and leave non-primary authors unexpanded.
+    // ASTHMA-A and ASTHMA-B share the same primary author (A Asthma).  Expanding the
+    // first author's given name cannot resolve the collision, so the cascade must fall
+    // through to year-suffix.  The et-al expansion to two names is retained alongside
+    // the suffix — the name form must not collapse back to one-name et-al.
     let asthma = process_citation_ids(&processor, &["ASTHMA-A", "ASTHMA-B"]);
 
     assert_eq!(
         asthma,
-        "A Asthma, Bronchitis, et al., (1990); A Asthma, Bronchitis, et al., (1990)"
+        "A Asthma, Bronchitis, et al., (1990a); A Asthma, Bronchitis, et al., (1990b)"
     );
+}
+
+/// §2.1 primary-name *success* path: when the primary authors' given names differ,
+/// expansion resolves the collision and year-suffix must NOT be applied.
+fn disambiguation_primary_name_givenname_expansion_resolves_distinct_primary_authors() {
+    let mut bibliography = indexmap::IndexMap::new();
+    for reference in [
+        make_book("ALICE", "Smith", "Alice", 2000, "Book A"),
+        make_book("BOB", "Smith", "Bob", 2000, "Book B"),
+    ] {
+        let id = reference.id().expect("fixture reference id").to_string();
+        bibliography.insert(id, reference);
+    }
+
+    let processor = Processor::new(
+        build_author_date_style_with_givenname_rule(GivennameRule::PrimaryName),
+        bibliography,
+    );
+
+    let result = process_citation_ids(&processor, &["ALICE", "BOB"]);
+
+    assert_eq!(result, "A Smith, (2000); B Smith, (2000)");
 }
 
 /// Test et-al expansion success: Name expansion disambiguates conflicting references.
@@ -1908,6 +1933,14 @@ mod disambiguation {
             "primary-name rule must expand the first author's given name; when that does not resolve the collision, year-suffix must be applied.",
         );
         super::disambiguation_primary_name_givenname_expansion();
+    }
+
+    #[test]
+    fn primary_name_givenname_expansion_resolves_when_primary_authors_differ() {
+        announce_behavior(
+            "primary-name rule must resolve the collision via given-name expansion alone when the primary authors' given names differ, with no year-suffix applied.",
+        );
+        super::disambiguation_primary_name_givenname_expansion_resolves_distinct_primary_authors();
     }
 
     #[test]

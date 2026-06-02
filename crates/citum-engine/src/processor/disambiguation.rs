@@ -360,9 +360,34 @@ impl<'a> Disambiguator<'a> {
             }
 
             if context.flags.add_givenname
-                && self.check_givenname_resolution(subgroup, context.cache, Some(min_names_to_show))
+                && self.check_givenname_resolution(
+                    subgroup,
+                    context.cache,
+                    Some(min_names_to_show),
+                    false,
+                )
             {
-                self.apply_resolution(hints, subgroup, context, true, Some(min_names_to_show));
+                // Under primary-name rules, secondary given names are not rendered.
+                // If the full-expansion check passes but primary-only does not, the
+                // subgroup must fall back to year-suffix (with expansion retained).
+                if context.flags.primary_givenname_only
+                    && !self.check_givenname_resolution(
+                        subgroup,
+                        context.cache,
+                        Some(min_names_to_show),
+                        true,
+                    )
+                {
+                    self.apply_year_suffix_for_group(
+                        hints,
+                        subgroup,
+                        context,
+                        true,
+                        Some(min_names_to_show),
+                    );
+                } else {
+                    self.apply_resolution(hints, subgroup, context, true, Some(min_names_to_show));
+                }
                 continue;
             }
 
@@ -384,8 +409,11 @@ impl<'a> Disambiguator<'a> {
         hints: &mut HashMap<String, ProcHints>,
         context: &GroupDisambiguationContext<'_>,
     ) -> bool {
+        // Use full-expansion keys to determine whether givenname expansion can help at all.
+        // (With n=1, the full and primary-only keys are equivalent — both inspect only the
+        // primary author — so no separate primary-only check is needed here.)
         if !(context.flags.add_givenname
-            && self.check_givenname_resolution(context.group, context.cache, None))
+            && self.check_givenname_resolution(context.group, context.cache, None, false))
         {
             return false;
         }
@@ -395,6 +423,13 @@ impl<'a> Disambiguator<'a> {
     }
 
     /// Attempts to resolve collisions by using both more names AND given name expansion.
+    ///
+    /// When `primary_givenname_only` is active, the renderer only shows given names for
+    /// the first author. `find_combined_resolution` uses full-expansion keys to find the
+    /// minimum name count that would work in theory; this function then verifies whether
+    /// that resolution also holds under the restricted primary-only rendering.  If not,
+    /// the group cannot be resolved by expansion alone and falls back to year-suffix while
+    /// retaining the et-al expansion that was found.
     fn try_apply_combined_resolution(
         &self,
         hints: &mut HashMap<String, ProcHints>,
@@ -408,6 +443,27 @@ impl<'a> Disambiguator<'a> {
         else {
             return false;
         };
+
+        // When primary-name expansion is active, confirm the resolution still holds when
+        // only the first author's given name is rendered.  If it does not, the expansion
+        // alone is insufficient; emit year-suffix while preserving the et-al expansion.
+        if context.flags.primary_givenname_only
+            && !self.check_givenname_resolution(
+                context.group,
+                context.cache,
+                Some(min_names_to_show),
+                true,
+            )
+        {
+            self.apply_year_suffix_for_group(
+                hints,
+                context.group,
+                context,
+                true,
+                Some(min_names_to_show),
+            );
+            return true;
+        }
 
         self.apply_resolution(hints, context.group, context, true, Some(min_names_to_show));
         true
@@ -426,7 +482,10 @@ impl<'a> Disambiguator<'a> {
             .max()
             .unwrap_or(0);
 
-        (2..=max_authors).find(|&n| self.check_givenname_resolution(group, cache, Some(n)))
+        // Use full-expansion keys (primary_only: false) to find the minimum name count.
+        // The caller is responsible for verifying the result under primary-only rendering
+        // when primary_givenname_only is active.
+        (2..=max_authors).find(|&n| self.check_givenname_resolution(group, cache, Some(n), false))
     }
 
     /// Finalizes a successful disambiguation strategy by inserting the calculated hints into the map.
@@ -674,12 +733,19 @@ impl<'a> Disambiguator<'a> {
     }
 
     /// Check if expanding to full names resolves ambiguity in the group.
-    /// If `min_names` is Some(n), it checks resolution when showing n names.
+    ///
+    /// If `min_names` is `Some(n)`, it checks resolution when showing `n` names.
+    ///
+    /// When `primary_only` is `true`, only the first author's given name is included
+    /// in the resolution key — mirroring what `primary-name` and
+    /// `primary-name-with-initials` actually render.  Use this to validate that a
+    /// candidate expansion still works under restricted rendering before committing.
     fn check_givenname_resolution(
         &self,
         group: &[&Reference],
         cache: &ReferenceCache,
         min_names: Option<usize>,
+        primary_only: bool,
     ) -> bool {
         let mut seen = HashSet::new();
         let mut buf = String::new();
@@ -687,7 +753,7 @@ impl<'a> Disambiguator<'a> {
         for reference in group {
             let names = &self.reference_data(reference, cache).names;
             buf.clear();
-            self.append_givenname_resolution_key(&mut buf, names, n);
+            self.append_givenname_resolution_key(&mut buf, names, n, primary_only);
             if !seen.insert(buf.clone()) {
                 return false;
             }
@@ -823,17 +889,27 @@ impl<'a> Disambiguator<'a> {
     }
 
     /// Creates a key including full name parts (given names, particles) for exact resolution.
+    ///
+    /// When `primary_only` is `true`, only the first author (index 0) receives full
+    /// given-name/particle parts; subsequent authors contribute only their family name.
+    /// This mirrors what `primary-name` and `primary-name-with-initials` actually render,
+    /// allowing resolution checks to validate against the real rendered surface form.
     fn append_givenname_resolution_key(
         &self,
         key: &mut String,
         names: &[crate::reference::FlatName],
         n: usize,
+        primary_only: bool,
     ) {
         for (idx, name) in names.iter().take(n).enumerate() {
             if idx > 0 {
                 key.push_str("||");
             }
             Self::append_optional_part(key, name.family.as_deref());
+            if primary_only && idx > 0 {
+                // Secondary authors: family name only under primary-name rules.
+                continue;
+            }
             key.push('|');
             Self::append_optional_part(key, name.given.as_deref());
             key.push('|');
@@ -1168,6 +1244,111 @@ mod tests {
         assert!(
             rendered_r2.contains("A. Smith"),
             "expected expanded given name for r2: {rendered_r2}"
+        );
+    }
+
+    /// When `primary-name` is active and expanding the first author's given name does
+    /// not resolve the collision (both works share an identical primary author), the
+    /// disambiguator must fall back to year-suffix while retaining the et-al expansion
+    /// that was found.  Concretely: hints must have `expand_given_names: true`,
+    /// `expand_given_names_primary_only: true`, `min_names_to_show: Some(2)`, and
+    /// `disamb_condition: true` (year-suffix), with distinct `group_index` values.
+    #[test]
+    fn test_primary_name_identical_primary_falls_back_to_year_suffix() {
+        use citum_schema::options::{
+            Disambiguation, Processing, ProcessingCustom, ShortenListOptions,
+        };
+
+        // Primary author ("Asthma/Albert") is identical; secondary authors differ only
+        // in given name ("Brandon" vs "Edward") — identical families.
+        let r1 = make_multi_author_ref(
+            "r1",
+            &[
+                ("Asthma", "Albert"),
+                ("Bronchitis", "Brandon"),
+                ("Cold", "Crispin"),
+            ],
+            1990,
+        );
+        let r2 = make_multi_author_ref(
+            "r2",
+            &[
+                ("Asthma", "Albert"),
+                ("Bronchitis", "Edward"),
+                ("Cold", "Crispin"),
+            ],
+            1990,
+        );
+
+        let mut bib = Bibliography::new();
+        bib.insert("r1".to_string(), r1);
+        bib.insert("r2".to_string(), r2);
+
+        let config = Config {
+            processing: Some(Processing::Custom(ProcessingCustom {
+                disambiguate: Some(Disambiguation {
+                    names: true,
+                    add_givenname: true,
+                    givenname_rule: GivennameRule::PrimaryName,
+                    year_suffix: true,
+                }),
+                ..Default::default()
+            })),
+            contributors: Some(ContributorConfig {
+                shorten: Some(ShortenListOptions {
+                    min: 3,
+                    use_first: 1,
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let locale = Locale::en_us();
+
+        let hints = Disambiguator::new(&bib, &config, &locale).calculate_hints();
+
+        let h1 = hints.get("r1").expect("r1 must have a hint");
+        let h2 = hints.get("r2").expect("r2 must have a hint");
+
+        // Et-al expansion to two names must be retained.
+        assert_eq!(
+            h1.min_names_to_show,
+            Some(2),
+            "r1: expected min_names_to_show=2"
+        );
+        assert_eq!(
+            h2.min_names_to_show,
+            Some(2),
+            "r2: expected min_names_to_show=2"
+        );
+
+        // Given-name expansion must be active (primary author initial shown).
+        assert!(h1.expand_given_names, "r1: expected expand_given_names");
+        assert!(h2.expand_given_names, "r2: expected expand_given_names");
+
+        // Primary-only flag must be propagated.
+        assert!(
+            h1.expand_given_names_primary_only,
+            "r1: expected primary-only"
+        );
+        assert!(
+            h2.expand_given_names_primary_only,
+            "r2: expected primary-only"
+        );
+
+        // Year-suffix must be assigned (disamb_condition true, distinct indices).
+        assert!(
+            h1.disamb_condition,
+            "r1: expected disamb_condition (year-suffix)"
+        );
+        assert!(
+            h2.disamb_condition,
+            "r2: expected disamb_condition (year-suffix)"
+        );
+        assert_ne!(
+            h1.group_index, h2.group_index,
+            "r1 and r2 must receive distinct year-suffix positions"
         );
     }
 
