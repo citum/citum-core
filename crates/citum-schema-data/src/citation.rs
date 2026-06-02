@@ -608,11 +608,6 @@ impl CitationItem {
 }
 
 /// Normalize a textual locator string into the canonical locator model.
-///
-/// # Panics
-///
-/// This function does not panic under normal use; the internal `unwrap` is
-/// guarded by the preceding segment-count match.
 pub fn normalize_locator_text(
     locator: &str,
     aliases: &[(String, LocatorType)],
