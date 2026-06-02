@@ -5,7 +5,7 @@ status: completed
 type: task
 priority: low
 created_at: 2026-05-09T00:00:00Z
-updated_at: 2026-05-29T00:27:23Z
+updated_at: 2026-06-02T10:49:35Z
 ---
 
 The current implementation of `merge_style_overlay` in `citum-schema-style` relies
@@ -50,3 +50,7 @@ Replaced all serde_yaml round-trips in `merge_style_overlay` with typed field me
 Eliminating the serialization round-trip during style merging will reduce
 latency, particularly in the `citum-server` interactive mode where styles
 may be resolved or overlaid frequently.
+
+## Summary of Changes
+
+Work completed in 98495bd. Dropped three serde_yaml serialization round-trips in merge_style_overlay in favour of typed per-field merges. Added BibliographyOptions::merge, a Criterion bench (36.5 µs → 31.3 µs, ~14% gain), and a regression test.

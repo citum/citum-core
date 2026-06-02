@@ -5,7 +5,7 @@ status: completed
 type: bug
 priority: normal
 created_at: 2026-05-25T19:14:01Z
-updated_at: 2026-06-01T01:14:57Z
+updated_at: 2026-06-02T10:49:35Z
 ---
 
 When a document uses multiple ::: bibliography ::: fenced divs (e.g. primary/secondary split), entries rendered in an earlier block reappear in later unfiltered blocks. Each block calls render_document_bibliography_block independently with no shared 'assigned' state across blocks. The style-level grouping code (grouping.rs) does track assigned entries but only for the render_grouped_bibliography_with_format code path, not the fenced-div pipeline in pipeline.rs:replace_document_bibliography_blocks. Observed with type=manuscript primary block + unfiltered secondary block: harrington1891 appears in both.
@@ -17,3 +17,7 @@ When a document uses multiple ::: bibliography ::: fenced divs (e.g. primary/sec
 - `replace_document_bibliography_blocks` (pipeline.rs) initialises a single `HashSet` before the loop and threads it across all per-block calls, so each subsequent block sees the entries already placed by earlier blocks.
 - Updated the existing single-block test to pass the new `&mut HashSet::new()` arg.
 - Added regression test `test_multi_bibliography_block_excludes_first_block_entries`.
+
+## Summary of Changes
+
+Work completed in 9130123. Added assigned: &mut HashSet<String> to render_bibliography_for_group and render_document_bibliography_block. replace_document_bibliography_blocks now initialises one HashSet before the per-block loop and threads it through every call.
