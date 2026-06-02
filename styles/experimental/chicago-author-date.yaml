@@ -72,6 +72,9 @@ citation:
       - variable: locator
 bibliography:
   options:
+    # CMOS 18th ed. §14.67: repeated author group replaced by 3-em-dash
+    subsequent-author-substitute: "———"
+    subsequent-author-substitute-rule: complete-all
     contributors:
       display-as-sort: first
       # Show up to 10 authors, then truncate
