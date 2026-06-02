@@ -223,7 +223,7 @@ added to the citation context.
 - [x] Multilingual key generation respects display mode
 - [x] Native fixture asserting `(1926/1967a) (1926/1967b) (1927/1967c)` for the APA §8.15 reprint scenario
 - [x] Short-title suppression via `first-reference-note-number` implemented and tested
-- [ ] `givenname-disambiguation-rule` field exists on `Disambiguation`; `primary-name` and
+- [x] `givenname-disambiguation-rule` field exists on `Disambiguation`; `primary-name` and
   `primary-name-with-initials` restrict expansion to the first author only (csl26-4ada)
 
 ## Changelog

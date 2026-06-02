@@ -5,7 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use crate::reference::{Bibliography, Reference};
 use crate::values::ProcHints;
-use citum_schema::options::Config;
+use citum_schema::options::{Config, GivennameRule};
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write as _;
 
@@ -64,6 +64,7 @@ struct DisambiguationFlags {
     add_givenname: bool,
     year_suffix: bool,
     is_label_mode: bool,
+    primary_givenname_only: bool,
 }
 
 struct GroupDisambiguationContext<'a> {
@@ -78,6 +79,7 @@ struct GroupDisambiguationContext<'a> {
 struct HintPlan<'a> {
     key: &'a str,
     expand_given_names: bool,
+    expand_given_names_primary_only: bool,
     min_names_to_show: Option<usize>,
     disamb_condition: bool,
 }
@@ -207,6 +209,12 @@ impl<'a> Disambiguator<'a> {
                 .processing
                 .as_ref()
                 .is_some_and(|p| matches!(p, citum_schema::options::Processing::Label(_))),
+            primary_givenname_only: disamb_config.as_ref().is_some_and(|d| {
+                matches!(
+                    d.givenname_rule,
+                    GivennameRule::PrimaryName | GivennameRule::PrimaryNameWithInitials
+                )
+            }),
         }
     }
 
@@ -437,6 +445,7 @@ impl<'a> Disambiguator<'a> {
             HintPlan {
                 key: context.key,
                 expand_given_names,
+                expand_given_names_primary_only: context.flags.primary_givenname_only,
                 min_names_to_show,
                 disamb_condition: false,
             },
@@ -504,6 +513,7 @@ impl<'a> Disambiguator<'a> {
             HintPlan {
                 key: context.key,
                 expand_given_names,
+                expand_given_names_primary_only: context.flags.primary_givenname_only,
                 min_names_to_show,
                 disamb_condition: true,
             },
@@ -574,6 +584,7 @@ impl<'a> Disambiguator<'a> {
                 group_index,
                 group_key: plan.key.to_string(),
                 expand_given_names: plan.expand_given_names,
+                expand_given_names_primary_only: plan.expand_given_names_primary_only,
                 min_names_to_show: plan.min_names_to_show,
                 ..Default::default()
             },
@@ -1054,6 +1065,7 @@ mod tests {
                     disambiguate: Some(Disambiguation {
                         names: false,
                         add_givenname: false,
+                        givenname_rule: GivennameRule::default(),
                         year_suffix: true,
                     }),
                     ..Default::default()
@@ -1098,6 +1110,7 @@ mod tests {
                 disambiguate: Some(Disambiguation {
                     names: false,
                     add_givenname: true,
+                    givenname_rule: GivennameRule::default(),
                     year_suffix: false,
                 }),
                 ..Default::default()
@@ -1129,6 +1142,7 @@ mod tests {
                     disambiguate: Some(Disambiguation {
                         names: false,
                         add_givenname: true,
+                        givenname_rule: GivennameRule::default(),
                         year_suffix: false,
                     }),
                     ..Default::default()
@@ -1173,6 +1187,7 @@ mod tests {
                 disambiguate: Some(Disambiguation {
                     names: false,
                     add_givenname: true,
+                    givenname_rule: GivennameRule::default(),
                     year_suffix: false,
                 }),
                 ..Default::default()
@@ -1190,6 +1205,7 @@ mod tests {
                 disambiguate: Some(Disambiguation {
                     names: false,
                     add_givenname: false,
+                    givenname_rule: GivennameRule::default(),
                     year_suffix: true,
                 }),
                 ..Default::default()
@@ -1223,6 +1239,7 @@ mod tests {
                 disambiguate: Some(Disambiguation {
                     names: true,
                     add_givenname: true,
+                    givenname_rule: GivennameRule::default(),
                     year_suffix: true,
                 }),
                 ..Default::default()
@@ -1274,6 +1291,7 @@ mod tests {
                 disambiguate: Some(Disambiguation {
                     names: true,
                     add_givenname: false,
+                    givenname_rule: GivennameRule::default(),
                     year_suffix: true,
                 }),
                 ..Default::default()

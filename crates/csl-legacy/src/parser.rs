@@ -79,6 +79,7 @@ pub fn parse_style(node: Node) -> Result<Style, String> {
         disambiguate_add_year_suffix: None,
         disambiguate_add_names: None,
         disambiguate_add_givenname: None,
+        disambiguate_givenname_rule: None,
     };
     let mut bibliography = None;
 
@@ -278,6 +279,9 @@ fn parse_citation(node: Node) -> Result<Citation, String> {
     let disambiguate_add_givenname = node
         .attribute("disambiguate-add-givenname")
         .map(|s| s == "true");
+    let disambiguate_givenname_rule = node
+        .attribute("givenname-disambiguation-rule")
+        .map(std::string::ToString::to_string);
 
     for child in node.children() {
         if !child.is_element() {
@@ -298,6 +302,7 @@ fn parse_citation(node: Node) -> Result<Citation, String> {
         disambiguate_add_year_suffix,
         disambiguate_add_names,
         disambiguate_add_givenname,
+        disambiguate_givenname_rule,
     })
 }
 

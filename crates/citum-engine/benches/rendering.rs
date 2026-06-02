@@ -25,8 +25,9 @@ use citum_engine::{
 };
 use citum_schema::grouping::{GroupSort, GroupSortKey, NameSortOrder, SortKey as GroupSortKeyKind};
 use citum_schema::options::{
-    BibliographyOptions, Config, Disambiguation, Group, LabelConfig, LabelPreset, Processing,
-    ProcessingCustom, Sort, SortEntry, SortKey, SortSpec, bibliography::CompoundNumericConfig,
+    BibliographyOptions, Config, Disambiguation, GivennameRule, Group, LabelConfig, LabelPreset,
+    Processing, ProcessingCustom, Sort, SortEntry, SortKey, SortSpec,
+    bibliography::CompoundNumericConfig,
 };
 use citum_schema::{
     BibliographySpec, InputBibliography, Style, StyleInfo,
@@ -120,6 +121,7 @@ fn bench_disambiguation(c: &mut Criterion) {
             disambiguate: Some(Disambiguation {
                 names: false,
                 add_givenname: false,
+                givenname_rule: GivennameRule::default(),
                 year_suffix: true,
             }),
             ..Default::default()
@@ -185,6 +187,7 @@ fn make_custom_config(names: bool, add_givenname: bool, year_suffix: bool) -> Co
             disambiguate: Some(Disambiguation {
                 names,
                 add_givenname,
+                givenname_rule: GivennameRule::default(),
                 year_suffix,
             }),
         })),

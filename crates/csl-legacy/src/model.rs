@@ -152,6 +152,8 @@ pub struct Citation {
     pub disambiguate_add_names: Option<bool>,
     /// If `true`, given names are expanded for disambiguation.
     pub disambiguate_add_givenname: Option<bool>,
+    /// Rule controlling which author positions receive given-name expansion.
+    pub disambiguate_givenname_rule: Option<String>,
 }
 
 /// Bibliography configuration (`<bibliography>` element).

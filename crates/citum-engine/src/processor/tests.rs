@@ -7,8 +7,8 @@ use super::*;
 use crate::{Bibliography, Citation, CitationItem, Reference};
 use citum_schema::BibliographyOptions;
 use citum_schema::options::{
-    AndOptions, ContributorConfig, DisplayAsSort, LabelConfig, LabelPreset, NameForm, Processing,
-    ShortenListOptions,
+    AndOptions, ContributorConfig, DisplayAsSort, GivennameRule, LabelConfig, LabelPreset,
+    NameForm, Processing, ShortenListOptions,
 };
 use citum_schema::template::{
     ContributorForm, ContributorRole, DateForm, DateVariable as TDateVar, NumberVariable,
@@ -969,6 +969,7 @@ fn test_disambiguation_givenname() {
             disambiguate: Some(Disambiguation {
                 names: true,
                 add_givenname: true,
+                givenname_rule: GivennameRule::default(),
                 year_suffix: true,
             }),
         })),
@@ -1067,6 +1068,7 @@ fn test_disambiguation_add_names() {
             disambiguate: Some(Disambiguation {
                 names: true, // disambiguate-add-names
                 add_givenname: false,
+                givenname_rule: GivennameRule::default(),
                 year_suffix: true,
             }),
         })),
@@ -1186,6 +1188,7 @@ fn test_disambiguation_combined_expansion() {
             disambiguate: Some(Disambiguation {
                 names: true,
                 add_givenname: true,
+                givenname_rule: GivennameRule::default(),
                 year_suffix: true,
             }),
         })),
@@ -5185,4 +5188,240 @@ fn test_integral_vs_non_integral_conjunction() {
         !non_integral.contains(" and "),
         "non-integral citation must not use 'and', got: {non_integral}"
     );
+}
+
+/// Tests that `GivennameRule::PrimaryName` sets `expand_given_names_primary_only`
+/// on the computed hints, while `GivennameRule::ByCite` does not.
+///
+/// Given a bibliography where "Smith, Alice" 2020 and "Smith, Bob" 2020 collide on
+/// family name + year, when disambiguation hints are calculated with
+/// `GivennameRule::PrimaryName`, then the hints carry `expand_given_names: true`
+/// and `expand_given_names_primary_only: true`. With `GivennameRule::ByCite` (default)
+/// the same collision resolves with `expand_given_names_primary_only: false`.
+#[allow(
+    clippy::too_many_lines,
+    reason = "test functions naturally exceed 100 lines"
+)]
+#[test]
+fn test_disambiguation_givenname_primary_only_flag() {
+    use citum_schema::options::{
+        Disambiguation, GivennameRule, Group, Processing, ProcessingCustom, Sort, SortKey, SortSpec,
+    };
+
+    let make_bib = || {
+        let mut bib = indexmap::IndexMap::new();
+        bib.insert(
+            "smith2020a".to_string(),
+            Reference::from(LegacyReference {
+                id: "smith2020a".to_string(),
+                ref_type: "book".to_string(),
+                author: Some(vec![Name::new("Smith", "Alice")]),
+                issued: Some(DateVariable::year(2020)),
+                ..Default::default()
+            }),
+        );
+        bib.insert(
+            "smith2020b".to_string(),
+            Reference::from(LegacyReference {
+                id: "smith2020b".to_string(),
+                ref_type: "book".to_string(),
+                author: Some(vec![Name::new("Smith", "Bob")]),
+                issued: Some(DateVariable::year(2020)),
+                ..Default::default()
+            }),
+        );
+        bib
+    };
+
+    let make_style_with_rule = |rule: GivennameRule| {
+        let mut style = make_style();
+        style.options = Some(Config {
+            processing: Some(Processing::Custom(ProcessingCustom {
+                sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
+                    shorten_names: false,
+                    render_substitutions: false,
+                    template: vec![
+                        SortSpec {
+                            key: SortKey::Author,
+                            ascending: true,
+                        },
+                        SortSpec {
+                            key: SortKey::Year,
+                            ascending: true,
+                        },
+                    ],
+                })),
+                group: Some(Group {
+                    template: vec![SortKey::Author, SortKey::Year],
+                }),
+                disambiguate: Some(Disambiguation {
+                    names: true,
+                    add_givenname: true,
+                    givenname_rule: rule,
+                    year_suffix: true,
+                }),
+            })),
+            ..Default::default()
+        });
+        style
+    };
+
+    // When: primary-name scoping
+    let processor = Processor::new(make_style_with_rule(GivennameRule::PrimaryName), make_bib());
+    let hints_a = processor
+        .hints
+        .get("smith2020a")
+        .expect("hints for smith2020a");
+    let hints_b = processor
+        .hints
+        .get("smith2020b")
+        .expect("hints for smith2020b");
+    // Then: both entries request given-name expansion, scoped to primary author only
+    assert!(
+        hints_a.expand_given_names,
+        "smith2020a must have expand_given_names"
+    );
+    assert!(
+        hints_b.expand_given_names,
+        "smith2020b must have expand_given_names"
+    );
+    assert!(
+        hints_a.expand_given_names_primary_only,
+        "primary-name rule must set primary_only on smith2020a"
+    );
+    assert!(
+        hints_b.expand_given_names_primary_only,
+        "primary-name rule must set primary_only on smith2020b"
+    );
+
+    // When: default (by-cite) scoping
+    let processor2 = Processor::new(make_style_with_rule(GivennameRule::ByCite), make_bib());
+    let hints_a2 = processor2
+        .hints
+        .get("smith2020a")
+        .expect("hints for smith2020a");
+    let hints_b2 = processor2
+        .hints
+        .get("smith2020b")
+        .expect("hints for smith2020b");
+    // Then: expansion active but NOT restricted to primary only
+    assert!(
+        hints_a2.expand_given_names,
+        "smith2020a must have expand_given_names"
+    );
+    assert!(
+        hints_b2.expand_given_names,
+        "smith2020b must have expand_given_names"
+    );
+    assert!(
+        !hints_a2.expand_given_names_primary_only,
+        "by-cite rule must not set primary_only on smith2020a"
+    );
+    assert!(
+        !hints_b2.expand_given_names_primary_only,
+        "by-cite rule must not set primary_only on smith2020b"
+    );
+}
+
+/// Given a multi-author collision [Smith A., Brown X.] vs [Smith B., Brown X.] 2020,
+/// when primary-name is set,
+/// then only the first author (Smith) receives given-name expansion in the rendered output;
+/// the co-author (Brown) stays in family-only form.
+/// With all-names, both positions are expanded.
+#[test]
+fn test_disambiguation_givenname_primary_only_rendered() {
+    use citum_schema::options::{
+        Disambiguation, GivennameRule, Group, Processing, ProcessingCustom, Sort, SortKey, SortSpec,
+    };
+
+    let make_bib = || {
+        let mut bib = indexmap::IndexMap::new();
+        // Smith, Alice + Brown, Carol 2020
+        bib.insert(
+            "ref1".to_string(),
+            Reference::from(LegacyReference {
+                id: "ref1".to_string(),
+                ref_type: "book".to_string(),
+                author: Some(vec![
+                    Name::new("Smith", "Alice"),
+                    Name::new("Brown", "Carol"),
+                ]),
+                issued: Some(DateVariable::year(2020)),
+                ..Default::default()
+            }),
+        );
+        // Smith, Bob + Brown, Carol 2020  (same co-author → same author key → same collision group)
+        bib.insert(
+            "ref2".to_string(),
+            Reference::from(LegacyReference {
+                id: "ref2".to_string(),
+                ref_type: "book".to_string(),
+                author: Some(vec![Name::new("Smith", "Bob"), Name::new("Brown", "Carol")]),
+                issued: Some(DateVariable::year(2020)),
+                ..Default::default()
+            }),
+        );
+        bib
+    };
+
+    let make_style_with_rule = |rule: GivennameRule| {
+        let mut style = make_style();
+        style.options = Some(Config {
+            processing: Some(Processing::Custom(ProcessingCustom {
+                sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
+                    shorten_names: false,
+                    render_substitutions: false,
+                    template: vec![
+                        SortSpec {
+                            key: SortKey::Author,
+                            ascending: true,
+                        },
+                        SortSpec {
+                            key: SortKey::Year,
+                            ascending: true,
+                        },
+                    ],
+                })),
+                group: Some(Group {
+                    template: vec![SortKey::Author, SortKey::Year],
+                }),
+                disambiguate: Some(Disambiguation {
+                    names: true,
+                    add_givenname: true,
+                    givenname_rule: rule,
+                    year_suffix: true,
+                }),
+            })),
+            contributors: Some(ContributorConfig {
+                initialize_with: Some(". ".to_string()),
+                name_form: Some(NameForm::Initials),
+                ..Default::default()
+            }),
+            ..Default::default()
+        });
+        style
+    };
+
+    let cite = |processor: &Processor, id: &str| {
+        processor
+            .process_citation(&Citation {
+                id: Some(id.into()),
+                items: vec![crate::reference::CitationItem {
+                    id: id.to_string(),
+                    ..Default::default()
+                }],
+                ..Default::default()
+            })
+            .unwrap()
+    };
+
+    // primary-name: first author (Smith) expanded; co-author (Brown) stays family-only
+    let primary = Processor::new(make_style_with_rule(GivennameRule::PrimaryName), make_bib());
+    assert_eq!(cite(&primary, "ref1"), "(A. Smith, Brown, 2020)");
+    assert_eq!(cite(&primary, "ref2"), "(B. Smith, Brown, 2020)");
+
+    // all-names: both positions expanded — "C. Brown" vs family-only "Brown" is the observable difference
+    let all = Processor::new(make_style_with_rule(GivennameRule::AllNames), make_bib());
+    assert_eq!(cite(&all, "ref1"), "(A. Smith, C. Brown, 2020)");
+    assert_eq!(cite(&all, "ref2"), "(B. Smith, C. Brown, 2020)");
 }

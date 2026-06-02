@@ -457,6 +457,8 @@ pub struct ProcHints {
     pub group_key: String,
     /// Whether to expand given names for disambiguation.
     pub expand_given_names: bool,
+    /// Whether to expand given names for primary author only.
+    pub expand_given_names_primary_only: bool,
     /// Minimum number of names to show to resolve ambiguity (overrides et-al-use-first).
     pub min_names_to_show: Option<usize>,
     /// Citation number for numeric citation styles (1-based).

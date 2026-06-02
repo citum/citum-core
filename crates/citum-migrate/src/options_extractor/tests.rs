@@ -6,7 +6,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use super::*;
 use citum_schema::grouping::SortKey as GroupSortKey;
 use citum_schema::options::{
-    ArticleJournalNoPageFallback, Processing, SortKey, SubstituteConfig, SubstituteKey,
+    ArticleJournalNoPageFallback, GivennameRule, Processing, SortKey, SubstituteConfig,
+    SubstituteKey,
 };
 use citum_schema::presets::SortPreset;
 use csl_legacy::parser::parse_style;
@@ -474,5 +475,91 @@ fn test_extract_article_journal_no_page_doi_fallback_ignores_additive_doi_patter
             .and_then(|bibliography| bibliography.article_journal)
             .and_then(|article_journal| article_journal.no_page_fallback)
             .is_none()
+    );
+}
+
+/// Given a CSL `<citation>` with `givenname-disambiguation-rule="primary-name"`,
+/// when processing options are extracted,
+/// then `Disambiguation.givenname_rule` is `GivennameRule::PrimaryName`.
+#[test]
+fn test_extract_givenname_rule_primary_name() {
+    let xml = r#"<style class="in-text">
+        <citation disambiguate-add-givenname="true" givenname-disambiguation-rule="primary-name">
+            <layout><text macro="year"/></layout>
+        </citation>
+        <bibliography><layout><text variable="title"/></layout></bibliography>
+    </style>"#;
+    let style = parse_csl(xml).unwrap();
+    let config = OptionsExtractor::extract(&style);
+
+    let Processing::Custom(custom) = config.processing.unwrap() else {
+        panic!("expected custom processing mode");
+    };
+    let disamb = custom.disambiguate.unwrap();
+    assert!(disamb.add_givenname);
+    assert_eq!(
+        disamb.givenname_rule,
+        GivennameRule::PrimaryName,
+        "givenname-disambiguation-rule=primary-name must map to GivennameRule::PrimaryName"
+    );
+}
+
+/// Given a CSL `<citation>` with no `givenname-disambiguation-rule` attribute,
+/// when processing options are extracted,
+/// then `Disambiguation.givenname_rule` defaults to `GivennameRule::ByCite`.
+#[test]
+fn test_extract_givenname_rule_defaults_to_by_cite() {
+    let xml = r#"<style class="in-text">
+        <citation disambiguate-add-givenname="true">
+            <layout><text macro="year"/></layout>
+        </citation>
+        <bibliography><layout><text variable="title"/></layout></bibliography>
+    </style>"#;
+    let style = parse_csl(xml).unwrap();
+    let config = OptionsExtractor::extract(&style);
+
+    let Processing::Custom(custom) = config.processing.unwrap() else {
+        panic!("expected custom processing mode");
+    };
+    let disamb = custom.disambiguate.unwrap();
+    assert_eq!(
+        disamb.givenname_rule,
+        GivennameRule::ByCite,
+        "absent givenname-disambiguation-rule must default to GivennameRule::ByCite"
+    );
+}
+
+/// Remaining givenname-disambiguation-rule values round-trip through the migrator.
+///
+/// Given CSL citations with each of the three non-default, non-primary-name attribute
+/// values, when processing options are extracted, then each maps to the correct
+/// GivennameRule variant.
+#[test]
+fn test_extract_givenname_rule_remaining_values() {
+    let parse_rule = |attr_value: &str| {
+        let xml = format!(
+            r#"<style class="in-text">
+            <citation disambiguate-add-givenname="true" givenname-disambiguation-rule="{attr_value}">
+                <layout><text macro="year"/></layout>
+            </citation>
+            <bibliography><layout><text variable="title"/></layout></bibliography>
+        </style>"#
+        );
+        let style = parse_csl(&xml).unwrap();
+        let config = OptionsExtractor::extract(&style);
+        let Processing::Custom(custom) = config.processing.unwrap() else {
+            panic!("expected custom processing");
+        };
+        custom.disambiguate.unwrap().givenname_rule
+    };
+
+    assert_eq!(parse_rule("all-names"), GivennameRule::AllNames);
+    assert_eq!(
+        parse_rule("all-names-with-initials"),
+        GivennameRule::AllNamesWithInitials
+    );
+    assert_eq!(
+        parse_rule("primary-name-with-initials"),
+        GivennameRule::PrimaryNameWithInitials
     );
 }

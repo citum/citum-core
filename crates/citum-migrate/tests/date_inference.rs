@@ -77,6 +77,7 @@ fn make_style_with_date(form: Option<String>) -> Style {
             disambiguate_add_year_suffix: None,
             disambiguate_add_names: None,
             disambiguate_add_givenname: None,
+            disambiguate_givenname_rule: None,
         },
         bibliography: None,
     }

@@ -61,6 +61,7 @@ fn test_style_global_initialize_with_co_emits_name_form_initials() {
             disambiguate_add_year_suffix: None,
             disambiguate_add_names: None,
             disambiguate_add_givenname: None,
+            disambiguate_givenname_rule: None,
         },
         bibliography: None,
     };
