@@ -208,6 +208,12 @@ pub(crate) fn render_entry_body_components_with_format<F: OutputFormat<Output = 
     entry_output
 }
 
+/// Append a rendered component to `entry_output`, inserting spacing or the
+/// `default_separator` according to bibliography house-style punctuation rules.
+///
+/// The separator logic inspects the boundary between the accumulated output
+/// and the incoming `rendered` string; `punctuation_in_quote` controls whether
+/// a period should be pulled inside a preceding closing quotation mark.
 pub(crate) fn append_rendered_component(
     entry_output: &mut String,
     rendered: &str,
@@ -220,13 +226,17 @@ pub(crate) fn append_rendered_component(
         let sep_first_char = default_separator.chars().next().unwrap_or('.');
         let trimmed_last = last_visible_non_space_char(entry_output).unwrap_or(' ');
         let ends_with_punctuation = is_final_punctuation(trimmed_last);
+        // The incoming component already carries its own leading separator (e.g. ", " or "; ").
         let starts_with_separator = matches!(first_char, ',' | ';' | ':' | ' ' | '.' | '(');
 
         if starts_with_separator {
+            // The rendered component is self-delimiting — don't add a separator.
+            // Exception: an opening parenthesis needs a leading space unless already spaced.
             if first_char == '(' && !last_char.is_whitespace() && last_char != '[' {
                 entry_output.push(' ');
             }
         } else if ends_with_punctuation {
+            // Output already ends in terminal punctuation — just ensure a separating space.
             if !last_char.is_whitespace() {
                 entry_output.push(' ');
             }
@@ -234,6 +244,7 @@ pub(crate) fn append_rendered_component(
             && (last_char == '"' || last_char == '\u{201D}')
             && sep_first_char == '.'
         {
+            // Punctuation-in-quote: pull the period inside the closing quotation mark.
             entry_output.pop();
             let quote_str = if last_char == '\u{201D}' {
                 ".\u{201D} "
@@ -242,12 +253,15 @@ pub(crate) fn append_rendered_component(
             };
             entry_output.push_str(quote_str);
         } else if !last_char.is_whitespace() && !first_char.is_whitespace() {
+            // Both sides are non-space — insert the configured separator between them.
             entry_output.push_str(default_separator);
         } else if !last_char.is_whitespace()
             && first_char.is_whitespace()
             && default_separator.starts_with('.')
             && !ends_with_punctuation
         {
+            // The next component leads with whitespace and the separator is period-prefixed:
+            // supply the missing period so the gap doesn't swallow the sentence boundary.
             entry_output.push('.');
         }
     }
