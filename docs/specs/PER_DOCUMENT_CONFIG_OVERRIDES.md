@@ -1,6 +1,6 @@
 # Per-Document Configuration Overrides Specification
 
-**Status:** Draft
+**Status:** Active
 **Date:** 2026-05-26
 **Related:** bean `csl26-tap8`, `docs/specs/INTEGRAL_NAME_MEMORY.md`, `docs/specs/UNIFIED_SCOPED_OPTIONS.md`
 
@@ -155,6 +155,30 @@ and by publishers rendering final output (where the dash is appropriate),
 this is a clear case for per-document control.
 
 Values: `full` (always render the full contributor list), `dash`, `dash-with-space`.
+
+**Default Chicago behaviour**: the standard `chicago-author-date` and
+`chicago-notes` builtins intentionally omit `subsequent-author-substitute`,
+matching the official CSL 18th-edition files and citeproc-js output. CMOS §14.67
+describes the convention as a *publisher's prerogative*; it is an opt-in variant,
+not a default. Use this override to add the dash per-document:
+
+```yaml
+---
+options:
+  bibliography:
+    repeated-author-rendering: dash
+---
+```
+
+Bibliography output with two consecutive entries by the same author:
+
+| Without override (`full`) | With `dash` |
+|---|---|
+| `Chen, Mei. 2017. …` | `Chen, Mei. 2017. …` |
+| `Chen, Mei. 2020. …` | `———. 2020. …` |
+
+To suppress the dash in a style that bakes it in (e.g. a house style derived
+from a 17th-edition Chicago variant), use `repeated-author-rendering: full`.
 
 ### `bibliography.label-mode`
 
@@ -326,8 +350,9 @@ when both are set.
 
 - [ ] `DocumentFrontmatter` deserializes an `options:` block with any subset
       of the eligible fields; unknown keys are rejected.
-- [ ] Each eligible field, when set, overrides the corresponding style option
+- [x] Each eligible field, when set, overrides the corresponding style option
       and produces the correct rendering output.
+      (`bibliography.repeated-author-rendering` verified; others at parity.)
 - [ ] Absent fields do not change the style's defaults.
 - [ ] Legacy top-level `integral-name-memory:` continues to work alongside
       `options.integral-name-memory:`; the latter takes precedence when both
@@ -342,6 +367,9 @@ when both are set.
 
 ## Changelog
 
+- 2026-06-03: Status Draft → Active. Add worked example for
+  `bibliography.repeated-author-rendering`; clarify default Chicago behaviour
+  re CSL 18th-edition and CMOS §14.67.
 - 2026-05-26: Address Copilot review — clarify sort-partitioning as multilingual-only
   (distinct from bibliography groups); rename locale-override → locale (base-locale
   selector, not patch ID); add CLI surface section; fix integral-name-memory compat note.
