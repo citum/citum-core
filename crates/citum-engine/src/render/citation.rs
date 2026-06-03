@@ -54,6 +54,49 @@ fn resolve_punctuation_collision(first: char, second: char) -> String {
     }
 }
 
+/// Append `delim` to `content`, applying house-style punctuation rules at the join point.
+///
+/// Three cases are handled in priority order:
+/// 1. **Punctuation-in-quote** – when `punctuation_in_quote` is set and `delim` starts with
+///    a comma, the comma is pulled *inside* a preceding closing quotation mark (`"` or `\u{201D}`)
+///    before appending the rest of the delimiter.
+/// 2. **Punctuation collision** – when the last char of `content` and the first char of `delim`
+///    are both terminal punctuation, the pair is resolved via [`resolve_punctuation_collision`]
+///    (e.g. `".` + `". "` → `". "` rather than `".. "`).
+/// 3. **Default** – append `delim` verbatim.
+#[inline]
+#[allow(
+    clippy::string_slice,
+    reason = "UTF-8 safe slicing based on char boundary checks"
+)]
+fn push_delimiter(content: &mut String, delim: &str, punctuation_in_quote: bool) {
+    let delim_first = delim.chars().next();
+    let content_last = content.chars().last();
+
+    if punctuation_in_quote
+        && delim_first == Some(',')
+        && (content.ends_with('"') || content.ends_with('\u{201D}'))
+    {
+        // Case 1: pull the leading comma inside the closing quotation mark.
+        let is_curly = content.ends_with('\u{201D}');
+        content.pop();
+        content.push(',');
+        content.push(if is_curly { '\u{201D}' } else { '"' });
+        content.push_str(&delim[1..]);
+    } else if let (Some(last), Some(first)) = (content_last, delim_first)
+        && is_terminal_punctuation(last)
+        && is_terminal_punctuation(first)
+    {
+        // Case 2: two adjacent terminal punctuation marks — merge them and skip the duplicate.
+        content.pop();
+        content.push_str(&resolve_punctuation_collision(last, first));
+        content.push_str(&delim[first.len_utf8()..]);
+    } else {
+        // Case 3: no special rule — append the delimiter verbatim.
+        content.push_str(delim);
+    }
+}
+
 /// Render a processed template into a final citation string using `PlainText` format.
 #[must_use]
 pub fn citation_to_string(
@@ -91,34 +134,9 @@ pub fn citation_to_string_with_format<F: OutputFormat<Output = String>>(
         .is_some_and(|cfg| cfg.punctuation_in_quote);
 
     let mut content = String::new();
-    #[allow(
-        clippy::string_slice,
-        reason = "UTF-8 safe slicing based on char boundary checks"
-    )]
     for (i, part) in parts.iter().enumerate() {
         if i > 0 {
-            let delim_first = delim.chars().next();
-            let content_last = content.chars().last();
-
-            if punctuation_in_quote
-                && delim_first == Some(',')
-                && (content.ends_with('"') || content.ends_with('\u{201D}'))
-            {
-                let is_curly = content.ends_with('\u{201D}');
-                content.pop();
-                content.push(',');
-                content.push(if is_curly { '\u{201D}' } else { '"' });
-                content.push_str(&delim[1..]);
-            } else if let (Some(last), Some(first)) = (content_last, delim_first)
-                && is_terminal_punctuation(last)
-                && is_terminal_punctuation(first)
-            {
-                content.pop();
-                content.push_str(&resolve_punctuation_collision(last, first));
-                content.push_str(&delim[first.len_utf8()..]);
-            } else {
-                content.push_str(delim);
-            }
+            push_delimiter(&mut content, delim, punctuation_in_quote);
         }
         content.push_str(part);
     }
