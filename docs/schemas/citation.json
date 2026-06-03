@@ -69,6 +69,10 @@
         "grouped": {
           "description": "If true, the entire citation is a single dynamic compound set.\n\nThe first item acts as the head and subsequent items are merged as tails\nin the bibliography. Ignored for non-numeric (compound-numeric) styles.\nItem order is preserved and sorting is suppressed when this flag is set.",
           "type": "boolean"
+        },
+        "sentence-start": {
+          "description": "Signal that this citation cluster opens a sentence, so its leading\ncharacter should be capitalized (e.g. \"see also …\" → \"See also …\").\n\nThe processor cannot infer sentence context from rendered text; the host\n(document pipeline, WASM bridge, or editor) supplies this flag\nexplicitly — mirroring LaTeX's capitalized cite commands (`\\Citet`,\n`\\Parencite`, `\\Textcite`). When `false` (the default), no\ncapitalization transform is applied.",
+          "type": "boolean"
         }
       },
       "required": [

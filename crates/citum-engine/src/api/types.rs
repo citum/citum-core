@@ -151,6 +151,9 @@ pub struct CitationOccurrence {
     /// Optional suffix text after all formatted items.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suffix: Option<String>,
+    /// Signal that this cluster opens a sentence; host supplies this explicitly.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sentence_start: Option<bool>,
 }
 
 impl From<CitationOccurrence> for citum_schema::data::citation::Citation {
@@ -162,6 +165,7 @@ impl From<CitationOccurrence> for citum_schema::data::citation::Citation {
             note_number: occ.note_number,
             suppress_author: occ.suppress_author.unwrap_or(false),
             grouped: occ.grouped.unwrap_or(false),
+            sentence_start: occ.sentence_start.unwrap_or(false),
             prefix: occ.prefix,
             suffix: occ.suffix,
             position: None, // Assigned by processor

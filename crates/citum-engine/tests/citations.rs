@@ -2460,3 +2460,103 @@ citation:
         ]
     );
 }
+
+// --- sentence_start capitalization ---
+
+#[test]
+fn test_sentence_start_capitalizes_lowercase_prefix() {
+    // Given: an integral citation with a lowercase prefix and sentence_start true
+    let style = build_author_date_style(false, false, false, None, None);
+    let bib = citum_schema::bib_map![
+        "smith2020" => make_book("smith2020", "Smith", "John", 2020, "A Book"),
+    ];
+    let processor = Processor::new(style, bib);
+
+    let citation = Citation {
+        mode: CitationMode::Integral,
+        prefix: Some("see also".to_string()),
+        sentence_start: true,
+        items: vec![CitationItem {
+            id: "smith2020".to_string(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    // When: rendered
+    let result = processor.process_citation(&citation).expect("render");
+
+    // Then: leading "s" of "see also" is capitalized
+    assert!(
+        result.starts_with("See also"),
+        "expected 'See also …' but got: {result}"
+    );
+}
+
+#[test]
+fn test_sentence_start_noop_on_capitalized_author() {
+    // Given: an integral citation with no prefix (author leads) and sentence_start true
+    let style = build_author_date_style(false, false, false, None, None);
+    let bib = citum_schema::bib_map![
+        "smith2020" => make_book("smith2020", "Smith", "John", 2020, "A Book"),
+    ];
+    let processor = Processor::new(style, bib);
+
+    let citation = Citation {
+        mode: CitationMode::Integral,
+        sentence_start: true,
+        items: vec![CitationItem {
+            id: "smith2020".to_string(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let without_flag = Citation {
+        sentence_start: false,
+        ..citation.clone()
+    };
+
+    // When: rendered with and without the flag
+    let with_result = processor
+        .process_citation(&citation)
+        .expect("render with flag");
+    let without_result = processor
+        .process_citation(&without_flag)
+        .expect("render without flag");
+
+    // Then: output is identical (author "Smith" already starts with a capital)
+    assert_eq!(
+        with_result, without_result,
+        "sentence_start should be a no-op when the cluster already starts with a capital"
+    );
+}
+
+#[test]
+fn test_sentence_start_false_leaves_output_unchanged() {
+    // Given: a citation with a lowercase prefix and sentence_start false (default)
+    let style = build_author_date_style(false, false, false, None, None);
+    let bib = citum_schema::bib_map![
+        "smith2020" => make_book("smith2020", "Smith", "John", 2020, "A Book"),
+    ];
+    let processor = Processor::new(style, bib);
+
+    let citation = Citation {
+        mode: CitationMode::Integral,
+        prefix: Some("see also".to_string()),
+        sentence_start: false,
+        items: vec![CitationItem {
+            id: "smith2020".to_string(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    // When: rendered
+    let result = processor.process_citation(&citation).expect("render");
+
+    // Then: "see also" remains lowercase
+    assert!(
+        result.starts_with("see also"),
+        "expected 'see also …' (lowercase) but got: {result}"
+    );
+}
