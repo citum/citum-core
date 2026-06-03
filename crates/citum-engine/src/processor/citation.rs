@@ -605,7 +605,21 @@ impl Processor {
         let output = self.apply_citation_input_affixes(citation, content, &fmt);
         let wrapped = self.apply_spec_wrap_and_affixes(citation, &effective_spec, output, &fmt);
 
-        Ok(fmt.finish(wrapped))
+        // If the host signals that this cluster opens a sentence, capitalize
+        // the leading character of the composed output.  The markup-aware
+        // variant skips leading punctuation (e.g. an opening parenthesis) so
+        // only the first alphabetic character is affected.
+        let finalized = if citation.sentence_start {
+            let case = crate::values::text_case::resolve_text_case(
+                citum_schema::options::titles::TextCase::CapitalizeFirst,
+                Some(self.locale.locale.as_str()),
+            );
+            crate::values::text_case::apply_text_case_markup_aware(&wrapped, case)
+        } else {
+            wrapped
+        };
+
+        Ok(fmt.finish(finalized))
     }
 
     /// Render multiple citations in document order.

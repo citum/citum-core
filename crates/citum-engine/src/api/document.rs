@@ -661,6 +661,7 @@ mod tests {
             grouped: None,
             prefix: None,
             suffix: None,
+            sentence_start: None,
         };
 
         let request = FormatDocumentRequest {
@@ -710,6 +711,7 @@ mod tests {
             grouped: None,
             prefix: None,
             suffix: None,
+            sentence_start: None,
         };
 
         let request = FormatDocumentRequest {
@@ -764,6 +766,7 @@ mod tests {
             grouped: None,
             prefix: None,
             suffix: None,
+            sentence_start: None,
         };
 
         let request = FormatDocumentRequest {
@@ -845,6 +848,7 @@ mod tests {
             grouped: None,
             prefix: None,
             suffix: None,
+            sentence_start: None,
         };
 
         let request = FormatDocumentRequest {

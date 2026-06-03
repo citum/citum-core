@@ -112,6 +112,16 @@ pub struct Citation {
     /// Item order is preserved and sorting is suppressed when this flag is set.
     #[serde(default, skip_serializing_if = "is_false")]
     pub grouped: bool,
+    /// Signal that this citation cluster opens a sentence, so its leading
+    /// character should be capitalized (e.g. "see also …" → "See also …").
+    ///
+    /// The processor cannot infer sentence context from rendered text; the host
+    /// (document pipeline, WASM bridge, or editor) supplies this flag
+    /// explicitly — mirroring LaTeX's capitalized cite commands (`\Citet`,
+    /// `\Parencite`, `\Textcite`). When `false` (the default), no
+    /// capitalization transform is applied.
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub sentence_start: bool,
 }
 
 impl Citation {

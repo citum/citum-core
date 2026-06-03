@@ -16,7 +16,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
     reason = "Panicking is acceptable and often desired in test, benchmark, and example code."
 )]
 
-use citum_schema::citation::{CitationItem, IntegralNameState};
+use citum_schema::citation::{Citation, CitationItem, IntegralNameState};
 use citum_schema::options::{IntegralNameContexts, IntegralNameScope};
 use citum_schema::reference::{ClassExtension, InputReference, Monograph, NumberingType};
 use citum_schema::{InputBibliography, Style};
@@ -204,6 +204,39 @@ fn test_citation_item_integral_name_state_round_trip() {
     assert_eq!(
         reparsed.integral_name_state,
         Some(IntegralNameState::Subsequent)
+    );
+}
+
+#[test]
+fn test_citation_sentence_start_round_trip() {
+    // Given: a citation JSON with sentence-start set
+    let json = r#"{
+        "items": [{"id": "smith2020"}],
+        "sentence-start": true
+    }"#;
+
+    // When: deserialized
+    let citation: Citation = serde_json::from_str(json).expect("citation should parse");
+
+    // Then: sentence_start is true
+    assert!(citation.sentence_start);
+
+    // And: round-trips cleanly
+    let serialized = serde_json::to_string(&citation).expect("citation should serialize");
+    let reparsed: Citation = serde_json::from_str(&serialized).expect("citation should round-trip");
+    assert!(reparsed.sentence_start);
+
+    // Given: sentence-start omitted (default false)
+    let json_default = r#"{"items": [{"id": "smith2020"}]}"#;
+    let default_citation: Citation =
+        serde_json::from_str(json_default).expect("default citation should parse");
+    // Then: sentence_start is false and field is absent from serialization
+    assert!(!default_citation.sentence_start);
+    let serialized_default =
+        serde_json::to_string(&default_citation).expect("default citation should serialize");
+    assert!(
+        !serialized_default.contains("sentence-start"),
+        "sentence-start should be omitted when false"
     );
 }
 
