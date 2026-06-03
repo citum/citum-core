@@ -132,7 +132,7 @@ options:
 
 #### Per-document overrides
 
-Both features can be overridden per-document in frontmatter without changing the style file:
+Both name-memory features can be overridden per-document in frontmatter without changing the style file:
 
 ```yaml
 ---
@@ -143,6 +143,39 @@ options:
     display: full-then-bracketed
 ---
 ```
+
+#### `bibliography.repeated-author-rendering`
+
+The 3-em-dash convention — replacing a consecutive repeated author group in the bibliography with `———` — is controlled via this field. CMOS §14.67 calls it a *publisher's prerogative*; standard Chicago styles intentionally omit it by default (matching CSL 18th-edition behaviour).
+
+Values: `full` (always print the full name), `dash`, `dash-with-space`.
+
+**Opt in per document** (e.g. for final publisher output):
+
+```yaml
+---
+options:
+  bibliography:
+    repeated-author-rendering: dash
+---
+```
+
+| Without override (`full`) | With `dash` |
+|---|---|
+| `Chen, Mei. 2017. The Social Life of References…` | `Chen, Mei. 2017. The Social Life of References…` |
+| `Chen, Mei. 2020. Citation and Authority…` | `———. 2020. Citation and Authority…` |
+
+**Suppress in a house style that bakes it in** (e.g. a 17th-edition–derived style):
+
+```yaml
+---
+options:
+  bibliography:
+    repeated-author-rendering: full
+---
+```
+
+See `docs/specs/PER_DOCUMENT_CONFIG_OVERRIDES.md` for the full eligible-option set.
 
 ## [layers] Template Components
 
