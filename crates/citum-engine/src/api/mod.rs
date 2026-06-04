@@ -17,9 +17,9 @@ mod style_input;
 mod types;
 
 pub use document::{
-    FormatDocumentError, FormatDocumentRequest, FormatDocumentResult, format_document,
-    format_document_with_resolver, format_document_with_style, unknown_enum_warnings,
-    unknown_reference_class_warnings,
+    FormatDocumentError, FormatDocumentRequest, FormatDocumentResult, apply_style_overrides,
+    format_document, format_document_with_resolver, format_document_with_style,
+    unknown_enum_warnings, unknown_reference_class_warnings,
 };
 pub use forward_compat::{UnknownFieldPath, collect_unknown_field_paths};
 pub use refs_input::RefsInput;

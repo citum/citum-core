@@ -114,8 +114,8 @@ pub use api::{
     DocumentOptions, DocumentSession, DocumentSessionError, EntryMetadata, FormatDocumentError,
     FormatDocumentRequest, FormatDocumentResult, FormattedBibliography, FormattedCitation,
     OpenSessionResult, OutputFormatKind, PreviewCitationResult, RefsInput, SessionMutationResult,
-    StyleInput, Warning, WarningLevel, format_document, format_document_with_resolver,
-    format_document_with_style,
+    StyleInput, Warning, WarningLevel, apply_style_overrides, format_document,
+    format_document_with_resolver, format_document_with_style,
 };
 pub use citum_schema::options::{Config, Processing};
 pub use citum_schema::reference::{

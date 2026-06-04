@@ -37,6 +37,16 @@ use super::{
 pub struct FormatDocumentRequest {
     /// The style to use (may be resolved locally or by an adapter).
     pub style: StyleInput,
+    /// Optional partial-style overlay (YAML or JSON) merged over the resolved base
+    /// style for this request only.
+    ///
+    /// Accepts any subset of the style YAML schema — e.g. just `options.contributors`
+    /// to change `and`/et-al behaviour, or a full citation spec. Uses the same
+    /// null-aware, typed-merge semantics as `extends` inheritance: supplied fields
+    /// win over base style fields; an explicit `~` (null) value clears an inherited
+    /// field. The base style is never mutated.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style_overrides: Option<String>,
     /// Optional locale override as a BCP 47 language tag (e.g. `en-US`).
     /// When omitted or set to en-US the engine uses its built-in en-US locale;
     /// other locales emit a warning and fall back to en-US until adapter-side
@@ -106,6 +116,31 @@ impl From<ProcessorError> for FormatDocumentError {
     }
 }
 
+/// Parse a partial-style overlay (YAML or JSON) and merge it over `style` in place.
+///
+/// Called internally by `format_document_with_style`; also available to surface crates
+/// (e.g. `citum-server`) that pre-resolve the style before handing it to the processor.
+///
+/// Uses the same null-aware, typed-merge semantics as `extends` inheritance.
+/// Calls `apply_scoped_options` after the merge so that overlay fields that affect
+/// scoped options (label_wrap, date_position, repeated_author_rendering, etc.) take
+/// effect in the same way they do during normal style resolution.
+///
+/// # Errors
+///
+/// Returns `FormatDocumentError::StyleParse` if the overlay cannot be parsed.
+pub fn apply_style_overrides(
+    style: &mut Style,
+    overlay_src: &str,
+) -> Result<(), FormatDocumentError> {
+    let overlay = Style::from_yaml_bytes(overlay_src.as_bytes()).map_err(|e| {
+        FormatDocumentError::StyleParse(format!("Failed to parse style_overrides: {e}"))
+    })?;
+    style.apply_overlay(&overlay);
+    style.apply_scoped_options();
+    Ok(())
+}
+
 /// Format a complete document's citations and bibliography (convenience wrapper).
 ///
 /// This function resolves the style locally using `StyleInput::resolve_local`.
@@ -169,6 +204,12 @@ pub fn format_document_with_style(
     request: FormatDocumentRequest,
 ) -> Result<FormatDocumentResult, FormatDocumentError> {
     let mut warnings = Vec::new();
+
+    // Apply per-request style overrides (merge over the resolved base style).
+    let mut style = style;
+    if let Some(src) = &request.style_overrides {
+        apply_style_overrides(&mut style, src)?;
+    }
 
     // Locale: the engine has no resolver chain for non-en-US locales.
     // Adapters with a citum_store dep can pre-resolve and call
@@ -570,6 +611,7 @@ mod tests {
         TemplateComponent, TemplateContributor, TemplateDate, TemplateDateVariable,
         WrapPunctuation,
     };
+    use citum_schema::options::{AndOptions, ContributorConfig};
     use citum_schema::reference::{EdtfString, InputReference, Monograph, MonographType, Title};
     use citum_schema::{CitationSpec, StyleInfo};
 
@@ -627,6 +669,7 @@ mod tests {
         let refs = make_test_bibliography();
         let request = FormatDocumentRequest {
             style: StyleInput::Yaml("dummy".to_string()),
+            style_overrides: None,
             locale: None,
             output_format: OutputFormatKind::Plain,
             refs,
@@ -666,6 +709,7 @@ mod tests {
 
         let request = FormatDocumentRequest {
             style: StyleInput::Yaml("dummy".to_string()),
+            style_overrides: None,
             locale: None,
             output_format: OutputFormatKind::Plain,
             refs,
@@ -716,6 +760,7 @@ mod tests {
 
         let request = FormatDocumentRequest {
             style: StyleInput::Yaml("dummy".to_string()),
+            style_overrides: None,
             locale: None,
             output_format: OutputFormatKind::Plain,
             refs: RefsInput::Json(serde_json::to_value(refs).unwrap()),
@@ -771,6 +816,7 @@ mod tests {
 
         let request = FormatDocumentRequest {
             style: StyleInput::Yaml(yaml_style),
+            style_overrides: None,
             locale: None,
             output_format: OutputFormatKind::Plain,
             refs: RefsInput::Json(serde_json::to_value(refs).unwrap()),
@@ -789,6 +835,7 @@ mod tests {
     fn format_document_uri_input_unresolved() {
         let request = FormatDocumentRequest {
             style: StyleInput::Uri("https://example.com/style.yaml".to_string()),
+            style_overrides: None,
             locale: None,
             output_format: OutputFormatKind::Plain,
             refs: RefsInput::Json(serde_json::Value::Object(Default::default())),
@@ -853,6 +900,7 @@ mod tests {
 
         let request = FormatDocumentRequest {
             style: StyleInput::Id("any-id".to_string()),
+            style_overrides: None,
             locale: None,
             output_format: OutputFormatKind::Plain,
             refs,
@@ -874,6 +922,189 @@ mod tests {
         assert!(
             !res.formatted_citations[0].text.is_empty(),
             "formatted citation text should not be empty"
+        );
+    }
+
+    /// Build an author-date style whose citation template renders contributor short form.
+    fn make_two_author_style() -> Style {
+        Style {
+            info: StyleInfo {
+                title: Some("Override Test Style".to_string()),
+                id: Some("override-test".into()),
+                ..Default::default()
+            },
+            options: Some(Config {
+                processing: Some(Processing::AuthorDate),
+                // Explicitly set `and: text` so the override to `symbol` is observable
+                // in rendered output without relying on any default connector.
+                contributors: Some(ContributorConfig {
+                    and: Some(AndOptions::Text),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            citation: Some(CitationSpec {
+                template: Some(vec![
+                    TemplateComponent::Contributor(TemplateContributor {
+                        contributor: ContributorRole::Author,
+                        form: ContributorForm::Short,
+                        rendering: Rendering::default(),
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Date(TemplateDate {
+                        date: TemplateDateVariable::Issued,
+                        form: DateForm::Year,
+                        rendering: Rendering {
+                            prefix: Some(", ".to_string()),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    }),
+                ]),
+                wrap: Some(WrapPunctuation::Parentheses.into()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }
+    }
+
+    /// Build a refs input with a two-author book so the "and" connector is exercised.
+    ///
+    /// Uses inline YAML (the reliably tested deserialization path) rather than
+    /// round-tripping through `serde_json::to_value` which may not preserve the
+    /// contributor tagged-enum layout the engine expects.
+    fn make_two_author_refs() -> RefsInput {
+        RefsInput::Yaml(
+            r#"duo2024:
+  class: monograph
+  id: duo2024
+  type: book
+  title: Duo Work
+  issued: "2024"
+  author:
+    - family: Smith
+      given: Alice
+    - family: Jones
+      given: Bob
+"#
+            .to_string(),
+        )
+    }
+
+    /// Helper: produce a single-item citation occurrence for a given ref id.
+    fn cite(ref_id: &str) -> CitationOccurrence {
+        CitationOccurrence {
+            id: "c1".to_string(),
+            items: vec![CitationOccurrenceItem {
+                id: ref_id.to_string(),
+                locator: None,
+                prefix: None,
+                suffix: None,
+                integral_name_state: None,
+                org_abbreviation_state: None,
+            }],
+            mode: None,
+            note_number: None,
+            suppress_author: None,
+            grouped: None,
+            prefix: None,
+            suffix: None,
+            sentence_start: None,
+        }
+    }
+
+    #[test]
+    fn style_overrides_and_symbol_changes_rendered_output() {
+        let base_style = make_two_author_style();
+        let refs = make_two_author_refs();
+
+        // given: base style produces a citation containing "and"
+        let request_base = FormatDocumentRequest {
+            style: StyleInput::Yaml("dummy".to_string()),
+            style_overrides: None,
+            locale: None,
+            output_format: OutputFormatKind::Plain,
+            refs: refs.clone(),
+            citations: vec![cite("duo2024")],
+            document_options: None,
+        };
+        let result_base = format_document_with_style(base_style.clone(), request_base).unwrap();
+        let text_base = &result_base.formatted_citations[0].text;
+        assert!(
+            text_base.contains("and"),
+            "base style should use text 'and' connector, got: {text_base:?}"
+        );
+
+        // when: style_overrides switches connector to symbol "&"
+        let request_override = FormatDocumentRequest {
+            style: StyleInput::Yaml("dummy".to_string()),
+            style_overrides: Some("options:\n  contributors:\n    and: symbol\n".to_string()),
+            locale: None,
+            output_format: OutputFormatKind::Plain,
+            refs,
+            citations: vec![cite("duo2024")],
+            document_options: None,
+        };
+        let result_override =
+            format_document_with_style(base_style.clone(), request_override).unwrap();
+        let text_override = &result_override.formatted_citations[0].text;
+        assert!(
+            text_override.contains('&'),
+            "overridden style should use '&' connector, got: {text_override:?}"
+        );
+
+        // then: base style struct is untouched — still has Text, not Symbol
+        let base_and = base_style
+            .options
+            .as_ref()
+            .and_then(|o| o.contributors.as_ref())
+            .and_then(|c| c.and.as_ref());
+        assert!(
+            matches!(base_and, Some(&AndOptions::Text)),
+            "base style must not be mutated; expected And::Text, got: {base_and:?}"
+        );
+    }
+
+    #[test]
+    fn style_overrides_invalid_yaml_returns_parse_error() {
+        let style = make_test_style();
+        let refs = make_test_bibliography();
+
+        let request = FormatDocumentRequest {
+            style: StyleInput::Yaml("dummy".to_string()),
+            style_overrides: Some("{ unclosed yaml: [".to_string()),
+            locale: None,
+            output_format: OutputFormatKind::Plain,
+            refs,
+            citations: vec![],
+            document_options: None,
+        };
+
+        match format_document_with_style(style, request) {
+            Err(FormatDocumentError::StyleParse(msg)) => {
+                assert!(
+                    msg.contains("style_overrides"),
+                    "error message should mention style_overrides, got: {msg}"
+                );
+            }
+            other => panic!("expected StyleParse error, got: {other:?}"),
+        }
+    }
+
+    #[test]
+    fn apply_style_overrides_merges_option_field() {
+        let mut style = make_test_style();
+        apply_style_overrides(&mut style, "options:\n  contributors:\n    and: symbol\n")
+            .expect("apply_style_overrides should succeed");
+
+        let and_option = style
+            .options
+            .as_ref()
+            .and_then(|o| o.contributors.as_ref())
+            .and_then(|c| c.and.as_ref());
+        assert!(
+            matches!(and_option, Some(&AndOptions::Symbol)),
+            "expected And::Symbol after override, got: {and_option:?}"
         );
     }
 }

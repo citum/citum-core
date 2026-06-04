@@ -107,7 +107,7 @@ info:
         let result = input.resolve_local();
         match result {
             Err(crate::api::FormatDocumentError::UnresolvedInput(msg)) => {
-                assert!(msg.contains("apa-7th"));
+                assert!(msg.contains("Style ID 'apa-7th' requires resolver chain"));
             }
             _ => panic!("Expected UnresolvedInput error"),
         }
@@ -148,7 +148,7 @@ info:
         let result = input.resolve_local();
         match result {
             Err(crate::api::FormatDocumentError::StylePath(msg)) => {
-                assert!(msg.contains("Failed to read"));
+                assert!(msg.contains("Failed to read style from '/nonexistent/path/style.yaml'"));
             }
             _ => panic!("Expected StylePath error"),
         }
@@ -160,7 +160,7 @@ info:
         let result = input.resolve_local();
         match result {
             Err(crate::api::FormatDocumentError::StyleParse(msg)) => {
-                assert!(msg.contains("Failed to parse"));
+                assert!(msg.contains("Failed to parse inline YAML style:"));
             }
             _ => panic!("Expected StyleParse error"),
         }

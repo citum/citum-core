@@ -536,8 +536,7 @@ fn invalid_output_format_returns_error() {
     );
     let err = dispatch(req).expect_err("invalid output format should error");
     assert_eq!(err.0, Some(json!(12)));
-    assert!(err.1.contains("unsupported output format"));
-    assert!(err.1.contains("pdf"));
+    assert!(err.1.contains("unsupported output format: pdf"));
 }
 
 #[test]
@@ -561,5 +560,114 @@ fn render_bibliography_typst_returns_labeled_markup() {
     assert_eq!(
         content,
         "Hawking, S. (1988). #emph[A Brief History of Time] <ref-ITEM-2>"
+    );
+}
+
+/// Two-author bibliography for testing the `and` connector override.
+fn duo_refs() -> serde_json::Value {
+    json!({
+        "DUO-1": {
+            "id": "DUO-1",
+            "class": "monograph",
+            "type": "book",
+            "title": "Collaborative Work",
+            "author": [
+                {"family": "Smith", "given": "Alice"},
+                {"family": "Jones", "given": "Bob"}
+            ],
+            "issued": "2024"
+        }
+    })
+}
+
+// --- style_overrides ---
+
+#[test]
+fn format_document_style_overrides_changes_and_connector() {
+    // APA uses `&` by default; override to `text` should produce "and".
+    let req_base = make_request(
+        60,
+        "format_document",
+        json!({
+            "style": {"kind": "path", "value": apa_style_path()},
+            "refs": duo_refs(),
+            "citations": [{"id": "cite-1", "items": [{"id": "DUO-1"}]}]
+        }),
+    );
+    let result_base = dispatch(req_base).expect("base format_document should succeed");
+    let text_base = result_base["result"]["formatted_citations"][0]["text"]
+        .as_str()
+        .expect("citation text should be a string");
+    assert!(
+        text_base.contains('&'),
+        "APA base style should use '&' connector, got: {text_base:?}"
+    );
+
+    // With style_overrides switching to text "and"
+    let req_override = make_request(
+        61,
+        "format_document",
+        json!({
+            "style": {"kind": "path", "value": apa_style_path()},
+            "style_overrides": "options:\n  contributors:\n    and: text\n",
+            "refs": duo_refs(),
+            "citations": [{"id": "cite-1", "items": [{"id": "DUO-1"}]}]
+        }),
+    );
+    let result_override = dispatch(req_override).expect("override format_document should succeed");
+    let text_override = result_override["result"]["formatted_citations"][0]["text"]
+        .as_str()
+        .expect("citation text should be a string");
+    assert!(
+        !text_override.contains('&'),
+        "overridden style should not use '&' connector, got: {text_override:?}"
+    );
+    assert_ne!(
+        text_base, text_override,
+        "overridden and base outputs should differ"
+    );
+}
+
+#[test]
+fn open_session_style_overrides_changes_and_connector() {
+    let mut dispatcher = RpcDispatcher::new_stdio();
+
+    // Session opened with `and: text` override
+    dispatcher
+        .dispatch(make_request(
+            62,
+            "open_session",
+            json!({
+                "style": {"kind": "path", "value": apa_style_path()},
+                "style_overrides": "options:\n  contributors:\n    and: text\n"
+            }),
+        ))
+        .expect("open_session with style_overrides should succeed");
+
+    dispatcher
+        .dispatch(make_request(
+            63,
+            "put_references",
+            json!({"session_id": "default", "refs": duo_refs()}),
+        ))
+        .expect("put_references should succeed");
+
+    let inserted = dispatcher
+        .dispatch(make_request(
+            64,
+            "insert_citation",
+            json!({
+                "session_id": "default",
+                "citation": {"id": "cite-1", "items": [{"id": "DUO-1"}]}
+            }),
+        ))
+        .expect("insert_citation should succeed");
+
+    let text = inserted["result"]["affected_citations"][0]["text"]
+        .as_str()
+        .expect("citation text should be a string");
+    assert!(
+        !text.contains('&'),
+        "session with and:text override should not use '&', got: {text:?}"
     );
 }
