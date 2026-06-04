@@ -30,32 +30,42 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //!   -d '{"id":2,"method":"format_document","params":{"style":{"kind":"path","value":"styles/embedded/apa-7th.yaml"},"output_format":"html","refs":{"smith2010":{"id":"smith2010","class":"monograph","type":"book","title":"Nationalism: Theory, Ideology, History","author":[{"family":"Smith","given":"Anthony D."}],"issued":"2010","publisher":{"name":"Polity"}}},"citations":[{"id":"cite-1","items":[{"id":"smith2010","locator":{"label":"page","value":"10"}}]}],"document_options":{"show_semantics":true}}}'
 //! ```
 
-use crate::rpc::{RpcRequest, dispatch};
+use crate::rpc::{RpcDispatcher, RpcRequest, error_response};
 use axum::{
     Json, Router,
-    extract::DefaultBodyLimit,
+    extract::{DefaultBodyLimit, State},
     http::{StatusCode, header},
     response::IntoResponse,
     routing::{get, post},
 };
 use serde_json::json;
 use std::net::SocketAddr;
+use std::sync::{Arc, Mutex};
 
 /// Maximum accepted HTTP JSON-RPC request size.
 pub const DEFAULT_HTTP_BODY_LIMIT_BYTES: usize = 8 * 1024 * 1024;
 
 /// HTTP handler for JSON-RPC requests.
 /// Dispatches to the same RPC logic as stdin/stdout.
-async fn rpc_handler(Json(payload): Json<RpcRequest>) -> impl IntoResponse {
-    match dispatch(payload.clone()) {
+async fn rpc_handler(
+    State(dispatcher): State<Arc<Mutex<RpcDispatcher>>>,
+    Json(payload): Json<RpcRequest>,
+) -> impl IntoResponse {
+    let result = match dispatcher.lock() {
+        Ok(mut dispatcher) => dispatcher
+            .dispatch(payload.clone())
+            .map_err(|(id, error)| (StatusCode::BAD_REQUEST, error_response(id, error))),
+        Err(_) => Err((
+            StatusCode::INTERNAL_SERVER_ERROR,
+            json!({
+                "id": payload.id,
+                "error": "RPC dispatcher mutex poisoned"
+            }),
+        )),
+    };
+    match result {
         Ok(result) => (StatusCode::OK, Json(result)),
-        Err((id, error)) => (
-            StatusCode::BAD_REQUEST,
-            Json(json!({
-                "id": id,
-                "error": error
-            })),
-        ),
+        Err((status, error)) => (status, Json(error)),
     }
 }
 
@@ -75,57 +85,179 @@ async fn rpc_get_hint() -> impl IntoResponse {
 
 /// GET /rpc/methods — returns a static descriptor list of all supported methods.
 async fn rpc_methods() -> impl IntoResponse {
-    Json(json!([
-        {
+    let methods = vec![
+        json!({
             "method": "render_citation",
             "description": "Render a single citation.",
             "required": ["style_path", "refs", "citation"],
             "optional": ["output_format", "inject_ast_indices"]
-        },
-        {
+        }),
+        json!({
             "method": "render_bibliography",
             "description": "Render a complete bibliography.",
             "required": ["style_path", "refs"],
             "optional": ["output_format", "inject_ast_indices"]
-        },
-        {
+        }),
+        json!({
             "method": "validate_style",
             "description": "Validate a Citum YAML style file.",
             "required": ["style_path"],
             "optional": []
-        },
-        {
+        }),
+        json!({
             "method": "format_document",
             "description": "Format all citations and bibliography in a document.",
             "required": ["style", "refs", "citations"],
             "optional": ["output_format", "locale", "document_options"]
-        }
-    ]))
+        }),
+    ];
+
+    #[cfg(feature = "session")]
+    let methods = {
+        let mut methods = methods;
+        methods.extend([
+            json!({
+                "method": "open_session",
+                "description": "Open a stateful document session.",
+                "required": ["style"],
+                "optional": ["output_format", "locale", "document_options"]
+            }),
+            json!({
+                "method": "put_references",
+                "description": "Replace the full reference set for a session.",
+                "required": ["session_id", "refs"],
+                "optional": []
+            }),
+            json!({
+                "method": "insert_citations_batch",
+                "description": "Replace the full ordered citation list for a session.",
+                "required": ["session_id", "citations"],
+                "optional": []
+            }),
+            json!({
+                "method": "insert_citation",
+                "description": "Insert one citation into a session.",
+                "required": ["session_id", "citation"],
+                "optional": ["position"]
+            }),
+            json!({
+                "method": "update_citation",
+                "description": "Update one citation in a session.",
+                "required": ["session_id", "citation_id", "citation"],
+                "optional": ["position"]
+            }),
+            json!({
+                "method": "delete_citation",
+                "description": "Delete one citation from a session.",
+                "required": ["session_id", "citation_id"],
+                "optional": []
+            }),
+            json!({
+                "method": "preview_citation",
+                "description": "Render a citation preview without mutating session state.",
+                "required": ["session_id", "items"],
+                "optional": ["position"]
+            }),
+            json!({
+                "method": "get_citations",
+                "description": "Return current formatted citations for a session.",
+                "required": ["session_id"],
+                "optional": []
+            }),
+            json!({
+                "method": "get_bibliography",
+                "description": "Return current bibliography for a session.",
+                "required": ["session_id"],
+                "optional": []
+            }),
+            json!({
+                "method": "close_session",
+                "description": "Close and free a session.",
+                "required": ["session_id"],
+                "optional": []
+            }),
+        ]);
+        methods
+    };
+
+    Json(json!(methods))
 }
 
 #[cfg(feature = "schema")]
 async fn rpc_schema() -> impl IntoResponse {
+    #[cfg(feature = "session")]
+    use crate::rpc::{
+        DeleteCitationParams, InsertCitationParams, InsertCitationsBatchParams, OpenSessionParams,
+        PreviewCitationParams, PutReferencesParams, SessionIdParams, UpdateCitationParams,
+    };
     use crate::rpc::{
         FormatDocumentParams, RenderBibliographyParams, RenderCitationParams, ValidateStyleParams,
     };
     use schemars::schema_for;
 
-    let schema = serde_json::json!({
+    let mut schema = serde_json::json!({
         "render_citation": schema_for!(RenderCitationParams),
         "render_bibliography": schema_for!(RenderBibliographyParams),
         "validate_style": schema_for!(ValidateStyleParams),
         "format_document": schema_for!(FormatDocumentParams),
     });
+    #[cfg(feature = "session")]
+    {
+        if let Some(schema) = schema.as_object_mut() {
+            schema.insert(
+                "open_session".to_string(),
+                json!(schema_for!(OpenSessionParams)),
+            );
+            schema.insert(
+                "put_references".to_string(),
+                json!(schema_for!(PutReferencesParams)),
+            );
+            schema.insert(
+                "insert_citations_batch".to_string(),
+                json!(schema_for!(InsertCitationsBatchParams)),
+            );
+            schema.insert(
+                "insert_citation".to_string(),
+                json!(schema_for!(InsertCitationParams)),
+            );
+            schema.insert(
+                "update_citation".to_string(),
+                json!(schema_for!(UpdateCitationParams)),
+            );
+            schema.insert(
+                "delete_citation".to_string(),
+                json!(schema_for!(DeleteCitationParams)),
+            );
+            schema.insert(
+                "preview_citation".to_string(),
+                json!(schema_for!(PreviewCitationParams)),
+            );
+            schema.insert(
+                "get_citations".to_string(),
+                json!(schema_for!(SessionIdParams)),
+            );
+            schema.insert(
+                "get_bibliography".to_string(),
+                json!(schema_for!(SessionIdParams)),
+            );
+            schema.insert(
+                "close_session".to_string(),
+                json!(schema_for!(SessionIdParams)),
+            );
+        }
+    }
     Json(schema)
 }
 
 /// Build the HTTP router for JSON-RPC requests.
 pub fn app() -> Router {
+    let dispatcher = Arc::new(Mutex::new(RpcDispatcher::new_http()));
     let router = Router::new()
         .route("/rpc", post(rpc_handler))
         .route("/rpc", get(rpc_get_hint))
         .route("/rpc/methods", get(rpc_methods))
-        .layer(DefaultBodyLimit::max(DEFAULT_HTTP_BODY_LIMIT_BYTES));
+        .layer(DefaultBodyLimit::max(DEFAULT_HTTP_BODY_LIMIT_BYTES))
+        .with_state(dispatcher);
 
     #[cfg(feature = "schema")]
     let router = router.route("/rpc/schema", get(rpc_schema));
@@ -164,13 +296,17 @@ pub async fn run_http(port: u16) -> Result<(), Box<dyn std::error::Error>> {
 )]
 mod tests {
     use super::{DEFAULT_HTTP_BODY_LIMIT_BYTES, app, rpc_handler};
+    use crate::rpc::RpcDispatcher;
     use axum::{
         Json,
         body::{Body, to_bytes},
+        extract::State,
         http::{Request, StatusCode},
         response::IntoResponse,
     };
     use serde_json::json;
+    use std::panic;
+    use std::sync::{Arc, Mutex};
     use tower::ServiceExt;
 
     /// Absolute path to the APA style.
@@ -203,6 +339,39 @@ mod tests {
         serde_json::from_slice(&body).expect("response body should be valid JSON")
     }
 
+    fn test_dispatcher() -> State<Arc<Mutex<RpcDispatcher>>> {
+        State(Arc::new(Mutex::new(RpcDispatcher::new_http())))
+    }
+
+    #[tokio::test(flavor = "current_thread")]
+    async fn rpc_handler_poisoned_dispatcher_returns_internal_server_error() {
+        let dispatcher = Arc::new(Mutex::new(RpcDispatcher::new_http()));
+        let poisoned = Arc::clone(&dispatcher);
+        let _ = panic::catch_unwind(move || {
+            let _guard = poisoned
+                .lock()
+                .expect("dispatcher lock should be available");
+            panic!("poison dispatcher mutex");
+        });
+        let payload = serde_json::from_value(json!({
+            "id": 25,
+            "method": "validate_style",
+            "params": {
+                "style_path": apa_style_path()
+            }
+        }))
+        .expect("payload should deserialize");
+
+        let response = rpc_handler(State(dispatcher), Json(payload))
+            .await
+            .into_response();
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+
+        let body = response_body_json(response).await;
+        assert_eq!(body["id"], 25);
+        assert_eq!(body["error"], "RPC dispatcher mutex poisoned");
+    }
+
     #[tokio::test(flavor = "current_thread")]
     async fn rpc_handler_render_citation_returns_ok() {
         let payload = serde_json::from_value(json!({
@@ -219,7 +388,9 @@ mod tests {
         }))
         .expect("payload should deserialize");
 
-        let response = rpc_handler(Json(payload)).await.into_response();
+        let response = rpc_handler(test_dispatcher(), Json(payload))
+            .await
+            .into_response();
         assert_eq!(response.status(), axum::http::StatusCode::OK);
 
         let body = response_body_json(response).await;
@@ -243,7 +414,9 @@ mod tests {
         }))
         .expect("payload should deserialize");
 
-        let response = rpc_handler(Json(payload)).await.into_response();
+        let response = rpc_handler(test_dispatcher(), Json(payload))
+            .await
+            .into_response();
         assert_eq!(response.status(), axum::http::StatusCode::OK);
 
         let body = response_body_json(response).await;
@@ -266,7 +439,9 @@ mod tests {
         }))
         .expect("payload should deserialize");
 
-        let response = rpc_handler(Json(payload)).await.into_response();
+        let response = rpc_handler(test_dispatcher(), Json(payload))
+            .await
+            .into_response();
         assert_eq!(response.status(), axum::http::StatusCode::BAD_REQUEST);
 
         let body = response_body_json(response).await;
@@ -288,7 +463,9 @@ mod tests {
         }))
         .expect("payload should deserialize");
 
-        let response = rpc_handler(Json(payload)).await.into_response();
+        let response = rpc_handler(test_dispatcher(), Json(payload))
+            .await
+            .into_response();
         assert_eq!(response.status(), axum::http::StatusCode::BAD_REQUEST);
 
         let body = response_body_json(response).await;
@@ -340,7 +517,7 @@ mod tests {
 
     #[cfg(feature = "schema")]
     #[tokio::test(flavor = "current_thread")]
-    async fn get_rpc_schema_returns_all_four_method_schemas() {
+    async fn get_rpc_schema_returns_method_schemas() {
         let request = Request::builder()
             .method("GET")
             .uri("/rpc/schema")
@@ -367,6 +544,17 @@ mod tests {
             body["format_document"].is_object(),
             "format_document schema missing"
         );
+        #[cfg(feature = "session")]
+        {
+            assert!(
+                body["open_session"]["properties"]["style"].is_object(),
+                "open_session schema should describe style params"
+            );
+            assert!(
+                body["get_citations"]["properties"]["session_id"].is_object(),
+                "get_citations schema should describe session_id params"
+            );
+        }
     }
 
     #[tokio::test(flavor = "current_thread")]

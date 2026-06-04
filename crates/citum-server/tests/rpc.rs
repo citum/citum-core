@@ -21,7 +21,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! Uses a real Citum style (apa-7th.yaml) and minimal inline reference data
 //! to exercise all four methods without touching stdin/stdout.
 
-use citum_server::rpc::{RpcRequest, dispatch};
+use citum_server::rpc::{RpcDispatchError, RpcDispatcher, RpcRequest, dispatch};
 use serde_json::json;
 
 /// Absolute path to the APA style.
@@ -369,6 +369,131 @@ fn format_document_accepts_refs_path_native_bibliography() {
         entries.iter().any(|entry| entry["id"] == "biss"),
         "bibliography should include the path-loaded reference: {payload}"
     );
+}
+
+// --- sessions ---
+
+#[test]
+fn stdio_dispatcher_keeps_default_session_across_requests() {
+    let mut dispatcher = RpcDispatcher::new_stdio();
+    let opened = dispatcher
+        .dispatch(make_request(
+            17,
+            "open_session",
+            json!({
+                "style": {
+                    "kind": "path",
+                    "value": apa_style_path()
+                },
+                "output_format": "html"
+            }),
+        ))
+        .expect("open_session should succeed");
+    assert_eq!(opened["result"]["session_id"], "default");
+
+    dispatcher
+        .dispatch(make_request(
+            18,
+            "put_references",
+            json!({
+                "session_id": "default",
+                "refs": hawking_refs()
+            }),
+        ))
+        .expect("put_references should succeed");
+
+    let inserted = dispatcher
+        .dispatch(make_request(
+            19,
+            "insert_citation",
+            json!({
+                "session_id": "default",
+                "citation": {
+                    "id": "cite-1",
+                    "items": [{"id": "ITEM-2"}]
+                }
+            }),
+        ))
+        .expect("insert_citation should succeed");
+    assert_eq!(inserted["result"]["version"], 1);
+    assert_eq!(inserted["result"]["affected_citations"][0]["id"], "cite-1");
+    assert_eq!(inserted["result"]["renumbering_occurred"], false);
+
+    let citations = dispatcher
+        .dispatch(make_request(
+            20,
+            "get_citations",
+            json!({ "session_id": "default" }),
+        ))
+        .expect("get_citations should succeed");
+    assert_eq!(
+        citations["result"]["formatted_citations"][0]["id"],
+        "cite-1"
+    );
+}
+
+#[test]
+fn http_dispatcher_generates_independent_session_ids() {
+    let mut dispatcher = RpcDispatcher::new_http();
+    let first = dispatcher
+        .dispatch(make_request(
+            21,
+            "open_session",
+            json!({
+                "style": {
+                    "kind": "path",
+                    "value": apa_style_path()
+                }
+            }),
+        ))
+        .expect("first open_session should succeed");
+    let second = dispatcher
+        .dispatch(make_request(
+            22,
+            "open_session",
+            json!({
+                "style": {
+                    "kind": "path",
+                    "value": apa_style_path()
+                }
+            }),
+        ))
+        .expect("second open_session should succeed");
+
+    assert_ne!(
+        first["result"]["session_id"],
+        second["result"]["session_id"]
+    );
+}
+
+#[test]
+fn http_dispatcher_requires_session_id_for_session_lookup() {
+    let mut dispatcher = RpcDispatcher::new_http();
+    let err = dispatcher
+        .dispatch(make_request(23, "get_citations", json!({})))
+        .expect_err("missing HTTP session_id should error");
+    let message = match err.1 {
+        RpcDispatchError::Message(message) => message,
+        RpcDispatchError::Response(response) => response.to_string(),
+    };
+
+    assert_eq!(err.0, Some(json!(23)));
+    assert_eq!(message, "missing required field: session_id");
+}
+
+#[test]
+fn http_dispatcher_requires_session_id_for_close_session() {
+    let mut dispatcher = RpcDispatcher::new_http();
+    let err = dispatcher
+        .dispatch(make_request(24, "close_session", json!({})))
+        .expect_err("missing HTTP session_id should error");
+    let message = match err.1 {
+        RpcDispatchError::Message(message) => message,
+        RpcDispatchError::Response(response) => response.to_string(),
+    };
+
+    assert_eq!(err.0, Some(json!(24)));
+    assert_eq!(message, "missing required field: session_id");
 }
 
 // --- error handling ---

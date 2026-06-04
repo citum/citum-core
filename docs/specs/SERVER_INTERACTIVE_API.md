@@ -14,7 +14,7 @@ The current server API renders citations one at a time (`render_citation`) witho
 
 **In scope:**
 - Tier 1: `format_document` — stateless, document-shaped batch endpoint (primary)
-- Tier 2: Session lifecycle API — stateful, `session` feature flag, HTTP only
+- Tier 2: Session lifecycle API — stateful, `session` feature flag, stdio + HTTP + WASM
 - Placement of shared types and logic in `citum-engine`
 - WASM exposure of both tiers via `citum-bindings`
 - Server exposure via `citum-server` RPC dispatch
@@ -59,8 +59,9 @@ citum-bindings (WASM adapter)
 
 citum-server (Daemon / Network adapter)
   ├── format_document dispatch arm (works in stdio + HTTP)
-  └── session lifecycle methods (HTTP + `session` feature only)
-        (session store: Arc<Mutex<HashMap<String, DocumentSession>>>)
+  └── session lifecycle methods (`session` feature; same method names in stdio + HTTP)
+        ├── stdio: one implicit process-local session, fixed session_id "default"
+        └── HTTP: multi-session store with generated session IDs and TTL eviction
 ```
 
 ### `StyleInput` — cross-transport style reference
@@ -358,11 +359,15 @@ The ordered `citations` array gives the processor full document context in a sin
 
 ### Tier 2 — Session API (stateful)
 
-For word processors with large bibliographies where re-sending the full `refs` library on each edit is too slow. Amortizes style parsing and deserialization across many edits. Available only with the `session` feature flag (which implies `http`).
+For word processors with large bibliographies where re-sending the full `refs` library on each edit is too slow. Amortizes style parsing and reference deserialization across many edits. Available with the `session` feature flag over stdio and HTTP; WASM exposes the same engine session object directly.
 
-**Session store (server-side):** `Arc<Mutex<HashMap<String, DocumentSession>>>`
+**Server-side session model:**
 
-**Session mutation result envelope** (all mutation methods share this shape):
+- stdio: one `DocumentSession` slot per `citum-server` process. `open_session` replaces that slot and returns `{"session_id": "default"}`. There is no TTL; the session lifetime is the subprocess lifetime.
+- HTTP: multi-session store owned by the HTTP RPC dispatcher. `open_session` returns an opaque generated session ID. Idle sessions are evicted after TTL expiry.
+
+**Session mutation result envelope** (`insert_citations_batch`, `insert_citation`,
+`update_citation`, and `delete_citation` share this shape):
 
 ```json
 {
@@ -384,14 +389,18 @@ For word processors with large bibliographies where re-sending the full `refs` l
 }
 ```
 
-`affected_citations` contains only citations whose formatted text changed. `renumbering_occurred` is `true` when note numbers or numeric labels shifted — GUIs should call `get_citations` to refresh all visible citations when this is set. `version` increments on each mutation; clients can use it to detect stale state.
+`affected_citations` is complete: after every committed mutation, it contains every current citation whose formatted text or referenced ID set changed since the previous committed session state. Deleted citations are not returned because the caller supplied the deletion target and can remove it directly.
 
-**Session eviction error** — when a session has been evicted after TTL expiry:
+`renumbering_occurred` is a diff-derived optimization hint. It is `true` iff an existing citation's note number or numeric/label citation output actually shifted. It is not set merely because an insert, delete, batch replacement, or reorder occurred. GUIs may use it to decide whether to call `get_citations`, but correctness must come from the complete `affected_citations` set. `version` increments on each mutation; clients can use it to detect stale state.
+
+**HTTP session eviction error** — when an HTTP session has been evicted after TTL expiry:
 ```json
 {"error": "session_expired", "session_id": "s-a1b2c3d4", "expired_at": "2026-05-04T12:34:56Z"}
 ```
 
-Clients must handle this by opening a new session and re-uploading references.
+`expired_at` is an RFC3339 UTC timestamp. HTTP clients must handle this by
+opening a new session and re-uploading references. stdio sessions do not expire
+independently of the subprocess.
 
 #### `open_session`
 
@@ -569,20 +578,40 @@ The `Arc<Mutex<HashMap<String, DocumentSession>>>` session store addresses this:
 
 **Alternative (actor pattern):** Confine each `DocumentSession` to a dedicated Tokio task that owns it forever. HTTP handlers communicate via channels (`mpsc::Sender<SessionCommand>`). The session never leaves its owning task, so `!Sync` is not a concern and there is no mutex contention. Preferred for high-throughput deployments; the mutex approach is simpler for initial implementation.
 
+### stdio Session Variant
+
+The LibreOffice adapter (`citum-office`) runs `citum-server` as a stdio subprocess
+per document — one process per open document, killed when the document closes. In
+that model the subprocess is the session. The server therefore accepts the same
+session method names over stdio and stores one implicit `DocumentSession` in process
+memory. `open_session` returns a fixed `session_id` of `"default"`; subsequent
+methods accept that ID for transport-shape consistency.
+
+Method names, parameter shapes, and return types are identical in stdio and HTTP.
+Only storage differs: stdio uses the implicit process-local slot; HTTP uses the
+multi-session store.
+
 ### Feature Flags
 
-`session` implies `http` implies `async`. Add to `citum-server/Cargo.toml`:
+`session` is default-on but does not imply `http`, `async`, or `tokio`. Add to
+`citum-server/Cargo.toml`:
 
 ```toml
 [features]
-session = ["http"]
+default = ["http", "session"]
+session = []
 ```
 
-Session methods are unreachable without HTTP (sessions require server-side state). `format_document` works in both stdio and HTTP modes.
+`http` still implies `async`. HTTP session TTL machinery is compiled only with the
+HTTP transport. A stdio-only build may enable `session` without pulling in the HTTP
+transport or Tokio runtime.
 
 ### Session TTL
 
-Sessions idle beyond a configurable timeout (default: 30 minutes) should be evicted to bound memory growth. When evicted, any subsequent method call for that session ID returns the `session_expired` error (see above). Implementation detail left to the implementing task.
+HTTP sessions idle beyond a configurable timeout (default: 30 minutes) should be
+evicted to bound memory growth. When evicted, any subsequent method call for that
+session ID returns the `session_expired` error (see above). stdio sessions are
+released when `close_session` is called or the subprocess exits.
 
 ---
 
@@ -592,10 +621,13 @@ Sessions idle beyond a configurable timeout (default: 30 minutes) should be evic
 - [ ] `format_document` returns one `FormattedCitation` per input `CitationOccurrence`, in the same order.
 - [ ] A document with multiple citations to the same work in a note style produces correct ibid where the style requires it.
 - [ ] An integral (`mode: "integral"`) citation occurrence renders as a narrative citation.
-- [ ] Session lifecycle (`open_session` → `put_references` → `insert_citations_batch` → `close_session`) works end-to-end over HTTP.
+- [ ] Session lifecycle (`open_session` → `put_references` → `insert_citations_batch` → `close_session`) works end-to-end over stdio and HTTP.
+- [ ] stdio `open_session` returns `{"session_id": "default"}` and keeps that implicit session alive for the process lifetime.
+- [ ] `affected_citations` is complete for every mutation.
+- [ ] `renumbering_occurred` is true only when existing note numbers or numeric/label citation output actually shifted.
 - [ ] `preview_citation` returns a `{"preview": "..."}` response without mutating the session's citation list.
 - [ ] `DocumentSession` is exposed as a wasm-bindgen class in `citum-bindings` with optional `refs_json` constructor and `dispose()` alias.
-- [ ] Expired session requests return `{"error": "session_expired", ...}`.
+- [ ] Expired HTTP session requests return `{"error": "session_expired", ...}`.
 - [ ] Existing `render_citation`, `render_bibliography`, `validate_style` methods continue to pass all current tests unchanged.
 - [ ] `cargo nextest run` passes.
 
@@ -604,3 +636,4 @@ Sessions idle beyond a configurable timeout (default: 30 minutes) should be evic
 - 2026-05-04: Initial draft.
 - 2026-05-04: Added `DocumentOptions` covering Pandoc-equivalent metadata fields (`suppress_bibliography`, `link_citations`, `link_bibliography`, `notes_after_punctuation`), document-level `bibliography_groups` override (reusing `BibliographyGroup` from csl26-extg), and `annotated_bibliography` mode. Added `csl26-r8d2` forward-reference for `StyleInput` URL variant.
 - 2026-05-04: Revised per reviewer feedback. `StyleInput` union replaces bare `style` string; `output_format` promoted to top-level; `note_number` made optional (null = in-text); `CitationOccurrence` fields aligned with `Citation`/`CitationItem` schema (`CitationLocator` shape, `mode`, `suppress_author`, `integral_name_state`, `grouped`); `author_only` removed; `!Send` corrected to `!Sync`; session results unified into versioned envelope; `insert_citations_batch` added; `warnings` structured; WASM constructor makes `refs_json` optional; `affected_citations` semantics clarified with `renumbering_occurred`; session eviction error documented.
+- 2026-06-04: Made Tier 2 sessions transport-neutral for csl26-3yk1. `session` is default-on but does not imply `http`; stdio uses fixed `session_id: "default"` and HTTP owns TTL eviction. Clarified complete `affected_citations` semantics and diff-derived `renumbering_occurred`.

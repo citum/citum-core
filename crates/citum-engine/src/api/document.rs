@@ -210,7 +210,7 @@ pub fn format_document_with_style(
                 code: "integral_name_memory_not_applied".to_string(),
                 citation_id: None,
                 ref_id: None,
-                message: "document_options.integral_name_memory is accepted but not yet wired through the processor; tracked in csl26-wq0y.".to_string(),
+                message: "document_options.integral_name_memory is accepted but not yet wired through the processor; tracked in csl26-ktq6.".to_string(),
             });
         }
     }
@@ -460,7 +460,7 @@ fn scan_template_for_unknowns(
 }
 
 /// Process citations and return formatted text.
-fn format_by_kind<F>(
+pub(crate) fn format_by_kind<F>(
     processor: &Processor,
     citations: &[Citation],
 ) -> Result<Vec<FormattedCitation>, FormatDocumentError>
@@ -486,7 +486,7 @@ where
 }
 
 /// Format the bibliography by output kind.
-fn format_bibliography<F>(
+pub(crate) fn format_bibliography<F>(
     processor: &Processor,
     format_kind: OutputFormatKind,
     doc_opts: Option<&DocumentOptions>,
