@@ -45,10 +45,21 @@ use citum_engine::{
     Bibliography, Citation, DocumentOptions, Processor, StyleInput,
     render::{djot::Djot, html::Html, latex::Latex, plain::PlainText, typst::Typst},
 };
+#[cfg(feature = "session")]
+use citum_engine::{
+    CitationInsertPosition, CitationOccurrence, CitationOccurrenceItem, DocumentSession,
+    OpenSessionResult, OutputFormatKind, RefsInput,
+};
 use citum_schema::Style;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+#[cfg(all(feature = "session", feature = "http"))]
+use std::collections::HashMap;
 use std::io::{self, BufRead, Write};
+#[cfg(all(feature = "session", feature = "http"))]
+use std::sync::atomic::{AtomicU64, Ordering};
+#[cfg(all(feature = "session", feature = "http"))]
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 /// JSON-RPC request envelope.
 #[derive(Debug, Deserialize)]
@@ -155,12 +166,492 @@ pub struct FormatDocumentParams {
     pub document_options: Option<DocumentOptions>,
 }
 
+/// Parameters for the `open_session` method.
+#[cfg(feature = "session")]
+#[derive(Debug, Deserialize)]
+#[cfg_attr(
+    any(feature = "schema", feature = "schema-types"),
+    derive(schemars::JsonSchema)
+)]
+pub struct OpenSessionParams {
+    /// Style identifier, path, URI, or inline YAML.
+    pub style: StyleInput,
+    /// Optional BCP 47 locale override.
+    pub locale: Option<String>,
+    /// Output format (plain, html, djot, latex, typst). Defaults to plain.
+    pub output_format: Option<OutputFormatKind>,
+    /// Optional document-level configuration.
+    pub document_options: Option<DocumentOptions>,
+}
+
+/// Parameters for the `put_references` method.
+#[cfg(feature = "session")]
+#[derive(Debug, Deserialize)]
+#[cfg_attr(
+    any(feature = "schema", feature = "schema-types"),
+    derive(schemars::JsonSchema)
+)]
+pub struct PutReferencesParams {
+    /// Session identifier returned by `open_session`.
+    pub session_id: Option<String>,
+    /// Full reference input for the session.
+    pub refs: RefsInput,
+}
+
+/// Parameters for the `insert_citations_batch` method.
+#[cfg(feature = "session")]
+#[derive(Debug, Deserialize)]
+#[cfg_attr(
+    any(feature = "schema", feature = "schema-types"),
+    derive(schemars::JsonSchema)
+)]
+pub struct InsertCitationsBatchParams {
+    /// Session identifier returned by `open_session`.
+    pub session_id: Option<String>,
+    /// Complete ordered citation list.
+    pub citations: Vec<CitationOccurrence>,
+}
+
+/// Parameters for the `insert_citation` method.
+#[cfg(feature = "session")]
+#[derive(Debug, Deserialize)]
+#[cfg_attr(
+    any(feature = "schema", feature = "schema-types"),
+    derive(schemars::JsonSchema)
+)]
+pub struct InsertCitationParams {
+    /// Session identifier returned by `open_session`.
+    pub session_id: Option<String>,
+    /// Citation to insert.
+    pub citation: CitationOccurrence,
+    /// Optional neighbour-ID position context.
+    pub position: Option<CitationInsertPosition>,
+}
+
+/// Parameters for the `update_citation` method.
+#[cfg(feature = "session")]
+#[derive(Debug, Deserialize)]
+#[cfg_attr(
+    any(feature = "schema", feature = "schema-types"),
+    derive(schemars::JsonSchema)
+)]
+pub struct UpdateCitationParams {
+    /// Session identifier returned by `open_session`.
+    pub session_id: Option<String>,
+    /// Existing citation ID to update.
+    pub citation_id: String,
+    /// Replacement citation data.
+    pub citation: CitationOccurrence,
+    /// Optional neighbour-ID position context.
+    pub position: Option<CitationInsertPosition>,
+}
+
+/// Parameters for the `delete_citation` method.
+#[cfg(feature = "session")]
+#[derive(Debug, Deserialize)]
+#[cfg_attr(
+    any(feature = "schema", feature = "schema-types"),
+    derive(schemars::JsonSchema)
+)]
+pub struct DeleteCitationParams {
+    /// Session identifier returned by `open_session`.
+    pub session_id: Option<String>,
+    /// Existing citation ID to delete.
+    pub citation_id: String,
+}
+
+/// Parameters for the `preview_citation` method.
+#[cfg(feature = "session")]
+#[derive(Debug, Deserialize)]
+#[cfg_attr(
+    any(feature = "schema", feature = "schema-types"),
+    derive(schemars::JsonSchema)
+)]
+pub struct PreviewCitationParams {
+    /// Session identifier returned by `open_session`.
+    pub session_id: Option<String>,
+    /// Citation items to preview.
+    pub items: Vec<CitationOccurrenceItem>,
+    /// Optional neighbour-ID position context.
+    pub position: Option<CitationInsertPosition>,
+}
+
+/// Parameters for methods that only need a session ID.
+#[cfg(feature = "session")]
+#[derive(Debug, Deserialize)]
+#[cfg_attr(
+    any(feature = "schema", feature = "schema-types"),
+    derive(schemars::JsonSchema)
+)]
+pub struct SessionIdParams {
+    /// Session identifier returned by `open_session`.
+    pub session_id: Option<String>,
+}
+
 #[derive(Debug, Serialize)]
 struct BibliographyResult {
     format: OutputFormat,
     content: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     entries: Option<Vec<String>>,
+}
+
+#[derive(Debug)]
+#[cfg(all(feature = "session", feature = "http"))]
+struct StoredSession {
+    session: DocumentSession,
+    last_access: SystemTime,
+}
+
+#[cfg(all(feature = "session", feature = "http"))]
+const HTTP_SESSION_TTL_SECS: u64 = 30 * 60;
+
+#[cfg(feature = "session")]
+#[derive(Debug)]
+enum SessionMode {
+    Stdio {
+        session: Box<Option<DocumentSession>>,
+    },
+    #[cfg(all(feature = "session", feature = "http"))]
+    Http {
+        sessions: HashMap<String, StoredSession>,
+        next_session_id: AtomicU64,
+        ttl: Duration,
+    },
+}
+
+/// Stateful RPC dispatcher used by stdio and HTTP transports.
+#[derive(Debug)]
+pub struct RpcDispatcher {
+    #[cfg(feature = "session")]
+    session_mode: SessionMode,
+}
+
+/// Error returned by the stateful RPC dispatcher.
+#[derive(Debug)]
+pub enum RpcDispatchError {
+    /// Legacy string-valued error response.
+    Message(String),
+    /// Complete JSON response for methods with structured top-level errors.
+    Response(Box<Value>),
+}
+
+impl RpcDispatcher {
+    /// Create a dispatcher with one implicit stdio session slot.
+    pub fn new_stdio() -> Self {
+        Self {
+            #[cfg(feature = "session")]
+            session_mode: SessionMode::Stdio {
+                session: Box::new(None),
+            },
+        }
+    }
+
+    /// Create a dispatcher with an HTTP multi-session store.
+    #[cfg(feature = "http")]
+    pub fn new_http() -> Self {
+        Self {
+            #[cfg(feature = "session")]
+            session_mode: SessionMode::Http {
+                sessions: HashMap::new(),
+                next_session_id: AtomicU64::new(1),
+                ttl: Duration::from_secs(HTTP_SESSION_TTL_SECS),
+            },
+        }
+    }
+
+    /// Process one RPC request against this dispatcher's session state.
+    ///
+    /// # Errors
+    ///
+    /// Returns a dispatch error when the method is unknown or a method-specific
+    /// validation, rendering, or session lookup fails.
+    pub fn dispatch(
+        &mut self,
+        req: RpcRequest,
+    ) -> Result<Value, (Option<Value>, RpcDispatchError)> {
+        let id = req.id.clone();
+
+        match req.method.as_str() {
+            "render_citation" => render_citation(&req.params, id)
+                .map_err(|e| (Some(req.id), RpcDispatchError::Message(e.to_string()))),
+            "render_bibliography" => render_bibliography(&req.params, id)
+                .map_err(|e| (Some(req.id), RpcDispatchError::Message(e.to_string()))),
+            "validate_style" => validate_style(&req.params, id)
+                .map_err(|e| (Some(req.id), RpcDispatchError::Message(e.to_string()))),
+            "format_document" => format_document(&req.params, id)
+                .map_err(|e| (Some(req.id), RpcDispatchError::Message(e.to_string()))),
+            #[cfg(feature = "session")]
+            "open_session" => self
+                .open_session(&req.params, id)
+                .map_err(|e| (Some(req.id), RpcDispatchError::Message(e.to_string()))),
+            #[cfg(feature = "session")]
+            "put_references" => self.put_references(&req.params, id, req.id.clone()),
+            #[cfg(feature = "session")]
+            "insert_citations_batch" => {
+                self.insert_citations_batch(&req.params, id, req.id.clone())
+            }
+            #[cfg(feature = "session")]
+            "insert_citation" => self.insert_citation(&req.params, id, req.id.clone()),
+            #[cfg(feature = "session")]
+            "update_citation" => self.update_citation(&req.params, id, req.id.clone()),
+            #[cfg(feature = "session")]
+            "delete_citation" => self.delete_citation(&req.params, id, req.id.clone()),
+            #[cfg(feature = "session")]
+            "preview_citation" => self.preview_citation(&req.params, id, req.id.clone()),
+            #[cfg(feature = "session")]
+            "get_citations" => self.get_citations(&req.params, id, req.id.clone()),
+            #[cfg(feature = "session")]
+            "get_bibliography" => self.get_bibliography(&req.params, id, req.id.clone()),
+            #[cfg(feature = "session")]
+            "close_session" => self.close_session(&req.params, id, req.id.clone()),
+            _ => Err((
+                Some(req.id),
+                RpcDispatchError::Message(format!("unknown method: {}", req.method)),
+            )),
+        }
+    }
+
+    #[cfg(feature = "session")]
+    fn open_session(&mut self, params: &Value, id: Value) -> Result<Value, ServerError> {
+        let params: OpenSessionParams = serde_json::from_value(params.clone())
+            .map_err(|e| ServerError::CitationError(format!("Invalid request JSON: {e}")))?;
+        let style = resolve_style_input(&params.style)?;
+        let session = DocumentSession::new(
+            style,
+            params.style,
+            params.locale,
+            params.output_format.unwrap_or_default(),
+            params.document_options,
+        );
+        let session_id = match &mut self.session_mode {
+            SessionMode::Stdio { session: slot } => {
+                **slot = Some(session);
+                "default".to_string()
+            }
+            #[cfg(feature = "http")]
+            SessionMode::Http {
+                sessions,
+                next_session_id,
+                ..
+            } => {
+                let next = next_session_id.fetch_add(1, Ordering::Relaxed);
+                let session_id = format!("s-{next:016x}");
+                sessions.insert(
+                    session_id.clone(),
+                    StoredSession {
+                        session,
+                        last_access: SystemTime::now(),
+                    },
+                );
+                session_id
+            }
+        };
+        let result = OpenSessionResult { session_id };
+        Ok(json!({ "id": id, "result": result }))
+    }
+
+    #[cfg(feature = "session")]
+    fn put_references(
+        &mut self,
+        params: &Value,
+        id: Value,
+        request_id: Value,
+    ) -> Result<Value, (Option<Value>, RpcDispatchError)> {
+        let params: PutReferencesParams = parse_session_params(params, &request_id)?;
+        let session = self.session_mut(params.session_id.as_deref(), &request_id)?;
+        session.put_references(params.refs);
+        Ok(json!({ "id": id, "result": {} }))
+    }
+
+    #[cfg(feature = "session")]
+    fn insert_citations_batch(
+        &mut self,
+        params: &Value,
+        id: Value,
+        request_id: Value,
+    ) -> Result<Value, (Option<Value>, RpcDispatchError)> {
+        let params: InsertCitationsBatchParams = parse_session_params(params, &request_id)?;
+        let session = self.session_mut(params.session_id.as_deref(), &request_id)?;
+        let result = session
+            .insert_citations_batch(params.citations)
+            .map_err(session_method_error(&request_id))?;
+        Ok(json!({ "id": id, "result": result }))
+    }
+
+    #[cfg(feature = "session")]
+    fn insert_citation(
+        &mut self,
+        params: &Value,
+        id: Value,
+        request_id: Value,
+    ) -> Result<Value, (Option<Value>, RpcDispatchError)> {
+        let params: InsertCitationParams = parse_session_params(params, &request_id)?;
+        let session = self.session_mut(params.session_id.as_deref(), &request_id)?;
+        let result = session
+            .insert_citation(params.citation, params.position)
+            .map_err(session_method_error(&request_id))?;
+        Ok(json!({ "id": id, "result": result }))
+    }
+
+    #[cfg(feature = "session")]
+    fn update_citation(
+        &mut self,
+        params: &Value,
+        id: Value,
+        request_id: Value,
+    ) -> Result<Value, (Option<Value>, RpcDispatchError)> {
+        let params: UpdateCitationParams = parse_session_params(params, &request_id)?;
+        let session = self.session_mut(params.session_id.as_deref(), &request_id)?;
+        let result = session
+            .update_citation(&params.citation_id, params.citation, params.position)
+            .map_err(session_method_error(&request_id))?;
+        Ok(json!({ "id": id, "result": result }))
+    }
+
+    #[cfg(feature = "session")]
+    fn delete_citation(
+        &mut self,
+        params: &Value,
+        id: Value,
+        request_id: Value,
+    ) -> Result<Value, (Option<Value>, RpcDispatchError)> {
+        let params: DeleteCitationParams = parse_session_params(params, &request_id)?;
+        let session = self.session_mut(params.session_id.as_deref(), &request_id)?;
+        let result = session
+            .delete_citation(&params.citation_id)
+            .map_err(session_method_error(&request_id))?;
+        Ok(json!({ "id": id, "result": result }))
+    }
+
+    #[cfg(feature = "session")]
+    fn preview_citation(
+        &mut self,
+        params: &Value,
+        id: Value,
+        request_id: Value,
+    ) -> Result<Value, (Option<Value>, RpcDispatchError)> {
+        let params: PreviewCitationParams = parse_session_params(params, &request_id)?;
+        let session = self.session_mut(params.session_id.as_deref(), &request_id)?;
+        let result = session
+            .preview_citation(params.items, params.position)
+            .map_err(session_method_error(&request_id))?;
+        Ok(json!({ "id": id, "result": result }))
+    }
+
+    #[cfg(feature = "session")]
+    fn get_citations(
+        &mut self,
+        params: &Value,
+        id: Value,
+        request_id: Value,
+    ) -> Result<Value, (Option<Value>, RpcDispatchError)> {
+        let params: SessionIdParams = parse_session_params(params, &request_id)?;
+        let session = self.session_mut(params.session_id.as_deref(), &request_id)?;
+        Ok(json!({
+            "id": id,
+            "result": { "formatted_citations": session.get_citations() }
+        }))
+    }
+
+    #[cfg(feature = "session")]
+    fn get_bibliography(
+        &mut self,
+        params: &Value,
+        id: Value,
+        request_id: Value,
+    ) -> Result<Value, (Option<Value>, RpcDispatchError)> {
+        let params: SessionIdParams = parse_session_params(params, &request_id)?;
+        let session = self.session_mut(params.session_id.as_deref(), &request_id)?;
+        Ok(json!({
+            "id": id,
+            "result": { "bibliography": session.get_bibliography() }
+        }))
+    }
+
+    #[cfg(feature = "session")]
+    fn close_session(
+        &mut self,
+        params: &Value,
+        id: Value,
+        request_id: Value,
+    ) -> Result<Value, (Option<Value>, RpcDispatchError)> {
+        let params: SessionIdParams = parse_session_params(params, &request_id)?;
+        #[cfg(not(feature = "http"))]
+        let _ = &params;
+        match &mut self.session_mode {
+            SessionMode::Stdio { session } => {
+                **session = None;
+            }
+            #[cfg(feature = "http")]
+            SessionMode::Http { sessions, .. } => {
+                let session_id = params.session_id.as_deref().ok_or_else(|| {
+                    (
+                        Some(request_id.clone()),
+                        RpcDispatchError::Message("missing required field: session_id".to_string()),
+                    )
+                })?;
+                sessions.remove(session_id);
+            }
+        }
+        Ok(json!({ "id": id, "result": {} }))
+    }
+
+    #[cfg(feature = "session")]
+    fn session_mut(
+        &mut self,
+        session_id: Option<&str>,
+        request_id: &Value,
+    ) -> Result<&mut DocumentSession, (Option<Value>, RpcDispatchError)> {
+        #[cfg(not(feature = "http"))]
+        let _ = session_id;
+        match &mut self.session_mode {
+            SessionMode::Stdio { session } => session.as_mut().as_mut().ok_or_else(|| {
+                (
+                    Some(request_id.clone()),
+                    RpcDispatchError::Message("session not open".to_string()),
+                )
+            }),
+            #[cfg(feature = "http")]
+            SessionMode::Http { sessions, ttl, .. } => {
+                let session_id = session_id.ok_or_else(|| {
+                    (
+                        Some(request_id.clone()),
+                        RpcDispatchError::Message("missing required field: session_id".to_string()),
+                    )
+                })?;
+                if let Some(stored) = sessions.get(session_id)
+                    && stored.last_access.elapsed().unwrap_or_default() > *ttl
+                {
+                    let expired_at = format_system_time(stored.last_access + *ttl);
+                    sessions.remove(session_id);
+                    return Err((
+                        Some(request_id.clone()),
+                        RpcDispatchError::Response(Box::new(json!({
+                            "id": request_id,
+                            "error": "session_expired",
+                            "session_id": session_id,
+                            "expired_at": expired_at
+                        }))),
+                    ));
+                }
+                let stored = sessions.get_mut(session_id).ok_or_else(|| {
+                    (
+                        Some(request_id.clone()),
+                        RpcDispatchError::Message(format!("session not found: {session_id}")),
+                    )
+                })?;
+                stored.last_access = SystemTime::now();
+                Ok(&mut stored.session)
+            }
+        }
+    }
+}
+
+impl Default for RpcDispatcher {
+    fn default() -> Self {
+        Self::new_stdio()
+    }
 }
 
 /// Return `MissingField` if `field` is absent from `params`.
@@ -193,23 +684,11 @@ fn validate_output_format(params: &Value) -> Result<(), ServerError> {
 /// Returns an error for unknown methods or when request-specific rendering or
 /// validation steps fail.
 pub fn dispatch(req: RpcRequest) -> Result<Value, (Option<Value>, String)> {
-    let id = req.id.clone();
-
-    match req.method.as_str() {
-        "render_citation" => {
-            render_citation(&req.params, id).map_err(|e| (Some(req.id), e.to_string()))
-        }
-        "render_bibliography" => {
-            render_bibliography(&req.params, id).map_err(|e| (Some(req.id), e.to_string()))
-        }
-        "validate_style" => {
-            validate_style(&req.params, id).map_err(|e| (Some(req.id), e.to_string()))
-        }
-        "format_document" => {
-            format_document(&req.params, id).map_err(|e| (Some(req.id), e.to_string()))
-        }
-        _ => Err((Some(req.id), format!("unknown method: {}", req.method))),
-    }
+    let mut dispatcher = RpcDispatcher::new_stdio();
+    dispatcher.dispatch(req).map_err(|(id, error)| match error {
+        RpcDispatchError::Message(message) => (id, message),
+        RpcDispatchError::Response(value) => (id, value.to_string()),
+    })
 }
 
 /// Render a single citation.
@@ -364,6 +843,16 @@ fn format_document(params: &Value, id: Value) -> Result<Value, ServerError> {
     }))
 }
 
+#[cfg(feature = "session")]
+fn resolve_style_input(style_input: &StyleInput) -> Result<Style, ServerError> {
+    match style_input {
+        StyleInput::Yaml(_) => style_input
+            .resolve_local()
+            .map_err(|e| ServerError::CitationError(e.to_string())),
+        StyleInput::Id(s) | StyleInput::Uri(s) | StyleInput::Path(s) => load_style(s),
+    }
+}
+
 /// Load a style through the standard resolver chain.
 ///
 /// The chain includes file, store, HTTP, git, and registry resolvers.
@@ -390,6 +879,60 @@ fn load_style(style_input: &str) -> Result<Style, ServerError> {
     }
 }
 
+#[cfg(feature = "session")]
+fn parse_session_params<T>(
+    params: &Value,
+    request_id: &Value,
+) -> Result<T, (Option<Value>, RpcDispatchError)>
+where
+    T: for<'de> Deserialize<'de>,
+{
+    serde_json::from_value(params.clone()).map_err(|e| {
+        (
+            Some(request_id.clone()),
+            RpcDispatchError::Message(format!("Invalid request JSON: {e}")),
+        )
+    })
+}
+
+#[cfg(feature = "session")]
+fn session_method_error(
+    request_id: &Value,
+) -> impl FnOnce(citum_engine::DocumentSessionError) -> (Option<Value>, RpcDispatchError) + '_ {
+    |err| {
+        (
+            Some(request_id.clone()),
+            RpcDispatchError::Message(err.to_string()),
+        )
+    }
+}
+
+#[cfg(all(feature = "session", feature = "http"))]
+fn format_system_time(time: SystemTime) -> String {
+    let seconds = time
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+    if let Ok(seconds) = i64::try_from(seconds)
+        && let Ok(datetime) = time::OffsetDateTime::from_unix_timestamp(seconds)
+        && let Ok(formatted) = datetime.format(&time::format_description::well_known::Rfc3339)
+    {
+        return formatted;
+    }
+    format!("unix:{seconds}")
+}
+
+/// Build a JSON-RPC error response from a dispatch error.
+pub fn error_response(id: Option<Value>, error: RpcDispatchError) -> Value {
+    match error {
+        RpcDispatchError::Message(error) => json!({
+            "id": id,
+            "error": error
+        }),
+        RpcDispatchError::Response(response) => *response,
+    }
+}
+
 /// Run the JSON-RPC server on stdin/stdout.
 /// Reads newline-delimited JSON requests and writes newline-delimited JSON responses.
 ///
@@ -400,6 +943,7 @@ fn load_style(style_input: &str) -> Result<Style, ServerError> {
 pub fn run_stdio() -> io::Result<()> {
     let stdin = io::stdin();
     let mut stdout = io::stdout();
+    let mut dispatcher = RpcDispatcher::new_stdio();
 
     let reader = stdin.lock();
     for line in reader.lines() {
@@ -412,12 +956,9 @@ pub fn run_stdio() -> io::Result<()> {
 
         // Try to parse the request.
         let response = match serde_json::from_str::<RpcRequest>(&line) {
-            Ok(req) => match dispatch(req.clone()) {
+            Ok(req) => match dispatcher.dispatch(req.clone()) {
                 Ok(result) => result,
-                Err((id, error)) => json!({
-                    "id": id,
-                    "error": error
-                }),
+                Err((id, error)) => error_response(id, error),
             },
             Err(e) => {
                 // Invalid JSON: send error without ID.

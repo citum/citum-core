@@ -30,6 +30,7 @@ tokio = { version = "1", features = ["full"], optional = true }
 
 # http feature dependencies (implies async)
 axum = { version = "0.8", optional = true }
+time = { version = "0.3.47", default-features = false, features = ["formatting"], optional = true }
 
 # schema feature dependencies
 schemars = { version = "1.2.1", features = ["derive"], optional = true }
@@ -38,9 +39,10 @@ schemars = { version = "1.2.1", features = ["derive"], optional = true }
 tower = { version = "0.5", features = ["util"] }
 
 [features]
-default = ["http"]
+default = ["http", "session"]
 async = ["dep:tokio"]
-http = ["async", "dep:axum"]
+http = ["async", "dep:axum", "dep:time"]
+session = []
 schema-types = ["dep:schemars", "citum-engine/schema"]
 schema = ["http", "schema-types"]
 

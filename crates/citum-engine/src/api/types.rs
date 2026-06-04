@@ -40,6 +40,7 @@ pub struct Warning {
 
 /// Supported output format kinds.
 #[derive(Debug, Clone, Copy, Default, Serialize, Deserialize, PartialEq, Eq)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "lowercase")]
 pub enum OutputFormatKind {
     /// Plain text (default).
@@ -90,7 +91,8 @@ pub enum AnnotationFormat {
 /// A single item within a citation occurrence.
 ///
 /// Maps to `CitationItem` from `citum-schema-data`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct CitationOccurrenceItem {
     /// The reference ID (citekey) being cited.
     pub id: String,
@@ -127,7 +129,8 @@ impl From<CitationOccurrenceItem> for citum_schema::data::citation::CitationItem
 /// A citation occurrence in the document.
 ///
 /// Maps to `Citation` from `citum-schema-data`.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct CitationOccurrence {
     /// Stable identifier for this citation in the document.
     pub id: String,

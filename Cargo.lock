@@ -662,6 +662,7 @@ dependencies = [
  "citum-schema",
  "csl-legacy",
  "indexmap 2.14.0",
+ "serde",
  "serde_json",
  "serde_yaml_ng",
  "specta",
@@ -838,6 +839,7 @@ dependencies = [
  "serde_json",
  "serde_yaml_ng",
  "thiserror",
+ "time",
  "tokio",
  "tower",
 ]

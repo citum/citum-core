@@ -31,6 +31,11 @@ use wasm_bindgen::prelude::*;
 use citum_engine::processor::Processor;
 use citum_engine::render::html::Html as HtmlRenderer;
 use citum_engine::{Citation, Reference};
+#[cfg(feature = "wasm")]
+use citum_engine::{
+    CitationOccurrence, CitationOccurrenceItem, DocumentSession, OutputFormatKind, RefsInput,
+    StyleInput,
+};
 use citum_schema::{CitationSpec, Style, TemplatePreset};
 use indexmap::IndexMap;
 use serde_json::Value;
@@ -269,6 +274,189 @@ pub fn format_document(request_json: &str) -> Result<String, String> {
     let result =
         citum_engine::format_document(request).map_err(|e| format!("Format error: {}", e))?;
     serde_json::to_string(&result).map_err(|e| format!("Result serialization failed: {}", e))
+}
+
+#[cfg(feature = "wasm")]
+#[wasm_bindgen(js_name = "DocumentSession")]
+/// WASM wrapper around the engine's stateful document session.
+pub struct WasmDocumentSession {
+    inner: DocumentSession,
+}
+
+#[cfg(feature = "wasm")]
+#[wasm_bindgen(js_class = "DocumentSession")]
+impl WasmDocumentSession {
+    /// Create a stateful document session from style YAML and optional refs JSON.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the style YAML or refs JSON cannot be parsed.
+    #[wasm_bindgen(constructor)]
+    pub fn new(style_yaml: &str, refs_json: Option<String>) -> Result<WasmDocumentSession, String> {
+        let mut style = parse_style(style_yaml)?;
+        ensure_style_has_templates(&mut style);
+        let mut inner = DocumentSession::new(
+            style,
+            StyleInput::Yaml(style_yaml.to_string()),
+            None,
+            OutputFormatKind::Html,
+            None,
+        );
+        if let Some(refs_json) = refs_json {
+            inner.put_references(refs_input_from_json(&refs_json)?);
+        }
+        Ok(Self { inner })
+    }
+
+    /// Replace the session's full reference set from a JSON object.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the refs JSON cannot be parsed.
+    pub fn put_references(&mut self, refs_json: &str) -> Result<(), String> {
+        self.inner.put_references(refs_input_from_json(refs_json)?);
+        Ok(())
+    }
+
+    /// Replace the full ordered citation list and return a session mutation result JSON string.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if citations JSON is invalid, rendering fails, or the
+    /// result cannot be serialized.
+    pub fn insert_citations_batch(&mut self, citations_json: &str) -> Result<String, String> {
+        let citations: Vec<CitationOccurrence> = serde_json::from_str(citations_json)
+            .map_err(|e| format!("Invalid citations JSON: {e}"))?;
+        let result = self
+            .inner
+            .insert_citations_batch(citations)
+            .map_err(|e| e.to_string())?;
+        serde_json::to_string(&result).map_err(|e| format!("Result serialization failed: {e}"))
+    }
+
+    /// Insert one citation and return a session mutation result JSON string.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if request JSON is invalid, rendering fails, or the
+    /// result cannot be serialized.
+    pub fn insert_citation(
+        &mut self,
+        citation_json: &str,
+        position_json: Option<String>,
+    ) -> Result<String, String> {
+        let citation = parse_json(citation_json, "citation")?;
+        let position = parse_optional_json(position_json, "position")?;
+        let result = self
+            .inner
+            .insert_citation(citation, position)
+            .map_err(|e| e.to_string())?;
+        serde_json::to_string(&result).map_err(|e| format!("Result serialization failed: {e}"))
+    }
+
+    /// Update one citation and return a session mutation result JSON string.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if request JSON is invalid, the citation is missing,
+    /// rendering fails, or the result cannot be serialized.
+    pub fn update_citation(
+        &mut self,
+        citation_id: &str,
+        citation_json: &str,
+        position_json: Option<String>,
+    ) -> Result<String, String> {
+        let citation = parse_json(citation_json, "citation")?;
+        let position = parse_optional_json(position_json, "position")?;
+        let result = self
+            .inner
+            .update_citation(citation_id, citation, position)
+            .map_err(|e| e.to_string())?;
+        serde_json::to_string(&result).map_err(|e| format!("Result serialization failed: {e}"))
+    }
+
+    /// Delete one citation and return a session mutation result JSON string.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the citation is missing, rendering fails, or the
+    /// result cannot be serialized.
+    pub fn delete_citation(&mut self, citation_id: &str) -> Result<String, String> {
+        let result = self
+            .inner
+            .delete_citation(citation_id)
+            .map_err(|e| e.to_string())?;
+        serde_json::to_string(&result).map_err(|e| format!("Result serialization failed: {e}"))
+    }
+
+    /// Render a citation preview without mutating session state.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if request JSON is invalid, rendering fails, or the
+    /// result cannot be serialized.
+    pub fn preview_citation(
+        &self,
+        items_json: &str,
+        position_json: Option<String>,
+    ) -> Result<String, String> {
+        let items: Vec<CitationOccurrenceItem> = parse_json(items_json, "items")?;
+        let position = parse_optional_json(position_json, "position")?;
+        let result = self
+            .inner
+            .preview_citation(items, position)
+            .map_err(|e| e.to_string())?;
+        serde_json::to_string(&result).map_err(|e| format!("Result serialization failed: {e}"))
+    }
+
+    /// Return the current formatted citations as a JSON string.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the result cannot be serialized.
+    pub fn get_citations(&self) -> Result<String, String> {
+        serde_json::to_string(&serde_json::json!({
+            "formatted_citations": self.inner.get_citations()
+        }))
+        .map_err(|e| format!("Result serialization failed: {e}"))
+    }
+
+    /// Return the current bibliography as a JSON string.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the result cannot be serialized.
+    pub fn get_bibliography(&self) -> Result<String, String> {
+        serde_json::to_string(&serde_json::json!({
+            "bibliography": self.inner.get_bibliography()
+        }))
+        .map_err(|e| format!("Result serialization failed: {e}"))
+    }
+
+    /// Explicitly dispose of the session object.
+    pub fn dispose(self) {}
+}
+
+#[cfg(feature = "wasm")]
+fn refs_input_from_json(refs_json: &str) -> Result<RefsInput, String> {
+    let refs = serde_json::from_str(refs_json).map_err(|e| format!("Invalid refs JSON: {e}"))?;
+    Ok(RefsInput::Json(refs))
+}
+
+#[cfg(feature = "wasm")]
+fn parse_json<T>(json: &str, label: &str) -> Result<T, String>
+where
+    T: for<'de> serde::Deserialize<'de>,
+{
+    serde_json::from_str(json).map_err(|e| format!("Invalid {label} JSON: {e}"))
+}
+
+#[cfg(feature = "wasm")]
+fn parse_optional_json<T>(json: Option<String>, label: &str) -> Result<Option<T>, String>
+where
+    T: for<'de> serde::Deserialize<'de>,
+{
+    json.map(|value| parse_json(&value, label)).transpose()
 }
 
 /// Export all Citum schema types as TypeScript type definitions to a file.
