@@ -99,7 +99,8 @@ Dates are EDTF strings such as `"1988"`, not CSL-JSON `date-parts` objects.
 | `get_bibliography` ¹ | — | `session_id` | `{bibliography}` |
 | `close_session` ¹ | — | `session_id` | `{}` |
 
-¹ Requires the `session` feature (default-on). See [Session API](#session-api).
+¹ Requires the `session` feature (default-on). `session_id` is optional in
+stdio (omit it or pass `"default"`) and required in HTTP. See [Session API](#session-api).
 
 Supported `output_format` values are `plain` (default), `html`, `djot`,
 `latex`, and `typst`.

@@ -30,8 +30,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! | `get_bibliography` ¹ | — | `session_id` | `{bibliography}` |
 //! | `close_session` ¹ | — | `session_id` | `{}` |
 //!
-//! ¹ Requires the `session` feature (default-on). Session mutation methods
-//! return `{formatted_citations, bibliography, warnings}`.
+//! ¹ Requires the `session` feature (default-on). `session_id` is optional in
+//! stdio (omit it or pass `"default"`) and required in HTTP. Session mutation
+//! methods return `{formatted_citations, bibliography, warnings}`.
 //!
 //! `refs` in `render_citation` and `render_bibliography` is an inline JSON map
 //! of native Citum reference objects. `refs` in `format_document` accepts
