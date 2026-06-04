@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.63.0] - 2026-06-04
+
+### Documentation
+
+**spec**
+
+- Activate per-doc overrides spec ([`d2c6d8b`](https://github.com/citum/citum-core/commit/d2c6d8b70540afc1ac2f3dfc006635d5cc4fdb91))
+
+
+
+### Features
+
+**schema**
+
+- Multilingual presets + pattern mode ([`98ca8e4`](https://github.com/citum/citum-core/commit/98ca8e4cc66132f2dfbd15ca82d906be14e5d974))
+
+- Citation sentence_start signal ([`acf6c29`](https://github.com/citum/citum-core/commit/acf6c29ffa418fc2ff4fc0f5eb30815baeb0968e))
+
+
+**server**
+
+- Add session api ([`ecea9dd`](https://github.com/citum/citum-core/commit/ecea9ddfaf5ac6d0be991ce7a4e2cbcc868aa878))
+
+
+
+### Refactor
+
+**engine**
+
+- Clarify delimiter-join loops ([`baf9953`](https://github.com/citum/citum-core/commit/baf9953464e45f24c8d65cbde476e4e1d02d7c30))
+
+
 ## [0.62.0] - 2026-06-02
 
 ### Bug Fixes
