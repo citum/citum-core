@@ -19,6 +19,19 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! | `render_bibliography` | `style_path`, `refs` | `output_format`, `inject_ast_indices` | rendered bibliography object |
 //! | `validate_style` | `style_path` | none | validation object |
 //! | `format_document` | `style`, `refs`, `citations` | `output_format`, `locale`, `document_options` | `{formatted_citations, bibliography, warnings}` |
+//! | `open_session` ¹ | `style` | `style_overrides`, `locale`, `output_format`, `document_options` | `{session_id}` |
+//! | `put_references` ¹ | `refs` | `session_id` | `{}` |
+//! | `insert_citations_batch` ¹ | `citations` | `session_id` | session mutation result |
+//! | `insert_citation` ¹ | `citation` | `session_id`, `position` | session mutation result |
+//! | `update_citation` ¹ | `citation_id`, `citation` | `session_id`, `position` | session mutation result |
+//! | `delete_citation` ¹ | `citation_id` | `session_id` | session mutation result |
+//! | `preview_citation` ¹ | `items` | `session_id`, `position` | preview result |
+//! | `get_citations` ¹ | — | `session_id` | `{formatted_citations}` |
+//! | `get_bibliography` ¹ | — | `session_id` | `{bibliography}` |
+//! | `close_session` ¹ | — | `session_id` | `{}` |
+//!
+//! ¹ Requires the `session` feature (default-on). Session mutation methods
+//! return `{formatted_citations, bibliography, warnings}`.
 //!
 //! `refs` in `render_citation` and `render_bibliography` is an inline JSON map
 //! of native Citum reference objects. `refs` in `format_document` accepts
@@ -28,7 +41,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //!
 //! `render_citation`, `render_bibliography`, and `validate_style` accept
 //! `style_path`, a string path to a local Citum YAML style. `format_document`
-//! accepts the richer `style` object, for example
+//! and the session methods accept the richer `style` object, for example
 //! `{ "kind": "path", "value": "styles/embedded/apa-7th.yaml" }`.
 //!
 //! See [`rpc`] for the request envelope and stdio transport details.
@@ -40,6 +53,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //!
 //! ## Features
 //!
+//! - `session`: stateful session API (`open_session`, `insert_citation`, etc.); enabled by default.
 //! - `async`: Tokio runtime support used by HTTP transport.
 //! - `http`: axum HTTP transport; enabled by default and implies `async`.
 //! - `schema`: `/rpc/schema` plus schema derivations.

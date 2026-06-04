@@ -10,20 +10,32 @@ The same dispatcher is available over two transports:
 - HTTP: `POST /rpc`, enabled by the default `http` feature
 
 The document-level RPC method is `format_document`. The single-citation and
-bibliography methods are convenience methods for smaller workflows.
+bibliography methods are convenience methods for smaller workflows. The session
+API (`open_session` and friends) supports stateful incremental editing and is
+enabled by the default `session` feature.
+
+## Install
+
+```sh
+cargo install citum-server --locked
+```
 
 ## Run It
 
-From the workspace root:
+Start stdio mode (reads one JSON object per line from stdin, writes one per
+line to stdout):
 
 ```sh
-cargo run -p citum-server
+citum-server
 ```
 
-That starts stdio mode. It reads one JSON object per line from stdin and writes
-one JSON object per line to stdout.
-
 For HTTP mode:
+
+```sh
+citum-server --http --port 9000
+```
+
+From the workspace root (development / contributing):
 
 ```sh
 cargo run -p citum-server -- --http --port 9000
@@ -76,6 +88,18 @@ Dates are EDTF strings such as `"1988"`, not CSL-JSON `date-parts` objects.
 | `render_bibliography` | `style_path`, `refs` | `output_format`, `inject_ast_indices` | `{format, content, entries}` |
 | `validate_style` | `style_path` | none | `{valid, warnings}` |
 | `format_document` | `style`, `refs`, `citations` | `output_format`, `locale`, `document_options` | `{formatted_citations, bibliography, warnings}` |
+| `open_session` ¹ | `style` | `style_overrides`, `locale`, `output_format`, `document_options` | `{session_id}` |
+| `put_references` ¹ | `refs` | `session_id` | `{}` |
+| `insert_citations_batch` ¹ | `citations` | `session_id` | session mutation result |
+| `insert_citation` ¹ | `citation` | `session_id`, `position` | session mutation result |
+| `update_citation` ¹ | `citation_id`, `citation` | `session_id`, `position` | session mutation result |
+| `delete_citation` ¹ | `citation_id` | `session_id` | session mutation result |
+| `preview_citation` ¹ | `items` | `session_id`, `position` | preview result |
+| `get_citations` ¹ | — | `session_id` | `{formatted_citations}` |
+| `get_bibliography` ¹ | — | `session_id` | `{bibliography}` |
+| `close_session` ¹ | — | `session_id` | `{}` |
+
+¹ Requires the `session` feature (default-on). See [Session API](#session-api).
 
 Supported `output_format` values are `plain` (default), `html`, `djot`,
 `latex`, and `typst`.
@@ -96,7 +120,7 @@ The stdio transport expects each request on a single line:
 
 ```sh
 printf '%s\n' '{"id":1,"method":"render_citation","params":{"style_path":"styles/embedded/apa-7th.yaml","refs":{"hawking1988":{"id":"hawking1988","class":"monograph","type":"book","title":"A Brief History of Time","author":[{"family":"Hawking","given":"Stephen"}],"issued":"1988"}},"citation":{"id":"cite-1","items":[{"id":"hawking1988"}]}}}' \
-  | cargo run -q -p citum-server
+  | citum-server
 ```
 
 The response is a JSON object whose `result` is the rendered citation string.
@@ -106,7 +130,7 @@ The response is a JSON object whose `result` is the rendered citation string.
 Start the server in another terminal:
 
 ```sh
-cargo run -q -p citum-server -- --http --port 9000
+citum-server --http --port 9000
 ```
 
 Then send a request:
@@ -196,7 +220,7 @@ request must be one JSON object on one line:
 
 ```sh
 printf '%s\n' '{"id":3,"method":"format_document","params":{"style":{"kind":"path","value":"styles/embedded/apa-7th.yaml"},"output_format":"html","refs":{"smith2010":{"id":"smith2010","class":"monograph","type":"book","title":"Nationalism: Theory, Ideology, History","author":[{"family":"Smith","given":"Anthony D."}],"issued":"2010","publisher":{"name":"Polity"}}},"citations":[{"id":"cite-1","items":[{"id":"smith2010","locator":{"label":"page","value":"10"}}]}],"document_options":{"show_semantics":true}}}' \
-  | cargo run -q -p citum-server
+  | citum-server
 ```
 
 The response `result` has the same top-level shape over HTTP and stdio:
@@ -274,7 +298,7 @@ printf '%s\n' '{
     "output_format": "html",
     "citations":    [{ "id": "cite-1", "items": [{ "id": "kuhn1962" }] }]
   }
-}' | cargo run -q -p citum-server
+}' | citum-server
 ```
 
 For HTTP clients that prefer inline data, assemble the request with `jq`:
@@ -296,6 +320,92 @@ jq -n \
   }' | curl -s http://localhost:9000/rpc \
     -H 'Content-Type: application/json' \
     -d @-
+```
+
+## Session API
+
+The session API is for editor and word-processor integrations where the
+reference list and citation order evolve as the user edits. Instead of
+re-sending the entire document on every change, a session holds state between
+calls so you can insert, update, or delete individual citations incrementally.
+
+### Session model
+
+**Stdio transport:** one implicit session per process. `open_session` returns
+`session_id: "default"`. Pass `session_id` or omit it — both work.
+
+**HTTP transport:** multiple concurrent named sessions, each identified by the
+`session_id` returned from `open_session`. Sessions expire after 30 minutes of
+inactivity. Always pass the `session_id` you received.
+
+### Session mutation result
+
+`insert_citation`, `update_citation`, `delete_citation`, and
+`insert_citations_batch` all return the same shape:
+
+```json
+{
+  "formatted_citations": [{ "id": "cite-1", "text": "...", "ref_ids": ["..."] }],
+  "bibliography": { "format": "html", "content": "...", "entries": [...] },
+  "warnings": []
+}
+```
+
+### Lifecycle
+
+```
+open_session  →  put_references  →  insert_citation(s)
+                                        ↕ update_citation / delete_citation
+                                    get_citations / get_bibliography
+                                    close_session
+```
+
+### `style_overrides`
+
+`open_session` accepts an optional `style_overrides` field: a partial YAML or
+JSON fragment merged over the resolved base style using the same null-aware
+typed-merge semantics as `extends` inheritance. The base style is never
+mutated, so overrides are scoped to the session.
+
+### Stdio session example
+
+```sh
+# open a session
+printf '%s\n' '{"id":1,"method":"open_session","params":{"style":{"kind":"path","value":"styles/embedded/apa-7th.yaml"},"output_format":"html"}}' \
+  | citum-server
+
+# put references (session_id optional in stdio — defaults to "default")
+printf '%s\n' '{"id":2,"method":"put_references","params":{"refs":{"hawking1988":{"id":"hawking1988","class":"monograph","type":"book","title":"A Brief History of Time","author":[{"family":"Hawking","given":"Stephen"}],"issued":"1988"}}}}' \
+  | citum-server
+
+# insert a citation
+printf '%s\n' '{"id":3,"method":"insert_citation","params":{"citation":{"id":"cite-1","items":[{"id":"hawking1988"}]}}}' \
+  | citum-server
+```
+
+### HTTP session example
+
+```sh
+# open a session
+SESSION=$(curl -s http://localhost:9000/rpc \
+  -H 'Content-Type: application/json' \
+  -d '{"id":1,"method":"open_session","params":{"style":{"kind":"path","value":"styles/embedded/apa-7th.yaml"},"output_format":"html"}}' \
+  | jq -r '.result.session_id')
+
+# put references
+curl -s http://localhost:9000/rpc \
+  -H 'Content-Type: application/json' \
+  -d "{\"id\":2,\"method\":\"put_references\",\"params\":{\"session_id\":\"$SESSION\",\"refs\":{\"hawking1988\":{\"id\":\"hawking1988\",\"class\":\"monograph\",\"type\":\"book\",\"title\":\"A Brief History of Time\",\"author\":[{\"family\":\"Hawking\",\"given\":\"Stephen\"}],\"issued\":\"1988\"}}}}"
+
+# insert a citation and receive updated formatted output
+curl -s http://localhost:9000/rpc \
+  -H 'Content-Type: application/json' \
+  -d "{\"id\":3,\"method\":\"insert_citation\",\"params\":{\"session_id\":\"$SESSION\",\"citation\":{\"id\":\"cite-1\",\"items\":[{\"id\":\"hawking1988\"}]}}}"
+
+# close the session
+curl -s http://localhost:9000/rpc \
+  -H 'Content-Type: application/json' \
+  -d "{\"id\":4,\"method\":\"close_session\",\"params\":{\"session_id\":\"$SESSION\"}}"
 ```
 
 ## Discovery
@@ -321,6 +431,7 @@ Allowed` with a JSON hint explaining that `/rpc` expects `POST`.
 
 | Feature | Default | Description |
 |---|---|---|
+| `session` | on | Enables the stateful session API (`open_session`, `insert_citation`, etc.) |
 | `async` | on through `http` | Enables the Tokio runtime dependency used by HTTP transport |
 | `http` | on | Enables the axum HTTP server and implies `async` |
 | `schema` | off | Enables `/rpc/schema` and implies `http` plus schema type support |
