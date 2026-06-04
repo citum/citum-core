@@ -236,6 +236,14 @@ pub fn format_document_with_style(
     warnings.extend(unknown_enum_warnings(&processor));
 
     if let Some(opts) = &request.document_options {
+        // Rebuild the processor with the document-level integral-name override
+        // before applying scalar field mutations (show_semantics etc.) so that
+        // those mutations are not lost when the processor is reconstructed.
+        if let Some(new_proc) = processor
+            .processor_with_document_integral_name_override(opts.integral_name_memory.as_ref())
+        {
+            processor = new_proc;
+        }
         if let Some(show_semantics) = opts.show_semantics {
             processor.show_semantics = show_semantics;
         }
@@ -244,15 +252,6 @@ pub fn format_document_with_style(
         }
         if let Some(abbr_map) = opts.abbreviation_map.clone() {
             processor.abbreviation_map = Some(abbr_map);
-        }
-        if opts.integral_name_memory.is_some() {
-            warnings.push(Warning {
-                level: WarningLevel::Warning,
-                code: "integral_name_memory_not_applied".to_string(),
-                citation_id: None,
-                ref_id: None,
-                message: "document_options.integral_name_memory is accepted but not yet wired through the processor; tracked in csl26-ktq6.".to_string(),
-            });
         }
     }
 
@@ -279,6 +278,11 @@ pub fn format_document_with_style(
         });
         citations.push(citation);
     }
+
+    // Annotate integral-name First/Subsequent state from the processor's
+    // effective config (no document structure available; all citations share
+    // document scope). Safe no-op when no memory config is present.
+    processor.annotate_flat_integral_name_states(&mut citations);
 
     // Process citations
     let formatted_citations = match request.output_format {
@@ -1105,6 +1109,218 @@ mod tests {
         assert!(
             matches!(and_option, Some(&AndOptions::Symbol)),
             "expected And::Symbol after override, got: {and_option:?}"
+        );
+    }
+
+    // --- integral_name_memory wiring ---
+
+    /// Build a style that has integral-name memory configured with scope=Document,
+    /// contexts=BodyAndNotes, subsequent_form=Short, and an integral sub-template
+    /// that renders the author in Long (given + family) form.
+    fn make_integral_name_style() -> Style {
+        use citum_schema::options::{
+            IntegralNameContexts, IntegralNameMemoryConfig, IntegralNameScope, SubsequentNameForm,
+        };
+        Style {
+            info: StyleInfo {
+                title: Some("Integral Name Memory Test".to_string()),
+                id: Some("integral-name-memory-test".into()),
+                ..Default::default()
+            },
+            options: Some(Config {
+                processing: Some(Processing::AuthorDate),
+                integral_name_memory: Some(IntegralNameMemoryConfig {
+                    scope: Some(IntegralNameScope::Document),
+                    contexts: Some(IntegralNameContexts::BodyAndNotes),
+                    subsequent_form: Some(SubsequentNameForm::Short),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            citation: Some(CitationSpec {
+                integral: Some(Box::new(CitationSpec {
+                    template: Some(vec![TemplateComponent::Contributor(TemplateContributor {
+                        contributor: ContributorRole::Author,
+                        form: ContributorForm::Long,
+                        rendering: Rendering::default(),
+                        ..Default::default()
+                    })]),
+                    ..Default::default()
+                })),
+                template: Some(vec![
+                    TemplateComponent::Contributor(TemplateContributor {
+                        contributor: ContributorRole::Author,
+                        form: ContributorForm::Short,
+                        rendering: Rendering::default(),
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Date(TemplateDate {
+                        date: TemplateDateVariable::Issued,
+                        form: DateForm::Year,
+                        rendering: Rendering::default(),
+                        ..Default::default()
+                    }),
+                ]),
+                wrap: Some(WrapPunctuation::Parentheses.into()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }
+    }
+
+    fn make_smith_refs() -> RefsInput {
+        RefsInput::Yaml(
+            r#"smith2020:
+  class: monograph
+  id: smith2020
+  type: book
+  title: Smith Book
+  issued: "2020"
+  author:
+    - family: Smith
+      given: John
+"#
+            .to_string(),
+        )
+    }
+
+    fn make_integral_occ(id: &str, ref_id: &str) -> CitationOccurrence {
+        CitationOccurrence {
+            id: id.to_string(),
+            items: vec![CitationOccurrenceItem {
+                id: ref_id.to_string(),
+                locator: None,
+                prefix: None,
+                suffix: None,
+                integral_name_state: None,
+                org_abbreviation_state: None,
+            }],
+            mode: Some(citum_schema::data::citation::CitationMode::Integral),
+            note_number: None,
+            suppress_author: None,
+            grouped: None,
+            prefix: None,
+            suffix: None,
+            sentence_start: None,
+        }
+    }
+
+    #[test]
+    fn document_options_integral_name_memory_first_full_then_short() {
+        use crate::processor::document::DocumentIntegralNameOverride;
+
+        let style = make_integral_name_style();
+        let refs = make_smith_refs();
+
+        let request = FormatDocumentRequest {
+            style: StyleInput::Yaml("dummy".to_string()),
+            style_overrides: None,
+            locale: None,
+            output_format: OutputFormatKind::Plain,
+            refs,
+            citations: vec![
+                make_integral_occ("c1", "smith2020"),
+                make_integral_occ("c2", "smith2020"),
+            ],
+            document_options: Some(DocumentOptions {
+                integral_name_memory: Some(DocumentIntegralNameOverride {
+                    enabled: Some(true),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+        };
+
+        let result = format_document_with_style(style, request).expect("should render");
+
+        assert!(
+            !result
+                .warnings
+                .iter()
+                .any(|w| w.code == "integral_name_memory_not_applied"),
+            "stale warning must not appear: {:?}",
+            result.warnings
+        );
+        assert_eq!(
+            result.formatted_citations[0].text, "John Smith",
+            "first integral cite should render full name form"
+        );
+        assert_eq!(
+            result.formatted_citations[1].text, "Smith",
+            "second integral cite of same author should render short form"
+        );
+    }
+
+    #[test]
+    fn document_options_integral_name_memory_disabled_keeps_full_form() {
+        use crate::processor::document::DocumentIntegralNameOverride;
+
+        let style = make_integral_name_style();
+        let refs = make_smith_refs();
+
+        let request = FormatDocumentRequest {
+            style: StyleInput::Yaml("dummy".to_string()),
+            style_overrides: None,
+            locale: None,
+            output_format: OutputFormatKind::Plain,
+            refs,
+            citations: vec![
+                make_integral_occ("c1", "smith2020"),
+                make_integral_occ("c2", "smith2020"),
+            ],
+            document_options: Some(DocumentOptions {
+                integral_name_memory: Some(DocumentIntegralNameOverride {
+                    enabled: Some(false),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+        };
+
+        let result = format_document_with_style(style, request).expect("should render");
+
+        // With memory disabled both occurrences should render the natural integral
+        // template form (Long = "John Smith") without any subsequent rewrite.
+        assert_eq!(
+            result.formatted_citations[0].text, "John Smith",
+            "first integral cite: {}",
+            result.formatted_citations[0].text
+        );
+        assert_eq!(
+            result.formatted_citations[1].text, "John Smith",
+            "second integral cite should also be full when memory is disabled"
+        );
+    }
+
+    #[test]
+    fn style_native_integral_name_memory_applied_without_document_override() {
+        // Style has integral_name_memory in its own options; no document_options
+        // override is supplied. The flat API must still annotate First/Subsequent.
+        let style = make_integral_name_style();
+        let refs = make_smith_refs();
+
+        let request = FormatDocumentRequest {
+            style: StyleInput::Yaml("dummy".to_string()),
+            style_overrides: None,
+            locale: None,
+            output_format: OutputFormatKind::Plain,
+            refs,
+            citations: vec![
+                make_integral_occ("c1", "smith2020"),
+                make_integral_occ("c2", "smith2020"),
+            ],
+            document_options: None,
+        };
+
+        let result = format_document_with_style(style, request).expect("should render");
+
+        assert_eq!(
+            result.formatted_citations[0].text, "John Smith",
+            "first integral cite should render full name form"
+        );
+        assert_eq!(
+            result.formatted_citations[1].text, "Smith",
+            "second integral cite should render short form from style-native config"
         );
     }
 }

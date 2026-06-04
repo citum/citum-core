@@ -80,7 +80,31 @@ impl Processor {
         self.normalize_note_context(&normalized)
     }
 
-    pub(super) fn processor_with_document_integral_name_override(
+    /// Annotate integral-name First/Subsequent state across a flat, ordered
+    /// citation list (API paths with no parsed document).
+    ///
+    /// Citations are processed in list order. A citation with a `note_number`
+    /// is treated as a note context; otherwise as body prose. There is no
+    /// chapter/section structure, so all citations share the document scope
+    /// regardless of the configured [`IntegralNameScope`].
+    pub(crate) fn annotate_flat_integral_name_states(&self, citations: &mut [Citation]) {
+        let contexts: Vec<IntegralNameContext> = citations
+            .iter()
+            .map(|citation| IntegralNameContext {
+                placement: if citation.note_number.is_some() {
+                    CitationPlacement::ManualFootnote {
+                        label: String::new(),
+                    }
+                } else {
+                    CitationPlacement::InlineProse
+                },
+                structure: CitationStructure::default(),
+            })
+            .collect();
+        self.annotate_integral_name_states(citations, &contexts);
+    }
+
+    pub(crate) fn processor_with_document_integral_name_override(
         &self,
         override_config: Option<&DocumentIntegralNameOverride>,
     ) -> Option<Self> {
