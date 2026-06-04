@@ -15,6 +15,7 @@ deno add jsr:@citum/engine
 
 ```ts
 import init, {
+  DocumentSession,
   formatDocument,
   getStyleMetadata,
   materializeStyle,
@@ -110,6 +111,58 @@ In WASM, Citum does not have the resolver chain used by the CLI and server.
 For `formatDocument`, pass an inline YAML style with
 `{ "kind": "yaml", "value": "..." }`. Style IDs and remote URIs require an
 external resolver before calling this package.
+
+## Stateful Session API
+
+Use `DocumentSession` when citations evolve incrementally — an editor inserting
+or deleting citations one at a time — rather than re-sending the entire document
+on every change.
+
+```ts
+// Create a session with a style; optionally pass an initial refs JSON string
+const session = new DocumentSession(styleYaml, refsJson);
+
+// Replace the full reference set at any time
+session.put_references(refsJson);
+
+// Replace the entire ordered citation list and get updated output
+const batchResult = JSON.parse(session.insert_citations_batch(citationsJson));
+
+// Insert one citation (optionally with a neighbour-ID position hint)
+const insertResult = JSON.parse(session.insert_citation(citationJson));
+
+// Update an existing citation
+const updateResult = JSON.parse(
+  session.update_citation("cite-1", citationJson),
+);
+
+// Delete a citation
+const deleteResult = JSON.parse(session.delete_citation("cite-1"));
+
+// Preview a citation without mutating session state
+const preview = JSON.parse(session.preview_citation(itemsJson));
+
+// Read current state
+const citations = JSON.parse(session.get_citations());
+const bibliography = JSON.parse(session.get_bibliography());
+
+// Dispose when done
+session.dispose();
+```
+
+Mutation methods (`insert_citations_batch`, `insert_citation`,
+`update_citation`, `delete_citation`) return:
+
+```ts
+{
+  formatted_citations: Array<{ id: string; text: string; ref_ids: string[] }>;
+  bibliography: { format: string; content: string; entries: unknown[] };
+  warnings: string[];
+}
+```
+
+`get_citations` returns `{ formatted_citations }` and `get_bibliography`
+returns `{ bibliography }` without triggering a re-render.
 
 ## License
 
