@@ -834,4 +834,89 @@ mod tests {
         assert_eq!(session.version(), before_version);
         assert_eq!(session.get_citations().len(), before_citations.len());
     }
+
+    /// Two sessions opened from the same base style but with different overrides
+    /// must produce divergent output for the same two-author citation.
+    #[test]
+    fn session_style_override_produces_divergent_output() {
+        use crate::api::apply_style_overrides;
+        use citum_schema::options::{AndOptions, ContributorConfig};
+
+        // base style with explicit `and: text`
+        let mut base_style = style();
+        assert!(
+            base_style.options.is_some(),
+            "style() must return options: Some(...) for this test's contributor setup to take effect"
+        );
+        if let Some(opts) = base_style.options.as_mut() {
+            opts.contributors = Some(ContributorConfig {
+                and: Some(AndOptions::Text),
+                ..Default::default()
+            });
+        }
+
+        // two-author reference via inline YAML
+        let two_author_refs = RefsInput::Yaml(
+            r#"duo2024:
+  class: monograph
+  id: duo2024
+  type: book
+  title: Duo Work
+  issued: "2024"
+  author:
+    - family: Smith
+      given: Alice
+    - family: Jones
+      given: Bob
+"#
+            .to_string(),
+        );
+
+        // session 1: no override — uses "and" text
+        let mut session_base = DocumentSession::new(
+            base_style.clone(),
+            StyleInput::Yaml(String::new()),
+            None,
+            OutputFormatKind::Plain,
+            None,
+        );
+        session_base.put_references(two_author_refs.clone());
+        let result_base = session_base
+            .insert_citations_batch(vec![citation("c1", "duo2024")])
+            .expect("base session should render");
+        let text_base = result_base.affected_citations[0].text.clone();
+
+        // session 2: override switches to "&" symbol
+        let mut style_overridden = base_style.clone();
+        apply_style_overrides(
+            &mut style_overridden,
+            "options:\n  contributors:\n    and: symbol\n",
+        )
+        .expect("override should parse");
+        let mut session_override = DocumentSession::new(
+            style_overridden,
+            StyleInput::Yaml(String::new()),
+            None,
+            OutputFormatKind::Plain,
+            None,
+        );
+        session_override.put_references(two_author_refs);
+        let result_override = session_override
+            .insert_citations_batch(vec![citation("c1", "duo2024")])
+            .expect("override session should render");
+        let text_override = result_override.affected_citations[0].text.clone();
+
+        assert!(
+            text_base.contains("and"),
+            "base session should use text 'and', got: {text_base:?}"
+        );
+        assert!(
+            text_override.contains('&'),
+            "override session should use '&', got: {text_override:?}"
+        );
+        assert_ne!(
+            text_base, text_override,
+            "sessions with different overrides should produce different output"
+        );
+    }
 }

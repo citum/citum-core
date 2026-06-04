@@ -115,6 +115,19 @@ impl Style {
         crate::options::scoped::apply_scoped_style_options(self);
     }
 
+    /// Merge a partial overlay style over this style in place; overlay fields win.
+    ///
+    /// Overlay merging is typed and matches `extends` inheritance for the fields it supports:
+    /// - `info`, `templates`, `options`, and `custom` are merged (overlay wins for `Some` fields / keys).
+    /// - `citation` / `bibliography` are deep-merged; explicit YAML `~` can clear inherited fields when
+    ///   `overlay.raw_yaml` is populated (e.g. via `Style::from_yaml_bytes`).
+    ///
+    /// The caller is responsible for calling [`apply_scoped_options`](Self::apply_scoped_options)
+    /// afterwards if scoped-option side-effects (label-wrap, date-position, etc.) are needed.
+    pub fn apply_overlay(&mut self, overlay: &Style) {
+        super::overlay::merge_style_overlay(self, overlay);
+    }
+
     /// Parse a Citum style from YAML bytes, preserving raw YAML for
     /// null-aware overlay merging during preset resolution.
     ///

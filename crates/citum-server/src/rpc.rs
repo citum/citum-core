@@ -48,7 +48,7 @@ use citum_engine::{
 #[cfg(feature = "session")]
 use citum_engine::{
     CitationInsertPosition, CitationOccurrence, CitationOccurrenceItem, DocumentSession,
-    OpenSessionResult, OutputFormatKind, RefsInput,
+    OpenSessionResult, OutputFormatKind, RefsInput, apply_style_overrides,
 };
 use citum_schema::Style;
 use serde::{Deserialize, Serialize};
@@ -153,6 +153,10 @@ pub struct ValidateStyleParams {
 pub struct FormatDocumentParams {
     /// Style identifier, path, URI, or inline YAML.
     pub style: StyleInput,
+    /// Optional partial-style overlay (YAML or JSON) merged over the resolved base
+    /// style for this request only. Uses the same null-aware, typed-merge semantics
+    /// as `extends` inheritance. The base style is never mutated.
+    pub style_overrides: Option<String>,
     /// Optional BCP 47 locale override.
     pub locale: Option<String>,
     /// Output format (plain, html, djot, latex, typst). Defaults to plain.
@@ -176,6 +180,10 @@ pub struct FormatDocumentParams {
 pub struct OpenSessionParams {
     /// Style identifier, path, URI, or inline YAML.
     pub style: StyleInput,
+    /// Optional partial-style overlay (YAML or JSON) merged over the resolved base
+    /// style for this session. Uses the same null-aware, typed-merge semantics as
+    /// `extends` inheritance. The base style is never mutated.
+    pub style_overrides: Option<String>,
     /// Optional BCP 47 locale override.
     pub locale: Option<String>,
     /// Output format (plain, html, djot, latex, typst). Defaults to plain.
@@ -416,7 +424,11 @@ impl RpcDispatcher {
     fn open_session(&mut self, params: &Value, id: Value) -> Result<Value, ServerError> {
         let params: OpenSessionParams = serde_json::from_value(params.clone())
             .map_err(|e| ServerError::CitationError(format!("Invalid request JSON: {e}")))?;
-        let style = resolve_style_input(&params.style)?;
+        let mut style = resolve_style_input(&params.style)?;
+        if let Some(src) = &params.style_overrides {
+            apply_style_overrides(&mut style, src)
+                .map_err(|e| ServerError::StyleValidation(e.to_string()))?;
+        }
         let session = DocumentSession::new(
             style,
             params.style,

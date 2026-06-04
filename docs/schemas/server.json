@@ -2847,6 +2847,13 @@
         "description": "Style identifier, path, URI, or inline YAML.",
         "$ref": "#/$defs/StyleInput"
       },
+      "style_overrides": {
+        "description": "Optional partial-style overlay (YAML or JSON) merged over the resolved base\nstyle for this request only. Uses the same null-aware, typed-merge semantics\nas `extends` inheritance. The base style is never mutated.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
       "locale": {
         "description": "Optional BCP 47 locale override.",
         "type": [
