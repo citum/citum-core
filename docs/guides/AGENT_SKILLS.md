@@ -15,6 +15,19 @@ This syncs the canonical `.skills/` tree into Codex's `$CODEX_HOME/skills`
 directory. Legacy `.codex/skills/` paths remain as compatibility shims for
 existing Codex installs.
 
+## Repo-Local Harness Boundary
+
+This repository owns its harness contract.
+
+- `CLAUDE.md` is the authored Citum project-instructions file.
+- `AGENTS.md` is the host-neutral repo entrypoint.
+- `.skills/` is the canonical public skill tree.
+- `.claude/skills/` and `.codex/agents/` are host-specific surfaces.
+
+`./scripts/install-skills.sh` is an optional installer for host exposure. It is
+not the source of truth, and contributors should not need to inspect `~/`
+content to understand Citum's workflow model.
+
 ## Contributor Skills
 
 | Skill | Description |

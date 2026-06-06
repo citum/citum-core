@@ -1,138 +1,81 @@
-# Claude Code Native Tasks Migration
+# Citum Repo-Local Harness
 
 ## Overview
 
-This project has been migrated to use Claude Code native tasks for work tracking and planning. This document explains the new structure and how to work with it.
+This repository no longer treats a home-directory harness as its governing
+control plane. The active Citum harness is repo-local: contributors should be
+able to understand the workflow from repository files alone.
+
+## Control Surfaces
+
+| Surface | Role |
+|---|---|
+| `CLAUDE.md` | Authored Citum project instructions |
+| `AGENTS.md` | Host-neutral repo entrypoint |
+| `.skills/` | Canonical public skill tree |
+| `.claude/skills/` | Host-specific skills and wrappers |
+| `.codex/agents/` | Thin internal Codex role contracts |
+
+See `docs/specs/REPO_LOCAL_HARNESS.md` for the governing design.
 
 ## What Changed
 
-### Documentation Structure
+### Before
 
-**Before:**
-```
-.agent/
-  ├── AGENTS.md (symlinked as CLAUDE.md)
-  ├── PERSONAS.md
-  ├── PRIOR_ART.md
-  ├── design/
-  ├── todo/         # Markdown TODO files
-  ├── sessions/     # Old session logs
-  └── workflows/    # Workflow docs
-```
+The repo still carried language that implied Citum behavior was layered on top
+of:
 
-**After:**
-```
-./architecture/
-  ├── PERSONAS.md
-  ├── PRIOR_ART.md
-  └── design/
+- a global home-directory agent layer
+- a generic home-directory verification wrapper
+- a prior host-native task system that is no longer the active local workflow
 
-.agent/
-  └── skills/       # Project-specific skills only
+### Now
 
-CLAUDE.md          # Standalone project instructions
-```
+The active contract is:
 
-### Task Management
+- repo-owned instructions are the source of truth
+- optional host installers are convenience layers only
+- contributor task tracking uses `/beans`
+- Claude and Codex entrypoints are documented in-repo
 
-**Before:** TODO items scattered across:
-- `.agent/todo/*.md` files
-- GitHub issues
-- `./TIER*_PLAN.md` files
+## Working Model
 
-**After:** All work tracked as native Claude tasks:
-- Use `TaskList` to see all tasks
-- Use `TaskCreate` to add new work items
-- Use `TaskUpdate` to mark progress
-- Proper dependency chains with `blockedBy`/`blocks`
+### Tasks
 
-## Current Tasks
+Use `/beans` for local task tracking. Do not rely on a host-native task panel as
+the repo's governing workflow.
 
-Run `TaskList` to see current status. As of migration:
+### Skills and agents
 
-### High Priority (from corpus analysis)
-- **Task #14**: Fix year positioning for numeric styles (HIGHEST - affects 10k+ entries)
-- **Task #17**: Debug Springer citation regression
+- Public reusable skills live under `.skills/`.
+- Claude/Copilot-specific skills live under `.claude/skills/`.
+- Internal Codex role contracts live under `.codex/agents/`.
 
-### Medium Priority
-- **Task #12**: Fix conference paper template formatting
-- **Task #13**: Refine bibliography sorting for anonymous works
-- **Task #10**: Refactor delimiter handling with hybrid enum
-- **Task #11**: Expand test data coverage to 20+ items
+Shared workflow logic should live in docs and policies, not be duplicated into
+every host wrapper.
 
-### Feature Requests (from GitHub issues)
-- **Task #5**: Implement full document processing (#99)
-- **Task #6**: Support language-dependent title formatting (#97)
-- **Task #7**: Create style authors guide (#96)
-- **Task #8**: Evaluate ICU library for date/time internationalization (#93)
-- **Task #9**: Support automatic foot/endnoting of citations (#88)
+### Optional install steps
 
-### Blocked Tasks
-- **Task #15**: Superscript citations (blocked by #14)
-- **Task #16**: Volume/issue ordering (blocked by #14)
+Some hosts may require optional local installation steps to expose repo-owned
+skills. Those steps do **not** change the source of truth:
 
-## Working with Global Agents
+- the repo remains authoritative
+- home-directory state is optional convenience only
 
-This project integrates with global `~/.claude/` agents:
+For Codex skill installation, see `docs/guides/AGENT_SKILLS.md`.
 
-### Available Agents
+## Maintainer Notes
 
-- **@planner**: Quick planning (≤3 questions with defaults)
-- **@dplanner**: Deep planning with research capabilities
-- **@builder**: Implementation specialist (2-retry cap, no questions)
-- **@reviewer**: QA specialist with conflict detection
+When updating the harness:
 
-### Project-Specific Context
+1. Keep `CLAUDE.md` and `AGENTS.md` aligned on core rules.
+2. Prefer repo docs over host-specific wrapper text for shared process logic.
+3. Avoid new references that make `~/` content part of the required Citum
+   contract.
+4. Update the harness spec when changing the control-surface model.
 
-When agents are invoked on this project, they automatically receive:
-- CSL domain knowledge
-- Rust engineering standards
-- Citation processing requirements
-- Oracle verification workflows
+## Historical Note
 
-This is handled through `CLAUDE.md` which acts as a context layer on top of global agent behavior.
-
-### Specialized Style Agents
-
-In addition to global agents, this project utilizes three specialized specialists for citation style authoring (accessible via the `/styleauthor` skill):
-
-- **@dstyleplan**: The **Deep Architect**. Prioritizes correctness and holistic design. Conducts research and designs component trees using `sequential-thinking`.
-- **@styleplan**: The **Architect**. Threshold: Maintenance & Simple Gaps. Provides technical build plans and Rust code snippets for the builder.
-- **@styleauthor**: The **Builder** (Haiku). Implementation specialist with a 2-retry cap. Executes the plan without asking questions.
-
-## Task Dependencies
-
-The migration set up proper dependency chains:
-
-```
-Task #14 (Year positioning)
-  ├─ blocks #15 (Superscript citations)
-  └─ blocks #16 (Volume/issue ordering)
-```
-
-When working on tasks, always check `blockedBy` to ensure prerequisites are complete.
-
-## Best Practices
-
-1. **Create tasks proactively**: When you discover new work, create a task instead of documenting in markdown
-2. **Use dependencies**: Set up `blockedBy`/`blocks` relationships to track order
-3. **Update status**: Mark tasks `in_progress` when starting, `completed` when done
-4. **Reference tasks**: Use `Task #N` in commit messages to link work to tasks
-5. **Keep tasks focused**: Break large work into multiple tasks with dependencies
-
-## Benefits of Native Tasks
-
-1. **Structured tracking**: Tasks have metadata (status, dependencies, owner)
-2. **Persistent state**: Tasks survive across sessions
-3. **Queryable**: Can filter/sort tasks programmatically
-4. **Integrated**: Works with Claude Code's planning and execution flow
-5. **No duplication**: Single source of truth vs scattered markdown files
-
-## Migration Notes
-
-All previous TODO content has been preserved in task descriptions:
-- GitHub issue context → Task description
-- TODO analysis → Task implementation details
-- TIER plan work → Broken into granular tasks
-
-Historical session logs and workflows were archived (removed from repo) as they're now superseded by native task tracking.
+This file used to document a Claude-native-task migration. It now serves as the
+current maintainer guide for the repo-local harness so existing links continue
+to land on active guidance instead of stale workflow history.

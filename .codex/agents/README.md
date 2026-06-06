@@ -5,6 +5,12 @@ This directory contains repo-local Codex agent drafts for `citum-core`.
 Repo-owned public skills live under `.skills/` and are installed into
 `$CODEX_HOME/skills` with `./scripts/install-skills.sh`.
 
+The repo-local control surfaces are:
+
+- `CLAUDE.md` — authored Citum project instructions
+- `AGENTS.md` — host-neutral repo entrypoint mirrored to the same core contract
+- `docs/guides/AGENT_SKILLS.md` — installation and boundary guide
+
 Authoritative shared process docs:
 - `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`
 - `docs/guides/STYLE_WORKFLOW_EXECUTION.md`
@@ -28,4 +34,4 @@ Runnable Codex fallback:
 - Keep scope explicit and bounded.
 - Prefer repo policies over generic behavior when they conflict.
 - For Citum Rust work, follow the repo's documented verification and documentation rules.
-- Treat `AGENTS.md` as the real control surface until Codex documents something stronger for custom agents.
+- Treat the repo-root `AGENTS.md` as the Codex-facing control surface and keep it aligned with `CLAUDE.md`.

@@ -44,7 +44,7 @@ cargo fmt --check && cargo clippy --all-targets --all-features -- -D warnings &&
 ```
 Run `cargo fmt` first if needed, then re-check. **Do not commit if any check fails.** Docs (`.md`) and styles (`.yaml`) skip checks.
 
-This command is the authoritative gate for this repo. The global "never call `cargo` directly — use `~/.claude/scripts/verify.sh`" rule does **not** apply here: the generic adapter is weaker (it swallows clippy warnings, skips `cargo fmt --check`, and runs `cargo test` instead of `nextest`). Run the gate above verbatim.
+This command is the authoritative gate for this repo. Do **not** substitute a generic wrapper that weakens it by skipping `cargo fmt --check`, swallowing clippy warnings, or replacing `cargo nextest run` with a weaker test command. Run the gate above verbatim.
 
 If `crates/citum-cli/` or `crates/citum-schema*/` changed, regenerate schemas in the same commit:
 ```bash
@@ -87,16 +87,21 @@ All new or modified **public Rust items** need `///` doc comments (one clear sen
 
 Non-trivial features: spec in `docs/specs/` first (status `Draft` → `Active` in the implementation commit). Reference the spec path in the bean.
 
-## Agents
+## Workflow Entry Points
 
-| Agent | Role | Notes |
-|---|---|---|
-| `@planner` | Quick planning | ≤3 questions |
-| `@dplanner` | Deep planning + research | Complex architecture |
-| `@builder` | Implementation | 2-retry cap, no questions |
-| `@reviewer` | QA / conflict detection | Use after code changes |
+This repository owns its harness contract. Do **not** assume required behavior
+from `~/.sober`, `~/.claude`, or `~/.codex`.
 
-Style tasks: `/style-evolve` (`upgrade`, `migrate`, `create`). Rust quality: `/rust-simplify` (size/dup) or `/rust-refine` (API shape).
+Use the repo-owned entrypoints instead:
+
+- `CLAUDE.md` — authored Citum project instructions
+- `AGENTS.md` — host-neutral repo entrypoint
+- `.skills/` — canonical public skills
+- `.claude/skills/` — host-specific skills and wrappers
+- `.codex/agents/` — thin internal Codex role contracts
+
+Style tasks: `/style-evolve` (`upgrade`, `migrate`, `create`). Rust quality:
+`/rust-simplify` (size/dup) or `/rust-refine` (API shape).
 
 ## Task Management
 
@@ -107,7 +112,7 @@ Style tasks: `/style-evolve` (`upgrade`, `migrate`, `create`). Rust quality: `/r
 - `Cargo.toml` / `Cargo.lock` changes
 - Any `styles-legacy/` submodule operation
 - `git push origin main`, `gh pr create`
-- Editing any file under `~/.claude/skills/` or `~/.claude/scripts/` — confirm absolute path before write
+- Editing repo-owned harness control surfaces (`CLAUDE.md`, `AGENTS.md`, `.skills/**`, `.claude/**`, `.codex/**`) when the change alters contributor workflow policy
 
 ## Git Workflow
 
@@ -150,4 +155,5 @@ If `.jj` is present, see `docs/guides/JJ_AI_CHANGE_STACK.md`. Git remains the pu
 - Coding standards: `docs/guides/CODING_STANDARDS.md`
 - Locale authoring: `docs/guides/AUTHORING_LOCALES.md`
 - Domain Expert workflow: `docs/guides/DOMAIN_EXPERT.md`
+- Repo-local harness spec: `docs/specs/REPO_LOCAL_HARNESS.md`
 - Frontmatter preflight: `./scripts/validate-frontmatter.sh --copilot-strict`
