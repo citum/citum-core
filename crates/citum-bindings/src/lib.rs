@@ -404,7 +404,7 @@ impl WasmDocumentSession {
         let position = parse_optional_json(position_json, "position")?;
         let result = self
             .inner
-            .preview_citation(items, position)
+            .preview_citation(items, None, position)
             .map_err(|e| e.to_string())?;
         serde_json::to_string(&result).map_err(|e| format!("Result serialization failed: {e}"))
     }
