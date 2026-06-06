@@ -10,8 +10,8 @@ able to understand the workflow from repository files alone.
 
 | Surface | Role |
 |---|---|
-| `CLAUDE.md` | Authored Citum project instructions |
-| `AGENTS.md` | Host-neutral repo entrypoint |
+| `CLAUDE.md` | Single authored Citum project instructions |
+| `AGENTS.md` | Symlink to `CLAUDE.md` for AGENTS-aware tools |
 | `.skills/` | Canonical public skill tree |
 | `.claude/skills/` | Host-specific skills and wrappers |
 | `.codex/agents/` | Thin internal Codex role contracts |
@@ -34,6 +34,7 @@ of:
 The active contract is:
 
 - repo-owned instructions are the source of truth
+- `AGENTS.md` resolves to `CLAUDE.md`; do not duplicate root instructions
 - optional host installers are convenience layers only
 - contributor task tracking uses `/beans`
 - Claude and Codex entrypoints are documented in-repo
@@ -54,6 +55,14 @@ the repo's governing workflow.
 Shared workflow logic should live in docs and policies, not be duplicated into
 every host wrapper.
 
+### Claude hooks
+
+`.claude/settings.json` and `.claude/hooks/jcm-nudge.sh` are repo-owned Claude
+surfaces. The hook reinforces the jcodemunch/rust-analyzer code-search rule
+when Claude falls back to broad file reads or text search against Rust code.
+This is local enforcement of `CLAUDE.md`, not a dependency on a home-directory
+harness.
+
 ### Optional install steps
 
 Some hosts may require optional local installation steps to expose repo-owned
@@ -68,7 +77,8 @@ For Codex skill installation, see `docs/guides/AGENT_SKILLS.md`.
 
 When updating the harness:
 
-1. Keep `CLAUDE.md` and `AGENTS.md` aligned on core rules.
+1. Keep `AGENTS.md` symlinked to `CLAUDE.md` unless a future spec moves both
+   entrypoints to a third shared source.
 2. Prefer repo docs over host-specific wrapper text for shared process logic.
 3. Avoid new references that make `~/` content part of the required Citum
    contract.

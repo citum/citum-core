@@ -95,10 +95,14 @@ from `~/.sober`, `~/.claude`, or `~/.codex`.
 Use the repo-owned entrypoints instead:
 
 - `CLAUDE.md` — authored Citum project instructions
-- `AGENTS.md` — host-neutral repo entrypoint
+- `AGENTS.md` — symlink to `CLAUDE.md` for AGENTS-aware tools
 - `.skills/` — canonical public skills
 - `.claude/skills/` — host-specific skills and wrappers
 - `.codex/agents/` — thin internal Codex role contracts
+
+Do not duplicate root instruction content between `CLAUDE.md` and `AGENTS.md`.
+Keep `AGENTS.md` symlinked to this file unless a future spec moves both
+entrypoints to a shared source.
 
 Style tasks: `/style-evolve` (`upgrade`, `migrate`, `create`). Rust quality:
 `/rust-simplify` (size/dup) or `/rust-refine` (API shape).

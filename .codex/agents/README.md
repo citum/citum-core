@@ -7,8 +7,8 @@ Repo-owned public skills live under `.skills/` and are installed into
 
 The repo-local control surfaces are:
 
-- `CLAUDE.md` — authored Citum project instructions
-- `AGENTS.md` — host-neutral repo entrypoint mirrored to the same core contract
+- `CLAUDE.md` — single authored Citum project instructions
+- `AGENTS.md` — symlink to `CLAUDE.md` for AGENTS-aware tools
 - `docs/guides/AGENT_SKILLS.md` — installation and boundary guide
 
 Authoritative shared process docs:
@@ -34,4 +34,4 @@ Runnable Codex fallback:
 - Keep scope explicit and bounded.
 - Prefer repo policies over generic behavior when they conflict.
 - For Citum Rust work, follow the repo's documented verification and documentation rules.
-- Treat the repo-root `AGENTS.md` as the Codex-facing control surface and keep it aligned with `CLAUDE.md`.
+- Treat the repo-root `AGENTS.md` as the Codex-facing control surface; it must remain symlinked to `CLAUDE.md` unless a future spec moves both entrypoints to a shared source.
