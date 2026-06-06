@@ -322,7 +322,7 @@ to `None` and relies on the operator to fill in well-known styles. Two enhanceme
   and APA 7 differ in publisher-place presentation and DOI formatting; the
   discriminator is needed before APA 6 input fidelity becomes measurable.
 
-### Skills (`~/.claude/skills/`)
+### Skills (`.claude/skills/`)
 
 - `style-evolve` and its sub-skills (`style-maintain`,
   `style-migrate-enhance`) must record the chosen edition base in the bean
