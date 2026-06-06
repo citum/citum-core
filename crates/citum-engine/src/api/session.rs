@@ -232,6 +232,7 @@ impl DocumentSession {
     pub fn preview_citation(
         &self,
         items: Vec<CitationOccurrenceItem>,
+        mode: Option<citum_schema::data::citation::CitationMode>,
         position: Option<CitationInsertPosition>,
     ) -> Result<PreviewCitationResult, DocumentSessionError> {
         let mut citations = self.citations.clone();
@@ -242,7 +243,7 @@ impl DocumentSession {
             CitationOccurrence {
                 id: preview_id.clone(),
                 items,
-                mode: None,
+                mode,
                 note_number: None,
                 suppress_author: None,
                 grouped: None,
@@ -822,18 +823,33 @@ mod tests {
 
     #[test]
     fn preview_does_not_mutate_session() {
-        let mut session = session();
+        use citum_schema::data::citation::CitationMode;
+
+        let mut session = DocumentSession::new(
+            integral_name_style(),
+            StyleInput::Yaml(String::new()),
+            None,
+            OutputFormatKind::Plain,
+            None,
+        );
+        session.put_references(smith_refs());
         session
             .insert_citations_batch(vec![citation("c1", "smith2020")])
             .expect("batch insert should render");
         let before_version = session.version();
         let before_citations = session.get_citations();
+        let preview_items = citation("preview", "smith2020").items;
 
-        let preview = session
-            .preview_citation(citation("preview", "doe2021").items, None)
+        let default_preview = session
+            .preview_citation(preview_items.clone(), None, None)
             .expect("preview should render");
+        let integral_preview = session
+            .preview_citation(preview_items, Some(CitationMode::Integral), None)
+            .expect("integral preview should render");
 
-        assert!(!preview.preview.is_empty());
+        assert!(!default_preview.preview.is_empty());
+        assert!(!integral_preview.preview.is_empty());
+        assert_ne!(default_preview.preview, integral_preview.preview);
         assert_eq!(session.version(), before_version);
         assert_eq!(session.get_citations().len(), before_citations.len());
     }

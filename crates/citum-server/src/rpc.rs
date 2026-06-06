@@ -280,6 +280,8 @@ pub struct PreviewCitationParams {
     pub session_id: Option<String>,
     /// Citation items to preview.
     pub items: Vec<CitationOccurrenceItem>,
+    /// Citation mode for the preview (integral / non-integral).
+    pub mode: Option<citum_schema::data::citation::CitationMode>,
     /// Optional neighbour-ID position context.
     pub position: Option<CitationInsertPosition>,
 }
@@ -546,7 +548,7 @@ impl RpcDispatcher {
         let params: PreviewCitationParams = parse_session_params(params, &request_id)?;
         let session = self.session_mut(params.session_id.as_deref(), &request_id)?;
         let result = session
-            .preview_citation(params.items, params.position)
+            .preview_citation(params.items, params.mode, params.position)
             .map_err(session_method_error(&request_id))?;
         Ok(json!({ "id": id, "result": result }))
     }
