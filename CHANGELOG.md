@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.64.0] - 2026-06-07
+
+### Bug Fixes
+
+**engine**
+
+- Honor preview citation mode ([`f86e5a7`](https://github.com/citum/citum-core/commit/f86e5a740d8af9ed204ea1a2f89e04c2cea086f2))
+
+- Format bibliography entry html ([`80caaf6`](https://github.com/citum/citum-core/commit/80caaf6e58df707bb97809cde82076ed1f26a47b))
+
+- Compose typst strong markup ([`52906b4`](https://github.com/citum/citum-core/commit/52906b43af6fef8b3f44aa7fc20f912e81d4b1f8))
+
+
+
+### Documentation
+
+**server**
+
+- Add session API docs, fix examples ([`ce91379`](https://github.com/citum/citum-core/commit/ce91379f44cf30a4f4cabe8f677248edaf494785))
+
+
+**tooling**
+
+- Formalize repo-local harness ([`ff7cd2f`](https://github.com/citum/citum-core/commit/ff7cd2f71c720e93e505e4888d115c3f618f9ede))
+
+
+
+### Features
+
+**engine**
+
+- Per-document style overrides ([`8d2f61e`](https://github.com/citum/citum-core/commit/8d2f61e495484b21b2d55652c03723505474506b))
+
+- Wire name-memory through session API ([`7689814`](https://github.com/citum/citum-core/commit/7689814d30c03b09c85ea29e2c15eb47653dfe73))
+
+
 ## [0.63.0] - 2026-06-04
 
 ### Documentation
