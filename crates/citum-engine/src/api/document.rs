@@ -565,7 +565,7 @@ where
     };
 
     // Extract per-entry text in the requested output format and capture metadata.
-    let proc_entries = processor.process_references().bibliography;
+    let proc_entries = processor.process_references_with_format::<F>().bibliography;
     let entries = proc_entries
         .into_iter()
         .map(|entry| {
@@ -617,7 +617,8 @@ mod tests {
     };
     use citum_schema::options::{AndOptions, ContributorConfig};
     use citum_schema::reference::{EdtfString, InputReference, Monograph, MonographType, Title};
-    use citum_schema::{CitationSpec, StyleInfo};
+    use citum_schema::template::{TemplateTitle, TitleType};
+    use citum_schema::{BibliographySpec, CitationSpec, StyleInfo};
 
     fn make_test_style() -> Style {
         Style {
@@ -667,6 +668,23 @@ mod tests {
         RefsInput::Json(serde_json::to_value(refs).unwrap())
     }
 
+    fn make_markup_bibliography() -> RefsInput {
+        let mut refs = Bibliography::new();
+        refs.insert(
+            "art1".to_string(),
+            InputReference::Monograph(Box::new(Monograph {
+                id: Some("art1".into()),
+                r#type: MonographType::Book,
+                title: Some(Title::Single(
+                    "_Homo sapiens_ and *modern* world".to_string(),
+                )),
+                issued: EdtfString("2023".to_string()),
+                ..Default::default()
+            })),
+        );
+        RefsInput::Json(serde_json::to_value(refs).unwrap())
+    }
+
     #[test]
     fn format_document_with_style_empty_citations() {
         let style = make_test_style();
@@ -685,6 +703,41 @@ mod tests {
         assert!(result.is_ok());
         let res = result.unwrap();
         assert_eq!(res.formatted_citations.len(), 0);
+    }
+
+    #[test]
+    fn format_document_html_bibliography_entries_preserve_inline_markup() {
+        let mut style = make_test_style();
+        style.bibliography = Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            })]),
+            ..Default::default()
+        });
+
+        let request = FormatDocumentRequest {
+            style: StyleInput::Yaml("dummy".to_string()),
+            style_overrides: None,
+            locale: None,
+            output_format: OutputFormatKind::Html,
+            refs: make_markup_bibliography(),
+            citations: vec![],
+            document_options: None,
+        };
+
+        let result = format_document_with_style(style, request).expect("should render");
+
+        assert_eq!(
+            result.bibliography.entries[0].text, result.bibliography.content,
+            "single-entry bibliography should mirror the full bibliography payload"
+        );
+        assert!(
+            result.bibliography.entries[0].text.contains(
+                "<span class=\"citum-title\"><em>Homo sapiens</em> and <b>modern</b> world</span>"
+            ),
+            "per-entry HTML should preserve inline markup for Djot-bearing titles"
+        );
     }
 
     #[test]

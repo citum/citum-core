@@ -119,13 +119,24 @@ impl Processor {
     /// Returns sorted and formatted bibliography entries. For numeric styles,
     /// citations must have been processed first to assign citation numbers.
     pub fn process_references(&self) -> ProcessedReferences {
+        self.process_references_with_format::<crate::render::plain::PlainText>()
+    }
+
+    /// Process all bibliography references using the requested output format.
+    ///
+    /// This preserves format-specific inline markup in per-entry API output.
+    pub fn process_references_with_format<F>(&self) -> ProcessedReferences
+    where
+        F: OutputFormat<Output = String>,
+    {
         self.initialize_numeric_bibliography_numbers();
         let sorted_refs = self.sort_references(self.bibliography.values().collect());
-        let bibliography = self.process_sorted_refs::<_, crate::render::plain::PlainText>(
+        let bibliography = self.process_sorted_refs::<_, F>(
             sorted_refs.iter().copied(),
-            |reference, entry_number| self.process_bibliography_entry(reference, entry_number),
+            |reference, entry_number| {
+                self.process_bibliography_entry_with_format::<F>(reference, entry_number)
+            },
         );
-
         ProcessedReferences {
             bibliography,
             citations: None,
