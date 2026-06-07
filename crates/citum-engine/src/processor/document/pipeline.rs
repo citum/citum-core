@@ -217,12 +217,13 @@ impl Processor {
 
         // Terminal formats (Typst, LaTeX) need the same placeholder flow so
         // the body markup can be converted to the target format after citations
-        // are replaced with NUL-token placeholders.
+        // are replaced with NUL-token placeholders. This is a converted-output
+        // path, not passthrough; passthrough is limited to Plain/Djot/Markdown.
         if matches!(format, DocumentFormat::Typst | DocumentFormat::Latex) {
             let mut placeholders = HtmlPlaceholderRegistry::default();
-            // Note styles emit raw footnote syntax that the body markup
-            // converter doesn't understand; fall back to the passthrough path
-            // and let the caller handle conversion separately if needed.
+            // Note styles still emit source footnote syntax that the terminal
+            // body renderer does not yet model, so keep that narrow legacy
+            // exception isolated from author-date terminal conversion.
             let content = if self.is_note_style() {
                 self.process_note_document::<F>(content, parsed)
             } else {
@@ -398,7 +399,8 @@ impl Processor {
             };
             placeholders.apply(converted)
         } else {
-            // Passthrough path (Plain, Djot, Markdown, note-style Typst/LaTeX).
+            // Passthrough path for Plain/Djot/Markdown, plus the isolated
+            // note-style Typst/LaTeX exception documented in render_document_body.
             // Keep the heading-rewrite for Typst in case headings came from
             // bibliography group labels rather than body markup.
             let content = rewrite_document_markup_for_typst(rendered.content, format);

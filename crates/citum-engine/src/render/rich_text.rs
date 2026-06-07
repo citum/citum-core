@@ -436,7 +436,7 @@ mod tests {
     fn test_djot_nested_formatting_preserves_typst_markup() {
         let fmt = Typst;
         let result = render_djot_inline("_emphasized *bold* text_", &fmt);
-        assert_eq!(result, "#emph[emphasized *bold* text]");
+        assert_eq!(result, "#emph[emphasized #strong[bold] text]");
     }
 
     #[test]

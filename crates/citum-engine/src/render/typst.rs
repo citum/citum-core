@@ -84,7 +84,7 @@ impl OutputFormat for Typst {
         if content.is_empty() {
             return content;
         }
-        format!("*{content}*")
+        format!("#strong[{content}]")
     }
 
     fn small_caps(&self, content: Self::Output) -> Self::Output {
