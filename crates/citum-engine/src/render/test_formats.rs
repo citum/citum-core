@@ -190,6 +190,15 @@ mod tests {
     }
 
     #[test]
+    fn test_typst_strong_composes_when_nested() {
+        let fmt = Typst;
+        let inner = fmt.strong(fmt.text("Note"));
+        let outer = fmt.strong(inner);
+
+        assert_eq!(outer, "#strong[#strong[Note]]");
+    }
+
+    #[test]
     fn test_typst_contributor_small_caps() {
         let component = ProcTemplateComponent {
             template_component: tc_contributor!(Author, Long, small_caps = true),

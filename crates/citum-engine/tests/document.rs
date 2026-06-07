@@ -1567,6 +1567,71 @@ fn given_djot_block_quote_when_rendered_as_typst_then_quote_block_is_emitted() {
     );
 }
 
+fn given_djot_notice_with_nested_strong_when_rendered_as_typst_then_strong_markup_is_composable() {
+    let processor = example_document_processor("styles/embedded/apa-7th.yaml");
+    let parser = DjotParser;
+    let document = concat!(
+        "{.citum-demo-notice}\n",
+        "**Note**: This notice is outside any footnote.\n\n",
+        "---\n\n",
+        "**Features illustrated**: source markup, thematic breaks, and citations.\n\n",
+        "A later citation still resolves [@kuhn1962].\n",
+    );
+
+    let output = processor.process_document::<_, citum_engine::render::typst::Typst>(
+        document,
+        &parser,
+        DocumentFormat::Typst,
+    );
+
+    assert!(
+        output.contains("#strong[#strong[Note]]"),
+        "Djot nested strong input **Note** should render as composable Typst strong markup, got: {output}"
+    );
+    assert!(
+        !output.contains("**Note**"),
+        "raw Djot strong delimiters should not leak into Typst output, got: {output}"
+    );
+    assert!(
+        !output.contains("{.citum-demo-notice}"),
+        "raw Djot paragraph attributes should not leak into Typst output, got: {output}"
+    );
+    assert!(
+        output.contains("#link(<ref-kuhn1962>)") && output.contains("Kuhn"),
+        "citation placeholder replacement should still produce Typst links, got: {output}"
+    );
+}
+
+fn given_djot_notice_with_nested_strong_when_rendered_as_djot_then_source_markup_passes_through() {
+    let processor = example_document_processor("styles/embedded/apa-7th.yaml");
+    let parser = DjotParser;
+    let document = concat!(
+        "{.citum-demo-notice}\n",
+        "**Note**: This notice is outside any footnote.\n\n",
+        "---\n\n",
+        "A later citation still resolves [@kuhn1962].\n",
+    );
+
+    let output = processor.process_document::<_, citum_engine::render::djot::Djot>(
+        document,
+        &parser,
+        DocumentFormat::Djot,
+    );
+
+    assert!(
+        output.contains("**Note**"),
+        "Djot passthrough output should preserve source body markup, got: {output}"
+    );
+    assert!(
+        output.contains("{.citum-demo-notice}"),
+        "Djot passthrough output should preserve source attributes, got: {output}"
+    );
+    assert!(
+        output.contains("Kuhn") && !output.contains("[@kuhn1962]"),
+        "citation text should be rendered while body markup passes through, got: {output}"
+    );
+}
+
 fn given_markdown_block_quote_when_rendered_as_latex_then_quote_environment_is_emitted() {
     let processor = example_document_processor("styles/embedded/apa-7th.yaml");
     let parser = MarkdownParser;
@@ -1634,6 +1699,22 @@ mod body_markup_terminal_formats {
             "A Djot block quote rendered to Typst should produce #quote(block: true) with correctly mapped inline markup.",
         );
         super::given_djot_block_quote_when_rendered_as_typst_then_quote_block_is_emitted();
+    }
+
+    #[test]
+    fn djot_notice_nested_strong_renders_as_composable_typst() {
+        announce_behavior(
+            "A Djot notice paragraph using nested strong markup (`**...**`) outside footnotes should render as composable Typst strong markup while preserving citation placeholder replacement.",
+        );
+        super::given_djot_notice_with_nested_strong_when_rendered_as_typst_then_strong_markup_is_composable();
+    }
+
+    #[test]
+    fn djot_passthrough_preserves_notice_source_markup() {
+        announce_behavior(
+            "Djot passthrough output should preserve source body markup while still replacing citation markers.",
+        );
+        super::given_djot_notice_with_nested_strong_when_rendered_as_djot_then_source_markup_passes_through();
     }
 
     #[test]
