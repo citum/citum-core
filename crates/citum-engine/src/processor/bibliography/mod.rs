@@ -28,6 +28,8 @@ pub(crate) struct RenderedBibliographyGroup {
     pub(crate) heading: Option<String>,
     /// The rendered bibliography body without any document-level heading wrapper.
     pub(crate) body: String,
+    /// Individual entries rendered in this block.
+    pub(crate) entries: Vec<crate::render::ProcEntry>,
 }
 
 impl Processor {

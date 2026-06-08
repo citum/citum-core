@@ -110,12 +110,13 @@ mod sort_support;
 pub mod values;
 
 pub use api::{
-    BibliographyEntry, CitationInsertPosition, CitationOccurrence, CitationOccurrenceItem,
-    DocumentOptions, DocumentSession, DocumentSessionError, EntryMetadata, FormatDocumentError,
-    FormatDocumentRequest, FormatDocumentResult, FormattedBibliography, FormattedCitation,
-    OpenSessionResult, OutputFormatKind, PreviewCitationResult, RefsInput, SessionMutationResult,
-    StyleInput, Warning, WarningLevel, apply_style_overrides, format_document,
-    format_document_with_resolver, format_document_with_style,
+    BibliographyBlockRequest, BibliographyEntry, CitationInsertPosition, CitationOccurrence,
+    CitationOccurrenceItem, DocumentOptions, DocumentSession, DocumentSessionError, EntryMetadata,
+    FormatDocumentError, FormatDocumentRequest, FormatDocumentResult, FormattedBibliography,
+    FormattedBibliographyBlock, FormattedCitation, OpenSessionResult, OutputFormatKind,
+    PreviewCitationResult, RefsInput, SessionMutationResult, StyleInput, Warning, WarningLevel,
+    apply_style_overrides, format_document, format_document_with_resolver,
+    format_document_with_style,
 };
 pub use citum_schema::options::{Config, Processing};
 pub use citum_schema::reference::{

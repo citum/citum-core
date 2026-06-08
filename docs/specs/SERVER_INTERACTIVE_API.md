@@ -238,6 +238,26 @@ These types capture the rendered output along with metadata provided by the engi
 | `year` | string | Rendered year string |
 | `title` | string | Rendered title string |
 
+### `BibliographyBlockRequest` and `FormattedBibliographyBlock`
+
+These types support sectional (split) bibliographies in `format_document`. Supply an ordered array of `BibliographyBlockRequest` in the request; get back a matching array of `FormattedBibliographyBlock` in the result. The engine threads a single dedup set across blocks so each reference appears in at most one block.
+
+**`BibliographyBlockRequest` fields:**
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | string | yes | Caller-supplied stable identifier for this block |
+| `group` | `BibliographyGroup` | yes | Group selector, heading, sort spec, and optional template override |
+
+**`FormattedBibliographyBlock` fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Identifier echoed from the request |
+| `heading` | string? | Resolved heading text (omitted when no heading was defined) |
+| `content` | string | Rendered block body (entries only, no heading wrapper) |
+| `entries` | `BibliographyEntry[]` | Individual formatted entries with metadata |
+
 ### `Warning` — structured diagnostic
 
 Both `format_document` and session mutation results carry a `warnings` array with structured entries:
@@ -277,6 +297,7 @@ Modelled on Pandoc citeproc: one call, all inputs, all outputs. Works in stdio, 
 | `output_format` | string | no | One of `plain` (default), `html`, `djot`, `latex`, `typst` |
 | `refs` | `RefsInput` | yes | Bibliography input: tagged path, YAML, JSON, or legacy bare JSON map |
 | `citations` | array | yes | Ordered `CitationOccurrence` items (document order) |
+| `bibliography_blocks` | array | no | Ordered `BibliographyBlockRequest` items for sectional bibliographies (see below) |
 | `document_options` | `DocumentOptions` | no | Document-level rendering config (see above) |
 
 **Example request:**

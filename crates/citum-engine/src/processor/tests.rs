@@ -3851,6 +3851,8 @@ fn test_document_bibliography_block_selects_members_before_compound_merge() {
     let rendered = processor.render_document_bibliography_block::<crate::render::plain::PlainText>(
         &make_selected_bibliography_group(),
         &mut std::collections::HashSet::new(),
+        None,
+        None,
     );
 
     assert_eq!(rendered.heading.as_deref(), Some("Selected"));
@@ -3889,10 +3891,14 @@ fn test_multi_bibliography_block_excludes_first_block_entries() {
     let block1 = processor.render_document_bibliography_block::<crate::render::plain::PlainText>(
         &make_selected_bibliography_group(),
         &mut assigned,
+        None,
+        None,
     );
     let block2 = processor.render_document_bibliography_block::<crate::render::plain::PlainText>(
         &catchall,
         &mut assigned,
+        None,
+        None,
     );
 
     assert!(
