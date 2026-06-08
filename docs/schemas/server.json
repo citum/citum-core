@@ -106,89 +106,23 @@
         }
       ]
     },
-    "DocumentOptions": {
-      "description": "Document-level configuration for rendering.\n\nControls rendering behavior that belongs to the document rather than the style.",
+    "BibliographyBlockRequest": {
+      "description": "A requested bibliography block in document order.",
       "type": "object",
       "properties": {
-        "bibliography_groups": {
-          "description": "Override or replace style-defined bibliography grouping.",
-          "type": [
-            "array",
-            "null"
-          ],
-          "items": {
-            "$ref": "#/$defs/BibliographyGroup"
-          }
+        "id": {
+          "description": "Stable identifier for this bibliography block.",
+          "type": "string"
         },
-        "sort_partitioning": {
-          "description": "Automatic bibliography partitioning by script or language.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/BibliographySortPartitioning"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "integral_name_memory": {
-          "description": "Document-level narrative citation rules.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/DocumentIntegralNameOverride"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "show_semantics": {
-          "description": "Whether to output semantic markup (HTML spans, Djot attributes).",
-          "type": [
-            "boolean",
-            "null"
-          ]
-        },
-        "inject_ast_indices": {
-          "description": "Whether to annotate semantic wrappers with source template indices.",
-          "type": [
-            "boolean",
-            "null"
-          ]
-        },
-        "annotations": {
-          "description": "Reference ID to annotation text mapping.",
-          "type": [
-            "object",
-            "null"
-          ],
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "annotation_format": {
-          "description": "Format for annotation text (djot, plain, org).",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/AnnotationFormat"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "abbreviation_map": {
-          "description": "Map from full rendered strings to their abbreviations.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/AbbreviationMap"
-            },
-            {
-              "type": "null"
-            }
-          ]
+        "group": {
+          "description": "Group selector, heading, sorting, and optional template override.",
+          "$ref": "#/$defs/BibliographyGroup"
         }
-      }
+      },
+      "required": [
+        "id",
+        "group"
+      ]
     },
     "BibliographyGroup": {
       "description": "A bibliography group with selector, optional heading, and per-group sorting.\n\nGroups allow styles to divide bibliographies into labeled sections with\ndistinct sorting rules. Items match the first group whose selector evaluates\nto true (first-match semantics).\n\n# Examples\n\n```yaml\ngroups:\n  - id: vietnamese\n    heading:\n      localized:\n        vi: \"Tài liệu tiếng Việt\"\n        en-US: \"Vietnamese Sources\"\n    selector:\n      field:\n        language: vi\n    sort:\n      template:\n        - key: author\n          sort-order: given-family\n```",
@@ -2492,6 +2426,90 @@
         }
       ]
     },
+    "DocumentOptions": {
+      "description": "Document-level configuration for rendering.\n\nControls rendering behavior that belongs to the document rather than the style.",
+      "type": "object",
+      "properties": {
+        "bibliography_groups": {
+          "description": "Override or replace style-defined bibliography grouping.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "$ref": "#/$defs/BibliographyGroup"
+          }
+        },
+        "sort_partitioning": {
+          "description": "Automatic bibliography partitioning by script or language.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BibliographySortPartitioning"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "integral_name_memory": {
+          "description": "Document-level narrative citation rules.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DocumentIntegralNameOverride"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "show_semantics": {
+          "description": "Whether to output semantic markup (HTML spans, Djot attributes).",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "inject_ast_indices": {
+          "description": "Whether to annotate semantic wrappers with source template indices.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "annotations": {
+          "description": "Reference ID to annotation text mapping.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "annotation_format": {
+          "description": "Format for annotation text (djot, plain, org).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AnnotationFormat"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "abbreviation_map": {
+          "description": "Map from full rendered strings to their abbreviations.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AbbreviationMap"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
     "BibliographySortPartitioning": {
       "description": "Bibliography partitioning policy for multilingual sort order and sections.",
       "type": "object",
@@ -2877,6 +2895,13 @@
       },
       "citations": {
         "description": "Ordered citations as they appear in the document."
+      },
+      "bibliography_blocks": {
+        "description": "Optional bibliography blocks to render in document order.",
+        "type": "array",
+        "items": {
+          "$ref": "#/$defs/BibliographyBlockRequest"
+        }
       },
       "document_options": {
         "description": "Optional document-level configuration.",

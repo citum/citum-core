@@ -20,7 +20,7 @@ use citum_engine::processor::document::{djot::DjotParser, markdown::MarkdownPars
 use citum_engine::render::{
     djot::Djot, html::Html, latex::Latex, markdown::Markdown, plain::PlainText, typst::Typst,
 };
-use citum_engine::{Citation, DocumentFormat, Processor};
+use citum_engine::{BibliographyBlockRequest, Citation, DocumentFormat, Processor};
 use citum_io::{
     AnnotationFormat, AnnotationStyle, load_annotations, load_merged_bibliography,
     load_merged_citations,
@@ -74,19 +74,52 @@ pub(super) fn run_render_doc(args: RenderDocArgs) -> CliResult {
         args.no_semantics,
         effective_locale,
     )?;
-    let output = match args.input_format {
-        InputFormat::Djot => render_doc_with_output_format(
-            &processor,
-            &doc_content,
-            args.format,
-            DocumentInput::Djot,
-        )?,
-        InputFormat::Markdown => render_doc_with_output_format(
-            &processor,
-            &doc_content,
-            args.format,
-            DocumentInput::Markdown,
-        )?,
+
+    let output = if let Some(blocks_path) = args.bibliography_blocks {
+        let json = fs::read_to_string(&blocks_path).map_err(|e| {
+            format!(
+                "cannot read --bibliography-blocks file '{}': {e}",
+                blocks_path.display()
+            )
+        })?;
+        let requests: Vec<BibliographyBlockRequest> = serde_json::from_str(&json).map_err(|e| {
+            format!(
+                "invalid --bibliography-blocks JSON in '{}': {e}",
+                blocks_path.display()
+            )
+        })?;
+        let groups: Vec<_> = requests.into_iter().map(|r| r.group).collect();
+        match args.input_format {
+            InputFormat::Djot => render_doc_with_caller_blocks(
+                &processor,
+                &doc_content,
+                args.format,
+                DocumentInput::Djot,
+                &groups,
+            )?,
+            InputFormat::Markdown => render_doc_with_caller_blocks(
+                &processor,
+                &doc_content,
+                args.format,
+                DocumentInput::Markdown,
+                &groups,
+            )?,
+        }
+    } else {
+        match args.input_format {
+            InputFormat::Djot => render_doc_with_output_format(
+                &processor,
+                &doc_content,
+                args.format,
+                DocumentInput::Djot,
+            )?,
+            InputFormat::Markdown => render_doc_with_output_format(
+                &processor,
+                &doc_content,
+                args.format,
+                DocumentInput::Markdown,
+            )?,
+        }
     };
 
     if args.pdf {
@@ -234,6 +267,78 @@ fn render_doc_with_output_format(
                 OutputFormat::Typst => {
                     Ok(processor.process_document::<_, Typst>(content, &parser, doc_format))
                 }
+            }
+        }
+    }
+}
+
+/// Render a document using caller-supplied bibliography groups (from `--bibliography-blocks`).
+///
+/// Mirrors [`render_doc_with_output_format`] but routes through
+/// [`Processor::process_document_with_caller_blocks`] so the sectional
+/// bibliographies are driven by the unified engine primitive rather than
+/// in-document `:::bibliography{...}` fenced divs.
+fn render_doc_with_caller_blocks(
+    processor: &Processor,
+    content: &str,
+    output_format: OutputFormat,
+    input_format: DocumentInput,
+    groups: &[citum_schema::grouping::BibliographyGroup],
+) -> Result<String, Box<dyn Error>> {
+    let doc_format = to_document_format(output_format)?;
+    match input_format {
+        DocumentInput::Djot => {
+            let parser = citum_engine::processor::document::djot::DjotParser;
+            match output_format {
+                OutputFormat::Plain => Ok(processor
+                    .process_document_with_caller_blocks::<_, PlainText>(
+                        content, groups, &parser, doc_format,
+                    )),
+                OutputFormat::Html => Ok(processor.process_document_with_caller_blocks::<_, Html>(
+                    content, groups, &parser, doc_format,
+                )),
+                OutputFormat::Djot => Ok(processor.process_document_with_caller_blocks::<_, Djot>(
+                    content, groups, &parser, doc_format,
+                )),
+                OutputFormat::Markdown => Ok(processor
+                    .process_document_with_caller_blocks::<_, Markdown>(
+                        content, groups, &parser, doc_format,
+                    )),
+                OutputFormat::Latex => Ok(processor
+                    .process_document_with_caller_blocks::<_, Latex>(
+                        content, groups, &parser, doc_format,
+                    )),
+                OutputFormat::Typst => Ok(processor
+                    .process_document_with_caller_blocks::<_, Typst>(
+                        content, groups, &parser, doc_format,
+                    )),
+            }
+        }
+        DocumentInput::Markdown => {
+            let parser = citum_engine::processor::document::markdown::MarkdownParser;
+            match output_format {
+                OutputFormat::Plain => Ok(processor
+                    .process_document_with_caller_blocks::<_, PlainText>(
+                        content, groups, &parser, doc_format,
+                    )),
+                OutputFormat::Html => Ok(processor.process_document_with_caller_blocks::<_, Html>(
+                    content, groups, &parser, doc_format,
+                )),
+                OutputFormat::Djot => Ok(processor.process_document_with_caller_blocks::<_, Djot>(
+                    content, groups, &parser, doc_format,
+                )),
+                OutputFormat::Markdown => Ok(processor
+                    .process_document_with_caller_blocks::<_, Markdown>(
+                        content, groups, &parser, doc_format,
+                    )),
+                OutputFormat::Latex => Ok(processor
+                    .process_document_with_caller_blocks::<_, Latex>(
+                        content, groups, &parser, doc_format,
+                    )),
+                OutputFormat::Typst => Ok(processor
+                    .process_document_with_caller_blocks::<_, Typst>(
+                        content, groups, &parser, doc_format,
+                    )),
             }
         }
     }

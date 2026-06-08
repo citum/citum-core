@@ -42,7 +42,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use crate::error::ServerError;
 use citum_engine::{
-    Bibliography, Citation, DocumentOptions, Processor, StyleInput,
+    Bibliography, BibliographyBlockRequest, Citation, DocumentOptions, Processor, StyleInput,
     render::{djot::Djot, html::Html, latex::Latex, plain::PlainText, typst::Typst},
 };
 #[cfg(feature = "session")]
@@ -166,6 +166,9 @@ pub struct FormatDocumentParams {
     pub refs: serde_json::Value,
     /// Ordered citations as they appear in the document.
     pub citations: serde_json::Value,
+    /// Optional bibliography blocks to render in document order.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub bibliography_blocks: Vec<BibliographyBlockRequest>,
     /// Optional document-level configuration.
     pub document_options: Option<DocumentOptions>,
 }

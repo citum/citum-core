@@ -83,6 +83,7 @@ fn run_deprecated_doc(args: crate::args::LegacyDocArgs) -> CliResult {
         pdf: false,
         typst_keep_source: false,
         locale: None,
+        bibliography_blocks: None,
         no_semantics: false,
     })
 }

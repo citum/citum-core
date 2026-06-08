@@ -622,6 +622,11 @@ pub(crate) struct RenderDocArgs {
     #[arg(short = 'L', long)]
     pub(crate) locale: Option<String>,
 
+    /// Path to JSON file containing ordered bibliography block requests
+    /// (`Vec<BibliographyBlockRequest>`). Each block is a group selector with an id.
+    #[arg(long = "bibliography-blocks")]
+    pub(crate) bibliography_blocks: Option<std::path::PathBuf>,
+
     /// Disable semantic classes (HTML spans, Djot attributes)
     #[arg(long)]
     pub(crate) no_semantics: bool,

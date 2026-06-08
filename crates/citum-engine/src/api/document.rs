@@ -29,7 +29,8 @@ use std::collections::HashMap;
 
 use super::{
     BibliographyEntry, CitationOccurrence, DocumentOptions, EntryMetadata, FormattedBibliography,
-    FormattedCitation, OutputFormatKind, RefsInput, StyleInput, Warning, WarningLevel,
+    FormattedBibliographyBlock, FormattedCitation, OutputFormatKind, RefsInput, StyleInput,
+    Warning, WarningLevel,
 };
 
 /// A request to format a complete document's citations and bibliography.
@@ -60,6 +61,9 @@ pub struct FormatDocumentRequest {
     pub refs: RefsInput,
     /// Ordered citations as they appear in the document.
     pub citations: Vec<CitationOccurrence>,
+    /// Ordered sectional bibliography blocks to render after citations.
+    #[serde(default)]
+    pub bibliography_blocks: Vec<super::BibliographyBlockRequest>,
     /// Optional document-level configuration.
     pub document_options: Option<DocumentOptions>,
 }
@@ -71,6 +75,8 @@ pub struct FormatDocumentResult {
     pub formatted_citations: Vec<FormattedCitation>,
     /// Formatted bibliography.
     pub bibliography: FormattedBibliography,
+    /// Rendered bibliography blocks, in request order.
+    pub bibliography_blocks: Vec<FormattedBibliographyBlock>,
     /// Non-fatal warnings encountered during processing.
     pub warnings: Vec<Warning>,
 }
@@ -328,9 +334,44 @@ pub fn format_document_with_style(
         )?,
     };
 
+    // Process bibliography blocks
+    let bibliography_blocks = match request.output_format {
+        OutputFormatKind::Plain => format_bibliography_blocks::<PlainText>(
+            &processor,
+            &request.bibliography_blocks,
+            request.document_options.as_ref(),
+        )?,
+        OutputFormatKind::Html => format_bibliography_blocks::<Html>(
+            &processor,
+            &request.bibliography_blocks,
+            request.document_options.as_ref(),
+        )?,
+        OutputFormatKind::Djot => format_bibliography_blocks::<Djot>(
+            &processor,
+            &request.bibliography_blocks,
+            request.document_options.as_ref(),
+        )?,
+        OutputFormatKind::Latex => format_bibliography_blocks::<Latex>(
+            &processor,
+            &request.bibliography_blocks,
+            request.document_options.as_ref(),
+        )?,
+        OutputFormatKind::Typst => format_bibliography_blocks::<Typst>(
+            &processor,
+            &request.bibliography_blocks,
+            request.document_options.as_ref(),
+        )?,
+        OutputFormatKind::Markdown => format_bibliography_blocks::<Markdown>(
+            &processor,
+            &request.bibliography_blocks,
+            request.document_options.as_ref(),
+        )?,
+    };
+
     Ok(FormatDocumentResult {
         formatted_citations,
         bibliography,
+        bibliography_blocks,
         warnings,
     })
 }
@@ -599,6 +640,101 @@ where
     })
 }
 
+/// Format ordered sectional bibliography blocks.
+///
+/// Threads a single `assigned` dedup set through all blocks so each reference
+/// appears in only one block. Renders entries with annotations if configured.
+pub(crate) fn format_bibliography_blocks<F>(
+    processor: &Processor,
+    requests: &[super::BibliographyBlockRequest],
+    doc_opts: Option<&DocumentOptions>,
+) -> Result<Vec<super::FormattedBibliographyBlock>, FormatDocumentError>
+where
+    F: OutputFormat<Output = String>,
+{
+    if requests.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let (annotations, annotation_style) = annotation_options(doc_opts);
+    let groups: Vec<_> = requests.iter().map(|r| r.group.clone()).collect();
+    let rendered = processor.render_document_bibliography_blocks::<F>(
+        &groups,
+        if annotations.is_empty() {
+            None
+        } else {
+            Some(&annotations)
+        },
+        annotation_style.as_ref(),
+    );
+
+    Ok(requests
+        .iter()
+        .zip(rendered)
+        .map(|(req, rg)| super::FormattedBibliographyBlock {
+            id: req.id.clone(),
+            heading: rg.heading,
+            content: rg.body,
+            entries: rg
+                .entries
+                .into_iter()
+                .map(|entry| {
+                    proc_entry_to_bibliography_entry::<F>(
+                        entry,
+                        if annotations.is_empty() {
+                            None
+                        } else {
+                            Some(&annotations)
+                        },
+                        annotation_style.as_ref(),
+                    )
+                })
+                .collect(),
+        })
+        .collect())
+}
+
+/// Extract annotation map and style from document options.
+fn annotation_options(
+    doc_opts: Option<&DocumentOptions>,
+) -> (HashMap<String, String>, Option<AnnotationStyle>) {
+    if let Some(opts) = doc_opts
+        && let Some(anns) = &opts.annotations
+    {
+        let style = opts.annotation_format.as_ref().map(|fmt| AnnotationStyle {
+            format: fmt.clone(),
+        });
+        return (anns.clone(), style);
+    }
+    (HashMap::new(), None)
+}
+
+/// Convert a processor entry to a bibliography entry with annotations.
+fn proc_entry_to_bibliography_entry<F>(
+    entry: crate::render::ProcEntry,
+    annotations: Option<&HashMap<String, String>>,
+    annotation_style: Option<&AnnotationStyle>,
+) -> BibliographyEntry
+where
+    F: OutputFormat<Output = String>,
+{
+    let text = crate::render::bibliography::refs_to_string_slice_with_format::<F>(
+        std::slice::from_ref(&entry),
+        annotations,
+        annotation_style,
+    );
+    let metadata = EntryMetadata {
+        author: entry.metadata.author.unwrap_or_default(),
+        year: entry.metadata.year.unwrap_or_default(),
+        title: entry.metadata.title.unwrap_or_default(),
+    };
+    BibliographyEntry {
+        id: entry.id,
+        text,
+        metadata,
+    }
+}
+
 #[cfg(test)]
 #[allow(
     clippy::unwrap_used,
@@ -696,6 +832,7 @@ mod tests {
             output_format: OutputFormatKind::Plain,
             refs,
             citations: vec![],
+            bibliography_blocks: Vec::new(),
             document_options: None,
         };
 
@@ -723,6 +860,7 @@ mod tests {
             output_format: OutputFormatKind::Html,
             refs: make_markup_bibliography(),
             citations: vec![],
+            bibliography_blocks: Vec::new(),
             document_options: None,
         };
 
@@ -771,6 +909,7 @@ mod tests {
             output_format: OutputFormatKind::Plain,
             refs,
             citations: vec![citation_occ],
+            bibliography_blocks: Vec::new(),
             document_options: None,
         };
 
@@ -822,6 +961,7 @@ mod tests {
             output_format: OutputFormatKind::Plain,
             refs: RefsInput::Json(serde_json::to_value(refs).unwrap()),
             citations: vec![citation_occ],
+            bibliography_blocks: Vec::new(),
             document_options: None,
         };
 
@@ -878,6 +1018,7 @@ mod tests {
             output_format: OutputFormatKind::Plain,
             refs: RefsInput::Json(serde_json::to_value(refs).unwrap()),
             citations: vec![citation_occ],
+            bibliography_blocks: Vec::new(),
             document_options: None,
         };
 
@@ -897,6 +1038,7 @@ mod tests {
             output_format: OutputFormatKind::Plain,
             refs: RefsInput::Json(serde_json::Value::Object(Default::default())),
             citations: vec![],
+            bibliography_blocks: Vec::new(),
             document_options: None,
         };
 
@@ -962,6 +1104,7 @@ mod tests {
             output_format: OutputFormatKind::Plain,
             refs,
             citations: vec![citation_occ],
+            bibliography_blocks: Vec::new(),
             document_options: None,
         };
 
@@ -1083,6 +1226,7 @@ mod tests {
             output_format: OutputFormatKind::Plain,
             refs: refs.clone(),
             citations: vec![cite("duo2024")],
+            bibliography_blocks: Vec::new(),
             document_options: None,
         };
         let result_base = format_document_with_style(base_style.clone(), request_base).unwrap();
@@ -1100,6 +1244,7 @@ mod tests {
             output_format: OutputFormatKind::Plain,
             refs,
             citations: vec![cite("duo2024")],
+            bibliography_blocks: Vec::new(),
             document_options: None,
         };
         let result_override =
@@ -1134,6 +1279,7 @@ mod tests {
             output_format: OutputFormatKind::Plain,
             refs,
             citations: vec![],
+            bibliography_blocks: Vec::new(),
             document_options: None,
         };
 
@@ -1275,6 +1421,7 @@ mod tests {
                 make_integral_occ("c1", "smith2020"),
                 make_integral_occ("c2", "smith2020"),
             ],
+            bibliography_blocks: Vec::new(),
             document_options: Some(DocumentOptions {
                 integral_name_memory: Some(DocumentIntegralNameOverride {
                     enabled: Some(true),
@@ -1321,6 +1468,7 @@ mod tests {
                 make_integral_occ("c1", "smith2020"),
                 make_integral_occ("c2", "smith2020"),
             ],
+            bibliography_blocks: Vec::new(),
             document_options: Some(DocumentOptions {
                 integral_name_memory: Some(DocumentIntegralNameOverride {
                     enabled: Some(false),
@@ -1362,6 +1510,7 @@ mod tests {
                 make_integral_occ("c1", "smith2020"),
                 make_integral_occ("c2", "smith2020"),
             ],
+            bibliography_blocks: Vec::new(),
             document_options: None,
         };
 
@@ -1374,6 +1523,80 @@ mod tests {
         assert_eq!(
             result.formatted_citations[1].text, "Smith",
             "second integral cite should render short form from style-native config"
+        );
+    }
+
+    #[test]
+    fn format_document_bibliography_blocks_ordered_with_dedup() {
+        use citum_schema::grouping::CitedStatus;
+        use citum_schema::grouping::{BibliographyGroup, GroupSelector};
+
+        let mut style = make_test_style();
+        style.bibliography = Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            })]),
+            ..Default::default()
+        });
+        let mut refs = Bibliography::new();
+        refs.insert(
+            "smith2020".to_string(),
+            InputReference::Monograph(Box::new(Monograph {
+                id: Some("smith2020".into()),
+                r#type: MonographType::Book,
+                title: Some(Title::Single("Sample Work".to_string())),
+                issued: EdtfString("2020".to_string()),
+                ..Default::default()
+            })),
+        );
+        refs.insert(
+            "jones2019".to_string(),
+            InputReference::Monograph(Box::new(Monograph {
+                id: Some("jones2019".into()),
+                r#type: MonographType::Book,
+                title: Some(Title::Single("Another Work".to_string())),
+                issued: EdtfString("2019".to_string()),
+                ..Default::default()
+            })),
+        );
+
+        let make_block = |id: &str| crate::BibliographyBlockRequest {
+            id: id.to_string(),
+            group: BibliographyGroup {
+                id: id.to_string(),
+                selector: GroupSelector {
+                    cited: Some(CitedStatus::Any),
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+        };
+
+        let request = FormatDocumentRequest {
+            style: StyleInput::Yaml("dummy".to_string()),
+            style_overrides: None,
+            locale: None,
+            output_format: OutputFormatKind::Plain,
+            refs: RefsInput::Json(serde_json::to_value(refs).unwrap()),
+            citations: vec![],
+            bibliography_blocks: vec![make_block("block-a"), make_block("block-b")],
+            document_options: None,
+        };
+
+        let result = format_document_with_style(style, request).expect("should render");
+
+        assert_eq!(result.bibliography_blocks.len(), 2, "both blocks returned");
+        assert_eq!(result.bibliography_blocks[0].id, "block-a");
+        assert_eq!(result.bibliography_blocks[1].id, "block-b");
+
+        let block_a_count = result.bibliography_blocks[0].entries.len();
+        let block_b_count = result.bibliography_blocks[1].entries.len();
+
+        assert_eq!(block_a_count, 2, "block-a captures both refs");
+        assert_eq!(
+            block_b_count, 0,
+            "block-b is empty: dedup set prevents re-assignment from block-a"
         );
     }
 }

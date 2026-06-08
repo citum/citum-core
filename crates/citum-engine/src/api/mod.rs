@@ -29,7 +29,8 @@ pub use session::{
 };
 pub use style_input::StyleInput;
 pub use types::{
-    AbbreviationMap, AnnotationFormat, AnnotationStyle, BibliographyEntry, CitationOccurrence,
-    CitationOccurrenceItem, DocumentOptions, EntryMetadata, FormattedBibliography,
-    FormattedCitation, OutputFormatKind, Warning, WarningLevel,
+    AbbreviationMap, AnnotationFormat, AnnotationStyle, BibliographyBlockRequest,
+    BibliographyEntry, CitationOccurrence, CitationOccurrenceItem, DocumentOptions, EntryMetadata,
+    FormattedBibliography, FormattedBibliographyBlock, FormattedCitation, OutputFormatKind,
+    Warning, WarningLevel,
 };

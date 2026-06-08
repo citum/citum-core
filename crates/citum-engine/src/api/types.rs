@@ -222,6 +222,7 @@ pub struct FormattedCitation {
 
 /// Metadata extracted from a bibliography entry for interactivity.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct EntryMetadata {
     /// Rendered author(s) string.
     pub author: String,
@@ -233,6 +234,7 @@ pub struct EntryMetadata {
 
 /// A single bibliography entry.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct BibliographyEntry {
     /// The reference ID.
     pub id: String,
@@ -244,11 +246,37 @@ pub struct BibliographyEntry {
 
 /// A formatted bibliography.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct FormattedBibliography {
     /// The output format used.
     pub format: OutputFormatKind,
     /// The complete formatted bibliography content.
     pub content: String,
     /// Individual entries with metadata.
+    pub entries: Vec<BibliographyEntry>,
+}
+
+/// A requested bibliography block in document order.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct BibliographyBlockRequest {
+    /// Stable identifier for this bibliography block.
+    pub id: String,
+    /// Group selector, heading, sorting, and optional template override.
+    pub group: citum_schema::grouping::BibliographyGroup,
+}
+
+/// A formatted bibliography block.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct FormattedBibliographyBlock {
+    /// The bibliography block identifier from the request.
+    pub id: String,
+    /// The resolved heading text, if the block has one.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub heading: Option<String>,
+    /// The rendered block body without a document-level heading wrapper.
+    pub content: String,
+    /// Individual entries rendered in this block.
     pub entries: Vec<BibliographyEntry>,
 }

@@ -145,6 +145,44 @@ impl Processor {
         self.finalize_document_output::<P, F>(parser, format, rendered)
     }
 
+    /// Process a document with bibliography groups supplied by the caller.
+    ///
+    /// Unlike the fenced-div path, the caller provides an ordered slice of
+    /// [`citum_schema::grouping::BibliographyGroup`]s (e.g. from `--bibliography-blocks` on the CLI or
+    /// a session-level block list) rather than `:::bibliography{...}` markers
+    /// embedded in the document. Citations are processed exactly as in
+    /// `process_document`; the trailing bibliography is replaced by one
+    /// rendered section per supplied group using the shared
+    /// `render_document_bibliography_blocks` primitive.
+    pub fn process_document_with_caller_blocks<P, F>(
+        &self,
+        content: &str,
+        blocks: &[citum_schema::grouping::BibliographyGroup],
+        parser: &P,
+        format: DocumentFormat,
+    ) -> String
+    where
+        P: CitationParser,
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let parsed = parser.parse_document(content, &self.locale);
+        let body = content.get(parsed.body_start..).unwrap_or(content);
+        let mut rendered = self.render_document_body::<F>(body, parsed, format);
+        // Render ordered sectional blocks via the unified primitive.
+        let rendered_groups = self.render_document_bibliography_blocks::<F>(blocks, None, None);
+        for rendered_group in rendered_groups {
+            let section = render_document_bibliography_block_replacement(
+                rendered.placeholders.as_mut(),
+                format,
+                rendered_group.heading,
+                rendered_group.body,
+            );
+            rendered.content.push_str("\n\n");
+            rendered.content.push_str(&section);
+        }
+        self.finalize_document_output::<P, F>(parser, format, rendered)
+    }
+
     /// Orchestrate document processing with the default trailing bibliography.
     fn process_document_with_default_bibliography<P, F>(
         &self,
@@ -356,11 +394,10 @@ impl Processor {
     ) where
         F: crate::render::format::OutputFormat<Output = String>,
     {
-        let mut assigned = std::collections::HashSet::<String>::new();
-        for (index, block) in blocks.iter().enumerate() {
+        let groups: Vec<_> = blocks.iter().map(|b| b.group.clone()).collect();
+        let rendered_groups = self.render_document_bibliography_blocks::<F>(&groups, None, None);
+        for (index, rendered_group) in rendered_groups.into_iter().enumerate() {
             let placeholder = bibliography_block_placeholder(index);
-            let rendered_group =
-                self.render_document_bibliography_block::<F>(&block.group, &mut assigned);
             let replacement = render_document_bibliography_block_replacement(
                 rendered.placeholders.as_mut(),
                 format,

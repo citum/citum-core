@@ -547,52 +547,6 @@ impl Processor {
         fmt.finish(result)
     }
 
-    /// Render a standalone bibliography block for a group.
-    fn render_bibliography_for_group<F>(
-        &self,
-        group: &BibliographyGroup,
-        annotations: Option<&HashMap<String, String>>,
-        annotation_style: Option<&AnnotationStyle>,
-        assigned: &mut HashSet<String>,
-    ) -> String
-    where
-        F: OutputFormat<Output = String>,
-    {
-        let bibliography = self.sorted_id_stubs();
-        let fmt = F::default();
-        let cited_ids = self.cited_ids.borrow();
-        let evaluator = SelectorEvaluator::new(&cited_ids);
-        let sorter = GroupSorter::new(&self.locale);
-
-        let matching_refs =
-            self.collect_matching_group_refs(&bibliography, assigned, &evaluator, group);
-        Self::mark_group_members_assigned(assigned, &matching_refs);
-
-        if matching_refs.is_empty() {
-            return fmt.finish(String::new());
-        }
-
-        let sorted_refs = if let Some(sort_spec) = &group.sort {
-            sorter.sort_references(matching_refs, &sort_spec.resolve())
-        } else {
-            matching_refs
-        };
-
-        let local_hints = self.build_group_local_hints(&sorted_refs, group);
-        let entries = self.merge_compound_entries::<F>(self.render_group_entries::<F>(
-            &bibliography,
-            sorted_refs,
-            group,
-            local_hints.as_ref(),
-        ));
-
-        fmt.finish(crate::render::refs_to_string_with_format::<F>(
-            entries,
-            annotations,
-            annotation_style,
-        ))
-    }
-
     /// Render the bibliography with grouping for uncited (nocite) items.
     ///
     /// If `style.bibliography.groups` is defined, uses configurable grouping
@@ -718,6 +672,46 @@ impl Processor {
         self.render_with_custom_groups::<F>(&all_entries, groups)
     }
 
+    /// Extract and render entries for a bibliography group.
+    ///
+    /// Returns the individual processed entries for the group, threading
+    /// the `assigned` dedup set to ensure each reference appears in only one group.
+    fn entries_for_bibliography_group<F>(
+        &self,
+        group: &BibliographyGroup,
+        assigned: &mut HashSet<String>,
+    ) -> Vec<crate::render::ProcEntry>
+    where
+        F: OutputFormat<Output = String>,
+    {
+        let bibliography = self.sorted_id_stubs();
+        let cited_ids = self.cited_ids.borrow();
+        let evaluator = SelectorEvaluator::new(&cited_ids);
+        let sorter = GroupSorter::new(&self.locale);
+
+        let matching_refs =
+            self.collect_matching_group_refs(&bibliography, assigned, &evaluator, group);
+        Self::mark_group_members_assigned(assigned, &matching_refs);
+
+        if matching_refs.is_empty() {
+            return Vec::new();
+        }
+
+        let sorted_refs = if let Some(sort_spec) = &group.sort {
+            sorter.sort_references(matching_refs, &sort_spec.resolve())
+        } else {
+            matching_refs
+        };
+
+        let local_hints = self.build_group_local_hints(&sorted_refs, group);
+        self.merge_compound_entries::<F>(self.render_group_entries::<F>(
+            &bibliography,
+            sorted_refs,
+            group,
+            local_hints.as_ref(),
+        ))
+    }
+
     /// Render one bibliography block for document output.
     ///
     /// Returns heading and body separately so callers can insert headings
@@ -726,6 +720,8 @@ impl Processor {
         &self,
         group: &BibliographyGroup,
         assigned: &mut HashSet<String>,
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
     ) -> RenderedBibliographyGroup
     where
         F: OutputFormat<Output = String>,
@@ -735,9 +731,46 @@ impl Processor {
             .heading
             .take()
             .and_then(|group_heading| self.resolve_group_heading(&group_heading));
-        let body = self.render_bibliography_for_group::<F>(&headingless, None, None, assigned);
 
-        RenderedBibliographyGroup { heading, body }
+        let entries = self.entries_for_bibliography_group::<F>(&headingless, assigned);
+        let body = crate::render::refs_to_string_slice_with_format::<F>(
+            &entries,
+            annotations,
+            annotation_style,
+        );
+
+        RenderedBibliographyGroup {
+            heading,
+            body,
+            entries,
+        }
+    }
+
+    /// Render an ordered sequence of sectional bibliography blocks.
+    ///
+    /// Threads a single `assigned` dedup set so each reference appears in
+    /// only one block. Returns rendered groups with heading, body, and entries.
+    pub(crate) fn render_document_bibliography_blocks<F>(
+        &self,
+        groups: &[BibliographyGroup],
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
+    ) -> Vec<RenderedBibliographyGroup>
+    where
+        F: OutputFormat<Output = String>,
+    {
+        let mut assigned = std::collections::HashSet::new();
+        groups
+            .iter()
+            .map(|group| {
+                self.render_document_bibliography_block::<F>(
+                    group,
+                    &mut assigned,
+                    annotations,
+                    annotation_style,
+                )
+            })
+            .collect()
     }
 
     pub(super) fn extract_metadata(&self, reference: &Reference) -> ProcEntryMetadata {
