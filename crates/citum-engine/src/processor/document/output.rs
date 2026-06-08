@@ -155,26 +155,6 @@ pub(super) fn render_document_bibliography_block_replacement(
     }
 }
 
-pub(super) fn rewrite_group_headings_for_document(
-    rendered: String,
-    format: DocumentFormat,
-) -> String {
-    match format {
-        DocumentFormat::Typst => rendered
-            .lines()
-            .map(|line| {
-                if let Some(rest) = line.strip_prefix("# ") {
-                    format!("== {rest}")
-                } else {
-                    line.to_string()
-                }
-            })
-            .collect::<Vec<_>>()
-            .join("\n"),
-        _ => rendered,
-    }
-}
-
 #[allow(
     clippy::string_slice,
     clippy::indexing_slicing,

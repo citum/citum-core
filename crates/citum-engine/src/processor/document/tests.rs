@@ -590,9 +590,10 @@ Some text [@item1]."#;
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
     // Should have the frontmatter heading and bibliography groups rendered
+    // Groups are rendered as H2 sub-headings under the H1 Bibliography heading.
     assert_eq!(
         result,
-        "Some text (Doe, 2020).\n\n# Bibliography\n\n# Primary Sources\n\nJohn Doe (2020)\n\n# Secondary Sources\n\nJane Smith (2010)"
+        "Some text (Doe, 2020).\n\n# Bibliography\n\n## Primary Sources\n\nJohn Doe (2020)\n\n## Secondary Sources\n\nJane Smith (2010)"
     );
 }
 
@@ -673,6 +674,87 @@ Some text [@item1]."#;
     assert_eq!(
         result,
         "Some text (#link(<ref-item1>)[Doe, 2020]).\n\n= Bibliography\n\n== Primary Sources\n\nJohn Doe (2020) <ref-item1>\n\n== Secondary Sources\n\nJane Smith (2010) <ref-item2>"
+    );
+}
+
+#[test]
+// Given: a document with frontmatter bibliography groups processed as HTML
+// When: process_document is called with the Html output format
+// Then: group headings render as <h2> elements, not literal Markdown ## markers
+fn test_document_frontmatter_groups_html_h2_heading() {
+    let bib = make_test_bib();
+    let processor = Processor::new(make_author_date_style(), bib);
+    let parser = DjotParser;
+
+    let content = r#"---
+bibliography:
+  - id: primary
+    heading:
+      literal: "Primary Sources"
+    selector:
+      cited: visible
+  - id: rest
+    heading:
+      literal: "All Sources"
+    selector: {}
+---
+
+Some text [@item1]."#;
+
+    let result = processor.process_document::<_, crate::render::html::Html>(
+        content,
+        &parser,
+        DocumentFormat::Html,
+    );
+
+    // Group heading must be a pre-rendered HTML <h2>, not a Markdown ## that leaked through.
+    assert!(
+        result.contains("<h2>Primary Sources</h2>\n\n<div class"),
+        "expected HTML <h2> group heading in trailing bibliography, got: {result}"
+    );
+    assert!(
+        !result.contains("## Primary Sources"),
+        "Markdown heading must not appear in HTML output: {result}"
+    );
+}
+
+#[test]
+// Given: a document with a frontmatter group whose selector matches no entries
+// When: process_document is called
+// Then: the empty group emits no heading and no body in the output
+fn test_document_frontmatter_empty_group_omitted() {
+    let bib = make_test_bib();
+    let processor = Processor::new(make_author_date_style(), bib);
+    let parser = DjotParser;
+
+    let content = r#"---
+bibliography:
+  - id: cases
+    heading:
+      literal: "Cases"
+    selector:
+      type: legal-case
+  - id: books
+    heading:
+      literal: "Books"
+    selector:
+      type: book
+---
+
+Some text [@item1]."#;
+
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    // Empty "Cases" group must produce no heading or body.
+    assert!(
+        !result.contains("Cases"),
+        "empty group heading must not appear in output: {result}"
+    );
+    // Non-empty "Books" group must appear with its heading and both entries.
+    assert!(
+        result.contains("## Books\n\nJohn Doe (2020)\n\nJane Smith"),
+        "non-empty group must appear with heading and entries: {result}"
     );
 }
 
@@ -919,9 +1001,11 @@ First [+@item1]. Later [+@item1]."#;
     let result =
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
+    // Groups are H2 sub-headings. Unmatched refs (Jane Smith, not cited) are not
+    // rendered — use an explicit catch-all group with `selector: {}` to capture them.
     assert_eq!(
         result,
-        "First John Doe. Later Doe.\n\n# Bibliography\n\n# Cited Works\n\nJohn Doe (2020)\n\nJane Smith (2010)"
+        "First John Doe. Later Doe.\n\n# Bibliography\n\n## Cited Works\n\nJohn Doe (2020)"
     );
 }
 

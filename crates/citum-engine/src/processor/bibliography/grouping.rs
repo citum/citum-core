@@ -371,19 +371,6 @@ impl Processor {
         fmt.finish(result)
     }
 
-    /// Render all entries using custom bibliography grouping.
-    pub(super) fn render_with_custom_groups<F>(
-        &self,
-        all_entries: &[ProcEntry],
-        groups: &[BibliographyGroup],
-    ) -> String
-    where
-        F: OutputFormat<Output = String>,
-    {
-        let selected: HashSet<String> = all_entries.iter().map(|e| e.id.clone()).collect();
-        self.render_with_custom_groups_filtered::<F>(all_entries, groups, &selected, None, None)
-    }
-
     /// Render a filtered subset of entries using custom bibliography grouping.
     ///
     /// This uses a two-pass grouping strategy:
@@ -655,21 +642,6 @@ impl Processor {
             annotations,
             annotation_style,
         )
-    }
-
-    /// Render frontmatter-defined bibliography groups for document output.
-    ///
-    /// This uses the same pre-merge selector semantics as
-    /// [`Self::render_grouped_bibliography_with_format`].
-    pub(crate) fn render_document_bibliography_groups<F>(
-        &self,
-        groups: &[BibliographyGroup],
-    ) -> String
-    where
-        F: OutputFormat<Output = String>,
-    {
-        let all_entries = self.sorted_id_stubs();
-        self.render_with_custom_groups::<F>(&all_entries, groups)
     }
 
     /// Extract and render entries for a bibliography group.
