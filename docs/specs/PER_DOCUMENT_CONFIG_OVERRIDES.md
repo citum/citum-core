@@ -2,7 +2,8 @@
 
 **Status:** Active
 **Date:** 2026-05-26
-**Related:** bean `csl26-tap8`, `docs/specs/INTEGRAL_NAME_MEMORY.md`, `docs/specs/UNIFIED_SCOPED_OPTIONS.md`
+**Related:** bean `csl26-tap8`, `docs/specs/INTEGRAL_NAME_MEMORY.md`,
+`docs/specs/UNIFIED_SCOPED_OPTIONS.md`, `docs/specs/BIBLIOGRAPHY_GROUPING.md`
 
 ## Purpose
 
@@ -26,7 +27,8 @@ consumers such as word-processor plugins.
 - CLI surface (`citum render doc` flags)
 - GUI consumer contract (same serde-derived Rust type; YAML/JSON/CBOR share one schema)
 - Implementation pattern (sparse-overlay model)
-- Relationship between per-document `sort-partitioning` and existing bibliography groups
+- Relationship between per-document `sort-partitioning` and bibliography groups
+- Per-document bibliography grouping surfaces (frontmatter list, CLI flag, server field)
 
 **Out of scope:**
 
@@ -116,20 +118,14 @@ Valid `by` values are `script` and `language`. The heading shape follows
 
 General-purpose bibliography divisions — primary vs. secondary sources, legal
 materials by category (cases / legislation / commentary), print vs. online —
-are **not** sort-partitioning. They are handled by the existing
-`DocumentFrontmatter.bibliography` field, which accepts a list of
-`BibliographyGroup` entries. Each group uses a `GroupSelector` (by type,
-cited status, or field value), an optional heading, an optional per-group
-sort, and an optional per-group template.
-
-OSCOLA's requirement for separate sections for cases, legislation, and
-secondary sources is expressed as bibliography groups with type selectors, not
-as sort-partitioning. Chicago divided bibliographies for large theses are
-likewise bibliography groups. Sort-partitioning is specifically the mechanism
+are **not** sort-partitioning. Sort-partitioning is specifically the mechanism
 for script/language-based multilingual reordering.
 
-This distinction resolves the naming confusion between the two features: they
-have different shapes, different selectors, and different purposes.
+General-purpose sectional bibliographies are handled by bibliography *groups*,
+a separate mechanism with its own type, selectors, and rendering primitive.
+See `docs/specs/BIBLIOGRAPHY_GROUPING.md` for the full type documentation,
+input surfaces, and examples. This spec covers only the per-document *access
+surfaces* for that mechanism (frontmatter list, CLI flag, server field).
 
 #### Interaction with numeric `label-mode`
 
@@ -284,6 +280,55 @@ bibliography:
 ---
 ```
 
+### Sectional bibliography grouping (per-document surfaces)
+
+Per-document sectional bibliographies are configured via three surfaces; all
+resolve to the same `BibliographyGroup` type before reaching the engine's
+shared rendering primitive. See `docs/specs/BIBLIOGRAPHY_GROUPING.md` for the
+full type definition, selector syntax, and precedence rules.
+
+**Frontmatter `bibliography:` list** — a top-level list of `BibliographyGroup`
+objects in document frontmatter. When present, it supersedes the style's own
+`bibliography.groups` list for that document:
+
+```yaml
+---
+bibliography:
+  - id: primary
+    heading:
+      literal: "Primary Sources"
+    selector:
+      type: [manuscript, interview, archival-document]
+
+  - id: secondary
+    heading:
+      literal: "Secondary Sources"
+    selector:
+      not:
+        type: [manuscript, interview, archival-document]
+---
+```
+
+Groups are rendered as ordered trailing sections (H2 under an automatic
+"Bibliography" H1), one per non-empty group. Entries matching no group are
+silently omitted — use an explicit catch-all `selector: {}` to surface them.
+
+**CLI `--bibliography-blocks <json>`** on `citum render doc` — an ordered JSON
+array of `BibliographyBlockRequest { id, group }` objects passed as a CLI flag.
+Takes precedence over frontmatter `bibliography:` and style-level groups:
+
+```
+citum render doc manuscript.djot -s oscola -b refs.json \
+  --bibliography-blocks '[{"id":"cases","group":{"selector":{"type":"legal-case"},"heading":{"literal":"Cases"}}},{"id":"other","group":{"selector":{},"heading":{"literal":"Other Sources"}}}]'
+```
+
+**Server `FormatDocumentRequest.bibliography_blocks`** — an ordered array of
+`BibliographyBlockRequest` items in the `format_document` RPC request. Intended
+for word-processor plugins and other GUI consumers. The consuming application
+controls the top-level "Bibliography" heading; the engine renders only the
+group sections. See `docs/specs/SERVER_INTERACTIVE_API.md` for the full field
+reference.
+
 ### CLI (`citum render doc`)
 
 `citum render doc` reads frontmatter `options:` automatically. No extra flags
@@ -367,6 +412,11 @@ when both are set.
 
 ## Changelog
 
+- 2026-06-08: Add sectional bibliography grouping to scope and Access Surfaces.
+  Replace re-described BibliographyGroup/GroupSelector prose with reference to
+  BIBLIOGRAPHY_GROUPING.md. Add three per-document group surfaces: frontmatter
+  `bibliography:` list, CLI `--bibliography-blocks`, server `bibliography_blocks`.
+  Cross-link SERVER_INTERACTIVE_API.md. (csl26-effd)
 - 2026-06-03: Status Draft → Active. Add worked example for
   `bibliography.repeated-author-rendering`; clarify default Chicago behaviour
   re CSL 18th-edition and CMOS §14.67.

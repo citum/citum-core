@@ -1,290 +1,163 @@
 # Bibliography Grouping Architecture
 
-**Status:** Design
+**Status:** Active
 **Created:** 2026-02-15
-**Related Issues:** csl26-group
+**Related:** bean `csl26-effd`, `csl26-o8ji`, `csl26-group`;
+`docs/specs/PER_DOCUMENT_CONFIG_OVERRIDES.md`,
+`docs/specs/SERVER_INTERACTIVE_API.md`
 
 ## Overview
 
-This document defines the architecture for configurable bibliography grouping in Citum. The design enables styles to divide bibliographies into labeled sections with distinct sorting rules, addressing use cases from legal citations (type-based hierarchies) and multilingual bibliographies to primary/secondary source divisions in historical scholarship.
+This document defines the architecture for configurable bibliography grouping
+in Citum. The design enables styles and documents to divide a bibliography
+into labelled sections, each with its own selector, sort order, heading, and
+optional template override. Use cases include legal citations (type-based
+hierarchies), multilingual bibliographies, and primary/secondary source
+divisions in historical scholarship.
 
-## Problem Statement
+## Vocabulary
 
-Current implementation provides only basic hardcoded support for separating visible vs silent (nocite) citations under an "Additional Reading" heading. Real-world use cases require:
+| Term | Meaning |
+|---|---|
+| **group** | A declarative definition: what belongs in a section, how it is headed, sorted, and rendered (`BibliographyGroup`). |
+| **block** | A group placed in document order: the group definition plus a caller-supplied stable identifier (`BibliographyBlockRequest`). |
 
-1. **Legal Hierarchy (The Bluebook):** Type-based grouping with rigid ordering (Constitutions → Statutes → Cases) that ignores alphabetical content
-2. **Multilingual Grouping (Juris-M):** Language-based grouping with distinct sorting logic per group (Vietnamese by given-name, English by family-name)
-3. **Primary/Secondary Source Divisions:** Common in historical and humanities scholarship, where primary documents must be listed separately from secondary literature.
-4. **Topical Groupings:** Custom field-based grouping (keywords, reference types, custom metadata)
-
-The critical requirement is **per-group sorting** - a simple "group then sort" approach fails when different groups require different collation rules.
+The same `BibliographyGroup` type is used in the style schema, in document
+frontmatter, and (wrapped in a `BibliographyBlockRequest`) in the CLI and
+server API. A reader should see "group" where the focus is the definition
+and "block" where the focus is placement in a rendered document.
 
 ## Design Principles
 
-### Three Orthogonal Concerns
+1. **First-match semantics** — a reference appears in the first group whose
+   selector matches it and in no subsequent group. This prevents duplication
+   and is essential for legal citation hierarchies.
+2. **Explicit over magic** — all grouping is declared in YAML or JSON; no
+   hardcoded hierarchies.
+3. **Graceful degradation** — omitting groups produces a flat bibliography.
+4. **Per-group sorting** — each group may override the global sort with its
+   own sort spec, enabling culturally appropriate collation within sections.
 
-1. **Selection** - Which items belong to which group (predicate logic)
-2. **Ordering** - How groups appear relative to each other (sequence)
-3. **Presentation** - Per-group sorting, headings, styling
+## Core Type: `BibliographyGroup`
 
-### Key Constraints
-
-- **First-match semantics:** Items appear in first matching group only (prevents duplication)
-- **Explicit over magic:** All grouping declared in YAML, no hardcoded hierarchies
-- **Graceful degradation:** Omitting `groups` field produces flat bibliography (current behavior)
-- **Per-group sorting:** Groups override global sort when culturally appropriate
-
-## Schema Design
-
-### BibliographySpec Extension
+Canonical Rust definition: `citum_schema::grouping::BibliographyGroup`
+(`crates/citum-schema-style/src/grouping.rs`).
 
 ```yaml
-bibliography:
-  # Global defaults
-  options: ...
-  template: ...
+# Minimal
+- id: cases
+  selector:
+    type: legal-case
 
-  # Optional grouping (omit for flat bibliography)
-  groups:
-    - id: primary-legal
-      heading: "Primary Sources"
-      selector:
-        type: [legal-case, statute, treaty]
-      sort:
-        template:
-          - key: type
-            order: [legal-case, statute, treaty]  # Explicit sequence
-          - key: issued
-
-    - id: vietnamese
-      heading: "Tài liệu tiếng Việt"
-      selector:
-        field:
-          language: vi
-      sort:
-        template:
-          - key: author
-            sort-order: given-family  # Vietnamese convention
-          - key: year
-
-    - id: other
-      heading: "Other Sources"
-      selector:
-        not:
-          type: [legal-case, statute, treaty]
-          field:
-            language: vi
-      sort:
-        template:
-          - key: author
-            sort-order: family-given
+# Full
+- id: vietnamese
+  heading:
+    literal: "Tài liệu tiếng Việt"
+  selector:
+    field:
+      language: vi
+  sort:
+    template:
+      - key: author
+        sort-order: given-family
+  template: ...         # optional entry-template override
+  disambiguate: locally # or globally (default)
 ```
 
-### Rust Types
+### `GroupSelector`
 
-```rust
-pub struct BibliographySpec {
-    pub options: Option<Config>,
-    pub template: Option<Template>,
+| Field | Description |
+|---|---|
+| `type` | Match by reference type (single string or list). |
+| `cited` | `visible` (cited in document) or `any` (all references). To select only uncited references, use `not: { cited: visible }`. |
+| `field` | Match by arbitrary field value (e.g. `language: vi`). |
+| `not` | Negate a nested selector — use for catch-all groups. |
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub groups: Option<Vec<BibliographyGroup>>,
-}
+An empty selector (`selector: {}`) matches every reference not yet assigned
+to a prior group, making it a natural catch-all.
 
-pub struct BibliographyGroup {
-    /// Unique identifier for this group
-    pub id: String,
+### `GroupHeading`
 
-    /// Optional heading (omit for no heading)
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub heading: Option<String>,
+One of:
+- `literal: "Cases"` — verbatim text.
+- `term: bibliography` (with optional sibling `form: long`) — locale-resolved term.
+- `localized: { zh: "中文文献", en-US: "Chinese-script sources" }` — per-locale map.
 
-    /// Selector predicate
-    pub selector: GroupSelector,
+Omit `heading:` entirely to render the group's entries with no section heading.
 
-    /// Optional per-group sorting (falls back to global sort if omitted)
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort: Option<GroupSort>,
+## Rendering Primitive
 
-    /// Optional per-group template override
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub template: Option<Template>,
+**`Processor::render_document_bibliography_blocks`**
+(`crates/citum-engine/src/processor/bibliography/grouping.rs`)
 
-    /// Optional disambiguation scope
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub disambiguate: Option<DisambiguationScope>,
-}
+All document-level sectional bibliography rendering flows through this one
+function. It accepts an ordered `&[BibliographyGroup]` and a shared
+`assigned: HashSet<String>` dedup set, and returns a
+`Vec<RenderedBibliographyGroup>` — **one element per input group** (including
+empty ones). Each element carries a resolved `heading: Option<String>`, a
+formatted `body: String`, and an `entries` vec. Callers are responsible for
+filtering: the document pipeline skips groups where `entries.is_empty()`; the
+server API echoes every requested block by `id` regardless of emptiness.
 
-pub enum DisambiguationScope {
-    Globally,  // Default: cross-group suffixes
-    Locally,   // Reset suffixes within this group
-}
+The dedup set ensures first-match semantics across the full ordered sequence
+regardless of which input surface supplied the groups.
 
-pub struct GroupSelector {
-    /// Type-based filtering
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub r#type: Option<TypeSelector>,
+## Input Surfaces
 
-    /// Citation status filtering
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub cited: Option<CitedStatus>,
+All four surfaces resolve to `&[BibliographyGroup]` before reaching the
+rendering primitive. Precedence when surfaces conflict is listed highest first.
 
-    /// Field-based filtering (language, keywords, etc.)
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub field: Option<HashMap<String, FieldMatcher>>,
+| Surface | How to use | Wrapper type |
+|---|---|---|
+| **Caller / CLI / server** | `--bibliography-blocks <json>` on `citum render doc`; `bibliography_blocks` in `FormatDocumentRequest` | `BibliographyBlockRequest { id, group }` array |
+| **Fenced-div** | `:::bibliography{#id}` markers embedded in the document body | Parsed by the Djot/Markdown adapter |
+| **Frontmatter `bibliography:`** | Top-level YAML list of `BibliographyGroup` objects in document frontmatter | Bare `BibliographyGroup` array |
+| **Style `bibliography.groups`** | `groups:` list in the style's `bibliography:` section | Bare `BibliographyGroup` array |
 
-    /// Negation for fallback groups
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub not: Option<Box<GroupSelector>>,
-}
+When the frontmatter `bibliography:` list is present, the style-level
+`bibliography.groups` is ignored for that document. Caller/CLI/server blocks
+and fenced-div blocks are document-level mechanisms that also take precedence
+over style-level groups.
 
-pub enum TypeSelector {
-    Single(String),
-    Multiple(Vec<String>),
-}
+### Trailing vs. Positioned rendering
 
-pub enum CitedStatus {
-    Visible,  // Cited in document
-    Silent,   // Nocite only
-    Any,
-}
+- **Trailing** (frontmatter list and caller/CLI/server blocks): groups are
+  rendered as an ordered sequence appended after the document body, under an
+  automatic "Bibliography" H1 heading added by the engine. Group headings are
+  H2 sub-headings (`## heading` / `\subsection*` / `== heading` / `<h2>`).
+- **Positioned** (fenced-div blocks): each `:::bibliography{#id}` marker in
+  the body is replaced in-place by its rendered group. No automatic "Bibliography"
+  heading is added; authors control placement and headings in the document.
+- **API / server** (caller-supplied blocks): sections are appended as trailing
+  H2-level sections, with no automatic "Bibliography" wrapper heading. The
+  consuming application (e.g. a word processor) controls the top-level heading.
 
-pub enum FieldMatcher {
-    Exact(String),
-    Multiple(Vec<String>),
-    Pattern(FieldPattern),
-}
+## Grouping vs. Sort-Partitioning
 
-pub struct GroupSort {
-    pub template: Vec<GroupSortSpec>,
-}
+These are two distinct mechanisms and must not be confused.
 
-pub struct GroupSortSpec {
-    pub key: SortKey,
+| Feature | Purpose | Configured via |
+|---|---|---|
+| **Bibliography groups** | Divide a bibliography into explicitly declared sections by type, language, cited status, or custom field | `bibliography.groups` (style) or `bibliography:` (frontmatter/CLI/server) |
+| **Sort-partitioning** | Reorder and visually separate a multilingual bibliography by Unicode script (`script`) or item language (`language`) | `bibliography.options.sort-partitioning` (style) or `options.bibliography.sort-partitioning` (frontmatter) |
 
-    #[serde(default = "default_true")]
-    pub ascending: bool,
+Sort-partitioning is automatic and data-driven (the engine derives partition
+keys from reference metadata). Groups are explicit (the author or style designer
+declares each section). A bibliography can use both: groups divide by type,
+and sort-partitioning further reorders within a group by script.
 
-    /// For type-based ordering (e.g., [legal-case, statute, treaty])
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub order: Option<Vec<String>>,
+When `label-mode: numeric` is active alongside partitioning, numeric labels
+run continuously across all partitions; restarting per partition would make
+cross-references ambiguous.
 
-    /// For name sorting (family-given vs given-family)
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub sort_order: Option<NameSortOrder>,
-}
-
-pub enum NameSortOrder {
-    FamilyGiven,  // Western convention
-    GivenFamily,  // Vietnamese convention
-}
-```
-
-## Processor Logic
-
-### High-Level Flow
-
-```rust
-pub fn render_grouped_bibliography(
-    &self,
-    refs: &[Reference],
-    style: &BibliographySpec,
-) -> Result<Vec<GroupedSection>, ProcessorError> {
-    let groups = style.groups.as_ref().ok_or_else(|| flat_bibliography)?;
-
-    let mut sections = Vec::new();
-    let mut assigned = HashSet::new();
-
-    for group in groups {
-        // Filter items matching this group's selector
-        let items: Vec<&Reference> = refs
-            .iter()
-            .filter(|r| !assigned.contains(&r.id))
-            .filter(|r| self.matches_selector(r, &group.selector))
-            .collect();
-
-        // Mark as assigned (first-match semantics)
-        for item in &items {
-            assigned.insert(&item.id);
-        }
-
-        // Sort using per-group or global sort
-        let sorted = self.sort_items(items, group.sort.as_ref().unwrap_or(&style.global_sort));
-
-        sections.push(GroupedSection {
-            heading: group.heading.clone(),
-            items: self.render_items(sorted, &group.template.unwrap_or(&style.template)),
-        });
-    }
-
-    // Fallback for ungrouped items
-    let unassigned: Vec<&Reference> = refs
-        .iter()
-        .filter(|r| !assigned.contains(&r.id))
-        .collect();
-
-    if !unassigned.is_empty() {
-        let sorted = self.sort_items(unassigned, &style.global_sort);
-        sections.push(GroupedSection {
-            heading: None,
-            items: self.render_items(sorted, &style.template),
-        });
-    }
-
-    Ok(sections)
-}
-
-fn matches_selector(&self, reference: &Reference, selector: &GroupSelector) -> bool {
-    let mut matches = true;
-
-    // Type filtering
-    if let Some(type_sel) = &selector.r#type {
-        matches &= match type_sel {
-            TypeSelector::Single(t) => reference.ref_type == *t,
-            TypeSelector::Multiple(types) => types.contains(&reference.ref_type),
-        };
-    }
-
-    // Citation status filtering
-    if let Some(cited) = &selector.cited {
-        matches &= match cited {
-            CitedStatus::Visible => self.cited_ids.contains(&reference.id),
-            CitedStatus::Silent => !self.cited_ids.contains(&reference.id),
-            CitedStatus::Any => true,
-        };
-    }
-
-    // Field filtering
-    if let Some(fields) = &selector.field {
-        for (field_name, matcher) in fields {
-            matches &= self.matches_field(reference, field_name, matcher);
-        }
-    }
-
-    // Negation
-    if let Some(not_sel) = &selector.not {
-        matches &= !self.matches_selector(reference, not_sel);
-    }
-
-    matches
-}
-```
-
-### Performance Considerations
-
-- **Complexity:** O(n × groups) for selector evaluation
-- **Optimization:** Pre-index by type/field for O(1) lookup if needed
-- **Typical case:** 3-5 groups, <1000 items per bibliography = negligible overhead
-
-## Use Case Examples
-
-### Legal Hierarchy (Bluebook)
+## Style-Level Groups
 
 ```yaml
 bibliography:
   groups:
     - id: cases
-      heading: "Cases"
+      heading:
+        literal: "Cases"
       selector:
         type: legal-case
       sort:
@@ -296,34 +169,61 @@ bibliography:
             ascending: false
 
     - id: statutes
-      heading: "Statutes"
+      heading:
+        literal: "Statutes"
       selector:
         type: statute
       sort:
         template:
           - key: title
+
+    - id: other
+      heading:
+        literal: "Secondary Sources"
+      selector:
+        not:
+          type: [legal-case, statute]
 ```
 
-**Input:** Brown (1954, supreme), District case (2020, trial), Roe (1973, supreme)
+Style-level groups apply to every document rendered with that style unless
+the document provides its own frontmatter `bibliography:` list or caller blocks.
 
-**Output:**
+## Per-Document Frontmatter Groups
+
+```yaml
+---
+bibliography:
+  - id: primary
+    heading:
+      literal: "Primary Sources"
+    selector:
+      type: [manuscript, interview, archival-document]
+
+  - id: secondary
+    heading:
+      literal: "Secondary Sources"
+    selector:
+      not:
+        type: [manuscript, interview, archival-document]
+---
 ```
-Cases
-Roe v. Wade, 410 U.S. 113 (1973).
-Brown v. Board of Education, 347 U.S. 483 (1954).
-District case (2020).
 
-Statutes
-[...]
-```
+**Unmatched entries are omitted.** The `not:` catch-all pattern above ensures
+all references appear. Without it, references not matching any group selector
+are silently skipped. This is intentional and consistent with how caller-supplied
+blocks work — use an explicit catch-all group to surface unmatched references.
 
-### Multilingual Sorting (Juris-M)
+See `docs/specs/PER_DOCUMENT_CONFIG_OVERRIDES.md` for the full set of per-document
+override surfaces, including CLI flags and the server API.
+
+## Multilingual Sorting Example (Juris-M)
 
 ```yaml
 bibliography:
   groups:
     - id: vietnamese
-      heading: "Tài liệu tiếng Việt"
+      heading:
+        literal: "Tài liệu tiếng Việt"
       selector:
         field:
           language: vi
@@ -343,108 +243,42 @@ bibliography:
             sort-order: family-given
 ```
 
-**Input:** Nguyễn Văn A (vi), Trần Thị B (vi), Smith John (en)
+## Open Questions
 
-**Output:**
-```
-Tài liệu tiếng Việt
-Nguyễn Văn A. (2019).
-Trần Thị B. (2020).
+**Q: Should items appear in multiple groups?**
+**A:** No. First-match semantics prevent duplication. This is critical for
+legal citations where the same item must not appear in both "Cases" and
+"Secondary Sources."
 
-Smith, J. (2018).
-```
+**Q: Should nested groups be supported?**
+**A:** No. Flat groups with selectors are sufficient for all known use cases.
+Nesting adds complexity without clear benefit.
 
-### Topical Grouping
-
-```yaml
-bibliography:
-  groups:
-    - id: primary-sources
-      heading: "Primary Sources"
-      selector:
-        type: [manuscript, interview, archival-document]
-
-    - id: datasets
-      heading: "Datasets"
-      selector:
-        type: dataset
-
-    - id: secondary
-      heading: "Secondary Sources"
-      selector:
-        not:
-          type: [manuscript, interview, archival-document, dataset]
-```
-
-## User-Defined Grouping
-
-Users can override style-defined grouping by providing a custom `groups` field:
-
-```yaml
-# User's bibliography.yaml
-groups:
-  - id: must-read
-    heading: "Essential Reading"
-    selector:
-      field:
-        keywords: essential
-
-  - id: other
-    selector:
-      not:
-        field:
-          keywords: essential
-```
-
-**Processor precedence:** User-defined groups > Style-defined groups > Flat bibliography
+**Q: What about items that match no group?**
+**A:** They are omitted. Use an explicit catch-all group with `selector: {}`
+or a `not:` negation to capture remaining entries.
 
 ## Prior Art
 
-### biblatex
-
-Uses predicate-based filtering with explicit section commands:
-
-```latex
-\printbibliography[type=article,title=Articles]
-\printbibliography[nottype=article,title=Other Sources]
-```
-
-**Key insight:** Flat, declarative syntax with negation for fallback groups.
-
-### CSL 1.0
-
-No bibliography grouping constructs. All grouping is hardcoded in processors.
-
-**Citum opportunity:** First-class grouping support in style schema.
-
-### CSL-M
-
-Locale-specific `<layout>` elements for presentation, but no grouping.
-
-**Citum improvement:** Unified grouping + sorting + presentation model.
-
-## Open Questions
-
-**Q: Should we support nested groups?**
-**A:** No. Flat groups with selectors are sufficient for all known use cases. Nesting adds complexity without clear benefits.
-
-**Q: Should items appear in multiple groups?**
-**A:** No. First-match semantics prevent duplication, which is critical for legal citations.
-
-**Q: Performance with 10,000+ items?**
-**A:** Pre-index by type/field if benchmarks show O(n × groups) is problematic. Defer optimization until measured.
+- **biblatex** `\printbibliography[type=article,title=Articles]` — flat,
+  declarative, negation for catch-all. The Citum group selector generalises
+  this to multi-field predicates.
+- **CSL 1.0** — no grouping constructs; all grouping is hardcoded in processors.
+- **Juris-M / CSL-M** — locale-specific layout elements, but no general grouping.
 
 ## Compliance with Citum Principles
 
-- **Explicit Over Magic:** All grouping declared in YAML
-- **Declarative Templates:** Flat selector syntax, no procedural conditionals
-- **Code-as-Schema:** Rust structs drive JSON schema validation
-- **Graceful Degradation:** Omitting `groups` uses flat bibliography
-- **Multilingual Support:** Per-group sorting enables culturally appropriate collation
+- **Explicit Over Magic:** all grouping declared in YAML or JSON.
+- **Declarative Templates:** flat selector syntax, no procedural conditionals.
+- **Code-as-Schema:** `BibliographyGroup` Rust struct drives JSON Schema.
+- **Graceful Degradation:** omitting `groups` produces a flat bibliography.
+- **Multilingual Support:** per-group sorting enables culturally appropriate collation.
 
-## References
+## Changelog
 
-- The Bluebook: A Uniform System of Citation, 21st Edition
-- biblatex Manual, Section 3.6.5 (Bibliography Filters)
-- Juris-M Documentation (Multilingual Sorting)
-- CSL-M Specification (Legal Citations)
+- 2026-06-08: Status Design → Active. Rewrite to reflect implemented code:
+  canonical type, `render_document_bibliography_blocks` primitive, vocabulary
+  rule (group vs block), input-surfaces table, grouping-vs-partitioning
+  distinction, unmatched-entry policy. Remove speculative Rust/processor
+  sections. (csl26-effd, csl26-o8ji, fd0c6eee)
+- 2026-02-15: Initial draft.

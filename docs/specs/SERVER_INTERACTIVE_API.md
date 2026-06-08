@@ -242,6 +242,13 @@ These types capture the rendered output along with metadata provided by the engi
 
 These types support sectional (split) bibliographies in `format_document`. Supply an ordered array of `BibliographyBlockRequest` in the request; get back a matching array of `FormattedBibliographyBlock` in the result. The engine threads a single dedup set across blocks so each reference appears in at most one block.
 
+`BibliographyBlockRequest` is the server surface for the bibliography grouping
+mechanism shared with frontmatter `bibliography:` lists and the CLI
+`--bibliography-blocks` flag. For the full `BibliographyGroup` type definition,
+`GroupSelector` syntax, precedence rules, and examples, see
+`docs/specs/BIBLIOGRAPHY_GROUPING.md`. For the per-document surfaces overview
+(frontmatter, CLI, server), see `docs/specs/PER_DOCUMENT_CONFIG_OVERRIDES.md`.
+
 **`BibliographyBlockRequest` fields:**
 
 | Field | Type | Required | Description |
@@ -297,7 +304,7 @@ Modelled on Pandoc citeproc: one call, all inputs, all outputs. Works in stdio, 
 | `output_format` | string | no | One of `plain` (default), `html`, `djot`, `latex`, `typst` |
 | `refs` | `RefsInput` | yes | Bibliography input: tagged path, YAML, JSON, or legacy bare JSON map |
 | `citations` | array | yes | Ordered `CitationOccurrence` items (document order) |
-| `bibliography_blocks` | array | no | Ordered `BibliographyBlockRequest` items for sectional bibliographies (see below) |
+| `bibliography_blocks` | array | no | Ordered `BibliographyBlockRequest` items for sectional bibliographies (see `BibliographyBlockRequest` above and `docs/specs/BIBLIOGRAPHY_GROUPING.md`) |
 | `document_options` | `DocumentOptions` | no | Document-level rendering config (see above) |
 
 **Example request:**
