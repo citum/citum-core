@@ -14,7 +14,7 @@ use crate::error::ProcessorError;
 use crate::reference::Reference;
 use crate::render::{ProcTemplate, ProcTemplateComponent};
 use crate::values::{ComponentValues, ProcHints, RenderContext, RenderOptions};
-use citum_schema::template::TemplateComponent;
+use citum_schema::template::{TemplateComponent, WrapConfig, WrapPunctuation};
 use std::borrow::Cow;
 
 struct GroupRenderState<'a> {
@@ -263,13 +263,19 @@ impl Renderer<'_> {
     {
         let state = self.resolve_group_render_state(group, params.spec)?;
 
-        if let Some(citation) = self.try_render_integral_group_with_format::<F>(
-            group,
-            params.spec,
-            params.mode,
-            params.suppress_author,
-            params.position,
-        )? {
+        // Multi-item same-author groups always collapse: one author name, all years
+        // joined, in both integral and non-integral modes. The year-group wrap is
+        // captured from the template and applied once around all years.
+        // Single-item groups use the per-item explicit integral path when available.
+        if group.len() == 1
+            && let Some(citation) = self.try_render_integral_group_with_format::<F>(
+                group,
+                params.spec,
+                params.mode,
+                params.suppress_author,
+                params.position,
+            )?
+        {
             return Ok(vec![citation]);
         }
 
@@ -309,13 +315,42 @@ impl Renderer<'_> {
             params.suppress_author,
             params.position,
         );
-        let (item_parts, group_delimiter) =
+        let (item_parts, group_delimiter, captured_year_wrap) =
             self.render_group_item_parts_with_format::<F>(&fmt, group, params)?;
+        // Pre-compute a format-aware wrapped years string for integral collapsed groups.
+        // Using fmt.inner_affix + fmt.wrap_punctuation honours output-format-specific
+        // punctuation (e.g. LaTeX ``…'') and preserves WrapConfig.inner_prefix/suffix.
+        // Non-integral groups leave pre_wrapped_years as None and rely on the
+        // per-item template path in build_grouped_citation_content.
+        let pre_wrapped_years =
+            if matches!(params.mode, citum_schema::citation::CitationMode::Integral)
+                && !item_parts.is_empty()
+            {
+                let delimiter = group_delimiter.as_deref().unwrap_or(params.intra_delimiter);
+                let joined = self.join_integral_group_item_parts(&item_parts, delimiter);
+                let wrap_punct = captured_year_wrap
+                    .as_ref()
+                    .map(|w| &w.punctuation)
+                    .unwrap_or(&WrapPunctuation::Parentheses);
+                let inner_prefix = captured_year_wrap
+                    .as_ref()
+                    .and_then(|w| w.inner_prefix.as_deref())
+                    .unwrap_or("");
+                let inner_suffix = captured_year_wrap
+                    .as_ref()
+                    .and_then(|w| w.inner_suffix.as_deref())
+                    .unwrap_or("");
+                let inner = fmt.inner_affix(inner_prefix, joined, inner_suffix);
+                Some(fmt.wrap_punctuation(wrap_punct, inner))
+            } else {
+                None
+            };
         let Some(content) = self.build_grouped_citation_content(
             &author_part,
             &item_parts,
             params,
             group_delimiter.as_deref(),
+            pre_wrapped_years.as_deref(),
         ) else {
             return Ok(None);
         };
@@ -341,12 +376,23 @@ impl Renderer<'_> {
         item_parts: &[String],
         params: &GroupRenderParams<'_>,
         group_delimiter: Option<&str>,
+        pre_wrapped_years: Option<&str>,
     ) -> Option<String> {
         if !author_part.is_empty() && !item_parts.is_empty() {
             let author_item_delimiter = group_delimiter.unwrap_or(params.intra_delimiter);
-            let joined_items = match params.mode {
+            return Some(match params.mode {
                 citum_schema::citation::CitationMode::Integral => {
-                    self.join_integral_group_item_parts(item_parts, author_item_delimiter)
+                    // pre_wrapped_years is Some for collapsed multi-item integral groups
+                    // (format-aware wrap applied upstream). For single-item groups this
+                    // path is not reached (they use the explicit integral path instead).
+                    let wrapped = pre_wrapped_years.map(str::to_string).unwrap_or_else(|| {
+                        self.join_integral_group_item_parts(item_parts, author_item_delimiter)
+                    });
+                    self.format_integral_grouped_items(
+                        author_part,
+                        &wrapped,
+                        params.suppress_author,
+                    )
                 }
                 citum_schema::citation::CitationMode::NonIntegral => {
                     let repeated_item_delimiter = if author_item_delimiter.trim().is_empty() {
@@ -354,23 +400,14 @@ impl Renderer<'_> {
                     } else {
                         author_item_delimiter
                     };
-                    item_parts.join(repeated_item_delimiter)
-                }
-            };
-            return Some(match params.mode {
-                citum_schema::citation::CitationMode::Integral => self
-                    .format_integral_grouped_items(
-                        author_part,
-                        &joined_items,
-                        params.suppress_author,
-                    ),
-                citum_schema::citation::CitationMode::NonIntegral => self
-                    .format_non_integral_grouped_items(
+                    let joined_items = item_parts.join(repeated_item_delimiter);
+                    self.format_non_integral_grouped_items(
                         author_part,
                         author_item_delimiter,
                         &joined_items,
                         params.suppress_author,
-                    ),
+                    )
+                }
             });
         }
 
@@ -388,13 +425,13 @@ impl Renderer<'_> {
     fn format_integral_grouped_items(
         &self,
         author_part: &str,
-        joined_items: &str,
+        wrapped_content: &str,
         suppress_author: bool,
     ) -> String {
         if suppress_author {
-            format!("({joined_items})")
+            wrapped_content.to_string()
         } else {
-            format!("{author_part} ({joined_items})")
+            format!("{author_part} {wrapped_content}")
         }
     }
 
@@ -446,16 +483,41 @@ impl Renderer<'_> {
         fmt: &F,
         group: &[&crate::reference::CitationItem],
         params: &GroupRenderParams<'_>,
-    ) -> Result<(Vec<String>, Option<String>), ProcessorError>
+    ) -> Result<(Vec<String>, Option<String>, Option<WrapConfig>), ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let mut item_parts = Vec::new();
         let mut group_delimiter: Option<String> = None;
+        // For integral multi-item same-author groups, capture the full WrapConfig
+        // (punctuation + inner_prefix/inner_suffix) from the first item's filtered
+        // template and strip the wrap from all items. The caller applies it once,
+        // format-aware, around the joined year string.
+        // Non-integral groups preserve per-item wraps (they may be the primary
+        // wrapping when no cluster-level wrap exists, e.g. author-date disambiguation).
+        let mut captured_year_wrap: Option<WrapConfig> = None;
+        let collapse_group = group.len() > 1
+            && matches!(params.mode, citum_schema::citation::CitationMode::Integral);
         for (index, item) in group.iter().enumerate() {
             let state = self.resolve_item_render_state(item, params.spec)?;
-            let (filtered_template, leading_affix, strip_item_delimiter) =
+            let (mut filtered_template, leading_affix, strip_item_delimiter) =
                 filter_author_from_template(&state.template);
+            if collapse_group {
+                if index == 0 {
+                    // Capture the full WrapConfig from the first remaining component
+                    // (typically the date or date-group). Preserves inner_prefix and
+                    // inner_suffix alongside punctuation so the caller can apply the
+                    // wrap format-aware via fmt.inner_affix + fmt.wrap_punctuation.
+                    captured_year_wrap = filtered_template
+                        .first_mut()
+                        .and_then(|c| c.rendering_mut().wrap.take());
+                } else {
+                    // Strip the wrap on subsequent items to match the first item.
+                    if let Some(first) = filtered_template.first_mut() {
+                        first.rendering_mut().wrap = None;
+                    }
+                }
+            }
             if group_delimiter.is_none() {
                 group_delimiter = leading_affix
                     .as_ref()
@@ -484,7 +546,7 @@ impl Renderer<'_> {
                 item_parts.push(self.affix_content(fmt, item_str, prefix, item.suffix.as_deref()));
             }
         }
-        Ok((item_parts, group_delimiter))
+        Ok((item_parts, group_delimiter, captured_year_wrap))
     }
 
     fn resolve_group_render_state<'b>(

@@ -12,7 +12,7 @@ use citum_schema::options::{
 };
 use citum_schema::template::{
     ContributorForm, ContributorRole, DateForm, DateVariable as TDateVar, NumberVariable,
-    Rendering, SimpleVariable, TemplateComponent, TemplateContributor, TemplateDate,
+    Rendering, SimpleVariable, TemplateComponent, TemplateContributor, TemplateDate, TemplateGroup,
     TemplateNumber, TemplateTitle, TemplateVariable, TitleType, WrapPunctuation,
 };
 use citum_schema::{BibliographySpec, CitationSpec, StyleInfo};
@@ -2467,6 +2467,222 @@ fn given_integral_multi_cites_when_rendering_then_joining_respects_integral_beha
     );
 
     assert_eq!(result, expected);
+}
+
+#[test]
+fn test_same_author_integral_multi_cite_collapses_to_grouped_years() {
+    let mut style = make_style();
+    let mut base_citation = style.citation.take().unwrap_or_default();
+    // Simulate APA: base spec has multi_cite_delimiter "; " but integral sub-spec does not.
+    base_citation.multi_cite_delimiter = Some("; ".to_string());
+    base_citation.integral = Some(Box::new(CitationSpec {
+        delimiter: Some(" ".to_string()),
+        template: Some(vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                form: ContributorForm::Short,
+                rendering: Rendering::default(),
+                ..Default::default()
+            }),
+            TemplateComponent::Group(TemplateGroup {
+                group: vec![TemplateComponent::Date(TemplateDate {
+                    date: TDateVar::Issued,
+                    form: DateForm::Year,
+                    rendering: Rendering::default(),
+                    ..Default::default()
+                })],
+                rendering: Rendering {
+                    prefix: Some(", ".to_string()),
+                    wrap: Some(WrapPunctuation::Parentheses.into()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ]),
+        ..Default::default()
+    }));
+    style.citation = Some(base_citation);
+
+    let mut bib = make_bibliography();
+    insert_book_reference(
+        &mut bib,
+        "chen2017",
+        "Chen",
+        "Ming",
+        2017,
+        "Social Life of References",
+    );
+    insert_book_reference(
+        &mut bib,
+        "chen2020",
+        "Chen",
+        "Ming",
+        2020,
+        "Citation and Authority",
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor
+        .process_citation(&Citation {
+            mode: citum_schema::citation::CitationMode::Integral,
+            items: vec![
+                CitationItem {
+                    id: "chen2017".to_string(),
+                    ..Default::default()
+                },
+                CitationItem {
+                    id: "chen2020".to_string(),
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        })
+        .unwrap();
+
+    assert_eq!(result, "Chen (2017, 2020)");
+}
+
+/// Same-author non-integral cluster with a cluster-level wrap collapses to
+/// "(Chen, 2017, 2020)" — author once, years joined, cluster wrap applied once.
+#[test]
+fn test_same_author_non_integral_multi_cite_collapses_to_grouped_years() {
+    let mut style = make_style();
+    // Flat non-integral template: [author, date] with cluster-level parentheses wrap.
+    style.citation = Some(CitationSpec {
+        template: Some(vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                form: ContributorForm::Short,
+                rendering: Rendering::default(),
+                ..Default::default()
+            }),
+            TemplateComponent::Date(TemplateDate {
+                date: TDateVar::Issued,
+                form: DateForm::Year,
+                rendering: Rendering {
+                    prefix: Some(", ".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ]),
+        wrap: Some(WrapPunctuation::Parentheses.into()),
+        multi_cite_delimiter: Some("; ".to_string()),
+        ..Default::default()
+    });
+
+    let mut bib = make_bibliography();
+    insert_book_reference(
+        &mut bib,
+        "chen2017",
+        "Chen",
+        "Ming",
+        2017,
+        "Social Life of References",
+    );
+    insert_book_reference(
+        &mut bib,
+        "chen2020",
+        "Chen",
+        "Ming",
+        2020,
+        "Citation and Authority",
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor
+        .process_citation(&Citation {
+            mode: citum_schema::citation::CitationMode::NonIntegral,
+            items: vec![
+                CitationItem {
+                    id: "chen2017".to_string(),
+                    ..Default::default()
+                },
+                CitationItem {
+                    id: "chen2020".to_string(),
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        })
+        .unwrap();
+
+    assert_eq!(result, "(Chen, 2017, 2020)");
+}
+
+/// Same-author integral cluster with a bracket wrap on the year group collapses
+/// to "Chen [2017, 2020]" — proves the wrap is captured from the template and
+/// is not hardcoded to parentheses.
+#[test]
+fn test_same_author_integral_multi_cite_respects_bracket_wrap() {
+    let mut style = make_style();
+    let mut base_citation = style.citation.take().unwrap_or_default();
+    base_citation.multi_cite_delimiter = Some("; ".to_string());
+    base_citation.integral = Some(Box::new(CitationSpec {
+        delimiter: Some(" ".to_string()),
+        template: Some(vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                form: ContributorForm::Short,
+                rendering: Rendering::default(),
+                ..Default::default()
+            }),
+            TemplateComponent::Group(TemplateGroup {
+                group: vec![TemplateComponent::Date(TemplateDate {
+                    date: TDateVar::Issued,
+                    form: DateForm::Year,
+                    rendering: Rendering::default(),
+                    ..Default::default()
+                })],
+                rendering: Rendering {
+                    prefix: Some(", ".to_string()),
+                    wrap: Some(WrapPunctuation::Brackets.into()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ]),
+        ..Default::default()
+    }));
+    style.citation = Some(base_citation);
+
+    let mut bib = make_bibliography();
+    insert_book_reference(
+        &mut bib,
+        "chen2017",
+        "Chen",
+        "Ming",
+        2017,
+        "Social Life of References",
+    );
+    insert_book_reference(
+        &mut bib,
+        "chen2020",
+        "Chen",
+        "Ming",
+        2020,
+        "Citation and Authority",
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor
+        .process_citation(&Citation {
+            mode: citum_schema::citation::CitationMode::Integral,
+            items: vec![
+                CitationItem {
+                    id: "chen2017".to_string(),
+                    ..Default::default()
+                },
+                CitationItem {
+                    id: "chen2020".to_string(),
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        })
+        .unwrap();
+
+    assert_eq!(result, "Chen [2017, 2020]");
 }
 
 #[test]
