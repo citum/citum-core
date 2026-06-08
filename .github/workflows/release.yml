@@ -402,10 +402,13 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
-          # Auto-generated release notes from PRs since last tag.
+          # Fetch all tags so we can find the previous one reliably.
+          git fetch --tags --quiet
+          PREV_TAG=$(git tag --sort=-version:refname -l 'v*' | grep -v "^${TAG}$" | head -1)
           gh release create "$TAG" \
             --title "$TAG" \
             --generate-notes \
+            --notes-start-tag "$PREV_TAG" \
             --verify-tag \
             release-artifacts/*.tar.gz \
             release-artifacts/SHA256SUMS \
