@@ -8,11 +8,32 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use super::output::{
     HtmlPlaceholderRegistry, RenderedDocumentBody, append_document_bibliography,
     bibliography_block_placeholder, render_document_bibliography_block_replacement,
-    rewrite_document_markup_for_typst, rewrite_group_headings_for_document,
-    stage_document_bibliography_blocks,
+    rewrite_document_markup_for_typst, stage_document_bibliography_blocks,
 };
 use super::{BibliographyBlock, CitationParser, DocumentFormat, ParsedDocument};
 use crate::processor::Processor;
+
+/// Format a bibliography section heading for the trailing-bibliography path.
+///
+/// Produces format-specific H2-level heading markup. HTML content in the
+/// trailing-bibliography path is inserted after `finalize_html_output`, so
+/// headings must already be HTML — hence the explicit `DocumentFormat::Html`
+/// arm, which emits a pre-escaped `<h2>` element. The heading text is sourced
+/// from YAML/JSON, so `&`, `<`, and `>` are escaped to prevent markup injection.
+fn render_bibliography_section_heading(heading: &str, format: DocumentFormat) -> String {
+    match format {
+        DocumentFormat::Html => {
+            let escaped = heading
+                .replace('&', "&amp;")
+                .replace('<', "&lt;")
+                .replace('>', "&gt;");
+            format!("<h2>{escaped}</h2>\n\n")
+        }
+        DocumentFormat::Latex => format!("\\subsection*{{{heading}}}\n\n"),
+        DocumentFormat::Typst => format!("== {heading}\n\n"),
+        _ => format!("## {heading}\n\n"),
+    }
+}
 
 impl Processor {
     /// Process citations in a document and append a bibliography.
@@ -100,6 +121,14 @@ impl Processor {
     }
 
     /// Orchestrate document processing with custom frontmatter bibliography groups.
+    ///
+    /// Renders each group as an ordered section via the shared
+    /// [`Processor::render_document_bibliography_blocks`] primitive, then
+    /// appends all sections as a trailing bibliography under the standard
+    /// "Bibliography" heading. Groups with no matching entries are omitted
+    /// silently; references not matched by any group selector are not rendered
+    /// (use a catch-all group with `selector: {}` or a `not:` negation to
+    /// capture unmatched entries).
     fn process_document_with_frontmatter_groups<P, F>(
         &self,
         body: &str,
@@ -118,10 +147,22 @@ impl Processor {
             parser,
             format,
             |processor| {
-                rewrite_group_headings_for_document(
-                    processor.render_document_bibliography_groups::<F>(&groups),
-                    format,
-                )
+                let rendered_blocks =
+                    processor.render_document_bibliography_blocks::<F>(&groups, None, None);
+                let mut output = String::new();
+                for block in rendered_blocks {
+                    if block.entries.is_empty() {
+                        continue;
+                    }
+                    if !output.is_empty() {
+                        output.push_str("\n\n");
+                    }
+                    if let Some(heading) = block.heading {
+                        output.push_str(&render_bibliography_section_heading(&heading, format));
+                    }
+                    output.push_str(&block.body);
+                }
+                output
             },
         )
     }
