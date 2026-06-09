@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.67.0] - 2026-06-09
+
+### Bug Fixes
+
+**engine**
+
+- Warn on unknown reference fields ([`0016e96`](https://github.com/citum/citum-core/commit/0016e965d86c27f43895326784779445d80c2fa7))
+
+- Render cne name patterns natively ([`7e2a709`](https://github.com/citum/citum-core/commit/7e2a70915d2c961b2f5087b2588c17608cbfad26))
+
+
+**examples**
+
+- Use Murakami instead of Murasaki ([`aab7d4d`](https://github.com/citum/citum-core/commit/aab7d4da0a88c0b887d5f1eb4974c4b95384bd0f))
+
+
+
+### Documentation
+
+**examples**
+
+- Promote cne refs to examples/ ([`279b990`](https://github.com/citum/citum-core/commit/279b99058ad35cb4afccbfe816b58f04243fecba))
+
+
+
+### Features
+
+**i18n**
+
+- Add cne chicago fixtures ([`5e3bbe0`](https://github.com/citum/citum-core/commit/5e3bbe0e9aa8a2a6495097a696e06824db8189a4))
+
+
 ## [0.66.0] - 2026-06-09
 
 ### Bug Fixes
