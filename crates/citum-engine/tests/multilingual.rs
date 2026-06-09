@@ -185,14 +185,11 @@ fn test_cne_chinese_article_three_part_title() {
         .process_citation(&single_item_citation("cne-hua-linfu-article"))
         .expect("CNE Chinese article citation should render");
 
-    // Chicago 18th source example expects the author as "Hua Linfu 华林甫":
-    // TODO(bean: csl26-q5ne): family-first native ordering not applied to
-    // transliterated names — engine renders given-first "Linfu Hua".
-    // TODO(bean: csl26-d2af): name-mode pattern segments ignored for names —
-    // original script "华林甫" is not appended after the romanized name.
+    // Matches the Chicago 18th source example: native family-first ordering
+    // with the original script appended after the romanized name.
     assert_eq!(
         entry,
-        "Linfu Hua, “Qingdai yilai Sanxia diqu shuihan zaihai de chubu yanjiu \
+        "Hua Linfu 华林甫, “Qingdai yilai Sanxia diqu shuihan zaihai de chubu yanjiu \
          清代以来三峡地区水旱灾害的初步研究 [A preliminary study of floods and droughts \
          in the Three Gorges region since the Qing dynasty]”, _Zhongguo shehui kexue \
          中国社会科学_ 1 (1999): 168–79."
@@ -215,14 +212,11 @@ fn test_cne_korean_book_three_part_title() {
         .process_citation(&single_item_citation("cne-kang-ubang-book"))
         .expect("CNE Korean book citation should render");
 
-    // Chicago 18th source example expects the author as "Kang U-bang 姜友邦":
-    // TODO(bean: csl26-q5ne): family-first native ordering not applied to
-    // transliterated names — engine renders given-first "U-bang Kang".
-    // TODO(bean: csl26-d2af): name-mode pattern segments ignored for names —
-    // original script "姜友邦" is not appended after the romanized name.
+    // Matches the Chicago 18th source example: native family-first ordering
+    // with the original Hanja appended after the romanized name.
     assert_eq!(
         entry,
-        "U-bang Kang, _Wŏnyung kwa chohwa: Han’guk kodae chogaksa ŭi wŏlli \
+        "Kang U-bang 姜友邦, _Wŏnyung kwa chohwa: Han’guk kodae chogaksa ŭi wŏlli \
          圓融과調和: 韓國古代彫刻史의原理 [Synthesis and harmony: Principle of the \
          history of ancient Korean sculpture]_ (Yŏrhwadang, 1990)."
     );
@@ -244,16 +238,11 @@ fn test_cne_japanese_book_two_authors() {
         .process_citation(&single_item_citation("cne-abe-yoshio-book"))
         .expect("CNE Japanese book citation should render");
 
-    // Chicago 18th source example expects "Abe Yoshio 阿部善雄, and Kaneko
-    // Hideo 金子英生":
-    // TODO(bean: csl26-q5ne): family-first native ordering not applied to
-    // transliterated names — engine renders given-first "Yoshio Abe".
-    // TODO(bean: csl26-d2af): name-mode pattern segments ignored for names —
-    // original script "阿部善雄" / "金子英生" is not appended after the
-    // romanized names.
+    // Matches the Chicago 18th source example: both names render family-first
+    // with their original kanji appended after the romanized form.
     assert_eq!(
         entry,
-        "Yoshio Abe and Hideo Kaneko, _Saigo no “Nihonjin”: Asakawa Kan’ichi no shōgai \
+        "Abe Yoshio 阿部善雄 and Kaneko Hideo 金子英生, _Saigo no “Nihonjin”: Asakawa Kan’ichi no shōgai \
          最後の「日本人」: 朝河貫一の生涯 [The last “Japanese”: Life of Kan’ichi Asakawa]_ \
          (Iwanami Shoten, 1983)."
     );

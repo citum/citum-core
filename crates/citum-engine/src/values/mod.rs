@@ -352,6 +352,28 @@ fn select_by_transliteration<'a>(
     m.transliterations.values().next().unwrap_or(&m.original)
 }
 
+/// Render the original-script display form of a structured name.
+///
+/// CJK names display family-first with no separator (`华林甫`); other scripts
+/// display given-first with a space.
+fn original_script_display(name: &citum_schema::reference::contributor::StructuredName) -> String {
+    use unicode_script::{Script, UnicodeScript};
+
+    let family = name.family.to_string();
+    let given = name.given.to_string();
+    let is_cjk = family.chars().chain(given.chars()).any(|ch| {
+        matches!(
+            ch.script(),
+            Script::Han | Script::Hiragana | Script::Katakana | Script::Hangul
+        )
+    });
+    if is_cjk || family.is_empty() || given.is_empty() {
+        format!("{family}{given}")
+    } else {
+        format!("{given} {family}")
+    }
+}
+
 /// Resolve a multilingual contributor name based on style configuration.
 ///
 /// Uses holistic name matching - selects the entire name variant (original/transliterated/translated)
@@ -394,12 +416,26 @@ pub fn resolve_multilingual_name(
                 MultilingualMode::Combined => {
                     select_by_transliteration(m, preferred_transliteration, preferred_script)
                 }
-                // Pattern mode for names: use the first non-original view (romanized).
-                // Names are always shown in a single script; multi-view name strings are
-                // not idiomatic in any major style guide.
+                // Pattern mode for names: render the romanized view, carrying the
+                // original-script form along when the pattern requests it (CNE
+                // style: "Hua Linfu 华林甫").
                 MultilingualMode::Pattern(_) => {
                     select_by_transliteration(m, preferred_transliteration, preferred_script)
                 }
+            };
+
+            // When a name pattern includes an `original` view alongside the
+            // selected transliteration, carry the original-script display form
+            // (with the segment's wrap applied) so formatting can append it
+            // after the romanized name.
+            let original_script = match mode {
+                MultilingualMode::Pattern(segments) if selected_name != &m.original => segments
+                    .iter()
+                    .find(|segment| {
+                        segment.view == citum_schema::options::MultilingualView::Original
+                    })
+                    .map(|segment| segment.wrap.apply(&original_script_display(&m.original))),
+                _ => None,
             };
 
             // Convert selected name to FlatName
@@ -411,6 +447,7 @@ pub fn resolve_multilingual_name(
                 non_dropping_particle: selected_name.non_dropping_particle.clone(),
                 literal: None,
                 short_name: None,
+                original_script,
             }]
         }
 
