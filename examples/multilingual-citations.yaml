@@ -5,12 +5,12 @@
 
 # 1. Single citation to Japanese work
 - items:
-    - id: genji_tale
+    - id: murakami_norwegian_wood
   mode: non-integral
 
 # 2. Narrative (integral) citation with page reference
 - items:
-    - id: genji_tale
+    - id: murakami_norwegian_wood
       label: page
       locator: "42"
   mode: integral
@@ -22,7 +22,7 @@
 
 # 4. Multi-cite mixing languages (Japanese + English)
 - items:
-    - id: genji_tale
+    - id: murakami_norwegian_wood
     - id: english_book_1
   mode: non-integral
 
@@ -47,7 +47,7 @@
 
 # 8. Complex multi-cite with mixed locators
 - items:
-    - id: genji_tale
+    - id: murakami_norwegian_wood
       label: page
       locator: "15-18"
     - id: alghazali_logic

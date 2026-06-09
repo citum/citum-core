@@ -11,32 +11,32 @@ references:
   # Original: Japanese Kanji
   # Transliteration: Latin romanization (Hepburn)
   # Translation: English
-  - id: genji_tale
+  - id: murakami_norwegian_wood
     class: monograph
     type: book
     title:
-      original: "源氏物語"
+      original: "ノルウェイの森"
       lang: "ja"
       transliterations:
-        ja-Latn-hepburn: "Genji Monogatari"
+        ja-Latn-hepburn: "Noruwei no Mori"
       translations:
-        en: "The Tale of Genji"
+        en: "Norwegian Wood"
     author:
       - original:
-          family: "紫式部"
-          given: ""
+          family: "村上"
+          given: "春樹"
         lang: "ja"
         transliterations:
           ja-Latn-hepburn:
-            family: "Murasaki"
-            given: "Shikibu"
+            family: "Murakami"
+            given: "Haruki"
         translations:
           en:
-            family: "Murasaki"
-            given: "Shikibu"
-    issued: "1010"
+            family: "Murakami"
+            given: "Haruki"
+    issued: "1987"
     publisher:
-      name: "古典文学之友"
+      name: "講談社"
     language: "ja"
 
   # 2. Arabic journal article with original title and translation
