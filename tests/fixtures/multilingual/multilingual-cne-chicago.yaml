@@ -1,0 +1,98 @@
+# Bibliographic facts (author names, titles, dates, publishers) are public domain.
+# No code or text copied from cite-non-english (AGPL-3.0).
+# Transliteration conventions follow McCune-Reischauer (Korean) and Hepburn (Japanese).
+#
+# These three real-world references illustrate the CNE (cite-non-english) rendering
+# pattern for Chicago 18th ed.: romanized title + original script + [English translation].
+
+references:
+  # Chinese journal article. Author: Hua (华) Linfu (林甫). Journal: Zhongguo shehui kexue.
+  - id: cne-hua-linfu-article
+    class: serial-component
+    type: article
+    language: zh
+    title:
+      original: 清代以来三峡地区水旱灾害的初步研究
+      lang: zh
+      transliterations:
+        zh-Latn-pinyin: Qingdai yilai Sanxia diqu shuihan zaihai de chubu yanjiu
+      translations:
+        en: A preliminary study of floods and droughts in the Three Gorges region since the Qing dynasty
+    author:
+      - original:
+          family: 华
+          given: 林甫
+        lang: zh
+        transliterations:
+          zh-Latn-pinyin:
+            family: Hua
+            given: Linfu
+    volume: "1"
+    pages: 168-79
+    issued: "1999"
+    container:
+      class: serial
+      type: academic-journal
+      title:
+        original: 中国社会科学
+        lang: zh
+        transliterations:
+          zh-Latn-pinyin: Zhongguo shehui kexue
+
+  # Korean monograph. Author: Kang (姜) U-bang (友邦). Original script is Hanja.
+  - id: cne-kang-ubang-book
+    class: monograph
+    type: book
+    language: ko
+    title:
+      original: "圓融과調和: 韓國古代彫刻史의原理"
+      lang: ko
+      transliterations:
+        ko-Latn-mcr: "Wŏnyung kwa chohwa: Han'guk kodae chogaksa ŭi wŏlli"
+      translations:
+        en: "Synthesis and harmony: Principle of the history of ancient Korean sculpture"
+    author:
+      - original:
+          family: 姜
+          given: 友邦
+        lang: ko
+        transliterations:
+          ko-Latn-mcr:
+            family: Kang
+            given: U-bang
+    issued: "1990"
+    publisher:
+      name: Yŏrhwadang
+
+  # Japanese monograph. Two authors: Abe Yoshio (阿部善雄) and Kaneko Hideo (金子英生).
+  - id: cne-abe-yoshio-book
+    class: monograph
+    type: book
+    language: ja
+    title:
+      original: "最後の「日本人」: 朝河貫一の生涯"
+      lang: ja
+      transliterations:
+        ja-Latn-hepburn: "Saigo no \"Nihonjin\": Asakawa Kan'ichi no shōgai"
+      translations:
+        en: "The last \"Japanese\": Life of Kan'ichi Asakawa"
+    author:
+      - original:
+          family: 阿部
+          given: 善雄
+        lang: ja
+        transliterations:
+          ja-Latn-hepburn:
+            family: Abe
+            given: Yoshio
+      - original:
+          family: 金子
+          given: 英生
+        lang: ja
+        transliterations:
+          ja-Latn-hepburn:
+            family: Kaneko
+            given: Hideo
+    issued: "1983"
+    publisher:
+      name: Iwanami Shoten
