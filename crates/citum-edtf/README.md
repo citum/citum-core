@@ -10,26 +10,26 @@ any project that needs EDTF date parsing.
 
 ## Usage
 
-`citum-edtf` uses [`winnow`](https://crates.io/crates/winnow)-style parsers
-that take `&mut &str` so callers can stream or chain them:
+The primary entry point is the `FromStr` impl on `Edtf`:
 
 ```rust
-use citum_edtf::parse;
+use citum_edtf::Edtf;
 
-let mut input = "2024-03-15";
-let date = parse(&mut input).unwrap();
-
-let mut input = "2024~";
-let approximate = parse(&mut input).unwrap();
-
-let mut input = "2020/2024";
-let interval = parse(&mut input).unwrap();
-
-let mut input = "2024-22"; // summer
-let season = parse(&mut input).unwrap();
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let date: Edtf        = "2024-03-15".parse()?;
+    let approximate: Edtf = "2024~".parse()?;
+    let interval: Edtf    = "2020/2024".parse()?;
+    let season: Edtf      = "2024-22".parse()?;  // summer
+    Ok(())
+}
 ```
 
-Use `parse_date` if you specifically need to parse a date-only EDTF value.
+`FromStr` consumes the entire string and returns a `ParseError` on failure.
+
+For streaming or parser-combinator use cases where you need to consume only a
+prefix and leave the rest in place, use the lower-level `parse` and
+`parse_date` functions, which follow the
+[`winnow`](https://crates.io/crates/winnow) `&mut &str` convention.
 
 Supported syntax includes negative years, year precision, month/day
 precision, approximations (`~`), uncertainty (`?`), unspecified digits (`X`),

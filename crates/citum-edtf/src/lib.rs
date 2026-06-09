@@ -217,6 +217,44 @@ pub struct Time {
 
 use std::fmt;
 
+/// Error returned when an EDTF string cannot be parsed.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ParseError(String);
+
+impl fmt::Display for ParseError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "invalid EDTF: {}", self.0)
+    }
+}
+
+impl std::error::Error for ParseError {}
+
+impl std::str::FromStr for Edtf {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut input = s;
+        let edtf = parse(&mut input).map_err(|e| ParseError(e.to_string()))?;
+        if !input.is_empty() {
+            return Err(ParseError(format!("unexpected trailing input: {input}")));
+        }
+        Ok(edtf)
+    }
+}
+
+impl std::str::FromStr for Date {
+    type Err = ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let mut input = s;
+        let date = parse_date(&mut input).map_err(|e| ParseError(e.to_string()))?;
+        if !input.is_empty() {
+            return Err(ParseError(format!("unexpected trailing input: {input}")));
+        }
+        Ok(date)
+    }
+}
+
 impl fmt::Display for Edtf {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
