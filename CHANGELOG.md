@@ -5,6 +5,53 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.66.0] - 2026-06-09
+
+### Bug Fixes
+
+**ci**
+
+- Scope release notes to previous tag ([`558e6c0`](https://github.com/citum/citum-core/commit/558e6c06469dc0168cc76b6c791ebbe67c9c853e))
+
+
+**engine**
+
+- Same-author collapse first-class rule ([`1272383`](https://github.com/citum/citum-core/commit/12723834a1331de7af76abd8daf18beb91b7bb5b))
+
+
+
+### Documentation
+
+**spec**
+
+- Reconcile bib grouping vocabulary ([`31e6daa`](https://github.com/citum/citum-core/commit/31e6daae5885cc84d71811422662b527513ce82d))
+
+- Expand citation cluster rendering spec ([`9c7c4b2`](https://github.com/citum/citum-core/commit/9c7c4b22e24b84a623c3eac8f85273089eb5213f))
+
+
+
+### Features
+
+**edtf**
+
+- Add FromStr and ParseError ([`7fccb7a`](https://github.com/citum/citum-core/commit/7fccb7ac327dfd488cb6fc8b0a824a530237011d))
+
+
+**engine**
+
+- Nocite bibliography-only entries ([`22212e9`](https://github.com/citum/citum-core/commit/22212e9d6046a5c882c91d29b9fd2899ea630b24))
+
+
+
+### Refactor
+
+**engine**
+
+- Fold bib groups onto blocks path ([`3e75f63`](https://github.com/citum/citum-core/commit/3e75f63c0ddb9d0f35c05f6d2232f5e271f10b58))
+
+- Unify document bib rendering ([`b5b01ba`](https://github.com/citum/citum-core/commit/b5b01bad751eccc5bc67f89713d896822b33acd7))
+
+
 ## [0.65.0] - 2026-06-08
 
 ### Features
