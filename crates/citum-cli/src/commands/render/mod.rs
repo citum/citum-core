@@ -142,6 +142,12 @@ pub(super) fn run_render_refs(args: RenderRefsArgs) -> CliResult {
     let style_obj = load_any_style(&args.style, args.no_semantics)?;
     let bibliography = load_merged_bibliography(&args.bibliography)?;
 
+    // Forward-compat: surface fields the engine silently captured (and will
+    // ignore) so data typos are visible at authoring time.
+    for warning in citum_engine::api::unknown_reference_field_warnings(&bibliography.references) {
+        eprintln!("Warning: {}", warning.message);
+    }
+
     let item_ids = if let Some(k) = args.keys.clone() {
         k
     } else {

@@ -489,3 +489,67 @@ fn forward_compat_snapshot_matches() {
         );
     }
 }
+
+/// Build an engine [`citum_engine::Bibliography`] from an `InputBibliography`
+/// YAML literal, keyed by the given reference IDs in order.
+fn bibliography_from_yaml(yaml: &str, ids: &[&str]) -> citum_engine::Bibliography {
+    let parsed: InputBibliography = serde_yaml::from_str(yaml).expect("fixture parses");
+    assert_eq!(
+        ids.len(),
+        parsed.references.len(),
+        "fixture reference count must match the expected IDs"
+    );
+    ids.iter()
+        .map(|id| (*id).to_string())
+        .zip(parsed.references)
+        .collect()
+}
+
+#[test]
+fn unknown_reference_field_warnings_reports_captured_keys() {
+    let yaml = r#"
+references:
+  - id: future-ref
+    class: serial-component
+    type: article
+    lang: zh
+    title: A future-shaped article
+    parent:
+      type: academic-journal
+      title: A future-shaped journal
+"#;
+    let bibliography = bibliography_from_yaml(yaml, &["future-ref"]);
+
+    let warnings = citum_engine::api::unknown_reference_field_warnings(&bibliography);
+
+    assert_eq!(warnings.len(), 1);
+    let warning = &warnings[0];
+    assert_eq!(warning.code, "unknown_reference_field");
+    assert_eq!(warning.ref_id.as_deref(), Some("future-ref"));
+    assert_eq!(
+        warning.message,
+        "Reference 'future-ref' has unknown field(s): lang, parent; \
+         these fields are ignored during rendering."
+    );
+}
+
+#[test]
+fn unknown_reference_field_warnings_is_silent_for_clean_references() {
+    let yaml = r#"
+references:
+  - id: clean-ref
+    class: serial-component
+    type: article
+    language: en
+    title: A well-formed article
+    container:
+      class: serial
+      type: academic-journal
+      title: A well-formed journal
+"#;
+    let bibliography = bibliography_from_yaml(yaml, &["clean-ref"]);
+
+    let warnings = citum_engine::api::unknown_reference_field_warnings(&bibliography);
+
+    assert!(warnings.is_empty(), "clean reference must not warn");
+}

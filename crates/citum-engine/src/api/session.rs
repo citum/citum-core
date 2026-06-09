@@ -21,6 +21,7 @@ use super::{
     CitationOccurrence, CitationOccurrenceItem, DocumentOptions, FormatDocumentError,
     FormattedBibliography, FormattedCitation, OutputFormatKind, RefsInput, StyleInput, Warning,
     WarningLevel, unknown_enum_warnings, unknown_reference_class_warnings,
+    unknown_reference_field_warnings,
 };
 use crate::processor::Processor;
 use crate::reference::Citation;
@@ -359,6 +360,7 @@ impl DocumentSession {
             .resolve_local()?;
         let mut processor = Processor::new(self.style.clone(), bibliography);
         warnings.extend(unknown_reference_class_warnings(&processor.bibliography));
+        warnings.extend(unknown_reference_field_warnings(&processor.bibliography));
         warnings.extend(unknown_enum_warnings(&processor));
 
         if let Some(opts) = &self.document_options {
