@@ -544,6 +544,9 @@ fn script_config_for_name<'a>(
         name.dropping_particle.as_deref(),
         name.non_dropping_particle.as_deref(),
         name.suffix.as_deref(),
+        // A transliterated name carries its source script here, so script
+        // options (e.g. use-native-ordering) apply to the romanized form too.
+        name.original_script.as_deref(),
     ]
     .into_iter()
     .flatten()
@@ -551,10 +554,15 @@ fn script_config_for_name<'a>(
         flags.record(part);
     }
 
-    flags
-        .candidate_keys()
-        .into_iter()
-        .find_map(|key| configs.get(key))
+    flags.candidate_keys().into_iter().find_map(|key| {
+        configs.get(key).or_else(|| {
+            // Style authors write ISO 15924 keys in their canonical casing
+            // ("Han", "Hangul"); candidate keys are lowercase aliases.
+            configs.iter().find_map(|(config_key, config)| {
+                config_key.eq_ignore_ascii_case(key).then_some(config)
+            })
+        })
+    })
 }
 
 /// Assemble a long-form name from its computed parts.
@@ -755,6 +763,15 @@ fn sort_separator_for_name<'a>(
         .unwrap_or(", ")
 }
 
+/// Append the source-script form after a romanized long-form name when a
+/// name pattern carried one (CNE: "Hua Linfu 华林甫").
+fn append_original_script(assembled: String, name: &crate::reference::FlatName) -> String {
+    match &name.original_script {
+        Some(original) if !original.is_empty() => format!("{assembled} {original}"),
+        _ => assembled,
+    }
+}
+
 /// Format a single name.
 pub(crate) fn format_single_name(
     name: &crate::reference::FlatName,
@@ -879,7 +896,7 @@ pub(crate) fn format_single_name(
                 .and_then(|config| config.delimiter.as_deref())
                 .unwrap_or(" ");
             let sep = sort_separator_for_name(script_config, ctx);
-            assemble_long_name(
+            let assembled = assemble_long_name(
                 family_part,
                 given_part,
                 particle_part,
@@ -887,7 +904,8 @@ pub(crate) fn format_single_name(
                 assembly_order,
                 name_part_delimiter,
                 sep,
-            )
+            );
+            append_original_script(assembled, name)
         }
     }
 }

@@ -151,6 +151,11 @@ pub struct FlatName {
     pub non_dropping_particle: Option<String>,
     pub literal: Option<String>,
     pub short_name: Option<String>,
+    /// Original-script display form of a multilingual name (e.g. `华林甫`),
+    /// carried alongside the selected transliteration so rendering can apply
+    /// native ordering and append the original script after the romanized
+    /// name when a name pattern requests both views.
+    pub original_script: Option<String>,
 }
 
 impl FlatName {
