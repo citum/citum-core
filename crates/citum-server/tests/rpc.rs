@@ -671,3 +671,99 @@ fn open_session_style_overrides_changes_and_connector() {
         "session with and:text override should not use '&', got: {text:?}"
     );
 }
+
+// --- set_nocite ---
+
+fn two_refs() -> serde_json::Value {
+    json!({
+        "ITEM-2": {
+            "id": "ITEM-2",
+            "class": "monograph",
+            "type": "book",
+            "title": "A Brief History of Time",
+            "author": [{"family": "Hawking", "given": "Stephen"}],
+            "issued": "1988"
+        },
+        "ITEM-3": {
+            "id": "ITEM-3",
+            "class": "monograph",
+            "type": "book",
+            "title": "Cosmos",
+            "author": [{"family": "Sagan", "given": "Carl"}],
+            "issued": "1980"
+        }
+    })
+}
+
+#[test]
+fn set_nocite_puts_ref_in_bibliography_not_in_formatted_citations() {
+    // given: a session with ITEM-2 cited in-text and ITEM-3 registered as nocite
+    let mut dispatcher = RpcDispatcher::new_stdio();
+    dispatcher
+        .dispatch(make_request(
+            70,
+            "open_session",
+            json!({
+                "style": {"kind": "path", "value": apa_style_path()}
+            }),
+        ))
+        .expect("open_session should succeed");
+
+    dispatcher
+        .dispatch(make_request(
+            71,
+            "put_references",
+            json!({"session_id": "default", "refs": two_refs()}),
+        ))
+        .expect("put_references should succeed");
+
+    dispatcher
+        .dispatch(make_request(
+            72,
+            "insert_citation",
+            json!({
+                "session_id": "default",
+                "citation": {"id": "cite-1", "items": [{"id": "ITEM-2"}]}
+            }),
+        ))
+        .expect("insert_citation should succeed");
+
+    // when: ITEM-3 is registered as nocite
+    let result = dispatcher
+        .dispatch(make_request(
+            73,
+            "set_nocite",
+            json!({"session_id": "default", "nocite": ["ITEM-3"]}),
+        ))
+        .expect("set_nocite should succeed");
+
+    // then: ITEM-3 appears in bibliography entries but not in formatted citations
+    let entries = &result["result"]["bibliography"]["entries"];
+    let ids: Vec<&str> = entries
+        .as_array()
+        .expect("entries should be an array")
+        .iter()
+        .map(|e| e["id"].as_str().expect("entry id should be a string"))
+        .collect();
+
+    assert!(
+        ids.contains(&"ITEM-3"),
+        "nocite ref ITEM-3 should appear in bibliography entries, got: {ids:?}"
+    );
+    let formatted = &result["result"]["affected_citations"];
+    let any_item3 = formatted
+        .as_array()
+        .map(|cites| {
+            cites.iter().any(|c| {
+                c["ref_ids"]
+                    .as_array()
+                    .map(|ids| ids.iter().any(|id| id == "ITEM-3"))
+                    .unwrap_or(false)
+            })
+        })
+        .unwrap_or(false);
+    assert!(
+        !any_item3,
+        "nocite ref ITEM-3 should not appear in any formatted citation"
+    );
+}

@@ -171,6 +171,12 @@ pub struct FormatDocumentParams {
     pub bibliography_blocks: Vec<BibliographyBlockRequest>,
     /// Optional document-level configuration.
     pub document_options: Option<DocumentOptions>,
+    /// Reference IDs to include in the bibliography without an in-text citation.
+    ///
+    /// Each ID must be present in `refs`. Unknown IDs produce a `nocite_missing_ref`
+    /// warning and are otherwise ignored.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub nocite: Vec<String>,
 }
 
 /// Parameters for the `open_session` method.
@@ -207,6 +213,24 @@ pub struct PutReferencesParams {
     pub session_id: Option<String>,
     /// Full reference input for the session.
     pub refs: RefsInput,
+}
+
+/// Parameters for the `set_nocite` method.
+#[cfg(feature = "session")]
+#[derive(Debug, Deserialize)]
+#[cfg_attr(
+    any(feature = "schema", feature = "schema-types"),
+    derive(schemars::JsonSchema)
+)]
+pub struct SetNociteParams {
+    /// Session identifier returned by `open_session`.
+    pub session_id: Option<String>,
+    /// Reference IDs to include in the bibliography without an in-text citation.
+    ///
+    /// Each ID must be present in the session's loaded references. Unknown IDs
+    /// produce a `nocite_missing_ref` warning and are otherwise ignored.
+    #[serde(default)]
+    pub nocite: Vec<String>,
 }
 
 /// Parameters for the `insert_citations_batch` method.
@@ -401,6 +425,8 @@ impl RpcDispatcher {
             #[cfg(feature = "session")]
             "put_references" => self.put_references(&req.params, id, req.id.clone()),
             #[cfg(feature = "session")]
+            "set_nocite" => self.set_nocite(&req.params, id, req.id.clone()),
+            #[cfg(feature = "session")]
             "insert_citations_batch" => {
                 self.insert_citations_batch(&req.params, id, req.id.clone())
             }
@@ -479,6 +505,21 @@ impl RpcDispatcher {
         let session = self.session_mut(params.session_id.as_deref(), &request_id)?;
         session.put_references(params.refs);
         Ok(json!({ "id": id, "result": {} }))
+    }
+
+    #[cfg(feature = "session")]
+    fn set_nocite(
+        &mut self,
+        params: &Value,
+        id: Value,
+        request_id: Value,
+    ) -> Result<Value, (Option<Value>, RpcDispatchError)> {
+        let params: SetNociteParams = parse_session_params(params, &request_id)?;
+        let session = self.session_mut(params.session_id.as_deref(), &request_id)?;
+        let result = session
+            .set_nocite(params.nocite)
+            .map_err(|e| (Some(request_id), RpcDispatchError::Message(e.to_string())))?;
+        Ok(json!({ "id": id, "result": result }))
     }
 
     #[cfg(feature = "session")]

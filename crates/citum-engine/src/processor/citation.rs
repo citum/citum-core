@@ -99,6 +99,23 @@ impl Processor {
         )
     }
 
+    /// Register nocite reference IDs into the cited set.
+    ///
+    /// Nocite IDs are treated as cited for bibliography-selection purposes (they
+    /// appear in `bibliography.entries` alongside normally cited refs and are
+    /// matched by `CitedStatus::Visible` selectors), but no `formatted_citations`
+    /// entry is produced for them. This matches standard citeproc / Pandoc `nocite`
+    /// semantics.
+    ///
+    /// IDs that are absent from `self.bibliography` are silently ignored here;
+    /// callers are responsible for emitting `nocite_missing_ref` warnings first.
+    pub fn register_nocite_ids(&self, ids: impl IntoIterator<Item = String>) {
+        let mut cited_ids = self.cited_ids.borrow_mut();
+        for id in ids {
+            cited_ids.insert(id);
+        }
+    }
+
     /// Register cited reference IDs and ensure numeric labels are initialized.
     ///
     /// This maintains the set of all references cited in the document and ensures
