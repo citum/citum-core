@@ -1254,6 +1254,15 @@ impl InputReference {
         class_dispatch!(&self.extension, |r| r.accessed.clone(), unknown(_) => None)
     }
 
+    /// Return the forward-compat `unknown_fields` captured for this reference.
+    ///
+    /// Returns `None` for unknown-class references: their fields are kept
+    /// wholesale in [`UnknownClassData::fields`] and reported separately via
+    /// the unknown-class warning.
+    pub fn unknown_fields(&self) -> Option<&std::collections::BTreeMap<String, JsonValue>> {
+        class_dispatch!(&self.extension, |r| Some(&r.unknown_fields), unknown(_) => None)
+    }
+
     /// Return the embedded inline reference behind `original` if any.
     ///
     /// All 16 reference classes that carry an `original` relation expose it via

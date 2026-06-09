@@ -30,22 +30,43 @@ pub(super) fn run_check(args: CheckArgs) -> CliResult {
                 let class_warnings = citum_engine::api::unknown_reference_class_warnings(&bib);
                 warnings.extend(class_warnings.into_iter().map(|w| w.message));
 
+                // Forward-compat: fields captured by the `unknown_fields`
+                // catch-all. Hard errors in strict mode, warnings otherwise.
+                let field_messages: Vec<String> =
+                    citum_engine::api::unknown_reference_field_warnings(&bib)
+                        .into_iter()
+                        .map(|w| w.message)
+                        .collect();
+
                 // For enums, we need a processor context
                 let processor = citum_engine::Processor::new(citum_schema::Style::default(), bib);
                 let enum_warnings = citum_engine::api::unknown_enum_warnings(&processor);
                 warnings.extend(enum_warnings.into_iter().map(|w| w.message));
 
+                let mut ok = true;
+                let mut error = None;
+                if !field_messages.is_empty() {
+                    if args.strict {
+                        ok = false;
+                        // Each message is a complete sentence; join with a
+                        // space rather than "; " to avoid ".;" punctuation.
+                        error = Some(format!("strict: {}", field_messages.join(" ")));
+                    } else {
+                        warnings.extend(field_messages);
+                    }
+                }
+
                 CheckItem {
                     kind: "bibliography",
                     path: display,
-                    ok: true,
+                    ok,
                     schema_version: None,
                     warnings: if warnings.is_empty() {
                         None
                     } else {
                         Some(warnings)
                     },
-                    error: None,
+                    error,
                 }
             }
             Err(e) => CheckItem {
