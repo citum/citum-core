@@ -560,17 +560,42 @@ impl Processor {
         self.render_grouped_bibliography_inner::<F>(false, annotations, annotation_style)
     }
 
-    /// Render the trailing document bibliography, restricted to cited references.
+    /// Unified document bibliography facade — returns content and per-entry data together.
     ///
-    /// Equivalent to [`Self::render_grouped_bibliography_with_format`] but
-    /// intersects every branch's candidate set with `self.cited_ids` so that
-    /// references not cited in the document are excluded — matching
-    /// standard citeproc semantics for document rendering.
-    pub(crate) fn render_grouped_document_bibliography_with_format<F>(&self) -> String
+    /// This is the single entry point for all document-context bibliography rendering:
+    /// batch (`format_document`), interactive session (`DocumentSession`), and the
+    /// document-string (`process_document`) path all funnel through here.
+    ///
+    /// When `restrict_to_cited` is `true` (the document case), only references present
+    /// in `self.cited_ids` — cited in-text or registered via `nocite` — are included.
+    /// When `false`, all loaded references are eligible; this hook is reserved for the
+    /// `allrefs` escape hatch (csl26-f9ri) and is not yet exposed publicly.
+    ///
+    /// Both `content` and `entries` are computed from the same cited subset so
+    /// subsequent-author substitution stays consistent across both outputs.
+    pub(crate) fn render_document_bibliography<F>(
+        &self,
+        restrict_to_cited: bool,
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
+    ) -> super::DocumentBibliography
     where
         F: OutputFormat<Output = String>,
     {
-        self.render_grouped_bibliography_inner::<F>(true, None, None)
+        let content = self.render_grouped_bibliography_inner::<F>(
+            restrict_to_cited,
+            annotations,
+            annotation_style,
+        );
+        // Collect IDs before calling process_* so the RefCell borrow is released.
+        let cited_ids: Vec<String> = self.cited_ids.borrow().iter().cloned().collect();
+        let entries = if restrict_to_cited {
+            self.process_selected_references_with_format::<F, _>(cited_ids)
+                .bibliography
+        } else {
+            self.process_references_with_format::<F>().bibliography
+        };
+        super::DocumentBibliography { content, entries }
     }
 
     /// Shared implementation for grouped bibliography rendering.
@@ -636,7 +661,7 @@ impl Processor {
             );
         }
 
-        let all_entries = self.process_references().bibliography;
+        let all_entries = self.process_references_with_format::<F>().bibliography;
         self.render_with_legacy_grouping::<F>(
             &self.merge_compound_entries::<F>(all_entries),
             annotations,

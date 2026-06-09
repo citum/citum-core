@@ -5,7 +5,7 @@ status: todo
 type: feature
 priority: normal
 created_at: 2026-06-09T12:08:17Z
-updated_at: 2026-06-09T12:08:58Z
+updated_at: 2026-06-09T13:22:39Z
 ---
 
 ## Background
@@ -66,3 +66,7 @@ nocite path. May be deferred if `@*` alone is sufficient.
 ## Spec cross-ref
 
 `docs/specs/NOCITE_BIBLIOGRAPHY_ONLY_ENTRIES.md` § Out of Scope notes this explicitly.
+
+## Note (from csl26-31pi)
+
+The engine scope hook is in place: Processor::render_document_bibliography takes a restrict_to_cited: bool param. Passing false makes all loaded references eligible. Remaining work here is the public allrefs flag on FormatDocumentRequest and DocumentSession, and the nocite @* wildcard expansion.

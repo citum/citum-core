@@ -32,6 +32,20 @@ pub(crate) struct RenderedBibliographyGroup {
     pub(crate) entries: Vec<crate::render::ProcEntry>,
 }
 
+/// Combined document bibliography rendering output.
+///
+/// Returned by [`Processor::render_document_bibliography`] — the unified facade
+/// used by the batch, session, and document-string rendering paths. Both fields
+/// are computed from the same cited subset so subsequent-author substitution
+/// stays consistent between the rendered string and the per-entry data.
+#[derive(Debug, Clone, Default)]
+pub(crate) struct DocumentBibliography {
+    /// The full rendered bibliography string for the document.
+    pub(crate) content: String,
+    /// Flat per-entry data, one entry per cited reference.
+    pub(crate) entries: Vec<crate::render::ProcEntry>,
+}
+
 impl Processor {
     /// Create a bibliography renderer with effective shared and bibliography-only config.
     fn with_bibliography_renderer<T>(&self, render: impl FnOnce(Renderer<'_>) -> T) -> T {
