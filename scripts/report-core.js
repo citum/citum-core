@@ -78,7 +78,9 @@ const KNOWN_DEPENDENTS = {
   'chicago-notes': 5,
 };
 
-const SKIPPED_STYLES = ['alpha', 'iso690-author-date', 'iso690-numeric'];
+// chicago-notes-18th-cne has no CSL/citeproc counterpart (CNE is a Zotero
+// plugin convention); its behavior is covered by engine multilingual tests.
+const SKIPPED_STYLES = ['alpha', 'chicago-notes-18th-cne', 'iso690-author-date', 'iso690-numeric'];
 const PROJECT_ROOT = path.dirname(__dirname);
 const DEFAULT_REPORT_CACHE_DIR = path.join(PROJECT_ROOT, '.oracle-cache', 'report-core');
 const DEFAULT_PARALLELISM = 4;
