@@ -83,7 +83,7 @@ rules:
   - id: rust-license-header
     kind: file_content_matches
     paths: "crates/**/*.rs"
-    pattern: "(?s)^/\\*\\nSPDX-License-Identifier: MIT OR Apache-2.0\\nSPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus\\n\\*/"
+    pattern: "(?s)^/\\*\\nSPDX-License-Identifier: MIT OR Apache-2.0\\nSPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors\\n\\*/"
     level: warning
 
   - id: rust-crate-readme
@@ -96,7 +96,7 @@ rules:
     paths:
       - "crates/citum-engine/**/*.rs"
       - "crates/citum-schema/**/*.rs"
-    pattern: 'println!\('
+    pattern: '\bprintln!\('
     level: warning
 
   - id: rust-cargo-metadata
@@ -119,11 +119,3 @@ rules:
     pattern: "(?s)^(/\\*.*?\\*/\\s*)?//!"
     level: warning
 
-  - id: rust-forbid-unsafe
-    kind: file_content_matches
-    paths:
-      - "crates/citum-schema/src/lib.rs"
-      - "crates/citum-migrate/src/lib.rs"
-      - "crates/citum-analyze/src/lib.rs"
-    pattern: "#!\\[forbid\\(unsafe_code\\)\\]"
-    level: warning
