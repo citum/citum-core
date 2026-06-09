@@ -241,7 +241,10 @@ impl Processor {
             parsed,
             parser,
             format,
-            super::super::Processor::render_grouped_document_bibliography_with_format::<F>,
+            |p: &super::super::Processor| {
+                p.render_document_bibliography::<F>(true, None, None)
+                    .content
+            },
         )
     }
 

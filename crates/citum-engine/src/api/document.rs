@@ -605,9 +605,10 @@ where
 /// Format the bibliography by output kind, restricted to the document's cited set.
 ///
 /// Only references that appear in `processor.cited_ids` — either via an in-text
-/// citation or via a `nocite` registration — are included in the output. This
-/// unifies the interactive API with the document-string path, both of which use
-/// `cited_ids` as the authority for "what belongs in the bibliography".
+/// citation or via a `nocite` registration — are included in the output. Delegates
+/// to [`Processor::render_document_bibliography`], the unified facade that ensures
+/// both `content` and `entries` are computed from the same cited subset so
+/// subsequent-author substitution stays consistent.
 pub(crate) fn format_bibliography<F>(
     processor: &Processor,
     format_kind: OutputFormatKind,
@@ -616,27 +617,9 @@ pub(crate) fn format_bibliography<F>(
 where
     F: OutputFormat<Output = String>,
 {
-    // Extract annotation map and style if present
-    let (annotations, annotation_style) = if let Some(opts) = doc_opts {
-        if let Some(anns) = &opts.annotations {
-            let style = opts.annotation_format.as_ref().map(|fmt| AnnotationStyle {
-                format: fmt.clone(),
-            });
-            (anns.clone(), style)
-        } else {
-            (HashMap::new(), None)
-        }
-    } else {
-        (HashMap::new(), None)
-    };
-
-    // Collect the document's reference set (cited + nocite IDs).
-    let cited_set = processor.cited_ids.borrow();
-    let cited_ids_vec: Vec<String> = cited_set.iter().cloned().collect();
-
-    // Render bibliography string restricted to the document reference set.
-    let content = processor.render_selected_bibliography_with_format_and_annotations::<F, _>(
-        cited_ids_vec,
+    let (annotations, annotation_style) = annotation_options(doc_opts);
+    let doc_bib = processor.render_document_bibliography::<F>(
+        true,
         if annotations.is_empty() {
             None
         } else {
@@ -644,42 +627,24 @@ where
         },
         annotation_style.as_ref(),
     );
-
-    // Extract per-entry text using the same selected subset that rendered
-    // content, so subsequent-author substitution is computed against cited
-    // refs only — not the full loaded bibliography.
-    let proc_entries = processor
-        .process_selected_references_with_format::<F, _>(cited_set.iter().cloned())
-        .bibliography;
-    let entries = proc_entries
+    let entries = doc_bib
+        .entries
         .into_iter()
         .map(|entry| {
-            let entry_anns = if annotations.is_empty() {
-                None
-            } else {
-                Some(&annotations)
-            };
-            let text = crate::render::bibliography::refs_to_string_with_format::<F>(
-                vec![entry.clone()],
-                entry_anns,
+            proc_entry_to_bibliography_entry::<F>(
+                entry,
+                if annotations.is_empty() {
+                    None
+                } else {
+                    Some(&annotations)
+                },
                 annotation_style.as_ref(),
-            );
-            let metadata = EntryMetadata {
-                author: entry.metadata.author.unwrap_or_default(),
-                year: entry.metadata.year.unwrap_or_default(),
-                title: entry.metadata.title.unwrap_or_default(),
-            };
-            BibliographyEntry {
-                id: entry.id,
-                text,
-                metadata,
-            }
+            )
         })
         .collect();
-
     Ok(FormattedBibliography {
         format: format_kind,
-        content,
+        content: doc_bib.content,
         entries,
     })
 }

@@ -78,6 +78,12 @@ The response is the standard `SessionMutationResult` envelope
 |------|-------|---------|
 | `nocite_missing_ref` | `warning` | The supplied nocite ID is not present in the loaded bibliography. |
 
+## See Also
+
+- [BIBLIOGRAPHY_RENDERING_PIPELINE.md](BIBLIOGRAPHY_RENDERING_PIPELINE.md) — consolidated
+  pipeline diagram and routing rules; explains how `cited_ids` (cited + nocite IDs) gates
+  bibliography inclusion across all three document-context API surfaces.
+
 ## Out of Scope
 
 - Numeric-label assignment for nocite-only entries (no in-text number, but a bibliography
