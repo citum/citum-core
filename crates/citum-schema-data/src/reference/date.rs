@@ -23,8 +23,7 @@ impl EdtfString {
 
     /// Parse the string as an EDTF date etc, or return the string as a literal.
     pub fn parse(&self) -> RefDate {
-        let mut input = self.0.as_str();
-        match citum_edtf::parse(&mut input) {
+        match self.0.parse::<citum_edtf::Edtf>() {
             Ok(edtf) => RefDate::Edtf(edtf),
             Err(_) => RefDate::Literal(self.0.clone()),
         }
