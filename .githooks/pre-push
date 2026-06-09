@@ -33,29 +33,14 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     exit 1
   fi
 
-  # Validate commit scopes against the canonical allowlist.
-  # Internal commits may use any scope, but everything pushed must be clean.
-  # Validate scopes against the canonical allowlist.
-  # Use sed to extract scope (avoids bash =~ ERE paren ambiguity).
-  VALID_SCOPES_RE='^(engine|schema|migrate|store|io|cli|server|styles|locale|i18n|ci|hooks|beans|scripts|tooling|spec|docs|release|report|examples|bindings|security|demo)$'
-  VALID_SCOPES_LIST="engine, schema, migrate, store, io, cli, server, styles, locale, i18n, ci, hooks, beans, scripts, tooling, spec, docs, release, report, examples, bindings, security, demo"
-  scope_errors=()
-  while IFS= read -r subject; do
-    # Extract scope: "type(scope)[!]: ..." -> scope, empty if unscoped.
-    scope="$(printf '%s' "$subject" | sed -nE 's/^[a-z]+\(([^)]+)\).*/\1/p')"
-    if [[ -n "$scope" ]] && ! printf '%s' "$scope" | grep -qE "$VALID_SCOPES_RE"; then
-      scope_errors+=("  '$scope' in: $subject")
+  # Validate conventional commits (scope allowlist, format, body) via alint.
+  # The authoritative scope list lives in .alint.yml — no duplication here.
+  if command -v alint &>/dev/null; then
+    if ! ALINT_BASE_SHA="$remote_sha" alint check --base "$remote_sha" \
+        "$ROOT_DIR" 2>&1; then
+      printf '[ERROR] alint check failed.\n' >&2
+      exit 1
     fi
-  done < <(git -C "$ROOT_DIR" log --format=%s "$remote_sha..$local_sha")
-
-  if (( ${#scope_errors[@]} > 0 )); then
-    printf '[ERROR] Invalid commit scope(s).\n' >&2
-    for err in "${scope_errors[@]}"; do
-      printf '%s\n' "$err" >&2
-    done
-    printf '[ERROR] Allowed: %s\n' "$VALID_SCOPES_LIST" >&2
-    printf '[ERROR] Rewrite history before pushing (git rebase -i).\n' >&2
-    exit 1
   fi
 
   # Bean hygiene: run the same check CI runs (unarchived terminals, stale beans).

@@ -10,7 +10,8 @@ if [[ "$header" =~ ^(Merge|Revert|fixup!|squash!) ]]; then
   exit 0
 fi
 
-header_regex='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\((engine|schema|migrate|store|io|cli|server|styles|locale|i18n|ci|hooks|beans|scripts|tooling|spec|docs|release|report|examples|bindings|security|demo)\))?(!)?: [a-z].+$'
+# Structural check only — scope allowlist is enforced by alint at push time.
+header_regex='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([^)]+\))?(!)?: [a-z].+$'
 
 if [[ ! "$header" =~ $header_regex ]]; then
   cat <<'EOF' >&2
