@@ -145,6 +145,40 @@ impl Processor {
         }
     }
 
+    /// Process only the selected bibliography entries, in bibliography sort order.
+    ///
+    /// Mirrors the flat path inside
+    /// [`render_selected_bibliography_with_format_and_annotations`] so that
+    /// per-entry `text` and subsequent-author substitution are computed against
+    /// the same subset that produced `content` — not the full loaded
+    /// bibliography. This matters for subsequent-author substitution: an uncited
+    /// predecessor must not cause the first cited entry to receive `———`.
+    pub(crate) fn process_selected_references_with_format<F, I>(
+        &self,
+        item_ids: I,
+    ) -> ProcessedReferences
+    where
+        F: OutputFormat<Output = String>,
+        I: IntoIterator<Item = String>,
+    {
+        self.initialize_numeric_bibliography_numbers();
+        let selected: HashSet<String> = item_ids.into_iter().collect();
+        let sorted_refs = self.sort_references(self.bibliography.values().collect());
+        let bibliography = self.process_sorted_refs::<_, F>(
+            sorted_refs
+                .iter()
+                .filter(|r| r.id().as_deref().is_some_and(|id| selected.contains(id)))
+                .copied(),
+            |reference, entry_number| {
+                self.process_bibliography_entry_with_format::<F>(reference, entry_number)
+            },
+        );
+        ProcessedReferences {
+            bibliography,
+            citations: None,
+        }
+    }
+
     /// Process and render a bibliography entry.
     pub fn process_bibliography_entry(
         &self,

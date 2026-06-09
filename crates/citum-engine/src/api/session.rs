@@ -106,6 +106,11 @@ pub struct DocumentSession {
     document_options: Option<DocumentOptions>,
     refs: Option<RefsInput>,
     citations: Vec<CitationOccurrence>,
+    /// Reference IDs registered for bibliography-only inclusion (nocite).
+    ///
+    /// IDs in this set appear in the bibliography alongside cited refs but
+    /// produce no `formatted_citations` entry (standard citeproc nocite).
+    nocite: Vec<String>,
     version: u64,
     formatted_citations: Vec<FormattedCitation>,
     bibliography: Option<FormattedBibliography>,
@@ -128,6 +133,7 @@ impl DocumentSession {
             document_options,
             refs: None,
             citations: Vec::new(),
+            nocite: Vec::new(),
             version: 0,
             formatted_citations: Vec::new(),
             bibliography: None,
@@ -143,6 +149,25 @@ impl DocumentSession {
     /// Replace the full reference set used by this session.
     pub fn put_references(&mut self, refs: RefsInput) {
         self.refs = Some(refs);
+    }
+
+    /// Set the nocite list and re-render the session bibliography.
+    ///
+    /// Nocite IDs appear in the bibliography alongside cited refs but produce
+    /// no `formatted_citations` entry. IDs absent from the current reference
+    /// set emit a `nocite_missing_ref` warning and are silently dropped.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when re-rendering the session output fails.
+    pub fn set_nocite(
+        &mut self,
+        ids: Vec<String>,
+    ) -> Result<SessionMutationResult, DocumentSessionError> {
+        let old_citations = self.citations.clone();
+        let old_formatted = self.formatted_citations.clone();
+        self.nocite = ids;
+        self.commit_render(old_citations, old_formatted)
     }
 
     /// Replace the full ordered citation list.
@@ -380,6 +405,29 @@ impl DocumentSession {
         // document scope). Safe no-op when no memory config is present.
         processor.annotate_flat_integral_name_states(&mut processor_citations);
 
+        // Register nocite IDs: validate against bibliography, warn on missing, then
+        // add to cited_ids so they appear in bibliography entries but produce no
+        // citation text.
+        let nocite_ids: Vec<String> = self
+            .nocite
+            .iter()
+            .filter_map(|id| {
+                if processor.bibliography.contains_key(id) {
+                    Some(id.clone())
+                } else {
+                    warnings.push(Warning {
+                        level: WarningLevel::Warning,
+                        code: "nocite_missing_ref".to_string(),
+                        citation_id: None,
+                        ref_id: Some(id.clone()),
+                        message: format!("Nocite reference '{id}' not found in bibliography"),
+                    });
+                    None
+                }
+            })
+            .collect();
+        processor.register_nocite_ids(nocite_ids);
+
         let formatted_citations = match self.output_format {
             OutputFormatKind::Plain => {
                 format_by_kind::<PlainText>(&processor, &processor_citations)?
@@ -609,9 +657,10 @@ mod tests {
         MultilingualString, Processing, Rendering, StructuredName, TemplateDateVariable,
     };
     use citum_schema::reference::{EdtfString, InputReference, Monograph, MonographType, Title};
+    use citum_schema::template::{TemplateTitle, TitleType};
     use citum_schema::{
-        CitationSpec, StyleInfo, TemplateComponent, TemplateContributor, TemplateDate,
-        WrapPunctuation,
+        BibliographySpec, CitationSpec, StyleInfo, TemplateComponent, TemplateContributor,
+        TemplateDate, WrapPunctuation,
     };
 
     fn style() -> Style {
@@ -1174,6 +1223,65 @@ mod tests {
         assert_eq!(
             second.text, "Smith",
             "second integral cite should render short form from style-native config"
+        );
+    }
+
+    fn style_with_bibliography() -> Style {
+        let mut s = style();
+        s.bibliography = Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            })]),
+            ..Default::default()
+        });
+        s
+    }
+
+    #[test]
+    fn set_nocite_puts_ref_in_bibliography_not_in_formatted_citations() {
+        // given: a session with smith2020 cited in-text and roe2022 nocite-only
+        let mut session = DocumentSession::new(
+            style_with_bibliography(),
+            StyleInput::Yaml(String::new()),
+            None,
+            OutputFormatKind::Plain,
+            None,
+        );
+        session.put_references(refs());
+        session
+            .insert_citations_batch(vec![citation("c1", "smith2020")])
+            .expect("citation insert should succeed");
+
+        // when: roe2022 is registered as nocite
+        let result = session
+            .set_nocite(vec!["roe2022".to_string()])
+            .expect("set_nocite should succeed");
+
+        // then: roe2022 appears in bibliography entries but not in any formatted citation
+        assert!(
+            result
+                .bibliography
+                .entries
+                .iter()
+                .any(|e| e.id == "roe2022"),
+            "nocite ref should appear in bibliography entries"
+        );
+        assert!(
+            result
+                .affected_citations
+                .iter()
+                .all(|c| c.text != "roe2022" && !c.ref_ids.contains(&"roe2022".to_string())),
+            "nocite ref should not appear in any formatted citation"
+        );
+        // and: the uncited, non-nocite ref (doe2021) is absent from bibliography
+        assert!(
+            !result
+                .bibliography
+                .entries
+                .iter()
+                .any(|e| e.id == "doe2021"),
+            "non-cited, non-nocite ref should not appear in bibliography"
         );
     }
 }

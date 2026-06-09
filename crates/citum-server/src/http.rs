@@ -188,7 +188,8 @@ async fn rpc_schema() -> impl IntoResponse {
     #[cfg(feature = "session")]
     use crate::rpc::{
         DeleteCitationParams, InsertCitationParams, InsertCitationsBatchParams, OpenSessionParams,
-        PreviewCitationParams, PutReferencesParams, SessionIdParams, UpdateCitationParams,
+        PreviewCitationParams, PutReferencesParams, SessionIdParams, SetNociteParams,
+        UpdateCitationParams,
     };
     use crate::rpc::{
         FormatDocumentParams, RenderBibliographyParams, RenderCitationParams, ValidateStyleParams,
@@ -211,6 +212,10 @@ async fn rpc_schema() -> impl IntoResponse {
             schema.insert(
                 "put_references".to_string(),
                 json!(schema_for!(PutReferencesParams)),
+            );
+            schema.insert(
+                "set_nocite".to_string(),
+                json!(schema_for!(SetNociteParams)),
             );
             schema.insert(
                 "insert_citations_batch".to_string(),

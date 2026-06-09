@@ -66,6 +66,15 @@ pub struct FormatDocumentRequest {
     pub bibliography_blocks: Vec<super::BibliographyBlockRequest>,
     /// Optional document-level configuration.
     pub document_options: Option<DocumentOptions>,
+    /// Reference IDs to include in the bibliography without emitting an in-text citation.
+    ///
+    /// Nocite entries appear in `bibliography.entries` (and match `CitedStatus::Visible`
+    /// selectors for grouped / block bibliographies) but produce no `formatted_citations`
+    /// entry. This matches standard citeproc / Pandoc `nocite` semantics.
+    ///
+    /// IDs absent from `refs` are ignored and trigger a `nocite_missing_ref` warning.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub nocite: Vec<String>,
 }
 
 /// The result of formatting a document.
@@ -299,6 +308,28 @@ pub fn format_document_with_style(
         OutputFormatKind::Typst => format_by_kind::<Typst>(&processor, &citations)?,
         OutputFormatKind::Markdown => format_by_kind::<Markdown>(&processor, &citations)?,
     };
+
+    // Register nocite IDs: validate against bibliography, warn on missing, then add
+    // to cited_ids so they appear in bibliography.entries but produce no citation text.
+    let nocite_ids: Vec<String> = request
+        .nocite
+        .iter()
+        .filter_map(|id| {
+            if processor.bibliography.contains_key(id) {
+                Some(id.clone())
+            } else {
+                warnings.push(Warning {
+                    level: WarningLevel::Warning,
+                    code: "nocite_missing_ref".to_string(),
+                    citation_id: None,
+                    ref_id: Some(id.clone()),
+                    message: format!("Nocite reference '{id}' not found in bibliography"),
+                });
+                None
+            }
+        })
+        .collect();
+    processor.register_nocite_ids(nocite_ids);
 
     // Process bibliography
     let bibliography = match request.output_format {
@@ -571,7 +602,12 @@ where
     Ok(formatted)
 }
 
-/// Format the bibliography by output kind.
+/// Format the bibliography by output kind, restricted to the document's cited set.
+///
+/// Only references that appear in `processor.cited_ids` — either via an in-text
+/// citation or via a `nocite` registration — are included in the output. This
+/// unifies the interactive API with the document-string path, both of which use
+/// `cited_ids` as the authority for "what belongs in the bibliography".
 pub(crate) fn format_bibliography<F>(
     processor: &Processor,
     format_kind: OutputFormatKind,
@@ -594,19 +630,27 @@ where
         (HashMap::new(), None)
     };
 
-    // Render bibliography as string
-    let content = if annotations.is_empty() {
-        processor
-            .render_bibliography_with_format_and_annotations::<F>(None, annotation_style.as_ref())
-    } else {
-        processor.render_bibliography_with_format_and_annotations::<F>(
-            Some(&annotations),
-            annotation_style.as_ref(),
-        )
-    };
+    // Collect the document's reference set (cited + nocite IDs).
+    let cited_set = processor.cited_ids.borrow();
+    let cited_ids_vec: Vec<String> = cited_set.iter().cloned().collect();
 
-    // Extract per-entry text in the requested output format and capture metadata.
-    let proc_entries = processor.process_references_with_format::<F>().bibliography;
+    // Render bibliography string restricted to the document reference set.
+    let content = processor.render_selected_bibliography_with_format_and_annotations::<F, _>(
+        cited_ids_vec,
+        if annotations.is_empty() {
+            None
+        } else {
+            Some(&annotations)
+        },
+        annotation_style.as_ref(),
+    );
+
+    // Extract per-entry text using the same selected subset that rendered
+    // content, so subsequent-author substitution is computed against cited
+    // refs only — not the full loaded bibliography.
+    let proc_entries = processor
+        .process_selected_references_with_format::<F, _>(cited_set.iter().cloned())
+        .bibliography;
     let entries = proc_entries
         .into_iter()
         .map(|entry| {
@@ -834,6 +878,7 @@ mod tests {
             citations: vec![],
             bibliography_blocks: Vec::new(),
             document_options: None,
+            nocite: vec![],
         };
 
         let result = format_document_with_style(style, request);
@@ -862,6 +907,9 @@ mod tests {
             citations: vec![],
             bibliography_blocks: Vec::new(),
             document_options: None,
+            // Use nocite to include art1 in the bibliography without an in-text citation;
+            // the test is validating bibliography HTML rendering, not citation rendering.
+            nocite: vec!["art1".to_string()],
         };
 
         let result = format_document_with_style(style, request).expect("should render");
@@ -911,6 +959,7 @@ mod tests {
             citations: vec![citation_occ],
             bibliography_blocks: Vec::new(),
             document_options: None,
+            nocite: vec![],
         };
 
         let result = format_document_with_style(style, request);
@@ -963,6 +1012,7 @@ mod tests {
             citations: vec![citation_occ],
             bibliography_blocks: Vec::new(),
             document_options: None,
+            nocite: vec![],
         };
 
         let result = format_document_with_style(style, request).unwrap();
@@ -1020,6 +1070,7 @@ mod tests {
             citations: vec![citation_occ],
             bibliography_blocks: Vec::new(),
             document_options: None,
+            nocite: vec![],
         };
 
         let result = format_document(request);
@@ -1040,6 +1091,7 @@ mod tests {
             citations: vec![],
             bibliography_blocks: Vec::new(),
             document_options: None,
+            nocite: vec![],
         };
 
         let result = format_document(request);
@@ -1106,6 +1158,7 @@ mod tests {
             citations: vec![citation_occ],
             bibliography_blocks: Vec::new(),
             document_options: None,
+            nocite: vec![],
         };
 
         // Without a resolver, the same Id input must be rejected.
@@ -1228,6 +1281,7 @@ mod tests {
             citations: vec![cite("duo2024")],
             bibliography_blocks: Vec::new(),
             document_options: None,
+            nocite: vec![],
         };
         let result_base = format_document_with_style(base_style.clone(), request_base).unwrap();
         let text_base = &result_base.formatted_citations[0].text;
@@ -1246,6 +1300,7 @@ mod tests {
             citations: vec![cite("duo2024")],
             bibliography_blocks: Vec::new(),
             document_options: None,
+            nocite: vec![],
         };
         let result_override =
             format_document_with_style(base_style.clone(), request_override).unwrap();
@@ -1281,6 +1336,7 @@ mod tests {
             citations: vec![],
             bibliography_blocks: Vec::new(),
             document_options: None,
+            nocite: vec![],
         };
 
         match format_document_with_style(style, request) {
@@ -1429,6 +1485,7 @@ mod tests {
                 }),
                 ..Default::default()
             }),
+            nocite: vec![],
         };
 
         let result = format_document_with_style(style, request).expect("should render");
@@ -1476,6 +1533,7 @@ mod tests {
                 }),
                 ..Default::default()
             }),
+            nocite: vec![],
         };
 
         let result = format_document_with_style(style, request).expect("should render");
@@ -1512,6 +1570,7 @@ mod tests {
             ],
             bibliography_blocks: Vec::new(),
             document_options: None,
+            nocite: vec![],
         };
 
         let result = format_document_with_style(style, request).expect("should render");
@@ -1582,6 +1641,7 @@ mod tests {
             citations: vec![],
             bibliography_blocks: vec![make_block("block-a"), make_block("block-b")],
             document_options: None,
+            nocite: vec![],
         };
 
         let result = format_document_with_style(style, request).expect("should render");
@@ -1597,6 +1657,194 @@ mod tests {
         assert_eq!(
             block_b_count, 0,
             "block-b is empty: dedup set prevents re-assignment from block-a"
+        );
+    }
+
+    // --- nocite tests ---
+
+    /// A ref listed only in `nocite` must appear in the bibliography but produce
+    /// no `formatted_citations` entry (standard citeproc nocite semantics).
+    #[test]
+    fn nocite_ref_in_bibliography_not_in_formatted_citations() {
+        let mut style = make_test_style();
+        // A bibliography template is required for entries to be produced.
+        style.bibliography = Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            })]),
+            ..Default::default()
+        });
+        let refs = make_test_bibliography(); // contains "smith2020"
+
+        let request = FormatDocumentRequest {
+            style: StyleInput::Yaml("dummy".to_string()),
+            style_overrides: None,
+            locale: None,
+            output_format: OutputFormatKind::Plain,
+            refs,
+            citations: vec![],
+            bibliography_blocks: Vec::new(),
+            document_options: None,
+            nocite: vec!["smith2020".to_string()],
+        };
+
+        let result = format_document_with_style(style, request).expect("should render");
+
+        assert_eq!(
+            result.formatted_citations.len(),
+            0,
+            "nocite refs must not produce a formatted citation"
+        );
+        assert_eq!(
+            result.bibliography.entries.len(),
+            1,
+            "nocite ref must appear in bibliography entries"
+        );
+        assert_eq!(
+            result.bibliography.entries[0].id, "smith2020",
+            "bibliography entry id should match nocite ref"
+        );
+        assert!(
+            !result.bibliography.content.is_empty(),
+            "bibliography content must be non-empty for nocite ref"
+        );
+        assert!(
+            result.warnings.is_empty(),
+            "no warnings expected: {:?}",
+            result.warnings
+        );
+    }
+
+    /// An ID listed in `nocite` that is absent from `refs` must emit a
+    /// `nocite_missing_ref` warning and not appear in the bibliography.
+    #[test]
+    fn nocite_missing_ref_emits_warning() {
+        let style = make_test_style();
+        let refs = make_test_bibliography();
+
+        let request = FormatDocumentRequest {
+            style: StyleInput::Yaml("dummy".to_string()),
+            style_overrides: None,
+            locale: None,
+            output_format: OutputFormatKind::Plain,
+            refs,
+            citations: vec![],
+            bibliography_blocks: Vec::new(),
+            document_options: None,
+            nocite: vec!["does_not_exist".to_string()],
+        };
+
+        let result = format_document_with_style(style, request).expect("should render");
+
+        assert_eq!(
+            result.bibliography.entries.len(),
+            0,
+            "absent nocite ref must not produce a bibliography entry"
+        );
+        let warning = result
+            .warnings
+            .iter()
+            .find(|w| w.code == "nocite_missing_ref")
+            .expect("nocite_missing_ref warning should be emitted");
+        assert_eq!(
+            warning.ref_id.as_deref(),
+            Some("does_not_exist"),
+            "warning ref_id should name the absent nocite key"
+        );
+    }
+
+    /// A nocite ref must sort alongside the cited ref when both are present
+    /// (i.e., citation status does not affect bibliography sort order).
+    #[test]
+    fn nocite_ref_sorts_alongside_cited_ref() {
+        let mut style = make_test_style();
+        style.bibliography = Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            })]),
+            ..Default::default()
+        });
+
+        let citation_occ = CitationOccurrence {
+            id: "c1".to_string(),
+            items: vec![CitationOccurrenceItem {
+                id: "duo2024".to_string(),
+                locator: None,
+                prefix: None,
+                suffix: None,
+                integral_name_state: None,
+                org_abbreviation_state: None,
+            }],
+            mode: None,
+            note_number: None,
+            suppress_author: None,
+            grouped: None,
+            prefix: None,
+            suffix: None,
+            sentence_start: None,
+        };
+
+        // Two refs: duo2024 (cited via citation_occ) + smith2020 (nocite-only).
+        let combined_refs = RefsInput::Yaml(
+            r#"duo2024:
+  class: monograph
+  id: duo2024
+  type: book
+  title: Duo Work
+  issued: "2024"
+  author:
+    - family: Smith
+      given: Alice
+    - family: Jones
+      given: Bob
+smith2020:
+  class: monograph
+  id: smith2020
+  type: book
+  title: Smith Work
+  issued: "2020"
+  author:
+    - family: Smith
+      given: Alex
+"#
+            .to_string(),
+        );
+
+        let request = FormatDocumentRequest {
+            style: StyleInput::Yaml("dummy".to_string()),
+            style_overrides: None,
+            locale: None,
+            output_format: OutputFormatKind::Plain,
+            refs: combined_refs,
+            citations: vec![citation_occ],
+            bibliography_blocks: Vec::new(),
+            document_options: None,
+            nocite: vec!["smith2020".to_string()],
+        };
+
+        let result = format_document_with_style(style, request).expect("should render");
+
+        assert_eq!(result.formatted_citations.len(), 1, "one in-text citation");
+        assert_eq!(
+            result.bibliography.entries.len(),
+            2,
+            "both cited and nocite refs must appear in the bibliography"
+        );
+        let ids: Vec<&str> = result
+            .bibliography
+            .entries
+            .iter()
+            .map(|e| e.id.as_str())
+            .collect();
+        assert!(
+            ids.contains(&"duo2024"),
+            "cited ref must be in bibliography: {ids:?}"
+        );
+        assert!(
+            ids.contains(&"smith2020"),
+            "nocite ref must be in bibliography: {ids:?}"
         );
     }
 }

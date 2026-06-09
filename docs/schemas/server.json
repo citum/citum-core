@@ -2913,6 +2913,13 @@
             "type": "null"
           }
         ]
+      },
+      "nocite": {
+        "description": "Reference IDs to include in the bibliography without an in-text citation.\n\nEach ID must be present in `refs`. Unknown IDs produce a `nocite_missing_ref`\nwarning and are otherwise ignored.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
       }
     }
   }
