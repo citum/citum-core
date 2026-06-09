@@ -41,7 +41,6 @@ rules:
       - "docs/guides/*.md"
       - "docs/policies/*.md"
       - "docs/reference/*.md"
-      - "docs/specs/*.md"
       - "README.md"
       - "CLAUDE.md"
     prefixes:
