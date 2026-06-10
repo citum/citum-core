@@ -1,0 +1,2031 @@
+{
+  "generated": "2026-06-10T16:52:41.318Z",
+  "commit": "4016d7cf",
+  "corpus": "random",
+  "sample": {
+    "seed": 20260610,
+    "requested": 100,
+    "population": 2844,
+    "strata": {
+      "author": 10,
+      "author-date": 1335,
+      "label": 3,
+      "note": 542,
+      "numeric": 954
+    },
+    "allocation": {
+      "author": 5,
+      "author-date": 40,
+      "label": 3,
+      "note": 19,
+      "numeric": 33
+    }
+  },
+  "aggregate": {
+    "migrated": {
+      "n": 98,
+      "mean": 94.9,
+      "p10": 86.03,
+      "p50": 97.5,
+      "p90": 99.27
+    },
+    "public": {
+      "n": 5,
+      "mean": 95.93,
+      "p10": 93.33,
+      "p50": 96.67,
+      "p90": 99.17
+    },
+    "delta": {
+      "n": 4,
+      "mean": -0.42,
+      "p10": -3.07,
+      "p50": -0.44,
+      "p90": 2.76
+    },
+    "fidelityHeadline": {
+      "threshold": 90,
+      "overall": {
+        "measured": 100,
+        "statuses": {
+          "ok": 98,
+          "oracle_failed": 2
+        },
+        "atThreshold": 43,
+        "shareAtThreshold": 43,
+        "combined": {
+          "n": 98,
+          "mean": 83.2,
+          "p10": 55.2,
+          "p50": 89.7,
+          "p90": 100
+        }
+      },
+      "perClass": {
+        "author": {
+          "measured": 5,
+          "statuses": {
+            "ok": 4,
+            "oracle_failed": 1
+          },
+          "atThreshold": 1,
+          "shareAtThreshold": 20,
+          "combined": {
+            "n": 4,
+            "mean": 86.9,
+            "p10": 82.8,
+            "p50": 87.7,
+            "p90": 91.2
+          }
+        },
+        "author-date": {
+          "measured": 40,
+          "statuses": {
+            "ok": 40
+          },
+          "atThreshold": 23,
+          "shareAtThreshold": 57.5,
+          "combined": {
+            "n": 40,
+            "mean": 87.8,
+            "p10": 67.2,
+            "p50": 94.8,
+            "p90": 100
+          }
+        },
+        "label": {
+          "measured": 3,
+          "statuses": {
+            "oracle_failed": 1,
+            "ok": 2
+          },
+          "atThreshold": 0,
+          "shareAtThreshold": 0,
+          "combined": {
+            "n": 2,
+            "mean": 46.6,
+            "p10": 19,
+            "p50": 74.1,
+            "p90": 74.1
+          }
+        },
+        "note": {
+          "measured": 19,
+          "statuses": {
+            "ok": 19
+          },
+          "atThreshold": 3,
+          "shareAtThreshold": 15.8,
+          "combined": {
+            "n": 19,
+            "mean": 70.6,
+            "p10": 35,
+            "p50": 75.9,
+            "p90": 93
+          }
+        },
+        "numeric": {
+          "measured": 33,
+          "statuses": {
+            "ok": 33
+          },
+          "atThreshold": 16,
+          "shareAtThreshold": 48.5,
+          "combined": {
+            "n": 33,
+            "mean": 86.4,
+            "p10": 63.8,
+            "p50": 89.8,
+            "p90": 100
+          }
+        }
+      }
+    }
+  },
+  "results": [
+    {
+      "style": "chicago-in-text-shortened-author",
+      "styleClass": "author",
+      "fidelity": {
+        "citations": {
+          "passed": 16,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 34,
+          "total": 37
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 95.03,
+      "publicSqi": null,
+      "outputLines": 665
+    },
+    {
+      "style": "chicago-in-text-shortened-author-no-url",
+      "styleClass": "author",
+      "fidelity": {
+        "citations": {
+          "passed": 16,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 33,
+          "total": 37
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 96.77,
+      "publicSqi": null,
+      "outputLines": 552
+    },
+    {
+      "style": "chicago-in-text-shortened-author-title-no-url",
+      "styleClass": "author",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 32,
+          "total": 37
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 96.7,
+      "publicSqi": null,
+      "outputLines": 543
+    },
+    {
+      "style": "modern-language-association-annotated-bibliography",
+      "styleClass": "author",
+      "fidelity": {
+        "citations": {
+          "passed": 14,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 34,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 90.67,
+      "publicSqi": null,
+      "outputLines": 771
+    },
+    {
+      "style": "zeitschrift-fur-fantastikforschung",
+      "styleClass": "author",
+      "fidelity": {
+        "error": "Citum rendering failed",
+        "details": "Processor failed: \nError: template variant operation in `bibliography.type-variants[interview]` matched no component\n"
+      },
+      "migratedSqi": null,
+      "publicSqi": null,
+      "outputLines": null
+    },
+    {
+      "style": "antarctic-science",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 19,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 38,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 92.77,
+      "publicSqi": null,
+      "outputLines": 224
+    },
+    {
+      "style": "anthropologie-et-societes",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 37,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 96.03,
+      "publicSqi": null,
+      "outputLines": 236
+    },
+    {
+      "style": "australian-road-research-board",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 18,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 38,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 85.57,
+      "publicSqi": null,
+      "outputLines": 213
+    },
+    {
+      "style": "berlin-school-of-economics-and-law-international-marketing-management",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 36,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 85.73,
+      "publicSqi": null,
+      "outputLines": 143
+    },
+    {
+      "style": "bio-protocol",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 6,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 31,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 76.27,
+      "publicSqi": null,
+      "outputLines": 1526
+    },
+    {
+      "style": "canadian-biosystems-engineering",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 32,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 92.87,
+      "publicSqi": null,
+      "outputLines": 510
+    },
+    {
+      "style": "carolinea",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 38,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.9,
+      "publicSqi": null,
+      "outputLines": 293
+    },
+    {
+      "style": "civitas-revista-de-ciencias-sociais",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 19,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 26,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 99.4,
+      "publicSqi": null,
+      "outputLines": 327
+    },
+    {
+      "style": "evolution-letters",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 37,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 99.37,
+      "publicSqi": null,
+      "outputLines": 209
+    },
+    {
+      "style": "freshwater-crayfish",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 38,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.63,
+      "publicSqi": null,
+      "outputLines": 344
+    },
+    {
+      "style": "harvard-coventry-university",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 19,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 33,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 84.03,
+      "publicSqi": null,
+      "outputLines": 1338
+    },
+    {
+      "style": "harvard-durham-university-business-school",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 19,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 36,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 97.77,
+      "publicSqi": null,
+      "outputLines": 449
+    },
+    {
+      "style": "history-of-the-human-sciences",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 38,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 86.03,
+      "publicSqi": null,
+      "outputLines": 177
+    },
+    {
+      "style": "institut-national-de-sante-publique-du-quebec-napp",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 32,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 99,
+      "publicSqi": null,
+      "outputLines": 214
+    },
+    {
+      "style": "instituto-de-pesquisas-energeticas-e-nucleares",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 7,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 28,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 99.13,
+      "publicSqi": null,
+      "outputLines": 225
+    },
+    {
+      "style": "interkulturelle-germanistik-gottingen",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 17,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 36,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 97.8,
+      "publicSqi": null,
+      "outputLines": 408
+    },
+    {
+      "style": "jcom-journal-of-science-communication",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 14,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 25,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 91,
+      "publicSqi": null,
+      "outputLines": 1271
+    },
+    {
+      "style": "journal-of-advertising-research",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 18,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 14,
+          "total": 46
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.07,
+      "publicSqi": null,
+      "outputLines": 382
+    },
+    {
+      "style": "journal-of-applied-entomology",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 37,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 99.3,
+      "publicSqi": null,
+      "outputLines": 181
+    },
+    {
+      "style": "journal-of-contemporary-water-research-and-education",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 19,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 35,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 85.8,
+      "publicSqi": null,
+      "outputLines": 1173
+    },
+    {
+      "style": "lien-social-et-politiques",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 37,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 96.03,
+      "publicSqi": null,
+      "outputLines": 260
+    },
+    {
+      "style": "mammalia",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 24,
+          "total": 39
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.03,
+      "publicSqi": null,
+      "outputLines": 354
+    },
+    {
+      "style": "media-culture-and-society",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 38,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 92.17,
+      "publicSqi": null,
+      "outputLines": 236
+    },
+    {
+      "style": "molecular-psychiatry",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 33,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.37,
+      "publicSqi": null,
+      "outputLines": 323
+    },
+    {
+      "style": "ocean-and-coastal-research",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 37,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 91.83,
+      "publicSqi": null,
+      "outputLines": 769
+    },
+    {
+      "style": "oecologia-australis",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 19,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 36,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 93.27,
+      "publicSqi": null,
+      "outputLines": 771
+    },
+    {
+      "style": "pacific-science",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 28,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 93.2,
+      "publicSqi": null,
+      "outputLines": 575
+    },
+    {
+      "style": "pakistan-journal-of-agricultural-sciences",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 30,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98,
+      "publicSqi": null,
+      "outputLines": 324
+    },
+    {
+      "style": "preslia",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 19,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 36,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 85.8,
+      "publicSqi": null,
+      "outputLines": 188
+    },
+    {
+      "style": "raptor-journal",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 31,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.3,
+      "publicSqi": null,
+      "outputLines": 310
+    },
+    {
+      "style": "reproduction",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 17,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 38,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 96,
+      "publicSqi": null,
+      "outputLines": 221
+    },
+    {
+      "style": "social-cognitive-and-affective-neuroscience",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 19,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 38,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 92.53,
+      "publicSqi": null,
+      "outputLines": 235
+    },
+    {
+      "style": "soil-science-and-plant-nutrition",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 32,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.07,
+      "publicSqi": null,
+      "outputLines": 362
+    },
+    {
+      "style": "springer-physics-author-date",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 11,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 96.1,
+      "publicSqi": 99.17,
+      "outputLines": 166
+    },
+    {
+      "style": "the-holocene",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 36,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.47,
+      "publicSqi": null,
+      "outputLines": 267
+    },
+    {
+      "style": "the-international-spectator",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 8,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 31,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 97.23,
+      "publicSqi": null,
+      "outputLines": 375
+    },
+    {
+      "style": "the-open-university-harvard",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 31,
+          "total": 42
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 94.5,
+      "publicSqi": null,
+      "outputLines": 492
+    },
+    {
+      "style": "universidade-estadual-do-oeste-do-parana-programa-institucional-de-bolsas-de-iniciacao-cientifica",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 37,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 92.63,
+      "publicSqi": null,
+      "outputLines": 207
+    },
+    {
+      "style": "universidade-estadual-paulista-campus-de-dracena-abnt",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 9,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 34,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 95.13,
+      "publicSqi": null,
+      "outputLines": 320
+    },
+    {
+      "style": "zeitschrift-fur-religionswissenschaft-author-date",
+      "styleClass": "author-date",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 37,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 95.3,
+      "publicSqi": null,
+      "outputLines": 246
+    },
+    {
+      "style": "american-mathematical-society-label",
+      "styleClass": "label",
+      "fidelity": {
+        "error": "Citum rendering failed",
+        "details": "Processor failed: \nError: template variant operation in `bibliography.type-variants[patent]` matched no component\n"
+      },
+      "migratedSqi": null,
+      "publicSqi": 93.8,
+      "outputLines": null
+    },
+    {
+      "style": "bibtex",
+      "styleClass": "label",
+      "fidelity": {
+        "citations": {
+          "passed": 8,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 3,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 84.73,
+      "publicSqi": null,
+      "outputLines": 245
+    },
+    {
+      "style": "din-1505-2-alphanumeric",
+      "styleClass": "label",
+      "fidelity": {
+        "citations": {
+          "passed": 7,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 36,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 92.4,
+      "publicSqi": 93.33,
+      "outputLines": 296
+    },
+    {
+      "style": "anabases",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 15,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 29,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 97.9,
+      "publicSqi": null,
+      "outputLines": 265
+    },
+    {
+      "style": "bulletin-de-correspondance-hellenique",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 15,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 31,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.43,
+      "publicSqi": null,
+      "outputLines": 187
+    },
+    {
+      "style": "chicago-notes-bibliography-access-dates",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 33,
+          "total": 37
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 95.1,
+      "publicSqi": null,
+      "outputLines": 669
+    },
+    {
+      "style": "chicago-shortened-notes-bibliography-classic-archive-place-first-no-url",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 33,
+          "total": 37
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 97.5,
+      "publicSqi": null,
+      "outputLines": 534
+    },
+    {
+      "style": "china-information",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 11,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 8,
+          "total": 41
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 93.87,
+      "publicSqi": null,
+      "outputLines": 856
+    },
+    {
+      "style": "donau-universitat-krems-department-fur-e-governance-in-wirthschaft-und-verwaltung",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 17,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 35,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 96.03,
+      "publicSqi": null,
+      "outputLines": 518
+    },
+    {
+      "style": "early-medieval-europe",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 9,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 0,
+          "total": 0
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 56.67,
+      "publicSqi": null,
+      "outputLines": 71
+    },
+    {
+      "style": "histoire-at-politique",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 18,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 34,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 94.37,
+      "publicSqi": null,
+      "outputLines": 263
+    },
+    {
+      "style": "iso690-full-note-es",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 5,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 34,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 99.2,
+      "publicSqi": null,
+      "outputLines": 309
+    },
+    {
+      "style": "law-technology-and-humans",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 18,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 35,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 95.9,
+      "publicSqi": null,
+      "outputLines": 612
+    },
+    {
+      "style": "mohr-siebeck-recht",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 12,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 23,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 89.33,
+      "publicSqi": null,
+      "outputLines": 120
+    },
+    {
+      "style": "new-harts-rules-notes-initials-bracket-role-page-range-no-url",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 18,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 30,
+          "total": 37
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 99.1,
+      "publicSqi": null,
+      "outputLines": 242
+    },
+    {
+      "style": "pravny-obzor",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 9,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 33,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.83,
+      "publicSqi": null,
+      "outputLines": 240
+    },
+    {
+      "style": "seminaire-saint-sulpice-ecole-theologie",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 16,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 15,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.7,
+      "publicSqi": null,
+      "outputLines": 300
+    },
+    {
+      "style": "stuttgart-media-university",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 14,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 21,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 97.5,
+      "publicSqi": null,
+      "outputLines": 317
+    },
+    {
+      "style": "the-journal-of-transport-history",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 16,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 32,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.1,
+      "publicSqi": null,
+      "outputLines": 284
+    },
+    {
+      "style": "universite-de-sherbrooke-histoire",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 16,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 34,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.43,
+      "publicSqi": null,
+      "outputLines": 309
+    },
+    {
+      "style": "vienna-legal",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 14,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 16,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 97.4,
+      "publicSqi": null,
+      "outputLines": 486
+    },
+    {
+      "style": "zeitschrift-fur-medienwissenschaft",
+      "styleClass": "note",
+      "fidelity": {
+        "citations": {
+          "passed": 7,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 0,
+          "total": 0
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 56.67,
+      "publicSqi": null,
+      "outputLines": 48
+    },
+    {
+      "style": "advanced-science",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 22,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 89.47,
+      "publicSqi": null,
+      "outputLines": 101
+    },
+    {
+      "style": "animal-migration",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 17,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.4,
+      "publicSqi": null,
+      "outputLines": 270
+    },
+    {
+      "style": "brazilian-journal-of-psychiatry",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 12,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.33,
+      "publicSqi": null,
+      "outputLines": 317
+    },
+    {
+      "style": "cellular-and-molecular-bioengineering",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 37,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 97.5,
+      "publicSqi": null,
+      "outputLines": 379
+    },
+    {
+      "style": "clinical-journal-of-sport-medicine",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 36,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 99.33,
+      "publicSqi": null,
+      "outputLines": 195
+    },
+    {
+      "style": "din-1505-2-numeric",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 35,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 99.27,
+      "publicSqi": null,
+      "outputLines": 315
+    },
+    {
+      "style": "endoscopia",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 38,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 97.47,
+      "publicSqi": null,
+      "outputLines": 384
+    },
+    {
+      "style": "european-journal-of-emergency-medicine",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 38,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 99.37,
+      "publicSqi": null,
+      "outputLines": 245
+    },
+    {
+      "style": "frontiers-medical-journals",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 38,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 96.23,
+      "publicSqi": 96.67,
+      "outputLines": 197
+    },
+    {
+      "style": "heart-rhythm",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 38,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 96.53,
+      "publicSqi": null,
+      "outputLines": 379
+    },
+    {
+      "style": "journal-of-cardiothoracic-and-vascular-anesthesia",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 28,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 97.63,
+      "publicSqi": null,
+      "outputLines": 310
+    },
+    {
+      "style": "journal-of-industrial-and-engineering-chemistry",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 30,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.07,
+      "publicSqi": null,
+      "outputLines": 345
+    },
+    {
+      "style": "journal-of-magnetic-resonance-imaging",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 33,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 99,
+      "publicSqi": null,
+      "outputLines": 348
+    },
+    {
+      "style": "journal-of-nanoscience-and-nanotechnology",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 23,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 89.17,
+      "publicSqi": null,
+      "outputLines": 114
+    },
+    {
+      "style": "journal-of-pediatric-gastroenterology-and-nutrition",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 15,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 37,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.77,
+      "publicSqi": null,
+      "outputLines": 319
+    },
+    {
+      "style": "journal-of-the-american-animal-hospital-association",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 15,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.77,
+      "publicSqi": null,
+      "outputLines": 314
+    },
+    {
+      "style": "journal-of-the-american-ceramic-society",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 33,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.27,
+      "publicSqi": null,
+      "outputLines": 306
+    },
+    {
+      "style": "malaysian-orthopaedic-journal",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 37,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 97.7,
+      "publicSqi": null,
+      "outputLines": 435
+    },
+    {
+      "style": "mycobiology",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 37,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 99.5,
+      "publicSqi": null,
+      "outputLines": 177
+    },
+    {
+      "style": "ophthalmic-genetics",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 37,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.2,
+      "publicSqi": null,
+      "outputLines": 448
+    },
+    {
+      "style": "opto-electronic-advances",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 38,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 99.37,
+      "publicSqi": null,
+      "outputLines": 141
+    },
+    {
+      "style": "pest-management-science",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 33,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 99.5,
+      "publicSqi": null,
+      "outputLines": 241
+    },
+    {
+      "style": "proceedings-of-the-estonian-academy-of-sciences-numeric",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 17,
+          "total": 53
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 97.13,
+      "publicSqi": null,
+      "outputLines": 486
+    },
+    {
+      "style": "proceedings-of-the-royal-society-b",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 37,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 99.43,
+      "publicSqi": 96.67,
+      "outputLines": 150
+    },
+    {
+      "style": "radiation-protection-dosimetry",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 15,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 36,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 99,
+      "publicSqi": null,
+      "outputLines": 340
+    },
+    {
+      "style": "sanamed",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 38,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.47,
+      "publicSqi": null,
+      "outputLines": 397
+    },
+    {
+      "style": "scientia-iranica",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 33,
+          "total": 39
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98,
+      "publicSqi": null,
+      "outputLines": 319
+    },
+    {
+      "style": "the-journal-of-adhesive-dentistry",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 10,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 36,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.2,
+      "publicSqi": null,
+      "outputLines": 231
+    },
+    {
+      "style": "the-journal-of-pure-and-applied-chemistry-research",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 19,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 96.9,
+      "publicSqi": null,
+      "outputLines": 407
+    },
+    {
+      "style": "veterinary-record",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 28,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 92.83,
+      "publicSqi": null,
+      "outputLines": 204
+    },
+    {
+      "style": "westfalische-wilhelms-universitat-munster-medizinische-fakultat",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 25,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 97.8,
+      "publicSqi": null,
+      "outputLines": 360
+    },
+    {
+      "style": "world-applied-sciences-journal",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 30,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.63,
+      "publicSqi": null,
+      "outputLines": 268
+    },
+    {
+      "style": "zeitschrift-fur-allgemeinmedizin",
+      "styleClass": "numeric",
+      "fidelity": {
+        "citations": {
+          "passed": 20,
+          "total": 20
+        },
+        "bibliography": {
+          "passed": 32,
+          "total": 38
+        },
+        "error": null,
+        "details": null
+      },
+      "migratedSqi": 98.43,
+      "publicSqi": null,
+      "outputLines": 289
+    }
+  ]
+}
