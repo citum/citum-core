@@ -6,3 +6,4 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 pub mod deduplicate;
 pub mod grouping;
 pub mod reorder;
+pub mod suppression;
