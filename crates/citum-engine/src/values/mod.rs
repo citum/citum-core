@@ -219,7 +219,7 @@ fn resolve_multilingual_pattern(
 
     for seg in segments {
         let text: Option<String> = match &seg.view {
-            MultilingualView::Original => Some(original.to_string()),
+            MultilingualView::OriginalScript => Some(original.to_string()),
             MultilingualView::Transliterated => resolve_transliteration(
                 transliterations,
                 preferred_transliteration,
@@ -417,22 +417,22 @@ pub fn resolve_multilingual_name(
                     select_by_transliteration(m, preferred_transliteration, preferred_script)
                 }
                 // Pattern mode for names: render the romanized view, carrying the
-                // original-script form along when the pattern requests it (CNE
-                // style: "Hua Linfu 华林甫").
+                // original-script form along when the pattern requests it
+                // (e.g. "Hua Linfu 华林甫").
                 MultilingualMode::Pattern(_) => {
                     select_by_transliteration(m, preferred_transliteration, preferred_script)
                 }
             };
 
-            // When a name pattern includes an `original` view alongside the
-            // selected transliteration, carry the original-script display form
-            // (with the segment's wrap applied) so formatting can append it
-            // after the romanized name.
+            // When a name pattern includes an `original-script` view alongside
+            // the selected transliteration, carry the original-script display
+            // form (with the segment's wrap applied) so formatting can append
+            // it after the romanized name.
             let original_script = match mode {
                 MultilingualMode::Pattern(segments) if selected_name != &m.original => segments
                     .iter()
                     .find(|segment| {
-                        segment.view == citum_schema::options::MultilingualView::Original
+                        segment.view == citum_schema::options::MultilingualView::OriginalScript
                     })
                     .map(|segment| segment.wrap.apply(&original_script_display(&m.original))),
                 _ => None,

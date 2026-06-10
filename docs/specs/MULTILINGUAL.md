@@ -182,7 +182,7 @@ options:
 |---|---|---|---|
 | `romanized-translated` | `romanized [translated]` (= `combined`) | romanized | APA, Chicago, MLA, Harvard, Vancouver, AMA, NLM, CSE |
 | `romanized-only` | romanized only | romanized | IEEE and numeric styles |
-| `romanized-script-translated` | `romanized original [translated]` | `romanized original` | Area-studies house styles (e.g. CJKR, JAAS); Zotero CNE plugin output |
+| `romanized-script-translated` | `romanized original-script [translated]` | `romanized original-script` | Area-studies and East Asian studies house styles (e.g. CJKR, JAAS) |
 
 All major English-language styles *require* romanized names and titles and *recommend*
 a translation bracket for non-English titles.  Showing original-script text alongside
@@ -206,7 +206,7 @@ options:
     # title-mode:
     #   pattern:
     #     - view: transliterated
-    #     - view: original
+    #     - view: original-script
     #     - view: translated
     #       wrap: brackets       # none | brackets | parentheses
 
@@ -226,8 +226,8 @@ options:
 ### 2.3 Pattern mode
 
 `Pattern` is an ordered list of view segments joined by spaces.  It is used for styles
-like Chicago (`romanized original [translation]`) or MLA (`original [translation]`) that
-combine more than two views.  Segments whose resolved text is empty or identical to the
+like Chicago (`romanized original-script [translation]`) or MLA (`original-script [translation]`)
+that combine more than two views.  Segments whose resolved text is empty or identical to the
 previous segment are silently skipped (dedup), so missing transliterations do not produce
 duplicate text.
 
@@ -289,7 +289,7 @@ Citation disambiguation resolves surface-level ambiguity in written references f
 
 **Primary:** String matching on the displayed written form:
 - If style displays `transliteration`, compare transliterated strings
-- If style displays `original`, compare original script strings
+- If style displays `original-script`, compare original script strings
 - If style displays `translation`, compare translated strings
 
 **Fallback:** If no exact match, use normalized comparison (Unicode NFC, case-folding)

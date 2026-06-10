@@ -810,14 +810,13 @@ pub enum MultilingualPreset {
     RomanizedOnly,
     /// Three-part view: romanized form, original script, bracketed translation.
     ///
-    /// Title pattern: `romanized original [translated]`.
-    /// Names: `romanized original` (no bracket).
+    /// Title pattern: `romanized original-script [translated]`.
+    /// Names: `romanized original-script` (no bracket).
     /// Script: `Latn`.  Han and Hangul names rendered family-first with no inter-part space.
     ///
     /// This is the rendering pattern used by some area-studies and East Asian studies
-    /// house styles (e.g. CJKR, JAAS) and produced by the Zotero "Cite Non-English"
-    /// (CNE) plugin.  It is **not** a mandated disciplinary standard — it is a display
-    /// convention that some publishers allow or require.
+    /// house styles (e.g. CJKR, JAAS).  It is **not** a mandated disciplinary standard —
+    /// it is a display convention that some publishers allow or require.
     ///
     /// When CJK names render in original script the `use-native-ordering` flag ensures
     /// family-first ordering.  For Latin-script (romanized) names, ordering follows the
@@ -864,7 +863,7 @@ impl MultilingualPreset {
                             wrap: SegmentWrap::None,
                         },
                         MultilingualSegment {
-                            view: MultilingualView::Original,
+                            view: MultilingualView::OriginalScript,
                             wrap: SegmentWrap::None,
                         },
                         MultilingualSegment {
@@ -878,7 +877,7 @@ impl MultilingualPreset {
                             wrap: SegmentWrap::None,
                         },
                         MultilingualSegment {
-                            view: MultilingualView::Original,
+                            view: MultilingualView::OriginalScript,
                             wrap: SegmentWrap::None,
                         },
                     ])),

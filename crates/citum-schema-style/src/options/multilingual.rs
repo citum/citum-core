@@ -48,7 +48,7 @@ pub enum MultilingualMode {
     /// Ordered sequence of views joined by spaces.
     ///
     /// Use this when a style requires more than two views — e.g. Chicago's
-    /// `romanized original [translated]` or MLA's `original [translated]`.
+    /// `romanized original-script [translated]` or MLA's `original-script [translated]`.
     /// Each segment specifies a view and an optional bracket wrap.
     /// Segments whose resolved text is empty or identical to the previous
     /// segment are silently skipped (dedup).
@@ -58,7 +58,7 @@ pub enum MultilingualMode {
     /// title-mode:
     ///   pattern:
     ///     - view: transliterated
-    ///     - view: original
+    ///     - view: original-script
     ///     - view: translated
     ///       wrap: brackets
     /// ```
@@ -82,8 +82,8 @@ pub struct MultilingualSegment {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum MultilingualView {
-    /// The original text as stored in the data.
-    Original,
+    /// The original-script text as stored in the data.
+    OriginalScript,
     /// The transliterated (romanized) form.
     Transliterated,
     /// The translation matching the style locale.

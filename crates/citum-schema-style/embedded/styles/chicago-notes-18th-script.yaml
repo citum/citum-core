@@ -1,0 +1,12 @@
+info:
+  title: Chicago Manual of Style 18th edition (notes) — romanized + original script
+  description: >-
+    Chicago-style source citations with three-part multilingual rendering:
+    romanized title + original script + [English translation], with native
+    name ordering for Han/Hangul scripts. Used by some East Asian studies
+    house styles (e.g. CJKR, JAAS) that require this display convention.
+  short-name: "Chicago Notes (romanized + script)"
+  edition: "18th edition"
+extends: chicago-notes-18th
+options:
+  multilingual: romanized-script-translated

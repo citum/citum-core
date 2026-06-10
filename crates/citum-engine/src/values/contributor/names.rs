@@ -764,7 +764,7 @@ fn sort_separator_for_name<'a>(
 }
 
 /// Append the source-script form after a romanized long-form name when a
-/// name pattern carried one (CNE: "Hua Linfu 华林甫").
+/// name pattern requests an `original-script` segment (e.g. "Hua Linfu 华林甫").
 fn append_original_script(assembled: String, name: &crate::reference::FlatName) -> String {
     match &name.original_script {
         Some(original) if !original.is_empty() => format!("{assembled} {original}"),

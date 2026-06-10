@@ -1171,7 +1171,7 @@ fn chicago_pattern_renders_three_way_japanese_title() {
                         wrap: SegmentWrap::None,
                     },
                     MultilingualSegment {
-                        view: MultilingualView::Original,
+                        view: MultilingualView::OriginalScript,
                         wrap: SegmentWrap::None,
                     },
                     MultilingualSegment {
@@ -1251,7 +1251,7 @@ fn mla_pattern_renders_original_and_translation_chinese_title() {
             multilingual: Some(MultilingualConfig {
                 title_mode: Some(MultilingualMode::Pattern(vec![
                     MultilingualSegment {
-                        view: MultilingualView::Original,
+                        view: MultilingualView::OriginalScript,
                         wrap: SegmentWrap::None,
                     },
                     MultilingualSegment {
@@ -1327,7 +1327,7 @@ fn given_mla_pattern_mode_when_original_and_translation_exist_then_original_prec
     let ml_string = MultilingualString::Complex(complex);
     let mode = MultilingualMode::Pattern(vec![
         MultilingualSegment {
-            view: MultilingualView::Original,
+            view: MultilingualView::OriginalScript,
             wrap: SegmentWrap::None,
         },
         MultilingualSegment {
@@ -1368,7 +1368,7 @@ fn given_chicago_pattern_mode_when_all_three_views_exist_then_romanized_original
             wrap: SegmentWrap::None,
         },
         MultilingualSegment {
-            view: MultilingualView::Original,
+            view: MultilingualView::OriginalScript,
             wrap: SegmentWrap::None,
         },
         MultilingualSegment {
@@ -1413,7 +1413,7 @@ fn given_pattern_mode_when_transliteration_equals_original_then_duplicate_is_sup
             wrap: SegmentWrap::None,
         },
         MultilingualSegment {
-            view: MultilingualView::Original,
+            view: MultilingualView::OriginalScript,
             wrap: SegmentWrap::None,
         },
         MultilingualSegment {
@@ -1456,7 +1456,7 @@ fn given_pattern_mode_when_translation_is_missing_then_missing_segment_is_skippe
             wrap: SegmentWrap::None,
         },
         MultilingualSegment {
-            view: MultilingualView::Original,
+            view: MultilingualView::OriginalScript,
             wrap: SegmentWrap::None,
         },
         MultilingualSegment {

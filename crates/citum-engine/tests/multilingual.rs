@@ -170,20 +170,21 @@ fn test_bibliography_locales_switch_full_entry_layouts() {
 }
 
 #[test]
-fn test_cne_chinese_article_three_part_title() {
+fn test_chinese_article_three_part_title() {
     announce_behavior(
-        "CNE Chicago: Chinese article title renders as romanized + original script + [translation].",
+        "Chicago: Chinese article renders as romanized + original script + [translation].",
     );
     let root = project_root();
-    let style = load_style(&root.join("styles/embedded/chicago-notes-18th-cne.yaml"));
-    let bibliography =
-        load_bibliography(&root.join("tests/fixtures/multilingual/multilingual-cne-chicago.yaml"))
-            .expect("CNE Chicago fixture should parse");
+    let style = load_style(&root.join("styles/embedded/chicago-notes-18th-script.yaml"));
+    let bibliography = load_bibliography(
+        &root.join("tests/fixtures/multilingual/multilingual-east-asian-chicago.yaml"),
+    )
+    .expect("East Asian Chicago fixture should parse");
 
     let processor = Processor::new(style, bibliography);
     let entry = processor
-        .process_citation(&single_item_citation("cne-hua-linfu-article"))
-        .expect("CNE Chinese article citation should render");
+        .process_citation(&single_item_citation("hua-linfu-article"))
+        .expect("Chinese article citation should render");
 
     // Matches the Chicago 18th source example: native family-first ordering
     // with the original script appended after the romanized name.
@@ -197,20 +198,21 @@ fn test_cne_chinese_article_three_part_title() {
 }
 
 #[test]
-fn test_cne_korean_book_three_part_title() {
+fn test_korean_book_three_part_title() {
     announce_behavior(
-        "CNE Chicago: Korean book title renders as romanized + original script + [translation].",
+        "Chicago: Korean book renders as romanized + original script + [translation].",
     );
     let root = project_root();
-    let style = load_style(&root.join("styles/embedded/chicago-notes-18th-cne.yaml"));
-    let bibliography =
-        load_bibliography(&root.join("tests/fixtures/multilingual/multilingual-cne-chicago.yaml"))
-            .expect("CNE Chicago fixture should parse");
+    let style = load_style(&root.join("styles/embedded/chicago-notes-18th-script.yaml"));
+    let bibliography = load_bibliography(
+        &root.join("tests/fixtures/multilingual/multilingual-east-asian-chicago.yaml"),
+    )
+    .expect("East Asian Chicago fixture should parse");
 
     let processor = Processor::new(style, bibliography);
     let entry = processor
-        .process_citation(&single_item_citation("cne-kang-ubang-book"))
-        .expect("CNE Korean book citation should render");
+        .process_citation(&single_item_citation("kang-ubang-book"))
+        .expect("Korean book citation should render");
 
     // Matches the Chicago 18th source example: native family-first ordering
     // with the original Hanja appended after the romanized name.
@@ -223,20 +225,21 @@ fn test_cne_korean_book_three_part_title() {
 }
 
 #[test]
-fn test_cne_japanese_book_two_authors() {
+fn test_japanese_book_two_authors() {
     announce_behavior(
-        "CNE Chicago: Japanese book with two authors — both names and three-part title render.",
+        "Chicago: Japanese book with two authors — both names and three-part title render.",
     );
     let root = project_root();
-    let style = load_style(&root.join("styles/embedded/chicago-notes-18th-cne.yaml"));
-    let bibliography =
-        load_bibliography(&root.join("tests/fixtures/multilingual/multilingual-cne-chicago.yaml"))
-            .expect("CNE Chicago fixture should parse");
+    let style = load_style(&root.join("styles/embedded/chicago-notes-18th-script.yaml"));
+    let bibliography = load_bibliography(
+        &root.join("tests/fixtures/multilingual/multilingual-east-asian-chicago.yaml"),
+    )
+    .expect("East Asian Chicago fixture should parse");
 
     let processor = Processor::new(style, bibliography);
     let entry = processor
-        .process_citation(&single_item_citation("cne-abe-yoshio-book"))
-        .expect("CNE Japanese book citation should render");
+        .process_citation(&single_item_citation("abe-yoshio-book"))
+        .expect("Japanese book citation should render");
 
     // Matches the Chicago 18th source example: both names render family-first
     // with their original kanji appended after the romanized form.

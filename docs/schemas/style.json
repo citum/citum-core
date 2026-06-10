@@ -3000,7 +3000,7 @@
           "const": "romanized-only"
         },
         {
-          "description": "Three-part view: romanized form, original script, bracketed translation.\n\nTitle pattern: `romanized original [translated]`.\nNames: `romanized original` (no bracket).\nScript: `Latn`.  Han and Hangul names rendered family-first with no inter-part space.\n\nThis is the rendering pattern used by some area-studies and East Asian studies\nhouse styles (e.g. CJKR, JAAS) and produced by the Zotero \"Cite Non-English\"\n(CNE) plugin.  It is **not** a mandated disciplinary standard — it is a display\nconvention that some publishers allow or require.\n\nWhen CJK names render in original script the `use-native-ordering` flag ensures\nfamily-first ordering.  For Latin-script (romanized) names, ordering follows the\nnormal template `name-order`.",
+          "description": "Three-part view: romanized form, original script, bracketed translation.\n\nTitle pattern: `romanized original-script [translated]`.\nNames: `romanized original-script` (no bracket).\nScript: `Latn`.  Han and Hangul names rendered family-first with no inter-part space.\n\nThis is the rendering pattern used by some area-studies and East Asian studies\nhouse styles (e.g. CJKR, JAAS).  It is **not** a mandated disciplinary standard —\nit is a display convention that some publishers allow or require.\n\nWhen CJK names render in original script the `use-native-ordering` flag ensures\nfamily-first ordering.  For Latin-script (romanized) names, ordering follows the\nnormal template `name-order`.",
           "type": "string",
           "const": "romanized-script-translated"
         }
@@ -3082,7 +3082,7 @@
           "const": "combined"
         },
         {
-          "description": "Ordered sequence of views joined by spaces.\n\nUse this when a style requires more than two views — e.g. Chicago's\n`romanized original [translated]` or MLA's `original [translated]`.\nEach segment specifies a view and an optional bracket wrap.\nSegments whose resolved text is empty or identical to the previous\nsegment are silently skipped (dedup).\n\nYAML form:\n```yaml\ntitle-mode:\n  pattern:\n    - view: transliterated\n    - view: original\n    - view: translated\n      wrap: brackets\n```",
+          "description": "Ordered sequence of views joined by spaces.\n\nUse this when a style requires more than two views — e.g. Chicago's\n`romanized original-script [translated]` or MLA's `original-script [translated]`.\nEach segment specifies a view and an optional bracket wrap.\nSegments whose resolved text is empty or identical to the previous\nsegment are silently skipped (dedup).\n\nYAML form:\n```yaml\ntitle-mode:\n  pattern:\n    - view: transliterated\n    - view: original-script\n    - view: translated\n      wrap: brackets\n```",
           "type": "object",
           "properties": {
             "pattern": {
@@ -3120,9 +3120,9 @@
       "description": "Which textual representation of a multilingual field to use in a pattern segment.",
       "oneOf": [
         {
-          "description": "The original text as stored in the data.",
+          "description": "The original-script text as stored in the data.",
           "type": "string",
-          "const": "original"
+          "const": "original-script"
         },
         {
           "description": "The transliterated (romanized) form.",
