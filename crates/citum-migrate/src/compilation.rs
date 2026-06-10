@@ -111,18 +111,25 @@ pub fn compile_from_xml(
 
     let (mut new_bib, type_templates) =
         template_compiler.compile_bibliography_with_types(&bib_ir, is_numeric);
-    let new_cit = template_compiler.compile_citation(&cit_ir);
+    let is_note_class = legacy_style.class == "note";
+    let new_cit = if is_note_class {
+        template_compiler.compile_citation_note(&cit_ir)
+    } else {
+        template_compiler.compile_citation(&cit_ir)
+    };
 
     let citation_position_overrides = CitationPositionOverrides {
         subsequent: compile_citation_position_override(
             &template_compiler,
             &compressor,
             citation_position_nodes.subsequent,
+            is_note_class,
         ),
         ibid: compile_citation_position_override(
             &template_compiler,
             &compressor,
             citation_position_nodes.ibid,
+            is_note_class,
         ),
     };
 
@@ -171,10 +178,15 @@ fn compile_citation_position_override(
     compiler: &TemplateCompiler,
     compressor: &Compressor,
     nodes: Option<Vec<crate::ir::Node>>,
+    is_note_class: bool,
 ) -> Option<Vec<TemplateComponent>> {
     let nodes = nodes?;
     let compressed = compressor.compress_nodes(nodes);
-    let compiled = compiler.compile_citation(&compressed);
+    let compiled = if is_note_class {
+        compiler.compile_citation_note(&compressed)
+    } else {
+        compiler.compile_citation(&compressed)
+    };
     if compiled.is_empty() {
         None
     } else {
