@@ -10,7 +10,7 @@ Citum keeps code and schema versioning separate:
 | Track | What | Source of truth | Automation |
 |-------|------|-----------------|------------|
 | **Code** | Rust workspace crates | `Cargo.toml` workspace version | automated release workflow (`cargo-release`) |
-| **Schema** | Citum schema format exposed by `citum_schema::SCHEMA_VERSION` | `STYLE_SCHEMA_VERSION` in `crates/citum-schema-style/src/lib.rs` | automated release workflow |
+| **Schema** | Citum schema format exposed by `citum_schema::SCHEMA_VERSION` | `STYLE_SCHEMA_VERSION` in [crates/citum-schema-style/src/lib.rs](../../crates/citum-schema-style/src/lib.rs) | automated release workflow |
 
 Why the split:
 
@@ -22,8 +22,8 @@ Why the split:
 
 - Code release notes: root [`CHANGELOG.md`](../../CHANGELOG.md)
 - Code version tags: `vX.Y.Z`
-- Schema version constant: `crates/citum-schema-style/src/lib.rs`
-- Canonical committed JSON schemas: `docs/schemas/*.json`
+- Schema version constant: [crates/citum-schema-style/src/lib.rs](../../crates/citum-schema-style/src/lib.rs)
+- Canonical committed JSON schemas: [docs/schemas](../schemas)/*.json
 - Operational schema history: this file
 - Future normative compatibility docs: bean `csl26-fuw7`
 
@@ -41,9 +41,9 @@ Code and schema releases are prepared by `.github/workflows/release.yml`.
 2. It infers the bump level from conventional commits:
    `feat` -> minor, `fix` / `perf` -> patch, and breaking commits -> major.
    During the pre-1.0 line, major is capped to minor.
-3. If committed generated schema artifacts in `docs/schemas/*.json` changed
+3. If committed generated schema artifacts in [docs/schemas](../schemas)/*.json changed
    structurally, the release PR bumps `STYLE_SCHEMA_VERSION`, updates this
-   changelog, and regenerates `docs/schemas/*`.
+   changelog, and regenerates [docs/schemas](../schemas).
 4. It runs `cargo release <level> --workspace` to bump crate versions and
    generate the root changelog.
 5. It opens or updates a release PR on the `release/next` branch.
@@ -51,10 +51,10 @@ Code and schema releases are prepared by `.github/workflows/release.yml`.
    when schema changed, the matching `schema-v*` tag.
 
 Feature PRs must not bump `STYLE_SCHEMA_VERSION`, add schema tags, or add
-`Schema-Bump:` footers. They should commit generated `docs/schemas/*` changes
+`Schema-Bump:` footers. They should commit generated [docs/schemas](../schemas) changes
 when schema output changes, and the release workflow applies the version bump.
 
-Do not use `scripts/bump.sh` for code versions or `v*` tags.
+Do not use [scripts/bump.sh](../../scripts/bump.sh) for code versions or `v*` tags.
 
 ## Bump Contract
 
@@ -111,7 +111,7 @@ was tracked primarily in documentation rather than a complete tag chain. Treat
 that earlier period as pre-automation legacy.
 
 The first release workflow schema bump establishes the new automation baseline.
-From that point forward, `STYLE_SCHEMA_VERSION`, `docs/schemas/*`, and the
+From that point forward, `STYLE_SCHEMA_VERSION`, [docs/schemas](../schemas), and the
 schema changelog entry in this file move together in the generated release PR.
 
 ## Version Pinning Contract (Post-1.0)
@@ -162,7 +162,7 @@ to a follow-up task. This section defines the contract; runtime integration come
 
 ## Schema Bump Helper
 
-`scripts/bump.sh` is retained for the release workflow and emergency manual
+[scripts/bump.sh](../../scripts/bump.sh) is retained for the release workflow and emergency manual
 repair. Do not run it in normal feature PRs.
 
 Interactive usage:
@@ -186,11 +186,11 @@ The helper updates:
 
 ## CI Validation
 
-The repo now treats `docs/schemas` as the only committed schema artifact set.
+The repo now treats [docs/schemas](../schemas) as the only committed schema artifact set.
 
 CI validates:
 
-1. all schema-generating code still produces the checked-in `docs/schemas/*`
+1. all schema-generating code still produces the checked-in [docs/schemas](../schemas)
 2. commit messages follow the conventional commit format used by release inference
 3. `citum check` and auxiliary validation scripts read from the same canonical schema directory
 
