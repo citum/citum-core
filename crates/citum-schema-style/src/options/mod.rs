@@ -1293,6 +1293,53 @@ locale-override: en-US-chicago
     }
 
     #[test]
+    fn test_multilingual_preset_romanized_script_translated_parses_and_resolves() {
+        // `romanized-script-translated` resolves to a Pattern title mode (romanized original [translated])
+        // and Pattern name mode (romanized original), with Latn script and CJK native ordering.
+        use crate::options::multilingual::{MultilingualSegment, MultilingualView, SegmentWrap};
+        let yaml = r#"multilingual: romanized-script-translated"#;
+        let config: Config = serde_yaml::from_str(yaml).unwrap();
+        let ml = config.multilingual.unwrap();
+        assert_eq!(
+            ml.title_mode,
+            Some(MultilingualMode::Pattern(vec![
+                MultilingualSegment {
+                    view: MultilingualView::Transliterated,
+                    wrap: SegmentWrap::None,
+                },
+                MultilingualSegment {
+                    view: MultilingualView::Original,
+                    wrap: SegmentWrap::None,
+                },
+                MultilingualSegment {
+                    view: MultilingualView::Translated,
+                    wrap: SegmentWrap::Brackets,
+                },
+            ]))
+        );
+        assert_eq!(
+            ml.name_mode,
+            Some(MultilingualMode::Pattern(vec![
+                MultilingualSegment {
+                    view: MultilingualView::Transliterated,
+                    wrap: SegmentWrap::None,
+                },
+                MultilingualSegment {
+                    view: MultilingualView::Original,
+                    wrap: SegmentWrap::None,
+                },
+            ]))
+        );
+        assert_eq!(ml.preferred_script.as_deref(), Some("Latn"));
+        assert!(ml.scripts.get("Han").is_some_and(|s| s.use_native_ordering));
+        assert!(
+            ml.scripts
+                .get("Hangul")
+                .is_some_and(|s| s.use_native_ordering)
+        );
+    }
+
+    #[test]
     fn test_multilingual_explicit_block_transliterated_roundtrips() {
         // Verify a Transliterated explicit block survives YAML serialize→deserialize.
         let yaml = r#"

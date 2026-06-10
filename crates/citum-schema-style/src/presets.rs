@@ -28,7 +28,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! 3. Skip presets entirely and specify everything explicitly
 
 use crate::grouping::{GroupSort, GroupSortKey, SortKey as GroupSortKey_};
-use crate::options::multilingual::{MultilingualConfig, MultilingualMode};
+use crate::options::multilingual::{
+    MultilingualConfig, MultilingualMode, MultilingualSegment, MultilingualView, ScriptConfig,
+    SegmentWrap,
+};
 use crate::options::{
     AndOptions, ContributorConfig, DateConfig, DelimiterPrecedesLast, DemoteNonDroppingParticle,
     DisplayAsSort, MonthFormat, NameForm, ShortenListOptions, Sort, SortKey, SortSpec, Substitute,
@@ -805,6 +808,21 @@ pub enum MultilingualPreset {
     /// Appropriate for IEEE and numeric styles where the translation bracket
     /// is typically omitted.
     RomanizedOnly,
+    /// Three-part view: romanized form, original script, bracketed translation.
+    ///
+    /// Title pattern: `romanized original [translated]`.
+    /// Names: `romanized original` (no bracket).
+    /// Script: `Latn`.  Han and Hangul names rendered family-first with no inter-part space.
+    ///
+    /// This is the rendering pattern used by some area-studies and East Asian studies
+    /// house styles (e.g. CJKR, JAAS) and produced by the Zotero "Cite Non-English"
+    /// (CNE) plugin.  It is **not** a mandated disciplinary standard — it is a display
+    /// convention that some publishers allow or require.
+    ///
+    /// When CJK names render in original script the `use-native-ordering` flag ensures
+    /// family-first ordering.  For Latin-script (romanized) names, ordering follows the
+    /// normal template `name-order`.
+    RomanizedScriptTranslated,
 }
 
 impl MultilingualPreset {
@@ -823,6 +841,52 @@ impl MultilingualPreset {
                 preferred_script: Some("Latn".to_string()),
                 ..Default::default()
             },
+            MultilingualPreset::RomanizedScriptTranslated => {
+                let mut scripts = HashMap::new();
+                scripts.insert(
+                    "Han".to_string(),
+                    ScriptConfig {
+                        use_native_ordering: true,
+                        ..Default::default()
+                    },
+                );
+                scripts.insert(
+                    "Hangul".to_string(),
+                    ScriptConfig {
+                        use_native_ordering: true,
+                        ..Default::default()
+                    },
+                );
+                MultilingualConfig {
+                    title_mode: Some(MultilingualMode::Pattern(vec![
+                        MultilingualSegment {
+                            view: MultilingualView::Transliterated,
+                            wrap: SegmentWrap::None,
+                        },
+                        MultilingualSegment {
+                            view: MultilingualView::Original,
+                            wrap: SegmentWrap::None,
+                        },
+                        MultilingualSegment {
+                            view: MultilingualView::Translated,
+                            wrap: SegmentWrap::Brackets,
+                        },
+                    ])),
+                    name_mode: Some(MultilingualMode::Pattern(vec![
+                        MultilingualSegment {
+                            view: MultilingualView::Transliterated,
+                            wrap: SegmentWrap::None,
+                        },
+                        MultilingualSegment {
+                            view: MultilingualView::Original,
+                            wrap: SegmentWrap::None,
+                        },
+                    ])),
+                    preferred_script: Some("Latn".to_string()),
+                    scripts,
+                    ..Default::default()
+                }
+            }
         }
     }
 }

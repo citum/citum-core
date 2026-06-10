@@ -175,18 +175,21 @@ They are the preferred way to configure multilingual rendering in embedded style
 
 ```yaml
 options:
-  multilingual: romanized-translated   # or: romanized-only
+  multilingual: romanized-translated   # or: romanized-only, romanized-script-translated
 ```
 
 | Preset | Title rendering | Name rendering | Typical use |
 |---|---|---|---|
 | `romanized-translated` | `romanized [translated]` (= `combined`) | romanized | APA, Chicago, MLA, Harvard, Vancouver, AMA, NLM, CSE |
 | `romanized-only` | romanized only | romanized | IEEE and numeric styles |
+| `romanized-script-translated` | `romanized original [translated]` | `romanized original` | Area-studies house styles (e.g. CJKR, JAAS); Zotero CNE plugin output |
 
 All major English-language styles *require* romanized names and titles and *recommend*
 a translation bracket for non-English titles.  Showing original-script text alongside
 romanization is something these styles *allow* as a house option, not something they
-mandate.  Use an explicit `pattern:` block (§2.3) to opt in to CJK-inclusive rendering.
+mandate.  `romanized-script-translated` also sets `use-native-ordering: true` for
+Han and Hangul scripts; for other scripts (Arabic, Cyrillic) the rendering pattern
+is the same but script-specific ordering is unaffected.
 
 ### 2.2 Explicit configuration
 
