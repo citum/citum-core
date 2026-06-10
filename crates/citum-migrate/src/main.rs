@@ -649,6 +649,18 @@ fn select_citation_template(
     let mut citation_subsequent_override: Option<Vec<TemplateComponent>> = None;
     let mut citation_ibid_override: Option<Vec<TemplateComponent>> = None;
     let new_cit = if let Some(ref resolved_cit) = resolved.citation {
+        // Inferred templates only capture the first-position form. For note
+        // styles, the subsequent/ibid short forms exist solely in the XML
+        // pipeline's position extraction — attach them so the inferred first
+        // form keeps its repeat behavior. Hand-authored templates are left
+        // alone: their repeat shape is a deliberate authoring decision.
+        if legacy_style.class == "note"
+            && citation_validate::is_inferred_source(&resolved_cit.source)
+            && let Some(out) = xml_fallback.as_ref()
+        {
+            citation_subsequent_override = out.citation_overrides.subsequent.clone();
+            citation_ibid_override = out.citation_overrides.ibid.clone();
+        }
         resolved_cit.template.clone()
     } else {
         #[allow(clippy::expect_used, reason = "fatal bootstrap error")]
@@ -1399,6 +1411,22 @@ mod tests {
         parse_style(doc.root_element()).expect("legacy style parsing should succeed")
     }
 
+    // The note-class citation path preserves authored group structure, so
+    // template assertions must search nested groups, not just the top level.
+    fn template_contains(
+        components: &[TemplateComponent],
+        predicate: &dyn Fn(&TemplateComponent) -> bool,
+    ) -> bool {
+        components.iter().any(|component| {
+            predicate(component)
+                || matches!(
+                    component,
+                    TemplateComponent::Group(group)
+                        if template_contains(&group.group, predicate)
+                )
+        })
+    }
+
     #[test]
     fn compile_from_xml_maps_nested_position_chooses_into_citation_overrides() {
         let legacy_style = parse_legacy_style(
@@ -1454,48 +1482,58 @@ mod tests {
         let out = compilation::compile_from_xml(&legacy_style, &mut options, false, &tracker);
 
         assert!(
-            out.citation
-                .iter()
-                .any(|component| matches!(component, TemplateComponent::Title(_))),
+            template_contains(&out.citation, &|component| matches!(
+                component,
+                TemplateComponent::Title(_)
+            )),
             "explicit first-position branch should become part of the base citation template"
         );
         assert!(
-            out.citation
-                .iter()
-                .any(|component| matches!(component, TemplateComponent::Date(_))),
+            template_contains(&out.citation, &|component| matches!(
+                component,
+                TemplateComponent::Date(_)
+            )),
             "fallback content from sibling chooses should remain in the base citation template"
         );
 
+        assert_position_override_shapes(&out);
+    }
+
+    fn assert_position_override_shapes(out: &compilation::XmlCompilationOutput) {
         let subsequent_template = out
             .citation_overrides
             .subsequent
+            .as_ref()
             .expect("subsequent branch should be migrated");
         assert!(
-            subsequent_template
-                .iter()
-                .any(|component| matches!(component, TemplateComponent::Contributor(_))),
+            template_contains(subsequent_template, &|component| matches!(
+                component,
+                TemplateComponent::Contributor(_)
+            )),
             "subsequent override should preserve author short-form branch"
         );
         assert!(
-            subsequent_template
-                .iter()
-                .any(|component| matches!(component, TemplateComponent::Date(_))),
+            template_contains(subsequent_template, &|component| matches!(
+                component,
+                TemplateComponent::Date(_)
+            )),
             "sibling choose fallback content should remain in the subsequent override"
         );
 
         let ibid_template = out
             .citation_overrides
             .ibid
+            .as_ref()
             .expect("ibid branch should be migrated");
         assert!(
-            ibid_template.iter().any(|component| matches!(
+            template_contains(ibid_template, &|component| matches!(
                 component,
                 TemplateComponent::Variable(variable) if variable.variable == SimpleVariable::Locator
             )),
             "merged ibid override should preserve locator-aware content"
         );
         assert!(
-            ibid_template.iter().any(|component| matches!(
+            template_contains(ibid_template, &|component| matches!(
                 component,
                 TemplateComponent::Term(term)
                     if term.term == citum_schema::locale::GeneralTerm::Ibid

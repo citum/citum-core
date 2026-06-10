@@ -84,4 +84,23 @@ impl TemplateCompiler {
         self.sort_citation_components(&mut components);
         components
     }
+
+    /// Compile a note-class citation template.
+    ///
+    /// Note citations are full bibliographic entries, not author-date or
+    /// numeric markers: the simplified citation path (skip else branches,
+    /// author-first sort) discards the type-conditional structure and the
+    /// affix order the note layout depends on. Route through the same
+    /// occurrence-based compilation the bibliography uses and preserve the
+    /// authored component order.
+    #[must_use]
+    pub fn compile_citation_note(&self, nodes: &[Node]) -> Vec<TemplateComponent> {
+        let mut components = self.compile(nodes);
+        crate::passes::deduplicate::deduplicate_numbers_in_lists(&mut components);
+        crate::passes::deduplicate::deduplicate_dates_in_lists(&mut components);
+        crate::passes::deduplicate::remove_redundant_no_date_terms(&mut components);
+        self.fix_duplicate_variables(&mut components);
+        crate::passes::suppression::strip_suppressed_variable_poison(&mut components);
+        components
+    }
 }
