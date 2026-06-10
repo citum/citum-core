@@ -50,3 +50,16 @@ doesn't fit the four classifications, a stop condition missing from the guides, 
 migration artifact the evidence ladder doesn't anticipate — record the insight as a
 concrete bullet here and include the file update in the same commit or PR. Future
 research passes start with a richer surface.
+
+- (2026-06-10) Corpus-level cluster selection: before opening a pass, run
+  `node scripts/report-migrate-sqi.js --corpus random --seed 20260610` and pick
+  the cluster by reach from its fidelity headline + failure taxonomy, not from
+  the curated lab corpus alone. The random baseline and current cluster table
+  live in `docs/architecture/audits/2026-06-10_MIGRATE_RANDOM_SAMPLE_BASELINE.md`.
+- (2026-06-10) A processor hard-fail on migrated output (e.g. a `type-variants`
+  op matching no component) is always `migration-artifact` with an emit-time
+  validation fix in `citum-migrate` plus a regression test — the converter must
+  never emit YAML the processor rejects. No evidence ladder needed.
+- (2026-06-10) Note-class run-on output (delimiters/affixes lost wholesale in
+  full-note citation templates) is one systemic cluster, not per-style defects;
+  do not open per-style passes for it.

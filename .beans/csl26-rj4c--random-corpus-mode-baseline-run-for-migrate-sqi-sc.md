@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: normal
 created_at: 2026-06-10T16:28:02Z
-updated_at: 2026-06-10T16:37:47Z
+updated_at: 2026-06-10T16:57:27Z
 parent: csl26-vmcr
 ---
 
@@ -14,6 +14,6 @@ Extend scripts/report-migrate-sqi.js with --corpus random --sample N --seed S: e
 - [x] sampler + classification + failure taxonomy in report-migrate-sqi.js
 - [x] tests in report-migrate-sqi.test.js (+ scripts/lib/corpus-sample.test.js)
 - [x] pilot run (sample 10) — wiring validated; allocator floor-scaling fix
-- [ ] full run (sample 100, fixed seed)
-- [ ] baseline audit doc + JSON snapshot committed
-- [ ] evaluate against quality bar, report to user
+- [x] full run (sample 100, seed 20260610)
+- [x] baseline audit doc + JSON snapshot committed (docs/architecture/audits/2026-06-10_MIGRATE_RANDOM_SAMPLE_BASELINE.md)
+- [x] evaluate against quality bar, report to user — BELOW BAR: 43/100 at >=90%; improvement wave activated (clusters C1-C5)
