@@ -27,6 +27,7 @@ impl TemplateCompiler {
         crate::passes::deduplicate::deduplicate_dates_in_lists(&mut template);
         crate::passes::deduplicate::remove_redundant_no_date_terms(&mut template);
         self.fix_duplicate_variables(&mut template);
+        crate::passes::suppression::strip_suppressed_variable_poison(&mut template);
         template
     }
 
@@ -58,6 +59,7 @@ impl TemplateCompiler {
 
         // Fix duplicate variables (e.g., date appearing both in List and standalone)
         self.fix_duplicate_variables(&mut default_template);
+        crate::passes::suppression::strip_suppressed_variable_poison(&mut default_template);
 
         let use_pathological_bibliography_cleanup =
             template_component_count(&default_template) > PATHOLOGICAL_BIBLIOGRAPHY_COMPONENTS;
@@ -73,6 +75,7 @@ impl TemplateCompiler {
             crate::passes::deduplicate::remove_redundant_no_date_terms(&mut default_template);
             self.fix_duplicate_variables(&mut default_template);
             deduplicate_exact_components(&mut default_template);
+            crate::passes::suppression::strip_suppressed_variable_poison(&mut default_template);
         }
 
         // Generate selective type templates for high-impact outlier types where
