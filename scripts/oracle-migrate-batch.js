@@ -140,6 +140,20 @@ function runOracleMigrateOnly(styleName, args) {
   });
 
   if (proc.status !== 0 && proc.status !== 1) {
+    // oracle.js exits >1 on hard failures but still writes a structured
+    // JSON error to stdout; prefer that reason over bare stderr/exit code.
+    try {
+      const parsed = JSON.parse(proc.stdout || '');
+      if (parsed.error) {
+        return {
+          style: styleName,
+          error: parsed.error,
+          details: parsed.reason || null,
+        };
+      }
+    } catch {
+      // fall through to the generic exec failure below
+    }
     return {
       style: styleName,
       error: 'oracle_exec_failed',

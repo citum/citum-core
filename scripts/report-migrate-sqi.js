@@ -20,6 +20,8 @@
  *   node scripts/report-migrate-sqi.js                       # default corpus (sentinels + lab)
  *   node scripts/report-migrate-sqi.js --corpus sentinels    # top-10 sentinels only
  *   node scripts/report-migrate-sqi.js --corpus lab          # migrate-research lab corpus only
+ *   node scripts/report-migrate-sqi.js --corpus random --sample 100 --seed 20260610
+ *                                                            # seeded stratified random independents
  *   node scripts/report-migrate-sqi.js --styles apa,ieee     # explicit set
  *   node scripts/report-migrate-sqi.js --out /tmp/sqi.json   # write JSON to file
  *   node scripts/report-migrate-sqi.js --markdown docs/architecture/...md
@@ -35,6 +37,7 @@ const { spawnSync } = require('child_process');
 const reportCore = require('./report-core.js');
 const { resolveAuthoredStylePath } = require('./oracle.js');
 const { normalizeText } = require('./oracle-utils.js');
+const { classifyCitationFormat, stratifiedSample } = require('./lib/corpus-sample.js');
 
 const WORKSPACE_ROOT = path.resolve(__dirname, '..');
 const LEGACY_DIR = path.join(WORKSPACE_ROOT, 'styles-legacy');
@@ -78,6 +81,15 @@ const DIAGNOSTIC_STYLES = [
 
 const PATHOLOGICAL_OUTPUT_LINES = 1500;
 
+// Headline quality bar: share of measured styles whose combined strict
+// citation+bibliography pass rate reaches this fraction.
+const FIDELITY_HEADLINE_THRESHOLD = 0.9;
+
+// Default seed for `--corpus random`. Fixed so scheduled re-runs measure the
+// same corpus and stay trend-comparable; pass `--seed` to draw a fresh one.
+const DEFAULT_RANDOM_SEED = 20260610;
+const DEFAULT_RANDOM_SAMPLE = 100;
+
 function parseArgs(argv) {
   const args = {
     corpus: 'both',
@@ -86,6 +98,8 @@ function parseArgs(argv) {
     markdown: null,
     json: false,
     skipFidelity: false,
+    sample: DEFAULT_RANDOM_SAMPLE,
+    seed: DEFAULT_RANDOM_SEED,
   };
   for (let i = 2; i < argv.length; i++) {
     const arg = argv[i];
@@ -93,6 +107,16 @@ function parseArgs(argv) {
       args.corpus = argv[++i];
     } else if (arg === '--styles' && argv[i + 1]) {
       args.styles = argv[++i];
+    } else if (arg === '--sample' && argv[i + 1]) {
+      args.sample = Number(argv[++i]);
+      if (!Number.isInteger(args.sample) || args.sample <= 0) {
+        throw new Error('--sample must be a positive integer');
+      }
+    } else if (arg === '--seed' && argv[i + 1]) {
+      args.seed = Number(argv[++i]);
+      if (!Number.isInteger(args.seed)) {
+        throw new Error('--seed must be an integer');
+      }
     } else if (arg === '--out' && argv[i + 1]) {
       args.out = argv[++i];
     } else if (arg === '--markdown' && argv[i + 1]) {
@@ -116,19 +140,60 @@ function printHelp() {
   console.log('');
   console.log('Usage:');
   console.log('  node scripts/report-migrate-sqi.js');
-  console.log('  node scripts/report-migrate-sqi.js --corpus sentinels|lab|both');
+  console.log('  node scripts/report-migrate-sqi.js --corpus sentinels|lab|both|random');
+  console.log('  node scripts/report-migrate-sqi.js --corpus random --sample 100 --seed 20260610');
   console.log('  node scripts/report-migrate-sqi.js --styles apa,ieee');
   console.log('  node scripts/report-migrate-sqi.js --out /tmp/sqi.json --markdown docs/...md');
   console.log('  node scripts/report-migrate-sqi.js --skip-fidelity   # YAML scoring only, no oracle');
 }
 
+/** Top-level styles-legacy/*.csl names; dependents live under dependent/. */
+function enumerateIndependentStyles() {
+  return fs
+    .readdirSync(LEGACY_DIR)
+    .filter((name) => name.endsWith('.csl'))
+    .map((name) => path.basename(name, '.csl'))
+    .sort();
+}
+
+function classifyLegacyStyle(styleName) {
+  try {
+    const cslText = fs.readFileSync(path.join(LEGACY_DIR, `${styleName}.csl`), 'utf8');
+    return classifyCitationFormat(cslText);
+  } catch {
+    return 'unknown';
+  }
+}
+
+function resolveRandomCorpus(args) {
+  const classified = enumerateIndependentStyles().map((style) => ({
+    style,
+    styleClass: classifyLegacyStyle(style),
+  }));
+  const drawn = stratifiedSample(classified, {
+    sampleSize: args.sample,
+    seed: args.seed,
+  });
+  return {
+    styles: drawn.sample.map((entry) => entry.style),
+    sampleMeta: {
+      seed: args.seed,
+      requested: args.sample,
+      population: drawn.population,
+      strata: drawn.strata,
+      allocation: drawn.allocation,
+    },
+  };
+}
+
 function resolveCorpus(args) {
   if (args.styles) {
-    return args.styles.split(',').map((s) => s.trim()).filter(Boolean);
+    return { styles: args.styles.split(',').map((s) => s.trim()).filter(Boolean) };
   }
-  if (args.corpus === 'sentinels') return [...SENTINELS];
-  if (args.corpus === 'lab') return [...LAB_CORPUS];
-  if (args.corpus === 'both') return [...SENTINELS, ...LAB_CORPUS];
+  if (args.corpus === 'sentinels') return { styles: [...SENTINELS] };
+  if (args.corpus === 'lab') return { styles: [...LAB_CORPUS] };
+  if (args.corpus === 'both') return { styles: [...SENTINELS, ...LAB_CORPUS] };
+  if (args.corpus === 'random') return resolveRandomCorpus(args);
   throw new Error(`Unknown corpus: ${args.corpus}`);
 }
 
@@ -160,7 +225,7 @@ function migrateStyleToYaml(styleName) {
         '--emit-evidence', evidenceTmp,
         cslPath,
       ],
-      { cwd: WORKSPACE_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
+      { cwd: WORKSPACE_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 }
     );
     if (proc.status !== 0) {
       return {
@@ -206,7 +271,7 @@ function attemptMinimization(styleName) {
         '--emit-evidence', evidenceTmp,
         cslPath,
       ],
-      { cwd: WORKSPACE_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
+      { cwd: WORKSPACE_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 }
     );
     if (proc.status !== 0) return null;
     let evidence = null;
@@ -243,7 +308,7 @@ function oracleForYaml(styleName, yamlText, options = {}) {
     const proc = spawnSync(
       'node',
       oracleArgs,
-      { cwd: WORKSPACE_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }
+      { cwd: WORKSPACE_ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 64 * 1024 * 1024 }
     );
     // oracle.js exits with status 1 whenever fidelity is below 100%, even
     // when stdout contains a well-formed JSON report. Treat the run as
@@ -414,25 +479,38 @@ function countComponent(component) {
 }
 
 function runOracle(styles) {
-  const oracleArgs = [
-    path.join(WORKSPACE_ROOT, 'scripts', 'oracle-migrate-batch.js'),
-    '--styles', styles.join(','),
-    '--json',
-  ];
-  const proc = spawnSync('node', oracleArgs, {
-    cwd: WORKSPACE_ROOT,
-    encoding: 'utf8',
-    stdio: ['ignore', 'pipe', 'pipe'],
-  });
-  if (proc.status !== 0) {
-    throw new Error(`oracle-migrate-batch failed: ${proc.stderr || `exit=${proc.status}`}`);
+  // Read results via --out instead of stdout: a large corpus (100+ styles)
+  // overflows spawnSync's default 1 MB maxBuffer and kills the child with
+  // a null exit status.
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'citum-oracle-batch-'));
+  const outPath = path.join(tmpDir, 'oracle-batch.json');
+  try {
+    const oracleArgs = [
+      path.join(WORKSPACE_ROOT, 'scripts', 'oracle-migrate-batch.js'),
+      '--styles', styles.join(','),
+      '--out', outPath,
+    ];
+    const proc = spawnSync('node', oracleArgs, {
+      cwd: WORKSPACE_ROOT,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+      maxBuffer: 64 * 1024 * 1024,
+    });
+    if (proc.status !== 0 || !fs.existsSync(outPath)) {
+      const detail = (proc.stderr || '').trim()
+        || (proc.error ? proc.error.message : '')
+        || `exit=${proc.status} signal=${proc.signal}`;
+      throw new Error(`oracle-migrate-batch failed: ${detail}`);
+    }
+    const summary = JSON.parse(fs.readFileSync(outPath, 'utf8'));
+    const fidelity = new Map();
+    for (const row of summary.styles || []) {
+      fidelity.set(row.style, row);
+    }
+    return fidelity;
+  } finally {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
   }
-  const summary = JSON.parse(proc.stdout);
-  const fidelity = new Map();
-  for (const row of summary.styles || []) {
-    fidelity.set(row.style, row);
-  }
-  return fidelity;
 }
 
 function percentile(sorted, p) {
@@ -473,13 +551,155 @@ function aggregateDelta(rows) {
   };
 }
 
+/**
+ * Per-style measurement status for the fidelity headline. Conversion or
+ * oracle failures are data, not script errors: they count against the
+ * headline rather than aborting the run.
+ */
+function rowFidelityStatus(row) {
+  if (row.error) return 'migrate_failed';
+  if (row.fidelity?.error) return 'oracle_failed';
+  if (!row.fidelity) return 'fidelity_skipped';
+  const total = (row.fidelity.citations?.total || 0) + (row.fidelity.bibliography?.total || 0);
+  if (total === 0) return 'oracle_empty';
+  return 'ok';
+}
+
+/** Combined strict pass rate across citations + bibliography, or null. */
+function combinedFidelity(row) {
+  if (rowFidelityStatus(row) !== 'ok') return null;
+  const passed = (row.fidelity.citations?.passed || 0) + (row.fidelity.bibliography?.passed || 0);
+  const total = (row.fidelity.citations?.total || 0) + (row.fidelity.bibliography?.total || 0);
+  return passed / total;
+}
+
+function summarizeFidelity(rows, threshold) {
+  const statuses = {};
+  const values = [];
+  let atThreshold = 0;
+  for (const row of rows) {
+    const status = rowFidelityStatus(row);
+    statuses[status] = (statuses[status] || 0) + 1;
+    const fidelity = combinedFidelity(row);
+    if (fidelity != null) {
+      values.push(fidelity);
+      if (fidelity >= threshold) atThreshold += 1;
+    }
+  }
+  // Failures stay in the denominator: a style that cannot convert does not
+  // meet the bar, and hiding it would inflate the published number.
+  const measured = rows.length - (statuses.fidelity_skipped || 0);
+  values.sort((a, b) => a - b);
+  const pct = (value) => Number((value * 100).toFixed(1));
+  const mean = values.length
+    ? values.reduce((sum, value) => sum + value, 0) / values.length
+    : null;
+  return {
+    measured,
+    statuses,
+    atThreshold,
+    shareAtThreshold: measured ? pct(atThreshold / measured) : null,
+    combined: values.length
+      ? {
+          n: values.length,
+          mean: pct(mean),
+          p10: pct(values[Math.min(values.length - 1, Math.floor(values.length * 0.1))]),
+          p50: pct(values[Math.min(values.length - 1, Math.floor(values.length * 0.5))]),
+          p90: pct(values[Math.min(values.length - 1, Math.floor(values.length * 0.9))]),
+        }
+      : null,
+  };
+}
+
+/**
+ * Headline fidelity aggregates over scorecard rows: overall and per
+ * style-class summaries against FIDELITY_HEADLINE_THRESHOLD.
+ */
+function aggregateFidelityHeadline(rows, threshold = FIDELITY_HEADLINE_THRESHOLD) {
+  const measurable = rows.filter((row) => rowFidelityStatus(row) !== 'fidelity_skipped');
+  if (measurable.length === 0) return null;
+  const byClass = new Map();
+  for (const row of rows) {
+    const styleClass = row.styleClass || 'unknown';
+    if (!byClass.has(styleClass)) byClass.set(styleClass, []);
+    byClass.get(styleClass).push(row);
+  }
+  const perClass = {};
+  for (const [styleClass, classRows] of [...byClass.entries()].sort()) {
+    perClass[styleClass] = summarizeFidelity(classRows, threshold);
+  }
+  return {
+    threshold: Number((threshold * 100).toFixed(1)),
+    overall: summarizeFidelity(rows, threshold),
+    perClass,
+  };
+}
+
 function buildMarkdown(report) {
   const lines = [];
   lines.push(`# citum-migrate SQI baseline`);
   lines.push('');
   lines.push(`- Generated: ${report.generated}`);
   lines.push(`- Commit: ${report.commit}`);
-  lines.push(`- Corpus: ${report.corpus} (${report.results.length} styles)`);
+  if (report.sample) {
+    lines.push(
+      `- Corpus: random (${report.results.length} of ${report.sample.population} independent parents, seed ${report.sample.seed})`
+    );
+    const strata = Object.entries(report.sample.allocation)
+      .map(([name, count]) => `${name} ${count}/${report.sample.strata[name]}`)
+      .join(', ');
+    lines.push(`- Strata (sampled/population): ${strata}`);
+  } else {
+    lines.push(`- Corpus: ${report.corpus} (${report.results.length} styles)`);
+  }
+  const headline = report.aggregate.fidelityHeadline;
+  if (headline) {
+    lines.push('');
+    lines.push('## Fidelity headline');
+    lines.push('');
+    const overall = headline.overall;
+    const statuses = Object.entries(overall.statuses)
+      .filter(([status]) => status !== 'ok')
+      .map(([status, count]) => `${status} ${count}`)
+      .join(', ');
+    lines.push(
+      `- Styles at ≥${headline.threshold}% combined strict fidelity: ${overall.atThreshold}/${overall.measured} (${overall.shareAtThreshold}%)${statuses ? ` — non-ok: ${statuses}` : ''}`
+    );
+    if (overall.combined) {
+      lines.push(
+        `- Combined strict fidelity (converted styles): mean ${overall.combined.mean}%, p10 ${overall.combined.p10}%, median ${overall.combined.p50}%, p90 ${overall.combined.p90}%`
+      );
+    }
+    lines.push('');
+    lines.push('### Per class');
+    lines.push('');
+    lines.push(`| Class | Measured | ≥${headline.threshold}% | Share | Mean | Median |`);
+    lines.push('|---|---:|---:|---:|---:|---:|');
+    for (const [styleClass, summary] of Object.entries(headline.perClass)) {
+      lines.push(
+        `| ${styleClass} | ${summary.measured} | ${summary.atThreshold} | ${summary.shareAtThreshold ?? '-'}% | ${summary.combined?.mean ?? '-'}% | ${summary.combined?.p50 ?? '-'}% |`
+      );
+    }
+    const failures = report.results.filter((row) =>
+      ['migrate_failed', 'oracle_failed', 'oracle_empty'].includes(rowFidelityStatus(row))
+    );
+    if (failures.length > 0) {
+      lines.push('');
+      lines.push('### Failure taxonomy');
+      lines.push('');
+      lines.push('| Style | Class | Status | Detail |');
+      lines.push('|---|---|---|---|');
+      for (const row of failures) {
+        const status = rowFidelityStatus(row);
+        const detail = String(
+          row.error?.details || row.fidelity?.details || row.fidelity?.error || ''
+        )
+          .replace(/\s+/g, ' ')
+          .slice(0, 140);
+        lines.push(`| ${row.style} | ${row.styleClass ?? '-'} | ${status} | ${detail} |`);
+      }
+    }
+  }
   lines.push('');
   lines.push('## Aggregate');
   lines.push('');
@@ -568,12 +788,12 @@ function gitCommit() {
 
 function main() {
   const args = parseArgs(process.argv);
-  const styles = resolveCorpus(args);
+  const { styles, sampleMeta } = resolveCorpus(args);
   const fidelity = args.skipFidelity ? new Map() : runOracle(styles);
 
   const results = [];
   for (const style of styles) {
-    const row = { style };
+    const row = { style, styleClass: classifyLegacyStyle(style) };
     const migrated = migrateStyleToYaml(style);
     if (migrated.error) {
       row.error = migrated;
@@ -596,6 +816,7 @@ function main() {
         citations: fidelityRow.citations,
         bibliography: fidelityRow.bibliography,
         error: fidelityRow.error || null,
+        details: fidelityRow.details || null,
       };
     }
     // Attempt evidence-driven wrapper minimization only for styles the
@@ -675,10 +896,12 @@ function main() {
     generated: new Date().toISOString(),
     commit: gitCommit(),
     corpus: args.styles ? 'explicit' : args.corpus,
+    ...(sampleMeta ? { sample: sampleMeta } : {}),
     aggregate: {
       migrated: aggregateComposite(results, 'migrated'),
       public: aggregateComposite(results, 'public'),
       delta: aggregateDelta(results),
+      fidelityHeadline: args.skipFidelity ? null : aggregateFidelityHeadline(results),
     },
     results,
     diagnostics: {
@@ -725,4 +948,8 @@ module.exports = {
   evaluateMinimizationAcceptance,
   normalizedEqual,
   strictSectionEquivalent,
+  rowFidelityStatus,
+  combinedFidelity,
+  aggregateFidelityHeadline,
+  FIDELITY_HEADLINE_THRESHOLD,
 };
