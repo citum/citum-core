@@ -2998,6 +2998,11 @@
           "description": "Romanize titles and names only — no translation appended.\n\nTitle pattern: romanized form only (= `Transliterated` mode).\nNames: romanized.  Script: `Latn`.\n\nAppropriate for IEEE and numeric styles where the translation bracket\nis typically omitted.",
           "type": "string",
           "const": "romanized-only"
+        },
+        {
+          "description": "Three-part view: romanized form, original script, bracketed translation.\n\nTitle pattern: `romanized original [translated]`.\nNames: `romanized original` (no bracket).\nScript: `Latn`.  Han and Hangul names rendered family-first with no inter-part space.\n\nThis is the rendering pattern used by some area-studies and East Asian studies\nhouse styles (e.g. CJKR, JAAS) and produced by the Zotero \"Cite Non-English\"\n(CNE) plugin.  It is **not** a mandated disciplinary standard — it is a display\nconvention that some publishers allow or require.\n\nWhen CJK names render in original script the `use-native-ordering` flag ensures\nfamily-first ordering.  For Latin-script (romanized) names, ordering follows the\nnormal template `name-order`.",
+          "type": "string",
+          "const": "romanized-script-translated"
         }
       ]
     },
