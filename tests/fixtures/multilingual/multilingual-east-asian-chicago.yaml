@@ -2,13 +2,12 @@
 # No code or text copied from cite-non-english (AGPL-3.0).
 # Transliteration conventions follow McCune-Reischauer (Korean) and Hepburn (Japanese).
 #
-# Three real-world references illustrating the CNE (cite-non-english) rendering
-# pattern for Chicago 18th ed.: romanized name + original script + [English translation].
-# Pair with styles/embedded/chicago-notes-18th-cne.yaml.
+# Three East Asian references illustrating the romanized + original-script rendering
+# pattern for Chicago 18th ed.: romanized title + original script + [English translation].
 
 references:
   # Chinese journal article. Author: Hua (华) Linfu (林甫). Journal: Zhongguo shehui kexue.
-  - id: cne-hua-linfu-article
+  - id: hua-linfu-article
     class: serial-component
     type: article
     language: zh
@@ -41,7 +40,7 @@ references:
           zh-Latn-pinyin: Zhongguo shehui kexue
 
   # Korean monograph. Author: Kang (姜) U-bang (友邦). Original script is Hanja.
-  - id: cne-kang-ubang-book
+  - id: kang-ubang-book
     class: monograph
     type: book
     language: ko
@@ -66,7 +65,7 @@ references:
       name: Yŏrhwadang
 
   # Japanese monograph. Two authors: Abe Yoshio (阿部善雄) and Kaneko Hideo (金子英生).
-  - id: cne-abe-yoshio-book
+  - id: abe-yoshio-book
     class: monograph
     type: book
     language: ja

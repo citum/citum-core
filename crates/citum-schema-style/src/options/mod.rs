@@ -1294,8 +1294,8 @@ locale-override: en-US-chicago
 
     #[test]
     fn test_multilingual_preset_romanized_script_translated_parses_and_resolves() {
-        // `romanized-script-translated` resolves to a Pattern title mode (romanized original [translated])
-        // and Pattern name mode (romanized original), with Latn script and CJK native ordering.
+        // `romanized-script-translated` resolves to a Pattern title mode (romanized original-script [translated])
+        // and Pattern name mode (romanized original-script), with Latn script and CJK native ordering.
         use crate::options::multilingual::{MultilingualSegment, MultilingualView, SegmentWrap};
         let yaml = r#"multilingual: romanized-script-translated"#;
         let config: Config = serde_yaml::from_str(yaml).unwrap();
@@ -1308,7 +1308,7 @@ locale-override: en-US-chicago
                     wrap: SegmentWrap::None,
                 },
                 MultilingualSegment {
-                    view: MultilingualView::Original,
+                    view: MultilingualView::OriginalScript,
                     wrap: SegmentWrap::None,
                 },
                 MultilingualSegment {
@@ -1325,7 +1325,7 @@ locale-override: en-US-chicago
                     wrap: SegmentWrap::None,
                 },
                 MultilingualSegment {
-                    view: MultilingualView::Original,
+                    view: MultilingualView::OriginalScript,
                     wrap: SegmentWrap::None,
                 },
             ]))
@@ -1365,7 +1365,7 @@ multilingual:
 multilingual:
   title-mode:
     pattern:
-      - view: original
+      - view: original-script
       - view: translated
         wrap: brackets
 "#;
