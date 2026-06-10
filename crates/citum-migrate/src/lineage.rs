@@ -120,6 +120,7 @@ pub struct StyleLineage {
 pub enum LineageError {
     Io(std::io::Error),
     Yaml(serde_yaml::Error),
+    Resolution(citum_schema::ResolutionError),
 }
 
 impl fmt::Display for LineageError {
@@ -127,6 +128,7 @@ impl fmt::Display for LineageError {
         match self {
             LineageError::Io(err) => write!(f, "{err}"),
             LineageError::Yaml(err) => write!(f, "{err}"),
+            LineageError::Resolution(err) => write!(f, "{err}"),
         }
     }
 }
@@ -438,6 +440,14 @@ impl StyleLineage {
         }
 
         let exclude_template_paths = !preserve_template_deltas;
+
+        // Materialize diff type-variants as full templates before attaching
+        // `extends`: a diff derived against this style's local template
+        // resolves against the parent's same-selector variant at render
+        // time, where its anchors may not exist (hard processor failure).
+        let mut style = style;
+        citum_schema::template::resolve_local_template_variants(&mut style)
+            .map_err(LineageError::Resolution)?;
 
         let child = serde_yaml::to_value(&style)?;
         let parent = serde_yaml::to_value(parent_style.clone().into_resolved())?;
