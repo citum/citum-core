@@ -49,6 +49,25 @@ pub(crate) use reference::locale_matches;
 pub use reference::{LocalizedTemplateSpec, TemplatePreset, TemplateReference};
 pub(crate) use resolution::{inherited_variant_context, resolve_style_template_variants};
 
+/// Resolve a style's local template variants in place without inherited
+/// context, materializing every diff variant as a full template.
+///
+/// Diff variants are resolved against the style's own section templates and
+/// intra-section `extends` chains. Emitters that re-parent a style (for
+/// example the migration wrapper path) use this before attaching `extends`:
+/// a diff derived against the local template would otherwise resolve against
+/// the parent's same-selector variant at render time.
+///
+/// # Errors
+///
+/// Returns a [`crate::ResolutionError`] when a variant cycle, missing
+/// parent, or non-matching diff operation is found.
+pub fn resolve_local_template_variants(
+    style: &mut crate::Style,
+) -> Result<(), crate::ResolutionError> {
+    resolution::resolve_style_template_variants(style, None)
+}
+
 /// A named template (reusable sequence of components).
 pub type Template = Vec<TemplateComponent>;
 
