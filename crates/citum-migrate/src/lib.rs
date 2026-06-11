@@ -32,6 +32,8 @@ pub mod ir;
 mod js_runtime;
 /// Migration-time lineage and wrapper classification.
 pub mod lineage;
+/// Measured inferred-vs-XML citation template selection.
+pub mod measured_citation;
 /// Options extraction from CSL 1.0.
 pub mod options_extractor;
 /// Multi-pass processing pipeline.

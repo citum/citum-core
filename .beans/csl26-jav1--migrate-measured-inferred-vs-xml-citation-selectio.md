@@ -1,10 +1,11 @@
 ---
 # csl26-jav1
 title: 'migrate: measured inferred-vs-xml citation selection'
-status: todo
+status: in-progress
 type: feature
+priority: normal
 created_at: 2026-06-10T21:16:25Z
-updated_at: 2026-06-10T21:16:25Z
+updated_at: 2026-06-11T09:53:02Z
 parent: csl26-vmcr
 ---
 

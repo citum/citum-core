@@ -16,6 +16,7 @@ clap = { version = "4.4", features = ["derive", "color"] }
 tracing.workspace = true
 csl-legacy = { workspace = true }
 citum-schema = { workspace = true }
+citum-engine = { workspace = true }
 deno_core = "0.400.0"
 indexmap = "2.13.0"
 roxmltree = "0.21"

@@ -56,6 +56,29 @@ impl EmbeddedTemplateRuntime {
         style_xml: &str,
         section: &str,
     ) -> Result<String, String> {
+        self.call_bundle_function("infer_template_fragment", style_name, style_xml, section)
+    }
+
+    /// Render single-item, first-position citations for every embedded fixture
+    /// item with citeproc-js in plain-text output.
+    ///
+    /// Returns a JSON object mapping item ID to citation string (`null` values
+    /// mark items citeproc could not render).
+    pub(crate) fn render_citation_strings(
+        &mut self,
+        style_name: &str,
+        style_xml: &str,
+    ) -> Result<String, String> {
+        self.call_bundle_function("render_citation_strings", style_name, style_xml, "citation")
+    }
+
+    fn call_bundle_function(
+        &mut self,
+        function_name: &str,
+        style_name: &str,
+        style_xml: &str,
+        section: &str,
+    ) -> Result<String, String> {
         let input = EmbeddedCallInput {
             style_name,
             style_xml,
@@ -66,13 +89,13 @@ impl EmbeddedTemplateRuntime {
             let context = scope.get_current_context();
             let global = context.global(scope);
 
-            let infer_key = v8::String::new(scope, "infer_template_fragment")
-                .ok_or_else(|| "failed to create infer_template_fragment key".to_string())?;
+            let infer_key = v8::String::new(scope, function_name)
+                .ok_or_else(|| format!("failed to create {function_name} key"))?;
             let infer_value = global
                 .get(scope, infer_key.into())
-                .ok_or_else(|| "failed to read globalThis.infer_template_fragment".to_string())?;
+                .ok_or_else(|| format!("failed to read globalThis.{function_name}"))?;
             let infer_function = v8::Local::<v8::Function>::try_from(infer_value)
-                .map_err(|_| "globalThis.infer_template_fragment is not a function".to_string())?;
+                .map_err(|_| format!("globalThis.{function_name} is not a function"))?;
 
             let input_value = serde_v8::to_v8(scope, &input)
                 .map_err(|err| format!("failed to serialize embedded inference input: {err}"))?;
@@ -123,7 +146,7 @@ impl EmbeddedTemplateRuntime {
     }
 }
 
-fn load_fixtures(workspace_root: &Path) -> Result<serde_json::Value, String> {
+pub(crate) fn load_fixtures(workspace_root: &Path) -> Result<serde_json::Value, String> {
     let path = workspace_root
         .join("tests")
         .join("fixtures")
