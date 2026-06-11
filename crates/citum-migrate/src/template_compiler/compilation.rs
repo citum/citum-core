@@ -100,7 +100,7 @@ impl TemplateCompiler {
                         self.collect_group_occurrences(g, inherited_wrap, context, occurrences);
                     }
                     Node::Condition(c) => {
-                        self.collect_condition_occurrences(c, inherited_wrap, occurrences);
+                        self.collect_condition_occurrences(c, inherited_wrap, context, occurrences);
                     }
                     _ => {}
                 }
@@ -324,20 +324,24 @@ impl TemplateCompiler {
             Option<String>,
             Option<String>,
         ),
+        inherited_context: &BranchContext,
         occurrences: &mut Vec<ComponentOccurrence>,
     ) {
-        // THEN branch: type-specific if types specified
+        // A type-less branch inherits the surrounding context; it must never
+        // narrow Conditional back to Default. A variable condition nested
+        // inside a type condition (e.g. `if variable="URL"` inside
+        // `if type="webpage"`) is still type-conditional output.
         let then_context = if c.if_item_type.is_empty() {
-            BranchContext::Default
+            inherited_context.clone()
         } else {
             BranchContext::Conditional
         };
         self.collect_occurrences(&c.then_branch, inherited_wrap, &then_context, occurrences);
 
-        // ELSE_IF branches: each is type-specific
+        // ELSE_IF branches: type-specific if types specified
         for else_if in &c.else_if_branches {
             let else_if_context = if else_if.if_item_type.is_empty() {
-                BranchContext::Default
+                inherited_context.clone()
             } else {
                 BranchContext::Conditional
             };
@@ -349,14 +353,9 @@ impl TemplateCompiler {
             );
         }
 
-        // ELSE branch: always default context
+        // ELSE branch: inherits the surrounding context
         if let Some(ref else_nodes) = c.else_branch {
-            self.collect_occurrences(
-                else_nodes,
-                inherited_wrap,
-                &BranchContext::Default,
-                occurrences,
-            );
+            self.collect_occurrences(else_nodes, inherited_wrap, inherited_context, occurrences);
         }
     }
 
@@ -371,7 +370,12 @@ impl TemplateCompiler {
         occurrences: &mut Vec<ComponentOccurrence>,
     ) {
         if !condition_has_type_branch(c) {
-            self.collect_condition_occurrences(c, inherited_wrap, occurrences);
+            self.collect_condition_occurrences(
+                c,
+                inherited_wrap,
+                &BranchContext::Default,
+                occurrences,
+            );
             return;
         }
 
@@ -445,10 +449,18 @@ impl TemplateCompiler {
                 continue;
             }
 
-            // Sort by source_order to preserve macro call order from CSL 1.0.
-            // Components without source_order (usize::MAX) sort last.
-            // Stable sort preserves existing order for components with same source_order.
-            group.sort_by_key(|occ| occ.source_order.unwrap_or(usize::MAX));
+            // Sort Default-context occurrences first, then by source_order, so the
+            // base component takes its shape (form, labels, affixes) and position
+            // from the default branch rather than from whichever type-specific
+            // branch happens to appear earliest in the CSL source. Components
+            // without source_order (usize::MAX) sort last; the stable sort
+            // preserves existing order for ties.
+            group.sort_by_key(|occ| {
+                (
+                    !matches!(occ.context, BranchContext::Default),
+                    occ.source_order.unwrap_or(usize::MAX),
+                )
+            });
 
             // Check if any occurrence is in Default context
             let has_default = group
@@ -472,8 +484,18 @@ impl TemplateCompiler {
                 self.set_component_rendering(&mut merged, base_rendering);
             }
 
-            // Track minimum source_order for this merged component
-            let min_order = group.iter().filter_map(|occ| occ.source_order).min();
+            // Position the merged component by its default-branch occurrence when
+            // one exists; conditional-only components fall back to their earliest
+            // occurrence in any branch.
+            let min_order = if has_default {
+                group
+                    .iter()
+                    .filter(|occ| matches!(occ.context, BranchContext::Default))
+                    .filter_map(|occ| occ.source_order)
+                    .min()
+            } else {
+                group.iter().filter_map(|occ| occ.source_order).min()
+            };
             result.push((merged, min_order));
         }
 
