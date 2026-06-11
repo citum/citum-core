@@ -187,10 +187,16 @@ impl<'a> MacroInliner<'a> {
                             };
 
                             // If this is a layout-level macro, expand its children WITH order tracking
-                            // so that nested macro calls get their own order numbers.
+                            // so that nested macro calls get their own order numbers, then fill the
+                            // macro's own order into direct children so they sort at the call site.
                             // Otherwise, expand without tracking to inherit the parent's order.
                             let expanded_children = if is_layout_macro {
-                                self.expand_nodes_with_order(macro_children, order_counter)
+                                let mut children =
+                                    self.expand_nodes_with_order(macro_children, order_counter);
+                                for child in &mut children {
+                                    Self::assign_macro_order_if_none(child, current_order);
+                                }
+                                children
                             } else {
                                 let children = self.expand_macros_no_increment(macro_children);
                                 // For non-layout macros, assign the parent's order only to nodes that don't already have one
@@ -406,19 +412,37 @@ impl<'a> MacroInliner<'a> {
         }
     }
 
-    /// Assign layout order to macro call nodes before expansion.
-    /// This assigns a sequential order to each `<text macro="..."/>` node based on its
-    /// position in the layout, which will be preserved during macro expansion.
+    /// Assign layout order to every renderable node before expansion.
+    /// Macro calls and direct nodes (`<text variable>`, `<date>`, `<names>`,
+    /// `<number>`, `<label>`) all receive sequential orders based on their
+    /// position in the layout, which is preserved during macro expansion.
+    /// Without orders on direct nodes, they sort after every macro-derived
+    /// component and the compiled template loses the authored layout order.
     fn assign_layout_order(nodes: &mut [CslNode], order_counter: &mut usize) {
         for node in nodes {
             match node {
-                CslNode::Text(text) if text.macro_name.is_some() => {
-                    // This is a macro call - assign it the current order
+                CslNode::Text(text) => {
+                    // Macro call or direct text node - assign it the current order
                     text.macro_call_order = Some(*order_counter);
                     *order_counter += 1;
                 }
+                CslNode::Date(date) => {
+                    date.macro_call_order = Some(*order_counter);
+                    *order_counter += 1;
+                }
+                CslNode::Number(number) => {
+                    number.macro_call_order = Some(*order_counter);
+                    *order_counter += 1;
+                }
+                CslNode::Label(label) => {
+                    label.macro_call_order = Some(*order_counter);
+                    *order_counter += 1;
+                }
                 CslNode::Group(group) => {
-                    // Recurse into groups to find macro calls
+                    // Order the group itself, then recurse so children keep
+                    // their relative positions if the group is flattened.
+                    group.macro_call_order = Some(*order_counter);
+                    *order_counter += 1;
                     Self::assign_layout_order(&mut group.children, order_counter);
                 }
                 CslNode::Choose(choose) => {
@@ -437,6 +461,8 @@ impl<'a> MacroInliner<'a> {
                     }
                 }
                 CslNode::Names(names) => {
+                    names.macro_call_order = Some(*order_counter);
+                    *order_counter += 1;
                     Self::assign_layout_order(&mut names.children, order_counter);
                 }
                 CslNode::Substitute(sub) => {
