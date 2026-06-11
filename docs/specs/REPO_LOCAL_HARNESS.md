@@ -3,14 +3,14 @@
 **Status:** Active
 **Date:** 2026-06-06
 **Supersedes:** —
-**Related:** `CLAUDE.md`; `AGENTS.md`; `.claude/settings.json`; `.claude/hooks/jcm-nudge.sh`; `docs/guides/AGENT_SKILLS.md`; bean `csl26-ddjg`
+**Related:** `CLAUDE.md`; `AGENTS.md`; `docs/policies/AGENT_HARNESS_POLICY.md`; `docs/guides/AGENT_ORCHESTRATION.md`; `docs/guides/AGENT_SKILLS.md`; `docs/guides/JJ_AI_CHANGE_STACK.md`; bean `csl26-ddjg`
 
 ## Purpose
 
-Define the Citum agent harness as a repository-owned system rather than an
-overlay on top of a home-directory harness. This keeps contributor workflow
-rules, skill boundaries, and Claude/Codex compatibility understandable from the
-repo alone.
+Define the Citum agent harness boundary. The repository owns project truth:
+invariants, verification gates, durable artifacts, role contracts, and publish
+safety. User-level harness config owns personal working style, model choices,
+local toolchain, token-saving hooks, and exact tool routing.
 
 ## Scope
 
@@ -18,27 +18,30 @@ In scope:
 
 - repo control surfaces such as `CLAUDE.md` and `AGENTS.md`
 - boundaries between `.skills/`, `.claude/skills/`, and `.codex/agents/`
-- repo-owned Claude settings and hooks that reinforce project rules
-- documentation for optional host installers
-- removal of active references that imply a required global harness
+- neutral planner, worker, reviewer, and task-packet contracts
+- durable Citum artifacts: beans, specs, policies, guides, and audit records
+- safety rules for optional local `jj` intent capture
 
 Out of scope:
 
-- re-creating Sober's installer model under a Citum name
-- broad historical documentation cleanup unrelated to current control surfaces
-- changing runtime behavior outside harness and documentation surfaces
+- defining personal model choices, token-saving preferences, or local hooks
+- requiring any hidden home-directory file to understand Citum workflow
+- making Citum depend on one editor, host, toolchain plugin, or model family
 
 ## Design
 
-### 1. Source of truth
+### 1. Two-layer source of truth
 
-The harness source of truth lives in this repository.
+The Citum source of truth lives in this repository. The user source of truth
+lives outside the repository.
 
 - `CLAUDE.md` is the single authored Citum project-instructions file.
 - `AGENTS.md` is a symlink to `CLAUDE.md` for AGENTS-aware tools.
 - The repo must not maintain duplicate root instruction bodies.
 - If this model changes later, both root entrypoints should point to a new
   shared source rather than diverging.
+- User config may choose tools and models, but must not override Citum's
+  verification, docs placement, bean, commit, PR, or publish rules.
 
 ### 2. Repo-local skill surfaces
 
@@ -50,21 +53,30 @@ The harness exposes three distinct skill layers:
 | `.claude/skills/` | Host-specific skills and wrappers |
 | `.codex/agents/` | Thin internal Codex role contracts |
 
-Shared workflow logic should live in docs or policy files rather than being
-duplicated across all host surfaces.
+Shared workflow logic lives in docs or policy files rather than being
+duplicated across all host surfaces:
 
-### 3. Repo-local Claude enforcement
+- `docs/policies/AGENT_HARNESS_POLICY.md` for binding orchestration rules
+- `docs/guides/AGENT_ORCHESTRATION.md` for task-packet and handoff mechanics
+- task-domain policies and guides such as the style workflow docs
 
-Claude-specific behavior may use repo-owned settings and hooks when plain
-instructions have proven unreliable.
+### 3. Tooling belongs to the user layer
 
-- `.claude/settings.json` registers repo-local Claude hooks.
-- `.claude/hooks/jcm-nudge.sh` reinforces the Rust code-search rule after
-  `Read`, `Grep`, or `Glob` use against Rust/code paths.
-- The jcodemunch/rust-analyzer priority table in `CLAUDE.md` is part of the
-  core harness contract, not optional style guidance.
-- A stale jcodemunch index must be refreshed before falling back to broad
-  file reads or text search for named Rust symbols.
+Repo docs state required capabilities, not personal tool names.
+
+Examples of user-layer concerns:
+
+- model tiers and cost policy
+- reasoning tier mapping and escalation permission gates
+- symbol-navigation tools and language servers
+- token-saving shell wrappers
+- structural search tools
+- local hooks and host-specific nudges
+- dispatch-worker backends and aliases
+
+Repo wrappers may mention that a capability is needed, but they must not require
+a contributor to share one user's exact local toolchain, model IDs, or private
+cost policy.
 
 ### 4. Optional installers
 
@@ -95,18 +107,30 @@ Active control surfaces must not describe Citum as governed by:
 If a host provides extra capabilities, describe them as optional host behavior,
 not as the governing Citum contract.
 
+### 6. Durable and temporary artifacts
+
+Durable project artifacts are tracked in the repo:
+
+- `.beans/*.md` for concrete work units
+- `docs/specs/` for non-trivial implementation contracts
+- `docs/policies/` for binding recurring rules
+- `docs/guides/` for operational how-tos
+- `docs/architecture/audits/` for dated evidence records
+
+Temporary local provenance may exist under `.ai-intents/` during `jj` drafting,
+but it must not be published unless the user explicitly asks for durable prompt
+provenance. Publish checks must reject accidental `.ai-intents/` paths.
+
 ## Implementation Notes
 
 - Keep `CLAUDE.md` as the authored source for now to minimize churn in existing
   Claude/Copilot workflows.
 - Keep `AGENTS.md` symlinked to `CLAUDE.md` so Codex/AGENTS-aware consumers
   receive the same contract without duplicated content.
-- Document repo-local Claude hooks where they enforce instructions that agents
-  have historically ignored.
-- Do not adopt Sober's home-directory install pattern.
-- Rewrite the legacy migration guide rather than deleting it so existing links
-  still land on current guidance.
-- Update the specs index when adding this file.
+- Keep host wrappers thin and point them at the shared policy/guide surface.
+- Move personal model, reasoning, tool routing, and hooks to user config.
+- Keep `.ai-intents/` publish-clean rather than ignored, so accidental durable
+  provenance is visible and blocked.
 
 ## Acceptance Criteria
 
@@ -117,10 +141,14 @@ not as the governing Citum contract.
   harness.
 - [x] The roles of `.skills/`, `.claude/skills/`, and `.codex/agents/` are
   documented and non-overlapping.
-- [x] Claude-specific jcodemunch reinforcement is documented as repo-local
-  enforcement rather than a home-directory dependency.
+- [x] Personal tool routing is treated as user config, not Citum project truth.
+- [x] Planner, worker, reviewer, and durable artifact rules are documented.
+- [x] `.ai-intents/` is documented as temporary local provenance and blocked
+  from accidental publication.
 - [x] A contributor can understand the harness from repo files alone.
 
 ## Changelog
 
+- 2026-06-11: Clarified repo/user harness boundary, moved personal tool routing
+  out of repo truth, and added orchestration plus `.ai-intents/` safety.
 - 2026-06-06: Initial version.

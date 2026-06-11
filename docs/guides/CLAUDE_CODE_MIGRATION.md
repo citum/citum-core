@@ -15,6 +15,8 @@ able to understand the workflow from repository files alone.
 | `.skills/` | Canonical public skill tree |
 | `.claude/skills/` | Host-specific skills and wrappers |
 | `.codex/agents/` | Thin internal Codex role contracts |
+| `docs/policies/AGENT_HARNESS_POLICY.md` | Repo-owned agent role and artifact rules |
+| `docs/guides/AGENT_ORCHESTRATION.md` | Repo-owned planner/worker/reviewer handoff guide |
 
 See `docs/specs/REPO_LOCAL_HARNESS.md` for the governing design.
 
@@ -57,11 +59,11 @@ every host wrapper.
 
 ### Claude hooks
 
-`.claude/settings.json` and `.claude/hooks/jcm-nudge.sh` are repo-owned Claude
-surfaces. The hook reinforces the jcodemunch/rust-analyzer code-search rule
-when Claude falls back to broad file reads or text search against Rust code.
-This is local enforcement of `CLAUDE.md`, not a dependency on a home-directory
-harness.
+Repo-local Claude settings may expose project conveniences such as `beans
+prime`, but personal tool nudges, token-saving hooks, and exact tool routing
+belong in user config. The repo states required capabilities and verification
+rules; the user layer decides whether those capabilities are provided by a
+language server, symbol index, shell wrapper, or another local tool.
 
 ### Optional install steps
 
@@ -82,7 +84,8 @@ When updating the harness:
 2. Prefer repo docs over host-specific wrapper text for shared process logic.
 3. Avoid new references that make `~/` content part of the required Citum
    contract.
-4. Update the harness spec when changing the control-surface model.
+4. Keep exact model IDs and personal tools out of repo wrappers.
+5. Update the harness spec when changing the control-surface model.
 
 ## Historical Note
 

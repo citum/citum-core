@@ -9,6 +9,8 @@ Use this skill for any Citum style request that should be handled through the sh
 style workflow.
 
 Read first:
+- `docs/policies/AGENT_HARNESS_POLICY.md`
+- `docs/guides/AGENT_ORCHESTRATION.md`
 - `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`
 - `docs/guides/STYLE_WORKFLOW_EXECUTION.md`
 - `docs/guides/AGENT_SKILLS.md`

@@ -1,6 +1,6 @@
 ---
 name: rust-simplify
-description: One-file-at-a-time Rust quality pass for Citum, using jcodemunch to target the highest-value cleanup.
+description: One-file-at-a-time Rust quality pass for Citum, using local symbol-aware code navigation to target the highest-value cleanup.
 ---
 
 # Rust Simplify
@@ -12,12 +12,14 @@ When `.jj` is present, use `docs/guides/JJ_AI_CHANGE_STACK.md` for optional
 local change isolation and intent capture before publishing through Git/GitHub.
 
 Read first:
+- `docs/policies/AGENT_HARNESS_POLICY.md`
+- `docs/guides/AGENT_ORCHESTRATION.md`
 - `docs/guides/CODING_STANDARDS.md`
 - `docs/guides/AGENT_SKILLS.md`
 
 ## Target Selection
 
-- Prefer `jcodemunch` symbol and file analysis before reading large files.
+- Prefer locally configured symbol and file analysis before reading large files.
 - Pick the highest-value Rust file in the affected crate or module.
 - If a file path was supplied, confirm it is actually wired into the build.
 
@@ -52,6 +54,6 @@ When you hit a recurring Rust smell not already caught by the audit script:
 2. If it's too contextual for a regex, add a short bullet to the Quality Pass section
    above instead.
 
-For verification failure modes or jcodemunch quirks, add a bullet to the Verification
-section above. Include any file updates in the same commit. One concrete rule per
-observation — keep the scope tight.
+For verification failure modes or code-navigation quirks, add a bullet to the
+Verification section above. Include any file updates in the same commit. One
+concrete rule per observation — keep the scope tight.

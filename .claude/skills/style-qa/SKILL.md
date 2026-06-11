@@ -2,12 +2,15 @@
 name: style-qa
 type: agent-invocable
 description: Standardized QA gate for style work. Verifies fidelity, SQI drift, formatting defects, and regression surface. Produces approve/reject verdict with numbered findings.
-model: haiku
+model_tier: reviewer
+reasoning_tier: medium
 ---
 
 # Style QA Gate
 
 Authoritative shared process docs:
+- `docs/policies/AGENT_HARNESS_POLICY.md`
+- `docs/guides/AGENT_ORCHESTRATION.md`
 - `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`
 - `docs/guides/STYLE_WORKFLOW_EXECUTION.md`
 

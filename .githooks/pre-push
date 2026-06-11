@@ -43,6 +43,12 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     fi
   fi
 
+  # Local jj drafting provenance must not be published accidentally.
+  if [[ -x "$ROOT_DIR/scripts/check-ai-intents-clean.sh" ]]; then
+    printf '[PRE-PUSH] Checking for temporary .ai-intents files...\n'
+    "$ROOT_DIR/scripts/check-ai-intents-clean.sh"
+  fi
+
   # Bean hygiene: run the same check CI runs (unarchived terminals, stale beans).
   # Soft-stale matches are advisory by default; hard hygiene findings still fail.
   BEAN_WRAPPER="$ROOT_DIR/.claude/skills/beans/bin/citum-bean"

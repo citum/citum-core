@@ -38,7 +38,7 @@ maintaining parallel copies.
 |-------|-------------|
 | `style-evolve` | Route style work: upgrade, migrate, or create a Citum style |
 | `migrate-research` | Autonomous research loop for citum_migrate fidelity gaps |
-| `rust-simplify` | One-file Rust quality pass using jcodemunch analysis |
+| `rust-simplify` | One-file Rust quality pass using local symbol-aware analysis |
 
 These skills are for citum-core contributors only. They require the repo to be present
 locally and reference internal docs by path.
@@ -75,9 +75,15 @@ Files in `.codex/agents/` remain internal execution roles:
 - `docs-curator`
 
 Use them for lower-level role contracts, not as primary user-facing entrypoints.
+Exact model IDs, tool routing, token-saving wrappers, and local hooks belong in
+user config, not these repo-owned role contracts.
 
 ## Mirror Rules
 
-- Keep workflow logic in `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md` and
-  `docs/guides/STYLE_WORKFLOW_EXECUTION.md`.
+- Keep general orchestration logic in
+  [../policies/AGENT_HARNESS_POLICY.md](../policies/AGENT_HARNESS_POLICY.md)
+  and [AGENT_ORCHESTRATION.md](./AGENT_ORCHESTRATION.md).
+- Keep style workflow logic in
+  [../policies/STYLE_WORKFLOW_DECISION_RULES.md](../policies/STYLE_WORKFLOW_DECISION_RULES.md)
+  and [STYLE_WORKFLOW_EXECUTION.md](./STYLE_WORKFLOW_EXECUTION.md).
 - Keep skills thin and host-focused.

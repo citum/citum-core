@@ -2,12 +2,15 @@
 name: style-migrate-enhance
 type: agent-invocable
 description: High-throughput migration waves converting priority parent CSL 1.0 styles to Citum with repeatable before/after metrics and migration-engine gap recommendations. Fidelity is the hard gate.
-model: sonnet
+model_tier: bounded-worker
+reasoning_tier: medium
 ---
 
 # Style Migrate+Enhance
 
 Authoritative shared process docs:
+- `docs/policies/AGENT_HARNESS_POLICY.md`
+- `docs/guides/AGENT_ORCHESTRATION.md`
 - `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`
 - `docs/guides/STYLE_WORKFLOW_EXECUTION.md`
 

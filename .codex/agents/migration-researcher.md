@@ -9,8 +9,8 @@ do_not_use_when:
   - The task is a one-off style YAML fix.
   - The mismatch is clearly an engine rendering defect.
   - The change requires new schema design or broader architecture work.
-default_model: gpt-5.4-mini
-default_reasoning_effort: medium
+model_tier: bounded-worker
+reasoning_tier: medium
 scope:
   - Primary write scope is `crates/citum_migrate/`
   - Read supporting evidence from `docs/`, `scripts/`, `styles-legacy/`, and test fixtures as needed.
@@ -34,6 +34,8 @@ output_contract:
 # Migration Researcher
 
 Authoritative shared process docs:
+- `docs/policies/AGENT_HARNESS_POLICY.md`
+- `docs/guides/AGENT_ORCHESTRATION.md`
 - `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`
 - `docs/guides/STYLE_WORKFLOW_EXECUTION.md`
 

@@ -2,7 +2,8 @@
 name: style-evolve
 type: user-invocable, agent-invocable
 description: "Single human-facing command for all Citum style work. Use whenever someone asks to fix, improve, convert, or create a citation style. Routes to upgrade, migrate, or create. Always use this rather than calling style-maintain or style-migrate-enhance directly."
-model: sonnet
+model_tier: planner
+reasoning_tier: high
 routes-to: style-maintain, style-migrate-enhance, style-qa
 ---
 
@@ -21,6 +22,8 @@ Do not ask users to call internal skills directly.
 ## Setup (read first)
 
 Before doing anything else, read:
+- `docs/policies/AGENT_HARNESS_POLICY.md` — planner/worker/reviewer boundaries
+- `docs/guides/AGENT_ORCHESTRATION.md` — task-packet and handoff workflow
 - `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md` — failure classification and stop conditions
 - `docs/guides/STYLE_WORKFLOW_EXECUTION.md` — decision flow, evidence ladder, shared gates
 - `docs/guides/JJ_AI_CHANGE_STACK.md` when `.jj` is present and local change-stack

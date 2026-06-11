@@ -1,7 +1,8 @@
 ---
 name: styleplan
 description: Strategy specialist for style maintenance, small migrations, and bounded schema/processor gaps.
-model: sonnet
+model_tier: planner
+reasoning_tier: high
 permissionMode: plan
 tools: Read, Glob, Grep
 disallowedTools: Write, Edit, Bash
@@ -51,3 +52,4 @@ Escalate to `@dstyleplan` when:
 ## Rules
 - Keep output under 40 lines.
 - Focus on correctness and minimal implementation churn.
+- User config chooses the exact model for this tier.

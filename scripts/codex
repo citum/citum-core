@@ -22,8 +22,11 @@ shift
 target="$*"
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+agent_policy="$repo_root/docs/policies/AGENT_HARNESS_POLICY.md"
+agent_guide="$repo_root/docs/guides/AGENT_ORCHESTRATION.md"
 docs_policy="$repo_root/docs/policies/STYLE_WORKFLOW_DECISION_RULES.md"
 docs_guide="$repo_root/docs/guides/STYLE_WORKFLOW_EXECUTION.md"
+coding_standards="$repo_root/docs/guides/CODING_STANDARDS.md"
 
 prompt_for_role() {
   case "$1" in
@@ -32,6 +35,8 @@ prompt_for_role() {
 Use the style-evolve role for: $target
 
 Read:
+- $agent_policy
+- $agent_guide
 - $docs_policy
 - $docs_guide
 
@@ -43,6 +48,8 @@ EOF
 Use the migration-researcher role for: $target
 
 Read:
+- $agent_policy
+- $agent_guide
 - $docs_policy
 - $docs_guide
 
@@ -54,6 +61,8 @@ EOF
 Use the style-qa-reviewer role for: $target
 
 Read:
+- $agent_policy
+- $agent_guide
 - $docs_policy
 - $docs_guide
 
@@ -65,8 +74,9 @@ EOF
 Use the rust-implementer role for: $target
 
 Read:
-- $docs_policy
-- $docs_guide
+- $agent_policy
+- $agent_guide
+- $coding_standards
 
 Implement the smallest bounded Rust change and report verification.
 EOF
@@ -76,8 +86,8 @@ EOF
 Use the spec-planner role for: $target
 
 Read:
-- $docs_policy
-- $docs_guide
+- $agent_policy
+- $agent_guide
 
 Produce a decision-complete plan only.
 EOF
@@ -87,8 +97,8 @@ EOF
 Use the docs-curator role for: $target
 
 Read:
-- $docs_policy
-- $docs_guide
+- $agent_policy
+- $agent_guide
 
 Update docs and public Rust item comments only.
 EOF
@@ -102,11 +112,28 @@ EOF
 
 model_for_role() {
   case "$1" in
-    rust-implementer|spec-planner)
-      echo "gpt-5.4"
+    spec-planner|style-evolve)
+      echo "${CITUM_CODEX_PLANNER_MODEL:-${CODEX_PLANNER_MODEL:-}}"
+      ;;
+    style-qa-reviewer)
+      echo "${CITUM_CODEX_REVIEWER_MODEL:-${CODEX_REVIEWER_MODEL:-}}"
       ;;
     *)
-      echo "gpt-5.4-mini"
+      echo "${CITUM_CODEX_WORKER_MODEL:-${CODEX_WORKER_MODEL:-}}"
+      ;;
+  esac
+}
+
+effort_for_role() {
+  case "$1" in
+    spec-planner|style-evolve)
+      echo "${CITUM_CODEX_PLANNER_REASONING_EFFORT:-${CODEX_PLANNER_REASONING_EFFORT:-}}"
+      ;;
+    style-qa-reviewer)
+      echo "${CITUM_CODEX_REVIEWER_REASONING_EFFORT:-${CODEX_REVIEWER_REASONING_EFFORT:-}}"
+      ;;
+    *)
+      echo "${CITUM_CODEX_WORKER_REASONING_EFFORT:-${CODEX_WORKER_REASONING_EFFORT:-}}"
       ;;
   esac
 }
@@ -114,13 +141,29 @@ model_for_role() {
 prompt="$(prompt_for_role "$role")"
 
 if command -v codex >/dev/null 2>&1; then
-  if codex exec --cd "$repo_root" --model "$(model_for_role "$role")" "$prompt"; then
+  model="$(model_for_role "$role")"
+  effort="$(effort_for_role "$role")"
+  codex_args=(exec --cd "$repo_root")
+  if [[ -n "$model" ]]; then
+    codex_args+=(--model "$model")
+  fi
+  if [[ -n "$effort" ]]; then
+    codex_args+=(-c "model_reasoning_effort=\"$effort\"")
+  fi
+  if codex "${codex_args[@]}" "$prompt"; then
     exit 0
   fi
 fi
 
 cat <<EOF >&2
 Codex runtime unavailable or rejected the request.
+
+Model and reasoning selection are user-configured. Set
+CITUM_CODEX_PLANNER_MODEL, CITUM_CODEX_WORKER_MODEL, or
+CITUM_CODEX_REVIEWER_MODEL to force a model for the corresponding role tier.
+Set CITUM_CODEX_PLANNER_REASONING_EFFORT,
+CITUM_CODEX_WORKER_REASONING_EFFORT, or
+CITUM_CODEX_REVIEWER_REASONING_EFFORT to force Codex reasoning effort.
 
 Prompt template for manual use:
 

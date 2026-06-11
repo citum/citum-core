@@ -9,8 +9,8 @@ do_not_use_when:
   - The main problem is still ambiguous and needs architectural clarification.
   - The task is purely documentation or style QA.
   - The requested change is primarily style-authoring rather than Rust implementation.
-default_model: gpt-5.4
-default_reasoning_effort: medium
+model_tier: bounded-worker
+reasoning_tier: medium
 scope:
   - Write scope is the smallest set of Rust and adjacent test files needed to complete the task.
   - Preserve existing repo conventions, docs, and public API comment requirements.
@@ -28,4 +28,6 @@ output_contract:
 
 # Rust Implementer
 
-Host-local contract only. Use the shared docs for the style workflow rules and keep this file focused on Rust implementation behavior.
+Host-local contract only. Use the agent harness and orchestration docs for
+handoff rules and keep this file focused on Rust implementation behavior. User
+config chooses exact model IDs and local code-intelligence tools.

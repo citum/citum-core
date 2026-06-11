@@ -8,6 +8,8 @@ description: "Legacy alias for style-evolve. Use it only when older docs or work
 This is a compatibility alias for `style-evolve`.
 
 Read the same shared docs as `style-evolve`:
+- `docs/policies/AGENT_HARNESS_POLICY.md`
+- `docs/guides/AGENT_ORCHESTRATION.md`
 - `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`
 - `docs/guides/STYLE_WORKFLOW_EXECUTION.md`
 - `docs/guides/AGENT_SKILLS.md`

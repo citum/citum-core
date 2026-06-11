@@ -8,8 +8,8 @@ use_when:
 do_not_use_when:
   - The task is primarily code implementation with no documentation impact.
   - The user needs a code-review style bug hunt instead of documentation work.
-default_model: gpt-5.4-mini
-default_reasoning_effort: low
+model_tier: bounded-worker
+reasoning_tier: low
 scope:
   - Write or refine docs under the repo's documented placement rules.
   - Add or improve `///` doc comments on touched public Rust items.
@@ -25,4 +25,6 @@ output_contract:
 
 # Docs Curator
 
-Host-local contract only. Use the shared docs for workflow logic and keep this file focused on documentation behavior.
+Host-local contract only. Use the agent harness and orchestration docs for
+workflow logic and keep this file focused on documentation behavior. User
+config chooses exact model IDs.

@@ -8,8 +8,8 @@ use_when:
 do_not_use_when:
   - The task is a small, obvious bug fix.
   - The implementation is already fully specified and just needs execution.
-default_model: gpt-5.4
-default_reasoning_effort: high
+model_tier: planner
+reasoning_tier: high
 scope:
   - Read design docs, policies, specs, architecture notes, and relevant code paths.
   - Do not mutate implementation code unless the workflow explicitly requests a draft spec file.
@@ -26,4 +26,6 @@ output_contract:
 
 # Spec Planner
 
-Host-local contract only. Use the shared docs for style-workflow logic and keep this file focused on planning behavior.
+Host-local contract only. Use the agent harness and orchestration docs for
+workflow logic and keep this file focused on planning behavior. User config
+chooses exact model IDs.

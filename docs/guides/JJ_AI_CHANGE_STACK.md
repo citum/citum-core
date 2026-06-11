@@ -100,6 +100,7 @@ Before publishing through Git/GitHub:
 ```bash
 jj status
 # delete .ai-intents/ from the current change, if present
+scripts/check-ai-intents-clean.sh
 jj git export
 git status --short --branch
 ```
@@ -123,7 +124,7 @@ cargo fmt --check \
   && cargo nextest run
 
 # 3. For any push — pre-push gate (schema regen, quality baseline)
-bash .githooks/pre-push
+scripts/check-ai-intents-clean.sh && bash .githooks/pre-push
 ```
 
 Skipping step 1 is the most common CI failure when using jj. Always run it.
@@ -157,7 +158,8 @@ across agents.
 Before push or PR creation:
 
 - Ensure `jj status` and `git status --short --branch` agree on the intended published diff.
-- Confirm `.ai-intents/` paths are absent from the final jj change and from `git status --short --branch`.
+- Confirm `.ai-intents/` paths are absent from the final jj change and from
+  `git status --short --branch` by running `scripts/check-ai-intents-clean.sh`.
 - Run the manual hook checks from the **Hook Gap** section above.
 - Run the verification gate for the touched change type.
 - Push the Git branch and check CI for PR branches.

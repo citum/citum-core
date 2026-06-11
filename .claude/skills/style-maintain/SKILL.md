@@ -2,12 +2,15 @@
 name: style-maintain
 type: agent-invocable
 description: "Fast targeted maintenance for an existing Citum style. Use for punctuation/layout bugs, missing type-variants entries, or syntax modernization. Not for migrations or batch waves."
-model: haiku
+model_tier: bounded-worker
+reasoning_tier: medium
 ---
 
 # Style Maintain
 
 Authoritative shared process docs:
+- `docs/policies/AGENT_HARNESS_POLICY.md`
+- `docs/guides/AGENT_ORCHESTRATION.md`
 - `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`
 - `docs/guides/STYLE_WORKFLOW_EXECUTION.md`
 

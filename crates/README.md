@@ -14,7 +14,7 @@ The citum-core workspace. Read this first to orient — then descend into the re
 | 1 | [`csl-legacy`](csl-legacy/CLAUDE.md) | CSL 1.0 XML parser — frozen, consumed by `citum-migrate`. |
 | 2 | [`citum-migrate`](citum-migrate/CLAUDE.md) | Standalone CSL 1.0 -> Citum YAML migration crate/tool. Plateau reached on automatic mode; hand-authoring is canonical for top parents. |
 | 3 | [`citum-schema`](citum-schema/CLAUDE.md) | Facade re-exporting `citum-schema-style` + `citum-schema-data`. Real types in `citum-schema-style/`. |
-| 4 | `citum-schema-style` | Modular style model: `Style`, `Template`, `Options`, `Locale`, `Renderer`, presets, registry, embedded styles/locales. Navigate via jcodemunch. |
+| 4 | `citum-schema-style` | Modular style model: `Style`, `Template`, `Options`, `Locale`, `Renderer`, presets, registry, embedded styles/locales. Prefer symbol-aware navigation. |
 | 5 | `citum-schema-data` | Reference / data model accessors. |
 | 6 | [`citum-engine`](citum-engine/CLAUDE.md) | Rendering engine. Citation/bibliography output. Byte-for-byte targets vs citeproc-js / biblatex. |
 
@@ -50,10 +50,10 @@ The citum-core workspace. Read this first to orient — then descend into the re
 
 ## Navigation rules
 
-This workspace contains 2,300+ Rust symbols across 15 crates. **Read fewer files; query symbols instead.**
+This workspace contains thousands of Rust symbols across 15 crates. **Read fewer files; query symbols instead.**
 
-- Symbol body / call hierarchy / module API → **jcodemunch** (`get_symbol`, `get_call_hierarchy`, `get_repo_outline`).
-- Type resolution, hover, go-to-def → **rust-analyzer** (LSP).
-- Call sites, string literals, regex → **Bash `mgrep` / `grep`** (RTK-rewritten).
+- Symbol body / call hierarchy / module API → use the locally configured symbol-navigation tool.
+- Type resolution, hover, go-to-def → use the locally configured Rust language server.
+- Call sites, string literals, regex → use bounded text search.
 
-See root `CLAUDE.md` for the full tool priority table.
+See root `CLAUDE.md` for the repo/user tooling boundary.

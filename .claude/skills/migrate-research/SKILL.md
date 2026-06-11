@@ -2,7 +2,7 @@
 name: migrate-research
 type: user-invocable, agent-invocable
 description: Autonomous research loop that improves citum-migrate converter fidelity by iterating on Rust code in crates/citum_migrate/src/. Measures fidelity across a corpus of priority styles, clusters failure patterns, attempts targeted Rust fixes, validates with cargo nextest, keeps improvements, reverts failures. Does NOT modify style YAML.
-model: sonnet
+model_tier: bounded-worker
 ---
 
 # Migrate Research
@@ -31,6 +31,8 @@ model: sonnet
 ## Setup (read first)
 
 Before doing anything else, read:
+- `docs/policies/AGENT_HARNESS_POLICY.md` — planner/worker/reviewer boundaries
+- `docs/guides/AGENT_ORCHESTRATION.md` — task-packet and handoff workflow
 - `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md` — failure classification and stop conditions
 - `docs/guides/STYLE_WORKFLOW_EXECUTION.md` — evidence ladder, cluster reduction, session loop
 

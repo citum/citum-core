@@ -2,37 +2,34 @@
 
 You are a **Lead Systems Architect and Principal Rust Engineer** for the Citum initiative. All responses in English.
 
-## Code Search Tool Priority (PROJECT OVERRIDE)
+## Local Tooling Boundary
 
-This overrides any global "prefer Bash" or "use Explore" rule. Choose by intent, not by habit:
+This repository defines the project rules; user-level harness config defines
+which local tools implement them. Do not encode personal tool availability,
+model names, token-saving hooks, or editor-specific behavior as Citum truth.
 
-| Task | Use |
+Use the strongest locally configured capability for the job:
+
+| Task | Required capability |
 |---|---|
-| Type/trait def, hover, go-to-def, "what does this generic resolve to?" | `rust-analyzer` (LSP) |
-| Symbol body / callers | jcodemunch (`get_symbol`, `get_symbols`, `get_call_hierarchy`) |
-| Outline of one file | jcodemunch `get_file_outline` |
-| Module API surface across files | jcodemunch `get_repo_outline` |
-| Call sites, string literals, regex, cross-file text patterns | Bash `mgrep` / `grep` (RTK-rewritten) |
-| Reading a known file by path | Bash `cat` (RTK-truncated) |
-| File writes / edits | `Write` / `Edit` tools |
+| Type/trait resolution, hover, go-to-def | language-server-backed Rust intelligence |
+| Symbol body, callers, or module API surface | symbol-aware code navigation |
+| Call sites, literals, regex, cross-file text patterns | bounded text search |
+| Known file by path | bounded file read |
+| File writes / edits | the host's normal edit/write tools |
 
-**NEVER use the `Explore` subagent for code in this repo** — jcodemunch replaces it. Explore is allowed only for non-code docs sweeps.
-
-jcodemunch is indexed as `local/citum-core` (~184 files, 2308 symbols). See `crates/README.md` for the crate map.
-
-**Stale index → refresh, do not bail.** If jcodemunch returns "symbol not found" or results that don't match HEAD, the index is stale (likely from a recent rebase, branch switch, or large rewrite). Re-index before falling back to Read/Grep — re-indexing costs less than a fresh codebase scan:
-
-- `index_folder` with `incremental: true` on the changed crate (fast, default path).
-- `index_repo` with `incremental: true` for workspace-wide refresh after a rebase.
-- `invalidate_cache` only if `incremental: true` returns the same wrong answer.
-
-Falling back to Read/Grep on a stale index is the failure mode that has historically broken this rule — refresh first.
+If a local tool index is stale, refresh that tool before falling back to broad
+source reads. Never let a user-level shortcut replace the repo verification,
+docs, commit, bean, PR, or style-workflow rules below.
 
 ## Project Goal
 
 Transition citation management from CSL 1.0 (procedural XML) to Citum (declarative, type-safe Rust/YAML). Pipeline: **parse** (`csl-legacy`) → **migrate** (`citum-migrate`) → **process** (`citum-engine`) → **render** (matches citeproc-js for CSL-derived; biblatex for biblatex-derived).
 
-See `crates/README.md` for crate layout and `docs/architecture/DESIGN_PRINCIPLES.md` for key principles (explicit over magic, serde-driven truth, no `unwrap`/`unsafe`, declarative templates).
+See [crates/README.md](crates/README.md) for crate layout and
+[docs/architecture/DESIGN_PRINCIPLES.md](docs/architecture/DESIGN_PRINCIPLES.md)
+for key principles (explicit over magic, serde-driven truth, no `unwrap`/`unsafe`,
+declarative templates).
 
 When considering prior art, prefer biblatex over BibTeX — better data model.
 
@@ -46,7 +43,7 @@ Run `cargo fmt` first if needed, then re-check. **Do not commit if any check fai
 
 This command is the authoritative gate for this repo. Do **not** substitute a generic wrapper that weakens it by skipping `cargo fmt --check`, swallowing clippy warnings, or replacing `cargo nextest run` with a weaker test command. Run the gate above verbatim.
 
-If `crates/citum-cli/` or `crates/citum-schema*/` changed, regenerate schemas in the same commit:
+If the CLI crate or schema crates changed, regenerate schemas in the same commit:
 ```bash
 cargo run --bin citum --features schema -- schema --out-dir docs/schemas && git add docs/schemas/
 ```
@@ -78,14 +75,16 @@ All new or modified **public Rust items** need `///` doc comments (one clear sen
 
 | Kind | Directory |
 |---|---|
-| Feature / design specs | `docs/specs/` (use template) |
-| Operational audit records | `docs/architecture/audits/` (date-stamped) |
-| Architectural decisions | `docs/architecture/` |
-| Active behavioral rules | `docs/policies/` |
-| Operational how-tos | `docs/guides/` |
-| Reference lookups | `docs/reference/` |
+| Feature / design specs | [docs/specs/](docs/specs/) (use template) |
+| Operational audit records | [docs/architecture/audits/](docs/architecture/audits/) (date-stamped) |
+| Architectural decisions | [docs/architecture/](docs/architecture/) |
+| Active behavioral rules | [docs/policies/](docs/policies/) |
+| Operational how-tos | [docs/guides/](docs/guides/) |
+| Reference lookups | [docs/reference/](docs/reference/) |
 
-Non-trivial features: spec in `docs/specs/` first (status `Draft` → `Active` in the implementation commit). Reference the spec path in the bean.
+Non-trivial features: spec in [docs/specs/](docs/specs/) first (status
+`Draft` → `Active` in the implementation commit). Reference the spec path in
+the bean.
 
 ## Workflow Entry Points
 
@@ -99,6 +98,8 @@ Use the repo-owned entrypoints instead:
 - `.skills/` — canonical public skills
 - `.claude/skills/` — host-specific skills and wrappers
 - `.codex/agents/` — thin internal Codex role contracts
+- [docs/policies/AGENT_HARNESS_POLICY.md](docs/policies/AGENT_HARNESS_POLICY.md) — binding agent orchestration rules
+- [docs/guides/AGENT_ORCHESTRATION.md](docs/guides/AGENT_ORCHESTRATION.md) — handoff and task-packet workflow
 
 Do not duplicate root instruction content between `CLAUDE.md` and `AGENTS.md`.
 Keep `AGENTS.md` symlinked to this file unless a future spec moves both
@@ -122,7 +123,11 @@ Style tasks: `/style-evolve` (`upgrade`, `migrate`, `create`). Rust quality:
 
 Branch protection on `main` — all changes via PR. Branch **before** committing when a PR is planned. Pre-commit gate above is required for Rust.
 
-**First action in any fresh clone:** run `scripts/install-hooks.sh` (sets `core.hooksPath .githooks`). The tracked hooks enforce the commit-msg 50/72 + conventional format, bean hygiene, and the pre-push Rust gate *locally* — without them, those checks fail only in CI.
+**First action in any fresh clone:** run
+[scripts/install-hooks.sh](scripts/install-hooks.sh) (sets
+`core.hooksPath .githooks`). The tracked hooks enforce the commit-msg 50/72 +
+conventional format, bean hygiene, and the pre-push Rust gate *locally* —
+without them, those checks fail only in CI.
 
 **After every push on a PR branch:** `gh pr checks <PR> --watch`. If failing, `gh run view <run-id> --log-failed`. Task is not done until CI passes.
 
@@ -144,20 +149,26 @@ node scripts/report-core.js > /tmp/r.json && \
     --baseline scripts/report-data/core-quality-baseline.json
 ```
 
-Full catalogue and the **test-assertion rule** (no `contains()` with substrings <30 chars): `docs/guides/CODING_STANDARDS.md`. Test style (BDD `given/when/then`, `rstest` for parameterised): same doc.
+Full catalogue and the **test-assertion rule** (no `contains()` with substrings
+<30 chars): [docs/guides/CODING_STANDARDS.md](docs/guides/CODING_STANDARDS.md).
+Test style (BDD `given/when/then`, `rstest` for parameterised): same doc.
 
 ## Optional: jj Change Stack
 
 If `.jj` is present, see `docs/guides/JJ_AI_CHANGE_STACK.md`. Git remains the public surface. **jj skips all git hooks** — run commit-msg / pre-commit / pre-push manually before `jj git push`.
+Temporary `.ai-intents/` files are local drafting provenance only; remove them
+before exporting or publishing a change stack.
 
 ## Pointers
 
-- Crate map: `crates/README.md`
-- Design principles: `docs/architecture/DESIGN_PRINCIPLES.md`
-- Architecture index: `docs/architecture/README.md`
-- Live fidelity: `docs/TIER_STATUS.md`
-- Coding standards: `docs/guides/CODING_STANDARDS.md`
-- Locale authoring: `docs/guides/AUTHORING_LOCALES.md`
-- Domain Expert workflow: `docs/guides/DOMAIN_EXPERT.md`
-- Repo-local harness spec: `docs/specs/REPO_LOCAL_HARNESS.md`
+- Crate map: [crates/README.md](crates/README.md)
+- Design principles: [docs/architecture/DESIGN_PRINCIPLES.md](docs/architecture/DESIGN_PRINCIPLES.md)
+- Architecture index: [docs/architecture/README.md](docs/architecture/README.md)
+- Live fidelity: [docs/TIER_STATUS.md](docs/TIER_STATUS.md)
+- Coding standards: [docs/guides/CODING_STANDARDS.md](docs/guides/CODING_STANDARDS.md)
+- Locale authoring: [docs/guides/AUTHORING_LOCALES.md](docs/guides/AUTHORING_LOCALES.md)
+- Domain Expert workflow: [docs/guides/DOMAIN_EXPERT.md](docs/guides/DOMAIN_EXPERT.md)
+- Repo-local harness spec: [docs/specs/REPO_LOCAL_HARNESS.md](docs/specs/REPO_LOCAL_HARNESS.md)
+- Agent harness policy: [docs/policies/AGENT_HARNESS_POLICY.md](docs/policies/AGENT_HARNESS_POLICY.md)
+- Agent orchestration guide: [docs/guides/AGENT_ORCHESTRATION.md](docs/guides/AGENT_ORCHESTRATION.md)
 - Frontmatter preflight: `./scripts/validate-frontmatter.sh --copilot-strict`

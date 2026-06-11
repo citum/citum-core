@@ -9,6 +9,8 @@ Use this skill when multiple styles share a migration failure pattern or when a 
 input pass needs classification before changing `citum_migrate`.
 
 Read first:
+- `docs/policies/AGENT_HARNESS_POLICY.md`
+- `docs/guides/AGENT_ORCHESTRATION.md`
 - `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`
 - `docs/guides/STYLE_WORKFLOW_EXECUTION.md`
 - `docs/specs/MIGRATE_RESEARCH_RICH_INPUTS.md`
