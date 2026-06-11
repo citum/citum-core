@@ -765,10 +765,11 @@ fn apply_measured_bibliography_selection(
         return (current, false);
     }
 
-    let alternative = assembly.assemble_with_selection(TemplateSourceSelection {
+    let bibliography_source = assembly.assemble_with_selection(TemplateSourceSelection {
         suppress_inferred_bibliography: true,
         ..source_selection
     });
+    let alternative = style_with_bibliography_from(current.clone(), bibliography_source);
     match citum_migrate::measured_citation::select_bibliography(
         &current,
         &alternative,
@@ -779,6 +780,11 @@ fn apply_measured_bibliography_selection(
         Ok(selection) => apply_bibliography_selection_result(current, style_name, selection),
         Err(err) => measured_selection_unavailable(current, style_name, "bibliography", err),
     }
+}
+
+fn style_with_bibliography_from(mut current: Style, bibliography_source: Style) -> Style {
+    current.bibliography = bibliography_source.bibliography;
+    current
 }
 
 fn apply_bibliography_selection_result(
@@ -1097,6 +1103,51 @@ mod tests {
         assert_eq!(
             routing.audit.outcome,
             MinimizationDecisionOutcome::NotSelected
+        );
+    }
+
+    #[test]
+    fn bibliography_candidate_preserves_current_citation_section() {
+        let current = Style {
+            citation: Some(CitationSpec {
+                delimiter: Some(String::new()),
+                ..CitationSpec::default()
+            }),
+            bibliography: Some(BibliographySpec {
+                template: Some(vec![TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Url,
+                    ..TemplateVariable::default()
+                })]),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+        let bibliography_source = Style {
+            citation: Some(CitationSpec {
+                delimiter: Some(", ".to_string()),
+                ..CitationSpec::default()
+            }),
+            bibliography: Some(BibliographySpec {
+                template: Some(vec![TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Doi,
+                    ..TemplateVariable::default()
+                })]),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+
+        let alternative =
+            style_with_bibliography_from(current.clone(), bibliography_source.clone());
+
+        assert_eq!(
+            serde_json::to_value(&alternative.citation).expect("citation should serialize"),
+            serde_json::to_value(&current.citation).expect("citation should serialize")
+        );
+        assert_eq!(
+            serde_json::to_value(&alternative.bibliography).expect("bibliography should serialize"),
+            serde_json::to_value(&bibliography_source.bibliography)
+                .expect("bibliography should serialize")
         );
     }
 
