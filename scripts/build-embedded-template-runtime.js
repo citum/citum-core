@@ -71,6 +71,12 @@ const bundle = `/* eslint-disable */
     const fragment = core.inferTemplateFragment(args);
     return fragment === null ? null : JSON.stringify(fragment);
   };
+
+  globalThis.render_citation_strings = function renderCitationStrings(input) {
+    const args = typeof input === 'string' ? JSON.parse(input) : input;
+    const citations = core.renderCitationScenarioStrings(args.styleXml, args.testItems, args.localeXml);
+    return citations === null ? null : JSON.stringify(citations);
+  };
 }());
 `;
 

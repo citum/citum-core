@@ -729,6 +729,7 @@ dependencies = [
 name = "citum-migrate"
 version = "0.67.0"
 dependencies = [
+ "citum-engine",
  "citum-schema",
  "clap",
  "csl-legacy",

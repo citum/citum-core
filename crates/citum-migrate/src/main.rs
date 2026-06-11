@@ -193,7 +193,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let MigrationOptions {
         mut options,
-        mut bibliography_options,
+        bibliography_options,
         citation_contributor_overrides,
         bibliography_contributor_overrides,
         citation_has_scope_shorten,
@@ -227,40 +227,22 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     log_template_sources(&resolved);
 
-    let (new_bib, mut type_templates, inferred_bib_source) =
-        select_and_process_bibliography_template(&resolved, &xml_fallback, &legacy_style);
-
-    let (mut new_cit, citation_subsequent_override, citation_ibid_override) =
-        select_citation_template(
-            &resolved,
-            &xml_fallback,
-            inferred_bib_source,
-            &legacy_style,
-            &mut type_templates,
-        );
-
-    override_bibliography_options_if_inferred(&resolved, &legacy_style, &mut bibliography_options);
-
-    let (citation_wrap, citation_prefix, citation_suffix, citation_delimiter) =
-        resolve_citation_metadata(&resolved, &legacy_style, &options, &mut new_cit);
-
-    let standalone_style = build_final_style(
-        &legacy_style,
-        CompiledOutput {
-            options,
-            citation_contributor_overrides,
-            bibliography_options,
-            bibliography_contributor_overrides,
-            new_cit,
-            new_bib,
-            type_templates,
-            citation_wrap,
-            citation_prefix,
-            citation_suffix,
-            citation_delimiter,
-            citation_subsequent_override,
-            citation_ibid_override,
-        },
+    let assembly = StandaloneAssembly {
+        legacy_style: &legacy_style,
+        resolved: &resolved,
+        xml_fallback: &xml_fallback,
+        options: &options,
+        bibliography_options: &bibliography_options,
+        citation_contributor_overrides: &citation_contributor_overrides,
+        bibliography_contributor_overrides: &bibliography_contributor_overrides,
+    };
+    let standalone_style = assembly.assemble(false);
+    let standalone_style = apply_measured_citation_selection(
+        standalone_style,
+        &assembly,
+        &style_name,
+        &text,
+        &workspace_root,
     );
     // Measure the standalone form first so the evidence record can report
     // the compression delta without re-running the pipeline. Cheap: one YAML
@@ -597,6 +579,145 @@ fn log_template_sources(resolved: &template_resolver::ResolvedTemplates) {
             "Using {} citation template",
             template_resolver::TemplateSource::XmlCompiled
         );
+    }
+}
+
+/// Borrowed pipeline state needed to assemble a standalone style for one
+/// citation-template choice.
+struct StandaloneAssembly<'a> {
+    legacy_style: &'a csl_legacy::model::Style,
+    resolved: &'a template_resolver::ResolvedTemplates,
+    xml_fallback: &'a Option<XmlFallback>,
+    options: &'a citum_schema::options::Config,
+    bibliography_options: &'a Option<citum_schema::BibliographyOptions>,
+    citation_contributor_overrides: &'a Option<citum_schema::options::ContributorConfig>,
+    bibliography_contributor_overrides: &'a Option<citum_schema::options::ContributorConfig>,
+}
+
+impl StandaloneAssembly<'_> {
+    /// Assemble the standalone migrated style.
+    ///
+    /// When `suppress_inferred_citation` is true the resolved citation
+    /// template is masked so assembly takes the XML-compiled citation path —
+    /// exactly what migration emits when the inferred candidate is rejected.
+    fn assemble(&self, suppress_inferred_citation: bool) -> Style {
+        let masked;
+        let resolved = if suppress_inferred_citation {
+            masked = template_resolver::ResolvedTemplates {
+                bibliography: self.resolved.bibliography.clone(),
+                citation: None,
+            };
+            &masked
+        } else {
+            self.resolved
+        };
+
+        let mut bibliography_options = self.bibliography_options.clone();
+        let (new_bib, mut type_templates, inferred_bib_source) =
+            select_and_process_bibliography_template(
+                resolved,
+                self.xml_fallback,
+                self.legacy_style,
+            );
+
+        let (mut new_cit, citation_subsequent_override, citation_ibid_override) =
+            select_citation_template(
+                resolved,
+                self.xml_fallback,
+                inferred_bib_source,
+                self.legacy_style,
+                &mut type_templates,
+            );
+
+        override_bibliography_options_if_inferred(
+            resolved,
+            self.legacy_style,
+            &mut bibliography_options,
+        );
+
+        let (citation_wrap, citation_prefix, citation_suffix, citation_delimiter) =
+            resolve_citation_metadata(resolved, self.legacy_style, self.options, &mut new_cit);
+
+        build_final_style(
+            self.legacy_style,
+            CompiledOutput {
+                options: self.options.clone(),
+                citation_contributor_overrides: self.citation_contributor_overrides.clone(),
+                bibliography_options,
+                bibliography_contributor_overrides: self.bibliography_contributor_overrides.clone(),
+                new_cit,
+                new_bib,
+                type_templates,
+                citation_wrap,
+                citation_prefix,
+                citation_suffix,
+                citation_delimiter,
+                citation_subsequent_override,
+                citation_ibid_override,
+            },
+        )
+    }
+}
+
+/// Replace an inferred note-class citation template when the XML-compiled
+/// candidate measurably renders closer to citeproc-js.
+///
+/// The inferrer's confidence score is self-referential and can rate templates
+/// highly that render badly; this settles the choice empirically. Any scoring
+/// failure (missing fixtures, runtime error) keeps the inferred status quo.
+fn apply_measured_citation_selection(
+    current: Style,
+    assembly: &StandaloneAssembly<'_>,
+    style_name: &str,
+    style_xml: &str,
+    workspace_root: &Path,
+) -> Style {
+    if assembly.legacy_style.class != "note" {
+        return current;
+    }
+    let Some(resolved_cit) = assembly.resolved.citation.as_ref() else {
+        return current;
+    };
+    if !citation_validate::is_inferred_source(&resolved_cit.source) {
+        return current;
+    }
+    let Some(out) = assembly.xml_fallback.as_ref() else {
+        return current;
+    };
+    if out.citation.is_empty() {
+        return current;
+    }
+
+    let alternative = assembly.assemble(true);
+    match citum_migrate::measured_citation::select(
+        &current,
+        &alternative,
+        style_name,
+        style_xml,
+        workspace_root,
+    ) {
+        Ok(selection) if selection.use_xml => {
+            tracing::debug!(
+                "Measured citation selection for {style_name}: XML candidate wins ({} vs {} passes over {} items); replacing inferred citation template.",
+                selection.xml_passes,
+                selection.inferred_passes,
+                selection.items
+            );
+            alternative
+        }
+        Ok(selection) => {
+            tracing::debug!(
+                "Measured citation selection for {style_name}: keeping inferred citation template ({} vs {} passes over {} items).",
+                selection.inferred_passes,
+                selection.xml_passes,
+                selection.items
+            );
+            current
+        }
+        Err(err) => {
+            tracing::debug!("Measured citation selection unavailable for {style_name}: {err}");
+            current
+        }
     }
 }
 

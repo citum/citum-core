@@ -67,8 +67,11 @@ function renderWithCiteproc(styleXml, testItems, localeXml) {
 /**
  * Render note-style citations (for position tracking in note styles).
  * Returns array of citation strings indexed by item ID.
+ *
+ * @param {string} [format='html'] - citeproc output format ('html' or 'text');
+ *   'text' yields plain strings suitable for cross-renderer comparison.
  */
-function renderCitations(styleXml, testItems, localeXml) {
+function renderCitations(styleXml, testItems, localeXml, format = 'html') {
   try {
     const engine = new CSL.Engine({
       retrieveLocale: () => localeXml,
@@ -76,7 +79,7 @@ function renderCitations(styleXml, testItems, localeXml) {
     }, styleXml);
 
     const itemIds = Object.keys(testItems);
-    engine.setOutputFormat('html');
+    engine.setOutputFormat(format);
     engine.updateItems(itemIds);
 
     const citations = {};
@@ -91,6 +94,45 @@ function renderCitations(styleXml, testItems, localeXml) {
     return citations;
   } catch (error) {
     console.error(`Failed to render citations: ${error.message}`);
+    return null;
+  }
+}
+
+/**
+ * Render citation scenario strings for cross-renderer comparison.
+ *
+ * For every test item renders two single-item clusters in plain-text output:
+ * a bare citation and one with a page locator. Returns a map of item ID to
+ * `[plain, withLocator]` (entries are null when citeproc fails on that item).
+ */
+function renderCitationScenarioStrings(styleXml, testItems, localeXml) {
+  try {
+    const engine = new CSL.Engine({
+      retrieveLocale: () => localeXml,
+      retrieveItem: (id) => testItems[id],
+    }, styleXml);
+
+    const itemIds = Object.keys(testItems);
+    engine.setOutputFormat('text');
+    engine.updateItems(itemIds);
+
+    const citations = {};
+    for (const id of itemIds) {
+      const variants = [
+        [{ id }],
+        [{ id, locator: '23', label: 'page' }],
+      ];
+      citations[id] = variants.map((cluster) => {
+        try {
+          return engine.makeCitationCluster(cluster) || '';
+        } catch (e) {
+          return null;
+        }
+      });
+    }
+    return citations;
+  } catch (error) {
+    console.error(`Failed to render citation scenarios: ${error.message}`);
     return null;
   }
 }
@@ -1137,6 +1179,7 @@ module.exports = {
   inferTemplateFragment,
   renderWithCiteproc,
   renderCitations,
+  renderCitationScenarioStrings,
   aggregateByType,
   findConsensusOrdering,
   findDelimiterConsensus,
