@@ -77,6 +77,12 @@ const bundle = `/* eslint-disable */
     const citations = core.renderCitationScenarioStrings(args.styleXml, args.testItems, args.localeXml);
     return citations === null ? null : JSON.stringify(citations);
   };
+
+  globalThis.render_bibliography_strings = function renderBibliographyStrings(input) {
+    const args = typeof input === 'string' ? JSON.parse(input) : input;
+    const bibliography = core.renderBibliographyEntryStrings(args.styleXml, args.testItems, args.localeXml);
+    return bibliography === null ? null : JSON.stringify(bibliography);
+  };
 }());
 `;
 

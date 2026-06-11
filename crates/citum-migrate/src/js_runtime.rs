@@ -72,6 +72,23 @@ impl EmbeddedTemplateRuntime {
         self.call_bundle_function("render_citation_strings", style_name, style_xml, "citation")
     }
 
+    /// Render bibliography entries for every embedded fixture item with
+    /// citeproc-js in plain-text output.
+    ///
+    /// Returns a JSON object mapping item ID to bibliography entry string.
+    pub(crate) fn render_bibliography_strings(
+        &mut self,
+        style_name: &str,
+        style_xml: &str,
+    ) -> Result<String, String> {
+        self.call_bundle_function(
+            "render_bibliography_strings",
+            style_name,
+            style_xml,
+            "bibliography",
+        )
+    }
+
     fn call_bundle_function(
         &mut self,
         function_name: &str,
