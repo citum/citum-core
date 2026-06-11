@@ -1,11 +1,11 @@
 ---
 # csl26-rj4c
 title: Random-corpus mode + baseline run for migrate SQI scorecard
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-06-10T16:28:02Z
-updated_at: 2026-06-10T16:57:27Z
+updated_at: 2026-06-11T15:57:01Z
 parent: csl26-vmcr
 ---
 
@@ -17,3 +17,9 @@ Extend scripts/report-migrate-sqi.js with --corpus random --sample N --seed S: e
 - [x] full run (sample 100, seed 20260610)
 - [x] baseline audit doc + JSON snapshot committed (docs/architecture/audits/2026-06-10_MIGRATE_RANDOM_SAMPLE_BASELINE.md)
 - [x] evaluate against quality bar, report to user — BELOW BAR: 43/100 at >=90%; improvement wave activated (clusters C1-C5)
+
+## Summary of Changes
+
+Shipped the random-corpus scorecard mode (--corpus random --sample N --seed S in scripts/report-migrate-sqi.js with stratified mulberry32 sampling, citation-format classification, and failure taxonomy), tests, and the full 100-style baseline run (seed 20260610). Baseline recorded in docs/architecture/audits/2026-06-10_MIGRATE_RANDOM_SAMPLE_BASELINE.md with JSON snapshot in scripts/report-data/migrate-random-baseline-2026-06-10.json.
+
+Verdict: 43/100 styles at >=90% combined strict fidelity, below the 80/100 bar. The follow-up improvement wave (clusters C1-C5, beans under csl26-vmcr) lifted the measured headline to 53/100 before PR #908; outcome and the decision to stop further waves are recorded in docs/architecture/audits/2026-06-11_MIGRATE_IMPROVEMENT_WAVE_OUTCOME.md.
