@@ -1015,6 +1015,10 @@ impl Renderer<'_> {
         }
 
         let resolved_component = component;
+        if resolved_component.rendering().suppress == Some(true) {
+            return None;
+        }
+
         let var_key = get_variable_key(resolved_component);
         if tracker.should_skip(var_key.as_deref()) {
             return None;
@@ -1064,13 +1068,19 @@ impl Renderer<'_> {
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
+        if group.rendering.suppress == Some(true) {
+            return None;
+        }
+
         let fmt = F::default();
-        let values = self.render_group_child_values(&fmt, ctx, group, tracker)?;
+        let mut group_tracker = tracker.clone();
+        let values = self.render_group_child_values(&fmt, ctx, group, &mut group_tracker)?;
         let delimiter = group
             .delimiter
             .as_ref()
             .unwrap_or(&citum_schema::template::DelimiterPunctuation::Comma)
             .to_string_with_space();
+        tracker.merge_from(group_tracker);
         let group_component = TemplateComponent::Group(group.clone());
         Some(ProcTemplateComponent {
             template_component: group_component.clone(),

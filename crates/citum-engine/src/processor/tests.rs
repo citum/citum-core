@@ -11,12 +11,13 @@ use citum_schema::options::{
     NameForm, Processing, ShortenListOptions,
 };
 use citum_schema::template::{
-    ContributorForm, ContributorRole, DateForm, DateVariable as TDateVar, NumberVariable,
-    Rendering, SimpleVariable, TemplateComponent, TemplateContributor, TemplateDate, TemplateGroup,
-    TemplateNumber, TemplateTitle, TemplateVariable, TitleType, WrapPunctuation,
+    ContributorForm, ContributorRole, DateForm, DateVariable as TDateVar, DelimiterPunctuation,
+    NumberVariable, Rendering, SimpleVariable, TemplateComponent, TemplateContributor,
+    TemplateDate, TemplateGroup, TemplateNumber, TemplateTitle, TemplateVariable, TitleType,
+    WrapPunctuation,
 };
 use citum_schema::{BibliographySpec, CitationSpec, StyleInfo};
-use csl_legacy::csl_json::{DateVariable, Name, Reference as LegacyReference};
+use csl_legacy::csl_json::{DateVariable, Name, Reference as LegacyReference, StringOrNumber};
 use rstest::rstest;
 
 fn make_style() -> Style {
@@ -125,6 +126,80 @@ fn make_bibliography() -> Bibliography {
     );
 
     bib
+}
+
+fn render_consumption_template(template: Vec<TemplateComponent>) -> String {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Template Consumption".to_string()),
+            id: Some("template-consumption".into()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(template),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let reference = Reference::from(LegacyReference {
+        id: "article".to_string(),
+        ref_type: "article-journal".to_string(),
+        title: Some("Major Breakthrough".to_string()),
+        container_title: Some("Journal of Tests".to_string()),
+        issued: Some(DateVariable::year(2024)),
+        volume: Some(StringOrNumber::Number(42)),
+        issue: Some(StringOrNumber::Number(7)),
+        page: Some("101-109".to_string()),
+        ..Default::default()
+    });
+    let mut bib = Bibliography::new();
+    bib.insert("article".to_string(), reference);
+
+    Processor::new(style, bib)
+        .render_bibliography()
+        .trim()
+        .to_string()
+}
+
+fn volume_component(rendering: Rendering) -> TemplateComponent {
+    TemplateComponent::Number(TemplateNumber {
+        number: NumberVariable::Volume,
+        rendering,
+        ..Default::default()
+    })
+}
+
+fn issue_component(rendering: Rendering) -> TemplateComponent {
+    TemplateComponent::Number(TemplateNumber {
+        number: NumberVariable::Issue,
+        rendering,
+        ..Default::default()
+    })
+}
+
+fn parent_serial_component(rendering: Rendering) -> TemplateComponent {
+    TemplateComponent::Title(TemplateTitle {
+        title: TitleType::ParentSerial,
+        rendering,
+        ..Default::default()
+    })
+}
+
+fn issued_year_component(rendering: Rendering) -> TemplateComponent {
+    TemplateComponent::Date(TemplateDate {
+        date: TDateVar::Issued,
+        form: DateForm::Year,
+        rendering,
+        ..Default::default()
+    })
+}
+
+fn page_component(rendering: Rendering) -> TemplateComponent {
+    TemplateComponent::Variable(TemplateVariable {
+        variable: SimpleVariable::Page,
+        rendering,
+        ..Default::default()
+    })
 }
 
 fn insert_book_reference(
@@ -908,6 +983,114 @@ fn test_render_bibliography() {
     assert_eq!(
         result,
         "Kuhn, Thomas S. (1962). _The Structure of Scientific Revolutions_"
+    );
+}
+
+#[test]
+fn suppressed_top_level_component_does_not_consume_variable() {
+    let rendered = render_consumption_template(vec![
+        volume_component(Rendering {
+            suppress: Some(true),
+            ..Default::default()
+        }),
+        volume_component(Rendering::default()),
+    ]);
+
+    assert_eq!(
+        rendered, "42",
+        "suppressed top-level variable component should not consume volume"
+    );
+}
+
+#[test]
+fn suppressed_group_does_not_starve_later_live_group() {
+    let rendered = render_consumption_template(vec![
+        TemplateComponent::Group(TemplateGroup {
+            group: vec![
+                parent_serial_component(Rendering::default()),
+                issued_year_component(Rendering::default()),
+            ],
+            rendering: Rendering {
+                suppress: Some(true),
+                ..Default::default()
+            },
+            ..Default::default()
+        }),
+        TemplateComponent::Group(TemplateGroup {
+            group: vec![
+                parent_serial_component(Rendering::default()),
+                volume_component(Rendering::default()),
+                page_component(Rendering::default()),
+            ],
+            delimiter: Some(DelimiterPunctuation::Comma),
+            ..Default::default()
+        }),
+    ]);
+
+    assert_eq!(
+        rendered, "Journal of Tests, 42, 101-109",
+        "suppressed fallback group must not starve later journal details"
+    );
+}
+
+#[test]
+fn suppressed_nested_group_children_do_not_consume_variables() {
+    let rendered = render_consumption_template(vec![
+        TemplateComponent::Group(TemplateGroup {
+            group: vec![volume_component(Rendering::default())],
+            rendering: Rendering {
+                suppress: Some(true),
+                ..Default::default()
+            },
+            ..Default::default()
+        }),
+        TemplateComponent::Group(TemplateGroup {
+            group: vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![issue_component(Rendering::default())],
+                rendering: Rendering {
+                    suppress: Some(true),
+                    ..Default::default()
+                },
+                ..Default::default()
+            })],
+            ..Default::default()
+        }),
+        TemplateComponent::Group(TemplateGroup {
+            group: vec![
+                volume_component(Rendering::default()),
+                issue_component(Rendering::default()),
+            ],
+            delimiter: Some(DelimiterPunctuation::Comma),
+            ..Default::default()
+        }),
+    ]);
+
+    assert_eq!(
+        rendered, "42, 7",
+        "suppressed depth-1 and depth-2 group children should not consume variables"
+    );
+}
+
+#[test]
+fn visible_first_occurrence_still_consumes_variable() {
+    let rendered = render_consumption_template(vec![
+        TemplateComponent::Group(TemplateGroup {
+            group: vec![parent_serial_component(Rendering::default())],
+            ..Default::default()
+        }),
+        TemplateComponent::Group(TemplateGroup {
+            group: vec![
+                parent_serial_component(Rendering::default()),
+                volume_component(Rendering::default()),
+            ],
+            delimiter: Some(DelimiterPunctuation::Comma),
+            ..Default::default()
+        }),
+    ]);
+
+    assert_eq!(
+        rendered, "Journal of Tests. 42",
+        "visible first parent-serial occurrence should suppress the later duplicate"
     );
 }
 

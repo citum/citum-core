@@ -120,7 +120,7 @@ pub struct TemplateRenderRequest<'a> {
     pub first_reference_note_number: Option<u32>,
 }
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 struct TemplateComponentTracker {
     rendered_vars: HashSet<String>,
     substituted_bases: HashSet<String>,
@@ -144,6 +144,11 @@ impl TemplateComponentTracker {
             self.substituted_bases
                 .insert(key_base(substituted_key).into_owned());
         }
+    }
+
+    fn merge_from(&mut self, other: Self) {
+        self.rendered_vars.extend(other.rendered_vars);
+        self.substituted_bases.extend(other.substituted_bases);
     }
 }
 
