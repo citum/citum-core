@@ -13,23 +13,39 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! citeproc-js reference rendering of the original CSL style, and keep the
 //! candidate that matches better.
 //!
-//! The per-item criterion mirrors the fidelity oracle
-//! (`scripts/oracle-utils.js`): bag-of-words Jaccard similarity over
-//! lowercased alphanumeric tokens, with a pass at `>= 0.60`. Selection
-//! therefore optimizes the same measure the oracle reports.
+//! Citation selection uses the oracle's token-similarity fallback directly,
+//! because citation labels can use punctuation as meaningful separators.
+//! Bibliography selection uses normalized exact comparison first, including
+//! the oracle's case-sensitive rejection for case-only mismatches, then the
+//! same token-similarity fallback. Selection therefore optimizes the same
+//! measure the oracle reports without hiding strict bibliography case errors.
 
 use crate::js_runtime::{self, EmbeddedTemplateRuntime};
 use citum_engine::Processor;
 use citum_engine::reference::{Bibliography, Citation};
+use citum_engine::render::bibliography::render_entry_body_with_format;
+use citum_engine::render::plain::PlainText;
 use citum_schema::Style;
-use std::collections::BTreeMap;
+use citum_schema::options::contributors::NameForm;
+use citum_schema::template::{
+    ContributorForm, ContributorRole, DateForm, NumberVariable, SimpleVariable, TemplateComponent,
+    TemplateVariant, TitleType, TypeSelector,
+};
+use std::collections::{BTreeMap, BTreeSet};
+use std::panic::AssertUnwindSafe;
 use std::path::Path;
 
 /// Outcome of measured citation-candidate scoring.
 #[derive(Debug, Clone)]
 pub struct MeasuredCitationSelection {
-    /// Whether the XML-compiled candidate beat the inferred candidate.
+    /// Selected style after citation-candidate scoring.
+    pub selected_style: Style,
+    /// Name of the candidate selected by measured scoring.
+    pub selected_candidate: String,
+    /// Whether the XML-compiled candidate beat all other candidates.
     pub use_xml: bool,
+    /// Items the selected candidate passed at the oracle threshold.
+    pub selected_passes: usize,
     /// Items the inferred candidate passed at the oracle threshold.
     pub inferred_passes: usize,
     /// Items the XML-compiled candidate passed at the oracle threshold.
@@ -38,12 +54,71 @@ pub struct MeasuredCitationSelection {
     pub items: usize,
 }
 
+/// Outcome of measured bibliography-candidate scoring.
+#[derive(Debug, Clone)]
+pub struct MeasuredBibliographySelection {
+    /// Selected style after bibliography-candidate scoring.
+    pub selected_style: Style,
+    /// Name of the candidate selected by measured scoring.
+    pub selected_candidate: String,
+    /// Candidate family selected by measured scoring, if this was a generated patch.
+    pub selected_family: Option<String>,
+    /// Section affected by the selected candidate, if this was a generated patch.
+    pub selected_section: Option<String>,
+    /// Reference types affected by the selected candidate.
+    pub selected_affected_types: Vec<String>,
+    /// Whether the XML-compiled candidate beat all other candidates.
+    pub use_xml: bool,
+    /// Items the selected candidate passed at the oracle threshold.
+    pub selected_passes: usize,
+    /// Items the inferred candidate passed at the oracle threshold.
+    pub inferred_passes: usize,
+    /// Items the XML-compiled candidate passed at the oracle threshold.
+    pub xml_passes: usize,
+    /// Number of fixture items that produced a citeproc reference entry.
+    pub items: usize,
+}
+
 /// Per-item pass threshold, mirroring the oracle's `similarityThreshold`.
 const PASS_THRESHOLD: f64 = 0.60;
 
-/// Margin (in summed similarity) the XML candidate must clear to win a
-/// pass-count tie, so noise cannot flip the inferred status quo.
-const TIE_MARGIN: f64 = 0.5;
+/// Margin (in summed similarity) a candidate must clear to win a pass-count
+/// tie, so tiny floating-point noise cannot flip the inferred status quo.
+const TIE_MARGIN: f64 = 0.05;
+
+/// Fixture types that often inherit the style's default bibliography shape
+/// more faithfully than an overfit migrated type variant.
+const LOCAL_DEFAULT_TYPES: &[&str] = &[
+    "article-magazine",
+    "article-newspaper",
+    "book",
+    "broadcast",
+    "chapter",
+    "dataset",
+    "entry-encyclopedia",
+    "interview",
+    "legal_case",
+    "manuscript",
+    "motion_picture",
+    "paper-conference",
+    "patent",
+    "personal_communication",
+    "report",
+    "thesis",
+    "webpage",
+];
+
+/// Date-heavy media and online fixture types where CSL often expects more
+/// than a bare issued year in bibliography output.
+const MEDIA_FULL_DATE_TYPES: &[&str] = &[
+    "interview",
+    "broadcast",
+    "motion_picture",
+    "patent",
+    "webpage",
+    "dataset",
+    "report",
+];
 
 /// Score both candidate styles against citeproc-js reference citations.
 ///
@@ -71,15 +146,170 @@ pub fn select(
             .map_err(|err| format!("failed to parse citeproc citation references: {err}"))?;
 
     let bibliography = fixture_bibliography(workspace_root)?;
-    let inferred = score_candidate(inferred_style, &bibliography, &references);
-    let xml = score_candidate(xml_style, &bibliography, &references);
+    let mut candidates = vec![
+        ("inferred".to_string(), inferred_style.clone()),
+        ("xml".to_string(), xml_style.clone()),
+    ];
+    candidates.extend(citation_mutation_candidates(inferred_style));
 
-    let use_xml = xml.passes > inferred.passes
-        || (xml.passes == inferred.passes
-            && xml.similarity_sum > inferred.similarity_sum + TIE_MARGIN);
+    let scored: Vec<_> = candidates
+        .iter()
+        .map(|(name, style)| {
+            (
+                name.as_str(),
+                score_candidate(style, &bibliography, &references),
+            )
+        })
+        .collect();
+    if std::env::var_os("CITUM_MIGRATE_DEBUG_CITATION_SELECTION").is_some() {
+        for (candidate_name, score) in &scored {
+            eprintln!(
+                "citation candidate {style_name} {candidate_name}: {} passes, {:.3} similarity over {} items",
+                score.passes, score.similarity_sum, score.items
+            );
+        }
+    }
+    let Some((_, inferred)) = scored.first() else {
+        return Err("no citation candidates were generated".to_string());
+    };
+    let Some((_, xml)) = scored.get(1) else {
+        return Err("XML citation candidate was not generated".to_string());
+    };
+    let mut selected_index = 0;
+    let mut selected_score = *inferred;
+    for (index, (_, score)) in scored.iter().enumerate().skip(1) {
+        if candidate_beats(score, &selected_score) {
+            selected_index = index;
+            selected_score = *score;
+        }
+    }
+
+    let Some(selected) = scored.get(selected_index) else {
+        return Err("selected citation candidate was not generated".to_string());
+    };
+    let Some((_, selected_style)) = candidates.get(selected_index) else {
+        return Err("selected citation style was not generated".to_string());
+    };
+    let selected_candidate = selected.0.to_string();
+    let use_xml = selected_candidate == "xml";
+    if std::env::var_os("CITUM_MIGRATE_DEBUG_CITATION_SELECTION").is_some() {
+        eprintln!(
+            "citation selected {style_name} {selected_candidate}: +{} passes, {:+.3} similarity",
+            selected.1.passes.saturating_sub(inferred.passes),
+            selected.1.similarity_sum - inferred.similarity_sum
+        );
+    }
 
     Ok(MeasuredCitationSelection {
+        selected_style: selected_style.clone(),
+        selected_candidate,
         use_xml,
+        selected_passes: selected.1.passes,
+        inferred_passes: inferred.passes,
+        xml_passes: xml.passes,
+        items: inferred.items,
+    })
+}
+
+/// Score bibliography candidates against citeproc-js reference entries.
+///
+/// `inferred_style` is the standalone style assembled with the inferred
+/// bibliography template; `xml_style` is the same style assembled down the
+/// XML-compilation path. Additional output-driven mutation candidates are
+/// derived from the inferred style. A candidate wins only when it passes
+/// strictly more items, or ties on passes with a clearly higher summed
+/// similarity.
+///
+/// # Errors
+///
+/// Returns an error when the embedded runtime, fixture data, or reference
+/// rendering is unavailable; callers should treat that as "keep the
+/// inferred candidate".
+pub fn select_bibliography(
+    inferred_style: &Style,
+    xml_style: &Style,
+    style_name: &str,
+    style_xml: &str,
+    workspace_root: &Path,
+) -> Result<MeasuredBibliographySelection, String> {
+    let mut runtime = EmbeddedTemplateRuntime::new(workspace_root)?;
+    let reference_json = runtime.render_bibliography_strings(style_name, style_xml)?;
+    let references: BTreeMap<String, Option<String>> = serde_json::from_str(&reference_json)
+        .map_err(|err| format!("failed to parse citeproc bibliography references: {err}"))?;
+
+    let bibliography = fixture_bibliography(workspace_root)?;
+    let mut candidates = vec![
+        CandidateStyle::baseline("inferred", inferred_style.clone()),
+        CandidateStyle::source_xml(xml_style.clone()),
+    ];
+    candidates.extend(bibliography_mutation_candidates(inferred_style));
+
+    let scored: Vec<_> = candidates
+        .iter()
+        .map(|candidate| {
+            (
+                candidate,
+                score_bibliography_candidate(&candidate.style, &bibliography, &references),
+            )
+        })
+        .collect();
+    if std::env::var_os("CITUM_MIGRATE_DEBUG_BIB_SELECTION").is_some() {
+        for (candidate, score) in &scored {
+            eprintln!(
+                "bibliography candidate {style_name} {} [{} {} {:?}]: {} passes, {:.3} similarity over {} items",
+                candidate.name,
+                candidate.family_label(),
+                candidate.section_label(),
+                candidate.affected_types,
+                score.passes,
+                score.similarity_sum,
+                score.items
+            );
+        }
+    }
+    let Some((_, inferred)) = scored.first() else {
+        return Err("no bibliography candidates were generated".to_string());
+    };
+    let Some((_, xml)) = scored.get(1) else {
+        return Err("XML bibliography candidate was not generated".to_string());
+    };
+    let mut selected_index = 0;
+    let mut selected_score = *inferred;
+    for (index, (_, score)) in scored.iter().enumerate().skip(1) {
+        if candidate_beats(score, &selected_score) {
+            selected_index = index;
+            selected_score = *score;
+        }
+    }
+
+    let Some(selected) = scored.get(selected_index) else {
+        return Err("selected bibliography candidate was not generated".to_string());
+    };
+    let selected_candidate = selected.0.name.clone();
+    let use_xml = selected_candidate == "xml";
+    if std::env::var_os("CITUM_MIGRATE_DEBUG_BIB_SELECTION").is_some() {
+        eprintln!(
+            "bibliography selected {style_name} {} [{} {} {:?}]: +{} passes, {:+.3} similarity",
+            selected.0.name,
+            selected.0.family_label(),
+            selected.0.section_label(),
+            selected.0.affected_types,
+            selected.1.passes.saturating_sub(inferred.passes),
+            selected.1.similarity_sum - inferred.similarity_sum
+        );
+    }
+
+    Ok(MeasuredBibliographySelection {
+        selected_style: selected.0.style.clone(),
+        selected_candidate,
+        selected_family: selected.0.family.map(|family| family.as_str().to_string()),
+        selected_section: selected
+            .0
+            .affected_section
+            .map(|section| section.as_str().to_string()),
+        selected_affected_types: selected.0.affected_types.clone(),
+        use_xml,
+        selected_passes: selected.1.passes,
         inferred_passes: inferred.passes,
         xml_passes: xml.passes,
         items: inferred.items,
@@ -87,10 +317,186 @@ pub fn select(
 }
 
 /// Aggregate score for one candidate over the fixture items.
+#[derive(Clone, Copy)]
 struct CandidateScore {
     passes: usize,
     similarity_sum: f64,
     items: usize,
+}
+
+fn candidate_beats(candidate: &CandidateScore, incumbent: &CandidateScore) -> bool {
+    candidate.passes > incumbent.passes
+        || (candidate.passes == incumbent.passes
+            && candidate.similarity_sum > incumbent.similarity_sum + TIE_MARGIN)
+}
+
+#[derive(Debug, Clone)]
+struct CandidateStyle {
+    name: String,
+    family: Option<CandidateFamily>,
+    affected_section: Option<AffectedSection>,
+    affected_types: Vec<String>,
+    style: Style,
+}
+
+impl CandidateStyle {
+    fn baseline(name: &str, style: Style) -> Self {
+        Self {
+            name: name.to_string(),
+            family: None,
+            affected_section: None,
+            affected_types: Vec::new(),
+            style,
+        }
+    }
+
+    fn source_xml(style: Style) -> Self {
+        Self {
+            name: "xml".to_string(),
+            family: Some(CandidateFamily::SourceXml),
+            affected_section: Some(AffectedSection::Bibliography),
+            affected_types: Vec::new(),
+            style,
+        }
+    }
+
+    fn from_patch(patch: &CandidatePatch, style: Style) -> Self {
+        Self {
+            name: patch.name.clone(),
+            family: Some(patch.family),
+            affected_section: Some(patch.affected_section),
+            affected_types: patch.affected_types.clone(),
+            style,
+        }
+    }
+
+    fn family_label(&self) -> &'static str {
+        self.family.map_or("baseline", CandidateFamily::as_str)
+    }
+
+    fn section_label(&self) -> &'static str {
+        self.affected_section
+            .map_or("none", AffectedSection::as_str)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CandidateFamily {
+    SourceXml,
+    ContributorCase,
+    TypeLocalDefault,
+    DateGranularity,
+    ArticleJournalSuppression,
+}
+
+impl CandidateFamily {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::SourceXml => "source-xml",
+            Self::ContributorCase => "contributor-case",
+            Self::TypeLocalDefault => "type-local-default",
+            Self::DateGranularity => "date-granularity",
+            Self::ArticleJournalSuppression => "article-journal-suppression",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+enum AffectedSection {
+    Bibliography,
+}
+
+impl AffectedSection {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Bibliography => "bibliography",
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+struct CandidatePatch {
+    family: CandidateFamily,
+    name: String,
+    affected_section: AffectedSection,
+    affected_types: Vec<String>,
+    kind: CandidatePatchKind,
+}
+
+impl CandidatePatch {
+    fn bibliography(
+        family: CandidateFamily,
+        name: impl Into<String>,
+        affected_types: Vec<String>,
+        kind: CandidatePatchKind,
+    ) -> Self {
+        Self {
+            family,
+            name: name.into(),
+            affected_section: AffectedSection::Bibliography,
+            affected_types,
+            kind,
+        }
+    }
+
+    fn apply(&self, style: &Style) -> Option<Style> {
+        match &self.kind {
+            CandidatePatchKind::BibliographyContributorsSmallCaps => {
+                apply_bibliography_template_mutation(style, set_contributors_small_caps)
+            }
+            CandidatePatchKind::TypeLocalDefault { ref_type } => {
+                apply_type_local_default(style, ref_type)
+            }
+            CandidatePatchKind::MediaIssuedFullDate { ref_types } => {
+                apply_issued_full_date(style, ref_types)
+            }
+            CandidatePatchKind::ArticleJournalSuppress { matchers } => {
+                apply_article_journal_suppression(style, matchers)
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+enum CandidatePatchKind {
+    BibliographyContributorsSmallCaps,
+    TypeLocalDefault { ref_type: String },
+    MediaIssuedFullDate { ref_types: Vec<String> },
+    ArticleJournalSuppress { matchers: Vec<ComponentMatcher> },
+}
+
+#[derive(Debug, Clone, Copy)]
+enum ComponentMatcher {
+    PrimaryTitle,
+    DoiOrUrl,
+    Issue,
+}
+
+impl ComponentMatcher {
+    fn matches(self, component: &TemplateComponent) -> bool {
+        match self {
+            Self::PrimaryTitle => {
+                matches!(
+                    component,
+                    TemplateComponent::Title(title) if title.title == TitleType::Primary
+                )
+            }
+            Self::DoiOrUrl => {
+                matches!(
+                    component,
+                    TemplateComponent::Variable(variable)
+                        if matches!(variable.variable, SimpleVariable::Doi | SimpleVariable::Url)
+                )
+            }
+            Self::Issue => {
+                matches!(
+                    component,
+                    TemplateComponent::Number(number)
+                        if matches!(number.number, NumberVariable::Issue)
+                )
+            }
+        }
+    }
 }
 
 /// Load the embedded fixture items as an engine bibliography.
@@ -150,6 +556,535 @@ fn score_candidate(
     score
 }
 
+fn citation_mutation_candidates(inferred_style: &Style) -> Vec<(String, Style)> {
+    let mut candidates = Vec::new();
+    if !citation_style_contains_primary_title(inferred_style) {
+        add_citation_mutation_candidate(
+            inferred_style,
+            "citation-author-family-only",
+            set_author_contributors_family_only,
+            &mut candidates,
+        );
+    }
+    add_compact_locator_delimiter_candidate(inferred_style, &mut candidates);
+    candidates
+}
+
+fn add_compact_locator_delimiter_candidate(
+    inferred_style: &Style,
+    candidates: &mut Vec<(String, Style)>,
+) {
+    let mut style = inferred_style.clone();
+    let mut changed = false;
+    if let Some(options) = style.options.as_mut()
+        && let Some(locators) = options.locators.as_mut()
+        && !locators.fallback_delimiter.is_empty()
+    {
+        locators.fallback_delimiter.clear();
+        changed = true;
+    }
+    if let Some(citation) = style.citation.as_mut()
+        && let Some(options) = citation.options.as_mut()
+        && let Some(locators) = options.locators.as_mut()
+        && !locators.fallback_delimiter.is_empty()
+    {
+        locators.fallback_delimiter.clear();
+        changed = true;
+    }
+    if let Some(citation) = style.citation.as_mut()
+        && citation.delimiter.as_deref() != Some("")
+    {
+        citation.delimiter = Some(String::new());
+        changed = true;
+    }
+    if changed {
+        candidates.push(("citation-compact-locator-delimiter".to_string(), style));
+    }
+}
+
+fn citation_style_contains_primary_title(style: &Style) -> bool {
+    style
+        .citation
+        .as_ref()
+        .is_some_and(citation_spec_contains_primary_title)
+}
+
+fn citation_spec_contains_primary_title(spec: &citum_schema::CitationSpec) -> bool {
+    spec.template
+        .as_ref()
+        .is_some_and(|template| template_contains_primary_title(template))
+        || spec.type_variants.as_ref().is_some_and(|type_variants| {
+            type_variants.values().any(|variant| {
+                variant
+                    .as_template()
+                    .is_some_and(template_contains_primary_title)
+            })
+        })
+        || spec
+            .integral
+            .as_ref()
+            .is_some_and(|spec| citation_spec_contains_primary_title(spec))
+        || spec
+            .non_integral
+            .as_ref()
+            .is_some_and(|spec| citation_spec_contains_primary_title(spec))
+        || spec
+            .subsequent
+            .as_ref()
+            .is_some_and(|spec| citation_spec_contains_primary_title(spec))
+        || spec
+            .ibid
+            .as_ref()
+            .is_some_and(|spec| citation_spec_contains_primary_title(spec))
+}
+
+fn template_contains_primary_title(components: &[TemplateComponent]) -> bool {
+    components.iter().any(|component| match component {
+        TemplateComponent::Title(title) => title.title == TitleType::Primary,
+        TemplateComponent::Group(group) => template_contains_primary_title(&group.group),
+        _ => false,
+    })
+}
+
+fn add_citation_mutation_candidate<F>(
+    inferred_style: &Style,
+    name: &str,
+    mutator: F,
+    candidates: &mut Vec<(String, Style)>,
+) where
+    F: Fn(&mut [TemplateComponent]) -> bool,
+{
+    let mut style = inferred_style.clone();
+    let Some(citation) = style.citation.as_mut() else {
+        return;
+    };
+    if mutate_citation_spec(citation, &mutator) {
+        candidates.push((name.to_string(), style));
+    }
+}
+
+fn mutate_citation_spec<F>(spec: &mut citum_schema::CitationSpec, mutator: &F) -> bool
+where
+    F: Fn(&mut [TemplateComponent]) -> bool,
+{
+    let mut changed = false;
+    if let Some(template) = spec.template.as_mut() {
+        changed |= mutator(template);
+    }
+    if let Some(type_variants) = spec.type_variants.as_mut() {
+        for variant in type_variants.values_mut() {
+            if let TemplateVariant::Full(template) = variant {
+                changed |= mutator(template);
+            }
+        }
+    }
+    if let Some(spec) = spec.integral.as_mut() {
+        changed |= mutate_citation_spec(spec, mutator);
+    }
+    if let Some(spec) = spec.non_integral.as_mut() {
+        changed |= mutate_citation_spec(spec, mutator);
+    }
+    if let Some(spec) = spec.subsequent.as_mut() {
+        changed |= mutate_citation_spec(spec, mutator);
+    }
+    if let Some(spec) = spec.ibid.as_mut() {
+        changed |= mutate_citation_spec(spec, mutator);
+    }
+    changed
+}
+
+fn set_author_contributors_family_only(components: &mut [TemplateComponent]) -> bool {
+    let mut changed = false;
+    for component in components {
+        if let TemplateComponent::Group(group) = component {
+            changed |= set_author_contributors_family_only(&mut group.group);
+        }
+        if let TemplateComponent::Contributor(contributor) = component
+            && contributor.contributor == ContributorRole::Author
+        {
+            if contributor.form != ContributorForm::FamilyOnly {
+                contributor.form = ContributorForm::FamilyOnly;
+                changed = true;
+            }
+            if contributor.name_form != Some(NameForm::FamilyOnly) {
+                contributor.name_form = Some(NameForm::FamilyOnly);
+                changed = true;
+            }
+        }
+    }
+    changed
+}
+
+/// Render one candidate bibliography and score entries against citeproc output.
+fn score_bibliography_candidate(
+    style: &Style,
+    bibliography: &Bibliography,
+    references: &BTreeMap<String, Option<String>>,
+) -> CandidateScore {
+    let Ok(processed) = catch_candidate_unwind(|| {
+        let processor = Processor::new(style.clone(), bibliography.clone());
+        processor.process_references_with_format::<PlainText>()
+    }) else {
+        return invalid_candidate_score(references);
+    };
+    let reference_entries: Vec<String> = references
+        .values()
+        .filter_map(|reference| reference.as_ref())
+        .filter(|reference| !reference.trim().is_empty())
+        .cloned()
+        .collect();
+    let rendered_entries: Vec<String> = processed
+        .bibliography
+        .iter()
+        .map(render_entry_body_with_format::<PlainText>)
+        .collect();
+
+    score_bibliography_entries(&reference_entries, &rendered_entries)
+}
+
+struct BibliographyPairCandidate {
+    reference_index: usize,
+    rendered_index: usize,
+    similarity: f64,
+}
+
+fn score_bibliography_entries(references: &[String], rendered: &[String]) -> CandidateScore {
+    let mut candidates = Vec::new();
+    for (reference_index, reference) in references.iter().enumerate() {
+        let normalized_reference = normalize_text(reference);
+        for (rendered_index, rendered_entry) in rendered.iter().enumerate() {
+            let similarity =
+                token_jaccard_normalized(&normalized_reference, &normalize_text(rendered_entry));
+            if similarity >= 0.20 {
+                candidates.push(BibliographyPairCandidate {
+                    reference_index,
+                    rendered_index,
+                    similarity,
+                });
+            }
+        }
+    }
+    candidates.sort_by(|left, right| {
+        right
+            .similarity
+            .partial_cmp(&left.similarity)
+            .unwrap_or(std::cmp::Ordering::Equal)
+    });
+
+    let mut used_references = vec![false; references.len()];
+    let mut used_rendered = vec![false; rendered.len()];
+    let mut score = CandidateScore {
+        passes: 0,
+        similarity_sum: 0.0,
+        items: 0,
+    };
+
+    for candidate in candidates {
+        let Some(reference_used) = used_references.get(candidate.reference_index) else {
+            continue;
+        };
+        let Some(rendered_used) = used_rendered.get(candidate.rendered_index) else {
+            continue;
+        };
+        if *reference_used || *rendered_used {
+            continue;
+        }
+        let Some(reference_used) = used_references.get_mut(candidate.reference_index) else {
+            continue;
+        };
+        *reference_used = true;
+        let Some(rendered_used) = used_rendered.get_mut(candidate.rendered_index) else {
+            continue;
+        };
+        *rendered_used = true;
+        let Some(reference) = references.get(candidate.reference_index) else {
+            continue;
+        };
+        let Some(rendered_entry) = rendered.get(candidate.rendered_index) else {
+            continue;
+        };
+        score.items += 1;
+        let comparison = compare_text(reference, rendered_entry);
+        if comparison.matches {
+            score.passes += 1;
+        }
+        score.similarity_sum += comparison.similarity;
+    }
+
+    score.items += used_references.iter().filter(|used| !**used).count();
+    score.items += used_rendered.iter().filter(|used| !**used).count();
+    score
+}
+
+fn catch_candidate_unwind<F, T>(f: F) -> Result<T, Box<dyn std::any::Any + Send>>
+where
+    F: FnOnce() -> T,
+{
+    let previous_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(|_| {}));
+    let result = std::panic::catch_unwind(AssertUnwindSafe(f));
+    std::panic::set_hook(previous_hook);
+    result
+}
+
+fn invalid_candidate_score(references: &BTreeMap<String, Option<String>>) -> CandidateScore {
+    CandidateScore {
+        passes: 0,
+        similarity_sum: 0.0,
+        items: references
+            .values()
+            .filter(|reference| {
+                reference
+                    .as_ref()
+                    .is_some_and(|text| !text.trim().is_empty())
+            })
+            .count(),
+    }
+}
+
+fn bibliography_mutation_candidates(inferred_style: &Style) -> Vec<CandidateStyle> {
+    let mut seen = BTreeSet::new();
+    bibliography_candidate_patches()
+        .into_iter()
+        .filter(|patch| seen.insert(patch.name.clone()))
+        .filter_map(|patch| {
+            patch
+                .apply(inferred_style)
+                .map(|style| CandidateStyle::from_patch(&patch, style))
+        })
+        .collect()
+}
+
+fn bibliography_candidate_patches() -> Vec<CandidatePatch> {
+    let mut patches = Vec::new();
+    patches.push(CandidatePatch::bibliography(
+        CandidateFamily::ContributorCase,
+        "bibliography-contributors-small-caps",
+        Vec::new(),
+        CandidatePatchKind::BibliographyContributorsSmallCaps,
+    ));
+    patches.push(CandidatePatch::bibliography(
+        CandidateFamily::DateGranularity,
+        "media-issued-full-date",
+        MEDIA_FULL_DATE_TYPES
+            .iter()
+            .map(|ty| (*ty).to_string())
+            .collect(),
+        CandidatePatchKind::MediaIssuedFullDate {
+            ref_types: MEDIA_FULL_DATE_TYPES
+                .iter()
+                .map(|ty| (*ty).to_string())
+                .collect(),
+        },
+    ));
+    for ref_type in LOCAL_DEFAULT_TYPES {
+        patches.push(CandidatePatch::bibliography(
+            CandidateFamily::TypeLocalDefault,
+            format!("{ref_type}-local-default"),
+            vec![(*ref_type).to_string()],
+            CandidatePatchKind::TypeLocalDefault {
+                ref_type: (*ref_type).to_string(),
+            },
+        ));
+    }
+    patches.push(CandidatePatch::bibliography(
+        CandidateFamily::TypeLocalDefault,
+        "article-journal-local-default",
+        vec!["article-journal".to_string()],
+        CandidatePatchKind::TypeLocalDefault {
+            ref_type: "article-journal".to_string(),
+        },
+    ));
+    patches.push(CandidatePatch::bibliography(
+        CandidateFamily::ArticleJournalSuppression,
+        "article-journal-suppress-primary-title",
+        vec!["article-journal".to_string()],
+        CandidatePatchKind::ArticleJournalSuppress {
+            matchers: vec![ComponentMatcher::PrimaryTitle],
+        },
+    ));
+    patches.push(CandidatePatch::bibliography(
+        CandidateFamily::ArticleJournalSuppression,
+        "article-journal-suppress-doi-url",
+        vec!["article-journal".to_string()],
+        CandidatePatchKind::ArticleJournalSuppress {
+            matchers: vec![ComponentMatcher::DoiOrUrl],
+        },
+    ));
+    patches.push(CandidatePatch::bibliography(
+        CandidateFamily::ArticleJournalSuppression,
+        "article-journal-suppress-primary-title-doi-url",
+        vec!["article-journal".to_string()],
+        CandidatePatchKind::ArticleJournalSuppress {
+            matchers: vec![ComponentMatcher::PrimaryTitle, ComponentMatcher::DoiOrUrl],
+        },
+    ));
+    patches.push(CandidatePatch::bibliography(
+        CandidateFamily::ArticleJournalSuppression,
+        "article-journal-suppress-issue",
+        vec!["article-journal".to_string()],
+        CandidatePatchKind::ArticleJournalSuppress {
+            matchers: vec![ComponentMatcher::Issue],
+        },
+    ));
+    patches
+}
+
+fn apply_bibliography_template_mutation<F>(style: &Style, mutator: F) -> Option<Style>
+where
+    F: Fn(&mut [TemplateComponent]) -> bool,
+{
+    let mut style = style.clone();
+    let bibliography = style.bibliography.as_mut()?;
+    let mut changed = false;
+    if let Some(template) = bibliography.template.as_mut() {
+        changed |= mutator(template);
+    }
+    if let Some(type_variants) = bibliography.type_variants.as_mut() {
+        for variant in type_variants.values_mut() {
+            if let Some(template) = variant.as_template_mut() {
+                changed |= mutator(template);
+            }
+        }
+    }
+    changed.then_some(style)
+}
+
+fn apply_type_local_default(style: &Style, ref_type: &str) -> Option<Style> {
+    let template = style
+        .bibliography
+        .as_ref()
+        .and_then(|bibliography| bibliography.template.clone())?;
+    let mut style = style.clone();
+    let bibliography = style.bibliography.as_mut()?;
+    bibliography
+        .type_variants
+        .get_or_insert_with(Default::default)
+        .insert(
+            TypeSelector::Single(ref_type.to_string()),
+            TemplateVariant::Full(template),
+        );
+    Some(style)
+}
+
+fn apply_issued_full_date(style: &Style, ref_types: &[String]) -> Option<Style> {
+    let mut updates = Vec::new();
+    for ref_type in ref_types {
+        let Some(mut template) = bibliography_template_for_type(style, ref_type) else {
+            continue;
+        };
+        if set_issued_year_dates_to_full(&mut template) {
+            updates.push((ref_type.clone(), template));
+        }
+    }
+    if updates.is_empty() {
+        return None;
+    }
+
+    let mut style = style.clone();
+    let bibliography = style.bibliography.as_mut()?;
+    let type_variants = bibliography
+        .type_variants
+        .get_or_insert_with(Default::default);
+    for (ref_type, template) in updates {
+        type_variants.insert(
+            TypeSelector::Single(ref_type),
+            TemplateVariant::Full(template),
+        );
+    }
+    Some(style)
+}
+
+fn apply_article_journal_suppression(
+    style: &Style,
+    matchers: &[ComponentMatcher],
+) -> Option<Style> {
+    let mut template = bibliography_template_for_type(style, "article-journal")?;
+    if !suppress_matching_components(&mut template, &|component| {
+        matchers.iter().any(|matcher| matcher.matches(component))
+    }) {
+        return None;
+    }
+
+    let mut style = style.clone();
+    let bibliography = style.bibliography.as_mut()?;
+    bibliography
+        .type_variants
+        .get_or_insert_with(Default::default)
+        .insert(
+            TypeSelector::Single("article-journal".to_string()),
+            TemplateVariant::Full(template),
+        );
+    Some(style)
+}
+
+fn bibliography_template_for_type(style: &Style, ref_type: &str) -> Option<Vec<TemplateComponent>> {
+    let bibliography = style.bibliography.as_ref()?;
+    if let Some(type_variants) = bibliography.type_variants.as_ref() {
+        for (selector, variant) in type_variants {
+            if selector.matches(ref_type)
+                && let TemplateVariant::Full(template) = variant
+            {
+                return Some(template.clone());
+            }
+        }
+    }
+    bibliography.template.clone()
+}
+
+fn suppress_matching_components<F>(
+    components: &mut [TemplateComponent],
+    should_suppress: &F,
+) -> bool
+where
+    F: Fn(&TemplateComponent) -> bool,
+{
+    let mut changed = false;
+    for component in components.iter_mut() {
+        if let TemplateComponent::Group(group) = component {
+            changed |= suppress_matching_components(&mut group.group, should_suppress);
+        }
+        if should_suppress(component) && component.rendering().suppress != Some(true) {
+            component.rendering_mut().suppress = Some(true);
+            changed = true;
+        }
+    }
+    changed
+}
+
+fn set_contributors_small_caps(components: &mut [TemplateComponent]) -> bool {
+    let mut changed = false;
+    for component in components {
+        if let TemplateComponent::Group(group) = component {
+            changed |= set_contributors_small_caps(&mut group.group);
+        }
+        if let TemplateComponent::Contributor(contributor) = component
+            && contributor.rendering.small_caps != Some(true)
+        {
+            contributor.rendering.small_caps = Some(true);
+            changed = true;
+        }
+    }
+    changed
+}
+
+fn set_issued_year_dates_to_full(components: &mut [TemplateComponent]) -> bool {
+    let mut changed = false;
+    for component in components {
+        if let TemplateComponent::Group(group) = component {
+            changed |= set_issued_year_dates_to_full(&mut group.group);
+        }
+        if let TemplateComponent::Date(date) = component
+            && date.date == citum_schema::template::DateVariable::Issued
+            && date.form == DateForm::Year
+        {
+            date.form = DateForm::Full;
+            changed = true;
+        }
+    }
+    changed
+}
+
 /// Build the engine-side citation matching a citeproc reference scenario.
 ///
 /// Index 0 is a bare single-item citation; any other index carries the same
@@ -167,12 +1102,146 @@ fn scenario_citation(id: &str, scenario_index: usize) -> Citation {
     citation
 }
 
-/// Bag-of-words Jaccard similarity over alphanumeric tokens, mirroring the
-/// oracle's `textSimilarity`: lowercase, non-alphanumeric characters split
-/// tokens, single-character tokens dropped, multiset intersection over union.
+/// Result of oracle-compatible text comparison for measured scoring.
+struct TextComparison {
+    matches: bool,
+    similarity: f64,
+}
+
+/// Compare rendered text with normalized exact equality first, then
+/// case-sensitive case-only rejection, then token similarity.
+fn compare_text(expected_text: &str, actual_text: &str) -> TextComparison {
+    let expected = normalize_text(expected_text);
+    let actual = normalize_text(actual_text);
+
+    if expected == actual {
+        return TextComparison {
+            matches: true,
+            similarity: 1.0,
+        };
+    }
+
+    if expected.to_lowercase() == actual.to_lowercase() {
+        return TextComparison {
+            matches: false,
+            similarity: 1.0,
+        };
+    }
+
+    let similarity = token_jaccard_normalized(&expected, &actual);
+    TextComparison {
+        matches: similarity >= PASS_THRESHOLD,
+        similarity,
+    }
+}
+
+/// Normalize rendered text for measured scoring, matching the oracle's most
+/// important case-sensitive equality behavior without pulling in a regex
+/// dependency.
+fn normalize_text(text: &str) -> String {
+    let without_html = strip_html_tags(text);
+    let normalized = without_html
+        .replace("&#38;", "&")
+        .replace('\u{00a0}', " ")
+        .replace(['_', '*'], "");
+    let collapsed = collapse_whitespace(&normalized);
+    let without_label = strip_bibliography_label(&collapsed);
+    without_label
+        .trim_end_matches(['.', ',', ';', ':'])
+        .trim()
+        .to_string()
+}
+
+fn strip_html_tags(text: &str) -> String {
+    let mut output = String::with_capacity(text.len());
+    let mut in_tag = false;
+    for ch in text.chars() {
+        match ch {
+            '<' => in_tag = true,
+            '>' if in_tag => in_tag = false,
+            _ if !in_tag => output.push(ch),
+            _ => {}
+        }
+    }
+    output
+}
+
+fn collapse_whitespace(text: &str) -> String {
+    let mut output = String::with_capacity(text.len());
+    let mut previous_was_space = false;
+    for ch in text.chars() {
+        if ch.is_whitespace() {
+            if !previous_was_space {
+                output.push(' ');
+                previous_was_space = true;
+            }
+        } else {
+            output.push(ch);
+            previous_was_space = false;
+        }
+    }
+    output
+        .replace(" ,", ",")
+        .replace(" .", ".")
+        .replace(" ;", ";")
+        .replace(" :", ":")
+        .trim()
+        .to_string()
+}
+
+fn strip_bibliography_label(text: &str) -> String {
+    let trimmed = text.trim_start_matches(|ch: char| {
+        matches!(
+            ch,
+            '\u{200e}'
+                | '\u{200f}'
+                | '\u{202a}'..='\u{202e}'
+                | '\u{2066}'..='\u{2069}'
+        )
+    });
+    let Some((dot_index, _)) = trimmed.char_indices().find(|(_, ch)| *ch == '.') else {
+        return text.to_string();
+    };
+    if dot_index == 0 {
+        return text.to_string();
+    }
+    let (label, after_label) = trimmed.split_at(dot_index);
+    if !label.chars().all(|ch| ch.is_ascii_digit()) {
+        return text.to_string();
+    }
+    let Some(after_dot) = after_label.strip_prefix('.') else {
+        return text.to_string();
+    };
+    if after_dot
+        .chars()
+        .next()
+        .is_some_and(|ch| ch.is_ascii_digit())
+    {
+        return text.to_string();
+    }
+    after_dot.trim_start().to_string()
+}
+
+/// Bag-of-words Jaccard similarity over raw alphanumeric tokens.
+///
+/// Citation selection keeps this historical raw scorer because some citation
+/// styles, notably BibTeX labels, use punctuation such as underscores as
+/// meaningful token separators. Bibliography selection uses
+/// [`compare_text`], which performs oracle-style normalization before its
+/// similarity fallback.
 fn token_jaccard(left_text: &str, right_text: &str) -> f64 {
     let left = tokenize(left_text);
     let right = tokenize(right_text);
+    token_jaccard_from_tokens(&left, &right)
+}
+
+fn token_jaccard_normalized(left_text: &str, right_text: &str) -> f64 {
+    let left = tokenize_normalized(left_text);
+    let right = tokenize_normalized(right_text);
+    token_jaccard_from_tokens(&left, &right)
+}
+
+fn token_jaccard_from_tokens(left: &[String], right: &[String]) -> f64 {
     if left.is_empty() && right.is_empty() {
         return 1.0;
     }
@@ -181,10 +1250,10 @@ fn token_jaccard(left_text: &str, right_text: &str) -> f64 {
     }
 
     let mut counts: BTreeMap<&str, (usize, usize)> = BTreeMap::new();
-    for token in &left {
+    for token in left {
         counts.entry(token).or_insert((0, 0)).0 += 1;
     }
-    for token in &right {
+    for token in right {
         counts.entry(token).or_insert((0, 0)).1 += 1;
     }
 
@@ -206,14 +1275,18 @@ fn token_jaccard(left_text: &str, right_text: &str) -> f64 {
     ratio
 }
 
-/// Split text into lowercased alphanumeric tokens, dropping single-character
-/// tokens, matching the oracle's `tokenizeForSimilarity`.
-fn tokenize(text: &str) -> Vec<String> {
+fn tokenize_normalized(text: &str) -> Vec<String> {
     text.to_lowercase()
         .split(|c: char| !c.is_alphanumeric())
         .filter(|token| token.chars().count() > 1)
         .map(str::to_string)
         .collect()
+}
+
+/// Split text into lowercased alphanumeric tokens, dropping single-character
+/// tokens.
+fn tokenize(text: &str) -> Vec<String> {
+    tokenize_normalized(text)
 }
 
 #[cfg(test)]
@@ -226,7 +1299,13 @@ fn tokenize(text: &str) -> Vec<String> {
     reason = "Panicking and exact comparison are acceptable in tests."
 )]
 mod tests {
-    use super::{PASS_THRESHOLD, token_jaccard, tokenize};
+    use super::{
+        CandidateScore, PASS_THRESHOLD, bibliography_candidate_patches,
+        bibliography_mutation_candidates, candidate_beats, compare_text, normalize_text,
+        token_jaccard, tokenize,
+    };
+    use citum_schema::Style;
+    use std::collections::BTreeSet;
 
     #[test]
     fn tokenize_splits_on_punctuation_and_drops_short_tokens() {
@@ -268,5 +1347,101 @@ mod tests {
         assert_eq!(token_jaccard("", ""), 1.0);
         assert_eq!(token_jaccard("Kuhn 1962", ""), 0.0);
         assert_eq!(token_jaccard("", "Kuhn 1962"), 0.0);
+    }
+
+    #[test]
+    fn citation_token_similarity_preserves_bibtex_label_separators() {
+        let rendered = "Kuhn_1962";
+        let reference = "Kuhn 1962";
+
+        assert_eq!(tokenize(rendered), vec!["kuhn", "1962"]);
+        assert_eq!(token_jaccard(rendered, reference), 1.0);
+    }
+
+    #[test]
+    fn candidate_tie_breaking_prioritizes_pass_count() {
+        let incumbent = CandidateScore {
+            passes: 2,
+            similarity_sum: 10.0,
+            items: 3,
+        };
+        let more_passes = CandidateScore {
+            passes: 3,
+            similarity_sum: 1.0,
+            items: 3,
+        };
+
+        assert!(candidate_beats(&more_passes, &incumbent));
+    }
+
+    #[test]
+    fn candidate_tie_breaking_requires_similarity_margin() {
+        let incumbent = CandidateScore {
+            passes: 2,
+            similarity_sum: 10.0,
+            items: 3,
+        };
+        let tiny_similarity_gain = CandidateScore {
+            passes: 2,
+            similarity_sum: 10.01,
+            items: 3,
+        };
+        let clear_similarity_gain = CandidateScore {
+            passes: 2,
+            similarity_sum: 10.06,
+            items: 3,
+        };
+
+        assert!(!candidate_beats(&tiny_similarity_gain, &incumbent));
+        assert!(candidate_beats(&clear_similarity_gain, &incumbent));
+    }
+
+    #[test]
+    fn compare_text_rejects_case_only_mismatch() {
+        let comparison = compare_text("ADAMS, J. (1797)", "Adams, J. (1797)");
+
+        assert!(!comparison.matches);
+        assert_eq!(comparison.similarity, 1.0);
+    }
+
+    #[test]
+    fn compare_text_accepts_non_case_near_match() {
+        let comparison = compare_text(
+            "Thomas Kuhn, The Structure of Scientific Revolutions, Chicago (1962), p. 23",
+            "Thomas Kuhn, The Structure of Scientific Revolutions, Chicago (1962)",
+        );
+
+        assert!(comparison.matches);
+        assert!(comparison.similarity >= PASS_THRESHOLD);
+    }
+
+    #[test]
+    fn normalize_text_strips_bibliography_labels_and_markup() {
+        assert_eq!(
+            normalize_text("12. <i>Smith</i>, **Jane**. "),
+            "Smith, Jane"
+        );
+    }
+
+    #[test]
+    fn bibliography_candidate_families_have_unique_patch_names() {
+        let patches = bibliography_candidate_patches();
+        let mut names = BTreeSet::new();
+
+        for patch in &patches {
+            assert!(
+                names.insert(patch.name.clone()),
+                "duplicate candidate patch name: {}",
+                patch.name
+            );
+        }
+        assert!(!patches.is_empty());
+    }
+
+    #[test]
+    fn bibliography_candidates_skip_noop_style_without_bibliography() {
+        let candidates = bibliography_mutation_candidates(&Style::default());
+
+        assert!(candidates.is_empty());
     }
 }

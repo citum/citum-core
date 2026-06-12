@@ -42,9 +42,7 @@ impl OutputFormat for PlainText {
     }
 
     fn small_caps(&self, content: Self::Output) -> Self::Output {
-        // Plain text fallback for small caps could be capitals, but usually we just keep it as is
-        // or use span-like markers if we wanted, but let's stick to plain text.
-        content
+        content.to_uppercase()
     }
 
     fn superscript(&self, content: Self::Output) -> Self::Output {
@@ -103,5 +101,27 @@ impl OutputFormat for PlainText {
         _metadata: &super::format::ProcEntryMetadata,
     ) -> Self::Output {
         content
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn small_caps_preserves_empty_text() {
+        let fmt = PlainText;
+
+        assert_eq!(fmt.small_caps(String::new()), "");
+    }
+
+    #[test]
+    fn small_caps_uppercases_plain_text() {
+        let fmt = PlainText;
+
+        assert_eq!(
+            fmt.small_caps("Smith and Lumière".to_string()),
+            "SMITH AND LUMIÈRE"
+        );
     }
 }

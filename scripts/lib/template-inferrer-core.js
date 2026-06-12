@@ -137,6 +137,46 @@ function renderCitationScenarioStrings(styleXml, testItems, localeXml) {
   }
 }
 
+/**
+ * Render bibliography entry strings for cross-renderer comparison.
+ *
+ * The full bibliography is rendered in one citeproc pass so numeric labels,
+ * sorting, and subsequent-author behavior are computed on the same surface as
+ * the oracle. Entries are then mapped back to fixture item IDs with the
+ * hardened component parser; ambiguous or unmapped entries are omitted.
+ */
+function renderBibliographyEntryStrings(styleXml, testItems, localeXml) {
+  try {
+    const engine = new CSL.Engine({
+      retrieveLocale: () => localeXml,
+      retrieveItem: (id) => testItems[id],
+    }, styleXml);
+
+    const itemIds = Object.keys(testItems);
+    engine.setOutputFormat('text');
+    engine.updateItems(itemIds);
+
+    const bibResult = engine.makeBibliography();
+    if (!bibResult || !bibResult[1]) {
+      return null;
+    }
+
+    const byId = {};
+    for (const entry of bibResult[1]) {
+      const ref = findRefDataForEntry(entry, testItems);
+      if (!ref) continue;
+      const matched = Object.entries(testItems).find(([, candidate]) => candidate === ref);
+      if (matched) {
+        byId[matched[0]] = entry || '';
+      }
+    }
+    return byId;
+  } catch (error) {
+    console.error(`Failed to render bibliography entries: ${error.message}`);
+    return null;
+  }
+}
+
 // -- Component aggregation and ordering --
 
 /**
@@ -1180,6 +1220,7 @@ module.exports = {
   renderWithCiteproc,
   renderCitations,
   renderCitationScenarioStrings,
+  renderBibliographyEntryStrings,
   aggregateByType,
   findConsensusOrdering,
   findDelimiterConsensus,

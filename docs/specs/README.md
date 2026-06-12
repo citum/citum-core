@@ -165,6 +165,7 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 | [`EMBEDDED_ROOT_WRAPPER_MIGRATION.md`](./EMBEDDED_ROOT_WRAPPER_MIGRATION.md) — proof-gated embedded roots plus thin public wrappers for style migration | Active | `crates/citum-migrate/tests/` |
 | [`MIXED_CONDITION_NOTE_POSITION_TREES.md`](./MIXED_CONDITION_NOTE_POSITION_TREES.md) — migration of legacy choose trees with mixed position predicates | Active | `crates/citum-migrate/tests/` |
 | [`EMBEDDED_JS_TEMPLATE_INFERENCE.md`](./EMBEDDED_JS_TEMPLATE_INFERENCE.md) — embedded JS runtime for live template inference in migrator | Active | `crates/citum-migrate/tests/` |
+| [`OUTPUT_DRIVEN_TEMPLATE_SYNTHESIS.md`](./OUTPUT_DRIVEN_TEMPLATE_SYNTHESIS.md) — measured candidate selection for migrated templates | Active | `crates/citum-migrate/tests/` |
 | [`ENGINE_MIGRATE_COEVOLUTION_WAVE.md`](./ENGINE_MIGRATE_COEVOLUTION_WAVE.md) — engine-first co-evolution wave for style-fidelity fixes | Active | — |
 
 ### Style System & Configuration

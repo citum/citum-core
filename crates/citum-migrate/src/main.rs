@@ -236,10 +236,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         citation_contributor_overrides: &citation_contributor_overrides,
         bibliography_contributor_overrides: &bibliography_contributor_overrides,
     };
-    let standalone_style = assembly.assemble(false);
-    let standalone_style = apply_measured_citation_selection(
+    let mut source_selection = TemplateSourceSelection::default();
+    let standalone_style = assembly.assemble_with_selection(source_selection);
+    let (standalone_style, use_xml_citation) = apply_measured_citation_selection(
         standalone_style,
         &assembly,
+        source_selection,
+        &style_name,
+        &text,
+        &workspace_root,
+    );
+    source_selection.suppress_inferred_citation = use_xml_citation;
+    let (standalone_style, _) = apply_measured_bibliography_selection(
+        standalone_style,
+        &assembly,
+        source_selection,
         &style_name,
         &text,
         &workspace_root,
@@ -594,23 +605,33 @@ struct StandaloneAssembly<'a> {
     bibliography_contributor_overrides: &'a Option<citum_schema::options::ContributorConfig>,
 }
 
+#[derive(Debug, Clone, Copy, Default)]
+struct TemplateSourceSelection {
+    suppress_inferred_bibliography: bool,
+    suppress_inferred_citation: bool,
+}
+
 impl StandaloneAssembly<'_> {
-    /// Assemble the standalone migrated style.
-    ///
-    /// When `suppress_inferred_citation` is true the resolved citation
-    /// template is masked so assembly takes the XML-compiled citation path —
-    /// exactly what migration emits when the inferred candidate is rejected.
-    fn assemble(&self, suppress_inferred_citation: bool) -> Style {
+    fn assemble_with_selection(&self, selection: TemplateSourceSelection) -> Style {
         let masked;
-        let resolved = if suppress_inferred_citation {
-            masked = template_resolver::ResolvedTemplates {
-                bibliography: self.resolved.bibliography.clone(),
-                citation: None,
+        let resolved =
+            if selection.suppress_inferred_bibliography || selection.suppress_inferred_citation {
+                masked = template_resolver::ResolvedTemplates {
+                    bibliography: if selection.suppress_inferred_bibliography {
+                        None
+                    } else {
+                        self.resolved.bibliography.clone()
+                    },
+                    citation: if selection.suppress_inferred_citation {
+                        None
+                    } else {
+                        self.resolved.citation.clone()
+                    },
+                };
+                &masked
+            } else {
+                self.resolved
             };
-            &masked
-        } else {
-            self.resolved
-        };
 
         let mut bibliography_options = self.bibliography_options.clone();
         let (new_bib, mut type_templates, inferred_bib_source) =
@@ -659,8 +680,8 @@ impl StandaloneAssembly<'_> {
     }
 }
 
-/// Replace an inferred note-class citation template when the XML-compiled
-/// candidate measurably renders closer to citeproc-js.
+/// Replace the current citation template when a measured candidate renders
+/// closer to citeproc-js.
 ///
 /// The inferrer's confidence score is self-referential and can rate templates
 /// highly that render badly; this settles the choice empirically. Any scoring
@@ -668,27 +689,22 @@ impl StandaloneAssembly<'_> {
 fn apply_measured_citation_selection(
     current: Style,
     assembly: &StandaloneAssembly<'_>,
+    source_selection: TemplateSourceSelection,
     style_name: &str,
     style_xml: &str,
     workspace_root: &Path,
-) -> Style {
-    if assembly.legacy_style.class != "note" {
-        return current;
-    }
-    let Some(resolved_cit) = assembly.resolved.citation.as_ref() else {
-        return current;
-    };
-    if !citation_validate::is_inferred_source(&resolved_cit.source) {
-        return current;
-    }
+) -> (Style, bool) {
     let Some(out) = assembly.xml_fallback.as_ref() else {
-        return current;
+        return (current, false);
     };
     if out.citation.is_empty() {
-        return current;
+        return (current, false);
     }
 
-    let alternative = assembly.assemble(true);
+    let alternative = assembly.assemble_with_selection(TemplateSourceSelection {
+        suppress_inferred_citation: true,
+        ..source_selection
+    });
     match citum_migrate::measured_citation::select(
         &current,
         &alternative,
@@ -696,29 +712,125 @@ fn apply_measured_citation_selection(
         style_xml,
         workspace_root,
     ) {
-        Ok(selection) if selection.use_xml => {
-            tracing::debug!(
-                "Measured citation selection for {style_name}: XML candidate wins ({} vs {} passes over {} items); replacing inferred citation template.",
-                selection.xml_passes,
-                selection.inferred_passes,
-                selection.items
-            );
-            alternative
-        }
-        Ok(selection) => {
-            tracing::debug!(
-                "Measured citation selection for {style_name}: keeping inferred citation template ({} vs {} passes over {} items).",
-                selection.inferred_passes,
-                selection.xml_passes,
-                selection.items
-            );
-            current
-        }
-        Err(err) => {
-            tracing::debug!("Measured citation selection unavailable for {style_name}: {err}");
-            current
-        }
+        Ok(selection) => apply_citation_selection_result(current, style_name, selection),
+        Err(err) => measured_selection_unavailable(current, style_name, "citation", err),
     }
+}
+
+fn apply_citation_selection_result(
+    current: Style,
+    style_name: &str,
+    selection: citum_migrate::measured_citation::MeasuredCitationSelection,
+) -> (Style, bool) {
+    if selection.use_xml {
+        tracing::debug!(
+            "Measured citation selection for {style_name}: XML candidate wins ({} vs {} passes over {} items); replacing inferred citation template.",
+            selection.xml_passes,
+            selection.inferred_passes,
+            selection.items
+        );
+        return (selection.selected_style, true);
+    }
+    if selection.selected_candidate != "inferred" {
+        tracing::debug!(
+            "Measured citation selection for {style_name}: {} candidate wins ({} vs {} current passes over {} items).",
+            selection.selected_candidate,
+            selection.selected_passes,
+            selection.inferred_passes,
+            selection.items
+        );
+        return (selection.selected_style, false);
+    }
+    tracing::debug!(
+        "Measured citation selection for {style_name}: keeping inferred citation template ({} vs {} passes over {} items).",
+        selection.inferred_passes,
+        selection.xml_passes,
+        selection.items
+    );
+    (current, false)
+}
+
+fn apply_measured_bibliography_selection(
+    current: Style,
+    assembly: &StandaloneAssembly<'_>,
+    source_selection: TemplateSourceSelection,
+    style_name: &str,
+    style_xml: &str,
+    workspace_root: &Path,
+) -> (Style, bool) {
+    let Some(out) = assembly.xml_fallback.as_ref() else {
+        return (current, false);
+    };
+    if out.bibliography.is_empty() {
+        return (current, false);
+    }
+
+    let bibliography_source = assembly.assemble_with_selection(TemplateSourceSelection {
+        suppress_inferred_bibliography: true,
+        ..source_selection
+    });
+    let alternative = style_with_bibliography_from(current.clone(), bibliography_source);
+    match citum_migrate::measured_citation::select_bibliography(
+        &current,
+        &alternative,
+        style_name,
+        style_xml,
+        workspace_root,
+    ) {
+        Ok(selection) => apply_bibliography_selection_result(current, style_name, selection),
+        Err(err) => measured_selection_unavailable(current, style_name, "bibliography", err),
+    }
+}
+
+fn style_with_bibliography_from(mut current: Style, bibliography_source: Style) -> Style {
+    current.bibliography = bibliography_source.bibliography;
+    current
+}
+
+fn apply_bibliography_selection_result(
+    current: Style,
+    style_name: &str,
+    selection: citum_migrate::measured_citation::MeasuredBibliographySelection,
+) -> (Style, bool) {
+    if selection.use_xml {
+        tracing::debug!(
+            "Measured bibliography selection for {style_name}: XML candidate wins ({} vs {} current passes over {} items); replacing current bibliography template.",
+            selection.xml_passes,
+            selection.inferred_passes,
+            selection.items
+        );
+        return (selection.selected_style, true);
+    }
+    if selection.selected_candidate != "inferred" {
+        tracing::debug!(
+            "Measured bibliography selection for {style_name}: {} candidate wins (family={}, section={}, types={:?}; {} vs {} current passes over {} items).",
+            selection.selected_candidate,
+            selection.selected_family.as_deref().unwrap_or("unknown"),
+            selection.selected_section.as_deref().unwrap_or("unknown"),
+            selection.selected_affected_types,
+            selection.selected_passes,
+            selection.inferred_passes,
+            selection.items
+        );
+        return (selection.selected_style, false);
+    }
+    tracing::debug!(
+        "Measured bibliography selection for {style_name}: keeping inferred bibliography template ({} vs {} passes over {} items).",
+        selection.inferred_passes,
+        selection.xml_passes,
+        selection.items
+    );
+    (current, false)
+}
+
+fn measured_selection_unavailable(
+    current: Style,
+    style_name: &str,
+    section: &str,
+    err: String,
+) -> (Style, bool) {
+    tracing::debug!("Measured {section} selection unavailable for {style_name}: {err}");
+    (current, false)
 }
 
 fn select_and_process_bibliography_template(
@@ -991,6 +1103,51 @@ mod tests {
         assert_eq!(
             routing.audit.outcome,
             MinimizationDecisionOutcome::NotSelected
+        );
+    }
+
+    #[test]
+    fn bibliography_candidate_preserves_current_citation_section() {
+        let current = Style {
+            citation: Some(CitationSpec {
+                delimiter: Some(String::new()),
+                ..CitationSpec::default()
+            }),
+            bibliography: Some(BibliographySpec {
+                template: Some(vec![TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Url,
+                    ..TemplateVariable::default()
+                })]),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+        let bibliography_source = Style {
+            citation: Some(CitationSpec {
+                delimiter: Some(", ".to_string()),
+                ..CitationSpec::default()
+            }),
+            bibliography: Some(BibliographySpec {
+                template: Some(vec![TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Doi,
+                    ..TemplateVariable::default()
+                })]),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+
+        let alternative =
+            style_with_bibliography_from(current.clone(), bibliography_source.clone());
+
+        assert_eq!(
+            serde_json::to_value(&alternative.citation).expect("citation should serialize"),
+            serde_json::to_value(&current.citation).expect("citation should serialize")
+        );
+        assert_eq!(
+            serde_json::to_value(&alternative.bibliography).expect("bibliography should serialize"),
+            serde_json::to_value(&bibliography_source.bibliography)
+                .expect("bibliography should serialize")
         );
     }
 
