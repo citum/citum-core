@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test Soundness Review"
+  short_description: "Audit Citum tests against their spec"
+  default_prompt: "Use $test-soundness-review to audit a spec's tests for soundness, or with no spec to report test-quality state."
