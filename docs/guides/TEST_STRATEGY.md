@@ -10,7 +10,7 @@
 **Method**:
 - Test fixtures use CSL JSON format (what citeproc-js expects)
 - Compare Citum output against citeproc-js (the oracle)
-- Located: `tests/fixtures/references-expanded.json`
+- Located: [tests/fixtures/references-expanded.json](../../tests/fixtures/references-expanded.json)
 - Test harness: `../../../scripts/oracle-e2e.js`
 
 **Limitations**:
@@ -45,7 +45,7 @@ cargo nextest run --test citations
 6. **Structured name particles** - More nuanced than CSL JSON
 
 **Implementation plan** (deferred):
-1. Create a native references fixture file under `tests/fixtures/` (yaml or json — serde supports both)
+1. Create a native references fixture file under [tests/fixtures/](../../tests/fixtures/) (yaml or json — serde supports both)
 2. Build separate test harness (no oracle comparison - we ARE the reference)
 3. Test Citum-specific rendering against expected outputs
 4. Document intentional divergences from CSL 1.0
@@ -56,8 +56,8 @@ cargo nextest run --test citations
   not the definition of scope.
 - Prioritize native intake by Citum relevance, oracle/style risk, current native
   coverage gaps, and renderer sensitivity.
-- See `docs/architecture/CSL_NATIVE_TEST_INTAKE_ONE_SHOT_PR_2026-03-01.md` and
-  `tests/fixtures/csl-native-intake-wave1.json`.
+- See [docs/architecture/CSL_NATIVE_TEST_INTAKE_ONE_SHOT_PR_2026-03-01.md](../architecture/CSL_NATIVE_TEST_INTAKE_ONE_SHOT_PR_2026-03-01.md) and
+  [tests/fixtures/csl-native-intake-wave1.json](../../tests/fixtures/csl-native-intake-wave1.json).
 
 ## Two-Phase Testing Strategy
 
@@ -82,6 +82,8 @@ We're deferring Citum-native tests to focus on CSL 1.0 parity. This is the right
 - Keeps current work focused and achievable
 
 ## Related
+- [`CODING_STANDARDS.md`](./CODING_STANDARDS.md) § "What makes a test worth keeping" — the shared bar for whether a test earns its place (independent claim, no tests for their own sake, classifiable against a spec).
+- [`../architecture/TEST_SOUNDNESS_STATUS.md`](../architecture/TEST_SOUNDNESS_STATUS.md) — per-spec test-soundness state.
 - csln#64 - Math in variables
 - csln#66 - Multilingual support
 - Citation model in citum_schema (mode, locator types)
