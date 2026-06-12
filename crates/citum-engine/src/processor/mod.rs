@@ -25,7 +25,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! > "Substituted variables are suppressed in the rest of the output to
 //! > prevent duplication."
 //!
-//! This is tracked via `rendered_vars` in `process_template()`.
+//! This is tracked by `TemplateComponentTracker` during template rendering.
+//! Suppressed components do not claim variables; see
+//! `docs/specs/TEMPLATE_RENDERING_SEMANTICS.md`.
 
 mod bibliography;
 mod citation;
