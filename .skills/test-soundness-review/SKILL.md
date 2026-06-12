@@ -6,8 +6,7 @@ description: >
   broken, or redundant; simultaneously reviews the spec for ambiguity,
   contradiction, and silence, halting to prompt the user when a spec defect
   blocks an honest verdict. Records state in the living ledger
-  docs/architecture/TEST_SOUNDNESS_STATUS.md plus a dated audit record — never
-  ephemeral JSON.
+  docs/architecture/TEST_SOUNDNESS_STATUS.md — never ephemeral JSON.
 
   Trigger on: "/test-soundness-review", "review my tests against the spec",
   "audit test soundness", "are my tests vacuous", "find broken tests", "find
@@ -194,31 +193,17 @@ is genuinely unresolvable (ambiguous spec, missing fixture data, failing gate).
 
 ## Step 6 — Persist state (replaces the old JSON dump)
 
-Two durable artifacts, both Markdown:
+Upsert the spec's row in `docs/architecture/TEST_SOUNDNESS_STATUS.md`:
+`| Spec / Module | Last reviewed | Tests (G/S/B/R) | Open spec issues | Status | Notes |`
+- `Last reviewed`: today.
+- `Tests (G/S/B/R)`: the four counts.
+- `Open spec issues`: refs to unresolved spec defects, or `—`.
+- `Status`: `todo` (never audited) · `audited` (reviewed, findings open) ·
+  `addressed` (findings fixed) · `needs-rework` (blocked on a spec decision).
+- `Notes`: one-liner summarising what changed — e.g. "Deleted 3 vacuous tests;
+  added 2 gap tests; clarified 1 spec silence." Use `—` if nothing was changed.
+- Bump the ledger's "Last updated" banner.
 
-1. **Audit record** — write/refresh
-   `docs/architecture/audits/YYYY-MM-DD_<TOPIC>_TEST_SOUNDNESS.md` (today's date;
-   match the house style of existing records such as
-   `2026-05-07_SQI_INTEGRITY_AUDIT.md`). Include:
-   - Header: date, scope (spec + reviewed files), related docs.
-   - A per-test table: `| Test | Location | Spec ref | Intended behaviour | What it does | Verdict | Action |`.
-   - A **Spec Issues** section: every ambiguity/contradiction/silence with its
-     `blocking`/`advisory` impact and recommendation.
-   - A **Coverage Gaps** section.
-   - A summary line: good / suspicious / broken / redundant counts.
-
-2. **Ledger row** — upsert the spec's row in
-   `docs/architecture/TEST_SOUNDNESS_STATUS.md`:
-   `| Spec / Module | Last reviewed | Tests (G/S/B/R) | Open spec issues | Status | Audit record |`
-   - `Last reviewed`: today.
-   - `Tests (G/S/B/R)`: the four counts.
-   - `Open spec issues`: refs to unresolved spec defects, or `—`.
-   - `Status`: `todo` (never audited) · `audited` (reviewed, findings open) ·
-     `addressed` (findings fixed) · `needs-rework` (blocked on a spec decision).
-   - `Audit record`: link to the file from artifact 1.
-   - Bump the ledger's "Last updated" banner.
-
-The audit record is the detail; the ledger row is the index that points to it.
 An agent resuming work greps the ledger for `todo` / `needs-rework`.
 
 **Commit guidance:** describe what changed, not just the meta-status. Split

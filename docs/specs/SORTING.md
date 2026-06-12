@@ -74,10 +74,10 @@ Sort keys are defined by `SortKey` (non-exhaustive) in
 
 | Key | Semantics |
 |---|---|
-| `Author` | Primary author name (family-first); falls back to editor, then title if no contributor |
+| `Author` | Primary author name (family-first); falls back to editor, then title if no contributor. When the Author key falls back to title (no contributor present), the title value is passed through the same `Locale::strip_sort_articles` pass as `SortKey::Title`. |
 | `Year` | Issued date year; year-bearing entries precede year-less entries |
 | `Title` | Title text with locale article stripping (see `Locale::strip_sort_articles`) |
-| `CitationNumber` | Numeric citation order (used internally; always equal in sort comparisons) |
+| `CitationNumber` | Reserved for citation-cluster sort templates. In a bibliography sort template it produces `Equal` for all comparisons (effectively a no-op there) — numeric ordering of bibliography entries is assigned by the citation-processing pass, not by sorting. |
 
 Each key has an `ascending` flag (default `true`).
 
