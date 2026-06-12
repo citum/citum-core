@@ -518,8 +518,10 @@ fn fixture_bibliography(workspace_root: &Path) -> Result<Bibliography, String> {
 /// Render the citation scenarios for one candidate and score each against the
 /// citeproc references at the oracle's similarity criterion.
 ///
-/// Scenario index 0 is a bare single-item citation; index 1 adds a page
-/// locator, so locator placement failures count against a candidate too.
+/// Scenario indices follow the [`scenario_citation`] contract: bare first,
+/// first with page locator, subsequent, ibid, and ibid with locator — so
+/// locator placement and positional repeat-form failures both count against
+/// a candidate.
 fn score_candidate(
     style: &Style,
     bibliography: &Bibliography,
@@ -1087,13 +1089,23 @@ fn set_issued_year_dates_to_full(components: &mut [TemplateComponent]) -> bool {
 
 /// Build the engine-side citation matching a citeproc reference scenario.
 ///
-/// Index 0 is a bare single-item citation; any other index carries the same
-/// page locator the JS side renders (`p. 23`).
+/// Scenario order is a cross-renderer contract with the JS side
+/// (`renderCitationScenarioStrings` in `scripts/lib/template-inferrer-core.js`):
+/// index 0 is a bare first citation, index 1 a first citation with the page
+/// locator the JS side renders (`p. 23`), index 2 a subsequent citation,
+/// index 3 an ibid citation, and index 4 an ibid citation with the locator.
 fn scenario_citation(id: &str, scenario_index: usize) -> Citation {
+    use citum_schema::citation::Position;
+
     let mut citation = Citation::simple(id);
-    if scenario_index > 0
-        && let Some(item) = citation.items.first_mut()
-    {
+    citation.position = match scenario_index {
+        0 | 1 => None,
+        2 => Some(Position::Subsequent),
+        3 => Some(Position::Ibid),
+        _ => Some(Position::IbidWithLocator),
+    };
+    let wants_locator = matches!(scenario_index, 1 | 4);
+    if wants_locator && let Some(item) = citation.items.first_mut() {
         item.locator = Some(citum_schema::citation::CitationLocator::single(
             citum_schema::citation::LocatorType::Page,
             "23",
@@ -1302,9 +1314,10 @@ mod tests {
     use super::{
         CandidateScore, PASS_THRESHOLD, bibliography_candidate_patches,
         bibliography_mutation_candidates, candidate_beats, compare_text, normalize_text,
-        token_jaccard, tokenize,
+        scenario_citation, token_jaccard, tokenize,
     };
     use citum_schema::Style;
+    use citum_schema::citation::Position;
     use std::collections::BTreeSet;
 
     #[test]
@@ -1312,6 +1325,36 @@ mod tests {
         let given = "T.S. Kuhn, ‘The Structure’ (1962)";
         let tokens = tokenize(given);
         assert_eq!(tokens, vec!["kuhn", "the", "structure", "1962"]);
+    }
+
+    #[test]
+    fn scenario_citation_positions_mirror_js_scenario_contract() {
+        let positions: Vec<Option<Position>> = (0..5)
+            .map(|index| scenario_citation("kuhn1962", index).position)
+            .collect();
+        assert_eq!(
+            positions,
+            vec![
+                None,
+                None,
+                Some(Position::Subsequent),
+                Some(Position::Ibid),
+                Some(Position::IbidWithLocator),
+            ]
+        );
+    }
+
+    #[test]
+    fn scenario_citation_sets_locator_only_on_locator_scenarios() {
+        let locator_scenarios: Vec<bool> = (0..5)
+            .map(|index| {
+                scenario_citation("kuhn1962", index)
+                    .items
+                    .first()
+                    .is_some_and(|item| item.locator.is_some())
+            })
+            .collect();
+        assert_eq!(locator_scenarios, vec![false, true, false, false, true]);
     }
 
     #[test]

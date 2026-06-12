@@ -101,9 +101,14 @@ function renderCitations(styleXml, testItems, localeXml, format = 'html') {
 /**
  * Render citation scenario strings for cross-renderer comparison.
  *
- * For every test item renders two single-item clusters in plain-text output:
- * a bare citation and one with a page locator. Returns a map of item ID to
- * `[plain, withLocator]` (entries are null when citeproc fails on that item).
+ * For every test item renders five single-item clusters in plain-text output:
+ * a bare first citation, a first citation with a page locator, a subsequent
+ * citation, an ibid citation, and an ibid citation with a locator. Positions
+ * are forced with explicit citeproc position flags so repeat forms render
+ * without cluster-history bookkeeping. Returns a map of item ID to the
+ * five-entry scenario array (entries are null when citeproc fails on that
+ * item). Scenario order is a cross-renderer contract: the Rust side mirrors
+ * the same indices in `measured_citation::scenario_citation`.
  */
 function renderCitationScenarioStrings(styleXml, testItems, localeXml) {
   try {
@@ -121,6 +126,14 @@ function renderCitationScenarioStrings(styleXml, testItems, localeXml) {
       const variants = [
         [{ id }],
         [{ id, locator: '23', label: 'page' }],
+        [{ id, position: CSL.POSITION_SUBSEQUENT }],
+        [{ id, position: CSL.POSITION_IBID }],
+        [{
+          id,
+          position: CSL.POSITION_IBID_WITH_LOCATOR,
+          locator: '23',
+          label: 'page',
+        }],
       ];
       citations[id] = variants.map((cluster) => {
         try {
