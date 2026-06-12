@@ -9,6 +9,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
     clippy::expect_used,
     clippy::panic,
     clippy::indexing_slicing,
+    clippy::string_slice,
     clippy::todo,
     clippy::unimplemented,
     clippy::unreachable,
@@ -81,32 +82,6 @@ fn test_apa_7th_sort_same_author_year_by_title() {
     assert!(
         digital_pos < ethics_pos,
         "Digital should come before Ethics"
-    );
-}
-
-/// Test APA 7th Edition anonymous work sorting by title (without leading article).
-/// Anonymous works should sort by title when no author is present.
-#[test]
-fn test_apa_7th_sort_anonymous_works_by_title() {
-    announce_behavior("Anonymous works sort by title with leading articles stripped.");
-    let root = project_root();
-    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
-    let bib = load_sort_oracle_bibliography();
-    let processor = Processor::new(style, bib);
-    let result = processor.render_bibliography();
-
-    // Both anonymous works should be present; "A Brief Guide" should come before "The Chicago Manual"
-    // when sorting alphabetically (note: actual article-stripping not yet implemented per SORT-4 ignore note)
-    let chicago_pos = result
-        .find("Chicago Manual")
-        .expect("Chicago Manual should be in output");
-    let guide_pos = result
-        .find("A Brief Guide")
-        .expect("A Brief Guide should be in output");
-
-    assert!(
-        guide_pos < chicago_pos,
-        "Anonymous works should file under title with article stripping. Got: {result}"
     );
 }
 
@@ -186,49 +161,17 @@ fn test_numeric_sort_by_citation_order() {
     );
 
     let bib_result = processor.render_bibliography();
-    assert!(!bib_result.is_empty(), "Bibliography should render");
-}
-
-/// Test all-caps surname handling in sort order.
-/// SMITH and WILLIAMS surnames should sort correctly in author-date and numeric styles.
-#[test]
-fn test_uppercase_surname_sort_order() {
-    announce_behavior("All-caps surnames sort in the same order as normally-cased surnames.");
-    let root = project_root();
-    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
-    let bib = load_sort_oracle_bibliography();
-    let processor = Processor::new(style, bib);
-    let result = processor.render_bibliography();
-
-    // SMITH and WILLIAMS are both all-caps; SMITH should come before WILLIAMS alphabetically
-    if let (Some(smith_pos), Some(williams_pos)) =
-        (result.find("Smith, Robert"), result.find("Williams, David"))
-    {
-        assert!(
-            smith_pos < williams_pos,
-            "Smith should come before Williams in sort order"
-        );
-    }
-}
-
-/// Test multi-author books and articles in same year sorted by first author.
-#[test]
-fn test_multiauthor_same_year_sort() {
-    announce_behavior(
-        "Multi-author works with the same year appear together in author-date sort order.",
-    );
-    let root = project_root();
-    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
-    let bib = load_sort_oracle_bibliography();
-    let processor = Processor::new(style, bib);
-    let result = processor.render_bibliography();
-
-    // Brown (2022) appears in both article and book form
-    // Book version should sort with article version in author-date order
-    let brown_refs = result.matches("Brown").count();
+    // SORT-6 and SORT-7 are the 6th and 7th items in fixture insertion order;
+    // numeric style assigns numbers by that order regardless of author or title.
+    let sort6_pos = bib_result
+        .find("6. Robert SMITH, Patricia Jones")
+        .expect("SORT-6 should render as '6. Robert SMITH, Patricia Jones'");
+    let sort7_pos = bib_result
+        .find("7. Robert SMITH, David Williams")
+        .expect("SORT-7 should render as '7. Robert SMITH, David Williams'");
     assert!(
-        brown_refs > 0,
-        "Brown references should appear in bibliography"
+        sort6_pos < sort7_pos,
+        "SORT-6 (entry 6) must appear before SORT-7 (entry 7) in bibliography"
     );
 }
 
@@ -260,83 +203,6 @@ fn test_apa_7th_sort_unicode_accented_surnames() {
     assert!(
         o_tuathail_pos < zimring_pos,
         "Ó Tuathail should sort before Zimring. Got: {result}"
-    );
-}
-
-/// Test numeric style volume/issue variation doesn't affect sort.
-/// Numeric styles should sort by citation order, not by volume/issue.
-#[test]
-fn test_numeric_style_volume_issue_independence() {
-    announce_behavior(
-        "Numeric style numbering is determined by citation order, not by volume or issue.",
-    );
-    // Build a simple numeric style for testing
-    let style = {
-        use citum_schema::options::Processing;
-        use citum_schema::{BibliographySpec, CitationSpec, StyleInfo, options::Config};
-
-        Style {
-            info: StyleInfo {
-                title: Some("Numeric Test".to_string()),
-                id: Some("numeric-test".into()),
-                ..Default::default()
-            },
-            options: Some(Config {
-                processing: Some(Processing::Numeric),
-                ..Default::default()
-            }),
-            citation: Some(CitationSpec {
-                template: Some(vec![citum_schema::tc_number!(CitationNumber)]),
-                wrap: Some(citum_schema::template::WrapPunctuation::Brackets.into()),
-                ..Default::default()
-            }),
-            bibliography: Some(BibliographySpec {
-                template: Some(vec![
-                    citum_schema::tc_number!(CitationNumber, suffix = ". "),
-                    citum_schema::tc_contributor!(Author, Long),
-                ]),
-                ..Default::default()
-            }),
-            ..Default::default()
-        }
-    };
-
-    let bib = load_sort_oracle_bibliography();
-    let processor = Processor::new(style, bib);
-
-    // SORT-6: volume 15, issue 3
-    // SORT-7: volume 8, issue 2
-    // In numeric style, citation order (not volume) determines numbering
-    let cit6 = Citation {
-        items: vec![CitationItem {
-            id: "SORT-6".to_string(),
-            ..Default::default()
-        }],
-        ..Default::default()
-    };
-    let result6 = processor
-        .process_citation(&cit6)
-        .expect("citation should process");
-    // SORT-6 is 6th item; gets [6] regardless of its volume/issue
-    assert_eq!(
-        result6, "[6]",
-        "SORT-6 should be [6] (citation order, not volume)"
-    );
-
-    let cit7 = Citation {
-        items: vec![CitationItem {
-            id: "SORT-7".to_string(),
-            ..Default::default()
-        }],
-        ..Default::default()
-    };
-    let result7 = processor
-        .process_citation(&cit7)
-        .expect("citation should process");
-    // SORT-7 is 7th item; gets [7] regardless of its volume/issue
-    assert_eq!(
-        result7, "[7]",
-        "SORT-7 should be [7] (citation order, not volume)"
     );
 }
 
@@ -443,5 +309,40 @@ fn test_allcaps_surname_sorts_case_insensitively() {
     assert!(
         smith_pos < zimring_pos,
         "SMITH must sort before Zimring — all-caps must not push it to end of list. Got:\n{result}"
+    );
+}
+
+/// Test that multi-author works sharing first author and year sort by title.
+/// SORT-9 (Brown/Lee, "Neural Networks") and SORT-10 (Brown/Green, "Data Science")
+/// share first author Michael Brown and year 2022; title tiebreak puts Data Science before
+/// Neural Networks.
+#[test]
+fn test_multiauthor_same_first_author_year_sorts_by_title() {
+    announce_behavior(
+        "Multi-author works with the same first author and year sort by title as the third key.",
+    );
+    let root = project_root();
+    let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
+    let bib = load_sort_oracle_bibliography();
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    let data_science_pos = result
+        .find("Data Science Fundamentals")
+        .expect("'Data Science Fundamentals' should be in output");
+    let neural_networks_pos = result
+        .find("Neural Networks and Deep Learning")
+        .expect("'Neural Networks and Deep Learning' should be in output");
+
+    assert!(
+        data_science_pos < neural_networks_pos,
+        "Data Science (D) must sort before Neural Networks (N) — same Brown 2022 author/year, title is tiebreaker. Got:\n{result}"
+    );
+
+    // No non-Brown entry between the two Brown entries.
+    let between = &result[data_science_pos..neural_networks_pos];
+    assert!(
+        !between.contains("Adams") && !between.contains("SMITH") && !between.contains("Zimring"),
+        "No non-Brown entry should appear between the two Brown 2022 entries. Between:\n{between}"
     );
 }

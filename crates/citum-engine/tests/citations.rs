@@ -1091,6 +1091,55 @@ fn sorting_empty_dates_pushes_undated_items_to_the_end() {
     );
 }
 
+/// Test that an explicit `citation.sort: [Author asc]` reorders a two-item cluster
+/// submitted in reverse-alphabetical order.
+fn explicit_citation_sort_by_author_reorders_cluster() {
+    let style = build_title_year_citation_style(vec![GroupSortKey {
+        key: GroupSortKeyType::Author,
+        ascending: true,
+        order: None,
+        sort_order: None,
+    }]);
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "zorr".to_string(),
+        make_book("zorr", "Zorro", "Robert", 2020, "Zorro Work"),
+    );
+    bib.insert(
+        "adam".to_string(),
+        make_book("adam", "Adams", "John", 2020, "Adams Work"),
+    );
+
+    let processor = Processor::new(style, bib);
+    // Submitted in Z-then-A order; citation.sort: [Author asc] must produce A-then-Z.
+    let citation = Citation {
+        items: vec![
+            CitationItem {
+                id: "zorr".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "adam".to_string(),
+                ..Default::default()
+            },
+        ],
+        mode: CitationMode::NonIntegral,
+        ..Default::default()
+    };
+
+    let result = processor
+        .process_citation(&citation)
+        .expect("citation with explicit Author sort should process");
+
+    let adams_pos = result.find("Adams Work").expect("Adams Work must appear");
+    let zorro_pos = result.find("Zorro Work").expect("Zorro Work must appear");
+    assert!(
+        adams_pos < zorro_pos,
+        "explicit citation.sort [Author asc] must reorder Z-then-A submission to A-then-Z. Got: {result}"
+    );
+}
+
 // --- Multilingual contributor disambiguation (§4) ---
 
 /// Verifies that `Contributor::Multilingual` entries participate in the
@@ -2083,6 +2132,14 @@ mod sorting_and_grouping {
             "Undated items should sort after dated items rather than interleaving with them.",
         );
         super::sorting_empty_dates_pushes_undated_items_to_the_end();
+    }
+
+    #[test]
+    fn explicit_citation_sort_by_author_reorders_cluster() {
+        announce_behavior(
+            "An explicit citation.sort [Author asc] must reorder a cluster submitted in reverse-alpha order.",
+        );
+        super::explicit_citation_sort_by_author_reorders_cluster();
     }
 }
 

@@ -1882,20 +1882,49 @@ fn sorting_multiple_keys_applies_secondary_ordering_within_author_groups() {
 fn author_date_processing_defaults_bibliography_to_author_date_title_order() {
     let style = build_processing_style(Processing::AuthorDate);
 
+    // Different years: author-date-title puts 2020 (Zeta) before 2022 (Alpha).
+    // author-title-date would put Alpha before Zeta (title-first within same author).
+    // Only author-date-title produces Zeta < Alpha, making this a true discriminator.
     let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "alpha".to_string(),
+        make_book("alpha", "Smith", "Jane", 2022, "Alpha Work"),
+    );
     bib.insert(
         "zeta".to_string(),
         make_book("zeta", "Smith", "Jane", 2020, "Zeta Work"),
-    );
-    bib.insert(
-        "alpha".to_string(),
-        make_book("alpha", "Smith", "Jane", 2020, "Alpha Work"),
     );
 
     let processor = Processor::new(style, bib);
     let result = processor.render_bibliography();
 
-    assert!(result.find("Alpha Work").unwrap() < result.find("Zeta Work").unwrap());
+    assert!(
+        result.find("Zeta Work").unwrap() < result.find("Alpha Work").unwrap(),
+        "author-date-title: Zeta (2020) must sort before Alpha (2022) — year is second key"
+    );
+}
+
+fn label_processing_defaults_bibliography_to_author_date_title_order() {
+    use citum_schema::options::LabelConfig;
+    let style = build_processing_style(Processing::Label(LabelConfig::default()));
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "alpha".to_string(),
+        make_book("alpha", "Smith", "Jane", 2022, "Alpha Work"),
+    );
+    bib.insert(
+        "zeta".to_string(),
+        make_book("zeta", "Smith", "Jane", 2020, "Zeta Work"),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert!(
+        result.find("Zeta Work").unwrap() < result.find("Alpha Work").unwrap(),
+        "label processing: Zeta (2020) must sort before Alpha (2022) — defaults to author-date-title"
+    );
 }
 
 fn note_processing_defaults_bibliography_to_author_title_date_order() {
@@ -2044,6 +2073,36 @@ fn numeric_bibliography_uses_assigned_citation_numbers() {
     assert_eq!(result, "1. John Smith (2020)");
 }
 
+fn anonymous_works_sort_by_explicit_title_key_strips_leading_articles() {
+    // SortKey::Title directly (not Author-key fallback) — verifies the Title-key contract.
+    // "A Zen Perspective on Method" stripped → "Zen" (Z).
+    // "The Academic Press Guide" stripped → "Academic" (A).
+    // Without stripping: A < T → "A Zen…" first (wrong). With stripping: A < Z → Academic first.
+    let style = build_title_year_sorted_style(vec![SortSpec {
+        key: SortKey::Title,
+        ascending: true,
+    }]);
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert(
+        "zen".to_string(),
+        make_book("zen", "", "", 2020, "A Zen Perspective on Method"),
+    );
+    bib.insert(
+        "academic".to_string(),
+        make_book("academic", "", "", 2020, "The Academic Press Guide"),
+    );
+
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert!(
+        result.find("The Academic Press Guide").unwrap()
+            < result.find("A Zen Perspective").unwrap(),
+        "SortKey::Title must strip leading articles: 'Academic' (A) before 'Zen' (Z). Got:\n{result}"
+    );
+}
+
 fn anonymous_works_sort_by_title_ignoring_leading_articles() {
     let style = build_title_year_sorted_style(vec![
         SortSpec {
@@ -2106,6 +2165,53 @@ fn anonymous_works_with_the_same_year_still_sort_by_year_first() {
 
     // 2019 entry should come before 2020 entries
     assert!(result.find("2019").unwrap() < result.find("2020").unwrap());
+}
+
+fn citation_key_tiebreaker_produces_deterministic_output_when_all_keys_equal() {
+    // Two entries with identical author, year, and title — all configured sort keys compare Equal.
+    // The citation-key tiebreaker must resolve the tie deterministically; repeated renders must
+    // produce byte-identical output.
+    let style = build_sorted_style(vec![
+        SortSpec {
+            key: SortKey::Author,
+            ascending: true,
+        },
+        SortSpec {
+            key: SortKey::Year,
+            ascending: true,
+        },
+        SortSpec {
+            key: SortKey::Title,
+            ascending: true,
+        },
+    ]);
+
+    let mut bib = indexmap::IndexMap::new();
+    // Inserted in Z-then-A key order; tiebreaker should produce A-then-Z regardless.
+    bib.insert(
+        "zzz-last".to_string(),
+        make_book("zzz-last", "Smith", "Jane", 2020, "Identical Title"),
+    );
+    bib.insert(
+        "aaa-first".to_string(),
+        make_book("aaa-first", "Smith", "Jane", 2020, "Identical Title"),
+    );
+
+    let processor = Processor::new(style, bib);
+    let first = processor.render_bibliography();
+    let second = processor.render_bibliography();
+
+    // Both entries must appear.
+    assert!(
+        first.matches("Smith").count() >= 2,
+        "both entries should appear in the bibliography. Got:\n{first}"
+    );
+
+    // Tiebreaker must be stable: identical output across calls.
+    assert_eq!(
+        first, second,
+        "citation-key tiebreaker must produce deterministic output across repeated renders"
+    );
 }
 
 fn article_journal_with_pages_keeps_standard_detail_block() {
@@ -3152,11 +3258,27 @@ mod sorting {
     }
 
     #[test]
+    fn label_processing_uses_author_date_title_as_the_default_bibliography_sort() {
+        announce_behavior(
+            "Label processing should default bibliography ordering to author, then date, then title.",
+        );
+        super::label_processing_defaults_bibliography_to_author_date_title_order();
+    }
+
+    #[test]
     fn note_processing_uses_author_title_date_as_the_default_bibliography_sort() {
         announce_behavior(
             "Note-style processing should default bibliography ordering to author, then title, then date.",
         );
         super::note_processing_defaults_bibliography_to_author_title_date_order();
+    }
+
+    #[test]
+    fn anonymous_works_sort_by_explicit_title_key_strips_leading_articles() {
+        announce_behavior(
+            "SortKey::Title strips leading articles so 'The Academic…' (A) sorts before 'A Zen…' (Z).",
+        );
+        super::anonymous_works_sort_by_explicit_title_key_strips_leading_articles();
     }
 
     #[test]
@@ -3173,6 +3295,14 @@ mod sorting {
             "Anonymous entries should still respect year ordering before applying same-year tiebreakers.",
         );
         super::anonymous_works_with_the_same_year_still_sort_by_year_first();
+    }
+
+    #[test]
+    fn citation_key_tiebreaker_is_deterministic_when_all_sort_keys_compare_equal() {
+        announce_behavior(
+            "When all sort keys compare Equal, the citation-key tiebreaker must produce the same output on every render call.",
+        );
+        super::citation_key_tiebreaker_produces_deterministic_output_when_all_keys_equal();
     }
 }
 
