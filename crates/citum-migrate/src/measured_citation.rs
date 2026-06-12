@@ -54,6 +54,10 @@ pub struct MeasuredCitationSelection {
     pub items: usize,
     /// Held-out validation of the selected candidate, when available.
     pub heldout: Option<HeldOutValidation>,
+    /// Mutation rounds the synthesis loop accepted for this selection.
+    pub synthesis_rounds: usize,
+    /// Names of accepted synthesis mutations, in acceptance order.
+    pub accepted_mutations: Vec<String>,
 }
 
 /// Held-out validation pass-rate for a selected candidate.
@@ -97,7 +101,7 @@ impl Default for CandidateBudget {
 impl CandidateBudget {
     /// Truncate generated mutations so seeds plus mutations stay within the
     /// total budget.
-    fn truncate_mutations<T>(self, mutations: &mut Vec<T>, seed_count: usize) {
+    pub(crate) fn truncate_mutations<T>(self, mutations: &mut Vec<T>, seed_count: usize) {
         mutations.truncate(self.max_total.saturating_sub(seed_count));
     }
 }
@@ -127,6 +131,10 @@ pub struct MeasuredBibliographySelection {
     pub items: usize,
     /// Held-out validation of the selected candidate, when available.
     pub heldout: Option<HeldOutValidation>,
+    /// Mutation rounds the synthesis loop accepted for this selection.
+    pub synthesis_rounds: usize,
+    /// Names of accepted synthesis mutations, in acceptance order.
+    pub accepted_mutations: Vec<String>,
 }
 
 /// Per-item pass threshold, mirroring the oracle's `similarityThreshold`.
@@ -189,96 +197,21 @@ pub fn select(
     style_xml: &str,
     workspace_root: &Path,
 ) -> Result<MeasuredCitationSelection, String> {
-    let mut runtime = EmbeddedTemplateRuntime::new(workspace_root)?;
-    let reference_json =
-        runtime.render_citation_strings(style_name, style_xml, FixtureSet::Selection)?;
-    let references: BTreeMap<String, Vec<Option<String>>> =
-        serde_json::from_str(&reference_json)
-            .map_err(|err| format!("failed to parse citeproc citation references: {err}"))?;
-
-    let bibliography = fixture_bibliography(workspace_root)?;
-    let budget = CandidateBudget::default();
-    let mut candidates = vec![
-        ("inferred".to_string(), inferred_style.clone()),
-        ("xml".to_string(), xml_style.clone()),
-    ];
-    let mut mutations = citation_mutation_candidates(inferred_style);
-    budget.truncate_mutations(&mut mutations, candidates.len());
-    candidates.extend(mutations);
-
-    let scored: Vec<_> = candidates
-        .iter()
-        .map(|(name, style)| {
-            (
-                name.as_str(),
-                score_candidate(style, &bibliography, &references),
-            )
-        })
-        .collect();
-    if std::env::var_os("CITUM_MIGRATE_DEBUG_CITATION_SELECTION").is_some() {
-        for (candidate_name, score) in &scored {
-            eprintln!(
-                "citation candidate {style_name} {candidate_name}: {} passes, {:.3} similarity over {} items",
-                score.passes, score.similarity_sum, score.items
-            );
-        }
-    }
-    let Some((_, inferred)) = scored.first() else {
-        return Err("no citation candidates were generated".to_string());
-    };
-    let Some((_, xml)) = scored.get(1) else {
-        return Err("XML citation candidate was not generated".to_string());
-    };
-    let mut selected_index = 0;
-    let mut selected_score = *inferred;
-    for (index, (_, score)) in scored.iter().enumerate().skip(1) {
-        if candidate_beats(score, &selected_score) {
-            selected_index = index;
-            selected_score = *score;
-        }
-    }
-
-    let Some(selected) = scored.get(selected_index) else {
-        return Err("selected citation candidate was not generated".to_string());
-    };
-    let Some((_, selected_style)) = candidates.get(selected_index) else {
-        return Err("selected citation style was not generated".to_string());
-    };
-    let selected_candidate = selected.0.to_string();
-    let use_xml = selected_candidate == "xml";
-    let heldout = heldout_citation_validation(
-        &mut runtime,
+    crate::synthesis::synthesize_citation_rounds(
+        inferred_style,
+        xml_style,
         style_name,
         style_xml,
-        selected_style,
         workspace_root,
-    );
-    if std::env::var_os("CITUM_MIGRATE_DEBUG_CITATION_SELECTION").is_some() {
-        eprintln!(
-            "citation selected {style_name} {selected_candidate}: +{} passes, {:+.3} similarity{}",
-            selected.1.passes.saturating_sub(inferred.passes),
-            selected.1.similarity_sum - inferred.similarity_sum,
-            heldout_debug_suffix(heldout)
-        );
-    }
-
-    Ok(MeasuredCitationSelection {
-        selected_style: selected_style.clone(),
-        selected_candidate,
-        use_xml,
-        selected_passes: selected.1.passes,
-        inferred_passes: inferred.passes,
-        xml_passes: xml.passes,
-        items: inferred.items,
-        heldout,
-    })
+        0,
+    )
 }
 
 /// Validate the selected citation candidate on the held-out fixture set.
 ///
 /// Reporting-only: failures to load or render the held-out set yield `None`
 /// rather than disturbing the selection outcome.
-fn heldout_citation_validation(
+pub(crate) fn heldout_citation_validation(
     runtime: &mut EmbeddedTemplateRuntime,
     style_name: &str,
     style_xml: &str,
@@ -299,7 +232,7 @@ fn heldout_citation_validation(
 }
 
 /// Format the held-out pass-rate for selection debug output.
-fn heldout_debug_suffix(heldout: Option<HeldOutValidation>) -> String {
+pub(crate) fn heldout_debug_suffix(heldout: Option<HeldOutValidation>) -> String {
     match heldout {
         Some(validation) => format!(
             "; held-out {}/{} passes",
@@ -330,108 +263,21 @@ pub fn select_bibliography(
     style_xml: &str,
     workspace_root: &Path,
 ) -> Result<MeasuredBibliographySelection, String> {
-    let mut runtime = EmbeddedTemplateRuntime::new(workspace_root)?;
-    let reference_json =
-        runtime.render_bibliography_strings(style_name, style_xml, FixtureSet::Selection)?;
-    let references: BTreeMap<String, Option<String>> = serde_json::from_str(&reference_json)
-        .map_err(|err| format!("failed to parse citeproc bibliography references: {err}"))?;
-
-    let bibliography = fixture_bibliography(workspace_root)?;
-    let budget = CandidateBudget::default();
-    let mut candidates = vec![
-        CandidateStyle::baseline("inferred", inferred_style.clone()),
-        CandidateStyle::source_xml(xml_style.clone()),
-    ];
-    let mut mutations = bibliography_mutation_candidates(inferred_style, budget);
-    budget.truncate_mutations(&mut mutations, candidates.len());
-    candidates.extend(mutations);
-
-    let scored: Vec<_> = candidates
-        .iter()
-        .map(|candidate| {
-            (
-                candidate,
-                score_bibliography_candidate(&candidate.style, &bibliography, &references),
-            )
-        })
-        .collect();
-    if std::env::var_os("CITUM_MIGRATE_DEBUG_BIB_SELECTION").is_some() {
-        for (candidate, score) in &scored {
-            eprintln!(
-                "bibliography candidate {style_name} {} [{} {} {:?}]: {} passes, {:.3} similarity over {} items",
-                candidate.name,
-                candidate.family_label(),
-                candidate.section_label(),
-                candidate.affected_types,
-                score.passes,
-                score.similarity_sum,
-                score.items
-            );
-        }
-    }
-    let Some((_, inferred)) = scored.first() else {
-        return Err("no bibliography candidates were generated".to_string());
-    };
-    let Some((_, xml)) = scored.get(1) else {
-        return Err("XML bibliography candidate was not generated".to_string());
-    };
-    let mut selected_index = 0;
-    let mut selected_score = *inferred;
-    for (index, (_, score)) in scored.iter().enumerate().skip(1) {
-        if candidate_beats(score, &selected_score) {
-            selected_index = index;
-            selected_score = *score;
-        }
-    }
-
-    let Some(selected) = scored.get(selected_index) else {
-        return Err("selected bibliography candidate was not generated".to_string());
-    };
-    let selected_candidate = selected.0.name.clone();
-    let use_xml = selected_candidate == "xml";
-    let heldout = heldout_bibliography_validation(
-        &mut runtime,
+    crate::synthesis::synthesize_bibliography_rounds(
+        inferred_style,
+        xml_style,
         style_name,
         style_xml,
-        &selected.0.style,
         workspace_root,
-    );
-    if std::env::var_os("CITUM_MIGRATE_DEBUG_BIB_SELECTION").is_some() {
-        eprintln!(
-            "bibliography selected {style_name} {} [{} {} {:?}]: +{} passes, {:+.3} similarity{}",
-            selected.0.name,
-            selected.0.family_label(),
-            selected.0.section_label(),
-            selected.0.affected_types,
-            selected.1.passes.saturating_sub(inferred.passes),
-            selected.1.similarity_sum - inferred.similarity_sum,
-            heldout_debug_suffix(heldout)
-        );
-    }
-
-    Ok(MeasuredBibliographySelection {
-        selected_style: selected.0.style.clone(),
-        selected_candidate,
-        selected_family: selected.0.family.map(|family| family.as_str().to_string()),
-        selected_section: selected
-            .0
-            .affected_section
-            .map(|section| section.as_str().to_string()),
-        selected_affected_types: selected.0.affected_types.clone(),
-        use_xml,
-        selected_passes: selected.1.passes,
-        inferred_passes: inferred.passes,
-        xml_passes: xml.passes,
-        items: inferred.items,
-        heldout,
-    })
+        0,
+    )
 }
 
 /// Validate the selected bibliography candidate on the held-out fixture set.
 ///
 /// Reporting-only: failures to load or render the held-out set yield `None`
 /// rather than disturbing the selection outcome.
-fn heldout_bibliography_validation(
+pub(crate) fn heldout_bibliography_validation(
     runtime: &mut EmbeddedTemplateRuntime,
     style_name: &str,
     style_xml: &str,
@@ -453,29 +299,33 @@ fn heldout_bibliography_validation(
 
 /// Aggregate score for one candidate over the fixture items.
 #[derive(Clone, Copy)]
-struct CandidateScore {
-    passes: usize,
-    similarity_sum: f64,
-    items: usize,
+pub(crate) struct CandidateScore {
+    pub(crate) passes: usize,
+    pub(crate) similarity_sum: f64,
+    pub(crate) items: usize,
 }
 
-fn candidate_beats(candidate: &CandidateScore, incumbent: &CandidateScore) -> bool {
+/// Phase 1 acceptance rule: strictly more passes, or a pass-count tie with a
+/// summed similarity clearly above the tie margin.
+pub(crate) fn candidate_beats(candidate: &CandidateScore, incumbent: &CandidateScore) -> bool {
     candidate.passes > incumbent.passes
         || (candidate.passes == incumbent.passes
             && candidate.similarity_sum > incumbent.similarity_sum + TIE_MARGIN)
 }
 
+/// One named bibliography candidate with its provenance metadata.
 #[derive(Debug, Clone)]
-struct CandidateStyle {
-    name: String,
-    family: Option<CandidateFamily>,
-    affected_section: Option<AffectedSection>,
-    affected_types: Vec<String>,
-    style: Style,
+pub(crate) struct CandidateStyle {
+    pub(crate) name: String,
+    pub(crate) family: Option<CandidateFamily>,
+    pub(crate) affected_section: Option<AffectedSection>,
+    pub(crate) affected_types: Vec<String>,
+    pub(crate) style: Style,
 }
 
 impl CandidateStyle {
-    fn baseline(name: &str, style: Style) -> Self {
+    /// Wrap a seed style with no generated-patch metadata.
+    pub(crate) fn baseline(name: &str, style: Style) -> Self {
         Self {
             name: name.to_string(),
             family: None,
@@ -485,7 +335,8 @@ impl CandidateStyle {
         }
     }
 
-    fn source_xml(style: Style) -> Self {
+    /// Wrap the XML-compiled seed style.
+    pub(crate) fn source_xml(style: Style) -> Self {
         Self {
             name: "xml".to_string(),
             family: Some(CandidateFamily::SourceXml),
@@ -505,18 +356,20 @@ impl CandidateStyle {
         }
     }
 
-    fn family_label(&self) -> &'static str {
+    /// Family label for debug output ("baseline" for seed candidates).
+    pub(crate) fn family_label(&self) -> &'static str {
         self.family.map_or("baseline", CandidateFamily::as_str)
     }
 
-    fn section_label(&self) -> &'static str {
+    /// Section label for debug output ("none" for seed candidates).
+    pub(crate) fn section_label(&self) -> &'static str {
         self.affected_section
             .map_or("none", AffectedSection::as_str)
     }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum CandidateFamily {
+pub(crate) enum CandidateFamily {
     SourceXml,
     ContributorCase,
     TypeLocalDefault,
@@ -525,7 +378,8 @@ enum CandidateFamily {
 }
 
 impl CandidateFamily {
-    fn as_str(self) -> &'static str {
+    /// Stable family label used in debug output and selection metadata.
+    pub(crate) fn as_str(self) -> &'static str {
         match self {
             Self::SourceXml => "source-xml",
             Self::ContributorCase => "contributor-case",
@@ -537,12 +391,13 @@ impl CandidateFamily {
 }
 
 #[derive(Debug, Clone, Copy)]
-enum AffectedSection {
+pub(crate) enum AffectedSection {
     Bibliography,
 }
 
 impl AffectedSection {
-    fn as_str(self) -> &'static str {
+    /// Stable section label used in debug output and selection metadata.
+    pub(crate) fn as_str(self) -> &'static str {
         match self {
             Self::Bibliography => "bibliography",
         }
@@ -635,7 +490,7 @@ impl ComponentMatcher {
 }
 
 /// Load the embedded fixture items as an engine bibliography.
-fn fixture_bibliography(workspace_root: &Path) -> Result<Bibliography, String> {
+pub(crate) fn fixture_bibliography(workspace_root: &Path) -> Result<Bibliography, String> {
     bibliography_from_fixtures(js_runtime::load_fixtures(workspace_root)?)
 }
 
@@ -666,7 +521,7 @@ fn bibliography_from_fixtures(fixtures: serde_json::Value) -> Result<Bibliograph
 /// first with page locator, subsequent, ibid, and ibid with locator — so
 /// locator placement and positional repeat-form failures both count against
 /// a candidate.
-fn score_candidate(
+pub(crate) fn score_candidate(
     style: &Style,
     bibliography: &Bibliography,
     references: &BTreeMap<String, Vec<Option<String>>>,
@@ -702,7 +557,8 @@ fn score_candidate(
     score
 }
 
-fn citation_mutation_candidates(inferred_style: &Style) -> Vec<(String, Style)> {
+/// Phase 1 bounded citation-local mutation candidates of the inferred style.
+pub(crate) fn citation_mutation_candidates(inferred_style: &Style) -> Vec<(String, Style)> {
     let mut candidates = Vec::new();
     if !citation_style_contains_primary_title(inferred_style) {
         add_citation_mutation_candidate(
@@ -862,7 +718,7 @@ fn set_author_contributors_family_only(components: &mut [TemplateComponent]) -> 
 }
 
 /// Render one candidate bibliography and score entries against citeproc output.
-fn score_bibliography_candidate(
+pub(crate) fn score_bibliography_candidate(
     style: &Style,
     bibliography: &Bibliography,
     references: &BTreeMap<String, Option<String>>,
@@ -988,7 +844,8 @@ fn invalid_candidate_score(references: &BTreeMap<String, Option<String>>) -> Can
     }
 }
 
-fn bibliography_mutation_candidates(
+/// Phase 1 typed bibliography patch candidates of the inferred style.
+pub(crate) fn bibliography_mutation_candidates(
     inferred_style: &Style,
     budget: CandidateBudget,
 ) -> Vec<CandidateStyle> {
