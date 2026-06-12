@@ -68,7 +68,7 @@ test against its spec. Those specs remain `todo`.
 | [CONFIG_ONLY_PROFILE_OVERRIDES.md](../specs/CONFIG_ONLY_PROFILE_OVERRIDES.md) | — | — | — | todo | — |
 | [CROSS_ENTRY_FIDELITY.md](../specs/CROSS_ENTRY_FIDELITY.md) | — | — | — | todo | — |
 | [DATE_MODEL.md](../specs/DATE_MODEL.md) | — | — | — | todo | — |
-| [DISAMBIGUATION.md](../specs/DISAMBIGUATION.md) | 2026-06-12 | ?/?/?/? | — | audited | `aa7af758` (pre-ledger soundness pass) |
+| [DISAMBIGUATION.md](../specs/DISAMBIGUATION.md) | 2026-06-12 | 24/0/0/0 | — | addressed | Added transliterated-name collision gap test; moved 1 out-of-scope wrapper out of the disambiguation behavior group. |
 | [DISTRIBUTED_RESOLVER.md](../specs/DISTRIBUTED_RESOLVER.md) | — | — | — | todo | — |
 | [DJOT_RICH_TEXT.md](../specs/DJOT_RICH_TEXT.md) | — | — | — | todo | — |
 | [DOCUMENT_INPUT_PARSER_BOUNDARY.md](../specs/DOCUMENT_INPUT_PARSER_BOUNDARY.md) | — | — | — | todo | — |
