@@ -7,7 +7,7 @@
     "version": {
       "description": "Style schema version.",
       "$ref": "#/$defs/SchemaVersion",
-      "default": "0.63.0"
+      "default": "0.64.0"
     },
     "info": {
       "description": "Style metadata.",
