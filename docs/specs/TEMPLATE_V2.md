@@ -99,7 +99,11 @@ removed until a future major schema version.
 A `group` suppresses its entire output — including prefix, suffix, wrap, and
 delimiter — if **none** of its child components produce any text. A child
 produces text if it has a non-empty rendered value after all suppression rules
-are applied. This matches CSL 1.0 `<group>` behavior.
+are applied. This matches CSL 1.0 `<group>` behavior. Render-time variable
+consumption is defined separately in
+[`TEMPLATE_RENDERING_SEMANTICS.md`](./TEMPLATE_RENDERING_SEMANTICS.md);
+suppressed components and suppressed groups do not claim variables for
+variable-once duplicate suppression.
 
 ```yaml
 # This group renders nothing if both title: parent-serial
