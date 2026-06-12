@@ -32,8 +32,9 @@ use citum_schema::{
     grouping::{GroupSort, GroupSortEntry, GroupSortKey, SortKey as GroupSortKeyType},
     options::{
         AndOptions, Config, ContributorConfig, DelimiterPrecedesLast, DisplayAsSort, GivennameRule,
-        IntegralNameContexts, IntegralNameMemoryConfig, IntegralNameScope, NameForm, Processing,
-        ProcessingCustom, ShortenListOptions, SubsequentNameForm,
+        IntegralNameContexts, IntegralNameMemoryConfig, IntegralNameScope, MultilingualConfig,
+        MultilingualMode, NameForm, Processing, ProcessingCustom, ShortenListOptions,
+        SubsequentNameForm,
     },
     reference::InputReference,
 };
@@ -1145,14 +1146,6 @@ fn explicit_citation_sort_by_author_reorders_cluster() {
 /// Verifies that `Contributor::Multilingual` entries participate in the
 /// collision-key path. Two refs share the same *original* family name and issued
 /// year → both receive a year suffix.
-///
-/// NOTE: The spec §4 specifies that when a style uses a non-`primary` display
-/// mode (transliteration, translation), the key should be built from the
-/// *displayed* name variant so transliteration-level collisions are caught.
-/// That path (`render_name_for_disambiguation`) is not yet implemented —
-/// `to_names_vec()` always reads `original`. A future test should add two refs
-/// whose originals differ but whose transliterations collide and assert they
-/// also receive year suffixes.
 fn disambiguation_multilingual_contributors_collide_on_original_family_name() {
     let a = common::make_multilingual_book(common::MultilingualBookParams {
         id: "ml-a",
@@ -1188,6 +1181,72 @@ fn disambiguation_multilingual_contributors_collide_on_original_family_name() {
         "김, (2020a); 김, (2020b)",
         "citation",
     );
+}
+
+/// DISAMBIGUATION.md §4: when the style renders transliterated names, the
+/// collision key is built from that displayed transliteration rather than from
+/// the distinct original-script names. With `add_givenname` enabled, the
+/// cascade resolves the transliterated-family collision by adding initials
+/// instead of falling through to year suffixes.
+fn disambiguation_multilingual_key_uses_transliterated_display_name() {
+    let input = vec![
+        common::make_multilingual_book(common::MultilingualBookParams {
+            id: "ml-tanaka-a",
+            original_family: "田中",
+            original_given: "太郎",
+            lang: "ja",
+            translit_script: "ja-Latn",
+            translit_family: "Tanaka",
+            translit_given: "Taro",
+            year: 2020,
+            title: "Book A",
+        }),
+        common::make_multilingual_book(common::MultilingualBookParams {
+            id: "ml-tanaka-b",
+            original_family: "谷中",
+            original_given: "次郎",
+            lang: "ja",
+            translit_script: "ja-Latn",
+            translit_family: "Tanaka",
+            translit_given: "Jiro",
+            year: 2020,
+            title: "Book B",
+        }),
+    ];
+
+    let mut style = common::build_author_date_style(true, false, true, None, None);
+    style.options = Some(Config {
+        multilingual: Some(MultilingualConfig {
+            name_mode: Some(MultilingualMode::Transliterated),
+            preferred_transliteration: Some(vec!["ja-Latn".to_string()]),
+            ..Default::default()
+        }),
+        ..style.options.take().unwrap_or_default()
+    });
+
+    let bibliography = input
+        .into_iter()
+        .filter_map(|item| item.id().map(|id| (id.to_string(), item)))
+        .collect();
+    let processor = Processor::new(style, bibliography);
+    let result = processor
+        .process_citation(&Citation {
+            items: vec![
+                CitationItem {
+                    id: "ml-tanaka-a".to_string(),
+                    ..Default::default()
+                },
+                CitationItem {
+                    id: "ml-tanaka-b".to_string(),
+                    ..Default::default()
+                },
+            ],
+            mode: CitationMode::NonIntegral,
+            ..Default::default()
+        })
+        .expect("citation should render");
+
+    assert_eq!(result, "T Tanaka, (2020); J Tanaka, (2020)");
 }
 
 // --- APA §8.15 Reprint Disambiguation ---
@@ -2025,14 +2084,6 @@ mod disambiguation {
     }
 
     #[test]
-    fn subsequent_et_al_thresholds_shorten_the_repeat_citation() {
-        announce_behavior(
-            "Subsequent-citation et al. thresholds should shorten a repeat citation more aggressively than the first cite.",
-        );
-        super::subsequent_et_al_thresholds_shorten_the_repeat_citation();
-    }
-
-    #[test]
     fn year_suffix_assigned_when_et_al_truncation_leaves_collision() {
         announce_behavior(
             "When et-al truncation collapses distinct author lists to the same prefix, the resulting collision group should still receive distinct year suffixes in title sort order.",
@@ -2065,6 +2116,14 @@ mod disambiguation {
     }
 
     #[test]
+    fn multilingual_key_uses_transliterated_display_name() {
+        announce_behavior(
+            "When the style renders transliterated names, distinct original-script names with the same transliteration must form a collision group.",
+        );
+        super::disambiguation_multilingual_key_uses_transliterated_display_name();
+    }
+
+    #[test]
     fn apa_reprint_year_suffix_attaches_to_issued_year_only() {
         announce_behavior(
             "APA §8.15 reprints with different original-dates should receive year-suffix on the \
@@ -2083,6 +2142,14 @@ mod contributor_scoping {
             "Citation-scoped contributor shortening should apply even when the template contributor has no explicit shorten block.",
         );
         super::citation_scoped_contributor_shorten_applies_without_component_override();
+    }
+
+    #[test]
+    fn subsequent_et_al_thresholds_shorten_the_repeat_citation() {
+        announce_behavior(
+            "Subsequent-citation et al. thresholds should shorten a repeat citation more aggressively than the first cite.",
+        );
+        super::subsequent_et_al_thresholds_shorten_the_repeat_citation();
     }
 }
 
