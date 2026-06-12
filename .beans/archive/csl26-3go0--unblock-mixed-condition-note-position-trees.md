@@ -5,11 +5,11 @@ status: completed
 type: task
 priority: normal
 tags:
-    - migration
     - styles
     - citations
+    - migrate
 created_at: 2026-03-10T22:20:45Z
-updated_at: 2026-03-11T11:29:52Z
+updated_at: 2026-06-13T10:54:54Z
 ---
 
 Follow-on from csl26-qfa3 and archive bean csl26-494i.
