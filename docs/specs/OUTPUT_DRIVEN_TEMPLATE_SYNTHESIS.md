@@ -1,8 +1,8 @@
 # Output-Driven Template Synthesis
 
-**Status:** Active (Phase 1 shipped; Phase 2 Draft)
+**Status:** Active (Phases 1–2 shipped)
 **Date:** 2026-06-11 (Phase 2 design added 2026-06-12)
-**Bean:** `csl26-aynr`
+**Bean:** `csl26-aynr` (Phase 1 + prerequisites), `csl26-8txa` (Phase 2 loop)
 **Related:** `docs/specs/EMBEDDED_JS_TEMPLATE_INFERENCE.md`, `docs/architecture/audits/2026-06-11_MIGRATE_IMPROVEMENT_WAVE_OUTCOME.md`
 
 ## Purpose
@@ -89,7 +89,7 @@ patch with a family, affected section, and affected reference types.
   oracle diff shows correct template data rendered incorrectly, route the gap
   to `citum-engine`.
 
-## Phase 2 — Full template synthesis (Draft)
+## Phase 2 — Full template synthesis (shipped)
 
 Phase 2 retires XML layout compilation as the template authority. Citum
 templates are synthesized by a deterministic propose/render/score/mutate loop
@@ -98,6 +98,64 @@ XML is read only for declarative attributes and options (et-al thresholds,
 `initialize-with`, sort keys, disambiguation and demotion options); the layout
 tree is never compiled as authority. During the transition the XML-compiled
 templates survive only as one seed candidate in the search space.
+
+### How synthesis works, in plain terms
+
+For reviewers who author CSL styles rather than read Rust: the loop refines a
+style the way a careful editor would — by trial and error — but automatically
+and deterministically.
+
+It starts from one or more *draft* templates: the inferrer's best guess at the
+Citum template, plus the template the legacy XML compiler would produce. It
+renders each draft with `citum-engine` and compares the result against the
+output **citeproc-js** produces for the same references. citeproc-js output is
+treated as the **answer key** — the closer a draft's rendered citations and
+bibliography are to it, the better that draft scores.
+
+The best-scoring draft becomes the **working version**. The loop then makes one
+small, well-defined change at a time — reordering two adjacent parts, dropping a
+stray prefix or suffix, switching a label between long / short / symbol forms,
+or moving a group boundary — renders the changed version, and compares again. A
+change is kept only if it moves the output *closer* to the answer key;
+otherwise it is thrown away. This repeats until no change helps or a fixed round
+limit is reached.
+
+Finally, the winning template faces an **honesty check**: it is re-tested on a
+separate batch of references deliberately held back during tuning. If it does
+worse on those, the loop concludes it over-fit to the examples it could see and
+rolls back to the last version that held up. Only then is the template emitted.
+
+Everything is deterministic — no randomness, no AI in the loop — so identical
+inputs always produce an identical template.
+
+| Term used below | Plain meaning |
+|---|---|
+| seed | a starting-point draft template — the inferrer's guess or the legacy XML-compiled template |
+| reference output | the citation/bibliography text citeproc-js produces, used as the answer key |
+| score / fitness | how closely a candidate's rendered output matches the reference output |
+| incumbent | the current best template — the one a proposed change must beat |
+| mutation | one small, named change to a template |
+| held-out set | reference examples withheld during tuning, used as a final over-fitting check |
+
+```mermaid
+flowchart TD
+    A[Gather starting templates<br/>inferrer's guess + legacy XML-compiled template] --> B[Render each with citum-engine]
+    B --> C[Compare against citeproc-js output<br/>— the reference 'answer key']
+    C --> D[Keep the closest match<br/>as the current best]
+    D --> E[Make one small, named change<br/>reorder parts · drop an affix<br/>switch a label form · move a group]
+    E --> F[Render the changed version<br/>and compare again]
+    F --> G{Closer to the<br/>answer key?}
+    G -- yes --> H[Adopt it as the new best]
+    G -- no --> I[Discard the change]
+    H --> J{Changes left to try,<br/>and under the round limit?}
+    I --> J
+    J -- yes --> E
+    J -- no --> K[Honesty check: re-test on held-out<br/>examples never seen during tuning]
+    K --> L{Worse on the<br/>held-out examples?}
+    L -- yes --> M[Roll back to the last safe version]
+    L -- no --> N([Emit the synthesized template])
+    M --> N
+```
 
 ### Prerequisites
 
@@ -165,8 +223,8 @@ removed. Regression instruments:
 - Held-out validation pass-rates are recorded on measured selection results
   and surfaced in debug output.
 - Candidate generation is budget-bounded with documented defaults.
-- The synthesis loop (follow-up work) keeps the seeded random-100 scorecard
-  as its headline gate:
+- The synthesis loop (`crates/citum-migrate/src/synthesis/`) keeps the seeded
+  random-100 scorecard as its headline gate:
 
 ```bash
 node scripts/report-migrate-sqi.js --corpus random --sample 100 --seed 20260610

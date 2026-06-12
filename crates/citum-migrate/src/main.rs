@@ -705,7 +705,7 @@ fn apply_measured_citation_selection(
         suppress_inferred_citation: true,
         ..source_selection
     });
-    match citum_migrate::measured_citation::select(
+    match citum_migrate::synthesis::synthesize_citation(
         &current,
         &alternative,
         style_name,
@@ -733,11 +733,13 @@ fn apply_citation_selection_result(
     }
     if selection.selected_candidate != "inferred" {
         tracing::debug!(
-            "Measured citation selection for {style_name}: {} candidate wins ({} vs {} current passes over {} items).",
+            "Measured citation selection for {style_name}: {} candidate wins ({} vs {} current passes over {} items; {} synthesis rounds: {:?}).",
             selection.selected_candidate,
             selection.selected_passes,
             selection.inferred_passes,
-            selection.items
+            selection.items,
+            selection.synthesis_rounds,
+            selection.accepted_mutations
         );
         return (selection.selected_style, false);
     }
@@ -770,7 +772,7 @@ fn apply_measured_bibliography_selection(
         ..source_selection
     });
     let alternative = style_with_bibliography_from(current.clone(), bibliography_source);
-    match citum_migrate::measured_citation::select_bibliography(
+    match citum_migrate::synthesis::synthesize_bibliography(
         &current,
         &alternative,
         style_name,
@@ -803,14 +805,16 @@ fn apply_bibliography_selection_result(
     }
     if selection.selected_candidate != "inferred" {
         tracing::debug!(
-            "Measured bibliography selection for {style_name}: {} candidate wins (family={}, section={}, types={:?}; {} vs {} current passes over {} items).",
+            "Measured bibliography selection for {style_name}: {} candidate wins (family={}, section={}, types={:?}; {} vs {} current passes over {} items; {} synthesis rounds: {:?}).",
             selection.selected_candidate,
             selection.selected_family.as_deref().unwrap_or("unknown"),
             selection.selected_section.as_deref().unwrap_or("unknown"),
             selection.selected_affected_types,
             selection.selected_passes,
             selection.inferred_passes,
-            selection.items
+            selection.items,
+            selection.synthesis_rounds,
+            selection.accepted_mutations
         );
         return (selection.selected_style, false);
     }
