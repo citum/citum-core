@@ -235,7 +235,22 @@ duplicate text.
 
 ### 3.1 Value Resolution
 
-... [existing resolution logic] ...
+For each multilingual field, the requested view (from `title-mode` / `name-mode`
+or the preset) selects which variant renders:
+
+- `primary` — the `original` text, unchanged.
+- `transliterated` — the transliteration selected by the §1.3 matching strategy
+  (exact BCP 47 tag → script prefix via `preferred-script` → fallback to
+  `original`).
+- `translated` — the translation matching the style locale's base language;
+  falls back to `original` when no translation exists.
+- `combined` — the transliterated view followed by the translated view in
+  brackets (`romanized [translated]`); when no transliteration exists, the
+  original takes its place. The bracket segment is dropped when the translation
+  is missing or identical to the first segment.
+- `pattern` — the ordered segment list defined in §2.3.
+
+Simple (non-multilingual) values resolve to themselves under every mode.
 
 ### 3.2 Script-Aware Name Rendering
 
@@ -260,6 +275,19 @@ The processor must distinguish between:
 Labels ("Ed.", "vol.") will always use the **Style Locale**. Data fields will use the script determined by the **Data Language** and **Multilingual Mode**.
 
 When `field-languages` is present, the processor should prefer the field-scoped language over the entry-level language for that specific field. This is how Citum can format a chapter title as English while formatting the containing book title as German in the same entry.
+
+### 3.4 Locale-Selected Bibliography Layouts (experimental)
+
+`bibliography.locales[]` lets a style swap the *entire* entry template based on
+the reference's effective language. Each branch names the locales it serves
+(`locale: [ja, zh, ko]`) or is marked `default: true`; an entry whose
+entry-level `language` matches a branch renders with that branch's template,
+and all other entries use the default branch (or the top-level
+`bibliography.template` when no default branch exists).
+
+This is currently demonstrated by
+`styles/experimental/locale-specific-bibliography-layouts.yaml` and is not yet
+a committed part of the style schema contract.
 
 ## 4. Sorting & Transliteration
 
