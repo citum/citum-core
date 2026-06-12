@@ -15,6 +15,10 @@ This syncs the canonical `.skills/` tree into Codex's `$CODEX_HOME/skills`
 directory. Legacy `.codex/skills/` paths remain as compatibility shims for
 existing Codex installs.
 
+`./scripts/install-hooks.sh` also refreshes these symlinks, so the repo's
+standard first-clone setup keeps new repo skills visible to Codex without a
+separate manual sync step.
+
 ## Repo-Local Harness Boundary
 
 This repository owns its harness contract.
@@ -39,6 +43,7 @@ maintaining parallel copies.
 | `style-evolve` | Route style work: upgrade, migrate, or create a Citum style |
 | `migrate-research` | Autonomous research loop for citum_migrate fidelity gaps |
 | `rust-simplify` | One-file Rust quality pass using jcodemunch analysis |
+| `test-soundness-review` | Audit tests against the governing spec and update the soundness ledger |
 
 These skills are for citum-core contributors only. They require the repo to be present
 locally and reference internal docs by path.
@@ -78,6 +83,7 @@ Use them for lower-level role contracts, not as primary user-facing entrypoints.
 
 ## Mirror Rules
 
-- Keep workflow logic in `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md` and
-  `docs/guides/STYLE_WORKFLOW_EXECUTION.md`.
+- Keep workflow logic in
+  [style workflow decision rules](../policies/STYLE_WORKFLOW_DECISION_RULES.md)
+  and [style workflow execution](STYLE_WORKFLOW_EXECUTION.md).
 - Keep skills thin and host-focused.

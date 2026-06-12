@@ -9,6 +9,7 @@ Usage:
 Roles:
   style-evolve
   migration-researcher
+  test-soundness-review
   style-qa-reviewer
   rust-implementer
   spec-planner
@@ -47,6 +48,19 @@ Read:
 - $docs_guide
 
 Run one bounded migration cluster pass and report the classification.
+EOF
+      ;;
+    test-soundness-review)
+      cat <<EOF
+Use the test-soundness-review role for: $target
+
+Read:
+- $repo_root/.skills/test-soundness-review/SKILL.md
+- $repo_root/docs/guides/CODING_STANDARDS.md
+- $repo_root/docs/architecture/TEST_SOUNDNESS_STATUS.md
+
+Audit the named tests against the named spec, apply Fix → Trim → Add → Persist,
+and keep verdict counts in the ledger.
 EOF
       ;;
     style-qa-reviewer)
@@ -102,7 +116,7 @@ EOF
 
 model_for_role() {
   case "$1" in
-    rust-implementer|spec-planner)
+    rust-implementer|spec-planner|test-soundness-review)
       echo "gpt-5.4"
       ;;
     *)
