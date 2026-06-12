@@ -7,10 +7,10 @@ Use the right test style based on scope and intent:
 | Scenario | Location | Style |
 |----------|----------|-------|
 | Pure logic, type conversions, single-function correctness | `#[cfg(test)]` inline in the module | Plain `#[test]` with descriptive names |
-| Single-scenario integration check | `tests/` directory | Plain `#[test]` |
-| User-observable behavior with multiple parameterised cases | `tests/` directory | `#[rstest]` with `given_…_when_…_then_…` naming |
+| Single-scenario integration check | `tests` directory | Plain `#[test]` |
+| User-observable behavior with multiple parameterised cases | `tests` directory | `#[rstest]` with `given_…_when_…_then_…` naming |
 
-**BDD naming rule** (`given_…_when_…_then_…`) is reserved for integration tests in `tests/` that exercise a cross-module behavior path and have at least two parameterised variants. Do not apply BDD naming to inline unit tests or single-scenario integration tests — it adds noise without signal.
+**BDD naming rule** (`given_…_when_…_then_…`) is reserved for integration tests in `tests` that exercise a cross-module behavior path and have at least two parameterised variants. Do not apply BDD naming to inline unit tests or single-scenario integration tests — it adds noise without signal.
 
 ```rust
 // Unit test — inline, plain name
@@ -62,6 +62,42 @@ Use the advisory review-smell audit before opening PRs that touch Rust tests:
 ```bash
 python3 scripts/audit-rust-review-smells.py --changed
 ```
+
+## What makes a test worth keeping
+
+This is the shared bar every test in this repo is held to. The
+[`test-soundness-review`](../../.skills/test-soundness-review/SKILL.md) skill,
+the [`test-coverage`](../../.claude/skills/test-coverage/SKILL.md) skill, and
+human reviewers all classify tests against these three expectations, so the
+words mean the same thing everywhere. A test that fails any of them is a defect,
+not just a style nit.
+
+1. **It makes an independent behavioural claim.** The expected value comes from
+   a source other than the code under test — a literal, fixture, oracle output,
+   spec, or registered divergence. (Full rule above in § "Test Independence".)
+   A test that mirrors current output proves only that the code does what it
+   currently does.
+
+2. **It isn't there just for its own sake.** Redundant, tautological, and
+   coverage-theatre tests dilute signal and cost maintenance. Prefer **deleting
+   or merging** them over keeping them. A test is **redundant** when it adds no
+   dimension a sibling doesn't already cover:
+   - a near-duplicate on the same fixture and same assertion dimension (no new
+     type, field shape, position, or edge condition);
+   - a tautology — `assert!(true)`, asserting a literal you just constructed, or
+     round-tripping a value through no transformation;
+   - a test of the language or a library rather than Citum behaviour;
+   - coverage theatre — exists only to touch a line, with no observable
+     behaviour asserted.
+
+3. **It is classifiable against a spec.** You can point to the spec section it
+   verifies and say whether it passes or fails *that section*. If the governing
+   spec is ambiguous, contradictory, or silent on the behaviour, the spec is the
+   bug — fix the spec (or escalate the decision) rather than letting the test
+   silently pick one reading. The soundness skill halts on such cases by design.
+
+State of conformance across specs is tracked in
+[`docs/architecture/TEST_SOUNDNESS_STATUS.md`](../architecture/TEST_SOUNDNESS_STATUS.md).
 
 ## String Ownership
 

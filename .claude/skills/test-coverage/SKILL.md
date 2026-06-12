@@ -40,6 +40,11 @@ claim about behavior:
 - If a fixture changes, state which missing shape it adds and which scenario
   exercises that shape.
 
+The full shared bar — including when a test counts as *redundant* and should be
+deleted rather than kept — lives in `docs/guides/CODING_STANDARDS.md`
+§ "What makes a test worth keeping". Per-spec soundness state is tracked in
+`docs/architecture/TEST_SOUNDNESS_STATUS.md`.
+
 ## Test Style
 
 Before writing a test, pick the right style (full rule in

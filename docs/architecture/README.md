@@ -11,6 +11,7 @@ current task.
 4. [`EXTENSIBILITY_STRATEGY.md`](./EXTENSIBILITY_STRATEGY.md) - where new rendering and data needs belong in the style format.
 5. [`../policies/TYPE_ADDITION_POLICY.md`](../policies/TYPE_ADDITION_POLICY.md) - active type-system policy.
 6. [`../policies/SQI_REFINEMENT_PLAN.md`](../policies/SQI_REFINEMENT_PLAN.md) - current SQI refinement direction.
+7. [`TEST_SOUNDNESS_STATUS.md`](./TEST_SOUNDNESS_STATUS.md) - living index of test-soundness state per spec (audited / addressed / todo); maintained by the `test-soundness-review` skill.
 
 ## Tier B: Active Specialized Design
 
