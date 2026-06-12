@@ -40,6 +40,8 @@ pub mod options_extractor;
 pub mod passes;
 /// Provenance tracking for style migration.
 pub mod provenance;
+/// Output-driven template synthesis loop.
+pub mod synthesis;
 /// CSL 1.0 to Citum template compilation.
 pub mod template_compiler;
 /// Template resolution and preprocessing.
