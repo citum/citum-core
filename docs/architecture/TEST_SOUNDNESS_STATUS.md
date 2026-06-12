@@ -94,7 +94,7 @@ test against its spec. Those specs remain `todo`.
 | [MIGRATE_RESEARCH_RICH_INPUTS.md](../specs/MIGRATE_RESEARCH_RICH_INPUTS.md) | — | — | — | todo | — |
 | [MIGRATION_TAXONOMY_AWARE_WRAPPERS.md](../specs/MIGRATION_TAXONOMY_AWARE_WRAPPERS.md) | — | — | — | todo | — |
 | [MIXED_CONDITION_NOTE_POSITION_TREES.md](../specs/MIXED_CONDITION_NOTE_POSITION_TREES.md) | — | — | — | todo | — |
-| [MULTILINGUAL.md](../specs/MULTILINGUAL.md) | — | — | — | todo | — |
+| [MULTILINGUAL.md](../specs/MULTILINGUAL.md) | 2026-06-12 | 4/0/3/1 | — | addressed | Fixed 3 broken contains() tests (capture-and-pin); deleted 1 redundant Arabic twin; added §2.1 preset gap test after converting the CJK fixture to native format (its multilingual items were silently dropped by the legacy map loader); filled §3.1 placeholder; documented §3.4 locale layouts. Scope: multilingual.rs only — §1.3/§2.2/§2.3 resolution coverage lives in the unaudited i18n suite. |
 | [MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md](../specs/MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md) | — | — | — | todo | — |
 | [MULTILINGUAL_NAMES.md](../specs/MULTILINGUAL_NAMES.md) | — | — | — | todo | — |
 | [NOCITE_BIBLIOGRAPHY_ONLY_ENTRIES.md](../specs/NOCITE_BIBLIOGRAPHY_ONLY_ENTRIES.md) | — | — | — | todo | — |
