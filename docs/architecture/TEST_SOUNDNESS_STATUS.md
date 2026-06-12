@@ -8,9 +8,9 @@
 > **Last updated:** 2026-06-12
 >
 > **How to refresh:** run the [`test-soundness-review`](../../.skills/test-soundness-review/SKILL.md)
-> skill against a spec and its tests. The skill reads this ledger first, writes
-> a dated audit record under [`audits/`](./audits/), and upserts the spec's row
-> here. Do not hand-edit verdict counts — let the skill own them.
+> skill against a spec and its tests. The skill reads this ledger first and
+> upserts the spec's row here. Do not hand-edit verdict counts — let the skill
+> own them.
 >
 > **What "soundness" means here** is defined once in
 > [`docs/guides/CODING_STANDARDS.md`](../guides/CODING_STANDARDS.md)
@@ -51,8 +51,8 @@ test against its spec. Those specs remain `todo`.
 
 ## Ledger
 
-| Spec / Module | Last reviewed | Tests (G/S/B/R) | Open spec issues | Status | Audit record |
-|---------------|---------------|-----------------|------------------|--------|--------------|
+| Spec / Module | Last reviewed | Tests (G/S/B/R) | Open spec issues | Status | Notes |
+|---------------|---------------|-----------------|------------------|--------|-------|
 | [ABBREVIATION_MAP.md](../specs/ABBREVIATION_MAP.md) | — | — | — | todo | — |
 | [ANNOTATED_BIBLIOGRAPHY.md](../specs/ANNOTATED_BIBLIOGRAPHY.md) | — | — | — | todo | — |
 | [APA_SQI_ALIGNMENT_AND_PRESET_REFACTOR.md](../specs/APA_SQI_ALIGNMENT_AND_PRESET_REFACTOR.md) | — | — | — | todo | — |
@@ -118,7 +118,7 @@ test against its spec. Those specs remain `todo`.
 | [SENTENCE_INITIAL_LABELS.md](../specs/SENTENCE_INITIAL_LABELS.md) | — | — | — | todo | — |
 | [SERVER_INTERACTIVE_API.md](../specs/SERVER_INTERACTIVE_API.md) | — | — | — | todo | — |
 | [SHORT_NAME.md](../specs/SHORT_NAME.md) | — | — | — | todo | — |
-| [SORTING.md](../specs/SORTING.md) | — | — | — | todo | — |
+| [SORTING.md](../specs/SORTING.md) | 2026-06-12 | 15/0/0/0 | — | addressed | Deleted 4 vacuous tests; fixed 2; added 5 gap tests; clarified 2 spec silences. |
 | [STRONG_DOMAIN_TYPES_PHASE1.md](../specs/STRONG_DOMAIN_TYPES_PHASE1.md) | — | — | — | todo | — |
 | [STYLE_ALIASING.md](../specs/STYLE_ALIASING.md) | — | — | — | todo | — |
 | [STYLE_EDITIONS_AND_FAMILIES.md](../specs/STYLE_EDITIONS_AND_FAMILIES.md) | — | — | — | todo | — |
