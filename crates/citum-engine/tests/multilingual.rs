@@ -62,11 +62,9 @@ fn test_cjk_name_rendering_asian_glyphs() {
         .process_citation(&single_item_citation("CSL-ASIAN-GLYPHS"))
         .expect("Asian glyphs citation should render");
 
-    // CSL test expects output to contain Japanese author name
-    assert!(
-        citation.contains("我妻"),
-        "Citation should contain Japanese author name"
-    );
+    // Plain CJK name with no parallel variants: the §1.3 fallback renders the
+    // original glyphs even under the APA romanized-translated preset.
+    assert_eq!(citation, "(我妻, 1960)");
 }
 
 #[test]
@@ -80,14 +78,12 @@ fn test_cjk_et_al_rendering() {
 
     let processor = Processor::new(style, bibliography);
     let citation = processor
-        .process_citation(&single_item_citation("CSL-ET-AL-KANJI"))
+        .process_citation(&single_item_citation("CJK-ET-AL-KANJI-AUTHORS"))
         .expect("et al. citation should render");
 
-    // Should render first author followed by et al.
-    assert!(
-        citation.contains("Zither") || citation.contains("et al"),
-        "Citation should contain author name or et al."
-    );
+    // Three kanji-named authors under APA shorten {min: 3, use-first: 1}:
+    // first author's family glyphs followed by the et-al term.
+    assert_eq!(citation, "(山田 et al., 2020)");
 }
 
 #[test]
@@ -104,31 +100,39 @@ fn test_arabic_short_forms_with_diacritics() {
         .process_citation(&single_item_citation("ARABIC-ASWANI-DIACRITICS"))
         .expect("Arabic citation with diacritics should render");
 
-    // Should render Arabic author name with proper diacritics
-    assert!(
-        citation.contains("al-Aswānī") || citation.contains("Alaa"),
-        "Citation should contain Arabic author name or transliteration"
-    );
+    // Romanized Arabic family name with macron and ʿayn must survive intact.
+    assert_eq!(citation, "(al-Aswānī, 2015)");
 }
 
 #[test]
-fn test_arabic_transliterated_forms() {
-    announce_behavior("Transliterated Arabic names are accepted and rendered correctly.");
+fn test_romanized_translated_preset_uses_parallel_metadata() {
+    announce_behavior(
+        "APA romanized-translated preset: names render romanized; titles render romanized [translated].",
+    );
     let root = project_root();
     let style = load_style(&root.join("styles/embedded/apa-7th.yaml"));
     let bibliography =
-        load_bibliography(&root.join("tests/fixtures/multilingual/multilingual-arabic.json"))
-            .expect("Arabic fixture should parse");
+        load_bibliography(&root.join("tests/fixtures/multilingual/multilingual-cjk.json"))
+            .expect("CJK fixture should parse");
 
     let processor = Processor::new(style, bibliography);
-    let citation = processor
-        .process_citation(&single_item_citation("ARABIC-ASWANI-TRANSLITERATED"))
-        .expect("Arabic citation with transliteration should render");
 
-    // Should render transliterated form
-    assert!(
-        citation.contains("al-Aswānī") || citation.contains("Alaa"),
-        "Citation should handle transliterated Arabic"
+    let citation = processor
+        .process_citation(&single_item_citation("CJK-JAPANESE-BOOK"))
+        .expect("Japanese book citation should render");
+    let entry = processor
+        .render_selected_bibliography_with_format::<citum_engine::render::plain::PlainText, _>(
+            vec!["CJK-JAPANESE-BOOK".to_string()],
+        );
+
+    // §2.1 romanized-translated: the ja-Latn-hepburn name transliteration is
+    // preferred over the original kana in the citation.
+    assert_eq!(citation, "(Torusutoi, 1869)");
+    // §2.1 romanized-translated: the title renders as the ja-Latn-hepburn
+    // transliteration followed by the bracketed English translation.
+    assert_eq!(
+        entry,
+        "Torusutoi, L. (1869). _Sensō to Heiwa [War and Peace]_. Iwanami Shoten."
     );
 }
 
@@ -152,7 +156,7 @@ fn test_bibliography_locales_switch_full_entry_layouts() {
         );
     let default_entry = processor
         .render_selected_bibliography_with_format::<citum_engine::render::plain::PlainText, _>(
-            vec!["CSL-ET-AL-KANJI".to_string()],
+            vec!["CSL-ET-AL-LATIN".to_string()],
         );
 
     assert!(
