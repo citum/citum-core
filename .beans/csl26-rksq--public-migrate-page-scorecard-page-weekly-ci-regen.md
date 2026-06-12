@@ -4,8 +4,12 @@ title: Public Migrate page, scorecard page, weekly CI regeneration
 status: todo
 type: task
 priority: deferred
+tags:
+    - migrate
+    - docs
+    - scorecard
 created_at: 2026-06-10T16:28:16Z
-updated_at: 2026-06-11T15:57:01Z
+updated_at: 2026-06-12T17:25:53Z
 parent: csl26-vmcr
 blocked_by:
     - csl26-rj4c
