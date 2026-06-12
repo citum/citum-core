@@ -70,6 +70,38 @@ pub struct HeldOutValidation {
     pub items: usize,
 }
 
+/// Caps on measured candidate generation so scoring stays bounded.
+///
+/// The defaults are sized above the current candidate families, so the
+/// bounded selector's behavior is unchanged; they exist so candidate
+/// generation cannot grow unbounded as mutation families are added, and the
+/// synthesis loop reuses the same caps to keep each mutation round
+/// non-combinatorial (`docs/specs/OUTPUT_DRIVEN_TEMPLATE_SYNTHESIS.md`).
+#[derive(Debug, Clone, Copy)]
+pub struct CandidateBudget {
+    /// Maximum generated candidates per mutation family.
+    pub max_per_family: usize,
+    /// Maximum candidates scored per selection, seed candidates included.
+    pub max_total: usize,
+}
+
+impl Default for CandidateBudget {
+    fn default() -> Self {
+        Self {
+            max_per_family: 24,
+            max_total: 32,
+        }
+    }
+}
+
+impl CandidateBudget {
+    /// Truncate generated mutations so seeds plus mutations stay within the
+    /// total budget.
+    fn truncate_mutations<T>(self, mutations: &mut Vec<T>, seed_count: usize) {
+        mutations.truncate(self.max_total.saturating_sub(seed_count));
+    }
+}
+
 /// Outcome of measured bibliography-candidate scoring.
 #[derive(Debug, Clone)]
 pub struct MeasuredBibliographySelection {
@@ -165,11 +197,14 @@ pub fn select(
             .map_err(|err| format!("failed to parse citeproc citation references: {err}"))?;
 
     let bibliography = fixture_bibliography(workspace_root)?;
+    let budget = CandidateBudget::default();
     let mut candidates = vec![
         ("inferred".to_string(), inferred_style.clone()),
         ("xml".to_string(), xml_style.clone()),
     ];
-    candidates.extend(citation_mutation_candidates(inferred_style));
+    let mut mutations = citation_mutation_candidates(inferred_style);
+    budget.truncate_mutations(&mut mutations, candidates.len());
+    candidates.extend(mutations);
 
     let scored: Vec<_> = candidates
         .iter()
@@ -302,11 +337,14 @@ pub fn select_bibliography(
         .map_err(|err| format!("failed to parse citeproc bibliography references: {err}"))?;
 
     let bibliography = fixture_bibliography(workspace_root)?;
+    let budget = CandidateBudget::default();
     let mut candidates = vec![
         CandidateStyle::baseline("inferred", inferred_style.clone()),
         CandidateStyle::source_xml(xml_style.clone()),
     ];
-    candidates.extend(bibliography_mutation_candidates(inferred_style));
+    let mut mutations = bibliography_mutation_candidates(inferred_style, budget);
+    budget.truncate_mutations(&mut mutations, candidates.len());
+    candidates.extend(mutations);
 
     let scored: Vec<_> = candidates
         .iter()
@@ -950,11 +988,20 @@ fn invalid_candidate_score(references: &BTreeMap<String, Option<String>>) -> Can
     }
 }
 
-fn bibliography_mutation_candidates(inferred_style: &Style) -> Vec<CandidateStyle> {
+fn bibliography_mutation_candidates(
+    inferred_style: &Style,
+    budget: CandidateBudget,
+) -> Vec<CandidateStyle> {
     let mut seen = BTreeSet::new();
+    let mut family_counts: BTreeMap<&'static str, usize> = BTreeMap::new();
     bibliography_candidate_patches()
         .into_iter()
         .filter(|patch| seen.insert(patch.name.clone()))
+        .filter(|patch| {
+            let count = family_counts.entry(patch.family.as_str()).or_insert(0);
+            *count += 1;
+            *count <= budget.max_per_family
+        })
         .filter_map(|patch| {
             patch
                 .apply(inferred_style)
@@ -1418,13 +1465,13 @@ fn tokenize(text: &str) -> Vec<String> {
 )]
 mod tests {
     use super::{
-        CandidateScore, PASS_THRESHOLD, bibliography_candidate_patches,
+        CandidateBudget, CandidateScore, PASS_THRESHOLD, bibliography_candidate_patches,
         bibliography_mutation_candidates, candidate_beats, compare_text, normalize_text,
         scenario_citation, token_jaccard, tokenize,
     };
     use citum_schema::Style;
     use citum_schema::citation::Position;
-    use std::collections::BTreeSet;
+    use std::collections::{BTreeMap, BTreeSet};
 
     #[test]
     fn tokenize_splits_on_punctuation_and_drops_short_tokens() {
@@ -1589,8 +1636,41 @@ mod tests {
 
     #[test]
     fn bibliography_candidates_skip_noop_style_without_bibliography() {
-        let candidates = bibliography_mutation_candidates(&Style::default());
+        let candidates =
+            bibliography_mutation_candidates(&Style::default(), CandidateBudget::default());
 
         assert!(candidates.is_empty());
+    }
+
+    #[test]
+    fn candidate_budget_defaults_do_not_truncate_current_patches() {
+        let budget = CandidateBudget::default();
+        let patches = bibliography_candidate_patches();
+        let mut family_counts: BTreeMap<&str, usize> = BTreeMap::new();
+        for patch in &patches {
+            *family_counts.entry(patch.family.as_str()).or_insert(0) += 1;
+        }
+
+        let seed_count = 2;
+        assert!(patches.len() + seed_count <= budget.max_total);
+        for (family, count) in family_counts {
+            assert!(
+                count <= budget.max_per_family,
+                "family {family} exceeds the default per-family budget: {count}"
+            );
+        }
+    }
+
+    #[test]
+    fn candidate_budget_truncates_over_cap_mutations() {
+        let budget = CandidateBudget {
+            max_per_family: 1,
+            max_total: 3,
+        };
+        let mut mutations: Vec<usize> = (0..10).collect();
+
+        budget.truncate_mutations(&mut mutations, 2);
+
+        assert_eq!(mutations, vec![0]);
     }
 }
