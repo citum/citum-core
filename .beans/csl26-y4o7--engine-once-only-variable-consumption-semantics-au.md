@@ -19,4 +19,4 @@ The engine renders each reference variable at most once per bibliography entry (
 
 Decide and document the intended semantics: should `suppress: true` components ever claim a variable? Candidate code area: `crates/citum-engine/src/processor/rendering/grouped/`. An engine-side fix would repair existing checked-in YAML, not just fresh migrations.
 
-Evidence repro: `/tmp/dup-min.yaml` pattern in C2 pass notes, where suppressed group `[parent-serial,date]` before live group `[parent-serial,volume]` starves the live group.
+Evidence trail: archived bean csl26-sfir records the C2 fix and routes the residual engine consumption-semantics question here. Reconstruct a checked-in regression fixture from the failing pattern before implementation: a suppressed group containing `parent-serial`/date before a live group containing `parent-serial`/volume can starve the live group.
