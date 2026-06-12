@@ -20,7 +20,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! same token-similarity fallback. Selection therefore optimizes the same
 //! measure the oracle reports without hiding strict bibliography case errors.
 
-use crate::js_runtime::{self, EmbeddedTemplateRuntime};
+use crate::js_runtime::{self, EmbeddedTemplateRuntime, FixtureSet};
 use citum_engine::Processor;
 use citum_engine::reference::{Bibliography, Citation};
 use citum_engine::render::bibliography::render_entry_body_with_format;
@@ -52,6 +52,22 @@ pub struct MeasuredCitationSelection {
     pub xml_passes: usize,
     /// Number of fixture items that produced a citeproc reference citation.
     pub items: usize,
+    /// Held-out validation of the selected candidate, when available.
+    pub heldout: Option<HeldOutValidation>,
+}
+
+/// Held-out validation pass-rate for a selected candidate.
+///
+/// Rendered on the held-out fixture set after selection; the held-out items
+/// never participate in inference or candidate scoring. Reporting-only for
+/// the bounded selector; the synthesis loop turns regressions into a
+/// rejection gate (`docs/specs/OUTPUT_DRIVEN_TEMPLATE_SYNTHESIS.md`).
+#[derive(Debug, Clone, Copy)]
+pub struct HeldOutValidation {
+    /// Held-out scenarios the selected candidate passed at the threshold.
+    pub passes: usize,
+    /// Held-out scenarios that produced a citeproc reference.
+    pub items: usize,
 }
 
 /// Outcome of measured bibliography-candidate scoring.
@@ -77,6 +93,8 @@ pub struct MeasuredBibliographySelection {
     pub xml_passes: usize,
     /// Number of fixture items that produced a citeproc reference entry.
     pub items: usize,
+    /// Held-out validation of the selected candidate, when available.
+    pub heldout: Option<HeldOutValidation>,
 }
 
 /// Per-item pass threshold, mirroring the oracle's `similarityThreshold`.
@@ -140,7 +158,8 @@ pub fn select(
     workspace_root: &Path,
 ) -> Result<MeasuredCitationSelection, String> {
     let mut runtime = EmbeddedTemplateRuntime::new(workspace_root)?;
-    let reference_json = runtime.render_citation_strings(style_name, style_xml)?;
+    let reference_json =
+        runtime.render_citation_strings(style_name, style_xml, FixtureSet::Selection)?;
     let references: BTreeMap<String, Vec<Option<String>>> =
         serde_json::from_str(&reference_json)
             .map_err(|err| format!("failed to parse citeproc citation references: {err}"))?;
@@ -192,11 +211,19 @@ pub fn select(
     };
     let selected_candidate = selected.0.to_string();
     let use_xml = selected_candidate == "xml";
+    let heldout = heldout_citation_validation(
+        &mut runtime,
+        style_name,
+        style_xml,
+        selected_style,
+        workspace_root,
+    );
     if std::env::var_os("CITUM_MIGRATE_DEBUG_CITATION_SELECTION").is_some() {
         eprintln!(
-            "citation selected {style_name} {selected_candidate}: +{} passes, {:+.3} similarity",
+            "citation selected {style_name} {selected_candidate}: +{} passes, {:+.3} similarity{}",
             selected.1.passes.saturating_sub(inferred.passes),
-            selected.1.similarity_sum - inferred.similarity_sum
+            selected.1.similarity_sum - inferred.similarity_sum,
+            heldout_debug_suffix(heldout)
         );
     }
 
@@ -208,7 +235,43 @@ pub fn select(
         inferred_passes: inferred.passes,
         xml_passes: xml.passes,
         items: inferred.items,
+        heldout,
     })
+}
+
+/// Validate the selected citation candidate on the held-out fixture set.
+///
+/// Reporting-only: failures to load or render the held-out set yield `None`
+/// rather than disturbing the selection outcome.
+fn heldout_citation_validation(
+    runtime: &mut EmbeddedTemplateRuntime,
+    style_name: &str,
+    style_xml: &str,
+    selected_style: &Style,
+    workspace_root: &Path,
+) -> Option<HeldOutValidation> {
+    let reference_json = runtime
+        .render_citation_strings(style_name, style_xml, FixtureSet::HeldOut)
+        .ok()?;
+    let references: BTreeMap<String, Vec<Option<String>>> =
+        serde_json::from_str(&reference_json).ok()?;
+    let bibliography = heldout_bibliography(workspace_root).ok()?;
+    let score = score_candidate(selected_style, &bibliography, &references);
+    Some(HeldOutValidation {
+        passes: score.passes,
+        items: score.items,
+    })
+}
+
+/// Format the held-out pass-rate for selection debug output.
+fn heldout_debug_suffix(heldout: Option<HeldOutValidation>) -> String {
+    match heldout {
+        Some(validation) => format!(
+            "; held-out {}/{} passes",
+            validation.passes, validation.items
+        ),
+        None => "; held-out unavailable".to_string(),
+    }
 }
 
 /// Score bibliography candidates against citeproc-js reference entries.
@@ -233,7 +296,8 @@ pub fn select_bibliography(
     workspace_root: &Path,
 ) -> Result<MeasuredBibliographySelection, String> {
     let mut runtime = EmbeddedTemplateRuntime::new(workspace_root)?;
-    let reference_json = runtime.render_bibliography_strings(style_name, style_xml)?;
+    let reference_json =
+        runtime.render_bibliography_strings(style_name, style_xml, FixtureSet::Selection)?;
     let references: BTreeMap<String, Option<String>> = serde_json::from_str(&reference_json)
         .map_err(|err| format!("failed to parse citeproc bibliography references: {err}"))?;
 
@@ -287,15 +351,23 @@ pub fn select_bibliography(
     };
     let selected_candidate = selected.0.name.clone();
     let use_xml = selected_candidate == "xml";
+    let heldout = heldout_bibliography_validation(
+        &mut runtime,
+        style_name,
+        style_xml,
+        &selected.0.style,
+        workspace_root,
+    );
     if std::env::var_os("CITUM_MIGRATE_DEBUG_BIB_SELECTION").is_some() {
         eprintln!(
-            "bibliography selected {style_name} {} [{} {} {:?}]: +{} passes, {:+.3} similarity",
+            "bibliography selected {style_name} {} [{} {} {:?}]: +{} passes, {:+.3} similarity{}",
             selected.0.name,
             selected.0.family_label(),
             selected.0.section_label(),
             selected.0.affected_types,
             selected.1.passes.saturating_sub(inferred.passes),
-            selected.1.similarity_sum - inferred.similarity_sum
+            selected.1.similarity_sum - inferred.similarity_sum,
+            heldout_debug_suffix(heldout)
         );
     }
 
@@ -313,6 +385,31 @@ pub fn select_bibliography(
         inferred_passes: inferred.passes,
         xml_passes: xml.passes,
         items: inferred.items,
+        heldout,
+    })
+}
+
+/// Validate the selected bibliography candidate on the held-out fixture set.
+///
+/// Reporting-only: failures to load or render the held-out set yield `None`
+/// rather than disturbing the selection outcome.
+fn heldout_bibliography_validation(
+    runtime: &mut EmbeddedTemplateRuntime,
+    style_name: &str,
+    style_xml: &str,
+    selected_style: &Style,
+    workspace_root: &Path,
+) -> Option<HeldOutValidation> {
+    let reference_json = runtime
+        .render_bibliography_strings(style_name, style_xml, FixtureSet::HeldOut)
+        .ok()?;
+    let references: BTreeMap<String, Option<String>> =
+        serde_json::from_str(&reference_json).ok()?;
+    let bibliography = heldout_bibliography(workspace_root).ok()?;
+    let score = score_bibliography_candidate(selected_style, &bibliography, &references);
+    Some(HeldOutValidation {
+        passes: score.passes,
+        items: score.items,
     })
 }
 
@@ -501,7 +598,16 @@ impl ComponentMatcher {
 
 /// Load the embedded fixture items as an engine bibliography.
 fn fixture_bibliography(workspace_root: &Path) -> Result<Bibliography, String> {
-    let fixtures = js_runtime::load_fixtures(workspace_root)?;
+    bibliography_from_fixtures(js_runtime::load_fixtures(workspace_root)?)
+}
+
+/// Load the held-out fixture items as an engine bibliography.
+fn heldout_bibliography(workspace_root: &Path) -> Result<Bibliography, String> {
+    bibliography_from_fixtures(js_runtime::load_heldout_fixtures(workspace_root)?)
+}
+
+/// Convert a loaded fixture JSON object into an engine bibliography.
+fn bibliography_from_fixtures(fixtures: serde_json::Value) -> Result<Bibliography, String> {
     let map = fixtures
         .as_object()
         .ok_or_else(|| "embedded fixture file is not a JSON object".to_string())?;
