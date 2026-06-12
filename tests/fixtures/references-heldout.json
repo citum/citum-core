@@ -1,0 +1,307 @@
+{
+  "comment": "Held-out validation items for measured template selection. Disjoint from references-expanded.json: never used for template inference or candidate scoring, only to validate the selected candidate after selection (docs/specs/OUTPUT_DRIVEN_TEMPLATE_SYNTHESIS.md).",
+  "HELD-1": {
+    "id": "HELD-1",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Tidal Disruption Events in Dwarf Galaxies",
+    "author": [
+      {
+        "family": "Okafor",
+        "given": "Adaeze"
+      },
+      {
+        "family": "Lindqvist",
+        "given": "Mats"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2021
+        ]
+      ]
+    },
+    "container-title": "Journal of Stellar Dynamics",
+    "volume": "44",
+    "issue": "3",
+    "page": "211-239",
+    "DOI": "10.5555/jsd.2021.044"
+  },
+  "HELD-2": {
+    "id": "HELD-2",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Soil Microbiome Recovery After Controlled Burns",
+    "author": [
+      {
+        "family": "Marchetti",
+        "given": "Lucia"
+      },
+      {
+        "family": "Devries",
+        "given": "Pieter"
+      },
+      {
+        "family": "Tanaka",
+        "given": "Hiroshi"
+      },
+      {
+        "family": "Almeida",
+        "given": "Beatriz"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2019
+        ]
+      ]
+    },
+    "container-title": "Applied Pyroecology",
+    "volume": "12",
+    "issue": "1",
+    "page": "55-78"
+  },
+  "HELD-3": {
+    "id": "HELD-3",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "A Reappraisal of Bronze Age Trade Routes in the Carpathian Basin",
+    "author": [
+      {
+        "family": "Horvath",
+        "given": "Eszter"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2017
+        ]
+      ]
+    },
+    "container-title": "Annals of Prehistoric Archaeology",
+    "volume": "29",
+    "page": "140-163",
+    "DOI": "10.5555/apa.2017.029"
+  },
+  "HELD-4": {
+    "id": "HELD-4",
+    "class": "serial-component",
+    "type": "article-journal",
+    "title": "Latency Bounds for Consensus Under Partial Synchrony",
+    "author": [
+      {
+        "family": "Bouchard",
+        "given": "Camille"
+      },
+      {
+        "family": "Ng",
+        "given": "Wai-Ling"
+      },
+      {
+        "family": "Petrov",
+        "given": "Ilya"
+      },
+      {
+        "family": "Sandoval",
+        "given": "Mariana"
+      },
+      {
+        "family": "Keller",
+        "given": "Jonas"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2022
+        ]
+      ]
+    },
+    "container-title": "Transactions on Distributed Computation",
+    "volume": "8",
+    "issue": "4",
+    "page": "1-29"
+  },
+  "HELD-5": {
+    "id": "HELD-5",
+    "class": "monograph",
+    "type": "book",
+    "title": "The Cartography of Memory",
+    "author": [
+      {
+        "family": "Iyer",
+        "given": "Meenakshi"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2015
+        ]
+      ]
+    },
+    "publisher": "Harbourline Press",
+    "publisher-place": "Toronto"
+  },
+  "HELD-6": {
+    "id": "HELD-6",
+    "class": "monograph",
+    "type": "book",
+    "title": "Foundations of Glacial Hydrology",
+    "author": [
+      {
+        "family": "Bergstrom",
+        "given": "Annika"
+      },
+      {
+        "family": "Calloway",
+        "given": "Desmond"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2008
+        ]
+      ]
+    },
+    "publisher": "Polar Academic Publishing",
+    "publisher-place": "Oslo",
+    "edition": "2"
+  },
+  "HELD-7": {
+    "id": "HELD-7",
+    "class": "collection-component",
+    "type": "chapter",
+    "title": "Negotiating Silence in Oral History Interviews",
+    "author": [
+      {
+        "family": "Aluko",
+        "given": "Folasade"
+      }
+    ],
+    "editor": [
+      {
+        "family": "Brandt",
+        "given": "Sigrid"
+      },
+      {
+        "family": "Moreau",
+        "given": "Yves"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2020
+        ]
+      ]
+    },
+    "container-title": "Methods in Narrative Research",
+    "publisher": "Westgate University Press",
+    "page": "97-118"
+  },
+  "HELD-8": {
+    "id": "HELD-8",
+    "class": "monograph",
+    "type": "report",
+    "title": "Coastal Resilience Assessment 2021",
+    "author": [
+      {
+        "literal": "Estuarine Research Consortium"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2021
+        ]
+      ]
+    },
+    "publisher": "Estuarine Research Consortium",
+    "publisher-place": "Wellington",
+    "number": "ERC-TR-114"
+  },
+  "HELD-9": {
+    "id": "HELD-9",
+    "class": "monograph",
+    "type": "thesis",
+    "title": "Acoustic Niche Partitioning in Tropical Frog Communities",
+    "author": [
+      {
+        "family": "Quispe",
+        "given": "Rodrigo"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2018
+        ]
+      ]
+    },
+    "publisher": "University of the Andes",
+    "genre": "phd-thesis"
+  },
+  "HELD-10": {
+    "id": "HELD-10",
+    "class": "monograph",
+    "type": "webpage",
+    "title": "Field Guide to Urban Lichens",
+    "author": [
+      {
+        "literal": "Metropolitan Bryology Network"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2022
+        ]
+      ]
+    },
+    "URL": "https://urbanlichens.example.org/guide",
+    "accessed": {
+      "date-parts": [
+        [
+          2023,
+          6,
+          2
+        ]
+      ]
+    }
+  },
+  "HELD-11": {
+    "id": "HELD-11",
+    "class": "collection-component",
+    "type": "paper-conference",
+    "title": "Sparse Retrieval for Low-Resource Question Answering",
+    "author": [
+      {
+        "family": "Eriksen",
+        "given": "Maja"
+      },
+      {
+        "family": "Osei",
+        "given": "Kwame"
+      },
+      {
+        "family": "Li",
+        "given": "Jun"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2023
+        ]
+      ]
+    },
+    "container-title": "Proceedings of the Conference on Computational Language Methods",
+    "page": "412-425",
+    "event": "Computational Language Methods 2023"
+  }
+}
