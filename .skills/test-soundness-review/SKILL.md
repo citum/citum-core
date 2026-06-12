@@ -168,21 +168,29 @@ add). Cross-check the spec's acceptance criteria for premature `[x]`: if a
 criterion is marked done but the function it depends on doesn't exist, record it
 as a gap and recommend reverting the `[x]`.
 
-## Step 5 — Offer follow-on actions: Fix / Trim / Add / Persist
+## Step 5 — Execute follow-on actions: Fix → Trim → Add → Persist
 
-After presenting the classification, offer:
+After presenting the per-test table and coverage gaps, **proceed immediately** to
+Fix → Trim → Add → Persist in that order. State the phase and what you are about
+to do before each one; the user can say "stop" or "skip <phase>" to redirect.
+The default is to do everything — do not stop to ask permission unless a decision
+is genuinely unresolvable (ambiguous spec, missing fixture data, failing gate).
 
 1. **Fix** — realign suspicious tests; rewrite broken assertions to exact
-   `assert_eq!`. **Capture, don't invent**: add a transient `eprintln!` + forced
-   failure, run the test, read the real output, then pin that string and remove
-   the stub. Never invent expected values.
-2. **Trim** — delete or merge `redundant` tests. Confirm the surviving sibling
-   still covers the dimension before deleting.
-3. **Add** — add tests for coverage gaps, capturing actual output first.
-4. **Persist** — Step 6 (always do this, even if the user declines 1–3).
-
-If the user says "do all of it", apply in order Fix → Trim → Add, running
-`cargo nextest run` after each round to confirm nothing regressed.
+   `assert_eq!`. For each test marked **broken** or **suspicious**: if fixing
+   requires pinning an expected string, use the capture-and-pin workflow — add a
+   transient `eprintln!` + forced `panic!("capture")`, run just that test, read
+   stderr/stdout, remove the stub, pin the real string. **Never invent expected
+   values.** Run `cargo nextest run` after the Fix batch.
+2. **Trim** — delete or merge `redundant` tests. For each deletion: confirm the
+   surviving sibling still covers the dimension (grep for the spec section; verify
+   at least one `good` test covers it) before deleting. Run `cargo nextest run`
+   after the Trim batch.
+3. **Add** — add tests for coverage gaps, capturing actual output first (same
+   capture-and-pin workflow). Prioritise: (1) gaps that would catch a realistic
+   regression, (2) gaps flagged as a spec-silence needing resolution, (3) the rest.
+   Run `cargo nextest run` after the Add batch.
+4. **Persist** — Step 6 (always, even if Fix/Trim/Add were skipped).
 
 ## Step 6 — Persist state (replaces the old JSON dump)
 
@@ -212,6 +220,13 @@ Two durable artifacts, both Markdown:
 
 The audit record is the detail; the ledger row is the index that points to it.
 An agent resuming work greps the ledger for `todo` / `needs-rework`.
+
+**Commit guidance:** describe what changed, not just the meta-status. Split
+into two commits when both test and doc/spec files change:
+- `test(engine): <what changed>` — test files only; subject names the action
+  (e.g. "trim 3 vacuous sort tests", "add citation-sort gap tests").
+- `docs(spec): <what changed>` — spec, ledger, skill files; subject names the
+  outcome (e.g. "clarify two SORTING spec silences"). Body 3–5 lines max.
 
 ---
 
