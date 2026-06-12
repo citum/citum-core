@@ -81,7 +81,7 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 | Spec | Status | Tests |
 |------|--------|-------|
 | [`ANNOTATED_BIBLIOGRAPHY.md`](./ANNOTATED_BIBLIOGRAPHY.md) — document-scoped annotation overlay for bibliography rendering | Active | `bibliography.rs::annotated_html_preview`, `document.rs` |
-| [`BIBLIOGRAPHY_GROUPING.md`](./BIBLIOGRAPHY_GROUPING.md) — grouped bibliography architecture: group specs, heading generation, nested groups | Draft | `document.rs::grouped_bibliography` |
+| [`BIBLIOGRAPHY_GROUPING.md`](./BIBLIOGRAPHY_GROUPING.md) — grouped bibliography architecture: group specs, heading generation, nested groups | Active | `document.rs::grouped_bibliography` |
 | [`ARTICLE_JOURNAL_NO_PAGE_FALLBACK.md`](./ARTICLE_JOURNAL_NO_PAGE_FALLBACK.md) — external bibliography parameter for article-journal page fallback | Active | `bibliography.rs::article_journal_no_page_fallback` |
 | [`CITATION_BIBLIOGRAPHY_OPTION_SPLIT.md`](./CITATION_BIBLIOGRAPHY_OPTION_SPLIT.md) — strict schema split for citation and bibliography option scopes | Active | `bibliography.rs`, `citations.rs` |
 | [`INLINE_JOURNAL_DETAIL_GROUPING.md`](./INLINE_JOURNAL_DETAIL_GROUPING.md) — inline article-journal detail blocks with mixed delimiters | Active | `bibliography.rs` |
@@ -139,6 +139,7 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 |------|--------|-------|
 | [`TEMPLATE_V2.md`](./TEMPLATE_V2.md) — simplified Template Schema v2 with group-first composition | Active | `bibliography.rs`, `citations.rs` |
 | [`TEMPLATE_V3.md`](./TEMPLATE_V3.md) — Template Schema v3 extensions | Active | `bibliography.rs`, `citations.rs` |
+| [`TEMPLATE_RENDERING_SEMANTICS.md`](./TEMPLATE_RENDERING_SEMANTICS.md) — render-time variable-once and group consumption semantics | Active | `bibliography.rs`, `citations.rs` |
 | [`TITLE_TEXT_CASE.md`](./TITLE_TEXT_CASE.md) — modeling and applying title-like text-case transformations | Active | `bibliography.rs` |
 | [`TITLE_NAME_INFLECTION.md`](./TITLE_NAME_INFLECTION.md) — grammatical inflection of title-adjacent names | Active | `bibliography.rs` |
 | [`PUNCTUATION_NORMALIZATION.md`](./PUNCTUATION_NORMALIZATION.md) — normalization of punctuation at rendered output boundaries | Draft | `bibliography.rs`, `citations.rs` |
