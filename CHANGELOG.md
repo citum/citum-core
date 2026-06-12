@@ -5,6 +5,84 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.68.0] - 2026-06-12
+
+### Bug Fixes
+
+**engine**
+
+- Skip suppressed consumption ([`a989446`](https://github.com/citum/citum-core/commit/a989446dfc45d1e48ea0fdb6283dd0e7f32f18bf))
+
+
+**migrate**
+
+- Strip suppressed variable poison ([`93f8e85`](https://github.com/citum/citum-core/commit/93f8e8526b308901b3cc18eb0d1f918de2327e4b))
+
+- Note-class citation repeat forms ([`5f3561e`](https://github.com/citum/citum-core/commit/5f3561ec1f4fa477bb2ff97cff391aae390e54bd))
+
+- Full variants in wrapper emission ([`8c15f9d`](https://github.com/citum/citum-core/commit/8c15f9da948e01921581ca6eb6325bf99f2485b8))
+
+- Keep default-branch bib order ([`a7afdbb`](https://github.com/citum/citum-core/commit/a7afdbbb3fed7a916d8d9b6b339bddca0ed50e08))
+
+
+
+### Documentation
+
+**spec**
+
+- Test-soundness ledger + shared bar ([`f97c022`](https://github.com/citum/citum-core/commit/f97c022db9c86a73d9b76a3e9e33d578ea5f147e))
+
+- Clarify two sorting silences ([`5113b25`](https://github.com/citum/citum-core/commit/5113b250f87c07154e6b29b7823534f52408b38a))
+
+- Fill two multilingual spec silences ([`c36ded1`](https://github.com/citum/citum-core/commit/c36ded1d813f09cf3d66a6b805b5f7537cfda3be))
+
+- Define consumption semantics ([`ed746ec`](https://github.com/citum/citum-core/commit/ed746ec0e8c4804bbf4292265a8889308a31cc57))
+
+
+
+### Features
+
+**i18n**
+
+- Romanized-script-translated preset ([`4c6d2e5`](https://github.com/citum/citum-core/commit/4c6d2e544eee984cf8c3ff1fafc201cd7754a5fd))
+
+
+**migrate**
+
+- Random-corpus sqi scorecard mode ([`d28c6e9`](https://github.com/citum/citum-core/commit/d28c6e915a9a16ce2d6b392b04d4bc89f9446ef6))
+
+- Measured citation selection ([`d296408`](https://github.com/citum/citum-core/commit/d296408f5d3c2f2a024b756592c0d4532257aea2))
+
+- Add measured candidate selection ([`666cda1`](https://github.com/citum/citum-core/commit/666cda13979ee5a745ed782a0478ffdde0dd3e30))
+
+
+**tooling**
+
+- Rework test-soundness-review skill ([`6eb53df`](https://github.com/citum/citum-core/commit/6eb53dfadb0f5f0a4e99154001fe668ad1adee21))
+
+- Auto-proceed after soundness audit ([`9624fe3`](https://github.com/citum/citum-core/commit/9624fe3533097a57ea2873626ce3280144a951e9))
+
+
+
+### Refactor
+
+**i18n**
+
+- Original-script view + drop CNE ([`d6f2faf`](https://github.com/citum/citum-core/commit/d6f2faff6c66ef6f8b75031cbb038fd755aa3afe))
+
+
+
+### Testing
+
+**engine**
+
+- Apply SORTING.md soundness findings ([`d2bbac0`](https://github.com/citum/citum-core/commit/d2bbac0e952fb3e958b8693133de16d9d022f24d))
+
+- Harden disambiguation soundness ([`de54051`](https://github.com/citum/citum-core/commit/de54051f04b0916577956f2d1d1349f7cd97f3ea))
+
+- Harden multilingual test soundness ([`28f2335`](https://github.com/citum/citum-core/commit/28f233502edbf2242593796ef3f21314fb973b13))
+
+
 ## [0.67.0] - 2026-06-09
 
 ### Bug Fixes
