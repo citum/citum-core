@@ -3,6 +3,9 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 git -C "$ROOT_DIR" config core.hooksPath .githooks
 echo "Git hooks configured: core.hooksPath = .githooks"
+"$ROOT_DIR/scripts/install-skills.sh"
+CODEX_SKILLS_DIR="${CODEX_HOME:-$HOME/.codex}/skills"
+echo "Repo skills refreshed in $CODEX_SKILLS_DIR"
 echo ""
 echo "Installed hooks:"
 echo "  pre-commit: Schema re-gen + bean hygiene"

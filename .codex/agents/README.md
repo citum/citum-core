@@ -22,6 +22,8 @@ These files are intentionally thin host wrappers:
 
 Runnable Codex fallback:
 - `./scripts/codex <role> <target...>`
+- Use `test-soundness-review` there for spec-driven test audits when a direct
+  skill invocation is unavailable.
 
 ## Files
 - `migration-researcher.md`
