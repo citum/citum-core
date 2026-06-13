@@ -320,14 +320,7 @@ impl Processor {
 
     /// Return true when the active citation config requests CSL by-cite given-name expansion.
     fn uses_by_cite_givenname(config: &Config) -> bool {
-        let disambiguate = match config.processing.as_ref() {
-            Some(processing) => processing.config().disambiguate,
-            None => {
-                citum_schema::options::Processing::AuthorDate
-                    .config()
-                    .disambiguate
-            }
-        };
+        let disambiguate = config.effective_processing().config().disambiguate;
 
         disambiguate
             .as_ref()

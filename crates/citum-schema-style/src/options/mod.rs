@@ -526,6 +526,14 @@ pub enum LinkAnchor {
 }
 
 impl Config {
+    /// Effective processing mode, falling back to the default when unset.
+    ///
+    /// Centralizes the `processing: None` fallback so every consumer resolves
+    /// the same default (`Processing::default()`) instead of hardcoding it.
+    pub fn effective_processing(&self) -> Processing {
+        self.processing.clone().unwrap_or_default()
+    }
+
     /// Merge another config into this one, with `other` taking precedence.
     ///
     /// Used for combining global options with context-specific (citation/bibliography) options.
@@ -954,7 +962,10 @@ mod tests {
     fn test_author_date_processing() {
         let processing = Processing::AuthorDate;
         let config = processing.config();
-        assert!(config.disambiguate.unwrap().year_suffix);
+        let disambiguate = config.disambiguate.unwrap();
+        assert!(disambiguate.year_suffix);
+        assert!(!disambiguate.names);
+        assert!(!disambiguate.add_givenname);
         assert_eq!(
             processing.default_bibliography_sort(),
             Some(crate::presets::SortPreset::AuthorDateTitle)

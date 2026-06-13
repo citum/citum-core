@@ -4,8 +4,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
 use citum_schema::options::{
-    Disambiguation, GivennameRule, Group, Processing, ProcessingCustom, Sort, SortEntry, SortKey,
-    SortSpec,
+    GivennameRule, Group, Processing, ProcessingCustom, Sort, SortEntry, SortKey, SortSpec,
 };
 use citum_schema::presets::SortPreset;
 use csl_legacy::model::{CslNode, Style};
@@ -52,38 +51,37 @@ pub fn detect_processing_mode(style: &Style) -> Option<Processing> {
         nodes_have_author_date_signal(&style.citation.layout.children, style, &mut visited_macros);
 
     if is_author_date {
-        // Extract disambiguation settings from citation-level attributes.
-        // Legacy CSL defaults are effectively "no extra names / no extra given
-        // names" unless explicitly requested. Defaulting to names=true here
-        // causes over-disambiguation and suppresses expected et-al behavior.
-        let givenname_rule = match style.citation.disambiguate_givenname_rule.as_deref() {
-            Some("primary-name") => GivennameRule::PrimaryName,
-            Some("primary-name-with-initials") => GivennameRule::PrimaryNameWithInitials,
-            Some("all-names-with-initials") => GivennameRule::AllNamesWithInitials,
-            Some("all-names") => GivennameRule::AllNames,
-            _ => GivennameRule::default(), // by-cite default
-        };
-
-        let disamb = Disambiguation {
-            names: style.citation.disambiguate_add_names.unwrap_or(false),
-            add_givenname: style.citation.disambiguate_add_givenname.unwrap_or(false),
-            givenname_rule,
-            // Author-date styles commonly rely on year suffixes; keep this true
-            // unless legacy style explicitly disables it.
-            year_suffix: style.citation.disambiguate_add_year_suffix.unwrap_or(true),
-        };
+        let mut custom = Processing::AuthorDate.config();
 
         let sort = style.citation.sort.as_ref().and_then(extract_sort);
-        let group = sort
-            .as_ref()
-            .map(SortEntry::resolve)
-            .and_then(|sort| extract_group_from_sort(&sort));
+        if let Some(sort) = sort {
+            // Preset sorts already carry their canonical group via the base
+            // config; only derive group from explicit (non-preset) sort keys.
+            if let SortEntry::Explicit(explicit_sort) = &sort {
+                custom.group = extract_group_from_sort(explicit_sort);
+            }
+            custom.sort = Some(sort);
+        }
 
-        let custom = ProcessingCustom {
-            sort,
-            group,
-            disambiguate: Some(disamb),
-        };
+        if let Some(disamb) = custom.disambiguate.as_mut() {
+            if let Some(names) = style.citation.disambiguate_add_names {
+                disamb.names = names;
+            }
+            if let Some(add_givenname) = style.citation.disambiguate_add_givenname {
+                disamb.add_givenname = add_givenname;
+            }
+            if let Some(year_suffix) = style.citation.disambiguate_add_year_suffix {
+                disamb.year_suffix = year_suffix;
+            }
+            disamb.givenname_rule = match style.citation.disambiguate_givenname_rule.as_deref() {
+                Some("primary-name") => GivennameRule::PrimaryName,
+                Some("primary-name-with-initials") => GivennameRule::PrimaryNameWithInitials,
+                Some("all-names-with-initials") => GivennameRule::AllNamesWithInitials,
+                Some("all-names") => GivennameRule::AllNames,
+                _ => GivennameRule::default(),
+            };
+        }
+
         return Some(fold_to_named_processing(custom));
     }
 
@@ -97,6 +95,9 @@ pub fn detect_processing_mode(style: &Style) -> Option<Processing> {
 fn fold_to_named_processing(custom: ProcessingCustom) -> Processing {
     for candidate in [
         Processing::AuthorDate,
+        Processing::AuthorDateGivenname,
+        Processing::AuthorDateNames,
+        Processing::AuthorDateFull,
         Processing::Numeric,
         Processing::Note,
     ] {
