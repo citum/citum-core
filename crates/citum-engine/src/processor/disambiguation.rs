@@ -1163,6 +1163,59 @@ mod tests {
     }
 
     #[test]
+    fn test_author_date_default_uses_year_suffix_without_name_expansion() {
+        use citum_schema::options::Processing;
+
+        let r1 = make_ref("r1", "Smith", "John", 2020);
+        let r2 = make_ref("r2", "Smith", "Alice", 2020);
+
+        let mut bib = Bibliography::new();
+        bib.insert("r1".to_string(), r1);
+        bib.insert("r2".to_string(), r2);
+
+        let config = Config {
+            processing: Some(Processing::AuthorDate),
+            ..Default::default()
+        };
+        let locale = Locale::en_us();
+
+        let disamb = Disambiguator::new(&bib, &config, &locale);
+        let hints = disamb.calculate_hints();
+        let r1_hints = hints.get("r1").unwrap();
+        let r2_hints = hints.get("r2").unwrap();
+
+        assert!(r1_hints.disamb_condition);
+        assert!(r2_hints.disamb_condition);
+        assert!(!r1_hints.expand_given_names);
+        assert!(!r2_hints.expand_given_names);
+        assert_eq!(r1_hints.min_names_to_show, None);
+        assert_eq!(r2_hints.min_names_to_show, None);
+
+        let style = make_author_date_style(config, None);
+        let processor = Processor::new(style, bib);
+
+        let rendered_r1 = processor.process_citation(&Citation::simple("r1")).unwrap();
+        let rendered_r2 = processor.process_citation(&Citation::simple("r2")).unwrap();
+
+        assert!(
+            rendered_r1.contains("2020a") || rendered_r1.contains("2020b"),
+            "expected r1 to receive a year suffix: {rendered_r1}"
+        );
+        assert!(
+            rendered_r2.contains("2020a") || rendered_r2.contains("2020b"),
+            "expected r2 to receive a year suffix: {rendered_r2}"
+        );
+        assert!(
+            !rendered_r1.contains("John") && !rendered_r1.contains("J."),
+            "expected r1 to avoid given-name expansion: {rendered_r1}"
+        );
+        assert!(
+            !rendered_r2.contains("Alice") && !rendered_r2.contains("A."),
+            "expected r2 to avoid given-name expansion: {rendered_r2}"
+        );
+    }
+
+    #[test]
     fn test_disambiguate_given_names() {
         use citum_schema::options::{Disambiguation, Processing, ProcessingCustom};
 
