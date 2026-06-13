@@ -142,3 +142,15 @@ panic = "abort"
 inherits = "release"
 opt-level = "z"
 codegen-units = 1
+
+# Optimized build that keeps stack unwinding. The migrate synthesis loop drops
+# panicking render candidates via std::panic::catch_unwind
+# (catch_candidate_unwind in crates/citum-migrate/src/measured_citation.rs);
+# under `panic = "abort"` that catch is a no-op, so one bad candidate SIGABRTs
+# the whole migration. This profile gives release-level speed with working panic
+# isolation — used by scripts/report-migrate-sqi.js for the scorecard binary.
+[profile.release-unwind]
+inherits = "release"
+panic = "unwind"
+lto = "thin"
+strip = false

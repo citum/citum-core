@@ -3,7 +3,7 @@
  * Converter SQI scorecard for citum-migrate.
  *
  * For each style in the chosen corpus this script:
- *   1. Invokes `cargo run -q --bin citum-migrate` to produce migrated YAML.
+ *   1. Invokes a prebuilt `citum-migrate` binary to produce migrated YAML.
  *   2. Reports fidelity via `scripts/oracle-migrate-batch.js` (force-migrate path).
  *   3. Scores the migrated YAML and the public YAML in `styles/` using the
  *      `concision`, `fallbackRobustness`, and `presetUsage` subscores exported
@@ -32,7 +32,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { spawnSync } = require('child_process');
+const { spawnSync, spawn } = require('child_process');
 
 const reportCore = require('./report-core.js');
 const { resolveAuthoredStylePath } = require('./oracle.js');
@@ -42,6 +42,118 @@ const { classifyCitationFormat, stratifiedSample } = require('./lib/corpus-sampl
 const WORKSPACE_ROOT = path.resolve(__dirname, '..');
 const LEGACY_DIR = path.join(WORKSPACE_ROOT, 'styles-legacy');
 const STYLES_DIR = path.join(WORKSPACE_ROOT, 'styles');
+
+// Resolved path to the citum-migrate binary, populated lazily on first use.
+let MIGRATE_BIN = null;
+
+// Cargo profile used to build the scorecard binary: optimized like release but
+// `panic = "unwind"` (defined in the workspace Cargo.toml).
+const MIGRATE_PROFILE = 'release-unwind';
+
+/**
+ * Resolve the citum-migrate binary, building it once under `release-unwind`.
+ *
+ * The binary MUST be built without `panic = "abort"`. The output-driven
+ * synthesis loop scores many candidate templates and relies on
+ * `std::panic::catch_unwind` to drop any candidate that panics in the engine
+ * (see `catch_candidate_unwind` in `crates/citum-migrate/src/measured_citation.rs`).
+ * Under the workspace `[profile.release] panic = "abort"`, `catch_unwind` is a
+ * no-op, so a single panicking candidate aborts the whole migration (SIGABRT,
+ * exit 134) and the style is reported as a spurious migrate failure. The
+ * `release-unwind` profile keeps `panic = "unwind"`, so the loop's panic
+ * isolation works — while still being optimized, so each style migrates in
+ * ~1-2s instead of the ~16s a debug build takes.
+ *
+ * Building once and invoking the binary directly also removes the per-style
+ * `cargo run` overhead (one cargo freshness check instead of 100). Set
+ * `CITUM_MIGRATE_BIN` to a prebuilt unwinding binary to skip the build.
+ */
+function migrateBinary() {
+  if (MIGRATE_BIN) return MIGRATE_BIN;
+  const override = process.env.CITUM_MIGRATE_BIN;
+  if (override) {
+    if (!fs.existsSync(override)) {
+      throw new Error(`CITUM_MIGRATE_BIN does not exist: ${override}`);
+    }
+    MIGRATE_BIN = override;
+    return MIGRATE_BIN;
+  }
+  const exe = process.platform === 'win32' ? 'citum-migrate.exe' : 'citum-migrate';
+  const profileBin = path.join(WORKSPACE_ROOT, 'target', MIGRATE_PROFILE, exe);
+  process.stderr.write(`Building citum-migrate (${MIGRATE_PROFILE}, one-time freshness check)...\n`);
+  const build = spawnSync(
+    'cargo',
+    ['build', '-q', '--profile', MIGRATE_PROFILE, '--bin', 'citum-migrate'],
+    { cwd: WORKSPACE_ROOT, stdio: ['ignore', 'inherit', 'inherit'] }
+  );
+  if (build.status !== 0 || !fs.existsSync(profileBin)) {
+    throw new Error('failed to build citum-migrate');
+  }
+  MIGRATE_BIN = profileBin;
+  return MIGRATE_BIN;
+}
+
+/** Default worker-pool width: one per core, capped by the work item count. */
+function defaultConcurrency(itemCount) {
+  return Math.max(1, Math.min(itemCount, os.cpus().length));
+}
+
+/**
+ * Run async `worker(item, index)` over `items` with at most `limit` in flight.
+ *
+ * Results preserve input order. The first rejection rejects the pool. Used to
+ * fan the per-style migrate and the sharded oracle across cores, which is where
+ * the scorecard spends almost all of its wall time.
+ */
+function runPool(items, limit, worker) {
+  return new Promise((resolve, reject) => {
+    const results = new Array(items.length);
+    if (items.length === 0) {
+      resolve(results);
+      return;
+    }
+    let next = 0;
+    let active = 0;
+    let settled = 0;
+    let failed = false;
+    const pump = () => {
+      while (!failed && active < limit && next < items.length) {
+        const index = next;
+        next += 1;
+        active += 1;
+        Promise.resolve(worker(items[index], index))
+          .then((value) => {
+            results[index] = value;
+            active -= 1;
+            settled += 1;
+            if (settled === items.length) resolve(results);
+            else pump();
+          })
+          .catch((err) => {
+            if (!failed) {
+              failed = true;
+              reject(err);
+            }
+          });
+      }
+    };
+    pump();
+  });
+}
+
+/** Spawn a child process, buffering output; resolves with `{status, stdout, stderr}`. */
+function spawnAsync(cmd, args, opts = {}) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(cmd, args, { stdio: ['ignore', 'pipe', 'pipe'], ...opts });
+    let stdout = '';
+    let stderr = '';
+    if (child.stdout) child.stdout.on('data', (chunk) => { stdout += chunk; });
+    if (child.stderr) child.stderr.on('data', (chunk) => { stderr += chunk; });
+    child.on('error', reject);
+    child.on('close', (status) => resolve({ status, stdout, stderr }));
+  });
+}
+
 const MINIMIZATION_CITATIONS_FIXTURE = path.join(
   WORKSPACE_ROOT,
   'tests',
@@ -219,9 +331,8 @@ function migrateStyleToYaml(styleName) {
   const evidenceTmp = path.join(evidenceDir, `${styleName}.evidence.json`);
   try {
     const proc = spawnSync(
-      'cargo',
+      migrateBinary(),
       [
-        'run', '-q', '--bin', 'citum-migrate', '--',
         '--emit-evidence', evidenceTmp,
         cslPath,
       ],
@@ -250,6 +361,58 @@ function migrateStyleToYaml(styleName) {
 }
 
 /**
+ * Async counterpart of {@link migrateStyleToYaml}: spawns the migrate binary
+ * without blocking the event loop so {@link migrateAllParallel} can fan many
+ * migrations across cores. Same return shape (`{yaml, evidence}` or `{error}`).
+ */
+async function migrateStyleAsync(styleName) {
+  const cslPath = path.join(LEGACY_DIR, `${styleName}.csl`);
+  if (!fs.existsSync(cslPath)) {
+    return { error: 'missing_legacy_style', details: cslPath };
+  }
+  const evidenceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'citum-evidence-'));
+  const evidenceTmp = path.join(evidenceDir, `${styleName}.evidence.json`);
+  try {
+    const proc = await spawnAsync(
+      migrateBinary(),
+      ['--emit-evidence', evidenceTmp, cslPath],
+      { cwd: WORKSPACE_ROOT }
+    );
+    if (proc.status !== 0) {
+      return {
+        error: 'migrate_failed',
+        details: (proc.stderr || '').trim() || `exit=${proc.status}`,
+      };
+    }
+    let evidence = null;
+    try {
+      if (fs.existsSync(evidenceTmp)) {
+        evidence = JSON.parse(fs.readFileSync(evidenceTmp, 'utf8'));
+      }
+    } catch (err) {
+      evidence = { error: 'evidence_parse_failed', details: err.message };
+    }
+    return { yaml: proc.stdout, evidence };
+  } finally {
+    fs.rmSync(evidenceDir, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Migrate every style concurrently, returning a `Map<style, result>` keyed by
+ * style name. Builds the migrate binary once (via the first `migrateBinary()`
+ * call) before fanning out, so the workers share one prebuilt binary.
+ */
+async function migrateAllParallel(styles) {
+  migrateBinary();
+  const map = new Map();
+  await runPool(styles, defaultConcurrency(styles.length), async (style) => {
+    map.set(style, await migrateStyleAsync(style));
+  });
+  return map;
+}
+
+/**
  * Attempt minimization for a style with a discovered family-candidate parent.
  * Runs `citum-migrate --family-candidate auto --minimize-wrapper` and returns
  * the minimized YAML + evidence. Caller is responsible for oracle-verifying
@@ -263,9 +426,8 @@ function attemptMinimization(styleName) {
   const evidenceTmp = path.join(evidenceDir, `${styleName}.evidence.json`);
   try {
     const proc = spawnSync(
-      'cargo',
+      migrateBinary(),
       [
-        'run', '-q', '--bin', 'citum-migrate', '--',
         '--family-candidate', 'auto',
         '--minimize-wrapper',
         '--emit-evidence', evidenceTmp,
@@ -478,10 +640,15 @@ function countComponent(component) {
   return 1;
 }
 
-function runOracle(styles) {
+/**
+ * Render citeproc-js fidelity for one shard of styles via
+ * `oracle-migrate-batch.js`, returning the parsed per-style rows. Each shard
+ * runs in its own subprocess with a private `--out` file, so shards are safe
+ * to run concurrently.
+ */
+async function runOracleShard(styles) {
   // Read results via --out instead of stdout: a large corpus (100+ styles)
-  // overflows spawnSync's default 1 MB maxBuffer and kills the child with
-  // a null exit status.
+  // overflows the child's stdout buffer and kills it with a null exit status.
   const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'citum-oracle-batch-'));
   const outPath = path.join(tmpDir, 'oracle-batch.json');
   try {
@@ -490,27 +657,35 @@ function runOracle(styles) {
       '--styles', styles.join(','),
       '--out', outPath,
     ];
-    const proc = spawnSync('node', oracleArgs, {
-      cwd: WORKSPACE_ROOT,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-      maxBuffer: 64 * 1024 * 1024,
-    });
+    const proc = await spawnAsync('node', oracleArgs, { cwd: WORKSPACE_ROOT });
     if (proc.status !== 0 || !fs.existsSync(outPath)) {
-      const detail = (proc.stderr || '').trim()
-        || (proc.error ? proc.error.message : '')
-        || `exit=${proc.status} signal=${proc.signal}`;
+      const detail = (proc.stderr || '').trim() || `exit=${proc.status}`;
       throw new Error(`oracle-migrate-batch failed: ${detail}`);
     }
     const summary = JSON.parse(fs.readFileSync(outPath, 'utf8'));
-    const fidelity = new Map();
-    for (const row of summary.styles || []) {
-      fidelity.set(row.style, row);
-    }
-    return fidelity;
+    return summary.styles || [];
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
   }
+}
+
+/**
+ * Render citeproc-js fidelity for all styles, sharding across cores. The
+ * citeproc oracle dominates scorecard wall time, so splitting the corpus into
+ * one shard per core and running them concurrently is the primary speedup.
+ * Returns a `Map<style, row>`.
+ */
+async function runOracle(styles) {
+  const concurrency = defaultConcurrency(styles.length);
+  const shards = Array.from({ length: concurrency }, () => []);
+  styles.forEach((style, index) => shards[index % concurrency].push(style));
+  const populated = shards.filter((shard) => shard.length > 0);
+  const shardRows = await runPool(populated, concurrency, (shard) => runOracleShard(shard));
+  const fidelity = new Map();
+  for (const rows of shardRows) {
+    for (const row of rows) fidelity.set(row.style, row);
+  }
+  return fidelity;
 }
 
 function percentile(sorted, p) {
@@ -786,15 +961,21 @@ function gitCommit() {
   return proc.stdout.trim();
 }
 
-function main() {
+async function main() {
   const args = parseArgs(process.argv);
   const { styles, sampleMeta } = resolveCorpus(args);
-  const fidelity = args.skipFidelity ? new Map() : runOracle(styles);
+  // Precompute the two dominant costs concurrently: the per-style migrations
+  // (fanned across cores) and the sharded citeproc oracle. The per-style loop
+  // below then reads from these caches instead of spawning serially.
+  const [migratedByStyle, fidelity] = await Promise.all([
+    migrateAllParallel(styles),
+    args.skipFidelity ? Promise.resolve(new Map()) : runOracle(styles),
+  ]);
 
   const results = [];
   for (const style of styles) {
     const row = { style, styleClass: classifyLegacyStyle(style) };
-    const migrated = migrateStyleToYaml(style);
+    const migrated = migratedByStyle.get(style) || migrateStyleToYaml(style);
     if (migrated.error) {
       row.error = migrated;
     } else {
@@ -936,12 +1117,10 @@ function collectMigratedOutputDiagnostics(styles) {
 }
 
 if (require.main === module) {
-  try {
-    main();
-  } catch (err) {
+  main().catch((err) => {
     console.error(`Error: ${err.message}`);
     process.exit(1);
-  }
+  });
 }
 
 module.exports = {
