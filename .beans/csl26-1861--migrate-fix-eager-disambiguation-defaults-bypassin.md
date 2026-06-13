@@ -1,14 +1,14 @@
 ---
 # csl26-1861
 title: 'migrate: fix eager disambiguation defaults bypassing Processing presets'
-status: todo
+status: in-progress
 type: task
 priority: normal
 tags:
     - migrate
     - fidelity
 created_at: 2026-06-13T11:55:30Z
-updated_at: 2026-06-13T11:55:30Z
+updated_at: 2026-06-13T14:20:00Z
 ---
 
 Deferred from the synthesis-loop PR (bean csl26-8txa). Surfaced while documenting
@@ -65,33 +65,42 @@ same delta philosophy `docs/specs/STYLE_PRESET_ARCHITECTURE.md` already uses for
 
 ## Open design questions (decide before implementing)
 
-1. **What should "author-date, unspecified" mean?** Owner leans **(b) opinionated Citum
-   default** (keep year-suffix on, on the theory that author-date styles want it) over
-   **(a) CSL-faithful** `{false,false,false}`. Whichever wins becomes the single canonical
-   default used by *both* the preset and extraction, so they agree and fold cleanly.
-2. **AuthorDate preset variants?** A single `AuthorDate` preset may be too coarse — consider
-   named variants (e.g. author-date with vs without year-suffix / given-name expansion) so
-   common real-world shapes each fold to a clean named value instead of `!custom`. Scope
-   this against the actual distribution of disambiguation configs in the corpus.
-3. **A `citum-migrate` flag for CSL-faithful vs Citum-opinionated extraction?** Possibly a
-   conversion flag toggling (a) vs (b) so strict-fidelity round-trips and opinionated
-   defaults are both reachable. Unsure it's worth the surface area — evaluate, don't assume.
+Resolved:
+
+1. **What should "author-date, unspecified" mean?** Use the opinionated Citum
+   B1 default: `year_suffix: true`, `names: false`, `add_givenname: false`.
+   This keeps same-author/same-year disambiguation active for author-date
+   styles while avoiding automatic name and given-name expansion.
+2. **AuthorDate preset variants?** Add named variants so common explicit CSL
+   disambiguation shapes fold to clean public values:
+   - `author-date`: B1, year suffix only.
+   - `author-date-givenname`: year suffix plus given-name expansion.
+   - `author-date-names`: year suffix plus name-list expansion.
+   - `author-date-full`: year suffix plus both name-list and given-name expansion.
+3. **A `citum-migrate` flag for CSL-faithful vs Citum-opinionated extraction?**
+   No. Migration uses Citum's class defaults and preserves explicit CSL
+   attributes as overrides; it does not add a second extraction mode.
 
 ## Scope / impact
 
 - Fidelity-affecting: changing the default changes every author-date style's rendered
   disambiguation, so this **moves the scorecard**. Required gates before accepting:
+  - `cargo fmt --check && cargo clippy --all-targets --all-features -- -D warnings
+    && cargo nextest run`
   - `node scripts/report-migrate-sqi.js --corpus random --sample 100 --seed 20260610`
     (headline, no regression)
   - `node scripts/report-core.js > /tmp/r.json && node scripts/check-core-quality.js
     --report /tmp/r.json --baseline scripts/report-data/core-quality-baseline.json`
 - Update `test_extract_processing_disambiguation_defaults` and any author-date fixtures to
   the new expected folding.
+- Regenerate schemas because `Processing` gains public serialized variants.
 
 ## Documentation (do as part of this bean, describing the FIXED behavior)
 
-- New `docs/reference/` doc: the CSL→Citum `Processing` classification and its class-default
-  disambiguation/sort table; how migrate folds to named variants vs `!custom`.
-- One-line pointer from `docs/specs/OUTPUT_DRIVEN_TEMPLATE_SYNTHESIS.md` (where it notes XML
-  is read "only for declarative attributes and options (… disambiguation …)"): disambiguation
-  is not synthesized; it is set by class-based `Processing` defaults during extraction.
+- [x] Add `docs/reference/PROCESSING_MIGRATION.md`: the CSL→Citum
+  `Processing` classification and its class-default disambiguation/sort table;
+  how migrate folds to named variants vs custom processing.
+- [x] Add one-line pointer from `docs/specs/OUTPUT_DRIVEN_TEMPLATE_SYNTHESIS.md`
+  (where it notes XML is read "only for declarative attributes and options
+  (… disambiguation …)"): disambiguation is not synthesized; it is set by
+  class-based `Processing` defaults during extraction.

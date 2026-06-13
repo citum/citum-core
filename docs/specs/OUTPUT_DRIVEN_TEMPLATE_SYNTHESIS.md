@@ -98,6 +98,9 @@ XML is read only for declarative attributes and options (et-al thresholds,
 `initialize-with`, sort keys, disambiguation and demotion options); the layout
 tree is never compiled as authority. During the transition the XML-compiled
 templates survive only as one seed candidate in the search space.
+Disambiguation is not synthesized from rendered output; it is extracted as
+class-based `Processing` configuration and folded to named presets as described
+in [`docs/reference/PROCESSING_MIGRATION.md`](../reference/PROCESSING_MIGRATION.md).
 
 ### How synthesis works, in plain terms
 
