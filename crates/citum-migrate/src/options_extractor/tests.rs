@@ -24,7 +24,7 @@ fn test_extract_author_date_processing() {
     let style = parse_csl(xml).unwrap();
     let config = OptionsExtractor::extract(&style);
 
-    assert!(matches!(config.processing, Some(Processing::Custom(_))));
+    assert_eq!(config.processing, Some(Processing::AuthorDate));
 }
 
 #[test]
@@ -43,7 +43,7 @@ fn test_extract_author_date_processing_from_nested_macro() {
     let style = parse_csl(xml).unwrap();
     let config = OptionsExtractor::extract(&style);
 
-    assert!(matches!(config.processing, Some(Processing::Custom(_))));
+    assert_eq!(config.processing, Some(Processing::AuthorDate));
 }
 
 #[test]
@@ -146,22 +146,16 @@ fn test_extract_processing_sort_uses_author_date_title_preset_for_duplicate_macr
     let style = parse_csl(xml).unwrap();
     let config = OptionsExtractor::extract(&style);
 
-    let Processing::Custom(custom) = config.processing.unwrap() else {
-        panic!("expected custom processing mode");
-    };
-
+    // Duplicate date macros deduplicate to [Author, Year], which maps to the
+    // AuthorDateTitle preset — so the style folds to the named variant, not Custom.
+    assert_eq!(config.processing, Some(Processing::AuthorDate));
+    let config_custom = config.processing.unwrap().config();
     assert!(matches!(
-        custom.sort,
+        config_custom.sort,
         Some(citum_schema::options::SortEntry::Preset(
             SortPreset::AuthorDateTitle
         ))
     ));
-
-    let group = custom.group.unwrap();
-    assert_eq!(
-        group.template,
-        vec![SortKey::Author, SortKey::Year, SortKey::Title]
-    );
 }
 
 #[test]
@@ -205,15 +199,74 @@ fn test_extract_processing_disambiguation_defaults() {
     let style = parse_csl(xml).unwrap();
     let config = OptionsExtractor::extract(&style);
 
-    let Processing::Custom(custom) = config.processing.unwrap() else {
-        panic!("expected custom processing mode");
-    };
-    let disamb = custom
-        .disambiguate
-        .expect("disambiguation should be present");
+    assert_eq!(config.processing, Some(Processing::AuthorDate));
+
+    let disamb = config.processing.unwrap().config().disambiguate.unwrap();
     assert!(!disamb.names);
     assert!(!disamb.add_givenname);
     assert!(disamb.year_suffix);
+}
+
+#[test]
+fn test_extract_processing_disambiguation_variant_givenname() {
+    let xml = r#"<style class="in-text">
+        <citation disambiguate-add-givenname="true">
+            <layout><text macro="year"/></layout>
+        </citation>
+        <bibliography><layout><text variable="title"/></layout></bibliography>
+    </style>"#;
+    let style = parse_csl(xml).unwrap();
+    let config = OptionsExtractor::extract(&style);
+
+    assert_eq!(config.processing, Some(Processing::AuthorDateGivenname));
+}
+
+#[test]
+fn test_extract_processing_disambiguation_variant_names() {
+    let xml = r#"<style class="in-text">
+        <citation disambiguate-add-names="true">
+            <layout><text macro="year"/></layout>
+        </citation>
+        <bibliography><layout><text variable="title"/></layout></bibliography>
+    </style>"#;
+    let style = parse_csl(xml).unwrap();
+    let config = OptionsExtractor::extract(&style);
+
+    assert_eq!(config.processing, Some(Processing::AuthorDateNames));
+}
+
+#[test]
+fn test_extract_processing_disambiguation_variant_full() {
+    let xml = r#"<style class="in-text">
+        <citation disambiguate-add-names="true" disambiguate-add-givenname="true">
+            <layout><text macro="year"/></layout>
+        </citation>
+        <bibliography><layout><text variable="title"/></layout></bibliography>
+    </style>"#;
+    let style = parse_csl(xml).unwrap();
+    let config = OptionsExtractor::extract(&style);
+
+    assert_eq!(config.processing, Some(Processing::AuthorDateFull));
+}
+
+#[test]
+fn test_extract_processing_disambiguation_year_suffix_false_stays_custom() {
+    let xml = r#"<style class="in-text">
+        <citation disambiguate-add-year-suffix="false">
+            <layout><text macro="year"/></layout>
+        </citation>
+        <bibliography><layout><text variable="title"/></layout></bibliography>
+    </style>"#;
+    let style = parse_csl(xml).unwrap();
+    let config = OptionsExtractor::extract(&style);
+
+    let Processing::Custom(custom) = config.processing.unwrap() else {
+        panic!("expected explicit year-suffix=false to stay custom");
+    };
+    let disamb = custom.disambiguate.unwrap();
+    assert!(!disamb.names);
+    assert!(!disamb.add_givenname);
+    assert!(!disamb.year_suffix);
 }
 
 #[test]
@@ -518,10 +571,10 @@ fn test_extract_givenname_rule_defaults_to_by_cite() {
     let style = parse_csl(xml).unwrap();
     let config = OptionsExtractor::extract(&style);
 
-    let Processing::Custom(custom) = config.processing.unwrap() else {
-        panic!("expected custom processing mode");
-    };
-    let disamb = custom.disambiguate.unwrap();
+    let processing = config.processing.unwrap();
+    assert_eq!(processing, Processing::AuthorDateGivenname);
+
+    let disamb = processing.config().disambiguate.unwrap();
     assert_eq!(
         disamb.givenname_rule,
         GivennameRule::ByCite,

@@ -20,6 +20,16 @@ use serde::{Deserialize, Serialize};
 
 use crate::presets::SortPreset;
 
+const PROCESSING_STRING_VARIANTS: &[&str] = &[
+    "author-date",
+    "author-date-givenname",
+    "author-date-names",
+    "author-date-full",
+    "numeric",
+    "note",
+    "label",
+];
+
 /// Label style preset conventions.
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -124,7 +134,7 @@ impl LabelConfig {
 ///
 /// Determines how citations and bibliographies are sorted, grouped, and disambiguated.
 /// Can be specified as a simple string or with complex configuration maps:
-/// - A string: `"author-date"`, `"numeric"`, `"note"`, or `"label"`
+/// - A string: `"author-date"`, `"author-date-full"`, `"numeric"`, `"note"`, or `"label"`
 /// - A label config map: `{ label: { preset: din } }`
 /// - A custom config map: `{ sort: ..., group: ..., disambiguate: ... }`
 // `rename_all` is retained for `JsonSchema` derive (custom `Serialize` /
@@ -135,9 +145,15 @@ impl LabelConfig {
 #[non_exhaustive]
 pub enum Processing {
     /// Author-date styles (e.g., APA, Chicago).
-    /// Default bibliography ordering: author, year, title.
+    /// Default bibliography ordering: author, year, title; disambiguates by year suffix.
     #[default]
     AuthorDate,
+    /// Author-date styles that also add given names during disambiguation.
+    AuthorDateGivenname,
+    /// Author-date styles that also expand name lists during disambiguation.
+    AuthorDateNames,
+    /// Author-date styles that expand name lists and add given names during disambiguation.
+    AuthorDateFull,
     /// Numeric styles (e.g., IEEE, Nature).
     /// Do not imply a bibliography sort; citations are numbered in order of appearance.
     Numeric,
@@ -183,6 +199,21 @@ pub struct ProcessingCustom {
     pub disambiguate: Option<Disambiguation>,
 }
 
+fn author_date_config(names: bool, add_givenname: bool) -> ProcessingCustom {
+    ProcessingCustom {
+        sort: Some(SortEntry::Preset(SortPreset::AuthorDateTitle)),
+        group: Some(Group {
+            template: vec![SortKey::Author, SortKey::Year],
+        }),
+        disambiguate: Some(Disambiguation {
+            names,
+            add_givenname,
+            givenname_rule: GivennameRule::default(),
+            year_suffix: true,
+        }),
+    }
+}
+
 impl Processing {
     /// Default bibliography sort for the processing family, if any.
     ///
@@ -192,12 +223,29 @@ impl Processing {
     /// - `Numeric` / `Custom`: None (no automatic sort)
     pub fn default_bibliography_sort(&self) -> Option<SortPreset> {
         match self {
-            Processing::AuthorDate => Some(SortPreset::AuthorDateTitle),
+            Processing::AuthorDate
+            | Processing::AuthorDateGivenname
+            | Processing::AuthorDateNames
+            | Processing::AuthorDateFull => Some(SortPreset::AuthorDateTitle),
             Processing::Numeric => None,
             Processing::Note => Some(SortPreset::AuthorTitleDate),
             Processing::Label(_) => Some(SortPreset::AuthorDateTitle),
             Processing::Custom(_) => None,
         }
+    }
+
+    /// Returns `true` for all author-date family variants.
+    ///
+    /// Centralizes the author-date family check so new variants don't require
+    /// updating scattered `matches!` blocks across the codebase.
+    pub fn is_author_date_family(&self) -> bool {
+        matches!(
+            self,
+            Self::AuthorDate
+                | Self::AuthorDateGivenname
+                | Self::AuthorDateNames
+                | Self::AuthorDateFull
+        )
     }
 
     /// Citation sorting remains explicit-only for all processing families.
@@ -214,18 +262,10 @@ impl Processing {
     /// preset defaults and user overrides. For `Custom` mode, returns the user-provided config as-is.
     pub fn config(&self) -> ProcessingCustom {
         match self {
-            Processing::AuthorDate => ProcessingCustom {
-                sort: Some(SortEntry::Preset(SortPreset::AuthorDateTitle)),
-                group: Some(Group {
-                    template: vec![SortKey::Author, SortKey::Year],
-                }),
-                disambiguate: Some(Disambiguation {
-                    names: true,
-                    add_givenname: true,
-                    givenname_rule: GivennameRule::default(),
-                    year_suffix: true,
-                }),
-            },
+            Processing::AuthorDate => author_date_config(false, false),
+            Processing::AuthorDateGivenname => author_date_config(false, true),
+            Processing::AuthorDateNames => author_date_config(true, false),
+            Processing::AuthorDateFull => author_date_config(true, true),
             Processing::Numeric => ProcessingCustom {
                 sort: None,
                 group: None,
@@ -263,6 +303,9 @@ impl Serialize for Processing {
     {
         match self {
             Processing::AuthorDate => serializer.serialize_str("author-date"),
+            Processing::AuthorDateGivenname => serializer.serialize_str("author-date-givenname"),
+            Processing::AuthorDateNames => serializer.serialize_str("author-date-names"),
+            Processing::AuthorDateFull => serializer.serialize_str("author-date-full"),
             Processing::Numeric => serializer.serialize_str("numeric"),
             Processing::Note => serializer.serialize_str("note"),
             Processing::Label(config) => {
@@ -298,13 +341,13 @@ impl<'de> Deserialize<'de> for Processing {
             fn visit_str<E: de::Error>(self, v: &str) -> Result<Processing, E> {
                 match v {
                     "author-date" => Ok(Processing::AuthorDate),
+                    "author-date-givenname" => Ok(Processing::AuthorDateGivenname),
+                    "author-date-names" => Ok(Processing::AuthorDateNames),
+                    "author-date-full" => Ok(Processing::AuthorDateFull),
                     "numeric" => Ok(Processing::Numeric),
                     "note" => Ok(Processing::Note),
                     "label" => Ok(Processing::Label(LabelConfig::default())),
-                    other => Err(E::unknown_variant(
-                        other,
-                        &["author-date", "numeric", "note", "label"],
-                    )),
+                    other => Err(E::unknown_variant(other, PROCESSING_STRING_VARIANTS)),
                 }
             }
 
@@ -316,10 +359,9 @@ impl<'de> Deserialize<'de> for Processing {
                         let custom: ProcessingCustom = access.newtype_variant()?;
                         Ok(Processing::Custom(custom))
                     }
-                    other => Err(de::Error::unknown_variant(
-                        other,
-                        &["author-date", "numeric", "note", "label", "custom"],
-                    )),
+                    // `custom` is the only externally-tagged variant; named
+                    // string forms are handled by `visit_str` above.
+                    other => Err(de::Error::unknown_variant(other, &["custom"])),
                 }
             }
 
@@ -643,6 +685,9 @@ mod tests {
     fn test_processing_citation_sort_policy() {
         let modes = vec![
             Processing::AuthorDate,
+            Processing::AuthorDateGivenname,
+            Processing::AuthorDateNames,
+            Processing::AuthorDateFull,
             Processing::Numeric,
             Processing::Note,
             Processing::Label(LabelConfig::default()),
@@ -657,20 +702,55 @@ mod tests {
         }
     }
 
-    /// Test that Processing::config() returns correct configuration for AuthorDate.
+    /// Test that Processing::config() returns correct configuration for author-date variants.
     #[test]
-    fn test_processing_author_date_config() {
-        let processing = Processing::AuthorDate;
-        let config = processing.config();
+    fn test_processing_author_date_variant_configs() {
+        let cases = [
+            (Processing::AuthorDate, false, false),
+            (Processing::AuthorDateGivenname, false, true),
+            (Processing::AuthorDateNames, true, false),
+            (Processing::AuthorDateFull, true, true),
+        ];
 
-        assert!(config.sort.is_some());
-        assert!(config.group.is_some());
-        assert!(config.disambiguate.is_some());
+        for (processing, names, add_givenname) in cases {
+            let config = processing.config();
 
-        let disambig = config.disambiguate.unwrap();
-        assert!(disambig.names);
-        assert!(disambig.add_givenname);
-        assert!(disambig.year_suffix);
+            assert_eq!(
+                config.sort,
+                Some(SortEntry::Preset(SortPreset::AuthorDateTitle))
+            );
+            assert_eq!(
+                config.group,
+                Some(Group {
+                    template: vec![SortKey::Author, SortKey::Year],
+                })
+            );
+
+            let disambig = config.disambiguate.unwrap();
+            assert_eq!(disambig.names, names);
+            assert_eq!(disambig.add_givenname, add_givenname);
+            assert_eq!(disambig.givenname_rule, GivennameRule::ByCite);
+            assert!(disambig.year_suffix);
+        }
+    }
+
+    /// Test that author-date processing variants round-trip through their public names.
+    #[test]
+    fn test_processing_author_date_variant_names() {
+        let cases = [
+            (Processing::AuthorDate, "author-date"),
+            (Processing::AuthorDateGivenname, "author-date-givenname"),
+            (Processing::AuthorDateNames, "author-date-names"),
+            (Processing::AuthorDateFull, "author-date-full"),
+        ];
+
+        for (processing, name) in cases {
+            let serialized = serde_yaml::to_string(&processing).unwrap();
+            assert_eq!(serialized.trim(), name);
+
+            let deserialized: Processing = serde_yaml::from_str(name).unwrap();
+            assert_eq!(deserialized, processing);
+        }
     }
 
     /// Test that Disambiguation defaults have correct values.

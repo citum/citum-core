@@ -2605,12 +2605,27 @@
       ]
     },
     "Processing": {
-      "description": "Processing mode for citation/bibliography generation.\n\nDetermines how citations and bibliographies are sorted, grouped, and disambiguated.\nCan be specified as a simple string or with complex configuration maps:\n- A string: `\"author-date\"`, `\"numeric\"`, `\"note\"`, or `\"label\"`\n- A label config map: `{ label: { preset: din } }`\n- A custom config map: `{ sort: ..., group: ..., disambiguate: ... }`",
+      "description": "Processing mode for citation/bibliography generation.\n\nDetermines how citations and bibliographies are sorted, grouped, and disambiguated.\nCan be specified as a simple string or with complex configuration maps:\n- A string: `\"author-date\"`, `\"author-date-full\"`, `\"numeric\"`, `\"note\"`, or `\"label\"`\n- A label config map: `{ label: { preset: din } }`\n- A custom config map: `{ sort: ..., group: ..., disambiguate: ... }`",
       "oneOf": [
         {
-          "description": "Author-date styles (e.g., APA, Chicago).\nDefault bibliography ordering: author, year, title.",
+          "description": "Author-date styles (e.g., APA, Chicago).\nDefault bibliography ordering: author, year, title; disambiguates by year suffix.",
           "type": "string",
           "const": "author-date"
+        },
+        {
+          "description": "Author-date styles that also add given names during disambiguation.",
+          "type": "string",
+          "const": "author-date-givenname"
+        },
+        {
+          "description": "Author-date styles that also expand name lists during disambiguation.",
+          "type": "string",
+          "const": "author-date-names"
+        },
+        {
+          "description": "Author-date styles that expand name lists and add given names during disambiguation.",
+          "type": "string",
+          "const": "author-date-full"
         },
         {
           "description": "Numeric styles (e.g., IEEE, Nature).\nDo not imply a bibliography sort; citations are numbered in order of appearance.",

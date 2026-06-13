@@ -109,10 +109,10 @@ fn normalize_note_or_author_date_citation(
     style_name: &str,
 ) {
     let should_normalize = legacy_style.class == "note"
-        || matches!(
-            options.processing,
-            Some(citum_schema::options::Processing::AuthorDate)
-        );
+        || options
+            .processing
+            .as_ref()
+            .is_some_and(citum_schema::options::Processing::is_author_date_family);
     if !should_normalize {
         return;
     }

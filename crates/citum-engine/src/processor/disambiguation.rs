@@ -191,14 +191,7 @@ impl<'a> Disambiguator<'a> {
 
     /// Resolves disambiguation configuration from the processor config.
     fn disambiguation_flags(&self) -> DisambiguationFlags {
-        let disamb_config = match self.config.processing.as_ref() {
-            Some(processing) => processing.config().disambiguate,
-            None => {
-                citum_schema::options::Processing::AuthorDate
-                    .config()
-                    .disambiguate
-            }
-        };
+        let disamb_config = self.config.effective_processing().config().disambiguate;
 
         DisambiguationFlags {
             add_names: disamb_config.as_ref().is_some_and(|d| d.names),

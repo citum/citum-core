@@ -142,10 +142,10 @@ pub fn compile_from_xml(
 
     // For author-date styles with in-text class, apply standard formatting.
     let is_in_text_class = legacy_style.class == "in-text";
-    let is_author_date_processing = matches!(
-        options.processing,
-        Some(citum_schema::options::Processing::AuthorDate)
-    );
+    let is_author_date_processing = options
+        .processing
+        .as_ref()
+        .is_some_and(citum_schema::options::Processing::is_author_date_family);
 
     // Apply to all in-text styles (both author-date and numeric)
     if is_in_text_class {

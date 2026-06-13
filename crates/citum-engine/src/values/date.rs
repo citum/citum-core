@@ -473,14 +473,11 @@ fn compute_disamb_suffix<F: crate::render::format::OutputFormat<Output = String>
     fmt: &F,
 ) -> Option<String> {
     if hints.disamb_condition && date_form_displays_year(form) && !date.year().is_empty() {
-        // Check if year suffix is enabled. Fall back to AuthorDate default
-        // (year_suffix: true) when processing is not explicitly set, matching
-        // the behavior in disambiguation.rs which uses unwrap_or_default().
+        // Check if year suffix is enabled, resolving the processing default
+        // centrally so an unset `processing` matches the rest of the engine.
         let use_suffix = options
             .config
-            .processing
-            .as_ref()
-            .unwrap_or(&citum_schema::options::Processing::AuthorDate)
+            .effective_processing()
             .config()
             .disambiguate
             .as_ref()
