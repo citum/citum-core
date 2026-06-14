@@ -62,13 +62,21 @@ cd citum-core
 ./scripts/dev-env.sh cargo test --workspace
 ```
 
-`./scripts/bootstrap.sh full` fetches the `styles-legacy/` and `tests/csl-test-suite/` submodules needed for migration and oracle workflows.
+For orchestrating common developer tasks (testing, quality gates, schema generation, etc.), this repository supports [just](https://github.com/casey/just). Run `just` at the root to see available recipes.
+
+`./scripts/bootstrap.sh full` fetches the `styles-legacy/` and tests/csl-test-suite submodules needed for migration and oracle workflows.
 
 `./scripts/dev-env.sh <cmd>` keeps `CARGO_TARGET_DIR` outside the repo at `${XDG_CACHE_HOME:-$HOME/.cache}/citum-core/target`.
 
 ### Key Commands
 
 Render references:
+
+```bash
+just render-refs styles/apa-7th.yaml tests/fixtures/references-expanded.json
+```
+
+Alternatively, run the raw command:
 
 ```bash
 cargo run --bin citum -- render refs \
@@ -79,6 +87,12 @@ cargo run --bin citum -- render refs \
 Validate a style and references:
 
 ```bash
+just check-style styles/apa-7th.yaml tests/fixtures/references-expanded.json
+```
+
+Alternatively, run the raw command:
+
+```bash
 cargo run --bin citum -- check \
   -s styles/apa-7th.yaml \
   -b tests/fixtures/references-expanded.json
@@ -87,10 +101,22 @@ cargo run --bin citum -- check \
 Validate all production styles:
 
 ```bash
+just validate-production-styles
+```
+
+Alternatively, run the script directly:
+
+```bash
 ./scripts/validate-production-styles.sh
 ```
 
 Convert reference formats:
+
+```bash
+just convert-refs tests/fixtures/references-expanded.json /tmp/refs.ris
+```
+
+Alternatively, run the raw command:
 
 ```bash
 cargo run --bin citum -- convert refs tests/fixtures/references-expanded.json \
@@ -102,11 +128,17 @@ Run `citum --help` for the full command surface.
 
 ### Crate Map
 
-See [`crates/README.md`](./crates/README.md) for the workspace layout and where work usually happens.
+See [crates/README.md](./crates/README.md) for the workspace layout and where work usually happens.
 
 ### Pre-Commit Gate
 
-Before committing `.rs`, `Cargo.toml`, or `Cargo.lock`:
+Before committing `.rs`, `Cargo.toml`, or `Cargo.lock`, run:
+
+```bash
+just pre-commit
+```
+
+Alternatively, run the raw commands:
 
 ```bash
 ./scripts/dev-env.sh cargo fmt --check
@@ -125,11 +157,11 @@ Conventional Commits (`type(scope): subject`, lowercase, 50/72 rule). See [`CONT
 | Resource | Location |
 |---|---|
 | Full user docs | [docs.citum.org](https://docs.citum.org) |
-| Specifications | [`docs/specs/`](./docs/specs/) |
-| Rendering workflow | [`docs/guides/RENDERING_WORKFLOW.md`](./docs/guides/RENDERING_WORKFLOW.md) |
-| Style authoring guide | [`docs/guides/style-author-guide.md`](./docs/guides/style-author-guide.md) |
-| Migration docs | [`crates/citum-migrate/README.md`](./crates/citum-migrate/README.md) |
-| Contributing | [`CONTRIBUTING.md`](./CONTRIBUTING.md) |
+| Specifications | [docs/specs/](./docs/specs/) |
+| Rendering workflow | [docs/guides/RENDERING_WORKFLOW.md](./docs/guides/RENDERING_WORKFLOW.md) |
+| Style authoring guide | [docs/guides/style-author-guide.md](./docs/guides/style-author-guide.md) |
+| Migration docs | [crates/citum-migrate/README.md](./crates/citum-migrate/README.md) |
+| Contributing | [CONTRIBUTING.md](./CONTRIBUTING.md) |
 
 ## License
 
