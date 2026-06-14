@@ -4,7 +4,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
 use citum_schema::options::{
-    GivennameRule, Group, Processing, ProcessingCustom, Sort, SortEntry, SortKey, SortSpec,
+    GivennameRule, Group, LabelConfig, Processing, ProcessingCustom, Sort, SortEntry, SortKey,
+    SortSpec,
 };
 use citum_schema::presets::SortPreset;
 use csl_legacy::model::{CslNode, Style};
@@ -18,6 +19,23 @@ pub fn detect_processing_mode(style: &Style) -> Option<Processing> {
     // 0. Note styles are explicit in CSL and should map directly.
     if style.class == "note" {
         return Some(Processing::Note);
+    }
+
+    // 0b. Label (trigraph) styles render the generated `citation-label`
+    // variable (e.g. `[Kuhn62]`). The engine only emits citation labels under
+    // `Processing::Label`, so the mode must be detected here or the label
+    // renders empty.
+    fn has_citation_label(nodes: &[csl_legacy::model::CslNode]) -> bool {
+        use csl_legacy::model::CslNode;
+        nodes.iter().any(|node| match node {
+            CslNode::Text(t) => t.variable.as_deref() == Some("citation-label"),
+            CslNode::Group(g) => has_citation_label(&g.children),
+            _ => false,
+        })
+    }
+
+    if has_citation_label(&style.citation.layout.children) {
+        return Some(Processing::Label(LabelConfig::default()));
     }
 
     // 1. Explicitly numeric style
@@ -276,5 +294,58 @@ fn parse_sort_key(name: &str) -> Option<SortKey> {
         Some(SortKey::Title)
     } else {
         None
+    }
+}
+
+#[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
+mod tests {
+    use super::*;
+    use roxmltree::Document;
+
+    fn parse(xml: &str) -> Style {
+        let doc = Document::parse(xml).expect("test style XML should parse");
+        csl_legacy::parser::parse_style(doc.root_element()).expect("legacy style should parse")
+    }
+
+    fn style_with_citation_layout(class: &str, layout_body: &str) -> Style {
+        parse(&format!(
+            r#"<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="{class}">
+  <info><title>t</title><id>https://example.org/t</id></info>
+  <citation><layout prefix="[" suffix="]">{layout_body}</layout></citation>
+</style>"#
+        ))
+    }
+
+    #[test]
+    fn detects_label_mode_from_citation_label_variable() {
+        // given an in-text style whose citation renders the generated label
+        let style = style_with_citation_layout("in-text", r#"<text variable="citation-label"/>"#);
+
+        // when the processing mode is detected
+        let mode = detect_processing_mode(&style);
+
+        // then it is Label, so the engine will emit trigraph labels
+        assert!(
+            matches!(mode, Some(Processing::Label(_))),
+            "expected Processing::Label, got: {mode:?}"
+        );
+    }
+
+    #[test]
+    fn citation_number_style_is_not_misdetected_as_label() {
+        // given a numeric style (no citation-label), Label must not steal it
+        let style = style_with_citation_layout("in-text", r#"<text variable="citation-number"/>"#);
+
+        let mode = detect_processing_mode(&style);
+
+        assert!(
+            matches!(mode, Some(Processing::Numeric)),
+            "expected Processing::Numeric, got: {mode:?}"
+        );
     }
 }

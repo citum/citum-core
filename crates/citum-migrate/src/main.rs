@@ -1031,9 +1031,9 @@ mod tests {
     use super::*;
     use citum_schema::locale::GeneralTerm;
     use citum_schema::template::{
-        ContributorRole, DateVariable, Rendering, SimpleVariable, TemplateComponent,
-        TemplateContributor, TemplateDate, TemplateTerm, TemplateTitle, TemplateVariable,
-        TemplateVariant, TitleType, TypeSelector,
+        ContributorRole, DateVariable, NumberVariable, Rendering, SimpleVariable,
+        TemplateComponent, TemplateContributor, TemplateDate, TemplateNumber, TemplateTerm,
+        TemplateTitle, TemplateVariable, TemplateVariant, TitleType, TypeSelector,
     };
     use csl_legacy::model::{
         Citation, CslNode, Formatting, Group, Info, Layout, Sort as LegacySort,
@@ -1691,6 +1691,45 @@ mod tests {
     fn parse_legacy_style(xml: &str) -> csl_legacy::model::Style {
         let doc = Document::parse(xml).expect("test style XML should parse");
         parse_style(doc.root_element()).expect("legacy style parsing should succeed")
+    }
+
+    #[test]
+    fn compile_from_xml_maps_citation_label_variable_into_citation_template() {
+        // given a label (trigraph) style whose citation renders `citation-label`
+        let legacy_style = parse_legacy_style(
+            r#"
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="in-text">
+  <info>
+    <title>label-test</title>
+    <id>https://example.org/label-test</id>
+  </info>
+  <citation collapse="citation-number">
+    <layout prefix="[" suffix="]" delimiter=", ">
+      <text variable="citation-label"/>
+    </layout>
+  </citation>
+</style>
+"#,
+        );
+
+        // when the citation layout is compiled to a Citum template
+        let mut options = citum_schema::options::Config::default();
+        let tracker = ProvenanceTracker::new(false);
+        let out = compilation::compile_from_xml(&legacy_style, &mut options, false, &tracker);
+
+        // then the `citation-label` node maps to a number component rather than
+        // being dropped (which produced an empty citation template, `[]`).
+        assert!(
+            template_contains(&out.citation, &|component| matches!(
+                component,
+                TemplateComponent::Number(TemplateNumber {
+                    number: NumberVariable::CitationLabel,
+                    ..
+                })
+            )),
+            "citation-label should compile to a citation-label number component, got: {:?}",
+            out.citation
+        );
     }
 
     // The note-class citation path preserves authored group structure, so

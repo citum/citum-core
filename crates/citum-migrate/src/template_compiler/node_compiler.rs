@@ -274,6 +274,7 @@ impl TemplateCompiler {
             Variable::CollectionNumber => Some(NumberVariable::CollectionNumber),
             Variable::NumberOfPages => Some(NumberVariable::NumberOfPages),
             Variable::CitationNumber => Some(NumberVariable::CitationNumber),
+            Variable::CitationLabel => Some(NumberVariable::CitationLabel),
             Variable::Number => Some(NumberVariable::Number),
             _ => None,
         }
