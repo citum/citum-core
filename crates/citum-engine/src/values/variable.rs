@@ -142,7 +142,15 @@ fn resolve_variable_value(
         SimpleVariable::PublisherPlace => reference.publisher_place(),
         SimpleVariable::OriginalPublisher => reference.original_publisher_str(),
         SimpleVariable::OriginalPublisherPlace => reference.original_publisher_place(),
-        SimpleVariable::Genre => reference.genre().map(|k| options.locale.lookup_genre(&k)),
+        // A genre that merely restates the reference's own type (e.g. an
+        // entry-encyclopedia carrying genre "entry-encyclopedia") is the data
+        // model's internal type-carrier, round-tripped through `ref_type()` for
+        // variant selection. citeproc never emits it, so rendering it only leaks
+        // literal type text into migrated bibliographies.
+        SimpleVariable::Genre => reference
+            .genre()
+            .filter(|genre| *genre != reference.ref_type())
+            .map(|k| options.locale.lookup_genre(&k)),
         SimpleVariable::Medium => reference.medium().map(|k| options.locale.lookup_medium(&k)),
         SimpleVariable::Status => reference.status(),
         SimpleVariable::Abstract | SimpleVariable::Note => None,
