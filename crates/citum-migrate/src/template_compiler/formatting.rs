@@ -31,7 +31,9 @@ impl TemplateCompiler {
         let (mut wrap_punct, remaining_prefix, remaining_suffix) =
             Self::infer_wrap_from_affixes(&fmt.prefix, &fmt.suffix);
 
-        // quotes="true" in CSL maps to wrap: quotes in Citum
+        // quotes="true" in CSL maps to wrap: quotes in Citum. This is the
+        // single owner of quote rendering; the `quote` field below is left
+        // unset so the engine does not apply quotation marks twice.
         if fmt.quotes == Some(true) {
             wrap_punct = Some(WrapPunctuation::Quotes);
         }
@@ -67,7 +69,9 @@ impl TemplateCompiler {
                 .as_ref()
                 .map(|v| matches!(v, crate::ir::FontVariant::SmallCaps)),
             vertical_align: fmt.vertical_align.clone(),
-            quote: fmt.quotes,
+            // Quote rendering is owned by the `wrap: quotes` path above; emitting
+            // it here as well caused doubled quotation marks (`““Title””`).
+            quote: None,
             prefix,
             suffix,
             wrap,
@@ -324,5 +328,29 @@ mod tests {
         } else {
             panic!("Expected TemplateComponent::Term");
         }
+    }
+
+    /// Regression test (csl26-c2um): a CSL `quotes="true"` node maps to a single
+    /// quote layer (`wrap: quotes`) and must not also set the `quote` field, which
+    /// would make the engine emit doubled quotation marks.
+    #[test]
+    fn given_quotes_true_when_convert_formatting_then_only_wrap_owns_quotes() {
+        let compiler = TemplateCompiler;
+        let fmt = crate::ir::FormattingOptions {
+            quotes: Some(true),
+            ..Default::default()
+        };
+
+        let rendering = compiler.convert_formatting(&fmt);
+
+        assert_eq!(
+            rendering.wrap.map(|w| w.punctuation),
+            Some(WrapPunctuation::Quotes),
+            "quotes=true should produce a quote wrap"
+        );
+        assert_eq!(
+            rendering.quote, None,
+            "the redundant quote field must stay unset so quotes are not doubled"
+        );
     }
 }
