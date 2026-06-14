@@ -32,7 +32,7 @@ use citum_migrate::{
         normalize_wrapped_numeric_locator_citation_component,
     },
     lineage::{MigrationOutputPlan, StyleLineage},
-    options_extractor::MigrationOptions,
+    options_extractor::{MigrationOptions, processing::detect_processing_mode},
     provenance::ProvenanceTracker,
     template_resolver,
 };
@@ -178,7 +178,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let doc = Document::parse(&text)?;
     let legacy_style = parse_style(doc.root_element())?;
 
-    let mut lineage = StyleLineage::resolve(path, &workspace_root, &legacy_style.info.links)?;
+    let detected_regime = detect_processing_mode(&legacy_style);
+    let mut lineage = StyleLineage::resolve(path, &workspace_root, &legacy_style.info.links)?
+        .apply_regime_guard(detected_regime.as_ref());
     let routing =
         apply_family_candidate_routing(&mut lineage, &workspace_root, &family_candidate, path)?;
 

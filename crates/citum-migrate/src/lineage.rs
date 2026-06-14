@@ -11,6 +11,7 @@ use crate::evidence::{
 };
 use citum_schema::Style;
 use citum_schema::embedded;
+use citum_schema::options::{Processing, RegimeFamily};
 use citum_schema::registry::{StyleKind, StyleRegistry};
 use csl_legacy::model::InfoLink;
 use serde_yaml::{Mapping, Value};
@@ -269,6 +270,69 @@ impl StyleLineage {
             parent_source,
             parent_style,
         })
+    }
+
+    /// Drop a template-linked parent when its citation regime family conflicts
+    /// with the child's detected regime.
+    ///
+    /// CSL `<link rel="template">` links record the style that served as a
+    /// formatting template during authoring — not a true semantic parent. When
+    /// the linked parent's `processing` regime family differs from the child's
+    /// detected regime, inheriting it would produce a wrapper with an
+    /// incompatible citation template (e.g., a numeric child inheriting an
+    /// author-date `non_integral`). This guard catches that case at migrate time
+    /// and falls back to standalone output.
+    ///
+    /// Only fires when **all** of:
+    /// - The parent was discovered via a `TemplateLink` (not `LocalExtends`,
+    ///   `RegistryAlias`, or `IndependentParentLink` — those are intentional).
+    /// - The parent Citum style has an explicitly declared `processing` field.
+    /// - `detected_regime` is `Some` and has a different `regime_family()` than
+    ///   the parent's declared processing.
+    ///
+    /// See `docs/specs/CITATION_REGIME.md`.
+    #[must_use]
+    pub fn apply_regime_guard(mut self, detected_regime: Option<&Processing>) -> Self {
+        // Only template links are subject to the guard.
+        if self.parent_source != Some(ParentDiscoverySource::TemplateLink) {
+            return self;
+        }
+        let Some(detected) = detected_regime else {
+            return self;
+        };
+        let detected_family = detected.regime_family();
+
+        // Read the parent style's declared processing, if any.
+        let parent_family: Option<RegimeFamily> = self
+            .parent_style
+            .as_ref()
+            .and_then(|s| s.options.as_ref())
+            .and_then(|c| c.processing.as_ref())
+            .map(|p| p.regime_family());
+
+        let Some(parent_family) = parent_family else {
+            // Parent has no explicit processing — no basis to drop it.
+            return self;
+        };
+
+        if parent_family == detected_family {
+            return self;
+        }
+
+        // Regime mismatch: drop the template-linked parent and fall back to
+        // standalone output. Preserve `family_candidate` in case it was set
+        // independently via reverse-template discovery.
+        tracing::debug!(
+            style_id = %self.style_id,
+            parent = ?self.parent_style_id,
+            "dropping template-link parent: regime mismatch ({detected_family:?} vs {parent_family:?})"
+        );
+        self.parent_style_id = None;
+        self.parent_source = None;
+        self.parent_style = None;
+        self.semantic_class = SemanticClass::Independent;
+        self.implementation_form = ImplementationForm::Standalone;
+        self
     }
 
     /// Build a `MigrationEvidence` record summarizing the lineage decisions
@@ -1267,6 +1331,83 @@ mod tests {
             "promotion must return false when no candidate was discovered"
         );
         assert!(lineage.parent_style_id.is_none());
+    }
+
+    // ── Regime guard tests ──────────────────────────────────────────────────
+
+    #[test]
+    fn regime_guard_drops_template_link_parent_on_regime_mismatch() {
+        // given: bio-protocol.csl is a numeric CSL style that declares a
+        // `<link rel="template">` pointing at APA (author-date).
+        // Parse the real CSL file so the links reflect what the migration sees.
+        let csl_path = repo_root().join("styles-legacy/bio-protocol.csl");
+        if !csl_path.exists() {
+            return;
+        }
+        let text = std::fs::read_to_string(&csl_path).expect("bio-protocol.csl must exist");
+        let doc = roxmltree::Document::parse(&text).expect("bio-protocol.csl must parse");
+        let legacy = csl_legacy::parser::parse_style(doc.root_element())
+            .expect("bio-protocol.csl must be valid CSL");
+        let detected = crate::options_extractor::processing::detect_processing_mode(&legacy);
+
+        // when: lineage is resolved with the real links and the regime guard applied
+        let lineage = StyleLineage::resolve(
+            "styles-legacy/bio-protocol.csl",
+            &repo_root(),
+            &legacy.info.links,
+        )
+        .unwrap()
+        .apply_regime_guard(detected.as_ref());
+
+        // then: the incompatible author-date parent is dropped; style is standalone
+        assert!(
+            lineage.parent_style_id.is_none(),
+            "numeric style with author-date template link must not inherit author-date parent; \
+             got: {:?}",
+            lineage.parent_style_id
+        );
+        assert_eq!(
+            lineage.semantic_class,
+            SemanticClass::Independent,
+            "class must reset to Independent after guard drops the parent"
+        );
+        assert_eq!(
+            lineage.output_plan(),
+            MigrationOutputPlan::Standalone,
+            "output plan must be Standalone after regime guard fires"
+        );
+    }
+
+    #[test]
+    fn regime_guard_preserves_same_regime_template_link() {
+        // given: apa-6th-edition.csl has no template link but if we call
+        // apply_regime_guard with a matching detected regime, nothing changes.
+        // Use a simple case: resolve anglia (author-date child), pass AuthorDate.
+        let csl_path = repo_root().join("styles-legacy/anglia-ruskin-university.csl");
+        if !csl_path.exists() {
+            // Skip if the file isn't present in this working copy.
+            return;
+        }
+        let text = std::fs::read_to_string(&csl_path).unwrap();
+        let doc = roxmltree::Document::parse(&text).unwrap();
+        let legacy = csl_legacy::parser::parse_style(doc.root_element()).unwrap();
+        let detected = crate::options_extractor::processing::detect_processing_mode(&legacy);
+
+        let lineage_before = StyleLineage::resolve(
+            "styles-legacy/anglia-ruskin-university.csl",
+            &repo_root(),
+            &legacy.info.links,
+        )
+        .unwrap();
+        let parent_before = lineage_before.parent_style_id.clone();
+
+        let lineage_after = lineage_before.apply_regime_guard(detected.as_ref());
+
+        // The guard must not change anything when the regime is compatible.
+        assert_eq!(
+            lineage_after.parent_style_id, parent_before,
+            "same-regime template link must not be dropped by the regime guard"
+        );
     }
 
     #[test]
