@@ -165,7 +165,14 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
     if rendering.vertical_align == Some(citum_schema::VerticalAlign::Superscript) {
         output = fmt.superscript(output);
     }
-    if rendering.quote == Some(true) {
+    // A `wrap: quotes` (applied below) already surrounds the value in quotation
+    // marks; honoring the `quote` flag as well would double them (`““Title””`).
+    // Only apply the flag when the wrap is not itself a quote wrap.
+    let wrapped_in_quotes = rendering
+        .wrap
+        .as_ref()
+        .is_some_and(|w| w.punctuation == citum_schema::template::WrapPunctuation::Quotes);
+    if rendering.quote == Some(true) && !wrapped_in_quotes {
         output = fmt.quote(output);
     }
 
@@ -386,5 +393,64 @@ mod tests {
 
         let result = render_component(&component);
         assert_eq!(result, "_The Structure of Scientific Revolutions_");
+    }
+
+    #[test]
+    fn given_quote_flag_and_quote_wrap_when_render_then_single_pair_of_quotes() {
+        use citum_schema::template::{WrapConfig, WrapPunctuation};
+
+        // Migrated styles can carry both a global `titles.*.quote` flag and a
+        // template `wrap: quotes`; applying both would double the quotes.
+        let component = ProcTemplateComponent {
+            template_component: TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                rendering: Rendering {
+                    quote: Some(true),
+                    wrap: Some(WrapConfig {
+                        punctuation: WrapPunctuation::Quotes,
+                        inner_prefix: None,
+                        inner_suffix: None,
+                    }),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+            value: "The Structure of Scientific Revolutions".to_string(),
+            ..Default::default()
+        };
+
+        let result = render_component(&component);
+        assert_eq!(
+            result,
+            "\u{201C}The Structure of Scientific Revolutions\u{201D}"
+        );
+    }
+
+    #[test]
+    fn given_quote_flag_and_non_quote_wrap_when_render_then_both_applied() {
+        use citum_schema::template::{WrapConfig, WrapPunctuation};
+
+        // A non-quote wrap (parentheses) does not subsume the quote flag, so
+        // both must still apply.
+        let component = ProcTemplateComponent {
+            template_component: TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                rendering: Rendering {
+                    quote: Some(true),
+                    wrap: Some(WrapConfig {
+                        punctuation: WrapPunctuation::Parentheses,
+                        inner_prefix: None,
+                        inner_suffix: None,
+                    }),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+            value: "Title".to_string(),
+            ..Default::default()
+        };
+
+        let result = render_component(&component);
+        assert_eq!(result, "(\u{201C}Title\u{201D})");
     }
 }
