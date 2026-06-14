@@ -244,7 +244,10 @@ node scripts/report-migrate-sqi.js --corpus random --sample 100 --seed 20260610
 - **Engine-level gaps.** When citeproc output cannot be matched by any
   candidate because `citum-engine` renders correct template data incorrectly,
   no amount of search helps; route the gap to the engine as Phase 1 already
-  prescribes.
+  prescribes. Note: the measured sub-90 tail is in fact *converter*-dominated,
+  not engine-bound — see the [2026-06-14 locus classification](../architecture/audits/2026-06-14_MIGRATE_FIDELITY_LOCUS_CLASSIFICATION.md).
+  Most failures are missing/wrong template data the loop cannot synthesize from a
+  broken candidate set, so the synthesis loop is the wrong lever for them too.
 - **Budget starvation.** Too-tight budgets can stop the loop before it
   reaches obvious wins. Budgets are tunable constants with defaults sized so
   Phase 1 behavior is unchanged.
