@@ -226,6 +226,14 @@ added to the citation context.
 - [x] Upstream CSL disambiguation fixtures that distinguish `by-cite` and
   `all-names` are tracked in the disambiguation fixture generator
 
+## Related specs
+
+- [CITATION_REGIME](CITATION_REGIME.md) — disambiguation is regime-scoped.
+  Author-date and label disambiguation settings must not leak into numeric
+  styles through style inheritance; the regime guard in `merge_style_overlay`
+  prevents this for `citation.non_integral` (which carries disambiguation-derived
+  author-date citations).
+
 ## Changelog
 
 - 2026-06-02: Fixed `primary-name` cascade fallback (csl26-wu1l). When the primary

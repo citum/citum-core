@@ -116,7 +116,17 @@ For `journal + structural-wrapper` targets:
 - [ ] Unknown or unresolved styles remain standalone.
 - [ ] `migrate-research` output contracts require semantic class, implementation form, and parent reporting.
 
+## Related specs
+
+- [CITATION_REGIME](CITATION_REGIME.md) — adds a regime-compatibility gate on
+  `<link rel="template">` parents: when the child's detected regime family
+  differs from the parent style's declared `processing` family, the template
+  link is dropped and the child migrates as standalone. Registry aliases,
+  `independent-parent` links, and local `extends` are not subject to this gate.
+
 ## Changelog
 
+- 2026-06-14: Added regime-compatibility gate on template-link parents; see
+  [CITATION_REGIME](CITATION_REGIME.md) and `StyleLineage::apply_regime_guard`.
 - 2026-04-23: Activated with implementation in `citum-migrate` and taxonomy-aware `migrate-research` routing.
 - 2026-04-23: Initial version.

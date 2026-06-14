@@ -29,7 +29,22 @@ macro_rules! clear_raw_nulls {
 ///
 /// Uses typed field merges throughout, preserving null-aware semantics for
 /// citation/bibliography sub-specs (e.g., `ibid: ~` clears inherited values).
+///
+/// Applies a **regime coherence guard** after the citation merge: when the
+/// overlay (child) declares a citation regime whose family differs from the base
+/// (parent) regime, and the child provides its own base `citation.template`, the
+/// inherited `citation.integral` and `citation.non_integral` sub-specs are reset
+/// to the child's own declared values (typically `None`). Bibliography spec is
+/// never touched by this guard. See `docs/specs/CITATION_REGIME.md`.
 pub(crate) fn merge_style_overlay(base: &mut Style, overlay: &Style) {
+    // Capture the parent's regime family before any merge so the guard below
+    // can compare against the pre-merge baseline.
+    let parent_regime_family = base
+        .options
+        .as_ref()
+        .and_then(|c| c.processing.as_ref())
+        .map(|p| p.regime_family());
+
     // Merge StyleInfo: per-field Option merge, fields vec replaces if non-empty
     merge_info(&mut base.info, &overlay.info);
 
@@ -71,6 +86,37 @@ pub(crate) fn merge_style_overlay(base: &mut Style, overlay: &Style) {
             (None, None, _) => return, // Impossible due to outer if guard
         };
         base.citation = Some(merged);
+    }
+
+    // Regime coherence guard: if the child (overlay) declares a citation regime
+    // whose family differs from the parent's (base), and the child supplies its
+    // own base `citation.template`, reset the inherited citation-mode sub-specs
+    // so they don't leak across regime boundaries at render time.
+    //
+    // Only fires when:
+    //   1. The child has an explicit `processing` with a different regime family.
+    //   2. The child provides its own `citation.template` (not just sub-spec overrides).
+    //
+    // Bibliography spec is intentionally not touched — sort/grouping is orthogonal
+    // to citation regime. See `docs/specs/CITATION_REGIME.md`.
+    if let Some(child_regime) = overlay
+        .options
+        .as_ref()
+        .and_then(|c| c.processing.as_ref())
+        .map(|p| p.regime_family())
+        && parent_regime_family.is_some_and(|pr| pr != child_regime)
+        && overlay
+            .citation
+            .as_ref()
+            .and_then(|c| c.template.as_ref())
+            .is_some()
+        && let Some(base_cit) = base.citation.as_mut()
+    {
+        base_cit.integral = overlay.citation.as_ref().and_then(|c| c.integral.clone());
+        base_cit.non_integral = overlay
+            .citation
+            .as_ref()
+            .and_then(|c| c.non_integral.clone());
     }
 
     // Merge bibliography spec with raw_yaml for null-aware semantics

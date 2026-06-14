@@ -199,6 +199,29 @@ pub struct ProcessingCustom {
     pub disambiguate: Option<Disambiguation>,
 }
 
+/// Coarse citation regime family for cross-regime compatibility checks.
+///
+/// Groups the `Processing` variants into mutually-exclusive citation-surface
+/// families. Used by `merge_style_overlay` and `StyleLineage::apply_regime_guard`
+/// to detect when a child's regime differs from its parent's, so that
+/// regime-specific citation sub-specs (integral, non-integral) can be reset
+/// rather than silently inherited.
+///
+/// See `docs/specs/CITATION_REGIME.md`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RegimeFamily {
+    /// All `AuthorDate*` variants: primary key is `(Author, Year)`.
+    AuthorDate,
+    /// `Numeric`: primary key is citation-order number.
+    Numeric,
+    /// `Note`: citations render as footnotes or endnotes.
+    Note,
+    /// `Label`: citations render as trigraph labels.
+    Label,
+    /// `Custom`: fully user-defined; never triggers automatic resets.
+    Custom,
+}
+
 fn author_date_config(names: bool, add_givenname: bool) -> ProcessingCustom {
     ProcessingCustom {
         sort: Some(SortEntry::Preset(SortPreset::AuthorDateTitle)),
@@ -246,6 +269,29 @@ impl Processing {
                 | Self::AuthorDateNames
                 | Self::AuthorDateFull
         )
+    }
+
+    /// Coarse citation regime family for cross-regime compatibility checks.
+    ///
+    /// Used during style inheritance to determine whether an inherited parent's
+    /// citation-mode sub-specs (integral, non-integral) belong to a different
+    /// regime and should be reset when the child supplies its own base template.
+    ///
+    /// `Custom` is its own family and never triggers automatic sub-spec resets,
+    /// preserving fully-custom authored styles.
+    ///
+    /// See `docs/specs/CITATION_REGIME.md` for the full invariant.
+    pub fn regime_family(&self) -> RegimeFamily {
+        match self {
+            Self::AuthorDate
+            | Self::AuthorDateGivenname
+            | Self::AuthorDateNames
+            | Self::AuthorDateFull => RegimeFamily::AuthorDate,
+            Self::Numeric => RegimeFamily::Numeric,
+            Self::Note => RegimeFamily::Note,
+            Self::Label(_) => RegimeFamily::Label,
+            Self::Custom(_) => RegimeFamily::Custom,
+        }
     }
 
     /// Citation sorting remains explicit-only for all processing families.
