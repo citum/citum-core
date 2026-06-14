@@ -248,6 +248,11 @@ node scripts/report-migrate-sqi.js --corpus random --sample 100 --seed 20260610
 - **Budget starvation.** Too-tight budgets can stop the loop before it
   reaches obvious wins. Budgets are tunable constants with defaults sized so
   Phase 1 behavior is unchanged.
+- **Gradient/metric decoupling.** The headline counts passes at a fixed
+  threshold, but order-only mutations are pass-neutral, so refining the
+  tie-break *gradient* (e.g. an order-aware similarity term) cannot move the
+  headline. Measured negative:
+  [2026-06-14 order-aware fitness](../architecture/audits/2026-06-14_MIGRATE_ORDER_AWARE_FITNESS_NEGATIVE.md).
 
 ## Verification
 
