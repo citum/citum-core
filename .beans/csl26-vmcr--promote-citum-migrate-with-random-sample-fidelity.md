@@ -1,7 +1,7 @@
 ---
 # csl26-vmcr
 title: Promote citum-migrate with random-sample fidelity metrics
-status: todo
+status: in-progress
 type: epic
 priority: deferred
 tags:
@@ -9,7 +9,7 @@ tags:
     - scorecard
     - migrate
 created_at: 2026-06-10T16:27:51Z
-updated_at: 2026-06-12T17:25:53Z
+updated_at: 2026-06-14T12:09:06Z
 ---
 
 Public docs site (docs.citum.org) never mentions citum-migrate. Goal: measure converter quality on a seeded, stratified random sample of ~100 independent parent CSL styles using existing fidelity+SQI tooling, record a baseline audit, then publish a Migrate page with truthful metrics and a weekly CI-regenerated scorecard. Quality bar: >=80% of sampled styles at >=90% combined strict citation+bibliography fidelity, no style class below 60%; below the bar, run a migrate-research improvement wave first. Plan: ~/.claude/plans/i-have-a-task-federated-gosling.md
