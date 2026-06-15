@@ -21,6 +21,11 @@ pub(crate) type TypeTemplateMap = indexmap::IndexMap<TypeSelector, Vec<TemplateC
 pub(crate) type TypeVariantMap = indexmap::IndexMap<TypeSelector, TemplateVariant>;
 
 /// Builds all template variants for a given reference type from a type-template map.
+///
+/// This runs before lineage/wrapper conversion, so raw template equality is not
+/// final semantic equality. Preserve the original selector keys here; any
+/// selector grouping must happen only after resolved parent-aware templates are
+/// known.
 pub(crate) fn build_type_variants(
     default_template: &[TemplateComponent],
     type_templates: TypeTemplateMap,
@@ -572,6 +577,38 @@ mod tests {
         assert!(
             matches!(article, TemplateVariant::Diff(_)),
             "a valid Diff should be kept as Diff — engine_validate_variants must not demote correct diffs"
+        );
+    }
+
+    #[test]
+    fn given_raw_equal_templates_when_variants_built_then_original_selectors_are_preserved() {
+        // Regression guard for csl26-sfi3: this function runs before
+        // lineage/wrapper resolution, where a raw-equal `book` template can
+        // require a different parent-aware result than `bill`. Raw equality
+        // must therefore not be collapsed into a broad multi-selector here.
+        let default_template = vec![title_component(), url_component()];
+        let raw_variant = vec![title_component()];
+        let bill_selector = TypeSelector::Single("bill".to_string());
+        let book_selector = TypeSelector::Single("book".to_string());
+        let mut type_templates = TypeTemplateMap::new();
+        type_templates.insert(bill_selector.clone(), raw_variant.clone());
+        type_templates.insert(book_selector.clone(), raw_variant);
+
+        let variants = build_type_variants(&default_template, type_templates);
+
+        assert!(
+            variants.contains_key(&bill_selector),
+            "bill must stay addressable as its original selector"
+        );
+        assert!(
+            variants.contains_key(&book_selector),
+            "book must stay addressable as its original selector"
+        );
+        assert!(
+            !variants
+                .keys()
+                .any(|selector| matches!(selector, TypeSelector::Multiple(_))),
+            "pre-wrapper variant construction must not synthesize grouped selectors"
         );
     }
 }
