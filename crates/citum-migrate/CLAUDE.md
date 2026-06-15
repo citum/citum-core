@@ -11,12 +11,31 @@ CSL 1.0 → Citum YAML converter. Hand-authoring with this converter is the cano
 | `src/passes/` | Conversion passes (run in order) |
 | `src/fixups/` | Post-conversion corrections |
 | `src/options_extractor/` | XML-pipeline options extraction |
-| `src/template_compiler/` | Template generation (LLM-authored for top parents) |
+| `src/synthesis/` | Template synthesis loop — **the authority and default path** (see below) |
+| `src/template_compiler/` | XML layout compilation → templates (transitional synthesis **seed**, not authority) |
 | `src/analysis/` | Pre/post analysis |
 | `src/base_detector.rs` | Detect base/parent style for inheritance |
-| `src/compilation.rs` | Final assembly |
+| `src/compilation.rs` | Final assembly — produces the XML seed candidate (`compile_from_xml`) |
 | `src/js_runtime.rs` | citeproc-js bridge for oracle/fidelity checks |
 | `src/template_diff.rs` | Reviewer-facing template diffs |
+
+## Template authority
+
+"XML pipeline" conflates three distinct things — keep them apart:
+
+- **Synthesis loop** (`src/synthesis/`, default path via `synthesize_citation` /
+  `synthesize_bibliography`) is **the template authority**: it scores candidates against
+  citeproc-js output and selects the best.
+- **XML layout compilation** (`compilation.rs::compile_from_xml`, `template_compiler/`) is a
+  *transitional seed candidate*, not authoritative. It still wins ~20% of selections (2026-06-13:
+  24/99 citation, 17/98 bibliography) and also feeds type-variant templates and note-position
+  overrides merged into the synthesized result — so **fixing its output quality is valid work**
+  until the removal gate in `csl26-hxhx` holds (the `xml` seed wins ≈0 selections). Removing it
+  before then regresses ~1 in 5 styles. Spec:
+  [OUTPUT_DRIVEN_TEMPLATE_SYNTHESIS.md](../../docs/specs/OUTPUT_DRIVEN_TEMPLATE_SYNTHESIS.md).
+- **XML attribute/options extraction** (`options_extractor/`) is **permanent** — the loop reads
+  XML for et-al thresholds, `initialize-with`, sort keys, etc. It is *not* part of the layout
+  compilation slated for removal.
 
 ## Gotchas
 
