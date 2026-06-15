@@ -28,7 +28,8 @@ use citum_migrate::{
     },
     fixups::{
         ensure_numeric_locator_citation_component, ensure_personal_communication_omitted,
-        move_group_wrap_to_citation_items, normalize_author_date_locator_citation_component,
+        gate_web_only_url_accessed, move_group_wrap_to_citation_items,
+        normalize_author_date_locator_citation_component, normalize_legal_case_type_template,
         normalize_wrapped_numeric_locator_citation_component,
     },
     lineage::{MigrationOutputPlan, StyleLineage},
@@ -96,6 +97,18 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOut
             .as_ref()
             .and_then(|bib| bib.sort.as_ref()),
     );
+
+    // Gate url and accessed to web-only types on the FINAL selected templates,
+    // matching citeproc-js `type="webpage post post-weblog"`. Must run here
+    // (after synthesis selects the winning base + type-templates) rather than
+    // in the XML seed, so synthesis scoring and the inferred webpage-merge are
+    // unaffected. Must also run before build_type_variants so the cleaned base
+    // and per-type components are captured in diffs consistently.
+    {
+        let mut empty = TypeTemplateMap::new();
+        let type_templates = c.type_templates.as_mut().unwrap_or(&mut empty);
+        gate_web_only_url_accessed(&mut c.new_bib, type_templates);
+    }
 
     // [PRUNING] Remove bibliography type-variants identical to the primary template.
     if let Some(type_templates) = c.type_templates.as_mut() {
@@ -869,6 +882,13 @@ fn select_and_process_bibliography_template(
 
     if inferred_bib_source {
         postprocess_inferred_bibliography(&mut new_bib, &mut type_templates, legacy_style);
+    } else {
+        // Path-independent semantic fixups must also run on the XML-seed path.
+        // normalize_legal_case_type_template corrects the XML compiler's
+        // legal_case shape (authority/editor/volume) to the base-shaped form;
+        // without it a gated base lets `bill` win as the `extends` parent and
+        // the wrong shape is emitted (jar "Brown v. Board of Education").
+        normalize_legal_case_type_template(legacy_style, &mut type_templates);
     }
 
     (new_bib, type_templates, inferred_bib_source)

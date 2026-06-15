@@ -18,7 +18,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use citum_schema::{
     locale::GeneralTerm,
     template::{
-        ContributorRole, DelimiterPunctuation, TemplateComponent, TemplateGroup, TitleType,
+        ContributorRole, DateVariable, DelimiterPunctuation, SimpleVariable, TemplateComponent,
+        TemplateGroup, TitleType, TypeSelector,
     },
 };
 
@@ -79,6 +80,100 @@ fn is_live_in_term(component: &TemplateComponent) -> bool {
         component,
         TemplateComponent::Term(term)
             if term.term == GeneralTerm::In && component.rendering().suppress != Some(true)
+    )
+}
+
+/// Reference types that citeproc-js gates url/accessed on.
+///
+/// Matches the `type="webpage post post-weblog"` conditional in CSL source.
+const WEB_TYPES: &[&str] = &["webpage", "post", "post-weblog"];
+
+/// Gate url and accessed components to web-only type templates.
+///
+/// citeproc-js renders url and the `accessed` term/date only when
+/// `type="webpage post post-weblog"`. The converter flattens the wrapping
+/// `<if type="webpage">` gate into the base template, so url and accessed
+/// leak into every entry type. This fixup restores the gate:
+///
+/// - **Base and non-web type-templates** (`webpage`, `post`, `post-weblog`
+///   absent from the selector): url variable, accessed date, and bare
+///   `accessed` label terms are removed. An orphan `accessed` term with no
+///   accompanying accessed date is purely spurious and is dropped.
+/// - **Web type-templates** (selector matches a web type): left untouched so
+///   the engine keeps its url/accessed rendering.
+///
+/// Must be called **before** `build_type_variants` so that the cleaned base
+/// and type-template components are captured in diffs consistently.
+pub fn gate_web_only_url_accessed(
+    base_template: &mut Vec<TemplateComponent>,
+    type_templates: &mut indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>,
+) {
+    strip_url_accessed(base_template);
+    for (selector, template) in type_templates.iter_mut() {
+        if !super::selector_matches_any(selector, WEB_TYPES) {
+            strip_url_accessed(template);
+        }
+    }
+}
+
+/// Removes url variable, accessed date, and bare accessed label terms from a template.
+///
+/// An `accessed` term immediately followed by an accessed date is a label/date
+/// pair introduced by the CSL webpage block; both are dropped. An orphan
+/// `accessed` term with no accompanying accessed date is also dropped.
+fn strip_url_accessed(template: &mut Vec<TemplateComponent>) {
+    let original = std::mem::take(template);
+    let mut out: Vec<TemplateComponent> = Vec::with_capacity(original.len());
+    let mut iter = original.into_iter().peekable();
+
+    while let Some(component) = iter.next() {
+        if is_url_variable(&component) || is_accessed_date(&component) {
+            // Drop url and standalone accessed-date components unconditionally.
+            continue;
+        }
+        if is_accessed_term(&component) {
+            // Consume the accessed term and any immediately following accessed
+            // date (the pair introduced by the CSL webpage accessed block).
+            // Neither renders correctly on non-web types; both are dropped.
+            if iter.peek().is_some_and(is_accessed_date) {
+                iter.next(); // drop the accompanying date too
+            }
+            continue;
+        }
+        // Recurse into groups so nested url/accessed are also cleaned.
+        let mut component = component;
+        if let TemplateComponent::Group(ref mut group) = component {
+            strip_url_accessed(&mut group.group);
+            // If the group is now empty after stripping, omit it entirely.
+            if group.group.is_empty() {
+                continue;
+            }
+        }
+        out.push(component);
+    }
+
+    *template = out;
+}
+
+fn is_url_variable(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Variable(v) if v.variable == SimpleVariable::Url
+    )
+}
+
+fn is_accessed_date(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Date(d) if d.date == DateVariable::Accessed
+    )
+}
+
+fn is_accessed_term(component: &TemplateComponent) -> bool {
+    matches!(
+        component,
+        TemplateComponent::Term(t)
+            if t.term == GeneralTerm::Accessed && component.rendering().suppress != Some(true)
     )
 }
 
@@ -203,5 +298,114 @@ mod tests {
             &template[0],
             TemplateComponent::Term(term) if term.term == GeneralTerm::In
         ));
+    }
+
+    // ── gate_web_only_url_accessed tests ────────────────────────────────────
+
+    fn url_variable() -> TemplateComponent {
+        use citum_schema::template::{SimpleVariable, TemplateVariable};
+        TemplateComponent::Variable(TemplateVariable {
+            variable: SimpleVariable::Url,
+            ..Default::default()
+        })
+    }
+
+    fn accessed_date() -> TemplateComponent {
+        TemplateComponent::Date(TemplateDate {
+            date: DateVariable::Accessed,
+            ..Default::default()
+        })
+    }
+
+    fn accessed_term() -> TemplateComponent {
+        TemplateComponent::Term(TemplateTerm {
+            term: GeneralTerm::Accessed,
+            ..Default::default()
+        })
+    }
+
+    #[test]
+    fn given_base_template_with_url_and_accessed_when_gated_then_all_stripped() {
+        // jar-style base: issued_date, url_variable, accessed_term, accessed_date
+        // citeproc-js only emits these for webpage/post types; non-web base must
+        // not carry them.
+        let mut base = vec![
+            issued_date(),
+            url_variable(),
+            accessed_term(),
+            accessed_date(),
+        ];
+        let mut type_templates = indexmap::IndexMap::new();
+        gate_web_only_url_accessed(&mut base, &mut type_templates);
+        assert_eq!(base.len(), 1, "only issued_date should remain in the base");
+        assert!(
+            matches!(&base[0], TemplateComponent::Date(d) if d.date == DateVariable::Issued),
+            "remaining component should be the issued date"
+        );
+    }
+
+    #[test]
+    fn given_non_web_type_template_with_url_when_gated_then_url_removed() {
+        // An article-journal type-template must not carry url/accessed even if
+        // it was flattened from a source conditional.
+        let mut base = vec![issued_date()];
+        let mut type_templates = indexmap::IndexMap::new();
+        type_templates.insert(
+            TypeSelector::Single("article-journal".to_string()),
+            vec![issued_date(), url_variable()],
+        );
+        gate_web_only_url_accessed(&mut base, &mut type_templates);
+        let article = type_templates
+            .get(&TypeSelector::Single("article-journal".to_string()))
+            .expect("article-journal template should still exist");
+        assert_eq!(
+            article.len(),
+            1,
+            "url should be removed from article-journal template"
+        );
+        assert!(
+            matches!(&article[0], TemplateComponent::Date(d) if d.date == DateVariable::Issued),
+            "issued date should remain in article-journal template"
+        );
+    }
+
+    #[test]
+    fn given_webpage_type_template_with_url_when_gated_then_url_retained() {
+        // webpage entries should keep url/accessed intact — that is the correct
+        // citeproc-js behaviour for web sources.
+        let mut base = vec![issued_date()];
+        let mut type_templates = indexmap::IndexMap::new();
+        type_templates.insert(
+            TypeSelector::Single("webpage".to_string()),
+            vec![
+                issued_date(),
+                url_variable(),
+                accessed_term(),
+                accessed_date(),
+            ],
+        );
+        gate_web_only_url_accessed(&mut base, &mut type_templates);
+        let webpage = type_templates
+            .get(&TypeSelector::Single("webpage".to_string()))
+            .expect("webpage template should still exist");
+        assert_eq!(
+            webpage.len(),
+            4,
+            "url, accessed-term and accessed-date should be retained for webpage type"
+        );
+    }
+
+    #[test]
+    fn given_orphan_accessed_term_with_no_date_when_gated_then_term_dropped() {
+        // A bare accessed term with no following accessed date is purely
+        // spurious: there is no date to gate the label on, so drop it.
+        let mut base = vec![issued_date(), accessed_term()];
+        let mut type_templates = indexmap::IndexMap::new();
+        gate_web_only_url_accessed(&mut base, &mut type_templates);
+        assert_eq!(base.len(), 1, "orphan accessed term should be dropped");
+        assert!(
+            matches!(&base[0], TemplateComponent::Date(d) if d.date == DateVariable::Issued),
+            "only issued date should remain"
+        );
     }
 }

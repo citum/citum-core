@@ -5,10 +5,13 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Template variant diff computation for bibliography type-variant generation.
 
-use citum_schema::template::{
-    Rendering, TemplateAddOperation, TemplateComponent, TemplateComponentSelector,
-    TemplateModifyOperation, TemplateRemoveOperation, TemplateVariant, TemplateVariantDiff,
-    TypeSelector,
+use citum_schema::{
+    BibliographySpec, Style,
+    template::{
+        Rendering, TemplateAddOperation, TemplateComponent, TemplateComponentSelector,
+        TemplateModifyOperation, TemplateRemoveOperation, TemplateVariant, TemplateVariantDiff,
+        TypeSelector,
+    },
 };
 use std::collections::BTreeMap;
 
@@ -24,6 +27,7 @@ pub(crate) fn build_type_variants(
 ) -> TypeVariantMap {
     let mut variants = TypeVariantMap::new();
     let mut candidate_parents: Vec<(TypeSelector, Vec<TemplateComponent>)> = Vec::new();
+    let intended_templates = type_templates.clone();
 
     for (selector, template) in type_templates {
         let variant = template_variant_from_full_template(
@@ -34,6 +38,62 @@ pub(crate) fn build_type_variants(
         );
         variants.insert(selector.clone(), variant);
         candidate_parents.push((selector, template));
+    }
+
+    engine_validate_variants(default_template, variants, &intended_templates)
+}
+
+/// Validate all derived variants through the engine's authoritative resolver.
+///
+/// Constructs a throwaway [`Style`] that mirrors what the engine will load,
+/// resolves it with the same logic the engine uses at render time, and
+/// compares each engine-resolved template against the original intended target.
+/// Any variant whose engine-resolved form diverges from the intent is demoted
+/// to [`TemplateVariant::Full`] so the engine can use it without reconstruction.
+///
+/// This eliminates the latent migrate-vs-engine diff-resolver mismatch where
+/// migrate's private pairwise check accepted diffs that the engine's recursive
+/// `extends` resolution would apply differently (e.g. corrupting `legal_case`
+/// when the shared base template was modified by a fixup).
+pub(crate) fn engine_validate_variants(
+    default_template: &[TemplateComponent],
+    mut variants: TypeVariantMap,
+    intended_templates: &TypeTemplateMap,
+) -> TypeVariantMap {
+    // Build a minimal throwaway style that carries exactly the section template
+    // and the candidate variant map — no extends, no version, no citum-version
+    // constraint — so try_into_resolved() only runs resolve_style_template_variants.
+    let probe = Style {
+        bibliography: Some(BibliographySpec {
+            template: Some(default_template.to_vec()),
+            type_variants: Some(variants.clone()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let engine_resolved_variants = probe
+        .try_into_resolved()
+        .ok()
+        .and_then(|s| s.bibliography)
+        .and_then(|bib| bib.type_variants);
+
+    for (selector, variant) in &mut variants {
+        if !matches!(variant, TemplateVariant::Diff(_)) {
+            continue;
+        }
+        let Some(target) = intended_templates.get(selector) else {
+            continue;
+        };
+        let engine_template = engine_resolved_variants
+            .as_ref()
+            .and_then(|m| m.get(selector))
+            .and_then(TemplateVariant::as_template);
+        if engine_template != Some(target.as_slice()) {
+            // Engine resolves this diff to a different template than intended:
+            // demote to Full so the engine uses the correct template verbatim.
+            *variant = TemplateVariant::Full(target.clone());
+        }
     }
 
     variants
@@ -400,4 +460,118 @@ fn lcs_pairs(left: &[String], right: &[String]) -> Vec<(usize, usize)> {
         }
     }
     pairs
+}
+
+#[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
+mod tests {
+    use super::*;
+    use citum_schema::template::{
+        SimpleVariable, TemplateComponent, TemplateTitle, TemplateVariable, TemplateVariant,
+        TemplateVariantDiff, TitleType, TypeSelector,
+    };
+
+    fn title_component() -> TemplateComponent {
+        TemplateComponent::Title(TemplateTitle {
+            title: TitleType::Primary,
+            ..Default::default()
+        })
+    }
+
+    fn url_component() -> TemplateComponent {
+        use citum_schema::template::SimpleVariable;
+        TemplateComponent::Variable(TemplateVariable {
+            variable: SimpleVariable::Url,
+            ..Default::default()
+        })
+    }
+
+    fn url_selector() -> TemplateComponentSelector {
+        let mut fields = BTreeMap::new();
+        fields.insert(
+            "variable".to_string(),
+            serde_json::to_value(SimpleVariable::Url).unwrap(),
+        );
+        TemplateComponentSelector { fields }
+    }
+
+    #[test]
+    fn given_diff_with_anchor_absent_from_base_when_engine_validated_then_demoted_to_full() {
+        // Regression guard for the migrate-vs-engine diff-resolver mismatch:
+        // a Diff whose remove operation targets an anchor not present in the
+        // default template must be caught by engine_validate_variants and
+        // demoted to Full so the engine can use the correct template verbatim.
+        //
+        // This mirrors what can happen when a base-fixup removes a component
+        // (e.g. url) after a Diff was derived against the old base — the stored
+        // Diff would reference the now-absent component, causing the engine to
+        // fail resolution and producing wrong output.
+        let default_template = vec![title_component()];
+
+        // "article" intended: [title_component] (url was never there after fixup)
+        // but a hand-crafted Diff still tries to remove url, which the engine
+        // cannot find in the section template.
+        let bad_diff = TemplateVariant::Diff(TemplateVariantDiff {
+            remove: vec![citum_schema::template::TemplateRemoveOperation {
+                match_selector: url_selector(),
+            }],
+            ..Default::default()
+        });
+
+        let mut variants = TypeVariantMap::new();
+        variants.insert(TypeSelector::Single("article".to_string()), bad_diff);
+
+        let mut intended = TypeTemplateMap::new();
+        intended.insert(
+            TypeSelector::Single("article".to_string()),
+            vec![title_component()],
+        );
+
+        let result = engine_validate_variants(&default_template, variants, &intended);
+        let article = result
+            .get(&TypeSelector::Single("article".to_string()))
+            .expect("article variant should be present");
+
+        assert!(
+            matches!(article, TemplateVariant::Full(_)),
+            "bad Diff with absent anchor should be demoted to Full by engine_validate_variants"
+        );
+        let TemplateVariant::Full(template) = article else {
+            panic!("variant should be Full after demotion");
+        };
+        assert_eq!(
+            template,
+            &vec![title_component()],
+            "demoted Full template should match the original intended template"
+        );
+    }
+
+    #[test]
+    fn given_correct_diff_when_engine_validated_then_diff_retained() {
+        // A Diff that the engine can round-trip correctly must not be demoted.
+        let default_template = vec![title_component(), url_component()];
+
+        // "article" drops url — a valid diff the engine can apply.
+        let mut type_templates = TypeTemplateMap::new();
+        type_templates.insert(
+            TypeSelector::Single("article".to_string()),
+            vec![title_component()],
+        );
+
+        let variants = build_type_variants(&default_template, type_templates);
+        let article = variants
+            .get(&TypeSelector::Single("article".to_string()))
+            .expect("article variant should be present");
+
+        assert!(
+            matches!(article, TemplateVariant::Diff(_)),
+            "a valid Diff should be kept as Diff — engine_validate_variants must not demote correct diffs"
+        );
+    }
 }
