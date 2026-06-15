@@ -38,8 +38,16 @@ pub struct CitationPositionOverrides {
     pub ibid: Option<Vec<TemplateComponent>>,
 }
 
-/// Run the full XML compilation pipeline for bibliography and citation templates.
-/// This is the fallback when no hand-authored or inferred template is available.
+/// Run the full XML layout-compilation pipeline for bibliography and citation templates.
+///
+/// Its output is a *transitional seed candidate* for the synthesis loop, not the template
+/// authority. The synthesis default path (`synthesis::synthesize_citation` /
+/// `synthesize_bibliography`) scores it against citeproc-js output and may select it, and it
+/// also supplies type-variant templates and note-position overrides merged into the
+/// inferred/synthesized result. It stays in-tree until the removal gate in bean `csl26-hxhx`
+/// holds (the `xml` seed wins ≈0 selections); see
+/// `docs/specs/OUTPUT_DRIVEN_TEMPLATE_SYNTHESIS.md`. Fixing its output quality is valid work
+/// until then. XML *attribute/options* extraction is permanent and separate from this.
 pub fn compile_from_xml(
     legacy_style: &csl_legacy::model::Style,
     options: &mut citum_schema::options::Config,
