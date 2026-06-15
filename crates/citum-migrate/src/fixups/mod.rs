@@ -8,9 +8,16 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use citum_schema::template::{TemplateComponent, TypeSelector, WrapPunctuation};
 use csl_legacy::model::Layout;
 
+mod gating;
 mod locator;
 mod media;
 mod template;
+
+/// Re-groups or drops a leaked root-level `in` term left bare by template
+/// specialization, restoring the engine's term-only group suppression.
+pub fn gate_leaked_in_term(template: &mut Vec<TemplateComponent>) {
+    gating::gate_leaked_in_term(template);
+}
 
 /// Returns whether a type selector matches any candidate type name.
 #[must_use]

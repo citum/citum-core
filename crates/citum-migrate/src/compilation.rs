@@ -109,16 +109,16 @@ pub fn compile_from_xml(
         Some(citum_schema::options::Processing::Numeric)
     );
 
-    let (mut new_bib, type_templates) =
+    let (mut new_bib, mut type_templates) =
         template_compiler.compile_bibliography_with_types(&bib_ir, is_numeric);
     let is_note_class = legacy_style.class == "note";
-    let new_cit = if is_note_class {
+    let mut new_cit = if is_note_class {
         template_compiler.compile_citation_note(&cit_ir)
     } else {
         template_compiler.compile_citation(&cit_ir)
     };
 
-    let citation_position_overrides = CitationPositionOverrides {
+    let mut citation_position_overrides = CitationPositionOverrides {
         subsequent: compile_citation_position_override(
             &template_compiler,
             &compressor,
@@ -159,6 +159,13 @@ pub fn compile_from_xml(
         apply_author_date_bibliography_passes(&mut new_bib, options, fixup_family);
     }
 
+    gate_leaked_in_terms(
+        &mut new_bib,
+        &mut new_cit,
+        &mut type_templates,
+        &mut citation_position_overrides,
+    );
+
     let type_templates_opt = if type_templates.is_empty() {
         None
     } else {
@@ -171,6 +178,28 @@ pub fn compile_from_xml(
         citation: new_cit,
         citation_overrides: citation_position_overrides,
         unsupported_mixed_conditions,
+    }
+}
+
+/// Re-bind or drop the leaked root-level `in` term that lost its enclosing CSL
+/// group during template specialization, restoring the engine's term-only
+/// group suppression across every compiled template.
+fn gate_leaked_in_terms(
+    new_bib: &mut Vec<TemplateComponent>,
+    new_cit: &mut Vec<TemplateComponent>,
+    type_templates: &mut TypeTemplateMap,
+    overrides: &mut CitationPositionOverrides,
+) {
+    crate::fixups::gate_leaked_in_term(new_bib);
+    crate::fixups::gate_leaked_in_term(new_cit);
+    for template in type_templates.values_mut() {
+        crate::fixups::gate_leaked_in_term(template);
+    }
+    if let Some(template) = overrides.subsequent.as_mut() {
+        crate::fixups::gate_leaked_in_term(template);
+    }
+    if let Some(template) = overrides.ibid.as_mut() {
+        crate::fixups::gate_leaked_in_term(template);
     }
 }
 
