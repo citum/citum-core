@@ -19,6 +19,17 @@ pub fn gate_leaked_in_term(template: &mut Vec<TemplateComponent>) {
     gating::gate_leaked_in_term(template);
 }
 
+/// Gates url and accessed components to web-only type templates.
+///
+/// Must be called before `build_type_variants` so that the cleaned base and
+/// type-template components are reflected consistently in derived diffs.
+pub fn gate_web_only_url_accessed(
+    base_template: &mut Vec<TemplateComponent>,
+    type_templates: &mut indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>,
+) {
+    gating::gate_web_only_url_accessed(base_template, type_templates);
+}
+
 /// Returns whether a type selector matches any candidate type name.
 #[must_use]
 pub fn selector_matches_any(selector: &TypeSelector, candidates: &[&str]) -> bool {
