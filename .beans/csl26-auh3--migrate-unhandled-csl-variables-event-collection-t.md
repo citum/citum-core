@@ -4,8 +4,11 @@ title: 'migrate: unhandled CSL variables — event, collection-title, translator
 status: todo
 type: feature
 priority: normal
+tags:
+    - migrate
+    - coverage-gap
 created_at: 2026-06-16T15:49:01Z
-updated_at: 2026-06-16T15:49:01Z
+updated_at: 2026-06-16T16:20:29Z
 ---
 
 After coverage-gap key-mapping fixes (csl26-t56t), these variables remain as genuine converter gaps across the independent-style corpus:

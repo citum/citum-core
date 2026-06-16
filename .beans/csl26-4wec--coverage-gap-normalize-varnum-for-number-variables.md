@@ -4,8 +4,12 @@ title: 'coverage-gap: normalize var:/num: for number variables in legacy extract
 status: todo
 type: task
 priority: normal
+tags:
+    - citum-analyze
+    - coverage-gap
+    - migrate
 created_at: 2026-06-16T15:48:49Z
-updated_at: 2026-06-16T15:48:49Z
+updated_at: 2026-06-16T16:20:29Z
 ---
 
 coverage_gap.rs::collect_legacy_features emits var:page, var:volume, var:issue, var:edition from CSL <text variable="X"/> nodes. But migrate likely converts these to NumberVariable (Number(NumberVariable::Volume)), producing num:volume in compiled output. This creates false-positive gaps for ~2782 (volume), ~2798 (page), ~1701 (issue), ~2422 (edition) styles.
