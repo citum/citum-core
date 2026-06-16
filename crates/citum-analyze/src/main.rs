@@ -9,9 +9,11 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 #![allow(missing_docs, reason = "bin/main")]
 
 mod analyzer;
+mod coverage_gap;
 mod profile_discovery;
 mod ranker;
 mod savings;
+pub mod semantic;
 mod util;
 
 use std::env;
@@ -32,6 +34,7 @@ fn main() {
     let rank_parents = args.iter().any(|arg| arg == "--rank-parents");
     let quantify_savings = args.iter().any(|arg| arg == "--quantify-savings");
     let identify_profiles = args.iter().any(|arg| arg == "--identify-profiles");
+    let coverage_gap = args.iter().any(|arg| arg == "--coverage-gap");
 
     // Check for format filter (--format author-date, --format numeric, etc.)
     let format_filter = args
@@ -40,7 +43,9 @@ fn main() {
         .and_then(|i| args.get(i + 1))
         .map(std::string::String::as_str);
 
-    if identify_profiles {
+    if coverage_gap {
+        coverage_gap::run_coverage_gap(styles_dir, json_output);
+    } else if identify_profiles {
         profile_discovery::run_profile_discovery(styles_dir, json_output);
     } else if quantify_savings {
         savings::run_savings_report(styles_dir, json_output);
@@ -73,10 +78,19 @@ fn print_usage() {
         "      Audit the current journal-profile candidate shortlist with normalized IDs and repo evidence."
     );
     eprintln!();
+    eprintln!("  citum_analyze <styles_dir> --coverage-gap [--json]");
+    eprintln!(
+        "      Report which CSL features migrate drops across the corpus (prioritized converter gaps)"
+    );
+    eprintln!(
+        "      and which independent styles match a Citum base style (preset-family clusters)."
+    );
+    eprintln!();
     eprintln!("Examples:");
     eprintln!("  citum_analyze styles-legacy/");
     eprintln!("  citum_analyze styles-legacy/ --rank-parents");
     eprintln!("  citum_analyze styles-legacy/ --rank-parents --format author-date --json");
     eprintln!("  citum_analyze styles-legacy/ --quantify-savings --json");
     eprintln!("  citum_analyze styles-legacy/ --identify-profiles --json");
+    eprintln!("  citum_analyze styles-legacy/ --coverage-gap --json | jq '.prioritized_gaps[:10]'");
 }
