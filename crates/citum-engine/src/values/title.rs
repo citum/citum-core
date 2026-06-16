@@ -384,6 +384,7 @@ fn resolve_primary_title(reference: &Reference, title_type: &TitleType) -> Optio
             | ClassExtension::Treaty(_) => reference.container_title(),
             _ => None,
         },
+        TitleType::CollectionTitle => reference.collection_title(),
         _ => None,
     }
 }

@@ -46,7 +46,9 @@ pub enum SemanticItem {
 ///
 /// Several Citum schema names diverge from their CSL 1.0 counterparts:
 /// - [`TitleType`] variants (`Primary`, `ParentMonograph`, …) are reverse-mapped to
-///   their CSL variable names (`title`, `container-title`).
+///   their CSL variable names (`title`, `container-title`, `collection-title`).
+/// - [`DateVariable::OriginalPublished`] is reverse-mapped to CSL's
+///   `original-date` variable.
 /// - [`SimpleVariable::Doi`] / [`SimpleVariable::Url`] use uppercase in CSL (`DOI`,
 ///   `URL`) but lowercase serde names in Citum.
 /// - [`SimpleVariable::ArchiveLocation`] uses an underscore in CSL (`archive_location`)
@@ -69,13 +71,20 @@ pub fn semantic_to_legacy_key(item: &SemanticItem) -> String {
             format!("var:{csl_name}")
         }
         SemanticItem::Number(n) => format!("num:{}", serialize(n)),
-        SemanticItem::Date(d) => format!("date:{}", serialize(d)),
+        SemanticItem::Date(d) => {
+            let csl_name = match d {
+                DateVariable::OriginalPublished => "original-date",
+                _ => return format!("date:{}", serialize(d)),
+            };
+            format!("date:{csl_name}")
+        }
         SemanticItem::Contributor(c) => format!("names:{}", serialize(c)),
         SemanticItem::Title(t) => {
             // TitleType uses Citum-internal names; reverse-map to CSL 1.0 variable names.
             let csl_var = match t {
                 TitleType::Primary => "title",
                 TitleType::ParentMonograph | TitleType::ParentSerial => "container-title",
+                TitleType::CollectionTitle => "collection-title",
                 _ => return format!("var:{}", serialize(t)),
             };
             format!("var:{csl_var}")
@@ -165,4 +174,37 @@ pub fn collect_base_semantic_sets()
             (base.clone(), bib_set, cit_sets)
         })
         .collect()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn maps_original_published_date_to_csl_original_date() {
+        assert_eq!(
+            semantic_to_legacy_key(&SemanticItem::Date(DateVariable::OriginalPublished)),
+            "date:original-date"
+        );
+    }
+
+    #[test]
+    fn maps_collection_title_to_csl_collection_title() {
+        assert_eq!(
+            semantic_to_legacy_key(&SemanticItem::Title(TitleType::CollectionTitle)),
+            "var:collection-title"
+        );
+    }
+
+    #[test]
+    fn keeps_parent_titles_as_csl_container_title() {
+        assert_eq!(
+            semantic_to_legacy_key(&SemanticItem::Title(TitleType::ParentMonograph)),
+            "var:container-title"
+        );
+        assert_eq!(
+            semantic_to_legacy_key(&SemanticItem::Title(TitleType::ParentSerial)),
+            "var:container-title"
+        );
+    }
 }

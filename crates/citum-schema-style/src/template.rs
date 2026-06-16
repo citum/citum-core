@@ -879,6 +879,8 @@ pub enum TitleType {
     ParentMonograph,
     /// Title of a periodical/serial containing the cited work.
     ParentSerial,
+    /// Title of a series or collection containing the cited work.
+    CollectionTitle,
 }
 
 /// Title rendering forms.

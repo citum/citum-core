@@ -1756,6 +1756,40 @@ fn container_title_short_prefers_explicit_short_field() {
 }
 
 #[test]
+fn collection_title_component_renders_parent_series_title() {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Collection Title Test".to_string()),
+            id: Some("collection-title-test".into()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Title(TemplateTitle {
+                title: TitleType::CollectionTitle,
+                ..Default::default()
+            })]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
+        "id": "ITEM-SERIES-1",
+        "type": "chapter",
+        "title": "Ignored",
+        "container-title": "Edited Book",
+        "collection-title": "Studies in Examples"
+    }))
+    .expect("legacy fixture should parse");
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert("ITEM-SERIES-1".to_string(), legacy.into());
+
+    let processor = Processor::new(style, bib);
+    assert_eq!(processor.render_bibliography(), "Studies in Examples");
+}
+
+#[test]
 fn legal_case_parent_serial_uses_reporter_as_container_title() {
     let style = Style {
         info: StyleInfo {

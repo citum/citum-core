@@ -57,6 +57,30 @@ fn test_parse_csl_json_structural_author_populates_canonical_contributors() {
 }
 
 #[test]
+fn csl_json_chapter_preserves_collection_title_as_parent_series() {
+    let json = r#"{
+        "id": "chapter-with-series",
+        "type": "chapter",
+        "title": "Chapter Title",
+        "container-title": "Edited Book",
+        "collection-title": "Studies in Examples",
+        "issued": {"date-parts": [[2024]]}
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(
+        reference.container_title(),
+        Some(Title::Single("Edited Book".to_string()))
+    );
+    assert_eq!(
+        reference.collection_title(),
+        Some(Title::Single("Studies in Examples".to_string()))
+    );
+}
+
+#[test]
 fn test_parse_csl_json_motion_picture_produces_audio_visual() {
     let json = r#"{
         "id": "parasite",
