@@ -1710,6 +1710,11 @@
           "description": "Title of a periodical/serial containing the cited work.",
           "type": "string",
           "const": "parent-serial"
+        },
+        {
+          "description": "Title of a series or collection containing the cited work.",
+          "type": "string",
+          "const": "collection-title"
         }
       ]
     },

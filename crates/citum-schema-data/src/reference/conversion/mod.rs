@@ -187,6 +187,15 @@ fn relation_event(
     ))))
 }
 
+fn relation_collection_title(title: Option<String>) -> Option<WorkRelation> {
+    title.map(|title| {
+        WorkRelation::Embedded(Box::new(InputReference::Collection(Box::new(Collection {
+            title: Some(Title::Single(title)),
+            ..Default::default()
+        }))))
+    })
+}
+
 fn short_title_from_legacy(legacy: &csl_legacy::csl_json::Reference, key: &str) -> Option<String> {
     legacy_extra_str(legacy, key)
 }

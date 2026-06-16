@@ -195,3 +195,32 @@ fn base_component_shape_comes_from_default_branch_occurrence() {
         "volume label from the book branch must not leak into the default shape"
     );
 }
+
+#[test]
+fn csl_section_and_collection_title_compile_to_distinct_citum_components() {
+    announce_behavior(
+        "CSL section migrates to a simple section variable, while collection-title migrates to the collection-title title surface rather than a parent monograph title.",
+    );
+    let xml = r#"<style class="in-text">
+        <citation><layout><text variable="citation-number"/></layout></citation>
+        <bibliography>
+            <layout>
+                <text variable="section"/>
+                <text variable="collection-title"/>
+            </layout>
+        </bibliography>
+    </style>"#;
+
+    let base_template = compile_bibliography_base(xml);
+    let visible_keys: Vec<String> = base_template
+        .iter()
+        .filter(|component| !is_suppressed(component))
+        .map(component_key)
+        .collect();
+
+    assert_eq!(
+        visible_keys,
+        vec!["variable:Section", "title:CollectionTitle"],
+        "section and collection-title should keep distinct Citum semantics"
+    );
+}

@@ -258,7 +258,7 @@ impl TemplateCompiler {
         match var {
             Variable::Title => Some(TitleType::Primary),
             Variable::ContainerTitle => Some(TitleType::ParentSerial),
-            Variable::CollectionTitle => Some(TitleType::ParentMonograph),
+            Variable::CollectionTitle => Some(TitleType::CollectionTitle),
             _ => None,
         }
     }
@@ -291,6 +291,7 @@ impl TemplateCompiler {
             Variable::PublisherPlace => Some(SimpleVariable::PublisherPlace),
             Variable::Genre => Some(SimpleVariable::Genre),
             Variable::Authority => Some(SimpleVariable::Authority),
+            Variable::Section => Some(SimpleVariable::Section),
             Variable::Archive => Some(SimpleVariable::Archive),
             Variable::ArchiveLocation => Some(SimpleVariable::ArchiveLocation),
             Variable::Version => Some(SimpleVariable::Version),

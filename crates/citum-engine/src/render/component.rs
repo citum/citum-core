@@ -58,7 +58,7 @@ fn resolve_semantic_class(component: &ProcTemplateComponent) -> Option<String> {
     match &component.template_component {
         TemplateComponent::Title(t) => match t.title {
             TitleType::Primary => Some("citum-title".to_string()),
-            TitleType::ParentMonograph | TitleType::ParentSerial => {
+            TitleType::ParentMonograph | TitleType::ParentSerial | TitleType::CollectionTitle => {
                 Some("citum-container-title".to_string())
             }
             _ => Some("citum-title".to_string()),
@@ -316,6 +316,7 @@ pub fn get_title_category_rendering(
             .container_monograph
             .as_ref()
             .or(titles_config.monograph.as_ref()),
+        TitleType::CollectionTitle => titles_config.default.as_ref(),
         TitleType::Primary => {
             if let Some(cat) = mapped_category {
                 match cat.as_str() {

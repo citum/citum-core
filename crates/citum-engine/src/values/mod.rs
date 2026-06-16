@@ -294,6 +294,7 @@ pub fn effective_component_language(
                 TitleType::Primary => reference.title(),
                 TitleType::ParentMonograph => reference.container_title(),
                 TitleType::ParentSerial => reference.container_title(),
+                TitleType::CollectionTitle => reference.collection_title(),
                 _ => reference.title(),
             };
 
@@ -301,6 +302,7 @@ pub fn effective_component_language(
                 TitleType::Primary => "title",
                 TitleType::ParentMonograph => "parent-monograph.title",
                 TitleType::ParentSerial => "parent-serial.title",
+                TitleType::CollectionTitle => "collection-title",
                 _ => "title",
             };
 

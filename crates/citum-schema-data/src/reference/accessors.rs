@@ -1051,6 +1051,36 @@ impl InputReference {
         }
     }
 
+    /// Return the series or collection title for a parent work.
+    pub fn collection_title(&self) -> Option<Title> {
+        fn nested_collection_title(relation: &WorkRelation) -> Option<Title> {
+            let WorkRelation::Embedded(parent) = relation else {
+                return None;
+            };
+            let container = match parent.extension() {
+                ClassExtension::Monograph(r) => r.container.as_ref(),
+                ClassExtension::Collection(r) => r.container.as_ref(),
+                ClassExtension::Serial(r) => r.container.as_ref(),
+                _ => None,
+            }?;
+            match container {
+                WorkRelation::Embedded(collection) => collection.title(),
+                WorkRelation::Id(_) => None,
+            }
+        }
+
+        match &self.extension {
+            ClassExtension::Monograph(r) => r.container.as_ref().and_then(nested_collection_title),
+            ClassExtension::CollectionComponent(r) => {
+                r.container.as_ref().and_then(nested_collection_title)
+            }
+            ClassExtension::SerialComponent(r) => {
+                r.container.as_ref().and_then(nested_collection_title)
+            }
+            _ => None,
+        }
+    }
+
     /// Return the volume.
     pub fn volume(&self) -> Option<NumOrStr> {
         match &self.extension {

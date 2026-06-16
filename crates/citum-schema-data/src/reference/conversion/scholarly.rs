@@ -86,6 +86,7 @@ pub(super) fn from_monograph_ref(
     let references = legacy_extra_str(&legacy, "references");
     let scale = legacy_extra_str(&legacy, "scale");
     let dimensions = legacy_extra_str(&legacy, "dimensions");
+    let collection_title = legacy.collection_title.clone();
     let mut contributors = legacy_named_contributors(&legacy);
     push_legacy_contributor(
         &mut contributors,
@@ -179,9 +180,11 @@ pub(super) fn from_monograph_ref(
     let container = {
         let base_title = legacy.container_title.clone().map(Title::Single);
         let effective_title = volume_title.map(Title::Single).or(base_title);
+        let collection = relation_collection_title(collection_title);
         effective_title.map(|t| {
             WorkRelation::Embedded(Box::new(InputReference::Monograph(Box::new(Monograph {
                 title: Some(t),
+                container: collection,
                 ..Default::default()
             }))))
         })
@@ -281,6 +284,7 @@ pub(super) fn from_collection_component_ref(
     let original_publisher = legacy_extra_str(&legacy, "original-publisher");
     let original_publisher_place = legacy_extra_str(&legacy, "original-publisher-place");
     let parent_title = legacy.container_title.clone().map(Title::Single);
+    let collection_title = legacy.collection_title.clone();
     let parent_volume = legacy
         .collection_number
         .clone()
@@ -376,7 +380,7 @@ pub(super) fn from_collection_component_ref(
                 },
                 title: parent_title,
                 short_title: ctx.container_title_short,
-                container: None,
+                container: relation_collection_title(collection_title),
                 editor: container_editor,
                 translator: None,
                 contributors: container_contributors,
@@ -589,6 +593,7 @@ pub(super) fn from_serial_component_ref(
         _ => SerialType::AcademicJournal,
     };
     let parent_title = legacy.container_title.clone().map(Title::Single);
+    let collection_title = legacy.collection_title.clone();
 
     let volume = legacy.volume.map(|v| v.to_string());
     let issue = legacy
@@ -662,7 +667,7 @@ pub(super) fn from_serial_component_ref(
                 r#type: serial_type,
                 title: parent_title,
                 short_title: ctx.container_title_short.or(ctx.journal_abbreviation),
-                container: None,
+                container: relation_collection_title(collection_title),
                 editor: serial_editor,
                 contributors: serial_contributors,
                 publisher: legacy.publisher.clone().map(|n| Publisher {
