@@ -36,7 +36,8 @@ impl TypeSelectorNames for TypeSelector {
     }
 }
 
-pub(crate) fn postprocess_inferred_bibliography(
+/// Apply bibliography semantic repairs while templates are still full.
+pub(crate) fn postprocess_bibliography_templates(
     new_bib: &mut Vec<TemplateComponent>,
     type_templates: &mut Option<TypeTemplateMap>,
     legacy_style: &csl_legacy::model::Style,
@@ -237,5 +238,142 @@ pub(crate) fn relax_inferred_bibliography_date_suppression(template: &mut [Templ
         if let TemplateComponent::Group(list) = component {
             relax_inferred_bibliography_date_suppression(&mut list.group);
         }
+    }
+}
+
+#[cfg(test)]
+#[allow(clippy::expect_used, reason = "Panicking is acceptable in tests.")]
+mod tests {
+    use super::*;
+    use citum_schema::template::{
+        DateVariable, TemplateContributor, TemplateDate, TemplateTerm, TemplateTitle,
+        TemplateVariable, TitleType,
+    };
+
+    #[test]
+    fn inferred_type_variants_recover_missing_primary_title() {
+        let default_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            TemplateComponent::Date(TemplateDate {
+                date: DateVariable::Issued,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            }),
+        ];
+
+        let mut type_templates = indexmap::IndexMap::from([(
+            TypeSelector::Single("article-newspaper".to_string()),
+            vec![
+                TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    ..Default::default()
+                }),
+                TemplateComponent::Date(TemplateDate {
+                    date: DateVariable::Issued,
+                    ..Default::default()
+                }),
+                TemplateComponent::Term(TemplateTerm {
+                    term: GeneralTerm::In,
+                    ..Default::default()
+                }),
+            ],
+        )]);
+
+        repair_inferred_bibliography_type_templates(&default_template, &mut type_templates);
+
+        let variant = type_templates
+            .get(&TypeSelector::Single("article-newspaper".to_string()))
+            .expect("article-newspaper variant should exist");
+
+        assert!(
+            variant.iter().any(component_is_primary_title),
+            "underfit inferred type variants should inherit the base primary title"
+        );
+        let title_index = variant
+            .iter()
+            .position(component_is_primary_title)
+            .expect("title should be present");
+        let in_index = variant
+            .iter()
+            .position(component_is_in_term)
+            .expect("in term should be present");
+        assert!(
+            title_index < in_index,
+            "recovered title should appear before container-introducing terms"
+        );
+    }
+
+    #[test]
+    fn inferred_type_variants_recover_missing_publisher() {
+        let default_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            TemplateComponent::Date(TemplateDate {
+                date: DateVariable::Issued,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                ..Default::default()
+            }),
+            TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::PublisherPlace,
+                ..Default::default()
+            }),
+            TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Publisher,
+                ..Default::default()
+            }),
+        ];
+
+        let mut type_templates = indexmap::IndexMap::from([(
+            TypeSelector::Single("book".to_string()),
+            vec![
+                TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    ..Default::default()
+                }),
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    ..Default::default()
+                }),
+                TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::PublisherPlace,
+                    ..Default::default()
+                }),
+            ],
+        )]);
+
+        repair_inferred_bibliography_type_templates(&default_template, &mut type_templates);
+
+        let variant = type_templates
+            .get(&TypeSelector::Single("book".to_string()))
+            .expect("book variant should exist");
+
+        assert!(
+            variant.iter().any(component_is_publisher),
+            "monographic inferred type variants should inherit the base publisher"
+        );
+        let publisher_place_index = variant
+            .iter()
+            .position(component_is_publisher_place)
+            .expect("publisher-place should be present");
+        let publisher_index = variant
+            .iter()
+            .position(component_is_publisher)
+            .expect("publisher should be present");
+        assert_eq!(
+            publisher_index,
+            publisher_place_index + 1,
+            "publisher should follow publisher-place after repair"
+        );
     }
 }

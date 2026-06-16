@@ -478,8 +478,9 @@ fn lcs_pairs(left: &[String], right: &[String]) -> Vec<(usize, usize)> {
 mod tests {
     use super::*;
     use citum_schema::template::{
-        SimpleVariable, TemplateComponent, TemplateTitle, TemplateVariable, TemplateVariant,
-        TemplateVariantDiff, TitleType, TypeSelector,
+        ContributorRole, Rendering, SimpleVariable, TemplateComponent, TemplateContributor,
+        TemplateTitle, TemplateVariable, TemplateVariant, TemplateVariantDiff, TitleType,
+        TypeSelector,
     };
 
     fn title_component() -> TemplateComponent {
@@ -610,5 +611,162 @@ mod tests {
                 .any(|selector| matches!(selector, TypeSelector::Multiple(_))),
             "pre-wrapper variant construction must not synthesize grouped selectors"
         );
+    }
+
+    #[test]
+    fn template_v3_diff_generator_emits_rendering_modify() {
+        let default_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            title_component(),
+        ];
+        let target_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                rendering: Rendering {
+                    suffix: Some(".".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ];
+
+        let variant = template_variant_from_full_template(
+            &default_template,
+            &[],
+            &TypeSelector::Single("book".to_string()),
+            target_template,
+        );
+
+        let TemplateVariant::Diff(diff) = variant else {
+            panic!("rendering-only template changes should emit Template V3 diffs");
+        };
+        assert_eq!(diff.modify.len(), 1);
+        assert!(diff.remove.is_empty());
+        assert!(diff.add.is_empty());
+    }
+
+    #[test]
+    fn template_v3_diff_generator_emits_structural_remove_and_add() {
+        let default_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            title_component(),
+            TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Publisher,
+                ..Default::default()
+            }),
+        ];
+        let target_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            TemplateComponent::Date(citum_schema::template::TemplateDate {
+                date: citum_schema::template::DateVariable::Issued,
+                ..Default::default()
+            }),
+            title_component(),
+        ];
+
+        let variant = template_variant_from_full_template(
+            &default_template,
+            &[],
+            &TypeSelector::Single("book".to_string()),
+            target_template,
+        );
+
+        let TemplateVariant::Diff(diff) = variant else {
+            panic!("safe structural template changes should emit Template V3 diffs");
+        };
+        assert!(diff.modify.is_empty());
+        assert_eq!(diff.remove.len(), 1);
+        assert_eq!(diff.add.len(), 1);
+    }
+
+    #[test]
+    fn template_v3_diff_generator_falls_back_for_non_rendering_changes() {
+        let default_template = vec![title_component()];
+        let target_template = vec![TemplateComponent::Title(TemplateTitle {
+            title: TitleType::Primary,
+            form: Some(citum_schema::template::TitleForm::Short),
+            ..Default::default()
+        })];
+
+        let variant = template_variant_from_full_template(
+            &default_template,
+            &[],
+            &TypeSelector::Single("book".to_string()),
+            target_template,
+        );
+
+        assert!(matches!(variant, TemplateVariant::Full(_)));
+    }
+
+    #[test]
+    fn template_v3_diff_generator_can_extend_prior_variant() {
+        let default_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            title_component(),
+            TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Publisher,
+                ..Default::default()
+            }),
+        ];
+        let book_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                rendering: Rendering {
+                    suffix: Some(".".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ];
+        let chapter_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            TemplateComponent::Title(TemplateTitle {
+                title: TitleType::Primary,
+                rendering: Rendering {
+                    suffix: Some("!".to_string()),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ];
+        let parent_selector = TypeSelector::Single("book".to_string());
+        let parents = vec![(parent_selector.clone(), book_template)];
+
+        let variant = template_variant_from_full_template(
+            &default_template,
+            &parents,
+            &TypeSelector::Single("chapter".to_string()),
+            chapter_template,
+        );
+
+        let TemplateVariant::Diff(diff) = variant else {
+            panic!("variant should extend prior variant when it is more concise");
+        };
+        assert_eq!(diff.extends, Some(parent_selector));
+        assert_eq!(diff.modify.len(), 1);
+        assert!(diff.remove.is_empty());
     }
 }

@@ -91,7 +91,7 @@ Synthesis
        → (new_bib: Full, type_templates: TypeTemplateMap of Full)
 
 Phase 1 — Fixups (order-independent within this phase)
-  ├─ postprocess_inferred_bibliography        (scrubs artifacts, relaxes suppression)
+  ├─ postprocess_bibliography_templates       (scrubs artifacts, relaxes suppression)
   ├─ normalize_legal_case_type_template       (semantic: legal-case formatting)
   ├─ ensure_inferred_media_type_templates     (semantic: media type completeness)
   ├─ ensure_inferred_patent_type_template     (semantic: patent template)
@@ -108,7 +108,7 @@ Phase 2 — Compression (pure serialization pass)
 | Component | Current role | New role |
 |---|---|---|
 | `build_type_variants` | Called once in `build_final_style` immediately after fixups; result is the stored output | Called once at the END of `build_final_style`, after ALL fixups; semantics unchanged |
-| `postprocess_inferred_bibliography` | Only called on the inferred path | Called on all paths (inferred and XML-seed winner), since it encodes semantic knowledge, not inference artifacts |
+| `postprocess_bibliography_templates` | Formerly inferred-only postprocess | Called on all paths (inferred and XML-seed winner), since it encodes semantic knowledge, not inference artifacts |
 | `engine_validate_variants` | Disabled / commented out | Restored as the round-trip safety net for Phase 2. A `Diff` that fails engine round-trip is demoted to `Full`; this is the only correctness gate needed for compression. |
 | Fixups that touch base template | Ordering is load-bearing | Ordering within Phase 1 is free; only constraint is Phase 1 before Phase 2 |
 | `gate_web_only_url_accessed` | Could not be added without regression | Added in Phase 1; strips url/accessed from base and non-web type templates before compression |
@@ -184,7 +184,7 @@ refactor.
 
 - [ ] `build_type_variants` is called only once in `build_final_style`, after
   all fixups have run.
-- [ ] `postprocess_inferred_bibliography` runs on both the inferred and
+- [ ] `postprocess_bibliography_templates` runs on both the inferred and
   XML-seed-winner paths (currently inferred-only).
 - [ ] `engine_validate_variants` is restored and active (demotes unsafe Diffs
   to Full).
@@ -207,7 +207,7 @@ The refactor is localized to `main.rs::build_final_style` and the call site for
 `build_type_variants`. The fixup functions themselves do not change; only their
 call order relative to `build_type_variants` changes.
 
-`postprocess_inferred_bibliography` currently holds some fixups that reference
+`postprocess_bibliography_templates` holds some fixups that reference
 `inferred_bib_source` to decide whether to run. Extracting those into a
 separate function (or removing the guard) is the main structural change needed.
 

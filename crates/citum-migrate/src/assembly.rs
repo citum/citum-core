@@ -1,0 +1,806 @@
+/*
+SPDX-License-Identifier: MIT OR Apache-2.0
+SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
+*/
+
+//! Final standalone style assembly for `citum-migrate`.
+
+use crate::{
+    bib_postprocess::{
+        is_inferred_bib_source, merge_inferred_type_templates, postprocess_bibliography_templates,
+    },
+    citation_validate,
+    template_diff::{TypeTemplateMap, TypeVariantMap, build_type_variants},
+};
+use citum_migrate::{
+    analysis,
+    compilation::XmlCompilationOutput as XmlFallback,
+    fixups::{
+        ensure_numeric_locator_citation_component, ensure_personal_communication_omitted,
+        gate_web_only_url_accessed, move_group_wrap_to_citation_items,
+        normalize_author_date_locator_citation_component,
+        normalize_wrapped_numeric_locator_citation_component,
+    },
+    template_resolver,
+};
+use citum_schema::{
+    BibliographySpec, CitationCollapse, CitationSpec, Style, StyleInfo,
+    template::{TemplateComponent, WrapPunctuation},
+};
+use std::path::Path;
+
+/// Borrowed pipeline state needed to assemble a standalone style variant.
+pub(crate) struct StandaloneAssembly<'a> {
+    /// Parsed legacy CSL style.
+    pub(crate) legacy_style: &'a csl_legacy::model::Style,
+    /// Resolved hand-authored, inferred, or XML-fallback template sources.
+    pub(crate) resolved: &'a template_resolver::ResolvedTemplates,
+    /// XML-compiled fallback candidate used when resolved templates are absent.
+    pub(crate) xml_fallback: &'a Option<XmlFallback>,
+    /// Extracted global migration options.
+    pub(crate) options: &'a citum_schema::options::Config,
+    /// Extracted bibliography-specific options.
+    pub(crate) bibliography_options: &'a Option<citum_schema::BibliographyOptions>,
+    /// Citation contributor overrides extracted from legacy CSL.
+    pub(crate) citation_contributor_overrides: &'a Option<citum_schema::options::ContributorConfig>,
+    /// Bibliography contributor overrides extracted from legacy CSL.
+    pub(crate) bibliography_contributor_overrides:
+        &'a Option<citum_schema::options::ContributorConfig>,
+}
+
+/// Template-source suppression switches used for measured candidate selection.
+#[derive(Debug, Clone, Copy, Default)]
+pub(crate) struct TemplateSourceSelection {
+    /// Force bibliography assembly through XML fallback.
+    pub(crate) suppress_inferred_bibliography: bool,
+    /// Force citation assembly through XML fallback.
+    pub(crate) suppress_inferred_citation: bool,
+}
+
+/// All compiled template and option data needed to build the final Style.
+struct CompiledOutput {
+    options: citum_schema::options::Config,
+    citation_contributor_overrides: Option<citum_schema::options::ContributorConfig>,
+    bibliography_options: Option<citum_schema::BibliographyOptions>,
+    bibliography_contributor_overrides: Option<citum_schema::options::ContributorConfig>,
+    new_cit: Vec<TemplateComponent>,
+    new_bib: Vec<TemplateComponent>,
+    type_templates: Option<TypeTemplateMap>,
+    citation_wrap: Option<WrapPunctuation>,
+    citation_prefix: Option<String>,
+    citation_suffix: Option<String>,
+    citation_delimiter: Option<String>,
+    citation_subsequent_override: Option<Vec<TemplateComponent>>,
+    citation_ibid_override: Option<Vec<TemplateComponent>>,
+}
+
+impl StandaloneAssembly<'_> {
+    /// Assemble a standalone style using the requested source suppression.
+    pub(crate) fn assemble_with_selection(&self, selection: TemplateSourceSelection) -> Style {
+        let masked;
+        let resolved =
+            if selection.suppress_inferred_bibliography || selection.suppress_inferred_citation {
+                masked = template_resolver::ResolvedTemplates {
+                    bibliography: if selection.suppress_inferred_bibliography {
+                        None
+                    } else {
+                        self.resolved.bibliography.clone()
+                    },
+                    citation: if selection.suppress_inferred_citation {
+                        None
+                    } else {
+                        self.resolved.citation.clone()
+                    },
+                };
+                &masked
+            } else {
+                self.resolved
+            };
+
+        let mut bibliography_options = self.bibliography_options.clone();
+        let (new_bib, mut type_templates, inferred_bib_source) =
+            select_and_process_bibliography_template(
+                resolved,
+                self.xml_fallback,
+                self.legacy_style,
+            );
+
+        let (mut new_cit, citation_subsequent_override, citation_ibid_override) =
+            select_citation_template(
+                resolved,
+                self.xml_fallback,
+                inferred_bib_source,
+                self.legacy_style,
+                &mut type_templates,
+            );
+
+        override_bibliography_options_if_inferred(
+            resolved,
+            self.legacy_style,
+            &mut bibliography_options,
+        );
+
+        let (citation_wrap, citation_prefix, citation_suffix, citation_delimiter) =
+            resolve_citation_metadata(resolved, self.legacy_style, self.options, &mut new_cit);
+
+        build_final_style(
+            self.legacy_style,
+            CompiledOutput {
+                options: self.options.clone(),
+                citation_contributor_overrides: self.citation_contributor_overrides.clone(),
+                bibliography_options,
+                bibliography_contributor_overrides: self.bibliography_contributor_overrides.clone(),
+                new_cit,
+                new_bib,
+                type_templates,
+                citation_wrap,
+                citation_prefix,
+                citation_suffix,
+                citation_delimiter,
+                citation_subsequent_override,
+                citation_ibid_override,
+            },
+        )
+    }
+}
+
+/// Replace the current citation template when a measured candidate renders
+/// closer to citeproc-js.
+///
+/// The inferrer's confidence score is self-referential and can rate templates
+/// highly that render badly; this settles the choice empirically. Any scoring
+/// failure keeps the inferred status quo.
+pub(crate) fn apply_measured_citation_selection(
+    current: Style,
+    assembly: &StandaloneAssembly<'_>,
+    source_selection: TemplateSourceSelection,
+    style_name: &str,
+    style_xml: &str,
+    workspace_root: &Path,
+) -> (Style, bool) {
+    let Some(out) = assembly.xml_fallback.as_ref() else {
+        return (current, false);
+    };
+    if out.citation.is_empty() {
+        return (current, false);
+    }
+
+    let alternative = assembly.assemble_with_selection(TemplateSourceSelection {
+        suppress_inferred_citation: true,
+        ..source_selection
+    });
+    match citum_migrate::synthesis::synthesize_citation(
+        &current,
+        &alternative,
+        style_name,
+        style_xml,
+        workspace_root,
+    ) {
+        Ok(selection) => apply_citation_selection_result(current, style_name, selection),
+        Err(err) => measured_selection_unavailable(current, style_name, "citation", err),
+    }
+}
+
+/// Replace the current bibliography template when a measured candidate renders
+/// closer to citeproc-js.
+pub(crate) fn apply_measured_bibliography_selection(
+    current: Style,
+    assembly: &StandaloneAssembly<'_>,
+    source_selection: TemplateSourceSelection,
+    style_name: &str,
+    style_xml: &str,
+    workspace_root: &Path,
+) -> (Style, bool) {
+    let Some(out) = assembly.xml_fallback.as_ref() else {
+        return (current, false);
+    };
+    if out.bibliography.is_empty() {
+        return (current, false);
+    }
+
+    let bibliography_source = assembly.assemble_with_selection(TemplateSourceSelection {
+        suppress_inferred_bibliography: true,
+        ..source_selection
+    });
+    let alternative = style_with_bibliography_from(current.clone(), bibliography_source);
+    match citum_migrate::synthesis::synthesize_bibliography(
+        &current,
+        &alternative,
+        style_name,
+        style_xml,
+        workspace_root,
+    ) {
+        Ok(selection) => apply_bibliography_selection_result(current, style_name, selection),
+        Err(err) => measured_selection_unavailable(current, style_name, "bibliography", err),
+    }
+}
+
+/// Resolve migrated bibliography sort only when it differs from the processing default.
+pub(crate) fn resolve_migrated_bibliography_sort(
+    processing: Option<&citum_schema::options::Processing>,
+    legacy_sort: Option<&csl_legacy::model::Sort>,
+) -> Option<citum_schema::grouping::GroupSortEntry> {
+    let extracted_entry = legacy_sort.and_then(
+        citum_migrate::options_extractor::bibliography::extract_group_sort_from_bibliography,
+    )?;
+    let extracted = extracted_entry.resolve();
+
+    if bibliography_sort_matches_processing_default(processing, &extracted) {
+        None
+    } else {
+        Some(extracted_entry)
+    }
+}
+
+/// Assembles the final Citum Style from compiled output and legacy metadata.
+fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOutput) -> Style {
+    let citation_scope_options =
+        c.citation_contributor_overrides
+            .map(|contributors| citum_schema::CitationOptions {
+                contributors: Some(contributors),
+                ..Default::default()
+            });
+    let mut bibliography_scope_options = c.bibliography_options.take().unwrap_or_default();
+    if let Some(contributors) = c.bibliography_contributor_overrides.take() {
+        bibliography_scope_options.contributors = Some(contributors);
+    }
+    let bibliography_scope_options = (bibliography_scope_options
+        != citum_schema::BibliographyOptions::default())
+    .then_some(bibliography_scope_options);
+    let bibliography_sort = resolve_migrated_bibliography_sort(
+        c.options.processing.as_ref(),
+        legacy_style
+            .bibliography
+            .as_ref()
+            .and_then(|bib| bib.sort.as_ref()),
+    );
+    let (new_bib, type_variants) = finalize_bibliography_variants(c.new_bib, c.type_templates);
+
+    // [PRUNING] Prune redundant citation modes (e.g. ibid/subsequent if they match base).
+    let subsequent = c
+        .citation_subsequent_override
+        .filter(|t| t != &c.new_cit)
+        .map(|t| {
+            Box::new(CitationSpec {
+                template: Some(t),
+                ..Default::default()
+            })
+        });
+
+    let ibid = c
+        .citation_ibid_override
+        .filter(|t| t != &c.new_cit)
+        .map(|t| {
+            Box::new(CitationSpec {
+                template: Some(t),
+                ..Default::default()
+            })
+        });
+
+    Style {
+        info: StyleInfo {
+            title: Some(legacy_style.info.title.clone()),
+            id: Some(legacy_style.info.id.clone()),
+            default_locale: legacy_style.default_locale.clone(),
+            ..Default::default()
+        },
+        templates: None,
+        options: Some(c.options),
+        citation: Some(CitationSpec {
+            options: citation_scope_options,
+            template_ref: None,
+            template: Some(c.new_cit),
+            collapse: extract_citation_collapse(&legacy_style.citation),
+            wrap: c.citation_wrap.map(Into::into),
+            prefix: c.citation_prefix,
+            suffix: c.citation_suffix,
+            delimiter: c.citation_delimiter,
+            multi_cite_delimiter: legacy_style.citation.layout.delimiter.clone(),
+            subsequent,
+            ibid,
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            options: bibliography_scope_options,
+            template_ref: None,
+            template: Some(new_bib),
+            type_variants,
+            sort: bibliography_sort,
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+fn select_and_process_bibliography_template(
+    resolved: &template_resolver::ResolvedTemplates,
+    xml_fallback: &Option<XmlFallback>,
+    legacy_style: &csl_legacy::model::Style,
+) -> (Vec<TemplateComponent>, Option<TypeTemplateMap>, bool) {
+    let (mut new_bib, mut type_templates, inferred_bib_source) =
+        if let Some(ref resolved_bib) = resolved.bibliography {
+            let inferred_bib = is_inferred_bib_source(&resolved_bib.source);
+            let merged_type_templates = if inferred_bib {
+                xml_fallback
+                    .as_ref()
+                    .and_then(|out| merge_inferred_type_templates(out, &resolved_bib.template))
+            } else {
+                None
+            };
+            (
+                resolved_bib.template.clone(),
+                merged_type_templates,
+                inferred_bib,
+            )
+        } else {
+            #[allow(clippy::expect_used, reason = "fatal bootstrap error")]
+            let out = xml_fallback
+                .as_ref()
+                .expect("XML fallback must exist when bibliography is unresolved");
+            (out.bibliography.clone(), out.type_templates.clone(), false)
+        };
+
+    // Phase 1: semantic fixups operate only on full concrete templates.
+    postprocess_bibliography_templates(&mut new_bib, &mut type_templates, legacy_style);
+
+    (new_bib, type_templates, inferred_bib_source)
+}
+
+fn select_citation_template(
+    resolved: &template_resolver::ResolvedTemplates,
+    xml_fallback: &Option<XmlFallback>,
+    inferred_bib_source: bool,
+    legacy_style: &csl_legacy::model::Style,
+    type_templates: &mut Option<TypeTemplateMap>,
+) -> (
+    Vec<TemplateComponent>,
+    Option<Vec<TemplateComponent>>,
+    Option<Vec<TemplateComponent>>,
+) {
+    let mut citation_subsequent_override: Option<Vec<TemplateComponent>> = None;
+    let mut citation_ibid_override: Option<Vec<TemplateComponent>> = None;
+    let new_cit = if let Some(ref resolved_cit) = resolved.citation {
+        // Inferred templates only capture the first-position form. For note
+        // styles, the subsequent/ibid short forms exist solely in the XML
+        // pipeline's position extraction — attach them so the inferred first
+        // form keeps its repeat behavior. Hand-authored templates are left
+        // alone: their repeat shape is a deliberate authoring decision.
+        if legacy_style.class == "note"
+            && citation_validate::is_inferred_source(&resolved_cit.source)
+            && let Some(out) = xml_fallback.as_ref()
+        {
+            citation_subsequent_override = out.citation_overrides.subsequent.clone();
+            citation_ibid_override = out.citation_overrides.ibid.clone();
+        }
+        resolved_cit.template.clone()
+    } else {
+        #[allow(clippy::expect_used, reason = "fatal bootstrap error")]
+        let out = xml_fallback
+            .as_ref()
+            .expect("XML fallback must exist when citation is unresolved");
+        citation_subsequent_override = out.citation_overrides.subsequent.clone();
+        citation_ibid_override = out.citation_overrides.ibid.clone();
+        out.citation.clone()
+    };
+
+    if inferred_bib_source {
+        ensure_personal_communication_omitted(legacy_style, &new_cit, type_templates);
+    }
+
+    (
+        new_cit,
+        citation_subsequent_override,
+        citation_ibid_override,
+    )
+}
+
+#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
+fn override_bibliography_options_if_inferred(
+    resolved: &template_resolver::ResolvedTemplates,
+    legacy_style: &csl_legacy::model::Style,
+    options: &mut Option<citum_schema::BibliographyOptions>,
+) {
+    if let Some(ref resolved_bib) = resolved.bibliography {
+        let allow_bib_punctuation_override =
+            !(legacy_style.class == "note" && is_inferred_bib_source(&resolved_bib.source));
+
+        if allow_bib_punctuation_override {
+            if let Some(ref delim) = resolved_bib.delimiter {
+                tracing::debug!("  Overriding bibliography separator: {delim:?}");
+                let bib_cfg = options.get_or_insert_with(Default::default);
+                bib_cfg.separator = Some(delim.clone());
+            }
+
+            if let Some(ref suffix) = resolved_bib.entry_suffix {
+                tracing::debug!("  Overriding bibliography entry suffix: {suffix:?}");
+                let bib_cfg = options.get_or_insert_with(Default::default);
+                bib_cfg.entry_suffix = Some(suffix.clone());
+            }
+        } else {
+            tracing::debug!(
+                "  Skipping inferred bibliography separator/entry-suffix override for note style."
+            );
+        }
+    }
+}
+
+fn resolve_citation_metadata(
+    resolved: &template_resolver::ResolvedTemplates,
+    legacy_style: &csl_legacy::model::Style,
+    options: &citum_schema::options::Config,
+    new_cit: &mut Vec<TemplateComponent>,
+) -> (
+    Option<citum_schema::template::WrapPunctuation>,
+    Option<String>,
+    Option<String>,
+    Option<String>,
+) {
+    let (mut citation_wrap, mut citation_prefix, mut citation_suffix) =
+        analysis::citation::infer_citation_wrapping(&legacy_style.citation.layout);
+    let mut citation_delimiter = analysis::citation::extract_citation_delimiter(
+        &legacy_style.citation.layout,
+        &legacy_style.macros,
+    );
+
+    if let Some(ref resolved_cit) = resolved.citation {
+        if let Some(ref wrap) = resolved_cit.wrap {
+            citation_wrap = Some(wrap.clone());
+            citation_prefix = None;
+            citation_suffix = None;
+        }
+        if let Some(ref delim) = resolved_cit.delimiter {
+            citation_delimiter = Some(delim.clone());
+        }
+    }
+
+    if matches!(
+        options.processing,
+        Some(citum_schema::options::Processing::Numeric)
+    ) {
+        ensure_numeric_locator_citation_component(&legacy_style.citation.layout, new_cit);
+        normalize_wrapped_numeric_locator_citation_component(
+            &legacy_style.citation.layout,
+            new_cit,
+            &mut citation_delimiter,
+        );
+        move_group_wrap_to_citation_items(
+            &legacy_style.citation.layout,
+            new_cit,
+            &mut citation_wrap,
+        );
+    } else if legacy_style.class == "in-text" {
+        normalize_author_date_locator_citation_component(
+            &legacy_style.citation.layout,
+            &legacy_style.macros,
+            new_cit,
+        );
+    }
+
+    (
+        citation_wrap,
+        citation_prefix,
+        citation_suffix,
+        citation_delimiter,
+    )
+}
+
+fn finalize_bibliography_variants(
+    mut new_bib: Vec<TemplateComponent>,
+    mut type_templates: Option<TypeTemplateMap>,
+) -> (Vec<TemplateComponent>, Option<TypeVariantMap>) {
+    // Phase 1: final semantic fixups still see full templates. This render-time
+    // citeproc-js gate is applied here after measured selection and before any
+    // diff encoding, so the cleaned base and type templates stay coherent.
+    {
+        let mut empty = TypeTemplateMap::new();
+        let templates = type_templates.as_mut().unwrap_or(&mut empty);
+        gate_web_only_url_accessed(&mut new_bib, templates);
+    }
+
+    // Phase 2: compression is a serialization pass over finalized Full templates.
+    if let Some(type_templates) = type_templates.as_mut() {
+        type_templates.retain(|_, template| template != &new_bib);
+    }
+    let type_variants = type_templates
+        .take()
+        .map(|type_templates| build_type_variants(&new_bib, type_templates));
+
+    (new_bib, type_variants)
+}
+
+fn apply_citation_selection_result(
+    current: Style,
+    style_name: &str,
+    selection: citum_migrate::measured_citation::MeasuredCitationSelection,
+) -> (Style, bool) {
+    if selection.use_xml {
+        tracing::debug!(
+            "Measured citation selection for {style_name}: XML candidate wins ({} vs {} passes over {} items); replacing inferred citation template.",
+            selection.xml_passes,
+            selection.inferred_passes,
+            selection.items
+        );
+        return (selection.selected_style, true);
+    }
+    if selection.selected_candidate != "inferred" {
+        tracing::debug!(
+            "Measured citation selection for {style_name}: {} candidate wins ({} vs {} current passes over {} items; {} synthesis rounds: {:?}).",
+            selection.selected_candidate,
+            selection.selected_passes,
+            selection.inferred_passes,
+            selection.items,
+            selection.synthesis_rounds,
+            selection.accepted_mutations
+        );
+        return (selection.selected_style, false);
+    }
+    tracing::debug!(
+        "Measured citation selection for {style_name}: keeping inferred citation template ({} vs {} passes over {} items).",
+        selection.inferred_passes,
+        selection.xml_passes,
+        selection.items
+    );
+    (current, false)
+}
+
+fn apply_bibliography_selection_result(
+    current: Style,
+    style_name: &str,
+    selection: citum_migrate::measured_citation::MeasuredBibliographySelection,
+) -> (Style, bool) {
+    if selection.use_xml {
+        tracing::debug!(
+            "Measured bibliography selection for {style_name}: XML candidate wins ({} vs {} current passes over {} items); replacing current bibliography template.",
+            selection.xml_passes,
+            selection.inferred_passes,
+            selection.items
+        );
+        return (selection.selected_style, true);
+    }
+    if selection.selected_candidate != "inferred" {
+        tracing::debug!(
+            "Measured bibliography selection for {style_name}: {} candidate wins (family={}, section={}, types={:?}; {} vs {} current passes over {} items; {} synthesis rounds: {:?}).",
+            selection.selected_candidate,
+            selection.selected_family.as_deref().unwrap_or("unknown"),
+            selection.selected_section.as_deref().unwrap_or("unknown"),
+            selection.selected_affected_types,
+            selection.selected_passes,
+            selection.inferred_passes,
+            selection.items,
+            selection.synthesis_rounds,
+            selection.accepted_mutations
+        );
+        return (selection.selected_style, false);
+    }
+    tracing::debug!(
+        "Measured bibliography selection for {style_name}: keeping inferred bibliography template ({} vs {} passes over {} items).",
+        selection.inferred_passes,
+        selection.xml_passes,
+        selection.items
+    );
+    (current, false)
+}
+
+fn style_with_bibliography_from(mut current: Style, bibliography_source: Style) -> Style {
+    current.bibliography = bibliography_source.bibliography;
+    current
+}
+
+fn measured_selection_unavailable(
+    current: Style,
+    style_name: &str,
+    section: &str,
+    err: String,
+) -> (Style, bool) {
+    tracing::debug!("Measured {section} selection unavailable for {style_name}: {err}");
+    (current, false)
+}
+
+fn extract_citation_collapse(citation: &csl_legacy::model::Citation) -> Option<CitationCollapse> {
+    match citation.collapse.as_deref() {
+        Some("citation-number") => Some(CitationCollapse::CitationNumber),
+        _ => None,
+    }
+}
+
+fn bibliography_sort_matches_processing_default(
+    processing: Option<&citum_schema::options::Processing>,
+    sort: &citum_schema::grouping::GroupSort,
+) -> bool {
+    processing
+        .and_then(citum_schema::options::Processing::default_bibliography_sort)
+        .is_some_and(|preset| preset.group_sort() == *sort)
+}
+
+#[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
+mod tests {
+    use super::*;
+    use citum_schema::{
+        BibliographySpec, CitationSpec,
+        template::{SimpleVariable, TemplateVariable},
+    };
+    use csl_legacy::model::{
+        Citation, Info, Layout, Sort as LegacySort, SortKey as LegacySortKey, Style as LegacyStyle,
+    };
+
+    #[test]
+    fn bibliography_candidate_preserves_current_citation_section() {
+        let current = Style {
+            citation: Some(CitationSpec {
+                delimiter: Some(String::new()),
+                ..CitationSpec::default()
+            }),
+            bibliography: Some(BibliographySpec {
+                template: Some(vec![TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Url,
+                    ..TemplateVariable::default()
+                })]),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+        let bibliography_source = Style {
+            citation: Some(CitationSpec {
+                delimiter: Some(", ".to_string()),
+                ..CitationSpec::default()
+            }),
+            bibliography: Some(BibliographySpec {
+                template: Some(vec![TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Doi,
+                    ..TemplateVariable::default()
+                })]),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+
+        let alternative =
+            style_with_bibliography_from(current.clone(), bibliography_source.clone());
+
+        assert_eq!(
+            serde_json::to_value(&alternative.citation).expect("citation should serialize"),
+            serde_json::to_value(&current.citation).expect("citation should serialize")
+        );
+        assert_eq!(
+            serde_json::to_value(&alternative.bibliography).expect("bibliography should serialize"),
+            serde_json::to_value(&bibliography_source.bibliography)
+                .expect("bibliography should serialize")
+        );
+    }
+
+    #[test]
+    fn suppresses_author_date_default_bibliography_sort() {
+        let sort = resolve_migrated_bibliography_sort(
+            Some(&citum_schema::options::Processing::AuthorDate),
+            Some(&legacy_sort(&["author", "issued", "title"])),
+        );
+
+        assert_eq!(sort, None);
+    }
+
+    #[test]
+    fn suppresses_note_default_bibliography_sort() {
+        let sort = resolve_migrated_bibliography_sort(
+            Some(&citum_schema::options::Processing::Note),
+            Some(&legacy_sort(&["author", "title", "issued"])),
+        );
+
+        assert_eq!(sort, None);
+    }
+
+    #[test]
+    fn preserves_numeric_bibliography_sort() {
+        let sort = resolve_migrated_bibliography_sort(
+            Some(&citum_schema::options::Processing::Numeric),
+            Some(&legacy_sort(&["author", "issued", "title"])),
+        );
+
+        assert_eq!(
+            sort,
+            Some(citum_schema::grouping::GroupSortEntry::Preset(
+                citum_schema::presets::SortPreset::AuthorDateTitle
+            ))
+        );
+    }
+
+    #[test]
+    fn preserves_note_family_exceptions() {
+        let sort = resolve_migrated_bibliography_sort(
+            Some(&citum_schema::options::Processing::Note),
+            Some(&legacy_sort(&["author", "issued", "title"])),
+        );
+
+        assert!(sort.is_some());
+    }
+
+    #[test]
+    fn maps_legacy_citation_number_collapse() {
+        let mut style = minimal_legacy_style();
+        style.citation.collapse = Some("citation-number".to_string());
+
+        let migrated = build_final_style(
+            &style,
+            CompiledOutput {
+                options: citum_schema::options::Config::default(),
+                bibliography_options: None,
+                citation_contributor_overrides: None,
+                bibliography_contributor_overrides: None,
+                new_cit: vec![],
+                new_bib: vec![],
+                type_templates: None,
+                citation_wrap: None,
+                citation_prefix: None,
+                citation_suffix: None,
+                citation_delimiter: None,
+                citation_subsequent_override: None,
+                citation_ibid_override: None,
+            },
+        );
+
+        assert_eq!(
+            migrated
+                .citation
+                .as_ref()
+                .and_then(|citation| citation.collapse.clone()),
+            Some(CitationCollapse::CitationNumber)
+        );
+    }
+
+    fn legacy_sort(keys: &[&str]) -> LegacySort {
+        LegacySort {
+            keys: keys
+                .iter()
+                .map(|key| LegacySortKey {
+                    variable: Some((*key).to_string()),
+                    macro_name: None,
+                    sort: None,
+                })
+                .collect(),
+        }
+    }
+
+    fn minimal_legacy_style() -> LegacyStyle {
+        LegacyStyle {
+            version: "1.0".to_string(),
+            xmlns: "http://purl.org/net/xbiblio/csl".to_string(),
+            class: "in-text".to_string(),
+            default_locale: None,
+            initialize_with: None,
+            initialize_with_hyphen: None,
+            names_delimiter: None,
+            name_as_sort_order: None,
+            sort_separator: None,
+            delimiter_precedes_last: None,
+            delimiter_precedes_et_al: None,
+            demote_non_dropping_particle: None,
+            and: None,
+            page_range_format: None,
+            info: Info::default(),
+            locale: vec![],
+            macros: vec![],
+            citation: Citation {
+                layout: Layout {
+                    prefix: None,
+                    suffix: None,
+                    delimiter: None,
+                    children: vec![],
+                },
+                sort: None,
+                collapse: None,
+                et_al_min: None,
+                et_al_use_first: None,
+                disambiguate_add_year_suffix: None,
+                disambiguate_add_names: None,
+                disambiguate_add_givenname: None,
+                disambiguate_givenname_rule: None,
+            },
+            bibliography: None,
+        }
+    }
+}

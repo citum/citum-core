@@ -6,8 +6,11 @@ CSL 1.0 → Citum YAML converter. Hand-authoring with this converter is the cano
 
 | Path | Purpose |
 |---|---|
-| `src/main.rs` | CLI entry (~45K — large, navigate via jcodemunch) |
-| `src/lib.rs` | Library entry, pipeline orchestration |
+| `src/main.rs` | CLI orchestration: parse input, resolve lineage, run assembly, emit output |
+| `src/assembly.rs` | Final standalone style assembly; template source selection; full-first fixup/compression boundary |
+| `src/runtime.rs` | Workspace-root discovery, template resolution, source logging, stdout/debug output |
+| `src/output_plan.rs` | Family-candidate routing, wrapper/evidence accounting, output-plan logging |
+| `src/lib.rs` | Library entry, macro inlining, shared module exports |
 | `src/passes/` | Conversion passes (run in order) |
 | `src/fixups/` | Post-conversion corrections |
 | `src/options_extractor/` | XML-pipeline options extraction |
@@ -17,7 +20,7 @@ CSL 1.0 → Citum YAML converter. Hand-authoring with this converter is the cano
 | `src/base_detector.rs` | Detect base/parent style for inheritance |
 | `src/compilation.rs` | Final assembly — produces the XML seed candidate (`compile_from_xml`) |
 | `src/js_runtime.rs` | citeproc-js bridge for oracle/fidelity checks |
-| `src/template_diff.rs` | Reviewer-facing template diffs |
+| `src/template_diff.rs` | Full-template to type-variant diff encoding plus engine round-trip validation |
 
 ## Template authority
 
@@ -54,4 +57,4 @@ node scripts/oracle.js styles-legacy/apa.csl    # CSL oracle (component diff)
 
 ## Symbol queries
 
-`main.rs` is large — never `cat` it. Use **jcodemunch**: `get_file_outline` to map symbols within the file, `get_symbol` to read one symbol's body, `get_repo_outline` for the crate's module API across files.
+Use **jcodemunch** for Rust symbols: `get_file_outline` for a file, `get_symbol` for one body, and `get_repo_outline` for the crate/module API across files.
