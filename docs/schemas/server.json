@@ -1702,6 +1702,11 @@
           "const": "primary"
         },
         {
+          "description": "Title of the parent work containing the cited work.",
+          "type": "string",
+          "const": "container-title"
+        },
+        {
           "description": "Title of a book/monograph containing the cited work.",
           "type": "string",
           "const": "parent-monograph"

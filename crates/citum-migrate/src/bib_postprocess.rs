@@ -187,7 +187,8 @@ fn component_is_container_title(component: &TemplateComponent) -> bool {
         TemplateComponent::Title(title)
             if matches!(
                 title.title,
-                citum_schema::template::TitleType::ParentMonograph
+                citum_schema::template::TitleType::ContainerTitle
+                    | citum_schema::template::TitleType::ParentMonograph
                     | citum_schema::template::TitleType::ParentSerial
             )
     )

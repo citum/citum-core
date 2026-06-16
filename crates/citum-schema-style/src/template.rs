@@ -875,6 +875,8 @@ pub enum TitleType {
     /// The primary title of the cited work.
     #[default]
     Primary,
+    /// Title of the parent work containing the cited work.
+    ContainerTitle,
     /// Title of a book/monograph containing the cited work.
     ParentMonograph,
     /// Title of a periodical/serial containing the cited work.

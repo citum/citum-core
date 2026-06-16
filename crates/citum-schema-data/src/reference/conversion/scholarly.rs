@@ -181,13 +181,27 @@ pub(super) fn from_monograph_ref(
         let base_title = legacy.container_title.clone().map(Title::Single);
         let effective_title = volume_title.map(Title::Single).or(base_title);
         let collection = relation_collection_title(collection_title);
-        effective_title.map(|t| {
-            WorkRelation::Embedded(Box::new(InputReference::Monograph(Box::new(Monograph {
-                title: Some(t),
-                container: collection,
-                ..Default::default()
-            }))))
-        })
+        if let Some(t) = effective_title {
+            Some(WorkRelation::Embedded(Box::new(InputReference::Monograph(
+                Box::new(Monograph {
+                    title: Some(t),
+                    container: collection,
+                    ..Default::default()
+                }),
+            ))))
+        } else if collection.is_some() {
+            // Book in a series with no intermediate container-title: wrap in a
+            // title-less parent so nested_collection_title can still find the series.
+            Some(WorkRelation::Embedded(Box::new(InputReference::Monograph(
+                Box::new(Monograph {
+                    title: None,
+                    container: collection,
+                    ..Default::default()
+                }),
+            ))))
+        } else {
+            None
+        }
     };
     if let Some(part_num) = part_number {
         numbering.push(Numbering {

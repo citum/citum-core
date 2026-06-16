@@ -106,6 +106,11 @@ fn title_text(title: &Title, form: Option<&TitleForm>) -> String {
 
 fn parent_short_title(reference: &Reference, title_type: &TitleType) -> Option<String> {
     match title_type {
+        TitleType::ContainerTitle => reference.container_title().and_then(|t| match t {
+            Title::Shorthand(short, _) => Some(short),
+            Title::Single(s) => Some(s),
+            _ => None,
+        }),
         TitleType::ParentMonograph => {
             if reference.ref_type() == "chapter" || reference.ref_type() == "paper-conference" {
                 reference.container_title().and_then(|t| match t {
@@ -128,6 +133,11 @@ fn parent_short_title(reference: &Reference, title_type: &TitleType) -> Option<S
                 None
             }
         }
+        TitleType::CollectionTitle => reference.collection_title().and_then(|t| match t {
+            Title::Shorthand(short, _) => Some(short),
+            Title::Single(s) => Some(s),
+            _ => None,
+        }),
         _ => None,
     }
 }
@@ -371,6 +381,7 @@ impl ComponentValues for TemplateTitle {
 fn resolve_primary_title(reference: &Reference, title_type: &TitleType) -> Option<Title> {
     match title_type {
         TitleType::Primary => reference.title(),
+        TitleType::ContainerTitle => reference.container_title(),
         TitleType::ParentMonograph => match reference.extension() {
             ClassExtension::Monograph(_)
             | ClassExtension::CollectionComponent(_)

@@ -40,7 +40,16 @@ impl TemplateCompiler {
                 }
             }
             TemplateComponent::Title(t) if t.title == TitleType::Primary => 3,
-            TemplateComponent::Title(t) if t.title == TitleType::ParentSerial => 4,
+            TemplateComponent::Title(t)
+                if matches!(
+                    t.title,
+                    TitleType::ContainerTitle
+                        | TitleType::ParentSerial
+                        | TitleType::CollectionTitle
+                ) =>
+            {
+                4
+            }
             TemplateComponent::Title(t) if t.title == TitleType::ParentMonograph => 5,
             TemplateComponent::Number(_) => 6,
             TemplateComponent::Variable(_) => 7,
@@ -59,7 +68,19 @@ impl TemplateCompiler {
                 } else if self.has_variable_recursive(
                     &l.group,
                     &TemplateComponent::Title(TemplateTitle {
+                        title: TitleType::ContainerTitle,
+                        ..Default::default()
+                    }),
+                ) || self.has_variable_recursive(
+                    &l.group,
+                    &TemplateComponent::Title(TemplateTitle {
                         title: TitleType::ParentSerial,
+                        ..Default::default()
+                    }),
+                ) || self.has_variable_recursive(
+                    &l.group,
+                    &TemplateComponent::Title(TemplateTitle {
+                        title: TitleType::CollectionTitle,
                         ..Default::default()
                     }),
                 ) {

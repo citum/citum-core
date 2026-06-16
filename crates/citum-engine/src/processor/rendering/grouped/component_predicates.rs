@@ -62,8 +62,10 @@ pub(super) fn is_parent_container_title_component(component: &TemplateComponent)
         TemplateComponent::Title(title)
             if matches!(
                 title.title,
-                citum_schema::template::TitleType::ParentSerial
+                citum_schema::template::TitleType::ContainerTitle
+                    | citum_schema::template::TitleType::ParentSerial
                     | citum_schema::template::TitleType::ParentMonograph
+                    | citum_schema::template::TitleType::CollectionTitle
             )
     )
 }

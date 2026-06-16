@@ -142,7 +142,7 @@ fn base_template_visible_components_follow_default_branch_order() {
             "number:CitationNumber",
             "contributor:Author",
             "title:Primary",
-            "title:ParentSerial",
+            "title:ContainerTitle",
             "date:Issued",
             "number:Volume",
             "number:Pages",

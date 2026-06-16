@@ -114,7 +114,10 @@ pub(super) fn normalize_legal_case_type_template(
                 if title_component.title == TitleType::ParentMonograph {
                     return false;
                 }
-                if title_component.title == TitleType::ParentSerial {
+                if matches!(
+                    title_component.title,
+                    TitleType::ContainerTitle | TitleType::ParentSerial
+                ) {
                     has_parent_serial = true;
                 }
             }

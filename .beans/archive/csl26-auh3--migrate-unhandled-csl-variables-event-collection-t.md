@@ -8,7 +8,7 @@ tags:
     - migrate
     - coverage-gap
 created_at: 2026-06-16T15:49:01Z
-updated_at: 2026-06-16T20:15:55Z
+updated_at: 2026-06-16T20:38:51Z
 ---
 
 The original bean was created from `citum-analyze --coverage-gap` output and
@@ -27,6 +27,8 @@ Real gaps fixed in the csl26-auh3 PR:
 - `citum-analyze` now reverse-maps `DateVariable::OriginalPublished` to CSL
   `date:original-date` instead of reporting a stale analyzer gap.
 - `var:section` now compiles to `SimpleVariable::Section`.
+- CSL `container-title` now compiles to `TitleType::ContainerTitle`, a neutral
+  parent-work title surface that can render either monograph or serial parents.
 - CSL `collection-title` is treated as a series/collection title, not as
   `container-title`. Migration now emits `TitleType::CollectionTitle`, CSL-JSON
   conversion preserves it as a nested parent-series relation, and the engine can
