@@ -643,9 +643,11 @@ dependencies = [
 name = "citum-analyze"
 version = "0.68.0"
 dependencies = [
+ "citum-engine",
  "citum-migrate",
  "citum-schema",
  "csl-legacy",
+ "indexmap 2.14.0",
  "roxmltree 0.21.1",
  "serde",
  "serde_json",
