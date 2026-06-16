@@ -11,12 +11,11 @@ use std::path::{Path, PathBuf};
 
 use crate::util::short_name_from_identifier;
 
+use crate::semantic::{
+    SemanticItem, collect_base_semantic_sets, jaccard_similarity, template_to_set,
+};
 use citum_migrate::{OptionsExtractor, compilation, fixups, provenance::ProvenanceTracker};
 use citum_schema::StyleBase;
-use citum_schema::locale::GeneralTerm;
-use citum_schema::template::{
-    ContributorRole, DateVariable, NumberVariable, SimpleVariable, TemplateComponent, TitleType,
-};
 use csl_legacy::parser::parse_style;
 
 const AUDITED_CANDIDATES: &[AuditedCandidateSpec] = &[
@@ -121,11 +120,12 @@ pub fn run_profile_discovery(styles_dir: &str, json_output: bool) {
 
     if json_output {
         match serde_json::to_string_pretty(&report) {
-            Ok(json) => tracing::debug!("{json}"),
+            Ok(json) => {
+                use std::io::Write as _;
+                writeln!(std::io::stdout(), "{json}").unwrap_or(());
+            }
             Err(err) => {
-                tracing::debug!(
-                    "Error: Failed to serialize profile discovery report to JSON: {err}"
-                );
+                eprintln!("Error: serializing profile discovery report: {err}");
             }
         }
     } else {
@@ -262,52 +262,6 @@ struct LegacyStyleMetadata {
     title: String,
     citation_format: Option<String>,
     fields: Vec<String>,
-}
-
-/// A simplified semantic representation of a template component.
-#[derive(Debug, PartialEq, Eq, Clone, Hash)]
-enum SemanticItem {
-    Variable(SimpleVariable),
-    Number(NumberVariable),
-    Date(DateVariable),
-    Contributor(ContributorRole),
-    Title(TitleType),
-    Term(GeneralTerm),
-}
-
-fn collect_base_semantic_sets()
--> Vec<(StyleBase, HashSet<SemanticItem>, Vec<HashSet<SemanticItem>>)> {
-    StyleBase::all()
-        .iter()
-        .map(|base| {
-            let style = base.base().into_resolved();
-            let bib_set = style
-                .bibliography
-                .as_ref()
-                .and_then(|b| b.template.as_ref())
-                .map(|t| template_to_set(t))
-                .unwrap_or_default();
-
-            let mut cit_sets = Vec::new();
-            if let Some(cit) = &style.citation {
-                if let Some(t) = &cit.template {
-                    cit_sets.push(template_to_set(t));
-                }
-                if let Some(i) = &cit.integral
-                    && let Some(t) = &i.template
-                {
-                    cit_sets.push(template_to_set(t));
-                }
-                if let Some(ni) = &cit.non_integral
-                    && let Some(t) = &ni.template
-                {
-                    cit_sets.push(template_to_set(t));
-                }
-            }
-
-            (base.clone(), bib_set, cit_sets)
-        })
-        .collect()
 }
 
 fn audit_candidate(
@@ -576,45 +530,6 @@ fn normalize_style_id(style_id: &str, renamed_styles: &HashMap<String, String>) 
         .get(&normalized)
         .cloned()
         .unwrap_or(normalized)
-}
-
-fn jaccard_similarity(left: &HashSet<SemanticItem>, right: &HashSet<SemanticItem>) -> f32 {
-    let intersection = left.intersection(right).count();
-    let union = left.union(right).count();
-
-    if union == 0 {
-        1.0
-    } else {
-        intersection as f32 / union as f32
-    }
-}
-
-/// Maps a template component to semantic items; structural wrappers (Conditional, Substitute, etc.) are intentionally skipped.
-fn to_semantic_items(component: &TemplateComponent, items: &mut Vec<SemanticItem>) {
-    match component {
-        TemplateComponent::Variable(v) => items.push(SemanticItem::Variable(v.variable.clone())),
-        TemplateComponent::Number(n) => items.push(SemanticItem::Number(n.number.clone())),
-        TemplateComponent::Date(d) => items.push(SemanticItem::Date(d.date.clone())),
-        TemplateComponent::Contributor(c) => {
-            items.push(SemanticItem::Contributor(c.contributor.clone()));
-        }
-        TemplateComponent::Title(t) => items.push(SemanticItem::Title(t.title.clone())),
-        TemplateComponent::Term(t) => items.push(SemanticItem::Term(t.term.clone())),
-        TemplateComponent::Group(g) => {
-            for child in &g.group {
-                to_semantic_items(child, items);
-            }
-        }
-        _ => {}
-    }
-}
-
-fn template_to_set(template: &[TemplateComponent]) -> HashSet<SemanticItem> {
-    let mut items = Vec::new();
-    for component in template {
-        to_semantic_items(component, &mut items);
-    }
-    items.into_iter().collect()
 }
 
 fn sanitize_url(url: &str) -> String {
