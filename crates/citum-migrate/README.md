@@ -14,6 +14,32 @@ The migration pipeline is now output-driven first:
 
 This keeps option extraction deterministic while scaling template migration to large style corpora.
 
+Final style assembly is intentionally split into two phases:
+
+1. Build complete citation and bibliography templates and apply semantic
+   fixups while every type-specific bibliography template is still `Full`.
+2. Compress finalized bibliography type templates into `Diff` variants only
+   after fixups have run.
+
+That boundary follows
+`docs/specs/MIGRATE_FULL_FIRST_ARCHITECTURE.md` and keeps compression as a
+serialization optimization rather than a semantic transformation.
+
+## Source Map
+
+| Path | Purpose |
+|---|---|
+| `src/main.rs` | CLI orchestration: parse input, resolve lineage, run assembly, emit output. |
+| `src/assembly.rs` | Standalone style assembly, template source selection, semantic bibliography fixups, and type-variant compression boundary. |
+| `src/runtime.rs` | CLI runtime helpers for workspace-root discovery, template resolution, source logging, and stdout/debug output. |
+| `src/output_plan.rs` | Family-candidate routing, wrapper/evidence accounting, and migration-output-plan logging. |
+| `src/options_extractor/` | Permanent XML attribute/options extraction. |
+| `src/synthesis/` | Output-driven template synthesis loop and measured candidate selection. |
+| `src/template_compiler/` | XML layout compilation used as a transitional seed/fallback candidate. |
+| `src/fixups/` | Semantic and migration-artifact fixups applied before compression. |
+| `src/template_diff.rs` | Full-template to type-variant diff encoding plus engine round-trip validation. |
+| `src/bib_postprocess.rs` | Bibliography template repair and postprocess fixups shared by inferred and XML-seed paths. |
+
 When the target style is already known in the repo as a profile or journal
 wrapper, `citum-migrate` now derives that lineage from current repo truth and
 may emit `extends:`-based wrapper output instead of flattening everything into a
