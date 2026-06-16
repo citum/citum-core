@@ -3,29 +3,35 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
-#![allow(missing_docs, reason = "bin crate")]
-/*
-SPDX-License-Identifier: MIT OR Apache-2.0
-SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
-*/
+//! Batch Migration Tester — runs every CSL 1.0 style in a directory through
+//! the full migrate + engine pipeline in-process and reports pass/fail rates.
+//!
+//! Running in-process (no `cargo run` spawns) makes a full-corpus pass take
+//! seconds rather than hours.
+//!
+//! Usage: `citum-batch-test <styles_dir> [--verbose] [--sample N] [--json]`
 
-//! Batch Migration Tester
-//!
-//! Runs CSL 1.0 → Citum migration on all styles and reports success rates.
-//!
-//! Usage: `citum_batch_test` <`styles_dir`> [--verbose] [--sample N]
+#![allow(missing_docs, reason = "bin crate")]
 
 use std::collections::HashMap;
 use std::env;
-use std::fs;
+use std::io::Write as _;
 use std::path::{Path, PathBuf};
-use std::process::Command;
+
 use walkdir::WalkDir;
 
+use citum_migrate::{OptionsExtractor, compilation, provenance::ProvenanceTracker};
+use citum_schema::{BibliographySpec, CitationSpec, Style};
+
+/// Parsed CLI arguments for `citum-batch-test`.
 struct CliArgs {
+    /// Path to the directory containing `.csl` files.
     styles_dir: String,
+    /// Print each style's result individually.
     verbose: bool,
+    /// Emit final results as JSON.
     json_output: bool,
+    /// Run on a pseudo-random sample of this size instead of the full corpus.
     sample_size: Option<usize>,
 }
 
@@ -66,13 +72,112 @@ fn collect_styles(styles_dir: &str, sample_size: Option<usize>) -> Vec<PathBuf> 
     styles
 }
 
+/// Aggregated results across all tested styles.
+#[derive(Default, serde::Serialize)]
+struct BatchResults {
+    total: usize,
+    migration_success: usize,
+    migration_failed: usize,
+    processor_failed: usize,
+    yaml_invalid: usize,
+    migration_errors: HashMap<String, usize>,
+    processor_errors: HashMap<String, usize>,
+    yaml_errors: HashMap<String, usize>,
+}
+
+/// Per-style test outcome.
+enum TestResult {
+    /// Migrate + schema roundtrip + engine instantiation all passed.
+    Success,
+    /// Legacy CSL parse or migrate compilation failed.
+    MigrationFailed(String),
+    /// Assembled `Style` could not be round-tripped through `serde_yaml`.
+    YamlInvalid(String),
+    /// Engine `Processor` could not be instantiated from the migrated style.
+    ProcessorFailed(String),
+}
+
+/// Test a single CSL style file in-process.
+///
+/// 1. Parses the legacy CSL XML with `csl_legacy::parser::parse_style`.
+/// 2. Runs the migrate XML compilation pipeline (`compile_from_xml`).
+/// 3. Assembles a minimal `citum_schema::Style` and round-trips it through `serde_yaml`.
+/// 4. Instantiates `citum_engine::Processor::new` to verify engine acceptance.
+fn test_style(path: &Path) -> TestResult {
+    // Step 1: parse legacy XML
+    let content = match std::fs::read_to_string(path) {
+        Ok(c) => c,
+        Err(e) => return TestResult::MigrationFailed(format!("read: {e}")),
+    };
+    let doc = match roxmltree::Document::parse(&content) {
+        Ok(d) => d,
+        Err(e) => return TestResult::MigrationFailed(format!("xml parse: {e}")),
+    };
+    let legacy = match csl_legacy::parser::parse_style(doc.root_element()) {
+        Ok(s) => s,
+        Err(e) => return TestResult::MigrationFailed(format!("csl parse: {e}")),
+    };
+
+    // Step 2: migrate in-process
+    let opts = OptionsExtractor::extract_migration_options(&legacy);
+    let mut options = opts.options;
+    let tracker = ProvenanceTracker::new(false);
+    let output = compilation::compile_from_xml(&legacy, &mut options, false, &tracker);
+
+    // Step 3: assemble minimal Style and validate YAML roundtrip
+    let style = Style {
+        options: Some(options),
+        bibliography: Some(BibliographySpec {
+            template: if output.bibliography.is_empty() {
+                None
+            } else {
+                Some(output.bibliography)
+            },
+            ..Default::default()
+        }),
+        citation: Some(CitationSpec {
+            template: if output.citation.is_empty() {
+                None
+            } else {
+                Some(output.citation)
+            },
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let yaml = match serde_yaml::to_string(&style) {
+        Ok(y) => y,
+        Err(e) => return TestResult::YamlInvalid(format!("serialize: {e}")),
+    };
+    if let Err(e) = serde_yaml::from_str::<Style>(&yaml) {
+        return TestResult::YamlInvalid(e.to_string());
+    }
+
+    // Step 4: engine instantiation check
+    let bib: citum_engine::Bibliography = indexmap::IndexMap::new();
+    let catch = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        citum_engine::Processor::new(style, bib)
+    }));
+    if let Err(e) = catch {
+        let msg = e
+            .downcast_ref::<String>()
+            .map(String::as_str)
+            .or_else(|| e.downcast_ref::<&str>().copied())
+            .unwrap_or("panic")
+            .to_string();
+        return TestResult::ProcessorFailed(msg);
+    }
+
+    TestResult::Success
+}
+
 #[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn run_batch(cli: CliArgs) {
     let styles = collect_styles(&cli.styles_dir, cli.sample_size);
     let total = styles.len();
     let mut results = BatchResults::default();
 
-    tracing::debug!("Testing {total} styles...\n");
+    eprintln!("Testing {total} styles...");
 
     for (i, path) in styles.iter().enumerate() {
         let result = test_style(path);
@@ -85,7 +190,7 @@ fn run_batch(cli: CliArgs) {
             TestResult::Success => {
                 results.migration_success += 1;
                 if cli.verbose {
-                    tracing::debug!("[{}/{}] ✅ {}", i + 1, total, name);
+                    eprintln!("[{}/{}] ✅ {}", i + 1, total, name);
                 }
             }
             TestResult::MigrationFailed(err) => {
@@ -95,8 +200,8 @@ fn run_batch(cli: CliArgs) {
                     .entry(categorize_error(err))
                     .or_insert(0) += 1;
                 if cli.verbose {
-                    tracing::debug!(
-                        "[{}/{}] ❌ {} - Migration: {}",
+                    eprintln!(
+                        "[{}/{}] ❌ {} — Migration: {}",
                         i + 1,
                         total,
                         name,
@@ -111,8 +216,8 @@ fn run_batch(cli: CliArgs) {
                     .entry(categorize_error(err))
                     .or_insert(0) += 1;
                 if cli.verbose {
-                    tracing::debug!(
-                        "[{}/{}] ⚠️  {} - Processor: {}",
+                    eprintln!(
+                        "[{}/{}] ⚠️  {} — Processor: {}",
                         i + 1,
                         total,
                         name,
@@ -127,8 +232,8 @@ fn run_batch(cli: CliArgs) {
                     .entry(categorize_error(err))
                     .or_insert(0) += 1;
                 if cli.verbose {
-                    tracing::debug!(
-                        "[{}/{}] ❌ {} - Invalid YAML: {}",
+                    eprintln!(
+                        "[{}/{}] ❌ {} — Invalid YAML: {}",
                         i + 1,
                         total,
                         name,
@@ -139,7 +244,7 @@ fn run_batch(cli: CliArgs) {
         }
 
         if !cli.verbose && (i + 1) % 100 == 0 {
-            tracing::debug!("  Processed {}/{}", i + 1, total);
+            eprintln!("  Processed {}/{}", i + 1, total);
         }
     }
 
@@ -147,10 +252,8 @@ fn run_batch(cli: CliArgs) {
 
     if cli.json_output {
         match serde_json::to_string_pretty(&results) {
-            Ok(json) => tracing::debug!("{json}"),
-            Err(err) => {
-                tracing::debug!("Error: Failed to serialize batch test results to JSON: {err}");
-            }
+            Ok(json) => writeln!(std::io::stdout(), "{json}").unwrap_or(()),
+            Err(err) => eprintln!("Error: serializing batch results: {err}"),
         }
     } else {
         print_results(&results);
@@ -161,90 +264,18 @@ fn run_batch(cli: CliArgs) {
 fn main() {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
-        tracing::debug!("Usage: citum_batch_test <styles_dir> [--verbose] [--sample N]");
-        tracing::debug!("");
-        tracing::debug!("Options:");
-        tracing::debug!("  --verbose    Show individual style results");
-        tracing::debug!("  --sample N   Only test N random styles");
-        tracing::debug!("  --json       Output as JSON");
+        eprintln!("Usage: citum-batch-test <styles_dir> [--verbose] [--sample N] [--json]");
+        eprintln!();
+        eprintln!("Options:");
+        eprintln!("  --verbose    Show individual style results");
+        eprintln!("  --sample N   Only test N pseudo-random styles");
+        eprintln!("  --json       Output final results as JSON");
         std::process::exit(1);
     }
     run_batch(parse_cli(&args));
 }
 
-#[derive(Default, serde::Serialize)]
-struct BatchResults {
-    total: usize,
-    migration_success: usize,
-    migration_failed: usize,
-    processor_failed: usize,
-    yaml_invalid: usize,
-    migration_errors: HashMap<String, usize>,
-    processor_errors: HashMap<String, usize>,
-    yaml_errors: HashMap<String, usize>,
-}
-
-enum TestResult {
-    Success,
-    MigrationFailed(String),
-    ProcessorFailed(String),
-    YamlInvalid(String),
-}
-
-fn test_style(path: &Path) -> TestResult {
-    // Step 1: Run migration
-    let migrate_output = Command::new("cargo")
-        .args(["run", "-q", "--bin", "citum_migrate", "--"])
-        .arg(path)
-        .output();
-
-    let migrate_output = match migrate_output {
-        Ok(o) => o,
-        Err(e) => return TestResult::MigrationFailed(format!("spawn error: {e}")),
-    };
-
-    if !migrate_output.status.success() {
-        let stderr = String::from_utf8_lossy(&migrate_output.stderr);
-        return TestResult::MigrationFailed(stderr.to_string());
-    }
-
-    let yaml_content = String::from_utf8_lossy(&migrate_output.stdout);
-
-    // Step 2: Validate YAML parses as Style
-    let style_result: Result<citum_schema::Style, _> = serde_yaml::from_str(&yaml_content);
-    if let Err(e) = style_result {
-        return TestResult::YamlInvalid(e.to_string());
-    }
-
-    // Step 3: Write to temp file and run processor
-    let temp_path = std::env::temp_dir().join("citum_batch_test.yaml");
-    if let Err(e) = fs::write(&temp_path, yaml_content.as_bytes()) {
-        return TestResult::ProcessorFailed(format!("write error: {e}"));
-    }
-
-    let proc_output = Command::new("cargo")
-        .args(["run", "-q", "--bin", "citum_engine", "--"])
-        .arg(&temp_path)
-        .output();
-
-    let proc_output = match proc_output {
-        Ok(o) => o,
-        Err(e) => return TestResult::ProcessorFailed(format!("spawn error: {e}")),
-    };
-
-    if !proc_output.status.success() {
-        let stderr = String::from_utf8_lossy(&proc_output.stderr);
-        return TestResult::ProcessorFailed(stderr.to_string());
-    }
-
-    // Clean up
-    let _ = fs::remove_file(&temp_path);
-
-    TestResult::Success
-}
-
 fn categorize_error(err: &str) -> String {
-    // Extract meaningful error category from error message
     if err.contains("unknown attribute")
         && let Some(attr) = err.split("unknown attribute: ").nth(1)
     {
@@ -270,8 +301,6 @@ fn categorize_error(err: &str) -> String {
     if err.contains("Error parsing style") {
         return "parse error".to_string();
     }
-
-    // Truncate to first line
     err.lines()
         .next()
         .unwrap_or("unknown")
@@ -283,7 +312,7 @@ fn categorize_error(err: &str) -> String {
 fn truncate(s: &str, max: usize) -> String {
     let first_line = s.lines().next().unwrap_or(s);
     if first_line.chars().count() > max {
-        format!("{}...", first_line.chars().take(max).collect::<String>())
+        format!("{}…", first_line.chars().take(max).collect::<String>())
     } else {
         first_line.to_string()
     }
@@ -291,32 +320,32 @@ fn truncate(s: &str, max: usize) -> String {
 
 #[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 fn print_results(results: &BatchResults) {
-    tracing::debug!("\n=== Batch Migration Test Results ===\n");
-    tracing::debug!("Total styles tested: {}", results.total);
-    tracing::debug!("");
-
-    let success_rate = (results.migration_success as f64 / results.total as f64) * 100.0;
-    tracing::debug!(
-        "Migration + Processor Success: {} ({:.1}%)",
-        results.migration_success,
-        success_rate
+    println!("\n=== Batch Migration Test Results ===\n");
+    println!("Total styles tested: {}", results.total);
+    println!();
+    let success_rate = if results.total > 0 {
+        (results.migration_success as f64 / results.total as f64) * 100.0
+    } else {
+        0.0
+    };
+    println!(
+        "Migration + Engine Success: {} ({:.1}%)",
+        results.migration_success, success_rate
     );
-    tracing::debug!("Migration Failed: {}", results.migration_failed);
-    tracing::debug!("YAML Invalid: {}", results.yaml_invalid);
-    tracing::debug!("Processor Failed: {}", results.processor_failed);
+    println!("Migration Failed:          {}", results.migration_failed);
+    println!("YAML Invalid:              {}", results.yaml_invalid);
+    println!("Processor Failed:          {}", results.processor_failed);
 
     if !results.migration_errors.is_empty() {
-        tracing::debug!("\n--- Migration Errors ---");
+        println!("\n--- Migration Errors ---");
         print_error_summary(&results.migration_errors);
     }
-
     if !results.yaml_errors.is_empty() {
-        tracing::debug!("\n--- YAML Validation Errors ---");
+        println!("\n--- YAML Validation Errors ---");
         print_error_summary(&results.yaml_errors);
     }
-
     if !results.processor_errors.is_empty() {
-        tracing::debug!("\n--- Processor Errors ---");
+        println!("\n--- Processor Errors ---");
         print_error_summary(&results.processor_errors);
     }
 }
@@ -324,11 +353,10 @@ fn print_results(results: &BatchResults) {
 fn print_error_summary(errors: &HashMap<String, usize>) {
     let mut items: Vec<_> = errors.iter().collect();
     items.sort_by(|a, b| b.1.cmp(a.1));
-
     for (error, count) in items.iter().take(10) {
-        tracing::debug!("  {count:5} - {error}");
+        println!("  {count:5} - {error}");
     }
     if items.len() > 10 {
-        tracing::debug!("  ... and {} more error types", items.len() - 10);
+        println!("  … and {} more error types", items.len() - 10);
     }
 }

@@ -20,6 +20,8 @@ tracing.workspace = true
 csl_legacy = { package = "csl-legacy", path = "../csl-legacy" }
 citum_schema = { package = "citum-schema", path = "../citum-schema" }
 citum_migrate = { package = "citum-migrate", path = "../citum-migrate" }
+citum_engine = { package = "citum-engine", path = "../citum-engine" }
+indexmap = "2"
 roxmltree = "0.21"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
