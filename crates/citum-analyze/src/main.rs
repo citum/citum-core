@@ -9,6 +9,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 #![allow(missing_docs, reason = "bin/main")]
 
 mod analyzer;
+mod config_presets;
 mod coverage_gap;
 mod profile_discovery;
 mod ranker;
@@ -35,6 +36,7 @@ fn main() {
     let quantify_savings = args.iter().any(|arg| arg == "--quantify-savings");
     let identify_profiles = args.iter().any(|arg| arg == "--identify-profiles");
     let coverage_gap = args.iter().any(|arg| arg == "--coverage-gap");
+    let config_presets = args.iter().any(|arg| arg == "--config-presets");
 
     // Check for format filter (--format author-date, --format numeric, etc.)
     let format_filter = args
@@ -43,7 +45,9 @@ fn main() {
         .and_then(|i| args.get(i + 1))
         .map(std::string::String::as_str);
 
-    if coverage_gap {
+    if config_presets {
+        config_presets::run_config_presets(styles_dir, json_output);
+    } else if coverage_gap {
         coverage_gap::run_coverage_gap(styles_dir, json_output);
     } else if identify_profiles {
         profile_discovery::run_profile_discovery(styles_dir, json_output);
@@ -86,6 +90,14 @@ fn print_usage() {
         "      and which independent styles match a Citum base style (preset-family clusters)."
     );
     eprintln!();
+    eprintln!("  citum_analyze <styles_dir> --config-presets [--json]");
+    eprintln!(
+        "      Discover recurring per-concern config shapes (contributors, dates, titles, locators)"
+    );
+    eprintln!(
+        "      that do not match any existing named preset — candidates for new presets in citum-schema-style."
+    );
+    eprintln!();
     eprintln!("Examples:");
     eprintln!("  citum_analyze styles-legacy/");
     eprintln!("  citum_analyze styles-legacy/ --rank-parents");
@@ -93,4 +105,7 @@ fn print_usage() {
     eprintln!("  citum_analyze styles-legacy/ --quantify-savings --json");
     eprintln!("  citum_analyze styles-legacy/ --identify-profiles --json");
     eprintln!("  citum_analyze styles-legacy/ --coverage-gap --json | jq '.prioritized_gaps[:10]'");
+    eprintln!(
+        "  citum_analyze styles-legacy/ --config-presets --json | jq '.concerns[].candidates[:3]'"
+    );
 }
