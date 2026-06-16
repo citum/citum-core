@@ -13,19 +13,20 @@ use citum_schema::{
         TypeSelector,
     },
 };
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 
 /// Per-type template map used throughout the migration pipeline.
 pub(crate) type TypeTemplateMap = indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>;
 
 pub(crate) type TypeVariantMap = indexmap::IndexMap<TypeSelector, TemplateVariant>;
 
+const COMMON_PARENT_MIN_EXTENDS_SAVINGS: usize = 1;
+const RARE_PARENT_MIN_EXTENDS_SAVINGS: usize = 2;
+
 /// Builds all template variants for a given reference type from a type-template map.
 ///
-/// This runs before lineage/wrapper conversion, so raw template equality is not
-/// final semantic equality. Preserve the original selector keys here; any
-/// selector grouping must happen only after resolved parent-aware templates are
-/// known.
+/// This preserves addressable parent selectors for `extends` resolution while
+/// grouping unreferenced selectors whose intended full templates are identical.
 pub(crate) fn build_type_variants(
     default_template: &[TemplateComponent],
     type_templates: TypeTemplateMap,
@@ -45,7 +46,8 @@ pub(crate) fn build_type_variants(
         candidate_parents.push((selector, template));
     }
 
-    engine_validate_variants(default_template, variants, &intended_templates)
+    let variants = engine_validate_variants(default_template, variants, &intended_templates);
+    group_equivalent_variants(variants, &intended_templates)
 }
 
 /// Validate all derived variants through the engine's authoritative resolver.
@@ -108,12 +110,15 @@ pub(crate) fn engine_validate_variants(
 pub(crate) fn template_variant_from_full_template(
     default_template: &[TemplateComponent],
     candidate_parents: &[(TypeSelector, Vec<TemplateComponent>)],
-    _selector: &TypeSelector,
+    selector: &TypeSelector,
     target_template: Vec<TemplateComponent>,
 ) -> TemplateVariant {
-    let Some(diff) =
-        derive_best_template_variant_diff(default_template, candidate_parents, &target_template)
-    else {
+    let Some(diff) = derive_best_template_variant_diff(
+        default_template,
+        candidate_parents,
+        selector,
+        &target_template,
+    ) else {
         return TemplateVariant::Full(target_template);
     };
 
@@ -128,6 +133,7 @@ pub(crate) fn template_variant_from_full_template(
 fn derive_best_template_variant_diff(
     default_template: &[TemplateComponent],
     candidate_parents: &[(TypeSelector, Vec<TemplateComponent>)],
+    selector: &TypeSelector,
     target_template: &[TemplateComponent],
 ) -> Option<TemplateVariantDiff> {
     let mut best_diff = derive_template_variant_diff(default_template, target_template);
@@ -141,8 +147,12 @@ fn derive_best_template_variant_diff(
         else {
             continue;
         };
-        let weight = diff_operation_weight(&parent_diff);
-        if weight >= best_weight {
+        let raw_weight = diff_operation_weight(&parent_diff);
+        if raw_weight == 0 {
+            continue;
+        }
+        let weight = raw_weight + extends_authoring_penalty(parent_selector, selector);
+        if weight + minimum_extends_savings(parent_selector) > best_weight {
             continue;
         }
         parent_diff.extends = Some(parent_selector.clone());
@@ -156,6 +166,124 @@ fn derive_best_template_variant_diff(
 /// Assigns a numeric cost to a diff operation for selecting the lowest-weight variant diff.
 fn diff_operation_weight(diff: &TemplateVariantDiff) -> usize {
     diff.modify.len() + diff.remove.len() + diff.add.len()
+}
+
+fn extends_authoring_penalty(parent_selector: &TypeSelector, selector: &TypeSelector) -> usize {
+    let selector_has_type = |candidate: &TypeSelector, type_name: &str| {
+        selector_type_names(candidate)
+            .iter()
+            .any(|name| name.replace('_', "-") == type_name)
+    };
+    let parent_rank = selector_authoring_rank(parent_selector);
+    let child_rank = selector_authoring_rank(selector);
+    let rare_parent_penalty = if parent_rank > child_rank { 3 } else { 0 };
+    let webpage_encyclopedia_penalty = if selector_has_type(selector, "webpage")
+        && selector_has_type(parent_selector, "entry-encyclopedia")
+    {
+        4
+    } else {
+        0
+    };
+    parent_rank + rare_parent_penalty + webpage_encyclopedia_penalty
+}
+
+fn minimum_extends_savings(parent_selector: &TypeSelector) -> usize {
+    if selector_authoring_rank(parent_selector) == 0 {
+        COMMON_PARENT_MIN_EXTENDS_SAVINGS
+    } else {
+        RARE_PARENT_MIN_EXTENDS_SAVINGS
+    }
+}
+
+fn selector_authoring_rank(selector: &TypeSelector) -> usize {
+    // A selector with no type names ranks as the rarest known tier rather than
+    // `usize::MAX`, which would overflow the penalty sums it feeds.
+    selector_type_names(selector)
+        .iter()
+        .map(|name| type_authoring_rank(name))
+        .min()
+        .unwrap_or_else(|| type_authoring_rank(""))
+}
+
+fn type_authoring_rank(name: &str) -> usize {
+    match name.replace('_', "-").as_str() {
+        "article" | "article-journal" | "book" | "chapter" => 0,
+        "report" | "thesis" | "webpage" => 1,
+        "article-magazine" | "article-newspaper" | "paper-conference" => 2,
+        "entry-encyclopedia" | "entry-dictionary" => 3,
+        _ => 4,
+    }
+}
+
+fn group_equivalent_variants(
+    variants: TypeVariantMap,
+    intended_templates: &TypeTemplateMap,
+) -> TypeVariantMap {
+    let mut grouped = TypeVariantMap::new();
+    let mut consumed: HashSet<TypeSelector> = HashSet::new();
+    let referenced_parents = variants
+        .values()
+        .filter_map(|variant| match variant {
+            TemplateVariant::Diff(diff) => diff.extends.clone(),
+            TemplateVariant::Full(_) => None,
+        })
+        .collect::<HashSet<_>>();
+
+    for (selector, variant) in &variants {
+        if consumed.contains(selector) {
+            continue;
+        }
+
+        if referenced_parents.contains(selector) {
+            consumed.insert(selector.clone());
+            grouped.insert(selector.clone(), variant.clone());
+            continue;
+        }
+
+        let mut equivalent_selectors = vec![selector.clone()];
+        if let Some(target_template) = intended_templates.get(selector) {
+            for candidate_selector in variants.keys() {
+                if candidate_selector == selector
+                    || consumed.contains(candidate_selector)
+                    || referenced_parents.contains(candidate_selector)
+                {
+                    continue;
+                }
+                if intended_templates.get(candidate_selector) == Some(target_template) {
+                    equivalent_selectors.push(candidate_selector.clone());
+                }
+            }
+        }
+
+        for equivalent in &equivalent_selectors {
+            consumed.insert(equivalent.clone());
+        }
+        grouped.insert(group_selector(equivalent_selectors), variant.clone());
+    }
+
+    grouped
+}
+
+fn group_selector(selectors: Vec<TypeSelector>) -> TypeSelector {
+    let mut names = selectors
+        .iter()
+        .flat_map(selector_type_names)
+        .collect::<Vec<_>>();
+    names.sort_by_key(|name| (type_authoring_rank(name), name.clone()));
+    names.dedup();
+
+    if names.len() == 1 {
+        TypeSelector::Single(names.remove(0))
+    } else {
+        TypeSelector::Multiple(names)
+    }
+}
+
+fn selector_type_names(selector: &TypeSelector) -> Vec<String> {
+    match selector {
+        TypeSelector::Single(name) => vec![name.clone()],
+        TypeSelector::Multiple(names) => names.clone(),
+    }
 }
 
 /// Round-trip correctness check: applies the computed diff and verifies it reproduces the target.
@@ -582,11 +710,7 @@ mod tests {
     }
 
     #[test]
-    fn given_raw_equal_templates_when_variants_built_then_original_selectors_are_preserved() {
-        // Regression guard for csl26-sfi3: this function runs before
-        // lineage/wrapper resolution, where a raw-equal `book` template can
-        // require a different parent-aware result than `bill`. Raw equality
-        // must therefore not be collapsed into a broad multi-selector here.
+    fn given_raw_equal_templates_when_variants_built_then_selectors_are_grouped() {
         let default_template = vec![title_component(), url_component()];
         let raw_variant = vec![title_component()];
         let bill_selector = TypeSelector::Single("bill".to_string());
@@ -597,20 +721,14 @@ mod tests {
 
         let variants = build_type_variants(&default_template, type_templates);
 
-        assert!(
-            variants.contains_key(&bill_selector),
-            "bill must stay addressable as its original selector"
-        );
-        assert!(
-            variants.contains_key(&book_selector),
-            "book must stay addressable as its original selector"
-        );
-        assert!(
-            !variants
-                .keys()
-                .any(|selector| matches!(selector, TypeSelector::Multiple(_))),
-            "pre-wrapper variant construction must not synthesize grouped selectors"
-        );
+        let grouped_selector = TypeSelector::Multiple(vec!["book".to_string(), "bill".to_string()]);
+        assert!(variants.contains_key(&grouped_selector));
+        assert!(!variants.contains_key(&bill_selector));
+        assert!(!variants.contains_key(&book_selector));
+        assert!(matches!(
+            variants.get(&grouped_selector),
+            Some(TemplateVariant::Diff(diff)) if diff.extends.is_none()
+        ));
     }
 
     #[test]
@@ -768,5 +886,74 @@ mod tests {
         assert_eq!(diff.extends, Some(parent_selector));
         assert_eq!(diff.modify.len(), 1);
         assert!(diff.remove.is_empty());
+    }
+
+    #[test]
+    fn template_v3_diff_generator_does_not_emit_bare_extends() {
+        let default_template = vec![title_component(), url_component()];
+        let bill_template = vec![title_component()];
+        let book_template = bill_template.clone();
+        let parent_selector = TypeSelector::Single("bill".to_string());
+        let parents = vec![(parent_selector, bill_template)];
+
+        let variant = template_variant_from_full_template(
+            &default_template,
+            &parents,
+            &TypeSelector::Single("book".to_string()),
+            book_template,
+        );
+
+        assert!(
+            !matches!(&variant, TemplateVariant::Diff(diff) if diff.extends.is_some() && diff_operation_weight(diff) == 0),
+            "equal templates should group later instead of serializing as bare extends"
+        );
+    }
+
+    #[test]
+    fn rare_parent_near_tie_loses_to_default_template() {
+        let default_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            title_component(),
+            TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Publisher,
+                ..Default::default()
+            }),
+        ];
+        let encyclopedia_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            title_component(),
+        ];
+        let webpage_template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                ..Default::default()
+            }),
+            title_component(),
+            url_component(),
+        ];
+        let parents = vec![(
+            TypeSelector::Single("entry-encyclopedia".to_string()),
+            encyclopedia_template,
+        )];
+
+        let variant = template_variant_from_full_template(
+            &default_template,
+            &parents,
+            &TypeSelector::Single("webpage".to_string()),
+            webpage_template,
+        );
+
+        let TemplateVariant::Diff(diff) = variant else {
+            panic!("default template can express this as a diff");
+        };
+        assert_eq!(diff.extends, None);
+        assert_eq!(diff.remove.len(), 1);
+        assert_eq!(diff.add.len(), 1);
     }
 }

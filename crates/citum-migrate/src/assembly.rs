@@ -21,6 +21,7 @@ use citum_migrate::{
         normalize_author_date_locator_citation_component,
         normalize_wrapped_numeric_locator_citation_component,
     },
+    passes::suppression::{normalize_visible_suppress, strip_inert_suppressed_placeholders},
     template_resolver,
 };
 use citum_schema::{
@@ -496,14 +497,35 @@ fn finalize_bibliography_variants(
         let templates = type_templates.as_mut().unwrap_or(&mut empty);
         gate_web_only_url_accessed(&mut new_bib, templates);
     }
+    strip_inert_suppressed_placeholders(&mut new_bib);
+    if let Some(type_templates) = type_templates.as_mut() {
+        for template in type_templates.values_mut() {
+            strip_inert_suppressed_placeholders(template);
+        }
+    }
 
     // Phase 2: compression is a serialization pass over finalized Full templates.
     if let Some(type_templates) = type_templates.as_mut() {
         type_templates.retain(|_, template| template != &new_bib);
     }
-    let type_variants = type_templates
+    let mut type_variants = type_templates
         .take()
         .map(|type_templates| build_type_variants(&new_bib, type_templates));
+
+    // Normalize suppress:Some(false) → None on all serialized full template
+    // lists. This clears the occurrence-compiler's "visible by default" marker,
+    // which is semantically identical to None but serializes as noise. Must run
+    // after build_type_variants so diff `modify` operations (which legitimately
+    // reference suppress:false to un-suppress a parent-suppressed component)
+    // are already encoded and are not affected.
+    normalize_visible_suppress(&mut new_bib);
+    if let Some(variants) = type_variants.as_mut() {
+        for variant in variants.values_mut() {
+            if let citum_schema::TemplateVariant::Full(components) = variant {
+                normalize_visible_suppress(components);
+            }
+        }
+    }
 
     (new_bib, type_variants)
 }

@@ -196,5 +196,11 @@ impl OptionsExtractor {
         {
             options.dates = Some(preset.config());
         }
+
+        if let Some(SubstituteConfig::Explicit(substitute)) = options.substitute.clone()
+            && let Some(preset) = base_detector::detect_substitute_preset(&substitute)
+        {
+            options.substitute = Some(SubstituteConfig::Preset(preset));
+        }
     }
 }

@@ -18,9 +18,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use citum_schema::options::{
     AndOptions, Config, ContributorConfig, DateConfig, DelimiterPrecedesLast,
-    DemoteNonDroppingParticle, DisplayAsSort, TitlesConfig,
+    DemoteNonDroppingParticle, DisplayAsSort, Substitute, TitlesConfig,
 };
-use citum_schema::presets::{ContributorPreset, DatePreset, TitlePreset};
+use citum_schema::presets::{ContributorPreset, DatePreset, SubstitutePreset, TitlePreset};
 
 /// Narrow formatting families used only by migration fixups.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -287,6 +287,30 @@ pub fn detect_date_preset(config: &DateConfig) -> Option<DatePreset> {
     }
 }
 
+/// Detect whether a substitute config exactly matches a named preset.
+///
+/// Unlike contributor/date/title detection, this is intentionally strict:
+/// substitute fallback chains can carry type overrides and role substitution
+/// policy, so only a byte-for-byte resolved preset match is folded.
+#[must_use]
+pub fn detect_substitute_preset(config: &Substitute) -> Option<SubstitutePreset> {
+    [
+        SubstitutePreset::Standard,
+        SubstitutePreset::EditorFirst,
+        SubstitutePreset::TitleFirst,
+        SubstitutePreset::EditorShort,
+        SubstitutePreset::EditorLong,
+        SubstitutePreset::EditorTranslatorShort,
+        SubstitutePreset::EditorTranslatorLong,
+        SubstitutePreset::EditorTitleShort,
+        SubstitutePreset::EditorTitleLong,
+        SubstitutePreset::EditorTranslatorTitleShort,
+        SubstitutePreset::EditorTranslatorTitleLong,
+    ]
+    .into_iter()
+    .find(|preset| preset.config() == *config)
+}
+
 #[cfg(test)]
 #[allow(
     clippy::unwrap_used,
@@ -301,7 +325,10 @@ pub fn detect_date_preset(config: &DateConfig) -> Option<DatePreset> {
 )]
 mod tests {
     use super::*;
-    use citum_schema::options::{DelimiterPrecedesLast, ShortenListOptions, TitleRendering};
+    use citum_schema::options::{
+        DelimiterPrecedesLast, ShortenListOptions, SubstituteKey, TitleRendering,
+    };
+    use std::collections::HashMap;
 
     #[test]
     fn test_detect_apa_contributor() {
@@ -507,6 +534,35 @@ mod tests {
             ..Default::default()
         };
         assert_eq!(detect_title_preset(&config), Some(TitlePreset::Scientific));
+    }
+
+    #[test]
+    fn detects_exact_standard_substitute_preset() {
+        let config = SubstitutePreset::Standard.config();
+
+        assert_eq!(
+            detect_substitute_preset(&config),
+            Some(SubstitutePreset::Standard)
+        );
+    }
+
+    #[test]
+    fn does_not_fold_substitute_with_role_substitute_chain() {
+        let mut config = SubstitutePreset::Standard.config();
+        config.role_substitute =
+            HashMap::from([("container-author".to_string(), vec!["editor".to_string()])]);
+
+        assert_eq!(detect_substitute_preset(&config), None);
+    }
+
+    #[test]
+    fn does_not_fold_non_preset_substitute_ordering() {
+        let config = Substitute {
+            template: vec![SubstituteKey::Editor, SubstituteKey::Translator],
+            ..Default::default()
+        };
+
+        assert_eq!(detect_substitute_preset(&config), None);
     }
 
     #[test]

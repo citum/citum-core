@@ -28,6 +28,40 @@ pub fn strip_suppressed_variable_poison(components: &mut Vec<TemplateComponent>)
     strip_in_scope(components, &live, false);
 }
 
+/// Remove suppressed placeholders that contain no reference-data components.
+///
+/// Suppressed variable-bearing placeholders can be useful type-variant anchors.
+/// A suppressed term-only group, by contrast, renders nothing and cannot anchor
+/// data-dependent diffs, so keeping it only makes generated styles harder to
+/// read.
+pub fn strip_inert_suppressed_placeholders(components: &mut Vec<TemplateComponent>) {
+    strip_inert_in_scope(components, false);
+}
+
+/// Drop `suppress: false` markers from a serialized full template.
+///
+/// The occurrence-based compiler tags every default-visible component with
+/// `suppress: Some(false)` to distinguish it from conditional-only components
+/// during compilation. That marker is semantically identical to `None` (both
+/// render the component) but, unlike `None`, it serializes as a noisy
+/// `suppress: false` line on every component.
+///
+/// This runs only on full component lists that serialize verbatim, after diff
+/// encoding, so the `suppress: false` that legitimately appears inside diff
+/// `modify` operations (un-suppressing a parent-suppressed component) is
+/// untouched.
+pub fn normalize_visible_suppress(components: &mut Vec<TemplateComponent>) {
+    for component in components {
+        let rendering = component.rendering_mut();
+        if rendering.suppress == Some(false) {
+            rendering.suppress = None;
+        }
+        if let TemplateComponent::Group(group) = component {
+            normalize_visible_suppress(&mut group.group);
+        }
+    }
+}
+
 fn collect_live_variable_keys(components: &[TemplateComponent]) -> HashSet<String> {
     let mut keys = HashSet::new();
     collect_live(components, false, &mut keys);
@@ -72,6 +106,29 @@ fn strip_in_scope(
     });
 }
 
+fn strip_inert_in_scope(components: &mut Vec<TemplateComponent>, inherited_suppressed: bool) {
+    components.retain_mut(|component| {
+        let suppressed = inherited_suppressed || component.rendering().suppress == Some(true);
+        let had_reference_data = has_reference_data(component);
+
+        if let TemplateComponent::Group(group) = component {
+            strip_inert_in_scope(&mut group.group, suppressed);
+            if group.group.is_empty() && !had_reference_data {
+                return false;
+            }
+        }
+
+        !suppressed || had_reference_data
+    });
+}
+
+fn has_reference_data(component: &TemplateComponent) -> bool {
+    match component {
+        TemplateComponent::Group(group) => group.group.iter().any(has_reference_data),
+        _ => variable_key(component).is_some(),
+    }
+}
+
 /// Stable identity of the data a component renders, ignoring presentation.
 fn variable_key(component: &TemplateComponent) -> Option<String> {
     match component {
@@ -98,9 +155,10 @@ fn variable_key(component: &TemplateComponent) -> Option<String> {
 )]
 mod tests {
     use super::*;
+    use citum_schema::locale::GeneralTerm;
     use citum_schema::template::{
-        DateVariable, NumberVariable, TemplateDate, TemplateGroup, TemplateNumber, TemplateTitle,
-        TitleType,
+        DateVariable, NumberVariable, TemplateDate, TemplateGroup, TemplateNumber, TemplateTerm,
+        TemplateTitle, TitleType,
     };
 
     fn title(title: TitleType, suppress: Option<bool>) -> TemplateComponent {
@@ -126,6 +184,15 @@ mod tests {
             number: NumberVariable::Volume,
             ..Default::default()
         })
+    }
+
+    fn term(suppress: Option<bool>) -> TemplateComponent {
+        let mut component = TemplateComponent::Term(TemplateTerm {
+            term: GeneralTerm::In,
+            ..Default::default()
+        });
+        component.rendering_mut().suppress = suppress;
+        component
     }
 
     fn group(members: Vec<TemplateComponent>, suppress: Option<bool>) -> TemplateComponent {
@@ -208,5 +275,56 @@ mod tests {
         let mut template = vec![title(TitleType::Primary, Some(true))];
         strip_suppressed_variable_poison(&mut template);
         assert_eq!(template.len(), 1);
+    }
+
+    #[test]
+    fn given_suppressed_term_only_group_when_inert_stripped_then_group_removed() {
+        let mut template = vec![
+            title(TitleType::Primary, None),
+            group(vec![term(None)], Some(true)),
+        ];
+
+        strip_inert_suppressed_placeholders(&mut template);
+
+        assert_eq!(template.len(), 1);
+        assert!(
+            matches!(&template[0], TemplateComponent::Title(t) if t.title == TitleType::Primary)
+        );
+    }
+
+    #[test]
+    fn given_suppressed_variable_placeholder_when_inert_stripped_then_placeholder_kept() {
+        let mut template = vec![
+            title(TitleType::Primary, None),
+            title(TitleType::ParentMonograph, Some(true)),
+        ];
+
+        strip_inert_suppressed_placeholders(&mut template);
+
+        assert_eq!(template.len(), 2);
+    }
+
+    #[test]
+    fn given_visible_suppress_marker_when_normalized_then_marker_cleared() {
+        // `suppress: Some(false)` is the compiler's default-visible marker; it
+        // renders identically to `None` but serializes as noise. Normalizing
+        // clears it while leaving `Some(true)` and nested members intact.
+        let mut template = vec![
+            title(TitleType::Primary, Some(false)),
+            group(
+                vec![title(TitleType::ParentSerial, Some(false)), volume()],
+                Some(true),
+            ),
+        ];
+
+        normalize_visible_suppress(&mut template);
+
+        assert_eq!(template[0].rendering().suppress, None);
+        // Group rendering is on the TemplateComponent, not on the inner TemplateGroup.
+        assert_eq!(template[1].rendering().suppress, Some(true));
+        let TemplateComponent::Group(outer) = &template[1] else {
+            panic!("expected group to survive");
+        };
+        assert_eq!(outer.group[0].rendering().suppress, None);
     }
 }
