@@ -292,6 +292,7 @@ pub fn effective_component_language(
         TemplateComponent::Title(title_component) => {
             let title = match title_component.title {
                 TitleType::Primary => reference.title(),
+                TitleType::ContainerTitle => reference.container_title(),
                 TitleType::ParentMonograph => reference.container_title(),
                 TitleType::ParentSerial => reference.container_title(),
                 TitleType::CollectionTitle => reference.collection_title(),
@@ -300,6 +301,7 @@ pub fn effective_component_language(
 
             let scope = match title_component.title {
                 TitleType::Primary => "title",
+                TitleType::ContainerTitle => "container-title",
                 TitleType::ParentMonograph => "parent-monograph.title",
                 TitleType::ParentSerial => "parent-serial.title",
                 TitleType::CollectionTitle => "collection-title",

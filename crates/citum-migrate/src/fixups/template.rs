@@ -237,7 +237,13 @@ fn template_has_parent_title(template: &[TemplateComponent]) -> bool {
 fn component_has_parent_title(component: &TemplateComponent) -> bool {
     match component {
         TemplateComponent::Title(t) => {
-            t.title == TitleType::ParentMonograph || t.title == TitleType::ParentSerial
+            matches!(
+                t.title,
+                TitleType::ContainerTitle
+                    | TitleType::ParentMonograph
+                    | TitleType::ParentSerial
+                    | TitleType::CollectionTitle
+            )
         }
         TemplateComponent::Group(list) => list.group.iter().any(component_has_parent_title),
         _ => false,
@@ -293,7 +299,9 @@ fn template_has_parent_serial(template: &[TemplateComponent]) -> bool {
 
 fn component_has_parent_serial(component: &TemplateComponent) -> bool {
     match component {
-        TemplateComponent::Title(t) => t.title == TitleType::ParentSerial,
+        TemplateComponent::Title(t) => {
+            matches!(t.title, TitleType::ContainerTitle | TitleType::ParentSerial)
+        }
         TemplateComponent::Group(list) => list.group.iter().any(component_has_parent_serial),
         _ => false,
     }

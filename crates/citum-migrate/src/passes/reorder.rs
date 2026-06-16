@@ -3,11 +3,15 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
-use citum_schema::template::{TemplateComponent, TemplateGroup};
+use citum_schema::template::{TemplateComponent, TemplateGroup, TitleType};
+
+fn is_serial_container_title(title: &TitleType) -> bool {
+    matches!(title, TitleType::ContainerTitle | TitleType::ParentSerial)
+}
 
 /// Recursively reorder serial components (container-title, volume) in a template.
 pub fn reorder_serial_components(components: &mut Vec<TemplateComponent>) {
-    use citum_schema::template::{NumberVariable, TitleType};
+    use citum_schema::template::NumberVariable;
 
     for component in components {
         if let TemplateComponent::Group(list) = component {
@@ -21,7 +25,7 @@ pub fn reorder_serial_components(components: &mut Vec<TemplateComponent>) {
             let has_parent_serial = list.group.iter().any(|item| {
                 matches!(
                     item,
-                    TemplateComponent::Title(t) if t.title == TitleType::ParentSerial
+                    TemplateComponent::Title(t) if is_serial_container_title(&t.title)
                 )
             });
 
@@ -36,7 +40,7 @@ pub fn reorder_serial_components(components: &mut Vec<TemplateComponent>) {
                 let parent_serial_pos = list.group.iter().position(|item| {
                     matches!(
                         item,
-                        TemplateComponent::Title(t) if t.title == TitleType::ParentSerial
+                        TemplateComponent::Title(t) if is_serial_container_title(&t.title)
                     )
                 });
 
@@ -60,7 +64,7 @@ pub fn reorder_serial_components(components: &mut Vec<TemplateComponent>) {
 
 /// Helper to reorder components in a single list.
 pub fn reorder_serial_components_in_list(list: &mut TemplateGroup) {
-    use citum_schema::template::{NumberVariable, TitleType};
+    use citum_schema::template::NumberVariable;
 
     // Check if this list contains both volume and parent-serial
     let has_volume = list.group.iter().any(|item| {
@@ -72,7 +76,7 @@ pub fn reorder_serial_components_in_list(list: &mut TemplateGroup) {
     let has_parent_serial = list.group.iter().any(|item| {
         matches!(
             item,
-            TemplateComponent::Title(t) if t.title == TitleType::ParentSerial
+            TemplateComponent::Title(t) if is_serial_container_title(&t.title)
         )
     });
 
@@ -87,7 +91,7 @@ pub fn reorder_serial_components_in_list(list: &mut TemplateGroup) {
         let parent_serial_pos = list.group.iter().position(|item| {
             matches!(
                 item,
-                TemplateComponent::Title(t) if t.title == TitleType::ParentSerial
+                TemplateComponent::Title(t) if is_serial_container_title(&t.title)
             )
         });
 
@@ -102,7 +106,7 @@ pub fn reorder_serial_components_in_list(list: &mut TemplateGroup) {
 
 /// Move pages component to appear after the container-title/volume List.
 pub fn reorder_pages_for_serials(components: &mut Vec<TemplateComponent>) {
-    use citum_schema::template::{NumberVariable, TitleType};
+    use citum_schema::template::NumberVariable;
 
     // Find the pages component position
     let pages_pos = components.iter().position(|c| {
@@ -127,7 +131,7 @@ pub fn reorder_pages_for_serials(components: &mut Vec<TemplateComponent>) {
 
     fn contains_parent_serial_recursive(component: &TemplateComponent) -> bool {
         match component {
-            TemplateComponent::Title(t) if t.title == TitleType::ParentSerial => true,
+            TemplateComponent::Title(t) if is_serial_container_title(&t.title) => true,
             TemplateComponent::Group(list) => {
                 list.group.iter().any(contains_parent_serial_recursive)
             }
@@ -142,7 +146,7 @@ pub fn reorder_publisher_place_for_chicago(
     fixup_family: Option<crate::base_detector::FixupFamily>,
 ) {
     use crate::base_detector::FixupFamily;
-    use citum_schema::template::{SimpleVariable, TitleType};
+    use citum_schema::template::SimpleVariable;
 
     // Only apply to Chicago styles
     if !matches!(fixup_family, Some(FixupFamily::Chicago)) {
@@ -168,7 +172,7 @@ pub fn reorder_publisher_place_for_chicago(
     let parent_serial_pos = components.iter().position(|c| {
         matches!(
             c,
-            TemplateComponent::Title(t) if t.title == TitleType::ParentSerial
+            TemplateComponent::Title(t) if is_serial_container_title(&t.title)
         )
     });
 
@@ -305,12 +309,12 @@ pub fn unsuppress_for_type(components: &mut [TemplateComponent], item_type: &str
 /// Add space prefix to volume when it directly follows parent-serial title.
 /// This handles numeric styles where journal and volume are siblings, not in a List.
 pub fn add_volume_prefix_after_serial(components: &mut [TemplateComponent]) {
-    use citum_schema::template::{NumberVariable, TitleType};
+    use citum_schema::template::NumberVariable;
 
     for i in 1..components.len() {
         let prev_is_serial = matches!(
             components.get(i - 1),
-            Some(TemplateComponent::Title(t)) if t.title == TitleType::ParentSerial
+            Some(TemplateComponent::Title(t)) if is_serial_container_title(&t.title)
         );
 
         if prev_is_serial

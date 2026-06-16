@@ -83,7 +83,9 @@ pub fn semantic_to_legacy_key(item: &SemanticItem) -> String {
             // TitleType uses Citum-internal names; reverse-map to CSL 1.0 variable names.
             let csl_var = match t {
                 TitleType::Primary => "title",
-                TitleType::ParentMonograph | TitleType::ParentSerial => "container-title",
+                TitleType::ContainerTitle
+                | TitleType::ParentMonograph
+                | TitleType::ParentSerial => "container-title",
                 TitleType::CollectionTitle => "collection-title",
                 _ => return format!("var:{}", serialize(t)),
             };
@@ -198,6 +200,10 @@ mod tests {
 
     #[test]
     fn keeps_parent_titles_as_csl_container_title() {
+        assert_eq!(
+            semantic_to_legacy_key(&SemanticItem::Title(TitleType::ContainerTitle)),
+            "var:container-title"
+        );
         assert_eq!(
             semantic_to_legacy_key(&SemanticItem::Title(TitleType::ParentMonograph)),
             "var:container-title"

@@ -190,7 +190,7 @@ fn is_container_component(component: &TemplateComponent) -> bool {
         ),
         TemplateComponent::Title(title) => matches!(
             title.title,
-            TitleType::ParentSerial | TitleType::ParentMonograph
+            TitleType::ContainerTitle | TitleType::ParentSerial | TitleType::ParentMonograph
         ),
         _ => false,
     }

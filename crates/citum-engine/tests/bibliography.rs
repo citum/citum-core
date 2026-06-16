@@ -1790,6 +1790,50 @@ fn collection_title_component_renders_parent_series_title() {
 }
 
 #[test]
+fn container_title_component_renders_monograph_or_serial_parent_title() {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Container Title Test".to_string()),
+            id: Some("container-title-test".into()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Title(TemplateTitle {
+                title: TitleType::ContainerTitle,
+                ..Default::default()
+            })]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let chapter: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
+        "id": "ITEM-CHAPTER-1",
+        "type": "chapter",
+        "title": "Ignored Chapter",
+        "container-title": "Edited Book"
+    }))
+    .expect("legacy chapter fixture should parse");
+    let article: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
+        "id": "ITEM-ARTICLE-1",
+        "type": "article-journal",
+        "title": "Ignored Article",
+        "container-title": "Example Journal"
+    }))
+    .expect("legacy article fixture should parse");
+
+    let mut bib = indexmap::IndexMap::new();
+    bib.insert("ITEM-CHAPTER-1".to_string(), chapter.into());
+    bib.insert("ITEM-ARTICLE-1".to_string(), article.into());
+
+    let processor = Processor::new(style, bib);
+    assert_eq!(
+        processor.render_bibliography(),
+        "Example Journal\n\nEdited Book"
+    );
+}
+
+#[test]
 fn legal_case_parent_serial_uses_reporter_as_container_title() {
     let style = Style {
         info: StyleInfo {

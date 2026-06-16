@@ -58,9 +58,10 @@ fn resolve_semantic_class(component: &ProcTemplateComponent) -> Option<String> {
     match &component.template_component {
         TemplateComponent::Title(t) => match t.title {
             TitleType::Primary => Some("citum-title".to_string()),
-            TitleType::ParentMonograph | TitleType::ParentSerial | TitleType::CollectionTitle => {
-                Some("citum-container-title".to_string())
-            }
+            TitleType::ContainerTitle
+            | TitleType::ParentMonograph
+            | TitleType::ParentSerial
+            | TitleType::CollectionTitle => Some("citum-container-title".to_string()),
             _ => Some("citum-title".to_string()),
         },
         TemplateComponent::Contributor(c) => Some(format!("citum-{}", c.contributor.as_str())),
@@ -292,6 +293,35 @@ pub fn get_title_category_rendering(
     let mapped_category = ref_type.and_then(|rt| titles_config.type_mapping.get(rt));
 
     let rendering = match title_type {
+        TitleType::ContainerTitle => {
+            if let Some(cat) = mapped_category {
+                match cat.as_str() {
+                    "periodical" => titles_config.periodical.as_ref(),
+                    "serial" => titles_config.serial.as_ref(),
+                    "monograph" | "collection" => titles_config
+                        .container_monograph
+                        .as_ref()
+                        .or(titles_config.monograph.as_ref()),
+                    _ => titles_config.default.as_ref(),
+                }
+            } else if let Some(rt) = ref_type {
+                if matches!(
+                    rt,
+                    "article-journal" | "article-magazine" | "article-newspaper" | "broadcast"
+                ) {
+                    titles_config.periodical.as_ref()
+                } else if matches!(rt, "chapter" | "paper-conference") {
+                    titles_config
+                        .container_monograph
+                        .as_ref()
+                        .or(titles_config.monograph.as_ref())
+                } else {
+                    titles_config.default.as_ref()
+                }
+            } else {
+                titles_config.default.as_ref()
+            }
+        }
         TitleType::ParentSerial => {
             if let Some(cat) = mapped_category {
                 match cat.as_str() {
@@ -316,7 +346,11 @@ pub fn get_title_category_rendering(
             .container_monograph
             .as_ref()
             .or(titles_config.monograph.as_ref()),
-        TitleType::CollectionTitle => titles_config.default.as_ref(),
+        TitleType::CollectionTitle => titles_config
+            .container_monograph
+            .as_ref()
+            .or(titles_config.monograph.as_ref())
+            .or(titles_config.default.as_ref()),
         TitleType::Primary => {
             if let Some(cat) = mapped_category {
                 match cat.as_str() {

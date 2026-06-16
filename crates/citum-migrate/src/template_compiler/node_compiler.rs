@@ -257,7 +257,7 @@ impl TemplateCompiler {
     pub(super) fn map_variable_to_title(&self, var: &Variable) -> Option<TitleType> {
         match var {
             Variable::Title => Some(TitleType::Primary),
-            Variable::ContainerTitle => Some(TitleType::ParentSerial),
+            Variable::ContainerTitle => Some(TitleType::ContainerTitle),
             Variable::CollectionTitle => Some(TitleType::CollectionTitle),
             _ => None,
         }
