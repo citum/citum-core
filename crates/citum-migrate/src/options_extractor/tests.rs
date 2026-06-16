@@ -9,7 +9,7 @@ use citum_schema::options::{
     ArticleJournalNoPageFallback, GivennameRule, Processing, SortKey, SubstituteConfig,
     SubstituteKey,
 };
-use citum_schema::presets::SortPreset;
+use citum_schema::presets::{SortPreset, SubstitutePreset};
 use csl_legacy::parser::parse_style;
 use roxmltree::Document;
 
@@ -87,6 +87,59 @@ fn test_extract_substitute_pattern() {
     } else {
         panic!("Substitute pattern not extracted");
     }
+}
+
+#[test]
+fn test_extract_migration_options_folds_standard_substitute_preset() {
+    let xml = r#"<style>
+        <citation><layout><text variable="title"/></layout></citation>
+        <bibliography><layout>
+            <names variable="author">
+                <name/>
+                <substitute>
+                    <names variable="editor"/>
+                    <text variable="title"/>
+                    <names variable="translator"/>
+                </substitute>
+            </names>
+        </layout></bibliography>
+    </style>"#;
+    let style = parse_csl(xml).unwrap();
+    let extracted = OptionsExtractor::extract_migration_options(&style);
+
+    assert_eq!(
+        extracted.options.substitute,
+        Some(SubstituteConfig::Preset(SubstitutePreset::Standard))
+    );
+}
+
+#[test]
+fn test_extract_migration_options_does_not_fold_substitute_with_overrides() {
+    let xml = r#"<style>
+        <citation><layout><text variable="title"/></layout></citation>
+        <bibliography><layout>
+            <names variable="author">
+                <name/>
+                <substitute>
+                    <choose>
+                        <if type="classic">
+                            <text variable="title"/>
+                        </if>
+                    </choose>
+                    <names variable="editor"/>
+                    <text variable="title"/>
+                    <names variable="translator"/>
+                </substitute>
+            </names>
+        </layout></bibliography>
+    </style>"#;
+    let style = parse_csl(xml).unwrap();
+    let extracted = OptionsExtractor::extract_migration_options(&style);
+
+    assert!(matches!(
+        extracted.options.substitute,
+        Some(SubstituteConfig::Explicit(_))
+    ));
 }
 
 #[test]
