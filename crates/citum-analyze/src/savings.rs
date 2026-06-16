@@ -17,9 +17,12 @@ pub fn run_savings_report(styles_dir: &str, json_output: bool) {
         Ok(report) => {
             if json_output {
                 match serde_json::to_string_pretty(&report) {
-                    Ok(json) => tracing::debug!("{json}"),
+                    Ok(json) => {
+                        use std::io::Write as _;
+                        writeln!(std::io::stdout(), "{json}").unwrap_or(());
+                    }
                     Err(error) => {
-                        tracing::debug!("Failed to serialize report to JSON: {error}");
+                        eprintln!("Error: serializing savings report: {error}");
                         std::process::exit(1);
                     }
                 }
@@ -28,7 +31,7 @@ pub fn run_savings_report(styles_dir: &str, json_output: bool) {
             }
         }
         Err(error) => {
-            tracing::debug!("Failed to analyze corpus savings: {error}");
+            eprintln!("Error: analyzing corpus savings: {error}");
             std::process::exit(1);
         }
     }
