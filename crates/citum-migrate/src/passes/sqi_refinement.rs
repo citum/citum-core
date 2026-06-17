@@ -163,10 +163,14 @@ fn encode_bibliography_type_variants(style: &mut Style) {
     let Some(type_variants) = bibliography.type_variants.as_ref() else {
         return;
     };
-    if !type_variants
+    let all_variants_full = type_variants
         .values()
-        .all(|variant| matches!(variant, TemplateVariant::Full(_)))
-    {
+        .all(|variant| matches!(variant, TemplateVariant::Full(_)));
+    if !all_variants_full {
+        debug_assert!(
+            all_variants_full,
+            "SQI refinement expects post-assembly bibliography variants to enter as Full templates"
+        );
         return;
     }
 
@@ -312,6 +316,10 @@ fn prune_type_variants(
                 for add in &mut diff.add {
                     normalize_component_against_options(&mut add.component, title_context, options);
                 }
+                // `modify.rendering` payloads are deliberately left explicit:
+                // a `suppress: false` modify can un-suppress a component that is
+                // suppressed in the base template, so pruning needs base-aware
+                // semantics rather than the component-local checks used here.
             }
         }
     }
@@ -585,6 +593,8 @@ fn normalize_variant_suppress(
                 for add in &mut diff.add {
                     normalize_component_suppress(&mut add.component);
                 }
+                // Do not normalize `modify.rendering.suppress`: `false` can be
+                // the meaningful diff that re-enables a base-suppressed anchor.
             }
         }
     }
@@ -612,6 +622,7 @@ fn normalize_component_suppress(component: &mut TemplateComponent) {
 )]
 mod tests {
     use super::*;
+    use citum_engine::{Processor, reference::Bibliography};
     use citum_schema::{
         options::{NameForm, TextCase, TitleRendering, TitlesConfig},
         template::{
@@ -642,6 +653,17 @@ mod tests {
     fn primary_title(text_case: Option<TextCase>) -> TemplateComponent {
         TemplateComponent::Title(TemplateTitle {
             title: TitleType::Primary,
+            rendering: Rendering {
+                text_case,
+                ..Rendering::default()
+            },
+            ..TemplateTitle::default()
+        })
+    }
+
+    fn container_title(text_case: Option<TextCase>) -> TemplateComponent {
+        TemplateComponent::Title(TemplateTitle {
+            title: TitleType::ContainerTitle,
             rendering: Rendering {
                 text_case,
                 ..Rendering::default()
@@ -744,6 +766,59 @@ mod tests {
                 .and_then(|contributors| contributors.and.as_ref())
                 .is_none()
         );
+    }
+
+    #[test]
+    fn preexisting_global_contributor_and_prunes_without_scope_hoist() {
+        let style = Style {
+            options: Some(citum_schema::options::Config {
+                contributors: Some(ContributorConfig {
+                    and: Some(AndOptions::Text),
+                    ..ContributorConfig::default()
+                }),
+                ..citum_schema::options::Config::default()
+            }),
+            citation: Some(CitationSpec {
+                template: Some(vec![author(Some(AndOptions::Text))]),
+                ..CitationSpec::default()
+            }),
+            bibliography: Some(BibliographySpec {
+                template: Some(vec![author(Some(AndOptions::Text))]),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+
+        let refined = refine_style(style);
+
+        assert!(
+            refined
+                .citation
+                .as_ref()
+                .and_then(|citation| citation.options.as_ref())
+                .and_then(|options| options.contributors.as_ref())
+                .and_then(|contributors| contributors.and.as_ref())
+                .is_none()
+        );
+        assert!(
+            refined
+                .bibliography
+                .as_ref()
+                .and_then(|bibliography| bibliography.options.as_ref())
+                .and_then(|options| options.contributors.as_ref())
+                .and_then(|contributors| contributors.and.as_ref())
+                .is_none()
+        );
+        let citation_author = refined
+            .citation
+            .as_ref()
+            .and_then(|citation| citation.template.as_ref())
+            .and_then(|template| template.first())
+            .expect("citation author exists");
+        let TemplateComponent::Contributor(citation_author) = citation_author else {
+            panic!("citation component should be contributor");
+        };
+        assert_eq!(citation_author.and, None);
     }
 
     #[test]
@@ -850,6 +925,51 @@ mod tests {
     }
 
     #[test]
+    fn category_specific_type_mapping_title_defaults_are_compacted() {
+        let mut type_variants = indexmap::IndexMap::new();
+        type_variants.insert(
+            TypeSelector::Single("article-journal".to_string()),
+            TemplateVariant::Full(vec![container_title(Some(TextCase::SentenceApa))]),
+        );
+        let mut type_mapping = std::collections::HashMap::new();
+        type_mapping.insert("article-journal".to_string(), "periodical".to_string());
+        let style = Style {
+            options: Some(citum_schema::options::Config {
+                titles: Some(TitlesConfig {
+                    type_mapping,
+                    periodical: Some(TitleRendering {
+                        text_case: Some(TextCase::SentenceApa),
+                        ..TitleRendering::default()
+                    }),
+                    ..TitlesConfig::default()
+                }),
+                ..citum_schema::options::Config::default()
+            }),
+            bibliography: Some(BibliographySpec {
+                template: Some(vec![primary_title(None)]),
+                type_variants: Some(type_variants),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+
+        let refined = refine_style(style);
+        let variant = refined
+            .bibliography
+            .as_ref()
+            .and_then(|bibliography| bibliography.type_variants.as_ref())
+            .and_then(|variants| variants.get(&TypeSelector::Single("article-journal".to_string())))
+            .expect("article-journal variant should exist");
+        let TemplateVariant::Full(template) = variant else {
+            panic!("non-rendering title-kind difference should remain Full");
+        };
+        let TemplateComponent::Title(title) = &template[0] else {
+            panic!("variant component should be title");
+        };
+        assert_eq!(title.rendering.text_case, None);
+    }
+
+    #[test]
     fn diff_add_payloads_are_pruned_after_diff_generation() {
         let mut type_variants = indexmap::IndexMap::new();
         type_variants.insert(
@@ -928,6 +1048,116 @@ mod tests {
             panic!("webpage variant should be a diff");
         };
         assert_eq!(diff.add[0].component.rendering().suppress, None);
+    }
+
+    #[test]
+    fn diff_modify_suppress_false_remains_explicit() {
+        let mut base_title = primary_title(None);
+        base_title.rendering_mut().suppress = Some(true);
+        let mut unsuppressed_title = primary_title(None);
+        unsuppressed_title.rendering_mut().suppress = Some(false);
+        let mut type_variants = indexmap::IndexMap::new();
+        type_variants.insert(
+            TypeSelector::Single("book".to_string()),
+            TemplateVariant::Full(vec![unsuppressed_title]),
+        );
+        let style = Style {
+            bibliography: Some(BibliographySpec {
+                template: Some(vec![base_title]),
+                type_variants: Some(type_variants),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+
+        let refined = refine_style(style);
+        let variant = refined
+            .bibliography
+            .as_ref()
+            .and_then(|bibliography| bibliography.type_variants.as_ref())
+            .and_then(|variants| variants.get(&TypeSelector::Single("book".to_string())))
+            .expect("book variant should exist");
+        let TemplateVariant::Diff(diff) = variant else {
+            panic!("rendering-only suppress change should be a diff");
+        };
+        assert_eq!(diff.modify[0].rendering.suppress, Some(false));
+    }
+
+    #[test]
+    fn non_integral_suppress_false_is_normalized() {
+        let mut visible_author = author(Some(AndOptions::Text));
+        visible_author.rendering_mut().suppress = Some(false);
+        let style = Style {
+            citation: Some(CitationSpec {
+                non_integral: Some(Box::new(CitationSpec {
+                    template: Some(vec![visible_author]),
+                    ..CitationSpec::default()
+                })),
+                ..CitationSpec::default()
+            }),
+            ..Style::default()
+        };
+
+        let refined = refine_style(style);
+        let non_integral = refined
+            .citation
+            .as_ref()
+            .and_then(|citation| citation.non_integral.as_ref())
+            .and_then(|spec| spec.template.as_ref())
+            .expect("non-integral template exists");
+        assert_eq!(non_integral[0].rendering().suppress, None);
+    }
+
+    #[test]
+    fn refinement_preserves_engine_rendering() {
+        let style = Style {
+            options: Some(citum_schema::options::Config {
+                contributors: Some(ContributorConfig {
+                    and: Some(AndOptions::Text),
+                    name_form: Some(NameForm::Initials),
+                    ..ContributorConfig::default()
+                }),
+                titles: Some(TitlesConfig {
+                    default: Some(TitleRendering {
+                        text_case: Some(TextCase::SentenceApa),
+                        ..TitleRendering::default()
+                    }),
+                    ..TitlesConfig::default()
+                }),
+                ..citum_schema::options::Config::default()
+            }),
+            bibliography: Some(BibliographySpec {
+                template: Some(vec![
+                    author_with_name_options(),
+                    primary_title(Some(TextCase::SentenceApa)),
+                ]),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+        let bibliography = one_book_bibliography();
+
+        let before = Processor::new(style.clone(), bibliography.clone()).render_bibliography();
+        let after = Processor::new(refine_style(style), bibliography).render_bibliography();
+
+        assert_eq!(after, before);
+    }
+
+    fn one_book_bibliography() -> Bibliography {
+        let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(
+            r#"{
+                "id": "item-1",
+                "type": "book",
+                "author": [{"family": "Kuhn", "given": "Thomas S."}],
+                "title": "The Structure of Scientific Revolutions",
+                "issued": {"date-parts": [[1962]]},
+                "publisher": "University of Chicago Press"
+            }"#,
+        )
+        .expect("fixture should parse");
+        let mut bibliography = Bibliography::new();
+        bibliography.insert("item-1".to_string(), legacy.into());
+        bibliography
     }
 
     #[test]
