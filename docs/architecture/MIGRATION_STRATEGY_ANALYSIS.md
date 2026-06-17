@@ -1,217 +1,238 @@
-# Migration Strategy Analysis: XML Compiler vs Output-Driven
+# Migration Strategy Analysis: Hybrid Converter and Evidence Pipeline
 
-## Context
+## Current Position
 
-Bean `csl26-rh2u` (now canceled/superseded) and the broader epic `csl26-ifiw` track bibliography-template quality problems in the migration pipeline. Historical results at the time of the original analysis were severe, but current baseline (2026-02-27) is improved: top-10 aggregate shows **100% citation match and 7/10 bibliography-perfect styles**. The remaining issues are concentrated in a smaller set of style-level deltas rather than global failure.
+`citum-migrate` is not the canonical authoring path for high-impact production
+styles. It is a hybrid migration and evidence tool: it extracts durable
+configuration from CSL 1.0 XML, resolves or synthesizes candidate templates,
+scores candidates against oracle output, assembles a concrete Citum style, and
+then refines the assembled result for Style Quality Index (SQI).
 
-**Design origin:** CSL 1.0 was designed with XSLT - a side-effect-free language where nodes are processed in document order and macro calls are simple substitutions. This means the XML node order in the layout IS the rendering order. The challenge is not node ordering itself, but that macros like `source` contain `choose/if/else` branches creating different component sequences for different reference types (e.g., journals get container-title + volume(issue) + pages, while chapters get editor + container-title + pages). Flattening these type-specific branches into one declarative template with overrides is the core difficulty.
+The strategic rule is the same as
+[`DESIGN_PRINCIPLES.md`](./DESIGN_PRINCIPLES.md): fidelity is the first
+constraint, SQI is secondary, and hand-authored or presetized parent styles are
+valid when automatic migration reaches a quality plateau. Generated YAML is
+acceptable only when downstream rendering and quality gates hold. A style that
+parses is not done; a style that renders correctly but is unreadable is still
+unfinished authoring work.
 
----
+The older "XML compiler vs output-driven inference" framing remains useful, but
+it is no longer the whole architecture. The current strategy is:
 
-## Approach A: XML Semantic Compiler (Status Quo)
+1. Use XML where XML is strongest: options, locale-ish signals, processing mode,
+   contributor/date/title defaults, substitutes, and latent branches.
+2. Use output-driven evidence where observed rendering is stronger than
+   procedural flattening: component order, delimiters, formatting, and exercised
+   type-specific suppression.
+3. Use measured selection and held-out validation to choose between candidate
+   styles rather than trusting one source unconditionally.
+4. Use hand-authored or presetized styles for high-impact parents where clean
+   style quality matters more than converter completeness.
+5. Run SQI refinement after assembly, never inside the semantic assembly phase.
 
-**How it works:** Parse CSL 1.0 XML, inline macros, upsample nodes to an intermediate representation, then compile into Citum's flat TemplateComponent model. Runs post-processing passes (reorder, deduplicate, group) to fix structural issues.
+The SQI refinement split is the intended architecture. In checkouts that include
+that split, assembly emits explicit templates and
+`citum_migrate::passes::sqi_refinement` performs post-assembly diffing,
+hoisting, pruning, and suppress cleanup. In older checkouts, read that boundary
+as the target architecture rather than the implemented crate state. See also
+[`SQI_REFINEMENT_PLAN.md`](../policies/SQI_REFINEMENT_PLAN.md) and
+[`crates/README.md`](../../crates/README.md).
 
-### Pros
+## Current `citum-migrate` Architecture
 
-1. **Semantic fidelity** - Works from the actual style definition, which encodes the author's intent across all reference types, not just observed output for tested types.
-2. **Complete conditional coverage** - Has access to ALL choose/if/else branches. APA has 126 choose blocks covering 50+ reference types; output-driven only sees what test data exercises.
-3. **Options extraction works well** - Global settings (name formatting, et-al rules, initialize-with, date forms, page-range-format) are reliably extracted from XML attributes. This is why citations already work at 87-100%.
-4. **Deterministic and scalable** - Same XML input always produces same Citum output. One compiler handles all 2,844 styles without per-style inference runs.
-5. **Provenance tracking** - When something fails, you can trace the exact CslNode to CslnNode to TemplateComponent chain. Debugging infrastructure already exists.
-6. **Handles latent features** - Substitute rules, disambiguation, subsequent-author-substitute, locale terms - all encoded in XML regardless of whether test data triggers them.
-7. **Significant investment** - 7,300 lines of working code. The options pipeline, upsampler, and preset detector are solid.
-
-### Cons
-
-1. **Fundamental model mismatch** - CSL 1.0 is procedural (macros, choose/if/else, groups with implicit suppression). Citum is declarative (flat templates with typed overrides). Bridging this is the hardest translation problem in the project.
-2. **Type-specific branch flattening is the unsolved problem** - While XML node order correctly reflects rendering order (per the XSLT design), macros like APA's `source` contain 50+ choose/if/else paths that produce different component sequences per reference type. The source_order tracking attempt (reverted in commit `1c9ad45`) correctly preserved node order but could not capture which components appear for which types. The hard problem is not ordering - it is inferring type-specific suppress overrides from deeply nested conditional logic.
-3. **Combinatorial explosion** - APA has 99 macros and 126 choose blocks. Flattening these into a flat template with correct suppress overrides for every type is an extremely high-dimensional mapping problem.
-4. **Heuristic passes are fragile** - The reorder, deduplicate, and grouping passes use pattern-matching heuristics. Fixing one style's layout frequently breaks another. *Update (2026-02-08):* Significant progress has been made by replacing hardcoded `style_id` checks with holistic style-family detection and explicit `type_mapping` configuration, making these passes more deterministic and less 'magical'.
-5. **Group semantics mismatch** - CSL 1.0 groups suppress their delimiter when a child is empty; Citum has no equivalent implicit behavior. This creates phantom components and incorrect spacing.
-6. **Diminishing returns** - The easy 87% came cheaply; the remaining gap involves the hardest cases where the two models diverge most.
-
----
-
-## Approach B: Output-Driven / Reverse Engineering
-
-**How it works:** Run citeproc-js with diverse test references, parse rendered output strings into structured components, cross-reference with input data to infer variable-to-output mappings, generate Citum YAML directly from observed patterns.
-
-### Pros
-
-1. **Directly targets the success criterion** - The oracle comparison IS the definition of correctness. Deriving the template from the output closes the loop: observed output leads to template leads to processor leads to same output.
-2. **Bypasses the branch-flattening problem entirely** - citeproc-js already resolves which choose/if/else path to take for each reference type. Component ordering and type-specific behavior are directly observed.
-3. **Naturally resolves group semantics** - Group delimiter behavior, implicit suppression, and macro interaction effects are all resolved by citeproc-js before inference begins. No need to replicate that logic.
-4. **Type-specific overrides emerge naturally** - Comparing outputs across reference types directly reveals differences: "publisher appears for chapters but not journals" becomes `suppress: true` for `article-journal`.
-5. **Human-intuitive** - Produces templates resembling what a style author would write by reading a style guide: "Author (Year). Title. *Journal*, volume(issue), pages."
-6. **Well-suited to Citum's design** - The flat template model was designed to be what a human would write. This approach produces exactly that.
-7. **Simpler conceptually** - No need to understand CSL 1.0's macro expansion, choose/if/else flattening, or group suppression.
-
-### Cons
-
-1. **Test data coverage problem** - You only learn about behavior you observe. CSL 1.0 has 50+ reference types; the current fixture has 16 items covering only 7 types (article-journal, book, chapter, report, thesis, paper-conference, webpage). Styles with rare type-specific behavior (legal, patent, dataset) will be missed.
-2. **Oracle parser fragility** - The existing oracle.js component parser (`parseComponents()`) uses fragile heuristics: publisher detection relies on 10-character prefix substring matching, container-title on 15-character prefixes, and title on 20-character prefixes. `findRefDataForEntry()` returns the first author match even when multiple references share an author. These must be substantially hardened before serving as a template generation foundation.
-3. **Ambiguous parsing** - Regex-based component extraction is inherently fragile. Is "Cambridge" a publisher or a place? Is "15" a volume or a page number? Context-dependent resolution requires complex heuristics.
-4. **Loses metadata linkage** - Output strings do not reveal which CSL variable produced which output token. Cross-referencing with input data helps but is not foolproof (e.g., "Smith" could be author or editor).
-5. **Cannot extract global options** - Output "Smith, J." does not tell you whether `initialize-with` is `. ` or the input only had initials. Options like name-as-sort-order, et-al, and page-range-format must still come from XML.
-6. **Delimiter and formatting inference** - Inferring delimiters between components (". " vs ", " vs ": ") and formatting (italics, bold) from rendered strings is non-trivial. "Nature" in italics looks the same as "Nature" in plain text unless the output format preserves markup.
-7. **Does not scale** - Each of 2,844 styles needs its own citeproc-js inference run with sufficient test data. This creates a permanent dependency on citeproc-js as infrastructure.
-8. **Non-deterministic** - Different test data sets may produce different inferred templates. The approach is probabilistic, not deterministic.
-9. **Cannot discover latent features** - Substitute rules, disambiguation, subsequent-author-substitute only trigger under specific conditions. Test data may never exercise them.
-10. **Locale conflation** - Output "pp. 1-10" does not reveal whether "pp." is a locale term or a hardcoded prefix. This matters for Citum's multilingual locale system.
-11. **Compensating errors** - If the Citum processor has bugs, the output-driven approach produces templates that compensate for those bugs rather than being correct.
-
----
-
-## Approach C: Hand-Authoring High-Impact Styles
-
-**How it works:** A human (or LLM-assisted human) reads the style guide and hand-authors Citum YAML templates, using the existing `../../examples/apa-style.yaml` as a model. This approach targets the top 10 parent styles covering 60% of dependent styles.
-
-### Pros
-
-1. **Proven to work** - `../../examples/apa-style.yaml` already exists: 11 components, correct ordering, proper type-specific overrides, correct delimiters. This is the gold standard.
-2. **Highest fidelity** - A knowledgeable author understands the intent behind a style guide, not just observed output. They can handle edge cases, locale terms, and rare types correctly.
-3. **No infrastructure dependency** - No need for oracle.js hardening, expanded test fixtures, or citeproc-js inference runs.
-4. **Directly produces the target format** - The Citum template model was designed to be human-readable and human-writable.
-
-### Cons
-
-1. **Does not scale** - Hand-authoring 300 parent styles is not feasible.
-2. **Requires domain expertise** - The author needs to understand both the style guide and the Citum template model.
-3. **Error-prone** - Manual work introduces human error, especially for complex styles with many type-specific overrides.
-4. **Still needs verification** - Oracle comparison is still needed to validate correctness.
-
----
-
-## Architect's Recommendation: Hybrid Approach
-
-**Verdict: Neither approach alone is sufficient. Use a hybrid strategy combining all three.**
-
-The critical insight is that these approaches fail at *different things*:
-
-| Capability | XML Compiler | Output-Driven | Hand-Authored |
-|---|---|---|---|
-| Global options (names, dates, et-al) | Excellent | Cannot do | Manual |
-| Template component ordering | Improved but still style-fragile (7/10 bib perfect in top-10) | Validated (6 styles correct) | Excellent |
-| Type-specific overrides/suppress | Fragile (heuristic) | Validated (observable) | Excellent |
-| Coverage of rare types | Complete | Test-data dependent | Domain-expert dependent |
-| Scalability to 2,844 styles | One compiler | Per-style inference | Not feasible |
-| Locale term handling | Direct | Cannot distinguish | Manual |
-| Substitute/disambiguation | Encoded in XML | Requires special test data | Manual |
-| Delimiter inference | Direct from XML | Validated (filtered voting) | Manual |
-
-### Concrete Architecture
-
-1. **Keep the XML pipeline for OPTIONS** - The options extractor, preset detector, locale handling, and processing mode detection all work. This is ~2,500 lines of solid code that does not need replacement.
-
-2. **Hand-author templates for the top 5-10 parent styles** - Starting from `../../examples/apa-style.yaml` as a model, use style guides and oracle verification to produce gold-standard templates. This covers 60% of dependent styles with the highest confidence.
-
-3. **Build output-driven template inference for the next tier** - For parent styles beyond the top 10, use citeproc-js output + input data cross-referencing to generate template structure. This requires hardening oracle.js first.
-
-4. **Retain the XML compiler as a fallback** - For the remaining parent styles, the XML compiler provides a reasonable starting point. It already gets citations right.
-
-5. **Use oracle comparison as cross-validation for all approaches** - Where hand-authored, output-inferred, and XML-compiled templates agree, confidence is high.
-
-### Why hybrid, not pure output-driven
-
-- You still need XML for options (the output-driven approach literally cannot extract `initialize-with`, `name-as-sort-order`, or `et-al-min` from rendered strings)
-- You still need XML for rare reference types not covered by test data
-- You still need XML for locale terms, substitute rules, and disambiguation
-- The existing options pipeline is proven and does not need replacement
-
-### Why hybrid, not pure XML compiler
-
-- The template compiler and pass chain remain the highest-risk area for residual bibliography deltas. Even with major progress, flattening type-specific choose/if/else behavior into declarative templates still introduces style-fragile edge cases that require targeted fixes.
-- The template structure for most styles is simple: 8-12 components in a predictable order. Hand-authoring or inferring this is far more reliable than deducing it from 126 choose blocks.
-
-### Estimated effort
-
-- Hand-authored top 10 templates: ~5-10 hours of domain-expert time (APA already done)
-- Oracle.js parser hardening: ~300-500 lines (replace substring matching with proper field-aware parsing)
-- Output-driven template inferrer: ~500-800 lines (extend hardened oracle.js + add variable cross-referencing)
-- Integration with options pipeline: ~200 lines
-- Test fixture expansion: ~200 lines of JSON (15 → 25-30 reference items)
-- Testing and validation: Use existing oracle infrastructure
-
-### Risk mitigation
-
-- Expand test fixtures from 16 references to 25-30, covering all major reference types (add article-newspaper, dataset, legal_case, entry at minimum)
-- Use the XML's choose/if type conditions as a validation checklist (ensure inferred template has overrides for all types the XML mentions)
-- Start with APA (the most complex, 99 macros) as proof-of-concept; the hand-authored version already exists
-- **Preserve citation template generation** - Current top-10 baseline is 100% citation match; any template changes must not regress this
-- Harden oracle.js component parser before building inference on top of it
-
----
-
-## Validation Results (2026-02-08)
-
-The output-driven template inferrer (`../../scripts/lib/template-inferrer.js`) was implemented and tested against 6 major parent styles. Results validate the hybrid approach.
-
-### What the inferrer demonstrated
-
-| Capability | Result | Notes |
+| Layer | Responsibility | Strategic status |
 |---|---|---|
-| Component ordering | Correct for all 6 styles | The problem that defeated the XML compiler falls out naturally from positional analysis |
-| Delimiter detection | APA `. `, IEEE `, `, others `. ` | Reliable once contributor/year/editor pairs filtered from voting |
-| Formatting inference | Italic and quote detection from HTML | Majority vote across entries; APA italic titles, IEEE quoted titles |
-| Parent-monograph detection | Serial vs monograph split | Inferred from reference types present in rendered output |
-| Type-specific suppress | Emerges from per-type component presence | No heuristic flattening of choose/if/else needed |
-| Confidence | 95-97% across styles | Per-type coverage metric |
+| XML parsing and macro expansion | Parse CSL 1.0, inline macros, preserve source provenance. | Necessary substrate. Good for semantic coverage, not sufficient for clean templates. |
+| Option extraction | Extract contributor, date, title, bibliography, locator, and processing options. | Strongest part of the XML pipeline. Keep and extend conservatively. |
+| XML compiler | Compile XML/IR into concrete citation and bibliography templates, including type templates. | Necessary fallback. Still risky for bibliography structure and type-conditioned macro flattening. |
+| Template resolver and inferred templates | Load embedded, curated, or generated template candidates when they exist. | Preferred when curated/generated evidence is stronger than raw XML compilation. |
+| Measured selection and synthesis | Score candidate citation/bibliography styles against citeproc-js fixtures and held-out validation. | Correct direction for bounded automatic improvement; limited by fixture coverage. |
+| Semantic fixups | Apply fidelity-preserving full-template corrections such as URL/accessed gating and media/type repairs. | Acceptable only with oracle evidence or clear CSL/Citum semantic mismatch. Keep localized. |
+| Assembly | Produce a standalone, explicit `citum_schema::Style` from selected sources. | Should be semantic and explicit. It must not hide differences through SQI compaction. |
+| SQI refinement | Generate exact diff-based `type-variants`, hoist safe options, prune inherited defaults, normalize serialization noise. | Post-assembly concern. It improves maintainability only after the style is semantically assembled. |
+| Lineage and wrappers | Attach `extends`, minimize wrappers, and emit evidence about standalone vs compressed forms. | Runs after standalone materialization so local diffs remain inspectable. |
 
-### Styles tested
+This separation matters. If assembly strips fields, hoists options, or compacts
+templates before diff generation, the diff engine compares already-mutated
+templates and can produce diffs that reflect compaction artifacts rather than
+semantic structure. Assembly should therefore prefer explicitness; SQI
+refinement should own concision.
 
-- **APA 7th** (783 dependents): `. ` delimiter, italic parent titles, both serial and monograph containers
-- **IEEE** (176 dependents): `, ` delimiter, quoted primary titles, italic parent titles
-- **Elsevier Harvard** (665 dependents): `. ` delimiter, no formatting (correct)
-- **Chicago Author-Date** (547 dependents): `. ` delimiter, italic parent titles
-- **Springer Basic** (460 dependents): `. ` delimiter
-- **Nature** (182 dependents): `. ` delimiter
+## Why Migrated Output Can Still Feel Wrong
 
-### Cons addressed by implementation
+Unsatisfying `citum-migrate` output usually falls into one of five buckets:
 
-Several Approach B cons identified in the original analysis have been mitigated:
-
-- **Con #2 (Parser fragility)**: The component parser was rewritten with exact field-aware matching, multi-field scoring for reference lookup, and digit-boundary guards for numeric fields. See `../../scripts/lib/component-parser.js`.
-- **Con #6 (Delimiter and formatting inference)**: Delimiter consensus uses filtered voting across all entry pairs. Formatting detection parses raw HTML output from citeproc-js to identify `<i>` tags and quote characters. Both work reliably.
-- **Con #8 (Non-deterministic)**: With sufficient entries per type (3+), the consensus-based approach produces stable results across runs.
-
-### Remaining gaps
-
-- **Test data coverage** (Con #1): Fixture has 28 items covering ~12 types; rare types (legal, patent) still underrepresented
-- **Locale conflation** (Con #10): "pp." detected as prefix but not distinguished from locale terms
-- **Latent features** (Con #9): Disambiguation, substitute rules still require XML or hand-authoring
-
-### Key architectural insight
-
-The inferrer validates that **template structure is often easier to solve from observed output than from procedural XML alone**. Early 0%-bibliography periods exposed the procedural-to-declarative translation difficulty; current results show this can be improved substantially but not fully eliminated with heuristics. Meanwhile, the XML pipeline remains the right tool for options extraction and currently sustains perfect citation match on the top-10 set.
-
-### Updated effort estimates
-
-| Task | Original estimate | Actual |
+| Symptom | Meaning | Correct response |
 |---|---|---|
-| Parser hardening | 300-500 lines | ~200 lines (component-parser.js rewrite) |
-| Template inferrer | 500-800 lines | ~400 lines (template-inferrer.js) |
-| Test fixture expansion | ~200 lines JSON | Done (28 items, 12+ types) |
-| Integration with options pipeline | ~200 lines | Not yet started |
+| Rendered output differs from citeproc-js or a style guide. | Fidelity failure. | Fix converter, schema, or engine behavior with oracle/workflow evidence. No SQI tradeoff is allowed. |
+| Rendered output is correct but YAML is verbose. | Structural ugliness, not necessarily semantic wrongness. | Improve SQI refinement, option hoisting, template presets, or hand-authored parent styles. |
+| Type variants are numerous or unnatural. | Procedural CSL conditionals did not map cleanly to a declarative spine. | Prefer curated parent templates or output-driven evidence; keep XML fallback for latent behavior. |
+| Behavior works only for exercised reference types. | Fixture coverage gap. | Expand selection and held-out fixtures before trusting output-driven inference. |
+| Fixups feel style-specific or fragile. | Heuristic debt in media/type handling or bibliography flattening. | Narrow the fixup, add regression cases, or move the rule into schema/style data if it is general. |
 
-### Future application: visual style creation
+This distinction is operationally important. A bad bibliography rendering is a
+hard bug. A correct but bulky template is a style-quality problem. A clean YAML
+file that only works for fixture-covered cases is not trustworthy enough for
+core parent styles.
 
-The same output-driven approach could power a visual style editor where users provide example formatted entries (by pasting, uploading, or modifying pre-selected reference data) and the system infers a Citum template. The component parser and template inferrer already perform the core task: given structured reference data and a formatted string, derive component ordering, delimiters, formatting, and type-specific behavior. This aligns with the progressive-refinement UI described in `./design/STYLE_EDITOR_VISION.md` and would allow style creation without requiring knowledge of any style language.
+## Operational Decision Rules
 
----
+| Situation | Default decision |
+|---|---|
+| Core parent style quality matters. | Hand-author or presetize the parent, then use migration output as evidence and regression input. |
+| Generated output is faithful but verbose. | Improve post-assembly SQI refinement or reusable presets; do not mutate assembly to chase concision. |
+| Generated output is unfaithful. | Fix converter, engine, schema, or fixtures with oracle evidence before SQI work. |
+| Fixture coverage is weak for affected behavior. | Expand selection and held-out fixtures before trusting output-driven inference. |
+| XML and measured output disagree. | Prefer measured output only for exercised behavior; retain XML fallback for latent branches, options, substitutes, and locale behavior. |
+| A heuristic fix helps one style and risks another. | Require a narrow regression test, family/type guard, or move the behavior into declarative style data. |
+| A style can be expressed with a generic spine plus few true outliers. | Prefer base templates, options, presets, and diff-based `type-variants` over many full type templates. |
+
+The goal is not to make the converter clever enough to author every style.
+The goal is to make it dependable as a source of explicit semantic candidates,
+evidence, and controlled automation while preserving a path to high-quality
+human-readable styles.
+
+## Historical Analysis: XML Compiler
+
+**How it works:** Parse CSL 1.0 XML, inline macros, upsample nodes to an
+intermediate representation, then compile into Citum's `TemplateComponent`
+model. Post-processing and fixups repair known structural mismatches.
+
+### Strengths
+
+1. **Semantic coverage** - XML contains the author's declared rules, including
+   rare reference types and branches fixtures may not exercise.
+2. **Options extraction** - Name formatting, et-al rules, initialize-with, date
+   forms, page-range-format, and processing mode are usually recoverable from
+   attributes and macro structure.
+3. **Determinism** - Same XML input produces the same candidate output.
+4. **Provenance** - Failures can be traced through the parsed CSL node and IR
+   pipeline.
+5. **Latent behavior** - Substitute rules, disambiguation hints, locale terms,
+   and subsequent-author-substitute exist whether or not test data triggers
+   them.
+
+### Weaknesses
+
+1. **Model mismatch** - CSL 1.0 is procedural: macros, conditionals, and groups
+   with implicit suppression. Citum is declarative and typed.
+2. **Type-conditioned flattening** - Macros such as APA's `source` contain many
+   `choose/if/else` paths that produce different component sequences per
+   reference type. Preserving XML order is not enough; the converter must infer
+   which structures belong to which types.
+3. **Group semantics** - CSL groups suppress delimiters when children are empty.
+   Citum templates do not have the same implicit behavior, so naive conversion
+   can create phantom punctuation or components.
+4. **Heuristic fragility** - Reordering, grouping, media/type repairs, and
+   bibliography flattening can become style-family heuristics unless tightly
+   tested.
+5. **Quality ceiling** - XML compilation can be faithful enough to render but
+   still produce YAML no human would choose to maintain.
+
+## Historical Analysis: Output-Driven Inference
+
+**How it works:** Run citeproc-js against fixture references, parse rendered
+output into components, cross-reference those components with input data, and
+generate or score Citum templates from observed behavior.
+
+### Strengths
+
+1. **Direct fidelity target** - Oracle output is the executable comparator for
+   CSL-derived behavior.
+2. **Resolved conditionals** - citeproc-js has already selected branches,
+   suppressed empty groups, and applied macro interactions for the exercised
+   reference.
+3. **Observed structure** - Component order, delimiters, formatting, and
+   type-specific suppression can be derived from actual output.
+4. **Human-readable bias** - The result tends to resemble the style a human
+   would write from examples.
+
+### Weaknesses
+
+1. **Coverage-bound** - It only knows behavior present in selection or held-out
+   fixtures.
+2. **Metadata ambiguity** - Output text does not always reveal whether a token
+   came from a contributor, editor, publisher, place, locale term, or literal.
+3. **Cannot replace XML options** - Output cannot reliably identify
+   initialize-with, name-as-sort-order, et-al thresholds, or latent substitute
+   behavior.
+4. **Locale conflation** - Rendered terms such as `pp.` may be locale terms,
+   hardcoded affixes, or style-specific literals.
+5. **Compensating errors** - If the Citum engine has a bug, inference can learn
+   a template that compensates for the bug rather than exposing it.
+
+### Current Result
+
+The output-driven parser and inferrer have already reduced several historical
+risks: component parsing is field-aware, delimiter inference uses filtered
+voting, HTML formatting is inspected, and fixture coverage is broader than the
+original 16-item set. This validates the hybrid approach, but it does not make
+output-driven inference a complete replacement for XML or hand-authored styles.
+
+## Historical Analysis: Hand-Authored Parent Styles
+
+**How it works:** A human or domain-assisted author writes Citum YAML directly
+from a style guide, examples, and oracle validation.
+
+### Strengths
+
+1. **Highest style quality** - The author can choose the clean generic spine,
+   presets, and meaningful type outliers directly.
+2. **Best authority handling** - Style guides and publisher instructions outrank
+   converter artifacts when they are clearer than CSL XML.
+3. **No inference ceiling** - Rare types, locale behavior, and edge cases can be
+   handled deliberately.
+
+### Weaknesses
+
+1. **Does not scale to every dependent style** - It is appropriate for high
+   leverage parent styles, not all migrated styles.
+2. **Requires domain judgment** - The author must understand both citation
+   behavior and Citum's declarative model.
+3. **Still needs executable validation** - Human-authored styles must pass the
+   same rendering and quality gates.
+
+## Strategic Recommendation
+
+The durable strategy is hybrid:
+
+1. **Keep XML for options and latent semantics.** This is the reliable part of
+   automatic migration and should not be discarded.
+2. **Use measured output for exercised template structure.** Let citeproc-js
+   settle concrete branch behavior where fixtures cover the case.
+3. **Retain XML compilation as a fallback and evidence source.** It remains the
+   only automatic path to rare unobserved branches.
+4. **Author or presetize top parent styles.** The core portfolio should not be
+   constrained by converter artifacts when a cleaner declarative style is known.
+5. **Separate semantic assembly from SQI refinement.** Keep templates explicit
+   until final refinement can diff, hoist, prune, and compact safely.
+6. **Treat oracle and workflow tests as gates.** SQI improvements that regress
+   fidelity are rejected.
+
+## Validation and Risk Controls
+
+Current and future migration work should be evaluated with layered checks:
+
+1. Targeted converter tests for assembly boundaries, template diffing, measured
+   selection, and SQI refinement.
+2. Oracle/workflow tests for representative legacy styles, especially parent
+   styles and styles whose generated output looks suspicious.
+3. Expanded selection and held-out fixtures when changing output-driven
+   inference or measured selection.
+4. SQI reports for maintainability regressions after fidelity is green.
+5. Manual review for high-impact parent styles, because clean Citum style design
+   is an authoring problem as well as a converter problem.
 
 ## Files Referenced
 
-- `../../crates/citum-migrate/src/template_compiler/mod.rs` - Current template compiler (2,077 lines), the bottleneck
-- `../../crates/citum-migrate/src/lib.rs` - MacroInliner with macro expansion logic
-- `../../crates/citum-migrate/src/upsampler.rs` - CslNode to CslnNode conversion (works well)
-- `../../crates/citum-migrate/src/options_extractor/` - Options pipeline (works well, keep)
-- `../../crates/citum-schema-style/src/template.rs` - Citum template model (target schema)
-- `../../scripts/oracle.js` - Oracle comparison test
-- `../../scripts/lib/component-parser.js` - Hardened component parser with field-aware matching
-- `../../scripts/lib/template-inferrer.js` - Output-driven template inference engine
-- `../../scripts/infer-template.js` - CLI wrapper for template inference
-- `../../examples/apa-style.yaml` - Hand-authored APA style (gold standard, 11 components)
-- `../../tests/fixtures/references-expanded.json` - Test fixture (28 items, 12+ types)
-- `../../.beans/csl26-rh2u--preserve-macro-call-order-from-csl-10-during-parsi.md` - The triggering bean
-- `../../.beans/csl26-m3lb--implement-hybrid-migration-strategy.md` - Implementation milestone
+- [`../../crates/citum-migrate/src/template_compiler/`](../../crates/citum-migrate/src/template_compiler/) - XML template compiler.
+- [`../../crates/citum-migrate/src/options_extractor/`](../../crates/citum-migrate/src/options_extractor/) - XML-derived options pipeline.
+- [`../../crates/citum-migrate/src/measured_citation.rs`](../../crates/citum-migrate/src/measured_citation.rs) - Oracle-scored candidate selection.
+- [`../../crates/citum-migrate/src/synthesis/`](../../crates/citum-migrate/src/synthesis/) - Bounded candidate mutation and held-out validation.
+- [`../../crates/citum-migrate/src/template_diff.rs`](../../crates/citum-migrate/src/template_diff.rs) - Diff-based `type-variants`.
+- [`../../scripts/oracle.js`](../../scripts/oracle.js) - citeproc-js comparison harness.
+- [`../../scripts/lib/component-parser.js`](../../scripts/lib/component-parser.js) - Field-aware output parser.
+- [`../../scripts/lib/template-inferrer.js`](../../scripts/lib/template-inferrer.js) - Output-driven template inference.
+- [`../../tests/fixtures/references-expanded.json`](../../tests/fixtures/references-expanded.json) - Selection fixture data.
+- [`../../tests/fixtures/references-heldout.json`](../../tests/fixtures/references-heldout.json) - Held-out validation fixture data.
+- [`../policies/SQI_REFINEMENT_PLAN.md`](../policies/SQI_REFINEMENT_PLAN.md) - Portfolio SQI policy.
