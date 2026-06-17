@@ -699,6 +699,7 @@ pub struct TemplateContributor {
     /// Which contributor role to render (author, editor, etc.).
     pub contributor: ContributorRole,
     /// How to display the contributor (long names, short, with label, etc.).
+    #[serde(default, skip_serializing_if = "ContributorForm::is_long")]
     pub form: ContributorForm,
     /// Optional role label configuration (e.g., "eds." for editors).
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -762,6 +763,14 @@ pub enum ContributorForm {
     FamilyOnly,
     Verb,
     VerbShort,
+}
+
+impl ContributorForm {
+    /// Return true when this form is the default long contributor form.
+    #[must_use]
+    pub fn is_long(&self) -> bool {
+        matches!(self, Self::Long)
+    }
 }
 
 crate::str_enum! {
@@ -1331,6 +1340,29 @@ form: long
         let comp: TemplateContributor = serde_yaml::from_str(yaml).unwrap();
         assert_eq!(comp.contributor, ContributorRole::Author);
         assert_eq!(comp.form, ContributorForm::Long);
+    }
+
+    #[test]
+    fn contributor_form_defaults_to_long_when_omitted() {
+        let yaml = "contributor: author\n";
+        let comp: TemplateContributor = serde_yaml::from_str(yaml).unwrap();
+
+        assert_eq!(comp.contributor, ContributorRole::Author);
+        assert_eq!(comp.form, ContributorForm::Long);
+    }
+
+    #[test]
+    fn long_contributor_form_is_not_serialized() {
+        let comp = TemplateContributor {
+            contributor: ContributorRole::Author,
+            form: ContributorForm::Long,
+            ..TemplateContributor::default()
+        };
+
+        let yaml = serde_yaml::to_string(&comp).unwrap();
+
+        assert!(yaml.contains("contributor: author"));
+        assert!(!yaml.contains("form: long"));
     }
 
     #[test]

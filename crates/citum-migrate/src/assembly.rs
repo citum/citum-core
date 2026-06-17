@@ -26,7 +26,11 @@ use citum_migrate::{
 };
 use citum_schema::{
     BibliographySpec, CitationCollapse, CitationSpec, Style, StyleInfo,
-    template::{TemplateComponent, WrapPunctuation},
+    options::{ContributorConfig, DisplayAsSort},
+    template::{
+        NameOrder, Rendering, TemplateComponent, TemplateContributor, TemplateTitle, TitleType,
+        TypeSelector, WrapPunctuation,
+    },
 };
 use std::path::Path;
 
@@ -245,6 +249,31 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOut
     if let Some(contributors) = c.bibliography_contributor_overrides.take() {
         bibliography_scope_options.contributors = Some(contributors);
     }
+    let effective_citation_options = citation_scope_options.as_ref().map_or_else(
+        || c.options.clone(),
+        |options| options.merged_with(&c.options),
+    );
+    normalize_templates_against_options(
+        &mut c.new_cit,
+        TitleDefaultContext::Default,
+        &effective_citation_options,
+    );
+    if let Some(template) = c.citation_subsequent_override.as_mut() {
+        normalize_templates_against_options(
+            template,
+            TitleDefaultContext::Default,
+            &effective_citation_options,
+        );
+    }
+    if let Some(template) = c.citation_ibid_override.as_mut() {
+        normalize_templates_against_options(
+            template,
+            TitleDefaultContext::Default,
+            &effective_citation_options,
+        );
+    }
+
+    let effective_bibliography_options = bibliography_scope_options.merged_with(&c.options);
     let bibliography_scope_options = (bibliography_scope_options
         != citum_schema::BibliographyOptions::default())
     .then_some(bibliography_scope_options);
@@ -255,7 +284,11 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOut
             .as_ref()
             .and_then(|bib| bib.sort.as_ref()),
     );
-    let (new_bib, type_variants) = finalize_bibliography_variants(c.new_bib, c.type_templates);
+    let (new_bib, type_variants) = finalize_bibliography_variants(
+        c.new_bib,
+        c.type_templates,
+        &effective_bibliography_options,
+    );
 
     // [PRUNING] Prune redundant citation modes (e.g. ibid/subsequent if they match base).
     let subsequent = c
@@ -488,6 +521,7 @@ fn resolve_citation_metadata(
 fn finalize_bibliography_variants(
     mut new_bib: Vec<TemplateComponent>,
     mut type_templates: Option<TypeTemplateMap>,
+    effective_options: &citum_schema::options::Config,
 ) -> (Vec<TemplateComponent>, Option<TypeVariantMap>) {
     // Phase 1: final semantic fixups still see full templates. This render-time
     // citeproc-js gate is applied here after measured selection and before any
@@ -507,6 +541,17 @@ fn finalize_bibliography_variants(
     // Phase 2: compression is a serialization pass over finalized Full templates.
     if let Some(type_templates) = type_templates.as_mut() {
         type_templates.retain(|_, template| template != &new_bib);
+    }
+    normalize_templates_against_options(
+        &mut new_bib,
+        TitleDefaultContext::Default,
+        effective_options,
+    );
+    if let Some(type_templates) = type_templates.as_mut() {
+        for (selector, template) in type_templates {
+            let context = selector_title_context(selector);
+            normalize_templates_against_options(template, context, effective_options);
+        }
     }
     let mut type_variants = type_templates
         .take()
@@ -528,6 +573,222 @@ fn finalize_bibliography_variants(
     }
 
     (new_bib, type_variants)
+}
+
+#[derive(Clone, Copy)]
+enum TitleDefaultContext<'a> {
+    Default,
+    RefType(&'a str),
+    Unknown,
+}
+
+fn selector_title_context(selector: &TypeSelector) -> TitleDefaultContext<'_> {
+    match selector {
+        TypeSelector::Single(ref_type) => TitleDefaultContext::RefType(ref_type),
+        TypeSelector::Multiple(_) => TitleDefaultContext::Unknown,
+    }
+}
+
+fn normalize_templates_against_options(
+    template: &mut [TemplateComponent],
+    title_context: TitleDefaultContext<'_>,
+    options: &citum_schema::options::Config,
+) {
+    for component in template {
+        match component {
+            TemplateComponent::Contributor(contributor) => {
+                if let Some(defaults) = options.contributors.as_ref() {
+                    compact_inherited_contributor(contributor, defaults);
+                }
+            }
+            TemplateComponent::Title(title) => {
+                compact_inherited_title(title, title_context, options);
+            }
+            TemplateComponent::Group(group) => {
+                normalize_templates_against_options(&mut group.group, title_context, options);
+            }
+            _ => {}
+        }
+    }
+}
+
+fn compact_inherited_title(
+    title: &mut TemplateTitle,
+    title_context: TitleDefaultContext<'_>,
+    options: &citum_schema::options::Config,
+) {
+    let Some(defaults) = effective_title_rendering(&title.title, title_context, options) else {
+        return;
+    };
+
+    clear_rendering_field(&mut title.rendering.text_case, defaults.text_case);
+    clear_rendering_field(&mut title.rendering.emph, defaults.emph);
+    clear_rendering_field(&mut title.rendering.quote, defaults.quote);
+    clear_rendering_field(&mut title.rendering.strong, defaults.strong);
+    clear_rendering_field(&mut title.rendering.small_caps, defaults.small_caps);
+    clear_rendering_field(&mut title.rendering.prefix, defaults.prefix);
+    clear_rendering_field(&mut title.rendering.suffix, defaults.suffix);
+}
+
+fn clear_rendering_field<T: PartialEq>(field: &mut Option<T>, inherited: Option<T>) {
+    if field.as_ref() == inherited.as_ref() {
+        *field = None;
+    }
+}
+
+fn effective_title_rendering(
+    title_type: &TitleType,
+    title_context: TitleDefaultContext<'_>,
+    options: &citum_schema::options::Config,
+) -> Option<Rendering> {
+    let ref_type = match title_context {
+        TitleDefaultContext::Default => None,
+        TitleDefaultContext::RefType(ref_type) => Some(ref_type),
+        TitleDefaultContext::Unknown => return None,
+    };
+    let titles = options.titles.as_ref()?;
+    let mapped_category = ref_type.and_then(|rt| titles.type_mapping.get(rt));
+
+    let rendering = match title_type {
+        TitleType::ContainerTitle => {
+            if let Some(category) = mapped_category {
+                match category.as_str() {
+                    "periodical" => titles.periodical.as_ref(),
+                    "serial" => titles.serial.as_ref(),
+                    "monograph" | "collection" => titles
+                        .container_monograph
+                        .as_ref()
+                        .or(titles.monograph.as_ref()),
+                    _ => titles.default.as_ref(),
+                }
+            } else if let Some(ref_type) = ref_type {
+                if matches!(
+                    ref_type,
+                    "article-journal" | "article-magazine" | "article-newspaper" | "broadcast"
+                ) {
+                    titles.periodical.as_ref()
+                } else if matches!(ref_type, "chapter" | "paper-conference") {
+                    titles
+                        .container_monograph
+                        .as_ref()
+                        .or(titles.monograph.as_ref())
+                } else {
+                    titles.default.as_ref()
+                }
+            } else {
+                titles.default.as_ref()
+            }
+        }
+        TitleType::ParentSerial => {
+            if let Some(category) = mapped_category {
+                match category.as_str() {
+                    "periodical" => titles.periodical.as_ref(),
+                    "serial" => titles.serial.as_ref(),
+                    _ => titles.periodical.as_ref(),
+                }
+            } else if let Some(ref_type) = ref_type {
+                if matches!(
+                    ref_type,
+                    "article-journal" | "article-magazine" | "article-newspaper"
+                ) {
+                    titles.periodical.as_ref()
+                } else {
+                    titles.serial.as_ref()
+                }
+            } else {
+                titles.periodical.as_ref()
+            }
+        }
+        TitleType::ParentMonograph => titles
+            .container_monograph
+            .as_ref()
+            .or(titles.monograph.as_ref()),
+        TitleType::CollectionTitle => titles
+            .container_monograph
+            .as_ref()
+            .or(titles.monograph.as_ref())
+            .or(titles.default.as_ref()),
+        TitleType::Primary => {
+            if let Some(category) = mapped_category {
+                match category.as_str() {
+                    "component" => titles.component.as_ref(),
+                    "monograph" => titles.monograph.as_ref(),
+                    _ => titles.default.as_ref(),
+                }
+            } else if let Some(ref_type) = ref_type {
+                if matches!(
+                    ref_type,
+                    "article-journal"
+                        | "article-magazine"
+                        | "article-newspaper"
+                        | "chapter"
+                        | "entry"
+                        | "entry-dictionary"
+                        | "entry-encyclopedia"
+                        | "paper-conference"
+                        | "post"
+                        | "post-weblog"
+                ) {
+                    titles.component.as_ref()
+                } else if matches!(ref_type, "book" | "thesis" | "report") {
+                    titles.monograph.as_ref()
+                } else {
+                    titles.default.as_ref()
+                }
+            } else {
+                titles.default.as_ref()
+            }
+        }
+        _ => None,
+    };
+
+    Some(rendering.or(titles.default.as_ref())?.to_rendering())
+}
+
+fn compact_inherited_contributor(
+    contributor: &mut TemplateContributor,
+    defaults: &ContributorConfig,
+) {
+    if contributor.and.as_ref() == defaults.and.as_ref() {
+        contributor.and = None;
+    }
+    if contributor.shorten.as_ref() == defaults.shorten.as_ref() {
+        contributor.shorten = None;
+    }
+    if contributor.sort_separator.as_ref() == defaults.sort_separator.as_ref() {
+        contributor.sort_separator = None;
+    }
+    if contributor.name_form.as_ref() == defaults.name_form.as_ref() {
+        contributor.name_form = None;
+    }
+    if contributor
+        .name_order
+        .as_ref()
+        .is_some_and(|name_order| inherited_name_order_matches(contributor, defaults, name_order))
+    {
+        contributor.name_order = None;
+    }
+}
+
+fn inherited_name_order_matches(
+    contributor: &TemplateContributor,
+    defaults: &ContributorConfig,
+    name_order: &NameOrder,
+) -> bool {
+    if defaults
+        .effective_role_name_order(&contributor.contributor)
+        .is_some_and(|default| default == name_order)
+    {
+        return true;
+    }
+
+    matches!(
+        (defaults.display_as_sort, name_order),
+        (
+            Some(DisplayAsSort::All | DisplayAsSort::First),
+            NameOrder::FamilyFirst
+        ) | (Some(DisplayAsSort::First), NameOrder::FamilyFirstOnly)
+    )
 }
 
 fn apply_citation_selection_result(
@@ -645,7 +906,15 @@ mod tests {
     use super::*;
     use citum_schema::{
         BibliographySpec, CitationSpec,
-        template::{SimpleVariable, TemplateVariable},
+        options::{
+            AndOptions, DateConfig, DisplayAsSort, MonthFormat, NameForm, ShortenListOptions,
+            TextCase, TitleRendering, TitlesConfig,
+        },
+        template::{
+            ContributorForm, ContributorRole, DateForm, DateVariable, NameOrder, Rendering,
+            SimpleVariable, TemplateContributor, TemplateDate, TemplateGroup, TemplateTitle,
+            TemplateVariable, TitleType,
+        },
     };
     use csl_legacy::model::{
         Citation, Info, Layout, Sort as LegacySort, SortKey as LegacySortKey, Style as LegacyStyle,
@@ -772,6 +1041,411 @@ mod tests {
                 .and_then(|citation| citation.collapse.clone()),
             Some(CitationCollapse::CitationNumber)
         );
+    }
+
+    #[test]
+    fn inherited_contributor_defaults_are_compacted() {
+        let defaults = ContributorConfig {
+            display_as_sort: Some(DisplayAsSort::First),
+            and: Some(AndOptions::Text),
+            shorten: Some(ShortenListOptions {
+                min: 3,
+                use_first: 1,
+                ..ShortenListOptions::default()
+            }),
+            sort_separator: Some(", ".to_string()),
+            name_form: Some(NameForm::Initials),
+            ..ContributorConfig::default()
+        };
+        let mut template = vec![
+            TemplateComponent::Contributor(TemplateContributor {
+                contributor: ContributorRole::Author,
+                form: ContributorForm::Long,
+                name_order: Some(NameOrder::FamilyFirstOnly),
+                and: Some(AndOptions::Text),
+                shorten: defaults.shorten.clone(),
+                sort_separator: Some(", ".to_string()),
+                name_form: Some(NameForm::Initials),
+                ..TemplateContributor::default()
+            }),
+            TemplateComponent::Group(TemplateGroup {
+                group: vec![TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Editor,
+                    form: ContributorForm::Long,
+                    name_order: Some(NameOrder::FamilyFirst),
+                    and: Some(AndOptions::Text),
+                    shorten: defaults.shorten.clone(),
+                    sort_separator: Some(", ".to_string()),
+                    name_form: Some(NameForm::Initials),
+                    ..TemplateContributor::default()
+                })],
+                ..TemplateGroup::default()
+            }),
+        ];
+
+        normalize_templates_against_options(
+            &mut template,
+            TitleDefaultContext::Default,
+            &citum_schema::options::Config {
+                contributors: Some(defaults),
+                ..citum_schema::options::Config::default()
+            },
+        );
+
+        let TemplateComponent::Contributor(author) =
+            template.first().expect("first component should exist")
+        else {
+            panic!("first component should remain a contributor");
+        };
+        assert_eq!(author.form, ContributorForm::Long);
+        assert_eq!(author.name_order, None);
+        assert_eq!(author.and, None);
+        assert_eq!(author.shorten, None);
+        assert_eq!(author.sort_separator, None);
+        assert_eq!(author.name_form, None);
+
+        let TemplateComponent::Group(group) =
+            template.get(1).expect("second component should exist")
+        else {
+            panic!("second component should remain a group");
+        };
+        let TemplateComponent::Contributor(editor) =
+            group.group.first().expect("group child should exist")
+        else {
+            panic!("group child should remain a contributor");
+        };
+        assert_eq!(editor.name_order, None);
+        assert_eq!(editor.and, None);
+        assert_eq!(editor.shorten, None);
+        assert_eq!(editor.sort_separator, None);
+        assert_eq!(editor.name_form, None);
+    }
+
+    #[test]
+    fn differing_contributor_fields_are_preserved() {
+        let defaults = ContributorConfig {
+            display_as_sort: Some(DisplayAsSort::First),
+            and: Some(AndOptions::Text),
+            sort_separator: Some(", ".to_string()),
+            name_form: Some(NameForm::Initials),
+            ..ContributorConfig::default()
+        };
+        let mut template = vec![TemplateComponent::Contributor(TemplateContributor {
+            contributor: ContributorRole::Author,
+            form: ContributorForm::Long,
+            name_order: Some(NameOrder::GivenFirst),
+            and: Some(AndOptions::Symbol),
+            sort_separator: Some(" ".to_string()),
+            name_form: Some(NameForm::Full),
+            ..TemplateContributor::default()
+        })];
+
+        normalize_templates_against_options(
+            &mut template,
+            TitleDefaultContext::Default,
+            &citum_schema::options::Config {
+                contributors: Some(defaults),
+                ..citum_schema::options::Config::default()
+            },
+        );
+
+        let TemplateComponent::Contributor(author) =
+            template.first().expect("component should exist")
+        else {
+            panic!("component should remain a contributor");
+        };
+        assert_eq!(author.name_order, Some(NameOrder::GivenFirst));
+        assert_eq!(author.and, Some(AndOptions::Symbol));
+        assert_eq!(author.sort_separator, Some(" ".to_string()));
+        assert_eq!(author.name_form, Some(NameForm::Full));
+    }
+
+    #[test]
+    fn citation_contributor_defaults_are_compacted() {
+        let style = minimal_legacy_style();
+        let migrated = build_final_style(
+            &style,
+            CompiledOutput {
+                options: citum_schema::options::Config {
+                    contributors: Some(ContributorConfig {
+                        display_as_sort: Some(DisplayAsSort::First),
+                        and: Some(AndOptions::Symbol),
+                        ..ContributorConfig::default()
+                    }),
+                    ..citum_schema::options::Config::default()
+                },
+                citation_contributor_overrides: Some(ContributorConfig {
+                    and: Some(AndOptions::Text),
+                    ..ContributorConfig::default()
+                }),
+                bibliography_options: None,
+                bibliography_contributor_overrides: None,
+                new_cit: vec![TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    form: ContributorForm::Long,
+                    name_order: Some(NameOrder::FamilyFirstOnly),
+                    and: Some(AndOptions::Text),
+                    ..TemplateContributor::default()
+                })],
+                new_bib: vec![TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    form: ContributorForm::Long,
+                    name_order: Some(NameOrder::FamilyFirstOnly),
+                    and: Some(AndOptions::Symbol),
+                    ..TemplateContributor::default()
+                })],
+                type_templates: None,
+                citation_wrap: None,
+                citation_prefix: None,
+                citation_suffix: None,
+                citation_delimiter: None,
+                citation_subsequent_override: None,
+                citation_ibid_override: None,
+            },
+        );
+
+        let citation_template = migrated
+            .citation
+            .as_ref()
+            .and_then(|citation| citation.template.as_ref())
+            .expect("citation template should be present");
+        let TemplateComponent::Contributor(citation_author) = citation_template
+            .first()
+            .expect("citation component should exist")
+        else {
+            panic!("citation component should remain a contributor");
+        };
+        assert_eq!(citation_author.name_order, None);
+        assert_eq!(citation_author.and, None);
+
+        let bibliography_template = migrated
+            .bibliography
+            .as_ref()
+            .and_then(|bibliography| bibliography.template.as_ref())
+            .expect("bibliography template should be present");
+        let TemplateComponent::Contributor(bibliography_author) = bibliography_template
+            .first()
+            .expect("bibliography component should exist")
+        else {
+            panic!("bibliography component should remain a contributor");
+        };
+        assert_eq!(bibliography_author.name_order, None);
+        assert_eq!(bibliography_author.and, None);
+    }
+
+    #[test]
+    fn citation_contributor_overrides_are_preserved_when_they_differ() {
+        let style = minimal_legacy_style();
+        let migrated = build_final_style(
+            &style,
+            CompiledOutput {
+                options: citum_schema::options::Config {
+                    contributors: Some(ContributorConfig {
+                        display_as_sort: Some(DisplayAsSort::First),
+                        and: Some(AndOptions::Text),
+                        ..ContributorConfig::default()
+                    }),
+                    ..citum_schema::options::Config::default()
+                },
+                bibliography_options: None,
+                citation_contributor_overrides: Some(ContributorConfig {
+                    and: Some(AndOptions::Symbol),
+                    ..ContributorConfig::default()
+                }),
+                bibliography_contributor_overrides: None,
+                new_cit: vec![TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    form: ContributorForm::Long,
+                    name_order: Some(NameOrder::FamilyFirstOnly),
+                    and: Some(AndOptions::Text),
+                    ..TemplateContributor::default()
+                })],
+                new_bib: vec![TemplateComponent::Contributor(TemplateContributor {
+                    contributor: ContributorRole::Author,
+                    form: ContributorForm::Long,
+                    name_order: Some(NameOrder::FamilyFirstOnly),
+                    and: Some(AndOptions::Text),
+                    ..TemplateContributor::default()
+                })],
+                type_templates: None,
+                citation_wrap: None,
+                citation_prefix: None,
+                citation_suffix: None,
+                citation_delimiter: None,
+                citation_subsequent_override: None,
+                citation_ibid_override: None,
+            },
+        );
+
+        let citation_template = migrated
+            .citation
+            .as_ref()
+            .and_then(|citation| citation.template.as_ref())
+            .expect("citation template should be present");
+        let TemplateComponent::Contributor(citation_author) = citation_template
+            .first()
+            .expect("citation component should exist")
+        else {
+            panic!("citation component should remain a contributor");
+        };
+        assert_eq!(citation_author.name_order, None);
+        assert_eq!(citation_author.and, Some(AndOptions::Text));
+
+        let bibliography_template = migrated
+            .bibliography
+            .as_ref()
+            .and_then(|bibliography| bibliography.template.as_ref())
+            .expect("bibliography template should be present");
+        let TemplateComponent::Contributor(bibliography_author) = bibliography_template
+            .first()
+            .expect("bibliography component should exist")
+        else {
+            panic!("bibliography component should remain a contributor");
+        };
+        assert_eq!(bibliography_author.name_order, None);
+        assert_eq!(bibliography_author.and, None);
+    }
+
+    #[test]
+    fn inherited_title_rendering_defaults_are_compacted() {
+        let mut template = vec![TemplateComponent::Title(TemplateTitle {
+            title: TitleType::Primary,
+            rendering: Rendering {
+                text_case: Some(TextCase::SentenceApa),
+                emph: Some(true),
+                quote: Some(true),
+                ..Rendering::default()
+            },
+            ..TemplateTitle::default()
+        })];
+
+        normalize_templates_against_options(
+            &mut template,
+            TitleDefaultContext::Default,
+            &citum_schema::options::Config {
+                titles: Some(TitlesConfig {
+                    default: Some(TitleRendering {
+                        text_case: Some(TextCase::SentenceApa),
+                        emph: Some(true),
+                        quote: Some(true),
+                        ..TitleRendering::default()
+                    }),
+                    ..TitlesConfig::default()
+                }),
+                ..citum_schema::options::Config::default()
+            },
+        );
+
+        let TemplateComponent::Title(title) = template.first().expect("component should exist")
+        else {
+            panic!("component should remain a title");
+        };
+        assert_eq!(title.rendering.text_case, None);
+        assert_eq!(title.rendering.emph, None);
+        assert_eq!(title.rendering.quote, None);
+    }
+
+    #[test]
+    fn category_specific_title_defaults_are_compacted() {
+        let mut template = vec![TemplateComponent::Title(TemplateTitle {
+            title: TitleType::Primary,
+            rendering: Rendering {
+                quote: Some(true),
+                ..Rendering::default()
+            },
+            ..TemplateTitle::default()
+        })];
+
+        normalize_templates_against_options(
+            &mut template,
+            TitleDefaultContext::RefType("article-journal"),
+            &citum_schema::options::Config {
+                titles: Some(TitlesConfig {
+                    component: Some(TitleRendering {
+                        quote: Some(true),
+                        ..TitleRendering::default()
+                    }),
+                    monograph: Some(TitleRendering {
+                        emph: Some(true),
+                        ..TitleRendering::default()
+                    }),
+                    ..TitlesConfig::default()
+                }),
+                ..citum_schema::options::Config::default()
+            },
+        );
+
+        let TemplateComponent::Title(title) = template.first().expect("component should exist")
+        else {
+            panic!("component should remain a title");
+        };
+        assert_eq!(title.rendering.quote, None);
+    }
+
+    #[test]
+    fn differing_title_rendering_is_preserved() {
+        let mut template = vec![TemplateComponent::Title(TemplateTitle {
+            title: TitleType::Primary,
+            rendering: Rendering {
+                text_case: Some(TextCase::Title),
+                emph: Some(false),
+                quote: Some(true),
+                ..Rendering::default()
+            },
+            ..TemplateTitle::default()
+        })];
+
+        normalize_templates_against_options(
+            &mut template,
+            TitleDefaultContext::Default,
+            &citum_schema::options::Config {
+                titles: Some(TitlesConfig {
+                    default: Some(TitleRendering {
+                        text_case: Some(TextCase::SentenceApa),
+                        emph: Some(true),
+                        quote: Some(true),
+                        ..TitleRendering::default()
+                    }),
+                    ..TitlesConfig::default()
+                }),
+                ..citum_schema::options::Config::default()
+            },
+        );
+
+        let TemplateComponent::Title(title) = template.first().expect("component should exist")
+        else {
+            panic!("component should remain a title");
+        };
+        assert_eq!(title.rendering.text_case, Some(TextCase::Title));
+        assert_eq!(title.rendering.emph, Some(false));
+        assert_eq!(title.rendering.quote, None);
+    }
+
+    #[test]
+    fn date_forms_are_not_compacted() {
+        let mut template = vec![TemplateComponent::Date(TemplateDate {
+            date: DateVariable::Issued,
+            form: DateForm::YearMonth,
+            ..TemplateDate::default()
+        })];
+
+        normalize_templates_against_options(
+            &mut template,
+            TitleDefaultContext::Default,
+            &citum_schema::options::Config {
+                dates: Some(DateConfig {
+                    month: MonthFormat::Short,
+                    ..DateConfig::default()
+                }),
+                ..citum_schema::options::Config::default()
+            },
+        );
+
+        let TemplateComponent::Date(date) = template.first().expect("component should exist")
+        else {
+            panic!("component should remain a date");
+        };
+        assert_eq!(date.form, DateForm::YearMonth);
     }
 
     fn legacy_sort(keys: &[&str]) -> LegacySort {

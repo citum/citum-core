@@ -614,8 +614,7 @@
       },
       "additionalProperties": false,
       "required": [
-        "contributor",
-        "form"
+        "contributor"
       ]
     },
     "ContributorRole": {
