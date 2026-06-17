@@ -2685,7 +2685,7 @@
           "default": "alpha"
         },
         "single-author-chars": {
-          "description": "Chars taken from single author's family name. Preset default: 3 (Alpha/Ams), 4 (Din).",
+          "description": "Chars taken from single author's family name. Preset default: 3 (Alpha), 4 (Ams/Din).",
           "type": [
             "integer",
             "null"
@@ -2705,7 +2705,7 @@
           "maximum": 255
         },
         "et-al-min": {
-          "description": "Max authors before truncation. Alpha/Ams default: 4, Din default: 3.",
+          "description": "Max authors before truncation. Alpha default: 4, Ams default: 5, Din default: 3.",
           "type": [
             "integer",
             "null"
@@ -2715,7 +2715,7 @@
           "maximum": 255
         },
         "et-al-marker": {
-          "description": "Suffix appended when truncated. Alpha/Ams default: \"+\", Din default: \"\".",
+          "description": "Suffix appended when truncated. Alpha default: \"+\", Ams/Din default: \"\".",
           "type": [
             "string",
             "null"
@@ -2757,7 +2757,7 @@
           "const": "din"
         },
         {
-          "description": "American Mathematical Society: same label-generation algorithm as Alpha.",
+          "description": "CSL/citeproc alphabetic labels used by American Mathematical Society styles.",
           "type": "string",
           "const": "ams"
         }

@@ -395,13 +395,6 @@ fn apply_citation_wrap_recursive(citation: &mut CitationSpec, wrap: LabelWrap) {
                 apply_citation_superscript(variant.as_template_mut());
             }
         }
-    } else {
-        update_label_wrap(citation.template.as_mut(), wrap);
-        if let Some(variants) = citation.type_variants.as_mut() {
-            for variant in variants.values_mut() {
-                update_label_wrap(variant.as_template_mut(), wrap);
-            }
-        }
     }
 
     for child in [

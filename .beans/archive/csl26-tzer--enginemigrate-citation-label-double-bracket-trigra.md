@@ -1,7 +1,7 @@
 ---
 # csl26-tzer
 title: 'engine/migrate: citation-label double-bracket + trigraph length'
-status: todo
+status: completed
 type: bug
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
     - migrate
     - engine
 created_at: 2026-06-14T11:19:46Z
-updated_at: 2026-06-14T11:49:29Z
+updated_at: 2026-06-17T00:52:22Z
 parent: csl26-vmcr
 blocked_by:
     - csl26-cvlm

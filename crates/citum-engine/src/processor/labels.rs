@@ -315,8 +315,8 @@ mod tests {
 
     #[test]
     fn test_ams_et_al_uses_4_initials() {
-        // AMS should use 4 initials in et-al case, not 3
-        // Vaswani, Shazeer, Parmar, Uszkoreit, ... 2017 → "VSPU+17" (4 chars)
+        // AMS/CSL should use 4 initials in et-al case with no marker.
+        // Vaswani, Shazeer, Parmar, Uszkoreit, ... 2017 → "VSPU17" (4 chars)
         let r = make_ref(
             vec![
                 Name::new("Vaswani", "Ashish"),
@@ -327,7 +327,7 @@ mod tests {
             ],
             2017,
         );
-        assert_eq!(generate_base_label(&r, &ams_params()), "VSPU+17");
+        assert_eq!(generate_base_label(&r, &ams_params()), "VSPU17");
     }
 
     #[test]

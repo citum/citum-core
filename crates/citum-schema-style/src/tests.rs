@@ -1322,6 +1322,88 @@ citation:
 }
 
 #[test]
+fn citation_bracket_label_wrap_keeps_label_component_bare() {
+    let resolved = Style::from_yaml_str(
+        r#"
+citation:
+  options:
+    label-wrap: brackets
+  template:
+    - number: citation-label
+"#,
+    )
+    .unwrap()
+    .try_into_resolved()
+    .expect("bracket citation label wrap should resolve");
+
+    let citation = resolved
+        .citation
+        .as_ref()
+        .expect("resolved style should include citation");
+    assert_eq!(
+        citation.wrap,
+        Some(template::WrapConfig::from(
+            template::WrapPunctuation::Brackets
+        ))
+    );
+
+    let citation_label_rendering = citation
+        .resolve_template()
+        .and_then(|template| {
+            template.iter().find_map(|component| match component {
+                template::TemplateComponent::Number(number)
+                    if matches!(number.number, template::NumberVariable::CitationLabel) =>
+                {
+                    Some(number.rendering.clone())
+                }
+                _ => None,
+            })
+        })
+        .expect("citation template should include citation-label");
+
+    assert_eq!(citation_label_rendering.wrap, None);
+}
+
+#[test]
+fn bibliography_bracket_label_wrap_still_wraps_label_component() {
+    let resolved = Style::from_yaml_str(
+        r#"
+bibliography:
+  options:
+    label-wrap: brackets
+  template:
+    - number: citation-label
+"#,
+    )
+    .unwrap()
+    .try_into_resolved()
+    .expect("bracket bibliography label wrap should resolve");
+
+    let bibliography_label_rendering = resolved
+        .bibliography
+        .as_ref()
+        .and_then(|bibliography| bibliography.resolve_template())
+        .and_then(|template| {
+            template.iter().find_map(|component| match component {
+                template::TemplateComponent::Number(number)
+                    if matches!(number.number, template::NumberVariable::CitationLabel) =>
+                {
+                    Some(number.rendering.clone())
+                }
+                _ => None,
+            })
+        })
+        .expect("bibliography template should include citation-label");
+
+    assert_eq!(
+        bibliography_label_rendering.wrap,
+        Some(template::WrapConfig::from(
+            template::WrapPunctuation::Brackets
+        ))
+    );
+}
+
+#[test]
 fn bibliography_rejects_superscript_label_wrap_at_parse_time() {
     let yaml = r#"
 bibliography:
