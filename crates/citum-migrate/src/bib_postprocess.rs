@@ -20,7 +20,7 @@ use citum_schema::{
     },
 };
 
-use super::template_diff::TypeTemplateMap;
+type TypeTemplateMap = indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>;
 
 /// Extension trait to enumerate concrete type names from a `TypeSelector`.
 pub(crate) trait TypeSelectorNames {

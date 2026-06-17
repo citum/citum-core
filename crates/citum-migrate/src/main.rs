@@ -11,7 +11,6 @@ mod citation_validate;
 mod cli;
 mod output_plan;
 mod runtime;
-mod template_diff;
 
 use assembly::{
     StandaloneAssembly, TemplateSourceSelection, apply_measured_bibliography_selection,
@@ -33,6 +32,7 @@ use citum_migrate::{
     OptionsExtractor, compilation,
     lineage::StyleLineage,
     options_extractor::{MigrationOptions, processing::detect_processing_mode},
+    passes::sqi_refinement,
     provenance::ProvenanceTracker,
 };
 use csl_legacy::parser::parse_style;
@@ -138,6 +138,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &text,
         &workspace_root,
     );
+    let standalone_style = sqi_refinement::refine_style(standalone_style);
     // Measure the standalone form first so the evidence record can report
     // the compression delta without re-running the pipeline. Cheap: one YAML
     // serialization of an in-memory value.
