@@ -44,6 +44,7 @@ pub mod provenance;
 pub mod synthesis;
 /// CSL 1.0 to Citum template compilation.
 pub mod template_compiler;
+pub(crate) mod template_diff;
 /// Template resolution and preprocessing.
 pub mod template_resolver;
 /// Upsamples flattened legacy CSL 1.0 nodes into migration IR ([`ir::Node`])

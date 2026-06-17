@@ -10,7 +10,6 @@ use crate::{
         is_inferred_bib_source, merge_inferred_type_templates, postprocess_bibliography_templates,
     },
     citation_validate,
-    template_diff::{TypeTemplateMap, TypeVariantMap, build_type_variants},
 };
 use citum_migrate::{
     analysis,
@@ -21,14 +20,17 @@ use citum_migrate::{
         normalize_author_date_locator_citation_component,
         normalize_wrapped_numeric_locator_citation_component,
     },
-    passes::suppression::{normalize_visible_suppress, strip_inert_suppressed_placeholders},
+    passes::suppression::strip_inert_suppressed_placeholders,
     template_resolver,
 };
 use citum_schema::{
     BibliographySpec, CitationCollapse, CitationSpec, Style, StyleInfo,
-    template::{TemplateComponent, WrapPunctuation},
+    template::{TemplateComponent, TemplateVariant, TypeSelector, WrapPunctuation},
 };
 use std::path::Path;
+
+type TypeTemplateMap = indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>;
+type TypeVariantMap = indexmap::IndexMap<TypeSelector, TemplateVariant>;
 
 /// Borrowed pipeline state needed to assemble a standalone style variant.
 pub(crate) struct StandaloneAssembly<'a> {
@@ -504,28 +506,12 @@ fn finalize_bibliography_variants(
         }
     }
 
-    // Phase 2: compression is a serialization pass over finalized Full templates.
-    if let Some(type_templates) = type_templates.as_mut() {
-        type_templates.retain(|_, template| template != &new_bib);
-    }
-    let mut type_variants = type_templates
-        .take()
-        .map(|type_templates| build_type_variants(&new_bib, type_templates));
-
-    // Normalize suppress:Some(false) → None on all serialized full template
-    // lists. This clears the occurrence-compiler's "visible by default" marker,
-    // which is semantically identical to None but serializes as noise. Must run
-    // after build_type_variants so diff `modify` operations (which legitimately
-    // reference suppress:false to un-suppress a parent-suppressed component)
-    // are already encoded and are not affected.
-    normalize_visible_suppress(&mut new_bib);
-    if let Some(variants) = type_variants.as_mut() {
-        for variant in variants.values_mut() {
-            if let citum_schema::TemplateVariant::Full(components) = variant {
-                normalize_visible_suppress(components);
-            }
-        }
-    }
+    let type_variants = type_templates.map(|type_templates| {
+        type_templates
+            .into_iter()
+            .map(|(selector, template)| (selector, TemplateVariant::Full(template)))
+            .collect()
+    });
 
     (new_bib, type_variants)
 }
@@ -645,7 +631,14 @@ mod tests {
     use super::*;
     use citum_schema::{
         BibliographySpec, CitationSpec,
-        template::{SimpleVariable, TemplateVariable},
+        options::{
+            AndOptions, ContributorConfig, DisplayAsSort, NameForm, TextCase, TitleRendering,
+            TitlesConfig,
+        },
+        template::{
+            ContributorForm, ContributorRole, NameOrder, Rendering, SimpleVariable,
+            TemplateContributor, TemplateTitle, TemplateVariable, TitleType,
+        },
     };
     use csl_legacy::model::{
         Citation, Info, Layout, Sort as LegacySort, SortKey as LegacySortKey, Style as LegacyStyle,
@@ -772,6 +765,112 @@ mod tests {
                 .and_then(|citation| citation.collapse.clone()),
             Some(CitationCollapse::CitationNumber)
         );
+    }
+
+    #[test]
+    fn assembly_preserves_explicit_template_fields_for_sqi_refinement() {
+        let migrated = build_final_style(&minimal_legacy_style(), explicit_sqi_boundary_output());
+
+        let citation_template = migrated
+            .citation
+            .as_ref()
+            .and_then(|citation| citation.template.as_ref())
+            .expect("citation template should be present");
+        let TemplateComponent::Contributor(author) = citation_template
+            .first()
+            .expect("first citation component should be present")
+        else {
+            panic!("first citation component should remain a contributor");
+        };
+        assert_eq!(author.and, Some(AndOptions::Text));
+        assert_eq!(author.name_form, Some(NameForm::Initials));
+        assert_eq!(author.name_order, Some(NameOrder::FamilyFirstOnly));
+        let TemplateComponent::Title(title) = citation_template
+            .get(1)
+            .expect("second citation component should be present")
+        else {
+            panic!("second citation component should remain a title");
+        };
+        assert_eq!(title.rendering.text_case, Some(TextCase::SentenceApa));
+
+        let book_variant = migrated
+            .bibliography
+            .as_ref()
+            .and_then(|bibliography| bibliography.type_variants.as_ref())
+            .and_then(|variants| variants.get(&TypeSelector::Single("book".to_string())))
+            .expect("book variant should be present");
+        let TemplateVariant::Full(book_template) = book_variant else {
+            panic!("assembly should emit full type variants before SQI refinement");
+        };
+        let TemplateComponent::Contributor(book_author) = book_template
+            .first()
+            .expect("book variant component should be present")
+        else {
+            panic!("book variant should remain a contributor template");
+        };
+        assert_eq!(book_author.and, Some(AndOptions::Text));
+        assert_eq!(book_author.name_form, Some(NameForm::Initials));
+        assert_eq!(book_author.name_order, Some(NameOrder::FamilyFirstOnly));
+    }
+
+    fn explicit_sqi_boundary_output() -> CompiledOutput {
+        let mut type_templates = TypeTemplateMap::new();
+        type_templates.insert(
+            TypeSelector::Single("book".to_string()),
+            vec![explicit_author_component()],
+        );
+
+        CompiledOutput {
+            options: citum_schema::options::Config {
+                contributors: Some(ContributorConfig {
+                    display_as_sort: Some(DisplayAsSort::First),
+                    and: Some(AndOptions::Text),
+                    name_form: Some(NameForm::Initials),
+                    ..ContributorConfig::default()
+                }),
+                titles: Some(TitlesConfig {
+                    default: Some(TitleRendering {
+                        text_case: Some(TextCase::SentenceApa),
+                        ..TitleRendering::default()
+                    }),
+                    ..TitlesConfig::default()
+                }),
+                ..citum_schema::options::Config::default()
+            },
+            bibliography_options: None,
+            citation_contributor_overrides: None,
+            bibliography_contributor_overrides: None,
+            new_cit: vec![
+                explicit_author_component(),
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    rendering: Rendering {
+                        text_case: Some(TextCase::SentenceApa),
+                        ..Rendering::default()
+                    },
+                    ..TemplateTitle::default()
+                }),
+            ],
+            new_bib: vec![],
+            type_templates: Some(type_templates),
+            citation_wrap: None,
+            citation_prefix: None,
+            citation_suffix: None,
+            citation_delimiter: None,
+            citation_subsequent_override: None,
+            citation_ibid_override: None,
+        }
+    }
+
+    fn explicit_author_component() -> TemplateComponent {
+        TemplateComponent::Contributor(TemplateContributor {
+            contributor: ContributorRole::Author,
+            form: ContributorForm::Long,
+            name_order: Some(NameOrder::FamilyFirstOnly),
+            name_form: Some(NameForm::Initials),
+            and: Some(AndOptions::Text),
+            ..TemplateContributor::default()
+        })
     }
 
     fn legacy_sort(keys: &[&str]) -> LegacySort {
