@@ -4,8 +4,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
 use citum_schema::options::{
-    GivennameRule, Group, LabelConfig, Processing, ProcessingCustom, Sort, SortEntry, SortKey,
-    SortSpec,
+    GivennameRule, Group, LabelConfig, LabelPreset, Processing, ProcessingCustom, Sort, SortEntry,
+    SortKey, SortSpec,
 };
 use citum_schema::presets::SortPreset;
 use csl_legacy::model::{CslNode, Style};
@@ -16,12 +16,7 @@ use std::collections::HashSet;
 /// Analyzes style attributes and layout patterns to determine if the style
 /// uses author-date, numeric, note-based, or label-based citation processing.
 pub fn detect_processing_mode(style: &Style) -> Option<Processing> {
-    // 0. Note styles are explicit in CSL and should map directly.
-    if style.class == "note" {
-        return Some(Processing::Note);
-    }
-
-    // 0b. Label (trigraph) styles render the generated `citation-label`
+    // 0. Label (trigraph) styles render the generated `citation-label`
     // variable (e.g. `[Kuhn62]`). The engine only emits citation labels under
     // `Processing::Label`, so the mode must be detected here or the label
     // renders empty.
@@ -35,7 +30,16 @@ pub fn detect_processing_mode(style: &Style) -> Option<Processing> {
     }
 
     if has_citation_label(&style.citation.layout.children) {
-        return Some(Processing::Label(LabelConfig::default()));
+        return Some(Processing::Label(LabelConfig {
+            preset: LabelPreset::Ams,
+            ..Default::default()
+        }));
+    }
+
+    // 0b. Note styles are explicit in CSL and should map directly when they
+    // do not render generated citation labels.
+    if style.class == "note" {
+        return Some(Processing::Note);
     }
 
     // 1. Explicitly numeric style
@@ -329,7 +333,27 @@ mod tests {
         // when the processing mode is detected
         let mode = detect_processing_mode(&style);
 
-        // then it is Label, so the engine will emit trigraph labels
+        // then it is Label with CSL-compatible label parameters
+        assert!(
+            matches!(mode, Some(Processing::Label(_))),
+            "expected Processing::Label, got: {mode:?}"
+        );
+        if let Some(Processing::Label(config)) = mode {
+            let params = config.effective_params();
+            assert_eq!(params.single_author_chars, 4);
+            assert_eq!(params.et_al_min, 5);
+            assert_eq!(params.et_al_marker, "");
+            assert_eq!(params.et_al_names, 4);
+        }
+    }
+
+    #[test]
+    fn detects_label_mode_before_note_mode() {
+        // given a note style whose citation renders the generated label
+        let style = style_with_citation_layout("note", r#"<text variable="citation-label"/>"#);
+
+        // then label processing wins because note processing cannot emit citation-label
+        let mode = detect_processing_mode(&style);
         assert!(
             matches!(mode, Some(Processing::Label(_))),
             "expected Processing::Label, got: {mode:?}"

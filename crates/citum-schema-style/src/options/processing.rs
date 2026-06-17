@@ -41,7 +41,7 @@ pub enum LabelPreset {
     Alpha,
     /// DIN 1505-2: up to 3 authors, no et-al marker, 2-digit year.
     Din,
-    /// American Mathematical Society: same label-generation algorithm as Alpha.
+    /// CSL/citeproc alphabetic labels used by American Mathematical Society styles.
     Ams,
 }
 
@@ -73,16 +73,16 @@ pub struct LabelConfig {
     /// Preset that determines default parameters.
     #[serde(default)]
     pub preset: LabelPreset,
-    /// Chars taken from single author's family name. Preset default: 3 (Alpha/Ams), 4 (Din).
+    /// Chars taken from single author's family name. Preset default: 3 (Alpha), 4 (Ams/Din).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub single_author_chars: Option<u8>,
     /// Chars per author family name when 2+ authors. Preset default: 1.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub multi_author_chars: Option<u8>,
-    /// Max authors before truncation. Alpha/Ams default: 4, Din default: 3.
+    /// Max authors before truncation. Alpha default: 4, Ams default: 5, Din default: 3.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub et_al_min: Option<u8>,
-    /// Suffix appended when truncated. Alpha/Ams default: "+", Din default: "".
+    /// Suffix appended when truncated. Alpha default: "+", Ams/Din default: "".
     #[serde(skip_serializing_if = "Option::is_none")]
     pub et_al_marker: Option<String>,
     /// Names shown when truncated (et-al). Alpha default: 3, Ams default: 4.
@@ -112,7 +112,7 @@ impl LabelConfig {
             default_et_al_names,
         ) = match self.preset {
             LabelPreset::Alpha => (3u8, 1u8, 4u8, "+".to_string(), 3u8),
-            LabelPreset::Ams => (3u8, 1u8, 4u8, "+".to_string(), 4u8),
+            LabelPreset::Ams => (4u8, 1u8, 5u8, String::new(), 4u8),
             LabelPreset::Din => (4u8, 1u8, 3u8, String::new(), 3u8),
         };
         LabelParams {
@@ -699,6 +699,28 @@ mod tests {
         assert_eq!(params.et_al_min, 3);
         assert_eq!(params.et_al_marker, "");
         assert_eq!(params.et_al_names, 3);
+        assert_eq!(params.year_digits, 2);
+    }
+
+    /// Test that LabelConfig::effective_params() applies AMS/CSL label defaults.
+    #[test]
+    fn test_label_config_ams_preset_defaults() {
+        let config = LabelConfig {
+            preset: LabelPreset::Ams,
+            single_author_chars: None,
+            multi_author_chars: None,
+            et_al_min: None,
+            et_al_marker: None,
+            et_al_names: None,
+            year_digits: None,
+        };
+
+        let params = config.effective_params();
+        assert_eq!(params.single_author_chars, 4);
+        assert_eq!(params.multi_author_chars, 1);
+        assert_eq!(params.et_al_min, 5);
+        assert_eq!(params.et_al_marker, "");
+        assert_eq!(params.et_al_names, 4);
         assert_eq!(params.year_digits, 2);
     }
 
