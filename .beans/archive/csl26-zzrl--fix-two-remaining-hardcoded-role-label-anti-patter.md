@@ -1,11 +1,11 @@
 ---
 # csl26-zzrl
 title: Fix two remaining hardcoded role-label anti-patterns (RSC + AFS)
-status: todo
+status: completed
 type: bug
 priority: normal
 created_at: 2026-06-18T15:05:58Z
-updated_at: 2026-06-18T15:05:58Z
+updated_at: 2026-06-18T16:38:30Z
 ---
 
 Two hardcoded English role-label strings could not be fixed during csl26-6bul
@@ -68,3 +68,18 @@ For RSC: Replace the single contributor component (in the `add` diff) with a gro
 ```
 
 For AFS: Requires oracle comparison against the original CSL first.
+
+## Resolution
+
+Completed in `fix(styles): align RSC and AFS role labels`.
+
+The AFS "Pattern 2" diagnosis above was wrong. The primary authority is the AFS
+reference guide, not the migrated CSL shape, and the guide consistently places
+the role label as a suffix on the contributor group: edited books render as
+`Name, editor(s). Year...`, and chapters render as
+`Pages ... in Name, editor(s). Container title...`.
+
+The fix updates AFS to use the guide document directly and rewrites the
+book/chapter contributor-role structure so role labels attach to contributors
+instead of publisher metadata. RSC now uses the schema-native contributor
+role-label API rather than hardcoded English role-label text.
