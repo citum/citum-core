@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-06-02T14:22:47.620Z",
+  "generated_at": "2026-06-18T12:17:47.372Z",
   "style": "current-opinion",
-  "fixture_hash": "0b1a38b458cc400a",
+  "fixture_hash": "5f8545b8e46c8025",
   "csl_hash": "45c8e880171af63d",
   "citations": {
     "single-item": "[1]",
@@ -65,6 +65,15 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">35. </div><div class=\"csl-right-inline\">Johnson A: <b>Quantitative Methods in Sociology</b>. <i>Sociological Review</i> 2020, <b>68</b>:23–45.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">36. </div><div class=\"csl-right-inline\">Johnson B: <b>Qualitative Methods in Sociology</b>. <i>Sociological Review</i> 2020, <b>68</b>:89–112.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">37. </div><div class=\"csl-right-inline\">Chen W: <b>Urban Heat Island Mitigation Strategies</b>. <i>Urban Climate</i> 2022, <b>15</b>:1–18.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">38. </div><div class=\"csl-right-inline\">Chen W: <b>Urban Heat Island Measurement Techniques</b>. <i>Urban Climate</i> 2024, <b>18</b>:45–62.</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">38. </div><div class=\"csl-right-inline\">Chen W: <b>Urban Heat Island Measurement Techniques</b>. <i>Urban Climate</i> 2024, <b>18</b>:45–62.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">39. </div><div class=\"csl-right-inline\"><b>Self-report</b>. <i>Merriam-Webster.com dictionary</i> [date unknown],</div>\n   </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">40. </div><div class=\"csl-right-inline\"><i>Every Student Succeeds Act</i>. 2015.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">41. </div><div class=\"csl-right-inline\">Cable D: <b>The racial dot map</b>. 2013,</div>\n   </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">42. </div><div class=\"csl-right-inline\"><b>Bibliographic references</b>. 2010, doi:10.3789/ansi.niso.z39.29-2005R2010.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">43. </div><div class=\"csl-right-inline\"><i>Mental Health on Campus Improvement Act</i>. 2013.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">44. </div><div class=\"csl-right-inline\"><b>Strengthening the federal student loan program for borrowers</b>. 2014,</div>\n   </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">45. </div><div class=\"csl-right-inline\">Tactile Labs: <b>Latero tactile display</b>. 2015,</div>\n   </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">46. </div><div class=\"csl-right-inline\">U.K., U.S., U.S.S.R.: <b>Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water</b>. <i>UST</i> 1963, <b>14</b>:1313.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">47. </div><div class=\"csl-right-inline\"><b>Protection of Human Subjects</b>. <i>CFR</i> 2009, <b>45</b>.</div>\n  </div>\n"
   ]
 }

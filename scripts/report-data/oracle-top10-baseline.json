@@ -1,117 +1,253 @@
 {
   "totalStyles": 10,
   "citationsPerfect": 10,
-  "bibliographyPerfect": 10,
+  "bibliographyPerfect": 1,
   "citationsPartial": 0,
-  "bibliographyPartial": 0,
-  "componentIssues": {},
-  "orderingIssues": 0,
+  "bibliographyPartial": 9,
+  "componentIssues": {
+    "year:value_mismatch": 17,
+    "title:value_mismatch": 22,
+    "publisher:value_mismatch": 5,
+    "doi:value_mismatch": 3,
+    "containerTitle:missing": 3,
+    "publisher:missing": 2,
+    "doi:missing": 4,
+    "publisher:extra": 5,
+    "doi:extra": 1,
+    "volume:missing": 2,
+    "containerTitle:value_mismatch": 1
+  },
+  "orderingIssues": 17,
   "styleBreakdown": [
     {
-      "style": "apa",
+      "style": "american-medical-association",
       "citations": "20/20",
-      "bibliography": "37/37",
+      "bibliography": "39/48",
       "rawCitations": "20/20",
-      "rawBibliography": "37/37",
+      "rawBibliography": "39/48",
       "citationsPct": 100,
-      "bibliographyPct": 100,
-      "adjustedDivergences": {},
-      "templateSource": "inferred"
-    },
-    {
-      "style": "elsevier-harvard",
-      "citations": "20/20",
-      "bibliography": "38/38",
-      "rawCitations": "20/20",
-      "rawBibliography": "38/38",
-      "citationsPct": 100,
-      "bibliographyPct": 100,
-      "adjustedDivergences": {},
-      "templateSource": "inferred"
-    },
-    {
-      "style": "elsevier-with-titles",
-      "citations": "20/20",
-      "bibliography": "38/38",
-      "rawCitations": "20/20",
-      "rawBibliography": "38/38",
-      "citationsPct": 100,
-      "bibliographyPct": 100,
+      "bibliographyPct": 81,
       "adjustedDivergences": {},
       "templateSource": "inferred"
     },
     {
       "style": "springer-basic-author-date",
       "citations": "20/20",
-      "bibliography": "38/38",
+      "bibliography": "44/47",
       "rawCitations": "20/20",
-      "rawBibliography": "38/38",
+      "rawBibliography": "44/47",
       "citationsPct": 100,
-      "bibliographyPct": 100,
-      "adjustedDivergences": {},
-      "templateSource": "inferred"
-    },
-    {
-      "style": "ieee",
-      "citations": "20/20",
-      "bibliography": "38/38",
-      "rawCitations": "20/20",
-      "rawBibliography": "38/38",
-      "citationsPct": 100,
-      "bibliographyPct": 100,
-      "adjustedDivergences": {},
-      "templateSource": "inferred"
-    },
-    {
-      "style": "elsevier-vancouver",
-      "citations": "20/20",
-      "bibliography": "38/38",
-      "rawCitations": "20/20",
-      "rawBibliography": "38/38",
-      "citationsPct": 100,
-      "bibliographyPct": 100,
-      "adjustedDivergences": {},
-      "templateSource": "inferred"
-    },
-    {
-      "style": "american-medical-association",
-      "citations": "20/20",
-      "bibliography": "38/38",
-      "rawCitations": "20/20",
-      "rawBibliography": "38/38",
-      "citationsPct": 100,
-      "bibliographyPct": 100,
-      "adjustedDivergences": {},
+      "bibliographyPct": 94,
+      "adjustedDivergences": {
+        "div-008": {
+          "scopes": [
+            "citation",
+            "bibliography"
+          ],
+          "tags": [
+            "same-family-secondary-sort-title-vs-given",
+            "sort-derived-numeric-citation-label"
+          ],
+          "note": "After a family-name match, citeproc-js sorts by given name (family → given → suffix → title); Citum sorts by title (family → title). Adjusted verification masks numeric citation labels that shift solely due to within-group reordering of same-family-name items, independent of the div-004 anonymous-item adjustment.",
+          "adjustedCitations": 0,
+          "bibliographyOrderDifference": true,
+          "swappedPairs": [
+            [
+              "ITEM-30",
+              "ITEM-10"
+            ]
+          ],
+          "affectedIds": [
+            "ITEM-30",
+            "ITEM-10"
+          ]
+        }
+      },
       "templateSource": "inferred"
     },
     {
       "style": "nature",
       "citations": "20/20",
-      "bibliography": "38/38",
+      "bibliography": "44/47",
       "rawCitations": "20/20",
-      "rawBibliography": "38/38",
+      "rawBibliography": "44/47",
       "citationsPct": 100,
-      "bibliographyPct": 100,
+      "bibliographyPct": 94,
       "adjustedDivergences": {},
       "templateSource": "inferred"
     },
     {
       "style": "cell",
       "citations": "20/20",
-      "bibliography": "38/38",
+      "bibliography": "45/48",
       "rawCitations": "20/20",
-      "rawBibliography": "38/38",
+      "rawBibliography": "45/48",
       "citationsPct": 100,
-      "bibliographyPct": 100,
+      "bibliographyPct": 94,
+      "adjustedDivergences": {},
+      "templateSource": "inferred"
+    },
+    {
+      "style": "elsevier-harvard",
+      "citations": "20/20",
+      "bibliography": "45/47",
+      "rawCitations": "20/20",
+      "rawBibliography": "45/47",
+      "citationsPct": 100,
+      "bibliographyPct": 96,
+      "adjustedDivergences": {
+        "div-008": {
+          "scopes": [
+            "citation",
+            "bibliography"
+          ],
+          "tags": [
+            "same-family-secondary-sort-title-vs-given",
+            "sort-derived-numeric-citation-label"
+          ],
+          "note": "After a family-name match, citeproc-js sorts by given name (family → given → suffix → title); Citum sorts by title (family → title). Adjusted verification masks numeric citation labels that shift solely due to within-group reordering of same-family-name items, independent of the div-004 anonymous-item adjustment.",
+          "adjustedCitations": 0,
+          "bibliographyOrderDifference": true,
+          "swappedPairs": [
+            [
+              "ITEM-38",
+              "ITEM-37"
+            ],
+            [
+              "ITEM-37",
+              "ITEM-11"
+            ],
+            [
+              "ITEM-8",
+              "ITEM-1"
+            ],
+            [
+              "ITEM-30",
+              "ITEM-10"
+            ]
+          ],
+          "affectedIds": [
+            "ITEM-38",
+            "ITEM-37",
+            "ITEM-11",
+            "ITEM-8",
+            "ITEM-1",
+            "ITEM-30",
+            "ITEM-10"
+          ]
+        }
+      },
+      "templateSource": "inferred"
+    },
+    {
+      "style": "elsevier-vancouver",
+      "citations": "20/20",
+      "bibliography": "45/47",
+      "rawCitations": "20/20",
+      "rawBibliography": "45/47",
+      "citationsPct": 100,
+      "bibliographyPct": 96,
       "adjustedDivergences": {},
       "templateSource": "inferred"
     },
     {
       "style": "chicago-author-date",
       "citations": "20/20",
-      "bibliography": "37/37",
+      "bibliography": "44/46",
       "rawCitations": "20/20",
-      "rawBibliography": "37/37",
+      "rawBibliography": "44/46",
+      "citationsPct": 100,
+      "bibliographyPct": 96,
+      "adjustedDivergences": {
+        "div-008": {
+          "scopes": [
+            "citation",
+            "bibliography"
+          ],
+          "tags": [
+            "same-family-secondary-sort-title-vs-given",
+            "sort-derived-numeric-citation-label"
+          ],
+          "note": "After a family-name match, citeproc-js sorts by given name (family → given → suffix → title); Citum sorts by title (family → title). Adjusted verification masks numeric citation labels that shift solely due to within-group reordering of same-family-name items, independent of the div-004 anonymous-item adjustment.",
+          "adjustedCitations": 0,
+          "bibliographyOrderDifference": true,
+          "swappedPairs": [
+            [
+              "ITEM-32",
+              "ITEM-31"
+            ]
+          ],
+          "affectedIds": [
+            "ITEM-32",
+            "ITEM-31"
+          ]
+        }
+      },
+      "templateSource": "inferred"
+    },
+    {
+      "style": "apa",
+      "citations": "20/20",
+      "bibliography": "45/46",
+      "rawCitations": "20/20",
+      "rawBibliography": "45/46",
+      "citationsPct": 100,
+      "bibliographyPct": 98,
+      "adjustedDivergences": {
+        "div-008": {
+          "scopes": [
+            "citation",
+            "bibliography"
+          ],
+          "tags": [
+            "same-family-secondary-sort-title-vs-given",
+            "sort-derived-numeric-citation-label"
+          ],
+          "note": "After a family-name match, citeproc-js sorts by given name (family → given → suffix → title); Citum sorts by title (family → title). Adjusted verification masks numeric citation labels that shift solely due to within-group reordering of same-family-name items, independent of the div-004 anonymous-item adjustment.",
+          "adjustedCitations": 0,
+          "bibliographyOrderDifference": true,
+          "swappedPairs": [
+            [
+              "ITEM-35",
+              "ITEM-36"
+            ],
+            [
+              "ITEM-29",
+              "ITEM-30"
+            ],
+            [
+              "ITEM-30",
+              "ITEM-10"
+            ]
+          ],
+          "affectedIds": [
+            "ITEM-35",
+            "ITEM-36",
+            "ITEM-29",
+            "ITEM-30",
+            "ITEM-10"
+          ]
+        }
+      },
+      "templateSource": "inferred"
+    },
+    {
+      "style": "elsevier-with-titles",
+      "citations": "20/20",
+      "bibliography": "46/47",
+      "rawCitations": "20/20",
+      "rawBibliography": "46/47",
+      "citationsPct": 100,
+      "bibliographyPct": 98,
+      "adjustedDivergences": {},
+      "templateSource": "inferred"
+    },
+    {
+      "style": "ieee",
+      "citations": "20/20",
+      "bibliography": "47/47",
+      "rawCitations": "20/20",
+      "rawBibliography": "47/47",
       "citationsPct": 100,
       "bibliographyPct": 100,
       "adjustedDivergences": {},
@@ -120,13 +256,13 @@
   ],
   "errors": [],
   "metadata": {
-    "timestamp": "2026-06-02T15:21:26.233Z",
-    "gitCommit": "fbc07526",
+    "timestamp": "2026-06-18T13:41:57.710Z",
+    "gitCommit": "7b301191",
     "generator": "scripts/oracle-batch-aggregate.js",
-    "duration": "17.1s",
+    "duration": "29.4s",
     "concurrency": 1,
     "fixture": "tests/fixtures/citations-expanded.json",
-    "styleSelector": "explicit",
+    "styleSelector": "top:10",
     "styles": [
       "apa",
       "elsevier-harvard",

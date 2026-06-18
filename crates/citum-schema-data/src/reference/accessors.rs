@@ -580,6 +580,7 @@ impl InputReference {
             ClassExtension::SerialComponent(r) => r.doi.clone(),
             ClassExtension::LegalCase(r) => r.doi.clone(),
             ClassExtension::Dataset(r) => r.doi.clone(),
+            ClassExtension::Standard(r) => r.doi.clone(),
             ClassExtension::Software(r) => r.doi.clone(),
             ClassExtension::AudioVisual(_) => None,
             _ => None,
@@ -1224,6 +1225,7 @@ impl InputReference {
                 .clone()
                 .or_else(|| self.find_numbering(NumberingType::Number)),
             ClassExtension::Statute(r) => r.number.clone(),
+            ClassExtension::Hearing(r) => r.session_number.clone(),
             ClassExtension::Collection(r) => r
                 .number
                 .clone()
@@ -1498,6 +1500,12 @@ impl InputReference {
             MonographType::Preprint => "preprint".to_string(),
             MonographType::PersonalCommunication => "personal-communication".to_string(),
             MonographType::Document => {
+                if r.genre
+                    .as_deref()
+                    .is_some_and(|genre| genre.eq_ignore_ascii_case("map"))
+                {
+                    return "map".to_string();
+                }
                 if let Some(genre) = r.genre.as_deref()
                     && matches!(genre, "bill-proceeding" | "bill-record")
                 {

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-06-02T14:22:59.996Z",
+  "generated_at": "2026-06-18T12:17:51.202Z",
   "style": "institute-of-physics-numeric",
-  "fixture_hash": "0b1a38b458cc400a",
+  "fixture_hash": "5f8545b8e46c8025",
   "csl_hash": "a957e3320fc0e777",
   "citations": {
     "single-item": "[1]",
@@ -65,6 +65,15 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[35]</div><div class=\"csl-right-inline\"> Johnson A 2020 Quantitative Methods in Sociology <i>Sociological Review</i> <b>68</b> 23–45</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[36]</div><div class=\"csl-right-inline\"> Johnson B 2020 Qualitative Methods in Sociology <i>Sociological Review</i> <b>68</b> 89–112</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[37]</div><div class=\"csl-right-inline\"> Chen W 2022 Urban Heat Island Mitigation Strategies <i>Urban Climate</i> <b>15</b> 1–18</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[38]</div><div class=\"csl-right-inline\"> Chen W 2024 Urban Heat Island Measurement Techniques <i>Urban Climate</i> <b>18</b> 45–62</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[38]</div><div class=\"csl-right-inline\"> Chen W 2024 Urban Heat Island Measurement Techniques <i>Urban Climate</i> <b>18</b> 45–62</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[39]</div><div class=\"csl-right-inline\"> Anon Self-report <i>Merriam-Webster.com dictionary</i></div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[40]</div><div class=\"csl-right-inline\"> Anon 2015 <i>Every Student Succeeds Act</i> vol 20</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[41]</div><div class=\"csl-right-inline\"> Cable D 2013 The racial dot map</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[42]</div><div class=\"csl-right-inline\"> Anon 2010 Bibliographic references</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[43]</div><div class=\"csl-right-inline\"> Anon 2013 <i>Mental Health on Campus Improvement Act</i></div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[44]</div><div class=\"csl-right-inline\"> Anon 2014 Strengthening the federal student loan program for borrowers</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[45]</div><div class=\"csl-right-inline\"> Tactile Labs 2015 Latero tactile display</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[46]</div><div class=\"csl-right-inline\"> U.K., U.S. and U.S.S.R. 1963 Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water <i>U.S.T.</i> <b>14</b> 1313</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[47]</div><div class=\"csl-right-inline\"> Anon 2009 Protection of Human Subjects <i>C.F.R.</i> <b>45</b></div>\n  </div>\n"
   ]
 }

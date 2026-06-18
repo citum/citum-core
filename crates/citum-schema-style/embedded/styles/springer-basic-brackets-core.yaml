@@ -231,8 +231,9 @@ bibliography:
     prefix: " "
   - delimiter: " "
     group:
-    - prefix: "In: "
-      contributor: editor
+    - term: in
+      form: long
+    - contributor: editor
       form: long
       name-order: family-first
     - title: parent-monograph

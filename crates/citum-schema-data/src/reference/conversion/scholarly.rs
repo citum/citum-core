@@ -797,6 +797,13 @@ pub(super) fn from_document_ref(
 
     let volume = legacy.volume.map(|v| v.to_string());
     let number = legacy.number.clone();
+    let genre = legacy.genre.or_else(|| {
+        if legacy.ref_type == "map" {
+            Some("map".to_string())
+        } else {
+            None
+        }
+    });
     let author = legacy.author.clone().map(Contributor::from);
     let editor = legacy.editor.clone().map(Contributor::from);
     let translator = legacy.translator.clone().map(Contributor::from);
@@ -848,7 +855,7 @@ pub(super) fn from_document_ref(
         ads_bibcode: None,
         volume,
         number,
-        genre: legacy.genre,
+        genre,
         medium: legacy.medium,
         archive,
         archive_location: legacy.archive_location,

@@ -101,10 +101,13 @@ bibliography:
     - variable: url
       prefix: <
       suffix: ">"
-    - date: accessed
-      form: year
-      prefix: " (accessed "
-      suffix: )
+    - group:
+      - term: accessed
+        form: long
+      - date: accessed
+        form: year
+      wrap:
+        punctuation: parentheses
   template:
   - contributor: author
     form: long

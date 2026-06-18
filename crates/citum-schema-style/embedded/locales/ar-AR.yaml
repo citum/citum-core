@@ -63,6 +63,10 @@ locators:
       plural: ص.
     gender: feminine
 
+terms:
+  in:
+    long: في
+
 messages:
   # NOTE: Using personal nouns (مُحَرِّر/مُتَرْجِم) for gendered forms.
   # Fallback to verbal nouns (تحقيق/ترجمة) for neutral or unknown groups, consistent with standard Arabic CSL.

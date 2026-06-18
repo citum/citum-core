@@ -4,6 +4,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
 use super::*;
+use url::Url;
 
 #[test]
 fn test_parse_csl_json() {
@@ -328,6 +329,40 @@ fn test_parse_csl_json_entry_dictionary_preserves_dictionary_type() {
 }
 
 #[test]
+fn test_parse_csl_json_map_preserves_map_type() {
+    let json = r#"{
+        "id": "map-1",
+        "type": "map",
+        "title": "The racial dot map",
+        "publisher": "University of Virginia, Weldon Cooper Center for Public Service"
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(reference.ref_type(), "map");
+}
+
+#[test]
+fn test_parse_csl_json_standard_preserves_doi() {
+    let json = r#"{
+        "id": "standard-1",
+        "type": "standard",
+        "title": "Bibliographic references",
+        "number": "Z39.29-2005 (R2010)",
+        "DOI": "10.3789/ansi.niso.z39.29-2005R2010"
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(
+        reference.doi(),
+        Some("10.3789/ansi.niso.z39.29-2005R2010".to_string())
+    );
+}
+
+#[test]
 fn test_parse_csl_json_containerless_article_maps_to_preprint() {
     let json = r#"{
         "id": "preprint-article",
@@ -573,6 +608,50 @@ fn test_parse_csl_bill_with_title_and_authority_routes_to_hearing() {
                 hearing.session_number.as_deref(),
                 Some("107th Cong., 2d Sess.")
             );
+        }
+        other => panic!("expected hearing, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_csl_json_hearing_preserves_legal_class_and_url() {
+    let json = r#"{
+        "id": "hearing",
+        "type": "hearing",
+        "title": "Strengthening Federal Access Programs",
+        "issued": {"date-parts": [[2014]]},
+        "URL": "https://example.test/hearing"
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(reference.ref_type(), "hearing");
+    assert_eq!(
+        reference.url(),
+        Some(Url::parse("https://example.test/hearing").unwrap())
+    );
+    assert!(matches!(reference.extension(), ClassExtension::Hearing(_)));
+}
+
+#[test]
+fn test_parse_csl_bill_hearing_preserves_number_as_session_number() {
+    let json = r#"{
+        "id": "hearing-number",
+        "type": "bill",
+        "title": "Mental Health on Campus Improvement Act",
+        "authority": "113th Cong.",
+        "number": "1100",
+        "issued": {"date-parts": [[2013]]}
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    match reference.extension() {
+        ClassExtension::Hearing(hearing) => {
+            assert_eq!(hearing.session_number.as_deref(), Some("1100"));
+            assert_eq!(reference.number(), Some("1100".to_string()));
         }
         other => panic!("expected hearing, got {:?}", other),
     }

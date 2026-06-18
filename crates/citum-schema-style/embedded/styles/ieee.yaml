@@ -290,6 +290,18 @@ bibliography:
         - match:
             title: primary
           emph: true
+    standard:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - title: primary
+    - variable: standard-number
+    - variable: publisher-place
+      suffix: "."
+    - date: issued
+      form: full
+    - variable: doi
+      prefix: "doi: "
   template:
   - delimiter: ""
     group:

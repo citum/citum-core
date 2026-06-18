@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-06-02T14:22:04.864Z",
+  "generated_at": "2026-06-18T12:17:37.822Z",
   "style": "american-institute-of-aeronautics-and-astronautics",
-  "fixture_hash": "0b1a38b458cc400a",
+  "fixture_hash": "5f8545b8e46c8025",
   "csl_hash": "2e9cf1593d0fef95",
   "citations": {
     "single-item": "[1]",
@@ -65,6 +65,15 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[35] </div><div class=\"csl-right-inline\">Johnson, A., “Quantitative Methods in Sociology,” <i>Sociological Review</i>, Vol. 68, 2020, pp. 23–45.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[36] </div><div class=\"csl-right-inline\">Johnson, B., “Qualitative Methods in Sociology,” <i>Sociological Review</i>, Vol. 68, 2020, pp. 89–112.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[37] </div><div class=\"csl-right-inline\">Chen, W., “Urban Heat Island Mitigation Strategies,” <i>Urban Climate</i>, Vol. 15, 2022, pp. 1–18. https://doi.org/10.5555/uc.2022.15.1</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[38] </div><div class=\"csl-right-inline\">Chen, W., “Urban Heat Island Measurement Techniques,” <i>Urban Climate</i>, Vol. 18, 2024, pp. 45–62. https://doi.org/10.5555/uc.2024.18.45</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[38] </div><div class=\"csl-right-inline\">Chen, W., “Urban Heat Island Measurement Techniques,” <i>Urban Climate</i>, Vol. 18, 2024, pp. 45–62. https://doi.org/10.5555/uc.2024.18.45</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[39] </div><div class=\"csl-right-inline\">“Self-Report,” Merriam-Webster.com dictionary.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[40] </div><div class=\"csl-right-inline\">“Every Student Succeeds Act,” U.S.C., 6301, 2015.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[41] </div><div class=\"csl-right-inline\">Cable, D., “The Racial Dot Map,” University of Virginia, Weldon Cooper Center for Public Service, 2013.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[42] </div><div class=\"csl-right-inline\">“Bibliographic References,” NISO, Bethesda, MD, May 13 2010. https://doi.org/10.3789/ansi.niso.z39.29-2005R2010</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[43] </div><div class=\"csl-right-inline\">“Mental Health on Campus Improvement Act,” 2013.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[44] </div><div class=\"csl-right-inline\">“Strengthening the Federal Student Loan Program for Borrowers,” 2014.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[45] </div><div class=\"csl-right-inline\">Tactile Labs, “Latero Tactile Display,” 2015.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[46] </div><div class=\"csl-right-inline\">U.K., U.S., and U.S.S.R., “Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water,” U.S.T., 14, Aug 05 1963, p. 1313.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[47] </div><div class=\"csl-right-inline\">“Protection of Human Subjects,” C.F.R., 45, 2009.</div>\n  </div>\n"
   ]
 }

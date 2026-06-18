@@ -2762,6 +2762,13 @@
                 }
               ]
             },
+            "doi": {
+              "description": "Digital Object Identifier for the standard.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "url": {
               "description": "URL for the standard.",
               "type": [

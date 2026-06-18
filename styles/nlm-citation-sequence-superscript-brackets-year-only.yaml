@@ -68,6 +68,57 @@ bibliography:
               - title: parent-monograph
           before:
             title: parent-serial
+    entry-dictionary:
+    - title: primary
+    - group:
+      - term: in
+        form: long
+      - title: parent-monograph
+    - group:
+      - term: cited
+        form: long
+      - date: accessed
+        form: year-month-day
+      wrap:
+        punctuation: brackets
+    - term: available-at
+      form: long
+    - variable: url
+    map:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 6
+    - title: primary
+      prefix: " "
+    - date: issued
+      form: year
+    - group:
+      - term: cited
+        form: long
+      - date: accessed
+        form: year-month-day
+      wrap:
+        punctuation: brackets
+    - term: available-at
+      form: long
+    - variable: url
+    standard:
+    - title: primary
+    - date: issued
+      form: year
+    - group:
+      - term: cited
+        form: long
+      - date: accessed
+        form: year-month-day
+      wrap:
+        punctuation: brackets
+    - term: available-at
+      form: long
+    - variable: url
   template:
   - contributor: author
     form: long

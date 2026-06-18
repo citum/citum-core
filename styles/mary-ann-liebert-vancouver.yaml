@@ -88,12 +88,16 @@ bibliography:
     - date: issued
       form: year
       suffix: ". "
+    - term: available-at
+      form: long
     - variable: url
-      prefix: "Available from: "
-    - date: accessed
-      form: full
-      prefix: " [Last accessed: "
-      suffix: "]"
+    - group:
+      - term: accessed
+        form: long
+      - date: accessed
+        form: full
+      wrap:
+        punctuation: brackets
   template:
   - contributor: author
     form: long

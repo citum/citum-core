@@ -1,7 +1,7 @@
 ---
 # csl26-6bul
 title: 'migrate: audit fixture coverage for measured selection'
-status: todo
+status: completed
 type: task
 priority: high
 tags:
@@ -9,7 +9,7 @@ tags:
     - fixtures
     - fidelity
 created_at: 2026-06-17T18:22:49Z
-updated_at: 2026-06-17T18:22:49Z
+updated_at: 2026-06-18T00:00:00Z
 ---
 
 Output-driven template selection and synthesis are explicitly coverage-bound: the selector can only prefer measured evidence for behavior exercised by the selection fixtures, and the held-out gate only rejects regressions visible in held-out fixtures. This makes fixture sufficiency a first-class migration quality risk, not just a testing nicety.
@@ -49,3 +49,23 @@ Output-driven template selection and synthesis are explicitly coverage-bound: th
 - `scripts/check-testing-infra.js`
 - `csl26-aynr` output-driven template synthesis
 - `csl26-hxhx` XML compiler removal blocker
+
+## Summary of Changes
+
+- Added machine-readable measured-selection summaries to `citum-migrate --emit-evidence`.
+- Added `scripts/audit-measured-fixture-coverage.js` for repeatable selection/held-out coverage audits.
+- Added `scripts/sync-measured-selection-fixtures.js` and an allowlist to import curated CSL JSON test items into the measured-selection fixtures.
+- Registered `references-heldout.json` in `coverage-manifest.json`.
+- Documented `fixture-sufficiency.yaml` as a hand-maintained policy file validated by testing-infra checks.
+- Added `docs/architecture/audits/2026-06-18_MEASURED_SELECTION_FIXTURE_COVERAGE.md` and linked it from the migration strategy analysis.
+
+## Verification
+
+- `cargo fmt`
+- `cargo test -p citum-migrate --quiet`
+- `cargo test -p citum-migrate js_runtime::tests::heldout_fixture_items_are_disjoint_from_selection_items --quiet`
+- `node scripts/check-testing-infra.js`
+- `node scripts/sync-measured-selection-fixtures.js`
+- `node scripts/audit-measured-fixture-coverage.js --json`
+- `cargo run --quiet --bin citum-migrate -- styles-legacy/apa.csl --emit-evidence /tmp/citum-apa-evidence.json`
+- `node scripts/report-migrate-sqi.js --styles apa,ieee,chicago-notes-bibliography --out /tmp/csl26-6bul-scorecard-expanded.json`

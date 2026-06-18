@@ -290,11 +290,12 @@ mod tests {
                 !selection_ids.contains(id),
                 "held-out item {id} reuses a selection item id"
             );
-            let title = item.get("title").and_then(|title| title.as_str()).unwrap();
-            assert!(
-                !selection_titles.contains(title),
-                "held-out item {id} reuses selection title {title:?}"
-            );
+            if let Some(title) = item.get("title").and_then(|title| title.as_str()) {
+                assert!(
+                    !selection_titles.contains(title),
+                    "held-out item {id} reuses selection title {title:?}"
+                );
+            }
         }
     }
 

@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "comment": "Allowlisted CSL JSON items imported from tests/fixtures/test-items-library into measured-selection fixtures. The source corpus is curated for CSL style development; overrides materialize Zotero Extra type hints as explicit top-level CSL item types so citeproc-js and Citum see the same effective type.",
+  "source_dir": "tests/fixtures/test-items-library",
+  "selection": [
+    {
+      "id": "TLIB-SEL-DICT-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/T3J5KEWI"
+    },
+    {
+      "id": "TLIB-SEL-LEGISLATION-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/X243XEPZ"
+    },
+    {
+      "id": "TLIB-SEL-MAP-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/CSGN9EY6"
+    },
+    {
+      "id": "TLIB-SEL-STANDARD-1",
+      "source": "chicago-18th.json",
+      "source_id": "6188419/P4PLPDIX"
+    },
+    {
+      "id": "TLIB-SEL-BILL-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/7QXATU6X"
+    },
+    {
+      "id": "TLIB-SEL-HEARING-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/5KJK3DD6"
+    },
+    {
+      "id": "TLIB-SEL-SOFTWARE-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/LEJCTFK8"
+    },
+    {
+      "id": "TLIB-SEL-TREATY-1",
+      "source": "chicago-18th.json",
+      "source_id": "6188419/7ARXM8SB",
+      "type": "treaty"
+    },
+    {
+      "id": "TLIB-SEL-REGULATION-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/Q3UXE5Y6",
+      "type": "regulation"
+    }
+  ],
+  "heldout": [
+    {
+      "id": "TLIB-HELD-MAGAZINE-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/383AXERQ"
+    },
+    {
+      "id": "TLIB-HELD-NEWSPAPER-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/CDHKUCS8"
+    },
+    {
+      "id": "TLIB-HELD-BROADCAST-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/HWIMSJBJ"
+    },
+    {
+      "id": "TLIB-HELD-DATASET-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/77A3CG7T"
+    },
+    {
+      "id": "TLIB-HELD-ENCYCLOPEDIA-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/TGVHQ36W"
+    },
+    {
+      "id": "TLIB-HELD-DICTIONARY-1",
+      "source": "chicago-18th.json",
+      "source_id": "6188419/R362J6UF"
+    },
+    {
+      "id": "TLIB-HELD-INTERVIEW-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/V4QJKJ83"
+    },
+    {
+      "id": "TLIB-HELD-LEGAL-CASE-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/I2CAB3TJ"
+    },
+    {
+      "id": "TLIB-HELD-MAP-1",
+      "source": "chicago-18th.json",
+      "source_id": "6188419/HQJ7S2XR"
+    },
+    {
+      "id": "TLIB-HELD-PATENT-1",
+      "source": "chicago-18th.json",
+      "source_id": "6188419/5J6C7H4H"
+    },
+    {
+      "id": "TLIB-HELD-STANDARD-1",
+      "source": "chicago-18th.json",
+      "source_id": "6188419/5EVSW3T5"
+    },
+    {
+      "id": "TLIB-HELD-SOFTWARE-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/PNTUM2T5"
+    },
+    {
+      "id": "TLIB-HELD-LEGISLATION-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/3GK8BGXF"
+    },
+    {
+      "id": "TLIB-HELD-BILL-1",
+      "source": "chicago-18th.json",
+      "source_id": "6188419/Y6BIFHFV"
+    },
+    {
+      "id": "TLIB-HELD-HEARING-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/XXYXLBRQ"
+    },
+    {
+      "id": "TLIB-HELD-MANUSCRIPT-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/9PKSQFCR"
+    },
+    {
+      "id": "TLIB-HELD-PERSONAL-COMMUNICATION-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/4B8FU4SC"
+    },
+    {
+      "id": "TLIB-HELD-TREATY-1",
+      "source": "chicago-18th.json",
+      "source_id": "6188419/RX3599FY",
+      "type": "treaty"
+    },
+    {
+      "id": "TLIB-HELD-REGULATION-1",
+      "source": "apa-7th.json",
+      "source_id": "6188419/PCA773U6",
+      "type": "regulation"
+    }
+  ]
+}

@@ -238,10 +238,13 @@ bibliography:
       links:
         target: url
         anchor: component
-    - date: accessed
-      form: full
-      prefix: " (accessed "
-      suffix: ")."
+    - group:
+      - term: accessed
+        form: long
+      - date: accessed
+        form: full
+      wrap:
+        punctuation: parentheses
     [article-newspaper, broadcast]:
     - contributor: author
       form: long

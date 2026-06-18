@@ -120,7 +120,8 @@ bibliography:
       suffix: '. '
     - contributor: editor
       form: long
-      suffix: ', editors. '
+      label: {term: editor, form: long, placement: suffix}
+      suffix: '. '
     - title: primary
       suffix: '. '
     - number: edition
@@ -147,10 +148,12 @@ bibliography:
       suffix: '. '
     - title: primary
       suffix: '. '
+    - term: in
+      form: long
     - contributor: editor
       form: long
-      prefix: 'In: '
-      suffix: ', editors. '
+      label: {term: editor, form: long, placement: suffix}
+      suffix: '. '
     - title: parent-monograph
       suffix: ', '
     - variable: publisher
@@ -244,10 +247,13 @@ bibliography:
       form: year
       suffix: '. '
     - variable: url
-    - date: accessed
-      form: full
-      prefix: ' (accessed '
-      suffix: ')'
+    - group:
+      - term: accessed
+        form: long
+      - date: accessed
+        form: full
+      wrap:
+        punctuation: parentheses
     patent:
       add:
         - component:

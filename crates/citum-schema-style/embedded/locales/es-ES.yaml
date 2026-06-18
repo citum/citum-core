@@ -129,6 +129,8 @@ roles:
       plural: ils.
     verb: ilustrado por
     verb-short: il. por
+  in:
+    long: en
   interviewer:
     long:
       singular:

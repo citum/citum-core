@@ -223,6 +223,12 @@ Current and future migration work should be evaluated with layered checks:
 5. Manual review for high-impact parent styles, because clean Citum style design
    is an authoring problem as well as a converter problem.
 
+The current fixture sufficiency audit is
+[`2026-06-18_MEASURED_SELECTION_FIXTURE_COVERAGE.md`](./audits/2026-06-18_MEASURED_SELECTION_FIXTURE_COVERAGE.md).
+It records the selection/held-out type surface, measured-selection sample
+evidence, and ranked fixture gaps that need curator input before rare
+type-local wins should be trusted broadly.
+
 ## Files Referenced
 
 - [`../../crates/citum-migrate/src/template_compiler/`](../../crates/citum-migrate/src/template_compiler/) - XML template compiler.

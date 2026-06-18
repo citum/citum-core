@@ -45,6 +45,28 @@ bibliography:
       remove:
         - match:
             date: issued
+    entry-dictionary:
+    - title: primary
+    - title: parent-monograph
+    - term: no-date
+      form: long
+      wrap:
+        punctuation: brackets
+    map:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+      prefix: ": "
+    - date: issued
+      form: year
+      prefix: ". "
+    standard:
+    - title: primary
+    - date: issued
+      form: year
+    - variable: doi
+      prefix: ", doi:"
   template:
   - contributor: author
     form: long

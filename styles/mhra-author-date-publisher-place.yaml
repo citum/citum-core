@@ -371,9 +371,9 @@ bibliography:
     - title: primary
       prefix: '. '
     - contributor: translator
-      form: long
+      form: verb-short
       name-order: given-first
-      prefix: ', trans. by '
+      prefix: ', '
     - contributor: editor
       form: verb
       name-order: given-first

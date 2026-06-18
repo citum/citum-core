@@ -491,6 +491,9 @@ pub struct Standard {
     /// Publisher (usually same as authority)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub publisher: Option<Publisher>,
+    /// Digital Object Identifier for the standard.
+    #[serde(alias = "DOI", skip_serializing_if = "Option::is_none")]
+    pub doi: Option<String>,
     /// URL for the standard.
     #[serde(alias = "URL", skip_serializing_if = "Option::is_none")]
     pub url: Option<Url>,
