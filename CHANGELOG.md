@@ -5,6 +5,123 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.69.0] - 2026-06-18
+
+### Bug Fixes
+
+**engine**
+
+- Avoid doubling quotes on titles ([`24b6194`](https://github.com/citum/citum-core/commit/24b6194a1b4c82a003c3e351a30f3e0074d674eb))
+
+- Suppress genre that echoes item type ([`c09bd77`](https://github.com/citum/citum-core/commit/c09bd77d7745ceb307d8a46b7409e654803e5020))
+
+
+**migrate**
+
+- Enforce regime on template links ([`eebd258`](https://github.com/citum/citum-core/commit/eebd2586e10828d801ee30bb9f42ef69f5817e82))
+
+- Gate leaked in. type-variant term ([`0e6407d`](https://github.com/citum/citum-core/commit/0e6407d1e527fe0c88863bd03e5e33cef836abcc))
+
+- Gate url/accessed to web types ([`291efe2`](https://github.com/citum/citum-core/commit/291efe25f8ed20ed6e205ebd793ed588d72ca42f))
+
+- Preserve pre-wrapper type variants ([`f16bb1e`](https://github.com/citum/citum-core/commit/f16bb1e7ce3ca57cdad3aebd1a26c1424a8f0ff6))
+
+- Improve authorable compression ([`26d2166`](https://github.com/citum/citum-core/commit/26d2166c688c632f5e24ff7cf8ed3e5c23d13602))
+
+- Stdout for --json modes in analyze ([`a95cd0f`](https://github.com/citum/citum-core/commit/a95cd0f6e1ec40e0320fcd18b57a4fc13a664f9e))
+
+- Correct CSL title semantics ([`9201f75`](https://github.com/citum/citum-core/commit/9201f7541ce5bbc13339461b5ad42836ed837da0))
+
+- Use neutral CSL container title ([`f41630a`](https://github.com/citum/citum-core/commit/f41630a72ffc02316c4feff644d74503b1518936))
+
+- Preserve CSL citation labels ([`30fdc34`](https://github.com/citum/citum-core/commit/30fdc346dc3bbf6a6b5779dcf64be2fa16fb2026))
+
+
+**styles**
+
+- Align RSC and AFS bibliographies ([`795f82c`](https://github.com/citum/citum-core/commit/795f82cd8af6c445267416ea6abaf7f076959ab8))
+
+
+
+### Documentation
+
+**migrate**
+
+- Lock disambiguation presets ([`07500b6`](https://github.com/citum/citum-core/commit/07500b64f29a653fee212f6a26f1497fe85a2f36))
+
+- Record order-aware fitness negative ([`2ac7229`](https://github.com/citum/citum-core/commit/2ac72297a8b84a68012a7ca85f2a979a8a98b113))
+
+- Locus classification audit ([`86ff26a`](https://github.com/citum/citum-core/commit/86ff26a607208a86be9beeca35fca703ec5e5ee2))
+
+- Defer dc1d/ya9b, vmcr in-progress ([`54f775c`](https://github.com/citum/citum-core/commit/54f775ca141c3791d90d38610d3c8e95c199ccc7))
+
+- Xml compilation is a synthesis seed ([`eac79db`](https://github.com/citum/citum-core/commit/eac79dbdb9b2e8a72963ed21a6b10da1908e2651))
+
+- Spec full-first type-variant arch ([`2958327`](https://github.com/citum/citum-core/commit/29583275650cb99740fd88001f474ebfe3637580))
+
+- Add citum-analyze README ([`2facf2f`](https://github.com/citum/citum-core/commit/2facf2fb904a61bfd8f883d466e4dea4f88340c6))
+
+- Update migration strategy analysis ([`014ccb5`](https://github.com/citum/citum-core/commit/014ccb5a4ead899877a75591c955cead043a6681))
+
+
+**spec**
+
+- Add synthesis loop phase two design ([`16afc2d`](https://github.com/citum/citum-core/commit/16afc2d475977a3fd811fe0cd62872843e977578))
+
+
+
+### Features
+
+**migrate**
+
+- Positional citation scenarios ([`4a82966`](https://github.com/citum/citum-core/commit/4a829661586417b003e24220d80b64bc2ec3136b))
+
+- Held-out fixture validation ([`b3b3124`](https://github.com/citum/citum-core/commit/b3b31242a5eb1ef51d6633070b70188bdfda42e3))
+
+- Enforce candidate generation budget ([`1e85444`](https://github.com/citum/citum-core/commit/1e85444b065575e9c36ae883c579d97d9d28ec23))
+
+- Add synthesis mutation operators ([`82980af`](https://github.com/citum/citum-core/commit/82980af19bed7fc4c43dfca0fab6c0afb9ff26ac))
+
+- Add output-driven synthesis loop ([`1893619`](https://github.com/citum/citum-core/commit/18936194c33f3e6623d90fb2bdb6a490f532610c))
+
+- Route migration through synthesis ([`c4e0dca`](https://github.com/citum/citum-core/commit/c4e0dca184a2cb6367b3eb52ebfe0a0dc3f279e1))
+
+- Fold author-date presets ([`0ab5ca0`](https://github.com/citum/citum-core/commit/0ab5ca0858d1c1a30ec94b5ea5a69456b6b62c20))
+
+- Render trigraph label styles ([`d17a88d`](https://github.com/citum/citum-core/commit/d17a88d8d72d085bf99fccab27c6be6999312aae))
+
+- In-process batch-test pipeline ([`e04ef48`](https://github.com/citum/citum-core/commit/e04ef484da1ecdb4d28f8b023be332b3bdea41d8))
+
+- Add --coverage-gap to citum-analyze ([`5750f90`](https://github.com/citum/citum-core/commit/5750f905ded0e641bc0175225d99a5467c0f782f))
+
+- Add --config-presets mode ([`9b1156d`](https://github.com/citum/citum-core/commit/9b1156de789516f1b609288e4bbe7ea81dd1b93d))
+
+- Expose measured selection evidence ([`5d1315e`](https://github.com/citum/citum-core/commit/5d1315e4af4d455961a811f99454ceacb2fe38a1))
+
+
+
+### Refactor
+
+**migrate**
+
+- Split migration assembly ([`8db09ef`](https://github.com/citum/citum-core/commit/8db09efd152b2c9b12e2e53f92ae36c1344e2fa9))
+
+- Split SQI refinement phase ([`2fcf7ac`](https://github.com/citum/citum-core/commit/2fcf7ac63f60fa2a73f625a73173821c69fb13c8))
+
+
+
+### Testing
+
+**engine**
+
+- Cover author-date disambiguation ([`ec9233a`](https://github.com/citum/citum-core/commit/ec9233a709a281acbd19a752d9dd2d0fac9d5983))
+
+
+**migrate**
+
+- Harden SQI refinement guards ([`d9c3293`](https://github.com/citum/citum-core/commit/d9c3293a489df262f5ea7e780ca436fb8c1c073a))
+
+
 ## [0.68.0] - 2026-06-12
 
 ### Bug Fixes
