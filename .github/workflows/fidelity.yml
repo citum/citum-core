@@ -35,8 +35,34 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
         with:
-          fetch-depth: 1
+          fetch-depth: 0
           persist-credentials: false
+
+      - name: Determine fidelity scope
+        id: fidelity-scope
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            changed="$(git diff --name-only "origin/$BASE_REF...HEAD")"
+          else
+            changed="$(git diff --name-only HEAD^ HEAD 2>/dev/null || git diff --name-only HEAD)"
+          fi
+
+          broad="$(printf '%s\n' "$changed" | grep -E '^(crates/citum-engine/|crates/citum-migrate/|scripts/oracle.*\.js$|scripts/report-core\.js$|scripts/check-core-quality\.js$|scripts/check-oracle-regression\.js$|scripts/lib/|tests/)' || true)"
+          style_files="$(printf '%s\n' "$changed" | grep -E '^styles/(embedded/)?[^/]+\.yaml$' || true)"
+
+          if [ -n "$style_files" ] && [ -z "$broad" ]; then
+            styles="$(printf '%s\n' "$style_files" | sed -E 's#^styles/(embedded/)?##; s#\.yaml$##' | sort -u | paste -sd, -)"
+            echo "mode=selected" >> "$GITHUB_OUTPUT"
+            echo "styles=$styles" >> "$GITHUB_OUTPUT"
+            echo "Running fidelity for changed styles: $styles"
+          else
+            echo "mode=all" >> "$GITHUB_OUTPUT"
+            echo "styles=" >> "$GITHUB_OUTPUT"
+            echo "Running full fidelity suite"
+          fi
 
       - name: Initialize optional corpora
         run: git submodule update --init --depth 1 styles-legacy tests/csl-test-suite
@@ -68,16 +94,46 @@ jobs:
         run: npm install --prefix scripts
 
       - name: Run corpus-aware script tests
+        if: ${{ steps.fidelity-scope.outputs.mode == 'all' }}
         run: node --test --test-timeout=180000 scripts/oracle.test.js scripts/report-core.test.js scripts/oracle-yaml.test.js
 
       - name: Check core fidelity and SQI drift
         run: |
-          node scripts/report-core.js --all-features > /tmp/core-report.json
-          node scripts/check-core-quality.js \
-            --report /tmp/core-report.json \
-            --baseline scripts/report-data/core-quality-baseline.json
+          if [ "${{ steps.fidelity-scope.outputs.mode }}" = "selected" ]; then
+            node scripts/report-core.js \
+              --all-features \
+              --styles "${{ steps.fidelity-scope.outputs.styles }}" \
+              > /tmp/core-report.json
+          node <<'NODE'
+          const fs = require('fs');
+          const report = JSON.parse(fs.readFileSync('/tmp/core-report.json', 'utf8'));
+          const styles = Array.isArray(report.styles) ? report.styles : [];
+          if (styles.length === 0) {
+            console.error('Selected fidelity report has no styles');
+            process.exit(1);
+          }
+          const failures = styles.filter((style) => style.error || style.qualityBreakdown?.error);
+          for (const style of styles) {
+            console.log(`${style.name}: fidelity=${style.fidelityScore}`);
+          }
+          if (failures.length > 0) {
+            for (const style of failures) {
+              console.error(
+                `Selected fidelity failed for ${style.name}: ${style.error || style.qualityBreakdown?.error}`
+              );
+            }
+            process.exit(1);
+          }
+          NODE
+          else
+            node scripts/report-core.js --all-features > /tmp/core-report.json
+            node scripts/check-core-quality.js \
+              --report /tmp/core-report.json \
+              --baseline scripts/report-data/core-quality-baseline.json
+          fi
 
       - name: Check oracle top-10 regression baseline
+        if: ${{ steps.fidelity-scope.outputs.mode == 'all' }}
         run: |
           node scripts/check-oracle-regression.js \
             --baseline scripts/report-data/oracle-top10-baseline.json

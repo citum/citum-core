@@ -50,7 +50,7 @@ jobs:
           fi
           has() { echo "$CHANGED" | grep -qE "$1" && echo "true" || echo "false"; }
           {
-            echo "rust=$(has '^(crates/|Cargo\.toml$|Cargo\.lock$|rust-toolchain\.toml$|styles/)')"
+            echo "rust=$(has '^(crates/|Cargo\.toml$|Cargo\.lock$|rust-toolchain\.toml$)')"
             echo "docs=$(has '\.md$|^(docs/|CONTRIBUTING\.md$|examples/|\.github/)')"
             echo "scripts=$(has '^(scripts/|examples/)')"
             echo "beans=$(has '^(registry/|locales/|templates/|\.beans\.yml$|\.beans/)')"
