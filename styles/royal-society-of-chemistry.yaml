@@ -95,7 +95,12 @@ bibliography:
             contributor: editor
             form: short
             name-order: given-first
-            prefix: ', editors. '
+            label:
+              term: editor
+              form: long
+              placement: suffix
+            prefix: ', '
+            suffix: .
           before:
             variable: publisher-place
     dataset:
@@ -122,6 +127,8 @@ bibliography:
       remove:
         - match:
             contributor: editor
+            form: short
+            name-order: given-first
     personal_communication:
       remove:
         - match:

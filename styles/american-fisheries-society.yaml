@@ -13,10 +13,11 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/ecology
       rel: template
-    - href: http://fisheries.org/docs/pub_stylefl.pdf
+    - href: https://fisheries.org/wp-content/uploads/2016/01/References.pdf
       rel: documentation
 options:
   substitute:
+    contributor-role-form: long
     template:
     - editor
     - translator
@@ -90,6 +91,7 @@ bibliography:
       display-as-sort: first
       name-form: initials
       initialize-with: ". "
+      and: text
       delimiter: ", "
       delimiter-precedes-last: always
       sort-separator: ", "
@@ -97,11 +99,50 @@ bibliography:
     entry-suffix: .
     separator: ". "
   type-variants:
+    book:
+    - contributor: author
+      form: long
+      name-order: family-first
+      and: text
+    - date: issued
+      form: year
+    - title: primary
+    - variable: publisher
+    - number: volume
+      prefix: ", "
+    - variable: publisher-place
+      prefix: ", "
     chapter:
-      modify:
-        - match:
-            contributor: editor
-          prefix: 'in '
+    - contributor: author
+      form: long
+      name-order: family-first
+      and: text
+    - date: issued
+      form: year
+    - title: primary
+    - group:
+      - number: pages
+        label-form: long
+        text-case: capitalize-first
+      - term: in
+      - group:
+        - contributor: editor
+          form: long
+          name-order: given-first
+          and: text
+          label:
+            term: editor
+            form: long
+            placement: suffix
+        - title: parent-monograph
+        delimiter: ". "
+      delimiter: " "
+    - title: parent-serial
+    - variable: publisher
+    - number: volume
+      prefix: ", "
+    - variable: publisher-place
+      prefix: ", "
     legal_case:
     - contributor: author
       form: long
@@ -150,7 +191,6 @@ bibliography:
     name-order: family-first
   - date: issued
     form: year
-    prefix: " "
   - title: primary
   - title: parent-monograph
   - title: parent-serial
