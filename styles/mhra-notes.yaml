@@ -330,8 +330,8 @@ bibliography:
         name-order: family-first
       - title: primary
       - contributor: translator
-        form: long
-        prefix: ", trans. by "
+        form: verb-short
+        prefix: ", "
       - variable: publisher
         prefix: " ("
       - date: issued

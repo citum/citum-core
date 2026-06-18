@@ -8,10 +8,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use crate::cli::{Args, FamilyCandidateMode};
 use citum_migrate::{
     evidence::{
-        EmittedForm, MinimizationDecisionAudit, MinimizationDecisionOutcome,
-        MinimizationDecisionSource,
+        EmittedForm, MeasuredSelectionEvidence, MinimizationDecisionAudit,
+        MinimizationDecisionOutcome, MinimizationDecisionSource,
     },
-    lineage::{MigrationOutputPlan, StyleLineage},
+    lineage::{MigrationEvidenceParts, MigrationOutputPlan, StyleLineage},
 };
 use citum_schema::Style;
 use std::{fs, path::Path};
@@ -84,6 +84,7 @@ pub(crate) fn write_optional_evidence(
     emitted_lines: usize,
     minimized: bool,
     minimization_decision: MinimizationDecisionAudit,
+    measured_selection: Option<MeasuredSelectionEvidence>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if let Some(evidence_path) = cli.emit_evidence.as_deref() {
         write_evidence_sidecar(
@@ -93,6 +94,7 @@ pub(crate) fn write_optional_evidence(
             emitted_lines,
             minimized,
             minimization_decision,
+            measured_selection,
         )?;
     }
     Ok(())
@@ -136,17 +138,19 @@ fn write_evidence_sidecar(
     emitted_lines: usize,
     minimized: bool,
     minimization_decision: MinimizationDecisionAudit,
+    measured_selection: Option<MeasuredSelectionEvidence>,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let emitted_form = describe_emitted_form(lineage, minimized);
     let (preserved, discarded) = classify_template_paths(&emitted_form);
-    let evidence = lineage.build_evidence(
+    let evidence = lineage.build_evidence(MigrationEvidenceParts {
         standalone_lines,
         emitted_form,
         emitted_lines,
         minimization_decision,
-        preserved,
-        discarded,
-    );
+        preserved_template_paths: preserved,
+        discarded_template_paths: discarded,
+        measured_selection,
+    });
     let json = serde_json::to_string_pretty(&evidence)?;
     fs::write(evidence_path, json)?;
     Ok(())

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-06-02T14:23:11.517Z",
+  "generated_at": "2026-06-18T12:17:53.229Z",
   "style": "mary-ann-liebert-vancouver",
-  "fixture_hash": "0b1a38b458cc400a",
+  "fixture_hash": "5f8545b8e46c8025",
   "csl_hash": "cd5c7e26b2b72bcd",
   "citations": {
     "single-item": "<sup>1</sup>",
@@ -65,6 +65,15 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">35.</div><div class=\"csl-right-inline\">Johnson A. Quantitative Methods in Sociology. Sociological Review 2020;68:23–45.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">36.</div><div class=\"csl-right-inline\">Johnson B. Qualitative Methods in Sociology. Sociological Review 2020;68:89–112.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">37.</div><div class=\"csl-right-inline\">Chen W. Urban Heat Island Mitigation Strategies. Urban Climate 2022;15:1–18; doi: 10.5555/uc.2022.15.1.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">38.</div><div class=\"csl-right-inline\">Chen W. Urban Heat Island Measurement Techniques. Urban Climate 2024;18:45–62; doi: 10.5555/uc.2024.18.45.</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">38.</div><div class=\"csl-right-inline\">Chen W. Urban Heat Island Measurement Techniques. Urban Climate 2024;18:45–62; doi: 10.5555/uc.2024.18.45.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">39.</div><div class=\"csl-right-inline\">Anonymous. Self-Report. Merriam-Webster.com dictionary n.d.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">40.</div><div class=\"csl-right-inline\">Anonymous. Every Student Succeeds Act. 2015.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">41.</div><div class=\"csl-right-inline\">Cable D. The Racial Dot Map. 2013.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">42.</div><div class=\"csl-right-inline\">Anonymous. Bibliographic References. 2010; doi: 10.3789/ansi.niso.z39.29-2005R2010.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">43.</div><div class=\"csl-right-inline\">Anonymous. Mental Health on Campus Improvement Act. H.R. 2013.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">44.</div><div class=\"csl-right-inline\">Anonymous. Strengthening the Federal Student Loan Program for Borrowers. 2014.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">45.</div><div class=\"csl-right-inline\">Tactile Labs. Latero Tactile Display. 2015.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">46.</div><div class=\"csl-right-inline\">U.K., U.S., U.S.S.R. Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water. UST 1963;14:1313.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">47.</div><div class=\"csl-right-inline\">Anonymous. Protection of Human Subjects. CFR 2009;45.</div>\n  </div>\n"
   ]
 }

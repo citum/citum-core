@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-06-02T14:23:33.536Z",
+  "generated_at": "2026-06-18T12:18:08.002Z",
   "style": "springer-vancouver-brackets",
-  "fixture_hash": "0b1a38b458cc400a",
+  "fixture_hash": "5f8545b8e46c8025",
   "csl_hash": "6f5b471d4807b4d0",
   "citations": {
     "single-item": "[1]",
@@ -65,6 +65,15 @@
     "  <div class=\"csl-entry\">35. Johnson A. Quantitative Methods in Sociology. Sociological Review. 2020;68:23–45. </div>\n",
     "  <div class=\"csl-entry\">36. Johnson B. Qualitative Methods in Sociology. Sociological Review. 2020;68:89–112. </div>\n",
     "  <div class=\"csl-entry\">37. Chen W. Urban Heat Island Mitigation Strategies. Urban Climate. 2022;15:1–18. https://doi.org/10.5555/uc.2022.15.1</div>\n",
-    "  <div class=\"csl-entry\">38. Chen W. Urban Heat Island Measurement Techniques. Urban Climate. 2024;18:45–62. https://doi.org/10.5555/uc.2024.18.45</div>\n"
+    "  <div class=\"csl-entry\">38. Chen W. Urban Heat Island Measurement Techniques. Urban Climate. 2024;18:45–62. https://doi.org/10.5555/uc.2024.18.45</div>\n",
+    "  <div class=\"csl-entry\">39. Self-report [Internet]. Merriam-Webster.com dictionary. [cited 2019 July 12]. https://www.merriam-webster.com/dictionary/self-report. Accessed 12 July 2019</div>\n",
+    "  <div class=\"csl-entry\">40. Every Student Succeeds Act [Internet]. U.S.C. Sect. 6301 2015. https://www.congress.gov/114/plaws/publ95/PLAW-114publ95.pdf</div>\n",
+    "  <div class=\"csl-entry\">41. Cable D. The racial dot map [Internet]. University of Virginia, Weldon Cooper Center for Public Service; 2013 [cited 2019 Oct 27]. https://demographics.coopercenter.org/Racial-Dot-Map. Accessed 27 Oct 2019</div>\n",
+    "  <div class=\"csl-entry\">42. Bibliographic references [Internet]. Bethesda, MD: NISO; 2010 [cited 2025 Apr 11]. https://doi.org/10.3789/ansi.niso.z39.29-2005R2010</div>\n",
+    "  <div class=\"csl-entry\">43. Mental Health on Campus Improvement Act [Internet]. 1100 2013. https://www.congress.gov/bill/113th-congress/housebill/1100</div>\n",
+    "  <div class=\"csl-entry\">44. Strengthening the federal student loan program for borrowers [Internet]. 2014. https://www.help.senate.gov/hearings/strengthening-the-federal-student-loan-program-for-borrowers</div>\n",
+    "  <div class=\"csl-entry\">45. Tactile Labs. Latero tactile display [Internet]. 2015. http://tactilelabs.com/products/haptics/latero-tactile-display/</div>\n",
+    "  <div class=\"csl-entry\">46. U.K., U.S., U.S.S.R. Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water. U.S.T. 1963. p. 1313. </div>\n",
+    "  <div class=\"csl-entry\">47. Protection of Human Subjects [Internet]. C.F.R. 2009. https://www.hhs.gov/ohrp/sites/default/files/ohrp/policy/ohrpregulations.pdf</div>\n"
   ]
 }

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-06-02T14:23:33.500Z",
+  "generated_at": "2026-06-18T12:18:06.965Z",
   "style": "springer-socpsych-brackets",
-  "fixture_hash": "0b1a38b458cc400a",
+  "fixture_hash": "5f8545b8e46c8025",
   "csl_hash": "f4232df988539e5f",
   "citations": {
     "single-item": "[1]",
@@ -65,6 +65,15 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">35. </div><div class=\"csl-right-inline\">Johnson, A. (2020). Quantitative Methods in Sociology. <i>Sociological Review</i>, <i>68</i>, 23–45.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">36. </div><div class=\"csl-right-inline\">Johnson, B. (2020). Qualitative Methods in Sociology. <i>Sociological Review</i>, <i>68</i>, 89–112.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">37. </div><div class=\"csl-right-inline\">Chen, W. (2022). Urban Heat Island Mitigation Strategies. <i>Urban Climate</i>, <i>15</i>, 1–18. https://doi.org/10.5555/uc.2022.15.1</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">38. </div><div class=\"csl-right-inline\">Chen, W. (2024). Urban Heat Island Measurement Techniques. <i>Urban Climate</i>, <i>18</i>, 45–62. https://doi.org/10.5555/uc.2024.18.45</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">38. </div><div class=\"csl-right-inline\">Chen, W. (2024). Urban Heat Island Measurement Techniques. <i>Urban Climate</i>, <i>18</i>, 45–62. https://doi.org/10.5555/uc.2024.18.45</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">39. </div><div class=\"csl-right-inline\">Self-report. (n.d.). <i>Merriam-Webster.com dictionary</i>. Retrieved from https://www.merriam-webster.com/dictionary/self-report</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">40. </div><div class=\"csl-right-inline\">Every Student Succeeds Act. , 20 U.S.C. § 6301 (2015). Retrieved from https://www.congress.gov/114/plaws/publ95/PLAW-114publ95.pdf</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">41. </div><div class=\"csl-right-inline\">Cable, D. (2013). The racial dot map. Map, University of Virginia, Weldon Cooper Center for Public Service. Retrieved from https://demographics.coopercenter.org/Racial-Dot-Map</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">42. </div><div class=\"csl-right-inline\">Bibliographic references. (2010, May 13). ANSI/NISO, Bethesda, MD: NISO. https://doi.org/10.3789/ansi.niso.z39.29-2005R2010</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">43. </div><div class=\"csl-right-inline\">Mental Health on Campus Improvement Act. , Pub. L. No. 1100 (2013). H.R. Retrieved from https://www.congress.gov/bill/113th-congress/housebill/1100</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">44. </div><div class=\"csl-right-inline\">Strengthening the federal student loan program for borrowers. (2014). Retrieved from https://www.help.senate.gov/hearings/strengthening-the-federal-student-loan-program-for-borrowers</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">45. </div><div class=\"csl-right-inline\">Tactile Labs. (2015). Latero tactile display. Model. Retrieved from http://tactilelabs.com/products/haptics/latero-tactile-display/</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">46. </div><div class=\"csl-right-inline\">U.K., U.S., &#38; U.S.S.R. (1963, August 5). Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water. <i>U.S.T.</i></div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">47. </div><div class=\"csl-right-inline\">Protection of Human Subjects. (2009). <i>C.F.R.</i> Retrieved from https://www.hhs.gov/ohrp/sites/default/files/ohrp/policy/ohrpregulations.pdf</div>\n  </div>\n"
   ]
 }

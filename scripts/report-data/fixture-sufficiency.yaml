@@ -1,3 +1,10 @@
+# Fixture-family sufficiency policy for Citum verification reports.
+#
+# This file is hand-maintained policy metadata, not generated output. It
+# records the reference types, scenarios, and fixture sets that are considered
+# sufficient before a family-level report should be treated as broadly
+# representative. `scripts/check-testing-infra.js` validates this file and
+# `scripts/lib/verification-policy.js` loads it for report tooling.
 version: 1
 defaults:
   release_report_fixture: core

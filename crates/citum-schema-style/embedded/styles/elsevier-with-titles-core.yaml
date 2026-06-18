@@ -86,13 +86,16 @@ bibliography:
         links:
           target: url
           anchor: component
-      - date: accessed
-        form: month-day
-        prefix: " (accessed "
-      - date: accessed
-        form: year
-        prefix: ", "
-        suffix: ")"
+      - group:
+        - term: accessed
+          form: long
+        - date: accessed
+          form: month-day
+        - date: accessed
+          form: year
+          prefix: ", "
+        wrap:
+          punctuation: parentheses
       - variable: number
       - variable: doi
         prefix: ". https://doi.org/"
@@ -132,13 +135,16 @@ bibliography:
         links:
           target: url
           anchor: component
-      - date: accessed
-        form: month-day
-        prefix: " (accessed "
-      - date: accessed
-        form: year
-        prefix: ", "
-        suffix: ")"
+      - group:
+        - term: accessed
+          form: long
+        - date: accessed
+          form: month-day
+        - date: accessed
+          form: year
+          prefix: ", "
+        wrap:
+          punctuation: parentheses
       - variable: number
       - variable: doi
         prefix: ". https://doi.org/"
@@ -180,13 +186,16 @@ bibliography:
         links:
           target: url
           anchor: component
-      - date: accessed
-        form: month-day
-        prefix: " (accessed "
-      - date: accessed
-        form: year
-        prefix: ", "
-        suffix: ")"
+      - group:
+        - term: accessed
+          form: long
+        - date: accessed
+          form: month-day
+        - date: accessed
+          form: year
+          prefix: ", "
+        wrap:
+          punctuation: parentheses
       - variable: number
       - variable: doi
         prefix: ". https://doi.org/"
@@ -228,13 +237,16 @@ bibliography:
         links:
           target: url
           anchor: component
-      - date: accessed
-        form: month-day
-        prefix: " (accessed "
-      - date: accessed
-        form: year
-        prefix: ", "
-        suffix: ")"
+      - group:
+        - term: accessed
+          form: long
+        - date: accessed
+          form: month-day
+        - date: accessed
+          form: year
+          prefix: ", "
+        wrap:
+          punctuation: parentheses
       - variable: number
       - variable: doi
         prefix: ". https://doi.org/"
@@ -271,13 +283,16 @@ bibliography:
         links:
           target: url
           anchor: component
-      - date: accessed
-        form: month-day
-        prefix: " (accessed "
-      - date: accessed
-        form: year
-        prefix: ", "
-        suffix: ")"
+      - group:
+        - term: accessed
+          form: long
+        - date: accessed
+          form: month-day
+        - date: accessed
+          form: year
+          prefix: ", "
+        wrap:
+          punctuation: parentheses
       - variable: number
       - variable: doi
         prefix: ". https://doi.org/"
@@ -350,13 +365,16 @@ bibliography:
           target: url
           anchor: component
         prefix: ". "
-      - date: accessed
-        form: month-day
-        prefix: " (accessed "
-      - date: accessed
-        form: year
-        prefix: ", "
-        suffix: ")"
+      - group:
+        - term: accessed
+          form: long
+        - date: accessed
+          form: month-day
+        - date: accessed
+          form: year
+          prefix: ", "
+        wrap:
+          punctuation: parentheses
       - variable: number
       - variable: doi
         prefix: ". https://doi.org/"
@@ -493,13 +511,16 @@ bibliography:
           target: url
           anchor: component
         prefix: ". "
-      - date: accessed
-        form: month-day
-        prefix: " (accessed "
-      - date: accessed
-        form: year
-        prefix: ", "
-        suffix: ")"
+      - group:
+        - term: accessed
+          form: long
+        - date: accessed
+          form: month-day
+        - date: accessed
+          form: year
+          prefix: ", "
+        wrap:
+          punctuation: parentheses
       - variable: number
       - variable: doi
         prefix: ". https://doi.org/"
@@ -527,13 +548,16 @@ bibliography:
       links:
         target: url
         anchor: component
-    - date: accessed
-      form: month-day
-      prefix: " (accessed "
-    - date: accessed
-      form: year
-      prefix: ", "
-      suffix: ")."
+    - group:
+      - term: accessed
+        form: long
+      - date: accessed
+        form: month-day
+      - date: accessed
+        form: year
+        prefix: ", "
+      wrap:
+        punctuation: parentheses
     [article-newspaper, broadcast]:
     - number: citation-number
       wrap:
@@ -597,13 +621,16 @@ bibliography:
       links:
         target: url
         anchor: component
-    - date: accessed
-      form: month-day
-      prefix: " (accessed "
-    - date: accessed
-      form: year
-      prefix: ", "
-      suffix: ")"
+    - group:
+      - term: accessed
+        form: long
+      - date: accessed
+        form: month-day
+      - date: accessed
+        form: year
+        prefix: ", "
+      wrap:
+        punctuation: parentheses
     - variable: number
     - variable: doi
       prefix: ". https://doi.org/"

@@ -30,6 +30,7 @@ use runtime::{
 
 use citum_migrate::{
     OptionsExtractor, compilation,
+    evidence::MeasuredSelectionEvidence,
     lineage::StyleLineage,
     options_extractor::{MigrationOptions, processing::detect_processing_mode},
     passes::sqi_refinement,
@@ -37,7 +38,7 @@ use citum_migrate::{
 };
 use csl_legacy::parser::parse_style;
 use roxmltree::Document;
-use std::fs;
+use std::{fs, path::Path};
 
 #[cfg(feature = "dhat-heap")]
 #[global_allocator]
@@ -119,25 +120,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         citation_contributor_overrides: &citation_contributor_overrides,
         bibliography_contributor_overrides: &bibliography_contributor_overrides,
     };
-    let mut source_selection = TemplateSourceSelection::default();
-    let standalone_style = assembly.assemble_with_selection(source_selection);
-    let (standalone_style, use_xml_citation) = apply_measured_citation_selection(
-        standalone_style,
-        &assembly,
-        source_selection,
-        &style_name,
-        &text,
-        &workspace_root,
-    );
-    source_selection.suppress_inferred_citation = use_xml_citation;
-    let (standalone_style, _) = apply_measured_bibliography_selection(
-        standalone_style,
-        &assembly,
-        source_selection,
-        &style_name,
-        &text,
-        &workspace_root,
-    );
+    let (standalone_style, measured_selection) =
+        apply_measured_selection_pipeline(&assembly, &style_name, &text, &workspace_root);
     let standalone_style = sqi_refinement::refine_style(standalone_style);
     // Measure the standalone form first so the evidence record can report
     // the compression delta without re-running the pipeline. Cheap: one YAML
@@ -158,10 +142,47 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         emitted_lines,
         cli.minimize_wrapper,
         routing.audit,
+        measured_selection,
     )?;
 
     output_style_and_debug(&style, cli.debug_variable.as_deref(), &tracker)?;
     Ok(())
+}
+
+fn apply_measured_selection_pipeline(
+    assembly: &StandaloneAssembly<'_>,
+    style_name: &str,
+    style_xml: &str,
+    workspace_root: &Path,
+) -> (citum_schema::Style, Option<MeasuredSelectionEvidence>) {
+    let mut source_selection = TemplateSourceSelection::default();
+    let standalone_style = assembly.assemble_with_selection(source_selection);
+    let (standalone_style, use_xml_citation, citation_selection) =
+        apply_measured_citation_selection(
+            standalone_style,
+            assembly,
+            source_selection,
+            style_name,
+            style_xml,
+            workspace_root,
+        );
+    source_selection.suppress_inferred_citation = use_xml_citation;
+    let (standalone_style, _, bibliography_selection) = apply_measured_bibliography_selection(
+        standalone_style,
+        assembly,
+        source_selection,
+        style_name,
+        style_xml,
+        workspace_root,
+    );
+    let measured_selection = MeasuredSelectionEvidence {
+        citation: citation_selection,
+        bibliography: bibliography_selection,
+    };
+    (
+        standalone_style,
+        (!measured_selection.is_empty()).then_some(measured_selection),
+    )
 }
 
 #[cfg(test)]

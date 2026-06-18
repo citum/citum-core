@@ -88,10 +88,13 @@ bibliography:
     - date: issued
       form: year
     - variable: url
-    - date: accessed
-      form: month-day
-      prefix: " (accessed "
-      suffix: ")"
+    - group:
+      - term: accessed
+        form: long
+      - date: accessed
+        form: month-day
+      wrap:
+        punctuation: parentheses
     article-magazine:
       remove:
         - match:
@@ -120,6 +123,42 @@ bibliography:
       remove:
         - match:
             date: issued
+    entry-dictionary:
+    - title: primary
+    - title: parent-monograph
+    - variable: url
+    - group:
+      - term: accessed
+        form: long
+      - date: accessed
+        form: month-day
+      wrap:
+        punctuation: parentheses
+    map:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 6
+    - title: primary
+    - date: issued
+      form: year
+    - variable: url
+      prefix: .
+    - group:
+      - term: accessed
+        form: long
+      - date: accessed
+        form: month-day
+      wrap:
+        punctuation: parentheses
+    standard:
+    - title: primary
+    - date: issued
+      form: year
+    - variable: doi
+      prefix: " doi:"
   template:
   - contributor: author
     form: long

@@ -84,6 +84,16 @@ bibliography:
         - match:
             number: pages
           label-form: short
+    standard:
+    - title: primary
+    - variable: publisher-place
+      suffix: ": "
+    - variable: publisher
+      suffix: "; "
+    - date: issued
+      form: year
+    - variable: doi
+      prefix: "doi:"
   template:
   - contributor: author
     form: long

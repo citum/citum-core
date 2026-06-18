@@ -90,13 +90,14 @@ bibliography:
     - contributor: author
       form: long
     - title: primary
+    - term: in
+      form: long
     - group:
       - contributor: editor
         form: long
         label: {term: editor, form: long, placement: suffix}
       - title: parent-monograph
       delimiter: '. '
-      prefix: 'In: '
     - variable: publisher
       suffix: '; '
     - date: issued
@@ -149,14 +150,18 @@ bibliography:
     - title: primary
     - date: issued
       form: year
-    - date: accessed
-      form: year-month-day
-      prefix: '[cited '
-      suffix: ']. '
+    - group:
+      - term: cited
+        form: long
+      - date: accessed
+        form: year-month-day
+      wrap:
+        punctuation: brackets
     - variable: url
+    - term: accessed
+      form: long
     - date: accessed
       form: year-month-day
-      prefix: '. Accessed '
 
     article-newspaper:
     - contributor: author
@@ -201,6 +206,22 @@ bibliography:
     - number: pages
       prefix: '. p. '
 
+    entry-dictionary:
+    - title: primary
+    - title: parent-monograph
+    - group:
+      - term: cited
+        form: long
+      - date: accessed
+        form: year-month-day
+      wrap:
+        punctuation: brackets
+    - variable: url
+    - term: accessed
+      form: long
+    - date: accessed
+      form: day-month-abbr-year
+
     dataset:
       extends: webpage
       add:
@@ -238,6 +259,76 @@ bibliography:
       suffix: '; '
     - date: issued
       form: year
+
+    map:
+    - contributor: author
+      form: long
+    - title: primary
+    - variable: publisher
+      suffix: '; '
+    - date: issued
+      form: year
+    - group:
+      - term: cited
+        form: long
+      - date: accessed
+        form: year-month-day
+      wrap:
+        punctuation: brackets
+    - variable: url
+    - term: accessed
+      form: long
+    - date: accessed
+      form: day-month-abbr-year
+
+    software:
+    - contributor: author
+      form: long
+    - title: primary
+    - date: issued
+      form: year
+    - variable: url
+
+    hearing:
+    - title: primary
+    - number: number
+    - date: issued
+      form: year
+    - variable: url
+
+    standard:
+    - title: primary
+    - variable: publisher-place
+      suffix: ': '
+    - variable: publisher
+      suffix: '; '
+    - date: issued
+      form: year
+    - group:
+      - term: cited
+        form: long
+      - date: accessed
+        form: year-month-day
+      wrap:
+        punctuation: brackets
+    - variable: doi
+      prefix: https://doi.org/
+
+    statute:
+    - title: primary
+    - variable: code
+    - variable: section
+      prefix: 'Sect. '
+    - date: issued
+      form: year
+    - variable: url
+
+    regulation:
+    - title: primary
+    - variable: code
+    - date: issued
+      form: year
+    - variable: url
 
 
   template:

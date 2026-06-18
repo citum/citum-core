@@ -84,17 +84,21 @@ bibliography:
         delimiter-precedes-last: always
     - title: primary
     - variable: url
-    - date: accessed
-      form: year
-      prefix: "(accessed "
-      suffix: )
+    - group:
+      - term: accessed
+        form: long
+      - date: accessed
+        form: year
+      wrap:
+        punctuation: parentheses
     patent:
       extends: webpage
       remove:
         - match:
             variable: url
         - match:
-            date: accessed
+            wrap:
+              punctuation: parentheses
       add:
         - component:
             date: issued

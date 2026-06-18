@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-06-02T14:23:14.942Z",
+  "generated_at": "2026-06-18T12:17:57.539Z",
   "style": "microbiology-society",
-  "fixture_hash": "0b1a38b458cc400a",
+  "fixture_hash": "5f8545b8e46c8025",
   "csl_hash": "78737b6e0ee6e503",
   "citations": {
     "single-item": "[1]",
@@ -65,6 +65,15 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">35.</div><div class=\"csl-right-inline\"><b>Johnson A</b>. Quantitative Methods in Sociology. <i>Sociological Review</i> 2020;68:23–45.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">36.</div><div class=\"csl-right-inline\"><b>Johnson B</b>. Qualitative Methods in Sociology. <i>Sociological Review</i> 2020;68:89–112.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">37.</div><div class=\"csl-right-inline\"><b>Chen W</b>. Urban Heat Island Mitigation Strategies. <i>Urban Climate</i> 2022;15:1–18.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">38.</div><div class=\"csl-right-inline\"><b>Chen W</b>. Urban Heat Island Measurement Techniques. <i>Urban Climate</i> 2024;18:45–62.</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">38.</div><div class=\"csl-right-inline\"><b>Chen W</b>. Urban Heat Island Measurement Techniques. <i>Urban Climate</i> 2024;18:45–62.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">39.</div><div class=\"csl-right-inline\">Self-report. <i>Merriam-Webster.com dictionary</i>. https://www.merriam-webster.com/dictionary/self-report (accessed July 12, 2019).</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">40.</div><div class=\"csl-right-inline\">Every Student Succeeds Act. https://www.congress.gov/114/plaws/publ95/PLAW-114publ95.pdf (2015).</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">41.</div><div class=\"csl-right-inline\"><b>Cable D</b>. The racial dot map. https://demographics.coopercenter.org/Racial-Dot-Map (2013, accessed October 27, 2019).</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">42.</div><div class=\"csl-right-inline\">Bibliographic references. Epub ahead of print May 13, 2010. DOI: 10.3789/ansi.niso.z39.29-2005R2010.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">43.</div><div class=\"csl-right-inline\">Mental Health on Campus Improvement Act. H.R. 1100. https://www.congress.gov/bill/113th-congress/housebill/1100 (2013).</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">44.</div><div class=\"csl-right-inline\">Strengthening the federal student loan program for borrowers. https://www.help.senate.gov/hearings/strengthening-the-federal-student-loan-program-for-borrowers (2014).</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">45.</div><div class=\"csl-right-inline\"><b>Tactile Labs</b>. Latero tactile display. http://tactilelabs.com/products/haptics/latero-tactile-display/ (2015).</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">46.</div><div class=\"csl-right-inline\"><b>U.K., U.S., U.S.S.R.</b> Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water. <i>U.S.T.</i> 1963;14:1313.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">47.</div><div class=\"csl-right-inline\">Protection of Human Subjects. <i>C.F.R.</i>;45. https://www.hhs.gov/ohrp/sites/default/files/ohrp/policy/ohrpregulations.pdf (2009).</div>\n  </div>\n"
   ]
 }

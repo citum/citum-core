@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-06-02T14:22:59.004Z",
+  "generated_at": "2026-06-18T12:17:50.828Z",
   "style": "ieee",
-  "fixture_hash": "0b1a38b458cc400a",
+  "fixture_hash": "5f8545b8e46c8025",
   "csl_hash": "b4c7619fc16c45a3",
   "citations": {
     "single-item": "[1]",
@@ -65,6 +65,15 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[35]</div><div class=\"csl-right-inline\">A. Johnson, “Quantitative Methods in Sociology,” <i>Sociological Review</i>, vol. 68, pp. 23–45, 2020.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[36]</div><div class=\"csl-right-inline\">B. Johnson, “Qualitative Methods in Sociology,” <i>Sociological Review</i>, vol. 68, pp. 89–112, 2020.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[37]</div><div class=\"csl-right-inline\">W. Chen, “Urban Heat Island Mitigation Strategies,” <i>Urban Climate</i>, vol. 15, pp. 1–18, 2022, doi: 10.5555/uc.2022.15.1.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[38]</div><div class=\"csl-right-inline\">W. Chen, “Urban Heat Island Measurement Techniques,” <i>Urban Climate</i>, vol. 18, pp. 45–62, 2024, doi: 10.5555/uc.2024.18.45.</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[38]</div><div class=\"csl-right-inline\">W. Chen, “Urban Heat Island Measurement Techniques,” <i>Urban Climate</i>, vol. 18, pp. 45–62, 2024, doi: 10.5555/uc.2024.18.45.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[39]</div><div class=\"csl-right-inline\">“Self-report,” <i>Merriam-Webster.com dictionary</i>. Accessed: Jul. 12, 2019. [Online]. Available: https://www.merriam-webster.com/dictionary/self-report</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[40]</div><div class=\"csl-right-inline\"><i>Every Student Succeeds Act</i>, vol. 20. 2015. [Online]. Available: https://www.congress.gov/114/plaws/publ95/PLAW-114publ95.pdf</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[41]</div><div class=\"csl-right-inline\">D. Cable, “The racial dot map,” University of Virginia, Weldon Cooper Center for Public Service, 2013. Accessed: Oct. 27, 2019. [Online]. Available: https://demographics.coopercenter.org/Racial-Dot-Map</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[42]</div><div class=\"csl-right-inline\"><i>Bibliographic references</i>, ANSI/NISO Z39.29-2005 (R2010), Bethesda, MD., May 13, 2010. doi: 10.3789/ansi.niso.z39.29-2005R2010.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[43]</div><div class=\"csl-right-inline\"><i>Mental Health on Campus Improvement Act</i>. 2013. [Online]. Available: https://www.congress.gov/bill/113th-congress/housebill/1100</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[44]</div><div class=\"csl-right-inline\">“Strengthening the federal student loan program for borrowers.” 2014. [Online]. Available: https://www.help.senate.gov/hearings/strengthening-the-federal-student-loan-program-for-borrowers</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[45]</div><div class=\"csl-right-inline\">Tactile Labs, <i>Latero tactile display</i>. (2015). Model. [Apparatus]. Available: http://tactilelabs.com/products/haptics/latero-tactile-display/</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[46]</div><div class=\"csl-right-inline\">U.K., U.S., and U.S.S.R., “Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water,” <i>U.S.T.</i>, vol. 14. p. 1313, Aug. 05, 1963.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[47]</div><div class=\"csl-right-inline\">“Protection of Human Subjects,” <i>C.F.R.</i>, vol. 45. 2009. [Online]. Available: https://www.hhs.gov/ohrp/sites/default/files/ohrp/policy/ohrpregulations.pdf</div>\n  </div>\n"
   ]
 }

@@ -79,10 +79,13 @@ bibliography:
     - date: issued
       form: year
     - variable: url
-    - date: accessed
-      form: month-day
-      prefix: ' (accessed '
-      suffix: )
+    - group:
+      - term: accessed
+        form: long
+      - date: accessed
+        form: month-day
+      wrap:
+        punctuation: parentheses
     legal-case:
     - title: primary
     - delimiter: ' '

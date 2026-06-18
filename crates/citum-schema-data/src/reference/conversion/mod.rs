@@ -379,6 +379,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             "broadcast" => scholarly::from_serial_component_ref(legacy, ctx),
             "speech" | "presentation" | "event" => scholarly::from_event_ref(legacy, ctx),
             "bill" => legal::from_bill_ref(legacy, ctx),
+            "hearing" => legal::from_hearing_ref(legacy, ctx),
             "legal-case" | "legal_case" => legal::from_legal_case_ref(legacy, ctx),
             "statute" | "legislation" => legal::from_statute_ref(legacy, ctx),
             "regulation" => legal::from_regulation_ref(legacy, ctx),

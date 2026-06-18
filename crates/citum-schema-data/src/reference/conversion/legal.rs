@@ -139,6 +139,7 @@ pub(super) fn from_standard_ref(
             name: n.into(),
             place: legacy.publisher_place.map(Into::into),
         }),
+        doi: ctx.doi,
         url: ctx.url,
         accessed: ctx.accessed,
         language: ctx.language,
@@ -271,7 +272,7 @@ pub(super) fn from_hearing_ref(
         original,
         authority: legacy.authority,
         // CSL chapter-number doubles as session/congress identifier for legislative sources
-        session_number: legacy.chapter_number,
+        session_number: legacy.chapter_number.or(legacy.number),
         created: ctx.created,
         issued: ctx.issued,
         url: ctx.url,

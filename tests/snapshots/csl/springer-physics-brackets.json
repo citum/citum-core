@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-06-02T14:23:33.461Z",
+  "generated_at": "2026-06-18T12:18:06.377Z",
   "style": "springer-physics-brackets",
-  "fixture_hash": "0b1a38b458cc400a",
+  "fixture_hash": "5f8545b8e46c8025",
   "csl_hash": "863583d0c2968d4e",
   "citations": {
     "single-item": "[1]",
@@ -65,6 +65,15 @@
     "  <div class=\"csl-entry\">35. A. Johnson, Sociological Review <b>68</b>, 23 (2020).</div>\n",
     "  <div class=\"csl-entry\">36. B. Johnson, Sociological Review <b>68</b>, 89 (2020).</div>\n",
     "  <div class=\"csl-entry\">37. W. Chen, Urban Climate <b>15</b>, 1 (2022).</div>\n",
-    "  <div class=\"csl-entry\">38. W. Chen, Urban Climate <b>18</b>, 45 (2024).</div>\n"
+    "  <div class=\"csl-entry\">38. W. Chen, Urban Climate <b>18</b>, 45 (2024).</div>\n",
+    "  <div class=\"csl-entry\">39. Merriam-Webster.Com Dictionary (n.d.).</div>\n",
+    "  <div class=\"csl-entry\">40. <i>Every Student Succeeds Act</i> (2015).</div>\n",
+    "  <div class=\"csl-entry\">41. D. Cable, (2013).</div>\n",
+    "  <div class=\"csl-entry\">42. (2010).</div>\n",
+    "  <div class=\"csl-entry\">43. <i>Mental Health on Campus Improvement Act</i> (2013).</div>\n",
+    "  <div class=\"csl-entry\">44. (2014).</div>\n",
+    "  <div class=\"csl-entry\">45. Tactile Labs, (2015).</div>\n",
+    "  <div class=\"csl-entry\">46. U.K., U.S., and U.S.S.R., U.S.T. <b>14</b>, 1313 (1963).</div>\n",
+    "  <div class=\"csl-entry\">47. C.F.R. <b>45</b>, (2009).</div>\n"
   ]
 }

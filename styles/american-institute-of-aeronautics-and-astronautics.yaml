@@ -172,6 +172,16 @@ bibliography:
     - number: number
     - date: issued
       form: full
+    standard:
+    - title: primary
+      wrap:
+        punctuation: quotes
+    - variable: publisher
+    - variable: publisher-place
+    - date: issued
+      form: full
+    - variable: doi
+      prefix: https://doi.org/
   template:
   - contributor: author
     form: long

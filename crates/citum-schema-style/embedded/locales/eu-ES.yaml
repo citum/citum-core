@@ -61,6 +61,8 @@ dates:
     - negua
 
 terms:
+  in:
+    long: in
   and:
     long: eta
   et_al:

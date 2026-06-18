@@ -160,12 +160,16 @@ pub(crate) fn apply_measured_citation_selection(
     style_name: &str,
     style_xml: &str,
     workspace_root: &Path,
-) -> (Style, bool) {
+) -> (
+    Style,
+    bool,
+    Option<citum_migrate::evidence::CitationSelectionEvidence>,
+) {
     let Some(out) = assembly.xml_fallback.as_ref() else {
-        return (current, false);
+        return (current, false, None);
     };
     if out.citation.is_empty() {
-        return (current, false);
+        return (current, false, None);
     }
 
     let alternative = assembly.assemble_with_selection(TemplateSourceSelection {
@@ -193,12 +197,16 @@ pub(crate) fn apply_measured_bibliography_selection(
     style_name: &str,
     style_xml: &str,
     workspace_root: &Path,
-) -> (Style, bool) {
+) -> (
+    Style,
+    bool,
+    Option<citum_migrate::evidence::BibliographySelectionEvidence>,
+) {
     let Some(out) = assembly.xml_fallback.as_ref() else {
-        return (current, false);
+        return (current, false, None);
     };
     if out.bibliography.is_empty() {
-        return (current, false);
+        return (current, false, None);
     }
 
     let bibliography_source = assembly.assemble_with_selection(TemplateSourceSelection {
@@ -520,7 +528,12 @@ fn apply_citation_selection_result(
     current: Style,
     style_name: &str,
     selection: citum_migrate::measured_citation::MeasuredCitationSelection,
-) -> (Style, bool) {
+) -> (
+    Style,
+    bool,
+    Option<citum_migrate::evidence::CitationSelectionEvidence>,
+) {
+    let evidence = citum_migrate::evidence::CitationSelectionEvidence::from(&selection);
     if selection.use_xml {
         tracing::debug!(
             "Measured citation selection for {style_name}: XML candidate wins ({} vs {} passes over {} items); replacing inferred citation template.",
@@ -528,7 +541,7 @@ fn apply_citation_selection_result(
             selection.inferred_passes,
             selection.items
         );
-        return (selection.selected_style, true);
+        return (selection.selected_style, true, Some(evidence));
     }
     if selection.selected_candidate != "inferred" {
         tracing::debug!(
@@ -540,7 +553,7 @@ fn apply_citation_selection_result(
             selection.synthesis_rounds,
             selection.accepted_mutations
         );
-        return (selection.selected_style, false);
+        return (selection.selected_style, false, Some(evidence));
     }
     tracing::debug!(
         "Measured citation selection for {style_name}: keeping inferred citation template ({} vs {} passes over {} items).",
@@ -548,14 +561,19 @@ fn apply_citation_selection_result(
         selection.xml_passes,
         selection.items
     );
-    (current, false)
+    (current, false, Some(evidence))
 }
 
 fn apply_bibliography_selection_result(
     current: Style,
     style_name: &str,
     selection: citum_migrate::measured_citation::MeasuredBibliographySelection,
-) -> (Style, bool) {
+) -> (
+    Style,
+    bool,
+    Option<citum_migrate::evidence::BibliographySelectionEvidence>,
+) {
+    let evidence = citum_migrate::evidence::BibliographySelectionEvidence::from(&selection);
     if selection.use_xml {
         tracing::debug!(
             "Measured bibliography selection for {style_name}: XML candidate wins ({} vs {} current passes over {} items); replacing current bibliography template.",
@@ -563,7 +581,7 @@ fn apply_bibliography_selection_result(
             selection.inferred_passes,
             selection.items
         );
-        return (selection.selected_style, true);
+        return (selection.selected_style, true, Some(evidence));
     }
     if selection.selected_candidate != "inferred" {
         tracing::debug!(
@@ -578,7 +596,7 @@ fn apply_bibliography_selection_result(
             selection.synthesis_rounds,
             selection.accepted_mutations
         );
-        return (selection.selected_style, false);
+        return (selection.selected_style, false, Some(evidence));
     }
     tracing::debug!(
         "Measured bibliography selection for {style_name}: keeping inferred bibliography template ({} vs {} passes over {} items).",
@@ -586,7 +604,7 @@ fn apply_bibliography_selection_result(
         selection.xml_passes,
         selection.items
     );
-    (current, false)
+    (current, false, Some(evidence))
 }
 
 fn style_with_bibliography_from(mut current: Style, bibliography_source: Style) -> Style {
@@ -594,14 +612,14 @@ fn style_with_bibliography_from(mut current: Style, bibliography_source: Style) 
     current
 }
 
-fn measured_selection_unavailable(
+fn measured_selection_unavailable<T>(
     current: Style,
     style_name: &str,
     section: &str,
     err: String,
-) -> (Style, bool) {
+) -> (Style, bool, Option<T>) {
     tracing::debug!("Measured {section} selection unavailable for {style_name}: {err}");
-    (current, false)
+    (current, false, None)
 }
 
 fn extract_citation_collapse(citation: &csl_legacy::model::Citation) -> Option<CitationCollapse> {

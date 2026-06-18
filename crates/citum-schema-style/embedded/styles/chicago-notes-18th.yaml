@@ -98,7 +98,8 @@ citation:
       prefix: ", "
     - contributor: translator
       form: long
-      prefix: ", trans. "
+      label: {term: translator, form: short, placement: prefix}
+      prefix: ", "
     - group:
       - title: parent-serial
         prefix: ", "
@@ -182,7 +183,8 @@ citation:
       prefix: ", "
     - contributor: translator
       form: long
-      prefix: ", trans. "
+      label: {term: translator, form: short, placement: prefix}
+      prefix: ", "
     - group:
       - date: original-published
         form: year
@@ -245,7 +247,8 @@ citation:
       prefix: ", "
     - contributor: translator
       form: long
-      prefix: ", trans. "
+      label: {term: translator, form: short, placement: prefix}
+      prefix: ", "
     - group:
       - title: parent-monograph
         prefix: ", in "

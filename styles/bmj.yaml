@@ -78,10 +78,13 @@ bibliography:
     - date: issued
       form: year
     - variable: url
-    - date: accessed
-      form: month-day
-      prefix: " (accessed "
-      suffix: ")"
+    - group:
+      - term: accessed
+        form: long
+      - date: accessed
+        form: month-day
+      wrap:
+        punctuation: parentheses
     article-magazine:
       remove:
         - match:
@@ -122,6 +125,24 @@ bibliography:
       remove:
         - match:
             date: issued
+    entry-dictionary:
+    - title: primary
+    - title: parent-monograph
+    map:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 3
+    - title: primary
+      prefix: " "
+    - date: issued
+      form: year
+    standard:
+    - title: primary
+    - date: issued
+      form: year
   template:
   - contributor: author
     form: long

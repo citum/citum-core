@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-06-02T14:22:57.437Z",
+  "generated_at": "2026-06-18T12:17:50.685Z",
   "style": "hawaii-international-conference-on-system-sciences-proceedings",
-  "fixture_hash": "0b1a38b458cc400a",
+  "fixture_hash": "5f8545b8e46c8025",
   "csl_hash": "f952e25cce978232",
   "citations": {
     "single-item": "[1]",
@@ -65,6 +65,15 @@
     "  <div class=\"csl-entry\">[35] Johnson, A., “Quantitative Methods in Sociology”, <span style=\"font-style:normal;\"><i>Sociological Review</i> <i>68</i></span>, 2020, pp. 23–45.</div>\n",
     "  <div class=\"csl-entry\">[36] Johnson, B., “Qualitative Methods in Sociology”, <span style=\"font-style:normal;\"><i>Sociological Review</i> <i>68</i></span>, 2020, pp. 89–112.</div>\n",
     "  <div class=\"csl-entry\">[37] Chen, W., “Urban Heat Island Mitigation Strategies”, <span style=\"font-style:normal;\"><i>Urban Climate</i> <i>15</i></span>, 2022, pp. 1–18.</div>\n",
-    "  <div class=\"csl-entry\">[38] Chen, W., “Urban Heat Island Measurement Techniques”, <span style=\"font-style:normal;\"><i>Urban Climate</i> <i>18</i></span>, 2024, pp. 45–62.</div>\n"
+    "  <div class=\"csl-entry\">[38] Chen, W., “Urban Heat Island Measurement Techniques”, <span style=\"font-style:normal;\"><i>Urban Climate</i> <i>18</i></span>, 2024, pp. 45–62.</div>\n",
+    "  <div class=\"csl-entry\">[39] “Self-report”, <i>Merriam-Webster.com dictionary</i>. https://www.merriam-webster.com/dictionary/self-report</div>\n",
+    "  <div class=\"csl-entry\">[40] <i>Every Student Succeeds Act</i>, 2015.</div>\n",
+    "  <div class=\"csl-entry\">[41] Cable, D., “The racial dot map”, 2013. https://demographics.coopercenter.org/Racial-Dot-Map</div>\n",
+    "  <div class=\"csl-entry\">[42] “Bibliographic references”, 2010. https://www.niso.org/publications/ansiniso-z3929-2005-r2010</div>\n",
+    "  <div class=\"csl-entry\">[43] <i>Mental Health on Campus Improvement Act</i>, 2013.</div>\n",
+    "  <div class=\"csl-entry\">[44] “Strengthening the federal student loan program for borrowers”, 2014. https://www.help.senate.gov/hearings/strengthening-the-federal-student-loan-program-for-borrowers</div>\n",
+    "  <div class=\"csl-entry\">[45] Tactile Labs, “Latero tactile display”, 2015. http://tactilelabs.com/products/haptics/latero-tactile-display/</div>\n",
+    "  <div class=\"csl-entry\">[46] U.K., U.S., and U.S.S.R., “Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water”, <i>U.S.T. 14</i>, 1963, 1313.</div>\n",
+    "  <div class=\"csl-entry\">[47] “Protection of Human Subjects”, <i>C.F.R. 45</i>, 2009. https://www.hhs.gov/ohrp/sites/default/files/ohrp/policy/ohrpregulations.pdf</div>\n"
   ]
 }

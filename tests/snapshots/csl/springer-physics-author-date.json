@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-06-02T14:23:33.452Z",
+  "generated_at": "2026-06-18T12:18:06.275Z",
   "style": "springer-physics-author-date",
-  "fixture_hash": "0b1a38b458cc400a",
+  "fixture_hash": "5f8545b8e46c8025",
   "csl_hash": "556c5667115e4fff",
   "citations": {
     "single-item": "(Kuhn 1962)",
@@ -30,6 +30,7 @@
   "bibliography": [
     "  <div class=\"csl-entry\"> J. Adams, (1797).</div>\n",
     "  <div class=\"csl-entry\"> Y. Bengio, (2023).</div>\n",
+    "  <div class=\"csl-entry\"> D. Cable, (2013).</div>\n",
     "  <div class=\"csl-entry\"> W. Chen, Neural Networks for Natural Language Understanding, phd-thesis, Stanford University, 2019.</div>\n",
     "  <div class=\"csl-entry\"> W. Chen, Urban Climate <b>15</b>, 1 (2022).</div>\n",
     "  <div class=\"csl-entry\"> W. Chen, Urban Climate <b>18</b>, 45 (2024).</div>\n",
@@ -58,13 +59,21 @@
     "  <div class=\"csl-entry\"> P. Smith, (2024).</div>\n",
     "  <div class=\"csl-entry\"> B. Spinoza, <i>Éthique</i> (Jan Rieuwertsz, Amsterdam, 1677).</div>\n",
     "  <div class=\"csl-entry\"> State of JS Team, (2023).</div>\n",
+    "  <div class=\"csl-entry\"> Tactile Labs, (2015).</div>\n",
     "  <div class=\"csl-entry\"> A. Thompson, Wired <b>31</b>, 42 (2023).</div>\n",
+    "  <div class=\"csl-entry\"> U.K., U.S., and U.S.S.R., U.S.T. <b>14</b>, 1313 (1963).</div>\n",
     "  <div class=\"csl-entry\"> United Nations Environment Programme, <i>State of the World’s Biodiversity</i> (UNEP, Nairobi, 2019).</div>\n",
     "  <div class=\"csl-entry\"> G. Vasari, Encyclopedia of World History <b>5</b>, 234 (2022).</div>\n",
     "  <div class=\"csl-entry\"> A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, L. Kaiser, and I. Polosukhin, Advances in Neural Information Processing Systems <b>30</b>, 5998 (2017).</div>\n",
     "  <div class=\"csl-entry\"> G. M. Weinberg and D. P. Freedman, <i>The Psychology of Computer Programming</i>, Silver Anniversary Edition (Van Nostrand Reinhold, New York, 1971).</div>\n",
     "  <div class=\"csl-entry\"> World Bank, <i>World Development Report 2023</i> (World Bank Group, Washington, DC, 2023).</div>\n",
     "  <div class=\"csl-entry\"><i>Brown v. Board of Education</i> (1954), p. 483.</div>\n",
-    "  <div class=\"csl-entry\">Journal of Theoretical Psychology <b>28</b>, 201 (2018).</div>\n"
+    "  <div class=\"csl-entry\">C.F.R. <b>45</b>, (2009).</div>\n",
+    "  <div class=\"csl-entry\">(2010).</div>\n",
+    "  <div class=\"csl-entry\"><i>Mental Health on Campus Improvement Act</i> (2013).</div>\n",
+    "  <div class=\"csl-entry\">(2014).</div>\n",
+    "  <div class=\"csl-entry\"><i>Every Student Succeeds Act</i> (2015).</div>\n",
+    "  <div class=\"csl-entry\">Journal of Theoretical Psychology <b>28</b>, 201 (2018).</div>\n",
+    "  <div class=\"csl-entry\">Merriam-Webster.Com Dictionary (n.d.).</div>\n"
   ]
 }

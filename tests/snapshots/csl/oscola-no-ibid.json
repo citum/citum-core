@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-06-02T14:23:23.248Z",
+  "generated_at": "2026-06-18T12:18:02.404Z",
   "style": "oscola-no-ibid",
-  "fixture_hash": "17c1d1d2b5e334dd",
+  "fixture_hash": "50dd15d3b173e87a",
   "csl_hash": "d3a655a224dca131",
   "citations": {
     "single-item-1": "Thomas S Kuhn, “The Structure of Scientific Revolutions” (1962) 2 International Encyclopedia of Unified Science.",
@@ -43,6 +43,8 @@
   },
   "bibliography": [
     "  <div class=\"csl-entry\">Adams J, “Letter to James Smith” (1797)</div>\n",
+    "  <div class=\"csl-entry\">“Bibliographic References” &#60;https://www.niso.org/publications/ansiniso-z3929-2005-r2010&#62; accessed April 11, 2025</div>\n",
+    "  <div class=\"csl-entry\">Cable D, “The Racial Dot Map” &#60;https://demographics.coopercenter.org/Racial-Dot-Map&#62; accessed October 27, 2019</div>\n",
     "  <div class=\"csl-entry\">Chen W, “Neural Networks for Natural Language Understanding” (phd-thesis, Stanford University 2019)</div>\n",
     "  <div class=\"csl-entry\">——, “Urban Heat Island Mitigation Strategies” (2022) 15 Urban Climate 1</div>\n",
     "  <div class=\"csl-entry\">——, “Urban Heat Island Measurement Techniques” (2024) 18 Urban Climate 45</div>\n",
@@ -64,6 +66,7 @@
     "  <div class=\"csl-entry\">NASA Goddard Institute for Space Studies, “Global Temperature Anomalies 1880-2023” &#60;https://data.giss.nasa.gov/gistemp/&#62; accessed January 20, 2024</div>\n",
     "  <div class=\"csl-entry\">Reis HT and Judd CM (eds), <i>Handbook of Research Methods in Social Psychology</i> (Cambridge University Press 2000)</div>\n",
     "  <div class=\"csl-entry\">Rodriguez M, “Major Breakthrough in Quantum Computing Announced” <i>The New York Times</i> (March 15, 2024)</div>\n",
+    "  <div class=\"csl-entry\">“Self-Report” &#60;https://www.merriam-webster.com/dictionary/self-report&#62; accessed July 12, 2019</div>\n",
     "  <div class=\"csl-entry\">Smith J and others, “Adaptive Climate Risk Modeling for Inland Regions” (2021) 12 Journal of Climate Analytics 201</div>\n",
     "  <div class=\"csl-entry\">——, “Adaptive Climate Risk Modeling in Coastal Cities” (2021) 12 Journal of Climate Analytics 101</div>\n",
     "  <div class=\"csl-entry\">Smith J and Anderson M, “Climate Change and Extreme Weather Events” (2020) 10 Nature Climate Change 850</div>\n",
@@ -71,6 +74,7 @@
     "  <div class=\"csl-entry\">Smith P to Bruce Darcus, “Discussion on Citum Schema Design” (February 7, 2024)</div>\n",
     "  <div class=\"csl-entry\">Spinoza B, <i>Éthique</i> (Jan Rieuwertsz 1677)</div>\n",
     "  <div class=\"csl-entry\">State of JS Team, “The State of JavaScript 2023” (2023) &#60;https://stateofjs.com/2023&#62; accessed January 15, 2024</div>\n",
+    "  <div class=\"csl-entry\">Tactile Labs, “Latero Tactile Display” &#60;http://tactilelabs.com/products/haptics/latero-tactile-display/&#62;</div>\n",
     "  <div class=\"csl-entry\">“The Role of Theory in Research” (2018) 28 Journal of Theoretical Psychology 201</div>\n",
     "  <div class=\"csl-entry\">Thompson A, “The Art of Minimalism in Modern Design” (2023) 31 <i>Wired</i> 42</div>\n",
     "  <div class=\"csl-entry\">United Nations Environment Programme, “State of the World’s Biodiversity” (Sandra Díaz ed, UNEP 2019) assessment-report</div>\n",
@@ -79,6 +83,11 @@
     "  <div class=\"csl-entry\">Weinberg GM and Freedman DP, <i>The Psychology of Computer Programming</i> (Silver Anniversary Edition, Van Nostrand Reinhold 1971)</div>\n",
     "  <div class=\"csl-entry\">World Bank, “World Development Report 2023” (World Bank Group 2023)</div>\n",
     "  <div class=\"csl-entry\">“The Universe in a Nutshell,” <i>Cosmos: A Spacetime Odyssey</i> (September 28, 1980)</div>\n",
-    "  <div class=\"csl-entry\"><i>Brown v Board of Education</i> (1954) 347 US Reports 483 (US Supreme Court)</div>\n"
+    "  <div class=\"csl-entry\">Mental Health on Campus Improvement Act 2013 [1100]</div>\n",
+    "  <div class=\"csl-entry\">“Protection of Human Subjects” &#60;https://www.hhs.gov/ohrp/sites/default/files/ohrp/policy/ohrpregulations.pdf&#62;</div>\n",
+    "  <div class=\"csl-entry\">“Strengthening the Federal Student Loan Program for Borrowers” &#60;https://www.help.senate.gov/hearings/strengthening-the-federal-student-loan-program-for-borrowers&#62;</div>\n",
+    "  <div class=\"csl-entry\">U.K., U.S. and U.S.S.R., <i>Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water</i> (August 5, 1963) 1313</div>\n",
+    "  <div class=\"csl-entry\"><i>Brown v Board of Education</i> (1954) 347 US Reports 483 (US Supreme Court)</div>\n",
+    "  <div class=\"csl-entry\">Every Student Succeeds Act 2015 (USC)</div>\n"
   ]
 }

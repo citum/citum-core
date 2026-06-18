@@ -6,8 +6,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! Migration-time style lineage and wrapper classification.
 
 use crate::evidence::{
-    EmittedForm, FamilyCandidate, MigrationEvidence, MinimizationDecisionAudit,
-    ParentDiscoverySource, RegistryAliasStatus,
+    EmittedForm, FamilyCandidate, MeasuredSelectionEvidence, MigrationEvidence,
+    MinimizationDecisionAudit, ParentDiscoverySource, RegistryAliasStatus,
 };
 use citum_schema::Style;
 use citum_schema::embedded;
@@ -114,6 +114,24 @@ pub struct StyleLineage {
     /// (registry alias vs source CSL link vs local file extends).
     pub parent_source: Option<ParentDiscoverySource>,
     parent_style: Option<Style>,
+}
+
+/// Caller-supplied details needed to build a migration evidence sidecar.
+pub struct MigrationEvidenceParts {
+    /// Output size of the standalone form, in lines.
+    pub standalone_lines: usize,
+    /// The form actually emitted by the migration invocation.
+    pub emitted_form: EmittedForm,
+    /// Output size of the emitted form, in lines.
+    pub emitted_lines: usize,
+    /// Audit trail for explicit minimization decisions.
+    pub minimization_decision: MinimizationDecisionAudit,
+    /// Template-bearing paths preserved in the emitted wrapper.
+    pub preserved_template_paths: Vec<String>,
+    /// Template-bearing paths discarded from the emitted wrapper.
+    pub discarded_template_paths: Vec<String>,
+    /// Output-driven measured candidate selection summaries.
+    pub measured_selection: Option<MeasuredSelectionEvidence>,
 }
 
 /// Failure while resolving or rewriting migration lineage.
@@ -340,15 +358,7 @@ impl StyleLineage {
     /// supplies the standalone reference LOC and the emitted form details,
     /// since those depend on running the full migration pipeline.
     #[must_use]
-    pub fn build_evidence(
-        &self,
-        standalone_lines: usize,
-        emitted_form: EmittedForm,
-        emitted_lines: usize,
-        minimization_decision: MinimizationDecisionAudit,
-        preserved_template_paths: Vec<String>,
-        discarded_template_paths: Vec<String>,
-    ) -> MigrationEvidence {
+    pub fn build_evidence(&self, parts: MigrationEvidenceParts) -> MigrationEvidence {
         let registry_alias_status = if self.registry_exact_match {
             RegistryAliasStatus::ExactMatch
         } else if let Some(target) = self.registry_alias_target.clone() {
@@ -398,12 +408,13 @@ impl StyleLineage {
             style_id: self.style_id.clone(),
             registry_alias_status,
             discovered_parents,
-            emitted_form,
-            minimization_decision,
-            preserved_template_paths,
-            discarded_template_paths,
-            standalone_output_lines: standalone_lines,
-            emitted_output_lines: emitted_lines,
+            emitted_form: parts.emitted_form,
+            minimization_decision: parts.minimization_decision,
+            preserved_template_paths: parts.preserved_template_paths,
+            discarded_template_paths: parts.discarded_template_paths,
+            measured_selection: parts.measured_selection,
+            standalone_output_lines: parts.standalone_lines,
+            emitted_output_lines: parts.emitted_lines,
         }
     }
 
@@ -1414,14 +1425,15 @@ mod tests {
     fn build_evidence_reports_reverse_template_discovery() {
         let lineage =
             StyleLineage::resolve("styles-legacy/apa-6th-edition.csl", &repo_root(), &[]).unwrap();
-        let evidence = lineage.build_evidence(
-            5662,
-            crate::evidence::EmittedForm::Standalone,
-            5662,
-            crate::evidence::MinimizationDecisionAudit::none(),
-            Vec::new(),
-            Vec::new(),
-        );
+        let evidence = lineage.build_evidence(MigrationEvidenceParts {
+            standalone_lines: 5662,
+            emitted_form: crate::evidence::EmittedForm::Standalone,
+            emitted_lines: 5662,
+            minimization_decision: crate::evidence::MinimizationDecisionAudit::none(),
+            preserved_template_paths: Vec::new(),
+            discarded_template_paths: Vec::new(),
+            measured_selection: None,
+        });
         assert_eq!(
             evidence.registry_alias_status,
             crate::evidence::RegistryAliasStatus::None

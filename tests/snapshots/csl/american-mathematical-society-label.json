@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-06-02T14:22:05.213Z",
+  "generated_at": "2026-06-18T12:17:38.150Z",
   "style": "american-mathematical-society-label",
-  "fixture_hash": "0b1a38b458cc400a",
+  "fixture_hash": "5f8545b8e46c8025",
   "csl_hash": "4e77169c077bd380",
   "citations": {
     "single-item": "[Kuhn62]",
@@ -65,6 +65,15 @@
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[John20] </div><div class=\"csl-right-inline\">Johnson, Alice, Quantitative Methods in Sociology, Sociological Review <b>68</b> (2020) 23–45.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[John20] </div><div class=\"csl-right-inline\">Johnson, Brian, Qualitative Methods in Sociology, Sociological Review <b>68</b> (2020) 89–112.</div>\n  </div>\n",
     "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Chen22] </div><div class=\"csl-right-inline\">Chen, Wei, Urban Heat Island Mitigation Strategies, Urban Climate <b>15</b> (2022) 1–18.</div>\n  </div>\n",
-    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Chen24] </div><div class=\"csl-right-inline\">Chen, Wei, Urban Heat Island Measurement Techniques, Urban Climate <b>18</b> (2024) 45–62.</div>\n  </div>\n"
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Chen24] </div><div class=\"csl-right-inline\">Chen, Wei, Urban Heat Island Measurement Techniques, Urban Climate <b>18</b> (2024) 45–62.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Self00] </div><div class=\"csl-right-inline\">Self-report.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Ever15] </div><div class=\"csl-right-inline\"><i>Every Student Succeeds Act</i>, vol. 20, 2015.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Cabl13] </div><div class=\"csl-right-inline\">Cable, D., The racial dot map, University of Virginia, Weldon Cooper Center for Public Service, 2013.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Bibl10] </div><div class=\"csl-right-inline\">Bibliographic references, NISO, Bethesda, MD, 2010, approved June 9, 2005; reaffirmed.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Ment13] </div><div class=\"csl-right-inline\"><i>Mental Health on Campus Improvement Act</i>, 2013.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Stre14] </div><div class=\"csl-right-inline\">Strengthening the federal student loan program for borrowers, 2014.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Tact15] </div><div class=\"csl-right-inline\">Tactile Labs, Latero tactile display, 2015.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[UkUU63] </div><div class=\"csl-right-inline\">U.K., U.S., and U.S.S.R., Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water, 1963.</div>\n  </div>\n",
+    "  <div class=\"csl-entry\">\n    <div class=\"csl-left-margin\">[Prot09] </div><div class=\"csl-right-inline\">Protection of Human Subjects, 2009.</div>\n  </div>\n"
   ]
 }

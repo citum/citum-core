@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-06-02T14:22:12.662Z",
+  "generated_at": "2026-06-18T12:17:41.715Z",
   "style": "biochemistry",
-  "fixture_hash": "0b1a38b458cc400a",
+  "fixture_hash": "5f8545b8e46c8025",
   "csl_hash": "7451989ed027cef6",
   "citations": {
     "single-item": "<sup>1</sup>",
@@ -65,6 +65,15 @@
     "  <div class=\"csl-entry\">(35) Johnson, A. (2020) Quantitative Methods in Sociology. <i>Sociological Review</i> <i>68</i>, 23–45.</div>\n",
     "  <div class=\"csl-entry\">(36) Johnson, B. (2020) Qualitative Methods in Sociology. <i>Sociological Review</i> <i>68</i>, 89–112.</div>\n",
     "  <div class=\"csl-entry\">(37) Chen, W. (2022) Urban Heat Island Mitigation Strategies. <i>Urban Climate</i> <i>15</i>, 1–18.</div>\n",
-    "  <div class=\"csl-entry\">(38) Chen, W. (2024) Urban Heat Island Measurement Techniques. <i>Urban Climate</i> <i>18</i>, 45–62.</div>\n"
+    "  <div class=\"csl-entry\">(38) Chen, W. (2024) Urban Heat Island Measurement Techniques. <i>Urban Climate</i> <i>18</i>, 45–62.</div>\n",
+    "  <div class=\"csl-entry\">(39)  Self-report. <i>Merriam-Webster.com dictionary</i>.</div>\n",
+    "  <div class=\"csl-entry\">(40)  (2015) Every Student Succeeds Act. <i>U.S.C.</i></div>\n",
+    "  <div class=\"csl-entry\">(41) Cable, D. (2013) The racial dot map. Map, University of Virginia, Weldon Cooper Center for Public Service.</div>\n",
+    "  <div class=\"csl-entry\">(42)  (2010, May 13) Bibliographic references. ANSI/NISO, NISO, Bethesda, MD.</div>\n",
+    "  <div class=\"csl-entry\">(43)  (2013) Mental Health on Campus Improvement Act. H.R.</div>\n",
+    "  <div class=\"csl-entry\">(44)  (2014) Strengthening the federal student loan program for borrowers.</div>\n",
+    "  <div class=\"csl-entry\">(45) Tactile Labs. (2015) Latero tactile display. Model.</div>\n",
+    "  <div class=\"csl-entry\">(46) U.K., U.S., and U.S.S.R. (1963, August 5) Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water. <i>U.S.T.</i></div>\n",
+    "  <div class=\"csl-entry\">(47)  (2009) Protection of Human Subjects. <i>C.F.R.</i></div>\n"
   ]
 }

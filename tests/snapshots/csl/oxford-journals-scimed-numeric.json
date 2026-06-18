@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-06-02T14:23:25.599Z",
+  "generated_at": "2026-06-18T12:18:02.672Z",
   "style": "oxford-journals-scimed-numeric",
-  "fixture_hash": "0b1a38b458cc400a",
+  "fixture_hash": "5f8545b8e46c8025",
   "csl_hash": "3afd5e4fa7a06d3f",
   "citations": {
     "single-item": "[1]",
@@ -65,6 +65,15 @@
     "  <div class=\"csl-entry\">35. Johnson A. Quantitative Methods in Sociology. <i>Sociological Review</i> 2020;<b>68</b>:23–45.</div>\n",
     "  <div class=\"csl-entry\">36. Johnson B. Qualitative Methods in Sociology. <i>Sociological Review</i> 2020;<b>68</b>:89–112.</div>\n",
     "  <div class=\"csl-entry\">37. Chen W. Urban Heat Island Mitigation Strategies. <i>Urban Climate</i> 2022;<b>15</b>:1–18.</div>\n",
-    "  <div class=\"csl-entry\">38. Chen W. Urban Heat Island Measurement Techniques. <i>Urban Climate</i> 2024;<b>18</b>:45–62.</div>\n"
+    "  <div class=\"csl-entry\">38. Chen W. Urban Heat Island Measurement Techniques. <i>Urban Climate</i> 2024;<b>18</b>:45–62.</div>\n",
+    "  <div class=\"csl-entry\">39. Self-report. <i>Merriam-Webster.com dictionary</i>.</div>\n",
+    "  <div class=\"csl-entry\">40. Every Student Succeeds Act. <i>USC</i> 2015;<b>20</b>.</div>\n",
+    "  <div class=\"csl-entry\">41. Cable D. The racial dot map. 2013.</div>\n",
+    "  <div class=\"csl-entry\">42. Bibliographic references. 2010, DOI: 10.3789/ansi.niso.z39.29-2005R2010.</div>\n",
+    "  <div class=\"csl-entry\">43. <i>Mental Health on Campus Improvement Act</i>., 2013.</div>\n",
+    "  <div class=\"csl-entry\">44. Strengthening the federal student loan program for borrowers. 2014.</div>\n",
+    "  <div class=\"csl-entry\">45. Tactile Labs. Latero tactile display. 2015.</div>\n",
+    "  <div class=\"csl-entry\">46. U.K., U.S., U.S.S.R. Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water. <i>UST</i> 1963;<b>14</b>:1313.</div>\n",
+    "  <div class=\"csl-entry\">47. Protection of Human Subjects. <i>CFR</i> 2009;<b>45</b>.</div>\n"
   ]
 }

@@ -1,9 +1,9 @@
 {
   "version": 1,
   "generated_by": "citeproc-js@2.4.63",
-  "generated_at": "2026-06-02T14:22:04.873Z",
+  "generated_at": "2026-06-18T12:17:37.924Z",
   "style": "american-institute-of-physics",
-  "fixture_hash": "0b1a38b458cc400a",
+  "fixture_hash": "5f8545b8e46c8025",
   "csl_hash": "673dae8c6c921251",
   "citations": {
     "single-item": "<sup>1</sup>",
@@ -65,6 +65,15 @@
     "  <div class=\"csl-entry\"><sup>35</sup> A. Johnson, “Quantitative Methods in Sociology,” Sociological Review <b>68</b>, 23–45 (2020).</div>\n",
     "  <div class=\"csl-entry\"><sup>36</sup> B. Johnson, “Qualitative Methods in Sociology,” Sociological Review <b>68</b>, 89–112 (2020).</div>\n",
     "  <div class=\"csl-entry\"><sup>37</sup> W. Chen, “Urban Heat Island Mitigation Strategies,” Urban Climate <b>15</b>, 1–18 (2022).</div>\n",
-    "  <div class=\"csl-entry\"><sup>38</sup> W. Chen, “Urban Heat Island Measurement Techniques,” Urban Climate <b>18</b>, 45–62 (2024).</div>\n"
+    "  <div class=\"csl-entry\"><sup>38</sup> W. Chen, “Urban Heat Island Measurement Techniques,” Urban Climate <b>18</b>, 45–62 (2024).</div>\n",
+    "  <div class=\"csl-entry\"><sup>39</sup>“Self-report,” Merriam-Webster.Com Dictionary, (n.d.).</div>\n",
+    "  <div class=\"csl-entry\"><sup>40</sup><i>Every Student Succeeds Act</i> (2015).</div>\n",
+    "  <div class=\"csl-entry\"><sup>41</sup> D. Cable, “The racial dot map,” (2013).</div>\n",
+    "  <div class=\"csl-entry\"><sup>42</sup>“Bibliographic references,” (2010).</div>\n",
+    "  <div class=\"csl-entry\"><sup>43</sup><i>Mental Health on Campus Improvement Act</i> (2013).</div>\n",
+    "  <div class=\"csl-entry\"><sup>44</sup>“Strengthening the federal student loan program for borrowers,” (2014).</div>\n",
+    "  <div class=\"csl-entry\"><sup>45</sup> Tactile Labs, “Latero tactile display,” (2015).</div>\n",
+    "  <div class=\"csl-entry\"><sup>46</sup> U.K., U.S., and U.S.S.R., “Treaty Banning Nuclear Weapon Tests in the Atmosphere, in Outer Space and Under Water,” U.S.T. <b>14</b>, 1313 (1963).</div>\n",
+    "  <div class=\"csl-entry\"><sup>47</sup>“Protection of Human Subjects,” C.F.R. <b>45</b>, (2009).</div>\n"
   ]
 }

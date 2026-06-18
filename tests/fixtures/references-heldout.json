@@ -303,5 +303,575 @@
     "container-title": "Proceedings of the Conference on Computational Language Methods",
     "page": "412-425",
     "event": "Computational Language Methods 2023"
+  },
+  "TLIB-HELD-MAGAZINE-1": {
+    "id": "TLIB-HELD-MAGAZINE-1",
+    "type": "article-magazine",
+    "citation-key": "weirForgivenessCanImprove2017",
+    "container-title": "Monitor on Psychology",
+    "issue": "1",
+    "language": "en",
+    "license": "APA7 15c",
+    "page": "30",
+    "title": "Forgiveness can improve mental and physical health: research shows how to get there",
+    "URL": "https://www.apa.org/monitor/2017/01/ce-corner",
+    "volume": "48",
+    "author": [
+      {
+        "family": "Weir",
+        "given": "Kirsten"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2017,
+          1
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-NEWSPAPER-1": {
+    "id": "TLIB-HELD-NEWSPAPER-1",
+    "type": "article-newspaper",
+    "abstract": "People are receptive to tiny aliens, but they don't think their neighbors will be.",
+    "citation-key": "guarinoHowWillHumanity2017",
+    "container-title": "The Washington Post",
+    "language": "en",
+    "license": "APA7 16a",
+    "shortTitle": "How will humanity react to alien life?",
+    "title": "How will humanity react to alien life? Psychologists have some predictions",
+    "title-short": "How will humanity react to alien life?",
+    "URL": "https://www.washingtonpost.com/news/speaking-of-science/wp/2017/12/04/how-will-humanity-react-to-alien-life-psychologists-have-some-predictions/",
+    "author": [
+      {
+        "family": "Guarino",
+        "given": "Ben"
+      }
+    ],
+    "accessed": {
+      "date-parts": [
+        [
+          2019,
+          10,
+          17
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          "2017",
+          12,
+          4
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-BROADCAST-1": {
+    "id": "TLIB-HELD-BROADCAST-1",
+    "type": "broadcast",
+    "abstract": "We head to some of the happiest places on Earth: amusement parks!",
+    "citation-key": "AmusementPark2011",
+    "language": "en",
+    "license": "APA7 94",
+    "medium": "audio podcast episode",
+    "note": "container-title: This American Life",
+    "number": "443",
+    "publisher": "WBEZ Chicago",
+    "title": "Amusement park",
+    "URL": "https://www.thisamericanlife.org/443/amusement-park",
+    "author": [
+      {
+        "family": "Glass",
+        "given": "Ira"
+      }
+    ],
+    "accessed": {
+      "date-parts": [
+        [
+          2019,
+          10,
+          26
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          2011,
+          8,
+          12
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-DATASET-1": {
+    "id": "TLIB-HELD-DATASET-1",
+    "type": "dataset",
+    "citation-key": "alonso-tapiaSituatedGoalsQuestionnaire2018",
+    "DOI": "10.1037/t66267-000",
+    "language": "en",
+    "license": "APA7 83a",
+    "medium": "database record",
+    "publisher": "PsycTESTS",
+    "source": "Crossref",
+    "title": "Situated Goals Questionnaire for University Students (SGQ-U, CMS-U)",
+    "URL": "http://doi.apa.org/getdoi.cfm?doi=10.1037/t66267-000",
+    "author": [
+      {
+        "family": "Alonso-Tapia",
+        "given": "Jesús"
+      },
+      {
+        "family": "Nieto",
+        "given": "Carmen"
+      },
+      {
+        "family": "Merino-Tejedor",
+        "given": "Enrique"
+      },
+      {
+        "family": "Huertas",
+        "given": "Juan A."
+      },
+      {
+        "family": "Ruiz",
+        "given": "Miguel"
+      }
+    ],
+    "accessed": {
+      "date-parts": [
+        [
+          2019,
+          10,
+          17
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          2018
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-ENCYCLOPEDIA-1": {
+    "id": "TLIB-HELD-ENCYCLOPEDIA-1",
+    "type": "entry-encyclopedia",
+    "abstract": "This list of the oldest companies in the world includes brands and companies, excluding associations and educational, government, or religious organizations. To be listed, a brand or company name must remain operating, either in whole or in part, since inception.",
+    "citation-key": "ListOldestCompanies2019",
+    "container-title": "Wikipedia",
+    "language": "en",
+    "license": "APA7 49",
+    "note": "Page Version ID: 878158136",
+    "source": "Wikipedia",
+    "title": "List of oldest companies",
+    "URL": "https://en.wikipedia.org/w/index.php?title=List_of_oldest_companies&oldid=878158136",
+    "accessed": {
+      "date-parts": [
+        [
+          2019,
+          10,
+          19
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          2019,
+          1,
+          13
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-DICTIONARY-1": {
+    "id": "TLIB-HELD-DICTIONARY-1",
+    "type": "entry-dictionary",
+    "citation-key": "Hootenanny2025",
+    "container-title": "Oxford English Dictionary",
+    "DOI": "10.1093/OED/7402752672",
+    "language": "en",
+    "license": "CMOS18 14.131",
+    "note": "status: last modified",
+    "source": "DOI.org (Crossref)",
+    "title": "hootenanny, n.",
+    "URL": "https://oed.com/dictionary/hootenanny_n",
+    "accessed": {
+      "date-parts": [
+        [
+          2025,
+          4,
+          29
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          "2025",
+          6
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-INTERVIEW-1": {
+    "id": "TLIB-HELD-INTERVIEW-1",
+    "type": "interview",
+    "citation-key": "authorKnownIssues",
+    "language": "en",
+    "license": "APA7 0",
+    "title": "Known issues",
+    "author": [
+      {
+        "family": "Author",
+        "given": ""
+      }
+    ]
+  },
+  "TLIB-HELD-LEGAL-CASE-1": {
+    "id": "TLIB-HELD-LEGAL-CASE-1",
+    "type": "legal_case",
+    "authority": "9th Cir.",
+    "citation-key": "DaubertMerrellDow1991",
+    "container-title": "F.2d",
+    "language": "en",
+    "license": "APA7 603",
+    "page": "1128",
+    "title": "Daubert v. Merrell Dow Pharmaceuticals, Inc.",
+    "URL": "https://openjurist.org/951/f2d/1128/william-daubert-vmerrell- dow-pharmaceuticals",
+    "volume": "951",
+    "issued": {
+      "date-parts": [
+        [
+          1991
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-MAP-1": {
+    "id": "TLIB-HELD-MAP-1",
+    "type": "map",
+    "call-number": "912.09",
+    "citation-key": "samueldechamplainCarteGeographiqueNouvelle2007",
+    "ISBN": "978-0-226-90732-1 978-0-226-90733-8 978-0-226-90734-5",
+    "language": "fr",
+    "license": "CMOS18 14.135",
+    "note": "original-date: 1612\ncontainer-title: The History of Cartography\nvolume: 3\nvolume-title: Cartography in the European Renaissance\npage: fig. 51.3\ndimensions: 43 × 76 cm",
+    "publisher": "University of Chicago Press",
+    "publisher-place": "Chicago",
+    "source": "BnF ISBN",
+    "title": "<span class=\"nocase\">Carte geographique de la Nouvelle Franse</span>",
+    "author": [
+      {
+        "family": "Samuel de Champlain",
+        "given": ""
+      }
+    ],
+    "collection-editor": [
+      {
+        "family": "Woodward",
+        "given": "David"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2007
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-PATENT-1": {
+    "id": "TLIB-HELD-PATENT-1",
+    "type": "patent",
+    "authority": "US",
+    "call-number": "US06624634",
+    "citation-key": "iizukaCementAdmixture1986",
+    "language": "en",
+    "license": "CMOS18 14.158",
+    "number": "4,586,960",
+    "title": "Cement admixture",
+    "URL": "https://patents.google.com/patent/US4586960A/",
+    "author": [
+      {
+        "family": "Iizuka",
+        "given": "Masanori"
+      },
+      {
+        "family": "Tanaka",
+        "given": "Hideki"
+      }
+    ],
+    "accessed": {
+      "date-parts": [
+        [
+          2025,
+          3,
+          31
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          1986,
+          5,
+          6
+        ]
+      ]
+    },
+    "submitted": {
+      "date-parts": [
+        [
+          1984,
+          6,
+          26
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-STANDARD-1": {
+    "id": "TLIB-HELD-STANDARD-1",
+    "type": "standard",
+    "authority": "World Wide Web Consortium",
+    "citation-key": "brayExtensibleMarkupLanguage2006",
+    "edition": "2",
+    "language": "en",
+    "license": "CMOS18 14.159",
+    "publisher": "W3C",
+    "title": "Extensible Markup Language (XML)",
+    "URL": "https://www.w3.org/TR/xml11/",
+    "version": "1.1",
+    "editor": [
+      {
+        "family": "Bray",
+        "given": "Tim"
+      },
+      {
+        "family": "Paoli",
+        "given": "Jean"
+      },
+      {
+        "family": "Sperberg-McQueen",
+        "given": "C. M."
+      },
+      {
+        "family": "Maler",
+        "given": "Eve"
+      },
+      {
+        "family": "Yergeau",
+        "given": "François"
+      },
+      {
+        "family": "Cowan",
+        "given": "John"
+      }
+    ],
+    "accessed": {
+      "date-parts": [
+        [
+          2025,
+          4,
+          11
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          "2006",
+          8,
+          16
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-SOFTWARE-1": {
+    "id": "TLIB-HELD-SOFTWARE-1",
+    "type": "software",
+    "citation-key": "srresearchEyelink10002016",
+    "license": "APA7 78a",
+    "medium": "Apparatus and software",
+    "title": "Eyelink 1000 plus",
+    "URL": "https://www.sr-research.com/eyelink1000plus.html",
+    "author": [
+      {
+        "family": "SR Research",
+        "given": ""
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2016
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-LEGISLATION-1": {
+    "id": "TLIB-HELD-LEGISLATION-1",
+    "type": "legislation",
+    "citation-key": "FloridaMentalHealth2009",
+    "container-title": "Fla. Stat.",
+    "language": "en",
+    "license": "APA7 613",
+    "note": "Original date: 1972",
+    "section": "394",
+    "title": "Florida Mental Health Act",
+    "URL": "http://www.leg.state.fl.us/statutes/index.cfm? App_mode=Display_Statute&URL=0300-0399/0394/0394.html",
+    "issued": {
+      "date-parts": [
+        [
+          2009
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-BILL-1": {
+    "id": "TLIB-HELD-BILL-1",
+    "type": "bill",
+    "authority": "117th Cong.",
+    "citation-key": "RespectMarriageAct2022",
+    "language": "en",
+    "license": "CMOS18 14.184",
+    "note": "status: enacted\ngenre: H.R.",
+    "number": "8404",
+    "title": "Respect for Marriage Act",
+    "URL": "https://www.congress.gov/bill/117th-congress/house-bill/8404",
+    "accessed": {
+      "date-parts": [
+        [
+          2025,
+          4,
+          11
+        ]
+      ]
+    },
+    "issued": {
+      "date-parts": [
+        [
+          2022
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-HEARING-1": {
+    "id": "TLIB-HELD-HEARING-1",
+    "type": "hearing",
+    "authority": "113th Cong.",
+    "citation-key": "StrengtheningFederalStudent2014",
+    "language": "en",
+    "license": "APA7 615a",
+    "title": "Strengthening the federal student loan program for borrowers: Hearing before the U.S. Senate Committee on Health, Education, Labor & Pensions",
+    "URL": "https://www.help.senate.gov/hearings/strengthening-the-federal-student-loan-program-for-borrowers",
+    "issued": {
+      "date-parts": [
+        [
+          2014
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-MANUSCRIPT-1": {
+    "id": "TLIB-HELD-MANUSCRIPT-1",
+    "type": "manuscript",
+    "citation-key": "lippincottEmotionRecognitionFunction2019",
+    "genre": "Manuscript submitted for publication",
+    "language": "en",
+    "license": "APA7 72",
+    "note": "status: submitted for publication",
+    "publisher": "Department of Psychology, University of Washington",
+    "title": "Emotion recognition as a function of facial cues: implications for practice",
+    "author": [
+      {
+        "family": "Lippincott",
+        "given": "T."
+      },
+      {
+        "family": "Poindexter",
+        "given": "E.K."
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2019
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-PERSONAL-COMMUNICATION-1": {
+    "id": "TLIB-HELD-PERSONAL-COMMUNICATION-1",
+    "type": "personal_communication",
+    "archive": "Rockefeller Archive Center",
+    "archive_location": "GEB series 1.3, Box 371, Folder 3877",
+    "citation-key": "frank1935",
+    "language": "en",
+    "license": "APA7 401",
+    "note": "archive-place: Tarrytown, NY, United States",
+    "author": [
+      {
+        "family": "Frank",
+        "given": "L.K."
+      }
+    ],
+    "recipient": [
+      {
+        "family": "Ogden",
+        "given": "Robert M."
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          1935,
+          2,
+          4
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-TREATY-1": {
+    "id": "TLIB-HELD-TREATY-1",
+    "type": "treaty",
+    "citation-key": "g.a.res.217iiiaUniversalDeclarationHuman1948",
+    "language": "en",
+    "license": "CMOS18 14.207",
+    "note": "Type: treaty",
+    "title": "Universal Declaration of Human Rights",
+    "URL": "https://undocs.org/en/A/RES/217(III)",
+    "author": [
+      {
+        "family": "G.A. Res. 217 (III) A",
+        "given": ""
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          "1948",
+          12,
+          10
+        ]
+      ]
+    }
+  },
+  "TLIB-HELD-REGULATION-1": {
+    "id": "TLIB-HELD-REGULATION-1",
+    "type": "regulation",
+    "citation-key": "DefiningDelimitingExemptions2016",
+    "container-title": "F.R.",
+    "language": "en",
+    "license": "APA7 620",
+    "note": "Type: regulation\nIssued: \"proposed May 23, 2016\"\nStatus: to be codified at 29 C.F.R. § 541",
+    "page": "32391",
+    "title": "Defining and Delimiting the Exemptions for Executive, Administrative, Professional, Outside Sales and Computer Employees",
+    "URL": "https://www.federalregister.gov/articles/2016/05/23/2016-11754/defining-and-delimiting-the-exemptions-for-executive-administrative-professional-outside-sales-and",
+    "volume": "81"
   }
 }
