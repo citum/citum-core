@@ -106,8 +106,8 @@ cargo install typst-cli</code></pre>
                 </p>
             </div>
             <div class="workshop-block">
-                <pre><code>citum render doc manuscript.djot \
-  -b refs.json \
+                <pre><code>citum render doc examples/manuscript.djot \
+  -b examples/references.json \
   -s apa-7th \
   -f typst \
   -o paper.typ</code></pre>
@@ -129,7 +129,7 @@ cargo install typst-cli</code></pre>
                 Combined in one shell line:
             </p>
             <div class="workshop-block" style="margin-top: 0.5rem;">
-                <pre><code>citum render doc manuscript.djot -b refs.json -s apa-7th -f typst -o paper.typ \
+                <pre><code>citum render doc examples/manuscript.djot -b examples/references.json -s apa-7th -f typst -o paper.typ \
   &amp;&amp; typst compile paper.typ paper.pdf</code></pre>
             </div>
         </section>
@@ -166,10 +166,10 @@ cargo install typst-cli</code></pre>
             <div class="doc-section-header">
                 <h2>Reproduce this recipe</h2>
                 <p>
-                    Fixtures in <a href="fixtures/">guides/integrations/fixtures/</a>:
+                    Fixtures in <a href="../../examples/">examples/</a> in the repo root:
                     <code>manuscript.djot</code> (source document) and
                     <code>references.json</code> (CSL-JSON bibliography).
-                    Copy them locally and run the commands above.
+                    Run the commands above from the repo root.
                 </p>
             </div>
             <p>
