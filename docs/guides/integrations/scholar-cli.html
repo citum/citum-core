@@ -109,9 +109,9 @@ Multi-cite: [@kuhn1962; @watson1953, ch. 2].</code></pre>
             </div>
             <div class="workshop-block" style="margin-top: 1rem;">
                 <div class="workshop-label">Render</div>
-                <pre><code>citum render doc manuscript.md \
+                <pre><code>citum render doc examples/manuscript.md \
   -I markdown \
-  -b references.json \
+  -b examples/references.json \
   -s apa-7th \
   -f html \
   -o paper.html</code></pre>
@@ -128,13 +128,13 @@ Multi-cite: [@kuhn1962; @watson1953, ch. 2].</code></pre>
             </div>
             <div class="workshop-block">
                 <pre><code># LaTeX
-citum render doc manuscript.md -I markdown -b references.json -s apa-7th -f latex -o paper.tex
+citum render doc examples/manuscript.md -I markdown -b examples/references.json -s apa-7th -f latex -o paper.tex
 
 # Typst
-citum render doc manuscript.md -I markdown -b references.json -s apa-7th -f typst -o paper.typ
+citum render doc examples/manuscript.md -I markdown -b examples/references.json -s apa-7th -f typst -o paper.typ
 
-# PDF (renders through Typst; requires the typst CLI on PATH)
-citum render doc manuscript.md -I markdown -b references.json -s apa-7th --pdf -o paper.pdf</code></pre>
+# PDF (compile Typst output; requires the typst CLI on PATH)
+typst compile paper.typ paper.pdf</code></pre>
             </div>
         </section>
 
@@ -161,9 +161,9 @@ citum convert refs legacy.json --from csl-json -o refs.yaml</code></pre>
                 <h2>Reproduce this recipe</h2>
                 <p>
                     The exact fixture used to verify these commands lives in
-                    <a href="fixtures/">guides/integrations/fixtures/</a>: <code>manuscript.md</code>,
-                    <code>manuscript.djot</code>, and <code>references.json</code>. Copy them locally and run any of
-                    the commands above.
+                    <a href="../../examples/">examples/</a> in the repo root: <code>manuscript.md</code>,
+                    <code>manuscript.djot</code>, and <code>references.json</code>. Run any of
+                    the commands above from the repo root.
                 </p>
             </div>
             <p>
