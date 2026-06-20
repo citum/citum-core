@@ -1,0 +1,25 @@
+name: Vouch — check PR
+
+on:
+  # Required by vouch: reads VOUCHED.td from the base branch and closes fork
+  # PRs. No untrusted code is checked out or executed.
+  pull_request_target: # zizmor: ignore[dangerous-triggers]
+    types: [opened, reopened]
+
+permissions: {}
+
+jobs:
+  check-pr:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: mitchellh/vouch/action/check-pr@baeb3bf7c7e6c12d6e33bab3870b7e936580a934  # main
+        with:
+          pr-number: ${{ github.event.pull_request.number }}
+          auto-close: true
+          require-vouch: true
+          template-file: .github/vouch-close.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

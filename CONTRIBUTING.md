@@ -1,8 +1,18 @@
 # Contributing to Citum
 
-Citum is a declarative, type-safe Rust implementation for managing and processing citation styles. We welcome contributions from domain experts, style authors, developers, and community members.
+## Contributor Access
+
+Citum uses [vouch](https://github.com/mitchellh/vouch) to manage contributor access. Pull requests from unknown GitHub accounts are automatically closed. **Issues are open to everyone** — no vouch required, so opening an issue is the right first step.
+
+**To request access:** open a GitHub issue introducing yourself and describing what you'd like to contribute. A maintainer will review and vouch you if appropriate. Once vouched, your pull requests proceed normally through code review.
+
+Trusted contributors are listed in [`.github/VOUCHED.td`](.github/VOUCHED.td). Maintainers manage the list by commenting `vouch @user` or `denounce @user <reason>` on vouch-request issues.
+
+---
 
 ## How to Contribute
+
+Citum is a declarative, type-safe Rust implementation for managing and processing citation styles. We welcome contributions from domain experts, style authors, and developers.
 
 While the core of this project was developed unassisted in [2023](https://github.com/bdarcus/csln), Citum follows an **AI-first development model** that values expertise over implementation speed. The most impactful contributions come from those who understand citation semantics:
 
@@ -16,9 +26,13 @@ While the core of this project was developed unassisted in [2023](https://github
 - Focus on core engine architecture (`citum_engine`), schema design (`citum_schema`), and agent tooling
 - Ensure all Rust code changes pass mandatory pre-commit checks before committing
 
+---
+
 ## AI & LLM Contributions
 
 Because Citum follows an AI-first development model, we rely heavily on LLMs and agentic workflows to build and maintain the project. However, to protect the structural integrity of the codebase and the time of our maintainers, we enforce a strict, zero-tolerance policy for AI "slop."
+
+The vouch gate is the first line of defense: unrecognized accounts cannot open PRs at all. For vouched contributors, the following rules apply unconditionally.
 
 We welcome AI assistance, but **you are solely responsible for the output.** If you use LLMs to draft, generate, or refactor code for a pull request, you must adhere to the following rules:
 
@@ -27,7 +41,9 @@ We welcome AI assistance, but **you are solely responsible for the output.** If 
 3. **No "Drive-By" Generative PRs:** Pull requests containing massive, AI-generated refactors or unrequested features will be closed unreviewed. If you intend to use an LLM to tackle a significant architectural change, open an issue to discuss the approach with maintainers *first*.
 4. **CI is the First Line of Defense (Not the Last):** We maintain rigorous git pre-commit hooks and a comprehensive CI pipeline precisely to guard against sloppy code and LLM hallucinations. An AI-assisted PR *must* have a green CI run before a maintainer will look at it. However, while our CI guarantees the code compiles, lints cleanly, and passes tests, it cannot verify architectural intent. A green CI does not excuse you from Rule 1.
 
-Contributors who repeatedly bypass pre-commit hooks, ignore CI failures on their PRs, or submit AI-generated code that violates our design principles—even if the tests pass—will have their PRs closed.
+Contributors who repeatedly bypass pre-commit hooks, ignore CI failures on their PRs, or submit AI-generated code that violates our design principles—even if the tests pass—will have their PRs closed and may be denounced in VOUCHED.td.
+
+---
 
 ## Development Setup
 
@@ -37,6 +53,8 @@ Quick start:
 ```bash
 rustup update && cargo build && cargo test
 ```
+
+---
 
 ## Task Management
 
@@ -53,6 +71,8 @@ Quick task commands:
 
 See `.claude/skills/beans/SKILL.md` for full reference.
 
+---
+
 ## Code Quality
 
 **All Rust code changes must pass these checks before committing:**
@@ -68,6 +88,8 @@ If `cargo nextest` is not installed, use `cargo test` as fallback.
 These checks are **mandatory** for all `.rs` files, `Cargo.toml`, and `Cargo.lock` changes. Documentation-only and style-only changes do not require these checks.
 
 **Do not commit if any check fails — fix the issues first.**
+
+---
 
 ## Schema & Style Design Philosophy
 
@@ -168,6 +190,8 @@ if ref_type == RefType::ArticleJournal {
 For the full rationale, see
 [docs/architecture/DESIGN_PRINCIPLES.md](./docs/architecture/DESIGN_PRINCIPLES.md).
 
+---
+
 ## Commit Conventions
 
 Follow [Conventional Commits](https://www.conventionalcommits.org/) format:
@@ -204,6 +228,8 @@ or empty in input reference data.
 
 Refs: #127
 ```
+
+---
 
 ## Maintainer-Level Development
 
