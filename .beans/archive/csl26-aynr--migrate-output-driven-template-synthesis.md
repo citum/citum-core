@@ -1,7 +1,7 @@
 ---
 # csl26-aynr
 title: 'migrate: output-driven template synthesis'
-status: in-progress
+status: scrapped
 type: feature
 priority: normal
 tags:
@@ -9,7 +9,7 @@ tags:
     - fidelity
     - architecture
 created_at: 2026-06-11T16:06:50Z
-updated_at: 2026-06-12T20:45:34Z
+updated_at: 2026-06-20T18:51:01Z
 ---
 
 Direction surfaced while closing the csl26-vmcr wave (pointer in docs/architecture/audits/2026-06-11_MIGRATE_IMPROVEMENT_WAVE_OUTCOME.md) and was reinforced by PR #910's measured-candidate selection work. Motivation: every fragile bug that wave fixed or exposed (C3 order scrambling, conditional leakage, suppressed-variable poison, wrapper variants) lived in the structural XML layout compiler -- compiling a procedural CSL layout tree into declarative templates is a semantic mismatch patched bug by bug. XML attribute/options extraction was never the problem.
@@ -30,3 +30,7 @@ codex/migrate-synthesis-prereqs:
 - [x] Held-out fixture set tests/fixtures/references-heldout.json with post-selection validation reporting
 - [x] CandidateBudget caps on measured candidate generation
 - [ ] Synthesis loop implementation (tracked in child bean)
+
+## Reasons for Scrapping
+
+Parent migrate wave (csl26-vmcr) stopped below bar 2026-06-11. One remaining open todo (complete output-driven synthesis end-to-end) has no active sponsor. Four completed subtasks' artefacts remain in the codebase as prior work.
