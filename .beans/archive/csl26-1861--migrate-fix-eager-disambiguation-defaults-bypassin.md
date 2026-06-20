@@ -1,14 +1,14 @@
 ---
 # csl26-1861
 title: 'migrate: fix eager disambiguation defaults bypassing Processing presets'
-status: in-progress
+status: completed
 type: task
 priority: normal
 tags:
     - migrate
     - fidelity
 created_at: 2026-06-13T11:55:30Z
-updated_at: 2026-06-13T14:20:00Z
+updated_at: 2026-06-20T18:51:10Z
 ---
 
 Deferred from the synthesis-loop PR (bean csl26-8txa). Surfaced while documenting
@@ -104,3 +104,7 @@ Resolved:
   (where it notes XML is read "only for declarative attributes and options
   (… disambiguation …)"): disambiguation is not synthesized; it is set by
   class-based `Processing` defaults during extraction.
+
+## Summary of Changes
+
+Delivered the documentation scope only. `docs/reference/PROCESSING_MIGRATION.md` committed in `07500b64`; one-line pointer added to `OUTPUT_DRIVEN_TEMPLATE_SYNTHESIS.md`. The code fix (delta-based extraction to eliminate eager disambiguation-default materialization) is deferred to a follow-up bean.

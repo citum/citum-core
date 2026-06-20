@@ -1,11 +1,11 @@
 ---
 # csl26-e94m
 title: 'migrate: spurious url/accessed on non-web types (split from ivjp)'
-status: in-progress
+status: scrapped
 type: bug
 priority: normal
 created_at: 2026-06-15T00:09:28Z
-updated_at: 2026-06-15T16:16:11Z
+updated_at: 2026-06-20T18:50:56Z
 parent: csl26-vmcr
 ---
 
@@ -57,3 +57,7 @@ The spec defines the **Full-first, normalize-later** design:
 - [ ] Restore `engine_validate_variants` as the Phase 2 round-trip safety net.
 - [ ] Implement `gate_web_only_url_accessed` as a Phase 1 fixup per the spec.
 - [ ] Verify Brown passes and url/accessed leak is fixed; full batch shows no regression.
+
+## Reasons for Scrapping
+
+Parent migrate wave (csl26-vmcr) stopped below bar 2026-06-11. Implementation was already pivoted to spec-only (MIGRATE_FULL_FIRST_ARCHITECTURE.md); the five remaining code todos have no active sponsor. The spec document remains as future design reference.

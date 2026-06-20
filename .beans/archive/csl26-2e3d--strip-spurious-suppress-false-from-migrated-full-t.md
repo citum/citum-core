@@ -1,7 +1,7 @@
 ---
 # csl26-2e3d
 title: 'Strip spurious suppress: false from migrated full templates'
-status: in-progress
+status: scrapped
 type: task
 priority: high
 tags:
@@ -10,7 +10,7 @@ tags:
     - cleanup
     - template
 created_at: 2026-06-16T12:54:57Z
-updated_at: 2026-06-16T12:54:57Z
+updated_at: 2026-06-20T18:51:00Z
 ---
 
 Occurrence-compiler (template_compiler/compilation.rs:477) sets suppress=Some(false) as a 'visible by default' marker. It leaks into serialized YAML (~24 noise lines in ACME) because suppress uses skip_serializing_if=Option::is_none, so only Some(false) emits. Some(false) is semantically identical to None.
@@ -28,3 +28,7 @@ Call it at the END of assembly.rs::finalize_bibliography_variants (after build_t
 - [ ] just pre-commit green; amended into 74706439
 
 Folds into PR #932.
+
+## Reasons for Scrapping
+
+Parent migrate wave (csl26-vmcr) stopped below bar 2026-06-11. Five code todos remain unstarted. No active sponsor for the full-first architecture refactor this work depends on.
