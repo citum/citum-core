@@ -676,6 +676,17 @@
           "description": "Where to place the label relative to names.",
           "$ref": "#/$defs/LabelPlacement",
           "default": "suffix"
+        },
+        "text-case": {
+          "description": "Optional case transform applied to the resolved label term, e.g.\n`capitalize-first` renders \"Eds.\" from the locale's \"eds.\" (as IEEE\nrequires). When unset the term is rendered as the locale stores it.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
@@ -696,6 +707,51 @@
       "enum": [
         "prefix",
         "suffix"
+      ]
+    },
+    "TextCase": {
+      "description": "Text-case transform applied to title-like fields.\n\nStyles select which transform applies to which field category.\nThe engine provides the generic primitives; styles own the selection.",
+      "oneOf": [
+        {
+          "description": "English headline-style title case (capitalize principal words).",
+          "type": "string",
+          "const": "title"
+        },
+        {
+          "description": "Generic sentence case (capitalize first word only).",
+          "type": "string",
+          "const": "sentence"
+        },
+        {
+          "description": "APA-style sentence case: capitalize first word of main title\nand first word after each subtitle boundary.",
+          "type": "string",
+          "const": "sentence-apa"
+        },
+        {
+          "description": "NLM-style sentence case: capitalize first word of main title only;\nsubtitles preserve only explicit/protected capitals.",
+          "type": "string",
+          "const": "sentence-nlm"
+        },
+        {
+          "description": "Capitalize the first letter of the value.",
+          "type": "string",
+          "const": "capitalize-first"
+        },
+        {
+          "description": "Transform the entire value to lowercase.",
+          "type": "string",
+          "const": "lowercase"
+        },
+        {
+          "description": "Transform the entire value to uppercase.",
+          "type": "string",
+          "const": "uppercase"
+        },
+        {
+          "description": "No transformation; render the value exactly as stored.",
+          "type": "string",
+          "const": "as-is"
+        }
       ]
     },
     "NameOrder": {
@@ -837,51 +893,6 @@
           "description": "No conjunction (e.g., \"Smith, Jones\").",
           "type": "string",
           "const": "none"
-        }
-      ]
-    },
-    "TextCase": {
-      "description": "Text-case transform applied to title-like fields.\n\nStyles select which transform applies to which field category.\nThe engine provides the generic primitives; styles own the selection.",
-      "oneOf": [
-        {
-          "description": "English headline-style title case (capitalize principal words).",
-          "type": "string",
-          "const": "title"
-        },
-        {
-          "description": "Generic sentence case (capitalize first word only).",
-          "type": "string",
-          "const": "sentence"
-        },
-        {
-          "description": "APA-style sentence case: capitalize first word of main title\nand first word after each subtitle boundary.",
-          "type": "string",
-          "const": "sentence-apa"
-        },
-        {
-          "description": "NLM-style sentence case: capitalize first word of main title only;\nsubtitles preserve only explicit/protected capitals.",
-          "type": "string",
-          "const": "sentence-nlm"
-        },
-        {
-          "description": "Capitalize the first letter of the value.",
-          "type": "string",
-          "const": "capitalize-first"
-        },
-        {
-          "description": "Transform the entire value to lowercase.",
-          "type": "string",
-          "const": "lowercase"
-        },
-        {
-          "description": "Transform the entire value to uppercase.",
-          "type": "string",
-          "const": "uppercase"
-        },
-        {
-          "description": "No transformation; render the value exactly as stored.",
-          "type": "string",
-          "const": "as-is"
         }
       ]
     },

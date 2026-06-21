@@ -671,6 +671,11 @@ pub struct RoleLabel {
     /// Where to place the label relative to names.
     #[serde(default)]
     pub placement: LabelPlacement,
+    /// Optional case transform applied to the resolved label term, e.g.
+    /// `capitalize-first` renders "Eds." from the locale's "eds." (as IEEE
+    /// requires). When unset the term is rendered as the locale stores it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub text_case: Option<crate::options::titles::TextCase>,
 }
 
 /// Term form for role labels.
