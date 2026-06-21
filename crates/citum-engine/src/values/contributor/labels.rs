@@ -138,6 +138,74 @@ pub(super) fn resolve_role_label_preset<F: OutputFormat<Output = String>>(
     }
 }
 
+/// Apply an optional `text-case` transform to a resolved role-label term.
+///
+/// Used so a style can render, e.g., "Eds." from the locale's "eds." (IEEE).
+/// `language` gates English-only transforms via [`resolve_text_case`].
+fn apply_label_case(
+    term: String,
+    text_case: Option<citum_schema::options::titles::TextCase>,
+    language: &str,
+) -> String {
+    match text_case {
+        Some(case) => {
+            let resolved = crate::values::text_case::resolve_text_case(case, Some(language));
+            crate::values::text_case::apply_text_case(&term, resolved)
+        }
+        None => term,
+    }
+}
+
+/// Resolve a contributor's explicit `label` config to `(prefix, suffix)`.
+///
+/// Honours the term key, short/long form, optional `text-case`, and placement.
+fn resolve_explicit_label<F: OutputFormat<Output = String>>(
+    label_config: &citum_schema::template::RoleLabel,
+    component: &TemplateContributor,
+    reference: &Reference,
+    names_count: usize,
+    effective_rendering: &Rendering,
+    options: &RenderOptions<'_>,
+    fmt: &F,
+) -> (Option<String>, Option<String>) {
+    use citum_schema::template::{LabelPlacement, RoleLabelForm};
+
+    let plural = names_count > 1;
+    let term_form = match label_config.form {
+        RoleLabelForm::Short => TermForm::Short,
+        RoleLabelForm::Long => TermForm::Long,
+    };
+
+    let role = match label_config.term.as_str() {
+        "chair" => Some(ContributorRole::Chair),
+        "editor" => Some(ContributorRole::Editor),
+        "translator" => Some(ContributorRole::Translator),
+        _ => Some(component.contributor.clone()),
+    };
+
+    let requested_gender = requested_role_gender(component, reference);
+    let term_text = role
+        .and_then(|r| {
+            resolve_role_term_by_request(options.locale, &r, plural, term_form, requested_gender)
+        })
+        .map(|t| apply_label_case(t, label_config.text_case, options.locale.locale.as_str()));
+
+    match label_config.placement {
+        LabelPlacement::Prefix => (
+            term_text.map(|t| {
+                super::format_role_term::<F>(&t, fmt, effective_rendering, options, "", " ")
+            }),
+            None,
+        ),
+        LabelPlacement::Suffix => (
+            None,
+            term_text.map(|t| {
+                super::format_role_term::<F>(&t, fmt, effective_rendering, options, ", ", "")
+            }),
+        ),
+    }
+}
+
 /// Resolve the role-label prefix and suffix for a formatted contributor.
 ///
 /// Returns `(prefix, suffix)` strings to wrap the formatted name list.
@@ -152,40 +220,15 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
     role_omitted: bool,
 ) -> (Option<String>, Option<String>) {
     if let Some(label_config) = &component.label {
-        use citum_schema::template::{LabelPlacement, RoleLabelForm};
-
-        let plural = names_count > 1;
-        let term_form = match label_config.form {
-            RoleLabelForm::Short => TermForm::Short,
-            RoleLabelForm::Long => TermForm::Long,
-        };
-
-        let role = match label_config.term.as_str() {
-            "chair" => Some(ContributorRole::Chair),
-            "editor" => Some(ContributorRole::Editor),
-            "translator" => Some(ContributorRole::Translator),
-            _ => Some(component.contributor.clone()),
-        };
-
-        let requested_gender = requested_role_gender(component, reference);
-        let term_text = role.and_then(|r| {
-            resolve_role_term_by_request(options.locale, &r, plural, term_form, requested_gender)
-        });
-
-        return match label_config.placement {
-            LabelPlacement::Prefix => (
-                term_text.map(|t| {
-                    super::format_role_term::<F>(&t, fmt, effective_rendering, options, "", " ")
-                }),
-                None,
-            ),
-            LabelPlacement::Suffix => (
-                None,
-                term_text.map(|t| {
-                    super::format_role_term::<F>(&t, fmt, effective_rendering, options, ", ", "")
-                }),
-            ),
-        };
+        return resolve_explicit_label(
+            label_config,
+            component,
+            reference,
+            names_count,
+            effective_rendering,
+            options,
+            fmt,
+        );
     }
 
     if role_omitted {
@@ -256,5 +299,27 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
             )
         }
         _ => (None, None),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::apply_label_case;
+    use citum_schema::options::titles::TextCase;
+
+    #[test]
+    fn capitalize_first_uppercases_label_initial() {
+        // given the locale's lowercase short editor term and capitalize-first
+        let out = apply_label_case("eds.".to_string(), Some(TextCase::CapitalizeFirst), "en-US");
+        // then the IEEE-style capitalized form is produced
+        assert_eq!(out, "Eds.");
+    }
+
+    #[test]
+    fn no_text_case_leaves_term_unchanged() {
+        // given no text-case transform
+        let out = apply_label_case("eds.".to_string(), None, "en-US");
+        // then the term is returned verbatim
+        assert_eq!(out, "eds.");
     }
 }

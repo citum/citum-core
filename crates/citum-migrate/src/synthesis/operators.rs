@@ -294,6 +294,7 @@ mod tests {
                     term: "editor".to_string(),
                     form: RoleLabelForm::Short,
                     placement: Default::default(),
+                    text_case: None,
                 }),
                 ..Default::default()
             }),
