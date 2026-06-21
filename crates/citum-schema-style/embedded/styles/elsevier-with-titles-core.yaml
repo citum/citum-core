@@ -51,6 +51,59 @@ bibliography:
     entry-suffix: .
     separator: ""
   type-variants:
+    # `all` matches every type and is resolved first (engine returns the first
+    # matching selector), so any type-specific variant must precede it to take
+    # effect. Journal articles place the year in parentheses between volume and
+    # pages (`Nature 521 (2015) 436–444`) per the Elsevier with-titles guide.
+    article-journal:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suffix: ""
+    - delimiter: comma
+      group:
+      - contributor: author
+        form: long
+      - title: primary
+      - delimiter: comma
+        group:
+        - delimiter: ": "
+          group:
+          - term: in
+        - title: parent-monograph
+        - delimiter: " "
+          group:
+          - title: parent-serial
+          - number: volume
+          - date: issued
+            form: year
+            wrap:
+              punctuation: parentheses
+          - number: pages
+      - number: edition
+      - variable: publisher
+      - variable: publisher-place
+      - variable: url
+        links:
+          target: url
+          anchor: component
+      - group:
+        - term: accessed
+          form: long
+        - date: accessed
+          form: month-day
+        - date: accessed
+          form: year
+          prefix: ", "
+        wrap:
+          punctuation: parentheses
+      - variable: number
+      - variable: doi
+        prefix: ". https://doi.org/"
+        links:
+          target: doi
+          anchor: component
+        suffix: "."
     all:
     - number: citation-number
       wrap:
@@ -82,55 +135,6 @@ bibliography:
       - variable: publisher-place
       - date: issued
         form: year
-      - variable: url
-        links:
-          target: url
-          anchor: component
-      - group:
-        - term: accessed
-          form: long
-        - date: accessed
-          form: month-day
-        - date: accessed
-          form: year
-          prefix: ", "
-        wrap:
-          punctuation: parentheses
-      - variable: number
-      - variable: doi
-        prefix: ". https://doi.org/"
-        links:
-          target: doi
-          anchor: component
-        suffix: "."
-    article-journal:
-    - number: citation-number
-      wrap:
-        punctuation: brackets
-      suffix: ""
-    - delimiter: comma
-      group:
-      - contributor: author
-        form: long
-      - title: primary
-      - delimiter: comma
-        group:
-        - delimiter: ": "
-          group:
-          - term: in
-        - title: parent-monograph
-        - delimiter: " "
-          group:
-          - title: parent-serial
-          - number: volume
-          - date: issued
-            form: year
-            wrap:
-              punctuation: parentheses
-          - number: pages
-      - number: edition
-      - variable: publisher
-      - variable: publisher-place
       - variable: url
         links:
           target: url

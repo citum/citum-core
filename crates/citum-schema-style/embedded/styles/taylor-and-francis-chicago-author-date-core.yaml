@@ -8,10 +8,23 @@ extends: chicago-author-date-18th
 options:
   multilingual: romanized-translated
   page-range-format: expanded
+  # T&F Style F (tf_f.pdf) prescribes sentence-style capitalisation for titles
+  # (only the first word capitalised) — a deliberate divergence from the CSL
+  # reference, which renders title-case. Journal/serial names stay title-case.
+  # Applied to article (`component`) titles only for now: the engine's
+  # `text-case: sentence` has no proper-noun protection (it would lowercase
+  # `Cambridge` in a book title), so monograph/container titles stay title-case
+  # until the sentence-case proper-noun fix lands (tracked in csl26-maim).
+  titles:
+    component:
+      text-case: sentence
   contributors:
     role:
       omit:
       - translator
+      # Style F forbids the plural "eds." label in this position (guide, tf_f.pdf);
+      # the chapter/default templates supply "edited by" manually.
+      - editor
 
 citation:
   options:
@@ -44,8 +57,6 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap:
-        punctuation: quotes
     - contributor: translator
       form: long
       name-order: given-first
@@ -91,8 +102,6 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap:
-        punctuation: quotes
       suffix: "."
     - contributor: translator
       form: long
@@ -105,10 +114,11 @@ bibliography:
       name-order: given-first
       prefix: ", edited by "
     - number: pages
-      prefix: ": "
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
+      prefix: ", "
+    - delimiter: ": "
+      group:
+      - variable: publisher-place
+      - variable: publisher
     - variable: doi
       prefix: ". https://doi.org/"
       suffix: "."
@@ -133,10 +143,11 @@ bibliography:
       wrap:
         punctuation: parentheses
     - number: pages
-      prefix: ": "
-    - variable: publisher-place
-    - variable: publisher
-      prefix: ": "
+      prefix: ", "
+    - delimiter: ": "
+      group:
+      - variable: publisher-place
+      - variable: publisher
     - date: issued
       form: year
       prefix: ", "
@@ -153,8 +164,6 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      wrap:
-        punctuation: quotes
     - contributor: interviewer
       form: long
       name-order: given-first

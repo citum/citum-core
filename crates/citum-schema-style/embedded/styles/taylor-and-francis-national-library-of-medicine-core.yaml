@@ -49,69 +49,75 @@ bibliography:
     entry-suffix: .
     separator: ". "
   type-variants:
-    article-journal:
-      remove:
-        - match:
-            date: issued
-    article-magazine:
-      remove:
-        - match:
-            date: issued
-    article-newspaper:
-      remove:
-        - match:
-            date: issued
+    [article-journal, article-magazine, article-newspaper, dataset, entry-encyclopedia]:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 3
+    - title: primary
+    - title: parent-serial
+    - delimiter: none
+      group:
+      - date: issued
+        form: year
+        suffix: ";"
+      - number: volume
+      - number: issue
+        wrap:
+          punctuation: parentheses
+      - number: pages
+        prefix: ":"
+    - variable: doi
+      prefix: ". doi:"
+    - variable: url
     chapter:
-      modify:
-        - match:
-            number: pages
-          label-form: short
-      remove:
-        - match:
-            group:
-              - contributor: editor
-                form: verb
-                name-order: given-first
-                shorten:
-                  min: 4
-                  use-first: 3
-              - title: parent-monograph
-      add:
-        - component:
-            group:
-              - contributor: editor
-                form: long
-                name-order: family-first
-                shorten:
-                  min: 4
-                  use-first: 3
-                label: {term: editor, form: long, placement: suffix}
-                prefix: 'In: '
-              - title: parent-monograph
-            delimiter: '. '
-          before:
-            title: parent-serial
-    dataset:
-      remove:
-        - match:
-            date: issued
-    entry-encyclopedia:
-      extends: article-journal
-      add:
-        - component:
-            date: issued
-            form: year
-          before:
-            group:
-              - number: volume
-              - number: issue
-                wrap:
-                  punctuation: parentheses
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 3
+    - title: primary
+    - delimiter: " "
+      group:
+      - term: in
+        text-case: capitalize-first
+        suffix: ":"
+      - contributor: editor
+        form: long
+        name-order: family-first
+        shorten:
+          min: 4
+          use-first: 3
+        label: {term: editor, form: long, placement: suffix}
+    - title: parent-monograph
+    - delimiter: "; "
+      group:
+      - delimiter: ": "
+        group:
+        - variable: publisher-place
+        - variable: publisher
+      - date: issued
+        form: year
+    - number: pages
+      prefix: ". p. "
+    - variable: url
     paper-conference:
-      modify:
-        - match:
-            number: pages
-          label-form: short
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 3
+    - title: primary
+    - title: parent-monograph
+    - date: issued
+      form: year
+    - number: pages
+      prefix: ". p. "
+    - variable: url
   template:
   - contributor: author
     form: long
@@ -120,24 +126,12 @@ bibliography:
       min: 8
       use-first: 3
   - title: primary
-  - group:
-    - contributor: editor
-      form: verb
-      name-order: given-first
-      shorten:
-        min: 4
-        use-first: 3
-    - title: parent-monograph
-  - title: parent-serial
-  - date: issued
-    form: year
-  - group:
-    - number: volume
-    - number: issue
-      wrap:
-        punctuation: parentheses
-  - variable: publisher-place
-  - variable: publisher
-    prefix: ": "
-  - number: pages
+  - delimiter: "; "
+    group:
+    - delimiter: ": "
+      group:
+      - variable: publisher-place
+      - variable: publisher
+    - date: issued
+      form: year
   - variable: url
