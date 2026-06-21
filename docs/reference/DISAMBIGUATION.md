@@ -171,23 +171,21 @@ them in order, stopping at the first successful disambiguation.
 
 ### Example: APA 7th Edition
 
-APA uses all three strategies. It needs a **global** given-name rule
-(`primary-name-with-initials`) so same-surname authors get first-author initials
-in every in-text citation (APA §8.20) — `by-cite` would only compare authors cited
-together. In Citum this is expressed as a custom `processing` block (see
-[`apa-7th.yaml`](../../crates/citum-schema-style/embedded/styles/apa-7th.yaml)):
+APA uses all three strategies with a **global** given-name rule (`primary-name`) so
+same-surname authors get first-author initials in every in-text citation (APA §8.20)
+— `by-cite` would only compare authors cited together. This is the major author-date
+guide profile, bundled by the **`author-date-full` preset** (names + add-givenname +
+`primary-name` + year-suffix), which APA and Chicago AD share
+(see [`apa-7th.yaml`](../../crates/citum-schema-style/embedded/styles/apa-7th.yaml)):
 
 ```yaml
 options:
-  processing:
-    disambiguate:
-      names: true
-      add-givenname: true
-      givenname-rule: primary-name-with-initials
-      year-suffix: true
-bibliography:
-  sort: author-date-title   # required once processing is a custom block
+  processing: author-date-full
 ```
+
+The initials form comes from APA's contributor config (`initialize-with`); Chicago,
+with the same preset, renders the full first given name. The preset also supplies the
+`author-date-title` bibliography sort, so no explicit `bibliography.sort` is needed.
 
 ## Test Coverage
 

@@ -472,7 +472,9 @@ test('apa-7th concision regression reflects preset-first success', () => {
   const concision = computeConcisionScore(loaded.resolvedStyleData, style.format);
 
   assert.equal(concision.variantSelectors, 26, 'resolved APA should reflect the embedded authored variant selectors');
-  assert.equal(concision.score, 62.9, `expected embedded APA concision, got ${concision.score}`);
+  // APA's disambiguation now uses the `author-date-full` preset instead of an inline
+  // custom block (plus the dropped explicit bibliography.sort), so concision improves.
+  assert.equal(concision.score, 63.3, `expected embedded APA concision, got ${concision.score}`);
 });
 
 test('report-core exposes expected benchmark labels for representative styles', () => {
