@@ -3054,9 +3054,13 @@ fn test_bibliography_per_group_disambiguation() {
     let result =
         processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
 
+    // Year-suffix letters follow the article-stripped bibliography sort (§3): the
+    // leading "A" of "A title" is a sort article, so it normalizes to "title" and
+    // sorts after "B title". Group 1 therefore assigns a→"B title", b→"A title";
+    // Group 2 restarts the sequence (locally scoped) at a→"C title", b→"D title".
     assert_eq!(
         result,
-        "# Group 1\n\nKuhn, Thomas (1962b). _B title_\n\nKuhn, Thomas (1962a). _A title_\n\n# Group 2\n\nKuhn, Thomas (1962a). _C title_\n\nKuhn, Thomas (1962b). _D title_"
+        "# Group 1\n\nKuhn, Thomas (1962a). _B title_\n\nKuhn, Thomas (1962b). _A title_\n\n# Group 2\n\nKuhn, Thomas (1962a). _C title_\n\nKuhn, Thomas (1962b). _D title_"
     );
 }
 

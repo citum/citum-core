@@ -222,13 +222,13 @@ impl<'a> Disambiguator<'a> {
             });
             let author_key = self.build_author_key(&names);
             let group_key = self.build_group_key(reference, &author_key);
-            let title_key = needs_title_key.then(|| {
-                reference
-                    .title()
-                    .map(|title| title.to_string())
-                    .unwrap_or_default()
-                    .to_lowercase()
-            });
+            // Year-suffix letters (a, b, c…) must follow the effective bibliography
+            // sort order. Reuse the bibliography title sort key (leading-article
+            // stripping + locale collation) so suffix assignment cannot diverge from
+            // the rendered order — a raw lowercased title sorts "An Ecology" before
+            // "Biology", producing `2019b` before `2019a` (DISAMBIGUATION.md §3).
+            let title_key = needs_title_key
+                .then(|| crate::sort_support::title_sort_key(reference, self.locale));
 
             cache.insert(
                 Self::reference_cache_key(reference),

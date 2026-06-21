@@ -27,7 +27,19 @@ info:
   short-name: "APA"
   edition: "7th"
 options:
-  processing: author-date
+  # APA 7 disambiguates by adding names and given-name initials before falling
+  # back to year suffixes (matches apa.csl: disambiguate-add-names +
+  # disambiguate-add-givenname + disambiguate-add-year-suffix). The given-name
+  # rule is `primary-name-with-initials`: APA §8.20 adds the first author's
+  # initials to *every* in-text citation when surnames collide, so detection must
+  # be global (the engine's `by-cite` default is citation-local and would miss
+  # same-surname authors cited separately). bibliography.sort is set below.
+  processing:
+    disambiguate:
+      names: true
+      add-givenname: true
+      givenname-rule: primary-name-with-initials
+      year-suffix: true
   substitute:
     template:
       - editor
@@ -139,6 +151,11 @@ citation:
         form: year
       - variable: locator
 bibliography:
+  # Explicit bibliography sort. The custom `processing` block above is not an
+  # author-date *preset*, so it no longer supplies the default author-date-title
+  # bibliography sort; state it here (also fixes year-suffix ordering, which
+  # follows the bibliography sort).
+  sort: author-date-title
   options:
     substitute: standard
     hanging-indent: true
