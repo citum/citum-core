@@ -222,7 +222,11 @@ pub enum RegimeFamily {
     Custom,
 }
 
-fn author_date_config(names: bool, add_givenname: bool) -> ProcessingCustom {
+fn author_date_config(
+    names: bool,
+    add_givenname: bool,
+    givenname_rule: GivennameRule,
+) -> ProcessingCustom {
     ProcessingCustom {
         sort: Some(SortEntry::Preset(SortPreset::AuthorDateTitle)),
         group: Some(Group {
@@ -231,7 +235,7 @@ fn author_date_config(names: bool, add_givenname: bool) -> ProcessingCustom {
         disambiguate: Some(Disambiguation {
             names,
             add_givenname,
-            givenname_rule: GivennameRule::default(),
+            givenname_rule,
             year_suffix: true,
         }),
     }
@@ -308,10 +312,20 @@ impl Processing {
     /// preset defaults and user overrides. For `Custom` mode, returns the user-provided config as-is.
     pub fn config(&self) -> ProcessingCustom {
         match self {
-            Processing::AuthorDate => author_date_config(false, false),
-            Processing::AuthorDateGivenname => author_date_config(false, true),
-            Processing::AuthorDateNames => author_date_config(true, false),
-            Processing::AuthorDateFull => author_date_config(true, true),
+            Processing::AuthorDate => author_date_config(false, false, GivennameRule::ByCite),
+            Processing::AuthorDateGivenname => {
+                author_date_config(false, true, GivennameRule::ByCite)
+            }
+            Processing::AuthorDateNames => author_date_config(true, false, GivennameRule::ByCite),
+            // `author-date-full` is the major author-date *guide* profile (APA §8.20,
+            // Chicago AD): it adds names + given names + year suffix, and uses the
+            // global `primary-name` rule so same-surname authors gain first-author
+            // initials in *every* in-text cite. (Citum's `by-cite` default is
+            // citation-local and would miss authors cited separately.) Initials vs full
+            // form follow each style's `initialize-with`/`name-form` contributor config.
+            Processing::AuthorDateFull => {
+                author_date_config(true, true, GivennameRule::PrimaryName)
+            }
             Processing::Numeric => ProcessingCustom {
                 sort: None,
                 group: None,
@@ -774,13 +788,29 @@ mod tests {
     #[test]
     fn test_processing_author_date_variant_configs() {
         let cases = [
-            (Processing::AuthorDate, false, false),
-            (Processing::AuthorDateGivenname, false, true),
-            (Processing::AuthorDateNames, true, false),
-            (Processing::AuthorDateFull, true, true),
+            (Processing::AuthorDate, false, false, GivennameRule::ByCite),
+            (
+                Processing::AuthorDateGivenname,
+                false,
+                true,
+                GivennameRule::ByCite,
+            ),
+            (
+                Processing::AuthorDateNames,
+                true,
+                false,
+                GivennameRule::ByCite,
+            ),
+            // Only `author-date-full` (the guide profile) uses the global primary-name rule.
+            (
+                Processing::AuthorDateFull,
+                true,
+                true,
+                GivennameRule::PrimaryName,
+            ),
         ];
 
-        for (processing, names, add_givenname) in cases {
+        for (processing, names, add_givenname, expected_rule) in cases {
             let config = processing.config();
 
             assert_eq!(
@@ -797,7 +827,7 @@ mod tests {
             let disambig = config.disambiguate.unwrap();
             assert_eq!(disambig.names, names);
             assert_eq!(disambig.add_givenname, add_givenname);
-            assert_eq!(disambig.givenname_rule, GivennameRule::ByCite);
+            assert_eq!(disambig.givenname_rule, expected_rule);
             assert!(disambig.year_suffix);
         }
     }

@@ -33,17 +33,12 @@ info:
 options:
   multilingual: romanized-translated
   locators: note
-  processing:
-    disambiguate:
-      names: true
-      add-givenname: true
-      year-suffix: true
-    sort:
-      template:
-      - key: author
-        ascending: true
-      - key: year
-        ascending: true
+  # Chicago author-date disambiguation profile (CMOS 18): add names + global
+  # first-author given-name + year suffix. The `author-date-full` preset bundles
+  # this and supplies the author-date-title bibliography sort; the `primary-name`
+  # rule it carries fixes same-surname authors (e.g. "A. Johnson" / "B. Johnson")
+  # that the previous `by-cite` default left ambiguous across separate citations.
+  processing: author-date-full
   contributors:
     and: text
     shorten:

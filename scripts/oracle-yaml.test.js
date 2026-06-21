@@ -115,7 +115,10 @@ test('resolveStyleData deep-merges preset wrappers with local overrides', () => 
   const resolved = resolveStyleData(rawStyleData);
 
   assert.equal(resolved.options['page-range-format'], 'expanded');
-  assert.equal(resolved.options.processing?.disambiguate?.names, true);
+  // Inherits chicago-author-date-18th's processing, now the `author-date-full`
+  // string preset (names + add-givenname + primary-name + year-suffix) rather than
+  // an inline disambiguate map. The Rust engine expands the preset at render time.
+  assert.equal(resolved.options.processing, 'author-date-full');
   assert.equal(resolved.citation.options.contributors.shorten.min, 4);
   assert.equal(
     resolved.bibliography['type-variants']['motion-picture'][4].prefix,

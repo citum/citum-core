@@ -168,27 +168,33 @@ author–date): **different authors who share a surname are distinguished by giv
 names/initials, never by a year suffix.** Year suffixes apply only to *same author,
 same year*. Mapping to engine flags:
 
-| Style | `names` | `add_givenname` | `givenname_rule` | `year_suffix` | Notes |
+| Style | `names` | `add_givenname` | `givenname_rule` | `year_suffix` | Expressed as |
 |---|---|---|---|---|---|
-| APA 7 | true | true | `primary-name-with-initials` | true | First-author initials in **all** in-text cites (global detection), not `by-cite`. |
-| Chicago 17/18 AD | true | true | `primary-name` *(or by-cite)* | true | First-author given name; `apa.csl`-style. |
-| MLA 9 | true | true | `by-cite` | **false** | Author-*page*: no suffix. Falls through to the `disambiguate-only` short title (see §6). |
-| IEEE / AMA | — | — | — | — | Numeric; no author-date disambiguation. |
+| APA 7 | true | true | `primary-name` | true | `processing: author-date-full` preset |
+| Chicago 17/18 AD | true | true | `primary-name` | true | `processing: author-date-full` preset |
+| MLA 9 | true | true | `by-cite` | **false** | custom block (author-*page*: no suffix; falls through to the `disambiguate-only` short title, §6) |
+| IEEE / AMA | — | — | — | — | numeric; no author-date disambiguation |
 
 **`by-cite` is citation-local in Citum** (§2.1.1): it compares only references that
 appear together in one citation. Same-surname authors usually appear in *separate*
-citations, so a guide that wants initials in every cite (APA) must use a **global**
-rule — `primary-name-with-initials` or `all-names*` — not `by-cite`. This is why
-`apa-7th.yaml` sets the rule explicitly rather than relying on the `author-date-full`
-preset, whose `by-cite` default would leave separately-cited "A. Johnson" / "B.
-Johnson" both rendered as bare "Johnson, 2020" (audit row 114).
+citations, so a guide that wants initials in every cite (APA §8.20) needs **global**
+detection — the `primary-name` rule, not `by-cite`. Initials vs. full given name is
+then driven by each style's contributor config (`initialize-with` / `name-form`), per
+the §2.1 invariant — so one rule serves APA (initials) and Chicago (full given name).
 
-A style that switches from a bare `author-date*` preset to a custom `processing`
-block (to set `givenname_rule` or disable `year_suffix`) becomes
-`Processing::Custom`, which supplies **no** `default_bibliography_sort`. Such a style
-must declare `bibliography.sort` explicitly (e.g. `author-date-title`) or its
-reference list — and therefore its year-suffix order (§3) — falls back to insertion
-order.
+The **`author-date-full` preset** encodes exactly this guide profile —
+names + add-givenname + **`primary-name`** + year-suffix — and APA and Chicago use it
+directly (`processing: author-date-full`). Because it is a real preset (not
+`Processing::Custom`) it also supplies `default_bibliography_sort` (`author-date-title`),
+so suffix order (§3) is correct without an explicit `bibliography.sort`. The other
+`author-date*` presets keep the CSL-default `by-cite` rule; the migration extractor
+only folds a CSL style to `author-date-full` when the source explicitly declares
+`primary-name`, preserving `by-cite` fidelity otherwise.
+
+A style that instead uses a custom `processing` block (e.g. MLA, to disable
+`year_suffix`) becomes `Processing::Custom`, which supplies **no**
+`default_bibliography_sort` — such a style must declare `bibliography.sort` explicitly
+or its reference list (and year-suffix order) falls back to insertion order.
 
 ### 4. Multilingual-aware keys
 
@@ -291,6 +297,16 @@ added to the citation context.
 
 ## Changelog
 
+- 2026-06-21: Promoted the major author-date guide disambiguation profile to the
+  `author-date-full` preset (csl26-2zy6 follow-on). `Processing::AuthorDateFull` now
+  carries the global `primary-name` rule (names + add-givenname + primary-name +
+  year-suffix); the other `author-date*` presets keep CSL-default `by-cite`. `apa-7th`
+  and `chicago-author-date-18th` now use `processing: author-date-full` (replacing
+  their custom blocks; APA drops the explicit `bibliography.sort` since the preset
+  supplies it). This fixed Chicago's latent same-surname collision (it had been
+  `by-cite`). The migration extractor (`fold_to_named_processing`) folds a CSL style to
+  `author-date-full` only when it explicitly declares `primary-name`, preserving
+  `by-cite` fidelity otherwise. No corpus regression (154 styles, fidelity=1.0).
 - 2026-06-21: Guide-conformance disambiguation pass (csl26-2zy6). Added §3.1
   (per-guide application) and rewrote §3 to state that year-suffix order follows the
   effective bibliography sort. Engine: `build_reference_cache` now keys the
