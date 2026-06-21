@@ -156,7 +156,7 @@ bibliography:
         punctuation: parentheses
       prefix: " "
     - title: primary
-      emph: true
+      emph: false
     - group:
       - variable: genre
         text-case: capitalize-first

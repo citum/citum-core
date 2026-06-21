@@ -14,7 +14,7 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/cse-name-year
       rel: template
-    - href: http://www.tandf.co.uk/journals/authors/style/reference/tf_CSE.pdf
+    - href: https://files.taylorandfrancis.com/tf_c.pdf
       rel: documentation
 options:
   multilingual: romanized-translated

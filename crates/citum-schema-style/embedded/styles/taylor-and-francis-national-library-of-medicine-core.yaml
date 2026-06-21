@@ -14,7 +14,7 @@ info:
       rel: self
     - href: http://www.zotero.org/styles/nlm-citation-sequence-brackets
       rel: template
-    - href: https://files.taylorandfrancis.com/tf_NLM.pdf
+    - href: https://files.taylorandfrancis.com/tf_nlm.pdf
       rel: documentation
 options:
   multilingual: romanized-translated
@@ -80,13 +80,15 @@ bibliography:
         - component:
             group:
               - contributor: editor
-                form: verb
-                name-order: given-first
+                form: long
+                name-order: family-first
                 shorten:
                   min: 4
                   use-first: 3
-                prefix: 'on '
+                label: {term: editor, form: long, placement: suffix}
+                prefix: 'In: '
               - title: parent-monograph
+            delimiter: '. '
           before:
             title: parent-serial
     dataset:
@@ -118,7 +120,6 @@ bibliography:
       min: 8
       use-first: 3
   - title: primary
-    prefix: " "
   - group:
     - contributor: editor
       form: verb
