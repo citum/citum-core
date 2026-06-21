@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.70.0] - 2026-06-21
+
+### Bug Fixes
+
+**engine**
+
+- Pull comma inside bibliography quotes ([`3d521ec`](https://github.com/citum/citum-core/commit/3d521ec0fb219c26ad6b5be4dd86d41513fccf07))
+
+- Guide-conformant disambiguation ([`527db9d`](https://github.com/citum/citum-core/commit/527db9d88b85ead9094bbd9450f531ad00a43745))
+
+
+**styles**
+
+- Align core styles with guides ([`bc8043c`](https://github.com/citum/citum-core/commit/bc8043c2cf85355055ed015fb388a395bc0079ed))
+
+- Structural conformance fixes ([`66588dd`](https://github.com/citum/citum-core/commit/66588ddd088c923e57f42d31965fcc3067e82b77))
+
+- Apa/chicago author-date-full preset ([`3a56866`](https://github.com/citum/citum-core/commit/3a568662bc2f2f4524485577bcbca0163d2cce4f))
+
+
+
+### Documentation
+
+**report**
+
+- Add style guide-conformance audit ([`fec1a1a`](https://github.com/citum/citum-core/commit/fec1a1a412a72fa402f132e472a3ce10a6852f6c))
+
+
+
+### Features
+
+**engine**
+
+- Bounded render residual controls ([`2a7e6b2`](https://github.com/citum/citum-core/commit/2a7e6b2f98c390dd85fcc7d103526edebcef745a))
+
+- Comma+short substitute editor label ([`f0d3724`](https://github.com/citum/citum-core/commit/f0d37240e3d53e84228f05c92108db70285a533f))
+
+
+**schema**
+
+- Text-case option for role labels ([`ebd3d9c`](https://github.com/citum/citum-core/commit/ebd3d9caa7b01b80bfcdb72baa77aca752fb4b8e))
+
+
 ## [0.69.0] - 2026-06-18
 
 ### Bug Fixes
