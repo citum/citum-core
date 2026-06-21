@@ -1821,7 +1821,7 @@ fn chicago_german_override_localizes_editor_verb() {
 
     assert_eq!(
         output,
-        "Name, Autor. 2024. \u{201c}Kapitel.\u{201d} hg. von Editor Name, _Sammelband_."
+        "Name, Autor. 2024. \u{201c}Kapitel.\u{201d} _Sammelband_, hg. von Editor Name."
     );
 }
 

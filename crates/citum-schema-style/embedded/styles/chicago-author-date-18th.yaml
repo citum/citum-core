@@ -52,6 +52,12 @@ options:
       and-others: et-al
       delimiter-precedes-last: contextual
     demote-non-dropping-particle: display-and-sort
+    # The book/default templates supply "Translated by" via a verb prefix; omit
+    # the default "(Trans.)" role label so it is not rendered twice (matches
+    # citeproc's `Translated by David Wyllie.`).
+    role:
+      omit:
+      - translator
   dates: long
   titles:
     component:
@@ -172,19 +178,22 @@ bibliography:
             variable: doi
           prefix: https://doi.org/
     article-magazine:
-      remove:
-        - match:
-            group:
-              - number: volume
-              - number: issue
-                prefix: ' ('
-                suffix: )
-      add:
-        - component:
-            group:
-              - number: volume
-          before:
-            number: pages
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 3
+    - date: issued
+      form: year
+    - title: primary
+      wrap:
+        punctuation: quotes
+    - title: parent-serial
+      emph: true
+    - date: issued
+      form: year-month
+      prefix: ", "
     bill-proceeding:
     - title: primary
     - variable: publisher
@@ -298,9 +307,30 @@ bibliography:
         punctuation: quotes
     - variable: url
     chapter:
-      remove:
-        - match:
-            number: pages
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 3
+    - date: issued
+      form: year
+    - title: primary
+      wrap:
+        punctuation: quotes
+    - delimiter: " "
+      group:
+      - term: in
+        text-case: capitalize-first
+      - title: parent-monograph
+        emph: true
+    - contributor: editor
+      form: verb
+      name-order: given-first
+      prefix: ", "
+    - variable: publisher
+    - variable: doi
+    - variable: url
     entry-dictionary:
     - title: parent-monograph
       emph: true
@@ -360,8 +390,9 @@ bibliography:
       delimiter: none
       group:
       - term: patent
+        text-case: capitalize-first
         suffix: " "
-      - number: number
+      - number: patent-number
       - date: issued
         form: full
         prefix: ", issued "
