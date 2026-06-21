@@ -134,12 +134,61 @@ decision to the current citation and preserves the existing position model.
 
 ### 3. Year-suffix assignment ordering
 
-Within a collision group, suffixes are assigned by a deterministic sort. The
-default sort key is `title` (lowercased). When a `BibliographyGroup` defines a
-`sort`, that sort takes precedence within the group (see §5 below).
+Within a collision group, suffixes (`a`, `b`, `c`…) **follow the effective
+bibliography sort order** — never citation order. Author and year are equal across
+a same-author/same-year group, so the operative tiebreaker is the title, sorted
+with the *same* normalization the bibliography uses: leading-article stripping plus
+locale collation via `sort_support::title_sort_key`. A raw lowercased title is
+**not** used — it sorts "An Ecology…" before "Biology…", yielding `2019b` before
+`2019a` (fixed for csl26-2zy6, guide-conformance audit row 138). The raw title
+survives only as a deterministic final tiebreaker.
+
+This matches the CSL spec and APA/Chicago guidance: `a`/`b`/`c` correspond to the
+order in which entries appear in the sorted reference list, so suffixes are
+*derived* from bibliography order. When the bibliography context changes, suffixes
+are recomputed; they are not user-stable keys.
+
+When a `BibliographyGroup` defines a `sort`, that sort takes precedence within the
+group (see §5 below).
 
 The letter sequence is base-26 with wrapping: 1→a, 26→z, 27→aa, 52→az, 53→ba,
 … Implemented in `int_to_letter` in `values/date.rs`.
+
+### 3.1 Per-guide application (engine default vs. style flags)
+
+The disambiguation cascade is style-driven: the engine ships a **CSL-faithful
+default** (`names: false`, `add_givenname: false`, matching citeproc-js, which
+defaults both off), and each style carries the flags its guide requires — exactly
+as the upstream CSL sources do. There is no contradiction between the conservative
+engine default and a guide that disambiguates aggressively; the guide's behavior is
+expressed in the style, not the default.
+
+The decisive rule from the major guides (APA §8.20, MLA 9 §6.9, Chicago 17/18
+author–date): **different authors who share a surname are distinguished by given
+names/initials, never by a year suffix.** Year suffixes apply only to *same author,
+same year*. Mapping to engine flags:
+
+| Style | `names` | `add_givenname` | `givenname_rule` | `year_suffix` | Notes |
+|---|---|---|---|---|---|
+| APA 7 | true | true | `primary-name-with-initials` | true | First-author initials in **all** in-text cites (global detection), not `by-cite`. |
+| Chicago 17/18 AD | true | true | `primary-name` *(or by-cite)* | true | First-author given name; `apa.csl`-style. |
+| MLA 9 | true | true | `by-cite` | **false** | Author-*page*: no suffix. Falls through to the `disambiguate-only` short title (see §6). |
+| IEEE / AMA | — | — | — | — | Numeric; no author-date disambiguation. |
+
+**`by-cite` is citation-local in Citum** (§2.1.1): it compares only references that
+appear together in one citation. Same-surname authors usually appear in *separate*
+citations, so a guide that wants initials in every cite (APA) must use a **global**
+rule — `primary-name-with-initials` or `all-names*` — not `by-cite`. This is why
+`apa-7th.yaml` sets the rule explicitly rather than relying on the `author-date-full`
+preset, whose `by-cite` default would leave separately-cited "A. Johnson" / "B.
+Johnson" both rendered as bare "Johnson, 2020" (audit row 114).
+
+A style that switches from a bare `author-date*` preset to a custom `processing`
+block (to set `givenname_rule` or disable `year_suffix`) becomes
+`Processing::Custom`, which supplies **no** `default_bibliography_sort`. Such a style
+must declare `bibliography.sort` explicitly (e.g. `author-date-title`) or its
+reference list — and therefore its year-suffix order (§3) — falls back to insertion
+order.
 
 ### 4. Multilingual-aware keys
 
@@ -225,6 +274,12 @@ added to the citation context.
   `all-names` global expansion (csl26-lvib)
 - [x] Upstream CSL disambiguation fixtures that distinguish `by-cite` and
   `all-names` are tracked in the disambiguation fixture generator
+- [x] Year-suffix order follows the article-stripped/locale-collated bibliography
+  sort, not a raw lowercased title (csl26-2zy6, audit row 138)
+- [x] APA-7th carries `add-givenname` + `primary-name-with-initials` (global) so
+  same-surname authors get initials, not a spurious year suffix (csl26-2zy6, row 114)
+- [x] MLA disables `year_suffix` and disambiguates same-author works via the
+  `disambiguate-only` short title (csl26-2zy6, row 173)
 
 ## Related specs
 
@@ -236,6 +291,21 @@ added to the citation context.
 
 ## Changelog
 
+- 2026-06-21: Guide-conformance disambiguation pass (csl26-2zy6). Added §3.1
+  (per-guide application) and rewrote §3 to state that year-suffix order follows the
+  effective bibliography sort. Engine: `build_reference_cache` now keys the
+  year-suffix sort on `sort_support::title_sort_key` (article-stripped, locale
+  collated) instead of a raw `to_lowercase()` — fixes `2019b`-before-`2019a` (audit
+  row 138). Styles: `apa-7th.yaml` switched to a custom `processing` block with
+  `add-givenname` + `givenname-rule: primary-name-with-initials` + explicit
+  `bibliography.sort: author-date-title` (row 114); `modern-language-association.yaml`
+  set `year-suffix: false` with `names`/`add-givenname` on, relying on its existing
+  `disambiguate-only` short title (row 173). Added native regressions
+  `year_suffix_follows_article_stripped_title_order`,
+  `givenname_expansion_preferred_over_year_suffix`,
+  `primary_name_initials_expand_globally_across_citations`, and
+  `year_suffix_off_emits_no_letter` in the `citations` target. No engine default
+  change (stays CSL-faithful); corpus fidelity held at 1.0/154.
 - 2026-06-02: Fixed `primary-name` cascade fallback (csl26-wu1l). When the primary
   author's given name cannot resolve a collision (identical primary authors), the engine
   now falls back to year-suffix while retaining the et-al expansion that was found.

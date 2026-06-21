@@ -489,6 +489,108 @@ fn disambiguation_givenname_expansion_resolves_same_year_family_name_collision()
     });
 }
 
+/// Row 138 regression: year-suffix letters must follow the article-stripped,
+/// locale-collated bibliography sort order, not a raw lowercased title. Under raw
+/// lowercasing "An Ecology…" sorts before "Biology…", so Biology wrongly takes
+/// `b`; after stripping the leading article "Biology" precedes "Ecology", so
+/// Biology takes `a` and Ecology takes `b`.
+fn disambiguation_year_suffix_follows_article_stripped_title_order() {
+    let input = vec![
+        make_book("eco", "Garcia", "Maria", 2019, "An Ecology of Rivers"),
+        make_book("bio", "Garcia", "Maria", 2019, "Biology of Lakes"),
+    ];
+    // Cite Biology first, Ecology second: Biology must read 2019a, Ecology 2019b.
+    let citation_items = vec![vec!["bio", "eco"]];
+    let expected = "Garcia, (2019a), (2019b)";
+
+    run_test_case_native(&input, &citation_items, expected, "citation");
+}
+
+/// Row 114 regression: same-surname, different-given-name authors in the same
+/// year ("A. Johnson 2020" / "B. Johnson 2020") must disambiguate by given-name
+/// initials, never by a spurious year suffix — even when year-suffix
+/// disambiguation is also enabled (as in apa-7th via the `author-date-full`
+/// preset). Given-name expansion precedes year suffix in the cascade and resolves
+/// the collision, so no `2020a`/`2020b` letter is added.
+fn disambiguation_givenname_expansion_preferred_over_year_suffix() {
+    let input = vec![
+        make_book("alan", "Johnson", "Alan", 2020, "Cognition"),
+        make_book("bea", "Johnson", "Beatrice", 2020, "Memory"),
+    ];
+    let citation_items = vec![vec!["alan", "bea"]];
+
+    run_test_case_native_with_options(common::TestCaseOptions {
+        input: &input,
+        citation_items: &citation_items,
+        // Initials resolve the surname collision; no `2020a`/`2020b`.
+        expected: "A Johnson, (2020); B Johnson, (2020)",
+        mode: "citation",
+        disambiguate_year_suffix: true,
+        disambiguate_names: true,
+        disambiguate_givenname: true,
+        et_al_min: None,
+        et_al_use_first: None,
+    });
+}
+
+/// Row 173 regression (MLA): author-page styles set year-suffix off. When two
+/// same-author/same-year works cannot be resolved by names or given names (the
+/// author is identical), no suffix letter is emitted — modern-language-association
+/// relies on its `disambiguate-only` short title instead. Guards against a
+/// regression that reintroduces `2019a`/`2019b` for MLA.
+fn disambiguation_year_suffix_off_emits_no_letter() {
+    let input = vec![
+        make_book("a", "Garcia", "Maria", 2019, "Rivers"),
+        make_book("b", "Garcia", "Maria", 2019, "Lakes"),
+    ];
+    let citation_items = vec![vec!["a", "b"]];
+
+    run_test_case_native_with_options(common::TestCaseOptions {
+        input: &input,
+        citation_items: &citation_items,
+        // year-suffix disabled: identical author/year render with no letter.
+        expected: "Garcia, (2019), (2019)",
+        mode: "citation",
+        disambiguate_year_suffix: false,
+        disambiguate_names: true,
+        disambiguate_givenname: true,
+        et_al_min: None,
+        et_al_use_first: None,
+    });
+}
+
+/// Row 114 (global, cross-citation): APA-7th uses `primary-name-with-initials`,
+/// whose detection is global. Same-surname authors cited in *separate* citations
+/// both receive first-author initials (APA §8.20) and no year suffix. The engine's
+/// `by-cite` default would miss this — it only compares references appearing
+/// together in one citation — which is why apa-7th sets the rule explicitly.
+fn disambiguation_primary_name_initials_expand_globally_across_citations() {
+    let input = vec![
+        make_book("aj", "Johnson", "Alan", 2020, "Cognition"),
+        make_book("bj", "Johnson", "Beatrice", 2020, "Memory"),
+    ];
+    let mut bibliography = indexmap::IndexMap::new();
+    for reference in input {
+        let id = reference.id().expect("fixture id").to_string();
+        bibliography.insert(id, reference);
+    }
+    let processor = Processor::new(
+        build_author_date_style_with_givenname_rule(GivennameRule::PrimaryNameWithInitials),
+        bibliography,
+    );
+
+    // Each author is cited in its own citation; global detection still expands
+    // both to initials, and neither gains a `2020a`/`2020b` suffix.
+    assert_eq!(
+        process_citation_ids(&processor, &["aj"]),
+        "A Johnson, (2020)"
+    );
+    assert_eq!(
+        process_citation_ids(&processor, &["bj"]),
+        "B Johnson, (2020)"
+    );
+}
+
 fn disambiguation_by_cite_givenname_expansion_is_citation_local() {
     let processor = processor_for_givenname_rule(GivennameRule::ByCite);
 
@@ -1993,6 +2095,38 @@ mod disambiguation {
             "Two same-year authors with the same family name but different given names must have initials injected for the ambiguous pair; unrelated authors stay unexpanded.",
         );
         super::disambiguation_givenname_expansion_resolves_same_year_family_name_collision();
+    }
+
+    #[test]
+    fn year_suffix_follows_article_stripped_title_order() {
+        announce_behavior(
+            "Year-suffix letters must follow the article-stripped bibliography sort order, so a leading article cannot flip 2019a/2019b.",
+        );
+        super::disambiguation_year_suffix_follows_article_stripped_title_order();
+    }
+
+    #[test]
+    fn givenname_expansion_preferred_over_year_suffix() {
+        announce_behavior(
+            "Same-surname, different-given-name authors in one year must disambiguate by initials, not a spurious year suffix, even when year-suffix is also enabled.",
+        );
+        super::disambiguation_givenname_expansion_preferred_over_year_suffix();
+    }
+
+    #[test]
+    fn year_suffix_off_emits_no_letter() {
+        announce_behavior(
+            "With year-suffix disabled (author-page styles like MLA), an unresolved same-author/same-year collision emits no suffix letter.",
+        );
+        super::disambiguation_year_suffix_off_emits_no_letter();
+    }
+
+    #[test]
+    fn primary_name_initials_expand_globally_across_citations() {
+        announce_behavior(
+            "Under primary-name-with-initials (APA), same-surname authors cited in separate citations both gain first-author initials globally, with no year suffix.",
+        );
+        super::disambiguation_primary_name_initials_expand_globally_across_citations();
     }
 
     #[test]

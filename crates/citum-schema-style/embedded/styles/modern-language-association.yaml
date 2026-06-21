@@ -22,7 +22,16 @@ info:
   edition: "9th"
 options:
   locators: note
-  processing: author-date
+  # MLA is author-page, not author-date: it never appends year suffixes. It
+  # disambiguates by adding names / given-name initials (matches mla.csl:
+  # disambiguate-add-names + disambiguate-add-givenname, no add-year-suffix) and,
+  # when those cannot resolve, by the `disambiguate-only` short title in the
+  # citation template below. The explicit `bibliography.sort` is unaffected.
+  processing:
+    disambiguate:
+      names: true
+      add-givenname: true
+      year-suffix: false
   substitute:
     contributor-role-form: long
     template: [editor, title, translator]

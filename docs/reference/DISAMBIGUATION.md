@@ -9,14 +9,28 @@ several strategies to resolve these ambiguities.
 ## Overview
 
 When citations are identical (e.g., multiple works by "Smith, 2000"),
-Citum applies disambiguation strategies in priority order:
+Citum applies disambiguation strategies in cascade order, from least to
+most disruptive, stopping at the first that resolves the collision:
 
-1. **Year Suffix** (`disambiguate-add-year-suffix`)
-2. **Name Expansion** (`disambiguate-add-names`)
-3. **Given Name Addition** (`disambiguate-add-givenname`)
+1. **Name Expansion** (`disambiguate-add-names`) — reveal names hidden by et-al.
+2. **Given Name Addition** (`disambiguate-add-givenname`) — add initials/given
+   names; scope set by `givenname-disambiguation-rule`.
+3. **Year Suffix** (`disambiguate-add-year-suffix`) — append `a`, `b`, `c`… to
+   the issued year.
 
-Once a strategy resolves an ambiguity, higher-priority strategies are
-not applied.
+Once a strategy resolves an ambiguity, later (more disruptive) strategies are
+not applied. The normative cascade and per-guide application live in the
+[spec](../specs/DISAMBIGUATION.md) (§2, §3.1).
+
+> **Same surname ≠ year suffix.** Different authors who share a surname (e.g.
+> "A. Johnson" vs "B. Johnson") are disambiguated by *given names/initials*, never
+> by a year suffix — year suffixes apply only to the *same author, same year*. APA
+> needs a **global** given-name rule (`primary-name-with-initials`) for this, since
+> the `by-cite` default only compares authors cited together.
+>
+> **MLA disambiguates by short title, not suffix.** MLA is author-*page*: it sets
+> `year-suffix: false` and resolves same-author works with a `disambiguate-only`
+> short title in the citation template.
 
 ## Year Suffix
 
@@ -157,15 +171,22 @@ them in order, stopping at the first successful disambiguation.
 
 ### Example: APA 7th Edition
 
-APA uses all three strategies in combination:
+APA uses all three strategies. It needs a **global** given-name rule
+(`primary-name-with-initials`) so same-surname authors get first-author initials
+in every in-text citation (APA §8.20) — `by-cite` would only compare authors cited
+together. In Citum this is expressed as a custom `processing` block (see
+[`apa-7th.yaml`](../../crates/citum-schema-style/embedded/styles/apa-7th.yaml)):
 
 ```yaml
-citation:
-  options:
-    disambiguate-add-year-suffix: true
-    disambiguate-add-names: true
-    disambiguate-add-givenname: true
-    givenname-disambiguation-rule: "by-cite"
+options:
+  processing:
+    disambiguate:
+      names: true
+      add-givenname: true
+      givenname-rule: primary-name-with-initials
+      year-suffix: true
+bibliography:
+  sort: author-date-title   # required once processing is a custom block
 ```
 
 ## Test Coverage
@@ -239,8 +260,10 @@ Reference → [Render] → String
   entries), year suffix wraps (a→z→aa, etc.)
 - **No cross-document**: Disambiguation is per-document; different
   documents may use inconsistent suffixes for the same reference
-- **Fixed sort order**: Disambiguation order follows reference input
-  order, not bibliographic sort order
+- **Suffix order tracks the bibliography**: year-suffix letters follow the
+  effective bibliography sort (article-stripped, locale-collated title as the
+  same-author/same-year tiebreaker), not reference input order. Suffixes are
+  recomputed when the bibliography context changes.
 
 ## Test Case Reference
 
