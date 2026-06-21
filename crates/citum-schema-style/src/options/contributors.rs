@@ -191,6 +191,8 @@ pub enum RoleLabelPreset {
     VerbShortPrefix,
     /// Render the localized short label after the names.
     ShortSuffix,
+    /// Render the localized short label after the names, comma-joined (`, eds.`).
+    ShortSuffixComma,
     /// Render the localized long label after the names.
     LongSuffix,
 }
@@ -203,6 +205,7 @@ impl RoleLabelPreset {
             "verb" => Some(Self::VerbPrefix),
             "verb-short" => Some(Self::VerbShortPrefix),
             "short" => Some(Self::ShortSuffix),
+            "short-comma" => Some(Self::ShortSuffixComma),
             "long" => Some(Self::LongSuffix),
             _ => None,
         }

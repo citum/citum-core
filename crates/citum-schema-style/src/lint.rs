@@ -482,7 +482,8 @@ fn collect_contributor_requirements(
             crate::options::RoleLabelPreset::None => return,
             crate::options::RoleLabelPreset::VerbPrefix => TermForm::Verb,
             crate::options::RoleLabelPreset::VerbShortPrefix => TermForm::VerbShort,
-            crate::options::RoleLabelPreset::ShortSuffix => TermForm::Short,
+            crate::options::RoleLabelPreset::ShortSuffix
+            | crate::options::RoleLabelPreset::ShortSuffixComma => TermForm::Short,
             crate::options::RoleLabelPreset::LongSuffix => TermForm::Long,
         };
         requirements.push(LocaleRequirement {

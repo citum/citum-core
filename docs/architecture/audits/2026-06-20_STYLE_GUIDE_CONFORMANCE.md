@@ -83,7 +83,7 @@ Guide reference templates (verbatim, abbreviated):
 | Thesis genre label | Citum renders `PhD thesis` (normalised), citeproc renders raw `phd-thesis`, guide wants `Ph.D. dissertation` | **C** | OPEN — genre-string normalisation, a data concern not a style concern; Citum's output is already cleaner than citeproc's |
 | **Conference** | `paper-conference:` only tweaked the page label → journal template; guide wants `… in Abbrev. Conf. Name, … pp.` | **A** | **FIXED** — full variant; now **byte-identical** to citeproc: `… "…," in *Proceedings of NIPS 2013*, 2013, pp. 3111–3119.` |
 | Publisher colon with no city | When `publisher-place` is empty, chapter renders `Eds.: Publisher`; guide/citeproc render `Eds., Publisher`. Root cause is the bibliography join after an abbreviation-period (`Eds.`) emitting a space, not `, ` | **E** | OPEN — engine join-logic edge; deferred (risky to change globally) |
-| Edited book (editor-as-author via `substitute`) | Renders `(eds.)` (lowercase, parenthesised); guide wants `Eds.,` | **A** | OPEN — interacts with substitute-label rendering; the new `text-case` option is the building block |
+| Edited book (editor-as-author via `substitute`) | Renders `(eds.)` (lowercase, parenthesised); guide wants `Eds.,` | **A** | **FIXED** (csl26-h1ms) — new `short-suffix-comma` preset + `substitute.contributor-role-case`; IEEE now renders `, Eds.` |
 | "et al." formatting | Citum renders `Vaswani et al. "…` (roman, no comma); citeproc/guide render `Vaswani et al., "…` (the snapshot italicises *et al.*) | **A/D** | OPEN — verify italic expectation |
 | Encyclopedia entry `[1]` | Citum adds `: University of Chicago Press`; citeproc omits publisher | **A/B** | OPEN — low priority, adjudicate vs guide |
 | Thesis snapshot `[11]` shows raw `phd-thesis` genre token | citeproc/data, not Citum's YAML | **C** | Note for fixture/genre follow-up |
@@ -153,7 +153,7 @@ journal and book titles (Citum's italics are therefore correct — no issue).
 | **Journal/book DOI** | `2(2) doi:…` — only a space before `doi:`. AMA/citeproc put a period (`2(2). doi:…`). | **A** | **FIXED** — doi `prefix: ". doi:"`. |
 | **Chapter/conference editor label** | `…, editors _Book_` (long form). AMA/citeproc use `…, eds. _Book_`. | **A** | **FIXED** — label `form: short`; now byte-matches citeproc. |
 | Trailing period after DOI | Citum ends doi entries with `.`; citeproc has none. | **E** | OPEN — engine `entry-suffix` keeps the period for doi-ending entries (same family as IEEE url/doi handling). |
-| Edited-book substitute | `Reis HT, Judd CM (eds.).`; citeproc `…, eds.`. | **A** | OPEN — substitute-role-label, same as IEEE. |
+| Edited-book substitute | `Reis HT, Judd CM (eds.).`; citeproc `…, eds.`. | **A** | **FIXED** (csl26-h1ms) — AMA uses `short-comma`; renders `, eds.`. |
 | Page range | `436–444` (en-dash); AMA/citeproc use a hyphen `436-444`. | **E** | OPEN — page-range formatting, engine. |
 
 Metadata: documentation URL (`academic.oup.com/amamanualofstyle`) OK.
@@ -171,7 +171,7 @@ italicise container titles.
 | **Journal DOI** | `pp. 81–104. https://doi.org/…` — period before the DOI; MLA/citeproc use a comma. | **A** | **FIXED** — the `article-journal` doi modify keeps the comma (`prefix: ", https://doi.org/"`). |
 | Trailing period after DOI | citeproc ends with `.`; Citum omits it (engine suppresses `entry-suffix` for url/doi-ending entries). MLA *wants* the period here. | **E** | OPEN — inverse of the IEEE case; engine `entry-suffix` policy is per-engine, not per-style. |
 | Disambiguation | `2019a`/`2021a` year-suffix appears; MLA disambiguates by adding author names, not suffix letters. | **A/E** | OPEN — engine disambiguation strategy. |
-| Edited book | `Reis, …, and Charles M. Judd.` — missing the `, editors` label citeproc emits. | **A** | OPEN — substitute-role-label (same family as IEEE/AMA). |
+| Edited book | `Reis, …, and Charles M. Judd.` — missing the `, editors` label citeproc emits. | **A** | **FIXED** (csl26-h1ms) — MLA substitute uses `long`; renders `, editors`. |
 | Translator | `translated by David Wyllie.` (lowercase, period); citeproc `Translated by David Wyllie,`. | **A** | OPEN — element-initial capitalisation + delimiter. |
 | Chapter / encyclopedia | `In`-ordering and missing `, vol. 5` on the container (same shape as Chicago chapter). | **A** | OPEN. |
 

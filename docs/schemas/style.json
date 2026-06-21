@@ -2597,6 +2597,17 @@
             "null"
           ]
         },
+        "contributor-role-case": {
+          "description": "Optional `text-case` transform applied to the substitute role label.\n\nLets a style capitalise the locale's lowercase term, e.g. IEEE's `Eds.`\nfrom `eds.`. Only affects the substitute (editor-as-author) path.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "template": {
           "description": "Ordered list of fields to try as substitutes.",
           "type": "array",
@@ -3502,6 +3513,11 @@
           "description": "Render the localized short label after the names.",
           "type": "string",
           "const": "short-suffix"
+        },
+        {
+          "description": "Render the localized short label after the names, comma-joined (`, eds.`).",
+          "type": "string",
+          "const": "short-suffix-comma"
         },
         {
           "description": "Render the localized long label after the names.",
