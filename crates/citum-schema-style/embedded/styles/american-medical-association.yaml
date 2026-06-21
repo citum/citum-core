@@ -23,7 +23,9 @@ options:
   multilingual: romanized-translated
   locators:
     strip-label-periods: true
-  substitute: editor-short
+  substitute:
+    contributor-role-form: short-comma
+    template: [editor]
   processing: numeric
   contributors:
     name-form: initials

@@ -665,104 +665,34 @@ pub enum SubstitutePreset {
 impl SubstitutePreset {
     /// Convert this preset to a concrete `Substitute`.
     pub fn config(&self) -> Substitute {
+        use SubstituteKey::{Editor, Title, Translator};
+
+        // Build a substitute from an optional role-label form and a template
+        // order; all presets share empty overrides/role-substitute/unknowns.
+        let build = |form: Option<&str>, template: Vec<SubstituteKey>| Substitute {
+            contributor_role_form: form.map(str::to_string),
+            template,
+            ..Substitute::default()
+        };
+
         match self {
-            SubstitutePreset::Standard => Substitute {
-                contributor_role_form: None,
-                template: vec![
-                    SubstituteKey::Editor,
-                    SubstituteKey::Title,
-                    SubstituteKey::Translator,
-                ],
-                overrides: HashMap::new(),
-                role_substitute: HashMap::new(),
-                unknown_fields: std::collections::BTreeMap::new(),
-            },
-            SubstitutePreset::EditorFirst => Substitute {
-                contributor_role_form: None,
-                template: vec![
-                    SubstituteKey::Editor,
-                    SubstituteKey::Translator,
-                    SubstituteKey::Title,
-                ],
-                overrides: HashMap::new(),
-                role_substitute: HashMap::new(),
-                unknown_fields: std::collections::BTreeMap::new(),
-            },
-            SubstitutePreset::TitleFirst => Substitute {
-                contributor_role_form: None,
-                template: vec![
-                    SubstituteKey::Title,
-                    SubstituteKey::Editor,
-                    SubstituteKey::Translator,
-                ],
-                overrides: HashMap::new(),
-                role_substitute: HashMap::new(),
-                unknown_fields: std::collections::BTreeMap::new(),
-            },
-            SubstitutePreset::EditorShort => Substitute {
-                contributor_role_form: Some("short".to_string()),
-                template: vec![SubstituteKey::Editor],
-                overrides: HashMap::new(),
-                role_substitute: HashMap::new(),
-                unknown_fields: std::collections::BTreeMap::new(),
-            },
-            SubstitutePreset::EditorLong => Substitute {
-                contributor_role_form: Some("long".to_string()),
-                template: vec![SubstituteKey::Editor],
-                overrides: HashMap::new(),
-                role_substitute: HashMap::new(),
-                unknown_fields: std::collections::BTreeMap::new(),
-            },
-            SubstitutePreset::EditorTranslatorShort => Substitute {
-                contributor_role_form: Some("short".to_string()),
-                template: vec![SubstituteKey::Editor, SubstituteKey::Translator],
-                overrides: HashMap::new(),
-                role_substitute: HashMap::new(),
-                unknown_fields: std::collections::BTreeMap::new(),
-            },
-            SubstitutePreset::EditorTranslatorLong => Substitute {
-                contributor_role_form: Some("long".to_string()),
-                template: vec![SubstituteKey::Editor, SubstituteKey::Translator],
-                overrides: HashMap::new(),
-                role_substitute: HashMap::new(),
-                unknown_fields: std::collections::BTreeMap::new(),
-            },
-            SubstitutePreset::EditorTitleShort => Substitute {
-                contributor_role_form: Some("short".to_string()),
-                template: vec![SubstituteKey::Editor, SubstituteKey::Title],
-                overrides: HashMap::new(),
-                role_substitute: HashMap::new(),
-                unknown_fields: std::collections::BTreeMap::new(),
-            },
-            SubstitutePreset::EditorTitleLong => Substitute {
-                contributor_role_form: Some("long".to_string()),
-                template: vec![SubstituteKey::Editor, SubstituteKey::Title],
-                overrides: HashMap::new(),
-                role_substitute: HashMap::new(),
-                unknown_fields: std::collections::BTreeMap::new(),
-            },
-            SubstitutePreset::EditorTranslatorTitleShort => Substitute {
-                contributor_role_form: Some("short".to_string()),
-                template: vec![
-                    SubstituteKey::Editor,
-                    SubstituteKey::Translator,
-                    SubstituteKey::Title,
-                ],
-                overrides: HashMap::new(),
-                role_substitute: HashMap::new(),
-                unknown_fields: std::collections::BTreeMap::new(),
-            },
-            SubstitutePreset::EditorTranslatorTitleLong => Substitute {
-                contributor_role_form: Some("long".to_string()),
-                template: vec![
-                    SubstituteKey::Editor,
-                    SubstituteKey::Translator,
-                    SubstituteKey::Title,
-                ],
-                overrides: HashMap::new(),
-                role_substitute: HashMap::new(),
-                unknown_fields: std::collections::BTreeMap::new(),
-            },
+            SubstitutePreset::Standard => build(None, vec![Editor, Title, Translator]),
+            SubstitutePreset::EditorFirst => build(None, vec![Editor, Translator, Title]),
+            SubstitutePreset::TitleFirst => build(None, vec![Title, Editor, Translator]),
+            SubstitutePreset::EditorShort => build(Some("short"), vec![Editor]),
+            SubstitutePreset::EditorLong => build(Some("long"), vec![Editor]),
+            SubstitutePreset::EditorTranslatorShort => {
+                build(Some("short"), vec![Editor, Translator])
+            }
+            SubstitutePreset::EditorTranslatorLong => build(Some("long"), vec![Editor, Translator]),
+            SubstitutePreset::EditorTitleShort => build(Some("short"), vec![Editor, Title]),
+            SubstitutePreset::EditorTitleLong => build(Some("long"), vec![Editor, Title]),
+            SubstitutePreset::EditorTranslatorTitleShort => {
+                build(Some("short"), vec![Editor, Translator, Title])
+            }
+            SubstitutePreset::EditorTranslatorTitleLong => {
+                build(Some("long"), vec![Editor, Translator, Title])
+            }
         }
     }
 }

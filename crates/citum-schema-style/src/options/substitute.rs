@@ -52,6 +52,12 @@ pub struct Substitute {
     /// Form to use for contributor roles when substituting.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub contributor_role_form: Option<String>,
+    /// Optional `text-case` transform applied to the substitute role label.
+    ///
+    /// Lets a style capitalise the locale's lowercase term, e.g. IEEE's `Eds.`
+    /// from `eds.`. Only affects the substitute (editor-as-author) path.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub contributor_role_case: Option<crate::options::titles::TextCase>,
     /// Ordered list of fields to try as substitutes.
     #[serde(default)]
     pub template: Vec<SubstituteKey>,
@@ -82,6 +88,7 @@ impl Default for Substitute {
     fn default() -> Self {
         Self {
             contributor_role_form: None,
+            contributor_role_case: None,
             template: vec![
                 SubstituteKey::Editor,
                 SubstituteKey::Title,
@@ -99,6 +106,9 @@ impl Substitute {
     pub fn merge(&mut self, other: &Self) {
         if other.contributor_role_form.is_some() {
             self.contributor_role_form = other.contributor_role_form.clone();
+        }
+        if other.contributor_role_case.is_some() {
+            self.contributor_role_case = other.contributor_role_case;
         }
         if !other.template.is_empty() {
             self.template = other.template.clone();

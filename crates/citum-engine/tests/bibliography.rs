@@ -3121,6 +3121,43 @@ fn editor_author_substitute_omits_verb_role_label_in_bibliography() {
 }
 
 #[test]
+fn editor_author_substitute_renders_comma_short_capitalized_label() {
+    // given an editor-substitute style configured for comma+short labels with
+    // a capitalize-first transform (the IEEE/AMA shape)
+    let mut style = load_style("styles/embedded/apa-7th.yaml");
+    let config = style.options.get_or_insert_with(Default::default);
+    config.substitute = Some(citum_schema::options::SubstituteConfig::Explicit(
+        citum_schema::options::Substitute {
+            contributor_role_form: Some("short-comma".to_string()),
+            contributor_role_case: Some(citum_schema::options::titles::TextCase::CapitalizeFirst),
+            template: vec![citum_schema::options::SubstituteKey::Editor],
+            ..Default::default()
+        },
+    ));
+
+    let bib = make_editor_substitute_bibliography();
+    let processor = Processor::new(style, bib);
+    let result = processor
+        .render_selected_bibliography_with_format::<citum_engine::render::plain::PlainText, _>(
+            vec!["ancient-tale".to_string(), "ipcc2023".to_string()],
+        );
+
+    // then the substitute label is comma-joined, short, and capitalized
+    assert!(
+        result.contains("Grimm, J., Ed. (1850). _The Ancient Tale_"),
+        "single editor substitute should render `, Ed.` (comma + short + capitalized): {result}"
+    );
+    assert!(
+        result.contains("Lee, H., & Romero, J., Eds. (2023)."),
+        "multi-editor substitute should render `, Eds.` (comma + short + capitalized): {result}"
+    );
+    assert!(
+        !result.contains("(eds.)") && !result.contains("(Eds.)"),
+        "the parenthesised short form must not appear for the comma preset: {result}"
+    );
+}
+
+#[test]
 fn sentence_initial_editor_verb_prefix_is_capitalized_in_bibliography() {
     let style = build_editor_verb_prefix_style(None);
     let mut bib = IndexMap::new();

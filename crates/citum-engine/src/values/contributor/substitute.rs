@@ -210,6 +210,7 @@ fn resolve_substitute_role_labels<F: OutputFormat<Output = String>>(
         .as_deref()
         .and_then(|form| match form {
             "short" => Some(RoleLabelPreset::ShortSuffix),
+            "short-comma" => Some(RoleLabelPreset::ShortSuffixComma),
             "long" => Some(RoleLabelPreset::LongSuffix),
             _ => None,
         })
@@ -240,7 +241,10 @@ fn resolve_substitute_role_labels<F: OutputFormat<Output = String>>(
                     known,
                     selected,
                     names_count,
-                    None,
+                    super::labels::RoleLabelTermOptions {
+                        gender: None,
+                        text_case: substitute.contributor_role_case,
+                    },
                     effective_rendering,
                     options,
                     fmt,

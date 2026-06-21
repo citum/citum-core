@@ -23,7 +23,9 @@ info:
 options:
   locators: note
   processing: author-date
-  substitute: standard
+  substitute:
+    contributor-role-form: long
+    template: [editor, title, translator]
   integral-name-memory:
     contexts: body-only
     subsequent-form: short

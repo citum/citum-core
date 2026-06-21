@@ -29,6 +29,14 @@ pub(super) enum RoleGenderRequest {
     Neutral,
 }
 
+/// How to resolve and transform a role-label term: the requested grammatical
+/// gender and an optional `text-case` transform applied to the resolved term.
+#[derive(Debug, Clone, Default)]
+pub(super) struct RoleLabelTermOptions {
+    pub gender: Option<RoleGenderRequest>,
+    pub text_case: Option<citum_schema::options::titles::TextCase>,
+}
+
 fn requested_role_gender(
     component: &TemplateContributor,
     reference: &Reference,
@@ -75,12 +83,17 @@ pub(super) fn resolve_role_label_preset<F: OutputFormat<Output = String>>(
     role: &ContributorRole,
     preset: RoleLabelPreset,
     names_count: usize,
-    requested_gender: Option<RoleGenderRequest>,
+    term_opts: RoleLabelTermOptions,
     effective_rendering: &Rendering,
     options: &RenderOptions<'_>,
     fmt: &F,
 ) -> (Option<String>, Option<String>) {
     let plural = names_count > 1;
+    let language = options.locale.locale.as_str();
+    let RoleLabelTermOptions {
+        gender: requested_gender,
+        text_case,
+    } = term_opts;
     match preset {
         RoleLabelPreset::None => (None, None),
         RoleLabelPreset::VerbPrefix => {
@@ -112,11 +125,28 @@ pub(super) fn resolve_role_label_preset<F: OutputFormat<Output = String>>(
                 plural,
                 TermForm::Short,
                 requested_gender,
-            );
+            )
+            .map(|t| apply_label_case(t, text_case, language));
             (
                 None,
                 term.map(|t| {
                     super::format_role_term::<F>(&t, fmt, effective_rendering, options, " (", ")")
+                }),
+            )
+        }
+        RoleLabelPreset::ShortSuffixComma => {
+            let term = resolve_role_term_by_request(
+                options.locale,
+                role,
+                plural,
+                TermForm::Short,
+                requested_gender,
+            )
+            .map(|t| apply_label_case(t, text_case, language));
+            (
+                None,
+                term.map(|t| {
+                    super::format_role_term::<F>(&t, fmt, effective_rendering, options, ", ", "")
                 }),
             )
         }
@@ -127,7 +157,8 @@ pub(super) fn resolve_role_label_preset<F: OutputFormat<Output = String>>(
                 plural,
                 TermForm::Long,
                 requested_gender,
-            );
+            )
+            .map(|t| apply_label_case(t, text_case, language));
             (
                 None,
                 term.map(|t| {
@@ -246,7 +277,10 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
             &component.contributor,
             preset,
             names_count,
-            requested_gender,
+            RoleLabelTermOptions {
+                gender: requested_gender,
+                text_case: None,
+            },
             effective_rendering,
             options,
             fmt,

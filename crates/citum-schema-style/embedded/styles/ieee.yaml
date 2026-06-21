@@ -18,7 +18,10 @@ info:
   short-name: "IEEE"
 options:
   multilingual: romanized-only
-  substitute: editor-translator-short
+  substitute:
+    contributor-role-form: short-comma
+    contributor-role-case: capitalize-first
+    template: [editor, translator]
   processing: numeric
   contributors:
     name-form: initials
