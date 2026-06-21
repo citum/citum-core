@@ -150,6 +150,8 @@ bibliography:
       suffix: '. '
     - term: in
       form: long
+      text-case: capitalize-first
+      suffix: ': '
     - contributor: editor
       form: long
       label: {term: editor, form: long, placement: suffix}

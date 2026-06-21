@@ -92,12 +92,15 @@ bibliography:
     - title: primary
     - term: in
       form: long
+      text-case: capitalize-first
+      suffix: ':'
     - group:
       - contributor: editor
         form: long
         label: {term: editor, form: long, placement: suffix}
       - title: parent-monograph
       delimiter: '. '
+      prefix: ' '
     - variable: publisher
       suffix: '; '
     - date: issued

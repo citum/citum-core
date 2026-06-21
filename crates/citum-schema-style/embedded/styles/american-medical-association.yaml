@@ -83,7 +83,7 @@ bibliography:
       - number: pages
         prefix: ":"
     - variable: doi
-      prefix: " doi:"
+      prefix: ". doi:"
     [book, report, thesis]:
     - contributor: author
       form: long
@@ -107,7 +107,7 @@ bibliography:
       - contributor: editor
         form: long
         name-order: family-first
-        label: {term: editor, form: long, placement: suffix}
+        label: {term: editor, form: short, placement: suffix}
       - title: parent-monograph
     - variable: publisher
       suffix: "; "

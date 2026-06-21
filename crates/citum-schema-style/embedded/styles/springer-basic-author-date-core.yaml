@@ -296,6 +296,7 @@ bibliography:
     group:
     - term: in
       form: long
+      suffix: ':'
     - contributor: editor
       form: long
       name-order: family-first

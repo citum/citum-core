@@ -42,8 +42,9 @@ bibliography:
     contributors:
       name-form: initials
       initialize-with: ". "
-      delimiter-precedes-last: never
+      delimiter-precedes-last: contextual
     separator: ", "
+    entry-suffix: .
   type-variants:
     article-journal:
       modify:
@@ -66,7 +67,7 @@ bibliography:
         and: text
         name-order: given-first
         shorten:
-          min: 8
+          min: 7
           use-first: 1
     - title: primary
     - title: parent-monograph
@@ -99,7 +100,7 @@ bibliography:
         and: text
         name-order: given-first
         shorten:
-          min: 8
+          min: 7
           use-first: 1
     - title: primary
     - title: parent-monograph
@@ -121,10 +122,42 @@ bibliography:
       prefix: ", doi: "
     - variable: url
     chapter:
-      modify:
-        - match:
-            number: pages
-          label-form: short
+    - delimiter: ""
+      group:
+      - number: citation-number
+        wrap:
+          punctuation: brackets
+      - contributor: author
+        form: long
+        and: text
+        name-order: given-first
+        shorten:
+          min: 7
+          use-first: 1
+    - title: primary
+      wrap:
+        punctuation: quotes
+    - group:
+      - term: in
+      - title: parent-monograph
+        emph: true
+      delimiter: " "
+    - contributor: editor
+      form: long
+      name-order: given-first
+      and: text
+      label:
+        term: editor
+        form: short
+        placement: suffix
+        text-case: capitalize-first
+    - variable: publisher-place
+    - variable: publisher
+      prefix: ": "
+    - date: issued
+      form: year
+    - number: pages
+      label-form: short
     dataset:
     - delimiter: ""
       group:
@@ -136,7 +169,7 @@ bibliography:
         and: text
         name-order: given-first
         shorten:
-          min: 8
+          min: 7
           use-first: 1
     - title: primary
     - title: parent-monograph
@@ -174,7 +207,7 @@ bibliography:
         and: text
         name-order: given-first
         shorten:
-          min: 8
+          min: 7
           use-first: 1
     - title: primary
     - title: parent-monograph
@@ -196,10 +229,30 @@ bibliography:
       prefix: ", doi: "
     - variable: url
     paper-conference:
-      modify:
-        - match:
-            number: pages
-          label-form: short
+    - delimiter: ""
+      group:
+      - number: citation-number
+        wrap:
+          punctuation: brackets
+      - contributor: author
+        form: long
+        and: text
+        name-order: given-first
+        shorten:
+          min: 7
+          use-first: 1
+    - title: primary
+      wrap:
+        punctuation: quotes
+    - group:
+      - term: in
+      - title: parent-monograph
+        emph: true
+      delimiter: " "
+    - date: issued
+      form: year
+    - number: pages
+      label-form: short
     patent:
     - number: citation-number
       wrap:
@@ -229,7 +282,7 @@ bibliography:
         and: text
         name-order: given-first
         shorten:
-          min: 8
+          min: 7
           use-first: 1
     - title: primary
       wrap:
@@ -263,7 +316,7 @@ bibliography:
         and: text
         name-order: given-first
         shorten:
-          min: 8
+          min: 7
           use-first: 1
     - title: primary
     - title: parent-monograph
@@ -285,11 +338,26 @@ bibliography:
       prefix: ", doi: "
     - variable: url
     thesis:
-      extends: book
-      modify:
-        - match:
-            title: primary
-          emph: true
+    - delimiter: ""
+      group:
+      - number: citation-number
+        wrap:
+          punctuation: brackets
+      - contributor: author
+        form: long
+        and: text
+        name-order: given-first
+        shorten:
+          min: 7
+          use-first: 1
+    - title: primary
+      emph: false
+      wrap:
+        punctuation: quotes
+    - variable: genre
+    - variable: publisher
+    - date: issued
+      form: year
     standard:
     - number: citation-number
       wrap:
@@ -313,7 +381,7 @@ bibliography:
       and: text
       name-order: given-first
       shorten:
-        min: 8
+        min: 7
         use-first: 1
   - title: primary
     wrap:

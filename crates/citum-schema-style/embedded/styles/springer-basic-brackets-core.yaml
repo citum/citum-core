@@ -96,6 +96,10 @@ bibliography:
       remove:
         - match:
             contributor: editor
+        - match:
+            group:
+              - number: volume
+              - number: pages
     default:
       remove:
         - match:
@@ -233,6 +237,7 @@ bibliography:
     group:
     - term: in
       form: long
+      suffix: ':'
     - contributor: editor
       form: long
       name-order: family-first

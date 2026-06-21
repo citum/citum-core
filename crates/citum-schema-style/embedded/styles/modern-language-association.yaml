@@ -91,7 +91,7 @@ bibliography:
           label-form: short
         - match:
             variable: doi
-          prefix: https://doi.org/
+          prefix: ", https://doi.org/"
     article-magazine:
       modify:
         - match:
@@ -183,6 +183,7 @@ bibliography:
   - title: parent-serial
     emph: true
   - number: volume
+    prefix: ", vol. "
   - number: issue
     prefix: ", no. "
   - variable: publisher
