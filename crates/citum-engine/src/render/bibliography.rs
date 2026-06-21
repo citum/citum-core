@@ -187,8 +187,14 @@ pub(crate) fn render_entry_body_components_with_format<F: OutputFormat<Output = 
     let entry_suffix = bib_cfg.and_then(|bib| bib.entry_suffix.as_deref());
     match entry_suffix {
         Some(suffix) if !suffix.is_empty() => {
-            let ends_with_url = ends_with_url_or_doi(&entry_output);
-            if !ends_with_url && !entry_output.ends_with(suffix.chars().next().unwrap_or('.')) {
+            // The suffix is suppressed after a terminal URL/DOI by default; a
+            // style may force it back on per link kind (IEEE: DOI, MLA: URL).
+            let suppress = match terminal_link(&entry_output) {
+                TerminalLink::Doi => !bib_cfg.is_some_and(|b| b.entry_suffix_after_doi),
+                TerminalLink::Url => !bib_cfg.is_some_and(|b| b.entry_suffix_after_url),
+                TerminalLink::None => false,
+            };
+            if !suppress && !entry_output.ends_with(suffix.chars().next().unwrap_or('.')) {
                 if suffix == "."
                     && punctuation_in_quote
                     && (entry_output.ends_with('"') || entry_output.ends_with('\u{201D}'))
@@ -351,19 +357,29 @@ pub fn refs_to_string_slice_with_format<F: OutputFormat<Output = String>>(
     fmt.finish(fmt.bibliography(rendered_entries))
 }
 
-/// Check if the output ends with a URL or DOI (to suppress trailing period).
-fn ends_with_url_or_doi(output: &str) -> bool {
+/// Classification of a bibliography entry's terminal token, used to decide
+/// whether the `entry_suffix` period applies (per-style URL/DOI policy).
+#[derive(PartialEq)]
+enum TerminalLink {
+    None,
+    Url,
+    Doi,
+}
+
+/// Classify whether an entry ends in a DOI, a plain URL, or neither.
+fn terminal_link(output: &str) -> TerminalLink {
     let visible = visible_text(output);
-    let trimmed = visible.trim_end_matches('.');
-    let trimmed = trimmed.trim_end();
-    // Check if the last "word" looks like a URL or DOI
-    if let Some(last_segment) = trimmed.rsplit_once(' ') {
-        let last = last_segment.1;
-        last.starts_with("https://") || last.starts_with("http://") || last.starts_with("doi.org/")
+    let trimmed = visible.trim_end_matches('.').trim_end();
+    let last = trimmed.rsplit_once(' ').map_or(trimmed, |(_, last)| last);
+    let is_doi = last.contains("doi.org/")
+        || last.starts_with("doi:")
+        || (last.starts_with("10.") && last.contains('/'));
+    if is_doi {
+        TerminalLink::Doi
+    } else if last.starts_with("https://") || last.starts_with("http://") {
+        TerminalLink::Url
     } else {
-        trimmed.starts_with("https://")
-            || trimmed.starts_with("http://")
-            || trimmed.starts_with("doi.org/")
+        TerminalLink::None
     }
 }
 
@@ -415,6 +431,20 @@ mod tests {
     use super::*;
     use crate::render::component::ProcTemplateComponent;
     use citum_schema::template::{Rendering, TemplateComponent, WrapConfig, WrapPunctuation};
+
+    #[test]
+    fn terminal_link_classifies_url_doi_and_plain_text() {
+        // given a DOI in url form, doi: form, or bare 10.x form → Doi
+        assert!(terminal_link("Author. Title. https://doi.org/10.1/x") == TerminalLink::Doi);
+        assert!(terminal_link("Author. Title. doi:10.1038/abc") == TerminalLink::Doi);
+        assert!(terminal_link("Author. Title. doi: 10.1038/abc") == TerminalLink::Doi);
+        // given a plain URL → Url
+        assert!(terminal_link("Author. Title. https://example.com/page") == TerminalLink::Url);
+        // given prose with no terminal link → None
+        assert!(terminal_link("Author. Title. Publisher, 2020") == TerminalLink::None);
+        // a trailing period is ignored when classifying
+        assert!(terminal_link("Author. https://example.com/page.") == TerminalLink::Url);
+    }
 
     #[test]
     fn test_component_starts_new_sentence_at_entry_start() {

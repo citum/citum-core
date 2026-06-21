@@ -839,6 +839,9 @@ crate::str_enum! {
         #[default]
         Year = "year",
         YearMonth = "year-month",
+        /// Month name only, no year or day: "June" (e.g. magazines whose year
+        /// is already supplied by the author-date position).
+        Month = "month",
         Full = "full",
         MonthDay = "month-day",
         YearMonthDay = "year-month-day",

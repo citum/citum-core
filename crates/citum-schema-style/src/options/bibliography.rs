@@ -45,6 +45,16 @@ pub struct BibliographyConfig {
     /// Set to true to suppress the period (APA 7th, Bluebook style).
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub suppress_period_after_url: bool,
+    /// Force `entry_suffix` even when the entry ends in a URL.
+    /// The default suppresses the suffix after URLs/DOIs; set true to keep it
+    /// (MLA wants the period after a terminal URL).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub entry_suffix_after_url: bool,
+    /// Force `entry_suffix` even when the entry ends in a DOI.
+    /// The default suppresses the suffix after URLs/DOIs; set true to keep it
+    /// (IEEE wants the period after a terminal DOI).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub entry_suffix_after_doi: bool,
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -282,6 +292,8 @@ impl Default for BibliographyConfig {
             entry_suffix: None,
             separator: default_separator(),
             suppress_period_after_url: false,
+            entry_suffix_after_url: false,
+            entry_suffix_after_doi: false,
             custom: None,
             compound_numeric: None,
             sort_partitioning: None,

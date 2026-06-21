@@ -83,6 +83,7 @@ bibliography:
     hanging-indent: true
     entry-suffix: .
     separator: ". "
+    entry-suffix-after-url: true
   type-variants:
     article-journal:
       modify:

@@ -45,6 +45,7 @@ bibliography:
       delimiter-precedes-last: contextual
     separator: ", "
     entry-suffix: .
+    entry-suffix-after-doi: true
   type-variants:
     article-journal:
       modify:

@@ -127,6 +127,10 @@ pub struct Config {
     /// Page range formatting (expanded, minimal, chicago).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub page_range_format: Option<PageRangeFormat>,
+    /// Separator between page-range endpoints. Overrides the locale's
+    /// `page-range-delimiter` (en-dash by default); AMA and similar use `-`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub page_range_delimiter: Option<String>,
     /// Hyperlink configuration.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub links: Option<LinksConfig>,
@@ -338,6 +342,12 @@ pub struct BibliographyOptions {
     /// Whether to suppress the trailing period after URLs/DOIs.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub suppress_period_after_url: bool,
+    /// Force `entry-suffix` even when the entry ends in a URL (MLA).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub entry_suffix_after_url: bool,
+    /// Force `entry-suffix` even when the entry ends in a DOI (IEEE).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub entry_suffix_after_doi: bool,
     /// Configuration for compound numeric bibliography entries.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub compound_numeric: Option<bibliography::CompoundNumericConfig>,
@@ -550,6 +560,7 @@ impl Config {
             titles,
             locators,
             page_range_format,
+            page_range_delimiter,
             links,
             volume_pages_delimiter,
             locale_override,
@@ -606,6 +617,7 @@ impl CitationOptions {
             titles: self.titles.clone(),
             locators: self.locators.clone(),
             page_range_format: self.page_range_format.clone(),
+            page_range_delimiter: None,
             links: self.links.clone(),
             punctuation_in_quote: self.punctuation_in_quote,
             volume_pages_delimiter: self.volume_pages_delimiter.clone(),
@@ -681,6 +693,8 @@ impl BibliographyOptions {
             entry_suffix: self.entry_suffix.clone(),
             separator: self.separator.clone(),
             suppress_period_after_url: self.suppress_period_after_url,
+            entry_suffix_after_url: self.entry_suffix_after_url,
+            entry_suffix_after_doi: self.entry_suffix_after_doi,
             custom: None,
             compound_numeric: self.compound_numeric.clone(),
             sort_partitioning: self.sort_partitioning.clone(),
@@ -702,6 +716,7 @@ impl BibliographyOptions {
             titles: self.titles.clone(),
             locators: None,
             page_range_format: self.page_range_format.clone(),
+            page_range_delimiter: None,
             links: self.links.clone(),
             punctuation_in_quote: self.punctuation_in_quote,
             volume_pages_delimiter: self.volume_pages_delimiter.clone(),
@@ -775,6 +790,12 @@ impl BibliographyOptions {
         }
         if other.suppress_period_after_url {
             self.suppress_period_after_url = true;
+        }
+        if other.entry_suffix_after_url {
+            self.entry_suffix_after_url = true;
+        }
+        if other.entry_suffix_after_doi {
+            self.entry_suffix_after_doi = true;
         }
 
         for (key, value) in &other.unknown_fields {
@@ -884,6 +905,8 @@ impl<'de> Deserialize<'de> for Config {
             #[serde(skip_serializing_if = "Option::is_none")]
             page_range_format: Option<PageRangeFormat>,
             #[serde(skip_serializing_if = "Option::is_none")]
+            page_range_delimiter: Option<String>,
+            #[serde(skip_serializing_if = "Option::is_none")]
             links: Option<LinksConfig>,
             #[serde(default, skip_serializing_if = "std::ops::Not::not")]
             punctuation_in_quote: bool,
@@ -923,6 +946,7 @@ impl<'de> Deserialize<'de> for Config {
             titles: wire.titles,
             locators: wire.locators,
             page_range_format: wire.page_range_format,
+            page_range_delimiter: wire.page_range_delimiter,
             links: wire.links,
             punctuation_in_quote: wire.punctuation_in_quote,
             volume_pages_delimiter: wire.volume_pages_delimiter,
