@@ -242,16 +242,25 @@ pub(crate) fn append_rendered_component(
             }
         } else if punctuation_in_quote
             && (last_char == '"' || last_char == '\u{201D}')
-            && sep_first_char == '.'
+            && (sep_first_char == '.' || sep_first_char == ',')
         {
-            // Punctuation-in-quote: pull the period inside the closing quotation mark.
-            entry_output.pop();
-            let quote_str = if last_char == '\u{201D}' {
-                ".\u{201D} "
+            // Punctuation-in-quote: pull the leading period or comma of the
+            // separator inside the closing quotation mark, then append the rest
+            // of the separator (e.g. the trailing space). Mirrors the citation
+            // path in `render/citation.rs::push_delimiter`.
+            let quote = if last_char == '\u{201D}' {
+                '\u{201D}'
             } else {
-                ".\" "
+                '"'
             };
-            entry_output.push_str(quote_str);
+            entry_output.pop();
+            entry_output.push(sep_first_char);
+            entry_output.push(quote);
+            entry_output.push_str(
+                default_separator
+                    .get(sep_first_char.len_utf8()..)
+                    .unwrap_or(""),
+            );
         } else if !last_char.is_whitespace() && !first_char.is_whitespace() {
             // Both sides are non-space — insert the configured separator between them.
             entry_output.push_str(default_separator);
@@ -567,6 +576,37 @@ mod tests {
         }];
         let result = refs_to_string(entries);
         assert_eq!(result, "(Eds.), Title");
+    }
+
+    #[test]
+    fn test_punctuation_in_quote_pulls_comma_inside_closing_quote() {
+        // given a quoted article title followed by a comma-delimited separator
+        // (IEEE house style: separator ", ", punctuation-in-quote enabled)
+        let mut entry_output = String::from("\u{201C}Deep Learning\u{201D}");
+        // when the next component (the journal title) is appended
+        append_rendered_component(&mut entry_output, "Nature", ", ", true);
+        // then the comma is pulled inside the closing quotation mark
+        assert_eq!(entry_output, "\u{201C}Deep Learning,\u{201D} Nature");
+    }
+
+    #[test]
+    fn test_punctuation_in_quote_pulls_period_inside_closing_quote() {
+        // given a quoted title followed by a period-delimited separator
+        let mut entry_output = String::from("\u{201C}Deep Learning\u{201D}");
+        // when the next component is appended
+        append_rendered_component(&mut entry_output, "Nature", ". ", true);
+        // then the period is pulled inside the closing quotation mark (unchanged behaviour)
+        assert_eq!(entry_output, "\u{201C}Deep Learning.\u{201D} Nature");
+    }
+
+    #[test]
+    fn test_punctuation_in_quote_disabled_leaves_comma_outside_quote() {
+        // given punctuation-in-quote disabled
+        let mut entry_output = String::from("\u{201C}Deep Learning\u{201D}");
+        // when the next component is appended with a comma separator
+        append_rendered_component(&mut entry_output, "Nature", ", ", false);
+        // then the comma stays outside the closing quotation mark
+        assert_eq!(entry_output, "\u{201C}Deep Learning\u{201D}, Nature");
     }
 
     #[test]
