@@ -86,7 +86,11 @@ fn render_with_pattern(
                 let kind_range_fmt = kind_cfg
                     .and_then(|k| k.range_format.clone())
                     .unwrap_or_else(|| config.range_format.clone());
-                apply_range_format(seg.value.value_str(), kind_range_fmt)
+                apply_range_format(
+                    seg.value.value_str(),
+                    kind_range_fmt,
+                    locale.grammar_options.page_range_delimiter.as_str(),
+                )
             };
 
             rendered.push(rendered_segment);
@@ -103,7 +107,11 @@ fn render_with_pattern(
         let kind_range_fmt = kind_cfg
             .and_then(|k| k.range_format.clone())
             .unwrap_or_else(|| config.range_format.clone());
-        let value_str = apply_range_format(seg.value.value_str(), kind_range_fmt);
+        let value_str = apply_range_format(
+            seg.value.value_str(),
+            kind_range_fmt,
+            locale.grammar_options.page_range_delimiter.as_str(),
+        );
         let rendered_segment = if matches!(form, LabelForm::None) {
             value_str
         } else {
@@ -136,7 +144,11 @@ fn render_default(segments: &[LocatorSegment], config: &LocatorConfig, locale: &
             let kind_range_fmt = kind_cfg
                 .and_then(|k| k.range_format.clone())
                 .unwrap_or_else(|| config.range_format.clone());
-            apply_range_format(seg.value.value_str(), kind_range_fmt)
+            apply_range_format(
+                seg.value.value_str(),
+                kind_range_fmt,
+                locale.grammar_options.page_range_delimiter.as_str(),
+            )
         } else {
             render_segment_with_label(seg, kind_cfg, form, config.strip_label_periods, locale)
         };
@@ -158,7 +170,11 @@ fn render_segment_with_label(
     let kind_range_fmt = kind_cfg
         .and_then(|k| k.range_format.clone())
         .unwrap_or(PageRangeFormat::Expanded);
-    let value_str = apply_range_format(seg.value.value_str(), kind_range_fmt);
+    let value_str = apply_range_format(
+        seg.value.value_str(),
+        kind_range_fmt,
+        locale.grammar_options.page_range_delimiter.as_str(),
+    );
     render_segment_with_label_str(seg, kind_cfg, form, &value_str, global_strip, locale)
 }
 
@@ -199,7 +215,7 @@ fn render_segment_with_label_str(
 }
 
 /// Apply range format to a value string containing a range separator.
-fn apply_range_format(value: &str, format: PageRangeFormat) -> String {
+fn apply_range_format(value: &str, format: PageRangeFormat, delimiter: &str) -> String {
     // Only act on values containing a range separator
     let sep_pos = value.find(['-', '–', '—']);
     let Some(pos) = sep_pos else {
@@ -219,22 +235,22 @@ fn apply_range_format(value: &str, format: PageRangeFormat) -> String {
         PageRangeFormat::Expanded => {
             // Expand abbreviated end: "33-5" → "33-35", "100-3" → "100-103"
             let expanded_end = expand_range_end(start.trim(), end);
-            format!("{start}\u{2013}{expanded_end}") // en-dash
+            format!("{start}{delimiter}{expanded_end}")
         }
         PageRangeFormat::Minimal => {
             // Minimal: trim shared prefix from end
             let minimal_end = minimal_range_end(start.trim(), end);
-            format!("{start}\u{2013}{minimal_end}")
+            format!("{start}{delimiter}{minimal_end}")
         }
         PageRangeFormat::MinimalTwo => {
             // MinimalTwo: keep at least 2 digits on end
             let minimal_end = minimal_range_end(start.trim(), end);
-            format!("{start}\u{2013}{minimal_end}")
+            format!("{start}{delimiter}{minimal_end}")
         }
         PageRangeFormat::Chicago | PageRangeFormat::Chicago16 | _ => {
             // Chicago rules (simplified: same as expanded for now)
             let expanded_end = expand_range_end(start.trim(), end);
-            format!("{start}\u{2013}{expanded_end}")
+            format!("{start}{delimiter}{expanded_end}")
         }
     }
 }

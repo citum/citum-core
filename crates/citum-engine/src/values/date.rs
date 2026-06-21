@@ -351,6 +351,7 @@ fn format_range_start(
                 format!("{month} {year}")
             }
         }
+        DateForm::Month => extract_month(date, &locale.dates.months.long),
         DateForm::MonthDay => {
             let month = extract_month(date, &locale.dates.months.long);
             let day = date.day();
@@ -598,6 +599,10 @@ fn format_single_date(
             } else {
                 Some(format!("{month} {year}"))
             }
+        }
+        DateForm::Month => {
+            let month = extract_month(date, &locale.dates.months.long);
+            if month.is_empty() { None } else { Some(month) }
         }
         DateForm::MonthDay => {
             let month = extract_month(date, &locale.dates.months.long);
@@ -1211,6 +1216,19 @@ mod locale_pattern_tests {
     #[test]
     fn en_us_month_day_unchanged_by_pattern_machinery() {
         assert_eq!(month_day(&en_us(), "2023-01-12"), "January 12");
+    }
+
+    #[test]
+    fn en_us_month_form_renders_month_name_only() {
+        // given a year-month date and the month-only form
+        let out = format_single_date(
+            &EdtfString("2023-06".to_string()),
+            &DateForm::Month,
+            &en_us(),
+            None,
+        );
+        // then only the month name renders (no year), e.g. magazines
+        assert_eq!(out.as_deref(), Some("June"));
     }
 
     #[test]

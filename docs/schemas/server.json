@@ -1542,6 +1542,11 @@
           ]
         },
         {
+          "description": "Month name only, no year or day: \"June\" (e.g. magazines whose year\nis already supplied by the author-date position).",
+          "type": "string",
+          "const": "month"
+        },
+        {
           "description": "Abbreviated month + day + year in US order: \"Jan 15, 2024\".",
           "type": "string",
           "const": "month-abbr-day-year"

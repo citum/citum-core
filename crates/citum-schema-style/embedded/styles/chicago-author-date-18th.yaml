@@ -192,7 +192,7 @@ bibliography:
     - title: parent-serial
       emph: true
     - date: issued
-      form: year-month
+      form: month
       prefix: ", "
     bill-proceeding:
     - title: primary

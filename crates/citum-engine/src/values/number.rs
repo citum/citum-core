@@ -37,7 +37,15 @@ fn resolve_number_value(
                 None
             } else {
                 reference.pages().map(|p| {
-                    format_page_range(&p.to_string(), options.config.page_range_format.as_ref())
+                    let delimiter =
+                        options.config.page_range_delimiter.as_deref().unwrap_or(
+                            options.locale.grammar_options.page_range_delimiter.as_str(),
+                        );
+                    format_page_range(
+                        &p.to_string(),
+                        options.config.page_range_format.as_ref(),
+                        delimiter,
+                    )
                 })
             }
         }
@@ -240,32 +248,33 @@ pub fn check_plural(value: &str, _locator_type: &citum_schema::citation::Locator
 
 /// Format a page range according to the specified format.
 ///
-/// Formats: expanded (default), minimal, minimal-two, chicago, chicago-16
+/// Formats: expanded (default), minimal, minimal-two, chicago, chicago-16.
+/// `delimiter` is the range separator (usually the locale's
+/// `page-range-delimiter`, en-dash by default; AMA and similar use a hyphen).
 #[must_use]
 pub fn format_page_range(
     pages: &str,
     format: Option<&citum_schema::options::PageRangeFormat>,
+    delimiter: &str,
 ) -> String {
     use citum_schema::options::PageRangeFormat;
 
-    // First, replace hyphen with en-dash
-    let pages = pages.replace('-', "–");
+    // Normalize any en-dash separator to a plain hyphen so splitting below is
+    // delimiter-agnostic; ranges are re-joined with the configured `delimiter`.
+    let normalized = pages.replace('\u{2013}', "-");
+    let with_delimiter = || normalized.replace('-', delimiter);
 
-    // If no range or no format specified, return as-is
+    // If no format specified, just apply the delimiter to the range.
     let Some(format) = format else {
-        return pages; // Default: just convert to en-dash
+        return with_delimiter();
     };
 
-    // Check if this is a range (contains en-dash)
-    let parts: Vec<&str> = pages.split('–').collect();
-    if parts.len() != 2 {
-        return pages; // Not a simple range
-    }
-
-    #[allow(clippy::indexing_slicing, reason = "length checked")]
-    let start = parts[0].trim();
-    #[allow(clippy::indexing_slicing, reason = "length checked")]
-    let end = parts[1].trim();
+    let parts: Vec<&str> = normalized.split('-').collect();
+    let [start, end] = parts.as_slice() else {
+        return with_delimiter(); // Not a simple range
+    };
+    let start = start.trim();
+    let end = end.trim();
 
     // Parse as numbers
     let start_num: Option<u32> = start.parse().ok();
@@ -280,9 +289,9 @@ pub fn format_page_range(
                 PageRangeFormat::Chicago | PageRangeFormat::Chicago16 => format_chicago(s, e),
                 _ => end.to_string(), // Future variants: default to expanded
             };
-            format!("{start}–{formatted_end}")
+            format!("{start}{delimiter}{formatted_end}")
         }
-        _ => pages, // Can't parse or invalid range
+        _ => with_delimiter(), // Can't parse or invalid range
     }
 }
 
@@ -395,6 +404,8 @@ mod tests {
 
     #[test]
     fn test_format_page_range() {
+        // Default en-dash delimiter.
+        let en = "\u{2013}";
         for (input, format, expected) in [
             ("10-15", None, "10–15"),
             ("10–15", None, "10–15"),
@@ -417,7 +428,21 @@ mod tests {
             ("X-Y", Some(PageRangeFormat::Chicago), "X–Y"),
             ("10-15-20", Some(PageRangeFormat::Chicago), "10–15–20"),
         ] {
-            assert_eq!(format_page_range(input, format.as_ref()), expected);
+            assert_eq!(format_page_range(input, format.as_ref(), en), expected);
+        }
+    }
+
+    #[test]
+    fn test_format_page_range_hyphen_delimiter() {
+        // AMA-style hyphen delimiter: en-dash input is normalized to a hyphen,
+        // and range formats still apply.
+        for (input, format, expected) in [
+            ("436-444", None, "436-444"),
+            ("436–444", None, "436-444"),
+            ("321-328", Some(PageRangeFormat::Expanded), "321-328"),
+            ("321-328", Some(PageRangeFormat::Chicago), "321-28"),
+        ] {
+            assert_eq!(format_page_range(input, format.as_ref(), "-"), expected);
         }
     }
 

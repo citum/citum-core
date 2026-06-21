@@ -336,6 +336,13 @@ impl Terms {
                         short: "pers. comm.".into(),
                     },
                 ),
+                (
+                    GeneralTerm::Patent,
+                    SimpleTerm {
+                        long: "patent".into(),
+                        short: "pat.".into(),
+                    },
+                ),
             ]),
         }
     }
