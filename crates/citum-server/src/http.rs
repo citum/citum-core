@@ -596,4 +596,42 @@ mod tests {
             serde_json::json!(["output_format", "locale", "document_options"])
         );
     }
+
+    #[tokio::test(flavor = "current_thread")]
+    async fn rpc_handler_format_document_returns_citations_and_bibliography() {
+        let payload = serde_json::from_value(json!({
+            "id": 70,
+            "method": "format_document",
+            "params": {
+                "style": { "kind": "path", "value": apa_style_path() },
+                "output_format": "plain",
+                "refs": hawking_refs(),
+                "citations": [{ "id": "cite-1", "items": [{ "id": "ITEM-2" }] }]
+            }
+        }))
+        .expect("payload should deserialize");
+
+        let response = rpc_handler(test_dispatcher(), Json(payload))
+            .await
+            .into_response();
+        assert_eq!(response.status(), axum::http::StatusCode::OK);
+
+        let body = response_body_json(response).await;
+        let formatted = body["result"]["formatted_citations"]
+            .as_array()
+            .expect("formatted_citations should be an array");
+        assert_eq!(
+            formatted.len(),
+            1,
+            "one citation submitted, one should be returned"
+        );
+        assert_eq!(
+            formatted[0]["id"], "cite-1",
+            "citation id should be preserved in output"
+        );
+        assert!(
+            body["result"]["bibliography"].is_object(),
+            "result should include a bibliography object: {body:?}"
+        );
+    }
 }

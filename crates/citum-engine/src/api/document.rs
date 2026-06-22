@@ -590,10 +590,12 @@ mod tests {
         TemplateComponent, TemplateContributor, TemplateDate, TemplateDateVariable,
         WrapPunctuation,
     };
+    use citum_schema::data::citation::CitationMode;
     use citum_schema::options::{AndOptions, ContributorConfig};
     use citum_schema::reference::{EdtfString, InputReference, Monograph, MonographType, Title};
     use citum_schema::template::{TemplateTitle, TitleType};
     use citum_schema::{BibliographySpec, CitationSpec, StyleInfo};
+    use std::collections::HashMap;
 
     fn make_test_style() -> Style {
         Style {
@@ -1640,6 +1642,217 @@ smith2020:
         assert!(
             ids.contains(&"smith2020"),
             "nocite ref must be in bibliography: {ids:?}"
+        );
+    }
+
+    fn apa_style_path() -> String {
+        use std::path::PathBuf;
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .join("styles/embedded/apa-7th.yaml")
+            .to_str()
+            .unwrap()
+            .to_string()
+    }
+
+    fn chicago_notes_path() -> String {
+        use std::path::PathBuf;
+        PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .parent()
+            .unwrap()
+            .parent()
+            .unwrap()
+            .join("styles/embedded/chicago-notes-18th.yaml")
+            .to_str()
+            .unwrap()
+            .to_string()
+    }
+
+    fn make_citation_occ(id: &str, ref_id: &str, mode: Option<CitationMode>) -> CitationOccurrence {
+        CitationOccurrence {
+            id: id.to_string(),
+            items: vec![CitationOccurrenceItem {
+                id: ref_id.to_string(),
+                locator: None,
+                prefix: None,
+                suffix: None,
+                integral_name_state: None,
+                org_abbreviation_state: None,
+            }],
+            mode,
+            note_number: None,
+            suppress_author: None,
+            grouped: None,
+            prefix: None,
+            suffix: None,
+            sentence_start: None,
+        }
+    }
+
+    #[test]
+    fn format_document_author_date_mixed_citation_modes_order_preserved() {
+        let refs = RefsInput::Json(serde_json::json!({
+            "smith2020": {
+                "id": "smith2020",
+                "class": "monograph",
+                "type": "book",
+                "title": "Sample Work",
+                "author": [{"family": "Smith", "given": "John"}],
+                "issued": "2020"
+            }
+        }));
+
+        let request = FormatDocumentRequest {
+            style: StyleInput::Path(apa_style_path()),
+            style_overrides: None,
+            locale: None,
+            output_format: OutputFormatKind::Plain,
+            refs,
+            citations: vec![
+                make_citation_occ("cite-integral", "smith2020", Some(CitationMode::Integral)),
+                make_citation_occ(
+                    "cite-non-integral",
+                    "smith2020",
+                    Some(CitationMode::NonIntegral),
+                ),
+            ],
+            bibliography_blocks: Vec::new(),
+            document_options: None,
+            nocite: vec![],
+        };
+
+        let result = format_document(request).expect("format_document should succeed");
+
+        assert_eq!(
+            result.formatted_citations.len(),
+            2,
+            "both citations should be returned"
+        );
+        assert_eq!(
+            result.formatted_citations[0].id, "cite-integral",
+            "document order must be preserved"
+        );
+        assert_eq!(
+            result.formatted_citations[1].id, "cite-non-integral",
+            "document order must be preserved"
+        );
+
+        let integral = &result.formatted_citations[0].text;
+        let non_integral = &result.formatted_citations[1].text;
+
+        assert!(
+            !integral.starts_with('('),
+            "integral citation should place author name outside parentheses: {integral:?}"
+        );
+        assert!(
+            integral.contains("Smith"),
+            "integral citation should contain author name: {integral:?}"
+        );
+        assert!(
+            non_integral.starts_with('('),
+            "non-integral citation should be fully parenthetical: {non_integral:?}"
+        );
+    }
+
+    #[test]
+    fn format_document_note_style_repeat_citations_produce_ibid() {
+        let refs = RefsInput::Json(serde_json::json!({
+            "smith1995": {
+                "id": "smith1995",
+                "class": "monograph",
+                "type": "book",
+                "title": "A Great Book",
+                "author": [{"family": "Smith", "given": "John"}],
+                "issued": "1995"
+            }
+        }));
+
+        let request = FormatDocumentRequest {
+            style: StyleInput::Path(chicago_notes_path()),
+            style_overrides: None,
+            locale: None,
+            output_format: OutputFormatKind::Plain,
+            refs,
+            citations: vec![
+                make_citation_occ("cite-1", "smith1995", None),
+                make_citation_occ("cite-2", "smith1995", None),
+                make_citation_occ("cite-3", "smith1995", None),
+            ],
+            bibliography_blocks: Vec::new(),
+            document_options: None,
+            nocite: vec![],
+        };
+
+        let result = format_document(request).expect("format_document should succeed");
+
+        assert_eq!(result.formatted_citations.len(), 3);
+
+        let first = &result.formatted_citations[0].text;
+        let second = &result.formatted_citations[1].text;
+        let third = &result.formatted_citations[2].text;
+
+        assert!(
+            first.contains("Smith"),
+            "first citation should render full form: {first:?}"
+        );
+        assert_eq!(
+            second.as_str(),
+            "Ibid.",
+            "immediate repeat should render as ibid: {second:?}"
+        );
+        assert_eq!(
+            third.as_str(),
+            "Ibid.",
+            "third repeat should also render as ibid: {third:?}"
+        );
+    }
+
+    #[test]
+    fn format_document_annotations_appear_in_bibliography() {
+        let refs = RefsInput::Json(serde_json::json!({
+            "smith2020": {
+                "id": "smith2020",
+                "class": "monograph",
+                "type": "book",
+                "title": "Sample Work",
+                "author": [{"family": "Smith", "given": "John"}],
+                "issued": "2020"
+            }
+        }));
+
+        let mut annotations = HashMap::new();
+        annotations.insert(
+            "smith2020".to_string(),
+            "Foundational work on the topic.".to_string(),
+        );
+
+        let request = FormatDocumentRequest {
+            style: StyleInput::Path(apa_style_path()),
+            style_overrides: None,
+            locale: None,
+            output_format: OutputFormatKind::Plain,
+            refs,
+            citations: vec![make_citation_occ("cite-1", "smith2020", None)],
+            bibliography_blocks: Vec::new(),
+            document_options: Some(DocumentOptions {
+                annotations: Some(annotations),
+                ..Default::default()
+            }),
+            nocite: vec![],
+        };
+
+        let result = format_document(request).expect("format_document should succeed");
+
+        assert!(
+            result
+                .bibliography
+                .content
+                .contains("Foundational work on the topic."),
+            "annotation text should appear in bibliography output: {:?}",
+            result.bibliography.content
         );
     }
 }
