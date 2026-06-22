@@ -24,9 +24,10 @@ options:
   contributors: physics-numeric
   dates: long
 citation:
-  template-ref: numeric-citation
-  prefix:  [
-  suffix: ']'
+  template:
+  - number: citation-number
+  wrap:
+    punctuation: brackets
   multi-cite-delimiter: ','
 bibliography:
   options:
