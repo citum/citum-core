@@ -19,8 +19,14 @@ trap "rm -f $TMP" EXIT
 
 # Render; strip the in-document preamble (notice + features paragraph + two <hr>s)
 # that the engine emits — the template already has those in the page wrapper.
+# Also: (1) drop the document-title <h1> from the article section (the page
+#     template shows it in the <header>); (2) add class="content" so the
+#     .content p+p paragraph-indentation rule in citum-interactive.css applies.
 cargo run --bin citum -- render doc "$DOC" -b "$REFS" -s "$STYLE" -f html 2>/dev/null \
-  | sed -n '/<section/,$p' > "$TMP"
+  | sed -n '/<section/,$p' \
+  | sed 's|id="The-Infrastructure-of-Scholarly-Memory"|id="The-Infrastructure-of-Scholarly-Memory" class="content"|' \
+  | sed '/^<h1>The Infrastructure of Scholarly Memory<\/h1>$/d' \
+  > "$TMP"
 
 # Inject rendered content between the CONTENT_START / CONTENT_END markers.
 python3 - "$OUT" "$TMP" <<'PYEOF'
