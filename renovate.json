@@ -8,6 +8,13 @@
   "commitMessageAction": "update",
   "commitBody": "",
   "commitBodyTable": false,
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "labels": ["security"],
+    "schedule": ["at any time"],
+    "prPriority": 10,
+    "groupName": null
+  },
   "packageRules": [
     {
       "matchManagers": ["cargo"],
