@@ -36,7 +36,7 @@ references:
     title: "The Footnote as Institution: A History of Scholarly Reference"
     author:
       - family: Webb
-        given: Margaret L.
+        given: Margaret Louise
     issued: "1968"
     publisher:
       name: Oxford University Press
@@ -118,7 +118,7 @@ references:
     title: "Notes on Bibliographic Method and the Organisation of Learned References"
     author:
       - family: Harrington
-        given: R. L.
+        given: Robert Langton
     issued: "1891?"   # EDTF Level 1: uncertain date
     archive-info:
       name: "British Library"

@@ -1,0 +1,554 @@
+<!-- PAGE_ID: guides-djot-documents -->
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Djot document authoring | Citum Docs</title>
+    <meta name="description" content="What you can do with Djot documents in Citum: citation syntax, name memory, bibliography grouping, rich text in reference fields, EDTF dates, multilingual sources, and multiple output formats." />
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="../assets/citum-theme.css" />
+    <style>
+        .syntax-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin: 1rem 0;
+        }
+        .syntax-table th {
+            text-align: left;
+            padding: 0.5rem 0.75rem;
+            border-bottom: 2px solid var(--citum-border, #ddd);
+            font-weight: 600;
+            color: var(--citum-ink-strong, #1a1a2e);
+        }
+        .syntax-table td {
+            padding: 0.45rem 0.75rem;
+            border-bottom: 1px solid var(--citum-border, #ddd);
+            vertical-align: top;
+        }
+        .syntax-table tr:last-child td {
+            border-bottom: none;
+        }
+        .syntax-table code {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+            background: var(--citum-paper-deep, #f5f2eb);
+            padding: 0.1em 0.3em;
+            border-radius: 3px;
+        }
+        .note-aside {
+            background: var(--citum-blue-soft, #eef6fc);
+            border-left: 3px solid var(--citum-blue, #2a94d6);
+            border-radius: 4px;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            color: var(--citum-muted, #555);
+            margin: 1rem 0;
+        }
+        .note-aside strong {
+            color: var(--citum-ink, #222);
+        }
+        .toc-link {
+            display: block;
+            padding: 0.3rem 0.5rem;
+            color: var(--citum-muted, #666);
+            text-decoration: none;
+            font-size: 0.88rem;
+            border-radius: 4px;
+            transition: background 0.15s, color 0.15s;
+        }
+        .toc-link:hover {
+            background: var(--citum-blue-soft, #eef6fc);
+            color: var(--citum-blue, #2a94d6);
+        }
+    </style>
+</head>
+<body>
+    <nav class="site-nav">
+        <!-- LAYOUT_NAV_START -->
+        <div class="site-nav-inner">
+            <div class="site-brand-wrap">
+                <a href="../index.html" class="site-brand">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </a>
+            </div>
+            <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
+                <a class="site-nav-link " href="../index.html">Overview</a>
+                <a class="site-nav-link " href="../examples.html">Capabilities</a>
+                <a class="site-nav-link active" href="../guides/style-authoring/start.html">Style Authoring</a>
+                <a class="site-nav-link " href="../developer.html">Integrate</a>
+                <a class="site-nav-link " href="../demo.html">Demo</a>
+                <a class="site-nav-link " href="../schemas/">Schemas</a>
+                <a class="site-nav-link " href="../reports.html">Reports</a>
+                <a class="site-source-link" href="https://github.com/citum/citum-core">
+                    <svg aria-hidden="true" class="site-source-icon" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"></path>
+                    </svg>
+                    GitHub
+                </a>
+            </div>
+            <button type="button" class="mobile-nav-toggle" data-nav-toggle aria-expanded="false" aria-controls="mobile-nav">
+                <span class="mobile-nav-icon" aria-hidden="true">&#9776;</span>
+            </button>
+        </div>
+        <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
+            <a class="site-nav-link " href="../index.html">Overview</a>
+            <a class="site-nav-link " href="../examples.html">Capabilities</a>
+            <a class="site-nav-link active" href="../guides/style-authoring/start.html">Style Authoring</a>
+            <a class="site-nav-link " href="../developer.html">Integrate</a>
+            <a class="site-nav-link " href="../demo.html">Demo</a>
+            <a class="site-nav-link " href="../schemas/">Schemas</a>
+            <a class="site-nav-link " href="../reports.html">Reports</a>
+            <a class="site-nav-link" href="https://github.com/citum/citum-core">GitHub</a>
+        </div>        <!-- LAYOUT_NAV_END -->
+    </nav>
+
+    <div class="doc-sidebar-layout">
+        <aside class="doc-sidebar" aria-label="In this guide">
+            <div class="doc-sidebar-title">In this guide</div>
+            <a class="toc-link" href="#pipeline">The document pipeline</a>
+            <a class="toc-link" href="#citation-syntax">Citation syntax</a>
+            <a class="toc-link" href="#name-memory">Name memory</a>
+            <a class="toc-link" href="#rich-text">Rich text in reference fields</a>
+            <a class="toc-link" href="#bib-groups">Bibliography grouping</a>
+            <a class="toc-link" href="#special-types">Special reference types</a>
+            <a class="toc-link" href="#output-formats">Output formats</a>
+            <div class="doc-sidebar-title" style="margin-top: 1.5rem;">See also</div>
+            <a class="toc-link" href="../demo.html">Live demo</a>
+            <a class="toc-link" href="integrations/djot.html">Integration recipe</a>
+            <a class="toc-link" href="style-authoring/start.html">Write a style</a>
+        </aside>
+
+        <main class="doc-shell">
+            <header class="doc-section-header">
+                <span class="citum-kicker">Document authoring</span>
+                <h1>Djot document authoring</h1>
+                <p>
+                    Djot is Citum&rsquo;s native document format. When you write a Djot manuscript and
+                    render it with Citum, you get citations, a formatted bibliography, and rich text
+                    in reference fields &mdash; all from a single command. This page documents what
+                    the pipeline supports and how to use it. The <a href="../demo.html">live demo</a>
+                    shows a complete example rendered with APA 7th.
+                </p>
+            </header>
+
+            <section class="doc-section" id="pipeline">
+                <div class="doc-section-header">
+                    <h2>The document pipeline</h2>
+                    <p>
+                        A Djot document is a plain text file with citation keys inside brackets.
+                        The Citum CLI reads the document, resolves each key against your reference
+                        file, and produces a formatted output with inline citations and a bibliography
+                        appended at the end.
+                    </p>
+                </div>
+                <div class="workshop-block">
+                    <div class="workshop-label">Minimal Djot document</div>
+                    <pre><code>---
+options:
+  style: apa-7th
+---
+
+As [@kuhn1962] argued, paradigm shifts are rarely smooth.
+[+@chen2017] extends this analysis to citation practices.
+
+# Bibliography
+
+::: bibliography
+:::</code></pre>
+                </div>
+                <div class="workshop-block" style="margin-top: 1rem;">
+                    <div class="workshop-label">Render to HTML</div>
+                    <pre><code>citum render doc manuscript.djot -b references.yaml -s apa-7th -f html -o paper.html</code></pre>
+                </div>
+                <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                    The <code>::: bibliography :::</code> fenced div marks where the bibliography is
+                    inserted. Without it, Citum appends the bibliography after the last paragraph.
+                    Options can also be supplied via YAML frontmatter in the document itself or via
+                    CLI flags &mdash; flags override frontmatter.
+                </p>
+            </section>
+
+            <section class="doc-section" id="citation-syntax">
+                <div class="doc-section-header">
+                    <h2>Citation syntax</h2>
+                    <p>
+                        Citum uses the same bracketed citation syntax as Pandoc, with one difference:
+                        integral (narrative) citations use a <code>+</code> prefix rather than a bare
+                        <code>@key</code> before the bracket.
+                    </p>
+                </div>
+                <table class="syntax-table">
+                    <thead>
+                        <tr>
+                            <th>Form</th>
+                            <th>Syntax</th>
+                            <th>Rendered (APA)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Non-integral (parenthetical)</td>
+                            <td><code>[@kuhn1962]</code></td>
+                            <td>(Kuhn, 1962)</td>
+                        </tr>
+                        <tr>
+                            <td>Integral (narrative)</td>
+                            <td><code>[+@chen2017]</code></td>
+                            <td>Chen (2017)</td>
+                        </tr>
+                        <tr>
+                            <td>Author suppressed</td>
+                            <td><code>[-@watson1953]</code></td>
+                            <td>(1953)</td>
+                        </tr>
+                        <tr>
+                            <td>With locator</td>
+                            <td><code>[@chen2017, ch. 3]</code></td>
+                            <td>(Chen, 2017, ch. 3)</td>
+                        </tr>
+                        <tr>
+                            <td>Integral with locator</td>
+                            <td><code>[+@chen2017, p. 45]</code></td>
+                            <td>Chen (2017, p. 45)</td>
+                        </tr>
+                        <tr>
+                            <td>Multiple citations</td>
+                            <td><code>[@kuhn1962; @watson1953]</code></td>
+                            <td>(Kuhn, 1962; Watson, 1953)</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="note-aside">
+                    <strong>Locator types.</strong> Citum understands standard locator labels:
+                    <code>p.</code>, <code>pp.</code>, <code>ch.</code>, <code>§</code>, <code>¶</code>,
+                    <code>fig.</code>, <code>no.</code>, <code>vol.</code>, <code>art.</code>, and others.
+                    Locators are passed through to the style, which decides how to render them.
+                </div>
+            </section>
+
+            <section class="doc-section" id="name-memory">
+                <div class="doc-section-header">
+                    <h2>Name memory</h2>
+                    <p>
+                        When the same author appears multiple times as an integral citation, name memory
+                        suppresses the given name on repeat occurrences &mdash; exactly as a human
+                        copy-editor would. This is opt-in and controlled per document.
+                    </p>
+                </div>
+                <div class="workshop-block">
+                    <div class="workshop-label">Document frontmatter</div>
+                    <pre><code>---
+options:
+  integral-name-memory:
+    enabled: true
+    scope: document       # "document" or "section"
+    contexts: body-and-notes   # or "body-only", "notes-only"
+---</code></pre>
+                </div>
+                <div class="workshop-block" style="margin-top: 1rem;">
+                    <div class="workshop-label">Effect in the text (APA author-date)</div>
+                    <pre><code>[+@chen2017] argues …       → Chen (2017) argues …
+[+@chen2017, ch. 3] shows … → Chen (2017, ch. 3) shows …   ← given name suppressed
+[+@chen2020] extends …     → Chen (2020) extends …          ← still suppressed</code></pre>
+                </div>
+                <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                    The <code>scope</code> controls when the memory resets: <code>document</code> means
+                    once the author has appeared, their name is short for the rest of the document.
+                    <code>section</code> resets the memory at each top-level heading.
+                    The <a href="../demo.html">demo</a> shows name memory in action with the Chen citations.
+                </p>
+            </section>
+
+            <section class="doc-section" id="rich-text">
+                <div class="doc-section-header">
+                    <h2>Rich text in reference fields</h2>
+                    <p>
+                        Djot inline markup is understood natively in the <code>title</code>,
+                        <code>note</code>, and <code>abstract</code> fields of Citum YAML references.
+                        This lets you encode an embedded book title, a proper noun that should keep
+                        its case, or typographic emphasis directly in the data &mdash; once, without
+                        duplicating it per output format.
+                    </p>
+                </div>
+
+                <h3 style="margin-top: 1.5rem; font-weight: 600;">Title-within-title</h3>
+                <p>
+                    If an article title contains a book title, mark the embedded title with Djot
+                    italic (<code>_..._</code>). The renderer applies the appropriate convention per
+                    output format: <code>&lt;em&gt;</code> in HTML, <code>\emph{}</code> in LaTeX,
+                    <code>#emph[]</code> in Typst.
+                </p>
+                <div class="workshop-block">
+                    <pre><code>- id: hoyningen2015
+  class: serial-component
+  type: article
+  title: "Kuhn's _The Structure of Scientific Revolutions_ Revisited"
+  author:
+    - family: Hoyningen-Huene
+      given: Paul
+  issued: "2015"
+  container:
+    class: serial
+    type: academic-journal
+    title: Studies in History and Philosophy of Science
+    volume: "52"</code></pre>
+                </div>
+                <p style="color: var(--citum-muted); font-size: 0.92rem;">
+                    Chicago output: &ldquo;Kuhn&rsquo;s <em>The Structure of Scientific Revolutions</em>
+                    Revisited&rdquo; &mdash; the embedded book title is italicised; the rest is not.
+                </p>
+
+                <h3 style="margin-top: 1.5rem; font-weight: 600;">Case protection with <code>{.nocase}</code></h3>
+                <p>
+                    Title-case styles would normally uppercase words in a title. Use a
+                    <code>{.nocase}</code> span to protect acronyms, proper nouns, or phrases that
+                    must stay as written.
+                </p>
+                <div class="workshop-block">
+                    <pre><code>title: "The role of {.nocase}[DNA] in evolutionary theory"
+title: "Chronology of the {.nocase}[BCE] period in ancient Rome"</code></pre>
+                </div>
+
+                <h3 style="margin-top: 1.5rem; font-weight: 600;">Markup in <code>note</code> and <code>abstract</code></h3>
+                <p>
+                    The <code>note</code> and <code>abstract</code> fields also accept Djot inline markup,
+                    including links. This is useful for annotation-style bibliographies.
+                </p>
+                <div class="workshop-block">
+                    <pre><code>- id: smith2024
+  type: book
+  title: Open Access and the Academy
+  author:
+    - family: Smith
+      given: Jordan
+  issued: "2024"
+  note: "Preprint available at [arXiv:2401.12345](https://arxiv.org/abs/2401.12345)."</code></pre>
+                </div>
+            </section>
+
+            <section class="doc-section" id="bib-groups">
+                <div class="doc-section-header">
+                    <h2>Bibliography grouping</h2>
+                    <p>
+                        A document can split its bibliography into named sections using fenced divs
+                        with filter attributes. Each <code>::: bibliography :::</code> div renders
+                        only the entries that match its filter; entries that match no filter do not
+                        appear.
+                    </p>
+                </div>
+                <div class="workshop-block">
+                    <div class="workshop-label">Two-part bibliography: primary and secondary sources</div>
+                    <pre><code>{ type="manuscript" title="Primary Sources" }
+::: bibliography
+:::
+
+{ not-type="manuscript" title="Secondary Sources" }
+::: bibliography
+:::</code></pre>
+                </div>
+                <p style="color: var(--citum-muted); font-size: 0.92rem;">
+                    The <code>title</code> attribute sets the heading for that section. The
+                    <code>type</code> attribute filters by Citum entry type; prefix any attribute with
+                    <code>not-</code> to invert the match.
+                </p>
+
+                <h3 style="margin-top: 1.5rem; font-weight: 600;">Available filter attributes</h3>
+                <table class="syntax-table">
+                    <thead>
+                        <tr>
+                            <th>Attribute</th>
+                            <th>Matches</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>type="book"</code></td>
+                            <td>Entries with that Citum entry type</td>
+                        </tr>
+                        <tr>
+                            <td><code>not-type="book"</code></td>
+                            <td>Entries whose type is <em>not</em> that value</td>
+                        </tr>
+                        <tr>
+                            <td><code>language="ja"</code></td>
+                            <td>Entries with that BCP 47 language tag</td>
+                        </tr>
+                        <tr>
+                            <td><code>title="Section heading"</code></td>
+                            <td>Sets the rendered heading for this bibliography section</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="note-aside">
+                    The <a href="../demo.html">live demo</a> shows primary/secondary bibliography grouping
+                    using <code>type="manuscript"</code> to separate an archival source from the
+                    secondary literature.
+                </div>
+            </section>
+
+            <section class="doc-section" id="special-types">
+                <div class="doc-section-header">
+                    <h2>Special reference types</h2>
+                </div>
+
+                <h3 style="font-weight: 600;">EDTF dates (uncertain and approximate)</h3>
+                <p>
+                    Citum reference YAML accepts
+                    <a href="https://www.loc.gov/standards/datetime/">EDTF Level 1</a> date strings in
+                    the <code>issued</code> field. The two most common modifiers:
+                </p>
+                <table class="syntax-table">
+                    <thead>
+                        <tr>
+                            <th>Modifier</th>
+                            <th>Meaning</th>
+                            <th>Example</th>
+                            <th>Rendered (APA)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>?</code></td>
+                            <td>Uncertain</td>
+                            <td><code>issued: "1891?"</code></td>
+                            <td>(1891?)</td>
+                        </tr>
+                        <tr>
+                            <td><code>~</code></td>
+                            <td>Approximate</td>
+                            <td><code>issued: "2022~"</code></td>
+                            <td>(ca. 2022)</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <h3 style="margin-top: 1.5rem; font-weight: 600;">Archival sources with <code>archive-info</code></h3>
+                <p>
+                    Unpublished manuscripts and archival items use <code>type: manuscript</code> and
+                    an <code>archive-info</code> block with repository metadata.
+                </p>
+                <div class="workshop-block">
+                    <pre><code>- id: harrington1891
+  class: monograph
+  type: manuscript
+  title: "Notes on Bibliographic Method and the Organisation of Learned References"
+  author:
+    - family: Harrington
+      given: Robert Langton
+  issued: "1891?"
+  archive-info:
+    name: "British Library"
+    location: "Manuscripts Reading Room"
+    place: "London"
+    collection: "Harrington Papers"
+    shelfmark: "MS Add. 47903, ff. 12–34"</code></pre>
+                </div>
+
+                <h3 style="margin-top: 1.5rem; font-weight: 600;">Preprints with <code>eprint</code></h3>
+                <p>
+                    Preprints and working papers use <code>type: report</code> with an
+                    <code>eprint</code> block that identifies the server and ID.
+                </p>
+                <div class="workshop-block">
+                    <pre><code>- id: okafor2024
+  class: monograph
+  type: report
+  title: "Network Topology of Academic Citation: A Large-Scale Computational Analysis"
+  author:
+    - family: Okafor
+      given: Nnamdi
+  issued: "2024-01"
+  eprint:
+    id: "2401.05832"
+    server: arXiv
+    class: "cs.DL"</code></pre>
+                </div>
+
+                <h3 style="margin-top: 1.5rem; font-weight: 600;">Multilingual sources</h3>
+                <p>
+                    Titles and contributor names can carry parallel-script and transliterated forms.
+                    The style selects which view to render. See
+                    <a href="../guides/style-authoring/start.html">Style authoring</a> and the
+                    <a href="../demo.html">demo</a> for Japanese and Spanish examples.
+                </p>
+            </section>
+
+            <section class="doc-section" id="output-formats">
+                <div class="doc-section-header">
+                    <h2>Output formats</h2>
+                    <p>
+                        The same Djot document and reference file can target HTML, LaTeX, or Typst
+                        with a single flag change. Rich text markup in reference fields is translated
+                        appropriately for each format.
+                    </p>
+                </div>
+                <div class="workshop-block">
+                    <pre><code># HTML
+citum render doc manuscript.djot -b references.yaml -s apa-7th -f html -o paper.html
+
+# LaTeX (produces a .tex file for inclusion in your LaTeX project)
+citum render doc manuscript.djot -b references.yaml -s apa-7th -f latex -o paper.tex
+
+# Typst
+citum render doc manuscript.djot -b references.yaml -s chicago-notes-18th -f typst -o paper.typ
+
+# Compile Typst → PDF (requires the typst CLI)
+typst compile paper.typ paper.pdf</code></pre>
+                </div>
+                <div class="note-aside">
+                    <strong>Output format and style are independent.</strong> Any style can render to
+                    any output format. A Chicago-notes style renders footnotes in all three formats;
+                    an author-date style renders parenthetical citations in all three.
+                </div>
+            </section>
+
+            <section class="doc-section">
+                <div class="doc-section-header">
+                    <h2>Try it</h2>
+                </div>
+                <p>
+                    The <a href="../demo.html">demo page</a> shows a complete Djot manuscript rendered
+                    with APA 7th, including name memory, multilingual sources, EDTF dates, archival and
+                    preprint entries, and grouped bibliographies. The source files
+                    (<code>docs/demo.djot</code> and <code>docs/demo-refs.yaml</code>) are in the
+                    repository and can be run locally with:
+                </p>
+                <div class="workshop-block">
+                    <pre><code>citum render doc docs/demo.djot -b docs/demo-refs.yaml -s styles/embedded/apa-7th.yaml -f html</code></pre>
+                </div>
+                <p style="margin-top: 1rem;">
+                    Need to integrate Citum into an existing workflow? See
+                    <a href="integrations/djot.html">Write citations in Djot &mdash; integration recipe</a>
+                    for a step-by-step setup guide, or
+                    <a href="../developer.html">Integrate Citum</a> for WASM, FFI, and JSON-RPC entry points.
+                </p>
+            </section>
+        </main>
+    </div>
+
+    <footer style="padding: 3rem 0; border-top: 1px solid var(--citum-border); background: var(--citum-surface);">
+        <!-- LAYOUT_FOOTER_START -->
+            <div class="site-footer-inner">
+                <div class="site-brand site-brand-small">
+                    <div class="site-brand-mark"><span>C</span></div>
+                    <span class="site-brand-name">Citum</span>
+                </div>
+                <div class="site-footer-links">
+                    <a href="../guides/style-authoring/start.html">Style Authoring</a>
+                    <a href="../developer.html">Integrate</a>
+                    <a href="../schemas/">Schemas</a>
+                    <a href="../reports.html">Reports</a>
+                    <a href="../operating.html">Contributing</a>
+                    <a href="https://github.com/citum/citum-core">GitHub</a>
+                </div>
+                <div class="site-footer-note">&copy; 2026 Citum Project.</div>
+            </div>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github.min.css">
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js" defer onload="hljs.highlightAll();"></script>        <!-- LAYOUT_FOOTER_END -->
+    </footer>
+    <script src="../assets/citum-interactive.js"></script>
+</body>
+</html>

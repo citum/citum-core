@@ -139,6 +139,29 @@
       padding: 0.15rem 0.6rem;
       font-size: 0.8rem;
       color: var(--citum-muted, #555);
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      user-select: none;
+    }
+    .feature-tag:hover {
+      background: var(--citum-blue-soft, #eef6fc);
+      border-color: var(--citum-blue, #2a94d6);
+      color: var(--citum-blue, #2a94d6);
+    }
+    .feature-tag.active {
+      background: var(--citum-blue, #2a94d6);
+      color: white;
+      border-color: var(--citum-blue, #2a94d6);
+    }
+    .feature-highlight {
+      outline: 2px solid var(--citum-blue, #2a94d6);
+      outline-offset: 2px;
+      border-radius: 3px;
+      background: var(--citum-blue-soft, #eef6fc);
+    }
+    .feature-highlight.citum-citation {
+      padding: 0.1em 0.25em;
+      margin: 0 -0.25em;
     }
   </style>
   <link rel="stylesheet" href="assets/citum-theme.css">
@@ -202,14 +225,14 @@
       <strong>Illustration only.</strong> This is an entirely artificial document created to
       demonstrate Citum citation rendering. All arguments, references, and authors are
       fabricated. No scholarly claims are made.
-      <div class="feature-tags">
-        <span class="feature-tag">integral &amp; non-integral</span>
-        <span class="feature-tag">name memory</span>
-        <span class="feature-tag">multilingual (ja, es)</span>
-        <span class="feature-tag">EDTF dates (2022~, 1891?)</span>
-        <span class="feature-tag">archival + archive-info</span>
-        <span class="feature-tag">preprint + eprint</span>
-        <span class="feature-tag">primary / secondary bibliography</span>
+      <div class="feature-tags" role="list" aria-label="Features illustrated — click to highlight">
+        <span class="feature-tag" role="listitem" data-feature="integral-non-integral" title="Click to highlight examples in the text">integral &amp; non-integral</span>
+        <span class="feature-tag" role="listitem" data-feature="name-memory" title="Click to highlight examples in the text">name memory</span>
+        <span class="feature-tag" role="listitem" data-feature="multilingual" title="Click to highlight examples in the text">multilingual (ja, es)</span>
+        <span class="feature-tag" role="listitem" data-feature="edtf-dates" title="Click to highlight examples in the text">EDTF dates (2022~, 1891?)</span>
+        <span class="feature-tag" role="listitem" data-feature="archival" title="Click to highlight examples in the text">archival + archive-info</span>
+        <span class="feature-tag" role="listitem" data-feature="preprint" title="Click to highlight examples in the text">preprint + eprint</span>
+        <span class="feature-tag" role="listitem" data-feature="bib-groups" title="Click to highlight examples in the text">primary / secondary bibliography</span>
       </div>
     </div>
 
@@ -222,30 +245,30 @@
     <div id="demo-root" class="demo-container">
       <section id="The-Infrastructure-of-Scholarly-Memory" class="content">
       <p>Scholarly citation serves as the primary mechanism through which academic knowledge
-      is organized, attributed, and transmitted. As <span class="citum-citation" data-ref="chen2017"><span class="citum-author">M. Chen</span> (<span class="citum-issued">2017</span>)</span> has argued, the practices
+      is organized, attributed, and transmitted. As <span class="citum-citation" data-ref="chen2017" data-features="integral-non-integral"><span class="citum-author">M. Chen</span> (<span class="citum-issued">2017</span>)</span> has argued, the practices
       surrounding citation reflect deeper epistemological commitments about what counts
       as knowledge and who produces it. The formal apparatus of bibliographic reference
-      — the footnote, the parenthetical, the numbered list — constitutes what (<span class="citum-citation" data-ref="webb1968">Webb, <span class="citum-issued">1968</span></span>)
+      — the footnote, the parenthetical, the numbered list — constitutes what (<span class="citum-citation" data-ref="webb1968" data-features="integral-non-integral">Webb, <span class="citum-issued">1968</span></span>)
       called “the footnote as institution,” embedding social relations within
       the seemingly neutral mechanics of scholarly communication.</p>
       <p>The production of this apparatus is not confined to Anglophone scholarship.
-      <span class="citum-citation" data-ref="tanaka_yuki2019"><span class="citum-author">Y. Tanaka and H. Suzuki</span> (<span class="citum-issued">2019</span>)</span> demonstrate that citation practices in Japanese science studies
+      <span class="citum-citation" data-ref="tanaka_yuki2019" data-features="integral-non-integral multilingual"><span class="citum-author">Y. Tanaka and H. Suzuki</span> (<span class="citum-issued">2019</span>)</span> demonstrate that citation practices in Japanese science studies
       reflect distinct epistemological conventions, including different assumptions about
       authorial authority and collective knowledge-making. Parallel observations emerge
       from Spanish-language scholarship, where the relationship between citation and
       institutional context differs in ways that challenge Anglocentric models of
-      attribution (<span class="citum-citation" data-ref="garcia2022">García-Reyes & Montoya, <span class="citum-issued">ca. 2022</span></span>).</p>
+      attribution (<span class="citum-citation" data-ref="garcia2022" data-features="multilingual edtf-dates">García-Reyes & Montoya, <span class="citum-issued">ca. 2022</span></span>).</p>
       <p>These questions have a longer history than recent digital debates might suggest.
-      <span class="citum-citation" data-ref="harrington1891"><span class="citum-author">R. L. Harrington</span> (<span class="citum-issued">1891?</span>)</span> observed — in manuscript notes preserved at the British Library —
+      <span class="citum-citation" data-ref="harrington1891" data-features="archival edtf-dates"><span class="citum-author">R. L. Harrington</span> (<span class="citum-issued">1891?</span>)</span> observed — in manuscript notes preserved at the British Library —
       that bibliographic method was already contested among Victorian scholars of natural
       history, who disagreed fundamentally about whether a citation should indicate
-      provenance, priority, or deference. <span class="citum-citation" data-ref="chen2017"><span class="citum-author">Chen</span> (<span class="citum-issued">2017</span>, <span class="citum-variable">ch. 3</span>)</span> traces a direct line from
+      provenance, priority, or deference. <span class="citum-citation" data-ref="chen2017" data-features="name-memory"><span class="citum-author">Chen</span> (<span class="citum-issued">2017</span>, <span class="citum-variable">ch. 3</span>)</span> traces a direct line from
       these Victorian anxieties to contemporary algorithmic citation metrics; the impulse
       to quantify scholarly influence has deep institutional roots.</p>
       <p>More recent work challenges the assumption that citation reflects merit rather than
-      network position. <span class="citum-citation" data-ref="chen2020"><span class="citum-author">Chen</span> (<span class="citum-issued">2020</span>)</span> extends this analysis to the digital transition, arguing
+      network position. <span class="citum-citation" data-ref="chen2020" data-features="name-memory"><span class="citum-author">Chen</span> (<span class="citum-issued">2020</span>)</span> extends this analysis to the digital transition, arguing
       that platform architectures reproduce and amplify existing hierarchies of credibility.
-      <span class="citum-citation" data-ref="okafor2024"><span class="citum-author">N. Okafor et al.</span> (<span class="citum-issued">2024</span>)</span> provide large-scale empirical support for this claim, showing through
+      <span class="citum-citation" data-ref="okafor2024" data-features="preprint"><span class="citum-author">N. Okafor et al.</span> (<span class="citum-issued">2024</span>)</span> provide large-scale empirical support for this claim, showing through
       computational analysis of citation networks that topological centrality correlates
       more strongly with institutional affiliation than with measured scholarly impact.</p>
       <p>Together, this body of evidence suggests that citation is less a neutral epistemic
@@ -256,21 +279,21 @@
       </section>
       <section id="Bibliography">
       <h1>Bibliography</h1>
-      <section id="Primary-Sources">
+      <section id="Primary-Sources" data-features="bib-groups archival">
       <h2>Primary Sources</h2>
       <div class="citum-bibliography">
-      <div class="citum-entry" id="ref-harrington1891" data-author="Harrington" data-year="1891" data-title="Notes on Bibliographic Method and the Organisation of Learned References"><span class="citum-author">Harrington, R. L.</span><span class="citum-issued"> (1891?)</span>. <span class="citum-title"><em>Notes on Bibliographic Method and the Organisation of Learned References</em></span>. <span class="citum-variable">British Library</span><span class="citum-variable"> (Manuscripts Reading Room)</span></div>
+      <div class="citum-entry" id="ref-harrington1891" data-author="Harrington" data-year="1891" data-title="Notes on Bibliographic Method and the Organisation of Learned References" data-features="archival edtf-dates bib-groups"><span class="citum-author">Harrington, R. L.</span><span class="citum-issued"> (1891?)</span>. <span class="citum-title"><em>Notes on Bibliographic Method and the Organisation of Learned References</em></span>. <span class="citum-variable">British Library</span><span class="citum-variable"> (Manuscripts Reading Room)</span></div>
       </div>
       </section>
-      <section id="Secondary-Sources">
+      <section id="Secondary-Sources" data-features="bib-groups">
       <h2>Secondary Sources</h2>
       <div class="citum-bibliography">
-      <div class="citum-entry" id="ref-chen2017" data-author="Chen" data-year="2017" data-title="The Social Life of References: Knowledge-Making in Collaborative Science"><span class="citum-author">Chen, M.</span><span class="citum-issued"> (2017)</span>. <span class="citum-title"><em>The Social Life of References: Knowledge-Making in Collaborative Science</em></span><span class="citum-publisher">. MIT Press.</span></div>
-      <div class="citum-entry" id="ref-chen2020" data-author="Chen" data-year="2020" data-title="Citation and Authority: Epistemic Practices in the Digital Age"><span class="citum-author">Chen, M.</span><span class="citum-issued"> (2020)</span>. <span class="citum-title"><em>Citation and Authority: Epistemic Practices in the Digital Age</em></span><span class="citum-publisher">. MIT Press.</span></div>
-      <div class="citum-entry" id="ref-garcia2022" data-author="García-Reyes, &amp; Montoya" data-year="2022" data-title="Prácticas de citación en la ciencia latinoamericana"><span class="citum-author">García-Reyes, I., & Montoya, C. P.</span><span class="citum-issued"> (ca. 2022)</span>. <span class="citum-title"><em>Prácticas de citación en la ciencia latinoamericana</em></span> (<span class="citum-editor">E. Restrepo, editor</span>). <span class="citum-container-title"><em>Epistemologías del Sur: Perspectivas desde América Latina</em></span><span class="citum-pages">, 112–138.</span></div>
-      <div class="citum-entry" id="ref-okafor2024" data-author="Okafor, Ferreira, &amp; Park" data-year="2024" data-title="Network Topology of Academic Citation: A Large-Scale Computational Analysis"><span class="citum-author">Okafor, N., Ferreira, B., & Park, J.</span><span class="citum-issued"> (2024)</span>. <span class="citum-title"><em>Network Topology of Academic Citation: A Large-Scale Computational Analysis</em></span></div>
-      <div class="citum-entry" id="ref-webb1968" data-author="Webb" data-year="1968" data-title="The Footnote as Institution: A History of Scholarly Reference"><span class="citum-author">Webb, M. L.</span><span class="citum-issued"> (1968)</span>. <span class="citum-title"><em>The Footnote as Institution: A History of Scholarly Reference</em></span><span class="citum-publisher">. Oxford University Press.</span></div>
-      <div class="citum-entry" id="ref-tanaka_yuki2019" data-author="Tanaka, &amp; Suzuki" data-year="2019" data-title="In'yo no shakaiteki kino: Gakujutsu chishiki no kochiku ni okeru sansho jissen [The Social Function of Citation: Reference Practices in the Construction of Academic Knowledge]"><span class="citum-author">Tanaka, Y., & Suzuki, H.</span><span class="citum-issued"> (2019)</span>. <span class="citum-title"><em>In’yo no shakaiteki kino: Gakujutsu chishiki no kochiku ni okeru sansho jissen [The Social Function of Citation: Reference Practices in the Construction of Academic Knowledge]</em></span>. <span class="citum-container-title"><em>Kagaku Shakai-gaku Kenkyu</em></span><span class="citum-pages">, 45–78.</span></div>
+      <div class="citum-entry" id="ref-chen2017" data-author="Chen" data-year="2017" data-title="The Social Life of References: Knowledge-Making in Collaborative Science" data-features="integral-non-integral name-memory"><span class="citum-author">Chen, M.</span><span class="citum-issued"> (2017)</span>. <span class="citum-title"><em>The Social Life of References: Knowledge-Making in Collaborative Science</em></span><span class="citum-publisher">. MIT Press.</span></div>
+      <div class="citum-entry" id="ref-chen2020" data-author="Chen" data-year="2020" data-title="Citation and Authority: Epistemic Practices in the Digital Age" data-features="name-memory"><span class="citum-author">Chen, M.</span><span class="citum-issued"> (2020)</span>. <span class="citum-title"><em>Citation and Authority: Epistemic Practices in the Digital Age</em></span><span class="citum-publisher">. MIT Press.</span></div>
+      <div class="citum-entry" id="ref-garcia2022" data-author="García-Reyes, &amp; Montoya" data-year="2022" data-title="Prácticas de citación en la ciencia latinoamericana" data-features="multilingual edtf-dates"><span class="citum-author">García-Reyes, I., & Montoya, C. P.</span><span class="citum-issued"> (ca. 2022)</span>. <span class="citum-title"><em>Prácticas de citación en la ciencia latinoamericana</em></span> (<span class="citum-editor">E. Restrepo, editor</span>). <span class="citum-container-title"><em>Epistemologías del Sur: Perspectivas desde América Latina</em></span><span class="citum-pages">, 112–138.</span></div>
+      <div class="citum-entry" id="ref-okafor2024" data-author="Okafor, Ferreira, &amp; Park" data-year="2024" data-title="Network Topology of Academic Citation: A Large-Scale Computational Analysis" data-features="preprint"><span class="citum-author">Okafor, N., Ferreira, B., & Park, J.</span><span class="citum-issued"> (2024)</span>. <span class="citum-title"><em>Network Topology of Academic Citation: A Large-Scale Computational Analysis</em></span></div>
+      <div class="citum-entry" id="ref-webb1968" data-author="Webb" data-year="1968" data-title="The Footnote as Institution: A History of Scholarly Reference" data-features="integral-non-integral"><span class="citum-author">Webb, M. L.</span><span class="citum-issued"> (1968)</span>. <span class="citum-title"><em>The Footnote as Institution: A History of Scholarly Reference</em></span><span class="citum-publisher">. Oxford University Press.</span></div>
+      <div class="citum-entry" id="ref-tanaka_yuki2019" data-author="Tanaka, &amp; Suzuki" data-year="2019" data-title="In’yo no shakaiteki kino: Gakujutsu chishiki no kochiku ni okeru sansho jissen [The Social Function of Citation: Reference Practices in the Construction of Academic Knowledge]" data-features="multilingual"><span class="citum-author">Tanaka, Y., & Suzuki, H.</span><span class="citum-issued"> (2019)</span>. <span class="citum-title"><em>In’yo no shakaiteki kino: Gakujutsu chishiki no kochiku ni okeru sansho jissen [The Social Function of Citation: Reference Practices in the Construction of Academic Knowledge]</em></span>. <span class="citum-container-title"><em>Kagaku Shakai-gaku Kenkyu</em></span><span class="citum-pages">, 45–78.</span></div>
       </div>
       </section>
       </section>
@@ -321,6 +344,35 @@
       root.classList.add('citum-with-sidebar');
       btnSidebar.classList.add('active');
       btnClassic.classList.remove('active');
+    });
+
+    // Feature bubble interactivity — click to highlight matching examples
+    const featureTags = document.querySelectorAll('.feature-tag[data-feature]');
+    function clearFeatureHighlights() {
+      featureTags.forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.feature-highlight').forEach(el => el.classList.remove('feature-highlight'));
+    }
+    featureTags.forEach(tag => {
+      tag.addEventListener('click', () => {
+        const feature = tag.dataset.feature;
+        const isActive = tag.classList.contains('active');
+        clearFeatureHighlights();
+        if (!isActive) {
+          tag.classList.add('active');
+          const targets = document.querySelectorAll(`[data-features~="${feature}"]`);
+          targets.forEach(el => {
+            el.classList.add('feature-highlight');
+            // Scroll first match into view
+          });
+          if (targets.length > 0) {
+            targets[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+        }
+      });
+    });
+    // Click on document body (outside tags) clears selection
+    document.addEventListener('click', e => {
+      if (!e.target.closest('.feature-tag')) clearFeatureHighlights();
     });
   </script>
 </body>
