@@ -123,39 +123,37 @@
   transform: translateX(4px);
 }
 
-/* Sidebar Layout (Optional Enhancement) */
-@media (min-width: 1200px) {
-  .citum-with-sidebar {
-    display: grid;
-    grid-template-columns: 1fr var(--citum-sidebar-width);
-    gap: var(--citum-sidebar-gap);
-    align-items: start;
-    max-width: 1400px;
-    margin: 0 auto;
-  }
-  
-  /* The engine's second grid child is <section id="Bibliography">, not .citum-bibliography */
-  .citum-with-sidebar #Bibliography {
-    margin-top: 0;
-    border-top: none;
-    position: sticky;
-    top: 2rem;
-    max-height: calc(100vh - 4rem);
-    overflow-y: auto;
-    padding: 0 1.5rem 1rem 2rem;
-    border: 1px solid var(--citum-border, oklch(0.88 0.024 238));
-    border-radius: 12px;
-    scrollbar-width: thin;
-    scrollbar-color: #ddd transparent;
-  }
+/* Sidebar Layout — activated by the "Modern Sidebar" button (user opt-in, no media query) */
+.citum-with-sidebar {
+  display: grid;
+  grid-template-columns: 1fr var(--citum-sidebar-width);
+  gap: var(--citum-sidebar-gap);
+  align-items: start;
+  max-width: 1400px;
+  margin: 0 auto;
+}
 
-  .citum-with-sidebar #Bibliography::-webkit-scrollbar {
-    width: 6px;
-  }
-  .citum-with-sidebar #Bibliography::-webkit-scrollbar-thumb {
-    background-color: #ddd;
-    border-radius: 10px;
-  }
+/* The engine's second grid child is <section id="Bibliography">, not .citum-bibliography */
+.citum-with-sidebar #Bibliography {
+  margin-top: 0;
+  border-top: none;
+  position: sticky;
+  top: 2rem;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+  padding: 0 1.5rem 1rem 2rem;
+  border: 1px solid var(--citum-border, oklch(0.88 0.024 238));
+  border-radius: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #ddd transparent;
+}
+
+.citum-with-sidebar #Bibliography::-webkit-scrollbar {
+  width: 6px;
+}
+.citum-with-sidebar #Bibliography::-webkit-scrollbar-thumb {
+  background-color: #ddd;
+  border-radius: 10px;
 }
 
 /* Tooltips */
