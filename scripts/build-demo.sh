@@ -39,11 +39,11 @@ with open(out_path) as f:
     html = f.read()
 
 pattern = r'<!-- CONTENT_START -->.*?<!-- CONTENT_END -->'
-replacement = '<!-- CONTENT_START -->\n' + new_content + '\n      <!-- CONTENT_END -->'
-result = re.sub(pattern, replacement, html, flags=re.DOTALL)
-if result == html:
+if not re.search(pattern, html, re.DOTALL):
     print("ERROR: CONTENT_START/END markers not found in demo.html", file=sys.stderr)
     sys.exit(1)
+replacement = '<!-- CONTENT_START -->\n' + new_content + '\n      <!-- CONTENT_END -->'
+result = re.sub(pattern, replacement, html, flags=re.DOTALL)
 
 with open(out_path, 'w') as f:
     f.write(result)
