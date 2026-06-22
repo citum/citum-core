@@ -158,6 +158,19 @@ fixes (div-004 guard removal, locator masking) and YAML citation template fixes.
 Wave delta: all four styles raised from ~79% to ≥85% (floor raised +7–14 pp).
 Oracle changes: `detectDiv004OrderDifference` guard removed; `:` added to `maskNumericCitationLabels` look-ahead.
 
+#### Fidelity Floor Wave: Biblatex snapshot refresh (2026-06-22)
+
+Regenerated biblatex snapshots for two compound styles to cover all 47 fixture
+references. Snapshots were generated before TLIB-SEL-* entry types were added
+to the fixture and only covered positions 1–33.
+
+| Style | Citations | Bibliography | Fidelity | Notes |
+|-------|-----------|--------------|----------|-------|
+| chem-rsc | 28/28 | 42/47 | 93.3% | Snapshot regenerated: 25→39 entries |
+| numeric-comp | 0/0 | 44/47 | 93.6% | Snapshot regenerated: 33→47 entries |
+
+Wave delta: both styles raised from ~68–79% to ≥93% (biblatex snapshot gap closed).
+
 ### Note Styles (Tier 3 — Partial)
 
 Note styles (footnote-based) are ~19% of corpus. Mixed-condition repeated-note
