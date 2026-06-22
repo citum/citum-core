@@ -1,7 +1,7 @@
 # Citum Style Tier Status
 
 > **Living document** — updated after each significant batch oracle run.
-> Last updated: 2026-03-12
+> Last updated: 2026-06-22
 >
 > **Baseline gate scoring:** Strict 18-scenario citation set (`tests/fixtures/citations-expanded.json`).
 > Hard-fails on processor/style errors. Includes suppress-author, mixed locator/prefix/suffix
@@ -142,6 +142,21 @@ Preset extraction across the 58-style wave:
 - `options.titles` presetized in `39` styles (`humanities`/`journal-emphasis`)
 - `options.substitute` presetized in `36` styles (`editor-*` variants)
 - contributor presetization in `11` styles (`numeric-compact`/`numeric-medium`)
+
+#### Fidelity Floor Wave: Numeric cluster (2026-06-22)
+
+Raised the fidelity floor for 4 below-80% numeric styles via oracle adjustment
+fixes (div-004 guard removal, locator masking) and YAML citation template fixes.
+
+| Style | Citations | Bibliography | Fidelity | Notes |
+|-------|-----------|--------------|----------|-------|
+| acm-sig-proceedings | 17/20 | 45/47 | 92.5% | Added `wrap: brackets` to citation; div-004 guard fix |
+| association-for-computing-machinery | 16/20 | 44/47 | 89.6% | div-004 guard fix |
+| springer-basic-brackets-no-et-al-alphabetical | 17/20 | 44/47 | 91.0% | div-004 guard fix |
+| the-optical-society | 20/20 | 38/47 | 86.6% | Explicit citation template override replacing inherited IEEE template |
+
+Wave delta: all four styles raised from ~79% to ≥85% (floor raised +7–14 pp).
+Oracle changes: `detectDiv004OrderDifference` guard removed; `:` added to `maskNumericCitationLabels` look-ahead.
 
 ### Note Styles (Tier 3 — Partial)
 

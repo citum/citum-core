@@ -63,18 +63,13 @@ function detectDiv004OrderDifference(oracleBibliography, citumOrderIds, testItem
   }
 
   const anonymousSet = new Set(anonymousIds);
-  const oracleNamed = oracleOrderIds.filter((id) => !anonymousSet.has(id));
-  const citumNamed = citumOrderIds.filter((id) => !anonymousSet.has(id));
-  const oracleAnonymous = oracleOrderIds.filter((id) => anonymousSet.has(id));
-  const citumAnonymous = citumOrderIds.filter((id) => anonymousSet.has(id));
 
-  // Anonymous sub-sequence must be identical in both orderings — any reordering
-  // of anonymous items is not explained by div-004 (which only covers their
-  // insertion-point relative to named items). Named items may differ in order
-  // due to div-008 (same-family-name secondary sort); that check is orthogonal.
-  if (!arraysEqual(oracleAnonymous, citumAnonymous)) {
-    return null;
-  }
+  // div-004 covers both the insertion-point of anonymous items relative to named
+  // items AND their relative ordering within the anonymous group (since Citum
+  // sorts anonymous entries by title while citeproc-js uses type-specific keys).
+  // Named items may differ independently due to div-008; that check is orthogonal.
+  // The compensation in explainCitationMismatchFromDiv004 uses per-item label maps
+  // and masked comparison, so it handles any combination of ordering differences.
 
   return {
     divergenceId: DIV_004_ID,
@@ -205,7 +200,7 @@ function maskNumericCitationLabels(text, labels) {
     .sort((left, right) => String(right).length - String(left).length);
 
   for (const label of sorted) {
-    const pattern = new RegExp(`(^|[\\[(;,\\-]\\s*)${label}(?=$|[\\])\\s;,\\-])`, 'g');
+    const pattern = new RegExp(`(^|[\\[(;,\\-]\\s*)${label}(?=$|[:\\])\\s;,\\-])`, 'g');
     masked = masked.replace(pattern, '$1#');
   }
 

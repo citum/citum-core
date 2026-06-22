@@ -41,6 +41,8 @@ options:
   titles: humanities
 citation:
   template-ref: numeric-citation
+  wrap:
+    punctuation: brackets
   collapse: citation-number
   multi-cite-delimiter: ", "
 bibliography:
