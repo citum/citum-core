@@ -23,6 +23,10 @@ schema-gen:
 bootstrap setup="minimal":
     ./scripts/bootstrap.sh {{setup}}
 
+# Regenerate docs/demo.html from docs/demo.djot (optionally override style)
+demo style="styles/embedded/chicago-author-date-18th.yaml":
+    ./scripts/build-demo.sh {{style}}
+
 # Render bibliography references using a style
 render-refs style="styles/embedded/apa-7th.yaml" refs="tests/fixtures/references-expanded.json":
     ./scripts/dev-env.sh cargo run --bin citum -- render refs -s {{style}} -b {{refs}}
