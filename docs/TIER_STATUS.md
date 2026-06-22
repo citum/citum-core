@@ -171,6 +171,25 @@ to the fixture and only covered positions 1–33.
 
 Wave delta: both styles raised from ~68–79% to ≥93% (biblatex snapshot gap closed).
 
+#### Fidelity Floor Wave: AMS-label engine + style fix (2026-06-22)
+
+Fixed `american-mathematical-society-label` (72.1%) via an engine fix and a
+two-part YAML fix:
+
+- **Engine**: `update_label_mode(Numeric)` in `crates/citum-schema-style/src/options/scoped.rs`
+  now recognises `CitationLabel` as satisfying the "already has a label" check,
+  preventing a spurious `citation-number` prepend when a `citation-label`
+  component is already present.
+- **Style**: Added `name-form: full` to contributor options; added an `all:`
+  type-variant override that uses `citation-label`, replacing the parent
+  `elsevier-with-titles-core` catch-all which had `citation-number`.
+
+| Style | Citations | Bibliography | Fidelity | Notes |
+|-------|-----------|--------------|----------|-------|
+| american-mathematical-society-label | 17/20 | 45/47 | 93.2% | Engine fix + name-form + all-variant override |
+
+Wave delta: 72.1% → 93.2% (+21 pp).
+
 ### Note Styles (Tier 3 — Partial)
 
 Note styles (footnote-based) are ~19% of corpus. Mixed-condition repeated-note

@@ -29,6 +29,7 @@ options:
       et-al-marker: ''
   contributors:
     display-as-sort: all
+    name-form: full
     delimiter: ', '
     delimiter-precedes-last: always
     sort-separator: ', '
@@ -51,6 +52,7 @@ bibliography:
   options:
     contributors:
       display-as-sort: all
+      name-form: full
       delimiter: ', '
       delimiter-precedes-last: always
       sort-separator: ', '
@@ -78,23 +80,7 @@ bibliography:
       prefix: ' '
     - number: pages
       prefix: ' '
-    chapter:
-    - number: citation-label
-      wrap:
-        punctuation: brackets
-      suffix: ' '
-    - contributor: author
-      form: long
-      name-order: family-first
-    - title: primary
-    - title: parent-monograph
-    - title: parent-serial
-    - variable: publisher
-    - variable: publisher-place
-    - number: volume
-    - number: pages
-      label-form: short
-    paper-conference:
+    all:
     - number: citation-label
       wrap:
         punctuation: brackets
@@ -111,7 +97,7 @@ bibliography:
     - date: issued
       form: year
     - number: pages
-      label-form: short
+      prefix: ' '
   template:
   - number: citation-label
     wrap:

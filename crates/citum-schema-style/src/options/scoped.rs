@@ -313,7 +313,11 @@ fn update_label_mode(template: Option<&mut Template>, mode: BibliographyLabelMod
                 matches!(
                     component,
                     TemplateComponent::Number(number)
-                        if matches!(number.number, crate::template::NumberVariable::CitationNumber)
+                        if matches!(
+                            number.number,
+                            crate::template::NumberVariable::CitationNumber
+                                | crate::template::NumberVariable::CitationLabel
+                        )
                 )
             });
             if !has_label {
