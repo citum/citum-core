@@ -2,6 +2,8 @@
 version = 2
 db-urls = ["https://github.com/rustsec/advisory-db"]
 yanked = "deny"
+# NOTE: cargo-audit does not read this file. Its ignore list is maintained
+# separately in .cargo/audit.toml and must be kept in sync with this block.
 ignore = [
     { id = "RUSTSEC-2024-0320", reason = "Transitive through syntect in the current Typst stack; no direct dependency or safe local replacement in this PR." },
     { id = "RUSTSEC-2024-0436", reason = "Transitive through V8, hayagriva, and biblatex; no direct dependency or safe local replacement in this PR." },

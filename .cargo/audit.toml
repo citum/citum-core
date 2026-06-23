@@ -1,0 +1,17 @@
+# cargo-audit configuration.
+#
+# This ignore list MUST stay in sync with the `[advisories].ignore` block in
+# `deny.toml`. cargo-audit does not read deny.toml, so the two tools need
+# parallel suppression lists.
+#
+# All four are *unmaintained* / *unsound* informational advisories on
+# transitive dependencies with no upstream fix available. They are NOT
+# patchable vulnerabilities, so Renovate `vulnerabilityAlerts` will never
+# auto-resolve them — they must be suppressed explicitly.
+[advisories]
+ignore = [
+    "RUSTSEC-2024-0320",  # yaml-rust unmaintained (transitive via syntect)
+    "RUSTSEC-2024-0436",  # paste unmaintained (transitive via V8/hayagriva/biblatex)
+    "RUSTSEC-2025-0141",  # bincode unmaintained (transitive via deno_core/syntect)
+    "RUSTSEC-2026-0186",  # memmap2 unsound (transitive via gix stack)
+]
