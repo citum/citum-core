@@ -91,10 +91,7 @@ pub(crate) enum OutputFormat {
     Plain,
     Html,
     Djot,
-    /// CommonMark (Markdown) output — citations rendered inline, body markup
-    /// passed through verbatim. Suitable for piping to pandoc or any
-    /// CommonMark-aware formatter. Note styles emit `[^n]` footnote syntax
-    /// (Pandoc/GFM extension — use `pandoc --from commonmark+footnotes`).
+    /// CommonMark output; pipe to pandoc or any CommonMark-aware tool
     Markdown,
     Latex,
     Typst,
@@ -589,6 +586,7 @@ pub(crate) struct RenderDocArgs {
     /// Path(s) to bibliography input files (repeat for multiple)
     #[arg(short, long, required = true, action = ArgAction::Append)]
     pub(crate) bibliography: Vec<PathBuf>,
+    /// Path(s) to citations input files (repeat for multiple)
     #[arg(short = 'c', long, action = ArgAction::Append)]
     pub(crate) citations: Vec<PathBuf>,
 
@@ -611,11 +609,11 @@ pub(crate) struct RenderDocArgs {
 
     /// Compile Typst output to PDF (not in v1 cargo-install builds; use
     /// `-f typst` then `typst compile`)
-    #[arg(long)]
+    #[arg(long, hide = true)]
     pub(crate) pdf: bool,
 
     /// Preserve generated Typst source next to the PDF output
-    #[arg(long)]
+    #[arg(long, hide = true)]
     pub(crate) typst_keep_source: bool,
 
     /// Locale ID (e.g. "de-DE", "fr-FR") to override the style's default locale
