@@ -5,6 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.70.1] - 2026-06-23
+
+### Bug Fixes
+
+**ci**
+
+- Add .cargo/audit.toml for audit ignores ([`d4354bf`](https://github.com/citum/citum-core/commit/d4354bf1faf3840bbadc4caf15238e38123a06b6))
+
+
+**migrate**
+
+- Raise numeric style fidelity floor ([`b85c13f`](https://github.com/citum/citum-core/commit/b85c13fe64c441470222bec444a03f8c24c93480))
+
+- Refresh biblatex snapshots ([`79f1617`](https://github.com/citum/citum-core/commit/79f1617b3634c390cb45cf3bf08d926ed11673d8))
+
+
+**security**
+
+- Bump quinn-proto 0.11.15 ([`22afcc8`](https://github.com/citum/citum-core/commit/22afcc8df60afa8fbb022b4f62c833463fd4ee3c))
+
+
+**styles**
+
+- Raise ams-label fidelity to 93% ([`e864b4c`](https://github.com/citum/citum-core/commit/e864b4c273e78e6fa9c5b3ea0769c95c477f9147))
+
+
+
+### Documentation
+
+**demo**
+
+- Generate from engine via just demo ([`2ca5df1`](https://github.com/citum/citum-core/commit/2ca5df1b70fffed00ec3e2cc86bf13db53234b32))
+
+- Fix layout — drop duplicate h1 ([`b2e6748`](https://github.com/citum/citum-core/commit/b2e6748d29df9461c70691e00e2807a9f2e41c4f))
+
+- Remove media query from sidebar layout ([`d0a93bd`](https://github.com/citum/citum-core/commit/d0a93bdcb1f2476e415fc2b73fabfedc97ee633d))
+
+- Fix layout buttons, build guard ([`e0836f1`](https://github.com/citum/citum-core/commit/e0836f14320a2f6d4afc815b143c94cbc5fc42a8))
+
+
+
+### Testing
+
+**engine**
+
+- Format_document extended tests ([`dfa5ad2`](https://github.com/citum/citum-core/commit/dfa5ad24726cf6659dc643d6f647d29011919d59))
+
+
 ## [0.70.0] - 2026-06-21
 
 ### Bug Fixes
