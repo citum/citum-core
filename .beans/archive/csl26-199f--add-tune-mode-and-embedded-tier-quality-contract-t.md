@@ -1,11 +1,11 @@
 ---
 # csl26-199f
 title: Add tune mode and embedded-tier quality contract to style-evolve skills
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-06-24T14:50:59Z
-updated_at: 2026-06-24T14:55:51Z
+updated_at: 2026-06-24T15:00:56Z
 ---
 
 Refactor style-evolve skill family to reflect the LLM hand-tuning era: add a new 'tune' mode for driving embedded-core styles to 100% fidelity + clean SQI, establish embedded-tier portfolio concept, make SQI a co-primary gate for embedded styles, reposition citum-migrate as evidence/seed. Changes span shared docs, both .skills/ and .claude/skills/ mirrors.
@@ -22,5 +22,14 @@ Refactor style-evolve skill family to reflect the LLM hand-tuning era: add a new
 - [x] Update .claude/skills/style-migrate-enhance/SKILL.md (migrate-as-seed framing)
 - [x] Update docs/guides/AGENT_SKILLS.md (tune mode table)
 - [x] Update docs/architecture/SKILL_AGENT_REFACTOR.md (topology note)
-- [ ] Verify docs/beans hygiene check passes
-- [ ] Commit + PR
+- [x] Verify docs/beans hygiene check passes
+- [x] Commit + PR
+
+## Summary of Changes
+
+Added a fourth public mode 'tune' to the style-evolve skill family. Established
+the embedded-core portfolio tier (16 binary-embedded styles) with both fidelity
+and SQI as hard gates. Repositioned citum-migrate output as a seed/evidence source
+for embedded-core targets, not a terminal deliverable. Created new style-tune
+sub-skill owning the hand-tuning loop. Updated style-qa to be tier-aware.
+PR: https://github.com/citum/citum-core/pull/963
