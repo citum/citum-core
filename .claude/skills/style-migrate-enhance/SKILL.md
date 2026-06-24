@@ -10,11 +10,23 @@ model: sonnet
 Authoritative shared process docs:
 - `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`
 - `docs/guides/STYLE_WORKFLOW_EXECUTION.md`
+- `docs/architecture/MIGRATION_STRATEGY_ANALYSIS.md` — converter role and limits
 
 ## Use This Skill When
-- The task is portfolio migration.
+- The task is portfolio migration (long-tail / dependent styles).
 - You need repeatable before/after/rerun metrics.
 - You want concrete recommendations for `citum_migrate` improvements from observed gaps.
+- You need to produce a migrate **seed** for a subsequent `tune` pass on an
+  embedded-core style.
+
+## Role of Migrate Output
+
+For **dependent** styles, the migrate output is the deliverable (subject to the
+fidelity hard gate). For **embedded-core** styles, the migrate output is a **seed
+and evidence source** feeding a subsequent `style-tune` pass — it is not a
+finished embedded style. See `docs/architecture/MIGRATION_STRATEGY_ANALYSIS.md`
+for the strategic basis: the converter is an evidence tool, not the canonical
+authoring path for high-impact styles.
 
 ## Input Contract
 - Legacy style path(s) under `styles-legacy/`.
@@ -42,7 +54,8 @@ Run the full wave without pausing between styles. Use the shared docs for the co
 ## Hard Gates
 - Never accept a fidelity regression.
 - Never classify a registered divergence as a migration or engine bug without updating adjudication first.
-- SQI is tie-breaker and optimization only.
+- SQI is tie-breaker and optimization only for dependent styles. For embedded-core
+  targets, SQI is not a gate here — the `tune` pass owns SQI to green.
 - After bounded retries with no progress, note it in the wave summary and move to the next style rather than halting the entire wave.
 
 ## Required Artifacts

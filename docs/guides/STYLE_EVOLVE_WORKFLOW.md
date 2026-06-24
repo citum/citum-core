@@ -19,8 +19,10 @@ targeting.
 - Typical goal: increase SQI while preserving or improving fidelity.
 
 2. `migrate`
-- Convert one or more CSL 1.0 styles into high-quality Citum styles.
+- Convert one or more CSL 1.0 styles into Citum styles.
 - Typical goal: high oracle parity plus maintainable templates.
+- For embedded-core targets, the output is a **seed** for a `tune` pass, not a
+  finished embedded style.
 
 3. `create`
 - Create a style from reference evidence.
@@ -30,24 +32,33 @@ targeting.
   - `--source-issue`
   - `--source-file`
 
+4. `tune`
+- Drive an **embedded-core** style to 100% fidelity **and** clean SQI via
+  iterative LLM authoring, seeded by migrate evidence.
+- Both fidelity and SQI are hard gates. Use only for styles in
+  `citum style list --source embedded`.
+
 ## Examples
 ```bash
 /style-evolve upgrade --styles styles/elsevier-harvard.yaml --target-sqi 0.90
 /style-evolve migrate --legacy styles-legacy/apa.csl --count 1
 /style-evolve create --source-url https://example-style-guide.org --source-text "example citations and bibliography"
+/style-evolve tune ieee
 ```
 
 ## Quality Policy
-- Fidelity to the declared primary authority is the hard gate.
-- SQI is a secondary optimization metric.
+- Fidelity to the declared primary authority is the hard gate for all styles.
+- **SQI is a hard gate for embedded-core styles.** Both fidelity and clean SQI
+  are required for any embedded-core style pass. For dependent/long-tail styles,
+  SQI is a secondary optimization metric.
 - For styles with configured `benchmark_runs`, official rich-input evidence is auto-run as supplemental advisory output.
 - Every iteration must assess both:
   - style-level edits
   - processor/preset/feature opportunities
-- Before editing YAML, classify the target using the shared two-axis taxonomy:
-  semantic class (`base`, `profile`, `journal`, `independent`) and
-  implementation form (`alias`, `config-wrapper`, `structural-wrapper`,
-  `standalone`).
+- Before editing YAML, classify the target using the shared three-axis taxonomy:
+  semantic class (`base`, `profile`, `journal`, `independent`),
+  implementation form (`alias`, `config-wrapper`, `structural-wrapper`, `standalone`),
+  and portfolio tier (`embedded-core` or `dependent`).
 - Profile work must preserve the config-wrapper contract: scoped options and
   metadata only, with no local templates, no local `type-variants`, and no
   template-clearing `null`.
@@ -64,20 +75,20 @@ targeting.
 
 ## Wave Guidance
 
-A style wave is a bounded cohort executed through repeated `upgrade`,
-`migrate`, or `create` passes under the shared workflow docs.
+A style wave is a bounded cohort executed through repeated `upgrade`, `migrate`,
+`create`, or `tune` passes under the shared workflow docs.
 
 - Keep one wave to one family or one clearly related cohort per PR.
 - Profile-family work may require a `create` pass for a hidden family root,
   followed by `upgrade` passes to reduce the public handles.
-- `style-evolve` remains a three-mode public entrypoint. A wave is execution
-  scope, not a fourth mode.
+- A wave is execution scope, not a separate mode.
 
 ## Internal Pipeline (For Maintainers)
 `/style-evolve` routes internally to:
 - `style-maintain` (upgrade path)
 - `style-migrate-enhance` (migrate path)
-- `style-qa` (required gate)
+- `style-tune` (tune path — Claude Code host)
+- `style-qa` (required gate — tier-aware)
 - `pr-workflow-fast` (branch/PR efficiency)
 
 `/styleauthor` remains available as a legacy alias and forwards to `/style-evolve`.

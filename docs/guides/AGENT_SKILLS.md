@@ -40,10 +40,23 @@ maintaining parallel copies.
 
 | Skill | Description |
 |-------|-------------|
-| `style-evolve` | Route style work: upgrade, migrate, or create a Citum style |
+| `style-evolve` | Route style work: upgrade, migrate, create, or tune a Citum style |
 | `migrate-research` | Autonomous research loop for citum_migrate fidelity gaps |
 | `rust-simplify` | One-file Rust quality pass using jcodemunch analysis |
 | `test-soundness-review` | Audit tests against the governing spec and update the soundness ledger |
+
+### style-evolve modes
+
+| Mode | Use when |
+|------|----------|
+| `upgrade` | Improve fidelity or quality of an existing Citum style |
+| `migrate` | Convert a CSL 1.0 XML source into a Citum style YAML |
+| `create` | Author a new Citum style from guide evidence |
+| `tune` | Drive an **embedded-core** style to 100% fidelity + clean SQI via iterative LLM authoring |
+
+The `tune` mode routes to the `.claude/skills/style-tune/` sub-skill (Claude
+Code host). Both fidelity and SQI are hard gates for `tune`. The migrate output
+is the seed, not the deliverable, for embedded-core styles.
 
 These skills are for citum-core contributors only. They require the repo to be present
 locally and reference internal docs by path.

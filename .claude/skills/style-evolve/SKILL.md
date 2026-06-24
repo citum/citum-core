@@ -1,9 +1,9 @@
 ---
 name: style-evolve
 type: user-invocable, agent-invocable
-description: "Single human-facing command for all Citum style work. Use whenever someone asks to fix, improve, convert, or create a citation style. Routes to upgrade, migrate, or create. Always use this rather than calling style-maintain or style-migrate-enhance directly."
+description: "Single human-facing command for all Citum style work. Use whenever someone asks to fix, improve, convert, create, or tune a citation style. Routes to upgrade, migrate, create, or tune. Always use this rather than calling internal skills directly."
 model: sonnet
-routes-to: style-maintain, style-migrate-enhance, style-qa
+routes-to: style-maintain, style-migrate-enhance, style-tune, style-qa
 ---
 
 # Style Evolve
@@ -14,6 +14,7 @@ routes-to: style-maintain, style-migrate-enhance, style-qa
 /style-evolve upgrade <style-path>
 /style-evolve migrate <csl-path>
 /style-evolve create
+/style-evolve tune <embedded-style-id>
 ```
 
 Do not ask users to call internal skills directly.
@@ -41,6 +42,11 @@ Route to `../style-migrate-enhance/SKILL.md`.
 ### 3. create
 Build a new Citum style from source evidence. Escalate to `@dplanner` for design.
 
+### 4. tune
+Route to `../style-tune/SKILL.md`. Use when the target is an `embedded-core`
+style and the goal is 100% fidelity **and** clean SQI. Both are hard gates for
+this mode. The migrate output is the seed, not the deliverable.
+
 ## Co-Evolution Rule
 
 Use `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md` for failure classification and stop conditions. Keep the router focused on dispatch and host entrypoint behavior.
@@ -48,9 +54,11 @@ Use `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md` for failure classification 
 ## Shared Gates
 
 - Compatibility fidelity regression is never allowed unless the task explicitly chooses a documented semantic divergence from legacy CSL behavior.
-- SQI is optimization-only after fidelity is stable.
-- Before editing a style, classify it by semantic class and implementation form
-  using the shared workflow docs and `docs/specs/STYLE_TAXONOMY.md`.
+- **SQI is a hard gate for `embedded-core` styles** (fidelity AND SQI both required).
+  For `dependent` styles, SQI is optimization-only after fidelity is stable.
+  See `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md` for the tier definition and quality bar.
+- Before editing a style, classify it by semantic class, implementation form, and
+  portfolio tier using the shared workflow docs and `docs/specs/STYLE_TAXONOMY.md`.
 - Profile-family work may require a `create` pass for a hidden family root
   followed by `upgrade` reduction of the public handles.
 - Journal/profile reductions must choose parents from guide-backed authority,
