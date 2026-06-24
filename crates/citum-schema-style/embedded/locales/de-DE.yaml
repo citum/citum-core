@@ -279,6 +279,8 @@ terms:
     long: im Druck
   internet:
     long: Internet
+  issued:
+    long: ausgegeben
   letter:
     long: Brief
   loc_cit:

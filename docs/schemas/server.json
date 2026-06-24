@@ -362,6 +362,11 @@
           "const": "patent"
         },
         {
+          "description": "The term used for \"issued\" in patent entries (e.g., \", issued June 9, 2010\").",
+          "type": "string",
+          "const": "issued"
+        },
+        {
           "description": "The general term for volume locators (e.g., \"volume\", \"vol.\").",
           "type": "string",
           "const": "volume"

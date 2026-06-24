@@ -417,16 +417,21 @@ citation:
       shorten: *id001
     - title: primary
       prefix: ", "
-    - number: number
-      prefix: ", Patent "
     - group:
+      - term: patent
+        text-case: capitalize-first
+      - number: number
+      delimiter: " "
+      prefix: ", "
+    - group:
+      - term: issued
       - date: issued
         form: month-day
-        prefix: ", issued "
       - date: issued
         form: year
         prefix: ", "
-      delimiter: none
+      delimiter: " "
+      prefix: ", "
     personal-communication:
     - contributor: author
       form: long

@@ -116,21 +116,141 @@ bibliography:
     - variable: doi
       prefix: https://doi.org/
     - variable: url
+    book:
+    - contributor: author
+      form: long
+      name-order: family-first-only
+      shorten:
+        min: 8
+        use-first: 3
+    - title: primary
+    - contributor: translator
+      form: verb
+      prefix: ". "
+    - variable: publisher
+    - date: issued
+      form: year
+      prefix: ", "
+    chapter:
+    - contributor: author
+      form: long
+      name-order: family-first-only
+      shorten:
+        min: 8
+        use-first: 3
+    - title: primary
+      prefix: ". "
+      wrap:
+        punctuation: quotes
+    - group:
+      - term: in
+        text-case: capitalize-first
+      - title: parent-monograph
+        emph: false
+      - contributor: editor
+        form: verb
+        name-order: given-first
+        prefix: ", "
+      prefix: " "
+      delimiter: " "
+    - variable: publisher
+      prefix: ". "
+    - date: issued
+      form: year
+      prefix: ", "
+    - number: pages
+      prefix: ": "
+    manuscript:
+    - contributor: author
+      form: long
+      name-order: family-first-only
+      shorten:
+        min: 8
+        use-first: 3
+    - title: primary
+      prefix: ". "
+      wrap:
+        punctuation: quotes
+    - date: issued
+      form: year
+      prefix: ". "
+    - variable: archive-location
+      prefix: ". "
+    - variable: archive-name
+      prefix: ". "
+    - variable: archive-place
+      prefix: ", "
+    entry-dictionary:
+    - title: parent-monograph
+      text-case: title
+    - title: primary
+      prefix: ". "
+      wrap:
+        punctuation: quotes
+    - group:
+      - term: accessed
+        text-case: capitalize-first
+      - date: accessed
+        form: month-day
+      - date: accessed
+        form: year
+        prefix: ", "
+      delimiter: " "
+      prefix: ". "
+    - variable: url
+      prefix: ". "
     personal-communication: []
+    personal_communication: []
     patent:
     - contributor: author
       form: long
       name-order: family-first-only
+      shorten:
+        min: 7
+        use-first: 3
     - title: primary
-    - delimiter: none
-      prefix: ". "
-      group:
+    - group:
       - term: patent
-        suffix: " "
+        text-case: capitalize-first
       - number: number
+      delimiter: " "
+      prefix: ". "
+    - group:
+      - term: issued
       - date: issued
-        form: full
-        prefix: ", issued "
+        form: month-day
+      - date: issued
+        form: year
+        prefix: ", "
+      delimiter: " "
+      prefix: ", "
+    standard:
+    - variable: authority
+    - title: primary
+      prefix: ". "
+      text-case: title
+    - group:
+      - variable: genre
+      - number: number
+        prefix: " "
+      delimiter: ""
+      prefix: ". "
+    - variable: publisher
+      prefix: ". "
+    - group:
+      - variable: status
+      - group:
+        - date: issued
+          form: month-day
+        - date: issued
+          form: year
+          prefix: ", "
+        delimiter: none
+        prefix: " "
+      delimiter: ""
+      prefix: ", "
+    - variable: doi
+      prefix: ". https://doi.org/"
   template:
   - contributor: author
     form: long

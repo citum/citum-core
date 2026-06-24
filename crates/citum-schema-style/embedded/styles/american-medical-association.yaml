@@ -127,12 +127,15 @@ bibliography:
     - title: primary
     - date: issued
       form: year
-    - date: accessed
-      form: month-day
-      prefix: "Accessed "
-    - date: accessed
-      form: year
-      prefix: ", "
+    - group:
+      - term: accessed
+        text-case: capitalize-first
+      - date: accessed
+        form: month-day
+      - date: accessed
+        form: year
+        prefix: ", "
+      delimiter: " "
       suffix: ". "
     - variable: url
     article-newspaper:
@@ -146,12 +149,15 @@ bibliography:
     - date: issued
       form: year
       prefix: ", "
-    - date: accessed
-      form: month-day
-      prefix: "Accessed "
-    - date: accessed
-      form: year
-      prefix: ", "
+    - group:
+      - term: accessed
+        text-case: capitalize-first
+      - date: accessed
+        form: month-day
+      - date: accessed
+        form: year
+        prefix: ", "
+      delimiter: " "
       suffix: ". "
     - variable: url
     entry-encyclopedia:
@@ -249,12 +255,15 @@ bibliography:
         prefix: ", "
       - variable: number
         prefix: ":"
-    - date: accessed
-      form: month-day
-      prefix: "Accessed "
-    - date: accessed
-      form: year
-      prefix: ", "
+    - group:
+      - term: accessed
+        text-case: capitalize-first
+      - date: accessed
+        form: month-day
+      - date: accessed
+        form: year
+        prefix: ", "
+      delimiter: " "
       suffix: ". "
     - variable: url
     [interview, personal-communication]:
@@ -272,6 +281,73 @@ bibliography:
       - date: issued
         form: year
         prefix: ", "
+    - variable: url
+    entry-dictionary:
+    - contributor: author
+      form: long
+      name-order: family-first
+    - title: primary
+    - term: in
+      suffix: ": "
+    - title: parent-monograph
+      text-case: title
+    - group:
+      - term: accessed
+        text-case: capitalize-first
+      - date: accessed
+        form: month-day
+      - date: accessed
+        form: year
+        prefix: ", "
+      delimiter: " "
+      suffix: ". "
+    - variable: url
+    map:
+      extends: dataset
+    software:
+      extends: dataset
+    statute:
+    - title: primary
+    - number: volume
+      prefix: "Vol "
+    - date: issued
+      form: year
+    - variable: url
+    hearing:
+    - title: primary
+    - delimiter: none
+      group:
+      - term: online
+        prefix: "Published "
+        suffix: " "
+      - date: issued
+        form: year
+    - variable: url
+    standard:
+    - title: primary
+    - delimiter: none
+      group:
+      - term: online
+        prefix: "Published "
+        suffix: " "
+      - date: issued
+        form: month-day
+      - date: issued
+        form: year
+        prefix: ", "
+        suffix: ":"
+      - variable: standard-number
+    - variable: doi
+      prefix: ". doi:"
+    regulation:
+    - title: primary
+    - variable: code
+    - delimiter: none
+      group:
+      - date: issued
+        form: year
+        suffix: ";"
+      - number: volume
     - variable: url
   template:
   - contributor: author

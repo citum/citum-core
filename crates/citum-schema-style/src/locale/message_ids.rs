@@ -43,6 +43,7 @@ impl Locale {
             GeneralTerm::Here => "here",
             GeneralTerm::Deposited => "deposited",
             GeneralTerm::Patent => "patent",
+            GeneralTerm::Issued => "issued",
             GeneralTerm::Volume => "volume",
             GeneralTerm::Issue => "issue",
             GeneralTerm::Page => "page",
