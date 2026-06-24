@@ -290,6 +290,8 @@ terms:
     long: in press
   internet:
     long: internet
+  issued:
+    long: issued
   letter:
     long: letter
     short: let.

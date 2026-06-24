@@ -275,6 +275,8 @@ terms:
     long: basımda
   internet:
     long: internet
+  issued:
+    long: yayımlanan
   letter:
     long: mektup
   loc_cit:

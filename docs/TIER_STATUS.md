@@ -1,7 +1,7 @@
 # Citum Style Tier Status
 
 > **Living document** — updated after each significant batch oracle run.
-> Last updated: 2026-06-22
+> Last updated: 2026-06-24
 >
 > **Baseline gate scoring:** Strict 18-scenario citation set (`tests/fixtures/citations-expanded.json`).
 > Hard-fails on processor/style errors. Includes suppress-author, mixed locator/prefix/suffix
@@ -18,15 +18,15 @@
 | Style | Dependents | Citations | Bibliography | Notes |
 |-------|-----------|-----------|--------------|-------|
 | apa | 783 | 18/18 | 32/32 ✅ | 100% fidelity |
-| elsevier-harvard | 665 | 18/18 | 33/33 ✅ | 100% fidelity |
+| elsevier-harvard | 665 | 20/20 | 47/47 ✅ | 100% fidelity |
 | elsevier-with-titles | 672 | 18/18 | 33/33 ✅ | 100% fidelity |
 | springer-basic-author-date | 460 | 18/18 | 33/33 ✅ | 100% fidelity |
 | ieee | 176 | 18/18 | 33/33 ✅ | 100% fidelity |
 | elsevier-vancouver | 502 | 18/18 | 33/33 ✅ | 100% fidelity |
-| american-medical-association | 293 | 18/18 | 33/33 ✅ | 100% fidelity |
+| american-medical-association | 293 | 20/20 | 47/47 ✅ | 100% fidelity |
 | nature | 182 | 18/18 | 33/33 ✅ | 100% fidelity |
 | cell | 95 | 18/18 | 33/33 ✅ | 100% fidelity |
-| chicago-author-date | ✅ Production | 18/18 | 32/32 ✅ | 100% fidelity |
+| chicago-author-date | ✅ Production | 20/20 | 46/46 ✅ | 100% fidelity |
 
 **Strict 100% citation match (top 10):** 10/10 styles
 **Strict 100% bibliography match (top 10):** 10/10 styles
@@ -54,10 +54,10 @@ coverage for the highest-impact parent set.
 | Style | Status | Citation Hit Rate | Bibliography Hit Rate |
 |-------|--------|------------------|-----------------------|
 | apa-7th | ✅ Production | 12/12 | 31/31 |
-| elsevier-harvard | ✅ Production | 12/12 | 32/32 |
+| elsevier-harvard | ✅ Production | 20/20 | 47/47 |
 | springer-basic-author-date | ✅ Production | 12/12 | 32/32 |
 | taylor-and-francis-chicago-author-date | ✅ Production | 12/12 | 31/31 |
-| chicago-author-date | ✅ Production | 18/18 | 32/32 |
+| chicago-author-date | ✅ Production | 20/20 | 46/46 |
 
 ### Numeric (Tier 2 — Active)
 
@@ -70,7 +70,7 @@ strictly, and a new Tier-2 wave has been migrated and enhanced.
 | elsevier-vancouver | ✅ Production | 12/12 citations, 32/32 bibliography |
 | springer-vancouver-brackets | ✅ Production | 12/12 citations, 32/32 bibliography |
 | springer-basic-brackets | ✅ Production | 12/12 citations, 32/32 bibliography |
-| american-medical-association | ✅ Production | 12/12 citations, 32/32 bibliography |
+| american-medical-association | ✅ Production | 20/20 citations, 47/47 bibliography |
 | ieee | ✅ Production | 12/12 citations, 32/32 bibliography |
 
 #### Tier-2 Wave: Next 10 Priority Styles (2026-02-20)
@@ -109,7 +109,7 @@ Wave aggregate:
 | baishideng-publishing-group | 12/12 | 31/32 | Citation template normalized |
 | royal-society-of-chemistry | 12/12 | 15/33 | Citation fixed; bibliography still major outlier |
 | association-for-computing-machinery | 12/12 | 31/32 | Locator citation formatting fixed |
-| chicago-shortened-notes-bibliography | 12/12 | 31/31 | Patent type-template + personal-comm suppression added |
+| chicago-shortened-notes-bibliography | 20/20 | 46/46 | entry-dictionary, standard, chapter, personal-comm, patent variants added |
 | nature | 12/12 | 31/32 | Citation template normalized |
 | copernicus-publications | 12/12 | 31/32 | Disambiguation + short-author citation pass |
 | springer-socpsych-brackets | 12/12 | 31/32 | Citation template normalized |
@@ -198,7 +198,7 @@ style-local fidelity cleanup rather than missing `position` support.
 
 | Style | Status | Notes |
 |-------|--------|-------|
-| chicago-shortened-notes-bibliography | ✅ Production | 13/13 citations, 31/31 bibliography |
+| chicago-shortened-notes-bibliography | ✅ Production | 20/20 citations, 46/46 bibliography |
 | chicago-notes | 🔄 In Progress | Repeated-position overrides ship; remaining work is style-local fidelity cleanup |
 | oscola | ✅ Production | 13/13 citations, 32/32 bibliography |
 | oscola-no-ibid | ✅ Production | 13/13 citations, 32/32 bibliography |
@@ -207,7 +207,7 @@ style-local fidelity cleanup rather than missing `position` support.
 
 | Style | Status | Notes |
 |-------|--------|-------|
-| modern-language-association | ✅ Production | 18/18 citations, 33/33 bibliography |
+| modern-language-association | ✅ Production | 20/20 citations, 47/47 bibliography |
 
 ## Embedded Styles (Built into Binary)
 

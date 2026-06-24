@@ -147,6 +147,34 @@ bibliography:
       remove:
         - match:
             variable: archive-location
+    entry-dictionary:
+    - title: primary
+      wrap:
+        punctuation: quotes
+    - title: parent-monograph
+    - variable: url
+      prefix: ", "
+    - group:
+      - term: accessed
+        text-case: capitalize-first
+      - date: accessed
+        form: day-month-abbr-year
+      delimiter: " "
+      prefix: ". "
+    standard:
+    - variable: authority
+    - title: primary
+    - group:
+      - variable: genre
+      - number: number
+      delimiter: " "
+    - variable: publisher
+      prefix: ", "
+    - date: issued
+      form: day-month-abbr-year
+      prefix: ", "
+    - variable: doi
+      prefix: ". https://doi.org/"
     interview:
     - contributor: author
       form: long

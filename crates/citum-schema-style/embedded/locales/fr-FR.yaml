@@ -296,6 +296,8 @@ terms:
     long: sous presse
   internet:
     long: Internet
+  issued:
+    long: publié le
   letter:
     long: lettre
     short: let.

@@ -490,6 +490,7 @@ impl Locale {
             "original-work-published" => Some(GeneralTerm::OriginalWorkPublished),
             "personal-communication" => Some(GeneralTerm::PersonalCommunication),
             "patent" => Some(GeneralTerm::Patent),
+            "issued" => Some(GeneralTerm::Issued),
             "volume" => Some(GeneralTerm::Volume),
             "issue" => Some(GeneralTerm::Issue),
             "page" => Some(GeneralTerm::Page),

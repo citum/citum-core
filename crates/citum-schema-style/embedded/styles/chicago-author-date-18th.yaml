@@ -225,9 +225,9 @@ bibliography:
       form: year
     - title: primary
     - contributor: translator
-      form: long
+      form: verb
       name-order: given-first
-      prefix: ". Translated by "
+      prefix: ". "
     - group:
       - contributor: editor
         form: verb
@@ -330,19 +330,43 @@ bibliography:
     - title: parent-monograph
       emph: true
       suffix: "."
+      text-case: title
     - date: issued
       form: year
     - title: primary
-      quote: true
       prefix: " "
-      suffix: "."
-    - variable: status
-      text-case: capitalize-first
-      prefix: " "
-      suffix: "."
+      text-case: sentence
+      wrap:
+        punctuation: quotes
+    - group:
+      - term: accessed
+        text-case: capitalize-first
+      - date: accessed
+        form: month-day
+      - date: accessed
+        form: year
+        prefix: ", "
+      delimiter: " "
+      prefix: ". "
+    - variable: url
+    standard:
+    - variable: authority
+    - date: issued
+      form: year
+    - title: primary
+    - group:
+      - variable: genre
+      - number: number
+      delimiter: " "
     - variable: publisher
+    - group:
+      - variable: status
+      - date: issued
+        form: month-day
+      delimiter: " "
+      prefix: ", "
     - variable: doi
-      prefix: "https://doi.org/"
+      prefix: ". https://doi.org/"
     legal-case:
       extends: book
       modify:
@@ -388,9 +412,12 @@ bibliography:
         text-case: capitalize-first
         suffix: " "
       - number: patent-number
-      - date: issued
-        form: full
-        prefix: ", issued "
+      - group:
+        - term: issued
+        - date: issued
+          form: full
+        delimiter: " "
+        prefix: ", "
     report:
       extends: book
       remove:

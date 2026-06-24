@@ -230,6 +230,8 @@ crate::str_enum! {
         OriginalWorkPublished = "original-work-published",
         /// The term used for patents (e.g., "patent").
         Patent = "patent",
+        /// The term used for "issued" in patent entries (e.g., ", issued June 9, 2010").
+        Issued = "issued",
         /// The general term for volume locators (e.g., "volume", "vol.").
         Volume = "volume",
         /// The general term for issue locators (e.g., "issue", "no.").
@@ -729,6 +731,7 @@ mod tests {
                 GeneralTerm::OriginalWorkPublished,
             ),
             (r#""patent""#, GeneralTerm::Patent),
+            (r#""issued""#, GeneralTerm::Issued),
             (r#""volume""#, GeneralTerm::Volume),
             (r#""issue""#, GeneralTerm::Issue),
             (r#""page""#, GeneralTerm::Page),

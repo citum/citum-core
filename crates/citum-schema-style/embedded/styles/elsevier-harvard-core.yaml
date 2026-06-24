@@ -315,6 +315,19 @@ bibliography:
       group:
       - variable: publisher
       - variable: publisher-place
+    entry-dictionary:
+    - title: primary
+    - date: issued
+      form: year
+      prefix: ", "
+    - title: parent-monograph
+    standard:
+    - title: primary
+    - date: issued
+      form: year
+      prefix: ", "
+    - variable: doi
+      prefix: ". https://doi.org/"
   template:
   - contributor: author
     form: long
