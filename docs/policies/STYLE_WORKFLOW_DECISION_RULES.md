@@ -1,9 +1,11 @@
 # Style Workflow Decision Rules
 
 **Status:** Active
-**Version:** 1.0
+**Version:** 1.3
 **Date:** 2026-04-04
-**Related:** `docs/guides/STYLE_WORKFLOW_EXECUTION.md`, `docs/architecture/SKILL_AGENT_REFACTOR.md`
+**Related:** [STYLE_WORKFLOW_EXECUTION.md](../guides/STYLE_WORKFLOW_EXECUTION.md),
+[SKILL_AGENT_REFACTOR.md](../architecture/SKILL_AGENT_REFACTOR.md),
+[MIGRATION_STRATEGY_ANALYSIS.md](../architecture/MIGRATION_STRATEGY_ANALYSIS.md)
 
 ## Rule
 Shared style-workflow agents must classify each mismatch as `style-defect`, `migration-artifact`, `processor-defect`, or `intentional divergence`, and must stop iterating once a cluster is clearly outside the active workflow's scope.
@@ -15,15 +17,37 @@ Style-authority decisions for existing journals must follow this order:
 4. CSL implementation evidence
 5. existing Citum YAML structure
 
-Before editing YAML, shared style workflows must classify the target on two
-axes:
+Before editing YAML, shared style workflows must classify the target on **three** axes:
 1. semantic class: `base`, `profile`, `journal`, or `independent`
-2. implementation form: `alias`, `config-wrapper`, `structural-wrapper`, or
-   `standalone`
+2. implementation form: `alias`, `config-wrapper`, `structural-wrapper`, or `standalone`
+3. portfolio tier: `embedded-core` or `dependent`
 
-This classification is operational, not cosmetic. It determines whether the
-style should be reduced to a thin wrapper, kept structural, or left
-self-contained.
+All three classifications are operational, not cosmetic.
+
+### Portfolio tier
+
+The **embedded-core** tier is the set of styles baked into the Citum binary at
+compile time. The canonical registry is
+[embedded/styles.rs](../../crates/citum-schema-style/src/embedded/styles.rs) (the `include_bytes!` match
+arms). The CLI exposes the predicate: `citum style list --source embedded`.
+All other styles are **dependent** (long-tail or external).
+
+Tier determines the quality bar:
+
+| Tier | Fidelity | SQI |
+|---|---|---|
+| `embedded-core` | Hard gate — 100% required | **Hard gate** — clean SQI required alongside fidelity |
+| `dependent` | Hard gate | Advisory / tie-breaker only |
+
+For `embedded-core` styles, the `citum-migrate` converter is a **seed and evidence
+source**, not the canonical authoring path. The correct authoring path is `create`
+or `tune` (iterative LLM authoring against oracle, guide, and SQI), as documented
+in [MIGRATION_STRATEGY_ANALYSIS.md](../architecture/MIGRATION_STRATEGY_ANALYSIS.md). A migrated candidate is
+acceptable only after it has been hand-tuned to satisfy both gates.
+
+This distinction is operationally important: a correct-but-bulky migrated YAML is
+not a finished embedded style. SQI matters here because the embedded set ships
+with the binary and defines the maintainability standard for the whole portfolio.
 
 ## Rationale
 Style work in Citum repeatedly follows the same decision logic: determine whether the defect belongs in YAML, migration, engine behavior, or adjudication, then route the work accordingly. Putting that logic in one policy keeps the Claude and Codex wrappers thin and reduces drift between hosts.
@@ -49,14 +73,19 @@ Style work in Citum repeatedly follows the same decision logic: determine whethe
 - If the same scenario fails with identical output after two distinct approaches, stop iterating on that scenario and reclassify it.
 - If a registered divergence explains the failure, record the divergence ID instead of treating it as a fresh bug.
 - A style wave is a bounded cohort executed through repeated `upgrade`,
-  `migrate`, or `create` passes under these same rules. Keep waves scoped to one
-  family or one clearly related cohort per PR.
+  `migrate`, `create`, or `tune` passes under these same rules. Keep waves scoped
+  to one family or one clearly related cohort per PR.
 
 ## Exceptions
 - Host-specific routing, model choice, and permission semantics stay in the wrapper files.
 - Rich-input evidence ordering and per-skill output phrasing live in the execution guide.
 
 ## Changelog
+- v1.3 (2026-06-24): Added the third classification axis (portfolio tier:
+  `embedded-core` vs `dependent`), tier-dependent quality bar (SQI is a hard
+  gate for embedded-core), and the embedded-tier authoring rule (migrate as
+  seed, not deliverable). Cross-linked `MIGRATION_STRATEGY_ANALYSIS.md`.
+  Added `tune` to the list of wave pass types.
 - v1.2 (2026-04-23): Added the two-axis taxonomy as an operational workflow
   rule, made the config-wrapper profile contract explicit, clarified that
   journal descendants may remain structural, and added the infrastructure-stop

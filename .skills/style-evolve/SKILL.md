@@ -1,6 +1,6 @@
 ---
 name: style-evolve
-description: "Public entrypoint for Citum style work. Activate on: 'upgrade', 'migrate', 'create', any style authoring request, or any request to fix/improve/convert a Citum or CSL citation style. Route to the shared workflow docs and internal roles."
+description: "Public entrypoint for Citum style work. Activate on: 'upgrade', 'migrate', 'create', 'tune', any style authoring request, or any request to fix/improve/convert a Citum or CSL citation style. Route to the shared workflow docs and internal roles."
 ---
 
 # Style Evolve
@@ -20,6 +20,9 @@ Read first:
 - `upgrade`: improve an existing Citum style.
 - `migrate`: convert CSL 1.0 source into Citum style YAML.
 - `create`: author a new Citum style from source evidence.
+- `tune`: drive an embedded-core style to 100% fidelity + clean SQI via
+  iterative LLM authoring, seeded by migrate evidence. Both fidelity and SQI
+  are hard gates for this mode. Loop defined in `docs/guides/STYLE_WORKFLOW_EXECUTION.md`.
 
 ## Routing
 
@@ -30,8 +33,11 @@ Read first:
 
 ## Operating Rules
 
-- Keep fidelity as the hard gate.
-- Treat SQI as secondary optimization only.
+- Fidelity is the hard gate for all tiers.
+- SQI is a **hard gate for embedded-core styles**; advisory/tie-breaker for dependent
+  styles. See `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md` for the tier definition
+  and quality bar.
+- For embedded-core targets, use `tune` rather than treating migrate output as final.
 - Before editing a style, classify it by semantic class and implementation
   form using `docs/specs/STYLE_TAXONOMY.md` and the shared workflow docs.
 - Profile-family work may require a `create` pass for a hidden family root

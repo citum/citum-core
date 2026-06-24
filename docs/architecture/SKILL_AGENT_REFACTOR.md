@@ -50,3 +50,35 @@ The repo also mirrors the public skill surface with repo-owned skill folders und
 - Lower token and iteration cost for common style tasks.
 - Fewer planner/implementer handoff ambiguities.
 - Faster, more consistent PRs with explicit quality evidence.
+
+---
+
+## Topology Update (2026-06-24): tune mode + embedded-core tier
+
+Following the recognition of deterministic migration limits (see
+`docs/architecture/MIGRATION_STRATEGY_ANALYSIS.md` and
+`docs/specs/MIGRATE_FULL_FIRST_ARCHITECTURE.md`), the skill topology was
+extended:
+
+### Changes
+- **`style-evolve`**: added a 4th public mode — `tune`. Routes to `.claude/skills/style-tune/`.
+- **`.claude/skills/style-tune/`**: new sub-skill. Owns the iterative LLM
+  hand-tuning loop for embedded-core styles (seed from migrate → fidelity loop →
+  SQI loop → QA). Model: sonnet.
+- **`style-qa`**: made tier-aware. SQI is a **hard gate for embedded-core styles**;
+  advisory for dependent styles.
+- **`style-migrate-enhance`**: migrate output repositioned as a **seed/evidence**
+  source for embedded-core targets (not a terminal deliverable). Long-tail batch
+  behavior unchanged.
+- **Shared docs** (`STYLE_WORKFLOW_DECISION_RULES.md`,
+  `STYLE_WORKFLOW_EXECUTION.md`): added a third classification axis (portfolio
+  tier: `embedded-core` vs `dependent`), tier-dependent quality bar, and the
+  `tune` execution loop definition.
+
+### Rationale
+The embedded portfolio (16 styles, baked into the binary) sets the
+maintainability standard for the whole portfolio. Achieving perfect fidelity and
+clean SQI for those styles requires iterative LLM authoring — the converter
+cannot reliably reach that bar autonomously. The `tune` mode and the
+`embedded-core` tier make this a first-class workflow rather than an implicit
+expectation.
