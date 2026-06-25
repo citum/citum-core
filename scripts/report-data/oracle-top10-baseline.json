@@ -1,35 +1,22 @@
 {
   "totalStyles": 10,
   "citationsPerfect": 10,
-  "bibliographyPerfect": 1,
+  "bibliographyPerfect": 4,
   "citationsPartial": 0,
-  "bibliographyPartial": 9,
+  "bibliographyPartial": 6,
   "componentIssues": {
-    "year:value_mismatch": 17,
-    "title:value_mismatch": 22,
-    "publisher:value_mismatch": 5,
-    "doi:value_mismatch": 3,
-    "containerTitle:missing": 3,
-    "publisher:missing": 2,
-    "doi:missing": 4,
-    "publisher:extra": 5,
+    "year:value_mismatch": 8,
+    "title:value_mismatch": 11,
+    "publisher:value_mismatch": 3,
+    "doi:value_mismatch": 2,
+    "publisher:extra": 4,
+    "containerTitle:missing": 2,
     "doi:extra": 1,
-    "volume:missing": 2,
-    "containerTitle:value_mismatch": 1
+    "publisher:missing": 1,
+    "doi:missing": 2
   },
-  "orderingIssues": 17,
+  "orderingIssues": 10,
   "styleBreakdown": [
-    {
-      "style": "american-medical-association",
-      "citations": "20/20",
-      "bibliography": "39/48",
-      "rawCitations": "20/20",
-      "rawBibliography": "39/48",
-      "citationsPct": 100,
-      "bibliographyPct": 81,
-      "adjustedDivergences": {},
-      "templateSource": "inferred"
-    },
     {
       "style": "springer-basic-author-date",
       "citations": "20/20",
@@ -39,6 +26,29 @@
       "citationsPct": 100,
       "bibliographyPct": 94,
       "adjustedDivergences": {
+        "div-004": {
+          "scopes": [
+            "citation",
+            "bibliography"
+          ],
+          "tags": [
+            "missing-name-title-sort-order",
+            "sort-derived-numeric-citation-label"
+          ],
+          "note": "Missing-name works sort by title under author-based sorting. Adjusted verification excludes mismatches caused solely by this registered divergence while preserving raw citeproc deltas in reports.",
+          "adjustedCitations": 0,
+          "bibliographyOrderDifference": true,
+          "anonymousIds": [
+            "ITEM-15",
+            "ITEM-20",
+            "TLIB-SEL-DICT-1",
+            "TLIB-SEL-LEGISLATION-1",
+            "TLIB-SEL-STANDARD-1",
+            "TLIB-SEL-BILL-1",
+            "TLIB-SEL-HEARING-1",
+            "TLIB-SEL-REGULATION-1"
+          ]
+        },
         "div-008": {
           "scopes": [
             "citation",
@@ -88,58 +98,6 @@
       "templateSource": "inferred"
     },
     {
-      "style": "elsevier-harvard",
-      "citations": "20/20",
-      "bibliography": "45/47",
-      "rawCitations": "20/20",
-      "rawBibliography": "45/47",
-      "citationsPct": 100,
-      "bibliographyPct": 96,
-      "adjustedDivergences": {
-        "div-008": {
-          "scopes": [
-            "citation",
-            "bibliography"
-          ],
-          "tags": [
-            "same-family-secondary-sort-title-vs-given",
-            "sort-derived-numeric-citation-label"
-          ],
-          "note": "After a family-name match, citeproc-js sorts by given name (family → given → suffix → title); Citum sorts by title (family → title). Adjusted verification masks numeric citation labels that shift solely due to within-group reordering of same-family-name items, independent of the div-004 anonymous-item adjustment.",
-          "adjustedCitations": 0,
-          "bibliographyOrderDifference": true,
-          "swappedPairs": [
-            [
-              "ITEM-38",
-              "ITEM-37"
-            ],
-            [
-              "ITEM-37",
-              "ITEM-11"
-            ],
-            [
-              "ITEM-8",
-              "ITEM-1"
-            ],
-            [
-              "ITEM-30",
-              "ITEM-10"
-            ]
-          ],
-          "affectedIds": [
-            "ITEM-38",
-            "ITEM-37",
-            "ITEM-11",
-            "ITEM-8",
-            "ITEM-1",
-            "ITEM-30",
-            "ITEM-10"
-          ]
-        }
-      },
-      "templateSource": "inferred"
-    },
-    {
       "style": "elsevier-vancouver",
       "citations": "20/20",
       "bibliography": "45/47",
@@ -151,41 +109,6 @@
       "templateSource": "inferred"
     },
     {
-      "style": "chicago-author-date",
-      "citations": "20/20",
-      "bibliography": "44/46",
-      "rawCitations": "20/20",
-      "rawBibliography": "44/46",
-      "citationsPct": 100,
-      "bibliographyPct": 96,
-      "adjustedDivergences": {
-        "div-008": {
-          "scopes": [
-            "citation",
-            "bibliography"
-          ],
-          "tags": [
-            "same-family-secondary-sort-title-vs-given",
-            "sort-derived-numeric-citation-label"
-          ],
-          "note": "After a family-name match, citeproc-js sorts by given name (family → given → suffix → title); Citum sorts by title (family → title). Adjusted verification masks numeric citation labels that shift solely due to within-group reordering of same-family-name items, independent of the div-004 anonymous-item adjustment.",
-          "adjustedCitations": 0,
-          "bibliographyOrderDifference": true,
-          "swappedPairs": [
-            [
-              "ITEM-32",
-              "ITEM-31"
-            ]
-          ],
-          "affectedIds": [
-            "ITEM-32",
-            "ITEM-31"
-          ]
-        }
-      },
-      "templateSource": "inferred"
-    },
-    {
       "style": "apa",
       "citations": "20/20",
       "bibliography": "45/46",
@@ -194,6 +117,29 @@
       "citationsPct": 100,
       "bibliographyPct": 98,
       "adjustedDivergences": {
+        "div-004": {
+          "scopes": [
+            "citation",
+            "bibliography"
+          ],
+          "tags": [
+            "missing-name-title-sort-order",
+            "sort-derived-numeric-citation-label"
+          ],
+          "note": "Missing-name works sort by title under author-based sorting. Adjusted verification excludes mismatches caused solely by this registered divergence while preserving raw citeproc deltas in reports.",
+          "adjustedCitations": 0,
+          "bibliographyOrderDifference": true,
+          "anonymousIds": [
+            "ITEM-20",
+            "TLIB-SEL-LEGISLATION-1",
+            "TLIB-SEL-BILL-1",
+            "TLIB-SEL-STANDARD-1",
+            "TLIB-SEL-REGULATION-1",
+            "TLIB-SEL-DICT-1",
+            "TLIB-SEL-HEARING-1",
+            "ITEM-15"
+          ]
+        },
         "div-008": {
           "scopes": [
             "citation",
@@ -243,6 +189,17 @@
       "templateSource": "inferred"
     },
     {
+      "style": "elsevier-harvard",
+      "citations": "20/20",
+      "bibliography": "47/47",
+      "rawCitations": "20/20",
+      "rawBibliography": "47/47",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "adjustedDivergences": {},
+      "templateSource": "inferred"
+    },
+    {
       "style": "ieee",
       "citations": "20/20",
       "bibliography": "47/47",
@@ -252,17 +209,39 @@
       "bibliographyPct": 100,
       "adjustedDivergences": {},
       "templateSource": "inferred"
+    },
+    {
+      "style": "american-medical-association",
+      "citations": "20/20",
+      "bibliography": "47/47",
+      "rawCitations": "20/20",
+      "rawBibliography": "47/47",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "adjustedDivergences": {},
+      "templateSource": "inferred"
+    },
+    {
+      "style": "chicago-author-date",
+      "citations": "20/20",
+      "bibliography": "46/46",
+      "rawCitations": "20/20",
+      "rawBibliography": "46/46",
+      "citationsPct": 100,
+      "bibliographyPct": 100,
+      "adjustedDivergences": {},
+      "templateSource": "inferred"
     }
   ],
   "errors": [],
   "metadata": {
-    "timestamp": "2026-06-18T13:41:57.710Z",
-    "gitCommit": "7b301191",
+    "timestamp": "2026-06-25T00:20:24.862Z",
+    "gitCommit": "b0ce930f",
     "generator": "scripts/oracle-batch-aggregate.js",
-    "duration": "29.4s",
+    "duration": "15.9s",
     "concurrency": 1,
     "fixture": "tests/fixtures/citations-expanded.json",
-    "styleSelector": "top:10",
+    "styleSelector": "explicit",
     "styles": [
       "apa",
       "elsevier-harvard",
