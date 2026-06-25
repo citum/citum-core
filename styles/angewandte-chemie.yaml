@@ -173,13 +173,14 @@ bibliography:
       prefix: "DOI "
     - variable: url
       prefix: "can be found under "
-    - term: accessed
-      form: long
-    - date: accessed
-      form: year
+    - message: pattern.accessed-date
+      args:
+        date:
+          date: accessed
+          form: year
     - date: issued
       form: year
-    - term: no-date
+    - message: term.no-date
       form: short
     legal_case:
     - number: citation-number

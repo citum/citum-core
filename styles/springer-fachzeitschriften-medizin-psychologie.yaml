@@ -107,11 +107,11 @@ bibliography:
       suffix: ". "
     - variable: url
       suffix: ". "
-    - term: accessed
-      form: long
-      suffix: ": "
-    - date: accessed
-      form: year
+    - message: pattern.accessed-date-colon
+      args:
+        date:
+          date: accessed
+          form: year
   template:
   - contributor: author
     form: long

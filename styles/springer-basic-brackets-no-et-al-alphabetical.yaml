@@ -97,14 +97,16 @@ bibliography:
       suffix: ". "
     - variable: url
       suffix: ". "
-    - term: accessed
-      form: long
-      suffix: ": "
-    - date: accessed
-      form: month-day
-      suffix: " "
-    - date: accessed
-      form: year
+    - message: pattern.accessed-date-colon
+      args:
+        date:
+          group:
+            - date: accessed
+              form: month-day
+              suffix: " "
+            - date: accessed
+              form: year
+          delimiter: " "
   template:
   - contributor: author
     form: long

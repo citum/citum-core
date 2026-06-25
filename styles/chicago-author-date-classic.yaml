@@ -121,9 +121,10 @@ bibliography:
     - number: number
     - date: issued
       form: year
-    - term: at
-      form: long
-    - variable: locator
+    - message: pattern.locator-at
+      args:
+        locator:
+          variable: locator
     - variable: doi
       prefix: https://doi.org/
   template:

@@ -48,7 +48,7 @@ bibliography:
     entry-dictionary:
     - title: primary
     - title: parent-monograph
-    - term: no-date
+    - message: term.no-date
       form: long
       wrap:
         punctuation: brackets

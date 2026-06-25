@@ -70,20 +70,21 @@ bibliography:
             title: parent-serial
     entry-dictionary:
     - title: primary
-    - group:
-      - term: in
-        form: long
-      - title: parent-monograph
-    - group:
-      - term: cited
-        form: long
-      - date: accessed
-        form: year-month-day
+    - message: pattern.in-container
+      args:
+        container:
+          title: parent-monograph
+    - message: pattern.cited-date
+      args:
+        date:
+          date: accessed
+          form: year-month-day
       wrap:
         punctuation: brackets
-    - term: available-at
-      form: long
-    - variable: url
+    - message: pattern.available-at
+      args:
+        url:
+          variable: url
     map:
     - contributor: author
       form: long
@@ -95,30 +96,32 @@ bibliography:
       prefix: " "
     - date: issued
       form: year
-    - group:
-      - term: cited
-        form: long
-      - date: accessed
-        form: year-month-day
+    - message: pattern.cited-date
+      args:
+        date:
+          date: accessed
+          form: year-month-day
       wrap:
         punctuation: brackets
-    - term: available-at
-      form: long
-    - variable: url
+    - message: pattern.available-at
+      args:
+        url:
+          variable: url
     standard:
     - title: primary
     - date: issued
       form: year
-    - group:
-      - term: cited
-        form: long
-      - date: accessed
-        form: year-month-day
+    - message: pattern.cited-date
+      args:
+        date:
+          date: accessed
+          form: year-month-day
       wrap:
         punctuation: brackets
-    - term: available-at
-      form: long
-    - variable: url
+    - message: pattern.available-at
+      args:
+        url:
+          variable: url
   template:
   - contributor: author
     form: long

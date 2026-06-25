@@ -88,14 +88,15 @@ bibliography:
     - date: issued
       form: year
       suffix: ". "
-    - term: available-at
-      form: long
-    - variable: url
-    - group:
-      - term: accessed
-        form: long
-      - date: accessed
-        form: full
+    - message: pattern.available-at
+      args:
+        url:
+          variable: url
+    - message: pattern.accessed-date
+      args:
+        date:
+          date: accessed
+          form: full
       wrap:
         punctuation: brackets
   template:

@@ -95,7 +95,7 @@ bibliography:
       strip-periods: true
     - title: primary
     - number: edition
-    - term: edition
+    - message: term.edition
       form: short
       strip-periods: true
     - variable: publisher-place

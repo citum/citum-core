@@ -108,10 +108,11 @@ bibliography:
       wrap:
         punctuation: quotes
     - variable: url
-    - term: accessed
-      form: long
-    - date: accessed
-      form: year-month
+    - message: pattern.accessed-date
+      args:
+        date:
+          date: accessed
+          form: year-month
   template:
   - contributor: author
     form: long

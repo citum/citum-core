@@ -96,7 +96,7 @@ bibliography:
       suffix: '," '
     - date: issued
       form: year
-    - term: no-date
+    - message: term.no-date
       form: short
   template:
   - contributor: author

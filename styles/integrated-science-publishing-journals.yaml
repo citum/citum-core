@@ -84,11 +84,11 @@ bibliography:
         delimiter-precedes-last: always
     - title: primary
     - variable: url
-    - group:
-      - term: accessed
-        form: long
-      - date: accessed
-        form: year
+    - message: pattern.accessed-date
+      args:
+        date:
+          date: accessed
+          form: year
       wrap:
         punctuation: parentheses
     patent:

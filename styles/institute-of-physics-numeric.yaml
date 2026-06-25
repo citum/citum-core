@@ -90,7 +90,7 @@ bibliography:
       form: year
       suppress: false
     - title: primary
-    - term: volume
+    - message: term.volume
       form: short
       strip-periods: true
     - number: volume

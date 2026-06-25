@@ -109,16 +109,17 @@ bibliography:
     entry-dictionary:
     - title: primary
     - title: parent-monograph
-    - group:
-      - term: cited
-        form: long
-      - date: accessed
-        form: year-month-day
+    - message: pattern.cited-date
+      args:
+        date:
+          date: accessed
+          form: year-month-day
       wrap:
         punctuation: brackets
-    - term: available-at
-      form: long
-    - variable: url
+    - message: pattern.available-at
+      args:
+        url:
+          variable: url
   template:
   - contributor: author
     form: long

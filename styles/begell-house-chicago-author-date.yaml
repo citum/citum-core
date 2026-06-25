@@ -132,7 +132,7 @@ bibliography:
       emph: true
     - date: issued
       form: year
-    - term: no-date
+    - message: term.no-date
       form: short
     patent:
     - contributor: author
@@ -157,11 +157,11 @@ bibliography:
     - title: parent-serial
       emph: true
     - number: number
-    - term: and
+    - message: term.and
       form: long
     - date: issued
       form: full
-    - term: no-date
+    - message: term.no-date
       form: short
     personal_communication:
       extends: patent
@@ -169,7 +169,7 @@ bibliography:
         - match:
             number: number
         - match:
-            term: and
+            message: term.and
       add:
         - component:
             variable: genre

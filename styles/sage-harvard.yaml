@@ -172,13 +172,13 @@ bibliography:
       and: text
     - date: issued
       form: year
-    - term: no-date
+    - message: term.no-date
       form: short
     - title: primary
       emph: true
     - variable: authority
     - number: edition
-    - term: edition
+    - message: term.edition
       form: short
     - title: parent-serial
       emph: true
@@ -193,7 +193,7 @@ bibliography:
         delimiter-precedes-last: contextual
       and: text
     - number: edition
-    - term: edition
+    - message: term.edition
       form: short
     - title: parent-monograph
     - number: number

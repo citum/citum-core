@@ -137,7 +137,7 @@ bibliography:
     - title: primary
     - variable: authority
     - number: edition
-    - term: edition
+    - message: term.edition
       form: short
     - contributor: editor
       form: long

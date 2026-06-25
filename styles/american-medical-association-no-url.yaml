@@ -193,11 +193,11 @@ bibliography:
         use-first: 3
     - title: primary
       prefix: ' '
-    - term: online
-      prefix: 'Published '
-      suffix: ' '
-    - date: issued
-      form: year
+    - message: pattern.published-online-date
+      args:
+        date:
+          date: issued
+          form: year
     webpage:
     - contributor: author
       form: long
@@ -220,14 +220,16 @@ bibliography:
       prefix: ' '
     - delimiter: none
       group:
-      - term: online
-        prefix: 'Published '
-        suffix: ' '
-      - date: issued
-        form: month-day
-      - date: issued
-        form: year
-        prefix: ', '
+      - message: pattern.published-online-date
+        args:
+          date:
+            group:
+              - date: issued
+                form: month-day
+              - date: issued
+                form: year
+                prefix: ', '
+            delimiter: " "
     - variable: patent-number
       prefix: ':'
   template:

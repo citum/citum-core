@@ -66,7 +66,7 @@ citation:
     suffix: ""
     delimiter: ", "
     template:
-    - term: ibid
+    - message: term.ibid
     - variable: locator
       suffix: .
   template:

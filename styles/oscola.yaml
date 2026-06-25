@@ -114,7 +114,7 @@ citation:
     note-start-text-case: lowercase
     delimiter: " "
     template:
-    - term: ibid
+    - message: term.ibid
       form: long
       strip-periods: true
     - variable: locator
