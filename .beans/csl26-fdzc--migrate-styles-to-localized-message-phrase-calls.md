@@ -9,7 +9,7 @@ tags:
     - localization
     - mf2
 created_at: 2026-06-25T00:22:34Z
-updated_at: 2026-06-25T10:16:23Z
+updated_at: 2026-06-25T11:02:06Z
 ---
 
 ## Problem
@@ -38,14 +38,42 @@ through the rest of `styles/` by style family or shared template pattern.
 - Each batch preserves existing fidelity gates for the affected styles.
 - Deprecated template `term:` use decreases monotonically across `styles/`.
 - Missing message IDs and missing message args are caught by lint before merge.
-- Embedded styles are completed before broad non-embedded migration begins.
+- Embedded styles move through explicit proof and completion batches before
+  broad non-embedded migration begins.
 - Any new phrase IDs are documented in `docs/specs/LOCALE_MESSAGES.md`.
 
 
 ## Embedded Proof Batch (PR #965)
 
-- Started the embedded migration with output-equivalent `message:` calls in embedded-core styles.
-- Converted representative `pattern.accessed-date` call sites in AMA, Chicago, Elsevier, MLA, and Springer Vancouver styles.
-- Converted representative `pattern.in-container` call sites in Chicago, IEEE, and Springer author-date styles.
-- Added grouped message arguments so `pattern.in-container` can receive an already-rendered container cluster such as editor plus parent-monograph title.
-- Deferred APA's container-author site, colon-bearing `in:` sites, `URL ` labels, and role-plus-name phrases until later batches define phrase IDs that preserve those outputs without encoding English glue inside arguments.
+- Started the embedded migration with output-equivalent `message:` calls in
+  representative embedded-core styles. This is a proof batch, not completion of
+  all embedded styles.
+- Converted representative `pattern.accessed-date` call sites in AMA, Chicago,
+  Elsevier, MLA, and Springer Vancouver styles.
+- Converted representative `pattern.in-container` call sites in Chicago, IEEE,
+  and Springer author-date styles.
+- Added grouped message arguments so `pattern.in-container` can receive an
+  already-rendered container cluster such as editor plus parent-monograph title.
+- Directly touched 9 embedded files. Wrapper styles may inherit those changes,
+  but remaining embedded-core files still need classification and migration.
+- Remaining embedded candidates include `elsevier-with-titles-core`,
+  `springer-basic-brackets-core`,
+  `taylor-and-francis-council-of-science-editors-author-date-core`,
+  `taylor-and-francis-national-library-of-medicine-core`, and residual
+  `term: in` sites in already-touched families.
+- Deferred APA's container-author site, Chicago author-date's German override
+  sensitive container site, colon-bearing `in:` sites, `URL ` labels, and
+  role-plus-name phrases until later batches define phrase IDs that preserve
+  those outputs without encoding English glue inside arguments.
+
+## Next Embedded Batch
+
+- Classify each remaining embedded candidate by behavior, not namespace:
+  lexical or inflectional label, phrase over rendered values, or contributor
+  role/name phrase.
+- Convert only output-preserving phrase-over-rendered-values sites to
+  `message: pattern.*`.
+- Keep role-label and role-plus-name migration out of this bean's next style
+  batch unless contributor rendering semantics are explicitly revised first.
+- Re-run parse/lint for all embedded styles and oracle/fidelity checks for each
+  affected embedded family before marking embedded migration complete.
