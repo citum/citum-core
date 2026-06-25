@@ -57,6 +57,10 @@ pub(super) fn is_primary_title_component(component: &TemplateComponent) -> bool 
 }
 
 pub(super) fn is_parent_container_title_component(component: &TemplateComponent) -> bool {
+    component_or_message_arg_contains(component, is_parent_container_title_component_direct)
+}
+
+fn is_parent_container_title_component_direct(component: &TemplateComponent) -> bool {
     matches!(
         component,
         TemplateComponent::Title(title)
@@ -71,11 +75,37 @@ pub(super) fn is_parent_container_title_component(component: &TemplateComponent)
 }
 
 pub(super) fn is_parent_monograph_title_component(component: &TemplateComponent) -> bool {
+    component_or_message_arg_contains(component, is_parent_monograph_title_component_direct)
+}
+
+fn is_parent_monograph_title_component_direct(component: &TemplateComponent) -> bool {
     matches!(
         component,
         TemplateComponent::Title(title)
             if title.title == citum_schema::template::TitleType::ParentMonograph
     )
+}
+
+fn component_or_message_arg_contains(
+    component: &TemplateComponent,
+    direct: fn(&TemplateComponent) -> bool,
+) -> bool {
+    if direct(component) {
+        return true;
+    }
+
+    match component {
+        TemplateComponent::Group(group) => group
+            .group
+            .iter()
+            .any(|child| component_or_message_arg_contains(child, direct)),
+        TemplateComponent::Message(message) => message
+            .args
+            .values()
+            .filter_map(|source| source.as_template_component())
+            .any(|child| component_or_message_arg_contains(&child, direct)),
+        _ => false,
+    }
 }
 
 pub(super) fn is_issued_date_component(component: &TemplateComponent) -> bool {

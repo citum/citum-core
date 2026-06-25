@@ -6,25 +6,25 @@
   "bibliographyPartial": 6,
   "componentIssues": {
     "year:value_mismatch": 8,
-    "title:value_mismatch": 11,
+    "title:value_mismatch": 10,
     "publisher:value_mismatch": 3,
     "doi:value_mismatch": 2,
     "publisher:extra": 4,
-    "containerTitle:missing": 2,
     "doi:extra": 1,
     "publisher:missing": 1,
-    "doi:missing": 2
+    "doi:missing": 2,
+    "containerTitle:value_mismatch": 1
   },
-  "orderingIssues": 10,
+  "orderingIssues": 9,
   "styleBreakdown": [
     {
       "style": "springer-basic-author-date",
       "citations": "20/20",
-      "bibliography": "44/47",
+      "bibliography": "45/47",
       "rawCitations": "20/20",
-      "rawBibliography": "44/47",
+      "rawBibliography": "45/47",
       "citationsPct": 100,
-      "bibliographyPct": 94,
+      "bibliographyPct": 96,
       "adjustedDivergences": {
         "div-004": {
           "scopes": [
@@ -76,29 +76,29 @@
       "templateSource": "inferred"
     },
     {
+      "style": "elsevier-vancouver",
+      "citations": "20/20",
+      "bibliography": "45/47",
+      "rawCitations": "20/20",
+      "rawBibliography": "45/47",
+      "citationsPct": 100,
+      "bibliographyPct": 96,
+      "adjustedDivergences": {},
+      "templateSource": "inferred"
+    },
+    {
       "style": "nature",
       "citations": "20/20",
-      "bibliography": "44/47",
+      "bibliography": "45/47",
       "rawCitations": "20/20",
-      "rawBibliography": "44/47",
+      "rawBibliography": "45/47",
       "citationsPct": 100,
-      "bibliographyPct": 94,
+      "bibliographyPct": 96,
       "adjustedDivergences": {},
       "templateSource": "inferred"
     },
     {
       "style": "cell",
-      "citations": "20/20",
-      "bibliography": "45/48",
-      "rawCitations": "20/20",
-      "rawBibliography": "45/48",
-      "citationsPct": 100,
-      "bibliographyPct": 94,
-      "adjustedDivergences": {},
-      "templateSource": "inferred"
-    },
-    {
-      "style": "elsevier-vancouver",
       "citations": "20/20",
       "bibliography": "45/47",
       "rawCitations": "20/20",
@@ -235,10 +235,10 @@
   ],
   "errors": [],
   "metadata": {
-    "timestamp": "2026-06-25T00:20:24.862Z",
-    "gitCommit": "b0ce930f",
+    "timestamp": "2026-06-25T11:36:52.635Z",
+    "gitCommit": "028ef881",
     "generator": "scripts/oracle-batch-aggregate.js",
-    "duration": "15.9s",
+    "duration": "16.2s",
     "concurrency": 1,
     "fixture": "tests/fixtures/citations-expanded.json",
     "styleSelector": "explicit",

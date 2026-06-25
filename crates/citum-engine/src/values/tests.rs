@@ -10,8 +10,9 @@ use citum_schema::locale::{GeneralTerm, GrammaticalGender, Locale, TermForm};
 use citum_schema::options::contributors::NameForm;
 use citum_schema::options::*;
 use citum_schema::reference::{
-    ClassExtension, Contributor, ContributorEntry, ContributorGender, EdtfString, FlatName,
-    InputReference, Monograph, MonographType, StructuredName,
+    ClassExtension, Collection, CollectionComponent, CollectionType, Contributor, ContributorEntry,
+    ContributorGender, EdtfString, FlatName, InputReference, Monograph, MonographComponentType,
+    MonographType, StructuredName, Title, WorkRelation,
 };
 use citum_schema::template::DateVariable as TemplateDateVar;
 use citum_schema::template::*;
@@ -921,6 +922,167 @@ fn test_message_component_renders_grouped_container_argument() {
 
     assert_eq!(values.value, "in Grimm, Jacob (ed.) _Book Title_");
     assert!(values.pre_formatted);
+}
+
+#[test]
+fn test_message_component_renders_embedded_container_author_group() {
+    let mut config = make_config();
+    config.substitute = Some(SubstituteConfig::Explicit(Substitute {
+        role_substitute: std::collections::HashMap::from([(
+            "container-author".to_string(),
+            vec!["editor".to_string()],
+        )]),
+        ..Default::default()
+    }));
+    let mut locale = make_locale();
+    locale
+        .messages
+        .insert("pattern.in-container".into(), "in {$container}".into());
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let reference = InputReference::CollectionComponent(Box::new(CollectionComponent {
+        id: Some("chapter-1".into()),
+        r#type: MonographComponentType::Chapter,
+        title: Some(Title::Single("Chapter Title".to_string())),
+        container: Some(WorkRelation::Embedded(Box::new(
+            InputReference::Collection(Box::new(Collection {
+                r#type: CollectionType::EditedBook,
+                title: Some(Title::Single("Book Title".to_string())),
+                editor: Some(Contributor::StructuredName(StructuredName {
+                    given: "Jane".into(),
+                    family: "Editor".into(),
+                    ..Default::default()
+                })),
+                ..Default::default()
+            })),
+        ))),
+        ..Default::default()
+    }));
+    let hints = ProcHints::default();
+    let component = TemplateMessage {
+        message: "pattern.in-container".into(),
+        args: [(
+            "container".into(),
+            MessageArgSource::Group(TemplateGroup {
+                group: vec![
+                    TemplateComponent::Contributor(TemplateContributor {
+                        contributor: ContributorRole::ContainerAuthor,
+                        form: ContributorForm::Long,
+                        name_order: Some(NameOrder::GivenFirst),
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Title(TemplateTitle {
+                        title: TitleType::ParentMonograph,
+                        rendering: Rendering {
+                            emph: Some(true),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    }),
+                ],
+                delimiter: Some(DelimiterPunctuation::Custom(", ".into())),
+                ..Default::default()
+            }),
+        )]
+        .into(),
+        rendering: Rendering {
+            text_case: Some(TextCase::CapitalizeFirst),
+            ..Default::default()
+        },
+        custom: None,
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "In Jane Editor, _Book Title_");
+}
+
+#[test]
+fn test_message_component_renders_legacy_container_author_group() {
+    let mut config = make_config();
+    config.substitute = Some(SubstituteConfig::Explicit(Substitute {
+        role_substitute: std::collections::HashMap::from([(
+            "container-author".to_string(),
+            vec!["editor".to_string()],
+        )]),
+        ..Default::default()
+    }));
+    let mut locale = make_locale();
+    locale
+        .messages
+        .insert("pattern.in-container".into(), "in {$container}".into());
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let reference = Reference::from(LegacyReference {
+        id: "chapter-1".to_string(),
+        ref_type: "chapter".to_string(),
+        editor: Some(vec![Name::new("Editor", "Jane")]),
+        container_title: Some("Book Title".to_string()),
+        ..Default::default()
+    });
+    let hints = ProcHints::default();
+    let component = TemplateMessage {
+        message: "pattern.in-container".into(),
+        args: [(
+            "container".into(),
+            MessageArgSource::Group(TemplateGroup {
+                group: vec![
+                    TemplateComponent::Contributor(TemplateContributor {
+                        contributor: ContributorRole::ContainerAuthor,
+                        form: ContributorForm::Long,
+                        name_order: Some(NameOrder::GivenFirst),
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Title(TemplateTitle {
+                        title: TitleType::ParentMonograph,
+                        rendering: Rendering {
+                            emph: Some(true),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    }),
+                ],
+                delimiter: Some(DelimiterPunctuation::Custom(", ".into())),
+                ..Default::default()
+            }),
+        )]
+        .into(),
+        rendering: Rendering {
+            text_case: Some(TextCase::CapitalizeFirst),
+            ..Default::default()
+        },
+        custom: None,
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "In Jane Editor, _Book Title_");
 }
 
 #[test]

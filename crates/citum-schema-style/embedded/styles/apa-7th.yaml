@@ -312,17 +312,17 @@ bibliography:
       wrap:
         punctuation: parentheses
       prefix: " "
-    - delimiter: " "
-      group:
-      - term: in
-        text-case: capitalize-first
-      - delimiter: ", "
-        group:
-        - contributor: container-author
-          form: long
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+    - message: pattern.in-container
+      args:
+        container:
+          delimiter: ", "
+          group:
+          - contributor: container-author
+            form: long
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      text-case: capitalize-first
     - delimiter: ", "
       wrap:
         punctuation: parentheses
