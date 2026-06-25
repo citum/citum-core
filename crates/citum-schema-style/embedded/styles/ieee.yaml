@@ -141,11 +141,11 @@ bibliography:
     - title: primary
       wrap:
         punctuation: quotes
-    - group:
-      - term: in
-      - title: parent-monograph
-        emph: true
-      delimiter: " "
+    - message: pattern.in-container
+      args:
+        container:
+          title: parent-monograph
+          emph: true
     - contributor: editor
       form: long
       name-order: given-first
@@ -248,11 +248,11 @@ bibliography:
     - title: primary
       wrap:
         punctuation: quotes
-    - group:
-      - term: in
-      - title: parent-monograph
-        emph: true
-      delimiter: " "
+    - message: pattern.in-container
+      args:
+        container:
+          title: parent-monograph
+          emph: true
     - date: issued
       form: year
     - number: pages

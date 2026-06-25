@@ -154,12 +154,12 @@ bibliography:
     - title: parent-monograph
     - variable: url
       prefix: ", "
-    - group:
-      - term: accessed
-        text-case: capitalize-first
-      - date: accessed
-        form: day-month-abbr-year
-      delimiter: " "
+    - message: pattern.accessed-date
+      args:
+        date:
+          date: accessed
+          form: day-month-abbr-year
+      text-case: capitalize-first
       prefix: ". "
     standard:
     - variable: authority

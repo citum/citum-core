@@ -1170,6 +1170,8 @@ pub enum MessageArgSource {
     Contributor(TemplateContributor),
     /// A rendered date argument.
     Date(TemplateDate),
+    /// A rendered group argument.
+    Group(TemplateGroup),
     /// A rendered title argument.
     Title(TemplateTitle),
     /// A rendered number argument.
@@ -1189,6 +1191,7 @@ impl MessageArgSource {
             Self::Literal { .. } => None,
             Self::Contributor(component) => Some(TemplateComponent::Contributor(component.clone())),
             Self::Date(component) => Some(TemplateComponent::Date(component.clone())),
+            Self::Group(component) => Some(TemplateComponent::Group(component.clone())),
             Self::Title(component) => Some(TemplateComponent::Title(component.clone())),
             Self::Number(component) => Some(TemplateComponent::Number(component.clone())),
             Self::Variable(component) => Some(TemplateComponent::Variable(component.clone())),
@@ -1522,8 +1525,9 @@ wrap: parentheses
 message: pattern.in-container
 args:
   container:
-    title: parent-monograph
-    emph: true
+    group:
+    - title: parent-monograph
+      emph: true
 text-case: capitalize-first
 "#;
         let comp: TemplateComponent = serde_yaml::from_str(yaml).unwrap();
@@ -1533,8 +1537,13 @@ text-case: capitalize-first
                 assert_eq!(message.message, "pattern.in-container");
                 assert!(matches!(
                     message.args.get("container"),
-                    Some(MessageArgSource::Title(title)) if title.title == TitleType::ParentMonograph
-                        && title.rendering.emph == Some(true)
+                    Some(MessageArgSource::Group(group)) if group.group.len() == 1
+                        && matches!(
+                            group.group.first(),
+                            Some(TemplateComponent::Title(title))
+                                if title.title == TitleType::ParentMonograph
+                                    && title.rendering.emph == Some(true)
+                        )
                 ));
                 assert_eq!(
                     message.rendering.text_case,

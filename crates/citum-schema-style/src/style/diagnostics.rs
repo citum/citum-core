@@ -13,6 +13,7 @@ const COMPONENT_KINDS: &[&str] = &[
     "title",
     "number",
     "variable",
+    "message",
     "group",
     "term",
 ];
@@ -364,6 +365,7 @@ fn component_allowed_fields(kind: &str) -> &'static [&'static str] {
             "custom",
         ],
         "variable" => &["variable", "links", "custom"],
+        "message" => &["message", "args", "custom"],
         "term" => &["term", "form", "gender", "custom"],
         "group" => &["group", "delimiter", "custom"],
         _ => &[],

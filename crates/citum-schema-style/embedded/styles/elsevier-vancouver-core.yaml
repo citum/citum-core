@@ -249,11 +249,11 @@ bibliography:
       form: year
       suffix: '. '
     - variable: url
-    - group:
-      - term: accessed
-        form: long
-      - date: accessed
-        form: full
+    - message: pattern.accessed-date
+      args:
+        date:
+          date: accessed
+          form: full
       wrap:
         punctuation: parentheses
     patent:

@@ -142,17 +142,19 @@ bibliography:
       prefix: ". "
       wrap:
         punctuation: quotes
-    - group:
-      - term: in
-        text-case: capitalize-first
-      - title: parent-monograph
-        emph: false
-      - contributor: editor
-        form: verb
-        name-order: given-first
-        prefix: ", "
+    - message: pattern.in-container
+      args:
+        container:
+          group:
+            - title: parent-monograph
+              emph: false
+            - contributor: editor
+              form: verb
+              name-order: given-first
+              prefix: ", "
+          delimiter: " "
+      text-case: capitalize-first
       prefix: " "
-      delimiter: " "
     - variable: publisher
       prefix: ". "
     - date: issued
@@ -187,15 +189,17 @@ bibliography:
       prefix: ". "
       wrap:
         punctuation: quotes
-    - group:
-      - term: accessed
-        text-case: capitalize-first
-      - date: accessed
-        form: month-day
-      - date: accessed
-        form: year
-        prefix: ", "
-      delimiter: " "
+    - message: pattern.accessed-date
+      args:
+        date:
+          group:
+            - date: accessed
+              form: month-day
+            - date: accessed
+              form: year
+              prefix: ", "
+          delimiter: " "
+      text-case: capitalize-first
       prefix: ". "
     - variable: url
       prefix: ". "

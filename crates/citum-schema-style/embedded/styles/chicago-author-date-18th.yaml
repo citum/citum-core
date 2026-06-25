@@ -338,15 +338,17 @@ bibliography:
       text-case: sentence
       wrap:
         punctuation: quotes
-    - group:
-      - term: accessed
-        text-case: capitalize-first
-      - date: accessed
-        form: month-day
-      - date: accessed
-        form: year
-        prefix: ", "
-      delimiter: " "
+    - message: pattern.accessed-date
+      args:
+        date:
+          group:
+            - date: accessed
+              form: month-day
+            - date: accessed
+              form: year
+              prefix: ", "
+          delimiter: " "
+      text-case: capitalize-first
       prefix: ". "
     - variable: url
     standard:
