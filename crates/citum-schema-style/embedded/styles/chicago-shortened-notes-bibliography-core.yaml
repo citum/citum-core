@@ -60,7 +60,7 @@ citation:
     suffix: ""
     delimiter: ", "
     template:
-    - term: ibid
+    - message: term.ibid
     - variable: locator
       suffix: .
   type-variants:
@@ -214,19 +214,21 @@ bibliography:
         use-first: 3
     - title: primary
     - group:
-      - term: patent
+      - message: pattern.patent-number
+        args:
+          number:
+            number: number
         text-case: capitalize-first
-      - number: number
-      delimiter: " "
-      prefix: ". "
-    - group:
-      - term: issued
-      - date: issued
-        form: month-day
-      - date: issued
-        form: year
-        prefix: ", "
-      delimiter: " "
+        prefix: ". "
+    - message: pattern.issued-date
+      args:
+        date:
+          group:
+            - date: issued
+              form: month-day
+            - date: issued
+              form: year
+              prefix: ", "
       prefix: ", "
     standard:
     - variable: authority

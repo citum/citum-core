@@ -411,15 +411,16 @@ bibliography:
     - prefix: ". "
       delimiter: none
       group:
-      - term: patent
+      - message: pattern.patent-number
+        args:
+          number:
+            number: patent-number
         text-case: capitalize-first
-        suffix: " "
-      - number: patent-number
-      - group:
-        - term: issued
-        - date: issued
-          form: full
-        delimiter: " "
+      - message: pattern.issued-date
+        args:
+          date:
+            date: issued
+            form: full
         prefix: ", "
     report:
       extends: book

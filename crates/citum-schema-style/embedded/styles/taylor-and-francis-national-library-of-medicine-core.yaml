@@ -80,19 +80,20 @@ bibliography:
         min: 8
         use-first: 3
     - title: primary
-    - delimiter: " "
-      group:
-      - term: in
-        text-case: capitalize-first
-        suffix: ":"
-      - contributor: editor
-        form: long
-        name-order: family-first
-        shorten:
-          min: 4
-          use-first: 3
-        label: {term: editor, form: long, placement: suffix}
-    - title: parent-monograph
+    - message: pattern.in-container-colon
+      args:
+        container:
+          delimiter: " "
+          group:
+          - contributor: editor
+            form: long
+            name-order: family-first
+            shorten:
+              min: 4
+              use-first: 3
+            label: {term: editor, form: long, placement: suffix}
+          - title: parent-monograph
+      text-case: capitalize-first
     - delimiter: "; "
       group:
       - delimiter: ": "
