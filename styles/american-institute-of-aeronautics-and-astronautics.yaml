@@ -158,10 +158,11 @@ bibliography:
       form: year
     - number: pages
       label-form: short
-    - term: retrieved
-      form: long
-    - date: accessed
-      form: year
+    - message: pattern.retrieved-date
+      args:
+        date:
+          date: accessed
+          form: year
     - variable: url
     patent:
     - contributor: author

@@ -116,12 +116,12 @@ bibliography:
       and: text
     - date: issued
       form: year
-    - term: no-date
+    - message: term.no-date
       form: short
     - title: primary
     - variable: authority
     - number: edition
-    - term: edition
+    - message: term.edition
       form: short
       suffix: .
     - contributor: editor

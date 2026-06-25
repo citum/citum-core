@@ -107,38 +107,40 @@ bibliography:
     delimiter: comma
     suffix: .
     suppress: true
-  - term: in
-    form: long
-    suffix: ' '
-    suppress: true
-  - contributor: editor
-    form: long
-    shorten:
-      min: 7
-      use-first: 3
-      and-others: et-al
-      delimiter-precedes-last: never
-    and: text
-    suppress: true
-  - title: parent-serial
-    emph: true
-    suffix: '. '
-    suppress: true
-  - group:
-    - group:
-      - variable: publisher
-      - variable: publisher-place
-      - date: issued
-        form: year
-      delimiter: comma
-    - number: pages
-    delimiter: comma
-    suffix: .
-    suppress: true
-  - number: volume
-    emph: true
-    quote: false
-    prefix: ' '
+  - message: pattern.in-container-colon
+    args:
+      container:
+        group:
+          - contributor: editor
+            form: long
+            shorten:
+              min: 7
+              use-first: 3
+              and-others: et-al
+              delimiter-precedes-last: never
+            and: text
+            suppress: true
+          - title: parent-serial
+            emph: true
+            suffix: '. '
+            suppress: true
+          - group:
+            - group:
+              - variable: publisher
+              - variable: publisher-place
+              - date: issued
+                form: year
+              delimiter: comma
+            - number: pages
+            delimiter: comma
+            suffix: .
+            suppress: true
+          - number: volume
+            emph: true
+            quote: false
+            prefix: ' '
+            suppress: true
+        delimiter: " "
     suppress: true
   - number: issue
     emph: false
@@ -226,23 +228,26 @@ bibliography:
       quote: true
       wrap:
         punctuation: quotes
-    - term: in
-      form: long
-    - contributor: editor
-      form: long
-      shorten:
-        min: 7
-        use-first: 3
-        and-others: et-al
-        delimiter-precedes-last: never
-      and: text
-    - title: parent-serial
-      emph: true
-    - group:
-      - variable: publisher
-      - variable: publisher-place
-      - date: issued
-        form: year
-      delimiter: comma
+    - message: pattern.in-container
+      args:
+        container:
+          group:
+            - contributor: editor
+              form: long
+              shorten:
+                min: 7
+                use-first: 3
+                and-others: et-al
+                delimiter-precedes-last: never
+              and: text
+            - title: parent-serial
+              emph: true
+            - group:
+              - variable: publisher
+              - variable: publisher-place
+              - date: issued
+                form: year
+              delimiter: comma
+          delimiter: " "
     - number: pages
       label-form: short

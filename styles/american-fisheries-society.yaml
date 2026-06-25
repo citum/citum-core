@@ -124,19 +124,20 @@ bibliography:
       - number: pages
         label-form: long
         text-case: capitalize-first
-      - term: in
-      - group:
-        - contributor: editor
-          form: long
-          name-order: given-first
-          and: text
-          label:
-            term: editor
-            form: long
-            placement: suffix
-        - title: parent-monograph
-        delimiter: ". "
-      delimiter: " "
+      - message: pattern.in-container
+        args:
+          container:
+            group:
+              - contributor: editor
+                form: long
+                name-order: given-first
+                and: text
+                label:
+                  term: editor
+                  form: long
+                  placement: suffix
+              - title: parent-monograph
+            delimiter: ". "
     - title: parent-serial
     - variable: publisher
     - number: volume
@@ -150,7 +151,7 @@ bibliography:
       and: text
     - date: issued
       form: year
-    - term: no-date
+    - message: term.no-date
       form: short
       wrap:
         punctuation: parentheses
@@ -165,7 +166,7 @@ bibliography:
     - title: parent-serial
     - number: edition
       prefix: ", "
-    - term: edition
+    - message: term.edition
       form: long
       prefix: " "
       suffix: .
@@ -184,7 +185,7 @@ bibliography:
         - match:
             number: edition
         - match:
-            term: edition
+            message: term.edition
   template:
   - contributor: author
     form: long

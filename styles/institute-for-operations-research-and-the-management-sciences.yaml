@@ -94,17 +94,17 @@ bibliography:
       prefix: " "
     - title: primary
       prefix: " "
-    - group:
-      - term: retrieved
-        form: long
-        text-case: capitalize-first
-      - date: accessed
-        form: month-abbr-day-year
-        wrap:
-          punctuation: parentheses
-        prefix: " "
+    - message: pattern.retrieved-date
+      args:
+        date:
+          date: accessed
+          form: month-abbr-day-year
+          wrap:
+            punctuation: parentheses
+          prefix: " "
       suffix: ", "
       prefix: ". "
+      text-case: capitalize-first
     - variable: url
     legal_case:
     - contributor: author

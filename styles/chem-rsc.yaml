@@ -160,10 +160,11 @@ bibliography:
       and: text
     - title: primary
     - variable: url
-    - term: accessed
-      form: long
-    - date: accessed
-      form: full
+    - message: pattern.accessed-date
+      args:
+        date:
+          date: accessed
+          form: full
     patent:
     - number: citation-number
       wrap:

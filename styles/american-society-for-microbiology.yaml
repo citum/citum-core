@@ -76,7 +76,7 @@ bibliography:
     - title: parent-serial
       prefix: ". "
     - number: edition
-    - term: edition
+    - message: term.edition
       form: short
     - variable: genre
     - variable: publisher
@@ -89,15 +89,13 @@ bibliography:
           after:
             variable: publisher-place
         - component:
-            term: retrieved
-            form: long
+            message: pattern.retrieved-date
+            args:
+              date:
+                date: accessed
+                form: year
           after:
             variable: url
-        - component:
-            date: accessed
-            form: year
-          after:
-            term: retrieved
   template:
   - contributor: author
     form: long

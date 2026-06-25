@@ -58,10 +58,14 @@ bibliography:
     - contributor: author
       form: long
       name-order: given-first
-    - term: in
-    - title: parent-monograph
-    - contributor: editor
-      form: verb
+    - message: pattern.in-container
+      args:
+        container:
+          group:
+            - title: parent-monograph
+            - contributor: editor
+              form: verb
+          delimiter: " "
     - variable: publisher
     - date: issued
       form: year

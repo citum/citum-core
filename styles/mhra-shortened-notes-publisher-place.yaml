@@ -25,7 +25,7 @@ citation:
   ibid:
     delimiter: ", "
     template:
-    - term: ibid
+    - message: term.ibid
       strip-periods: true
     - variable: locator
   template:
@@ -92,9 +92,10 @@ bibliography:
     - title: primary
     - delimiter: none
       group:
-      - term: patent
-        suffix: " "
-      - number: number
+      - message: pattern.patent-number
+        args:
+          number:
+            number: number
       - date: issued
         form: month-day
         prefix: ", issued "

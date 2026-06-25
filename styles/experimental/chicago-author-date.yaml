@@ -54,7 +54,7 @@ citation:
       - date: issued
         form: year
         fallback:
-        - term: no-date
+        - message: term.no-date
     - variable: locator
   integral:
     delimiter: " "
@@ -68,7 +68,7 @@ citation:
       - date: issued
         form: year
         fallback:
-        - term: no-date
+        - message: term.no-date
       - variable: locator
 bibliography:
   options:
@@ -90,7 +90,7 @@ bibliography:
       form: year
       suffix: "."
       fallback: &id001
-      - term: no-date
+      - message: term.no-date
         suffix: "."
     - title: primary
       suffix: "."
@@ -101,11 +101,15 @@ bibliography:
       group:
       - delimiter: space
         group:
-        - term: in
-        - title: parent-monograph
-          emph: true
-        - contributor: editor
-          form: verb
+        - message: pattern.in-container
+          args:
+            container:
+              group:
+                - title: parent-monograph
+                  emph: true
+                - contributor: editor
+                  form: verb
+              delimiter: " "
       - title: parent-serial
         form: long
         emph: true
@@ -141,11 +145,15 @@ bibliography:
       group:
       - delimiter: space
         group:
-        - term: in
-        - title: parent-monograph
-          emph: true
-        - contributor: editor
-          form: verb
+        - message: pattern.in-container
+          args:
+            container:
+              group:
+                - title: parent-monograph
+                  emph: true
+                - contributor: editor
+                  form: verb
+              delimiter: " "
       - title: parent-serial
         form: long
         emph: true
@@ -171,11 +179,15 @@ bibliography:
     group:
     - delimiter: space
       group:
-      - term: in
-      - title: parent-monograph
-        emph: true
-      - contributor: editor
-        form: verb
+      - message: pattern.in-container
+        args:
+          container:
+            group:
+              - title: parent-monograph
+                emph: true
+              - contributor: editor
+                form: verb
+            delimiter: " "
     - title: parent-serial
       form: long
       emph: true

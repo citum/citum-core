@@ -134,7 +134,7 @@ bibliography:
         and-others: et-al
         delimiter-precedes-last: always
     - title: primary
-    - term: edition
+    - message: term.edition
       form: short
       strip-periods: true
     - number: edition

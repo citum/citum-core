@@ -109,7 +109,7 @@ bibliography:
       emph: true
       suffix: .
     - number: edition
-    - term: edition
+    - message: term.edition
       form: short
     - variable: publisher
     - variable: publisher-place
@@ -134,14 +134,14 @@ bibliography:
     - contributor: editor
       form: long
     - number: edition
-    - term: edition
+    - message: term.edition
       form: short
     - variable: publisher
     - variable: publisher-place
     - date: issued
       form: year
       suppress: false
-    - term: volume
+    - message: term.volume
       form: short
     - number: volume
       suppress: false
@@ -163,13 +163,15 @@ bibliography:
         and-others: et-al
         delimiter-precedes-last: always
     - title: primary
-    - term: available-at
-      form: long
-    - variable: url
-    - term: accessed
-      form: long
-    - date: accessed
-      form: year
+    - message: pattern.available-at
+      args:
+        url:
+          variable: url
+    - message: pattern.accessed-date
+      args:
+        date:
+          date: accessed
+          form: year
     patent:
     - contributor: author
       form: long
@@ -179,4 +181,3 @@ bibliography:
     - date: issued
       form: year
     - number: number
-

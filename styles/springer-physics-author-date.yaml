@@ -161,13 +161,13 @@ bibliography:
       emph: true
     - variable: authority
     - number: edition
-    - term: edition
+    - message: term.edition
       form: short
     - variable: publisher
     - variable: publisher-place
     - date: issued
       form: year
-    - term: no-date
+    - message: term.no-date
       form: short
     patent:
     - contributor: author
@@ -176,7 +176,7 @@ bibliography:
     - number: number
     - date: issued
       form: year
-    - term: no-date
+    - message: term.no-date
       form: short
   template:
   - contributor: author

@@ -126,7 +126,7 @@ bibliography:
         delimiter-precedes-last: always
     - title: primary
     - number: edition
-    - term: edition
+    - message: term.edition
       form: short
     - variable: publisher-place
     - variable: publisher
@@ -145,15 +145,13 @@ bibliography:
           after:
             number: pages
         - component:
-            term: accessed
-            form: long
+            message: pattern.accessed-date
+            args:
+              date:
+                date: accessed
+                form: full
           after:
             variable: url
-        - component:
-            date: accessed
-            form: full
-          after:
-            term: accessed
     patent:
     - contributor: author
       form: long
@@ -167,4 +165,3 @@ bibliography:
       prefix: ' '
     - date: issued
       form: year
-

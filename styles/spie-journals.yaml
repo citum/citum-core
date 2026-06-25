@@ -101,11 +101,11 @@ bibliography:
     - variable: url
       prefix: <
       suffix: ">"
-    - group:
-      - term: accessed
-        form: long
-      - date: accessed
-        form: year
+    - message: pattern.accessed-date
+      args:
+        date:
+          date: accessed
+          form: year
       wrap:
         punctuation: parentheses
   template:
