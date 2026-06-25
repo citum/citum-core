@@ -15,7 +15,19 @@ const RULES = {
   STYLE005: 'Legacy items blocks should be authored as group blocks.',
   STYLE006: 'Page labels must use localized label-form settings instead of raw locale strings.',
   STYLE007: 'Empty style version values should be omitted so schema defaults apply.',
+  STYLE008: 'Rendered template terms are deprecated; use message components instead.',
+  STYLE009: 'Phrase-like term-backed messages must use localized pattern messages.',
 };
+
+const FATAL_RULE_IDS = new Set(['STYLE008', 'STYLE009']);
+const ALLOWED_TERM_MESSAGE_IDS = new Set([
+  'and',
+  'edition',
+  'ibid',
+  'no-date',
+  'personal-communication',
+  'volume',
+]);
 
 function parseArgs(argv = process.argv.slice(2)) {
   const args = {
@@ -59,6 +71,10 @@ function isProductionStyle(filePath) {
   return /^styles\/[^/]+\.yaml$/.test(repoRelative(filePath));
 }
 
+function isEmbeddedStyle(filePath) {
+  return /^crates\/citum-schema-style\/embedded\/styles\/[^/]+\.yaml$/.test(repoRelative(filePath));
+}
+
 function listStyleFiles(filePaths = []) {
   if (filePaths.length === 0) {
     return fs.readdirSync(STYLES_DIR)
@@ -69,7 +85,7 @@ function listStyleFiles(filePaths = []) {
 
   return filePaths
     .map((filePath) => path.resolve(filePath))
-    .filter((filePath) => isProductionStyle(filePath))
+    .filter((filePath) => isProductionStyle(filePath) || isEmbeddedStyle(filePath))
     .sort();
 }
 
@@ -201,6 +217,59 @@ function lintEmptyStyleVersion(filePath, content) {
       line: content.slice(0, match.index).split('\n').length,
       message: `${RULES.STYLE007} Remove the empty version field.`,
       fixable: true,
+    });
+  }
+
+  return violations;
+}
+
+function lintDeprecatedTemplateTerms(filePath, content) {
+  const violations = [];
+  const lines = content.split('\n');
+  const pattern = /^(\s*)(?:-\s*)?term:\s*([^#\s]+)/;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index];
+    const match = line.match(pattern);
+    if (!match) continue;
+
+    let previous = '';
+    for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
+      if (lines[cursor].trim() !== '') {
+        previous = lines[cursor].trim();
+        break;
+      }
+    }
+
+    if (previous.startsWith('label:')) continue;
+
+    violations.push({
+      ruleId: 'STYLE008',
+      file: repoRelative(filePath),
+      line: index + 1,
+      message: `${RULES.STYLE008} Found term: ${match[2]}.`,
+      fixable: false,
+    });
+  }
+
+  return violations;
+}
+
+function lintPhraseLikeTermMessages(filePath, content) {
+  const violations = [];
+  const pattern = /^(\s*)(?:-\s*)?message:\s+term\.([^#\s]+)/gm;
+  let match;
+
+  while ((match = pattern.exec(content)) !== null) {
+    const messageId = match[2].trim();
+    if (ALLOWED_TERM_MESSAGE_IDS.has(messageId)) continue;
+
+    violations.push({
+      ruleId: 'STYLE009',
+      file: repoRelative(filePath),
+      line: content.slice(0, match.index).split('\n').length,
+      message: `${RULES.STYLE009} Found message: term.${messageId}.`,
+      fixable: false,
     });
   }
 
@@ -651,6 +720,8 @@ function lintStyleFile(filePath, options = {}) {
   const violations = lintAnonymousAnchors(filePath, content);
   violations.push(...lintLegacyItemsAlias(filePath, content));
   violations.push(...lintEmptyStyleVersion(filePath, content));
+  violations.push(...lintDeprecatedTemplateTerms(filePath, content));
+  violations.push(...lintPhraseLikeTermMessages(filePath, content));
   let workingContent = content;
   let fixed = false;
 
@@ -719,6 +790,8 @@ function lintStyleFile(filePath, options = {}) {
     ...lintAnonymousAnchors(filePath, refreshedContent),
     ...lintLegacyItemsAlias(filePath, refreshedContent),
     ...lintEmptyStyleVersion(filePath, refreshedContent),
+    ...lintDeprecatedTemplateTerms(filePath, refreshedContent),
+    ...lintPhraseLikeTermMessages(filePath, refreshedContent),
   ];
   if (parsed && typeof parsed === 'object' && !fixed) {
     refreshedViolations.push(...lintParsedStyle(filePath, refreshedContent, parsed));
@@ -775,7 +848,10 @@ function main() {
     printTextReport(summary);
   }
 
-  if (args.strict && summary.violations.length > 0) {
+  if (
+    summary.violations.some((violation) => FATAL_RULE_IDS.has(violation.ruleId)) ||
+    (args.strict && summary.violations.length > 0)
+  ) {
     process.exit(1);
   }
 }
@@ -794,6 +870,8 @@ module.exports = {
   convertItemsAliasInText,
   expandAnonymousAnchorsInText,
   lintEmptyStyleVersion,
+  lintDeprecatedTemplateTerms,
+  lintPhraseLikeTermMessages,
   lintAnonymousAnchors,
   lintLegacyItemsAlias,
   lintParsedStyle,
