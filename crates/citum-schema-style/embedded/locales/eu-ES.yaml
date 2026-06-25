@@ -98,8 +98,18 @@ messages:
 
   pattern.page-range: "{$start}–{$end}"
   pattern.accessed-date: "kontsulta-data: {$date}"
+  pattern.accessed-date-colon: "kontsulta-data: {$date}"
   pattern.in-container: "{$container}(e)n"
+  pattern.in-container-colon: "{$container}(e)n:"
+  pattern.cited-date: "aipatua: {$date}"
+  pattern.issued-date: "emana: {$date}"
+  pattern.retrieved-date: "berreskuratua: {$date}"
+  pattern.published-online: "Sarean argitaratua"
+  pattern.published-online-date: "Sarean argitaratua: {$date}"
+  pattern.patent-number: "{$number} patentea"
+  pattern.locator-at: "{$locator}(e)n"
   pattern.retrieved-from: "iturria: {$url}"
+  pattern.available-at: "hemen eskuragarri: {$url}"
   date.open-ended: "gaur"
 
 date-formats:

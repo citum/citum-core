@@ -774,8 +774,18 @@ messages:
     when one {Dokument}
     when * {Dokumente}
   pattern.accessed-date: "Zugriff am {$date}"
+  pattern.accessed-date-colon: "Zugriff: {$date}"
   pattern.in-container: "in {$container}"
+  pattern.in-container-colon: "in: {$container}"
+  pattern.cited-date: "zitiert {$date}"
+  pattern.issued-date: "erteilt {$date}"
+  pattern.retrieved-date: "abgerufen {$date}"
+  pattern.published-online: "Online veröffentlicht"
+  pattern.published-online-date: "Online veröffentlicht {$date}"
+  pattern.patent-number: "Patent {$number}"
+  pattern.locator-at: "bei {$locator}"
   pattern.retrieved-from: "abgerufen von {$url}"
+  pattern.available-at: "verfügbar unter {$url}"
   date.open-ended: "heute"
 
 date-formats:

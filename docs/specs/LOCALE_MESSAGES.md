@@ -303,9 +303,18 @@ Locales SHOULD define these initial compositional phrase IDs:
 | Message ID | Variables | Purpose |
 |---|---|---|
 | `pattern.accessed-date` | `$date` | Access-date statements such as “accessed December 1, 2021”. |
+| `pattern.accessed-date-colon` | `$date` | Access-date statements whose style form requires colon punctuation. |
 | `pattern.in-container` | `$container` | Container-introduction phrases such as “in _Book Title_”. |
+| `pattern.in-container-colon` | `$container` | Container-introduction phrases that require colon punctuation after the introductory term, such as “In: _Book Title_”. |
 | `pattern.available-at` | `$url` | Availability statements. |
 | `pattern.retrieved-from` | `$url` | Retrieval/source statements. |
+| `pattern.cited-date` | `$date` | Citation access-date statements such as “cited December 1, 2021”. |
+| `pattern.issued-date` | `$date` | Issuance statements such as patent issue dates. |
+| `pattern.retrieved-date` | `$date` | Retrieval-date statements where the URL is rendered separately. |
+| `pattern.published-online` | none | Standalone online-publication phrase fragment used by structural overrides. |
+| `pattern.published-online-date` | `$date` | Online-publication date statements. |
+| `pattern.patent-number` | `$number` | Patent number statements. |
+| `pattern.locator-at` | `$locator` | Locator phrases introduced by “at”. |
 
 If a style calls a missing message ID, style-lint reports an error. If a message
 body references a variable not declared in the template component's `args`, the
@@ -456,6 +465,8 @@ messages:
 
   # Compositional patterns
   pattern.page-range:      "{$start}\u2013{$end}"
+  pattern.cited-date:      "cited {$date}"
+  pattern.in-container-colon: "in: {$container}"
   pattern.retrieved-from:  "retrieved from {$url}"
   pattern.available-at:    "available at {$url}"
   pattern.n-authors-et-al: "{$main_list}, et al."
