@@ -10,6 +10,8 @@ const {
   expandAnonymousAnchorsInText,
   lintAnonymousAnchors,
   lintEmptyStyleVersion,
+  lintDeprecatedTemplateTerms,
+  lintPhraseLikeTermMessages,
   lintLegacyItemsAlias,
   lintParsedStyle,
   removeEmptyVersionInText,
@@ -400,6 +402,54 @@ info:
   assert.equal(output, `info:
   title: Example
 `);
+});
+
+test('STYLE008 detects rendered template terms but ignores role labels', () => {
+  const content = `bibliography:
+  template:
+    - term: accessed
+      form: long
+    - contributor: editor
+      label:
+        term: editor
+        form: short
+`;
+
+  const violations = lintDeprecatedTemplateTerms('styles/fixture.yaml', content);
+
+  assert.equal(violations.length, 1);
+  assert.equal(violations[0].ruleId, 'STYLE008');
+  assert.equal(violations[0].line, 3);
+});
+
+test('STYLE009 rejects phrase-like term-backed messages', () => {
+  const content = `bibliography:
+  template:
+    - message: term.in
+    - message: term.accessed
+`;
+
+  const violations = lintPhraseLikeTermMessages('styles/fixture.yaml', content);
+
+  assert.equal(violations.length, 2);
+  assert.equal(violations[0].ruleId, 'STYLE009');
+  assert.equal(violations[0].line, 3);
+});
+
+test('STYLE009 allows lexical term-backed messages', () => {
+  const content = `bibliography:
+  template:
+    - message: term.no-date
+    - message: term.edition
+    - message: term.volume
+    - message: term.ibid
+    - message: term.personal-communication
+    - message: term.and
+`;
+
+  const violations = lintPhraseLikeTermMessages('styles/fixture.yaml', content);
+
+  assert.equal(violations.length, 0);
 });
 
 test('applyFixes removes empty version properties', () => {
