@@ -9,10 +9,11 @@ use crate::citation::LocatorType;
 use crate::locale::{GeneralTerm, Locale, RawLocale, TermForm, types::MessageSyntax};
 use crate::options::Config;
 use crate::template::{
-    ContributorForm, ContributorRole, LabelForm as TemplateLabelForm, NumberVariable,
-    RoleLabelForm, TemplateComponent, TemplateContributor,
+    ContributorForm, ContributorRole, LabelForm as TemplateLabelForm, MessageArgSource,
+    NumberVariable, RoleLabelForm, TemplateComponent, TemplateContributor, TemplateMessage,
 };
 use crate::{CitationSpec, Style, TemplateVariant};
+use std::collections::BTreeSet;
 
 /// A single lint finding produced by locale or style validation.
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -79,6 +80,10 @@ enum LocaleRequirementKind {
     Locator {
         locator: LocatorType,
         form: TermForm,
+    },
+    Message {
+        message_id: String,
+        args: Vec<String>,
     },
 }
 
@@ -164,6 +169,26 @@ pub fn lint_style_against_locale(style: &Style, locale: &Locale) -> LintReport {
                             "locale does not fully resolve locator term '{locator:?}' in form '{form:?}'"
                         ),
                     );
+                }
+            }
+            LocaleRequirementKind::Message { message_id, args } => {
+                let Some(message) = locale.messages.get(&message_id) else {
+                    report.error(
+                        requirement.path,
+                        format!("locale message '{message_id}' does not exist"),
+                    );
+                    continue;
+                };
+
+                for variable in mf2_variables(message) {
+                    if !args.iter().any(|arg| arg == &variable) {
+                        report.error(
+                            requirement.path.clone(),
+                            format!(
+                                "locale message '{message_id}' references '${variable}' but the template message does not declare that arg"
+                            ),
+                        );
+                    }
                 }
             }
         }
@@ -389,13 +414,18 @@ fn collect_template_requirements(
     for (index, component) in template.iter().enumerate() {
         let component_path = format!("{path}[{index}]");
         match component {
-            TemplateComponent::Term(term) => requirements.push(LocaleRequirement {
-                path: component_path,
-                kind: LocaleRequirementKind::General {
-                    term: term.term.clone(),
-                    form: term.form.clone().unwrap_or(TermForm::Long),
-                },
-            }),
+            TemplateComponent::Term(term) => {
+                requirements.push(LocaleRequirement {
+                    path: component_path,
+                    kind: LocaleRequirementKind::General {
+                        term: term.term.clone(),
+                        form: term.form.clone().unwrap_or(TermForm::Long),
+                    },
+                });
+            }
+            TemplateComponent::Message(message) => {
+                collect_message_requirements(message, &component_path, config, requirements);
+            }
             TemplateComponent::Contributor(contributor) => {
                 collect_contributor_requirements(
                     contributor,
@@ -451,6 +481,41 @@ fn collect_template_requirements(
             }
             _ => {}
         }
+    }
+}
+
+fn collect_message_requirements(
+    message: &TemplateMessage,
+    path: &str,
+    config: &Config,
+    requirements: &mut Vec<LocaleRequirement>,
+) {
+    requirements.push(LocaleRequirement {
+        path: path.to_string(),
+        kind: LocaleRequirementKind::Message {
+            message_id: message.message.clone(),
+            args: message.args.keys().cloned().collect(),
+        },
+    });
+
+    for (arg_name, source) in &message.args {
+        collect_message_arg_requirements(
+            source,
+            &format!("{path}.args.{arg_name}"),
+            config,
+            requirements,
+        );
+    }
+}
+
+fn collect_message_arg_requirements(
+    source: &MessageArgSource,
+    path: &str,
+    config: &Config,
+    requirements: &mut Vec<LocaleRequirement>,
+) {
+    if let Some(component) = source.as_template_component() {
+        collect_template_requirements(std::slice::from_ref(&component), path, config, requirements);
     }
 }
 
@@ -576,6 +641,35 @@ fn lint_mf2_message(message: &str) -> Result<(), String> {
         lint_mf2_match(trimmed)
     } else {
         lint_mf2_pattern(trimmed)
+    }
+}
+
+fn mf2_variables(message: &str) -> Vec<String> {
+    let mut variables = BTreeSet::new();
+    collect_mf2_variables(message, &mut variables);
+    variables.into_iter().collect()
+}
+
+fn collect_mf2_variables(input: &str, variables: &mut BTreeSet<String>) {
+    let mut cursor = 0usize;
+    while let Some(offset) = input.get(cursor..).and_then(|s| s.find('{')) {
+        let open = cursor + offset;
+        let Some(close) = find_matching_brace(input, open) else {
+            break;
+        };
+        let Some(inner) = input.get(open + 1..close).map(str::trim) else {
+            break;
+        };
+
+        if let Some(rest) = inner.strip_prefix('$')
+            && let Some(name) = rest.split_whitespace().next()
+            && !name.is_empty()
+        {
+            variables.insert(name.to_string());
+        }
+
+        collect_mf2_variables(inner, variables);
+        cursor = close + 1;
     }
 }
 
@@ -857,6 +951,57 @@ mod tests {
             finding.severity == LintSeverity::Warning
                 && finding.path == "citation.template[0]"
                 && finding.message.contains("general term")
+        }));
+    }
+
+    #[test]
+    fn test_lint_style_against_locale_errors_for_missing_message_id() {
+        let style = Style {
+            citation: Some(CitationSpec {
+                template: Some(vec![TemplateComponent::Message(TemplateMessage {
+                    message: "pattern.missing".into(),
+                    ..Default::default()
+                })]),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let locale = Locale::en_us();
+
+        let report = lint_style_against_locale(&style, &locale);
+
+        assert!(report.has_errors());
+        assert!(report.findings.iter().any(|finding| {
+            finding.severity == LintSeverity::Error
+                && finding.path == "citation.template[0]"
+                && finding.message.contains("pattern.missing")
+        }));
+    }
+
+    #[test]
+    fn test_lint_style_against_locale_errors_for_missing_message_arg() {
+        let style = Style {
+            citation: Some(CitationSpec {
+                template: Some(vec![TemplateComponent::Message(TemplateMessage {
+                    message: "pattern.accessed-date".into(),
+                    ..Default::default()
+                })]),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let mut locale = Locale::en_us();
+        locale
+            .messages
+            .insert("pattern.accessed-date".into(), "accessed {$date}".into());
+
+        let report = lint_style_against_locale(&style, &locale);
+
+        assert!(report.has_errors());
+        assert!(report.findings.iter().any(|finding| {
+            finding.severity == LintSeverity::Error
+                && finding.path == "citation.template[0]"
+                && finding.message.contains("$date")
         }));
     }
 

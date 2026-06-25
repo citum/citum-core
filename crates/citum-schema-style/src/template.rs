@@ -473,6 +473,7 @@ pub enum TemplateComponent {
     Title(TemplateTitle),
     Number(TemplateNumber),
     Variable(TemplateVariable),
+    Message(TemplateMessage),
     Group(TemplateGroup),
     Term(TemplateTerm),
 }
@@ -1136,6 +1137,66 @@ pub struct TemplateVariable {
     pub custom: Option<HashMap<String, serde_json::Value>>,
 }
 
+/// A locale message call inside a citation or bibliography template.
+///
+/// The style chooses the message ID and supplies structured argument sources;
+/// the active locale owns the natural-language realization in its `messages`
+/// map.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Default)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct TemplateMessage {
+    /// Locale message ID to evaluate, such as `pattern.accessed-date`.
+    pub message: String,
+    /// Named argument sources pre-rendered before message evaluation.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub args: HashMap<String, MessageArgSource>,
+    #[serde(flatten, default)]
+    pub rendering: Rendering,
+
+    /// Custom user-defined fields for extensions.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub custom: Option<HashMap<String, serde_json::Value>>,
+}
+
+/// A structured source for one named locale-message argument.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(untagged)]
+pub enum MessageArgSource {
+    /// A literal string argument.
+    Literal { literal: String },
+    /// A rendered contributor argument.
+    Contributor(TemplateContributor),
+    /// A rendered date argument.
+    Date(TemplateDate),
+    /// A rendered title argument.
+    Title(TemplateTitle),
+    /// A rendered number argument.
+    Number(TemplateNumber),
+    /// A rendered variable argument.
+    Variable(TemplateVariable),
+    /// A rendered locale term argument.
+    Term(TemplateTerm),
+}
+
+impl MessageArgSource {
+    /// Convert this argument source into a normal template component when it
+    /// should be rendered through the standard component pipeline.
+    #[must_use]
+    pub fn as_template_component(&self) -> Option<TemplateComponent> {
+        match self {
+            Self::Literal { .. } => None,
+            Self::Contributor(component) => Some(TemplateComponent::Contributor(component.clone())),
+            Self::Date(component) => Some(TemplateComponent::Date(component.clone())),
+            Self::Title(component) => Some(TemplateComponent::Title(component.clone())),
+            Self::Number(component) => Some(TemplateComponent::Number(component.clone())),
+            Self::Variable(component) => Some(TemplateComponent::Variable(component.clone())),
+            Self::Term(component) => Some(TemplateComponent::Term(component.clone())),
+        }
+    }
+}
+
 /// Simple string variables.
 ///
 /// Use `variable:` for string passthrough fields, even when the field name is
@@ -1452,6 +1513,35 @@ wrap: parentheses
                 assert_eq!(v.variable, SimpleVariable::Publisher);
             }
             _ => panic!("Expected Variable(Publisher), got {:?}", comp),
+        }
+    }
+
+    #[test]
+    fn test_message_component_deserialization() {
+        let yaml = r#"
+message: pattern.in-container
+args:
+  container:
+    title: parent-monograph
+    emph: true
+text-case: capitalize-first
+"#;
+        let comp: TemplateComponent = serde_yaml::from_str(yaml).unwrap();
+
+        match comp {
+            TemplateComponent::Message(message) => {
+                assert_eq!(message.message, "pattern.in-container");
+                assert!(matches!(
+                    message.args.get("container"),
+                    Some(MessageArgSource::Title(title)) if title.title == TitleType::ParentMonograph
+                        && title.rendering.emph == Some(true)
+                ));
+                assert_eq!(
+                    message.rendering.text_case,
+                    Some(crate::options::titles::TextCase::CapitalizeFirst)
+                );
+            }
+            _ => panic!("Expected Message component, got {comp:?}"),
         }
     }
 

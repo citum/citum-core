@@ -16,6 +16,8 @@ pub mod date;
 pub mod list;
 /// Locator rendering logic.
 pub mod locator;
+/// Locale message component rendering.
+pub mod message;
 /// Numeric variable extraction and page-range helpers.
 pub mod number;
 /// Shared helpers for collapsing consecutive numeric or ordinal numbering.
@@ -652,6 +654,7 @@ impl ComponentValues for TemplateComponent {
             TemplateComponent::Title(t) => t.values::<F>(reference, hints, options),
             TemplateComponent::Number(n) => n.values::<F>(reference, hints, options),
             TemplateComponent::Variable(v) => v.values::<F>(reference, hints, options),
+            TemplateComponent::Message(m) => m.values::<F>(reference, hints, options),
             TemplateComponent::Group(l) => l.values::<F>(reference, hints, options),
             TemplateComponent::Term(t) => t.values::<F>(reference, hints, options),
             _ => None,

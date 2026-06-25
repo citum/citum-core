@@ -754,6 +754,111 @@ fn test_date_values() {
 }
 
 #[test]
+fn test_message_component_renders_accessed_date_argument() {
+    let config = make_config();
+    let mut locale = make_locale();
+    locale
+        .messages
+        .insert("pattern.accessed-date".into(), "accessed {$date}".into());
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let reference = Reference::from(LegacyReference {
+        id: "web-2021".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("Web Resource".to_string()),
+        issued: Some(DateVariable::year(2021)),
+        ..Default::default()
+    });
+    let hints = ProcHints::default();
+    let component = TemplateMessage {
+        message: "pattern.accessed-date".into(),
+        args: [(
+            "date".into(),
+            MessageArgSource::Date(TemplateDate {
+                date: TemplateDateVar::Issued,
+                form: DateForm::Year,
+                fallback: None,
+                rendering: Default::default(),
+                links: None,
+                custom: None,
+            }),
+        )]
+        .into(),
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "accessed 2021");
+    assert!(values.pre_formatted);
+}
+
+#[test]
+fn test_message_component_renders_in_container_argument_with_formatting() {
+    let config = make_config();
+    let mut locale = make_locale();
+    locale
+        .messages
+        .insert("pattern.in-container".into(), "in {$container}".into());
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let reference = Reference::from(LegacyReference {
+        id: "chapter-1".to_string(),
+        ref_type: "chapter".to_string(),
+        container_title: Some("Book Title".to_string()),
+        ..Default::default()
+    });
+    let hints = ProcHints::default();
+    let component = TemplateMessage {
+        message: "pattern.in-container".into(),
+        args: [(
+            "container".into(),
+            MessageArgSource::Title(TemplateTitle {
+                title: TitleType::ParentMonograph,
+                rendering: Rendering {
+                    emph: Some(true),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        )]
+        .into(),
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "in _Book Title_");
+    assert!(values.pre_formatted);
+}
+
+#[test]
 fn test_year_month_day_dates_inline_disambiguation_suffix_on_year() {
     let config = make_config();
     let locale = make_locale();

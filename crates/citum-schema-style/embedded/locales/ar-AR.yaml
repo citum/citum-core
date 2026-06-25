@@ -88,3 +88,7 @@ messages:
     when feminine * {مُتَرْجِمات}
     when * * {ترجمة}
   role.translator.verb: "ترجمة"
+  pattern.accessed-date: "تاريخ الوصول {$date}"
+  pattern.in-container: "في {$container}"
+  pattern.retrieved-from: "استُرجع من {$url}"
+  pattern.available-at: "متاح على {$url}"

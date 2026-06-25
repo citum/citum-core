@@ -10,6 +10,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! for future ICU4X migration, allowing different evaluator implementations
 //! to be swapped without changing call sites.
 
+use std::collections::HashMap;
+
 /// Arguments passed to message evaluation.
 ///
 /// Contains optional named variables that may be referenced in a message.
@@ -41,6 +43,8 @@ pub struct MessageArgs<'a> {
     pub day: Option<&'a str>,
     /// Main contributor list for "et al." patterns.
     pub main_list: Option<&'a str>,
+    /// Arbitrary named arguments supplied by `TemplateMessage` components.
+    pub named: HashMap<String, String>,
 }
 
 /// Evaluates a parameterized message string with runtime arguments.
@@ -75,6 +79,21 @@ pub trait MessageEvaluator: Send + Sync {
 /// without external dependencies.
 #[derive(Debug, Clone)]
 pub struct Mf2MessageEvaluator;
+
+/// No-op evaluator for `message-syntax: static` locales.
+///
+/// Always returns `None` so the caller falls back to plain-text fast-path or
+/// the legacy term map. Stored in `Locale::evaluator` when the locale declares
+/// `Static` syntax; the `resolve_message` guard ensures it is never actually
+/// called for plain-text messages.
+#[derive(Debug, Clone)]
+pub struct NoOpEvaluator;
+
+impl MessageEvaluator for NoOpEvaluator {
+    fn evaluate(&self, _message: &str, _args: &MessageArgs<'_>) -> Option<String> {
+        None
+    }
+}
 
 impl MessageEvaluator for Mf2MessageEvaluator {
     fn evaluate(&self, message: &str, args: &MessageArgs<'_>) -> Option<String> {
@@ -129,7 +148,7 @@ fn substitute_mf2_vars(pattern: &str, args: &MessageArgs<'_>) -> Option<String> 
 
 /// Resolve a variable name to its value in `MessageArgs`.
 fn resolve_var<'a>(var_name: &str, args: &'a MessageArgs<'a>) -> Option<&'a str> {
-    match var_name {
+    let typed = match var_name {
         "value" => args.value,
         "gender" => args.gender,
         "names" => args.names,
@@ -142,7 +161,9 @@ fn resolve_var<'a>(var_name: &str, args: &'a MessageArgs<'a>) -> Option<&'a str>
         "day" => args.day,
         "main_list" => args.main_list,
         _ => None,
-    }
+    };
+
+    typed.or_else(|| args.named.get(var_name).map(String::as_str))
 }
 
 /// Evaluate a `.match` statement with selectors and variants.
@@ -209,6 +230,8 @@ fn determine_match_key(
                 return None;
             }
             let count = args.count?;
+            // Only "one" vs "*" are dispatched; full CLDR categories (two/few/many)
+            // are deferred to the ICU4X evaluator swap (bean csl26-qrpo).
             if count == 1 {
                 Some("one".to_string())
             } else {
@@ -368,6 +391,20 @@ mod tests {
         assert_eq!(
             result,
             Some("retrieved from https://example.com".to_string())
+        );
+    }
+
+    #[test]
+    fn test_named_template_message_argument() {
+        let evaluator = Mf2MessageEvaluator;
+        let args = MessageArgs {
+            named: HashMap::from([("container".to_string(), "Book Title".to_string())]),
+            ..Default::default()
+        };
+
+        assert_eq!(
+            evaluator.evaluate("in {$container}", &args),
+            Some("in Book Title".to_string())
         );
     }
 

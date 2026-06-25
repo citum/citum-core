@@ -1,8 +1,8 @@
 # Locale Messages Specification
 
 **Status:** Active
-**Version:** 1.4
-**Date:** 2026-05-16
+**Version:** 1.5
+**Date:** 2026-06-24
 **Supersedes:** (none)
 **Related:** bean `csl26-qrpo` (ICU4X upgrade), bean `csl26-v6ok` (locale-authored date patterns)
 
@@ -22,6 +22,7 @@ duplicating styles per language.
   `numberFormats`, `grammarOptions`, `legacyTermAliases`.
 - `LocaleOverride` struct and merge semantics.
 - `MessageEvaluator` trait and `Mf2MessageEvaluator` implementation.
+- Style-template `message:` components that call locale-authored phrases by ID.
 - Migration compatibility layer: dual-path lookup and `localeSchemaVersion`
   gating.
 - CLI lint tooling: `citum locale lint` and `citum style lint --locale`.
@@ -120,6 +121,52 @@ the rendering surface that Phase 0–3 exercises.
 The distinction is runtime-only: both types use identical YAML representation
 (a string value under a message ID key). The engine classifies a message as
 parameterized if and only if its body contains a `{` character.
+
+---
+
+### 1.4.1 Atomic Labels vs Compositional Phrases
+
+Locale messages have two different jobs:
+
+- **Atomic labels** (`term.*`, `role.*`) name a localizable word or short label:
+  `term.page-label`, `term.accessed`, `role.editor.label`.
+- **Compositional phrases** (`pattern.*`) assemble already-rendered citation
+  values into natural-language fragments: `pattern.accessed-date`,
+  `pattern.in-container`, `pattern.available-at`, `pattern.retrieved-from`.
+
+Styles SHOULD use `message:` template components for compositional phrases
+instead of spelling English glue with `term:` components, `prefix`, or `suffix`.
+The style still decides *which* phrase is needed and *which fields* supply its
+arguments; the active locale decides the phrase order and glue text.
+
+The template-schema `term:` component remains parseable for compatibility but
+is deprecated for new phrase realization. This does not remove `term.*` message
+IDs from locale files; those IDs remain the canonical representation for atomic
+labels.
+
+```yaml
+# Locale file
+messages:
+  pattern.accessed-date: "accessed {$date}"
+  pattern.in-container: "in {$container}"
+```
+
+```yaml
+# Style template
+- message: pattern.accessed-date
+  args:
+    date: { date: accessed, form: day-month-abbr-year }
+
+- message: pattern.in-container
+  args:
+    container: { title: parent-monograph, emph: true }
+  text-case: capitalize-first
+```
+
+`message:` is a style-template component defined in
+`crates/citum-schema-style/src/template.rs` as `TemplateMessage`. It is not part
+of `Locale`. Locale owns the message catalog and evaluator through
+`Locale::resolve_message(message_id, args)`.
 
 ---
 
@@ -230,6 +277,22 @@ All message IDs are dot-namespaced strings:
 | `role.<role>.<form>` | Contributor role phrases | `role.editor.label`, `role.editor.verb` |
 | `pattern.` | Compositional phrase templates | `pattern.page-range`, `pattern.retrieved-from`, `pattern.date-full` |
 | `date.` | Date-specific terms not in `dateFormats` | `date.open-ended` |
+
+#### Required phrase pattern IDs
+
+Locales SHOULD define these initial compositional phrase IDs:
+
+| Message ID | Variables | Purpose |
+|---|---|---|
+| `pattern.accessed-date` | `$date` | Access-date statements such as “accessed December 1, 2021”. |
+| `pattern.in-container` | `$container` | Container-introduction phrases such as “in _Book Title_”. |
+| `pattern.available-at` | `$url` | Availability statements. |
+| `pattern.retrieved-from` | `$url` | Retrieval/source statements. |
+
+If a style calls a missing message ID, style-lint reports an error. If a message
+body references a variable not declared in the template component's `args`, the
+style/locale pair is invalid for that call site. At render time, a failed
+message evaluation suppresses the component rather than emitting partial glue.
 
 #### Supported `pattern.date-*` IDs
 
@@ -928,6 +991,11 @@ Engine behavior by `localeSchemaVersion`:
 
 ## Changelog
 
+- v1.5 (2026-06-24): Add style-template `message:` components as call sites
+  for locale-authored compositional phrases. Clarify the boundary between
+  atomic `term.*` labels and `pattern.*` phrases, define the initial required
+  phrase IDs, and deprecate template-schema `term:` for phrase realization
+  while retaining locale `term.*` message IDs.
 - v1.3 (2026-03-22): **Pivot to MF2.** Replace MF1 as the canonical message
   syntax with Unicode MessageFormat 2 (finalized standard). Implement custom
   dependency-free `Mf2MessageEvaluator` (no external crate — GPL-3.0 crates

@@ -10,11 +10,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! pages and chapters, date-related terms, and month names. These are used by citation
 //! processors to render localized output.
 
-/*
-SPDX-License-Identifier: MIT OR Apache-2.0
-SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
-*/
-
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};

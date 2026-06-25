@@ -295,6 +295,8 @@ messages:
     when * * {equipo de traducción}
   # Compositional patterns
   pattern.page-range: "{$start}–{$end}"
+  pattern.accessed-date: "consultado el {$date}"
+  pattern.in-container: "en {$container}"
   pattern.retrieved-from: "recuperado de {$url}"
   pattern.available-at: "disponible en {$url}"
   # Date assembly — Spanish places the day first and connects with "de".

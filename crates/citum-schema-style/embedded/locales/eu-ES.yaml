@@ -97,6 +97,8 @@ messages:
   pattern.date-year-month: "{$year}ko {$month}"
 
   pattern.page-range: "{$start}–{$end}"
+  pattern.accessed-date: "kontsulta-data: {$date}"
+  pattern.in-container: "{$container}(e)n"
   pattern.retrieved-from: "iturria: {$url}"
   date.open-ended: "gaur"
 
