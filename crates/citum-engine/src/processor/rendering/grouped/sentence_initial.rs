@@ -141,7 +141,9 @@ impl Renderer<'_> {
                 component.value =
                     crate::values::text_case::apply_text_case_markup_aware(&component.value, case);
             }
-            TemplateComponent::Term(_) if self.is_note_start_term_component(component) => {
+            TemplateComponent::Term(_) | TemplateComponent::Message(_)
+                if self.is_note_start_term_component(component) =>
+            {
                 if let Some(case) = note_start_text_case {
                     component.value = crate::values::text_case::apply_note_start_text_case(
                         &component.value,
@@ -158,6 +160,9 @@ impl Renderer<'_> {
         matches!(
             &component.template_component,
             TemplateComponent::Term(term) if term.term == GeneralTerm::Ibid
+        ) || matches!(
+            &component.template_component,
+            TemplateComponent::Message(message) if message.message == "term.ibid"
         )
     }
 }

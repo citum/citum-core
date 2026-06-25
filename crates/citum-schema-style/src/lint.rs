@@ -84,6 +84,8 @@ enum LocaleRequirementKind {
     Message {
         message_id: String,
         args: Vec<String>,
+        form: Option<TermForm>,
+        gender: Option<crate::locale::GrammaticalGender>,
     },
 }
 
@@ -171,12 +173,27 @@ pub fn lint_style_against_locale(style: &Style, locale: &Locale) -> LintReport {
                     );
                 }
             }
-            LocaleRequirementKind::Message { message_id, args } => {
+            LocaleRequirementKind::Message {
+                message_id,
+                args,
+                form,
+                gender,
+            } => {
                 let Some(message) = locale.messages.get(&message_id) else {
-                    report.error(
-                        requirement.path,
-                        format!("locale message '{message_id}' does not exist"),
-                    );
+                    if locale
+                        .resolve_template_message(
+                            &message_id,
+                            &crate::locale::MessageArgs::default(),
+                            form.as_ref(),
+                            gender,
+                        )
+                        .is_none()
+                    {
+                        report.error(
+                            requirement.path,
+                            format!("locale message '{message_id}' does not exist"),
+                        );
+                    }
                     continue;
                 };
 
@@ -495,6 +512,8 @@ fn collect_message_requirements(
         kind: LocaleRequirementKind::Message {
             message_id: message.message.clone(),
             args: message.args.keys().cloned().collect(),
+            form: message.form.clone(),
+            gender: message.gender.clone(),
         },
     });
 
@@ -976,6 +995,27 @@ mod tests {
                 && finding.path == "citation.template[0]"
                 && finding.message.contains("pattern.missing")
         }));
+    }
+
+    #[test]
+    fn test_lint_style_against_locale_accepts_term_backed_message_id() {
+        let style = Style {
+            citation: Some(CitationSpec {
+                template: Some(vec![TemplateComponent::Message(TemplateMessage {
+                    message: "term.edition".into(),
+                    form: Some(TermForm::Short),
+                    ..Default::default()
+                })]),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let locale = Locale::from_yaml_str(include_str!("../embedded/locales/en-US.yaml"))
+            .expect("english locale should parse");
+
+        let report = lint_style_against_locale(&style, &locale);
+
+        assert!(!report.has_errors());
     }
 
     #[test]

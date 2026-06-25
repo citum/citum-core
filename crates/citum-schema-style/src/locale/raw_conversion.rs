@@ -468,6 +468,7 @@ impl Locale {
         match Self::normalize_term_key(name).as_str() {
             "in" => Some(GeneralTerm::In),
             "accessed" => Some(GeneralTerm::Accessed),
+            "cited" => Some(GeneralTerm::Cited),
             "retrieved" => Some(GeneralTerm::Retrieved),
             "at" => Some(GeneralTerm::At),
             "from" => Some(GeneralTerm::From),

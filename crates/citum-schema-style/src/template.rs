@@ -1148,6 +1148,12 @@ pub struct TemplateVariable {
 pub struct TemplateMessage {
     /// Locale message ID to evaluate, such as `pattern.accessed-date`.
     pub message: String,
+    /// Optional term form used when `message` addresses a `term.*` locale item.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub form: Option<TermForm>,
+    /// Explicit grammatical gender override for term-backed message selection.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub gender: Option<GrammaticalGender>,
     /// Named argument sources pre-rendered before message evaluation.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub args: HashMap<String, MessageArgSource>,
@@ -1551,6 +1557,50 @@ text-case: capitalize-first
                 );
             }
             _ => panic!("Expected Message component, got {comp:?}"),
+        }
+    }
+
+    #[test]
+    fn test_term_backed_message_component_deserializes_form() {
+        let yaml = r#"
+message: term.in
+form: long
+suffix: ":"
+"#;
+        let comp: TemplateComponent = serde_yaml::from_str(yaml).unwrap();
+
+        match comp {
+            TemplateComponent::Message(message) => {
+                assert_eq!(message.message, "term.in");
+                assert_eq!(message.form, Some(TermForm::Long));
+                assert_eq!(message.rendering.suffix.as_deref(), Some(":"));
+            }
+            _ => panic!("Expected Message component, got {comp:?}"),
+        }
+    }
+
+    #[test]
+    fn test_group_deserializes_term_backed_message_component_with_form() {
+        let yaml = r#"
+group:
+- message: term.in
+  form: long
+  suffix: ":"
+- title: parent-monograph
+"#;
+        let comp: TemplateComponent = serde_yaml::from_str(yaml).unwrap();
+
+        match comp {
+            TemplateComponent::Group(group) => {
+                assert!(matches!(
+                    group.group.first(),
+                    Some(TemplateComponent::Message(message))
+                        if message.message == "term.in"
+                            && message.form == Some(TermForm::Long)
+                            && message.rendering.suffix.as_deref() == Some(":")
+                ));
+            }
+            _ => panic!("Expected Group component, got {comp:?}"),
         }
     }
 

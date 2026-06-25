@@ -39,6 +39,11 @@ fn make_locale() -> Locale {
     Locale::en_us()
 }
 
+fn make_embedded_english_locale() -> Locale {
+    Locale::from_yaml_str(include_str!("../../../../locales/en-US.yaml"))
+        .expect("english locale should parse")
+}
+
 fn make_reference() -> Reference {
     Reference::from(LegacyReference {
         id: "kuhn1962".to_string(),
@@ -925,6 +930,182 @@ fn test_message_component_renders_grouped_container_argument() {
 }
 
 #[test]
+fn test_message_component_reorders_locale_phrase_arguments() {
+    let config = make_config();
+    let mut locale = make_locale();
+    locale.messages.insert(
+        "pattern.accessed-date".into(),
+        "{$date} <<accessed>>".into(),
+    );
+    locale
+        .messages
+        .insert("pattern.in-container".into(), "{$container} <<in>>".into());
+    locale
+        .messages
+        .insert("pattern.cited-date".into(), "{$date} <<cited>>".into());
+    locale
+        .messages
+        .insert("pattern.available-at".into(), "{$url} <<available>>".into());
+    locale.messages.insert(
+        "pattern.retrieved-from".into(),
+        "{$url} <<retrieved>>".into(),
+    );
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let reference = Reference::from(LegacyReference {
+        id: "localized-phrase".to_string(),
+        ref_type: "chapter".to_string(),
+        container_title: Some("Book Title".to_string()),
+        issued: Some(DateVariable::year(2021)),
+        url: Some("https://example.test/item".to_string()),
+        ..Default::default()
+    });
+    let hints = ProcHints::default();
+
+    let date_arg = MessageArgSource::Date(TemplateDate {
+        date: TemplateDateVar::Issued,
+        form: DateForm::Year,
+        fallback: None,
+        rendering: Default::default(),
+        links: None,
+        custom: None,
+    });
+    let url_arg = MessageArgSource::Variable(TemplateVariable {
+        variable: SimpleVariable::Url,
+        ..Default::default()
+    });
+
+    let phrase = |message: &str, name: &str, arg: MessageArgSource| {
+        TemplateMessage {
+            message: message.into(),
+            args: [(name.into(), arg)].into(),
+            ..Default::default()
+        }
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("message phrase should render")
+        .value
+    };
+
+    assert_eq!(
+        phrase("pattern.accessed-date", "date", date_arg.clone()),
+        "2021 <<accessed>>"
+    );
+    assert_eq!(
+        phrase(
+            "pattern.in-container",
+            "container",
+            MessageArgSource::Title(TemplateTitle {
+                title: TitleType::ParentMonograph,
+                rendering: Rendering {
+                    emph: Some(true),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }),
+        ),
+        "_Book Title_ <<in>>"
+    );
+    assert_eq!(
+        phrase("pattern.cited-date", "date", date_arg),
+        "2021 <<cited>>"
+    );
+    assert_eq!(
+        phrase("pattern.available-at", "url", url_arg.clone()),
+        "https://example.test/item <<available>>"
+    );
+    assert_eq!(
+        phrase("pattern.retrieved-from", "url", url_arg),
+        "https://example.test/item <<retrieved>>"
+    );
+}
+
+#[test]
+fn test_message_component_resolves_term_backed_messages() {
+    let config = make_config();
+    let locale = make_embedded_english_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let reference = make_reference();
+    let hints = ProcHints::default();
+
+    let cases = [
+        ("term.no-date", Some(TermForm::Short), "n.d."),
+        ("term.edition", Some(TermForm::Short), "ed."),
+        ("term.cited", Some(TermForm::Long), "cited"),
+    ];
+
+    for (message, form, expected) in cases {
+        let component = TemplateMessage {
+            message: message.into(),
+            form,
+            ..Default::default()
+        };
+        let values = component
+            .values::<PlainText>(&reference, &hints, &options)
+            .unwrap();
+        assert_eq!(values.value, expected, "{message}");
+    }
+}
+
+#[test]
+fn test_message_component_preserves_term_rendering_options() {
+    let mut config = make_config();
+    config.strip_periods = Some(true);
+    let locale = make_embedded_english_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let reference = make_reference();
+    let hints = ProcHints::default();
+    let component = TemplateMessage {
+        message: "term.ibid".into(),
+        rendering: Rendering {
+            strip_periods: Some(true),
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "ibid");
+}
+
+#[test]
 fn test_message_component_renders_embedded_container_author_group() {
     let mut config = make_config();
     config.substitute = Some(SubstituteConfig::Explicit(Substitute {
@@ -1001,6 +1182,7 @@ fn test_message_component_renders_embedded_container_author_group() {
             ..Default::default()
         },
         custom: None,
+        ..Default::default()
     };
 
     let values = component
@@ -1076,6 +1258,7 @@ fn test_message_component_renders_legacy_container_author_group() {
             ..Default::default()
         },
         custom: None,
+        ..Default::default()
     };
 
     let values = component

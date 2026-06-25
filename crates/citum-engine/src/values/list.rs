@@ -91,6 +91,7 @@ fn is_term_based(component: &citum_schema::template::TemplateComponent) -> bool 
     use citum_schema::template::TemplateComponent;
     match component {
         TemplateComponent::Term(_) => true,
+        TemplateComponent::Message(message) if message.message.starts_with("term.") => true,
         TemplateComponent::Group(l) => l.group.iter().all(is_term_based),
         _ => false,
     }

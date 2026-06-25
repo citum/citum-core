@@ -43,6 +43,7 @@ pub(super) fn aliased_type_selector_candidates(ref_type: &str) -> Vec<&str> {
 pub(super) fn is_term_only_component(component: &TemplateComponent) -> bool {
     match component {
         TemplateComponent::Term(_) => true,
+        TemplateComponent::Message(message) if message.message.starts_with("term.") => true,
         TemplateComponent::Group(group) => group.group.iter().all(is_term_only_component),
         _ => false,
     }
