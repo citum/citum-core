@@ -25,6 +25,7 @@ impl Locale {
             GeneralTerm::EtAl => "et-al",
             GeneralTerm::AndOthers => "and-others",
             GeneralTerm::Accessed => "accessed",
+            GeneralTerm::Cited => "cited",
             GeneralTerm::Retrieved => "retrieved",
             GeneralTerm::NoDate => "no-date",
             GeneralTerm::Ibid => "ibid",
@@ -131,6 +132,7 @@ impl Locale {
             (GeneralTerm::EtAl, _) => Some("term.et-al"),
             (GeneralTerm::AndOthers, _) => Some("term.and-others"),
             (GeneralTerm::Accessed, _) => Some("term.accessed"),
+            (GeneralTerm::Cited, _) => Some("term.cited"),
             (GeneralTerm::Retrieved, _) => Some("term.retrieved"),
             (GeneralTerm::NoDate, TermForm::Long) => Some("term.no-date-long"),
             (GeneralTerm::NoDate, _) => Some("term.no-date"),
@@ -168,6 +170,38 @@ impl Locale {
         }
 
         self.evaluator.evaluate(message, args)
+    }
+
+    /// Resolve a style-template message call, including term-backed message IDs.
+    ///
+    /// `term.*` IDs are allowed to fall through to the structured locale term
+    /// resolver so checked-in styles can use the message component surface
+    /// without duplicating legacy term data into every locale's `messages` map.
+    pub fn resolve_template_message(
+        &self,
+        message_id: &str,
+        args: &MessageArgs<'_>,
+        form: Option<&TermForm>,
+        gender: Option<GrammaticalGender>,
+    ) -> Option<String> {
+        if let Some((term, implied_form)) = Self::term_message_parts(message_id) {
+            let effective_form = form.cloned().or(implied_form).unwrap_or(TermForm::Long);
+            if let Some(value) = self.resolved_general_term(&term, &effective_form, gender) {
+                return Some(value);
+            }
+        }
+
+        self.resolve_message(message_id, args)
+    }
+
+    fn term_message_parts(message_id: &str) -> Option<(GeneralTerm, Option<TermForm>)> {
+        let key = message_id.strip_prefix("term.")?;
+        let (term_key, implied_form) = key
+            .strip_suffix("-long")
+            .map_or((key, None), |base| (base, Some(TermForm::Long)));
+        let term = Self::parse_general_term(term_key)
+            .unwrap_or_else(|| GeneralTerm::Unknown(term_key.to_string()));
+        Some((term, implied_form))
     }
 
     pub(super) fn resolve_message_text(

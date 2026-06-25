@@ -183,6 +183,8 @@ crate::str_enum! {
         In = "in",
         /// The term used for access dates (e.g., "accessed May 1").
         Accessed = "accessed",
+        /// The term used to introduce citation access dates (e.g., "cited May 1").
+        Cited = "cited",
         /// The term used for retrieval statements (e.g., "retrieved from URL").
         Retrieved = "retrieved",
         /// The preposition "at" (e.g., "at the conference").
@@ -324,6 +326,13 @@ impl Terms {
                     SimpleTerm {
                         long: "no date".into(),
                         short: "n.d.".into(),
+                    },
+                ),
+                (
+                    GeneralTerm::Cited,
+                    SimpleTerm {
+                        long: "cited".into(),
+                        short: "cit.".into(),
                     },
                 ),
                 (

@@ -1849,6 +1849,28 @@
           "description": "Locale message ID to evaluate, such as `pattern.accessed-date`.",
           "type": "string"
         },
+        "form": {
+          "description": "Optional term form used when `message` addresses a `term.*` locale item.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TermForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "gender": {
+          "description": "Explicit grammatical gender override for term-backed message selection.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GrammaticalGender"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "args": {
           "description": "Named argument sources pre-rendered before message evaluation.",
           "type": "object",
@@ -1975,6 +1997,36 @@
       "additionalProperties": false,
       "required": [
         "message"
+      ]
+    },
+    "TermForm": {
+      "description": "Form for term lookup.\n\nSpecifies which form variant of a term should be used in citation output.",
+      "oneOf": [
+        {
+          "description": "Long form of a term (e.g., \"page\" vs \"p.\").",
+          "type": "string",
+          "const": "long"
+        },
+        {
+          "description": "Short form of a term (e.g., \"p.\" vs \"page\").",
+          "type": "string",
+          "const": "short"
+        },
+        {
+          "description": "Verb form of a term (e.g., \"edited by\").",
+          "type": "string",
+          "const": "verb"
+        },
+        {
+          "description": "Short verb form of a term (e.g., \"ed.\" vs \"edited by\").",
+          "type": "string",
+          "const": "verb-short"
+        },
+        {
+          "description": "Symbol form of a term (e.g., \"§\" for section).",
+          "type": "string",
+          "const": "symbol"
+        }
       ]
     },
     "MessageArgSource": {
@@ -2332,6 +2384,11 @@
           "const": "accessed"
         },
         {
+          "description": "The term used to introduce citation access dates (e.g., \"cited May 1\").",
+          "type": "string",
+          "const": "cited"
+        },
+        {
           "description": "The term used for retrieval statements (e.g., \"retrieved from URL\").",
           "type": "string",
           "const": "retrieved"
@@ -2475,36 +2532,6 @@
           "description": "The label for personal communications (e.g., \"personal communication\").",
           "type": "string",
           "const": "personal-communication"
-        }
-      ]
-    },
-    "TermForm": {
-      "description": "Form for term lookup.\n\nSpecifies which form variant of a term should be used in citation output.",
-      "oneOf": [
-        {
-          "description": "Long form of a term (e.g., \"page\" vs \"p.\").",
-          "type": "string",
-          "const": "long"
-        },
-        {
-          "description": "Short form of a term (e.g., \"p.\" vs \"page\").",
-          "type": "string",
-          "const": "short"
-        },
-        {
-          "description": "Verb form of a term (e.g., \"edited by\").",
-          "type": "string",
-          "const": "verb"
-        },
-        {
-          "description": "Short verb form of a term (e.g., \"ed.\" vs \"edited by\").",
-          "type": "string",
-          "const": "verb-short"
-        },
-        {
-          "description": "Symbol form of a term (e.g., \"§\" for section).",
-          "type": "string",
-          "const": "symbol"
         }
       ]
     },

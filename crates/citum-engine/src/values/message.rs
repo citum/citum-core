@@ -36,7 +36,12 @@ impl ComponentValues for TemplateMessage {
             named,
             ..MessageArgs::default()
         };
-        let mut value = options.locale.resolve_message(&self.message, &args)?;
+        let mut value = options.locale.resolve_template_message(
+            &self.message,
+            &args,
+            self.form.as_ref(),
+            self.gender.clone(),
+        )?;
 
         if crate::values::should_strip_periods(&self.rendering, options) {
             value = crate::values::strip_trailing_periods(&value);
@@ -49,10 +54,11 @@ impl ComponentValues for TemplateMessage {
         if value.trim().is_empty() {
             return None;
         }
+        let term_backed = self.message.starts_with("term.");
 
         Some(ProcValues {
             value,
-            pre_formatted: true,
+            pre_formatted: !term_backed,
             ..Default::default()
         })
     }

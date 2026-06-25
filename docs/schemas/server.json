@@ -257,6 +257,11 @@
           "const": "accessed"
         },
         {
+          "description": "The term used to introduce citation access dates (e.g., \"cited May 1\").",
+          "type": "string",
+          "const": "cited"
+        },
+        {
           "description": "The term used for retrieval statements (e.g., \"retrieved from URL\").",
           "type": "string",
           "const": "retrieved"
@@ -2156,6 +2161,28 @@
         "message": {
           "description": "Locale message ID to evaluate, such as `pattern.accessed-date`.",
           "type": "string"
+        },
+        "form": {
+          "description": "Optional term form used when `message` addresses a `term.*` locale item.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TermForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "gender": {
+          "description": "Explicit grammatical gender override for term-backed message selection.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GrammaticalGender"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "args": {
           "description": "Named argument sources pre-rendered before message evaluation.",

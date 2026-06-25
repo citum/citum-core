@@ -127,6 +127,9 @@ impl Renderer<'_> {
         }
 
         if reference_has_online_access(reference) {
+            if template_has_pattern_message(template) {
+                return None;
+            }
             Some(AnonymousEntryBibliographyMode::ContainerLed)
         } else {
             Some(AnonymousEntryBibliographyMode::SuppressPrintLike)
@@ -285,4 +288,23 @@ fn template_has_dictionary_entry_shape(template: &[TemplateComponent]) -> bool {
             TemplateComponent::Variable(variable) if variable.variable == SimpleVariable::Version
         )
     })
+}
+
+fn template_has_pattern_message(template: &[TemplateComponent]) -> bool {
+    template.iter().any(component_has_pattern_message)
+}
+
+fn component_has_pattern_message(component: &TemplateComponent) -> bool {
+    match component {
+        TemplateComponent::Message(message) => {
+            message.message.starts_with("pattern.")
+                || message
+                    .args
+                    .values()
+                    .filter_map(|source| source.as_template_component())
+                    .any(|child| component_has_pattern_message(&child))
+        }
+        TemplateComponent::Group(group) => group.group.iter().any(component_has_pattern_message),
+        _ => false,
+    }
 }
