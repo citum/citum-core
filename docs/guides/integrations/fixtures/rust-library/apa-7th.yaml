@@ -89,7 +89,7 @@ citation:
       - contributor: author
         form: long
         name-order: given-first
-      - term: personal-communication
+      - message: term.personal-communication
       - date: issued
         form: full
       - variable: locator
@@ -127,7 +127,7 @@ citation:
         wrap:
           punctuation: parentheses
         group:
-        - term: personal-communication
+        - message: term.personal-communication
         - date: issued
           form: full
         - variable: locator
@@ -309,17 +309,17 @@ bibliography:
       wrap:
         punctuation: parentheses
       prefix: " "
-    - delimiter: " "
-      group:
-      - term: in
-        text-case: capitalize-first
-      - delimiter: ", "
-        group:
-        - contributor: container-author
-          form: long
-          name-order: given-first
-        - title: parent-monograph
-          emph: true
+    - message: pattern.in-container
+      args:
+        container:
+          delimiter: ", "
+          group:
+          - contributor: container-author
+            form: long
+            name-order: given-first
+          - title: parent-monograph
+            emph: true
+      text-case: capitalize-first
     - delimiter: ", "
       wrap:
         punctuation: parentheses
@@ -558,7 +558,7 @@ bibliography:
         group:
         - delimiter: ""
           group:
-          - term: volume
+          - message: term.volume
             form: short
             text-case: capitalize-first
             suffix: " "
@@ -815,7 +815,7 @@ bibliography:
       punctuation: parentheses
     prefix: " "
     group:
-    - term: volume
+    - message: term.volume
       form: short
       suffix: " "
     - number: volume

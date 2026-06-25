@@ -65,21 +65,21 @@ bibliography:
       - contributor: author
         form: long
       - title: primary
-      - delimiter: comma
-        group:
-        - delimiter: ": "
-          group:
-          - term: in
-        - title: parent-monograph
-        - delimiter: " "
-          group:
-          - title: parent-serial
-          - number: volume
-          - date: issued
-            form: year
-            wrap:
-              punctuation: parentheses
-          - number: pages
+      - message: pattern.in-container-colon
+        args:
+          container:
+            delimiter: comma
+            group:
+            - title: parent-monograph
+            - delimiter: " "
+              group:
+              - title: parent-serial
+              - number: volume
+              - date: issued
+                form: year
+                wrap:
+                  punctuation: parentheses
+              - number: pages
       - number: edition
       - variable: publisher
       - variable: publisher-place
@@ -87,14 +87,16 @@ bibliography:
         links:
           target: url
           anchor: component
-      - group:
-        - term: accessed
-          form: long
-        - date: accessed
-          form: month-day
-        - date: accessed
-          form: year
-          prefix: ", "
+      - message: pattern.accessed-date
+        args:
+          date:
+            group:
+              - date: accessed
+                form: month-day
+              - date: accessed
+                form: year
+                prefix: ", "
+            delimiter: " "
         wrap:
           punctuation: parentheses
       - variable: number
@@ -120,10 +122,12 @@ bibliography:
         group:
         - delimiter: ": "
           group:
-          - term: in
-          - contributor: editor
-            form: long
-            initialize-with: "."
+          - message: pattern.in-container
+            args:
+              container:
+                contributor: editor
+                form: long
+                initialize-with: "."
         - title: parent-monograph
         - delimiter: " "
           group:
@@ -139,14 +143,16 @@ bibliography:
         links:
           target: url
           anchor: component
-      - group:
-        - term: accessed
-          form: long
-        - date: accessed
-          form: month-day
-        - date: accessed
-          form: year
-          prefix: ", "
+      - message: pattern.accessed-date
+        args:
+          date:
+            group:
+              - date: accessed
+                form: month-day
+              - date: accessed
+                form: year
+                prefix: ", "
+            delimiter: " "
         wrap:
           punctuation: parentheses
       - variable: number
@@ -170,9 +176,11 @@ bibliography:
         group:
         - delimiter: ": "
           group:
-          - term: in
-          - contributor: editor
-            form: long
+          - message: pattern.in-container
+            args:
+              container:
+                contributor: editor
+                form: long
         - title: parent-monograph
         - delimiter: " "
           group:
@@ -190,14 +198,16 @@ bibliography:
         links:
           target: url
           anchor: component
-      - group:
-        - term: accessed
-          form: long
-        - date: accessed
-          form: month-day
-        - date: accessed
-          form: year
-          prefix: ", "
+      - message: pattern.accessed-date
+        args:
+          date:
+            group:
+              - date: accessed
+                form: month-day
+              - date: accessed
+                form: year
+                prefix: ", "
+            delimiter: " "
         wrap:
           punctuation: parentheses
       - variable: number
@@ -221,9 +231,11 @@ bibliography:
         group:
         - delimiter: ": "
           group:
-          - term: in
-          - contributor: editor
-            form: long
+          - message: pattern.in-container
+            args:
+              container:
+                contributor: editor
+                form: long
         - title: parent-monograph
         - delimiter: " "
           group:
@@ -241,14 +253,16 @@ bibliography:
         links:
           target: url
           anchor: component
-      - group:
-        - term: accessed
-          form: long
-        - date: accessed
-          form: month-day
-        - date: accessed
-          form: year
-          prefix: ", "
+      - message: pattern.accessed-date
+        args:
+          date:
+            group:
+              - date: accessed
+                form: month-day
+              - date: accessed
+                form: year
+                prefix: ", "
+            delimiter: " "
         wrap:
           punctuation: parentheses
       - variable: number
@@ -268,16 +282,16 @@ bibliography:
       - contributor: author
         form: long
       - title: primary
-      - delimiter: comma
-        group:
-        - delimiter: ": "
-          group:
-          - term: in
-        - title: parent-monograph
-        - delimiter: " "
-          group:
-          - title: parent-serial
-          - number: volume
+      - message: pattern.in-container-colon
+        args:
+          container:
+            delimiter: comma
+            group:
+            - title: parent-monograph
+            - delimiter: " "
+              group:
+              - title: parent-serial
+              - number: volume
       - number: edition
       - variable: publisher
       - variable: publisher-place
@@ -287,14 +301,16 @@ bibliography:
         links:
           target: url
           anchor: component
-      - group:
-        - term: accessed
-          form: long
-        - date: accessed
-          form: month-day
-        - date: accessed
-          form: year
-          prefix: ", "
+      - message: pattern.accessed-date
+        args:
+          date:
+            group:
+              - date: accessed
+                form: month-day
+              - date: accessed
+                form: year
+                prefix: ", "
+            delimiter: " "
         wrap:
           punctuation: parentheses
       - variable: number
@@ -316,12 +332,15 @@ bibliography:
     - delimiter: " "
       prefix: ", "
       group:
-      - term: in
-        suffix: ":"
-      - contributor: editor
-        form: long
-        suffix: ", "
-      - title: parent-monograph
+      - message: pattern.in-container-colon
+        args:
+          container:
+            group:
+              - contributor: editor
+                form: long
+                suffix: ", "
+              - title: parent-monograph
+            delimiter: " "
     - variable: publisher
       prefix: ", "
     - delimiter: ""
@@ -348,9 +367,11 @@ bibliography:
         group:
         - delimiter: ": "
           group:
-          - term: in
-          - contributor: editor
-            form: long
+          - message: pattern.in-container
+            args:
+              container:
+                contributor: editor
+                form: long
         - title: parent-monograph
         - delimiter: " "
           group:
@@ -369,14 +390,16 @@ bibliography:
           target: url
           anchor: component
         prefix: ". "
-      - group:
-        - term: accessed
-          form: long
-        - date: accessed
-          form: month-day
-        - date: accessed
-          form: year
-          prefix: ", "
+      - message: pattern.accessed-date
+        args:
+          date:
+            group:
+              - date: accessed
+                form: month-day
+              - date: accessed
+                form: year
+                prefix: ", "
+            delimiter: " "
         wrap:
           punctuation: parentheses
       - variable: number
@@ -494,9 +517,11 @@ bibliography:
         group:
         - delimiter: ": "
           group:
-          - term: in
-          - contributor: editor
-            form: long
+          - message: pattern.in-container
+            args:
+              container:
+                contributor: editor
+                form: long
         - title: parent-monograph
         - delimiter: " "
           group:
@@ -515,14 +540,16 @@ bibliography:
           target: url
           anchor: component
         prefix: ". "
-      - group:
-        - term: accessed
-          form: long
-        - date: accessed
-          form: month-day
-        - date: accessed
-          form: year
-          prefix: ", "
+      - message: pattern.accessed-date
+        args:
+          date:
+            group:
+              - date: accessed
+                form: month-day
+              - date: accessed
+                form: year
+                prefix: ", "
+            delimiter: " "
         wrap:
           punctuation: parentheses
       - variable: number
@@ -552,14 +579,16 @@ bibliography:
       links:
         target: url
         anchor: component
-    - group:
-      - term: accessed
-        form: long
-      - date: accessed
-        form: month-day
-      - date: accessed
-        form: year
-        prefix: ", "
+    - message: pattern.accessed-date
+      args:
+        date:
+          group:
+            - date: accessed
+              form: month-day
+            - date: accessed
+              form: year
+              prefix: ", "
+          delimiter: " "
       wrap:
         punctuation: parentheses
     [article-newspaper, broadcast]:
@@ -607,9 +636,11 @@ bibliography:
       group:
       - delimiter: ": "
         group:
-        - term: in
-        - contributor: editor
-          form: long
+        - message: pattern.in-container
+          args:
+            container:
+              contributor: editor
+              form: long
       - title: parent-monograph
       - delimiter: " "
         group:
@@ -625,14 +656,16 @@ bibliography:
       links:
         target: url
         anchor: component
-    - group:
-      - term: accessed
-        form: long
-      - date: accessed
-        form: month-day
-      - date: accessed
-        form: year
-        prefix: ", "
+    - message: pattern.accessed-date
+      args:
+        date:
+          group:
+            - date: accessed
+              form: month-day
+            - date: accessed
+              form: year
+              prefix: ", "
+          delimiter: " "
       wrap:
         punctuation: parentheses
     - variable: number

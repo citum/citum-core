@@ -51,7 +51,7 @@ citation:
     suffix: ""
     delimiter: ", "
     template:
-    - term: ibid
+    - message: term.ibid
     - variable: locator
       suffix: .
   subsequent:
@@ -418,19 +418,21 @@ citation:
     - title: primary
       prefix: ", "
     - group:
-      - term: patent
+      - message: pattern.patent-number
+        args:
+          number:
+            number: number
         text-case: capitalize-first
-      - number: number
-      delimiter: " "
-      prefix: ", "
-    - group:
-      - term: issued
-      - date: issued
-        form: month-day
-      - date: issued
-        form: year
         prefix: ", "
-      delimiter: " "
+    - message: pattern.issued-date
+      args:
+        date:
+          group:
+            - date: issued
+              form: month-day
+            - date: issued
+              form: year
+              prefix: ", "
       prefix: ", "
     personal-communication:
     - contributor: author

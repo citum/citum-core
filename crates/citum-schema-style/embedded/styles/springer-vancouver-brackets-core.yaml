@@ -90,17 +90,17 @@ bibliography:
     - contributor: author
       form: long
     - title: primary
-    - term: in
-      form: long
+    - message: pattern.in-container-colon
+      args:
+        container:
+          group:
+            - contributor: editor
+              form: long
+              label: {term: editor, form: long, placement: suffix}
+            - title: parent-monograph
+          delimiter: '. '
+          prefix: ' '
       text-case: capitalize-first
-      suffix: ':'
-    - group:
-      - contributor: editor
-        form: long
-        label: {term: editor, form: long, placement: suffix}
-      - title: parent-monograph
-      delimiter: '. '
-      prefix: ' '
     - variable: publisher
       suffix: '; '
     - date: issued
@@ -153,11 +153,11 @@ bibliography:
     - title: primary
     - date: issued
       form: year
-    - group:
-      - term: cited
-        form: long
-      - date: accessed
-        form: year-month-day
+    - message: pattern.cited-date
+      args:
+        date:
+          date: accessed
+          form: year-month-day
       wrap:
         punctuation: brackets
     - variable: url
@@ -213,11 +213,11 @@ bibliography:
     entry-dictionary:
     - title: primary
     - title: parent-monograph
-    - group:
-      - term: cited
-        form: long
-      - date: accessed
-        form: year-month-day
+    - message: pattern.cited-date
+      args:
+        date:
+          date: accessed
+          form: year-month-day
       wrap:
         punctuation: brackets
     - variable: url
@@ -273,11 +273,11 @@ bibliography:
       suffix: '; '
     - date: issued
       form: year
-    - group:
-      - term: cited
-        form: long
-      - date: accessed
-        form: year-month-day
+    - message: pattern.cited-date
+      args:
+        date:
+          date: accessed
+          form: year-month-day
       wrap:
         punctuation: brackets
     - variable: url
@@ -310,11 +310,11 @@ bibliography:
       suffix: '; '
     - date: issued
       form: year
-    - group:
-      - term: cited
-        form: long
-      - date: accessed
-        form: year-month-day
+    - message: pattern.cited-date
+      args:
+        date:
+          date: accessed
+          form: year-month-day
       wrap:
         punctuation: brackets
     - variable: doi

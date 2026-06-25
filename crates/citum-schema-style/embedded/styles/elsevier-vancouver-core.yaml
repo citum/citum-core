@@ -148,16 +148,18 @@ bibliography:
       suffix: '. '
     - title: primary
       suffix: '. '
-    - term: in
-      form: long
+    - message: pattern.in-container-colon
+      args:
+        container:
+          group:
+            - contributor: editor
+              form: long
+              label: {term: editor, form: long, placement: suffix}
+              suffix: '. '
+            - title: parent-monograph
+              suffix: ', '
+          delimiter: " "
       text-case: capitalize-first
-      suffix: ': '
-    - contributor: editor
-      form: long
-      label: {term: editor, form: long, placement: suffix}
-      suffix: '. '
-    - title: parent-monograph
-      suffix: ', '
     - variable: publisher
       suffix: '; '
     - date: issued
