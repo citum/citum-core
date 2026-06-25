@@ -296,7 +296,16 @@ messages:
   # Compositional patterns
   pattern.page-range: "{$start}–{$end}"
   pattern.accessed-date: "consultado el {$date}"
+  pattern.accessed-date-colon: "consultado: {$date}"
   pattern.in-container: "en {$container}"
+  pattern.in-container-colon: "en: {$container}"
+  pattern.cited-date: "citado el {$date}"
+  pattern.issued-date: "emitido el {$date}"
+  pattern.retrieved-date: "recuperado el {$date}"
+  pattern.published-online: "Publicado en línea"
+  pattern.published-online-date: "Publicado en línea el {$date}"
+  pattern.patent-number: "Patente {$number}"
+  pattern.locator-at: "en {$locator}"
   pattern.retrieved-from: "recuperado de {$url}"
   pattern.available-at: "disponible en {$url}"
   # Date assembly — Spanish places the day first and connects with "de".

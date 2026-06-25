@@ -66,7 +66,25 @@ pub(crate) fn en_us_archive_messages() -> HashMap<String, String> {
     [
         ("pattern.page-range".into(), "{$start}–{$end}".into()),
         ("pattern.accessed-date".into(), "accessed {$date}".into()),
+        (
+            "pattern.accessed-date-colon".into(),
+            "accessed: {$date}".into(),
+        ),
         ("pattern.in-container".into(), "in {$container}".into()),
+        (
+            "pattern.in-container-colon".into(),
+            "in: {$container}".into(),
+        ),
+        ("pattern.cited-date".into(), "cited {$date}".into()),
+        ("pattern.issued-date".into(), "issued {$date}".into()),
+        ("pattern.retrieved-date".into(), "retrieved {$date}".into()),
+        ("pattern.published-online".into(), "Published online".into()),
+        (
+            "pattern.published-online-date".into(),
+            "Published online {$date}".into(),
+        ),
+        ("pattern.patent-number".into(), "Patent {$number}".into()),
+        ("pattern.locator-at".into(), "at {$locator}".into()),
         (
             "pattern.retrieved-from".into(),
             "retrieved from {$url}".into(),
