@@ -959,6 +959,22 @@ locale: en-US
         );
     }
 
+    /// The hardcoded en-US locale includes phrase messages used by style
+    /// `message:` components, not only legacy term compatibility messages.
+    #[test]
+    fn test_en_us_locale_resolves_phrase_messages() {
+        let locale = Locale::en_us();
+        let args = MessageArgs {
+            named: [("container".to_string(), "Book Title".to_string())].into(),
+            ..Default::default()
+        };
+
+        assert_eq!(
+            locale.resolve_message("pattern.in-container", &args),
+            Some("in Book Title".to_string())
+        );
+    }
+
     /// apply_override with grammar_options replaces block and syncs punctuation_in_quote.
     #[test]
     fn test_apply_override_grammar_options_syncs_punctuation() {

@@ -9,7 +9,7 @@ tags:
     - localization
     - mf2
 created_at: 2026-06-25T00:22:34Z
-updated_at: 2026-06-25T11:02:06Z
+updated_at: 2026-06-25T11:37:33Z
 ---
 
 ## Problem
@@ -61,10 +61,11 @@ through the rest of `styles/` by style family or shared template pattern.
   `taylor-and-francis-council-of-science-editors-author-date-core`,
   `taylor-and-francis-national-library-of-medicine-core`, and residual
   `term: in` sites in already-touched families.
-- Deferred APA's container-author site, Chicago author-date's German override
-  sensitive container site, colon-bearing `in:` sites, `URL ` labels, and
-  role-plus-name phrases until later batches define phrase IDs that preserve
-  those outputs without encoding English glue inside arguments.
+- Deferred colon-bearing `in:` sites, `URL ` labels, and role-plus-name phrases
+  until later batches define phrase IDs that preserve those outputs without
+  encoding English glue inside arguments. (APA's container-author site and
+  Chicago author-date's German-override container site were initially deferred
+  here but were completed in the follow-up below.)
 
 ## Next Embedded Batch
 
@@ -77,3 +78,18 @@ through the rest of `styles/` by style family or shared template pattern.
   batch unless contributor rendering semantics are explicitly revised first.
 - Re-run parse/lint for all embedded styles and oracle/fidelity checks for each
   affected embedded family before marking embedded migration complete.
+
+## APA And Chicago Follow-up (PR #965)
+
+- Converted APA's chapter container-author phrase to
+  `message: pattern.in-container` after fixing the hardcoded `Locale::en_us()`
+  boundary so `Processor::new` can resolve default phrase messages.
+- Converted Chicago author-date's chapter container phrase to
+  `message: pattern.in-container`.
+- Added `de-DE-chicago` override support for `pattern.in-container:
+  "{$container}"` so the Chicago German variant preserves its intentional
+  adjacency form without the English "In" phrase.
+- Added regression coverage for message arguments over embedded and legacy
+  container-author/title groups.
+- Refreshed the top-10 oracle baseline after confirming the current aggregate
+  has `cell` at 45/47 bibliography entries and no oracle regressions.

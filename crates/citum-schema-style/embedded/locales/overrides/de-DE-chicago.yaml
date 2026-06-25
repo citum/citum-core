@@ -17,6 +17,9 @@ locale-schema-version: "2"
 locale: de-DE-chicago
 base-locale: de-DE
 
+evaluation:
+  message-syntax: mf2
+
 grammar-options:
   # CSL de variant: delimiter-precedes-last="never"
   delimiter-precedes-last: never
@@ -24,6 +27,9 @@ grammar-options:
   serial-comma: false
 
 messages:
+  # Chicago-German chapter entries introduce the container by adjacency; the
+  # English "In" phrase is intentionally suppressed for this style variant.
+  pattern.in-container: "{$container}"
   # Chicago-German editor verb form — "herausgegeben von" abbreviated
   role.editor.verb: "hg. von"
   # Chicago-German translator verb form

@@ -57,13 +57,21 @@ fn extract_top_level_yaml_section(yaml: &str, key: &str) -> Option<String> {
     }
 }
 
-/// Archive hierarchy label messages for the hardcoded en-US locale.
+/// Built-in messages for the hardcoded en-US locale.
 ///
-/// Only the archive terms are pre-seeded here; all other message lookups fall
-/// through to the legacy typed term maps so that the hardcoded `en_us()`
-/// constructor stays consistent with the pre-existing test baseline.
+/// Archive terms are pre-seeded for compatibility with legacy typed term maps.
+/// Phrase patterns are also available because `Processor::new` uses this
+/// locale directly when a style does not specify a default locale.
 pub(crate) fn en_us_archive_messages() -> HashMap<String, String> {
     [
+        ("pattern.page-range".into(), "{$start}–{$end}".into()),
+        ("pattern.accessed-date".into(), "accessed {$date}".into()),
+        ("pattern.in-container".into(), "in {$container}".into()),
+        (
+            "pattern.retrieved-from".into(),
+            "retrieved from {$url}".into(),
+        ),
+        ("pattern.available-at".into(), "available at {$url}".into()),
         ("term.archive-collection-label".into(), "collection".into()),
         ("term.archive-series-label".into(), "series".into()),
         (
