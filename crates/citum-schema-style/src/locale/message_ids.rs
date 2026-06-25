@@ -151,19 +151,13 @@ impl Locale {
         }
     }
 
-    pub(super) fn resolve_message_text(
-        &self,
-        message_id: &str,
-        count: Option<u64>,
-        gender: Option<GrammaticalGender>,
-    ) -> Option<String> {
+    /// Resolve a locale message by ID with caller-supplied MF2 arguments.
+    ///
+    /// This is the public boundary for style-template `message` components:
+    /// templates select the message ID and pass named arguments, while the
+    /// active locale owns the message body and evaluator.
+    pub fn resolve_message(&self, message_id: &str, args: &MessageArgs<'_>) -> Option<String> {
         let message = self.messages.get(message_id)?;
-
-        let args = MessageArgs {
-            count,
-            gender: gender.as_ref().map(Self::gender_selector_key),
-            ..MessageArgs::default()
-        };
 
         if !message.contains('{') {
             return Some(message.clone());
@@ -173,6 +167,21 @@ impl Locale {
             return None;
         }
 
-        self.evaluator.evaluate(message, &args)
+        self.evaluator.evaluate(message, args)
+    }
+
+    pub(super) fn resolve_message_text(
+        &self,
+        message_id: &str,
+        count: Option<u64>,
+        gender: Option<GrammaticalGender>,
+    ) -> Option<String> {
+        let args = MessageArgs {
+            count,
+            gender: gender.as_ref().map(Self::gender_selector_key),
+            ..MessageArgs::default()
+        };
+
+        self.resolve_message(message_id, &args)
     }
 }

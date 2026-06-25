@@ -883,6 +883,8 @@ messages:
     when * {Pièces}
   # Compositional patterns
   pattern.page-range: "{$start}–{$end}"
+  pattern.accessed-date: "consulté le {$date}"
+  pattern.in-container: "dans {$container}"
   pattern.retrieved-from: "consulté à l'adresse {$url}"
   pattern.available-at: "disponible sur {$url}"
   date.open-ended: "présent"

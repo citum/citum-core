@@ -92,6 +92,14 @@ fn resolve_semantic_class(component: &ProcTemplateComponent) -> Option<String> {
                 _ => "variable",
             }
         )),
+        TemplateComponent::Message(m) => Some(format!(
+            "citum-message-{}",
+            m.message
+                .chars()
+                .map(|ch| if ch.is_ascii_alphanumeric() { ch } else { '-' })
+                .collect::<String>()
+                .trim_matches('-')
+        )),
         _ => None,
     }
 }

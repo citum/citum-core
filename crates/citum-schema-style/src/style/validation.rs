@@ -255,6 +255,17 @@ impl TemplateResourceBudget {
             TemplateComponent::Group(group) => {
                 self.check_template(&group.group, &format!("{location}.group"), depth + 1)?;
             }
+            TemplateComponent::Message(message) => {
+                for (name, source) in &message.args {
+                    if let Some(component) = source.as_template_component() {
+                        self.check_component(
+                            &component,
+                            &format!("{location}.message.args.{name}"),
+                            depth + 1,
+                        )?;
+                    }
+                }
+            }
             TemplateComponent::Contributor(_)
             | TemplateComponent::Title(_)
             | TemplateComponent::Number(_)

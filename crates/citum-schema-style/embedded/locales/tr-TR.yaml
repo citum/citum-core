@@ -770,6 +770,8 @@ messages:
   role.guest.verb: "konuk olarak"
   # Compositional patterns
   pattern.page-range: "{$start}–{$end}"
+  pattern.accessed-date: "erişim tarihi: {$date}"
+  pattern.in-container: "{$container} içinde"
   pattern.retrieved-from: "erişim adresi: {$url}"
   pattern.available-at: "erişim adresi: {$url}"
   date.open-ended: "günümüz"

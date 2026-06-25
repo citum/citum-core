@@ -11,7 +11,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! place. Public Locale APIs unrelated to raw conversion stay in `mod.rs`.
 
 use super::Locale;
-use super::message::Mf2MessageEvaluator;
+use super::message::{MessageEvaluator, Mf2MessageEvaluator, NoOpEvaluator};
 use super::raw;
 use super::types::{
     ContributorTerm, DateTerms, LocaleOverride, LocatorTerm, MaybeGendered, MessageSyntax,
@@ -265,8 +265,8 @@ impl Locale {
         }
 
         locale.evaluator = match locale.evaluation.message_syntax {
-            MessageSyntax::Mf2 => Arc::new(Mf2MessageEvaluator),
-            MessageSyntax::Static => Arc::new(Mf2MessageEvaluator),
+            MessageSyntax::Mf2 => Arc::new(Mf2MessageEvaluator) as Arc<dyn MessageEvaluator>,
+            MessageSyntax::Static => Arc::new(NoOpEvaluator),
         };
 
         locale

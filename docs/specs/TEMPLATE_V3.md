@@ -1,8 +1,8 @@
 # Template Schema v3 Specification
 
 **Status:** Active
-**Version:** 0.3
-**Date:** 2026-05-05
+**Version:** 0.4
+**Date:** 2026-06-24
 **Supersedes:** `docs/specs/TEMPLATE_V2.md`
 **Related:** csl26-t3v1, `docs/specs/DISTRIBUTED_RESOLVER.md`
 
@@ -21,6 +21,7 @@ This design explicitly **rejects "Macros"** to avoid the complexity and fragment
 **In Scope:**
 - `extends` keyword within `type-variants` (defaulting to the base `template`).
 - List-diff operations: `modify`, `add`, `remove`.
+- `message:` template components for locale-authored compositional phrases.
 - Expansion of `options` (e.g., `contributor-config`, `date-config`) to absorb shared logic.
 - Impact on `DistributedResolver` style-merging.
 
@@ -93,6 +94,32 @@ options:
       missing: "omit"
 ```
 
+### §2.3 Locale Message Components
+
+Templates MAY call a locale-authored phrase with `message:`. This component
+lives in the style template schema as `TemplateMessage`; it is evaluated by the
+active `Locale` at render time.
+
+```yaml
+- message: pattern.accessed-date
+  args:
+    date: { date: accessed, form: day-month-abbr-year }
+
+- message: pattern.in-container
+  args:
+    container: { title: parent-monograph, emph: true }
+  text-case: capitalize-first
+```
+
+Each `args` entry is rendered through the normal component pipeline before MF2
+evaluation. Supported argument sources are `literal`, `variable`, `date`,
+`title`, `contributor`, `number`, and `term`. The resulting strings become MF2
+named variables (`{$date}`, `{$container}`, etc.).
+
+The style owns phrase selection and argument selection; the locale owns word
+order and glue text. `term:` components remain readable for compatibility, but
+new localized phrase work SHOULD use `message:` and `pattern.*` locale IDs.
+
 ### §3 — Merge Operations (Formalized)
 
 The engine MUST process each operation list (`modify`, `remove`, `add`) in the order provided. The order of these keys (`modify`, `remove`, `add`) within a variant has no semantic effect.
@@ -143,6 +170,9 @@ Engines SHOULD treat unreachable or invalid parent URIs as resolution errors; st
 
 ## Changelog
 
+- v0.4 (2026-06-24): Add `message:` components for locale-authored MF2
+  compositional phrases and deprecate template `term:` as the long-term phrase
+  realization surface.
 - v0.3 (2026-05-05): Clarified terminology, matching semantics, order of operations, and validation rules. Added subscriber style example using localized terms instead of literal affixes.
 - v0.2 (2026-05-05): Pivoted to Pure Diff model. Removed Macros/Named Templates. Expanded role of style-level options.
 - v0.1 (2026-05-05): Initial draft (Macro-based).
