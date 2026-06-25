@@ -127,15 +127,17 @@ bibliography:
     - title: primary
     - date: issued
       form: year
-    - group:
-      - term: accessed
-        text-case: capitalize-first
-      - date: accessed
-        form: month-day
-      - date: accessed
-        form: year
-        prefix: ", "
-      delimiter: " "
+    - message: pattern.accessed-date
+      args:
+        date:
+          group:
+            - date: accessed
+              form: month-day
+            - date: accessed
+              form: year
+              prefix: ", "
+          delimiter: " "
+      text-case: capitalize-first
       suffix: ". "
     - variable: url
     article-newspaper:
@@ -149,15 +151,17 @@ bibliography:
     - date: issued
       form: year
       prefix: ", "
-    - group:
-      - term: accessed
-        text-case: capitalize-first
-      - date: accessed
-        form: month-day
-      - date: accessed
-        form: year
-        prefix: ", "
-      delimiter: " "
+    - message: pattern.accessed-date
+      args:
+        date:
+          group:
+            - date: accessed
+              form: month-day
+            - date: accessed
+              form: year
+              prefix: ", "
+          delimiter: " "
+      text-case: capitalize-first
       suffix: ". "
     - variable: url
     entry-encyclopedia:
@@ -255,15 +259,17 @@ bibliography:
         prefix: ", "
       - variable: number
         prefix: ":"
-    - group:
-      - term: accessed
-        text-case: capitalize-first
-      - date: accessed
-        form: month-day
-      - date: accessed
-        form: year
-        prefix: ", "
-      delimiter: " "
+    - message: pattern.accessed-date
+      args:
+        date:
+          group:
+            - date: accessed
+              form: month-day
+            - date: accessed
+              form: year
+              prefix: ", "
+          delimiter: " "
+      text-case: capitalize-first
       suffix: ". "
     - variable: url
     [interview, personal-communication]:
@@ -291,15 +297,17 @@ bibliography:
       suffix: ": "
     - title: parent-monograph
       text-case: title
-    - group:
-      - term: accessed
-        text-case: capitalize-first
-      - date: accessed
-        form: month-day
-      - date: accessed
-        form: year
-        prefix: ", "
-      delimiter: " "
+    - message: pattern.accessed-date
+      args:
+        date:
+          group:
+            - date: accessed
+              form: month-day
+            - date: accessed
+              form: year
+              prefix: ", "
+          delimiter: " "
+      text-case: capitalize-first
       suffix: ". "
     - variable: url
     map:

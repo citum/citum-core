@@ -2309,6 +2309,10 @@
           "$ref": "#/$defs/TemplateDate"
         },
         {
+          "description": "A rendered group argument.",
+          "$ref": "#/$defs/TemplateGroup"
+        },
+        {
           "description": "A rendered title argument.",
           "$ref": "#/$defs/TemplateTitle"
         },
@@ -2325,6 +2329,151 @@
           "$ref": "#/$defs/TemplateTerm"
         }
       ]
+    },
+    "TemplateGroup": {
+      "description": "A group component for grouping multiple components with a delimiter,\nmatching CSL 1.0 `<group>` semantics.",
+      "type": "object",
+      "properties": {
+        "group": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TemplateComponent"
+          }
+        },
+        "delimiter": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelimiterPunctuation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "emph": {
+          "description": "Render in italics/emphasis.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "quote": {
+          "description": "Render in quotes.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "strong": {
+          "description": "Render in bold/strong.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "small-caps": {
+          "description": "Render in small caps.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "vertical-align": {
+          "description": "Vertical alignment to apply to rendered output.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VerticalAlign"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "prefix": {
+          "description": "Text to prepend to the rendered value (outside any wrap).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suffix": {
+          "description": "Text to append to the rendered value (outside any wrap).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "wrap": {
+          "description": "Wrapping punctuation and optional inner affixes (text inside the wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WrapConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "suppress": {
+          "description": "If true, suppress this component entirely (render as empty string).\nUseful for type-specific overrides like suppressing publisher for journals.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "initialize-with": {
+          "description": "Override name initialization (e.g., \". \" or \"\").",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name-form": {
+          "description": "Override name form (e.g., initials, full, family-only).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NameForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "strip-periods": {
+          "description": "Strip trailing periods from rendered value.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "custom": {
+          "description": "Custom user-defined fields for extensions.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "group"
+      ]
+    },
+    "DelimiterPunctuation": {
+      "description": "Delimiter punctuation options.",
+      "type": "string"
     },
     "TemplateTerm": {
       "description": "A term component for rendering locale-specific text.",
@@ -2476,151 +2625,6 @@
       "required": [
         "term"
       ]
-    },
-    "TemplateGroup": {
-      "description": "A group component for grouping multiple components with a delimiter,\nmatching CSL 1.0 `<group>` semantics.",
-      "type": "object",
-      "properties": {
-        "group": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/TemplateComponent"
-          }
-        },
-        "delimiter": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/DelimiterPunctuation"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "text-case": {
-          "description": "Text-case transform to apply to the rendered value.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/TextCase"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "emph": {
-          "description": "Render in italics/emphasis.",
-          "type": [
-            "boolean",
-            "null"
-          ]
-        },
-        "quote": {
-          "description": "Render in quotes.",
-          "type": [
-            "boolean",
-            "null"
-          ]
-        },
-        "strong": {
-          "description": "Render in bold/strong.",
-          "type": [
-            "boolean",
-            "null"
-          ]
-        },
-        "small-caps": {
-          "description": "Render in small caps.",
-          "type": [
-            "boolean",
-            "null"
-          ]
-        },
-        "vertical-align": {
-          "description": "Vertical alignment to apply to rendered output.",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/VerticalAlign"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "prefix": {
-          "description": "Text to prepend to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "suffix": {
-          "description": "Text to append to the rendered value (outside any wrap).",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "wrap": {
-          "description": "Wrapping punctuation and optional inner affixes (text inside the wrap).",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/WrapConfig"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "suppress": {
-          "description": "If true, suppress this component entirely (render as empty string).\nUseful for type-specific overrides like suppressing publisher for journals.",
-          "type": [
-            "boolean",
-            "null"
-          ]
-        },
-        "initialize-with": {
-          "description": "Override name initialization (e.g., \". \" or \"\").",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "name-form": {
-          "description": "Override name form (e.g., initials, full, family-only).",
-          "anyOf": [
-            {
-              "$ref": "#/$defs/NameForm"
-            },
-            {
-              "type": "null"
-            }
-          ]
-        },
-        "strip-periods": {
-          "description": "Strip trailing periods from rendered value.",
-          "type": [
-            "boolean",
-            "null"
-          ]
-        },
-        "custom": {
-          "description": "Custom user-defined fields for extensions.",
-          "type": [
-            "object",
-            "null"
-          ],
-          "additionalProperties": true
-        }
-      },
-      "additionalProperties": false,
-      "required": [
-        "group"
-      ]
-    },
-    "DelimiterPunctuation": {
-      "description": "Delimiter punctuation options.",
-      "type": "string"
     },
     "DisambiguationScope": {
       "description": "Scope for disambiguation (e.g., year suffix assignment).",

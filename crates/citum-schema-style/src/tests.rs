@@ -1607,7 +1607,7 @@ bibliography:
         "message should name the invalid component property: {message}"
     );
     assert!(
-        message.contains("component must contain exactly one of contributor/date/title/number/variable/group/term"),
+        message.contains("component must contain exactly one of contributor/date/title/number/variable/message/group/term"),
         "message should enumerate valid component kinds: {message}"
     );
 }
@@ -1628,7 +1628,7 @@ bibliography:
         "message should include template item path: {message}"
     );
     assert!(
-        message.contains("component must contain exactly one of contributor/date/title/number/variable/group/term"),
+        message.contains("component must contain exactly one of contributor/date/title/number/variable/message/group/term"),
         "message should enumerate valid component kinds: {message}"
     );
 }

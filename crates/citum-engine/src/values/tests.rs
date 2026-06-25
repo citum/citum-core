@@ -859,6 +859,71 @@ fn test_message_component_renders_in_container_argument_with_formatting() {
 }
 
 #[test]
+fn test_message_component_renders_grouped_container_argument() {
+    let config = make_config();
+    let mut locale = make_locale();
+    locale
+        .messages
+        .insert("pattern.in-container".into(), "in {$container}".into());
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let reference = Reference::from(LegacyReference {
+        id: "chapter-1".to_string(),
+        ref_type: "chapter".to_string(),
+        editor: Some(vec![Name::new("Grimm", "Jacob")]),
+        container_title: Some("Book Title".to_string()),
+        ..Default::default()
+    });
+    let hints = ProcHints::default();
+    let component = TemplateMessage {
+        message: "pattern.in-container".into(),
+        args: [(
+            "container".into(),
+            MessageArgSource::Group(TemplateGroup {
+                group: vec![
+                    TemplateComponent::Contributor(TemplateContributor {
+                        contributor: ContributorRole::Editor,
+                        form: ContributorForm::Long,
+                        name_order: Some(NameOrder::FamilyFirst),
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Title(TemplateTitle {
+                        title: TitleType::ParentMonograph,
+                        rendering: Rendering {
+                            emph: Some(true),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    }),
+                ],
+                delimiter: Some(DelimiterPunctuation::Custom(" ".into())),
+                ..Default::default()
+            }),
+        )]
+        .into(),
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+
+    assert_eq!(values.value, "in Grimm, Jacob (ed.) _Book Title_");
+    assert!(values.pre_formatted);
+}
+
+#[test]
 fn test_year_month_day_dates_inline_disambiguation_suffix_on_year() {
     let config = make_config();
     let locale = make_locale();

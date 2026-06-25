@@ -124,13 +124,22 @@ parameterized if and only if its body contains a `{` character.
 
 ---
 
-### 1.4.1 Atomic Labels vs Compositional Phrases
+### 1.4.1 Lexical Labels vs Phrase Realization
 
-Locale messages have two different jobs:
+Locale messages have two different jobs, but the boundary is behavioral rather
+than a hard namespace split. Three terms recur below: a *lexical* item is the
+localized word or abbreviation a language picks (`editor` in English,
+`Herausgeber` in German); an *inflectional* form is that word varied by a
+grammatical feature such as count or gender (`ed.` vs `eds.`); and *phrase
+realization* is assembling already-rendered citation values into a
+natural-language fragment, with the locale supplying the glue text and word
+order.
 
-- **Atomic labels** (`term.*`, `role.*`) name a localizable word or short label:
-  `term.page-label`, `term.accessed`, `role.editor.label`.
-- **Compositional phrases** (`pattern.*`) assemble already-rendered citation
+- **Lexical or inflectional labels** (`term.*`, `role.*`) name a localizable
+  word, abbreviation, or role form: `term.page-label`, `term.accessed`,
+  `role.editor.label`. These IDs may still use MF2 when the label depends on
+  count, gender, or another grammatical selector.
+- **Phrase realization** (`pattern.*`) assembles already-rendered citation
   values into natural-language fragments: `pattern.accessed-date`,
   `pattern.in-container`, `pattern.available-at`, `pattern.retrieved-from`.
 
@@ -139,10 +148,19 @@ instead of spelling English glue with `term:` components, `prefix`, or `suffix`.
 The style still decides *which* phrase is needed and *which fields* supply its
 arguments; the active locale decides the phrase order and glue text.
 
+Role-related messages can belong to either side of this distinction. A suffix
+label like `role.editor.label` is lexical or inflectional. A role-plus-name
+phrase such as `edited by {$names}` is phrase realization and would be modeled
+as a dedicated `pattern.*` message — `pattern.editor-contribution` — when a
+style needs the locale to control placement or word order around the rendered
+names. Introducing and adopting that ID is deferred to the role-plus-name batch
+tracked in bean `csl26-fdzc`; no style calls it yet.
+
 The template-schema `term:` component remains parseable for compatibility but
-is deprecated for new phrase realization. This does not remove `term.*` message
-IDs from locale files; those IDs remain the canonical representation for atomic
-labels.
+is deprecated for new phrase realization, and will be removed as soon as the
+existing styles are upgraded to drop it. This does not remove `term.*` message
+IDs from locale files; those IDs remain the canonical representation for labels,
+abbreviations, and inflected role forms.
 
 ```yaml
 # Locale file
@@ -992,10 +1010,11 @@ Engine behavior by `localeSchemaVersion`:
 ## Changelog
 
 - v1.5 (2026-06-24): Add style-template `message:` components as call sites
-  for locale-authored compositional phrases. Clarify the boundary between
-  atomic `term.*` labels and `pattern.*` phrases, define the initial required
-  phrase IDs, and deprecate template-schema `term:` for phrase realization
-  while retaining locale `term.*` message IDs.
+  for locale-authored phrase realization. Clarify the behavioral boundary
+  between lexical or inflectional `term.*`/`role.*` messages and compositional
+  `pattern.*` phrases, define the initial required phrase IDs, and deprecate
+  template-schema `term:` for phrase realization while retaining locale
+  `term.*` message IDs.
 - v1.3 (2026-03-22): **Pivot to MF2.** Replace MF1 as the canonical message
   syntax with Unicode MessageFormat 2 (finalized standard). Implement custom
   dependency-free `Mf2MessageEvaluator` (no external crate — GPL-3.0 crates
