@@ -19,6 +19,7 @@ styles-report.json
 migrated_*.yaml
 
 # Debug/analysis artifacts
+.repowise/
 debug_*.yaml
 oracle_comparison.rs
 styles_analysis.txt
