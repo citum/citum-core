@@ -1,7 +1,7 @@
 ---
 # csl26-fdzc
 title: Migrate styles to localized message phrase calls
-status: in-progress
+status: completed
 type: task
 priority: high
 tags:
@@ -9,7 +9,7 @@ tags:
     - localization
     - mf2
 created_at: 2026-06-25T00:22:34Z
-updated_at: 2026-06-26T11:40:06Z
+updated_at: 2026-06-26T12:29:28Z
 ---
 
 ## Problem
@@ -94,7 +94,7 @@ through the rest of `styles/` by style family or shared template pattern.
 - Refreshed the top-10 oracle baseline after confirming the current aggregate
   has `cell` at 45/47 bibliography entries and no oracle regressions.
 
-## PR #966 Follow-up Documentation
+## PR #966 Completion And Split-Out
 
 - PR #966 completes the checked-in template `term:` migration without taking on
   richer contributor phrase semantics. The immediate invariant remains:
@@ -108,10 +108,11 @@ through the rest of `styles/` by style family or shared template pattern.
   italicized `In` inside a locale phrase. A future message pipeline should
   return format-neutral inline fragments before MF2 markup elements or any
   constrained inline message-body markup is enabled.
-- Contributor-plus-role phrase realization is deferred. AMA-style `In:`
-  editor/title phrasing and APA-style container contributor/title phrasing need
-  future `pattern.*` messages with a designed argument shape; exact message IDs
-  are intentionally not reserved in this batch.
+- Contributor-plus-role phrase realization is split out to `csl26-eh5c`.
+  AMA-style `In:` editor/title phrasing and APA-style container
+  contributor/title phrasing need future `pattern.*` messages with a designed
+  argument shape; exact message IDs are intentionally not reserved in this
+  completed migration batch.
 - The durable design boundary is documented in
   `docs/specs/LOCALE_MESSAGES.md`, with a cross-reference from
   `docs/specs/DJOT_RICH_TEXT.md`.
