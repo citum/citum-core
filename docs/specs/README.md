@@ -113,6 +113,7 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 |------|--------|-------|
 | [`MULTILINGUAL.md`](./MULTILINGUAL.md) — multilingual data model, processor logic, sorting, disambiguation *(umbrella)* | Active | `multilingual.rs`, `i18n.rs::multilingual_rendering` |
 | [`LOCALE_MESSAGES.md`](./LOCALE_MESSAGES.md) — ICU MF2 parameterized message system replacing flat YAML terms | Active | `i18n.rs::string_resolution`, `i18n.rs::config` |
+| [`CONTRIBUTOR_PHRASE_MESSAGES.md`](./CONTRIBUTOR_PHRASE_MESSAGES.md) — locale-owned contributor phrase messages for role/name/title ordering | Draft | — |
 | [`GENDERED_LOCALE_TERMS.md`](./GENDERED_LOCALE_TERMS.md) — multi-dimensional locale terms with grammatical gender support | Active | `i18n.rs::string_resolution` |
 | [`MULTILINGUAL_NAMES.md`](./MULTILINGUAL_NAMES.md) — script-specific contributor name assembly | Active | `multilingual_names.rs`, `i18n.rs::name_resolution` |
 | [`SENTENCE_INITIAL_LABELS.md`](./SENTENCE_INITIAL_LABELS.md) — sentence-initial capitalization for localized labels | Active | `i18n.rs` |
