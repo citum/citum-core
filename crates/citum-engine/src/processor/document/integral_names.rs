@@ -4,6 +4,14 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
 //! Integral-name state handling for document processing.
+//!
+//! Document processing annotates integral citations before rendering so styles
+//! can render first narrative mentions differently from subsequent ones. Parsed
+//! documents are processed in source-aware order: body prose and generated note
+//! references participate by note occurrence order, while flat API inputs use
+//! their caller-provided order. Name memory can reset by document, chapter, or
+//! section scope, and it can either ignore note-only mentions or let note and
+//! body mentions share one state machine.
 
 #[rustfmt::skip]
 use super::note_support::{NoteOccurrence, build_note_order_indices};
@@ -11,26 +19,33 @@ use super::{
     CitationPlacement, CitationStructure, DocumentIntegralNameOverride, DocumentOptionsOverride,
     DocumentOrgAbbreviationOverride, ParsedDocument,
 };
-use crate::reference::Contributor;
+use crate::reference::{CitationItem, Contributor};
 use crate::{Citation, Processor};
+use citum_schema::citation::{CitationMode, IntegralNameState};
 use citum_schema::options::{IntegralNameContexts, IntegralNameScope};
-use std::collections::HashMap;
+use std::collections::{HashMap, hash_map::Entry};
+
+const DOCUMENT_SCOPE_KEY: &str = "document";
+
+type NameMemoryKey = (String, String);
 
 #[derive(Debug, Clone)]
 pub(super) struct IntegralNameContext {
+    /// Where the citation appears in the parsed document.
     pub(super) placement: CitationPlacement,
+    /// Chapter and section scope metadata for this citation location.
     pub(super) structure: CitationStructure,
 }
 
+/// Tracks how a name has already participated in integral-name memory.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum SeenIntegralNameState {
-    Unseen,
     NoteOnlySeen,
     BodySeen,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-enum AnnotateKind {
+enum NameMemoryKind {
     Personal,
     OrgAbbreviation,
 }
@@ -175,99 +190,34 @@ impl Processor {
         &self,
         citations: &mut [Citation],
         contexts: &[IntegralNameContext],
-        kind: AnnotateKind,
+        kind: NameMemoryKind,
         scope: IntegralNameScope,
         name_contexts: IntegralNameContexts,
     ) {
-        let mut seen: HashMap<(String, String), SeenIntegralNameState> = HashMap::new();
+        let mut seen: HashMap<NameMemoryKey, SeenIntegralNameState> = HashMap::new();
         for (citation, context) in citations.iter_mut().zip(contexts.iter()) {
-            let counts_as_integral = matches!(
-                citation.mode,
-                citum_schema::citation::CitationMode::Integral
-            ) || citation.suppress_author;
-            if !counts_as_integral {
+            if !citation_counts_as_integral(citation) {
                 continue;
             }
 
-            let is_body = matches!(context.placement, CitationPlacement::InlineProse);
+            let is_body = is_body_context(context);
             if matches!(name_contexts, IntegralNameContexts::BodyOnly) && !is_body {
                 continue;
             }
 
-            let scope_key = match scope {
-                IntegralNameScope::Document => "document".to_string(),
-                IntegralNameScope::Chapter => context.structure.chapter_scope.clone(),
-                IntegralNameScope::Section => context.structure.section_scope.clone(),
-            };
+            let scope_key = scope_key(scope, context);
 
             for item in &mut citation.items {
-                let is_org = first_author_is_org(&self.bibliography, &item.id);
-                match kind {
-                    AnnotateKind::Personal if is_org => continue,
-                    AnnotateKind::OrgAbbreviation if !is_org => continue,
-                    _ => {}
-                }
-
-                let state_already_set = match kind {
-                    AnnotateKind::Personal => item.integral_name_state.is_some(),
-                    AnnotateKind::OrgAbbreviation => item.org_abbreviation_state.is_some(),
-                };
-                if state_already_set {
+                if !kind.tracks_item(&self.bibliography, item) || kind.state_is_set(item) {
                     continue;
                 }
 
-                let author_key = match kind {
-                    AnnotateKind::Personal => {
-                        personal_author_key_for_item(&self.bibliography, &item.id)
-                    }
-                    AnnotateKind::OrgAbbreviation => {
-                        first_author_key_for_item(&self.bibliography, &item.id)
-                    }
-                };
-                let key = (scope_key.clone(), author_key);
-                let state = seen
-                    .get(&key)
-                    .copied()
-                    .unwrap_or(SeenIntegralNameState::Unseen);
-                let derived = match name_contexts {
-                    IntegralNameContexts::BodyOnly => {
-                        if matches!(state, SeenIntegralNameState::BodySeen) {
-                            citum_schema::citation::IntegralNameState::Subsequent
-                        } else {
-                            seen.insert(key, SeenIntegralNameState::BodySeen);
-                            citum_schema::citation::IntegralNameState::First
-                        }
-                    }
-                    IntegralNameContexts::BodyAndNotes => {
-                        if is_body {
-                            match state {
-                                SeenIntegralNameState::BodySeen => {
-                                    citum_schema::citation::IntegralNameState::Subsequent
-                                }
-                                SeenIntegralNameState::Unseen
-                                | SeenIntegralNameState::NoteOnlySeen => {
-                                    seen.insert(key, SeenIntegralNameState::BodySeen);
-                                    citum_schema::citation::IntegralNameState::First
-                                }
-                            }
-                        } else {
-                            match state {
-                                SeenIntegralNameState::Unseen => {
-                                    seen.insert(key, SeenIntegralNameState::NoteOnlySeen);
-                                    citum_schema::citation::IntegralNameState::First
-                                }
-                                SeenIntegralNameState::NoteOnlySeen
-                                | SeenIntegralNameState::BodySeen => {
-                                    citum_schema::citation::IntegralNameState::Subsequent
-                                }
-                            }
-                        }
-                    }
-                };
-                match kind {
-                    AnnotateKind::Personal => item.integral_name_state = Some(derived),
-                    AnnotateKind::OrgAbbreviation => item.org_abbreviation_state = Some(derived),
-                }
+                let key = (
+                    scope_key.to_string(),
+                    kind.key_for_item(&self.bibliography, item),
+                );
+                let derived = mark_seen_name(&mut seen, key, is_body, name_contexts);
+                kind.set_state(item, derived);
             }
         }
     }
@@ -287,7 +237,7 @@ impl Processor {
             self.annotate_name_states_for_kind(
                 citations,
                 contexts,
-                AnnotateKind::Personal,
+                NameMemoryKind::Personal,
                 config.scope,
                 config.contexts,
             );
@@ -301,11 +251,120 @@ impl Processor {
             self.annotate_name_states_for_kind(
                 citations,
                 contexts,
-                AnnotateKind::OrgAbbreviation,
+                NameMemoryKind::OrgAbbreviation,
                 config.scope,
                 config.contexts,
             );
         }
+    }
+}
+
+impl NameMemoryKind {
+    fn tracks_item(&self, bibliography: &crate::Bibliography, item: &CitationItem) -> bool {
+        match self {
+            Self::Personal => !first_author_is_org(bibliography, &item.id),
+            Self::OrgAbbreviation => first_author_is_org(bibliography, &item.id),
+        }
+    }
+
+    fn state_is_set(&self, item: &CitationItem) -> bool {
+        match self {
+            Self::Personal => item.integral_name_state.is_some(),
+            Self::OrgAbbreviation => item.org_abbreviation_state.is_some(),
+        }
+    }
+
+    fn key_for_item(&self, bibliography: &crate::Bibliography, item: &CitationItem) -> String {
+        match self {
+            Self::Personal => personal_author_key_for_item(bibliography, &item.id),
+            Self::OrgAbbreviation => first_author_key_for_item(bibliography, &item.id),
+        }
+    }
+
+    fn set_state(&self, item: &mut CitationItem, state: IntegralNameState) {
+        match self {
+            Self::Personal => item.integral_name_state = Some(state),
+            Self::OrgAbbreviation => item.org_abbreviation_state = Some(state),
+        }
+    }
+}
+
+fn citation_counts_as_integral(citation: &Citation) -> bool {
+    matches!(citation.mode, CitationMode::Integral) || citation.suppress_author
+}
+
+fn is_body_context(context: &IntegralNameContext) -> bool {
+    matches!(context.placement, CitationPlacement::InlineProse)
+}
+
+fn scope_key(scope: IntegralNameScope, context: &IntegralNameContext) -> &str {
+    match scope {
+        IntegralNameScope::Document => DOCUMENT_SCOPE_KEY,
+        IntegralNameScope::Chapter => context.structure.chapter_scope.as_str(),
+        IntegralNameScope::Section => context.structure.section_scope.as_str(),
+    }
+}
+
+fn mark_seen_name(
+    seen: &mut HashMap<NameMemoryKey, SeenIntegralNameState>,
+    key: NameMemoryKey,
+    is_body: bool,
+    name_contexts: IntegralNameContexts,
+) -> IntegralNameState {
+    match name_contexts {
+        IntegralNameContexts::BodyOnly => mark_body_only_name(seen, key),
+        IntegralNameContexts::BodyAndNotes if is_body => mark_body_name(seen, key),
+        IntegralNameContexts::BodyAndNotes => mark_note_name(seen, key),
+    }
+}
+
+fn mark_body_only_name(
+    seen: &mut HashMap<NameMemoryKey, SeenIntegralNameState>,
+    key: NameMemoryKey,
+) -> IntegralNameState {
+    match seen.entry(key) {
+        Entry::Occupied(mut entry) if *entry.get() != SeenIntegralNameState::BodySeen => {
+            entry.insert(SeenIntegralNameState::BodySeen);
+            IntegralNameState::First
+        }
+        Entry::Occupied(_) => IntegralNameState::Subsequent,
+        Entry::Vacant(entry) => {
+            entry.insert(SeenIntegralNameState::BodySeen);
+            IntegralNameState::First
+        }
+    }
+}
+
+fn mark_body_name(
+    seen: &mut HashMap<NameMemoryKey, SeenIntegralNameState>,
+    key: NameMemoryKey,
+) -> IntegralNameState {
+    match seen.entry(key) {
+        Entry::Occupied(entry) if *entry.get() == SeenIntegralNameState::BodySeen => {
+            IntegralNameState::Subsequent
+        }
+        Entry::Occupied(mut entry) => {
+            // Note-only sightings do not consume the first body mention.
+            entry.insert(SeenIntegralNameState::BodySeen);
+            IntegralNameState::First
+        }
+        Entry::Vacant(entry) => {
+            entry.insert(SeenIntegralNameState::BodySeen);
+            IntegralNameState::First
+        }
+    }
+}
+
+fn mark_note_name(
+    seen: &mut HashMap<NameMemoryKey, SeenIntegralNameState>,
+    key: NameMemoryKey,
+) -> IntegralNameState {
+    match seen.entry(key) {
+        Entry::Vacant(entry) => {
+            entry.insert(SeenIntegralNameState::NoteOnlySeen);
+            IntegralNameState::First
+        }
+        Entry::Occupied(_) => IntegralNameState::Subsequent,
     }
 }
 
