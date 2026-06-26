@@ -5,7 +5,8 @@
 **Date:** 2026-06-26
 **Supersedes:** (none)
 **Related:** bean `csl26-qrpo` (ICU4X upgrade), bean `csl26-v6ok`
-(locale-authored date patterns), bean `csl26-fdzc` (style phrase migration)
+(locale-authored date patterns), bean `csl26-fdzc` (style phrase migration),
+bean `csl26-eh5c` (contributor phrase messages)
 
 ## Purpose
 
@@ -154,8 +155,8 @@ label like `role.editor.label` is lexical or inflectional. A role-plus-name
 phrase such as `edited by {$names}` is phrase realization and would be modeled
 as a dedicated `pattern.*` message — `pattern.editor-contribution` — when a
 style needs the locale to control placement or word order around the rendered
-names. Introducing and adopting that ID is deferred to the role-plus-name batch
-tracked in bean `csl26-fdzc`; no style calls it yet.
+names. Introducing and adopting that ID is deferred to the contributor phrase
+batch tracked in bean `csl26-eh5c`; no style calls it yet.
 
 Two current style families motivate that deferred batch:
 
@@ -253,7 +254,7 @@ placeholder fragments.
 
 This boundary keeps the current style migration narrow: phrase localization
 moves English glue into `pattern.*` messages, while rich message bodies and full
-contributor phrase realization remain future work under bean `csl26-fdzc`.
+contributor phrase realization remain future work under bean `csl26-eh5c`.
 
 ---
 
