@@ -1,7 +1,7 @@
 ---
 # csl26-eh5c
 title: Design locale-authored contributor phrase messages
-status: todo
+status: completed
 type: feature
 priority: high
 tags:
@@ -10,7 +10,7 @@ tags:
     - contributors
     - styles
 created_at: 2026-06-26T12:29:18Z
-updated_at: 2026-06-26T12:29:18Z
+updated_at: 2026-06-26T12:45:14Z
 ---
 
 ## Problem
@@ -54,3 +54,8 @@ role-plus-name phrase.
 - Split from `csl26-fdzc` after PR #966 completed the checked-in rendered
   template `term:` migration.
 - Spec context: `docs/specs/LOCALE_MESSAGES.md`.
+
+
+## Completion
+
+Specified in `docs/specs/CONTRIBUTOR_PHRASE_MESSAGES.md`, with cross-links from `docs/specs/LOCALE_MESSAGES.md` and `docs/specs/README.md`. The spec defines the initial contributor phrase message IDs, argument contracts, rationale for why term-based and role-label-only approaches are insufficient for diverse locales, and acceptance criteria for the later implementation PR.

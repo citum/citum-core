@@ -1,12 +1,13 @@
 # Locale Messages Specification
 
 **Status:** Active
-**Version:** 1.6
+**Version:** 1.7
 **Date:** 2026-06-26
 **Supersedes:** (none)
 **Related:** bean `csl26-qrpo` (ICU4X upgrade), bean `csl26-v6ok`
 (locale-authored date patterns), bean `csl26-fdzc` (style phrase migration),
-bean `csl26-eh5c` (contributor phrase messages)
+bean `csl26-eh5c` (contributor phrase messages),
+[`CONTRIBUTOR_PHRASE_MESSAGES.md`](./CONTRIBUTOR_PHRASE_MESSAGES.md)
 
 ## Purpose
 
@@ -152,13 +153,15 @@ arguments; the active locale decides the phrase order and glue text.
 
 Role-related messages can belong to either side of this distinction. A suffix
 label like `role.editor.label` is lexical or inflectional. A role-plus-name
-phrase such as `edited by {$names}` is phrase realization and would be modeled
-as a dedicated `pattern.*` message — `pattern.editor-contribution` — when a
-style needs the locale to control placement or word order around the rendered
-names. Introducing and adopting that ID is deferred to the contributor phrase
-batch tracked in bean `csl26-eh5c`; no style calls it yet.
+phrase such as `edited by {$names}` is phrase realization and should be modeled
+as a dedicated `pattern.*` message when a style needs the locale to control
+placement or word order around rendered names. Contributor phrase realization
+is specified separately in
+[`CONTRIBUTOR_PHRASE_MESSAGES.md`](./CONTRIBUTOR_PHRASE_MESSAGES.md), including
+the initial `pattern.in-contributor-container` and
+`pattern.container-contributor-title` IDs.
 
-Two current style families motivate that deferred batch:
+Two current style families motivate this contributor phrase model:
 
 - AMA-style chapter entries need the locale to own the relationship among an
   `In:` introducer, rendered editor names, a role label, and the parent title.
@@ -170,9 +173,10 @@ Those are phrase-realization problems, not lexical-label problems. The existing
 `label.term` field remains the right representation when a contributor
 component only needs an inflected role label such as `editor` or `translator`.
 It is not the deprecated style-template `term:` component. Full contributor
-phrases should become future `pattern.*` messages once their argument shape and
-rendering semantics are designed; this spec intentionally does not reserve
-exact IDs for that batch.
+phrases belong to the contributor phrase message model, which receives rendered
+names, role labels, role metadata, counts, optional gender, and rendered
+title/container fragments as separate arguments so the locale can own phrase
+order and punctuation.
 
 The template-schema `term:` component remains parseable for compatibility but
 is deprecated for new phrase realization, and will be removed as soon as the
@@ -253,8 +257,9 @@ must preserve formatting on locale-owned literal fragments as well as on
 placeholder fragments.
 
 This boundary keeps the current style migration narrow: phrase localization
-moves English glue into `pattern.*` messages, while rich message bodies and full
-contributor phrase realization remain future work under bean `csl26-eh5c`.
+moves English glue into `pattern.*` messages, while rich message bodies remain
+future fragment-output work and full contributor phrase realization is specified
+in [`CONTRIBUTOR_PHRASE_MESSAGES.md`](./CONTRIBUTOR_PHRASE_MESSAGES.md).
 
 ---
 
@@ -1090,6 +1095,11 @@ Engine behavior by `localeSchemaVersion`:
 
 ## Changelog
 
+- v1.7 (2026-06-26): Link the dedicated contributor phrase message spec and
+  replace the earlier deferred placeholder with the initial
+  `pattern.in-contributor-container` and `pattern.container-contributor-title`
+  direction. Reaffirm that contributor `label.term` remains a lexical
+  role-label mechanism, not deprecated template `term:`.
 - v1.5 (2026-06-24): Add style-template `message:` components as call sites
   for locale-authored phrase realization. Clarify the behavioral boundary
   between lexical or inflectional `term.*`/`role.*` messages and compositional
