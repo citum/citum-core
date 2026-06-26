@@ -13,6 +13,7 @@ use crate::reference::Reference;
 use crate::render::format::OutputFormat;
 use crate::values::{ProcHints, ProcValues, RenderContext, RenderOptions};
 use citum_schema::options::{RoleLabelPreset, SubstituteKey};
+use citum_schema::reference::ContributorRole as DataRole;
 use citum_schema::reference::Title;
 use citum_schema::template::{ContributorRole, Rendering, TemplateComponent, TemplateContributor};
 
@@ -94,64 +95,52 @@ fn lookup_role_contributor(
     reference: &Reference,
     role: &ResolvedRole,
 ) -> Option<citum_schema::reference::contributor::Contributor> {
-    use citum_schema::reference::ContributorRole as DataRole;
-
     match role {
         ResolvedRole::BuiltIn(ContributorRole::Editor) => reference.editor(),
         ResolvedRole::BuiltIn(ContributorRole::Translator) => reference.translator(),
-        ResolvedRole::BuiltIn(ContributorRole::Director) => {
-            reference.contributor(DataRole::Director)
+        ResolvedRole::BuiltIn(role) => {
+            data_role_for_builtin(role).and_then(|data_role| reference.contributor(data_role))
         }
-        ResolvedRole::BuiltIn(ContributorRole::Composer) => {
-            reference.contributor(DataRole::Composer)
-        }
-        ResolvedRole::BuiltIn(ContributorRole::Illustrator) => {
-            reference.contributor(DataRole::Illustrator)
-        }
-        ResolvedRole::BuiltIn(ContributorRole::ContainerAuthor) => {
-            reference.contributor(DataRole::Unknown("container-author".to_string()))
-        }
-        ResolvedRole::BuiltIn(ContributorRole::CollectionEditor) => {
-            reference.contributor(DataRole::Unknown("collection-editor".to_string()))
-        }
-        ResolvedRole::BuiltIn(ContributorRole::EditorialDirector) => {
-            reference.contributor(DataRole::Unknown("editorial-director".to_string()))
-        }
-        ResolvedRole::BuiltIn(ContributorRole::TextualEditor) => {
-            reference.contributor(DataRole::Unknown("textual-editor".to_string()))
-        }
-        ResolvedRole::BuiltIn(ContributorRole::OriginalAuthor) => {
-            reference.contributor(DataRole::Unknown("original-author".to_string()))
-        }
-        ResolvedRole::BuiltIn(ContributorRole::ReviewedAuthor) => {
-            reference.contributor(DataRole::Unknown("reviewed-author".to_string()))
-        }
-        ResolvedRole::BuiltIn(ContributorRole::Recipient) => {
-            reference.contributor(DataRole::Recipient)
-        }
-        ResolvedRole::BuiltIn(ContributorRole::Interviewer) => {
-            reference.contributor(DataRole::Interviewer)
-        }
-        ResolvedRole::BuiltIn(ContributorRole::Guest) => reference.contributor(DataRole::Guest),
-        ResolvedRole::BuiltIn(ContributorRole::Chair) => {
-            reference.contributor(DataRole::Unknown("chair".to_string()))
-        }
-        ResolvedRole::BuiltIn(ContributorRole::Inventor) => {
-            reference.contributor(DataRole::Unknown("inventor".to_string()))
-        }
-        ResolvedRole::BuiltIn(ContributorRole::Counsel) => {
-            reference.contributor(DataRole::Unknown("counsel".to_string()))
-        }
-        ResolvedRole::Custom(role) => match role.as_str() {
-            "compiler" => reference.contributor(DataRole::Compiler),
-            "performer" => reference.contributor(DataRole::Performer),
-            "narrator" => reference.contributor(DataRole::Narrator),
-            "host" => reference.contributor(DataRole::Host),
-            "producer" | "executive-producer" => reference.contributor(DataRole::Producer),
-            "writer" => reference.contributor(DataRole::Writer),
-            _ => reference.contributor(DataRole::Unknown(role.clone())),
-        },
-        _ => None,
+        ResolvedRole::Custom(role) => reference.contributor(data_role_for_custom(role)),
+    }
+}
+
+fn data_role_for_builtin(role: &ContributorRole) -> Option<DataRole> {
+    Some(match role {
+        ContributorRole::Director => DataRole::Director,
+        ContributorRole::Composer => DataRole::Composer,
+        ContributorRole::Illustrator => DataRole::Illustrator,
+        ContributorRole::Recipient => DataRole::Recipient,
+        ContributorRole::Interviewer => DataRole::Interviewer,
+        ContributorRole::Guest => DataRole::Guest,
+        ContributorRole::ContainerAuthor
+        | ContributorRole::CollectionEditor
+        | ContributorRole::EditorialDirector
+        | ContributorRole::TextualEditor
+        | ContributorRole::OriginalAuthor
+        | ContributorRole::ReviewedAuthor
+        | ContributorRole::Chair
+        | ContributorRole::Inventor
+        | ContributorRole::Counsel => DataRole::Unknown(role.as_str().to_string()),
+        ContributorRole::Unknown(role) => DataRole::Unknown(role.clone()),
+        ContributorRole::Author
+        | ContributorRole::Editor
+        | ContributorRole::Translator
+        | ContributorRole::Publisher
+        | ContributorRole::Interviewee => return None,
+        _ => return None,
+    })
+}
+
+fn data_role_for_custom(role: &str) -> DataRole {
+    match role {
+        "compiler" => DataRole::Compiler,
+        "performer" => DataRole::Performer,
+        "narrator" => DataRole::Narrator,
+        "host" => DataRole::Host,
+        "producer" | "executive-producer" => DataRole::Producer,
+        "writer" => DataRole::Writer,
+        _ => DataRole::Unknown(role.to_string()),
     }
 }
 
@@ -339,6 +328,34 @@ fn resolve_named_substitute<F: OutputFormat<Output = String>>(
     })
 }
 
+#[allow(
+    clippy::too_many_arguments,
+    reason = "Substitute lookup and formatting share the same rendering state."
+)]
+fn resolve_contributor_substitute_for_role<F: OutputFormat<Output = String>>(
+    role: &ResolvedRole,
+    component: &TemplateContributor,
+    hints: &ProcHints,
+    options: &RenderOptions<'_>,
+    reference: &Reference,
+    effective_rendering: &Rendering,
+    fmt: &F,
+    substitute: &citum_schema::options::Substitute,
+) -> Option<ProcValues<F::Output>> {
+    let contributor = lookup_role_contributor(reference, role)?;
+    resolve_named_substitute(
+        role,
+        &contributor,
+        component,
+        hints,
+        options,
+        reference,
+        effective_rendering,
+        fmt,
+        substitute,
+    )
+}
+
 /// Check if a role should be suppressed by role-substitute configuration.
 ///
 /// Returns true if this role appears as a fallback in some other role's chain
@@ -416,22 +433,69 @@ pub(super) fn resolve_role_substitute<F: OutputFormat<Output = String>>(
             continue;
         };
 
-        if let Some(contrib) = lookup_role_contributor(reference, &fallback_role) {
-            return resolve_named_substitute(
-                &fallback_role,
-                &contrib,
-                component,
-                hints,
-                options,
-                reference,
-                effective_rendering,
-                fmt,
-                substitute,
-            );
+        if let Some(result) = resolve_contributor_substitute_for_role(
+            &fallback_role,
+            component,
+            hints,
+            options,
+            reference,
+            effective_rendering,
+            fmt,
+            substitute,
+        ) {
+            return Some(result);
         }
     }
 
     None
+}
+
+fn resolve_title_substitute<F: OutputFormat<Output = String>>(
+    title: Title,
+    component: &TemplateContributor,
+    options: &RenderOptions<'_>,
+    reference: &Reference,
+    fmt: &F,
+) -> ProcValues<F::Output> {
+    let title_str = title_substitute_text(title, options.context);
+    let value = if options.context == RenderContext::Citation {
+        fmt.quote(fmt.text(&title_str))
+    } else {
+        fmt.text(&title_str)
+    };
+
+    let url = crate::values::resolve_effective_url(
+        component.links.as_ref(),
+        options.config.links.as_ref(),
+        reference,
+        citum_schema::options::LinkAnchor::Title,
+    );
+
+    ProcValues {
+        value,
+        prefix: None,
+        suffix: None,
+        url,
+        substituted_key: Some("title:Primary".to_string()),
+        pre_formatted: true,
+    }
+}
+
+fn title_substitute_text(title: Title, context: RenderContext) -> String {
+    if context != RenderContext::Citation {
+        return title.to_string();
+    }
+
+    match title {
+        Title::Structured(s) => s.main,
+        Title::MultiStructured(v) => v
+            .into_iter()
+            .next()
+            .map(|(_, s)| s.main)
+            .unwrap_or_default(),
+        Title::Shorthand(abbr, _) => abbr,
+        _ => title.to_string(),
+    }
 }
 
 /// Attempt to substitute an empty author field with editor, title, or translator.
@@ -450,77 +514,37 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
     for key in &substitute.template {
         match key {
             SubstituteKey::Editor => {
-                if let Some(editors) = reference.editor()
-                    && let Some(result) = resolve_named_substitute(
-                        &ResolvedRole::BuiltIn(ContributorRole::Editor),
-                        &editors,
-                        component,
-                        hints,
-                        options,
-                        reference,
-                        effective_rendering,
-                        fmt,
-                        substitute,
-                    )
-                {
+                if let Some(result) = resolve_contributor_substitute_for_role(
+                    &ResolvedRole::BuiltIn(ContributorRole::Editor),
+                    component,
+                    hints,
+                    options,
+                    reference,
+                    effective_rendering,
+                    fmt,
+                    substitute,
+                ) {
                     return Some(result);
                 }
             }
             SubstituteKey::Title => {
                 if let Some(title) = reference.title() {
-                    // In citation context use a short-form title (main title only,
-                    // no subtitle) so the substitute doesn't bloat the in-text cite.
-                    // In bibliography use the full display form.
-                    let title_str = match options.context {
-                        RenderContext::Citation => match title {
-                            Title::Structured(s) => s.main.clone(),
-                            Title::MultiStructured(v) => {
-                                v.first().map(|(_, s)| s.main.clone()).unwrap_or_default()
-                            }
-                            Title::Shorthand(abbr, _) => abbr.clone(),
-                            _ => title.to_string(),
-                        },
-                        _ => title.to_string(),
-                    };
-                    // In citations: quote the title per CSL conventions.
-                    // In bibliography: use title as-is (will be styled normally).
-                    let value = if options.context == RenderContext::Citation {
-                        fmt.quote(fmt.text(&title_str))
-                    } else {
-                        fmt.text(&title_str)
-                    };
-
-                    let url = crate::values::resolve_effective_url(
-                        component.links.as_ref(),
-                        options.config.links.as_ref(),
-                        reference,
-                        citum_schema::options::LinkAnchor::Title,
-                    );
-
-                    return Some(ProcValues {
-                        value,
-                        prefix: None,
-                        suffix: None,
-                        url,
-                        substituted_key: Some("title:Primary".to_string()),
-                        pre_formatted: true,
-                    });
+                    return Some(resolve_title_substitute(
+                        title, component, options, reference, fmt,
+                    ));
                 }
             }
             SubstituteKey::Translator => {
-                if let Some(translators) = reference.translator()
-                    && let Some(result) = resolve_named_substitute(
-                        &ResolvedRole::BuiltIn(ContributorRole::Translator),
-                        &translators,
-                        component,
-                        hints,
-                        options,
-                        reference,
-                        effective_rendering,
-                        fmt,
-                        substitute,
-                    )
-                {
+                if let Some(result) = resolve_contributor_substitute_for_role(
+                    &ResolvedRole::BuiltIn(ContributorRole::Translator),
+                    component,
+                    hints,
+                    options,
+                    reference,
+                    effective_rendering,
+                    fmt,
+                    substitute,
+                ) {
                     return Some(result);
                 }
             }
