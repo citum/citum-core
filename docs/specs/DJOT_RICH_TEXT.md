@@ -1,8 +1,8 @@
 # Djot Rich Text Specification
 
 **Status:** Active
-**Date:** 2026-04-26
-**Related:** bean `csl26-suz3`
+**Date:** 2026-06-26
+**Related:** bean `csl26-suz3`, bean `csl26-fdzc`
 
 ## Purpose
 
@@ -39,6 +39,13 @@ Rare; mostly style-driven (some styles render `BCE`/`CE` in smallcaps). Djot spa
 
 In scope: inline djot markup (bold, italic, links, code) in title strings, annotation strings, note fields, and abstract fields.
 Out of scope: block-level djot, math markup, sentence-case and title-case text transformations (tracked in csl26-wv5o).
+
+Locale message bodies are a separate surface. This spec covers rich text that
+comes from bibliographic fields and template-rendered values; it does not enable
+Djot or any other inline markup inside locale-authored `messages:` strings.
+Locale-owned literal styling, such as italicizing an `In` supplied by a locale
+message, is deferred to the fragment-output design documented in
+[`LOCALE_MESSAGES.md`](./LOCALE_MESSAGES.md), not handled by Djot field markup.
 
 ## Design
 
@@ -91,5 +98,7 @@ Quote toggling is likewise renderer-owned. `OutputFormat` exposes depth-aware qu
 - General title/text-case semantics (`.nocase` transformation engine — tracked in csl26-wv5o)
 
 ## Changelog
+- 2026-06-26: Clarified that locale message body rich text is a separate
+  deferred design.
 - 2026-05-21: Added inline rendering context for nested emphasis and quote toggling.
 - 2026-04-26: Initial version (Phase 2 implementation).

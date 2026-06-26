@@ -9,7 +9,7 @@ tags:
     - localization
     - mf2
 created_at: 2026-06-25T00:22:34Z
-updated_at: 2026-06-25T11:37:33Z
+updated_at: 2026-06-26T11:40:06Z
 ---
 
 ## Problem
@@ -93,3 +93,25 @@ through the rest of `styles/` by style family or shared template pattern.
   container-author/title groups.
 - Refreshed the top-10 oracle baseline after confirming the current aggregate
   has `cell` at 45/47 bibliography entries and no oracle regressions.
+
+## PR #966 Follow-up Documentation
+
+- PR #966 completes the checked-in template `term:` migration without taking on
+  richer contributor phrase semantics. The immediate invariant remains:
+  phrase localization uses `message: pattern.*`; `message: term.*` is reserved
+  for atomic lexical or inflectional labels; contributor `label.term` is not the
+  deprecated rendered template `term:` component.
+- Rich locale message bodies are deferred. Current locale messages are plain
+  text plus placeholders, and rich formatting should come from the template
+  components that render message arguments. Deferred rich message bodies include
+  both rich placeholders and rich locale-owned literal text, such as an
+  italicized `In` inside a locale phrase. A future message pipeline should
+  return format-neutral inline fragments before MF2 markup elements or any
+  constrained inline message-body markup is enabled.
+- Contributor-plus-role phrase realization is deferred. AMA-style `In:`
+  editor/title phrasing and APA-style container contributor/title phrasing need
+  future `pattern.*` messages with a designed argument shape; exact message IDs
+  are intentionally not reserved in this batch.
+- The durable design boundary is documented in
+  `docs/specs/LOCALE_MESSAGES.md`, with a cross-reference from
+  `docs/specs/DJOT_RICH_TEXT.md`.

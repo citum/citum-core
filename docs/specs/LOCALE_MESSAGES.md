@@ -1,10 +1,11 @@
 # Locale Messages Specification
 
 **Status:** Active
-**Version:** 1.5
-**Date:** 2026-06-24
+**Version:** 1.6
+**Date:** 2026-06-26
 **Supersedes:** (none)
-**Related:** bean `csl26-qrpo` (ICU4X upgrade), bean `csl26-v6ok` (locale-authored date patterns)
+**Related:** bean `csl26-qrpo` (ICU4X upgrade), bean `csl26-v6ok`
+(locale-authored date patterns), bean `csl26-fdzc` (style phrase migration)
 
 ## Purpose
 
@@ -156,6 +157,22 @@ style needs the locale to control placement or word order around the rendered
 names. Introducing and adopting that ID is deferred to the role-plus-name batch
 tracked in bean `csl26-fdzc`; no style calls it yet.
 
+Two current style families motivate that deferred batch:
+
+- AMA-style chapter entries need the locale to own the relationship among an
+  `In:` introducer, rendered editor names, a role label, and the parent title.
+- APA-style translated or container-authored chapters need the locale to own
+  where container contributors and their role information sit relative to the
+  parent title.
+
+Those are phrase-realization problems, not lexical-label problems. The existing
+`label.term` field remains the right representation when a contributor
+component only needs an inflected role label such as `editor` or `translator`.
+It is not the deprecated style-template `term:` component. Full contributor
+phrases should become future `pattern.*` messages once their argument shape and
+rendering semantics are designed; this spec intentionally does not reserve
+exact IDs for that batch.
+
 The template-schema `term:` component remains parseable for compatibility but
 is deprecated for new phrase realization, and will be removed as soon as the
 existing styles are upgraded to drop it. This does not remove `term.*` message
@@ -185,6 +202,58 @@ messages:
 `crates/citum-schema-style/src/template.rs` as `TemplateMessage`. It is not part
 of `Locale`. Locale owns the message catalog and evaluator through
 `Locale::resolve_message(message_id, args)`.
+
+---
+
+### 1.4.2 Rich Text Boundary
+
+Current locale message bodies are plain text plus placeholders. The active
+message evaluator returns a resolved `String`, and MF2 markup elements such as
+`{#b}...{/b}` remain out of scope for the current evaluator.
+
+There are two distinct rich-text cases:
+
+- **Rich rendered arguments.** A style should keep title emphasis, URL linking,
+  quote wrapping, and contributor rendering on the template components that
+  build `{$container}`, `{$url}`, or `{$names}`. The locale message should
+  decide phrase order and glue text around those rendered values.
+- **Rich locale-authored literals.** A locale may eventually need formatting on
+  literal message text that is not a variable, such as an italicized `In` in an
+  `in {$container}` phrase.
+
+The first case is already the correct style-authoring boundary, although the
+present pipeline flattens the rendered argument into the message result. For
+example, `pattern.in-container` can receive a container argument whose internal
+template already rendered an emphasized parent title.
+
+The second case is not supported today. `TemplateMessage` rendering options
+style the whole resolved message, not one literal span inside it. Splitting a
+literal such as `In` into a separate styled template component would also lose
+the localization benefit, because the style would again own phrase order and
+glue. Locale authors should not write HTML, Djot, Typst, or MF2 markup in the
+message body to work around that gap.
+
+The future rich-text path is a format-neutral inline fragment result for
+message evaluation. That result should preserve literal text fragments and
+placeholder fragments separately, so a rendered argument can carry emphasis,
+links, quote state, or other semantic spans through the message evaluator
+without being collapsed into plain text first. Only after that fragment model
+exists should Citum consider enabling MF2 markup elements or a constrained
+inline markup subset in locale message bodies.
+
+Illustrative future syntax, not valid in the current evaluator:
+
+```yaml
+pattern.in-container: "{#emph}In{/emph} {$container}"
+```
+
+The important contract is not that exact syntax; it is that a future evaluator
+must preserve formatting on locale-owned literal fragments as well as on
+placeholder fragments.
+
+This boundary keeps the current style migration narrow: phrase localization
+moves English glue into `pattern.*` messages, while rich message bodies and full
+contributor phrase realization remain future work under bean `csl26-fdzc`.
 
 ---
 
