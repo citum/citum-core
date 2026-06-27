@@ -8,10 +8,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! This is the final step in migration: converting the upsampled node tree
 //! into the clean, declarative TemplateComponent format.
 
-use crate::ir::{FormattingOptions, ItemType, Node, Variable};
+use crate::ir::{ItemType, Node, Variable};
 use citum_schema::template::{
-    ContributorForm, ContributorRole, DateForm, DateVariable, DelimiterPunctuation, NumberVariable,
-    Rendering, SimpleVariable, TemplateComponent, TemplateContributor, TemplateDate, TemplateGroup,
+    ContributorForm, ContributorRole, DateForm, DateVariable, NumberVariable, Rendering,
+    SimpleVariable, TemplateComponent, TemplateContributor, TemplateDate, TemplateGroup,
     TemplateNumber, TemplateTitle, TemplateVariable, TitleType,
 };
 use indexmap::IndexMap;

@@ -3,7 +3,10 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
-use super::{Node, Rendering, TemplateCompiler, TemplateComponent, TemplateGroup};
+use super::{
+    Node, Rendering, TemplateCompiler, TemplateComponent, TemplateGroup,
+    formatting::{get_component_rendering, set_component_rendering},
+};
 
 impl TemplateCompiler {
     pub(super) fn has_variable_recursive(
@@ -119,7 +122,7 @@ impl TemplateCompiler {
 
         for component in components.iter() {
             if let TemplateComponent::Group(list) = component {
-                let base_rendering = self.get_component_rendering(component);
+                let base_rendering = get_component_rendering(component);
                 let is_default_visible = base_rendering.suppress != Some(true);
 
                 if is_default_visible {
@@ -142,9 +145,9 @@ impl TemplateCompiler {
             if let Some(var_key) = self.get_variable_key(component)
                 && default_list_vars.contains(&var_key)
             {
-                let mut rendering = self.get_component_rendering(component);
+                let mut rendering = get_component_rendering(component);
                 rendering.suppress = Some(true);
-                self.set_component_rendering(component, rendering);
+                set_component_rendering(component, rendering);
             }
         }
     }

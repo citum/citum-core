@@ -7,6 +7,7 @@ use super::{
     ContributorForm, ContributorRole, DateForm, DateVariable, Node, NumberVariable, SimpleVariable,
     TemplateCompiler, TemplateComponent, TemplateContributor, TemplateDate, TemplateNumber,
     TemplateTitle, TemplateVariable, TitleType, Variable,
+    formatting::{convert_formatting, map_label_form},
 };
 
 impl TemplateCompiler {
@@ -90,7 +91,7 @@ impl TemplateCompiler {
             }
         });
 
-        let mut rendering = self.convert_formatting(&names.formatting);
+        let mut rendering = convert_formatting(&names.formatting);
         if let Some(label) = &names.options.label {
             rendering.strip_periods = label.formatting.strip_periods.or(rendering.strip_periods);
         }
@@ -155,7 +156,7 @@ impl TemplateCompiler {
         Some(TemplateComponent::Date(TemplateDate {
             date: date_var,
             form,
-            rendering: self.convert_formatting(&date.formatting),
+            rendering: convert_formatting(&date.formatting),
             ..Default::default()
         }))
     }
@@ -178,7 +179,7 @@ impl TemplateCompiler {
             citum_schema::template::TemplateTerm {
                 term: term.term.clone(),
                 form: Some(term.form.clone()),
-                rendering: self.convert_formatting(&term.formatting),
+                rendering: convert_formatting(&term.formatting),
                 ..Default::default()
             },
         ))
@@ -196,7 +197,7 @@ impl TemplateCompiler {
                 form: ContributorForm::Long,
                 name_order: None, // Use global setting by default
                 delimiter: None,
-                rendering: self.convert_formatting(&var.formatting),
+                rendering: convert_formatting(&var.formatting),
                 ..Default::default()
             }));
         }
@@ -206,21 +207,21 @@ impl TemplateCompiler {
             return Some(TemplateComponent::Title(TemplateTitle {
                 title: title_type,
                 form: None,
-                rendering: self.convert_formatting(&var.formatting),
+                rendering: convert_formatting(&var.formatting),
                 ..Default::default()
             }));
         }
 
         // Check if it's a number
         if let Some(num_var) = self.map_variable_to_number(&var.variable) {
-            let mut rendering = self.convert_formatting(&var.formatting);
+            let mut rendering = convert_formatting(&var.formatting);
             if let Some(label) = &var.label {
                 rendering.strip_periods =
                     label.formatting.strip_periods.or(rendering.strip_periods);
             }
 
             // Extract label form if present
-            let label_form = var.label.as_ref().map(|l| self.map_label_form(&l.form));
+            let label_form = var.label.as_ref().map(|l| map_label_form(&l.form));
 
             return Some(TemplateComponent::Number(TemplateNumber {
                 number: num_var,
@@ -233,7 +234,7 @@ impl TemplateCompiler {
 
         // Check if it's a simple variable
         if let Some(simple_var) = self.map_variable_to_simple(&var.variable) {
-            let mut rendering = self.convert_formatting(&var.formatting);
+            let mut rendering = convert_formatting(&var.formatting);
 
             if let Some(label) = &var.label
                 && !matches!(simple_var, SimpleVariable::Locator)
