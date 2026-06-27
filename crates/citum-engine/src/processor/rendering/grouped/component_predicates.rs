@@ -14,7 +14,7 @@ use citum_schema::{
 
 /// Returns the first type-variant template whose selector matches `ref_type`,
 /// or `None` if there are no variants or none match.
-pub(super) fn resolve_type_variant<'a>(
+pub(in crate::processor::rendering) fn resolve_type_variant<'a>(
     type_variants: Option<
         &'a indexmap::IndexMap<citum_schema::template::TypeSelector, citum_schema::TemplateVariant>,
     >,

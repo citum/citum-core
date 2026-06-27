@@ -883,6 +883,69 @@ fn test_type_specific_rendering() {
     );
 }
 
+#[test]
+fn ungrouped_chapter_citation_uses_entry_dictionary_variant_alias() {
+    let mut bibliography = Bibliography::new();
+    bibliography.insert(
+        "chapter1".to_string(),
+        make_reference(
+            "chapter1",
+            "chapter",
+            Some(("Diderot", "Denis")),
+            1751,
+            "Encyclopedia Entry",
+        ),
+    );
+
+    let mut type_variants = IndexMap::new();
+    type_variants.insert(
+        TypeSelector::from_str("entry-dictionary").unwrap(),
+        vec![TemplateComponent::Title(TemplateTitle {
+            title: TitleType::Primary,
+            ..Default::default()
+        })]
+        .into(),
+    );
+
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Ungrouped Chapter Alias".to_string()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::Numeric),
+            ..Default::default()
+        }),
+        citation: Some(CitationSpec {
+            type_variants: Some(type_variants),
+            template: Some(vec![TemplateComponent::Number(TemplateNumber {
+                number: NumberVariable::CitationNumber,
+                ..Default::default()
+            })]),
+            wrap: Some(WrapPunctuation::Parentheses.into()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let processor = Processor::new(style, bibliography);
+
+    let citation = Citation {
+        items: vec![CitationItem {
+            id: "chapter1".to_string(),
+            ..Default::default()
+        }],
+        mode: CitationMode::NonIntegral,
+        ..Default::default()
+    };
+
+    assert_eq!(
+        processor
+            .process_citation(&citation)
+            .expect("ungrouped chapter citation should render"),
+        "(Encyclopedia Entry)"
+    );
+}
+
 #[allow(clippy::too_many_lines, reason = "integration test fixture setup")]
 #[test]
 fn test_bibliography_type_specific_rendering() {
