@@ -20,7 +20,7 @@ pub(crate) fn input_reference_to_csl_json(reference: &InputReference) -> LegacyR
     r.language = reference.language().map(|lang| lang.to_string());
     r.note = reference.note().map(|rt| rt.raw().to_string());
     r.doi = reference.doi();
-    r.issued = reference.csl_issued_date().and_then(|d| {
+    r.issued = reference.effective_issued_date().and_then(|d| {
         let year = d.0.get(0..4)?.parse::<i32>().ok()?;
         Some(DateVariable::year(year))
     });

@@ -37,7 +37,7 @@ The accessor methods in `InputReference` will be updated to match all variants.
 
 - **Files**: `crates/citum-schema-data/src/reference/mod.rs`
 - **Methods**: `original_date()`, `original_title()`, `original_publisher_str()`, `original_publisher_place()`.
-- **Logic Change**: In `original_date()`, the embedded reference's date will be fetched via `p.csl_issued_date()` instead of `p.issued()`. This ensures that if the original work only has a `created` date (common for unpublished works or archival items), it is correctly picked up as the "original date".
+- **Logic Change**: In `original_date()`, the embedded reference's date will be fetched via `p.effective_issued_date()` instead of `p.issued()`. This ensures that if the original work only has a `created` date (common for unpublished works or archival items), it is correctly picked up as the "original date".
 
 ### 3. Legacy CSL-JSON Migration
 The CSL-JSON to Citum conversion logic will be updated to read `original-title` from the structured `csl_legacy::csl_json::Reference.original_title` field and extract the remaining legacy `original-*` data (`original-author`, `original-date`, `original-publisher`, `original-publisher-place`) from the `extra` map, then populate the `original` struct.

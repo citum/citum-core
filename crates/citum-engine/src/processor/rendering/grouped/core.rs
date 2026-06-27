@@ -1155,7 +1155,7 @@ impl Renderer<'_> {
                 date: citum_schema::template::DateVariable::Issued,
                 ..
             })
-        ) || reference.csl_issued_date().is_some()
+        ) || reference.effective_issued_date().is_some()
             || self.preferred_no_date_term_form() != citum_schema::locale::TermForm::Long
         {
             return;

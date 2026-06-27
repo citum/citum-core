@@ -567,8 +567,9 @@ impl InputReference {
         }
     }
 
-    /// Return the effective issued date used for compatibility layers.
-    pub fn csl_issued_date(&self) -> Option<EdtfString> {
+    /// Return the effective issued date, falling back to the created date when
+    /// no explicit issued date is present.
+    pub fn effective_issued_date(&self) -> Option<EdtfString> {
         self.issued().or_else(|| self.created())
     }
 
@@ -1329,7 +1330,7 @@ impl InputReference {
 
     /// Return the original publication date.
     pub fn original_date(&self) -> Option<EdtfString> {
-        self.original_embedded()?.csl_issued_date()
+        self.original_embedded()?.effective_issued_date()
     }
 
     /// Return the original title.

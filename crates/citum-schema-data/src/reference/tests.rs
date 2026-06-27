@@ -446,11 +446,11 @@ fn unpublished_legacy_records_promote_issued_to_created() {
 
     assert_eq!(reference.created().unwrap().0, "1973-01-01");
     assert_eq!(reference.issued().unwrap().0, "1973-01-01");
-    assert_eq!(reference.csl_issued_date().unwrap().0, "1973-01-01");
+    assert_eq!(reference.effective_issued_date().unwrap().0, "1973-01-01");
 }
 
 #[test]
-fn created_date_backfills_csl_issued_compatibility() {
+fn created_date_backfills_effective_issued_date() {
     let reference = InputReference::Monograph(Box::new(Monograph {
         id: Some("created-only".into()),
         r#type: MonographType::Manuscript,
@@ -461,7 +461,7 @@ fn created_date_backfills_csl_issued_compatibility() {
 
     assert_eq!(reference.issued(), None);
     assert_eq!(reference.created().unwrap().0, "1954-05-17");
-    assert_eq!(reference.csl_issued_date().unwrap().0, "1954-05-17");
+    assert_eq!(reference.effective_issued_date().unwrap().0, "1954-05-17");
 }
 
 #[test]

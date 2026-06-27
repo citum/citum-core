@@ -43,7 +43,7 @@ names, joined by commas, with the et-al suffix included when the name list is
 abbreviated by the style's `shorten` config. This matches what the style will
 visually show, so disambiguation keys track rendered output without re-rendering.
 
-**Year key** (`build_group_key`): the `issued` year (`csl_issued_date()`),
+**Year key** (`build_group_key`): the `issued` year (`effective_issued_date()`),
 appended to the author key. **No other date field participates in the key.**
 
 #### Year-suffix when the original-publication date differs
