@@ -10,13 +10,14 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use super::CliResult;
 use super::catalog::{
-    CatalogSourceFilter, StyleCatalogPage, StyleCatalogRow, paginate_style_catalog_rows,
-    print_style_catalog_rows, style_catalog_entries, style_row_matches_query,
+    CatalogSourceFilter, StyleCatalogPage, paginate_style_catalog_rows, print_style_catalog_rows,
+    style_catalog_entries, style_row_matches_query,
 };
 use super::lint::run_lint_style;
 use super::style_install::{CliStyleBrowserActions, run_style_add, run_style_remove};
 use crate::args::{StyleCatalogFormat, StyleCommands};
 use crate::style_browser::{StyleBrowserConfig, run_style_browser};
+use crate::style_catalog::StyleCatalogRow;
 use citum_schema::{Locale, Style};
 use citum_store::{StoreConfig, StoreResolver, platform_data_dir};
 use std::error::Error;
