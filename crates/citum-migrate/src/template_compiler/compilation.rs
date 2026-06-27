@@ -6,6 +6,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use super::{
     BranchContext, ComponentOccurrence, IndexMap, Node, TemplateCompiler, TemplateComponent,
     TemplateGroup,
+    formatting::{
+        apply_wrap_to_component, convert_formatting, extract_source_order, get_component_rendering,
+        infer_wrap_from_affixes, map_delimiter, set_component_rendering,
+    },
 };
 
 impl TemplateCompiler {
@@ -26,20 +30,20 @@ impl TemplateCompiler {
         let mut next_comp = self.compile_node(next_node)?;
 
         // Merge text into prefix
-        let mut rendering = self.get_component_rendering(&next_comp);
+        let mut rendering = get_component_rendering(&next_comp);
         let mut new_prefix = text_value.to_string();
         if let Some(p) = rendering.prefix {
             new_prefix.push_str(&p);
         }
         rendering.prefix = Some(new_prefix);
-        self.set_component_rendering(&mut next_comp, rendering);
+        set_component_rendering(&mut next_comp, rendering);
 
         // Apply inherited wrap if applicable
         if inherited_wrap.0.is_some() && matches!(&next_comp, TemplateComponent::Date(_)) {
-            self.apply_wrap_to_component(&mut next_comp, inherited_wrap);
+            apply_wrap_to_component(&mut next_comp, inherited_wrap);
         }
 
-        let source_order = self.extract_source_order(next_node);
+        let source_order = extract_source_order(next_node);
         Some((next_comp, source_order))
     }
 
@@ -86,9 +90,9 @@ impl TemplateCompiler {
             if let Some(mut component) = self.compile_node(node) {
                 // Apply inherited wrap to date components
                 if inherited_wrap.0.is_some() && matches!(&component, TemplateComponent::Date(_)) {
-                    self.apply_wrap_to_component(&mut component, inherited_wrap);
+                    apply_wrap_to_component(&mut component, inherited_wrap);
                 }
-                let source_order = self.extract_source_order(node);
+                let source_order = extract_source_order(node);
                 occurrences.push(ComponentOccurrence {
                     component,
                     context: context.clone(),
@@ -150,9 +154,9 @@ impl TemplateCompiler {
 
             if let Some(mut component) = self.compile_node(node) {
                 if inherited_wrap.0.is_some() && matches!(&component, TemplateComponent::Date(_)) {
-                    self.apply_wrap_to_component(&mut component, inherited_wrap);
+                    apply_wrap_to_component(&mut component, inherited_wrap);
                 }
-                let source_order = self.extract_source_order(node);
+                let source_order = extract_source_order(node);
                 occurrences.push(ComponentOccurrence {
                     component,
                     context: context.clone(),
@@ -194,7 +198,7 @@ impl TemplateCompiler {
         occurrences: &mut Vec<ComponentOccurrence>,
     ) {
         // Check if this group has its own wrap
-        let group_wrap = Self::infer_wrap_from_affixes(&g.formatting.prefix, &g.formatting.suffix);
+        let group_wrap = infer_wrap_from_affixes(&g.formatting.prefix, &g.formatting.suffix);
         let effective_wrap = if group_wrap.0.is_some() {
             group_wrap.clone()
         } else {
@@ -238,8 +242,8 @@ impl TemplateCompiler {
         if (should_be_list || must_preserve_as_group) && !group_components.is_empty() {
             let list = TemplateComponent::Group(TemplateGroup {
                 group: group_components,
-                delimiter: self.map_delimiter(&g.delimiter),
-                rendering: self.convert_formatting(&g.formatting),
+                delimiter: map_delimiter(&g.delimiter),
+                rendering: convert_formatting(&g.formatting),
                 ..Default::default()
             });
             let source_order = g.source_order;
@@ -265,7 +269,7 @@ impl TemplateCompiler {
         context: &BranchContext,
         occurrences: &mut Vec<ComponentOccurrence>,
     ) {
-        let group_wrap = Self::infer_wrap_from_affixes(&g.formatting.prefix, &g.formatting.suffix);
+        let group_wrap = infer_wrap_from_affixes(&g.formatting.prefix, &g.formatting.suffix);
         let effective_wrap = if group_wrap.0.is_some() {
             group_wrap.clone()
         } else {
@@ -302,8 +306,8 @@ impl TemplateCompiler {
         if (should_be_list || must_preserve_as_group) && !group_components.is_empty() {
             let list = TemplateComponent::Group(TemplateGroup {
                 group: group_components,
-                delimiter: self.map_delimiter(&g.delimiter),
-                rendering: self.convert_formatting(&g.formatting),
+                delimiter: map_delimiter(&g.delimiter),
+                rendering: convert_formatting(&g.formatting),
                 ..Default::default()
             });
             occurrences.push(ComponentOccurrence {
@@ -473,15 +477,15 @@ impl TemplateCompiler {
 
             if has_default {
                 // Component appears in default branch → visible by default
-                let mut base_rendering = self.get_component_rendering(&merged);
+                let mut base_rendering = get_component_rendering(&merged);
                 base_rendering.suppress = Some(false);
-                self.set_component_rendering(&mut merged, base_rendering);
+                set_component_rendering(&mut merged, base_rendering);
             } else {
                 // Component ONLY in type-specific branches → hidden by default
                 // Type-variants entries (from compile_for_type) handle per-type visibility.
-                let mut base_rendering = self.get_component_rendering(&merged);
+                let mut base_rendering = get_component_rendering(&merged);
                 base_rendering.suppress = Some(true);
-                self.set_component_rendering(&mut merged, base_rendering);
+                set_component_rendering(&mut merged, base_rendering);
             }
 
             // Position the merged component by its default-branch occurrence when
