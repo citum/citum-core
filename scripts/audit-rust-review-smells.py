@@ -48,7 +48,7 @@ class Finding:
 
 @dataclass(frozen=True)
 class Rule:
-    """A line-oriented advisory rule."""
+    """An advisory rule matched per line or, when ``multiline``, per statement."""
 
     name: str
     category: str
@@ -56,6 +56,7 @@ class Rule:
     pattern: re.Pattern[str]
     message: str
     include_kinds: tuple[str, ...] = ("prod", "hot-path", "test", "bench", "fixture")
+    multiline: bool = False
 
 
 RULES = (
@@ -100,10 +101,10 @@ RULES = (
         name="ignored-test",
         category="test-independence",
         severity="high",
-        pattern=re.compile(r"#\s*\[\s*ignore(?:\s*[=\]])"),
+        pattern=re.compile(r"#\s*\[\s*ignore\s*\]"),
         message=(
-            "Ignored tests need an explicit reason and tracking path; otherwise they "
-            "can hide regressions."
+            "Bare #[ignore] needs an explicit reason (#[ignore = \"...\"]) and a "
+            "tracking path; otherwise it can hide regressions."
         ),
         include_kinds=("test",),
     ),
@@ -121,8 +122,8 @@ RULES = (
             "must include '_contains_' or '_partial_'. See CODING_STANDARDS.md."
         ),
         include_kinds=("test",),
+        multiline=True,
     ),
-
     Rule(
         name="expected-derived-from-actual",
         category="test-independence",
@@ -137,6 +138,7 @@ RULES = (
             "literal behavior contract, not from the actual output under test."
         ),
         include_kinds=("test",),
+        multiline=True,
     ),
 )
 
@@ -208,9 +210,22 @@ def dense_literal_to_string_findings(path: Path, lines: list[str], path_kind: st
     if path_kind not in {"prod", "hot-path"}:
         return []
 
-    # Ignore match arms (ending in =>)
-    literal_pattern = re.compile(r'(?<!=>\s)' + SHORT_LITERAL + r"\.to_string\(\)")
-    test_like_pattern = re.compile(r"\b(?:assert|panic)!\(|#\s*\[\s*(?:test|rstest|case|cfg\(test\))")
+    # Drop the trailing inline test module: literals there are test data, not
+    # production churn. Test modules conventionally sit after the first #[cfg(test)].
+    cfg_test_pattern = re.compile(r"#\s*\[\s*cfg\(\s*test\s*\)")
+    cutoff = next(
+        (i for i, line in enumerate(lines) if cfg_test_pattern.search(line)),
+        len(lines),
+    )
+    lines = lines[:cutoff]
+
+    literal_pattern = re.compile(SHORT_LITERAL + r"\.to_string\(\)")
+    # Lines that build owned data are not churn: assertions of every flavour and
+    # match arms (`=>`), which typically construct owned enum/struct payloads.
+    test_like_pattern = re.compile(
+        r"\b(?:assert(?:_eq|_ne)?|debug_assert(?:_eq|_ne)?|panic)!\(|"
+        r"#\s*\[\s*(?:test|rstest|case|cfg\(test\))|=>"
+    )
     findings: list[Finding] = []
     window_size = 25
     threshold = 6 if path_kind == "hot-path" else 10
@@ -251,6 +266,26 @@ def dense_literal_to_string_findings(path: Path, lines: list[str], path_kind: st
     return findings
 
 
+def iter_statements(lines: list[str]) -> Iterable[tuple[int, str]]:
+    """Yield ``(start_line, text)`` for each `;`-terminated statement.
+
+    Lines are joined with spaces so multi-line assertions are matchable as a
+    single chunk; the reported line is where the statement began.
+    """
+
+    buffer: list[str] = []
+    start = 0
+    for line_number, line in enumerate(lines, start=1):
+        if not buffer:
+            start = line_number
+        buffer.append(line)
+        if ";" in line:
+            yield start, " ".join(buffer)
+            buffer = []
+    if buffer:
+        yield start, " ".join(buffer)
+
+
 def scan_file(path: Path) -> list[Finding]:
     """Scan one Rust file for advisory findings."""
 
@@ -260,26 +295,35 @@ def scan_file(path: Path) -> list[Finding]:
     except UnicodeDecodeError:
         lines = path.read_text(errors="replace").splitlines()
 
+    rel = path.relative_to(ROOT).as_posix()
+
+    def make(rule: Rule, line: int, snippet: str) -> Finding:
+        return Finding(
+            severity=rule.severity,
+            category=rule.category,
+            path_kind=path_kind,
+            path=rel,
+            line=line,
+            rule=rule.name,
+            message=rule.message,
+            snippet=snippet,
+        )
+
+    active = [rule for rule in RULES if path_kind in rule.include_kinds]
+    line_rules = [rule for rule in active if not rule.multiline]
+    statement_rules = [rule for rule in active if rule.multiline]
+
     findings: list[Finding] = []
     for line_number, line in enumerate(lines, start=1):
-        stripped = line.strip()
-        for rule in RULES:
-            if path_kind not in rule.include_kinds:
-                continue
-            if not rule.pattern.search(line):
-                continue
-            findings.append(
-                Finding(
-                    severity=rule.severity,
-                    category=rule.category,
-                    path_kind=path_kind,
-                    path=path.relative_to(ROOT).as_posix(),
-                    line=line_number,
-                    rule=rule.name,
-                    message=rule.message,
-                    snippet=stripped,
-                )
-            )
+        for rule in line_rules:
+            if rule.pattern.search(line):
+                findings.append(make(rule, line_number, line.strip()))
+
+    if statement_rules:
+        for start, text in iter_statements(lines):
+            for rule in statement_rules:
+                if rule.pattern.search(text):
+                    findings.append(make(rule, start, " ".join(text.split())))
 
     findings.extend(dense_literal_to_string_findings(path, lines, path_kind))
     return findings

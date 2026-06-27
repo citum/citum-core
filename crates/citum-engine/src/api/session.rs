@@ -1273,7 +1273,7 @@ mod tests {
             result
                 .affected_citations
                 .iter()
-                .all(|c| c.text != "roe2022" && !c.ref_ids.contains(&"roe2022".to_string())),
+                .all(|c| c.text != "roe2022" && !c.ref_ids.iter().any(|r| r == "roe2022")),
             "nocite ref should not appear in any formatted citation"
         );
         // and: the uncited, non-nocite ref (doe2021) is absent from bibliography

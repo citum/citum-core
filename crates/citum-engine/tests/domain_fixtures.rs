@@ -88,23 +88,18 @@ fn test_legal_fixture_is_covered_in_processor_tests() {
         "Brown case citation should have case name and year"
     );
     // Verify Civil Rights Act includes title and year
-    assert!(
-        civil.contains("Civil Rights Act of 1964")
-            && civil.starts_with('(')
-            && civil.ends_with(')'),
+    assert_eq!(
+        civil, "(\u{201C}Civil Rights Act of 1964,\u{201D} 1964)",
         "Civil Rights Act citation should include act name within parentheses"
     );
     // Verify Treaty has parties and date
-    assert!(
-        treaty.contains("Treaty of Versailles") && treaty.contains("1919"),
+    assert_eq!(
+        treaty, "(_Treaty of Versailles_, 1919)",
         "Treaty citation should include treaty name and date"
     );
     // Verify bibliography includes the Brown case reporter form.
     assert!(
-        rendered_bib.contains("Brown v. Board of Education")
-            && rendered_bib.contains("(1954)")
-            && rendered_bib.contains("(vol. 347)")
-            && rendered_bib.contains("_U.S._, 483"),
+        rendered_bib.contains("Brown v. Board of Education. (1954) (vol. 347). _U.S._, 483."),
         "Bibliography should include the Brown case title, year, volume, and reporter"
     );
 }
@@ -136,33 +131,35 @@ fn test_scientific_fixture_is_covered_in_processor_tests() {
     let rendered_bib = processor.render_bibliography();
 
     // Verify patent includes inventor name and year
-    assert!(
-        patent.contains("Pavlovic") && patent.contains("2008"),
+    assert_eq!(
+        patent, "(Pavlovic, 2008)",
         "Patent citation should include inventor name and year"
     );
     // Verify dataset includes creator and year
-    assert!(
-        dataset.contains("Irino") && dataset.contains("2009"),
+    assert_eq!(
+        dataset, "(Irino & Tada, 2009)",
         "Dataset citation should include creator name and year"
     );
     // Verify standard includes standard name and year
-    assert!(
-        standard.contains("IEEE") && standard.contains("2008"),
+    assert_eq!(
+        standard, "(\u{201C}IEEE Standard for Floating-Point Arithmetic,\u{201D} 2008)",
         "Standard citation should include standards body and year"
     );
     // Verify software includes team/author and year
-    assert!(
-        software.contains("Core Team") && software.contains("2021"),
+    assert_eq!(
+        software, "(R Core Team, 2021)",
         "Software citation should include team name and year"
     );
-    // Verify bibliography includes resource type labels
+    // Verify bibliography includes resource type labels (full dataset entry >= 30 chars)
     assert!(
-        rendered_bib.contains("[Dataset]"),
+        rendered_bib.contains(
+            "Chemical and mineral compositions of sediments from ODP Site 127-797 [Dataset]."
+        ),
         "Bibliography should label dataset entries"
     );
     assert!(
-        rendered_bib.contains("Patent"),
-        "Bibliography should include patent information"
+        rendered_bib.contains("_Bicycle with adjustable suspension_. U.S. Patent No. 7,347,809."),
+        "Bibliography should include full patent entry"
     );
 }
 
@@ -180,23 +177,18 @@ fn test_multilingual_fixture_is_covered_in_processor_tests() {
     let processor = Processor::new(style, bibliography);
     let rendered_bib = processor.render_bibliography();
 
-    // Verify Vietnamese names with diacritics are preserved
+    // Verify Vietnamese names with diacritics and publishers are preserved (full entry ≥ 30 chars)
     assert!(
-        rendered_bib.contains("Nguyễn"),
-        "Bibliography should render Vietnamese names with diacritics"
+        rendered_bib.contains("Nguyễn, V. A. (2020). _Lịch sử Việt Nam_. Nhà xuất bản Giáo dục."),
+        "Bibliography should render Vietnamese names and publishers with diacritics"
     );
     assert!(
-        rendered_bib.contains("Trần"),
-        "Bibliography should include other Vietnamese names"
-    );
-    // Verify multilingual content is included
-    assert!(
-        rendered_bib.contains("Nhà xuất bản"),
-        "Bibliography should include Vietnamese publisher names"
+        rendered_bib.contains("Trần, T. B. (2019). _Văn hóa truyền thống_. Nhà xuất bản Văn hóa."),
+        "Bibliography should include other Vietnamese entries with publishers"
     );
     // Verify English-language references are also included
     assert!(
-        rendered_bib.contains("Oxford University Press"),
+        rendered_bib.contains("Smith, J. (2020). _Vietnamese History_. Oxford University Press."),
         "Bibliography should include English publisher names"
     );
 }
@@ -243,21 +235,19 @@ fn test_humanities_note_fixture_preserves_archive_and_interview_fields() {
             && archive_info.place.as_deref() == Some("Jerusalem"),
         "manuscript fixture should preserve structured archive name, location, and place"
     );
-    assert!(
-        manuscript.contains("The Community Rule (1QS)")
-            && manuscript.contains("Manuscript scroll")
-            && manuscript.contains("101 BC"),
+    assert_eq!(
+        manuscript,
+        "\u{201C}The Community Rule (1QS)\u{201D}, Manuscript scroll, 101 BC, Shrine of the Book, Israel Antiquities Authority, Jerusalem.",
         "manuscript citation should continue rendering the manuscript reference"
     );
-    assert!(
-        interview.contains("interview by Alessandro Fontana")
-            && interview.contains("Power/Knowledge: Selected Interviews and Other Writings")
-            && interview.contains("115"),
+    assert_eq!(
+        interview,
+        "Michel Foucault, Truth and power, interview by Alessandro Fontana (Interviewer), _Power/Knowledge: Selected Interviews and Other Writings_ (New York), Pantheon Books, 1977, 115.",
         "interview citation should include interviewer, container title, and locator"
     );
-    assert!(
-        letter.contains("to Paul de Man")
-            && letter.contains("University of California, Irvine, Critical Theory Archive"),
+    assert_eq!(
+        letter,
+        "Jacques Derrida, Letter to Paul de ManUniversity of California, Irvine, Critical Theory Archive, March 15, to Paul de Man.",
         "personal communication citation should include recipient and archive"
     );
 }
@@ -292,10 +282,9 @@ fn test_taylor_and_francis_author_date_wrapper_preserves_prefixed_multi_cites() 
         .process_citation(&citation)
         .expect("prefixed multi-cite should render");
 
-    assert!(
-        rendered.contains("cf. LeCun, Bengio, and Hinton 2015")
-            && !rendered.contains("cf. LeCun et al"),
-        "prefixed multi-cites should retain the full three-author form: {rendered}"
+    assert_eq!(
+        rendered, "(Kuhn 1962 , 44; cf. LeCun, Bengio, and Hinton 2015 , 437)",
+        "prefixed multi-cites should retain the full three-author form"
     );
 }
 
@@ -311,22 +300,20 @@ fn test_taylor_and_francis_author_date_wrapper_preserves_media_and_translation_d
     let rendered_bib = processor.render_bibliography();
 
     assert!(
-        rendered_bib.contains("The Arrival of a Train at La Ciotat Station")
-            && rendered_bib.contains("Short film")
-            && rendered_bib.contains("Directed by Louis Lumière"),
+        rendered_bib.contains(
+            "The Arrival of a Train at La Ciotat Station. Short film. Directed by Louis Lumière."
+        ),
         "motion pictures should retain genre and director detail"
     );
     assert!(
-        rendered_bib.contains("The Future of Artificial Intelligence")
-            && rendered_bib.contains("Interview by Stephen Colbert")
-            && rendered_bib.contains("Video interview")
-            && rendered_bib.contains("https://example.com/interview"),
+        rendered_bib.contains(
+            "The Future of Artificial Intelligence. Interview by Stephen Colbert (Interviewer). Video interview. https://example.com/interview."
+        ),
         "interviews should retain interviewer, genre, and url detail"
     );
     assert!(
-        rendered_bib.contains("Metamorphosis")
-            && rendered_bib.contains("Translated by David Wyllie")
-            && rendered_bib.contains("Kurt Wolff Verlag"),
+        rendered_bib
+            .contains("Metamorphosis. Translated by David Wyllie. Leipzig: Kurt Wolff Verlag"),
         "translated books should retain translator detail"
     );
 }
