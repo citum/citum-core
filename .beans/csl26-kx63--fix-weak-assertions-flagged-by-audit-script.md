@@ -5,10 +5,18 @@ status: draft
 type: epic
 priority: normal
 created_at: 2026-04-27T20:17:18Z
-updated_at: 2026-04-27T20:17:25Z
+updated_at: 2026-06-27T18:07:30Z
 ---
 
 160 findings total from `audit-rust-review-smells.py` as of 2026-04-27.
+
+**2026-06-27 update (PR fix/audit-rust-review-smells-accuracy):**
+Script accuracy improved — statement-level scanning now detects multi-line
+`assert!(...contains(...))` calls. With this fix the true finding count is
+**191** (was 14 with the old scanner; prior 160 figure was from a manual pass).
+session.rs and domain_fixtures.rs (20 findings) cleared in the same PR.
+Remaining 171 findings split across document/tests.rs (79), processor/tests.rs (64),
+bibliography.rs (21), and other files — tracked in tracks below.
 
 ## Track 1 — contains() assertions (101 high, test code)
 
