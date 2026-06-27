@@ -16,6 +16,7 @@ use citum_schema::citation::CitationLocator;
 use citum_schema::locale::Locale;
 use citum_schema::options::{Config, bibliography::BibliographyConfig};
 use citum_schema::template::TemplateComponent;
+use grouped::component_predicates::resolve_type_variant;
 use indexmap::IndexMap;
 use std::borrow::Cow;
 use std::cell::RefCell;
@@ -118,6 +119,22 @@ pub struct TemplateRenderRequest<'a> {
     pub org_abbreviation_state: Option<citum_schema::citation::IntegralNameState>,
     /// First note number for this reference (note styles, subsequent position).
     pub first_reference_note_number: Option<u32>,
+}
+
+/// Per-item state resolved for rendering one ungrouped citation item.
+struct UngroupedItemRenderState<'a> {
+    reference: &'a Reference,
+    template: Cow<'a, [TemplateComponent]>,
+    delimiter: &'a str,
+}
+
+/// Shared, citation-wide parameters threaded into each ungrouped item render.
+#[derive(Clone, Copy)]
+struct UngroupedItemRenderParams<'a> {
+    mode: &'a citum_schema::citation::CitationMode,
+    suppress_author: bool,
+    position: Option<&'a citum_schema::citation::Position>,
+    note_start_text_case: Option<citum_schema::NoteStartTextCase>,
 }
 
 #[derive(Clone, Default)]
@@ -375,6 +392,25 @@ impl<'a> Renderer<'a> {
         }
     }
 
+    /// Build a citation chunk for a single item from its rendered content.
+    fn build_item_chunk<F>(
+        &self,
+        fmt: &F,
+        item: &crate::reference::CitationItem,
+        content: String,
+    ) -> Option<(Vec<String>, String)>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        self.build_citation_chunk(
+            fmt,
+            vec![item.id.clone()],
+            content,
+            item.prefix.as_deref(),
+            item.suffix.as_deref(),
+        )
+    }
+
     /// Create a template render request for a single citation item.
     fn citation_render_request<'b>(
         &self,
@@ -423,6 +459,35 @@ impl<'a> Renderer<'a> {
                     Some(delimiter),
                 )
             })
+    }
+
+    /// Resolve the reference, template, and delimiter needed to render one
+    /// ungrouped citation item, applying type-variant and language fallbacks.
+    fn resolve_ungrouped_item_render_state<'b>(
+        &'b self,
+        item: &'b crate::reference::CitationItem,
+        spec: &'b citum_schema::CitationSpec,
+        intra_delimiter: &'b str,
+    ) -> Result<UngroupedItemRenderState<'b>, ProcessorError> {
+        let reference = self
+            .bibliography
+            .get(&item.id)
+            .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
+        let ref_type = reference.ref_type();
+        let item_language = crate::values::effective_item_language(reference);
+        let template = resolve_type_variant(spec.type_variants.as_ref(), &ref_type)
+            .map(Cow::Borrowed)
+            .or_else(|| {
+                spec.resolve_template_for_language(item_language.as_deref())
+                    .map(Cow::Owned)
+            })
+            .unwrap_or(Cow::Borrowed(&[]));
+
+        Ok(UngroupedItemRenderState {
+            reference,
+            template,
+            delimiter: spec.delimiter.as_deref().unwrap_or(intra_delimiter),
+        })
     }
 
     /// Initialize render options for a citation.
@@ -491,6 +556,51 @@ impl<'a> Renderer<'a> {
         }
     }
 
+    /// Render one item as author + citation number for numeric integral cites.
+    fn render_numeric_integral_item_chunk_with_format<F>(
+        &self,
+        fmt: &F,
+        item: &crate::reference::CitationItem,
+    ) -> Result<Option<(Vec<String>, String)>, ProcessorError>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let reference = self
+            .bibliography
+            .get(&item.id)
+            .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
+        let citation_number = self.get_or_assign_citation_number(&item.id);
+        let item_str = self.render_author_number_for_numeric_integral_with_format::<F>(
+            reference,
+            item,
+            citation_number,
+        );
+        Ok(self.build_item_chunk(fmt, item, item_str))
+    }
+
+    /// Render one ungrouped item from its resolved template state.
+    fn render_template_item_chunk_with_format<F>(
+        &self,
+        fmt: &F,
+        item: &crate::reference::CitationItem,
+        state: UngroupedItemRenderState<'_>,
+        params: UngroupedItemRenderParams<'_>,
+    ) -> Option<(Vec<String>, String)>
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        let request = self.citation_render_request(
+            item,
+            &state.template,
+            params.mode,
+            params.suppress_author,
+            params.position,
+            params.note_start_text_case,
+        );
+        self.render_item_from_template_with_format::<F>(state.reference, request, state.delimiter)
+            .and_then(|item_str| self.build_item_chunk(fmt, item, item_str))
+    }
+
     /// Render citation items without grouping, using plain text format.
     ///
     /// # Errors
@@ -548,71 +658,24 @@ impl<'a> Renderer<'a> {
 
         // For numeric styles with integral mode, render author + citation number instead.
         let use_author_number = self.should_render_author_number_for_numeric_integral(mode);
+        let params = UngroupedItemRenderParams {
+            mode,
+            suppress_author,
+            position,
+            note_start_text_case,
+        };
 
         for item in items {
-            let reference = self
-                .bibliography
-                .get(&item.id)
-                .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
-
-            if use_author_number {
-                // Numeric integral: render author + citation number
-                let citation_number = self.get_or_assign_citation_number(&item.id);
-                let item_str = self.render_author_number_for_numeric_integral_with_format::<F>(
-                    reference,
-                    item,
-                    citation_number,
-                );
-                if let Some(chunk) = self.build_citation_chunk(
-                    &fmt,
-                    vec![item.id.clone()],
-                    item_str,
-                    item.prefix.as_deref(),
-                    item.suffix.as_deref(),
-                ) {
-                    chunks.push(chunk);
-                }
+            let chunk = if use_author_number {
+                self.render_numeric_integral_item_chunk_with_format::<F>(&fmt, item)?
             } else {
-                // Standard rendering: use template with citation number
-                let item_language = crate::values::effective_item_language(reference);
-                let default_template = spec.resolve_template_for_language(item_language.as_deref());
+                let state =
+                    self.resolve_ungrouped_item_render_state(item, spec, intra_delimiter)?;
+                self.render_template_item_chunk_with_format::<F>(&fmt, item, state, params)
+            };
 
-                let ref_type = reference.ref_type();
-                let matched_type_template = spec.type_variants.as_ref().and_then(|type_variants| {
-                    let mut matched_template = None;
-                    for (selector, template) in type_variants {
-                        if selector.matches(&ref_type) {
-                            matched_template = template.clone().into_template();
-                            break;
-                        }
-                    }
-                    matched_template
-                });
-
-                let template = matched_type_template.or(default_template);
-                let effective_template = template.as_deref().unwrap_or(&[]);
-                let effective_delim = spec.delimiter.as_deref().unwrap_or(intra_delimiter);
-                let request = self.citation_render_request(
-                    item,
-                    effective_template,
-                    mode,
-                    suppress_author,
-                    position,
-                    note_start_text_case,
-                );
-                if let Some(item_str) = self.render_item_from_template_with_format::<F>(
-                    reference,
-                    request,
-                    effective_delim,
-                ) && let Some(chunk) = self.build_citation_chunk(
-                    &fmt,
-                    vec![item.id.clone()],
-                    item_str,
-                    item.prefix.as_deref(),
-                    item.suffix.as_deref(),
-                ) {
-                    chunks.push(chunk);
-                }
+            if let Some(chunk) = chunk {
+                chunks.push(chunk);
             }
         }
 
