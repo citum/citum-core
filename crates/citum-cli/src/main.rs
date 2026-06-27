@@ -14,6 +14,7 @@ mod args;
 mod commands;
 mod output;
 mod style_browser;
+mod style_catalog;
 mod style_resolver;
 mod table;
 mod typst_pdf;

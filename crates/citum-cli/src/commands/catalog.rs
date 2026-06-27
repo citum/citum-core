@@ -3,68 +3,17 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
-//! Style catalog: row type, source filter, pagination, formatting, and
-//! source-aggregating lookup.
+//! Style catalog source filtering, pagination, formatting, and aggregation.
 
 use super::CliResult;
 use super::registry::load_registry_chain;
 use crate::args::StyleCatalogFormat;
+use crate::style_catalog::StyleCatalogRow;
 use crate::table::build_table;
 use citum_schema::RegistryEntry;
 use citum_store::{StoreConfig, StoreResolver, platform_data_dir};
-use serde::Serialize;
 use std::error::Error;
 use std::fmt::Write as _;
-
-/// A single row in a style listing. `pub(crate)` so `style_browser` can take
-/// rows in its config.
-#[derive(Clone, Debug, Serialize)]
-pub(crate) struct StyleCatalogRow {
-    pub(crate) source: String,
-    pub(crate) id: String,
-    pub(crate) aliases: Vec<String>,
-    pub(crate) title: Option<String>,
-    pub(crate) description: Option<String>,
-    pub(crate) fields: Vec<String>,
-    pub(crate) url: Option<String>,
-}
-
-impl StyleCatalogRow {
-    /// Build a row from a registry entry, resolving the title from embedded
-    /// style metadata when the entry omits one.
-    pub(super) fn from_entry(source: &str, entry: &RegistryEntry) -> Self {
-        let title = entry.title.clone().or_else(|| {
-            entry.builtin.as_ref().and_then(|builtin| {
-                citum_schema::embedded::get_embedded_style(builtin)
-                    .and_then(Result::ok)
-                    .and_then(|style| style.info.title)
-            })
-        });
-
-        Self {
-            source: source.to_string(),
-            id: entry.id.clone(),
-            aliases: entry.aliases.clone(),
-            title,
-            description: entry.description.clone(),
-            fields: entry.fields.clone(),
-            url: entry.url.clone(),
-        }
-    }
-
-    /// Build a row for a user-installed style, where only the id is known.
-    pub(super) fn installed(id: String) -> Self {
-        Self {
-            source: "installed".to_string(),
-            id,
-            aliases: Vec::new(),
-            title: None,
-            description: None,
-            fields: Vec::new(),
-            url: None,
-        }
-    }
-}
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(super) enum CatalogSourceFilter<'a> {

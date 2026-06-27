@@ -21,8 +21,6 @@ mod style;
 mod style_install;
 mod util;
 
-pub(crate) use catalog::StyleCatalogRow;
-
 use crate::args::{CheckArgs, Cli, Commands, InputFormat, RefsFormat, RenderDocArgs};
 use citum_io::RefsFormat as EngineRefsFormat;
 use clap::{CommandFactory, Parser};

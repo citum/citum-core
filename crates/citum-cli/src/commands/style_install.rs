@@ -6,11 +6,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! Install and remove user-installed styles, and the style-browser action shim.
 
 use super::CliResult;
-use super::catalog::{
-    CatalogSourceFilter, StyleCatalogRow, style_catalog_entries, style_row_matches_query,
-};
+use super::catalog::{CatalogSourceFilter, style_catalog_entries, style_row_matches_query};
 use super::util::{confirm, validate_resource_name};
 use crate::style_browser::StyleBrowserActions;
+use crate::style_catalog::StyleCatalogRow;
 use crate::style_resolver::load_any_style;
 use citum_schema::Style;
 use citum_store::{StoreConfig, StoreResolver, platform_data_dir};
