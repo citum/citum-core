@@ -86,7 +86,7 @@ fn generate_name_part(reference: &Reference, params: &LabelParams) -> String {
 
 fn generate_year_part(reference: &Reference, year_digits: u8) -> String {
     reference
-        .csl_issued_date()
+        .effective_issued_date()
         .and_then(|d| d.year().parse::<i32>().ok())
         .map(|y| {
             let y_str = y.to_string();

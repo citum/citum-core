@@ -739,7 +739,7 @@ impl ComponentValues for TemplateDate {
     ) -> Option<ProcValues<F::Output>> {
         let fmt = F::default();
         let date_opt: Option<EdtfString> = match self.date {
-            TemplateDateVar::Issued => reference.csl_issued_date(),
+            TemplateDateVar::Issued => reference.effective_issued_date(),
             TemplateDateVar::Accessed => reference.accessed(),
             TemplateDateVar::OriginalPublished => reference.original_date(),
             _ => None,

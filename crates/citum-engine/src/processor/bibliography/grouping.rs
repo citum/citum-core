@@ -802,7 +802,7 @@ impl Processor {
                 format_contributors_short(&names, &options)
             }),
             year: reference
-                .csl_issued_date()
+                .effective_issued_date()
                 .map(|issued| issued.year().clone()),
             title: reference.title().map(|title| {
                 use citum_schema::reference::types::{MultilingualString, Title};
