@@ -41,6 +41,62 @@ use citum_schema::{
     },
 };
 
+fn assert_output_includes(output: &str, expected: &str, context: &str) {
+    assert_ne!(
+        output.find(expected),
+        None,
+        "{context}\nexpected fragment: {expected:?}\noutput:\n{output}"
+    );
+}
+
+fn assert_output_excludes(output: &str, unexpected: &str, context: &str) {
+    assert_eq!(
+        output.find(unexpected),
+        None,
+        "{context}\nunexpected fragment: {unexpected:?}\noutput:\n{output}"
+    );
+}
+
+fn assert_output_has_line(output: &str, expected: &str, context: &str) {
+    assert!(
+        output.lines().any(|line| line == expected),
+        "{context}\nexpected line: {expected:?}\noutput:\n{output}"
+    );
+}
+
+fn assert_output_lacks_line(output: &str, unexpected: &str, context: &str) {
+    assert!(
+        output.lines().all(|line| line != unexpected),
+        "{context}\nunexpected line: {unexpected:?}\noutput:\n{output}"
+    );
+}
+
+fn assert_output_includes_all(output: &str, expected: &[&str], context: &str) {
+    for fragment in expected {
+        assert_output_includes(output, fragment, context);
+    }
+}
+
+fn assert_output_excludes_all(output: &str, unexpected: &[&str], context: &str) {
+    for fragment in unexpected {
+        assert_output_excludes(output, fragment, context);
+    }
+}
+
+fn assert_output_in_order(output: &str, first: &str, second: &str, context: &str) {
+    let first_position = output.find(first).unwrap_or_else(|| {
+        panic!("{context}\nmissing first fragment: {first:?}\noutput:\n{output}")
+    });
+    let second_position = output.find(second).unwrap_or_else(|| {
+        panic!("{context}\nmissing second fragment: {second:?}\noutput:\n{output}")
+    });
+
+    assert!(
+        first_position < second_position,
+        "{context}\nexpected {first:?} before {second:?}\noutput:\n{output}"
+    );
+}
+
 // --- Document Rendering Scenarios ---
 
 fn given_simple_author_date_document_when_rendered_as_html_then_a_bibliography_heading_is_appended()
@@ -97,22 +153,20 @@ fn given_simple_author_date_document_when_rendered_as_html_then_a_bibliography_h
         DocumentFormat::Html,
     );
 
-    // Verify that the output contains HTML heading
-    assert!(
-        html_output.contains("<h1>Bibliography</h1>"),
-        "Output should contain <h1>Bibliography</h1>"
+    assert_output_includes(
+        &html_output,
+        "<h1>Bibliography</h1>",
+        "HTML output should append a bibliography heading",
     );
-
-    // Verify that the citation was replaced
-    assert!(
-        html_output.contains("kuhn1962") || html_output.contains("Kuhn"),
-        "Output should contain reference to kuhn1962 or Kuhn. Got: {html_output}"
+    assert_output_includes(
+        &html_output,
+        "Kuhn",
+        "HTML output should replace the citation with rendered reference text",
     );
-
-    // Verify document structure is preserved
-    assert!(
-        html_output.contains("test document with a citation"),
-        "Output should contain original document text"
+    assert_output_includes(
+        &html_output,
+        "test document with a citation",
+        "HTML output should preserve original document text",
     );
 }
 
@@ -160,16 +214,15 @@ fn given_simple_author_date_document_when_rendered_as_djot_then_html_tags_are_no
         DocumentFormat::Djot,
     );
 
-    // Verify it contains Djot markdown (not HTML)
-    assert!(
-        djot_output.contains("# Bibliography"),
-        "Djot output should contain # Bibliography markdown"
+    assert_output_has_line(
+        &djot_output,
+        "# Bibliography",
+        "Djot output should contain a markdown bibliography heading",
     );
-
-    // Should not contain HTML tags
-    assert!(
-        !djot_output.contains("<h1>"),
-        "Djot output should not contain HTML tags"
+    assert_output_lacks_line(
+        &djot_output,
+        "<h1>Bibliography</h1>",
+        "Djot output should not contain HTML heading tags",
     );
 }
 
@@ -184,21 +237,25 @@ fn given_example_mla_document_when_rendered_as_html_then_citation_markup_is_not_
         DocumentFormat::Html,
     );
 
-    assert!(
-        html_output.contains(r#"<span class="citum-citation" data-ref="smith2010">"#),
-        "citation markup should be real HTML: {html_output}"
+    assert_output_includes(
+        &html_output,
+        r#"<span class="citum-citation" data-ref="smith2010">"#,
+        "citation markup should be real HTML",
     );
-    assert!(
-        html_output.contains(r#"<div class="citum-bibliography">"#),
-        "bibliography markup should be real HTML: {html_output}"
+    assert_output_includes(
+        &html_output,
+        r#"<div class="citum-bibliography">"#,
+        "bibliography markup should be real HTML",
     );
-    assert!(
-        !html_output.contains("&lt;span class="),
-        "citation markup should not be escaped: {html_output}"
+    assert_output_excludes(
+        &html_output,
+        "&lt;span class=",
+        "citation markup should not be escaped",
     );
-    assert!(
-        !html_output.contains("&lt;div class="),
-        "bibliography markup should not be escaped: {html_output}"
+    assert_output_excludes(
+        &html_output,
+        "&lt;div class=",
+        "bibliography markup should not be escaped",
     );
 }
 
@@ -284,17 +341,19 @@ fn given_two_authors_with_same_surname_when_both_cited_integrally_then_each_gets
         DocumentFormat::Plain,
     );
 
-    // Both authors share surname "Smith" but are different people.
-    // The second author's first integral mention must NOT be marked Subsequent.
-    // A family-name-only tracking key conflates them — "Jane Smith" appears as
-    // just "Smith" instead of "Jane Smith".
-    assert!(
-        output.contains("John Smith"),
-        "first Smith should show full given+family name: {output}"
+    // Both authors share surname "Smith" but are different people, so each
+    // person's first integral mention should use the full given+family form.
+    // A family-name-only tracking key would conflate Jane with John's prior
+    // mention and render Jane as just "Smith".
+    assert_output_includes(
+        &output,
+        "John Smith",
+        "John Smith's first integral mention should show full given+family name",
     );
-    assert!(
-        output.contains("Jane Smith"),
-        "second Smith should show full given+family name (not just 'Smith'): {output}"
+    assert_output_includes(
+        &output,
+        "Jane Smith",
+        "Jane Smith's first integral mention should show full given+family name",
     );
 }
 
@@ -340,15 +399,17 @@ fn given_org_with_short_name_when_org_abbreviation_memory_configured_and_cited_i
     );
 
     // First integral mention: full name + abbreviation in parens.
-    assert!(
-        output.contains("World Health Organization (WHO)"),
-        "first mention should show full name then abbreviation: {output}"
+    assert_output_includes(
+        &output,
+        "World Health Organization (WHO)",
+        "first mention should show full name then abbreviation",
     );
     // Subsequent mention: abbreviation only.
-    assert!(
-        !output.contains("World Health Organization (WHO) released")
-            || output.contains("WHO followed"),
-        "second mention should use short form only: {output}"
+    assert_output_in_order(
+        &output,
+        "World Health Organization (WHO)",
+        "WHO followed",
+        "second mention should use short form after the first full mention",
     );
 }
 
@@ -365,13 +426,31 @@ fn given_example_apa_document_when_rendered_as_plain_text_then_integral_citation
     );
 
     // APA abbreviates given names: "A. D. Smith" (Long form, first integral mention)
-    assert!(output.contains("First narrative mention: A. D. Smith (2010, p. 10)"));
-    assert!(output.contains("Later in the same chapter: Smith (2010, p. 12)"));
-    assert!(output.contains("Integral with locator: T. S. Kuhn (1962, p. 10) argues"));
-    assert!(output.contains(
-        "[^narrative-note]: Before the prose introduces him, A. D. Smith (2010, p. 3) already appears in a note."
-    ));
-    assert!(output.contains("Suppress author with locator: (1962, p. 10)."));
+    assert_output_has_line(
+        &output,
+        "First narrative mention: A. D. Smith (2010, p. 10) surveys the broader literature.",
+        "APA output should keep the first integral locator",
+    );
+    assert_output_has_line(
+        &output,
+        "Later in the same chapter: Smith (2010, p. 12) narrows the argument.",
+        "APA output should keep the subsequent integral locator",
+    );
+    assert_output_has_line(
+        &output,
+        "Integral with locator: T. S. Kuhn (1962, p. 10) argues...",
+        "APA output should keep Kuhn's integral locator",
+    );
+    assert_output_has_line(
+        &output,
+        "[^narrative-note]: Before the prose introduces him, A. D. Smith (2010, p. 3) already appears in a note.",
+        "APA output should keep the manual note locator",
+    );
+    assert_output_has_line(
+        &output,
+        "Suppress author with locator: (1962, p. 10).",
+        "APA output should keep the suppress-author locator",
+    );
 }
 
 fn given_example_chicago_note_document_when_rendered_as_plain_text_then_integral_mentions_keep_their_note_anchor()
@@ -387,35 +466,49 @@ fn given_example_chicago_note_document_when_rendered_as_plain_text_then_integral
         DocumentFormat::Plain,
     );
 
-    // Note-style in-text anchors show surname only; first-mention Long form applies to
-    // note content. Smith's first body cite is IbidWithLocator (follows note cite),
-    // so the fallback renders surname. Kuhn is Subsequent-position but first integral
-    // mention → Long form → full name in anchor.
-    assert!(output.contains("First narrative mention: Smith[^citum-auto-5] surveys"));
-    assert!(output.contains("Later in the same chapter: Smith[^citum-auto-6] narrows"));
-    assert!(output.contains("Integral with locator: Thomas S. Kuhn[^citum-auto-7] argues"));
-    assert!(
-        output.contains("[^narrative-note]: Before the prose introduces him, Smith, Anthony D."),
-        "manual note should preserve the authored anchor: {output}"
+    // Body anchors and note bodies are distinct rendered surfaces. Smith is
+    // introduced first in the manual note, so later body anchors use the
+    // surname anchor; Kuhn has no prior integral-name mention, so its body
+    // anchor uses the full note-style long form.
+    assert_output_has_line(
+        &output,
+        "First narrative mention: Smith[^citum-auto-5] surveys the broader literature.",
+        "Chicago note output should keep Smith's first narrative anchor",
     );
-    assert!(
-        output.contains("_Nationalism: Theory, Ideology, History_, 3"),
-        "manual note should preserve the reduced note content and locator: {output}"
+    assert_output_has_line(
+        &output,
+        "Later in the same chapter: Smith[^citum-auto-6] narrows the argument.",
+        "Chicago note output should keep Smith's subsequent narrative anchor",
+    );
+    assert_output_has_line(
+        &output,
+        "Integral with locator: Thomas S. Kuhn[^citum-auto-7] argues...",
+        "Chicago note output should keep Kuhn's narrative anchor",
+    );
+
+    // Manual note content is checked separately from body anchors: it should
+    // preserve the authored anchor and reduced note content with its locator.
+    assert_output_includes(
+        &output,
+        "[^narrative-note]: Before the prose introduces him, Smith, Anthony D.",
+        "manual note should preserve the authored anchor",
+    );
+    assert_output_includes(
+        &output,
+        "_Nationalism: Theory, Ideology, History_, 3",
+        "manual note should preserve the reduced note content and locator",
     );
     assert_eq!(
         output.matches("[^narrative-note]:").count(),
         1,
         "manual note should not be duplicated: {output}"
     );
-    assert!(
-        !output.contains("[+@smith2010]"),
-        "raw citation leaked: {output}"
-    );
+    assert_output_excludes(&output, "[+@smith2010]", "raw citation should not leak");
 }
 
 // --- Note Flow Scenarios ---
 
-fn given_chicago_note_flow_document_when_ibid_is_rendered_then_it_does_not_concatenate_with_the_narrative_anchor()
+fn given_chicago_note_flow_document_when_authored_ibid_appears_in_notes_then_anchor_and_reduced_form_stay_separate()
  {
     let processor = example_document_processor("styles/embedded/chicago-notes-18th.yaml");
     let parser = DjotParser;
@@ -427,33 +520,36 @@ fn given_chicago_note_flow_document_when_ibid_is_rendered_then_it_does_not_conca
         DocumentFormat::Djot,
     );
 
-    assert!(
-        output.to_lowercase().contains("ibid"),
-        "note style should render ibid in this scenario: {output}"
+    let lowercase_output = output.to_lowercase();
+    assert_output_includes(
+        &lowercase_output,
+        "ibid",
+        "note style should render ibid in this scenario",
     );
-    assert!(
-        !output.contains("KuhnIbid"),
-        "ibid should not concatenate with author token: {output}"
+    assert_output_excludes(
+        &output,
+        "KuhnIbid",
+        "ibid should not concatenate with Kuhn author token",
     );
-    assert!(
-        !output.contains("SmithIbid"),
-        "ibid should not concatenate with author token: {output}"
+    assert_output_excludes(
+        &output,
+        "SmithIbid",
+        "ibid should not concatenate with Smith author token",
     );
-    assert!(
-        output.contains("Brown ("),
-        "integral ibid should preserve the authored anchor: {output}"
+    assert_output_includes(
+        &output,
+        "Brown (",
+        "authored note ibid should preserve the Brown narrative anchor",
     );
-    assert!(
-        output.to_lowercase().contains("ibid"),
-        "integral ibid should remain reduced in authored notes: {output}"
+    assert_output_excludes(
+        &lowercase_output,
+        "brown ibid",
+        "authored note ibid should not concatenate the anchor and reduced form",
     );
-    assert!(
-        !output.to_lowercase().contains("brown ibid"),
-        "integral ibid should not concatenate the anchor and reduced form: {output}"
-    );
-    assert!(
-        !output.to_lowercase().contains("ibid also argues that..."),
-        "integral ibid should not replace the narrative anchor in authored notes: {output}"
+    assert_output_excludes(
+        &lowercase_output,
+        "ibid also argues that...",
+        "authored note ibid should not replace the narrative anchor",
     );
 }
 
@@ -474,17 +570,20 @@ fn given_chicago_note_locator_repeat_when_integral_ibid_is_rendered_then_anchor_
         DocumentFormat::Plain,
     );
 
-    assert!(
-        output.contains("Brown ("),
-        "integral ibid-with-locator should preserve the authored anchor: {output}"
+    assert_output_includes(
+        &output,
+        "Brown (",
+        "integral ibid-with-locator should preserve the authored anchor",
     );
-    assert!(
-        output.to_lowercase().contains("ibid"),
-        "integral ibid-with-locator should remain reduced: {output}"
+    assert_output_includes(
+        &output.to_lowercase(),
+        "ibid",
+        "integral ibid-with-locator should remain reduced",
     );
-    assert!(
-        output.contains("Brown (ibid., 12)"),
-        "integral ibid-with-locator should preserve the reduced locator fragment: {output}"
+    assert_output_includes(
+        &output,
+        "Brown (ibid., 12)",
+        "integral ibid-with-locator should preserve the reduced locator fragment",
     );
 }
 
@@ -508,17 +607,20 @@ fn given_page_labels_are_configured_when_integral_ibid_is_rendered_then_the_labe
         DocumentFormat::Plain,
     );
 
-    assert!(
-        output.contains("Brown ("),
-        "integral ibid-with-locator should preserve the authored anchor: {output}"
+    assert_output_includes(
+        &output,
+        "Brown (",
+        "integral ibid-with-locator should preserve the authored anchor",
     );
-    assert!(
-        output.to_lowercase().contains("ibid"),
-        "integral ibid-with-locator should remain reduced: {output}"
+    assert_output_includes(
+        &output.to_lowercase(),
+        "ibid",
+        "integral ibid-with-locator should remain reduced",
     );
-    assert!(
-        output.contains("p. 12"),
-        "configured page labels should be preserved in reduced manual notes: {output}"
+    assert_output_includes(
+        &output,
+        "p. 12",
+        "configured page labels should be preserved in reduced manual notes",
     );
 }
 
@@ -539,17 +641,20 @@ fn given_chapter_locator_repeat_when_integral_ibid_is_rendered_then_the_labeled_
         DocumentFormat::Plain,
     );
 
-    assert!(
-        output.contains("Brown ("),
-        "integral ibid-with-locator should preserve the authored anchor: {output}"
+    assert_output_includes(
+        &output,
+        "Brown (",
+        "integral ibid-with-locator should preserve the authored anchor",
     );
-    assert!(
-        output.to_lowercase().contains("ibid"),
-        "integral ibid-with-locator should remain reduced: {output}"
+    assert_output_includes(
+        &output.to_lowercase(),
+        "ibid",
+        "integral ibid-with-locator should remain reduced",
     );
-    assert!(
-        output.contains("ch. 3"),
-        "chapter locators should retain their localized label in reduced manual notes: {output}"
+    assert_output_includes(
+        &output,
+        "ch. 3",
+        "chapter locators should retain their localized label in reduced manual notes",
     );
 }
 
@@ -574,13 +679,15 @@ fn given_locale_specific_ibid_term_when_the_style_has_no_ibid_override_then_the_
         DocumentFormat::Plain,
     );
 
-    assert!(
-        output.contains("Brown (ibid) also argues that..."),
-        "ibid term should come from locale data and preserve locale punctuation: {output}"
+    assert_output_has_line(
+        &output,
+        "   - Brown (ibid) also argues that...",
+        "ibid term should come from locale data and preserve locale punctuation",
     );
-    assert!(
-        !output.contains("Brown (.) also argues that..."),
-        "ibid fallback must not use base citation suffix: {output}"
+    assert_output_excludes(
+        &output,
+        "Brown (.) also argues that...",
+        "ibid fallback must not use base citation suffix",
     );
 }
 
@@ -605,9 +712,10 @@ fn given_explicit_style_ibid_suffix_when_locale_also_defines_ibid_then_the_style
         DocumentFormat::Plain,
     );
 
-    assert!(
-        output.contains("Brown (IBIDX) also argues that..."),
-        "explicit style ibid suffix should override locale ibid term: {output}"
+    assert_output_has_line(
+        &output,
+        "   - Brown (IBIDX) also argues that...",
+        "explicit style ibid suffix should override locale ibid term",
     );
 }
 
@@ -628,13 +736,15 @@ fn given_missing_note_anchor_when_integral_ibid_is_rendered_then_the_reduced_cit
         DocumentFormat::Plain,
     );
 
-    assert!(
-        output.to_lowercase().contains("ibid"),
-        "when anchor cannot render, integral ibid should still render reduced citation text: {output}"
+    assert_output_includes(
+        &output.to_lowercase(),
+        "ibid",
+        "when anchor cannot render, integral ibid should still render reduced citation text",
     );
-    assert!(
-        !output.contains("missingrefIbid"),
-        "anchor failure path must not concatenate fallback and ibid text: {output}"
+    assert_output_excludes(
+        &output,
+        "missingrefIbid",
+        "anchor failure path must not concatenate fallback and ibid text",
     );
 }
 
@@ -650,9 +760,10 @@ fn given_chicago_note_flow_document_when_no_bibliography_entries_are_needed_then
         DocumentFormat::Djot,
     );
 
-    assert!(
-        !output.contains("# Bibliography"),
-        "empty bibliography should not emit heading: {output}"
+    assert_output_lacks_line(
+        &output,
+        "# Bibliography",
+        "empty bibliography should not emit Djot heading",
     );
 
     let html_output = processor.process_document::<_, citum_engine::render::html::Html>(
@@ -660,9 +771,10 @@ fn given_chicago_note_flow_document_when_no_bibliography_entries_are_needed_then
         &parser,
         DocumentFormat::Html,
     );
-    assert!(
-        !html_output.contains("<h1>Bibliography</h1>"),
-        "empty bibliography should not emit HTML heading: {html_output}"
+    assert_output_excludes(
+        &html_output,
+        "<h1>Bibliography</h1>",
+        "empty bibliography should not emit HTML heading",
     );
 }
 
@@ -683,9 +795,10 @@ fn given_non_note_styles_when_rendering_the_note_flow_example_then_ibid_is_never
             &parser,
             DocumentFormat::Djot,
         );
-        assert!(
-            !output.contains("Ibid"),
-            "non-note style unexpectedly rendered ibid for {style_path}: {output}"
+        assert_output_excludes(
+            &output,
+            "Ibid",
+            &format!("non-note style unexpectedly rendered ibid for {style_path}"),
         );
     }
 }
@@ -705,21 +818,15 @@ fn given_pandoc_markdown_author_date_syntax_when_rendered_then_integral_and_clus
         DocumentFormat::Plain,
     );
 
-    assert!(
-        output.contains("Kuhn (1962, p. 10) changed science."),
-        "integral markdown citation did not render: {output}"
+    assert_output_has_line(
+        &output,
+        "Kuhn argued that Kuhn (1962, p. 10) changed science.",
+        "integral markdown citation should render in prose",
     );
-    assert!(
-        output.contains("Later work supports this ("),
-        "bracketed markdown cite cluster did not render: {output}"
-    );
-    assert!(
-        output.contains("Kuhn, 1962, ch. 3"),
-        "markdown locator cite missing from cluster: {output}"
-    );
-    assert!(
-        output.contains("see Smith, 2010, p. 12"),
-        "markdown prefix cite missing from cluster: {output}"
+    assert_output_has_line(
+        &output,
+        "Later work supports this (Kuhn, 1962, ch. 3; see Smith, 2010, p. 12).",
+        "bracketed markdown cite cluster should render with prefix and locator",
     );
 }
 
@@ -736,13 +843,15 @@ fn given_markdown_integral_note_citation_when_rendered_with_a_note_style_then_a_
         DocumentFormat::Plain,
     );
 
-    assert!(
-        output.contains("Narrative mention Smith[^citum-auto-1] introduces the argument."),
-        "note-style markdown integral citation did not anchor correctly: {output}"
+    assert_output_has_line(
+        &output,
+        "Narrative mention Smith[^citum-auto-1] introduces the argument.",
+        "note-style markdown integral citation should anchor correctly",
     );
-    assert!(
-        output.contains("[^citum-auto-1]: Smith, _Nationalism: Theory, Ideology, History_."),
-        "generated note missing for markdown citation: {output}"
+    assert_output_has_line(
+        &output,
+        "[^citum-auto-1]: Smith, _Nationalism: Theory, Ideology, History_.",
+        "generated note should be emitted for markdown citation",
     );
 }
 
@@ -763,24 +872,28 @@ fn given_markdown_citation_inside_manual_footnote_when_rendered_with_note_style_
     );
 
     // The manual footnote anchor must appear in prose.
-    assert!(
-        output.contains("[^1]"),
-        "manual footnote reference should appear in prose: {output}"
+    assert_output_includes(
+        &output,
+        "[^1]",
+        "manual footnote reference should appear in prose",
     );
     // The rendered citation should appear inside the footnote definition, not
     // as a separate auto-generated note.
-    assert!(
-        output.contains("[^1]: Early work"),
-        "footnote definition body should be preserved: {output}"
+    assert_output_includes(
+        &output,
+        "[^1]: Early work",
+        "footnote definition body should be preserved",
     );
-    assert!(
-        output.contains("Kuhn") || output.contains("Structure"),
-        "citation inside manual footnote should be rendered in place: {output}"
+    assert_output_includes(
+        &output,
+        "Kuhn",
+        "citation inside manual footnote should be rendered in place",
     );
     // No auto-generated note should be created for this citation.
-    assert!(
-        !output.contains("[^citum-auto-"),
-        "no auto-footnote should be generated for a ManualFootnote citation: {output}"
+    assert_output_excludes(
+        &output,
+        "[^citum-auto-",
+        "no auto-footnote should be generated for a ManualFootnote citation",
     );
 }
 
@@ -801,21 +914,25 @@ fn given_grouped_primary_and_secondary_sources_when_rendered_then_both_group_hea
         DocumentFormat::Plain,
     );
 
-    assert!(
-        output.contains("# Primary Sources"),
-        "missing primary heading: {output}"
+    assert_output_has_line(
+        &output,
+        "# Primary Sources",
+        "grouped bibliography should include the primary heading",
     );
-    assert!(
-        output.contains("# Secondary Sources"),
-        "missing secondary heading: {output}"
+    assert_output_has_line(
+        &output,
+        "# Secondary Sources",
+        "grouped bibliography should include the secondary heading",
     );
-    assert!(
-        output.contains("Field Notes from the Delta Survey"),
-        "missing primary-source entry: {output}"
+    assert_output_includes(
+        &output,
+        "Field Notes from the Delta Survey",
+        "grouped bibliography should include the primary-source entry",
     );
-    assert!(
-        output.contains("Trade Networks in the Early Modern Atlantic"),
-        "missing secondary-source entry: {output}"
+    assert_output_includes(
+        &output,
+        "Trade Networks in the Early Modern Atlantic",
+        "grouped bibliography should include the secondary-source entry",
     );
 }
 
@@ -868,20 +985,23 @@ fn given_group_local_disambiguation_when_rendering_multilingual_groups_then_year
         .unwrap_or_else(|| panic!("Western Sources section missing: {output}"));
 
     // Each group must have both 2020a and 2020b — suffixes restart at 'a' per group.
-    assert!(
-        vi_block.contains("2020a") && vi_block.contains("2020b"),
-        "Vietnamese group should have both 2020a and 2020b: {vi_block}"
+    assert_output_includes_all(
+        vi_block,
+        &["2020a", "2020b"],
+        "Vietnamese group should restart suffixes at 2020a and 2020b",
     );
-    assert!(
-        en_block.contains("2020a") && en_block.contains("2020b"),
-        "Western group should have both 2020a and 2020b: {en_block}"
+    assert_output_includes_all(
+        en_block,
+        &["2020a", "2020b"],
+        "Western group should restart suffixes at 2020a and 2020b",
     );
 
     // Suffixes must not bleed across the boundary: neither group should contain
     // a suffix that belongs to the other (i.e. no 2020c or 2020d anywhere).
-    assert!(
-        !output.contains("2020c") && !output.contains("2020d"),
-        "No cross-group suffix leakage expected: {output}"
+    assert_output_excludes_all(
+        &output,
+        &["2020c", "2020d"],
+        "cross-group suffixes should not leak",
     );
 }
 
@@ -943,13 +1063,15 @@ fn given_an_english_locale_variant_when_group_headings_are_localized_then_the_la
 
     // chicago-author-date headings are localized with en-US + en.
     // en-GB should fall back to the language tag (en).
-    assert!(
-        output.contains("# Primary Sources"),
-        "missing primary heading: {output}"
+    assert_output_has_line(
+        &output,
+        "# Primary Sources",
+        "English locale fallback should resolve the primary heading",
     );
-    assert!(
-        output.contains("# Secondary Sources"),
-        "missing secondary heading: {output}"
+    assert_output_has_line(
+        &output,
+        "# Secondary Sources",
+        "English locale fallback should resolve the secondary heading",
     );
 }
 
@@ -1030,11 +1152,11 @@ mod note_flow {
     use super::announce_behavior;
 
     #[test]
-    fn chicago_note_flow_does_not_concatenate_ibid_with_the_narrative_anchor() {
+    fn chicago_note_flow_preserves_authored_ibid_anchor_and_reduced_form() {
         announce_behavior(
-            "A Chicago note-flow narrative mention should not concatenate the generated ibid text onto the prose anchor.",
+            "A Chicago note-flow authored note should keep the narrative anchor separate from the generated ibid text.",
         );
-        super::given_chicago_note_flow_document_when_ibid_is_rendered_then_it_does_not_concatenate_with_the_narrative_anchor();
+        super::given_chicago_note_flow_document_when_authored_ibid_appears_in_notes_then_anchor_and_reduced_form_stay_separate();
     }
 
     #[test]
@@ -1120,39 +1242,40 @@ fn given_markdown_document_with_pipe_table_when_rendered_as_markdown_then_body_p
     );
 
     // Pipe table lines must be unchanged.
-    assert!(
-        output.contains("| Column A | Column B |"),
-        "pipe table header missing: {output}"
-    );
-    assert!(
-        output.contains("|----------|----------|"),
-        "pipe table separator missing: {output}"
-    );
-    assert!(
-        output.contains("| cell 1   | cell 2   |"),
-        "pipe table row missing: {output}"
+    assert_output_includes_all(
+        &output,
+        &[
+            "| Column A | Column B |",
+            "|----------|----------|",
+            "| cell 1   | cell 2   |",
+        ],
+        "pipe table should pass through unchanged",
     );
 
     // Fenced code block must be unchanged.
-    assert!(
-        output.contains("```rust\nfn hello() {}\n```"),
-        "fenced code block missing or modified: {output}"
+    assert_output_includes(
+        &output,
+        "```rust\nfn hello() {}\n```",
+        "fenced code block should pass through unchanged",
     );
 
     // Citation marker replaced with rendered inline text.
-    assert!(
-        !output.contains("[@kuhn1962]"),
-        "raw citation marker should be replaced: {output}"
+    assert_output_excludes(
+        &output,
+        "[@kuhn1962]",
+        "raw citation marker should be replaced",
     );
-    assert!(
-        output.contains("As argued in (Kuhn, 1962)."),
-        "rendered citation should replace the marker with the full APA cite: {output}"
+    assert_output_has_line(
+        &output,
+        "As argued in (Kuhn, 1962).",
+        "rendered citation should replace the marker with the full APA cite",
     );
 
     // Bibliography heading present.
-    assert!(
-        output.contains("# Bibliography"),
-        "bibliography heading missing: {output}"
+    assert_output_has_line(
+        &output,
+        "# Bibliography",
+        "bibliography heading should be present",
     );
 }
 
@@ -1172,29 +1295,24 @@ fn given_note_style_markdown_document_when_rendered_as_markdown_then_commonmark_
     );
 
     // Footnote anchors in prose.
-    assert!(
-        output.contains("[^citum-auto-1]"),
-        "first footnote anchor missing: {output}"
-    );
-    assert!(
-        output.contains("[^citum-auto-2]"),
-        "second footnote anchor missing: {output}"
+    assert_output_has_line(
+        &output,
+        "First claim.[^citum-auto-1] Second claim.[^citum-auto-2]",
+        "footnote anchors should be emitted in prose",
     );
 
     // Footnote definitions with rendered content (CommonMark emphasis).
-    assert!(
-        output.contains("[^citum-auto-1]:"),
-        "first footnote definition missing: {output}"
-    );
-    assert!(
-        output.contains("[^citum-auto-2]:"),
-        "second footnote definition missing: {output}"
+    assert_output_includes_all(
+        &output,
+        &["[^citum-auto-1]:", "[^citum-auto-2]:"],
+        "footnote definitions should be emitted",
     );
 
     // No raw citation markers remain.
-    assert!(
-        !output.contains("[@kuhn1962]") && !output.contains("[@smith2010]"),
-        "raw citation markers should be replaced: {output}"
+    assert_output_excludes_all(
+        &output,
+        &["[@kuhn1962]", "[@smith2010]"],
+        "raw citation markers should be replaced",
     );
 }
 
@@ -1271,11 +1389,12 @@ fn given_chicago_author_date_markdown_citation_when_rendered_then_no_spurious_sp
         DocumentFormat::Plain,
     );
 
-    // Chicago author-date should render "(Kuhn 1962, 5)" — author, year, locator, no
-    // spurious space before the comma.
-    assert!(
-        output.contains("(Kuhn 1962, 5)"),
-        "expected '(Kuhn 1962, 5)' in parenthetical citation: {output}"
+    // Chicago author-date should render the full sentence with author, year,
+    // and locator, with no spurious space before the comma.
+    assert_output_has_line(
+        &output,
+        "See (Kuhn 1962, 5).",
+        "Chicago author-date locator sentence should be exactly 'See (Kuhn 1962, 5).'",
     );
 }
 
@@ -1289,11 +1408,12 @@ fn given_chicago_author_date_markdown_suppressed_citation_when_rendered_then_no_
         DocumentFormat::Plain,
     );
 
-    // Suppress-author form should render "(1962, 5)" — year + locator, no author, no
-    // spurious space before the comma.
-    assert!(
-        output.contains("(1962, 5)"),
-        "expected '(1962, 5)' in suppress-author citation: {output}"
+    // Suppress-author form should render the full sentence with year and
+    // locator only, with no author or spurious space before the comma.
+    assert_output_has_line(
+        &output,
+        "See (1962, 5).",
+        "Chicago author-date suppress-author locator sentence should be exactly 'See (1962, 5).'",
     );
 }
 
@@ -1381,9 +1501,10 @@ fn djot_note_preserves_italic_markup_in_html_bibliography() {
     );
 
     let output = Processor::new(style, bib).render_bibliography_with_format::<Html>();
-    assert!(
-        output.contains("<em>italic</em>"),
-        "Djot _italic_ in note should render as <em>italic</em> in HTML, got: {output}"
+    assert_eq!(
+        output,
+        "<div class=\"citum-bibliography\">\n<div class=\"citum-entry\" id=\"ref-ref1\" data-year=\"2024\" data-title=\"Test Book\"><span class=\"citum-note\"><em>italic</em></span></div>\n</div>",
+        "Djot note should preserve italic markup in HTML bibliography"
     );
 }
 
@@ -1431,9 +1552,10 @@ fn djot_note_sentence_case_does_not_restart_across_markup_boundaries() {
     );
 
     let output = Processor::new(style, bib).render_bibliography_with_format::<Html>();
-    assert!(
-        output.contains("Foo <em>bar</em> baz"),
-        "Djot sentence case should not restart inside markup, got: {output}"
+    assert_eq!(
+        output,
+        "<div class=\"citum-bibliography\">\n<div class=\"citum-entry\" id=\"ref-ref1\" data-year=\"2024\" data-title=\"Test Book\"><span class=\"citum-note\">Foo <em>bar</em> baz</span></div>\n</div>",
+        "Djot note sentence case should not restart inside markup"
     );
 }
 
@@ -1529,13 +1651,10 @@ fn given_markdown_block_quote_when_rendered_as_typst_then_quote_block_is_emitted
         DocumentFormat::Typst,
     );
 
-    assert!(
-        output.contains("#quote(block: true)"),
-        "markdown block quote should produce Typst #quote(block: true), got: {output}"
-    );
-    assert!(
-        output.contains("#emph[italic]"),
-        "markdown *italic* should produce Typst #emph[…], got: {output}"
+    assert_output_includes_all(
+        &output,
+        &["#quote(block: true)", "#emph[italic]"],
+        "markdown block quote should produce Typst quote and emphasis markup",
     );
     assert!(
         !output.starts_with('>'),
@@ -1557,13 +1676,10 @@ fn given_djot_block_quote_when_rendered_as_typst_then_quote_block_is_emitted() {
         DocumentFormat::Typst,
     );
 
-    assert!(
-        output.contains("#quote(block: true)"),
-        "djot block quote should produce Typst #quote(block: true), got: {output}"
-    );
-    assert!(
-        output.contains("#emph[italic]"),
-        "djot _italic_ should produce Typst #emph[…], got: {output}"
+    assert_output_includes_all(
+        &output,
+        &["#quote(block: true)", "#emph[italic]"],
+        "Djot block quote should produce Typst quote and emphasis markup",
     );
 }
 
@@ -1584,21 +1700,25 @@ fn given_djot_notice_with_nested_strong_when_rendered_as_typst_then_strong_marku
         DocumentFormat::Typst,
     );
 
-    assert!(
-        output.contains("#strong[#strong[Note]]"),
-        "Djot nested strong input **Note** should render as composable Typst strong markup, got: {output}"
+    assert_output_includes(
+        &output,
+        "#strong[#strong[Note]]",
+        "Djot nested strong input should render as composable Typst strong markup",
     );
-    assert!(
-        !output.contains("**Note**"),
-        "raw Djot strong delimiters should not leak into Typst output, got: {output}"
+    assert_output_excludes(
+        &output,
+        "**Note**",
+        "raw Djot strong delimiters should not leak into Typst output",
     );
-    assert!(
-        !output.contains("{.citum-demo-notice}"),
-        "raw Djot paragraph attributes should not leak into Typst output, got: {output}"
+    assert_output_excludes(
+        &output,
+        "{.citum-demo-notice}",
+        "raw Djot paragraph attributes should not leak into Typst output",
     );
-    assert!(
-        output.contains("#link(<ref-kuhn1962>)") && output.contains("Kuhn"),
-        "citation placeholder replacement should still produce Typst links, got: {output}"
+    assert_output_includes_all(
+        &output,
+        &["#link(<ref-kuhn1962>)", "Kuhn"],
+        "citation placeholder replacement should still produce Typst links",
     );
 }
 
@@ -1618,17 +1738,25 @@ fn given_djot_notice_with_nested_strong_when_rendered_as_djot_then_source_markup
         DocumentFormat::Djot,
     );
 
-    assert!(
-        output.contains("**Note**"),
-        "Djot passthrough output should preserve source body markup, got: {output}"
+    assert_output_includes(
+        &output,
+        "**Note**",
+        "Djot passthrough output should preserve source body markup",
     );
-    assert!(
-        output.contains("{.citum-demo-notice}"),
-        "Djot passthrough output should preserve source attributes, got: {output}"
+    assert_output_includes(
+        &output,
+        "{.citum-demo-notice}",
+        "Djot passthrough output should preserve source attributes",
     );
-    assert!(
-        output.contains("Kuhn") && !output.contains("[@kuhn1962]"),
-        "citation text should be rendered while body markup passes through, got: {output}"
+    assert_output_includes(
+        &output,
+        "Kuhn",
+        "citation text should be rendered while body markup passes through",
+    );
+    assert_output_excludes(
+        &output,
+        "[@kuhn1962]",
+        "raw citation marker should not pass through",
     );
 }
 
@@ -1646,17 +1774,10 @@ fn given_markdown_block_quote_when_rendered_as_latex_then_quote_environment_is_e
         DocumentFormat::Latex,
     );
 
-    assert!(
-        output.contains("\\begin{quote}"),
-        "markdown block quote should produce LaTeX \\begin{{quote}}, got: {output}"
-    );
-    assert!(
-        output.contains("\\emph{italic}"),
-        "markdown *italic* should produce LaTeX \\emph{{}}, got: {output}"
-    );
-    assert!(
-        output.contains("\\textbf{strong}"),
-        "markdown **strong** should produce LaTeX \\textbf{{}}, got: {output}"
+    assert_output_includes_all(
+        &output,
+        &["\\begin{quote}", "\\emph{italic}", "\\textbf{strong}"],
+        "markdown block quote should produce LaTeX quote, emph, and strong markup",
     );
 }
 
@@ -1672,13 +1793,15 @@ fn given_markdown_citation_inside_prose_when_rendered_as_typst_then_citation_and
         DocumentFormat::Typst,
     );
 
-    assert!(
-        output.contains("#emph[emphasis]"),
-        "markdown *emphasis* in paragraph should produce Typst #emph[…], got: {output}"
+    assert_output_includes(
+        &output,
+        "#emph[emphasis]",
+        "markdown emphasis in paragraph should produce Typst emphasis markup",
     );
-    assert!(
-        output.contains("Kuhn") && output.contains("1962"),
-        "citation should render in Typst output, got: {output}"
+    assert_output_includes_all(
+        &output,
+        &["Kuhn", "1962"],
+        "citation should render in Typst output",
     );
 }
 
