@@ -5,6 +5,124 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.71.0] - 2026-06-28
+
+### Bug Fixes
+
+**cli**
+
+- Clean up render --help noise ([`1091096`](https://github.com/citum/citum-core/commit/109109669e5e36fc436655795dec8a195589ce72))
+
+
+**scripts**
+
+- Improve audit precision and recall ([`607fbbc`](https://github.com/citum/citum-core/commit/607fbbc587b8bcfc8691a987b1d81835e481ec41))
+
+
+
+### Documentation
+
+**docs**
+
+- Add tune mode, embedded-tier gates ([`a29f815`](https://github.com/citum/citum-core/commit/a29f81506499380b52bca53aad504dd33b675fa4))
+
+
+**locale**
+
+- Add remaining phrase ids ([`d5f75d4`](https://github.com/citum/citum-core/commit/d5f75d4c2b99054357a8b42c129ed4f92876e395))
+
+- Document message followups ([`85a2f18`](https://github.com/citum/citum-core/commit/85a2f189b11d827e86c3092193cd640062f87a0f))
+
+- Track contributor phrase followup ([`cbaef1f`](https://github.com/citum/citum-core/commit/cbaef1fc7bd8fa28527eaa62c24c1ea04347e34b))
+
+- Spec contributor phrase messages ([`1254427`](https://github.com/citum/citum-core/commit/1254427cecdade8121d50041af1214aae8ff753d))
+
+
+
+### Features
+
+**locale**
+
+- Resolve term-backed message calls ([`7b3b9e0`](https://github.com/citum/citum-core/commit/7b3b9e0965b4c7952842ae9ae681e3f803905772))
+
+
+**schema**
+
+- Add localized message components ([`4afa50f`](https://github.com/citum/citum-core/commit/4afa50f77e3d604b9d6e7e39339674ba1bf8d88e))
+
+
+**styles**
+
+- Use embedded message phrases ([`5a0bf77`](https://github.com/citum/citum-core/commit/5a0bf77fac0e286e3545cee885decafe313b5f83))
+
+- Convert apa chicago phrases ([`880701b`](https://github.com/citum/citum-core/commit/880701b8624c6eaa64071a11db9a69baedbbf772))
+
+
+
+### Refactor
+
+**cli**
+
+- Extract style catalog row ([`58ef6f6`](https://github.com/citum/citum-core/commit/58ef6f655e0d91191732d462f674780ff2b1991e))
+
+
+**engine**
+
+- Simplify integral name memory ([`b2c1caf`](https://github.com/citum/citum-core/commit/b2c1caf19411643c3132f4919809d7ca57049639))
+
+- Simplify substitute logic ([`41db0e9`](https://github.com/citum/citum-core/commit/41db0e93ba8279904ca57c6a49e679cb88ecc9ee))
+
+- Simplify ungrouped rendering ([`58d3665`](https://github.com/citum/citum-core/commit/58d3665feaebc02b1ce91185de5a347d39ac2e85))
+
+
+**locale**
+
+- Split locale lookup modules ([`9112026`](https://github.com/citum/citum-core/commit/9112026fc56cf4509c37c0c8647de52c0b3d683f))
+
+
+**migrate**
+
+- Decouple template formatting ([`5fa5a49`](https://github.com/citum/citum-core/commit/5fa5a49489da6ea1ae950a12d3247c959a52a13e))
+
+
+**schema**
+
+- Rename issued date accessor ([`fa32312`](https://github.com/citum/citum-core/commit/fa323123a9b2bb4290775b20168bfce59bdfc260))
+
+
+**styles**
+
+- Migrate embedded terms ([`46c80c0`](https://github.com/citum/citum-core/commit/46c80c0794b269a4d128146c30036d5473cdf61c))
+
+- Migrate production terms ([`842301c`](https://github.com/citum/citum-core/commit/842301cd636d6874bb6027d191483fa4871e6df0))
+
+
+
+### Styling
+
+**styles**
+
+- Bring 6 styles to 100% fidelity ([`d3b5fe1`](https://github.com/citum/citum-core/commit/d3b5fe1080929603263b7e13cb93eeaf7e3f03a6))
+
+
+
+### Testing
+
+**engine**
+
+- Clean document review smells ([`47537b0`](https://github.com/citum/citum-core/commit/47537b06c36a107d67a32b98496303ea1283ad52))
+
+
+**report**
+
+- Refresh top-10 oracle baseline ([`2de5f30`](https://github.com/citum/citum-core/commit/2de5f30798fd13dfe8e8e88569cf75b034716a87))
+
+
+**styles**
+
+- Forbid checked-in template terms ([`01b6eff`](https://github.com/citum/citum-core/commit/01b6eff7b23c7237f78f2d62f93eb2db9cd17889))
+
+
 ## [0.70.1] - 2026-06-23
 
 ### Bug Fixes
