@@ -16,11 +16,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
     reason = "Panicking is acceptable and often desired in test, benchmark, and example code."
 )]
 
-/*
-SPDX-License-Identifier: MIT OR Apache-2.0
-SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
-*/
-
 mod common;
 use common::*;
 
