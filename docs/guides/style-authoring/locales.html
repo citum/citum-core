@@ -4,8 +4,8 @@
     <head>
         <meta charset="utf-8" />
         <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-        <title>Locales and Gender-Aware Terms | Citum Docs</title>
-        <meta name="description" content="Use locale terms for roles, labels, locators, and grammatical agreement." />
+        <title>Locale Messages | Citum Docs</title>
+        <meta name="description" content="Use MessageFormat 2 messages for locale-owned text: labels, role phrases, and compositional patterns." />
         <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap" rel="stylesheet" />
         <link rel="stylesheet" href="../../assets/citum-theme.css">
     </head>
@@ -53,8 +53,8 @@
         <main class="doc-shell">
             <header class="doc-section-header">
                 <span class="citum-kicker">Style authoring</span>
-                <h1>Locales and Gender-Aware Terms</h1>
-                <p>Use locale terms for roles, labels, locators, and grammatical agreement.</p>
+                <h1>Locale Messages</h1>
+                <p>Use MessageFormat 2 messages for locale-owned text: labels, role phrases, and compositional patterns.</p>
             </header>
 
             <div class="doc-sidebar-layout">
@@ -70,81 +70,100 @@
 <a class="doc-sidebar-link" href="../../guides/style-authoring/advanced-examples.html">Advanced Examples</a>
                 </aside>
                 <article class="doc-prose">
-                    <h2 id="locale-owned-text">Locale-owned text</h2><p>Use locale terms for text that varies by language: page labels, role labels,
-and other bibliographic terms. Style templates should express structure; locale
-files should own language.</p>
+                    <h2 id="messages-block">The <code>messages</code> block</h2><p>Locale files own language. Style templates express structure; locale files
+supply the words, inflections, and phrase order via a top-level
+<code>messages</code> block. Enable the message system with two header fields:</p>
 
             <div class="workshop-block">
-                <pre><code class="language-yaml"><span class="text-slate-400">- </span><span class="text-primary">term</span>: <span class="text-emerald-400">volume</span>
-  <span class="text-primary">form</span>: <span class="text-emerald-400">short</span>
-  <span class="text-primary">suffix</span>: <span class="text-emerald-400">" "</span>
-<span class="text-slate-400">- </span><span class="text-primary">number</span>: <span class="text-emerald-400">volume</span></code></pre>
+                <pre><code class="language-yaml"><span class="text-primary">locale-schema-version</span>: <span class="text-emerald-400">"2"</span>
+<span class="text-primary">locale</span>: <span class="text-emerald-400">en-US</span>
+<span class="text-indigo-400">evaluation</span>:
+  <span class="text-primary">message-syntax</span>: <span class="text-emerald-400">mf2</span>
+<span class="text-indigo-400">messages</span>:
+  <span class="text-primary">term.and</span>: <span class="text-emerald-400">"and"</span>
+  <span class="text-primary">term.et-al</span>: <span class="text-emerald-400">"et al."</span></code></pre>
             </div>
-        <h2 id="contributor-gender-metadata">Contributor gender metadata</h2><p>Contributor-driven role labels can use contributor gender metadata where the
-locale provides gendered forms.</p>
+        <h2 id="message-id-namespaces">Message ID namespaces</h2><p>All message IDs follow a dot-namespaced convention:</p>
+<ul>
+<li><code>term.*</code> — localized labels and abbreviations (page markers, connectors)</li>
+<li><code>role.*</code> — contributor role phrases, both label and verb forms</li>
+<li><code>pattern.*</code> — compositional phrase templates; the locale controls word order and glue</li>
+</ul>
+<h2 id="plain-strings">Plain strings and variable substitution</h2><p>Most messages are plain strings. Use <code>{$variable}</code> to splice in a
+rendered value supplied by the engine.</p>
 
             <div class="workshop-block">
-                <pre><code class="language-yaml"><span class="text-indigo-400">contributors</span>:
-  <span class="text-slate-400">- </span><span class="text-primary">role</span>: <span class="text-emerald-400">editor</span>
-    <span class="text-primary">contributor</span>:
-      <span class="text-primary">family</span>: <span class="text-emerald-400">"Martinez"</span>
-      <span class="text-primary">given</span>: <span class="text-emerald-400">"Ana"</span>
-    <span class="text-primary">gender</span>: <span class="text-emerald-400">feminine</span></code></pre>
+                <pre><code class="language-yaml"><span class="text-indigo-400">messages</span>:
+  <span class="text-primary">term.and</span>: <span class="text-emerald-400">"and"</span>
+  <span class="text-primary">term.et-al</span>: <span class="text-emerald-400">"et al."</span>
+  <span class="text-primary">pattern.accessed-date</span>: <span class="text-emerald-400">"accessed {$date}"</span>
+  <span class="text-primary">pattern.in-container</span>: <span class="text-emerald-400">"in {$container}"</span>
+  <span class="text-primary">pattern.retrieved-from</span>: <span class="text-emerald-400">"retrieved from {$url}"</span></code></pre>
             </div>
-        <p>Mixed-gender contributor groups prefer a locale&#39;s neutral or common form when
-one exists. Citum does not silently choose a masculine-specific label for a
-mixed group when only gendered forms are available.</p>
-<h2 id="template-gender-overrides">Template gender overrides</h2><p>Use a template-level <code>gender</code> override when the style needs to request a
-specific agreement form directly.</p>
+        <h2 id="plural-dispatch">Plural dispatch</h2><p>Use <code>.match {$count :plural}</code> to select between singular and plural
+forms. <code>when one</code> matches a count of one; <code>when *</code> is the
+catch-all.</p>
 
             <div class="workshop-block">
-                <pre><code class="language-yaml"><span class="text-slate-400">- </span><span class="text-primary">contributor</span>: <span class="text-emerald-400">editor</span>
-  <span class="text-primary">form</span>: <span class="text-emerald-400">long</span>
-  <span class="text-primary">gender</span>: <span class="text-emerald-400">feminine</span>
+                <pre><code class="language-yaml"><span class="text-primary">term.page-label</span>: <span class="text-emerald-400">|</span>
+  <span class="text-indigo-400">.match</span> {$count :plural}
+  <span class="text-indigo-400">when</span> one {p.}
+  <span class="text-indigo-400">when</span> * {pp.}
 
-<span class="text-slate-400">- </span><span class="text-primary">term</span>: <span class="text-emerald-400">volume</span>
-  <span class="text-primary">form</span>: <span class="text-emerald-400">short</span>
-  <span class="text-primary">gender</span>: <span class="text-emerald-400">masculine</span>
-
-<span class="text-slate-400">- </span><span class="text-primary">number</span>: <span class="text-emerald-400">volume</span>
-  <span class="text-primary">label-form</span>: <span class="text-emerald-400">short</span>
-  <span class="text-primary">gender</span>: <span class="text-emerald-400">feminine</span></code></pre>
+<span class="text-primary">term.chapter-label</span>: <span class="text-emerald-400">|</span>
+  <span class="text-indigo-400">.match</span> {$count :plural}
+  <span class="text-indigo-400">when</span> one {chap.}
+  <span class="text-indigo-400">when</span> * {chaps.}</code></pre>
             </div>
-        <h2 id="locale-yaml">Locale YAML</h2><p>Locale terms can be plain strings or gendered maps.</p>
+        <h2 id="gender-aware-role-labels">Gender-aware role labels</h2><p>Use <code>.match {$gender :select}</code> for gender agreement. Combine with
+<code>{$count :plural}</code> when both dimensions matter. The <code>$gender</code>
+argument comes from contributor gender metadata on the reference;
+<code>when *</code> is the neutral fallback.</p>
 
             <div class="workshop-block">
-                <pre><code class="language-yaml"><span class="text-indigo-400">roles</span>:
-  <span class="text-primary">editor</span>:
-    <span class="text-primary">long</span>:
-      <span class="text-primary">singular</span>:
-        <span class="text-primary">masculine</span>: <span class="text-emerald-400">editor</span>
-        <span class="text-primary">feminine</span>: <span class="text-emerald-400">editora</span>
-        <span class="text-primary">common</span>: <span class="text-emerald-400">persona</span> editora
-      <span class="text-primary">plural</span>:
-        <span class="text-primary">masculine</span>: <span class="text-emerald-400">editores</span>
-        <span class="text-primary">feminine</span>: <span class="text-emerald-400">editoras</span>
-        <span class="text-primary">common</span>: <span class="text-emerald-400">equipo</span> editorial</code></pre>
+                <pre><code class="language-yaml"><span class="text-slate-400"># verb form — gender only</span>
+<span class="text-primary">role.editor.verb</span>: <span class="text-emerald-400">|</span>
+  <span class="text-indigo-400">.match</span> {$gender :select}
+  <span class="text-indigo-400">when</span> masculine {editado por}
+  <span class="text-indigo-400">when</span> feminine {editada por}
+  <span class="text-indigo-400">when</span> * {editado por}
+
+<span class="text-slate-400"># role label — gender × count</span>
+<span class="text-primary">role.editor.label-long</span>: <span class="text-emerald-400">|</span>
+  <span class="text-indigo-400">.match</span> {$gender :select} {$count :plural}
+  <span class="text-indigo-400">when</span> masculine one {editor}
+  <span class="text-indigo-400">when</span> masculine * {editores}
+  <span class="text-indigo-400">when</span> feminine one {editora}
+  <span class="text-indigo-400">when</span> feminine * {editoras}
+  <span class="text-indigo-400">when</span> * * {equipo editorial}</code></pre>
             </div>
-        <p>Locator terms can also declare lexical gender metadata.</p>
+        <p>A <code>gender:</code> field on the contributor entry feeds the <code>$gender</code>
+selector. Mixed-gender groups receive the <code>when *</code> form; Citum does not
+silently choose a masculine-specific label for a mixed group.</p>
+<h2 id="compositional-patterns">Compositional patterns</h2><p><code>pattern.*</code> messages assemble pre-rendered values into natural-language
+phrases. The engine fills the named variables; the locale controls word order
+and connecting words. This is where languages differ most — date component
+order, prepositions, postpositions.</p>
 
             <div class="workshop-block">
-                <pre><code class="language-yaml"><span class="text-indigo-400">locators</span>:
-  <span class="text-primary">page</span>:
-    <span class="text-primary">long</span>:
-      <span class="text-primary">singular</span>: página
-      <span class="text-primary">plural</span>: páginas
-    <span class="text-primary">short</span>:
-      <span class="text-primary">singular</span>: <span class="text-emerald-400">p.</span>
-      <span class="text-primary">plural</span>: <span class="text-emerald-400">pp.</span>
-    <span class="text-primary">gender</span>: <span class="text-emerald-400">feminine</span></code></pre>
+                <pre><code class="language-yaml"><span class="text-slate-400"># English — month first</span>
+<span class="text-primary">pattern.date-full</span>: <span class="text-emerald-400">"{$month} {$day}, {$year}"</span>
+
+<span class="text-slate-400"># Spanish — day first</span>
+<span class="text-primary">pattern.date-full</span>: <span class="text-emerald-400">"{$day} de {$month} de {$year}"</span>
+
+<span class="text-slate-400"># Page range</span>
+<span class="text-primary">pattern.page-range</span>: <span class="text-emerald-400">"{$start}–{$end}"</span></code></pre>
             </div>
 
             <div class="callout tip">
                 <span aria-hidden="true">ℹ️</span>
-                <div><strong>Current scope</strong>
-Gender-aware rendering applies to locale term selection and contributor role
-labels. Verb-form role terms remain ungendered until the follow-up adds the
-required plumbing.</div>
+                <div><strong>Current plural scope</strong>
+MF2 select dispatch (<code>:select</code>) is fully supported, including gendered verb
+forms. Plural dispatch (<code>:plural</code>) currently recognises <code>one</code> and
+<code>*</code> (catch-all) — sufficient for most Western-European languages. Full
+CLDR plural categories (<code>zero</code>, <code>two</code>, <code>few</code>, <code>many</code>)
+are planned pending ICU4X stabilisation.</div>
             </div>
 
                 </article>
