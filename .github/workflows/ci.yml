@@ -33,7 +33,7 @@ jobs:
       semver: ${{ steps.filter.outputs.semver }}
       release: ${{ steps.filter.outputs.release }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -65,7 +65,7 @@ jobs:
     if: ${{ needs.changes.outputs.docs == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -79,7 +79,7 @@ jobs:
     if: ${{ needs.changes.outputs.beans == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -112,7 +112,7 @@ jobs:
     if: ${{ needs.changes.outputs.scripts == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
         with:
           persist-credentials: false
 
@@ -140,7 +140,7 @@ jobs:
     if: ${{ needs.changes.outputs.release == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
         with:
           persist-credentials: false
 
@@ -157,7 +157,7 @@ jobs:
           key: release-dry-runs
 
       - name: Install wasm-pack
-        uses: taiki-e/install-action@0fd46367812ee04360509b4169d9f659d6892bb2  # v2
+        uses: taiki-e/install-action@9bcaee1dcae34154180f412e2fa69355a7cda9f6  # v2
         with:
           tool: wasm-pack
 
@@ -180,7 +180,7 @@ jobs:
     if: ${{ needs.changes.outputs.infra == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
         with:
           persist-credentials: false
 
@@ -201,6 +201,41 @@ jobs:
       - name: Check facade crate boundaries
         run: ./scripts/check-facade-crate.sh
 
+  benchmark-wasm:
+    name: WASM Benchmark Smoke Test
+    needs: changes
+    if: ${{ needs.changes.outputs.infra == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
+        with:
+          persist-credentials: false
+
+      - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8  # stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - uses: Swatinem/rust-cache@e18b497796c12c097a38f9edb9d0641fb99eee32  # v2
+        with:
+          key: benchmark-wasm
+
+      - name: Install wasm-pack
+        uses: taiki-e/install-action@9bcaee1dcae34154180f412e2fa69355a7cda9f6  # v2
+        with:
+          tool: wasm-pack
+
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e  # v6
+        with:
+          node-version: "22"
+
+      - name: Build WASM bindings
+        working-directory: crates/citum-bindings
+        run: wasm-pack build --target nodejs --features full-wasm
+
+      - name: Run workflow benchmark (CI mode)
+        run: node scripts/benchmark-wasm-workflow.js --ci
+
   rust-ci:
     name: Rust CI (Lint + Test)
     needs: changes
@@ -211,7 +246,7 @@ jobs:
       RUSTFLAGS: "-C link-arg=-fuse-ld=mold"
       CARGO_INCREMENTAL: "0"
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
         with:
           fetch-depth: 1
           persist-credentials: false
@@ -225,7 +260,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y mold
 
       - name: Install cargo-nextest
-        uses: taiki-e/install-action@0fd46367812ee04360509b4169d9f659d6892bb2  # v2
+        uses: taiki-e/install-action@9bcaee1dcae34154180f412e2fa69355a7cda9f6  # v2
         with:
           tool: cargo-nextest
 
@@ -261,7 +296,7 @@ jobs:
     env:
       CARGO_TERM_COLOR: always
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
         with:
           fetch-depth: 1
           persist-credentials: false
@@ -273,7 +308,7 @@ jobs:
         uses: dtolnay/rust-toolchain@5b842231ba77f5c045dba54ac5560fed2db780e2  # nightly
 
       - name: Install security tools
-        uses: taiki-e/install-action@0fd46367812ee04360509b4169d9f659d6892bb2  # v2
+        uses: taiki-e/install-action@9bcaee1dcae34154180f412e2fa69355a7cda9f6  # v2
         with:
           tool: cargo-audit,cargo-deny,cargo-fuzz
 
@@ -294,7 +329,7 @@ jobs:
           needs.changes.outputs.semver == 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10  # v6
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -309,7 +344,7 @@ jobs:
           cache-workspace-crates: true
 
       - name: Install cargo-semver-checks
-        uses: taiki-e/install-action@0fd46367812ee04360509b4169d9f659d6892bb2  # v2
+        uses: taiki-e/install-action@9bcaee1dcae34154180f412e2fa69355a7cda9f6  # v2
         with:
           tool: cargo-semver-checks
 
