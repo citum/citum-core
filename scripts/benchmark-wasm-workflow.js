@@ -9,7 +9,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus
  * Measures performance metrics for citation and bibliography rendering.
  */
 
-const { renderCitation, renderBibliography, validateStyle } = require('../crates/citum-bindings/pkg/citum_bindings.js');
 const { performance } = require('node:perf_hooks');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -21,22 +20,41 @@ const getArg = (name, defaultValue) => {
   return (index !== -1 && args[index + 1]) ? args[index + 1] : defaultValue;
 };
 
-const REFS_COUNT = parseInt(getArg('--refs', '500'), 10);
-const CITATIONS_COUNT = parseInt(getArg('--cites', '100'), 10);
-const REFRESH_INTERVAL = parseInt(getArg('--interval', '20'), 10);
+const CI_MODE = args.includes('--ci');
+const REFS_COUNT = parseInt(getArg('--refs', CI_MODE ? '50' : '500'), 10);
+const CITATIONS_COUNT = parseInt(getArg('--cites', CI_MODE ? '20' : '100'), 10);
+const REFRESH_INTERVAL = parseInt(getArg('--interval', CI_MODE ? '5' : '20'), 10);
 const STYLE_PATH = getArg('--style', 'styles/embedded/apa-7th.yaml');
 
-async function runBenchmark() {
+function runBenchmark() {
+  // Lazy-load WASM so a missing artifact gives a clear, actionable error.
+  let renderCitation, renderBibliography, validateStyle;
+  const wasmJs = path.resolve(__dirname, '../crates/citum-bindings/pkg/citum_bindings.js');
+  const wasmBin = path.resolve(__dirname, '../crates/citum-bindings/pkg/citum_bindings_bg.wasm');
+  if (!fs.existsSync(wasmJs) || !fs.existsSync(wasmBin)) {
+    console.error(
+      'WASM not built. Run: wasm-pack build --target nodejs --features full-wasm  (in crates/citum-bindings/)'
+    );
+    process.exit(1);
+  }
+  try {
+    ({ renderCitation, renderBibliography, validateStyle } = require(wasmJs));
+  } catch (e) {
+    console.error('Failed to load WASM bindings:', e.message);
+    process.exit(1);
+  }
+
   console.log('====================================================');
   console.log('   Citum WASM: Word Processor Workflow Benchmark');
   console.log('====================================================');
 
   const styleYaml = fs.readFileSync(path.resolve(__dirname, '..', STYLE_PATH), 'utf8');
-  
+
   console.log(`[Config] Style:      ${STYLE_PATH}`);
   console.log(`[Config] References: ${REFS_COUNT}`);
   console.log(`[Config] Citations:  ${CITATIONS_COUNT}`);
   console.log(`[Config] Refresh:    Every ${REFRESH_INTERVAL} citations`);
+  if (CI_MODE) console.log('[Config] Mode:       CI (reduced params)');
   console.log('----------------------------------------------------');
 
   // 1. Warmup / Validation
@@ -122,7 +140,7 @@ async function runBenchmark() {
   console.log('----------------------------------------------------');
 }
 
-runBenchmark().catch(err => {
+try { runBenchmark(); } catch (err) {
   console.error('\nFatal error:', err);
   process.exit(1);
-});
+}
