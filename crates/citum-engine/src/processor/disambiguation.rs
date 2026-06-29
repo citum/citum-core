@@ -90,6 +90,21 @@ enum HintOrder {
     GroupSorted,
 }
 
+enum GroupHintAction<'a> {
+    Singleton(&'a Reference),
+    LabelYearSuffix,
+    NamePartitions {
+        min_names_to_show: usize,
+        partitions: HashMap<String, Vec<&'a Reference>>,
+    },
+    GivennameResolution,
+    CombinedResolution {
+        min_names_to_show: usize,
+        primary_only_requires_suffix: bool,
+    },
+    FallbackYearSuffix,
+}
+
 type ReferenceCache = HashMap<usize, CachedReferenceData>;
 
 struct CachedReferenceData {
@@ -270,82 +285,163 @@ impl<'a> Disambiguator<'a> {
         hints: &mut HashMap<String, ProcHints>,
         context: GroupDisambiguationContext<'_>,
     ) {
-        if self.try_apply_singleton_hint(hints, &context) {
-            return;
+        match self.select_group_hint_action(&context) {
+            GroupHintAction::Singleton(reference) => {
+                self.insert_hint(
+                    hints,
+                    reference,
+                    context.author_group_lengths,
+                    context.cache,
+                    ProcHints::default(),
+                );
+            }
+            GroupHintAction::LabelYearSuffix => {
+                self.apply_year_suffix(hints, &context, false, None);
+            }
+            GroupHintAction::NamePartitions {
+                min_names_to_show,
+                partitions,
+            } => self.apply_name_partitions(hints, &context, min_names_to_show, &partitions),
+            GroupHintAction::GivennameResolution => {
+                self.apply_resolution(hints, context.group, &context, true, None);
+            }
+            GroupHintAction::CombinedResolution {
+                min_names_to_show,
+                primary_only_requires_suffix,
+            } => {
+                if primary_only_requires_suffix {
+                    self.apply_year_suffix_for_group(
+                        hints,
+                        context.group,
+                        &context,
+                        true,
+                        Some(min_names_to_show),
+                    );
+                } else {
+                    self.apply_resolution(
+                        hints,
+                        context.group,
+                        &context,
+                        true,
+                        Some(min_names_to_show),
+                    );
+                }
+            }
+            GroupHintAction::FallbackYearSuffix => {
+                self.apply_year_suffix(hints, &context, false, None);
+            }
         }
-
-        if self.try_apply_label_mode_year_suffix(hints, &context) {
-            return;
-        }
-
-        if self.try_apply_name_partitions(hints, &context) {
-            return;
-        }
-
-        if self.try_apply_givenname_resolution(hints, &context) {
-            return;
-        }
-
-        if self.try_apply_combined_resolution(hints, &context) {
-            return;
-        }
-
-        self.apply_year_suffix(hints, &context, false, None);
     }
 
-    /// Optimization for groups with only one reference (no collision).
-    fn try_apply_singleton_hint(
+    /// Selects the first applicable disambiguation action without mutating hint state.
+    fn select_group_hint_action<'b>(
+        &self,
+        context: &GroupDisambiguationContext<'b>,
+    ) -> GroupHintAction<'b> {
+        if let Some(reference) = self.select_singleton_hint(context) {
+            return GroupHintAction::Singleton(reference);
+        }
+
+        if self.select_label_mode_year_suffix(context) {
+            return GroupHintAction::LabelYearSuffix;
+        }
+
+        if let Some((min_names_to_show, partitions)) = self.select_name_partitions(context) {
+            return GroupHintAction::NamePartitions {
+                min_names_to_show,
+                partitions,
+            };
+        }
+
+        if self.select_givenname_resolution(context) {
+            return GroupHintAction::GivennameResolution;
+        }
+
+        if let Some((min_names_to_show, primary_only_requires_suffix)) =
+            self.select_combined_resolution(context)
+        {
+            return GroupHintAction::CombinedResolution {
+                min_names_to_show,
+                primary_only_requires_suffix,
+            };
+        }
+
+        GroupHintAction::FallbackYearSuffix
+    }
+
+    /// Selects singleton handling for groups with only one reference (no collision).
+    fn select_singleton_hint<'b>(
+        &self,
+        context: &GroupDisambiguationContext<'b>,
+    ) -> Option<&'b Reference> {
+        if context.group.len() == 1 {
+            #[allow(clippy::indexing_slicing, reason = "context.group.len() == 1")]
+            return Some(context.group[0]);
+        }
+
+        None
+    }
+
+    /// Selects year-suffix disambiguation specifically for label-based styles (e.g. [Knu84a]).
+    fn select_label_mode_year_suffix(&self, context: &GroupDisambiguationContext<'_>) -> bool {
+        context.flags.is_label_mode && context.flags.year_suffix
+    }
+
+    /// Selects partitions produced by expanding the number of names shown (et al. expansion).
+    fn select_name_partitions<'b>(
+        &self,
+        context: &GroupDisambiguationContext<'b>,
+    ) -> Option<(usize, HashMap<String, Vec<&'b Reference>>)> {
+        context
+            .flags
+            .add_names
+            .then(|| self.partition_by_name_expansion(context.group, context.cache))
+            .flatten()
+    }
+
+    /// Selects collision resolution by adding given names or initials.
+    fn select_givenname_resolution(&self, context: &GroupDisambiguationContext<'_>) -> bool {
+        // Use full-expansion keys to determine whether givenname expansion can help at all.
+        // (With n=1, the full and primary-only keys are equivalent — both inspect only the
+        // primary author — so no separate primary-only check is needed here.)
+        context.flags.add_givenname
+            && self.check_givenname_resolution(context.group, context.cache, None, false)
+    }
+
+    /// Selects collision resolution by using both more names AND given name expansion.
+    ///
+    /// When `primary_givenname_only` is active, the renderer only shows given names for
+    /// the first author. `find_combined_resolution` uses full-expansion keys to find the
+    /// minimum name count that would work in theory; this function then verifies whether
+    /// that resolution also holds under the restricted primary-only rendering.
+    fn select_combined_resolution(
+        &self,
+        context: &GroupDisambiguationContext<'_>,
+    ) -> Option<(usize, bool)> {
+        if !context.flags.add_names || !context.flags.add_givenname {
+            return None;
+        }
+
+        let min_names_to_show = self.find_combined_resolution(context.group, context.cache)?;
+        let primary_only_requires_suffix = context.flags.primary_givenname_only
+            && !self.check_givenname_resolution(
+                context.group,
+                context.cache,
+                Some(min_names_to_show),
+                true,
+            );
+
+        Some((min_names_to_show, primary_only_requires_suffix))
+    }
+
+    /// Applies a name-expansion partition plan, suffixing any unresolved subgroups.
+    fn apply_name_partitions(
         &self,
         hints: &mut HashMap<String, ProcHints>,
         context: &GroupDisambiguationContext<'_>,
-    ) -> bool {
-        if context.group.len() != 1 {
-            return false;
-        }
-
-        #[allow(clippy::indexing_slicing, reason = "context.group.len() == 1")]
-        let head = context.group[0];
-
-        self.insert_hint(
-            hints,
-            head,
-            context.author_group_lengths,
-            context.cache,
-            ProcHints::default(),
-        );
-        true
-    }
-
-    /// Handles year-suffix disambiguation specifically for label-based styles (e.g. [Knu84a]).
-    fn try_apply_label_mode_year_suffix(
-        &self,
-        hints: &mut HashMap<String, ProcHints>,
-        context: &GroupDisambiguationContext<'_>,
-    ) -> bool {
-        if !(context.flags.is_label_mode && context.flags.year_suffix) {
-            return false;
-        }
-
-        self.apply_year_suffix(hints, context, false, None);
-        true
-    }
-
-    /// Attempts to resolve collisions by expanding the number of names shown (et al. expansion).
-    fn try_apply_name_partitions(
-        &self,
-        hints: &mut HashMap<String, ProcHints>,
-        context: &GroupDisambiguationContext<'_>,
-    ) -> bool {
-        if !context.flags.add_names {
-            return false;
-        }
-
-        let Some((min_names_to_show, partitions)) =
-            self.partition_by_name_expansion(context.group, context.cache)
-        else {
-            return false;
-        };
-
+        min_names_to_show: usize,
+        partitions: &HashMap<String, Vec<&Reference>>,
+    ) {
         for subgroup in partitions.values() {
             if subgroup.len() == 1 {
                 self.apply_resolution(hints, subgroup, context, false, Some(min_names_to_show));
@@ -392,74 +488,6 @@ impl<'a> Disambiguator<'a> {
                 Some(min_names_to_show),
             );
         }
-
-        true
-    }
-
-    /// Attempts to resolve collisions by adding given names or initials.
-    fn try_apply_givenname_resolution(
-        &self,
-        hints: &mut HashMap<String, ProcHints>,
-        context: &GroupDisambiguationContext<'_>,
-    ) -> bool {
-        // Use full-expansion keys to determine whether givenname expansion can help at all.
-        // (With n=1, the full and primary-only keys are equivalent — both inspect only the
-        // primary author — so no separate primary-only check is needed here.)
-        if !(context.flags.add_givenname
-            && self.check_givenname_resolution(context.group, context.cache, None, false))
-        {
-            return false;
-        }
-
-        self.apply_resolution(hints, context.group, context, true, None);
-        true
-    }
-
-    /// Attempts to resolve collisions by using both more names AND given name expansion.
-    ///
-    /// When `primary_givenname_only` is active, the renderer only shows given names for
-    /// the first author. `find_combined_resolution` uses full-expansion keys to find the
-    /// minimum name count that would work in theory; this function then verifies whether
-    /// that resolution also holds under the restricted primary-only rendering.  If not,
-    /// the group cannot be resolved by expansion alone and falls back to year-suffix while
-    /// retaining the et-al expansion that was found.
-    fn try_apply_combined_resolution(
-        &self,
-        hints: &mut HashMap<String, ProcHints>,
-        context: &GroupDisambiguationContext<'_>,
-    ) -> bool {
-        if !context.flags.add_names || !context.flags.add_givenname {
-            return false;
-        }
-
-        let Some(min_names_to_show) = self.find_combined_resolution(context.group, context.cache)
-        else {
-            return false;
-        };
-
-        // When primary-name expansion is active, confirm the resolution still holds when
-        // only the first author's given name is rendered.  If it does not, the expansion
-        // alone is insufficient; emit year-suffix while preserving the et-al expansion.
-        if context.flags.primary_givenname_only
-            && !self.check_givenname_resolution(
-                context.group,
-                context.cache,
-                Some(min_names_to_show),
-                true,
-            )
-        {
-            self.apply_year_suffix_for_group(
-                hints,
-                context.group,
-                context,
-                true,
-                Some(min_names_to_show),
-            );
-            return true;
-        }
-
-        self.apply_resolution(hints, context.group, context, true, Some(min_names_to_show));
-        true
     }
 
     /// Searches for the minimum number of names that, when combined with given name expansion,
