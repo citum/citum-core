@@ -1,3 +1,4 @@
+extends: chicago-18-base
 info:
   title: Chicago Manual of Style 18th edition (notes without bibliography)
   description: Chicago-style source citations (with Bluebook for legal citations), notes system
@@ -33,17 +34,15 @@ info:
   short-name: "Chicago Notes"
   edition: "18th edition"
 options:
-  multilingual: romanized-translated
+  # multilingual, page-range-format, punctuation-in-quote, and
+  # contributors.demote-non-dropping-particle are inherited from chicago-18-base.
   processing: note
   substitute: editor-translator-short
   contributors:
     and: text
     delimiter-precedes-last: contextual
-    demote-non-dropping-particle: display-and-sort
   dates: long
   titles: chicago
-  page-range-format: chicago16
-  punctuation-in-quote: true
 citation:
   delimiter: ""
   ibid:

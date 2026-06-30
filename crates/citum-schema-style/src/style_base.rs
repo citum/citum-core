@@ -48,6 +48,9 @@ pub enum StyleBase {
     TaylorAndFrancisNationalLibraryOfMedicineCore,
     /// Hidden Chicago shortened-notes root.
     ChicagoShortenedNotesBibliographyCore,
+    /// Hidden Chicago 18 shared component base (options-only; both CMOS heads extend it).
+    #[serde(rename = "chicago-18-base")]
+    Chicago18Base,
     /// Chicago Manual of Style 18th edition — notes without bibliography.
     #[serde(rename = "chicago-notes-18th")]
     ChicagoNotes18th,
@@ -108,6 +111,7 @@ impl StyleBase {
             StyleBase::ChicagoShortenedNotesBibliographyCore => {
                 "chicago-shortened-notes-bibliography-core"
             }
+            StyleBase::Chicago18Base => "chicago-18-base",
             StyleBase::ChicagoNotes18th => "chicago-notes-18th",
             StyleBase::ChicagoAuthorDate18th => "chicago-author-date-18th",
             StyleBase::ChicagoShortenedNotesBibliography => "chicago-shortened-notes-bibliography",
@@ -207,6 +211,7 @@ impl StyleBase {
             StyleBase::ChicagoShortenedNotesBibliographyCore => {
                 "chicago-shortened-notes-bibliography-core"
             }
+            StyleBase::Chicago18Base => "chicago-18-base",
             StyleBase::ChicagoNotes18th => "chicago-notes-18th",
             StyleBase::ChicagoAuthorDate18th => "chicago-author-date-18th",
             StyleBase::ChicagoShortenedNotesBibliography => "chicago-shortened-notes-bibliography",
@@ -248,6 +253,7 @@ impl StyleBase {
             StyleBase::TaylorAndFrancisCouncilOfScienceEditorsAuthorDateCore,
             StyleBase::TaylorAndFrancisNationalLibraryOfMedicineCore,
             StyleBase::ChicagoShortenedNotesBibliographyCore,
+            StyleBase::Chicago18Base,
             StyleBase::ChicagoNotes18th,
             StyleBase::ChicagoAuthorDate18th,
             StyleBase::ChicagoShortenedNotesBibliography,
@@ -467,11 +473,16 @@ citation:
     fn all_bases_resolve_cleanly() {
         for base in StyleBase::all() {
             let resolved = base.base().into_resolved();
-            assert!(
-                resolved.citation.is_some(),
-                "{} resolved citation missing",
-                base.key()
-            );
+            // Component bases (key ends in `-base`) are never rendered directly:
+            // they carry only shared options for descendants and legitimately
+            // have no citation grammar of their own.
+            if !base.key().ends_with("-base") {
+                assert!(
+                    resolved.citation.is_some(),
+                    "{} resolved citation missing",
+                    base.key()
+                );
+            }
             assert!(
                 resolved.options.is_some(),
                 "{} resolved options missing",
@@ -481,13 +492,48 @@ citation:
     }
 
     #[test]
+    fn chicago_18_base_carries_shared_component_options() {
+        use crate::options::PageRangeFormat;
+
+        let resolved = StyleBase::Chicago18Base.base().into_resolved();
+        let options = resolved.options.expect("chicago-18-base has options");
+        assert_eq!(
+            options.page_range_format,
+            Some(PageRangeFormat::Chicago16),
+            "shared page-range-format must be present"
+        );
+        assert!(
+            options.punctuation_in_quote,
+            "shared punctuation-in-quote must be present"
+        );
+        assert!(
+            options.multilingual.is_some(),
+            "shared multilingual policy must be present"
+        );
+        assert!(
+            options
+                .contributors
+                .as_ref()
+                .and_then(|c| c.demote_non_dropping_particle)
+                .is_some(),
+            "shared demote-non-dropping-particle must be present"
+        );
+        // A component base must not carry a citation grammar.
+        assert!(
+            resolved.citation.is_none(),
+            "chicago-18-base must not define a citation grammar"
+        );
+    }
+
+    #[test]
     fn tier1_bases_have_no_extends_field() {
         // Tier-1 base styles must not contain an extends: field — they ARE the root.
         // Profile styles (Tier-2) in StyleBase may legitimately extend a base.
+        // The two CMOS heads are now Tier-2: they extend the shared
+        // `chicago-18-base` component root (which is itself Tier-1).
         let tier1 = [
             StyleBase::Apa7th,
-            StyleBase::ChicagoNotes18th,
-            StyleBase::ChicagoAuthorDate18th,
+            StyleBase::Chicago18Base,
             StyleBase::Ieee,
             StyleBase::AmericanMedicalAssociation,
             StyleBase::ModernLanguageAssociation,

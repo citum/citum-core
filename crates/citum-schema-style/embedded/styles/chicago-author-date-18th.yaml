@@ -1,3 +1,4 @@
+extends: chicago-18-base
 info:
   title: Chicago Manual of Style 18th edition (author-date)
   description: Chicago-style source citations (with Bluebook for legal citations), author-date system
@@ -31,7 +32,8 @@ info:
   short-name: "Chicago Author-Date"
   edition: "18th edition"
 options:
-  multilingual: romanized-translated
+  # multilingual, page-range-format, punctuation-in-quote, and
+  # contributors.demote-non-dropping-particle are inherited from chicago-18-base.
   locators: note
   # Chicago author-date disambiguation profile (CMOS 18): add names + global
   # first-author given-name + year suffix. The `author-date-full` preset bundles
@@ -46,7 +48,6 @@ options:
       use-first: 3
       and-others: et-al
       delimiter-precedes-last: contextual
-    demote-non-dropping-particle: display-and-sort
     # The book/default templates supply "Translated by" via a verb prefix; omit
     # the default "(Trans.)" role label so it is not rendered twice (matches
     # citeproc's `Translated by David Wyllie.`).
@@ -67,8 +68,6 @@ options:
       emph: true
     serial:
       emph: true
-  page-range-format: chicago16
-  punctuation-in-quote: true
 citation:
   options:
     substitute:

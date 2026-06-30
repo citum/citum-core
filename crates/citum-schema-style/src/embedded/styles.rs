@@ -43,6 +43,7 @@ fn get_style_bytes(name: &str) -> Option<&'static [u8]> {
         "chicago-shortened-notes-bibliography-core" => Some(include_bytes!(
             "../../embedded/styles/chicago-shortened-notes-bibliography-core.yaml"
         )),
+        "chicago-18-base" => Some(include_bytes!("../../embedded/styles/chicago-18-base.yaml")),
         "preset-bases/apa-7th" => Some(include_bytes!("../../embedded/styles/apa-7th.yaml")),
         "preset-bases/chicago-author-date-18th" => Some(include_bytes!(
             "../../embedded/styles/chicago-author-date-18th.yaml"
@@ -157,6 +158,7 @@ pub const EMBEDDED_STYLE_NAMES: &[&str] = &[
     "taylor-and-francis-council-of-science-editors-author-date-core",
     "taylor-and-francis-national-library-of-medicine-core",
     "chicago-shortened-notes-bibliography-core",
+    "chicago-18-base",
     "apa-7th",
     "elsevier-harvard",
     "elsevier-with-titles",

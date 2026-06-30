@@ -6647,6 +6647,11 @@
           "const": "chicago-shortened-notes-bibliography-core"
         },
         {
+          "description": "Hidden Chicago 18 shared component base (options-only; both CMOS heads extend it).",
+          "type": "string",
+          "const": "chicago-18-base"
+        },
+        {
           "description": "Chicago Manual of Style 18th edition — notes without bibliography.",
           "type": "string",
           "const": "chicago-notes-18th"
