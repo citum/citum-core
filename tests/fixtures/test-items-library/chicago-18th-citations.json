@@ -1,0 +1,96 @@
+[
+  {
+    "id": "chi-book-single",
+    "items": [
+      { "id": "6188419/KRWGSS77" }
+    ]
+  },
+  {
+    "id": "chi-book-multi-author",
+    "items": [
+      { "id": "6188419/2FLUQV7Q" }
+    ]
+  },
+  {
+    "id": "chi-chapter-locator",
+    "items": [
+      {
+        "id": "6188419/35B93H6N",
+        "locator": { "label": "page", "value": "112-118" }
+      }
+    ]
+  },
+  {
+    "id": "chi-article-journal",
+    "items": [
+      { "id": "6188419/YF7Q2VUU" }
+    ]
+  },
+  {
+    "id": "chi-article-magazine",
+    "items": [
+      { "id": "6188419/UMQEEZLJ" }
+    ]
+  },
+  {
+    "id": "chi-article-newspaper",
+    "items": [
+      { "id": "6188419/ANR2QB7P" }
+    ]
+  },
+  {
+    "id": "chi-multi-source",
+    "items": [
+      { "id": "6188419/42M8T5XH" },
+      { "id": "6188419/NV46DE8B" }
+    ]
+  },
+  {
+    "id": "chi-no-date",
+    "items": [
+      { "id": "6188419/47IE8DL3" }
+    ]
+  },
+  {
+    "id": "chi-thesis",
+    "items": [
+      { "id": "6188419/RY7PJ7H7" }
+    ]
+  },
+  {
+    "id": "chi-webpage",
+    "items": [
+      { "id": "6188419/BGSKEDCQ" }
+    ]
+  },
+  {
+    "id": "chi-manuscript",
+    "items": [
+      { "id": "6188419/UDAG5V6W" }
+    ]
+  },
+  {
+    "id": "chi-personal-communication",
+    "items": [
+      { "id": "6188419/VHPQRCMZ" }
+    ]
+  },
+  {
+    "id": "chi-interview",
+    "items": [
+      { "id": "6188419/EDMI8NQY" }
+    ]
+  },
+  {
+    "id": "chi-motion-picture",
+    "items": [
+      { "id": "6188419/523NVAZF" }
+    ]
+  },
+  {
+    "id": "chi-broadcast",
+    "items": [
+      { "id": "6188419/EXVHRUDT" }
+    ]
+  }
+]
