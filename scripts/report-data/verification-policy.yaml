@@ -165,6 +165,19 @@ styles:
         scope: bibliography
         count_toward_fidelity: true
         min_pass_rate: 0.73
+      # Shared Chicago-family corpus (csl26-8br0): one fixture pair exercising
+      # citation AND bibliography output, wired identically across the
+      # bibliography-bearing Chicago variants so the family is measured on a
+      # common surface. Diagnostic-only for now — promotion to a gating run
+      # (count_toward_fidelity: true + tuned min_pass_rate) is the substrate
+      # PR's job (csl26-h7oc), after the shared component/conversion work lands.
+      - id: chicago-shared-corpus
+        label: Chicago shared corpus (citation + bibliography)
+        runner: citeproc-oracle
+        refs_fixture: tests/fixtures/test-items-library/chicago-18th.json
+        citations_fixture: tests/fixtures/test-items-library/chicago-18th-citations.json
+        scope: both
+        count_toward_fidelity: false
       - id: relational-comprehensive-smoke
         label: Relational comprehensive native smoke
         runner: native-smoke
@@ -183,10 +196,38 @@ styles:
     scopes:
       - citation
     fixture_family: note-humanities
+    # No shared-corpus benchmark_run here: this variant has no bibliography
+    # surface (bibliography.template is []), and citeproc-oracle does not yet
+    # support a citation-only scope. Wiring it onto the shared corpus is
+    # tracked as follow-up bean csl26-qy4d (give notes-18th a bibliography
+    # surface / lift the citation-scope oracle restriction).
+  chicago-shortened-notes-bibliography:
+    secondary:
+      - biblatex
+    # No fixture_family here on purpose: this style had no policy entry before
+    # and was graded base-run-only. Adding a family would change its gating
+    # fidelity surface, which is out of scope for this ground-prep commit — the
+    # only addition is the diagnostic (count_toward_fidelity: false) run below.
+    benchmark_runs:
+      - id: chicago-shared-corpus
+        label: Chicago shared corpus (citation + bibliography)
+        runner: citeproc-oracle
+        refs_fixture: tests/fixtures/test-items-library/chicago-18th.json
+        citations_fixture: tests/fixtures/test-items-library/chicago-18th-citations.json
+        scope: both
+        count_toward_fidelity: false
   taylor-and-francis-chicago-author-date:
     secondary:
       - biblatex
     fixture_family: author-date
+    benchmark_runs:
+      - id: chicago-shared-corpus
+        label: Chicago shared corpus (citation + bibliography)
+        runner: citeproc-oracle
+        refs_fixture: tests/fixtures/test-items-library/chicago-18th.json
+        citations_fixture: tests/fixtures/test-items-library/chicago-18th-citations.json
+        scope: both
+        count_toward_fidelity: false
   american-physics-society:
     secondary:
       - biblatex
