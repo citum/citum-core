@@ -5,7 +5,7 @@ status: todo
 type: task
 priority: high
 created_at: 2026-06-30T18:46:08Z
-updated_at: 2026-06-30T18:46:23Z
+updated_at: 2026-06-30T18:55:24Z
 parent: csl26-h7oc
 blocked_by:
     - csl26-ucg3
@@ -18,6 +18,7 @@ surface; `bibliography.template: []` is intentional).
 
 ## Baseline (measured 2026-06-30)
 - citations: 7/15 (47%) — lowest of the four variants
+- gated via `chicago-shared-corpus`, `min_pass_rate: 0.46` (csl26-h7oc)
 - bibliography: n/a (notes-only style by design)
 
 ## Input contract (style-tune)

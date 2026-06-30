@@ -5,7 +5,7 @@ status: todo
 type: task
 priority: high
 created_at: 2026-06-30T18:46:09Z
-updated_at: 2026-06-30T18:46:09Z
+updated_at: 2026-06-30T18:55:24Z
 parent: csl26-h7oc
 blocked_by:
     - csl26-giun
@@ -18,7 +18,8 @@ the `style-tune` skill, against the shared Chicago corpus
 ## Baseline (measured 2026-06-30)
 - citations: 11/15 (73%) — inherited from chicago-author-date-18th, untuned
   for Style F specifically
-- bibliography: 298/402 (74%) — same inheritance; not yet gated
+- bibliography: 298/402 (74%) — same inheritance
+- gated via `chicago-shared-corpus`, `min_pass_rate: 0.73` (csl26-h7oc)
 
 ## Input contract (style-tune)
 - Embedded style ID: `taylor-and-francis-chicago-author-date`

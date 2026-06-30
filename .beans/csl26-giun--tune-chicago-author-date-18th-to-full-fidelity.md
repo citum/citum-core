@@ -5,7 +5,7 @@ status: todo
 type: task
 priority: high
 created_at: 2026-06-30T18:46:08Z
-updated_at: 2026-06-30T18:46:08Z
+updated_at: 2026-06-30T18:55:07Z
 parent: csl26-h7oc
 ---
 
@@ -15,8 +15,9 @@ Tune `chicago-author-date-18th` to 100% fidelity + clean SQI via the
 
 ## Baseline (measured 2026-06-30)
 - citations: 11/15 (73%)
-- bibliography: 298/402 (74%) — currently the only gated number in the
-  Chicago family, via `chicago-zotero-bibliography`, `min_pass_rate: 0.73`
+- bibliography: 298/402 (74%)
+- gated via `chicago-shared-corpus`, `min_pass_rate: 0.73` (combined
+  citation+bibliography rate; csl26-h7oc)
 
 ## Input contract (style-tune)
 - Embedded style ID: `chicago-author-date-18th`

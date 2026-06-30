@@ -32,10 +32,14 @@ test('parseArgs requires style, out-dir, and exactly one selector', () => {
 test('resolveBenchmarkRun selects chicago-author-date-18th scoring bibliography benchmark by default', () => {
   const benchmark = resolveBenchmarkRun('chicago-author-date-18th');
 
+  // chicago-zotero-bibliography is diagnostic-only (count_toward_fidelity:
+  // false) since chicago-shared-corpus now carries the headline fidelity
+  // score for this style, but it remains the bibliography-scope run and is
+  // still the correct default pick for this v1, bibliography-only tool.
   assert.equal(benchmark.id, 'chicago-zotero-bibliography');
   assert.equal(benchmark.scope, 'bibliography');
   assert.equal(benchmark.runner, 'citeproc-oracle');
-  assert.equal(benchmark.countTowardFidelity, true);
+  assert.equal(benchmark.countTowardFidelity, false);
   assert.match(benchmark.refsFixture, /tests\/fixtures\/test-items-library\/chicago-18th\.json$/);
 });
 
