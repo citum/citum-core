@@ -131,7 +131,7 @@ for:
 ## Related Files
 
 - `baselines/README.md`
-- `docs/TIER_STATUS.md`
+- generated `docs/compat.html`
 - `docs/guides/RENDERING_WORKFLOW.md`
 - `tests/fixtures/coverage-manifest.json`
 - `scripts/check-testing-infra.js`

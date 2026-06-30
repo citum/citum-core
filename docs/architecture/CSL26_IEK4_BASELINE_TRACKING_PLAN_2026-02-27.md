@@ -34,7 +34,7 @@ Out of scope:
 
 ## Implementation Plan
 1. Define canonical baseline target
-- Baseline set: top-priority parent styles currently used for strict tracking (start with top 10 in `docs/TIER_STATUS.md`).
+- Baseline set: top-priority parent styles currently used for strict tracking (derive from `scripts/report-core.js` output).
 - Fixture set: strict 12-scenario fixture (`tests/fixtures/citations-expanded.json`) as canonical input.
 - Determinism: fix sort/stable output order in saved JSON if needed.
 
@@ -55,7 +55,7 @@ Out of scope:
 - Wire script into `.github/workflows/ci.yml` after existing Rust/tests and core-quality checks.
 
 4. Add local workflow commands and docs
-- Update `docs/TIER_STATUS.md` and/or `docs/guides/RENDERING_WORKFLOW.md` with:
+- Update `docs/compat.html` via `node scripts/report-core.js --write-html` and/or `docs/guides/RENDERING_WORKFLOW.md` with:
   - gate command,
   - baseline refresh command,
   - policy: refresh baseline only in dedicated PRs with justification.

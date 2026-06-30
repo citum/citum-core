@@ -30,7 +30,8 @@ system whose first obligation is to render known styles correctly.
   biblatex behavior belong in the divergence register or a focused spec, not
   in hidden processor behavior.
 
-See also: [`../TIER_STATUS.md`](../TIER_STATUS.md),
+For current automated metrics, run `node scripts/report-core.js > /tmp/core-report.json`.
+See also:
 [`../policies/SQI_REFINEMENT_PLAN.md`](../policies/SQI_REFINEMENT_PLAN.md),
 [`../adjudication/DIVERGENCE_REGISTER.md`](../adjudication/DIVERGENCE_REGISTER.md),
 [`../policies/STYLE_WORKFLOW_DECISION_RULES.md`](../policies/STYLE_WORKFLOW_DECISION_RULES.md),

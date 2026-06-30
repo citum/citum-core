@@ -10,9 +10,9 @@
 **Purpose:** Strategic plan tracking project maturity, phases, and risks
 
 **Canonical metrics source of truth:**
-- `docs/TIER_STATUS.md` for style-level strict oracle status
+- `node scripts/report-core.js > /tmp/core-report.json` for live style-level fidelity and SQI status
 - `scripts/report-data/core-quality-baseline.json` for portfolio baseline gates
-- `docs/compat.html` for published compatibility snapshot
+- `node scripts/report-core.js --write-html` for the generated `docs/compat.html` compatibility snapshot
 
 ## Current State Matrix
 
@@ -31,16 +31,16 @@
 |-----------|--------|----------|-------|
 | XML Options Extraction | ✅ Operational | 87-100% citations | ~2,500 lines, DO NOT TOUCH |
 | Output-Driven Templates | ✅ Validated | 95-97% confidence | Tested on 6 styles |
-| LLM Hand-Authoring | ✅ Operational | See `docs/TIER_STATUS.md` | Production styles converted and maintained via style-evolve |
+| LLM Hand-Authoring | ✅ Operational | See `report-core` output | Production styles converted and maintained via style-evolve |
 | Oracle Verification | ✅ Complete | - | Structured diff, batch aggregator |
 
 ### Processor (Format-Specific Readiness)
 
 | Format | Citations | Bibliography | Blockers |
 |--------|-----------|--------------|----------|
-| Author-Date | See `docs/TIER_STATUS.md` | See `docs/TIER_STATUS.md` | Long-tail variation cleanup |
-| Numeric | See `docs/TIER_STATUS.md` | See `docs/TIER_STATUS.md` | Residual long-tail outliers |
-| Note | See `docs/TIER_STATUS.md` | See `docs/TIER_STATUS.md` | Position-sensitive edge cases |
+| Author-Date | See `report-core` output | See `report-core` output | Long-tail variation cleanup |
+| Numeric | See `report-core` output | See `report-core` output | Residual long-tail outliers |
+| Note | See `report-core` output | See `report-core` output | Position-sensitive edge cases |
 
 **Output Formats:** Plain text ✅, HTML ✅, Djot ✅
 
@@ -144,7 +144,7 @@
 
 | Metric | Current | Phase 1 Target | Phase 2 Target | Notes |
 |--------|---------|----------------|----------------|-------|
-| Top-10 strict parity | See `docs/TIER_STATUS.md` | Maintain parity | Maintain parity | Single source: `docs/TIER_STATUS.md` |
+| Top-10 strict parity | See `report-core` output | Maintain parity | Maintain parity | Single source: `scripts/report-core.js` |
 | Portfolio fidelity/SQI | See `scripts/report-data/core-quality-baseline.json` | Increase threshold attainment count | Increase threshold attainment count | Evaluated via `report-core` + `check-core-quality` |
 | Long-tail outliers | See latest core report | Reduce repeated citation clusters | Reduce repeated bibliography clusters | Use `scripts/analyze-migration-gaps.js` |
 | Bean hygiene | See `.beans/` audit | Normalize status taxonomy | Keep duplicates at zero for active migrate tasks | Enforced by hygiene script |

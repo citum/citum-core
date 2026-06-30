@@ -65,6 +65,7 @@ const KNOWN_DEPENDENTS = {
   'springer-socpsych-author-date': 317,
   'american-medical-association': 293,
   'taylor-and-francis-chicago-author-date': 234,
+  'chicago-author-date': 8,
   'springer-mathphys-brackets': 201,
   'multidisciplinary-digital-publishing-institute': 180,
   'ieee': 176,
@@ -526,7 +527,7 @@ function discoverCoreStyles(provenanceConfig = loadReportProvenance()) {
     const lineageKey = provenanceConfig.styles?.[name]?.lineage
       || inferLineageKey(styleData, hasLegacySource);
     const origin = getLineagePresentation(lineageKey, provenanceConfig);
-    const cslReach = KNOWN_DEPENDENTS[name] ?? null;
+    const cslReach = KNOWN_DEPENDENTS[name] ?? KNOWN_DEPENDENTS[sourceName] ?? null;
 
     return {
       name,
@@ -3739,7 +3740,7 @@ async function main() {
         fs.mkdirSync(htmlDir, { recursive: true });
       }
 
-      const htmlContent = generateHtml(report);
+      const htmlContent = generateHtml(report).replace(/[ \t]+$/gm, '');
       fs.writeFileSync(htmlPath, htmlContent, 'utf8');
       process.stderr.write(`HTML report written to: ${htmlPath}\n`);
     }

@@ -112,7 +112,7 @@ Likely files/modules:
 1. `styles/*.yaml` (small residual deltas only)
 2. `scripts/report-core.js`
 3. `scripts/check-core-quality.js`
-4. `docs/TIER_STATUS.md`
+4. Generated `report-core` compatibility output
 5. `docs/architecture/SQI_REFINEMENT_PLAN.md`
 
 ## Metrics Mapping
@@ -135,4 +135,3 @@ Likely files/modules:
 3. Every non-generalized style patch includes rationale.
 4. Clear evidence that improvements come from reusable migration logic first.
 5. No new direct CSL 1.0 processor support commitments or APIs.
-

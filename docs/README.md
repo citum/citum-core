@@ -1,18 +1,19 @@
 # Docs Map
 
-This directory is organized for progressive disclosure: start with concise status,
-then drill into strategy and implementation details only as needed.
+This directory is organized for progressive disclosure: start with generated
+status, then drill into strategy and implementation details only as needed.
 
 ## Start Here (Canonical)
 
-1. [`TIER_STATUS.md`](./TIER_STATUS.md) - current official style status, with baseline gate metrics and supplemental rich-input evidence notes.
-2. [`compat.html`](https://citum.github.io/citum-core/compat.html) - published compatibility snapshot, including official supplemental rich benchmark evidence for configured styles.
+1. `scripts/report-core.js` - canonical live style fidelity and SQI report source.
+2. [`compat.html`](https://citum.github.io/citum-core/compat.html) - generated compatibility snapshot, including official supplemental rich benchmark evidence for configured styles.
 3. `behavior-report.html` - published engine behavior coverage page generated in CI, with source locations for the selected engine behavior suites.
 4. `migration-behavior-report.html` - published CSL-to-Citum migration behavior coverage page generated in CI, with source locations for reviewer-facing `citum-migrate` suites.
 5. [`guides/RENDERING_WORKFLOW.md`](./guides/RENDERING_WORKFLOW.md) - operational rendering and verification workflow.
-6. [`architecture/ROADMAP.md`](./architecture/ROADMAP.md) - strategic direction and phase sequencing.
+6. [`architecture/ROADMAP.md`](./architecture/ROADMAP.md) - archival strategic direction and phase sequencing.
 
-Generate the compatibility snapshot locally with `node scripts/report-core.js --output-html docs/compat.html`.
+Generate the live JSON status locally with `node scripts/report-core.js > /tmp/core-report.json`.
+Generate the compatibility snapshot locally with `node scripts/report-core.js --write-html`.
 Generate an official single-style report for workflow consumption with `node scripts/report-core.js --style <style-name>`.
 Generate the local behavior report with `./scripts/test-report.sh`.
 Generate the local CSL-to-Citum migration behavior report with `./scripts/migration-test-report.sh`.
