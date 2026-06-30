@@ -656,6 +656,7 @@ test('verification policy rejects unsupported benchmark run combinations', () =>
     /count_toward_fidelity must be false for native-smoke/
   );
 
+  // A citation-scope citeproc-oracle run still requires a citations_fixture.
   assert.throws(
     () => validateVerificationPolicy({
       version: 1,
@@ -667,19 +668,42 @@ test('verification policy rejects unsupported benchmark run combinations', () =>
       styles: {
         sample: {
           benchmark_runs: [{
-            id: 'bad-citation-only',
-            label: 'Bad citation only',
+            id: 'citation-missing-fixture',
+            label: 'Citation missing fixture',
             runner: 'citeproc-oracle',
             refs_fixture: 'tests/fixtures/references-expanded.json',
-            citations_fixture: 'tests/fixtures/citations-expanded.json',
             scope: 'citation',
-            count_toward_fidelity: true,
+            count_toward_fidelity: false,
           }],
         },
       },
     }),
-    /scope citation is not yet supported for citeproc-oracle/
+    /citations_fixture is required unless scope is bibliography/
   );
+});
+
+test('verification policy accepts citation-scope citeproc-oracle runs', () => {
+  assert.doesNotThrow(() => validateVerificationPolicy({
+    version: 1,
+    defaults: {
+      authority: 'citeproc-js',
+      secondary: [],
+      scopes: ['citation', 'bibliography'],
+    },
+    styles: {
+      sample: {
+        benchmark_runs: [{
+          id: 'citation-only',
+          label: 'Citation only',
+          runner: 'citeproc-oracle',
+          refs_fixture: 'tests/fixtures/references-expanded.json',
+          citations_fixture: 'tests/fixtures/citations-expanded.json',
+          scope: 'citation',
+          count_toward_fidelity: false,
+        }],
+      },
+    },
+  }));
 });
 
 test('executeBenchmarkRuns preserves declaration order', async () => {

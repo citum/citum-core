@@ -112,32 +112,35 @@ test('parallel oracle invocations do not collide on temp files', {
   }
 });
 
-test('oracle rejects unsupported citation-only scope', {
+test('oracle supports citation-only scope and skips bibliography', {
   skip: !hasLegacyStyles,
 }, async () => {
   const stylePath = path.join(projectRoot, 'styles-legacy', 'apa.csl');
 
-  await new Promise((resolve, reject) => {
+  const { code, stdout } = await new Promise((resolve, reject) => {
     const proc = spawn('node', [oracleScript, stylePath, '--json', '--scope', 'citation'], {
       cwd: projectRoot,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
 
+    let stdout = '';
     let stderr = '';
+    proc.stdout.on('data', (chunk) => {
+      stdout += chunk;
+    });
     proc.stderr.on('data', (chunk) => {
       stderr += chunk;
     });
     proc.on('error', reject);
-    proc.on('close', (code) => {
-      try {
-        assert.equal(code, 1);
-        assert.match(stderr, /scope citation is not yet supported/);
-        resolve();
-      } catch (error) {
-        reject(error);
-      }
-    });
+    proc.on('close', (closeCode) => resolve({ code: closeCode, stdout, stderr }));
   });
+
+  // Exit code is 0 (all match) or 1 (some citation diffs), never the old 2/throw.
+  assert.ok(code === 0 || code === 1, `unexpected exit code ${code}`);
+  const result = JSON.parse(stdout);
+  assert.equal(result.summary.scope, 'citation');
+  assert.ok(result.citations.total > 0, 'citation-only run should grade citations');
+  assert.equal(result.bibliography.total, 0, 'citation-only run should skip bibliography');
 });
 
 test('normalizeFixtureItems handles wrapped and array fixtures by item id', () => {
