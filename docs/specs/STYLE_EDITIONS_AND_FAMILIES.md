@@ -174,7 +174,7 @@ inlined or reparented replacement, the core is removed in the same release.
 A `StyleBase` variant must be embedded only when **all three** conditions
 hold:
 
-1. It is named in `docs/TIER_STATUS.md` priority cohort, **or** has projected
+1. It is named in the current `scripts/report-core.js` priority cohort, **or** has projected
    non-trivial real-world usage based on the source CSL corpus.
 2. At least one shipped style declares `extends: <key>` against it, **or** the
    variant is itself the canonical handle for the family (the user-facing

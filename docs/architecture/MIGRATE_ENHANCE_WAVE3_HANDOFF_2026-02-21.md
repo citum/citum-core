@@ -1,6 +1,7 @@
 # Wave 3 Handoff: Author-Date + Label/Author Diversity (2026-02-21)
 
-> **Historical snapshot**: point-in-time execution record. For current status, use `docs/TIER_STATUS.md` and `docs/architecture/ROADMAP.md`.
+> **Historical snapshot**: point-in-time execution record. For current style
+> metrics, run `node scripts/report-core.js > /tmp/core-report.json`.
 
 > Canonical status/next-actions now live in:
 > `docs/architecture/MIGRATE_ENHANCE_WAVE_RUNBOOK_2026-02-21.md`

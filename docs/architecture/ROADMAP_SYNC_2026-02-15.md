@@ -1,10 +1,12 @@
 # Roadmap Synchronization - 2026-02-15
 
-> **Historical snapshot**: point-in-time execution record. For current status, use `docs/TIER_STATUS.md` and `docs/architecture/ROADMAP.md`.
+> **Historical snapshot**: point-in-time execution record. For current style
+> metrics, run `node scripts/report-core.js > /tmp/core-report.json`; see
+> `docs/architecture/ROADMAP.md` for archival phase context.
 
 **Purpose:** Document the alignment between project reality and tracking systems (beans, docs)
 **Note:** This is a historical synchronization snapshot from 2026-02-15. For
-current metrics, see `docs/architecture/ROADMAP.md`.
+current metrics, run `node scripts/report-core.js > /tmp/core-report.json`.
 
 ## Changes Made
 
