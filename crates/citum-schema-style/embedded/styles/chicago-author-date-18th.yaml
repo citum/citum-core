@@ -187,8 +187,25 @@ bibliography:
     - title: parent-serial
       emph: true
     - date: issued
-      form: month
+      form: month-day
       prefix: ", "
+    - variable: url
+    article-newspaper:
+    - contributor: author
+      form: long
+      name-order: family-first
+      shorten:
+        min: 8
+        use-first: 3
+    - date: issued
+      form: year
+    - title: primary
+    - title: parent-serial
+      emph: true
+    - date: issued
+      form: month-day
+      prefix: ", "
+    - variable: url
     bill-proceeding:
     - title: primary
     - variable: publisher
