@@ -196,11 +196,17 @@ styles:
     scopes:
       - citation
     fixture_family: note-humanities
-    # No shared-corpus benchmark_run here: this variant has no bibliography
-    # surface (bibliography.template is []), and citeproc-oracle does not yet
-    # support a citation-only scope. Wiring it onto the shared corpus is
-    # tracked as follow-up bean csl26-qy4d (give notes-18th a bibliography
-    # surface / lift the citation-scope oracle restriction).
+    # citation-only: this variant has no bibliography surface
+    # (bibliography.template is []), so it joins the shared corpus on its note
+    # citation output only.
+    benchmark_runs:
+      - id: chicago-shared-corpus
+        label: Chicago shared corpus (citation)
+        runner: citeproc-oracle
+        refs_fixture: tests/fixtures/test-items-library/chicago-18th.json
+        citations_fixture: tests/fixtures/test-items-library/chicago-18th-citations.json
+        scope: citation
+        count_toward_fidelity: false
   chicago-shortened-notes-bibliography:
     secondary:
       - biblatex

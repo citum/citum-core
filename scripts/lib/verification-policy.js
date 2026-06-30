@@ -92,9 +92,6 @@ function validateBenchmarkRun(run, label) {
     assert(run.scope === 'bibliography', `${label}.scope must be bibliography for native-smoke runs`);
     assert(run.count_toward_fidelity === false, `${label}.count_toward_fidelity must be false for native-smoke runs`);
   }
-  if (run.runner === 'citeproc-oracle') {
-    assert(run.scope !== 'citation', `${label}.scope citation is not yet supported for citeproc-oracle runs`);
-  }
   if (run.scope !== 'bibliography') {
     assert(run.citations_fixture, `${label}.citations_fixture is required unless scope is bibliography`);
   }

@@ -691,9 +691,6 @@ function matchBibliographyEntries(oracleBib, citumBib) {
 }
 
 function runOracle(cliOptions = parseArgs()) {
-  if (cliOptions.scope === 'citation') {
-    throw new Error('--scope citation is not yet supported; use --scope both or --scope bibliography');
-  }
   const stylePath = cliOptions.stylePath;
   const jsonOutput = cliOptions.jsonOutput;
   const verbose = cliOptions.verbose;
@@ -757,8 +754,11 @@ function runOracle(cliOptions = parseArgs()) {
     return;
   }
 
-  // Analyze bibliography
-  const pairs = matchBibliographyEntries(oracle.bibliography, citum.bibliography);
+  // Analyze bibliography (skipped for citation-only scope, the mirror of how
+  // scope: bibliography skips citations below).
+  const pairs = cliOptions.scope === 'citation'
+    ? []
+    : matchBibliographyEntries(oracle.bibliography, citum.bibliography);
 
   const rawResults = {
     style: styleName,
