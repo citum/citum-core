@@ -5,7 +5,7 @@ status: todo
 type: epic
 priority: high
 created_at: 2026-06-30T14:30:24Z
-updated_at: 2026-06-30T18:45:58Z
+updated_at: 2026-06-30T18:55:01Z
 parent: csl26-40n4
 ---
 
@@ -18,29 +18,40 @@ gap — baseline below was unchanged-codebase, freshly measured.
 
 | variant | citations | bibliography | gated in CI? |
 |---|---|---|---|
-| chicago-author-date-18th | 11/15 (73%) | 298/402 (74%) | **bib only**, via separate `chicago-zotero-bibliography` run, `min_pass_rate: 0.73` (barely above floor) |
-| chicago-notes-18th | 7/15 (47%) | — (no bibliography surface) | no |
-| chicago-shortened-notes-bibliography | 6/15 (40%) | 264/402 (66%) | no |
-| taylor-and-francis-chicago-author-date | 11/15 (73%) | 298/402 (74%, inherits author-date) | no |
+| chicago-author-date-18th | 11/15 (73%) | 298/402 (74%) | yes — `chicago-shared-corpus`, combined rate 309/417 = 0.741, `min_pass_rate: 0.73` |
+| chicago-notes-18th | 7/15 (47%) | — (no bibliography surface) | yes — `chicago-shared-corpus`, citation-only rate 0.467, `min_pass_rate: 0.46` |
+| chicago-shortened-notes-bibliography | 6/15 (40%) | 264/402 (66%) | yes — `chicago-shared-corpus`, combined rate 270/417 = 0.647, `min_pass_rate: 0.64` |
+| taylor-and-francis-chicago-author-date | 11/15 (73%) | 298/402 (74%, inherits author-date) | yes — `chicago-shared-corpus`, combined rate 309/417 = 0.741, `min_pass_rate: 0.73` |
 
-Only one of these eight numbers is gated today. The `chicago-shared-corpus`
-benchmark run exists identically across all four variants in
-`scripts/report-data/verification-policy.yaml` but is `count_toward_fidelity:
-false` (diagnostic-only). Every citation surface, and the bibliography surface
-for notes/shortened/T&F, can regress silently.
+## Gating policy — implemented (this PR)
 
-## Recommendations — pending decision (not yet acted on)
+`chicago-shared-corpus` is now `count_toward_fidelity: true` on all four
+variants in `scripts/report-data/verification-policy.yaml`, with interim
+`min_pass_rate` floors set just below the 2026-06-30 baseline above (the
+*combined* citation+bibliography match rate that `report-core.js`'s
+`determineBenchmarkStatus` actually computes, not a naive average of the two
+surface percentages). Floors lock against regression during tuning; ratchet
+upward per variant as each is tuned toward 100%.
 
-**Gating policy:** promote `chicago-shared-corpus` to `count_toward_fidelity:
-true` on all four variants with interim floors set just below current
-baseline (lock against regression during tuning), then ratchet upward per
-variant as fidelity climbs. Suggested initial floors: author-date ~0.70, T&F
-~0.70, notes ~0.45 (citation-only), shortened ~0.40 (combined). Once
-shared-corpus gates author-date's bibliography, demote the now-redundant
-`chicago-zotero-bibliography` run (same `chicago-18th.json` fixture) to
-diagnostic — retires the duplicate gate flagged on #987.
+`chicago-author-date-18th`'s old `chicago-zotero-bibliography` run (same
+402-ref `chicago-18th.json` fixture) is demoted to diagnostic
+(`count_toward_fidelity: false`) — leaving both runs `true` would have
+double-counted that fixture into the headline `fidelityScore`, since
+`report-core.js` additively merges every `count_toward_fidelity: true` run
+for a style. This also retires the fragmentation flagged on #987.
 
-**Tuning order:** author-date → T&F → notes → shortened. T&F-core extends
+Note: none of this is a hard CI merge-blocking gate today —
+`scripts/check-core-quality.js`'s hard `fidelityScore === 1.0` check only
+applies to styles listed in `scripts/report-data/core-quality-baseline.json`,
+which does not include any of the four Chicago variants. The `min_pass_rate`
+floors above are scored and shown as pass/fail in `report-core.js` output
+(visibility/regression-tracking), not wired into a failing CI step. Wiring a
+hard gate is a separate decision, not made here — it would currently be
+unmeetable (fidelityScore == 1.0) and would block unrelated engine/migrate PRs.
+
+## Tuning order (recommended, encoded in the child-bean `blocked_by` graph below — not separately ratified)
+
+author-date → T&F → notes → shortened. T&F-core extends
 `chicago-author-date-18th`, so author-date gains lift T&F before its Style-F
 deltas apply. `chicago-shortened-notes-bibliography-core` extends
 `chicago-notes-18th`, so notes is tuned before shortened inherits its citation
@@ -49,11 +60,10 @@ Author-date/T&F (73-74%) are closest to the bar; notes (47%) and shortened
 (40%) need the most work but inherit upstream wins.
 
 ## Todo
-- [ ] Decide and implement the gating-policy recommendation above (own commit
-      to `verification-policy.yaml`, separate from the four tunes)
+- [x] Decide and implement the gating-policy recommendation above
 - [ ] Land child tune: chicago-author-date-18th
 - [ ] Land child tune: taylor-and-francis-chicago-author-date
 - [ ] Land child tune: chicago-notes-18th
 - [ ] Land child tune: chicago-shortened-notes-bibliography
-- [ ] Final `report-core.js` sweep confirming all four at target; demote/retire
-      redundant gating runs
+- [ ] Final `report-core.js` sweep confirming all four at target; ratchet
+      `min_pass_rate` floors upward as each variant clears them

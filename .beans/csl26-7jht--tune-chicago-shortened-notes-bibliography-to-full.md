@@ -5,7 +5,7 @@ status: todo
 type: task
 priority: high
 created_at: 2026-06-30T18:46:09Z
-updated_at: 2026-06-30T18:46:09Z
+updated_at: 2026-06-30T18:55:24Z
 parent: csl26-h7oc
 blocked_by:
     - csl26-lxy3
@@ -18,6 +18,7 @@ the `style-tune` skill, against the shared Chicago corpus
 ## Baseline (measured 2026-06-30)
 - citations: 6/15 (40%) — lowest of the four variants
 - bibliography: 264/402 (66%)
+- gated via `chicago-shared-corpus`, `min_pass_rate: 0.64` (csl26-h7oc)
 
 ## Input contract (style-tune)
 - Embedded style ID: `chicago-shortened-notes-bibliography`

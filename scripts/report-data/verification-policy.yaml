@@ -158,26 +158,33 @@ styles:
       - biblatex
     fixture_family: author-date
     benchmark_runs:
+      # Superseded by chicago-shared-corpus below (csl26-h7oc): same 402-ref
+      # chicago-18th.json fixture, bibliography-only subset of the shared
+      # corpus. Kept diagnostic so report-core.js does not double-count this
+      # fixture into the headline fidelityScore (both runs count_toward_fidelity
+      # would merge the same refs twice).
       - id: chicago-zotero-bibliography
         label: Chicago Zotero bibliography
         runner: citeproc-oracle
         refs_fixture: tests/fixtures/test-items-library/chicago-18th.json
         scope: bibliography
-        count_toward_fidelity: true
-        min_pass_rate: 0.73
+        count_toward_fidelity: false
       # Shared Chicago-family corpus (csl26-8br0): one fixture pair exercising
       # citation AND bibliography output, wired identically across the
       # bibliography-bearing Chicago variants so the family is measured on a
-      # common surface. Diagnostic-only for now — promotion to a gating run
-      # (count_toward_fidelity: true + tuned min_pass_rate) is the substrate
-      # PR's job (csl26-h7oc), after the shared component/conversion work lands.
+      # common surface. Promoted to gating (csl26-h7oc): min_pass_rate is an
+      # interim floor set just below the 2026-06-30 baseline (combined
+      # citation+bibliography match rate 309/417 = 0.741) to lock against
+      # regression during per-variant tuning; ratchet upward as each variant
+      # is tuned toward 100%.
       - id: chicago-shared-corpus
         label: Chicago shared corpus (citation + bibliography)
         runner: citeproc-oracle
         refs_fixture: tests/fixtures/test-items-library/chicago-18th.json
         citations_fixture: tests/fixtures/test-items-library/chicago-18th-citations.json
         scope: both
-        count_toward_fidelity: false
+        count_toward_fidelity: true
+        min_pass_rate: 0.73
       - id: relational-comprehensive-smoke
         label: Relational comprehensive native smoke
         runner: native-smoke
@@ -198,7 +205,8 @@ styles:
     fixture_family: note-humanities
     # citation-only: this variant has no bibliography surface
     # (bibliography.template is []), so it joins the shared corpus on its note
-    # citation output only.
+    # citation output only. Promoted to gating (csl26-h7oc): min_pass_rate is
+    # an interim floor just below the 2026-06-30 baseline (7/15 = 0.467).
     benchmark_runs:
       - id: chicago-shared-corpus
         label: Chicago shared corpus (citation)
@@ -206,14 +214,17 @@ styles:
         refs_fixture: tests/fixtures/test-items-library/chicago-18th.json
         citations_fixture: tests/fixtures/test-items-library/chicago-18th-citations.json
         scope: citation
-        count_toward_fidelity: false
+        count_toward_fidelity: true
+        min_pass_rate: 0.46
   chicago-shortened-notes-bibliography:
     secondary:
       - biblatex
     # No fixture_family here on purpose: this style had no policy entry before
     # and was graded base-run-only. Adding a family would change its gating
-    # fidelity surface, which is out of scope for this ground-prep commit — the
-    # only addition is the diagnostic (count_toward_fidelity: false) run below.
+    # fidelity surface, which is out of scope for this commit. Promoted to
+    # gating on the shared-corpus run only (csl26-h7oc): min_pass_rate is an
+    # interim floor just below the 2026-06-30 baseline (combined
+    # citation+bibliography match rate 270/417 = 0.647).
     benchmark_runs:
       - id: chicago-shared-corpus
         label: Chicago shared corpus (citation + bibliography)
@@ -221,11 +232,16 @@ styles:
         refs_fixture: tests/fixtures/test-items-library/chicago-18th.json
         citations_fixture: tests/fixtures/test-items-library/chicago-18th-citations.json
         scope: both
-        count_toward_fidelity: false
+        count_toward_fidelity: true
+        min_pass_rate: 0.64
   taylor-and-francis-chicago-author-date:
     secondary:
       - biblatex
     fixture_family: author-date
+    # Inherits chicago-author-date-18th's baseline until its own Style-F tune
+    # lands (csl26-gzwj). Promoted to gating (csl26-h7oc): same interim floor
+    # as chicago-author-date-18th since the two are currently numerically
+    # identical (309/417 = 0.741); will diverge once T&F-specific tuning starts.
     benchmark_runs:
       - id: chicago-shared-corpus
         label: Chicago shared corpus (citation + bibliography)
@@ -233,7 +249,8 @@ styles:
         refs_fixture: tests/fixtures/test-items-library/chicago-18th.json
         citations_fixture: tests/fixtures/test-items-library/chicago-18th-citations.json
         scope: both
-        count_toward_fidelity: false
+        count_toward_fidelity: true
+        min_pass_rate: 0.73
   american-physics-society:
     secondary:
       - biblatex

@@ -135,7 +135,13 @@ function resolveBenchmarkRun(styleName, benchmarkId, policy = loadVerificationPo
       throw new Error(`Benchmark run not found for ${styleName}: ${benchmarkId}`);
     }
   } else {
-    benchmarkRun = benchmarkRuns.find((run) => run.countTowardFidelity && run.runner === 'citeproc-oracle')
+    // v1 only extracts bibliography evidence, so default-selection must prefer
+    // a bibliography-scope run even when it is not the run counted toward the
+    // headline fidelity score (e.g. a style's only count_toward_fidelity run
+    // may have scope: both, shared across citation and bibliography).
+    benchmarkRun = benchmarkRuns.find((run) => run.runner === 'citeproc-oracle' && run.scope === 'bibliography' && run.countTowardFidelity)
+      || benchmarkRuns.find((run) => run.runner === 'citeproc-oracle' && run.scope === 'bibliography')
+      || benchmarkRuns.find((run) => run.countTowardFidelity && run.runner === 'citeproc-oracle')
       || benchmarkRuns.find((run) => run.runner === 'citeproc-oracle');
   }
 
