@@ -242,7 +242,7 @@ fn test_humanities_note_fixture_preserves_archive_and_interview_fields() {
     );
     assert_eq!(
         interview,
-        "Michel Foucault, Truth and power, interview by Alessandro Fontana (Interviewer), _Power/Knowledge: Selected Interviews and Other Writings_ (New York), Pantheon Books, 1977, 115.",
+        "Michel Foucault, Truth and power, interviewed by Alessandro Fontana, _Power/Knowledge: Selected Interviews and Other Writings_ (New York), Pantheon Books, 1977, 115.",
         "interview citation should include interviewer, container title, and locator"
     );
     assert_eq!(
