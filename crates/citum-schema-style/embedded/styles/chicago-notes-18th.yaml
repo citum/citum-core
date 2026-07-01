@@ -89,7 +89,7 @@ citation:
     article-journal:
     - contributor: author
       form: long
-      shorten: &id001
+      shorten:
         min: 8
         use-first: 3
         and-others: et-al
@@ -109,7 +109,8 @@ citation:
       - number: volume
         prefix: " "
       - number: issue
-        prefix: ", no. "
+        label-form: short
+        prefix: ", "
       - date: issued
         form: year
         wrap:
@@ -123,7 +124,10 @@ citation:
     article-magazine:
     - contributor: author
       form: long
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
+        and-others: et-al
     - title: primary
       prefix: ", "
     - group:
@@ -136,7 +140,8 @@ citation:
       - number: volume
         prefix: " "
       - number: issue
-        prefix: ", no. "
+        label-form: short
+        prefix: ", "
       - date: issued
         form: year
         wrap:
@@ -150,7 +155,10 @@ citation:
     article-newspaper:
     - contributor: author
       form: long
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
+        and-others: et-al
     - title: primary
       prefix: ", "
     - group:
@@ -163,7 +171,8 @@ citation:
       - number: volume
         prefix: " "
       - number: issue
-        prefix: ", no. "
+        label-form: short
+        prefix: ", "
       - date: issued
         form: year
         wrap:
@@ -177,7 +186,10 @@ citation:
     book:
     - contributor: author
       form: long
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
+        and-others: et-al
     - title: primary
       prefix: ", "
     - contributor: translator
@@ -209,7 +221,10 @@ citation:
     broadcast:
     - contributor: author
       form: long
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
+        and-others: et-al
     - title: primary
       prefix: ", "
     - group:
@@ -222,7 +237,8 @@ citation:
       - number: volume
         prefix: " "
       - number: issue
-        prefix: ", no. "
+        label-form: short
+        prefix: ", "
       - date: issued
         form: year
         wrap:
@@ -241,7 +257,10 @@ citation:
     chapter:
     - contributor: author
       form: long
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
+        and-others: et-al
     - title: primary
       prefix: ", "
     - contributor: translator
@@ -249,12 +268,16 @@ citation:
       label: {term: translator, form: short, placement: prefix}
       prefix: ", "
     - group:
-      - title: parent-monograph
-        prefix: ", in "
+      - message: pattern.in-container
+        args:
+          container:
+            title: parent-monograph
+        prefix: ", "
       - contributor: editor
         form: long
-        prefix: ", ed. "
-      - group: &id002
+        label: {term: editor, form: short, placement: prefix}
+        prefix: ", "
+      - group:
         - variable: publisher
         - date: issued
           form: year
@@ -270,7 +293,10 @@ citation:
     dataset:
     - contributor: author
       form: long
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
+        and-others: et-al
     - title: primary
       prefix: ", "
     - group:
@@ -289,20 +315,34 @@ citation:
     entry-encyclopedia:
     - contributor: author
       form: long
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
+        and-others: et-al
     - title: primary
       prefix: ", "
     - group:
-      - title: parent-monograph
-        prefix: ", in "
-      - title: parent-serial
-        prefix: ", in "
+      - message: pattern.in-container
+        args:
+          container:
+            title: parent-monograph
+        prefix: ", "
+      - message: pattern.in-container
+        args:
+          container:
+            title: parent-serial
+        prefix: ", "
       - number: volume
-        prefix: ", vol. "
+        label-form: short
+        prefix: ", "
       - contributor: editor
         form: long
-        prefix: ", ed. "
-      - group: *id002
+        label: {term: editor, form: short, placement: prefix}
+        prefix: ", "
+      - group:
+        - variable: publisher
+        - date: issued
+          form: year
         delimiter: ", "
         wrap:
           punctuation: parentheses
@@ -313,7 +353,10 @@ citation:
     interview:
     - contributor: author
       form: long
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
+        and-others: et-al
     - title: primary
       prefix: ", "
     - variable: url
@@ -321,8 +364,8 @@ citation:
     - variable: medium
       prefix: ", "
     - contributor: interviewer
-      form: long
-      prefix: ", interview by "
+      form: verb
+      prefix: ", "
     - title: parent-monograph
       prefix: ", "
     - variable: publisher-place
@@ -342,7 +385,10 @@ citation:
     legal-case:
     - contributor: author
       form: long
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
+        and-others: et-al
     - title: primary
       prefix: ", "
     - group:
@@ -362,7 +408,10 @@ citation:
     manuscript:
     - contributor: author
       form: long
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
+        and-others: et-al
     - title: primary
       prefix: ", "
       wrap:
@@ -389,14 +438,17 @@ citation:
     motion-picture:
     - contributor: author
       form: long
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
+        and-others: et-al
     - title: primary
       prefix: ", "
     - variable: genre
       prefix: ", "
-    - contributor: author
-      form: long
-      prefix: ", directed by "
+    - contributor: director
+      form: verb
+      prefix: ", "
     - date: issued
       form: year
       prefix: ", "
@@ -413,7 +465,10 @@ citation:
     patent:
     - contributor: author
       form: long
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
+        and-others: et-al
     - title: primary
       prefix: ", "
     - group:
@@ -436,7 +491,10 @@ citation:
     personal-communication:
     - contributor: author
       form: long
-      shorten: *id001
+      shorten:
+        min: 8
+        use-first: 3
+        and-others: et-al
     - title: primary
       prefix: ", "
     - variable: archive
@@ -478,7 +536,10 @@ citation:
   template:
   - contributor: author
     form: long
-    shorten: *id001
+    shorten:
+      min: 8
+      use-first: 3
+      and-others: et-al
   - title: primary
     prefix: ", "
   - group:
@@ -491,7 +552,8 @@ citation:
     - number: volume
       prefix: " "
     - number: issue
-      prefix: ", no. "
+      label-form: short
+      prefix: ", "
     - date: issued
       form: year
       wrap:
@@ -501,16 +563,27 @@ citation:
       prefix: ": "
     delimiter: ""
   - group:
-    - title: parent-monograph
-      prefix: ", in "
-    - title: parent-serial
-      prefix: ", in "
+    - message: pattern.in-container
+      args:
+        container:
+          title: parent-monograph
+      prefix: ", "
+    - message: pattern.in-container
+      args:
+        container:
+          title: parent-serial
+      prefix: ", "
     - number: volume
-      prefix: ", vol. "
+      label-form: short
+      prefix: ", "
     - contributor: editor
       form: long
-      prefix: ", ed. "
-    - group: *id002
+      label: {term: editor, form: short, placement: prefix}
+      prefix: ", "
+    - group:
+      - variable: publisher
+      - date: issued
+        form: year
       delimiter: ", "
       wrap:
         punctuation: parentheses

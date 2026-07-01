@@ -205,106 +205,68 @@ pub(crate) fn en_us_role_terms() -> HashMap<ContributorRole, ContributorTerm> {
     roles
 }
 
+/// Build a `LocatorTerm` from plain long/short/symbol singular-plural pairs.
+fn locator_term(
+    long: Option<(&str, &str)>,
+    short: Option<(&str, &str)>,
+    symbol: Option<(&str, &str)>,
+) -> LocatorTerm {
+    let pair = |(singular, plural): (&str, &str)| SingularPlural {
+        singular: MaybeGendered::Plain(singular.into()),
+        plural: MaybeGendered::Plain(plural.into()),
+    };
+    LocatorTerm {
+        long: long.map(pair),
+        short: short.map(pair),
+        symbol: symbol.map(pair),
+        gender: None,
+    }
+}
+
 /// Extract English (US) locator terms.
 pub(crate) fn en_us_locator_terms() -> HashMap<LocatorType, LocatorTerm> {
     let mut locators = HashMap::new();
     locators.insert(
         LocatorType::Page,
-        LocatorTerm {
-            long: Some(SingularPlural {
-                singular: MaybeGendered::Plain("page".into()),
-                plural: MaybeGendered::Plain("pages".into()),
-            }),
-            short: Some(SingularPlural {
-                singular: MaybeGendered::Plain("p.".into()),
-                plural: MaybeGendered::Plain("pp.".into()),
-            }),
-            symbol: None,
-            gender: None,
-        },
+        locator_term(Some(("page", "pages")), Some(("p.", "pp.")), None),
     );
 
     locators.insert(
         LocatorType::Chapter,
-        LocatorTerm {
-            long: Some(SingularPlural {
-                singular: MaybeGendered::Plain("chapter".into()),
-                plural: MaybeGendered::Plain("chapters".into()),
-            }),
-            short: Some(SingularPlural {
-                singular: MaybeGendered::Plain("ch.".into()),
-                plural: MaybeGendered::Plain("chs.".into()),
-            }),
-            symbol: None,
-            gender: None,
-        },
+        locator_term(Some(("chapter", "chapters")), Some(("ch.", "chs.")), None),
     );
 
     locators.insert(
         LocatorType::Volume,
-        LocatorTerm {
-            long: Some(SingularPlural {
-                singular: MaybeGendered::Plain("volume".into()),
-                plural: MaybeGendered::Plain("volumes".into()),
-            }),
-            short: Some(SingularPlural {
-                singular: MaybeGendered::Plain("vol.".into()),
-                plural: MaybeGendered::Plain("vols.".into()),
-            }),
-            symbol: None,
-            gender: None,
-        },
+        locator_term(Some(("volume", "volumes")), Some(("vol.", "vols.")), None),
+    );
+
+    locators.insert(
+        LocatorType::Issue,
+        locator_term(Some(("issue", "issues")), Some(("no.", "nos.")), None),
     );
 
     locators.insert(
         LocatorType::Section,
-        LocatorTerm {
-            long: Some(SingularPlural {
-                singular: MaybeGendered::Plain("section".into()),
-                plural: MaybeGendered::Plain("sections".into()),
-            }),
-            short: Some(SingularPlural {
-                singular: MaybeGendered::Plain("sec.".into()),
-                plural: MaybeGendered::Plain("secs.".into()),
-            }),
-            symbol: Some(SingularPlural {
-                singular: MaybeGendered::Plain("§".into()),
-                plural: MaybeGendered::Plain("§§".into()),
-            }),
-            gender: None,
-        },
+        locator_term(
+            Some(("section", "sections")),
+            Some(("sec.", "secs.")),
+            Some(("§", "§§")),
+        ),
     );
 
     locators.insert(
         LocatorType::Part,
-        LocatorTerm {
-            long: Some(SingularPlural {
-                singular: MaybeGendered::Plain("part".into()),
-                plural: MaybeGendered::Plain("parts".into()),
-            }),
-            short: Some(SingularPlural {
-                singular: MaybeGendered::Plain("pt.".into()),
-                plural: MaybeGendered::Plain("pts.".into()),
-            }),
-            symbol: None,
-            gender: None,
-        },
+        locator_term(Some(("part", "parts")), Some(("pt.", "pts.")), None),
     );
 
     locators.insert(
         LocatorType::Supplement,
-        LocatorTerm {
-            long: Some(SingularPlural {
-                singular: MaybeGendered::Plain("supplement".into()),
-                plural: MaybeGendered::Plain("supplements".into()),
-            }),
-            short: Some(SingularPlural {
-                singular: MaybeGendered::Plain("suppl.".into()),
-                plural: MaybeGendered::Plain("suppls.".into()),
-            }),
-            symbol: None,
-            gender: None,
-        },
+        locator_term(
+            Some(("supplement", "supplements")),
+            Some(("suppl.", "suppls.")),
+            None,
+        ),
     );
 
     locators
