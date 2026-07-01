@@ -82,6 +82,7 @@ bibliography:
     - title: primary
       prefix: " "
     - message: pattern.in-container
+      text-case: capitalize-first
       args:
         container:
           group:
@@ -296,6 +297,7 @@ bibliography:
   - delimiter: " "
     group:
     - message: pattern.in-container-colon
+      text-case: capitalize-first
       args:
         container:
           group:

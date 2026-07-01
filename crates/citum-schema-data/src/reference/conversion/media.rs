@@ -16,6 +16,8 @@ pub(super) fn from_software_ref(
     ctx: RefContext,
 ) -> InputReference {
     let original = legacy_original_relation(&legacy);
+    let version = legacy_extra_str(&legacy, "version");
+    let platform = legacy.medium.clone();
     InputReference::Software(Box::new(Software {
         id: ctx.id,
         title: build_title(ctx.title, ctx.short_title),
@@ -27,10 +29,10 @@ pub(super) fn from_software_ref(
             name: n.into(),
             place: legacy.publisher_place.map(Into::into),
         }),
-        version: None,
+        version,
         repository: None,
         license: None,
-        platform: None,
+        platform,
         doi: ctx.doi,
         url: ctx.url,
         accessed: ctx.accessed,
@@ -47,68 +49,15 @@ pub(super) fn from_audio_visual_ref(
     ctx: RefContext,
 ) -> InputReference {
     let original = legacy_original_relation(&legacy);
-    let r#type = match legacy.ref_type.as_str() {
-        "motion_picture" => AudioVisualType::Film,
-        "song" => AudioVisualType::Recording,
-        "broadcast" => AudioVisualType::Broadcast,
-        _ => AudioVisualType::Broadcast,
-    };
-    let mut contributors = Vec::new();
-    push_legacy_contributor(
-        &mut contributors,
-        ContributorRole::Director,
-        legacy.director.clone(),
+    let r#type = audio_visual_type(&legacy.ref_type);
+    let contributors = audio_visual_contributors(&legacy);
+    let event = relation_event(
+        legacy_extra_str(&legacy, "event-title"),
+        legacy_extra_str(&legacy, "event-place"),
+        legacy_extra_date(&legacy, "event-date"),
     );
-    push_legacy_contributor(
-        &mut contributors,
-        ContributorRole::Composer,
-        legacy_extra_names(&legacy, "composer"),
-    );
-    // For recordings (song type), `author` is the performer; store it as Performer
-    // so that Composer takes precedence as the primary author in APA style.
-    let author_role = if legacy.ref_type == "song" {
-        ContributorRole::Performer
-    } else {
-        ContributorRole::Author
-    };
-    push_legacy_contributor(
-        &mut contributors,
-        ContributorRole::Performer,
-        legacy_extra_names(&legacy, "performer"),
-    );
-    push_legacy_contributor(
-        &mut contributors,
-        ContributorRole::Producer,
-        legacy_extra_names(&legacy, "producer")
-            .or_else(|| legacy_extra_names(&legacy, "executive-producer")),
-    );
-    push_legacy_contributor(&mut contributors, author_role, legacy.author.clone());
-    push_legacy_contributor(
-        &mut contributors,
-        ContributorRole::Translator,
-        legacy.translator.clone(),
-    );
-
-    let mut numbering: Vec<Numbering> = legacy
-        .number
-        .into_iter()
-        .map(|number| Numbering {
-            r#type: NumberingType::Number,
-            value: number,
-        })
-        .collect();
-    if let Some(vol) = legacy.volume.map(|v| v.to_string()) {
-        numbering.push(Numbering {
-            r#type: NumberingType::Volume,
-            value: vol,
-        });
-    }
-    if let Some(chapter) = legacy.chapter_number.clone() {
-        numbering.push(Numbering {
-            r#type: NumberingType::Chapter,
-            value: chapter,
-        });
-    }
+    let dimensions = legacy_extra_str(&legacy, "dimensions");
+    let numbering = audio_visual_numbering(&legacy);
 
     InputReference::AudioVisual(Box::new(AudioVisualWork {
         id: ctx.id,
@@ -129,12 +78,14 @@ pub(super) fn from_audio_visual_ref(
                 ..Default::default()
             }))))
         }),
+        event,
         numbering,
         publisher: legacy.publisher.map(|name| Publisher {
             name: name.into(),
             place: legacy.publisher_place.map(Into::into),
         }),
         medium: legacy.medium,
+        dimensions,
         platform: None,
         url: ctx.url,
         accessed: ctx.accessed,
@@ -142,4 +93,102 @@ pub(super) fn from_audio_visual_ref(
         note: ctx.note.map(RichText::Plain),
         unknown_fields: Default::default(),
     }))
+}
+
+fn audio_visual_type(ref_type: &str) -> AudioVisualType {
+    match ref_type {
+        "motion_picture" => AudioVisualType::Film,
+        "song" => AudioVisualType::Recording,
+        "broadcast" => AudioVisualType::Broadcast,
+        _ => AudioVisualType::Broadcast,
+    }
+}
+
+fn audio_visual_contributors(legacy: &csl_legacy::csl_json::Reference) -> Vec<ContributorEntry> {
+    let mut contributors = Vec::new();
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Director,
+        legacy
+            .director
+            .clone()
+            .or_else(|| legacy_extra_names(legacy, "director")),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Composer,
+        legacy_extra_names(legacy, "composer"),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Performer,
+        legacy_extra_names(legacy, "performer"),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Narrator,
+        legacy_extra_names(legacy, "narrator"),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Unknown("contributor".to_string()),
+        legacy_extra_names(legacy, "contributor"),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Producer,
+        legacy_extra_names(legacy, "producer")
+            .or_else(|| legacy_extra_names(legacy, "executive-producer")),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Writer,
+        legacy_extra_names(legacy, "script-writer"),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        audio_visual_author_role(legacy),
+        legacy.author.clone(),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Translator,
+        legacy.translator.clone(),
+    );
+    contributors
+}
+
+fn audio_visual_author_role(legacy: &csl_legacy::csl_json::Reference) -> ContributorRole {
+    // For recordings, CSL/Zotero `author` is the performer; store it that way
+    // so that composer can remain the primary rendered author where applicable.
+    if legacy.ref_type == "song" {
+        ContributorRole::Performer
+    } else {
+        ContributorRole::Author
+    }
+}
+
+fn audio_visual_numbering(legacy: &csl_legacy::csl_json::Reference) -> Vec<Numbering> {
+    let mut numbering: Vec<Numbering> = legacy
+        .number
+        .iter()
+        .cloned()
+        .map(|number| Numbering {
+            r#type: NumberingType::Number,
+            value: number,
+        })
+        .collect();
+    if let Some(vol) = legacy.volume.as_ref().map(ToString::to_string) {
+        numbering.push(Numbering {
+            r#type: NumberingType::Volume,
+            value: vol,
+        });
+    }
+    if let Some(chapter) = legacy.chapter_number.clone() {
+        numbering.push(Numbering {
+            r#type: NumberingType::Chapter,
+            value: chapter,
+        });
+    }
+    numbering
 }

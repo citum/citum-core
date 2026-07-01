@@ -13,8 +13,8 @@ use crate::reference::Reference;
 use crate::render::format::OutputFormat;
 use crate::values::{ProcHints, ProcValues, RenderContext, RenderOptions};
 use citum_schema::options::{RoleLabelPreset, SubstituteKey};
-use citum_schema::reference::ContributorRole as DataRole;
 use citum_schema::reference::Title;
+use citum_schema::reference::{ClassExtension, ContributorRole as DataRole};
 use citum_schema::template::{ContributorRole, Rendering, TemplateComponent, TemplateContributor};
 
 enum ResolvedRole {
@@ -456,9 +456,11 @@ fn resolve_title_substitute<F: OutputFormat<Output = String>>(
     options: &RenderOptions<'_>,
     reference: &Reference,
     fmt: &F,
+    substituted_key: &'static str,
+    quote_in_citation: bool,
 ) -> ProcValues<F::Output> {
     let title_str = title_substitute_text(title, options.context);
-    let value = if options.context == RenderContext::Citation {
+    let value = if options.context == RenderContext::Citation && quote_in_citation {
         fmt.quote(fmt.text(&title_str))
     } else {
         fmt.text(&title_str)
@@ -476,7 +478,7 @@ fn resolve_title_substitute<F: OutputFormat<Output = String>>(
         prefix: None,
         suffix: None,
         url,
-        substituted_key: Some("title:Primary".to_string()),
+        substituted_key: Some(substituted_key.to_string()),
         pre_formatted: true,
     }
 }
@@ -498,6 +500,15 @@ fn title_substitute_text(title: Title, context: RenderContext) -> String {
     }
 }
 
+fn resolve_parent_serial_title(reference: &Reference) -> Option<Title> {
+    match reference.extension() {
+        ClassExtension::SerialComponent(_)
+        | ClassExtension::LegalCase(_)
+        | ClassExtension::Treaty(_) => reference.container_title(),
+        _ => None,
+    }
+}
+
 /// Attempt to substitute an empty author field with editor, title, or translator.
 ///
 /// Returns `Some(ProcValues)` if a substitute was found, `None` if the chain
@@ -513,6 +524,20 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
 ) -> Option<ProcValues<F::Output>> {
     for key in &substitute.template {
         match key {
+            SubstituteKey::CollectionEditor => {
+                if let Some(result) = resolve_contributor_substitute_for_role(
+                    &ResolvedRole::BuiltIn(ContributorRole::CollectionEditor),
+                    component,
+                    hints,
+                    options,
+                    reference,
+                    effective_rendering,
+                    fmt,
+                    substitute,
+                ) {
+                    return Some(result);
+                }
+            }
             SubstituteKey::Editor => {
                 if let Some(result) = resolve_contributor_substitute_for_role(
                     &ResolvedRole::BuiltIn(ContributorRole::Editor),
@@ -527,10 +552,29 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
                     return Some(result);
                 }
             }
+            SubstituteKey::ParentSerial => {
+                if let Some(title) = resolve_parent_serial_title(reference) {
+                    return Some(resolve_title_substitute(
+                        title,
+                        component,
+                        options,
+                        reference,
+                        fmt,
+                        "title:ParentSerial",
+                        false,
+                    ));
+                }
+            }
             SubstituteKey::Title => {
                 if let Some(title) = reference.title() {
                     return Some(resolve_title_substitute(
-                        title, component, options, reference, fmt,
+                        title,
+                        component,
+                        options,
+                        reference,
+                        fmt,
+                        "title:Primary",
+                        true,
                     ));
                 }
             }

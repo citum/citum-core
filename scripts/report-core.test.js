@@ -88,6 +88,7 @@ test('discoverCoreStyles skips hidden embedded core wrappers', () => {
   const styles = discoverCoreStyles();
 
   assert.equal(styles.some((style) => style.name.endsWith('-core')), false);
+  assert.equal(styles.some((style) => style.name === 'chicago-18-base'), false);
 });
 
 test('resolveSelectedStyles filters to requested style names and rejects unknown styles', () => {

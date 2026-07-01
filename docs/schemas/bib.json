@@ -349,6 +349,16 @@
                 }
               ]
             },
+            "event": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "status": {
               "type": [
                 "string",
@@ -3259,6 +3269,16 @@
                 }
               ]
             },
+            "event": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "numbering": {
               "type": "array",
               "items": {
@@ -3283,6 +3303,12 @@
               ]
             },
             "medium": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "dimensions": {
               "type": [
                 "string",
                 "null"

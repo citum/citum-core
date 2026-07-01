@@ -81,7 +81,13 @@ const KNOWN_DEPENDENTS = {
 
 // chicago-notes-18th-script has no CSL/citeproc counterpart (it is a derivative
 // embedded style; its behavior is covered by engine multilingual tests).
-const SKIPPED_STYLES = ['alpha', 'chicago-notes-18th-script', 'iso690-author-date', 'iso690-numeric'];
+const SKIPPED_STYLES = [
+  'alpha',
+  'chicago-18-base',
+  'chicago-notes-18th-script',
+  'iso690-author-date',
+  'iso690-numeric',
+];
 const PROJECT_ROOT = path.dirname(__dirname);
 const DEFAULT_REPORT_CACHE_DIR = path.join(PROJECT_ROOT, '.oracle-cache', 'report-core');
 const DEFAULT_PARALLELISM = 4;

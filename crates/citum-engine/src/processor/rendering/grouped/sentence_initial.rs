@@ -131,15 +131,25 @@ impl Renderer<'_> {
                     };
                 }
             }
-            // Pre-formatted group components — capitalize the first word of the
-            // rendered group value (e.g. "edited by Smith" as first child).
-            TemplateComponent::Group(_) => {
+            // Pre-formatted groups keep child identity only in the template
+            // structure. Auto-case title groups and contributor-role prose,
+            // but keep date/term/data groups' rendered casing intact.
+            TemplateComponent::Group(group) if group_supports_sentence_initial_casing(group) => {
                 let case =
                     crate::values::text_case::resolve_text_case(TextCase::CapitalizeFirst, locale);
                 // Groups are always pre-formatted (rendered markup); use the markup-aware
                 // variant so HTML tags and LaTeX/Typst command prefixes are not corrupted.
                 component.value =
                     crate::values::text_case::apply_text_case_markup_aware(&component.value, case);
+            }
+            TemplateComponent::Message(message) if !message.message.starts_with("term.") => {
+                let case =
+                    crate::values::text_case::resolve_text_case(TextCase::CapitalizeFirst, locale);
+                component.value = if component.pre_formatted {
+                    crate::values::text_case::apply_text_case_markup_aware(&component.value, case)
+                } else {
+                    crate::values::text_case::apply_text_case(&component.value, case)
+                };
             }
             TemplateComponent::Term(_) | TemplateComponent::Message(_)
                 if self.is_note_start_term_component(component) =>
@@ -164,5 +174,28 @@ impl Renderer<'_> {
             &component.template_component,
             TemplateComponent::Message(message) if message.message == "term.ibid"
         )
+    }
+}
+
+fn group_supports_sentence_initial_casing(group: &citum_schema::template::TemplateGroup) -> bool {
+    group.group.iter().find_map(first_sentence_casing_candidate) == Some(true)
+}
+
+fn first_sentence_casing_candidate(component: &TemplateComponent) -> Option<bool> {
+    if component.rendering().suppress == Some(true) {
+        return None;
+    }
+
+    match component {
+        TemplateComponent::Contributor(contributor) => Some(matches!(
+            contributor.form,
+            citum_schema::template::ContributorForm::Verb
+                | citum_schema::template::ContributorForm::VerbShort
+        )),
+        TemplateComponent::Title(_) => Some(true),
+        TemplateComponent::Group(group) => {
+            group.group.iter().find_map(first_sentence_casing_candidate)
+        }
+        _ => Some(false),
     }
 }

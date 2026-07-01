@@ -131,7 +131,11 @@ impl Substitute {
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "lowercase")]
 pub enum SubstituteKey {
+    #[serde(rename = "collection-editor")]
+    CollectionEditor,
     Editor,
+    #[serde(rename = "parent-serial")]
+    ParentSerial,
     Title,
     Translator,
 }

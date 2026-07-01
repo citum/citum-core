@@ -349,6 +349,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             | "thesis"
             | "manual"
             | "manuscript"
+            | "classic"
             | "webpage"
             | "post"
             | "post-weblog"
@@ -518,6 +519,23 @@ mod tests {
 
         assert_eq!(converted.number(), Some("2".to_string()));
         assert_eq!(converted.report_number(), None);
+    }
+
+    #[test]
+    fn legacy_note_type_classic_maps_to_classic_reference() {
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "classic-1".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("De civitate Dei".to_string()),
+            issued: Some(legacy_year(1931)),
+            note: Some("type: classic".to_string()),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        assert_eq!(converted.ref_type(), "classic");
+        assert!(matches!(converted.extension(), ClassExtension::Classic(_)));
     }
 
     #[test]

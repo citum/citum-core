@@ -1800,7 +1800,9 @@
         "annote",
         "keyword",
         "genre",
+        "raw-genre",
         "medium",
+        "raw-medium",
         "source",
         "status",
         "archive",
@@ -1821,8 +1823,10 @@
         "publisher-place",
         "original-publisher",
         "original-publisher-place",
+        "event-title",
         "event-place",
         "dimensions",
+        "references",
         "scale",
         "version",
         "locator",
@@ -2084,6 +2088,17 @@
             "$ref": "#/$defs/TemplateComponent"
           }
         },
+        "render-when": {
+          "description": "Optional field-presence condition that controls whether the group renders.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TemplateGroupCondition"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "delimiter": {
           "anyOf": [
             {
@@ -2213,6 +2228,100 @@
       "additionalProperties": false,
       "required": [
         "group"
+      ]
+    },
+    "TemplateGroupCondition": {
+      "description": "Field-presence condition for rendering a template group.",
+      "type": "object",
+      "properties": {
+        "field-present": {
+          "description": "Required field that must be present for the group to render.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TemplateConditionField"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "field-absent": {
+          "description": "Required field that must be absent for the group to render.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TemplateConditionField"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "TemplateConditionField": {
+      "description": "Reference fields that can be tested by a template group condition.",
+      "oneOf": [
+        {
+          "description": "The primary author contributor.",
+          "type": "string",
+          "const": "author"
+        },
+        {
+          "description": "The editor contributor.",
+          "type": "string",
+          "const": "editor"
+        },
+        {
+          "description": "The recipient contributor.",
+          "type": "string",
+          "const": "recipient"
+        },
+        {
+          "description": "The translator contributor.",
+          "type": "string",
+          "const": "translator"
+        },
+        {
+          "description": "The primary title.",
+          "type": "string",
+          "const": "title"
+        },
+        {
+          "description": "The issued date.",
+          "type": "string",
+          "const": "issued"
+        },
+        {
+          "description": "The original publication date.",
+          "type": "string",
+          "const": "original-published"
+        },
+        {
+          "description": "The publisher name.",
+          "type": "string",
+          "const": "publisher"
+        },
+        {
+          "description": "The DOI identifier.",
+          "type": "string",
+          "const": "doi"
+        },
+        {
+          "description": "The reference genre or item type label.",
+          "type": "string",
+          "const": "genre"
+        },
+        {
+          "description": "The archive or repository name.",
+          "type": "string",
+          "const": "archive"
+        },
+        {
+          "description": "The archive shelfmark or repository location.",
+          "type": "string",
+          "const": "archive-location"
+        }
       ]
     },
     "DelimiterPunctuation": {
@@ -2859,7 +2968,9 @@
       "description": "Fields that can be used as author substitutes.",
       "type": "string",
       "enum": [
+        "collection-editor",
         "editor",
+        "parent-serial",
         "title",
         "translator"
       ]

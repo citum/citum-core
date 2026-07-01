@@ -14,7 +14,9 @@ use crate::error::ProcessorError;
 use crate::reference::Reference;
 use crate::render::{ProcTemplate, ProcTemplateComponent};
 use crate::values::{ComponentValues, ProcHints, RenderContext, RenderOptions};
-use citum_schema::template::{TemplateComponent, WrapConfig, WrapPunctuation};
+use citum_schema::template::{
+    TemplateComponent, TemplateConditionField, TemplateGroupCondition, WrapConfig, WrapPunctuation,
+};
 use std::borrow::Cow;
 
 struct GroupRenderState<'a> {
@@ -63,6 +65,36 @@ struct HintInputs<'a> {
     integral_name_state: Option<citum_schema::citation::IntegralNameState>,
     org_abbreviation_state: Option<citum_schema::citation::IntegralNameState>,
     first_reference_note_number: Option<u32>,
+}
+
+fn group_condition_matches(reference: &Reference, condition: &TemplateGroupCondition) -> bool {
+    condition
+        .field_present
+        .as_ref()
+        .is_none_or(|field| condition_field_present(reference, field))
+        && condition
+            .field_absent
+            .as_ref()
+            .is_none_or(|field| !condition_field_present(reference, field))
+}
+
+fn condition_field_present(reference: &Reference, field: &TemplateConditionField) -> bool {
+    match field {
+        TemplateConditionField::Author => reference.author().is_some(),
+        TemplateConditionField::Editor => reference.editor().is_some(),
+        TemplateConditionField::Recipient => reference
+            .contributor(citum_schema::reference::ContributorRole::Recipient)
+            .is_some(),
+        TemplateConditionField::Translator => reference.translator().is_some(),
+        TemplateConditionField::Title => reference.title().is_some(),
+        TemplateConditionField::Issued => reference.effective_issued_date().is_some(),
+        TemplateConditionField::OriginalPublished => reference.original_date().is_some(),
+        TemplateConditionField::Publisher => reference.publisher_str().is_some(),
+        TemplateConditionField::Doi => reference.doi().is_some(),
+        TemplateConditionField::Genre => reference.genre().is_some(),
+        TemplateConditionField::Archive => reference.archive().is_some(),
+        TemplateConditionField::ArchiveLocation => reference.archive_location().is_some(),
+    }
 }
 
 impl Renderer<'_> {
@@ -1069,6 +1101,13 @@ impl Renderer<'_> {
         F: crate::render::format::OutputFormat<Output = String>,
     {
         if group.rendering.suppress == Some(true) {
+            return None;
+        }
+        if group
+            .render_when
+            .as_ref()
+            .is_some_and(|condition| !group_condition_matches(ctx.reference, condition))
+        {
             return None;
         }
 

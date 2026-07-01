@@ -367,7 +367,7 @@ fn component_allowed_fields(kind: &str) -> &'static [&'static str] {
         "variable" => &["variable", "links", "custom"],
         "message" => &["message", "form", "gender", "args", "custom"],
         "term" => &["term", "form", "gender", "custom"],
-        "group" => &["group", "delimiter", "custom"],
+        "group" => &["group", "render-when", "delimiter", "custom"],
         _ => &[],
     }
 }

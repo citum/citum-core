@@ -523,6 +523,7 @@ fn test_repro_djot_rendering() {
                             ..Default::default()
                         },
                         delimiter: None,
+                        render_when: None,
                         custom: None,
                     }),
                 ]),

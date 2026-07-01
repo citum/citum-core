@@ -216,6 +216,61 @@ bibliography:
 }
 
 #[test]
+fn substitute_parent_serial_and_group_conditions_parse() {
+    let yaml = r#"
+info:
+  title: Conditional style
+citation:
+  options:
+    substitute:
+      template:
+      - editor
+      - parent-serial
+      - title
+  template:
+  - group:
+    - contributor: author
+      form: short
+    render-when:
+      field-present: recipient
+      field-absent: title
+"#;
+    let style: Style = serde_yaml::from_str(yaml).unwrap();
+    let citation = style.citation.unwrap();
+    let substitute = citation
+        .options
+        .as_ref()
+        .unwrap()
+        .substitute
+        .as_ref()
+        .unwrap()
+        .resolve();
+
+    assert_eq!(
+        substitute.template,
+        vec![
+            options::SubstituteKey::Editor,
+            options::SubstituteKey::ParentSerial,
+            options::SubstituteKey::Title,
+        ]
+    );
+
+    let template = citation.resolve_template().unwrap();
+    let template::TemplateComponent::Group(group) = &template[0] else {
+        panic!("expected group component");
+    };
+    let condition = group.render_when.as_ref().expect("condition should parse");
+    assert_eq!(
+        condition.field_present,
+        Some(template::TemplateConditionField::Recipient)
+    );
+    assert_eq!(
+        condition.field_absent,
+        Some(template::TemplateConditionField::Title)
+    );
+}
+
+#[test]
 fn test_style_custom_fields() {
     let yaml = r#"
 version: "1.1"
