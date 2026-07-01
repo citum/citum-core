@@ -676,6 +676,9 @@ pub struct AudioVisualWork {
     /// Container series or program (work-to-work relation).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub container: Option<WorkRelation>,
+    /// Event or performance associated with the recording.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub event: Option<WorkRelation>,
     /// Season and episode numbering.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub numbering: Vec<Numbering>,
@@ -685,6 +688,9 @@ pub struct AudioVisualWork {
     /// Physical delivery format or presentation descriptor.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub medium: Option<String>,
+    /// Physical extent or running time.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dimensions: Option<String>,
     /// Digital distribution host or streaming service.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub platform: Option<String>,
@@ -740,6 +746,7 @@ struct AudioVisualDeser {
     genre: Option<String>,
     // AudioVisualWork-specific fields
     container: Option<WorkRelation>,
+    event: Option<WorkRelation>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     numbering: Vec<Numbering>,
     /// Catalog or episode number shorthand (normalized into `numbering`).
@@ -747,6 +754,7 @@ struct AudioVisualDeser {
     number: Option<String>,
     publisher: Option<Publisher>,
     medium: Option<String>,
+    dimensions: Option<String>,
     platform: Option<String>,
     #[serde(alias = "URL")]
     url: Option<Url>,
@@ -790,9 +798,11 @@ impl From<AudioVisualDeser> for AudioVisualWork {
                 genre: raw.genre,
             },
             container: raw.container,
+            event: raw.event,
             numbering,
             publisher: raw.publisher,
             medium: raw.medium,
+            dimensions: raw.dimensions,
             platform: raw.platform,
             url: raw.url,
             accessed: raw.accessed,

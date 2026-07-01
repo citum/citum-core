@@ -101,6 +101,7 @@ fn explicit_author_year_group_style() -> Style {
                     ],
                     delimiter: Some(DelimiterPunctuation::Space),
                     rendering: Rendering::default(),
+                    render_when: None,
                     custom: None,
                 }),
                 TemplateComponent::Variable(TemplateVariable {
@@ -150,6 +151,7 @@ fn explicit_author_year_group_with_locator_delimiter_style() -> Style {
                     ],
                     delimiter: Some(DelimiterPunctuation::Space),
                     rendering: Rendering::default(),
+                    render_when: None,
                     custom: None,
                 }),
                 TemplateComponent::Variable(TemplateVariable {
@@ -382,6 +384,7 @@ fn test_strip_author_component_nested_list() {
         ],
         delimiter: Some(DelimiterPunctuation::Space),
         rendering: Rendering::default(),
+        render_when: None,
         custom: None,
     });
 
@@ -1077,4 +1080,137 @@ fn test_bibliography_type_specific_rendering() {
         result,
         "Arendt, Hannah (1975) _Thinking in Public_ (Young-Bruehl, Elisabeth). Schocken Books."
     );
+}
+
+fn render_single_bibliography_entry(style: Style, reference: Reference) -> String {
+    let id = reference
+        .id()
+        .map(|id| id.to_string())
+        .unwrap_or_else(|| "ref1".to_string());
+    let mut bibliography = Bibliography::new();
+    bibliography.insert(id, reference);
+
+    Processor::new(style, bibliography)
+        .render_bibliography_with_format::<crate::render::plain::PlainText>()
+}
+
+fn bibliography_style_with_template(template: Vec<TemplateComponent>) -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Sentence Initial Bibliography".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(citum_schema::BibliographySpec {
+            template: Some(template),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+#[test]
+fn sentence_initial_date_group_preserves_no_date_term_case() {
+    let reference = Reference::from(LegacyReference {
+        id: "no-date".to_string(),
+        ref_type: "book".to_string(),
+        author: Some(vec![Name::new("Forthcoming", "A.")]),
+        title: Some("Foundations of Declarative Bibliography".to_string()),
+        publisher: Some("University Press".to_string()),
+        ..Default::default()
+    });
+    let style = bibliography_style_with_template(vec![
+        TemplateComponent::Contributor(TemplateContributor {
+            contributor: ContributorRole::Author,
+            form: ContributorForm::Long,
+            name_order: Some(NameOrder::FamilyFirst),
+            ..Default::default()
+        }),
+        TemplateComponent::Group(TemplateGroup {
+            group: vec![TemplateComponent::Date(TemplateDate {
+                date: citum_schema::template::DateVariable::Issued,
+                form: DateForm::Year,
+                ..Default::default()
+            })],
+            ..Default::default()
+        }),
+        TemplateComponent::Title(TemplateTitle {
+            title: TitleType::Primary,
+            ..Default::default()
+        }),
+        TemplateComponent::Variable(TemplateVariable {
+            variable: SimpleVariable::Publisher,
+            ..Default::default()
+        }),
+    ]);
+
+    let result = render_single_bibliography_entry(style, reference);
+
+    assert_eq!(
+        result,
+        "Forthcoming, A. n.d. Foundations of Declarative Bibliography. University Press"
+    );
+}
+
+#[test]
+fn sentence_initial_term_group_preserves_locale_term_case() {
+    let reference = Reference::from(LegacyReference {
+        id: "term-group".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("Untitled".to_string()),
+        ..Default::default()
+    });
+    let no_date_term = TemplateComponent::Term(TemplateTerm {
+        term: citum_schema::locale::GeneralTerm::NoDate,
+        form: Some(citum_schema::locale::TermForm::Short),
+        ..Default::default()
+    });
+
+    for component in [
+        no_date_term,
+        TemplateComponent::Message(TemplateMessage {
+            message: "term.no-date".to_string(),
+            form: Some(citum_schema::locale::TermForm::Short),
+            ..Default::default()
+        }),
+    ] {
+        let style =
+            bibliography_style_with_template(vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![
+                    component,
+                    TemplateComponent::Title(TemplateTitle {
+                        title: TitleType::Primary,
+                        ..Default::default()
+                    }),
+                ],
+                delimiter: Some(DelimiterPunctuation::Space),
+                ..Default::default()
+            })]);
+
+        let result = render_single_bibliography_entry(style, reference.clone());
+        assert_eq!(result, "n.d. Untitled");
+    }
+}
+
+#[test]
+fn sentence_initial_group_still_capitalizes_leading_contributor_role_prose() {
+    let reference = Reference::from(LegacyReference {
+        id: "edited".to_string(),
+        ref_type: "book".to_string(),
+        editor: Some(vec![Name::new("Smith", "Ada")]),
+        title: Some("Collected Sources".to_string()),
+        ..Default::default()
+    });
+    let style = bibliography_style_with_template(vec![TemplateComponent::Group(TemplateGroup {
+        group: vec![TemplateComponent::Contributor(TemplateContributor {
+            contributor: ContributorRole::Editor,
+            form: ContributorForm::Verb,
+            name_order: Some(NameOrder::GivenFirst),
+            ..Default::default()
+        })],
+        ..Default::default()
+    })]);
+
+    let result = render_single_bibliography_entry(style, reference);
+
+    assert_eq!(result, "Edited by Ada Smith");
 }

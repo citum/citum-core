@@ -224,6 +224,9 @@ pub struct Monograph {
     /// Original publication relation (for reprints or translations).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub original: Option<WorkRelation>,
+    /// Event or performance associated with the work.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub event: Option<WorkRelation>,
     /// Publication status (e.g., `"forthcoming"`, `"in press"`).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<String>,
@@ -316,6 +319,7 @@ struct MonographDeser {
     eprint: Option<EprintInfo>,
     keywords: Option<Vec<String>>,
     original: Option<WorkRelation>,
+    event: Option<WorkRelation>,
     status: Option<String>,
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     available_date: Option<EdtfString>,
@@ -369,6 +373,7 @@ impl From<MonographDeser> for Monograph {
             eprint: raw.eprint,
             keywords: raw.keywords,
             original: raw.original,
+            event: raw.event,
             status: raw.status,
             available_date: raw.available_date,
             size: raw.size,

@@ -14,6 +14,7 @@ use citum_edtf::{Day, Edtf, MonthOrSeason, Timezone, UnspecifiedYear, Year};
 use citum_schema::locale::{GeneralTerm, TermForm};
 use citum_schema::options::dates::TimeFormat;
 use citum_schema::reference::types::RefDate;
+use citum_schema::reference::{ClassExtension, WorkRelation};
 use citum_schema::template::{DateForm, DateVariable as TemplateDateVar, TemplateDate};
 
 fn month_to_string(month: u32, months: &[String]) -> String {
@@ -39,6 +40,27 @@ fn extract_month(date: &EdtfString, months: &[String]) -> String {
         Some(month) => month_to_string(month, months),
         None => String::new(),
     }
+}
+
+fn event_date(reference: &Reference) -> Option<EdtfString> {
+    match reference.extension() {
+        ClassExtension::Event(event) => event.date.clone(),
+        ClassExtension::Monograph(monograph) => embedded_event_date(monograph.event.as_ref()?),
+        ClassExtension::AudioVisual(audio_visual) => {
+            embedded_event_date(audio_visual.event.as_ref()?)
+        }
+        _ => None,
+    }
+}
+
+fn embedded_event_date(relation: &WorkRelation) -> Option<EdtfString> {
+    let WorkRelation::Embedded(reference) = relation else {
+        return None;
+    };
+    let ClassExtension::Event(event) = reference.extension() else {
+        return None;
+    };
+    event.date.clone()
 }
 
 /// Compute the delta for unspecified year ranges.
@@ -742,6 +764,7 @@ impl ComponentValues for TemplateDate {
             TemplateDateVar::Issued => reference.effective_issued_date(),
             TemplateDateVar::Accessed => reference.accessed(),
             TemplateDateVar::OriginalPublished => reference.original_date(),
+            TemplateDateVar::EventDate => event_date(reference),
             _ => None,
         };
 

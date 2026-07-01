@@ -79,6 +79,15 @@ pub(super) fn contributor_role_to_reference_role(
         ContributorRole::ReviewedAuthor => Some(citum_schema::reference::ContributorRole::Unknown(
             "reviewed-author".to_string(),
         )),
+        ContributorRole::Unknown(role) => Some(match role.as_str() {
+            "compiler" => citum_schema::reference::ContributorRole::Compiler,
+            "performer" => citum_schema::reference::ContributorRole::Performer,
+            "narrator" => citum_schema::reference::ContributorRole::Narrator,
+            "host" => citum_schema::reference::ContributorRole::Host,
+            "producer" | "executive-producer" => citum_schema::reference::ContributorRole::Producer,
+            "writer" => citum_schema::reference::ContributorRole::Writer,
+            _ => citum_schema::reference::ContributorRole::Unknown(role.clone()),
+        }),
         ContributorRole::Interviewee | ContributorRole::Publisher => None,
         _ => None,
     }

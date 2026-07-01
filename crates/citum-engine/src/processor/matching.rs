@@ -82,8 +82,14 @@ impl<'a> Matcher<'a> {
         // Fall back through the substitute template order
         for key in &substitute.template {
             let contributor = match key {
+                SubstituteKey::CollectionEditor => {
+                    reference.contributor(citum_schema::reference::ContributorRole::Unknown(
+                        "collection-editor".to_string(),
+                    ))
+                }
                 SubstituteKey::Editor => reference.editor(),
                 SubstituteKey::Translator => reference.translator(),
+                SubstituteKey::ParentSerial => None,
                 SubstituteKey::Title => None, // Title is not a contributor
             };
             if contributor.is_some() {

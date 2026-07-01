@@ -12,7 +12,7 @@ use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
 use citum_schema::locale::ArchiveHierarchyField;
 use citum_schema::options::titles::TextCase;
-use citum_schema::reference::{ClassExtension, RichText};
+use citum_schema::reference::{ClassExtension, RichText, WorkRelation};
 use citum_schema::template::{SimpleVariable, TemplateVariable};
 
 /// Extracts the short title from a parent reference if available.
@@ -26,6 +26,87 @@ fn container_title_short(reference: &Reference) -> Option<String> {
         citum_schema::reference::types::Title::Single(s) => Some(s),
         _ => None,
     })
+}
+
+fn event_place(reference: &Reference) -> Option<String> {
+    match reference.extension() {
+        ClassExtension::Event(event) => event.location.clone(),
+        ClassExtension::Monograph(monograph) => embedded_event_place(monograph.event.as_ref()?),
+        ClassExtension::AudioVisual(audio_visual) => {
+            embedded_event_place(audio_visual.event.as_ref()?)
+        }
+        _ => None,
+    }
+}
+
+fn event_title(reference: &Reference) -> Option<String> {
+    match reference.extension() {
+        ClassExtension::Event(event) => event.title.as_ref().map(ToString::to_string),
+        ClassExtension::Monograph(monograph) => embedded_event_title(monograph.event.as_ref()?),
+        ClassExtension::AudioVisual(audio_visual) => {
+            embedded_event_title(audio_visual.event.as_ref()?)
+        }
+        _ => None,
+    }
+}
+
+fn embedded_event_title(relation: &WorkRelation) -> Option<String> {
+    let WorkRelation::Embedded(reference) = relation else {
+        return None;
+    };
+    let ClassExtension::Event(event) = reference.extension() else {
+        return None;
+    };
+    event.title.as_ref().map(ToString::to_string)
+}
+
+fn embedded_event_place(relation: &WorkRelation) -> Option<String> {
+    let WorkRelation::Embedded(reference) = relation else {
+        return None;
+    };
+    let ClassExtension::Event(event) = reference.extension() else {
+        return None;
+    };
+    event.location.clone()
+}
+
+fn dimensions(reference: &Reference) -> Option<String> {
+    match reference.extension() {
+        ClassExtension::Monograph(monograph) => {
+            monograph.duration.clone().or(monograph.size.clone())
+        }
+        ClassExtension::AudioVisual(audio_visual) => audio_visual.dimensions.clone(),
+        _ => None,
+    }
+}
+
+fn raw_medium(reference: &Reference) -> Option<String> {
+    match reference.extension() {
+        ClassExtension::Monograph(monograph) => monograph.medium.clone(),
+        ClassExtension::CollectionComponent(component) => component.medium.clone(),
+        ClassExtension::SerialComponent(component) => component.medium.clone(),
+        ClassExtension::AudioVisual(audio_visual) => audio_visual.medium.clone(),
+        ClassExtension::Software(software) => software.platform.clone(),
+        _ => None,
+    }
+}
+
+fn raw_genre(reference: &Reference) -> Option<String> {
+    match reference.extension() {
+        ClassExtension::Monograph(monograph) => monograph.genre.clone(),
+        ClassExtension::CollectionComponent(component) => component.genre.clone(),
+        ClassExtension::SerialComponent(component) => component.genre.clone(),
+        ClassExtension::Event(event) => event.genre.clone(),
+        ClassExtension::AudioVisual(audio_visual) => audio_visual.core.genre.clone(),
+        _ => None,
+    }
+}
+
+fn references(reference: &Reference) -> Option<String> {
+    match reference.extension() {
+        ClassExtension::Monograph(monograph) => monograph.references.clone(),
+        _ => None,
+    }
 }
 
 fn resolve_archive_name(reference: &Reference, options: &RenderOptions<'_>) -> Option<String> {
@@ -142,6 +223,10 @@ fn resolve_variable_value(
         SimpleVariable::PublisherPlace => reference.publisher_place(),
         SimpleVariable::OriginalPublisher => reference.original_publisher_str(),
         SimpleVariable::OriginalPublisherPlace => reference.original_publisher_place(),
+        SimpleVariable::EventTitle => event_title(reference),
+        SimpleVariable::EventPlace => event_place(reference),
+        SimpleVariable::Dimensions => dimensions(reference),
+        SimpleVariable::References => references(reference),
         // A genre that merely restates the reference's own type (e.g. an
         // entry-encyclopedia carrying genre "entry-encyclopedia") is the data
         // model's internal type-carrier, round-tripped through `ref_type()` for
@@ -151,7 +236,9 @@ fn resolve_variable_value(
             .genre()
             .filter(|genre| *genre != reference.ref_type())
             .map(|k| options.locale.lookup_genre(&k)),
+        SimpleVariable::RawGenre => raw_genre(reference),
         SimpleVariable::Medium => reference.medium().map(|k| options.locale.lookup_medium(&k)),
+        SimpleVariable::RawMedium => raw_medium(reference),
         SimpleVariable::Status => reference.status(),
         SimpleVariable::Abstract | SimpleVariable::Note => None,
         SimpleVariable::Archive => reference.archive(),

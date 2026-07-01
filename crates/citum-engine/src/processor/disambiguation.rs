@@ -12,6 +12,8 @@ use std::fmt::Write as _;
 use crate::grouping::GroupSorter;
 use citum_schema::grouping::GroupSort;
 use citum_schema::locale::Locale;
+use citum_schema::options::{Substitute, SubstituteKey};
+use citum_schema::reference::{ClassExtension, Title};
 
 /// Handles disambiguation logic for author-date citations.
 ///
@@ -235,7 +237,7 @@ impl<'a> Disambiguator<'a> {
             let names = reference.author().map_or_else(Vec::new, |authors| {
                 self.render_name_for_disambiguation(&authors)
             });
-            let author_key = self.build_author_key(&names);
+            let author_key = self.build_author_slot_key(reference, &names);
             let group_key = self.build_group_key(reference, &author_key);
             // Year-suffix letters (a, b, c…) must follow the effective bibliography
             // sort order. Reuse the bibliography title sort key (leading-article
@@ -257,6 +259,61 @@ impl<'a> Disambiguator<'a> {
         }
 
         cache
+    }
+
+    fn build_author_slot_key(
+        &self,
+        reference: &Reference,
+        author_names: &[crate::reference::FlatName],
+    ) -> String {
+        let author_key = self.build_author_key(author_names);
+        if !author_key.is_empty() {
+            return author_key;
+        }
+
+        let substitute = self
+            .config
+            .substitute
+            .as_ref()
+            .map(citum_schema::options::SubstituteConfig::resolve)
+            .unwrap_or_default();
+
+        self.build_substitute_author_key(reference, &substitute)
+            .unwrap_or_default()
+    }
+
+    fn build_substitute_author_key(
+        &self,
+        reference: &Reference,
+        substitute: &Substitute,
+    ) -> Option<String> {
+        for key in &substitute.template {
+            let resolved = match key {
+                SubstituteKey::CollectionEditor => reference
+                    .contributor(citum_schema::reference::ContributorRole::Unknown(
+                        "collection-editor".to_string(),
+                    ))
+                    .map(|names| {
+                        self.build_author_key(&self.render_name_for_disambiguation(&names))
+                    }),
+                SubstituteKey::Editor => reference.editor().map(|names| {
+                    self.build_author_key(&self.render_name_for_disambiguation(&names))
+                }),
+                SubstituteKey::Translator => reference.translator().map(|names| {
+                    self.build_author_key(&self.render_name_for_disambiguation(&names))
+                }),
+                SubstituteKey::ParentSerial => {
+                    resolve_parent_serial_title(reference).map(Self::title_substitute_key)
+                }
+                SubstituteKey::Title => reference.title().map(Self::title_substitute_key),
+            };
+
+            if let Some(key) = resolved.filter(|key| !key.is_empty()) {
+                return Some(key);
+            }
+        }
+
+        None
     }
 
     /// Calculates how many references in `refs` share the same `author_key`.
@@ -696,7 +753,9 @@ impl<'a> Disambiguator<'a> {
                     .title_key
                     .as_deref()
                     .unwrap_or_default();
-                a_title.cmp(b_title)
+                a_title
+                    .cmp(b_title)
+                    .then_with(|| year_suffix_date_key(a).cmp(&year_suffix_date_key(b)))
             });
             sorter.sort_references(pre_sorted, sort_spec)
         } else {
@@ -712,7 +771,9 @@ impl<'a> Disambiguator<'a> {
                     .title_key
                     .as_deref()
                     .unwrap_or_default();
-                a_title.cmp(b_title)
+                a_title
+                    .cmp(b_title)
+                    .then_with(|| year_suffix_date_key(a).cmp(&year_suffix_date_key(b)))
             });
             sorted
         }
@@ -840,6 +901,12 @@ impl<'a> Disambiguator<'a> {
         }
 
         self.append_lowercased_families(&mut key, names, names.len(), ',');
+        key
+    }
+
+    fn title_substitute_key(title: Title) -> String {
+        let mut key = String::new();
+        Self::push_lowercased(&mut key, title.to_string().trim());
         key
     }
 
@@ -986,6 +1053,22 @@ impl<'a> Disambiguator<'a> {
             .get(&Self::reference_cache_key(reference))
             .expect("disambiguation cache missing reference")
     }
+}
+
+fn resolve_parent_serial_title(reference: &Reference) -> Option<Title> {
+    match reference.extension() {
+        ClassExtension::SerialComponent(_)
+        | ClassExtension::LegalCase(_)
+        | ClassExtension::Treaty(_) => reference.container_title(),
+        _ => None,
+    }
+}
+
+fn year_suffix_date_key(reference: &Reference) -> String {
+    reference
+        .effective_issued_date()
+        .map(|date| date.to_string())
+        .unwrap_or_default()
 }
 
 #[cfg(test)]

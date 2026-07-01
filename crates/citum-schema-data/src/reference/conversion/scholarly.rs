@@ -12,6 +12,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
     reason = "submodule shares the parent's helper + type pool by design"
 )]
 use super::*;
+use crate::reference::Classic;
 
 #[allow(
     clippy::too_many_lines,
@@ -86,6 +87,11 @@ pub(super) fn from_monograph_ref(
     let references = legacy_extra_str(&legacy, "references");
     let scale = legacy_extra_str(&legacy, "scale");
     let dimensions = legacy_extra_str(&legacy, "dimensions");
+    let event = relation_event(
+        legacy_extra_str(&legacy, "event-title"),
+        legacy_extra_str(&legacy, "event-place"),
+        legacy_extra_date(&legacy, "event-date"),
+    );
     let collection_title = legacy.collection_title.clone();
     let mut contributors = legacy_named_contributors(&legacy);
     push_legacy_contributor(
@@ -115,8 +121,23 @@ pub(super) fn from_monograph_ref(
     );
     push_legacy_contributor(
         &mut contributors,
+        ContributorRole::Illustrator,
+        legacy_extra_names(&legacy, "illustrator"),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Unknown("contributor".to_string()),
+        legacy_extra_names(&legacy, "contributor"),
+    );
+    push_legacy_contributor(
+        &mut contributors,
         ContributorRole::Compiler,
         legacy_extra_names(&legacy, "compiler"),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Unknown("collection-editor".to_string()),
+        legacy_extra_names(&legacy, "collection-editor"),
     );
     push_legacy_contributor(
         &mut contributors,
@@ -231,6 +252,39 @@ pub(super) fn from_monograph_ref(
         None => (None, None),
     };
 
+    if legacy.ref_type == "classic" {
+        return InputReference::Classic(Box::new(Classic {
+            id: ctx.id,
+            title: build_title(title, ctx.short_title.clone()),
+            container,
+            original,
+            author,
+            editor,
+            translator,
+            volume,
+            issue: None,
+            edition,
+            number,
+            part_number: None,
+            supplement_number: None,
+            printing_number: legacy.printing_number,
+            numbering,
+            created: ctx.created,
+            issued: ctx.issued,
+            publisher: legacy.publisher.map(|n| Publisher {
+                name: n.into(),
+                place: legacy.publisher_place.map(Into::into),
+            }),
+            url: ctx.url,
+            accessed: ctx.accessed,
+            language: ctx.language,
+            field_languages: HashMap::new(),
+            note: ctx.note.map(RichText::Plain),
+            keywords: None,
+            unknown_fields: Default::default(),
+        }));
+    }
+
     InputReference::Monograph(Box::new(Monograph {
         id: ctx.id,
         r#type,
@@ -272,6 +326,7 @@ pub(super) fn from_monograph_ref(
         eprint: None,
         keywords: None,
         original,
+        event,
         status,
         available_date,
         size,

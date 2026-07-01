@@ -1229,7 +1229,9 @@ pub enum SimpleVariable {
     Annote,
     Keyword,
     Genre,
+    RawGenre,
     Medium,
+    RawMedium,
     Source,
     Status,
     Archive,
@@ -1250,8 +1252,10 @@ pub enum SimpleVariable {
     PublisherPlace,
     OriginalPublisher,
     OriginalPublisherPlace,
+    EventTitle,
     EventPlace,
     Dimensions,
+    References,
     Scale,
     Version,
     Locator,
@@ -1298,6 +1302,9 @@ pub struct TemplateTerm {
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct TemplateGroup {
     pub group: Vec<TemplateComponent>,
+    /// Optional field-presence condition that controls whether the group renders.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub render_when: Option<TemplateGroupCondition>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub delimiter: Option<DelimiterPunctuation>,
     #[serde(flatten, default)]
@@ -1306,6 +1313,50 @@ pub struct TemplateGroup {
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
+}
+
+/// Field-presence condition for rendering a template group.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Default)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct TemplateGroupCondition {
+    /// Required field that must be present for the group to render.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub field_present: Option<TemplateConditionField>,
+    /// Required field that must be absent for the group to render.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub field_absent: Option<TemplateConditionField>,
+}
+
+/// Reference fields that can be tested by a template group condition.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum TemplateConditionField {
+    /// The primary author contributor.
+    Author,
+    /// The editor contributor.
+    Editor,
+    /// The recipient contributor.
+    Recipient,
+    /// The translator contributor.
+    Translator,
+    /// The primary title.
+    Title,
+    /// The issued date.
+    Issued,
+    /// The original publication date.
+    OriginalPublished,
+    /// The publisher name.
+    Publisher,
+    /// The DOI identifier.
+    Doi,
+    /// The reference genre or item type label.
+    Genre,
+    /// The archive or repository name.
+    Archive,
+    /// The archive shelfmark or repository location.
+    ArchiveLocation,
 }
 
 /// Delimiter punctuation options.

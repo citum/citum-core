@@ -672,6 +672,23 @@ fn conversion_applies_note_type_override() {
 }
 
 #[test]
+fn conversion_applies_note_type_classic_override() {
+    let json = r#"{
+        "id": "classic-override",
+        "type": "book",
+        "title": "De civitate Dei",
+        "note": "type: classic",
+        "issued": {"date-parts": [[1931]]}
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(reference.ref_type(), "classic");
+    assert!(matches!(reference.extension(), ClassExtension::Classic(_)));
+}
+
+#[test]
 fn conversion_promotes_genre_and_preserves_free_text() {
     let json = r#"{
         "id": "note-genre",
