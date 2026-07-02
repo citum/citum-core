@@ -38,6 +38,11 @@ authoring path for high-impact styles.
 - Updated style YAML file(s).
 - Shared metrics and rerun evidence in the format described by the shared execution guide.
 - Migration-pattern gaps and recommended converter/preset follow-up when observed.
+  Every CSL 1.0.2 type reaches styles as its real `ref_type` under the
+  conversion contract (`docs/specs/CSL_TYPE_CONVERSION_CONTRACT.md`), so when
+  the source CSL style handles a type like `collection`, `review`,
+  `performance`, or `figure`, a missing `type-variants` entry in the migrated
+  YAML is a reportable migration gap, not converter noise.
 
 ## Autonomous Operation
 

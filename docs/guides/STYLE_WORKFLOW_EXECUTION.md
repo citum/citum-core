@@ -97,7 +97,9 @@ first iteration.
    a concrete candidate. Record oracle fidelity baseline and SQI baseline.
 2. **Fidelity loop:**
    a. Run the oracle (`node scripts/oracle.js <legacy-style> --json`).
-   b. Classify each failure per the shared decision rules.
+   b. Classify each failure per the shared decision rules; for type- or
+      field-population-shaped failures, run the conversion-layer pre-flight
+      (Decision Rules → "Conversion-layer pre-flight") first.
    c. Apply the smallest correct YAML change toward the target reference output.
    d. Re-run oracle. Repeat until fidelity is 100%.
    e. If a residual is clearly a `processor-defect` or `intentional divergence`,

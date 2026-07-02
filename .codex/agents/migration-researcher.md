@@ -24,7 +24,7 @@ output_contract:
   - State the chosen cluster.
   - State the target semantic class and implementation form.
   - State the selected parent style when one exists.
-  - Classify it as `migration-artifact`, `style-defect`, `processor-defect`, or `intentional divergence`.
+  - Classify it as `migration-artifact`, `style-defect`, `processor-defect`, or `intentional divergence`, running the conversion-layer pre-flight from `docs/policies/STYLE_WORKFLOW_DECISION_RULES.md` first for type- or field-population-shaped clusters.
   - Preserve the config-wrapper contract for `profile + config-wrapper` targets.
   - Accept `journal + structural-wrapper` as a valid stopping point.
   - If classified as `migration-artifact`, make at most one tightly scoped code change for that pass.

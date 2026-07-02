@@ -32,6 +32,9 @@ Authoritative shared process docs:
   gate alongside fidelity for the embedded portfolio.
 - For `dependent` styles, SQI drift is advisory only; do not reject on SQI alone.
 - Reject when a registered divergence is reported as an unexplained defect.
+- Reject when a residual is classified `processor-defect` (conversion)
+  without the conversion-layer pre-flight evidence required by the
+  Decision Rules.
 - Reject when formatting defects are introduced.
 - Approve when fidelity is preserved or improved, formatting is clean, and (for
   `embedded-core`) SQI is clean.

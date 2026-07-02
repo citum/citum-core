@@ -49,7 +49,10 @@ Follow the full `tune` loop from `docs/guides/STYLE_WORKFLOW_EXECUTION.md`:
 4. **QA gate** — hand off to `../style-qa/SKILL.md` with `tier: embedded-core`.
 
 ## Failure Classification
-Use the shared decision rules for all mismatches:
+Use the shared decision rules for all mismatches. For type- or
+field-population-shaped mismatches, run the conversion-layer pre-flight
+(Decision Rules → "Conversion-layer pre-flight") before classifying —
+never iterate YAML against a reference that converted wrongly.
 - `style-defect` → fix in YAML.
 - `migration-artifact` → note gap, do not cycle YAML to compensate; fix the seed
   if a converter improvement is available, otherwise hand-author around it.
