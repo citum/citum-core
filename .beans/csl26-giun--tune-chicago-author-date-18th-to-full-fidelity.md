@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: high
 created_at: 2026-06-30T18:46:08Z
-updated_at: 2026-06-30T19:59:04Z
+updated_at: 2026-07-02T23:19:17Z
 parent: csl26-h7oc
 ---
 
@@ -41,3 +41,95 @@ are layered on.
 
 - 2026-06-30 tune attempt: `webpage` citation variant added to render publisher/year for publisher-owned web pages. `node scripts/report-core.js --style chicago-author-date-18th` now reports headline fidelity 0.808, SQI 0.975, and `chicago-shared-corpus` 12/15 citations + 298/402 bibliography. Residual citation failures: `chi-article-magazine` (`Gourmet 2000b` vs `(2000)`), `chi-multi-source` classic book (`Augustine, De civitate Dei` vs `Augustine 1931`), and `chi-personal-communication` (`Johnson to O’Laughlin 1916` vs `Hiram Johnson`). Invalid/failed probes reverted: citation substitute keys `publisher`/`parent-serial` are schema-invalid; article-magazine `title: parent-serial` duplicates `Gourmet`; raw `container-title` is invalid in citation type-variants; personal_communication sender-recipient-year variant regresses `secondary-roles` recipient citation. Fidelity not green; SQI/QA/PR intentionally not run.
 - 2026-06-30 recovery attempt on `codex/chicago-author-date-full-fidelity`: citation fidelity is now green for `chicago-shared-corpus` (`15/15`). Implemented bounded support for `parent-serial` substitutes, field-presence/absence `render-when` groups, classic conversion from CSL/Zotero `type: classic`, collection-editor substitution, custom contributor-role rendering, and audio-visual event/dimensions preservation. Bibliography improved from `298/402` to `331/400` in the shared oracle run; `node scripts/report-core.js --style chicago-author-date-18th` reports headline fidelity `0.868` and SQI `0.927`. Remaining bibliography failures are broad rich-reference clusters (book original/reprint/rich contributors, interviews, manuscripts, web pages, recordings/media, broadcasts, and manuscript/archive edge cases), so the original 100% + clean SQI + QA completion gate is not met. This draft PR is a substrate/progress PR, not a completed full-fidelity tune.
+
+- 2026-07-02 bounded cluster-lift PR (`fix/chicago-author-date-bib-clusters`):
+  shared-corpus bibliography 331/400 -> 344/400 (citations stayed 15/15).
+  Root-caused and fixed four clusters:
+  - **Title casing**: the engine's legacy type->title-category fallback only
+    recognized a small hardcoded set (component: article/chapter/entry;
+    monograph: book/thesis/report); `broadcast`, `manuscript`, `motion-picture`,
+    `song`, `webpage`, and the note-field-routed `collection` type fell through
+    with no case transform. Fixed via a style-local `titles.type-mapping`
+    (YAML) rather than widening the shared engine default (would affect every
+    embedded style). Also found and fixed three Rust engine bugs surfaced by
+    this cluster: (1) the CSL `substitute` chain (title standing in for a
+    missing author) bypassed all text-case resolution entirely — added
+    `resolve_substitute_text_case` (`citum-engine/src/values/title.rs`) and
+    wired it into `resolve_title_substitute`
+    (`citum-engine/src/values/contributor/substitute.rs`); (2) `to_title_case`
+    hunted past leading digits to capitalize the next letter ("35 mm film" ->
+    "35 Mm film") — `capitalize_first_word` now stops at a leading digit
+    (`citum-engine/src/values/text_case.rs`); (3) title-case hyphenated-compound
+    handling didn't recognize en dash as a hyphen substitute ("Aging-Disability"
+    stayed uncapitalized on the second half) — added en-dash awareness to
+    `capitalize_hyphenated`; (4) the bibliography sentence-initial
+    auto-capitalization pass wrongly capitalized a contributor's literal name
+    ("the author" -> "The author") when the component had a static YAML
+    `prefix:` instead of a dynamic role-label prefix
+    (`citum-engine/src/processor/rendering/grouped/sentence_initial.rs`).
+  - **Original/reprint dates**: fixed the missing period before the
+    parenthesized original year (`Fitzgerald, F. Scott (1925) 1992` ->
+    `Fitzgerald, F. Scott. (1925) 1992.`) and the missing "Translated by"
+    verb-label — `role.omit` was suppressing the verb-form label entirely
+    instead of only the decorative default/preset label
+    (`citum-engine/src/values/contributor/labels.rs`), plus wiring
+    `text-case: capitalize-first` into `format_role_term`
+    (`citum-engine/src/values/contributor/mod.rs`) since verb-form output is
+    pre-formatted and skips the generic case pass. **Deferred**: the
+    "Reprint"/"Originally published as X (publisher)" trailer text and
+    `original-publisher`/`original-publisher-place` wiring — blocked on
+    `TemplateConditionField` (a closed enum) not exposing those fields for
+    `render-when`, plus each fixture item's free-text `edition` field has
+    bespoke, non-systematic oracle capitalization that doesn't reduce to a
+    simple rule. Deeper than "mostly YAML wiring"; needs its own pass.
+  - **Manuscript/archive block**: the 7 manuscript-type refs in this corpus
+    are tagged via a note-field `type: collection` override (routes to
+    `ref_type() == "collection"` per the CSL type conversion contract), but
+    the style had no `collection` type-variant at all, so they fell to the
+    generic article-shaped default template. Merged `manuscript, collection`
+    into one type-variant key (both need the same archival rendering:
+    author/title substitute + archive-location/archive-collection/archive-name
+    fields). **Deferred**: the CSL-`document`-routed archival refs (Purcell
+    map, Agassiz, Henshaw, Johnson, Concerning-a-court-of-arbitration — 5
+    refs) needed the same treatment, but `document` is also used by ~30
+    unrelated annotation/placeholder items in this corpus; adding `document`
+    to the merged type-variant dropped the oracle's total entry count from
+    400 to 397 (some of those placeholder items stopped rendering
+    distinguishably), so it was reverted as a real regression rather than a
+    net win. Date ranges (`issued: 1790/1803` rendering as bare `1790`) and
+    uncertain dates (`[1772?]` rendering as `n.d.`) are unresolved — likely
+    engine-side date-form gaps, not investigated further in this PR.
+  - **Contributor label punctuation**: `contributor-role-form: short` mapped
+    to `RoleLabelPreset::ShortSuffix` (parenthetical: `Lattimore (eds.)`);
+    CMOS wants the comma form. Switched to `short-comma` ->
+    `RoleLabelPreset::ShortSuffixComma` (`Lattimore, eds.`).
+  Verification: `just pre-commit` (fmt/clippy/nextest, 1707 tests) green;
+  `node scripts/report-core.js` full run (154 embedded styles) against
+  `core-quality-baseline.json` green (fidelity=1.0 for all, 0 warnings) —
+  no regressions from the shared-engine changes. chicago-author-date-18th
+  fidelity 0.875 -> 0.898, SQI 0.926 -> 0.925 (marginal miss of the stated
+  0.926 floor: the `manuscript, collection` merge is scored as 2
+  "variant selectors" by `report-core.js`'s sprawl-penalty concision metric,
+  a ~0.001 mechanical cost for a functionally-correct DRY fix, not a
+  maintainability regression — flagged for the reviewer rather than reverted
+  the fix that lifted 6 bibliography refs). taylor-and-francis-chicago-author-date
+  inherits identically (fidelity 0.875 -> 0.898, quality unaffected at 1.0).
+  chicago-notes-18th and chicago-shortened-notes-bibliography unchanged (no
+  regression). Ratcheted `chicago-shared-corpus.min_pass_rate` for both
+  chicago-author-date-18th and taylor-and-francis-chicago-author-date from
+  0.73 to 0.86 (combined rate 359/415 = 0.865, floor set just below) in
+  `scripts/report-data/verification-policy.yaml`.
+  **Target not fully met**: bibliography landed at 344/400, short of the
+  ≥360/400 target — the two deferred pieces above (original/reprint trailer
+  text, `document`-type archival refs) account for most of the gap and were
+  each classified as genuinely deeper than "mostly YAML wiring" per the
+  bounded-PR scope rule, rather than absorbed here.
+  **Explicitly out of scope** (deferred structural clusters, unchanged from
+  the prior note): broadcast/episode grammar (`Episode 6, "…," written
+  by…`), hearings/legal, multi-volume chains (`Bk. 3 of…, vol. 2 of…`),
+  review-of framing, patents (missing "filed" date / country prefix),
+  dataset versioning (`Version 1.2. With … et al`), personal_communication
+  edge cases (text/Facebook/email message genres), and the ~8-entry
+  index-misaligned tail (classic/legal-citation placeholder items the
+  oracle doesn't render at all). Bean stays in-progress; 100% + clean-SQI
+  gate not met.

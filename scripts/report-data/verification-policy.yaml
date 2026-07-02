@@ -176,7 +176,9 @@ styles:
       # interim floor set just below the 2026-06-30 baseline (combined
       # citation+bibliography match rate 309/417 = 0.741) to lock against
       # regression during per-variant tuning; ratchet upward as each variant
-      # is tuned toward 100%.
+      # is tuned toward 100%. Ratcheted again after the csl26-giun bibliography
+      # cluster lift (2026-07-02): combined rate 359/415 = 0.865, floor set
+      # just below at 0.86.
       - id: chicago-shared-corpus
         label: Chicago shared corpus (citation + bibliography)
         runner: citeproc-oracle
@@ -184,7 +186,7 @@ styles:
         citations_fixture: tests/fixtures/test-items-library/chicago-18th-citations.json
         scope: both
         count_toward_fidelity: true
-        min_pass_rate: 0.73
+        min_pass_rate: 0.86
       - id: relational-comprehensive-smoke
         label: Relational comprehensive native smoke
         runner: native-smoke
@@ -242,6 +244,8 @@ styles:
     # lands (csl26-gzwj). Promoted to gating (csl26-h7oc): same interim floor
     # as chicago-author-date-18th since the two are currently numerically
     # identical (309/417 = 0.741); will diverge once T&F-specific tuning starts.
+    # Ratcheted again after the csl26-giun bibliography cluster lift
+    # (2026-07-02): combined rate 359/415 = 0.865, floor set just below at 0.86.
     benchmark_runs:
       - id: chicago-shared-corpus
         label: Chicago shared corpus (citation + bibliography)
@@ -250,7 +254,7 @@ styles:
         citations_fixture: tests/fixtures/test-items-library/chicago-18th-citations.json
         scope: both
         count_toward_fidelity: true
-        min_pass_rate: 0.73
+        min_pass_rate: 0.86
   american-physics-society:
     secondary:
       - biblatex
