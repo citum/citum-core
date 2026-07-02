@@ -5,6 +5,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.72.0] - 2026-07-02
+
+### Bug Fixes
+
+**styles**
+
+- Tune chicago author-date periodicals ([`bae9d2f`](https://github.com/citum/citum-core/commit/bae9d2fd70f9bbfa3b359970976b0f38d07a44ee))
+
+- Tune chicago author-date fidelity ([`3ca2fad`](https://github.com/citum/citum-core/commit/3ca2fad1f717e62da513c9d48c659de249b6649b))
+
+- Drop anchors and hardcoded text ([`c6f1dd3`](https://github.com/citum/citum-core/commit/c6f1dd3cf981502afe767cb3ba0fa880807fedca))
+
+
+
+### Documentation
+
+**report**
+
+- Make report-core fidelity source ([`5acbae0`](https://github.com/citum/citum-core/commit/5acbae05fed13898b045daed76693a20c385189d))
+
+
+
+### Features
+
+**report**
+
+- Support citation-only oracle scope ([`a59fc85`](https://github.com/citum/citum-core/commit/a59fc85ef7f983b675a3ab925fe07d97f5b8c10d))
+
+- Gate chicago-shared-corpus fidelity ([`75b61b1`](https://github.com/citum/citum-core/commit/75b61b1390915066d045c2195db32623f669ad73))
+
+
+**styles**
+
+- Add chicago-18-base component root ([`8532982`](https://github.com/citum/citum-core/commit/85329825479b2aa29285c2d60f64b107c7fab4bc))
+
+
+
+### Refactor
+
+**engine**
+
+- Select disambiguation action ([`3e8fab7`](https://github.com/citum/citum-core/commit/3e8fab7ccd521c9f89605d09743d33034573502b))
+
+
 ## [0.71.0] - 2026-06-28
 
 ### Bug Fixes
