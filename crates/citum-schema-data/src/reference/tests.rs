@@ -726,6 +726,24 @@ fn conversion_preserves_pre_existing_fields() {
 }
 
 #[test]
+fn conversion_ignores_unrecognized_note_type_override_and_keeps_the_line() {
+    let json = r#"{
+        "id": "note-type-typo",
+        "type": "book",
+        "note": "type: colection"
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(reference.ref_type(), "book");
+    assert_eq!(
+        reference.note(),
+        Some(super::RichText::Plain("type: colection".to_string()))
+    );
+}
+
+#[test]
 fn test_audio_visual_film_round_trip() {
     let yaml = r#"
 class: audio-visual
