@@ -15,4 +15,6 @@ ignore = [
     "RUSTSEC-2025-0141",  # bincode unmaintained (transitive via deno_core/syntect)
     "RUSTSEC-2026-0186",  # memmap2 unsound (transitive via gix stack)
     "RUSTSEC-2026-0192",  # ttf-parser unmaintained (transitive via Typst stack)
+    "RUSTSEC-2026-0194",  # quick-xml quadratic attr check (transitive via Typst stack; fix needs quick-xml >=0.41 upstream — removal tracked in bean csl26-blyb)
+    "RUSTSEC-2026-0195",  # quick-xml NsReader memory-exhaustion DoS (same transitive paths and fix version as 0194 — bean csl26-blyb)
 ]
