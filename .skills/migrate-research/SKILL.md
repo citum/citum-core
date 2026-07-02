@@ -28,7 +28,9 @@ Read first:
 - Start with the smallest trustworthy evidence surface.
 - State the target semantic class and implementation form before proposing a fix.
 - Classify each cluster as `migration-artifact`, `style-defect`, `processor-defect`,
-  or `intentional divergence`.
+  or `intentional divergence`. For type- or field-population-shaped clusters,
+  run the conversion-layer pre-flight from the shared decision rules
+  (`docs/policies/STYLE_WORKFLOW_DECISION_RULES.md`) before classifying.
 - Record the selected parent style when the target is a known wrapper.
 - Preserve the config-wrapper contract for `profile + config-wrapper` targets.
 - Treat `journal + structural-wrapper` as a valid endpoint; do not force thin-wrapper reduction.

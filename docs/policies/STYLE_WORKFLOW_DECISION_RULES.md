@@ -1,11 +1,12 @@
 # Style Workflow Decision Rules
 
 **Status:** Active
-**Version:** 1.3
-**Date:** 2026-04-04
+**Version:** 1.4
+**Date:** 2026-07-02
 **Related:** [STYLE_WORKFLOW_EXECUTION.md](../guides/STYLE_WORKFLOW_EXECUTION.md),
 [SKILL_AGENT_REFACTOR.md](../architecture/SKILL_AGENT_REFACTOR.md),
-[MIGRATION_STRATEGY_ANALYSIS.md](../architecture/MIGRATION_STRATEGY_ANALYSIS.md)
+[MIGRATION_STRATEGY_ANALYSIS.md](../architecture/MIGRATION_STRATEGY_ANALYSIS.md),
+[CSL_TYPE_CONVERSION_CONTRACT.md](../specs/CSL_TYPE_CONVERSION_CONTRACT.md)
 
 ## Rule
 Shared style-workflow agents must classify each mismatch as `style-defect`, `migration-artifact`, `processor-defect`, or `intentional divergence`, and must stop iterating once a cluster is clearly outside the active workflow's scope.
@@ -23,6 +24,45 @@ Before editing YAML, shared style workflows must classify the target on **three*
 3. portfolio tier: `embedded-core` or `dependent`
 
 All three classifications are operational, not cosmetic.
+
+### Conversion-layer pre-flight
+
+Before classifying any mismatch whose reference type or field population
+looks suspicious (wrong type-variant selected, fields missing that the
+fixture clearly carries, output that reads like a generic default), verify
+the reference converts truthfully **before** touching YAML:
+
+```bash
+cargo run --bin citum -- convert refs <item>.json --from csl-json -o /tmp/converted.yaml
+```
+
+Compare the converted class/type/fields against the canonicalization table
+in [CSL_TYPE_CONVERSION_CONTRACT.md](../specs/CSL_TYPE_CONVERSION_CONTRACT.md)
+(the authoritative statement of which `ref_type()` output each CSL 1.0.2
+input type must produce, including the intentional divergences).
+
+- Conversion wrong (type collapsed, fields dropped, note-field `type:`
+  override misapplied) → classify `processor-defect` (conversion). It must
+  reproduce in the conversion contract-test module
+  (`citum_schema_data::reference::conversion::contract_tests`) before any
+  Rust fix, and no YAML iteration happens on that cluster.
+- Conversion correct → the defect is style- or migration-side; classify
+  against the remaining categories as usual.
+
+Two facts of the conversion contract matter when reading oracle output:
+every CSL 1.0.2 type now reaches styles as its real `ref_type` (including
+`collection`, `entry`, `figure`, `graphic`, `musical_score`, `pamphlet`,
+`performance`, `periodical`, `review`, `review-book`, `post-weblog`), and
+note-field `type:` overrides apply only for recognized types — a
+misspelled override keeps the top-level type and stays visible in the
+note. A style that predates the contract may simply lack a `type-variants`
+entry for a newly-routed type; that is a `style-defect` (or a
+migration-gap when the source CSL style handled the type), not a
+processor problem.
+
+This pre-flight is the interim manual procedure; bean `csl26-3r34`
+(attributed fidelity reporting) will mechanize the tagging in
+`oracle.js`/`report-core.js`.
 
 ### Portfolio tier
 
@@ -53,6 +93,9 @@ with the binary and defines the maintainability standard for the whole portfolio
 Style work in Citum repeatedly follows the same decision logic: determine whether the defect belongs in YAML, migration, engine behavior, or adjudication, then route the work accordingly. Putting that logic in one policy keeps the Claude and Codex wrappers thin and reduces drift between hosts.
 
 ## Application
+- Run the conversion-layer pre-flight before classifying a type- or
+  field-population-shaped mismatch; a `processor-defect` (conversion)
+  claim needs the pre-flight evidence attached.
 - `style-defect` routes to style-local YAML repair.
 - `migration-artifact` stays in migration-focused work.
 - `processor-defect` routes to engine or processor follow-up.
@@ -81,6 +124,11 @@ Style work in Citum repeatedly follows the same decision logic: determine whethe
 - Rich-input evidence ordering and per-skill output phrasing live in the execution guide.
 
 ## Changelog
+- v1.4 (2026-07-02): Added the conversion-layer pre-flight (verify the
+  reference converts truthfully against `CSL_TYPE_CONVERSION_CONTRACT.md`
+  before classifying) and the newly-routed-types reading guidance,
+  following the conversion contract landing in PR #993. Interim manual
+  procedure until `csl26-3r34` mechanizes the tagging.
 - v1.3 (2026-06-24): Added the third classification axis (portfolio tier:
   `embedded-core` vs `dependent`), tier-dependent quality bar (SQI is a hard
   gate for embedded-core), and the embedded-tier authoring rule (migrate as
