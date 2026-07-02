@@ -324,7 +324,7 @@ override-validation policy; it was the missing `collection` routing arm
       reproduces and fixes the `chi-manuscript` regression.
 - [x] Every routing gap in the table above has an explicit arm; the
       wildcard fallback carries the `debug_assert!` loud-fail.
-- [ ] `Reference::parse_note_field_hacks` validates `type:` overrides
+- [x] `Reference::parse_note_field_hacks` validates `type:` overrides
       against `CSL_TYPES ∪ CSL_TYPE_EXTENSIONS`; unrecognized overrides
       are ignored and the note line is preserved (tests in
       `crates/csl-legacy/src/csl_json.rs` and
