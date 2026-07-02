@@ -121,16 +121,26 @@ fn to_sentence_case(text: &str) -> String {
 
 /// Capitalize the first alphabetic character of the string,
 /// preserving leading whitespace and punctuation.
+///
+/// A leading digit blocks capitalization entirely rather than being skipped
+/// over: a string like `"35 mm film"` has no leading word to capitalize (the
+/// first token is a numeral, not a word), so it is left as-is instead of
+/// capitalizing the first letter found later in the string (which would
+/// wrongly produce `"35 Mm film"`).
 pub(crate) fn capitalize_first_word(text: &str) -> String {
     let mut result = String::with_capacity(text.len());
     let mut found_first = false;
+    let mut blocked_by_digit = false;
     for ch in text.chars() {
-        if !found_first && ch.is_alphabetic() {
+        if !found_first && !blocked_by_digit && ch.is_alphabetic() {
             for upper in ch.to_uppercase() {
                 result.push(upper);
             }
             found_first = true;
         } else {
+            if !found_first && ch.is_ascii_digit() {
+                blocked_by_digit = true;
+            }
             result.push(ch);
         }
     }
@@ -243,26 +253,49 @@ const TITLE_CASE_STOP_WORDS: &[&str] = &[
     "the", "to", "up", "yet", "v", "vs",
 ];
 
-/// Capitalize each component of a hyphenated compound word for title case.
+/// Hyphen-like characters that join compound words for title-case purposes.
+///
+/// Includes the ASCII hyphen-minus and the en dash: bibliographic titles
+/// commonly use an en dash as a hyphen substitute in compounds like
+/// "Aging–Disability Nexus" (as-typed source data), and CMOS title-cases
+/// each component the same way it would for an ASCII-hyphenated compound.
+const HYPHEN_LIKE_CHARS: [char; 2] = ['-', '\u{2013}'];
+
+fn contains_hyphen_like(text: &str) -> bool {
+    text.contains(HYPHEN_LIKE_CHARS)
+}
+
+/// Capitalize each component of a hyphen-joined compound word for title case.
 ///
 /// When `force_all` is true (first/last word, post-punctuation), every component
 /// is capitalized. Otherwise interior stop-word components stay lowercase.
+/// Splits on both the ASCII hyphen and the en dash (see [`HYPHEN_LIKE_CHARS`]),
+/// preserving whichever separator character was actually used.
 fn capitalize_hyphenated(word: &str, force_all: bool) -> String {
-    word.split('-')
-        .map(|part| {
-            if force_all {
-                capitalize_first_word(part)
-            } else {
-                let alpha_core = part.trim_matches(|c: char| !c.is_alphanumeric());
-                if TITLE_CASE_STOP_WORDS.contains(&alpha_core) {
-                    part.to_string()
-                } else {
-                    capitalize_first_word(part)
-                }
-            }
-        })
-        .collect::<Vec<_>>()
-        .join("-")
+    let mut result = String::with_capacity(word.len());
+    let mut last_end = 0;
+    for (idx, sep) in word.match_indices(HYPHEN_LIKE_CHARS) {
+        let part = word.get(last_end..idx).unwrap_or_default();
+        result.push_str(&capitalize_hyphen_part(part, force_all));
+        result.push_str(sep);
+        last_end = idx + sep.len();
+    }
+    let tail = word.get(last_end..).unwrap_or_default();
+    result.push_str(&capitalize_hyphen_part(tail, force_all));
+    result
+}
+
+fn capitalize_hyphen_part(part: &str, force_all: bool) -> String {
+    if force_all {
+        capitalize_first_word(part)
+    } else {
+        let alpha_core = part.trim_matches(|c: char| !c.is_alphanumeric());
+        if TITLE_CASE_STOP_WORDS.contains(&alpha_core) {
+            part.to_string()
+        } else {
+            capitalize_first_word(part)
+        }
+    }
 }
 
 fn trim_trailing_closing_punctuation(word: &str) -> &str {
@@ -292,7 +325,7 @@ fn to_title_case(text: &str) -> String {
     for (i, word) in words.iter().enumerate() {
         let lower = word.to_lowercase();
         if i == 0 || i == last_idx || capitalize_next {
-            if lower.contains('-') {
+            if contains_hyphen_like(&lower) {
                 parts.push(capitalize_hyphenated(&lower, true));
             } else {
                 parts.push(capitalize_first_word(&lower));
@@ -303,7 +336,7 @@ fn to_title_case(text: &str) -> String {
             let alpha_core = lower.trim_matches(|c: char| !c.is_alphanumeric());
             if TITLE_CASE_STOP_WORDS.contains(&alpha_core) {
                 parts.push(lower);
-            } else if lower.contains('-') {
+            } else if contains_hyphen_like(&lower) {
                 parts.push(capitalize_hyphenated(&lower, false));
             } else {
                 parts.push(capitalize_first_word(&lower));
@@ -374,6 +407,18 @@ mod tests {
     #[test]
     fn test_capitalize_first_word_already_upper() {
         assert_eq!(capitalize_first_word("Hello"), "Hello");
+    }
+
+    #[test]
+    fn given_leading_numeral_when_capitalize_first_word_then_left_as_is() {
+        // "35 mm film" has no leading word to capitalize; the first letter
+        // ("m" in "mm") must not be hunted down and capitalized instead.
+        assert_eq!(capitalize_first_word("35 mm film"), "35 mm film");
+    }
+
+    #[test]
+    fn given_leading_letter_when_capitalize_first_word_then_capitalized() {
+        assert_eq!(capitalize_first_word("in Korean"), "In Korean");
     }
 
     // --- capitalize_first_word_markup_aware ---
@@ -542,6 +587,17 @@ mod tests {
     fn test_title_case_hyphenated_stop_word_part() {
         // "well-to-do": "to" is a stop word → stays lowercase in interior position
         assert_eq!(to_title_case("a well-to-do family"), "A Well-to-Do Family");
+    }
+
+    #[test]
+    fn given_en_dash_compound_when_title_case_then_both_sides_capitalized() {
+        // Source data sometimes uses an en dash ("–") as a hyphen substitute
+        // in a compound like "Aging–Disability"; CMOS title-cases each side
+        // the same way it would for an ASCII-hyphenated compound.
+        assert_eq!(
+            to_title_case("the aging\u{2013}disability nexus"),
+            "The Aging\u{2013}Disability Nexus"
+        );
     }
 
     // --- apply_to_structured_parts ---

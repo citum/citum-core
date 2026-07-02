@@ -127,6 +127,17 @@ pub(super) fn format_role_term<F: crate::render::format::OutputFormat<Output = S
     } else {
         term.to_string()
     };
+    // Locale role terms are stored lowercase (e.g. "translated by") since
+    // they usually sit mid-sentence. A `form: verb` component is marked
+    // `pre_formatted`, which skips the generic title/value text-case pass,
+    // so a style that positions the verb label as its own clause (e.g.
+    // after a `". "` prefix) must opt in here explicitly.
+    let term_str = match effective_rendering.text_case {
+        Some(citum_schema::options::titles::TextCase::CapitalizeFirst) => {
+            crate::values::text_case::capitalize_first_word(&term_str)
+        }
+        _ => term_str,
+    };
     fmt.text(&format!("{prefix}{term_str}{suffix}"))
 }
 

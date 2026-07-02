@@ -276,6 +276,30 @@ fn resolve_effective_text_case(
     None
 }
 
+/// Resolve the effective text-case for a title rendered outside its normal
+/// `title:` template component, e.g. when the CSL `substitute` chain falls
+/// through to `title` because the reference has no author/editor/translator.
+///
+/// There is no `TemplateTitle` to consult for a per-component override in
+/// that path, so this only resolves the style's category-level `titles:`
+/// configuration (mirroring the second half of [`resolve_effective_text_case`]).
+pub(crate) fn resolve_substitute_text_case(
+    title_type: &TitleType,
+    reference: &Reference,
+    options: &RenderOptions<'_>,
+) -> Option<TextCase> {
+    let ref_type = reference.ref_type();
+    let lang = reference.language();
+    let rendering = crate::render::component::get_title_category_rendering(
+        title_type,
+        Some(&ref_type),
+        lang.as_deref(),
+        options.config,
+    )?;
+    let tc = rendering.text_case?;
+    Some(apply_language_fallback(tc, reference))
+}
+
 fn effective_title_quote_depth(
     template: &TemplateTitle,
     reference: &Reference,
