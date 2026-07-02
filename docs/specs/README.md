@@ -127,6 +127,7 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 | [`TYPE_REFACTOR_v3.md`](./TYPE_REFACTOR_v3.md) — unified type system refactor for high-fidelity work modeling | Active | `metadata.rs`, `domain_fixtures.rs` |
 | [`TYPE_SYSTEM_ARCHITECTURE.md`](./TYPE_SYSTEM_ARCHITECTURE.md) — overall type system architecture and classification hierarchy | Draft | `crates/citum-schema/tests/` |
 | [`INPUT_REFERENCE_CLASS_DISCRIMINATOR.md`](./INPUT_REFERENCE_CLASS_DISCRIMINATOR.md) — discriminated union for reference-class dispatch | Active | `crates/citum-schema/tests/` |
+| [`CSL_TYPE_CONVERSION_CONTRACT.md`](./CSL_TYPE_CONVERSION_CONTRACT.md) — CSL 1.0.2 type vocabulary, routing closure, and note-override validation | Active | `crates/citum-schema-data/src/reference/conversion/contract_tests.rs` |
 | [`GENERALIZED_RELATIONAL_CONTAINER_MODEL.md`](./GENERALIZED_RELATIONAL_CONTAINER_MODEL.md) — recursive relational container model replacing flat variables | Active | `metadata.rs` |
 | [`DATE_MODEL.md`](./DATE_MODEL.md) — refined date model for created vs. issued distinction | Active | `metadata.rs` |
 | [`NUMBERING_SEMANTICS.md`](./NUMBERING_SEMANTICS.md) — canonical semantics for numbering, report, and part fields | Active | `metadata.rs` |
