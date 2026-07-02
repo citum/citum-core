@@ -9,6 +9,7 @@ updated_at: 2026-06-30T18:55:24Z
 parent: csl26-h7oc
 blocked_by:
     - csl26-ucg3
+    - csl26-shco
 ---
 
 Tune `chicago-notes-18th` to 100% fidelity + clean SQI via the `style-tune`

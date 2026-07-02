@@ -6,6 +6,7 @@ type: bug
 priority: medium
 created_at: 2026-07-01T00:00:00Z
 updated_at: 2026-07-01T00:00:00Z
+parent: csl26-h7oc
 ---
 
 `chicago-notes-18th`'s `chicago-shared-corpus` benchmark (registered in
