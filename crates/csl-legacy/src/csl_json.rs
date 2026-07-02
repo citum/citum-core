@@ -502,8 +502,16 @@ impl Reference {
 
             // Process the key-value pair; only mark as parsed when the key is recognized
             if key.eq_ignore_ascii_case("type") {
-                self.ref_type = value.to_string();
-                parsed_indices.insert(idx);
+                // Only apply the override when `value` is a recognized CSL
+                // type (1.0.2 or a known extension). An unrecognized value
+                // (typo, or a vocabulary the current release doesn't know)
+                // is left alone: the top-level `type` wins, and the line
+                // stays in the rebuilt `note` rather than being silently
+                // consumed. See docs/specs/CSL_TYPE_CONVERSION_CONTRACT.md.
+                if CSL_TYPES.contains(&value) || CSL_TYPE_EXTENSIONS.contains(&value) {
+                    self.ref_type = value.to_string();
+                    parsed_indices.insert(idx);
+                }
             } else if is_date_variable(key) {
                 handle_date_variable(self, key, value);
                 parsed_indices.insert(idx);
@@ -992,6 +1000,42 @@ mod tests {
         ref_obj.parse_note_field_hacks();
         assert_eq!(ref_obj.ref_type, "article-journal");
         assert_eq!(ref_obj.note, None);
+    }
+
+    #[test]
+    fn test_parse_note_field_type_override_recognizes_extension_spelling() {
+        // "legal-case" is not itself in CSL_TYPES (the CSL 1.0.2 spelling
+        // is "legal_case"), but it is a known CSL_TYPE_EXTENSIONS entry,
+        // so the override must still apply.
+        let mut ref_obj = Reference {
+            id: "test".to_string(),
+            ref_type: "document".to_string(),
+            note: Some("type: legal-case".to_string()),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+        assert_eq!(ref_obj.ref_type, "legal-case");
+        assert_eq!(ref_obj.note, None);
+    }
+
+    #[test]
+    fn test_parse_note_field_unrecognized_type_override_is_ignored() {
+        // "colection" is a typo (missing an "l") and matches neither
+        // CSL_TYPES nor CSL_TYPE_EXTENSIONS. The top-level type must win,
+        // and the unrecognized line stays in the rebuilt note instead of
+        // being silently consumed. See
+        // docs/specs/CSL_TYPE_CONVERSION_CONTRACT.md.
+        let mut ref_obj = Reference {
+            id: "test".to_string(),
+            ref_type: "book".to_string(),
+            note: Some("type: colection".to_string()),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+        assert_eq!(ref_obj.ref_type, "book");
+        assert_eq!(ref_obj.note, Some("type: colection".to_string()));
     }
 
     #[test]
