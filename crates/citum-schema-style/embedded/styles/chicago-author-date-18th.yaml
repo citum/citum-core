@@ -56,6 +56,19 @@ options:
       - translator
   dates: long
   titles:
+    # CMOS 18 title-cases nearly every reference-type title (article, book,
+    # broadcast, manuscript, motion picture, song, webpage); the engine's
+    # legacy type->category fallback only recognizes a small hardcoded set
+    # (component: articles/chapters/entries; monograph: book/thesis/report).
+    # Map the remaining CMOS title-case types explicitly rather than widen
+    # the shared engine default, which would affect every embedded style.
+    type-mapping:
+      broadcast: component
+      collection: component
+      manuscript: component
+      motion-picture: component
+      song: component
+      webpage: component
     component:
       text-case: title
     monograph:
@@ -152,7 +165,10 @@ citation:
 bibliography:
   options:
     substitute:
-      contributor-role-form: short
+      # CMOS 18: when editor substitutes for a missing author, the short
+      # role label follows a comma ("Lattimore, eds.") rather than sitting
+      # in parentheses ("Lattimore (eds.)").
+      contributor-role-form: short-comma
       template:
       - editor
       - translator
@@ -305,6 +321,7 @@ bibliography:
         form: year
         wrap:
           punctuation: parentheses
+        prefix: ". "
       - date: issued
         form: year
         prefix: " "
@@ -321,6 +338,7 @@ bibliography:
       form: verb
       name-order: given-first
       prefix: ". "
+      text-case: capitalize-first
     - contributor: illustrator
       form: long
       name-order: given-first
@@ -387,7 +405,12 @@ bibliography:
     - variable: dimensions
       prefix: ". "
     - variable: url
-    manuscript:
+    # `collection` is included here because a note-field `type: collection`
+    # override is how this corpus tags archival manuscripts cataloged as
+    # collections (e.g. "Revere family papers") — see
+    # docs/specs/CSL_TYPE_CONVERSION_CONTRACT.md. Both route to the same
+    # archival rendering shape (author/title substitute, archive fields).
+    manuscript, collection:
     - contributor: author
       form: long
       name-order: family-first
@@ -400,7 +423,6 @@ bibliography:
       render-when:
         field-present: issued
     - title: primary
-      text-case: as-is
     - date: issued
       form: month-day
     - variable: raw-genre
@@ -491,6 +513,7 @@ bibliography:
         delimiter: none
       - group:
         - variable: raw-medium
+          text-case: capitalize-first
         - variable: dimensions
           prefix: ", "
         delimiter: none
@@ -533,6 +556,7 @@ bibliography:
         delimiter: none
       - group:
         - variable: raw-medium
+          text-case: capitalize-first
         - variable: dimensions
           prefix: ", "
         delimiter: none
@@ -669,6 +693,7 @@ bibliography:
     - variable: publisher
     - group:
       - variable: raw-medium
+        text-case: capitalize-first
       - variable: dimensions
         prefix: ", "
     - variable: url
@@ -688,7 +713,6 @@ bibliography:
     - date: issued
       form: year
     - title: primary
-      text-case: as-is
     - contributor: narrator
       form: long
       name-order: given-first
@@ -725,6 +749,7 @@ bibliography:
       delimiter: " "
     - group:
       - variable: raw-medium
+        text-case: capitalize-first
       - variable: dimensions
         prefix: ", "
       delimiter: none
