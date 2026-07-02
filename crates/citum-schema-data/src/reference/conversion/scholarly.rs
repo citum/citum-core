@@ -285,6 +285,20 @@ pub(super) fn from_monograph_ref(
         }));
     }
 
+    // Seed genre from ref_type for CSL types whose round trip through
+    // `ref_type()` depends on genre (see `monograph_ref_type`'s Book and
+    // Post arms in accessors.rs); never overwrites a user-supplied genre.
+    // `post-weblog` needs this too: it shares `MonographType::Post` with
+    // plain `post` (both match `ref_type.contains("post")` above), so
+    // genre is the only signal that distinguishes them on the way back out.
+    let genre = legacy.genre.clone().or_else(|| {
+        matches!(
+            legacy.ref_type.as_str(),
+            "musical_score" | "pamphlet" | "post-weblog"
+        )
+        .then(|| legacy.ref_type.clone())
+    });
+
     InputReference::Monograph(Box::new(Monograph {
         id: ctx.id,
         r#type,
@@ -318,7 +332,7 @@ pub(super) fn from_monograph_ref(
         supplement_number: None,
         printing_number: legacy.printing_number,
         numbering,
-        genre: legacy.genre,
+        genre,
         medium: legacy.medium,
         archive,
         archive_location: legacy.archive_location,
@@ -543,6 +557,7 @@ fn collection_component_metadata(
         genre = match legacy.ref_type.as_str() {
             "entry-dictionary" => Some("entry-dictionary".to_string()),
             "entry-encyclopedia" => Some("entry-encyclopedia".to_string()),
+            "entry" => Some("entry".to_string()),
             _ => None,
         };
     }
@@ -638,6 +653,9 @@ pub(super) fn from_serial_component_ref(
     let mut genre = legacy.genre.clone();
     if legacy.ref_type == "entry-encyclopedia" && genre.is_none() {
         genre = Some("entry-encyclopedia".to_string());
+    }
+    if matches!(legacy.ref_type.as_str(), "review" | "review-book") && genre.is_none() {
+        genre = Some(legacy.ref_type.clone());
     }
     let host_names = legacy_extra_names(&legacy, "host");
     let narrator_names = legacy_extra_names(&legacy, "narrator");
@@ -852,12 +870,15 @@ pub(super) fn from_document_ref(
 
     let volume = legacy.volume.map(|v| v.to_string());
     let number = legacy.number.clone();
-    let genre = legacy.genre.or_else(|| {
-        if legacy.ref_type == "map" {
-            Some("map".to_string())
-        } else {
-            None
-        }
+    // Seed genre from ref_type for CSL types whose round trip through
+    // `ref_type()` depends on genre (see `monograph_ref_type`'s Document
+    // arm in accessors.rs); never overwrites a user-supplied genre.
+    let genre = legacy.genre.clone().or_else(|| {
+        matches!(
+            legacy.ref_type.as_str(),
+            "map" | "figure" | "graphic" | "periodical" | "collection"
+        )
+        .then(|| legacy.ref_type.clone())
     });
     let author = legacy.author.clone().map(Contributor::from);
     let editor = legacy.editor.clone().map(Contributor::from);
@@ -1062,7 +1083,13 @@ pub(super) fn from_event_ref(
         location: event_place.or(legacy.publisher_place.clone()),
         date: event_date.or_else(|| (!ctx.issued.is_empty()).then_some(ctx.issued)),
         available_date,
-        genre: legacy.genre,
+        // Seed genre from ref_type for CSL types whose round trip through
+        // `ref_type()` depends on genre (see `event_ref_type` in
+        // accessors.rs); never overwrites a user-supplied genre.
+        genre: legacy.genre.clone().or_else(|| {
+            matches!(legacy.ref_type.as_str(), "speech" | "performance")
+                .then(|| legacy.ref_type.clone())
+        }),
         network: None,
         contributors,
         url: ctx.url,

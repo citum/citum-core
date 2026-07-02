@@ -1481,31 +1481,53 @@ impl InputReference {
 
     fn monograph_ref_type(&self, r: &Monograph) -> String {
         match r.r#type {
-            MonographType::Book => if r
-                .medium
-                .as_deref()
-                .is_some_and(|m| m.to_ascii_lowercase().contains("interview"))
-            {
-                "interview"
-            } else {
-                "book"
+            MonographType::Book => {
+                if r.genre
+                    .as_deref()
+                    .is_some_and(|genre| genre.eq_ignore_ascii_case("musical_score"))
+                {
+                    return "musical-score".to_string();
+                }
+                if r.genre.as_deref().is_some_and(|genre| genre == "pamphlet") {
+                    return "pamphlet".to_string();
+                }
+                if r.medium
+                    .as_deref()
+                    .is_some_and(|m| m.to_ascii_lowercase().contains("interview"))
+                {
+                    "interview"
+                } else {
+                    "book"
+                }
+                .to_string()
             }
-            .to_string(),
             MonographType::Manual => "manual".to_string(),
             MonographType::Report => "report".to_string(),
             MonographType::Thesis => "thesis".to_string(),
             MonographType::Webpage => "webpage".to_string(),
-            MonographType::Post => "post".to_string(),
+            MonographType::Post => if r.genre.as_deref() == Some("post-weblog") {
+                "post-weblog"
+            } else {
+                "post"
+            }
+            .to_string(),
             MonographType::Interview => "interview".to_string(),
             MonographType::Manuscript => "manuscript".to_string(),
             MonographType::Preprint => "preprint".to_string(),
             MonographType::PersonalCommunication => "personal-communication".to_string(),
             MonographType::Document => {
-                if r.genre
-                    .as_deref()
-                    .is_some_and(|genre| genre.eq_ignore_ascii_case("map"))
-                {
-                    return "map".to_string();
+                // Case-insensitive: real-world exports carry capitalized
+                // genre labels (e.g. Zotero's `Map`), and the pre-existing
+                // map back-map matched them ignoring case; the canonical
+                // lowercase CSL type string is returned either way.
+                if let Some(genre) = r.genre.as_deref() {
+                    let lowered = genre.to_ascii_lowercase();
+                    if matches!(
+                        lowered.as_str(),
+                        "map" | "figure" | "graphic" | "periodical" | "collection"
+                    ) {
+                        return lowered;
+                    }
                 }
                 if let Some(genre) = r.genre.as_deref()
                     && matches!(genre, "bill-proceeding" | "bill-record")
@@ -1535,6 +1557,7 @@ fn collection_component_ref_type(r: &CollectionComponent) -> String {
         MonographComponentType::Chapter => match r.genre.as_deref() {
             Some("entry-dictionary") => "entry-dictionary",
             Some("entry-encyclopedia") => "entry-encyclopedia",
+            Some("entry") => "entry",
             _ => "chapter",
         }
         .to_string(),
@@ -1546,6 +1569,11 @@ fn collection_component_ref_type(r: &CollectionComponent) -> String {
 fn serial_component_ref_type(r: &SerialComponent) -> String {
     if r.genre.as_deref() == Some("entry-encyclopedia") {
         return "entry-encyclopedia".to_string();
+    }
+    if let Some(genre) = r.genre.as_deref()
+        && matches!(genre, "review" | "review-book")
+    {
+        return genre.to_string();
     }
     let container_type = r.container.as_ref().and_then(|c| match c {
         WorkRelation::Embedded(p) => Some(p.ref_type()),
@@ -1573,6 +1601,7 @@ fn event_ref_type(r: &Event) -> &'static str {
     match lowered.as_deref() {
         Some(g) if g.contains("conference") || g.contains("paper") => "paper-conference",
         Some(g) if g.contains("broadcast") => "broadcast",
+        Some(g) if g.contains("performance") => "performance",
         Some(g) if g.contains("talk") || g.contains("speech") => "speech",
         _ => "event",
     }
