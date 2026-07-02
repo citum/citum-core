@@ -10,6 +10,8 @@ ignore = [
     { id = "RUSTSEC-2025-0141", reason = "Transitive through deno_core and syntect; no direct dependency or safe local replacement in this PR." },
     { id = "RUSTSEC-2026-0186", reason = "memmap2 unsound: transitive through gix-ref/gix-protocol/gix; no upstream memmap2 fix available in the gix ecosystem yet." },
     { id = "RUSTSEC-2026-0192", reason = "ttf-parser unmaintained: transitive through the current Typst stack; no direct dependency or actionable local patch path in this PR." },
+    { id = "RUSTSEC-2026-0194", reason = "quick-xml quadratic attribute check: transitive through the Typst stack (citationberg/hayagriva at 0.38.4, syntect/plist at 0.39.4); the fix requires quick-xml >=0.41, a breaking bump those upstreams have not shipped yet." },
+    { id = "RUSTSEC-2026-0195", reason = "quick-xml NsReader memory-exhaustion DoS: same transitive paths and fix version as RUSTSEC-2026-0194." },
 ]
 
 [licenses]

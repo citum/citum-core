@@ -71,7 +71,7 @@ jobs:
           persist-credentials: false
 
       - name: Run repository hygiene (alint)
-        uses: asamarts/alint@3c15d45a21884dc39f1f351a85e03297da237b87  # v0.9.22
+        uses: asamarts/alint@9a341559646a0a128957a0f70671e0835fb38dcb  # v0.13.0
 
   hygiene-beans:
     name: Hygiene Checks — Beans
