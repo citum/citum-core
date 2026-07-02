@@ -262,7 +262,18 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
         );
     }
 
-    if role_omitted {
+    // `role.omit` suppresses the *decorative* default/preset label (e.g. a
+    // trailing "(Trans.)"), not a `form: verb`/`form: verb-short` label: the
+    // verb phrase ("Translated by X") is structural to that form, not an
+    // optional suffix, so a style that both requests verb form and omits the
+    // role's default label (to avoid double-labeling under a different form)
+    // must still get its verb label.
+    if role_omitted
+        && !matches!(
+            component.form,
+            ContributorForm::Verb | ContributorForm::VerbShort
+        )
+    {
         return (None, None);
     }
 

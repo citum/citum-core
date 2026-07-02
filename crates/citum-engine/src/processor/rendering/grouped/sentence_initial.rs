@@ -111,12 +111,17 @@ impl Renderer<'_> {
 
         let locale = Some(self.locale.locale.as_str());
         match &component.template_component {
-            TemplateComponent::Contributor(_) => {
+            TemplateComponent::Contributor(contributor) => {
                 let case =
                     crate::values::text_case::resolve_text_case(TextCase::CapitalizeFirst, locale);
                 if let Some(prefix) = component.prefix.as_mut() {
                     // Explicit template prefix (e.g. ". Translated by ") — capitalize it.
                     *prefix = crate::values::text_case::apply_text_case(prefix, case);
+                } else if contributor.rendering.prefix.is_some() {
+                    // A static YAML `prefix:` (e.g. "Narrated by ") already supplies
+                    // the sentence-initial capital as authored. The contributor's own
+                    // value is a name (or literal descriptive text like "the author")
+                    // and must not also be capitalized on top of it.
                 } else {
                     // No explicit prefix: the role label (e.g. "edited by ") is baked
                     // into the rendered value.  Capitalize the first word so that

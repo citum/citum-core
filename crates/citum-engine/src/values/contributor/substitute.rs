@@ -11,11 +11,15 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use crate::processor::rendering::get_variable_key;
 use crate::reference::Reference;
 use crate::render::format::OutputFormat;
+use crate::values::text_case::apply_text_case;
+use crate::values::title::resolve_substitute_text_case;
 use crate::values::{ProcHints, ProcValues, RenderContext, RenderOptions};
 use citum_schema::options::{RoleLabelPreset, SubstituteKey};
 use citum_schema::reference::Title;
 use citum_schema::reference::{ClassExtension, ContributorRole as DataRole};
-use citum_schema::template::{ContributorRole, Rendering, TemplateComponent, TemplateContributor};
+use citum_schema::template::{
+    ContributorRole, Rendering, TemplateComponent, TemplateContributor, TitleType,
+};
 
 enum ResolvedRole {
     BuiltIn(ContributorRole),
@@ -450,16 +454,34 @@ pub(super) fn resolve_role_substitute<F: OutputFormat<Output = String>>(
     None
 }
 
+/// The `substituted_key` recorded on `ProcValues` for a title substitution,
+/// keyed by which title slot filled the missing-author position.
+fn substituted_key_for_title_type(title_type: &TitleType) -> &'static str {
+    match title_type {
+        TitleType::ParentSerial => "title:ParentSerial",
+        _ => "title:Primary",
+    }
+}
+
 fn resolve_title_substitute<F: OutputFormat<Output = String>>(
     title: Title,
+    title_type: &TitleType,
     component: &TemplateContributor,
     options: &RenderOptions<'_>,
     reference: &Reference,
     fmt: &F,
-    substituted_key: &'static str,
     quote_in_citation: bool,
 ) -> ProcValues<F::Output> {
+    let substituted_key = substituted_key_for_title_type(title_type);
     let title_str = title_substitute_text(title, options.context);
+    // The substitute chain has no `TemplateTitle` to carry a per-component
+    // `text-case:` override, so only the style's category-level `titles:`
+    // config (keyed by reference type) applies here — see
+    // `resolve_substitute_text_case`.
+    let title_str = match resolve_substitute_text_case(title_type, reference, options) {
+        Some(case) => apply_text_case(&title_str, case),
+        None => title_str,
+    };
     let value = if options.context == RenderContext::Citation && quote_in_citation {
         fmt.quote(fmt.text(&title_str))
     } else {
@@ -556,11 +578,11 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
                 if let Some(title) = resolve_parent_serial_title(reference) {
                     return Some(resolve_title_substitute(
                         title,
+                        &TitleType::ParentSerial,
                         component,
                         options,
                         reference,
                         fmt,
-                        "title:ParentSerial",
                         false,
                     ));
                 }
@@ -569,11 +591,11 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
                 if let Some(title) = reference.title() {
                     return Some(resolve_title_substitute(
                         title,
+                        &TitleType::Primary,
                         component,
                         options,
                         reference,
                         fmt,
-                        "title:Primary",
                         true,
                     ));
                 }
