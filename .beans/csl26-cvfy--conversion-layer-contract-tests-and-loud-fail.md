@@ -1,11 +1,11 @@
 ---
 # csl26-cvfy
-title: 'CSL-JSON conversion-layer contract tests + loud-fail on unmapped types'
-status: todo
+title: CSL-JSON conversion-layer contract tests + loud-fail on unmapped types
+status: in-progress
 type: epic
 priority: medium
 created_at: 2026-07-02T00:00:00Z
-updated_at: 2026-07-02T00:00:00Z
+updated_at: 2026-07-02T17:22:41Z
 ---
 
 ## Problem
@@ -179,21 +179,59 @@ sufficient input for that spec's first draft, but the spec itself is not
 written yet.
 
 ## Todo
-- [ ] Author `docs/specs/CSL_TYPE_CONVERSION_CONTRACT.md` (or similarly
+- [x] Author `docs/specs/CSL_TYPE_CONVERSION_CONTRACT.md` (or similarly
       named) — Draft status, scoping Phases 1-4 as the MVP and Phase 5 as
       a stretch/follow-on
-- [ ] Phase 1: source-of-truth CSL 1.0 type vocabulary + gap audit against
+- [x] Phase 1: source-of-truth CSL 1.0 type vocabulary + gap audit against
       current `conversion/mod.rs` routing arms
-- [ ] Phase 2: red test reproducing the `chi-manuscript`/`collection`
+- [x] Phase 2: red test reproducing the `chi-manuscript`/`collection`
       regression at the conversion layer, independent of any style
-- [ ] Phase 3: validate note-field type-override against the vocabulary
+- [x] Phase 3: validate note-field type-override against the vocabulary
       (sequence after Phase 4's routing fix per the dependency noted above)
-- [ ] Phase 4: close routing gaps; design + implement loud-fail for
+- [x] Phase 4: close routing gaps; design + implement loud-fail for
       unmapped types, coordinated with `csl26-1bdr`'s prior art
 - [ ] Phase 5 (stretch, separate PR): attributed fidelity reporting in
       `oracle.js`/`report-core.js`
-- [ ] Re-run `node scripts/report-core.js --style chicago-notes-18th`
+- [x] Re-run `node scripts/report-core.js --style chicago-notes-18th`
       after Phase 4 lands to confirm `chi-manuscript` (and any other
       newly-routed types in the shared corpus) improve without YAML
       changes, validating the "conversion bugs, not style bugs" diagnosis
-      in `csl26-shco`
+      in `csl26-shco`. **Outcome:** the conversion layer is fixed and
+      verified (`chi-manuscript` converts to `ref_type() == "collection"`
+      with `archive-info` intact; contract test + CLI trace both green),
+      the full corpus shows zero style regressions and a small
+      bibliography improvement (7790→7792 passed), but the shared-corpus
+      citation itself still fails (7/15 unchanged) because the *migrated
+      style* has no `collection` type-variant — the failure is now
+      cleanly attributable to the style/migration layer, which is
+      exactly `csl26-shco` scope. Diagnosis mechanism validated; the
+      "without YAML changes" improvement expectation was optimistic.
+
+## Summary of Changes
+
+Implemented in PR #993 (branch `epic/csl-json-conversion-contract-tests`):
+
+- `docs/specs/CSL_TYPE_CONVERSION_CONTRACT.md` (Active): vocabulary
+  source of truth, canonicalization table, routing closure design,
+  loud-fail pattern, note-override policy.
+- `crates/csl-legacy/src/csl_json.rs`: `CSL_TYPES` (45 CSL 1.0.2 types)
+  + `CSL_TYPE_EXTENSIONS`; `parse_note_field_hacks` now applies a
+  `type: X` override only for recognized types — unrecognized values
+  keep the top-level type and stay in the note.
+- `crates/citum-schema-data/src/reference/conversion/`: 12 routing gaps
+  closed (11 anticipated + test-discovered `post-weblog`→`post`
+  collapse; `speech`→`event` collapse also fixed). CSL `collection`
+  routes as an *archival* document shape (genre-discriminated) because
+  Citum's editorial `Collection` class has no author/archive fields —
+  recorded in the spec. Wildcard fallback now `debug_assert!`s on known
+  CSL types (mirrors `accessors.rs` `TODO(csl26-1bdr)` prior art).
+- `conversion/contract_tests.rs`: expectation-table round-trip test over
+  all 45 types (zero exceptions), chi-manuscript regression test with
+  archive-preservation assertion, capitalized-genre (`Map`) regression
+  test.
+- Fidelity: zero regressions across the core corpus; bibliography
+  passed 7790→7792; chicago-author-date-18th and
+  taylor-and-francis-chicago-author-date +0.002 each.
+
+Phase 5 filed as `csl26-3r34`. Remaining `chi-manuscript` citation
+mismatch reclassified as a style/migration-layer defect (`csl26-shco`).
