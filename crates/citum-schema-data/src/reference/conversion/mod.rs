@@ -20,6 +20,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! `RefContext` struct that bundles the fields every converter pre-extracts
 //! live here in `mod.rs` so submodules can pull them in with `use super::*;`.
 
+#[cfg(test)]
+mod contract_tests;
 mod legal;
 mod media;
 mod scholarly;
@@ -355,7 +357,9 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             | "post-weblog"
             | "interview"
             | "personal_communication"
-            | "personal-communication" => scholarly::from_monograph_ref(legacy, ctx),
+            | "personal-communication"
+            | "musical_score"
+            | "pamphlet" => scholarly::from_monograph_ref(legacy, ctx),
             "report"
                 if legacy.page.is_some()
                     && (legacy.editor.is_some() || legacy.container_title.is_some()) =>
@@ -363,12 +367,10 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 scholarly::from_collection_component_ref(legacy, ctx)
             }
             "report" => scholarly::from_monograph_ref(legacy, ctx),
-            "chapter" | "paper-conference" | "entry-dictionary" | "entry-encyclopedia" => {
-                scholarly::from_collection_component_ref(legacy, ctx)
-            }
-            "article-journal" | "article-magazine" | "article-newspaper" => {
-                scholarly::from_serial_component_ref(legacy, ctx)
-            }
+            "chapter" | "paper-conference" | "entry" | "entry-dictionary"
+            | "entry-encyclopedia" => scholarly::from_collection_component_ref(legacy, ctx),
+            "article-journal" | "article-magazine" | "article-newspaper" | "review"
+            | "review-book" => scholarly::from_serial_component_ref(legacy, ctx),
             "article" => {
                 if legacy.container_title.is_none() {
                     scholarly::from_preprint_ref(legacy, ctx)
@@ -378,7 +380,9 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             }
             "motion_picture" | "song" => media::from_audio_visual_ref(legacy, ctx),
             "broadcast" => scholarly::from_serial_component_ref(legacy, ctx),
-            "speech" | "presentation" | "event" => scholarly::from_event_ref(legacy, ctx),
+            "speech" | "presentation" | "performance" | "event" => {
+                scholarly::from_event_ref(legacy, ctx)
+            }
             "bill" => legal::from_bill_ref(legacy, ctx),
             "hearing" => legal::from_hearing_ref(legacy, ctx),
             "legal-case" | "legal_case" => legal::from_legal_case_ref(legacy, ctx),
@@ -388,7 +392,34 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             "standard" => legal::from_standard_ref(legacy, ctx),
             "patent" => legal::from_patent_ref(legacy, ctx),
             "dataset" => scholarly::from_dataset_ref(legacy, ctx),
-            _ => scholarly::from_document_ref(legacy, ctx),
+            // `collection` is CSL 1.0.2's *archival* collection (a body of
+            // manuscripts/papers held by an archive: author, archive,
+            // archive-place). It routes with the other archival/document
+            // shapes so those fields survive; Citum's editorial
+            // `ClassExtension::Collection` (anthology/proceedings) has no
+            // author or archive fields and would silently drop them. See
+            // docs/specs/CSL_TYPE_CONVERSION_CONTRACT.md.
+            "document" | "map" | "figure" | "graphic" | "periodical" | "collection" => {
+                scholarly::from_document_ref(legacy, ctx)
+            }
+            _ => {
+                // Every CSL 1.0.2 type string has an explicit arm above; a
+                // known type reaching this fallback means a routing arm was
+                // dropped, not that the type is genuinely unmapped.
+                //
+                // TODO(csl26-1bdr): Layer 5 `CompatibilityWarning` plumbing
+                // will surface unrecognized types as a soft-degrade warning
+                // rather than silent fall-through. Until then this
+                // fallback mirrors the ClassExtension::Unknown loud-fail
+                // pattern in accessors.rs.
+                debug_assert!(
+                    !csl_legacy::csl_json::CSL_TYPES.contains(&legacy.ref_type.as_str()),
+                    "unmapped CSL 1.0.2 type `{}` fell through to the document fallback; \
+                     add a routing arm in conversion/mod.rs",
+                    legacy.ref_type
+                );
+                scholarly::from_document_ref(legacy, ctx)
+            }
         }
     }
 }

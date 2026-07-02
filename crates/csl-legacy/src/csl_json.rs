@@ -14,6 +14,97 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use serde::{Deserialize, Deserializer, Serialize};
 use std::collections::{HashMap, HashSet};
 
+/// Canonical CSL 1.0.2 item-type vocabulary.
+///
+/// Source: `schemas/styles/csl-types.rnc` at the tagged `v1.0.2` release of
+/// the CSL schema repository
+/// (<https://github.com/citation-style-language/schema/blob/v1.0.2/schemas/styles/csl-types.rnc>,
+/// verified identical against `master` at time of writing). This is the
+/// complete, closed set of `"type"` strings a conformant CSL 1.0.2 producer
+/// may emit. It is the source of truth consumed by:
+///
+/// - the CSL-type routing table in
+///   `citum_schema_data::reference::conversion` (every entry here must
+///   have an explicit routing arm — see
+///   `docs/specs/CSL_TYPE_CONVERSION_CONTRACT.md`);
+/// - [`Reference::parse_note_field_hacks`], which validates `note:`-field
+///   `type: X` overrides against this list (plus [`CSL_TYPE_EXTENSIONS`])
+///   before applying them.
+pub const CSL_TYPES: &[&str] = &[
+    "article",
+    "article-journal",
+    "article-magazine",
+    "article-newspaper",
+    "bill",
+    "book",
+    "broadcast",
+    "chapter",
+    "classic",
+    "collection",
+    "dataset",
+    "document",
+    "entry",
+    "entry-dictionary",
+    "entry-encyclopedia",
+    "event",
+    "figure",
+    "graphic",
+    "hearing",
+    "interview",
+    "legal_case",
+    "legislation",
+    "manuscript",
+    "map",
+    "motion_picture",
+    "musical_score",
+    "pamphlet",
+    "paper-conference",
+    "patent",
+    "performance",
+    "periodical",
+    "personal_communication",
+    "post",
+    "post-weblog",
+    "regulation",
+    "report",
+    "review",
+    "review-book",
+    "software",
+    "song",
+    "speech",
+    "standard",
+    "thesis",
+    "treaty",
+    "webpage",
+];
+
+/// Non-CSL-1.0.2 `"type"` strings the legacy conversion layer also treats
+/// as first-class inputs.
+///
+/// These spellings show up in real-world CSL-JSON exports (Zotero,
+/// BibTeX/BibLaTeX round-trips, etc.) but are not part of the official CSL
+/// 1.0.2 vocabulary in [`CSL_TYPES`]. They are accepted because
+/// `citum_schema_data::reference::conversion`'s routing table has
+/// historically routed them like a known type, not because a producer
+/// following the CSL 1.0.2 spec would ever emit them. Listed here so
+/// [`Reference::parse_note_field_hacks`] recognizes them too, and so the
+/// conversion-layer contract test can distinguish "known extension" from
+/// "unrecognized/typo".
+pub const CSL_TYPE_EXTENSIONS: &[&str] = &[
+    // Zotero/BibLaTeX "manual" export; routed like a technical manual.
+    "manual",
+    // Historical alias accepted alongside `speech`/`event`; routed to the
+    // event converter.
+    "presentation",
+    // Hyphenated respelling of the CSL 1.0.2 `personal_communication` type.
+    "personal-communication",
+    // Hyphenated respelling of the CSL 1.0.2 `legal_case` type.
+    "legal-case",
+    // Not part of CSL 1.0.2 (`legislation` is the closed-vocabulary
+    // equivalent); routed to the same statute converter as `legislation`.
+    "statute",
+];
+
 /// A bibliographic reference item.
 /// This is compatible with CSL-JSON format.
 #[derive(Debug, Clone, Default, Deserialize, Serialize)]

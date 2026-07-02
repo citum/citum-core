@@ -1,6 +1,6 @@
 # CSL 1.0.2 Type Conversion Contract
 
-**Status:** Draft
+**Status:** Active
 **Version:** 1.0
 **Date:** 2026-07-02
 **Supersedes:** None
@@ -149,15 +149,15 @@ also found this way — `post-weblog` had a working routing arm but shared
 `MonographType::Post` with plain `post` and nothing distinguished them on
 the way back out.
 
-Each gap closes with the same shape: route to an existing (or, for
-`collection`, one new) constructor, and seed `genre` from `ref_type` only
-when the legacy reference didn't already supply one — this is the
-established pattern (`from_document_ref`'s pre-existing `"map"` handling)
-generalized to the other genre-discriminated types:
+Each gap closes with the same shape: route to an existing constructor,
+and seed `genre` from `ref_type` only when the legacy reference didn't
+already supply one — this is the established pattern
+(`from_document_ref`'s pre-existing `"map"` handling) generalized to the
+other genre-discriminated types:
 
 | CSL type | Route | Round-trip mechanism |
 |---|---|---|
-| `collection` | New `scholarly::from_collection_ref` → `ClassExtension::Collection` | `ref_type()` already maps every non-`EditedBook` `CollectionType` back to `"collection"`. |
+| `collection` | `from_document_ref` (see the archival-semantics note below) | Genre seeded from `ref_type`; `monograph_ref_type`'s `Document` arm gains `collection`. |
 | `document` | Explicit arm → `from_document_ref` (previously only reachable via the wildcard) | Already `"document"`. |
 | `entry` | `from_collection_component_ref` | Genre seeded `"entry"`; `collection_component_ref_type` gains an `entry` arm. |
 | `figure`, `graphic` | `from_document_ref` | Genre seeded from `ref_type`; `monograph_ref_type`'s `Document` arm gains `figure`/`graphic`. |
@@ -181,6 +181,26 @@ original `"map"` handling already made) — the contract test only exercises
 the minimal shape, so this edge case is not separately asserted, but it is
 the same shape of divergence already accepted for `map`, `bill-proceeding`,
 and `bill-record`.
+
+**`collection` routing decision (archival, not editorial).** CSL 1.0.2's
+`collection` denotes an **archival collection** — a body of manuscripts or
+papers held by an archive, carrying an author/creator, an `archive`, an
+`archive-place`, and often an `archive_collection` note override (this is
+exactly the shape of the Chicago 18th fixtures that motivated this spec:
+"Egmont Manuscripts, Phillipps Collection, University of Georgia
+Library"). Citum's `ClassExtension::Collection` models the *editorial*
+collection (anthology, proceedings, edited volume): it has `editor` but
+**no `author` field and no archive fields**, so routing CSL `collection`
+into it silently drops the author and the entire archival location — the
+very data these references exist to cite. (`ref_type()` mapping
+`ClassExtension::Collection` → `"collection"` predates this spec and is a
+lossy legacy-output concession, not evidence the two concepts coincide.)
+`collection` therefore routes through `from_document_ref` with a
+genre-discriminated round trip, the same as the other archival/document
+shapes, preserving `author`, `archive`, `archive_location`, and
+`archive_info`. If archival collections ever warrant first-class
+modeling, that is a schema addition (author + archive fields on a
+dedicated class), which this spec's non-goals exclude.
 
 **`periodical` routing decision.** `periodical` describes a standalone
 reference to a serial publication itself (the publication, not an
@@ -294,15 +314,15 @@ override-validation policy; it was the missing `collection` routing arm
 
 ## Acceptance Criteria
 
-- [ ] `CSL_TYPES` and `CSL_TYPE_EXTENSIONS` defined in
+- [x] `CSL_TYPES` and `CSL_TYPE_EXTENSIONS` defined in
       `crates/csl-legacy/src/csl_json.rs` with provenance documented in
       `///` comments.
-- [ ] `conversion::contract_tests::every_csl_1_0_2_type_round_trips_through_ref_type`
+- [x] `conversion::contract_tests::every_csl_1_0_2_type_round_trips_through_ref_type`
       asserts every `CSL_TYPES` entry against the canonicalization table
       above, with zero allowlisted exceptions.
-- [ ] `conversion::contract_tests::manuscript_with_recognized_collection_note_override_converts_to_collection`
+- [x] `conversion::contract_tests::manuscript_with_recognized_collection_note_override_converts_to_collection`
       reproduces and fixes the `chi-manuscript` regression.
-- [ ] Every routing gap in the table above has an explicit arm; the
+- [x] Every routing gap in the table above has an explicit arm; the
       wildcard fallback carries the `debug_assert!` loud-fail.
 - [ ] `Reference::parse_note_field_hacks` validates `type:` overrides
       against `CSL_TYPES ∪ CSL_TYPE_EXTENSIONS`; unrecognized overrides
