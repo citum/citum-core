@@ -275,9 +275,15 @@ impl Locale {
         requested_gender: Option<GrammaticalGender>,
     ) -> Option<&str> {
         // Legacy borrowed lookup path: prefer plain v2 messages first, then
-        // alias-backed messages, and finally the v1 term tables.
-        let candidate_id = format!("term.{}", Self::general_term_to_message_id(term));
-        if let Some(msg) = self.messages.get(&candidate_id) {
+        // alias-backed messages, and finally the v1 term tables. The
+        // candidate id must be form-aware (`general_message_id`) rather than
+        // form-blind, otherwise Long/Short forms collapse onto whichever
+        // message happens to exist for the form-blind id (e.g. `no date`
+        // always resolving to the short "n.d." even when Long was
+        // requested).
+        if let Some(candidate_id) = Self::general_message_id(term, form)
+            && let Some(msg) = self.messages.get(candidate_id)
+        {
             // Only use plain messages here (no ICU variable syntax)
             if !msg.contains('{') {
                 return Some(msg.as_str());

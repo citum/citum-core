@@ -1,11 +1,11 @@
 ---
 # csl26-6n17
 title: Single-source en-US fallback messages from embedded YAML
-status: todo
+status: in-progress
 type: bug
 priority: normal
 created_at: 2026-07-03T12:17:42Z
-updated_at: 2026-07-03T12:17:42Z
+updated_at: 2026-07-03T13:05:45Z
 parent: csl26-h7oc
 ---
 
@@ -32,7 +32,7 @@ MF2 messages are resolved before the legacy structured Terms/LocatorTerm fields 
 ## Todo
 - [ ] Enumerate every legacy-hardcoded term/message key with a YAML messages: counterpart; diff values
 - [ ] Classify each conflict: YAML-is-correct-fix-legacy vs legacy-is-correct-fix-YAML vs genuinely ambiguous (needs style-guide research)
-- [ ] Root-cause and fix the no-date term regression specifically
+- [x] Root-cause and fix the no-date term regression specifically
 - [ ] Implement single-sourcing (extract_top_level_yaml_section pattern) once conflicts are resolved
 - [ ] Full report-core.js sweep (154 styles) confirming no unintended fidelity regressions
 - [ ] Update/remove now-stale pinned test expectations (Trans./ch. etc.) with justification per change, not a blanket accept
