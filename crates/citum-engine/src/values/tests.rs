@@ -3128,7 +3128,12 @@ fn test_role_specific_name_order_applies_in_substitute_path() {
         .unwrap();
 
     assert_eq!(values.value, "Anna Muller");
-    assert_eq!(values.suffix, Some(" (Trans.)".to_string()));
+    // CSL reference locale (scripts/locales-en-US.xml) has translator short
+    // form "trans." (lowercase, no plural variant) — the base engine locale
+    // now single-sources from the YAML asset which matches this; styles
+    // that need a capitalized label (e.g. APA) apply `text-case:
+    // capitalize-first` at the style level instead.
+    assert_eq!(values.suffix, Some(" (trans.)".to_string()));
 }
 
 /// Tests the behavior of `test_term_values`.

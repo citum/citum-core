@@ -161,8 +161,6 @@ bibliography:
       emph: true
     - variable: authority
     - number: edition
-    - message: term.edition
-      form: short
     - variable: publisher
     - variable: publisher-place
     - date: issued

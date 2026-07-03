@@ -307,7 +307,7 @@ fn test_taylor_and_francis_author_date_wrapper_preserves_media_and_translation_d
     );
     assert!(
         rendered_bib.contains(
-            "The Future of Artificial Intelligence. Interview by Stephen Colbert (Interviewer). Video interview. https://example.com/interview."
+            "The Future of Artificial Intelligence. Interview by Stephen Colbert (interviewer). Video interview. https://example.com/interview."
         ),
         "interviews should retain interviewer, genre, and url detail"
     );

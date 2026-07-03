@@ -166,10 +166,6 @@ bibliography:
     - title: parent-serial
     - number: edition
       prefix: ", "
-    - message: term.edition
-      form: long
-      prefix: " "
-      suffix: .
     - variable: genre
     - variable: publisher
     - variable: publisher-place
@@ -184,8 +180,6 @@ bibliography:
             title: parent-serial
         - match:
             number: edition
-        - match:
-            message: term.edition
   template:
   - contributor: author
     form: long
