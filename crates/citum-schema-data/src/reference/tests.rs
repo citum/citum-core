@@ -211,6 +211,105 @@ fn test_parse_csl_json_broadcast_podcast_number_normalizes_with_no_prefix_added(
 }
 
 #[test]
+fn test_parse_csl_json_article_newspaper_preserves_review_event_facts() {
+    let json = r#"{
+        "id": "newspaper-review",
+        "type": "article-newspaper",
+        "title": "Young Concert Artists Is Back",
+        "container-title": "New York Times",
+        "section": "Arts",
+        "reviewed-author": [{"family": "Zhu Wang (piano)", "given": ""}],
+        "note": "reviewed-genre: recital\nevent-title: Zankel Hall\nevent-place: New York",
+        "issued": {"date-parts": [[2021, 11, 12]]}
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(reference.section(), Some("Arts".to_string()));
+    assert!(
+        reference
+            .contributor(ContributorRole::Unknown("reviewed-author".to_string()))
+            .is_some(),
+        "reviewed author should be renderable from the top-level article component"
+    );
+
+    match reference.extension() {
+        ClassExtension::SerialComponent(component) => {
+            let Some(WorkRelation::Embedded(event)) = component.event.as_ref() else {
+                panic!("expected review event relation");
+            };
+            let ClassExtension::Event(event) = event.extension() else {
+                panic!("expected event relation");
+            };
+            assert_eq!(event.title, Some(Title::Single("Zankel Hall".to_string())));
+            assert_eq!(event.location, Some("New York".to_string()));
+        }
+        other => panic!("expected serial component, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_csl_json_note_issued_range_converts_to_edtf_interval() {
+    let json = r#"{
+        "id": "hansard-range",
+        "type": "book",
+        "title": "Hansard parliamentary debates",
+        "note": "issued: 1803/1820"
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    match reference.extension() {
+        ClassExtension::Monograph(monograph) => {
+            assert_eq!(monograph.issued, EdtfString("1803/1820".to_string()));
+        }
+        other => panic!("expected monograph, got {:?}", other),
+    }
+}
+
+#[test]
+fn test_parse_csl_json_broadcast_preserves_writer_cast_network_and_duration() {
+    let json = r#"{
+        "id": "broadcast-rich",
+        "type": "broadcast",
+        "title": "Her Sister's Shadow",
+        "container-title": "The Brady Bunch",
+        "number": "season 3, episode 10",
+        "publisher": "ABC",
+        "dimensions": "26m",
+        "script-writer": [{"family": "Schwartz", "given": "Sherwood"}],
+        "contributor": [{"family": "Reed", "given": "Robert"}],
+        "issued": {"date-parts": [[1971, 11, 19]]}
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(reference.ref_type(), "broadcast");
+    match reference.extension() {
+        ClassExtension::SerialComponent(component) => {
+            assert_eq!(component.issue.as_deref(), Some("season 3, episode 10"));
+            assert_eq!(component.duration.as_deref(), Some("26m"));
+            assert!(
+                component
+                    .contributors
+                    .iter()
+                    .any(|entry| entry.role == ContributorRole::Writer)
+            );
+            assert!(
+                component
+                    .contributors
+                    .iter()
+                    .any(|entry| entry.role == ContributorRole::Performer)
+            );
+        }
+        other => panic!("expected serial component, got {:?}", other),
+    }
+}
+
+#[test]
 fn test_serial_component_author_falls_back_to_producer_for_av_like_broadcasts() {
     let json = r#"{
         "id": "the-wire",

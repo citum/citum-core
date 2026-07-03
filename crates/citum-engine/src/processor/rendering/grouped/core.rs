@@ -87,6 +87,7 @@ fn condition_field_present(reference: &Reference, field: &TemplateConditionField
             .is_some(),
         TemplateConditionField::Translator => reference.translator().is_some(),
         TemplateConditionField::Title => reference.title().is_some(),
+        TemplateConditionField::CollectionTitle => reference.collection_title().is_some(),
         TemplateConditionField::Issued => reference.effective_issued_date().is_some(),
         TemplateConditionField::OriginalPublished => reference.original_date().is_some(),
         TemplateConditionField::Publisher => reference.publisher_str().is_some(),

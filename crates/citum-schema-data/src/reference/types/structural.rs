@@ -978,6 +978,12 @@ pub struct SerialComponent {
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub available_date: Option<EdtfString>,
+    /// Event relation associated with the component, such as a performance venue/date.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub event: Option<WorkRelation>,
+    /// Runtime or duration of the component.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub duration: Option<String>,
     /// Work relation for reviews.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reviewed: Option<WorkRelation>,
@@ -1053,6 +1059,8 @@ struct SerialComponentDeser {
     status: Option<String>,
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     available_date: Option<EdtfString>,
+    event: Option<WorkRelation>,
+    duration: Option<String>,
     reviewed: Option<WorkRelation>,
     original: Option<WorkRelation>,
     #[serde(flatten, default)]
@@ -1098,6 +1106,8 @@ impl From<SerialComponentDeser> for SerialComponent {
             section: raw.section,
             status: raw.status,
             available_date: raw.available_date,
+            event: raw.event,
+            duration: raw.duration,
             reviewed: raw.reviewed,
             original: raw.original,
             unknown_fields: raw.unknown_fields,

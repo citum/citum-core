@@ -130,6 +130,9 @@ pub struct Reference {
     /// Director
     #[serde(skip_serializing_if = "Option::is_none")]
     pub director: Option<Vec<Name>>,
+    /// Generic contributors, such as cast members or performers.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub contributor: Option<Vec<Name>>,
     /// Interviewer
     #[serde(skip_serializing_if = "Option::is_none")]
     pub interviewer: Option<Vec<Name>>,
@@ -197,6 +200,9 @@ pub struct Reference {
     /// Medium
     #[serde(skip_serializing_if = "Option::is_none")]
     pub medium: Option<String>,
+    /// Physical dimensions, runtime, or other extent information.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dimensions: Option<String>,
     /// Archive or repository name.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub archive: Option<String>,
@@ -683,6 +689,7 @@ fn is_name_variable(key: &str) -> bool {
             | "translator"
             | "interviewer"
             | "director"
+            | "contributor"
             | "recipient"
             | "author"
             | "collection-editor"
@@ -719,6 +726,9 @@ fn handle_name_variable(ref_obj: &mut Reference, key: &str, value: &str) {
         }
         "director" if ref_obj.director.is_none() => {
             ref_obj.director = Some(vec![name]);
+        }
+        "contributor" if ref_obj.contributor.is_none() => {
+            ref_obj.contributor = Some(vec![name]);
         }
         "recipient" if ref_obj.recipient.is_none() => {
             ref_obj.recipient = Some(vec![name]);

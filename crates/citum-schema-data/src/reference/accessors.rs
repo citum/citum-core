@@ -1208,12 +1208,13 @@ impl InputReference {
         }
     }
 
-    /// Return the section (legal section number).
+    /// Return the section identifier for legal, classic, or serial-component references.
     pub fn section(&self) -> Option<String> {
         match &self.extension {
             ClassExtension::Statute(r) => r.section.clone(),
             ClassExtension::Regulation(r) => r.section.clone(),
             ClassExtension::Classic(_) => self.find_numbering(NumberingType::Section),
+            ClassExtension::SerialComponent(r) => r.section.clone(),
             _ => None,
         }
     }

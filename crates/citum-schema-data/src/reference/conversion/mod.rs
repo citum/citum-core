@@ -429,29 +429,42 @@ impl From<csl_legacy::csl_json::DateVariable> for EdtfString {
         if let Some(literal) = date.literal {
             return EdtfString(literal);
         }
-        if let Some(first) = date.date_parts.and_then(|p| p.first().cloned()) {
-            let year = first
-                .first()
-                .map(|y| {
-                    if *y < 0 {
-                        format!("-{:04}", y.abs())
-                    } else {
-                        format!("{:04}", y)
-                    }
-                })
-                .unwrap_or_default();
-            let month = first
-                .get(1)
-                .map(|m| format!("-{:02}", m))
-                .unwrap_or_default();
-            let day = first
-                .get(2)
-                .map(|d| format!("-{:02}", d))
-                .unwrap_or_default();
-            return EdtfString(format!("{}{}{}", year, month, day));
+        if let Some(parts) = date.date_parts {
+            let mut rendered = parts.iter().map(|part| render_date_part(part));
+            if let Some(first) = rendered.next() {
+                if let Some(second) = rendered.next() {
+                    return EdtfString(format!("{first}/{second}"));
+                }
+                return EdtfString(first);
+            }
+        }
+        if let Some(raw) = date.raw {
+            return EdtfString(raw);
         }
         EdtfString(String::new())
     }
+}
+
+fn render_date_part(part: &[i32]) -> String {
+    let year = part
+        .first()
+        .map(|y| {
+            if *y < 0 {
+                format!("-{:04}", y.abs())
+            } else {
+                format!("{:04}", y)
+            }
+        })
+        .unwrap_or_default();
+    let month = part
+        .get(1)
+        .map(|m| format!("-{:02}", m))
+        .unwrap_or_default();
+    let day = part
+        .get(2)
+        .map(|d| format!("-{:02}", d))
+        .unwrap_or_default();
+    format!("{year}{month}{day}")
 }
 
 impl From<Vec<csl_legacy::csl_json::Name>> for Contributor {
@@ -648,6 +661,95 @@ mod tests {
             Some(Title::Single("Reviewed Book".to_string()))
         );
         assert!(reviewed_work.author.is_some());
+    }
+
+    #[test]
+    fn legacy_serial_component_exposes_section_and_review_event_metadata() {
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "newspaper-review".to_string(),
+            ref_type: "article-newspaper".to_string(),
+            title: Some("Young Concert Artists Is Back".to_string()),
+            container_title: Some("New York Times".to_string()),
+            section: Some("Arts".to_string()),
+            issued: Some(csl_legacy::csl_json::DateVariable::full(2021, 11, 12)),
+            extra: HashMap::from([
+                ("reviewed-genre".to_string(), json!("recital")),
+                (
+                    "reviewed-author".to_string(),
+                    json!([{"family":"Zhu Wang (piano)","given":""}]),
+                ),
+                ("event-title".to_string(), json!("Zankel Hall")),
+                ("event-place".to_string(), json!("New York")),
+            ]),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        assert_eq!(converted.section(), Some("Arts".to_string()));
+        assert!(
+            converted
+                .contributor(ContributorRole::Unknown("reviewed-author".to_string()))
+                .is_some(),
+            "reviewed author should be renderable from the top-level article component"
+        );
+
+        let ClassExtension::SerialComponent(component) = converted.extension() else {
+            panic!("expected serial component");
+        };
+        let Some(WorkRelation::Embedded(event)) = component.event.as_ref() else {
+            panic!("expected review event relation");
+        };
+        let ClassExtension::Event(event) = event.extension() else {
+            panic!("expected event relation");
+        };
+        assert_eq!(event.title, Some(Title::Single("Zankel Hall".to_string())));
+        assert_eq!(event.location, Some("New York".to_string()));
+    }
+
+    #[test]
+    fn legacy_broadcast_preserves_writer_cast_network_and_duration() {
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "broadcast-rich".to_string(),
+            ref_type: "broadcast".to_string(),
+            title: Some("Her Sister's Shadow".to_string()),
+            container_title: Some("The Brady Bunch".to_string()),
+            number: Some("season 3, episode 10".to_string()),
+            publisher: Some("ABC".to_string()),
+            dimensions: Some("26m".to_string()),
+            issued: Some(csl_legacy::csl_json::DateVariable::full(1971, 11, 19)),
+            extra: HashMap::from([(
+                "script-writer".to_string(),
+                json!([{"family":"Schwartz","given":"Sherwood"}]),
+            )]),
+            contributor: Some(vec![csl_legacy::csl_json::Name {
+                family: Some("Reed".to_string()),
+                given: Some("Robert".to_string()),
+                ..Default::default()
+            }]),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        assert_eq!(converted.ref_type(), "broadcast");
+        let ClassExtension::SerialComponent(component) = converted.extension() else {
+            panic!("expected serial component");
+        };
+        assert_eq!(component.issue.as_deref(), Some("season 3, episode 10"));
+        assert_eq!(component.duration.as_deref(), Some("26m"));
+        assert!(
+            component
+                .contributors
+                .iter()
+                .any(|entry| entry.role == ContributorRole::Writer)
+        );
+        assert!(
+            component
+                .contributors
+                .iter()
+                .any(|entry| entry.role == ContributorRole::Performer)
+        );
     }
 
     #[test]

@@ -1730,3 +1730,54 @@ bibliography:
 "#;
     Style::from_yaml_str(yaml).expect("valid recursive template surfaces should parse");
 }
+
+#[test]
+fn chicago_notes_templates_keep_english_prose_in_locale_messages() {
+    let yaml = include_str!("../embedded/styles/chicago-notes-18th.yaml");
+    let value: serde_yaml::Value = serde_yaml::from_str(yaml).unwrap();
+    let mut violations = Vec::new();
+
+    collect_english_affix_literals(&value, "$", &mut violations);
+
+    assert!(
+        violations.is_empty(),
+        "move natural-language template affixes into locale messages: {violations:#?}"
+    );
+}
+
+fn collect_english_affix_literals(
+    value: &serde_yaml::Value,
+    path: &str,
+    violations: &mut Vec<String>,
+) {
+    match value {
+        serde_yaml::Value::Mapping(mapping) => {
+            for (key, child) in mapping {
+                let key_text = key.as_str().unwrap_or("<non-string-key>");
+                let child_path = format!("{path}.{key_text}");
+                if is_template_affix_key(key_text)
+                    && let Some(text) = child.as_str()
+                    && text.chars().any(char::is_alphabetic)
+                    && !is_allowed_non_prose_affix(key_text, text)
+                {
+                    violations.push(format!("{child_path}: {text:?}"));
+                }
+                collect_english_affix_literals(child, &child_path, violations);
+            }
+        }
+        serde_yaml::Value::Sequence(sequence) => {
+            for (index, child) in sequence.iter().enumerate() {
+                collect_english_affix_literals(child, &format!("{path}[{index}]"), violations);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn is_template_affix_key(key: &str) -> bool {
+    matches!(key, "prefix" | "suffix" | "delimiter" | "text")
+}
+
+fn is_allowed_non_prose_affix(key: &str, text: &str) -> bool {
+    (key == "prefix" && text.contains("https://doi.org/")) || (key == "delimiter" && text == "none")
+}

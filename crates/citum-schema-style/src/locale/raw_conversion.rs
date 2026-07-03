@@ -383,7 +383,9 @@ impl Locale {
             "original-author" => Some(ContributorRole::OriginalAuthor),
             "recipient" => Some(ContributorRole::Recipient),
             "reviewed-author" => Some(ContributorRole::ReviewedAuthor),
+            "performer" => Some(ContributorRole::Performer),
             "composer" => Some(ContributorRole::Composer),
+            "writer" => Some(ContributorRole::Writer),
             _ => None,
         }
     }
