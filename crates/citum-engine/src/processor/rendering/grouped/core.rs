@@ -90,6 +90,11 @@ fn condition_field_present(reference: &Reference, field: &TemplateConditionField
         TemplateConditionField::Issued => reference.effective_issued_date().is_some(),
         TemplateConditionField::OriginalPublished => reference.original_date().is_some(),
         TemplateConditionField::Publisher => reference.publisher_str().is_some(),
+        TemplateConditionField::OriginalPublisher => reference.original_publisher_str().is_some(),
+        TemplateConditionField::OriginalPublisherPlace => {
+            reference.original_publisher_place().is_some()
+        }
+        TemplateConditionField::OriginalTitle => reference.original_title().is_some(),
         TemplateConditionField::Doi => reference.doi().is_some(),
         TemplateConditionField::Genre => reference.genre().is_some(),
         TemplateConditionField::Archive => reference.archive().is_some(),

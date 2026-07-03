@@ -172,6 +172,14 @@ impl ComponentValues for TemplateNumber {
             // Resolve effective rendering options
             let effective_rendering = &self.rendering;
 
+            // Free-text number values (e.g. `edition`) honor an explicit
+            // text-case override the same way string variables do.
+            let value = if let Some(tc) = effective_rendering.text_case {
+                crate::values::text_case::apply_text_case(&value, tc)
+            } else {
+                value
+            };
+
             // Handle label if label_form is specified
             let prefix = if let Some(label_form) = &self.label_form {
                 resolve_number_label(
