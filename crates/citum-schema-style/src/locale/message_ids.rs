@@ -87,9 +87,19 @@ impl Locale {
                 "role.guest" => "role.guest.label",
                 _ => return None,
             }),
-            TermForm::Verb | TermForm::VerbShort => Some(match prefix {
+            TermForm::Verb => Some(match prefix {
                 "role.editor" => "role.editor.verb",
                 "role.translator" => "role.translator.verb",
+                "role.guest" => "role.guest.verb",
+                _ => return None,
+            }),
+            // CSL reference (scripts/locales-en-US.xml) distinguishes
+            // "verb-short" from "verb" for editor ("ed. by" vs "edited by")
+            // and translator ("trans. by" vs "translated by"). Guest has no
+            // CSL-defined short verb form, so it falls back to the long verb.
+            TermForm::VerbShort => Some(match prefix {
+                "role.editor" => "role.editor.verb-short",
+                "role.translator" => "role.translator.verb-short",
                 "role.guest" => "role.guest.verb",
                 _ => return None,
             }),

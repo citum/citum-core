@@ -38,6 +38,14 @@ dates:
     - Winter
   uncertainty-term: uncertain
   open-ended-term: present
+  am: AM
+  pm: PM
+  timezone-utc: UTC
+  before-era: BC
+  ad: AD
+  bc: BC
+  bce: BCE
+  ce: CE
 roles:
   author:
     long:
@@ -858,7 +866,9 @@ messages:
   term.no-date: "n.d."
   term.no-date-long: "no date"
   term.forthcoming: "forthcoming"
-  term.circa: "ca."
+  # CSL reference locale (scripts/locales-en-US.xml): CMOS 10.48 allows
+  # "ca." but CSL has historically used "c." — match the CSL reference.
+  term.circa: "c."
   term.circa-long: "circa"
   # Role labels
   role.editor.label: |
@@ -870,12 +880,16 @@ messages:
     when one {editor}
     when * {editors}
   role.editor.verb: "edited by"
+  # CSL reference (scripts/locales-en-US.xml) distinguishes "ed. by" (short) from "edited by" (long).
+  role.editor.verb-short: "ed. by"
   role.translator.label: "trans."
   role.translator.label-long: |
     .match {$count :plural}
     when one {translator}
     when * {translators}
   role.translator.verb: "translated by"
+  # CSL reference (scripts/locales-en-US.xml) distinguishes "trans. by" (short) from "translated by" (long).
+  role.translator.verb-short: "trans. by"
   role.guest.label: |
     .match {$count :plural}
     when one {guest}
@@ -928,6 +942,11 @@ date-formats:
   bib-default: "MMMM d, yyyy"
   year-only: "yyyy"
   iso: "yyyy-MM-dd"
+
+number-formats:
+  decimal-separator: "."
+  thousands-separator: ","
+  minimum-digits: 1
 
 grammar-options:
   punctuation-in-quote: true

@@ -406,7 +406,13 @@ fn render_integral_multi_cite(
     let processor = if locale_and_term.is_some() || serial_comma.is_some() {
         let mut locale = citum_schema::locale::Locale::en_us();
         if let Some(and_term) = locale_and_term {
+            // `resolved_general_term` checks the MF2 `messages` map before the
+            // legacy structured `terms.and` field (see `general_message_id`),
+            // so both must be set for an override to take effect end-to-end.
             locale.terms.and = Some(and_term.to_string());
+            locale
+                .messages
+                .insert("term.and".to_string(), and_term.to_string());
         }
         if let Some(serial_comma) = serial_comma {
             locale.grammar_options.serial_comma = serial_comma;
