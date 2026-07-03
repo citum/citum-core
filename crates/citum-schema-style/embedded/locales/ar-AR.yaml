@@ -92,6 +92,7 @@ messages:
   pattern.accessed-date-colon: "تاريخ الوصول: {$date}"
   pattern.in-container: "في {$container}"
   pattern.in-container-colon: "في: {$container}"
+  pattern.originally-published-as: "نُشر في الأصل بعنوان {$title}"
   pattern.cited-date: "تاريخ الاستشهاد {$date}"
   pattern.issued-date: "تاريخ الإصدار {$date}"
   pattern.retrieved-date: "تاريخ الاسترجاع {$date}"

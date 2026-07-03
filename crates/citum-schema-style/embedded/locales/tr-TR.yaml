@@ -774,6 +774,7 @@ messages:
   pattern.accessed-date-colon: "erişim tarihi: {$date}"
   pattern.in-container: "{$container} içinde"
   pattern.in-container-colon: "{$container} içinde:"
+  pattern.originally-published-as: "özgün olarak {$title} adıyla yayımlandı"
   pattern.cited-date: "alıntılama tarihi: {$date}"
   pattern.issued-date: "veriliş tarihi: {$date}"
   pattern.retrieved-date: "erişim tarihi: {$date}"

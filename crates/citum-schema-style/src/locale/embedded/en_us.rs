@@ -75,6 +75,10 @@ pub(crate) fn en_us_archive_messages() -> HashMap<String, String> {
             "pattern.in-container-colon".into(),
             "in: {$container}".into(),
         ),
+        (
+            "pattern.originally-published-as".into(),
+            "originally published as {$title}".into(),
+        ),
         ("pattern.cited-date".into(), "cited {$date}".into()),
         ("pattern.issued-date".into(), "issued {$date}".into()),
         ("pattern.retrieved-date".into(), "retrieved {$date}".into()),

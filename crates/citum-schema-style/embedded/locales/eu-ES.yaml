@@ -101,6 +101,7 @@ messages:
   pattern.accessed-date-colon: "kontsulta-data: {$date}"
   pattern.in-container: "{$container}(e)n"
   pattern.in-container-colon: "{$container}(e)n:"
+  pattern.originally-published-as: "jatorriz {$title} izenburuarekin argitaratua"
   pattern.cited-date: "aipatua: {$date}"
   pattern.issued-date: "emana: {$date}"
   pattern.retrieved-date: "berreskuratua: {$date}"
