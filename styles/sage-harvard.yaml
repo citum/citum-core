@@ -178,8 +178,6 @@ bibliography:
       emph: true
     - variable: authority
     - number: edition
-    - message: term.edition
-      form: short
     - title: parent-serial
       emph: true
     - contributor: editor
@@ -193,8 +191,6 @@ bibliography:
         delimiter-precedes-last: contextual
       and: text
     - number: edition
-    - message: term.edition
-      form: short
     - title: parent-monograph
     - number: number
     - variable: genre

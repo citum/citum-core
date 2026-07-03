@@ -188,7 +188,7 @@ bibliography:
       - contributor: translator
         form: long
         name-order: given-first
-        label: {term: translator, form: short, placement: suffix}
+        label: {term: translator, form: short, placement: suffix, text-case: capitalize-first}
       - number: report-number
         prefix: "No. "
     - delimiter: ", "
@@ -224,7 +224,7 @@ bibliography:
     - contributor: translator
       form: long
       name-order: given-first
-      label: {term: translator, form: short, placement: suffix}
+      label: {term: translator, form: short, placement: suffix, text-case: capitalize-first}
       wrap:
         punctuation: parentheses
       prefix: " "
@@ -270,7 +270,7 @@ bibliography:
     - contributor: translator
       form: long
       name-order: given-first
-      label: {term: translator, form: short, placement: suffix}
+      label: {term: translator, form: short, placement: suffix, text-case: capitalize-first}
       wrap:
         punctuation: parentheses
       prefix: " "
@@ -308,7 +308,7 @@ bibliography:
     - contributor: translator
       form: long
       name-order: given-first
-      label: {term: translator, form: short, placement: suffix}
+      label: {term: translator, form: short, placement: suffix, text-case: capitalize-first}
       wrap:
         punctuation: parentheses
       prefix: " "
@@ -361,7 +361,7 @@ bibliography:
     - contributor: translator
       form: long
       name-order: given-first
-      label: {term: translator, form: short, placement: suffix}
+      label: {term: translator, form: short, placement: suffix, text-case: capitalize-first}
       wrap:
         punctuation: parentheses
       prefix: " "
@@ -454,7 +454,7 @@ bibliography:
     - contributor: translator
       form: long
       name-order: given-first
-      label: {term: translator, form: short, placement: suffix}
+      label: {term: translator, form: short, placement: suffix, text-case: capitalize-first}
       wrap:
         punctuation: parentheses
       prefix: " "
@@ -502,7 +502,7 @@ bibliography:
     - contributor: translator
       form: long
       name-order: given-first
-      label: {term: translator, form: short, placement: suffix}
+      label: {term: translator, form: short, placement: suffix, text-case: capitalize-first}
       wrap:
         punctuation: parentheses
       prefix: " "
@@ -555,7 +555,7 @@ bibliography:
       - contributor: translator
         form: long
         name-order: given-first
-        label: {term: translator, form: short, placement: suffix}
+        label: {term: translator, form: short, placement: suffix, text-case: capitalize-first}
       - variable: number
       - delimiter: ", "
         group:
@@ -648,7 +648,7 @@ bibliography:
     - contributor: interviewer
       form: long
       name-order: given-first
-      label: {term: interviewer, form: long, placement: suffix}
+      label: {term: interviewer, form: long, placement: suffix, text-case: capitalize-first}
       wrap:
         punctuation: parentheses
       prefix: " "
@@ -720,7 +720,7 @@ bibliography:
       - contributor: translator
         form: long
         name-order: given-first
-        label: {term: translator, form: short, placement: suffix}
+        label: {term: translator, form: short, placement: suffix, text-case: capitalize-first}
       - number: report-number
         prefix: "No. "
     - variable: publisher
@@ -782,6 +782,7 @@ bibliography:
                   term: translator
                   form: short
                   placement: suffix
+                  text-case: capitalize-first
           before:
             group:
               - variable: genre
@@ -825,7 +826,7 @@ bibliography:
   - contributor: translator
     form: long
     name-order: given-first
-    label: {term: translator, form: short, placement: suffix}
+    label: {term: translator, form: short, placement: suffix, text-case: capitalize-first}
     wrap:
       punctuation: parentheses
     prefix: " "
