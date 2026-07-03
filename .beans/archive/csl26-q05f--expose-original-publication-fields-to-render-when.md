@@ -1,11 +1,11 @@
 ---
 # csl26-q05f
 title: Expose original-publication fields to render-when
-status: in-progress
+status: completed
 type: feature
 priority: normal
 created_at: 2026-07-02T23:42:51Z
-updated_at: 2026-07-03T00:30:38Z
+updated_at: 2026-07-03T00:41:13Z
 parent: csl26-h7oc
 blocking:
     - csl26-giun
@@ -116,3 +116,5 @@ unchanged — correctly inherits the parent's (unchanged) pass count.
 
 Bean left in-progress per instructions: final report-core sweep and PR
 are the supervisor's after #996 merges.
+
+2026-07-02 supervisor close-out: rebased onto main post-#996 (commits 85cb069f, d6688270), independently re-verified (oracle 15/15 + 344/400; report-core author-date 0.898/0.921, T&F 0.898/1.0; nextest 1713/1713). PR #997 opened with both commits per user decision. Literal-Reprint trailer word deferred (needs TemplateConditionField::Edition; zero corpus cost).
