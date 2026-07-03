@@ -295,65 +295,6 @@ pub struct Terms {
     pub general: std::collections::HashMap<GeneralTerm, SimpleTerm>,
 }
 
-impl Terms {
-    /// Create English (US) terms.
-    pub fn en_us() -> Self {
-        Self {
-            and: Some("and".into()),
-            and_symbol: Some("&".into()),
-            and_others: Some("and others".into()),
-            anonymous: SimpleTerm {
-                long: "anonymous".into(),
-                short: "anon.".into(),
-            },
-            at: Some("at".into()),
-            accessed: Some("accessed".into()),
-            available_at: Some("available at".into()),
-            by: Some("by".into()),
-            circa: SimpleTerm {
-                long: "circa".into(),
-                short: "c.".into(),
-            },
-            et_al: Some("et al.".into()),
-            from: Some("from".into()),
-            ibid: Some("ibid.".into()),
-            in_: Some("in".into()),
-            no_date: Some("n.d.".into()),
-            retrieved: Some("retrieved".into()),
-            general: std::collections::HashMap::from([
-                (
-                    GeneralTerm::NoDate,
-                    SimpleTerm {
-                        long: "no date".into(),
-                        short: "n.d.".into(),
-                    },
-                ),
-                (
-                    GeneralTerm::Cited,
-                    SimpleTerm {
-                        long: "cited".into(),
-                        short: "cit.".into(),
-                    },
-                ),
-                (
-                    GeneralTerm::PersonalCommunication,
-                    SimpleTerm {
-                        long: "personal communication".into(),
-                        short: "pers. comm.".into(),
-                    },
-                ),
-                (
-                    GeneralTerm::Patent,
-                    SimpleTerm {
-                        long: "patent".into(),
-                        short: "pat.".into(),
-                    },
-                ),
-            ]),
-        }
-    }
-}
-
 /// A simple term with long and short forms.
 ///
 /// Used for terms that have a primary long form and a shorter variant.
@@ -458,31 +399,6 @@ pub struct DateTerms {
     pub ce: Option<String>,
 }
 
-impl DateTerms {
-    /// Create English (US) date terms.
-    pub fn en_us() -> Self {
-        Self {
-            months: MonthNames::en_us(),
-            seasons: vec![
-                "Spring".into(),
-                "Summer".into(),
-                "Autumn".into(),
-                "Winter".into(),
-            ],
-            uncertainty_term: Some("uncertain".into()),
-            open_ended_term: Some("present".into()),
-            am: Some("AM".into()),
-            pm: Some("PM".into()),
-            timezone_utc: Some("UTC".into()),
-            before_era: Some("BC".into()),
-            ad: Some("AD".into()),
-            bc: Some("BC".into()),
-            bce: Some("BCE".into()),
-            ce: Some("CE".into()),
-        }
-    }
-}
-
 /// Month name lists.
 ///
 /// Contains both full and abbreviated month names for a given locale.
@@ -493,42 +409,6 @@ pub struct MonthNames {
     pub long: Vec<String>,
     /// Abbreviated month names (e.g., "Jan.", "Feb.", ..., "Dec.").
     pub short: Vec<String>,
-}
-
-impl MonthNames {
-    /// Create English month names.
-    pub fn en_us() -> Self {
-        Self {
-            long: vec![
-                "January".into(),
-                "February".into(),
-                "March".into(),
-                "April".into(),
-                "May".into(),
-                "June".into(),
-                "July".into(),
-                "August".into(),
-                "September".into(),
-                "October".into(),
-                "November".into(),
-                "December".into(),
-            ],
-            short: vec![
-                "Jan.".into(),
-                "Feb.".into(),
-                "Mar.".into(),
-                "Apr.".into(),
-                "May".into(),
-                "June".into(),
-                "July".into(),
-                "Aug.".into(),
-                "Sept.".into(),
-                "Oct.".into(),
-                "Nov.".into(),
-                "Dec.".into(),
-            ],
-        }
-    }
 }
 
 /// Number formatting options for a locale.
@@ -794,37 +674,22 @@ mod tests {
         assert_eq!(term.plural, MaybeGendered::Plain("pages".to_string()));
     }
 
-    /// Test that Terms::en_us() returns expected English terms.
+    /// The legacy no-date fallback (`no_date`) must not serialize alongside
+    /// the structured `no-date` entry in `general`, even though both are
+    /// populated (as they are for a fully-loaded en-US locale).
     #[test]
-    fn test_terms_en_us_defaults() {
-        let terms = Terms::en_us();
-
-        assert_eq!(terms.and, Some("and".to_string()));
-        assert_eq!(terms.and_symbol, Some("&".to_string()));
-        assert_eq!(terms.and_others, Some("and others".to_string()));
-        assert_eq!(terms.by, Some("by".to_string()));
-        assert_eq!(terms.from, Some("from".to_string()));
-        assert_eq!(terms.et_al, Some("et al.".to_string()));
-        assert_eq!(terms.in_, Some("in".to_string()));
-        assert_eq!(terms.no_date, Some("n.d.".to_string()));
-        assert_eq!(terms.ibid, Some("ibid.".to_string()));
-
-        assert_eq!(
-            terms.anonymous.long,
-            MaybeGendered::Plain("anonymous".to_string())
-        );
-        assert_eq!(
-            terms.anonymous.short,
-            MaybeGendered::Plain("anon.".to_string())
-        );
-        assert_eq!(terms.circa.long, MaybeGendered::Plain("circa".to_string()));
-        assert_eq!(terms.circa.short, MaybeGendered::Plain("c.".to_string()));
-    }
-
-    /// Test that the legacy no-date fallback does not serialize alongside the structured term.
-    #[test]
-    fn test_terms_en_us_serializes_single_no_date_entry() {
-        let terms = Terms::en_us();
+    fn test_terms_serializes_single_no_date_entry() {
+        let terms = Terms {
+            no_date: Some("n.d.".to_string()),
+            general: std::collections::HashMap::from([(
+                GeneralTerm::NoDate,
+                SimpleTerm {
+                    long: "no date".into(),
+                    short: "n.d.".into(),
+                },
+            )]),
+            ..Default::default()
+        };
         let value = serde_json::to_value(&terms).unwrap();
         let object = value.as_object().unwrap();
 
@@ -838,53 +703,60 @@ mod tests {
         assert_eq!(object.get("no_date"), None);
     }
 
-    /// Test that DateTerms::en_us() provides all month names and seasons.
+    /// The YAML-derived `Locale::en_us()` provides the same general terms
+    /// that the deleted hardcoded `Terms::en_us()` constructor used to.
     #[test]
-    fn test_date_terms_en_us_months() {
-        let date_terms = DateTerms::en_us();
+    fn test_locale_en_us_terms_defaults() {
+        let locale = super::super::Locale::en_us();
+        let terms = &locale.terms;
 
-        assert_eq!(date_terms.months.long.len(), 12);
-        assert_eq!(date_terms.months.short.len(), 12);
-        assert_eq!(date_terms.months.long[0], "January");
-        assert_eq!(date_terms.months.short[0], "Jan.");
-        assert_eq!(date_terms.months.long[11], "December");
-        assert_eq!(date_terms.months.short[11], "Dec.");
+        assert_eq!(terms.and, Some("and".to_string()));
+        assert_eq!(terms.and_symbol, Some("&".to_string()));
+        assert_eq!(terms.and_others, Some("and others".to_string()));
+        assert_eq!(terms.et_al, Some("et al.".to_string()));
+        assert_eq!(terms.ibid, Some("ibid.".to_string()));
+
+        // "circa" is parsed into the flattened `general` map (keyed by
+        // GeneralTerm), not the legacy dedicated `circa` field, so resolve
+        // it via the same public API callers use.
+        assert_eq!(
+            locale.general_term(&GeneralTerm::Circa, &TermForm::Long, None),
+            Some("circa")
+        );
+        assert_eq!(
+            locale.general_term(&GeneralTerm::Circa, &TermForm::Short, None),
+            Some("c.")
+        );
     }
 
-    /// Test that DateTerms::en_us() provides all four season names.
+    /// The YAML-derived `Locale::en_us()` provides month names and seasons
+    /// that the deleted hardcoded `DateTerms::en_us()` constructor used to.
     #[test]
-    fn test_date_terms_en_us_seasons() {
-        let date_terms = DateTerms::en_us();
+    fn test_locale_en_us_dates_months_and_seasons() {
+        let dates = &super::super::Locale::en_us().dates;
 
-        assert_eq!(date_terms.seasons.len(), 4);
-        assert_eq!(date_terms.seasons[0], "Spring");
-        assert_eq!(date_terms.seasons[1], "Summer");
-        assert_eq!(date_terms.seasons[2], "Autumn");
-        assert_eq!(date_terms.seasons[3], "Winter");
+        assert_eq!(dates.months.long.len(), 12);
+        assert_eq!(dates.months.short.len(), 12);
+        assert_eq!(dates.months.long[0], "January");
+        assert_eq!(dates.months.long[11], "December");
+
+        assert_eq!(dates.seasons.len(), 4);
+        assert_eq!(dates.seasons[0], "Spring");
+        assert_eq!(dates.seasons[1], "Summer");
+        assert_eq!(dates.seasons[2], "Autumn");
+        assert_eq!(dates.seasons[3], "Winter");
     }
 
-    /// Test that DateTerms::en_us() provides era suffixes for historical years.
+    /// The YAML-derived `Locale::en_us()` provides era suffixes that the
+    /// deleted hardcoded `DateTerms::en_us()` constructor used to.
     #[test]
-    fn test_date_terms_en_us_before_era() {
-        let date_terms = DateTerms::en_us();
+    fn test_locale_en_us_dates_before_era() {
+        let dates = &super::super::Locale::en_us().dates;
 
-        assert_eq!(date_terms.before_era.as_deref(), Some("BC"));
-        assert_eq!(date_terms.ad.as_deref(), Some("AD"));
-        assert_eq!(date_terms.bc.as_deref(), Some("BC"));
-        assert_eq!(date_terms.bce.as_deref(), Some("BCE"));
-        assert_eq!(date_terms.ce.as_deref(), Some("CE"));
-    }
-
-    /// Test that MonthNames::en_us() provides standard English month names.
-    #[test]
-    fn test_month_names_en_us() {
-        let months = MonthNames::en_us();
-
-        assert_eq!(months.long.len(), 12);
-        assert_eq!(months.short.len(), 12);
-        assert_eq!(months.long[5], "June");
-        assert_eq!(months.short[5], "June");
-        assert_eq!(months.long[8], "September");
-        assert_eq!(months.short[8], "Sept.");
+        assert_eq!(dates.before_era.as_deref(), Some("BC"));
+        assert_eq!(dates.ad.as_deref(), Some("AD"));
+        assert_eq!(dates.bc.as_deref(), Some("BC"));
+        assert_eq!(dates.bce.as_deref(), Some("BCE"));
+        assert_eq!(dates.ce.as_deref(), Some("CE"));
     }
 }

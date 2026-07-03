@@ -9,7 +9,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! for citation formatting.
 
 mod date_patterns;
-mod embedded;
 /// Locator text normalization.
 pub mod locator;
 /// Message evaluation for parameterized locale strings.
@@ -156,41 +155,45 @@ impl fmt::Debug for Locale {
 }
 
 impl Locale {
-    /// Create a new English (US) locale with default terms.
+    /// Create the English (US) locale, the fallback baseline every other
+    /// locale inherits from and the default for the majority of embedded
+    /// styles (which declare no `info.default-locale`).
+    ///
+    /// This parses the embedded canonical asset
+    /// (`embedded/locales/en-US.yaml`) so the YAML is the single source of
+    /// truth — there is no separate hand-maintained Rust copy to drift out
+    /// of sync with it. The parse is memoized in a `std::sync::OnceLock`
+    /// since it is pure and immutable; callers get a `clone()` of the cached
+    /// result (still a deep copy of its maps/vecs, but far cheaper than
+    /// re-parsing the YAML) rather than re-parsing on every call.
+    ///
+    /// Seeds from [`Locale::default()`] (not `from_raw`'s usual
+    /// `Locale::en_us()` seed) via `from_raw_with_base` to avoid infinite
+    /// recursion through this very function.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the embedded `en-US.yaml` asset is missing, not valid
+    /// UTF-8, or fails to parse. This cannot happen at runtime: the asset is
+    /// embedded at compile time and covered by
+    /// `bundled_ar_ar_and_eu_es_locales_are_embedded_and_parseable`-style
+    /// tests, so a failure here indicates a broken build, not bad input.
+    #[allow(
+        clippy::expect_used,
+        reason = "Embedded en-US.yaml locale must parse; failure indicates a broken build, not bad input"
+    )]
     pub fn en_us() -> Self {
-        Self {
-            locale: "en-US".into(),
-            dates: DateTerms::en_us(),
-            roles: embedded::en_us_role_terms(),
-            locators: embedded::en_us_locator_terms(),
-            terms: Terms::en_us(),
-            punctuation_in_quote: true,
-            sort_articles: vec!["the".into(), "a".into(), "an".into()],
-            locale_schema_version: None,
-            evaluation: EvaluationConfig {
-                message_syntax: MessageSyntax::Mf2,
-            },
-            messages: embedded::en_us_archive_messages(),
-            date_formats: HashMap::new(),
-            number_formats: NumberFormats {
-                decimal_separator: ".".into(),
-                thousands_separator: ",".into(),
-                minimum_digits: 1,
-            },
-            grammar_options: GrammarOptions {
-                punctuation_in_quote: true,
-                nbsp_before_colon: false,
-                open_quote: "\u{201C}".into(),
-                close_quote: "\u{201D}".into(),
-                open_inner_quote: "\u{2018}".into(),
-                close_inner_quote: "\u{2019}".into(),
-                serial_comma: true,
-                page_range_delimiter: "\u{2013}".into(),
-            },
-            legacy_term_aliases: HashMap::new(),
-            vocab: embedded::embedded_en_us_vocab().clone(),
-            evaluator: Arc::new(Mf2MessageEvaluator),
-        }
+        static EN_US: std::sync::OnceLock<Locale> = std::sync::OnceLock::new();
+        EN_US
+            .get_or_init(|| {
+                let bytes = crate::embedded::get_locale_bytes("en-US")
+                    .expect("en-US is a compile-time embedded locale");
+                let yaml = std::str::from_utf8(bytes).expect("embedded en-US.yaml is valid UTF-8");
+                let raw: RawLocale =
+                    serde_yaml::from_str(yaml).expect("embedded en-US.yaml parses");
+                Self::from_raw_with_base(raw, Locale::default())
+            })
+            .clone()
     }
 }
 
@@ -398,5 +401,58 @@ locale: en-US
 
             assert_eq!(locale.locale, id);
         }
+    }
+
+    /// Round-trip regression guard for `Locale::en_us()` parsing the
+    /// embedded `en-US.yaml` asset: asserts the critical values a future
+    /// edit to that YAML could silently regress, since `en_us()` is the
+    /// fallback baseline for the large majority of embedded styles.
+    #[test]
+    fn en_us_locale_round_trip_carries_critical_values() {
+        let locale = Locale::en_us();
+
+        // Role labels (CSL reference: scripts/locales-en-US.xml).
+        assert_eq!(
+            locale.resolved_role_term(&ContributorRole::Translator, false, &TermForm::Short, None),
+            Some("trans.".to_string())
+        );
+
+        // Locator labels (CSL reference: chap./chaps.).
+        assert_eq!(
+            locale.locator_term(&LocatorType::Chapter, false, &TermForm::Short, None),
+            Some("chap.")
+        );
+        assert_eq!(
+            locale.locator_term(&LocatorType::Chapter, true, &TermForm::Short, None),
+            Some("chaps.")
+        );
+
+        // No-date term is form-aware (see general_term fix).
+        assert_eq!(
+            locale.general_term(&GeneralTerm::NoDate, &TermForm::Long, None),
+            Some("no date")
+        );
+        assert_eq!(
+            locale.general_term(&GeneralTerm::NoDate, &TermForm::Short, None),
+            Some("n.d.")
+        );
+
+        // Core general terms.
+        assert_eq!(locale.terms.and.as_deref(), Some("and"));
+        assert_eq!(locale.terms.et_al.as_deref(), Some("et al."));
+
+        // Month names.
+        assert_eq!(
+            locale.dates.months.long.first().map(String::as_str),
+            Some("January")
+        );
+
+        // Number formats (single-sourced explicitly in the YAML, Step 4).
+        assert_eq!(locale.number_formats.decimal_separator, ".");
+        assert_eq!(locale.number_formats.thousands_separator, ",");
+        assert_eq!(locale.number_formats.minimum_digits, 1);
+
+        // Sort articles.
+        assert_eq!(locale.sort_articles, ["the", "a", "an"]);
     }
 }

@@ -101,16 +101,43 @@ impl Locale {
         }
     }
 
-    /// Convert a RawLocale to a Locale.
+    /// Convert a RawLocale to a Locale, seeding from [`Locale::en_us()`].
+    ///
+    /// This is the inheritance model non-en-US locales rely on: a partial
+    /// locale file (e.g. `ar-AR`, `eu-ES`) only overrides the fields it
+    /// specifies, and everything else falls back to the English baseline —
+    /// but the inheritance is field-granular, not uniform. `roles`,
+    /// `locators`, `terms`, and `vocab` are merged key-by-key into the base,
+    /// so an omitted key keeps the base's value. `messages`, `date_formats`,
+    /// and `legacy_term_aliases` are replaced wholesale from the raw locale
+    /// (defaulting to empty when the section is absent from the YAML), so a
+    /// partial locale that omits `messages:` entirely loses the base's MF2
+    /// messages rather than falling back to them. This whole-map replacement
+    /// is pre-existing behavior, not introduced by the `en_us()` YAML
+    /// single-sourcing above — see follow-up bean for reconciling it.
+    fn from_raw(raw: raw::RawLocale) -> Self {
+        Self::from_raw_with_base(raw, Locale::en_us())
+    }
+
+    /// Convert a RawLocale to a Locale, seeding from the given `base` locale
+    /// instead of always inheriting from [`Locale::en_us()`].
+    ///
+    /// This exists so [`Locale::en_us()`] itself can parse the embedded
+    /// `en-US.yaml` without infinite recursion: it seeds from
+    /// [`Locale::default()`] (a non-circular, fully-formed empty locale)
+    /// rather than from `en_us()`. Non-en-US locale loading is unaffected —
+    /// [`Locale::from_raw`] still calls this with `Locale::en_us()` as the
+    /// base, preserving today's partial-locale inheritance behavior (see
+    /// that function's doc comment for which fields merge vs. replace).
     #[allow(
         clippy::too_many_lines,
         reason = "Complex parsing of raw locale data with multiple term types"
     )]
-    fn from_raw(raw: raw::RawLocale) -> Self {
+    pub(super) fn from_raw_with_base(raw: raw::RawLocale, base: Self) -> Self {
         let punctuation_in_quote = raw.locale.starts_with("en-US")
             || (raw.locale.starts_with("en") && !raw.locale.starts_with("en-GB"));
 
-        let mut locale = Locale::en_us();
+        let mut locale = base;
         locale.locale = raw.locale.clone();
         locale.dates = DateTerms {
             months: MonthNames {

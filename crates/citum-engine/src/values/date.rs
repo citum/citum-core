@@ -1005,11 +1005,11 @@ mod time_tests {
 mod era_tests {
     use super::*;
     use citum_edtf::{UnspecifiedYear, Year};
-    use citum_schema::locale::DateTerms;
+    use citum_schema::locale::{DateTerms, Locale};
     use citum_schema::options::dates::{EraLabels, NegativeUnspecifiedYears};
 
     fn en_terms() -> DateTerms {
-        DateTerms::en_us()
+        Locale::en_us().dates
     }
 
     #[test]
