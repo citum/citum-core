@@ -299,6 +299,7 @@ messages:
   pattern.accessed-date-colon: "consultado: {$date}"
   pattern.in-container: "en {$container}"
   pattern.in-container-colon: "en: {$container}"
+  pattern.originally-published-as: "publicado originalmente como {$title}"
   pattern.cited-date: "citado el {$date}"
   pattern.issued-date: "emitido el {$date}"
   pattern.retrieved-date: "recuperado el {$date}"

@@ -887,6 +887,7 @@ messages:
   pattern.accessed-date-colon: "consulté le : {$date}"
   pattern.in-container: "dans {$container}"
   pattern.in-container-colon: "dans : {$container}"
+  pattern.originally-published-as: "publié à l'origine sous le titre {$title}"
   pattern.cited-date: "cité le {$date}"
   pattern.issued-date: "délivré le {$date}"
   pattern.retrieved-date: "consulté le {$date}"

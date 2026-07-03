@@ -364,9 +364,45 @@ bibliography:
       - number: issue
         prefix: " ("
         suffix: ")"
+    - group:
+      - variable: original-publisher
+      render-when:
+        field-absent: original-title
+    - group:
+      - variable: original-publisher-place
+      render-when:
+        field-absent: original-publisher
+    - number: edition
+      text-case: capitalize-first
     - variable: publisher
     - variable: doi
     - variable: url
+    - group:
+      # CMOS 18 13.101: a translation or reprint under a different title notes
+      # the original title (and, where known, its publisher or place).
+      - message: pattern.originally-published-as
+        args:
+          title:
+            group:
+            - title: original
+              emph: true
+              text-case: title
+        text-case: capitalize-first
+      - group:
+        - variable: original-publisher
+        wrap:
+          punctuation: parentheses
+        prefix: " "
+      - group:
+        - variable: original-publisher-place
+        wrap:
+          punctuation: parentheses
+        prefix: " "
+        render-when:
+          field-absent: original-publisher
+      delimiter: none
+      render-when:
+        field-present: original-title
     broadcast:
     - contributor: author
       form: long
