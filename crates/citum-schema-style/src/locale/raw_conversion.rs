@@ -15,7 +15,7 @@ use super::message::{MessageEvaluator, Mf2MessageEvaluator, NoOpEvaluator};
 use super::raw;
 use super::types::{
     ContributorTerm, DateTerms, LocaleOverride, LocatorTerm, MaybeGendered, MessageSyntax,
-    MonthNames, SimpleTerm, SingularPlural,
+    MonthNames, SimpleTerm, SingularPlural, TermForm,
 };
 use crate::citation::LocatorType;
 use crate::template::ContributorRole;
@@ -107,14 +107,11 @@ impl Locale {
     /// locale file (e.g. `ar-AR`, `eu-ES`) only overrides the fields it
     /// specifies, and everything else falls back to the English baseline —
     /// but the inheritance is field-granular, not uniform. `roles`,
-    /// `locators`, `terms`, and `vocab` are merged key-by-key into the base,
-    /// so an omitted key keeps the base's value. `messages`, `date_formats`,
-    /// and `legacy_term_aliases` are replaced wholesale from the raw locale
-    /// (defaulting to empty when the section is absent from the YAML), so a
-    /// partial locale that omits `messages:` entirely loses the base's MF2
-    /// messages rather than falling back to them. This whole-map replacement
-    /// is pre-existing behavior, not introduced by the `en_us()` YAML
-    /// single-sourcing above — see follow-up bean for reconciling it.
+    /// `locators`, `terms`, `vocab`, `messages`, `date_formats`, and
+    /// `legacy_term_aliases` are merged key-by-key into the base, so an
+    /// omitted key keeps the base's value while an explicit raw entry
+    /// overrides it. Inherited message fallbacks do not shadow structured
+    /// terms supplied by the raw locale.
     fn from_raw(raw: raw::RawLocale) -> Self {
         Self::from_raw_with_base(raw, Locale::en_us())
     }
@@ -127,8 +124,7 @@ impl Locale {
     /// [`Locale::default()`] (a non-circular, fully-formed empty locale)
     /// rather than from `en_us()`. Non-en-US locale loading is unaffected —
     /// [`Locale::from_raw`] still calls this with `Locale::en_us()` as the
-    /// base, preserving today's partial-locale inheritance behavior (see
-    /// that function's doc comment for which fields merge vs. replace).
+    /// base, preserving partial-locale inheritance behavior.
     #[allow(
         clippy::too_many_lines,
         reason = "Complex parsing of raw locale data with multiple term types"
@@ -139,6 +135,7 @@ impl Locale {
 
         let mut locale = base;
         locale.locale = raw.locale.clone();
+        Self::remove_base_messages_shadowed_by_raw_terms(&raw, &mut locale.messages);
         locale.dates = DateTerms {
             months: MonthNames {
                 long: raw.dates.months.long,
@@ -161,9 +158,9 @@ impl Locale {
 
         locale.locale_schema_version = raw.locale_schema_version;
         locale.evaluation = raw.evaluation.unwrap_or_default();
-        locale.messages = raw.messages;
-        locale.date_formats = raw.date_formats;
-        locale.legacy_term_aliases = raw.legacy_term_aliases;
+        locale.messages.extend(raw.messages);
+        locale.date_formats.extend(raw.date_formats);
+        locale.legacy_term_aliases.extend(raw.legacy_term_aliases);
 
         if let Some(raw_vocab) = raw.vocab {
             locale.vocab.genre.extend(raw_vocab.genre);
@@ -388,6 +385,46 @@ impl Locale {
             "reviewed-author" => Some(ContributorRole::ReviewedAuthor),
             "composer" => Some(ContributorRole::Composer),
             _ => None,
+        }
+    }
+
+    fn remove_base_messages_shadowed_by_raw_terms(
+        raw: &raw::RawLocale,
+        messages: &mut HashMap<String, String>,
+    ) {
+        for key in raw.locators.keys() {
+            if let Some(locator) = Self::parse_builtin_locator_type(key) {
+                for form in [TermForm::Long, TermForm::Short] {
+                    if let Some(message_id) = Self::locator_message_id(&locator, &form) {
+                        messages.remove(message_id);
+                    }
+                }
+            }
+        }
+
+        for key in raw.roles.keys() {
+            if let Some(role) = Self::parse_role_name(key) {
+                for form in [
+                    TermForm::Long,
+                    TermForm::Short,
+                    TermForm::Verb,
+                    TermForm::VerbShort,
+                ] {
+                    if let Some(message_id) = Self::role_message_id(&role, &form) {
+                        messages.remove(message_id);
+                    }
+                }
+            }
+        }
+
+        for key in raw.terms.keys() {
+            if let Some(term) = Self::parse_general_term(key) {
+                for form in [TermForm::Long, TermForm::Short] {
+                    if let Some(message_id) = Self::general_message_id(&term, &form) {
+                        messages.remove(message_id);
+                    }
+                }
+            }
         }
     }
 

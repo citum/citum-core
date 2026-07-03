@@ -329,6 +329,62 @@ locale: en-US
         assert!(locale.grammar_options.punctuation_in_quote);
     }
 
+    /// Partial locales inherit base messages, date formats, and aliases.
+    #[test]
+    fn test_partial_locale_merges_raw_maps_with_base() {
+        let yaml = r#"
+locale-schema-version: "2"
+locale: zz-ZZ
+messages:
+  pattern.in-container: "inside {$container}"
+date-formats:
+  numeric-short: "dd/MM/y"
+locators:
+  page:
+    long:
+      singular: page-localized
+      plural: pages-localized
+legacy-term-aliases:
+  page: term.page-label-long
+"#;
+        let locale = Locale::from_yaml_str(yaml).unwrap();
+
+        assert_eq!(
+            locale
+                .messages
+                .get("pattern.originally-published-as")
+                .map(String::as_str),
+            Some("originally published as {$title}")
+        );
+        assert_eq!(
+            locale
+                .messages
+                .get("pattern.in-container")
+                .map(String::as_str),
+            Some("inside {$container}")
+        );
+        assert_eq!(
+            locale.date_formats.get("textual-full").map(String::as_str),
+            Some("MMMM d, yyyy")
+        );
+        assert_eq!(
+            locale.date_formats.get("numeric-short").map(String::as_str),
+            Some("dd/MM/y")
+        );
+        assert_eq!(
+            locale.legacy_term_aliases.get("and").map(String::as_str),
+            Some("term.and")
+        );
+        assert_eq!(
+            locale.legacy_term_aliases.get("page").map(String::as_str),
+            Some("term.page-label-long")
+        );
+        assert_eq!(
+            locale.resolved_locator_term(&LocatorType::Page, false, &TermForm::Long, None),
+            Some("page-localized".to_string())
+        );
+    }
+
     /// apply_override merges messages key-by-key into the base locale.
     #[test]
     fn test_apply_override_merges_messages() {
