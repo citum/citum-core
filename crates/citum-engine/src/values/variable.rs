@@ -32,6 +32,9 @@ fn event_place(reference: &Reference) -> Option<String> {
     match reference.extension() {
         ClassExtension::Event(event) => event.location.clone(),
         ClassExtension::Monograph(monograph) => embedded_event_place(monograph.event.as_ref()?),
+        ClassExtension::SerialComponent(component) => {
+            embedded_event_place(component.event.as_ref()?)
+        }
         ClassExtension::AudioVisual(audio_visual) => {
             embedded_event_place(audio_visual.event.as_ref()?)
         }
@@ -43,6 +46,9 @@ fn event_title(reference: &Reference) -> Option<String> {
     match reference.extension() {
         ClassExtension::Event(event) => event.title.as_ref().map(ToString::to_string),
         ClassExtension::Monograph(monograph) => embedded_event_title(monograph.event.as_ref()?),
+        ClassExtension::SerialComponent(component) => {
+            embedded_event_title(component.event.as_ref()?)
+        }
         ClassExtension::AudioVisual(audio_visual) => {
             embedded_event_title(audio_visual.event.as_ref()?)
         }
@@ -75,6 +81,7 @@ fn dimensions(reference: &Reference) -> Option<String> {
         ClassExtension::Monograph(monograph) => {
             monograph.duration.clone().or(monograph.size.clone())
         }
+        ClassExtension::SerialComponent(component) => component.duration.clone(),
         ClassExtension::AudioVisual(audio_visual) => audio_visual.dimensions.clone(),
         _ => None,
     }

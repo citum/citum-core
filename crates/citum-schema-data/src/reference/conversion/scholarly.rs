@@ -665,9 +665,17 @@ pub(super) fn from_serial_component_ref(
     let reviewed_author = legacy_extra_names(&legacy, "reviewed-author");
     let reviewed_title = legacy_extra_str(&legacy, "reviewed-title").map(Title::Single);
     let reviewed_genre = legacy_extra_str(&legacy, "reviewed-genre");
+    if genre.is_none() {
+        genre = reviewed_genre.clone();
+    }
+    let event_title = legacy_extra_str(&legacy, "event-title");
+    let event_place = legacy_extra_str(&legacy, "event-place")
+        .or_else(|| legacy_extra_str(&legacy, "event-location"));
+    let event_date = legacy_extra_date(&legacy, "event-date");
     let supplement_number = legacy_extra_str(&legacy, "supplement-number");
     let status = legacy_extra_str(&legacy, "status");
     let available_date = legacy_extra_date(&legacy, "available-date");
+    let dimensions = legacy_extra_str(&legacy, "dimensions").or(legacy.dimensions.clone());
     let original_author = legacy_extra_contributor(&legacy, "original-author");
     let original_date = legacy_extra_date(&legacy, "original-date");
     let original_publisher = legacy_extra_str(&legacy, "original-publisher");
@@ -682,7 +690,7 @@ pub(super) fn from_serial_component_ref(
     let parent_title = legacy.container_title.clone().map(Title::Single);
     let collection_title = legacy.collection_title.clone();
 
-    let volume = legacy.volume.map(|v| v.to_string());
+    let volume = legacy.volume.as_ref().map(ToString::to_string);
     let issue = legacy
         .issue
         .clone()
@@ -713,6 +721,21 @@ pub(super) fn from_serial_component_ref(
     push_legacy_contributor(&mut contributors, ContributorRole::Host, host_names);
     push_legacy_contributor(&mut contributors, ContributorRole::Narrator, narrator_names);
     push_legacy_contributor(&mut contributors, ContributorRole::Producer, producer_names);
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Writer,
+        legacy_extra_names(&legacy, "script-writer"),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Performer,
+        legacy.contributor.clone(),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Unknown("reviewed-author".to_string()),
+        reviewed_author.clone(),
+    );
     let serial_editor = legacy.editor.clone().map(Contributor::from);
     let mut serial_contributors = Vec::new();
     push_legacy_contributor(
@@ -808,6 +831,8 @@ pub(super) fn from_serial_component_ref(
             original_publisher,
             original_publisher_place,
         ),
+        event: relation_event(event_title, event_place, event_date),
+        duration: dimensions,
         ..Default::default()
     }))
 }

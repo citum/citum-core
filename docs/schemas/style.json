@@ -637,9 +637,11 @@
             "interviewer",
             "interviewee",
             "guest",
+            "performer",
             "inventor",
             "counsel",
             "composer",
+            "writer",
             "collection-editor",
             "container-author",
             "editorial-director",
@@ -2291,6 +2293,11 @@
           "description": "The primary title.",
           "type": "string",
           "const": "title"
+        },
+        {
+          "description": "The series or collection title.",
+          "type": "string",
+          "const": "collection-title"
         },
         {
           "description": "The issued date.",

@@ -52,8 +52,10 @@ pub(super) fn contributor_role_to_reference_role(
         )),
         ContributorRole::Interviewer => Some(citum_schema::reference::ContributorRole::Interviewer),
         ContributorRole::Guest => Some(citum_schema::reference::ContributorRole::Guest),
+        ContributorRole::Performer => Some(citum_schema::reference::ContributorRole::Performer),
         ContributorRole::Director => Some(citum_schema::reference::ContributorRole::Director),
         ContributorRole::Composer => Some(citum_schema::reference::ContributorRole::Composer),
+        ContributorRole::Writer => Some(citum_schema::reference::ContributorRole::Writer),
         ContributorRole::Illustrator => Some(citum_schema::reference::ContributorRole::Illustrator),
         ContributorRole::Inventor => Some(citum_schema::reference::ContributorRole::Unknown(
             "inventor".to_string(),

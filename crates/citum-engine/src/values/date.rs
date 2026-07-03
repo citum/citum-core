@@ -46,6 +46,9 @@ fn event_date(reference: &Reference) -> Option<EdtfString> {
     match reference.extension() {
         ClassExtension::Event(event) => event.date.clone(),
         ClassExtension::Monograph(monograph) => embedded_event_date(monograph.event.as_ref()?),
+        ClassExtension::SerialComponent(component) => {
+            embedded_event_date(component.event.as_ref()?)
+        }
         ClassExtension::AudioVisual(audio_visual) => {
             embedded_event_date(audio_visual.event.as_ref()?)
         }

@@ -786,9 +786,11 @@ crate::str_enum! {
         Interviewer = "interviewer",
         Interviewee = "interviewee",
         Guest = "guest",
+        Performer = "performer",
         Inventor = "inventor",
         Counsel = "counsel",
         Composer = "composer",
+        Writer = "writer",
         CollectionEditor = "collection-editor",
         ContainerAuthor = "container-author",
         EditorialDirector = "editorial-director",
@@ -1345,6 +1347,8 @@ pub enum TemplateConditionField {
     Translator,
     /// The primary title.
     Title,
+    /// The series or collection title.
+    CollectionTitle,
     /// The issued date.
     Issued,
     /// The original publication date.

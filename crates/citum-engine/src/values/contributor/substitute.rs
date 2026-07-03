@@ -80,8 +80,10 @@ fn parse_known_role(value: &str) -> Option<ContributorRole> {
         "recipient" => ContributorRole::Recipient,
         "interviewer" => ContributorRole::Interviewer,
         "guest" => ContributorRole::Guest,
+        "performer" => ContributorRole::Performer,
         "inventor" => ContributorRole::Inventor,
         "counsel" => ContributorRole::Counsel,
+        "writer" => ContributorRole::Writer,
         _ => return None,
     })
 }
@@ -117,6 +119,8 @@ fn data_role_for_builtin(role: &ContributorRole) -> Option<DataRole> {
         ContributorRole::Recipient => DataRole::Recipient,
         ContributorRole::Interviewer => DataRole::Interviewer,
         ContributorRole::Guest => DataRole::Guest,
+        ContributorRole::Performer => DataRole::Performer,
+        ContributorRole::Writer => DataRole::Writer,
         ContributorRole::ContainerAuthor
         | ContributorRole::CollectionEditor
         | ContributorRole::EditorialDirector

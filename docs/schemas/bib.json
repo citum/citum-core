@@ -919,6 +919,22 @@
                 }
               ]
             },
+            "event": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/WorkRelation"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "duration": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "reviewed": {
               "anyOf": [
                 {

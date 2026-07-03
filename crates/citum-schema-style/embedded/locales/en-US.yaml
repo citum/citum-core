@@ -933,6 +933,14 @@ messages:
   pattern.locator-at: "at {$locator}"
   pattern.retrieved-from: "retrieved from {$url}"
   pattern.available-at: "available at {$url}"
+  pattern.chicago-aired-date: "aired {$date}"
+  pattern.chicago-by: "by {$name}"
+  pattern.chicago-interview-by: "interview by {$name}"
+  pattern.chicago-on: "on {$source}"
+  pattern.chicago-review-of: "review of {$genre}"
+  pattern.chicago-to: "to {$name}"
+  pattern.chicago-with: "with {$name}"
+  pattern.chicago-written-by: "written by {$name}"
   date.open-ended: "present"
 
 date-formats:
