@@ -42,8 +42,9 @@ use citum_schema::{
     },
     template::{
         DateForm, DateVariable, DelimiterPunctuation, NumberVariable, Rendering, SimpleVariable,
-        TemplateComponent, TemplateDate, TemplateGroup, TemplateNumber, TemplateTitle,
-        TemplateVariable, TitleForm, TitleType,
+        TemplateComponent, TemplateConditionField, TemplateDate, TemplateGroup,
+        TemplateGroupCondition, TemplateNumber, TemplateTitle, TemplateVariable, TitleForm,
+        TitleType,
     },
 };
 use indexmap::IndexMap;
@@ -3720,6 +3721,213 @@ fn original_published_date_variable_renders_for_patent_references() {
         .to_string();
 
     assert_eq!(rendered, "(1901) 1992. Improved Widget");
+}
+
+/// Builds an `original` sub-reference JSON fragment with an optional publisher
+/// name and/or publisher place, matching the shape produced by the CMOS 18
+/// reprint fixtures (e.g. a reprint with only an original publisher, or only
+/// an original publisher place).
+fn original_publisher_fragment(
+    original_publisher: Option<&str>,
+    original_publisher_place: Option<&str>,
+) -> serde_json::Value {
+    let mut original = serde_json::json!({
+        "class": "monograph",
+        "type": "book",
+        "id": "orig",
+        "issued": "1900",
+    });
+    let publisher = match (original_publisher, original_publisher_place) {
+        (Some(name), Some(place)) => Some(serde_json::json!({ "name": name, "place": place })),
+        (Some(name), None) => Some(serde_json::json!({ "name": name })),
+        (None, Some(place)) => Some(serde_json::json!({ "name": "", "place": place })),
+        (None, None) => None,
+    };
+    if let Some(publisher) = publisher {
+        original
+            .as_object_mut()
+            .expect("original fragment is an object")
+            .insert("publisher".to_string(), publisher);
+    }
+    original
+}
+
+#[rstest]
+#[case::original_publisher_present(Some("Kodansha"), None, "10.1000/marker-doi")]
+#[case::original_publisher_place_present_alone(
+    None,
+    Some("Oxford"),
+    "https://example.test/marker-url"
+)]
+#[case::neither_present(None, None, "")]
+fn given_original_publication_fields_when_a_bibliography_group_checks_field_presence_then_it_renders_conditionally(
+    #[case] original_publisher: Option<&str>,
+    #[case] original_publisher_place: Option<&str>,
+    #[case] expected: &str,
+) {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Original-publication condition test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                TemplateComponent::Group(TemplateGroup {
+                    group: vec![TemplateComponent::Variable(TemplateVariable {
+                        variable: SimpleVariable::Doi,
+                        ..Default::default()
+                    })],
+                    render_when: Some(TemplateGroupCondition {
+                        field_present: Some(TemplateConditionField::OriginalPublisher),
+                        field_absent: None,
+                    }),
+                    ..Default::default()
+                }),
+                TemplateComponent::Group(TemplateGroup {
+                    group: vec![TemplateComponent::Variable(TemplateVariable {
+                        variable: SimpleVariable::Url,
+                        ..Default::default()
+                    })],
+                    render_when: Some(TemplateGroupCondition {
+                        field_present: Some(TemplateConditionField::OriginalPublisherPlace),
+                        field_absent: Some(TemplateConditionField::OriginalPublisher),
+                    }),
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let reference: InputReference = serde_json::from_value(serde_json::json!({
+        "class": "monograph",
+        "type": "book",
+        "id": "primary",
+        "title": "Primary Work",
+        "issued": "1995",
+        "doi": "10.1000/marker-doi",
+        "url": "https://example.test/marker-url",
+        "original": original_publisher_fragment(original_publisher, original_publisher_place),
+    }))
+    .unwrap();
+
+    let bibliography = IndexMap::from([("primary".to_string(), reference)]);
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor
+        .render_selected_bibliography_with_format::<PlainText, _>(["primary".to_string()])
+        .trim()
+        .to_string();
+
+    assert_eq!(rendered, expected);
+}
+
+#[test]
+fn original_title_variable_renders_the_original_language_title() {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Original-title test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Primary,
+                    form: Some(TitleForm::Long),
+                    ..Default::default()
+                }),
+                TemplateComponent::Title(TemplateTitle {
+                    title: TitleType::Original,
+                    form: Some(TitleForm::Long),
+                    rendering: Rendering {
+                        prefix: Some(" / ".to_string()),
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let reference: InputReference = serde_json::from_str(
+        r#"{
+            "class": "monograph",
+            "type": "book",
+            "id": "memory-police",
+            "title": "The Memory Police",
+            "issued": "2020",
+            "original": {
+                "class": "monograph",
+                "type": "book",
+                "id": "memory-police-orig",
+                "title": "Hisoyaka na kesshō",
+                "issued": "1994"
+            }
+        }"#,
+    )
+    .unwrap();
+
+    let bibliography = IndexMap::from([("memory-police".to_string(), reference)]);
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor
+        .render_selected_bibliography_with_format::<PlainText, _>(["memory-police".to_string()])
+        .trim()
+        .to_string();
+
+    assert_eq!(rendered, "The Memory Police / Hisoyaka na kesshō");
+}
+
+#[rstest]
+#[case::with_capitalize_first_case(
+    Some(citum_schema::options::titles::TextCase::CapitalizeFirst),
+    "Reprinted with a new preface"
+)]
+#[case::without_a_case_override(None, "reprinted with a new preface")]
+fn given_a_number_component_with_free_text_when_a_text_case_override_is_set_then_it_is_applied(
+    #[case] text_case: Option<citum_schema::options::titles::TextCase>,
+    #[case] expected: &str,
+) {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Number text-case test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Number(TemplateNumber {
+                number: NumberVariable::Edition,
+                rendering: Rendering {
+                    text_case,
+                    ..Default::default()
+                },
+                ..Default::default()
+            })]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let reference: InputReference = serde_json::from_str(
+        r#"{
+            "class": "monograph",
+            "type": "book",
+            "id": "reprint",
+            "title": "A Reprinted Work",
+            "issued": "2000",
+            "edition": "reprinted with a new preface"
+        }"#,
+    )
+    .unwrap();
+
+    let bibliography = IndexMap::from([("reprint".to_string(), reference)]);
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor
+        .render_selected_bibliography_with_format::<PlainText, _>(["reprint".to_string()])
+        .trim()
+        .to_string();
+
+    assert_eq!(rendered, expected);
 }
 
 mod annotated_html_preview {

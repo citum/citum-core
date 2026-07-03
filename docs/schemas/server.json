@@ -1749,6 +1749,11 @@
           "description": "Title of a series or collection containing the cited work.",
           "type": "string",
           "const": "collection-title"
+        },
+        {
+          "description": "Title of the work's original publication (e.g. a translation's source-language title).",
+          "type": "string",
+          "const": "original"
         }
       ]
     },
@@ -2584,6 +2589,21 @@
           "description": "The publisher name.",
           "type": "string",
           "const": "publisher"
+        },
+        {
+          "description": "The original publisher name (e.g. a reprint's first publisher).",
+          "type": "string",
+          "const": "original-publisher"
+        },
+        {
+          "description": "The original publisher place (e.g. a reprint's first place of publication).",
+          "type": "string",
+          "const": "original-publisher-place"
+        },
+        {
+          "description": "The original title (e.g. a translation's title in its source language).",
+          "type": "string",
+          "const": "original-title"
         },
         {
           "description": "The DOI identifier.",

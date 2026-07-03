@@ -420,6 +420,7 @@ fn resolve_primary_title(reference: &Reference, title_type: &TitleType) -> Optio
             _ => None,
         },
         TitleType::CollectionTitle => reference.collection_title(),
+        TitleType::Original => reference.original_title(),
         _ => None,
     }
 }

@@ -894,6 +894,8 @@ pub enum TitleType {
     ParentSerial,
     /// Title of a series or collection containing the cited work.
     CollectionTitle,
+    /// Title of the work's original publication (e.g. a translation's source-language title).
+    Original,
 }
 
 /// Title rendering forms.
@@ -1349,6 +1351,12 @@ pub enum TemplateConditionField {
     OriginalPublished,
     /// The publisher name.
     Publisher,
+    /// The original publisher name (e.g. a reprint's first publisher).
+    OriginalPublisher,
+    /// The original publisher place (e.g. a reprint's first place of publication).
+    OriginalPublisherPlace,
+    /// The original title (e.g. a translation's title in its source language).
+    OriginalTitle,
     /// The DOI identifier.
     Doi,
     /// The reference genre or item type label.
