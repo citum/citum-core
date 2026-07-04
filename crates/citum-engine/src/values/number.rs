@@ -294,7 +294,9 @@ pub fn format_page_range(
                 PageRangeFormat::Expanded => end.to_string(),
                 PageRangeFormat::Minimal => format_minimal(start, end, 1),
                 PageRangeFormat::MinimalTwo => format_minimal(start, end, 2),
-                PageRangeFormat::Chicago | PageRangeFormat::Chicago16 => format_chicago(s, e),
+                PageRangeFormat::Chicago | PageRangeFormat::Chicago16 => {
+                    format_chicago_page_range_end(s, e)
+                }
                 _ => end.to_string(), // Future variants: default to expanded
             };
             format!("{start}{delimiter}{formatted_end}")
@@ -331,35 +333,45 @@ pub fn format_minimal(start: &str, end: &str, min_digits: usize) -> String {
         .collect()
 }
 
-/// Chicago Manual of Style page range format
+/// Format the second number in a Chicago Manual of Style page range.
 #[must_use]
-pub fn format_chicago(start: u32, end: u32) -> String {
-    // Chicago rules (simplified from CMOS 17th):
-    // - Under 100: use all digits (3–10, 71–72, 96–117)
-    // - 100+, same hundreds: use changed part only for 2+ digits (107–8, 321–28, 1536–38)
-    // - Different hundreds: use all digits (107–108, 321–328 if change of hundreds)
+fn format_chicago_page_range_end(start: u32, end: u32) -> String {
+    // Chicago rules:
+    // - start < 100: use all digits
+    // - start exact multiple of 100: use all digits
+    // - start % 100 is 1..=9: use the changed part only and trim any leading
+    //   zero from that suffix (1002–6, 505–17, 107–8)
+    // - otherwise: keep at least two digits unless more are needed to show the
+    //   changed part (321–25, 1087–89, 1496–500, 13792–803)
 
-    if start < 100 || end < 100 {
+    if start < 100 || start.is_multiple_of(100) {
         return end.to_string();
     }
 
     let start_str = start.to_string();
     let end_str = end.to_string();
+    let changed_end_part = if start % 100 <= 9 {
+        format_minimal(&start_str, &end_str, 1)
+    } else {
+        format_minimal(&start_str, &end_str, 2)
+    };
 
-    if start_str.len() != end_str.len() {
-        return end_str;
+    if changed_end_part.len() > 1 && changed_end_part.starts_with('0') {
+        let trimmed = changed_end_part.trim_start_matches('0');
+        if trimmed.is_empty() {
+            "0".to_string()
+        } else {
+            trimmed.to_string()
+        }
+    } else {
+        changed_end_part
     }
+}
 
-    // Check if same hundreds
-    let start_prefix = start / 100;
-    let end_prefix = end / 100;
-
-    if start_prefix != end_prefix {
-        return end_str; // Different hundreds, use full number
-    }
-
-    // Same hundreds: use minimal-two style
-    format_minimal(&start_str, &end_str, 2)
+/// Format a Chicago Manual of Style page range end.
+#[must_use]
+pub fn format_chicago(start: u32, end: u32) -> String {
+    format_chicago_page_range_end(start, end)
 }
 
 #[cfg(test)]
@@ -379,18 +391,24 @@ mod tests {
     use citum_schema::options::PageRangeFormat;
 
     #[test]
-    fn test_format_chicago() {
+    fn test_format_chicago_page_range_end() {
         for (start, end, expected) in [
             (3, 10, "10"),
             (71, 72, "72"),
-            (96, 117, "117"),
-            (107, 108, "08"),
-            (321, 328, "28"),
-            (1536, 1538, "38"),
-            (107, 208, "208"),
-            (321, 428, "428"),
+            (92, 113, "113"),
+            (100, 104, "104"),
+            (600, 613, "613"),
+            (107, 108, "8"),
+            (505, 517, "17"),
+            (1002, 1006, "6"),
+            (321, 325, "25"),
+            (415, 532, "532"),
+            (1087, 1089, "89"),
+            (1496, 1500, "500"),
+            (13792, 13803, "803"),
+            (12991, 13001, "3001"),
         ] {
-            assert_eq!(format_chicago(start, end), expected);
+            assert_eq!(format_chicago_page_range_end(start, end), expected);
         }
     }
 
@@ -420,11 +438,38 @@ mod tests {
             ("321-328", None, "321–328"),
             ("10-15", Some(PageRangeFormat::Expanded), "10–15"),
             ("42-45", Some(PageRangeFormat::Expanded), "42–45"),
-            ("107-108", Some(PageRangeFormat::Chicago), "107–08"),
+            ("3-10", Some(PageRangeFormat::Chicago), "3–10"),
             ("71-72", Some(PageRangeFormat::Chicago), "71–72"),
-            ("321-328", Some(PageRangeFormat::Chicago), "321–28"),
-            ("321-428", Some(PageRangeFormat::Chicago), "321–428"),
-            ("1536-1538", Some(PageRangeFormat::Chicago), "1536–38"),
+            ("92-113", Some(PageRangeFormat::Chicago), "92–113"),
+            ("100-104", Some(PageRangeFormat::Chicago), "100–104"),
+            ("600-613", Some(PageRangeFormat::Chicago), "600–613"),
+            ("107-108", Some(PageRangeFormat::Chicago), "107–8"),
+            ("505-517", Some(PageRangeFormat::Chicago), "505–17"),
+            ("1002-1006", Some(PageRangeFormat::Chicago), "1002–6"),
+            ("321-325", Some(PageRangeFormat::Chicago), "321–25"),
+            ("415-532", Some(PageRangeFormat::Chicago), "415–532"),
+            ("1087-1089", Some(PageRangeFormat::Chicago), "1087–89"),
+            ("1496-1500", Some(PageRangeFormat::Chicago), "1496–500"),
+            ("13792-13803", Some(PageRangeFormat::Chicago), "13792–803"),
+            ("12991-13001", Some(PageRangeFormat::Chicago), "12991–3001"),
+            ("3-10", Some(PageRangeFormat::Chicago16), "3–10"),
+            ("71-72", Some(PageRangeFormat::Chicago16), "71–72"),
+            ("92-113", Some(PageRangeFormat::Chicago16), "92–113"),
+            ("100-104", Some(PageRangeFormat::Chicago16), "100–104"),
+            ("600-613", Some(PageRangeFormat::Chicago16), "600–613"),
+            ("107-108", Some(PageRangeFormat::Chicago16), "107–8"),
+            ("505-517", Some(PageRangeFormat::Chicago16), "505–17"),
+            ("1002-1006", Some(PageRangeFormat::Chicago16), "1002–6"),
+            ("321-325", Some(PageRangeFormat::Chicago16), "321–25"),
+            ("415-532", Some(PageRangeFormat::Chicago16), "415–532"),
+            ("1087-1089", Some(PageRangeFormat::Chicago16), "1087–89"),
+            ("1496-1500", Some(PageRangeFormat::Chicago16), "1496–500"),
+            ("13792-13803", Some(PageRangeFormat::Chicago16), "13792–803"),
+            (
+                "12991-13001",
+                Some(PageRangeFormat::Chicago16),
+                "12991–3001",
+            ),
             ("100-105", Some(PageRangeFormat::Minimal), "100–5"),
             ("321-328", Some(PageRangeFormat::Minimal), "321–8"),
             ("42-45", Some(PageRangeFormat::Minimal), "42–5"),
