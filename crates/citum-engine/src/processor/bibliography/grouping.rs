@@ -119,7 +119,7 @@ impl Processor {
     ///
     /// Used for grouping paths that only need IDs for selector matching — avoids
     /// the full PlainText render pass that `process_references` performs.
-    fn sorted_id_stubs(&self) -> Vec<ProcEntry> {
+    pub(super) fn sorted_id_stubs(&self) -> Vec<ProcEntry> {
         self.initialize_numeric_bibliography_numbers();
         self.sort_references(self.bibliography.values().collect())
             .into_iter()

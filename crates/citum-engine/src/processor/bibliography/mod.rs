@@ -294,7 +294,7 @@ impl Processor {
             .filter(|bibliography| bibliography.groups_enabled)
             .and_then(|bibliography| bibliography.groups.as_ref())
         {
-            let all_entries = self.process_references().bibliography;
+            let all_entries = self.sorted_id_stubs();
             return self.render_with_custom_groups_filtered::<F>(
                 &all_entries,
                 groups,
