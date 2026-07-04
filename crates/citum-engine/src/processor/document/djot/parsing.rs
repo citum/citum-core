@@ -363,6 +363,18 @@ impl ScopeTracker {
     }
 }
 
+/// Whether `line` (a single line, excluding its trailing newline) is a
+/// frontmatter delimiter: a line consisting solely of `---`, tolerating
+/// trailing whitespace or a `\r` (CRLF line endings) before the newline.
+///
+/// Anchoring to whole lines (rather than a bare substring match) avoids two
+/// pitfalls: a leading `----` thematic break is not a delimiter, and a YAML
+/// value containing `---` mid-line (e.g. `title: a --- b`) does not count
+/// as one either.
+fn is_frontmatter_delimiter_line(line: &str) -> bool {
+    line.trim_end() == "---"
+}
+
 /// Parse YAML frontmatter from content.
 ///
 /// Returns `(result, remaining_content)` where `result` is:
@@ -371,6 +383,11 @@ impl ScopeTracker {
 /// - `Err(msg)` when a `---` block is present but fails to deserialize (e.g.
 ///   unknown field rejected by `deny_unknown_fields`)
 ///
+/// Both the opening and closing delimiters must be a line consisting solely
+/// of `---` (see [`is_frontmatter_delimiter_line`]); a bare substring match
+/// would misread a leading thematic break as frontmatter, or close the block
+/// early on an embedded `---` inside a YAML value.
+///
 /// Callers must surface the error; they must not silently proceed without
 /// frontmatter data when the user authored an invalid block.
 #[allow(clippy::string_slice, reason = "'---' is 1-byte ASCII")]
@@ -378,21 +395,44 @@ pub(crate) fn parse_frontmatter(
     content: &str,
 ) -> (Result<Option<DocumentFrontmatter>, String>, &str) {
     let trimmed = content.trim_start();
-    if !trimmed.starts_with("---") {
+
+    let opening_line_len = trimmed.find('\n').unwrap_or(trimmed.len());
+    if !is_frontmatter_delimiter_line(&trimmed[..opening_line_len]) {
         return (Ok(None), content);
     }
-
-    let after_opening = &trimmed[3..];
-    if let Some(closing_pos) = after_opening.find("---") {
-        let frontmatter_content = &after_opening[..closing_pos];
-        let remaining = &after_opening[closing_pos + 3..].trim_start();
-
-        let result = serde_yaml::from_str::<DocumentFrontmatter>(frontmatter_content)
-            .map(Some)
-            .map_err(|e| e.to_string());
-        (result, remaining)
+    let after_opening = if opening_line_len < trimmed.len() {
+        &trimmed[opening_line_len + 1..]
     } else {
-        (Ok(None), content)
+        ""
+    };
+
+    // Scan line-by-line for the closing delimiter.
+    let mut cursor = 0usize;
+    loop {
+        let remaining = &after_opening[cursor..];
+        let line_len = remaining.find('\n').unwrap_or(remaining.len());
+        let line = &remaining[..line_len];
+        let at_end = cursor + line_len >= after_opening.len();
+
+        if is_frontmatter_delimiter_line(line) {
+            let frontmatter_content = &after_opening[..cursor];
+            let remaining_start = if at_end {
+                after_opening.len()
+            } else {
+                cursor + line_len + 1
+            };
+            let remaining_body = after_opening[remaining_start..].trim_start();
+
+            let result = serde_yaml::from_str::<DocumentFrontmatter>(frontmatter_content)
+                .map(Some)
+                .map_err(|e| e.to_string());
+            return (result, remaining_body);
+        }
+
+        if at_end {
+            return (Ok(None), content);
+        }
+        cursor += line_len + 1;
     }
 }
 
@@ -470,10 +510,49 @@ fn parse_type_selector(value: &str) -> TypeSelector {
 }
 
 #[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
 mod tests {
-    use super::scan_bibliography_blocks;
+    use super::{parse_frontmatter, scan_bibliography_blocks};
     use citum_schema::grouping::GroupHeading;
     use citum_schema::template::TypeSelector;
+
+    #[test]
+    fn given_leading_thematic_break_when_parse_frontmatter_then_not_treated_as_frontmatter() {
+        // A leading "----" thematic break must not be misread as a
+        // frontmatter opening delimiter (only an exact "---" line opens one).
+        let content = "----\n\nBody text.";
+        let (result, remaining) = parse_frontmatter(content);
+
+        assert!(result.unwrap().is_none());
+        assert_eq!(remaining, content);
+    }
+
+    #[test]
+    fn given_embedded_dashes_in_value_when_parse_frontmatter_then_block_does_not_close_early() {
+        // A YAML value containing "---" mid-line must not be mistaken for
+        // the closing delimiter.
+        let content = "---\ntitle: a --- b\n---\n\nBody text.";
+        let (result, remaining) = parse_frontmatter(content);
+
+        assert!(
+            result.unwrap().is_some(),
+            "well-formed frontmatter block should parse"
+        );
+        assert_eq!(remaining, "Body text.");
+    }
+
+    #[test]
+    fn given_normal_frontmatter_when_parse_frontmatter_then_body_is_returned() {
+        let content = "---\ntitle: T\n---\n\nBody text.";
+        let (result, remaining) = parse_frontmatter(content);
+
+        assert!(result.unwrap().is_some(), "frontmatter should parse");
+        assert_eq!(remaining, "Body text.");
+    }
 
     #[test]
     fn bibliography_block_attrs_parse_negated_type_selector() {
