@@ -1936,8 +1936,126 @@ fn test_et_al_use_last_overlap() {
         .values::<PlainText>(&reference, &hints, &options)
         .unwrap();
     // use_first(2) + use_last(2) = 4 >= 3 names, so show first 2 + ellipsis + last 1
-    // Alpha & Beta … Gamma (skip=max(2, 3-2)=2, so last 1 name)
-    assert_eq!(values.value, "Alpha & Beta … Gamma");
+    // (skip=max(2, 3-2)=2, so last 1 name). Two names are shown before the
+    // ellipsis, so the configured delimiter (default ", ") precedes it, as
+    // citeproc-js does whenever more than one name is shown before the
+    // ellipsis.
+    assert_eq!(values.value, "Alpha & Beta, … Gamma");
+}
+
+/// Tests the behavior of `test_et_al_use_last_multiple_first_names_delimiter`.
+#[test]
+fn test_et_al_use_last_multiple_first_names_delimiter() {
+    // citeproc-js: "Smith, J., Jones, K., … Zebra, Z." — the name delimiter
+    // precedes the ellipsis when more than one name is shown before it.
+    let mut config = make_config();
+    if let Some(ref mut contributors) = config.contributors {
+        contributors.and = None;
+        contributors.shorten = Some(ShortenListOptions {
+            min: 4,
+            use_first: 2,
+            use_last: Some(1),
+            ..Default::default()
+        });
+    }
+
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Citation,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "multi-first".to_string(),
+        ref_type: "article-journal".to_string(),
+        author: Some(vec![
+            Name::new("Smith", "John"),
+            Name::new("Jones", "Karen"),
+            Name::new("Alpha", "Amy"),
+            Name::new("Zebra", "Zoe"),
+        ]),
+        ..Default::default()
+    });
+
+    let component = TemplateContributor {
+        contributor: ContributorRole::Author,
+        form: ContributorForm::Short,
+        links: None,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+    assert_eq!(values.value, "Smith, Jones, … Zebra");
+}
+
+/// Tests the behavior of `test_et_al_uses_configured_delimiter`.
+#[test]
+fn test_et_al_uses_configured_delimiter() {
+    // citeproc-js: a "; "-delimited name list places "; " (not a hardcoded
+    // ", ") before "et al." when more than one name is shown.
+    use citum_schema::options::DelimiterPrecedesLast;
+
+    let mut config = make_config();
+    if let Some(ref mut contributors) = config.contributors {
+        contributors.delimiter = Some("; ".to_string());
+        contributors.shorten = Some(ShortenListOptions {
+            min: 3,
+            use_first: 2,
+            ..Default::default()
+        });
+        contributors.delimiter_precedes_et_al = Some(DelimiterPrecedesLast::Contextual);
+    }
+
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: &config,
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Citation,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let hints = ProcHints::default();
+
+    let reference = Reference::from(LegacyReference {
+        id: "multi".to_string(),
+        ref_type: "article-journal".to_string(),
+        author: Some(vec![
+            Name::new("Smith", "John"),
+            Name::new("Jones", "Jane"),
+            Name::new("Zebra", "Zoe"),
+        ]),
+        ..Default::default()
+    });
+
+    let component = TemplateContributor {
+        contributor: ContributorRole::Author,
+        form: ContributorForm::Short,
+        links: None,
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap();
+    assert_eq!(values.value, "Smith; Jones; et al.");
 }
 
 /// Tests the behavior of `test_title_hyperlink`.
