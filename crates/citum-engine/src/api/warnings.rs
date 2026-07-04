@@ -148,18 +148,74 @@ pub fn unknown_enum_warnings(processor: &Processor) -> Vec<Warning> {
             scan_template_for_unknowns(template, &format!("template '{name}'"), &mut warnings);
         }
     }
-    if let Some(citation) = &processor.style.citation
-        && let Some(template) = &citation.template
-    {
-        scan_template_for_unknowns(template, "citation layout", &mut warnings);
+    if let Some(citation) = &processor.style.citation {
+        scan_citation_spec_for_unknowns(citation, "citation layout", &mut warnings);
     }
-    if let Some(bib) = &processor.style.bibliography
-        && let Some(template) = &bib.template
-    {
-        scan_template_for_unknowns(template, "bibliography layout", &mut warnings);
+    if let Some(bib) = &processor.style.bibliography {
+        if let Some(template) = &bib.template {
+            scan_template_for_unknowns(template, "bibliography layout", &mut warnings);
+        }
+        if let Some(type_variants) = &bib.type_variants {
+            for variant in type_variants.values() {
+                if let Some(template) = variant.as_template() {
+                    scan_template_for_unknowns(template, "bibliography layout", &mut warnings);
+                }
+            }
+        }
+        if let Some(locales) = &bib.locales {
+            for locale_spec in locales {
+                scan_template_for_unknowns(
+                    &locale_spec.template,
+                    "bibliography layout",
+                    &mut warnings,
+                );
+            }
+        }
     }
 
     warnings
+}
+
+/// Recursively scan a [`citum_schema::CitationSpec`] and its mode/position
+/// sub-specs (`integral`, `non-integral`, `subsequent`, `ibid`), plus its
+/// `type-variants` and per-locale templates, for unknown enum variants.
+///
+/// The top-level `unknown_enum_warnings` scan previously inspected only the
+/// main citation template, missing unknown terms/roles/date-forms nested in
+/// sub-specs, type-variants, and localized templates.
+fn scan_citation_spec_for_unknowns(
+    spec: &citum_schema::CitationSpec,
+    location: &str,
+    warnings: &mut Vec<Warning>,
+) {
+    if let Some(template) = &spec.template {
+        scan_template_for_unknowns(template, location, warnings);
+    }
+    if let Some(type_variants) = &spec.type_variants {
+        for variant in type_variants.values() {
+            if let Some(template) = variant.as_template() {
+                scan_template_for_unknowns(template, location, warnings);
+            }
+        }
+    }
+    if let Some(locales) = &spec.locales {
+        for locale_spec in locales {
+            scan_template_for_unknowns(&locale_spec.template, location, warnings);
+        }
+    }
+
+    if let Some(child) = &spec.integral {
+        scan_citation_spec_for_unknowns(child, &format!("{location} (integral)"), warnings);
+    }
+    if let Some(child) = &spec.non_integral {
+        scan_citation_spec_for_unknowns(child, &format!("{location} (non-integral)"), warnings);
+    }
+    if let Some(child) = &spec.subsequent {
+        scan_citation_spec_for_unknowns(child, &format!("{location} (subsequent)"), warnings);
+    }
+    if let Some(child) = &spec.ibid {
+        scan_citation_spec_for_unknowns(child, &format!("{location} (ibid)"), warnings);
+    }
 }
 
 fn scan_template_for_unknowns(
@@ -217,5 +273,41 @@ fn scan_template_for_unknowns(
             }
             _ => {}
         }
+    }
+}
+
+#[cfg(test)]
+#[allow(clippy::unwrap_used, reason = "tests")]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unknown_enum_warnings_reports_unknown_term_in_integral_sub_spec() {
+        let yaml = "info:\n  title: Test\ncitation:\n  integral:\n    template:\n      - term: not-a-real-term\n";
+        let style = citum_schema::Style::from_yaml_str(yaml).unwrap();
+        let processor = Processor::new(style, Bibliography::new());
+
+        let warnings = unknown_enum_warnings(&processor);
+        assert!(
+            warnings
+                .iter()
+                .any(|w| w.message.contains("not-a-real-term") && w.message.contains("(integral)")),
+            "expected a warning for the unknown term in citation.integral.template, got: {warnings:?}"
+        );
+    }
+
+    #[test]
+    fn unknown_enum_warnings_reports_unknown_term_in_type_variants() {
+        let yaml = "info:\n  title: Test\ncitation:\n  type-variants:\n    book:\n      - term: not-a-real-term-2\n";
+        let style = citum_schema::Style::from_yaml_str(yaml).unwrap();
+        let processor = Processor::new(style, Bibliography::new());
+
+        let warnings = unknown_enum_warnings(&processor);
+        assert!(
+            warnings
+                .iter()
+                .any(|w| w.message.contains("not-a-real-term-2")),
+            "expected a warning for the unknown term in citation.type-variants, got: {warnings:?}"
+        );
     }
 }
