@@ -142,11 +142,13 @@ fn given_simple_author_date_document_when_rendered_as_html_then_a_bibliography_h
 
     // Process document as HTML
     let parser = DjotParser;
-    let html_output = processor.process_document::<_, citum_engine::render::html::Html>(
-        document,
-        &parser,
-        DocumentFormat::Html,
-    );
+    let html_output = processor
+        .process_document::<_, citum_engine::render::html::Html>(
+            document,
+            &parser,
+            DocumentFormat::Html,
+        )
+        .expect("document should render");
 
     assert_output_includes(
         &html_output,
@@ -203,11 +205,13 @@ fn given_simple_author_date_document_when_rendered_as_djot_then_html_tags_are_no
 
     // Process as Djot format
     let parser = DjotParser;
-    let djot_output = processor.process_document::<_, citum_engine::render::djot::Djot>(
-        document,
-        &parser,
-        DocumentFormat::Djot,
-    );
+    let djot_output = processor
+        .process_document::<_, citum_engine::render::djot::Djot>(
+            document,
+            &parser,
+            DocumentFormat::Djot,
+        )
+        .expect("document should render");
 
     assert_output_has_line(
         &djot_output,
@@ -226,11 +230,13 @@ fn given_example_mla_document_when_rendered_as_html_then_citation_markup_is_not_
     let parser = DjotParser;
     let document = load_example_document("examples/document.djot");
 
-    let html_output = processor.process_document::<_, citum_engine::render::html::Html>(
-        &document,
-        &parser,
-        DocumentFormat::Html,
-    );
+    let html_output = processor
+        .process_document::<_, citum_engine::render::html::Html>(
+            &document,
+            &parser,
+            DocumentFormat::Html,
+        )
+        .expect("document should render");
 
     assert_output_includes(
         &html_output,
@@ -259,11 +265,13 @@ fn given_example_mla_document_when_rendered_as_plain_text_then_integral_name_mem
     let parser = DjotParser;
     let document = load_example_document("examples/document.djot");
 
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        &document,
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            &document,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     assert_eq!(
         output,
@@ -330,11 +338,13 @@ fn given_two_authors_with_same_surname_when_both_cited_integrally_then_each_gets
     let parser = DjotParser;
     let doc = "[+@john-smith] wrote the first book. [+@jane-smith] wrote the second.";
 
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        doc,
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            doc,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     // Both authors share surname "Smith" but are different people, so each
     // person's first integral mention should use the full given+family form.
@@ -387,11 +397,13 @@ fn given_org_with_short_name_when_org_abbreviation_memory_configured_and_cited_i
     // Two integral citations to the same org.
     let doc = "[+@who2020] released a report. Later, [+@who2020] followed up.";
 
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        doc,
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            doc,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     // First integral mention: full name + abbreviation in parens.
     assert_output_includes(
@@ -414,11 +426,13 @@ fn given_example_apa_document_when_rendered_as_plain_text_then_integral_citation
     let parser = DjotParser;
     let document = load_example_document("examples/document.djot");
 
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        &document,
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            &document,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     // APA abbreviates given names: "A. D. Smith" (Long form, first integral mention)
     assert_output_has_line(
@@ -455,11 +469,13 @@ fn given_example_chicago_note_document_when_rendered_as_plain_text_then_integral
     let parser = DjotParser;
     let document = load_example_document("examples/document.djot");
 
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        &document,
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            &document,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     // Body anchors and note bodies are distinct rendered surfaces. Smith is
     // introduced first in the manual note, so later body anchors use the
@@ -509,11 +525,13 @@ fn given_chicago_note_flow_document_when_authored_ibid_appears_in_notes_then_anc
     let parser = DjotParser;
     let document = load_example_document("examples/document-citation-flow.djot");
 
-    let output = processor.process_document::<_, citum_engine::render::djot::Djot>(
-        &document,
-        &parser,
-        DocumentFormat::Djot,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::djot::Djot>(
+            &document,
+            &parser,
+            DocumentFormat::Djot,
+        )
+        .expect("document should render");
 
     let lowercase_output = output.to_lowercase();
     assert_output_includes(
@@ -559,11 +577,13 @@ fn given_chicago_note_locator_repeat_when_integral_ibid_is_rendered_then_anchor_
         "  - [+@brown1954, p. 12] also argues that...\n",
     );
 
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        document,
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            document,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     assert_output_includes(
         &output,
@@ -596,11 +616,13 @@ fn given_page_labels_are_configured_when_integral_ibid_is_rendered_then_the_labe
         "  - [+@brown1954, p. 12] also argues that...\n",
     );
 
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        document,
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            document,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     assert_output_includes(
         &output,
@@ -630,11 +652,13 @@ fn given_chapter_locator_repeat_when_integral_ibid_is_rendered_then_the_labeled_
         "  - [+@brown1954, chap. 3] also argues that...\n",
     );
 
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        document,
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            document,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     assert_output_includes(
         &output,
@@ -668,11 +692,13 @@ fn given_locale_specific_ibid_term_when_the_style_has_no_ibid_override_then_the_
     let parser = DjotParser;
     let document = load_example_document("examples/document-citation-flow.djot");
 
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        &document,
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            &document,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     assert_output_has_line(
         &output,
@@ -701,11 +727,13 @@ fn given_explicit_style_ibid_suffix_when_locale_also_defines_ibid_then_the_style
     let parser = DjotParser;
     let document = load_example_document("examples/document-citation-flow.djot");
 
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        &document,
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            &document,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     assert_output_has_line(
         &output,
@@ -725,11 +753,13 @@ fn given_missing_note_anchor_when_integral_ibid_is_rendered_then_the_reduced_cit
         "  - [+@missingref, p. 12] also argues that...\n",
     );
 
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        document,
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            document,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     assert_output_includes(
         &output.to_lowercase(),
@@ -749,11 +779,13 @@ fn given_chicago_note_flow_document_when_no_bibliography_entries_are_needed_then
     let parser = DjotParser;
     let document = load_example_document("examples/document-citation-flow.djot");
 
-    let output = processor.process_document::<_, citum_engine::render::djot::Djot>(
-        &document,
-        &parser,
-        DocumentFormat::Djot,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::djot::Djot>(
+            &document,
+            &parser,
+            DocumentFormat::Djot,
+        )
+        .expect("document should render");
 
     assert_output_lacks_line(
         &output,
@@ -761,11 +793,13 @@ fn given_chicago_note_flow_document_when_no_bibliography_entries_are_needed_then
         "empty bibliography should not emit Djot heading",
     );
 
-    let html_output = processor.process_document::<_, citum_engine::render::html::Html>(
-        &document,
-        &parser,
-        DocumentFormat::Html,
-    );
+    let html_output = processor
+        .process_document::<_, citum_engine::render::html::Html>(
+            &document,
+            &parser,
+            DocumentFormat::Html,
+        )
+        .expect("document should render");
     assert_output_excludes(
         &html_output,
         "<h1>Bibliography</h1>",
@@ -785,11 +819,13 @@ fn given_non_note_styles_when_rendering_the_note_flow_example_then_ibid_is_never
         let style = load_style(style_path);
         let processor = Processor::new(style, load_example_bibliography());
 
-        let output = processor.process_document::<_, citum_engine::render::djot::Djot>(
-            &document,
-            &parser,
-            DocumentFormat::Djot,
-        );
+        let output = processor
+            .process_document::<_, citum_engine::render::djot::Djot>(
+                &document,
+                &parser,
+                DocumentFormat::Djot,
+            )
+            .expect("document should render");
         assert_output_excludes(
             &output,
             "Ibid",
@@ -807,11 +843,13 @@ fn given_pandoc_markdown_author_date_syntax_when_rendered_then_integral_and_clus
         "Later work supports this [see @smith2010, p. 12; @kuhn1962, ch. 3].",
     );
 
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        document,
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            document,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     assert_output_has_line(
         &output,
@@ -832,11 +870,13 @@ fn given_markdown_integral_note_citation_when_rendered_with_a_note_style_then_a_
     let parser = MarkdownParser;
     let document = "Narrative mention @smith2010 introduces the argument.";
 
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        document,
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            document,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     assert_output_has_line(
         &output,
@@ -860,11 +900,13 @@ fn given_markdown_citation_inside_manual_footnote_when_rendered_with_note_style_
     let parser = MarkdownParser;
     let document = "See note[^1].\n\n[^1]: Early work [@kuhn1962] supports this.";
 
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        document,
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            document,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     // The manual footnote anchor must appear in prose.
     assert_output_includes(
@@ -903,11 +945,13 @@ fn given_grouped_primary_and_secondary_sources_when_rendered_then_both_group_hea
 
     let processor = Processor::new(style, bibliography);
     let parser = DjotParser;
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        "Grouping check [@interview-1978; @ms-archive-1901; @journal-2021].",
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            "Grouping check [@interview-1978; @ms-archive-1901; @journal-2021].",
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     assert_output_has_line(
         &output,
@@ -962,11 +1006,13 @@ fn given_group_local_disambiguation_when_rendering_multilingual_groups_then_year
             .expect("multilingual grouping fixture should parse");
     let processor = Processor::new(style, bibliography);
     let parser = DjotParser;
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        "Disambiguation check [@vi-kuhn-a; @vi-kuhn-b; @en-kuhn-a; @en-kuhn-b].",
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            "Disambiguation check [@vi-kuhn-a; @vi-kuhn-b; @en-kuhn-a; @en-kuhn-b].",
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     // Split on the known group headings to get per-group bibliography text.
     let vi_block = output
@@ -1008,11 +1054,13 @@ fn given_juris_m_legal_grouping_when_rendered_then_headings_follow_the_expected_
 
     let processor = Processor::new(style, bibliography);
     let parser = DjotParser;
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        "Legal grouping [@brown1954; @civilrights1964; @versailles1919; @hart1994].",
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            "Legal grouping [@brown1954; @civilrights1964; @versailles1919; @hart1994].",
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     let cases = output
         .find("# Cases")
@@ -1050,11 +1098,13 @@ fn given_an_english_locale_variant_when_group_headings_are_localized_then_the_la
 
     let processor = Processor::with_locale(style, bibliography, locale);
     let parser = DjotParser;
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        "Locale fallback check [@interview-1978; @journal-2021].",
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            "Locale fallback check [@interview-1978; @journal-2021].",
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     // chicago-author-date headings are localized with en-US + en.
     // en-GB should fall back to the language tag (en).
@@ -1230,11 +1280,13 @@ fn given_markdown_document_with_pipe_table_when_rendered_as_markdown_then_body_p
     let document =
         format!("# Introduction\n\nAs argued in [@kuhn1962].\n\n{pipe_table}\n\n{code_block}\n");
 
-    let output = processor.process_document::<_, citum_engine::render::markdown::Markdown>(
-        &document,
-        &parser,
-        DocumentFormat::Markdown,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::markdown::Markdown>(
+            &document,
+            &parser,
+            DocumentFormat::Markdown,
+        )
+        .expect("document should render");
 
     // Pipe table lines must be unchanged.
     assert_output_includes_all(
@@ -1283,11 +1335,13 @@ fn given_note_style_markdown_document_when_rendered_as_markdown_then_commonmark_
     let parser = MarkdownParser;
     let document = "First claim [@kuhn1962]. Second claim [@smith2010].";
 
-    let output = processor.process_document::<_, citum_engine::render::markdown::Markdown>(
-        document,
-        &parser,
-        DocumentFormat::Markdown,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::markdown::Markdown>(
+            document,
+            &parser,
+            DocumentFormat::Markdown,
+        )
+        .expect("document should render");
 
     // Footnote anchors in prose.
     assert_output_has_line(
@@ -1378,11 +1432,13 @@ fn given_chicago_author_date_markdown_citation_when_rendered_then_no_spurious_sp
     let processor = example_document_processor("styles/embedded/chicago-author-date-18th.yaml");
     let parser = MarkdownParser;
 
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        "See [@kuhn1962, p. 5].",
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            "See [@kuhn1962, p. 5].",
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     // Chicago author-date should render the full sentence with author, year,
     // and locator, with no spurious space before the comma.
@@ -1397,11 +1453,13 @@ fn given_chicago_author_date_markdown_suppressed_citation_when_rendered_then_no_
     let processor = example_document_processor("styles/embedded/chicago-author-date-18th.yaml");
     let parser = MarkdownParser;
 
-    let output = processor.process_document::<_, citum_engine::render::plain::PlainText>(
-        "See [-@kuhn1962, p. 5].",
-        &parser,
-        DocumentFormat::Plain,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            "See [-@kuhn1962, p. 5].",
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
 
     // Suppress-author form should render the full sentence with year and
     // locator only, with no author or spurious space before the comma.
@@ -1640,11 +1698,13 @@ fn given_markdown_block_quote_when_rendered_as_typst_then_quote_block_is_emitted
         "> and **strong** text. So is __this__.\n",
     );
 
-    let output = processor.process_document::<_, citum_engine::render::typst::Typst>(
-        document,
-        &parser,
-        DocumentFormat::Typst,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::typst::Typst>(
+            document,
+            &parser,
+            DocumentFormat::Typst,
+        )
+        .expect("document should render");
 
     assert_output_includes_all(
         &output,
@@ -1665,11 +1725,13 @@ fn given_djot_block_quote_when_rendered_as_typst_then_quote_block_is_emitted() {
         "> and *bold*.\n",
     );
 
-    let output = processor.process_document::<_, citum_engine::render::typst::Typst>(
-        document,
-        &parser,
-        DocumentFormat::Typst,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::typst::Typst>(
+            document,
+            &parser,
+            DocumentFormat::Typst,
+        )
+        .expect("document should render");
 
     assert_output_includes_all(
         &output,
@@ -1689,11 +1751,13 @@ fn given_djot_notice_with_nested_strong_when_rendered_as_typst_then_strong_marku
         "A later citation still resolves [@kuhn1962].\n",
     );
 
-    let output = processor.process_document::<_, citum_engine::render::typst::Typst>(
-        document,
-        &parser,
-        DocumentFormat::Typst,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::typst::Typst>(
+            document,
+            &parser,
+            DocumentFormat::Typst,
+        )
+        .expect("document should render");
 
     assert_output_includes(
         &output,
@@ -1727,11 +1791,13 @@ fn given_djot_notice_with_nested_strong_when_rendered_as_djot_then_source_markup
         "A later citation still resolves [@kuhn1962].\n",
     );
 
-    let output = processor.process_document::<_, citum_engine::render::djot::Djot>(
-        document,
-        &parser,
-        DocumentFormat::Djot,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::djot::Djot>(
+            document,
+            &parser,
+            DocumentFormat::Djot,
+        )
+        .expect("document should render");
 
     assert_output_includes(
         &output,
@@ -1763,11 +1829,13 @@ fn given_markdown_block_quote_when_rendered_as_latex_then_quote_environment_is_e
         "> and **strong** text.\n",
     );
 
-    let output = processor.process_document::<_, citum_engine::render::latex::Latex>(
-        document,
-        &parser,
-        DocumentFormat::Latex,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::latex::Latex>(
+            document,
+            &parser,
+            DocumentFormat::Latex,
+        )
+        .expect("document should render");
 
     assert_output_includes_all(
         &output,
@@ -1782,11 +1850,13 @@ fn given_markdown_citation_inside_prose_when_rendered_as_typst_then_citation_and
     let parser = MarkdownParser;
     let document = "A paragraph with *emphasis* and a citation [@kuhn1962].";
 
-    let output = processor.process_document::<_, citum_engine::render::typst::Typst>(
-        document,
-        &parser,
-        DocumentFormat::Typst,
-    );
+    let output = processor
+        .process_document::<_, citum_engine::render::typst::Typst>(
+            document,
+            &parser,
+            DocumentFormat::Typst,
+        )
+        .expect("document should render");
 
     assert_output_includes(
         &output,

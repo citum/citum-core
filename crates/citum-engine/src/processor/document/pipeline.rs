@@ -11,6 +11,7 @@ use super::output::{
     rewrite_document_markup_for_typst, stage_document_bibliography_blocks,
 };
 use super::{BibliographyBlock, CitationParser, DocumentFormat, ParsedDocument};
+use crate::error::ProcessorError;
 use crate::processor::Processor;
 
 /// Format a bibliography section heading for the trailing-bibliography path.
@@ -42,6 +43,11 @@ impl Processor {
     /// 1. Parses the source document using the provided adapter.
     /// 2. Resolves frontmatter overrides (integral-name policy, bibliography options).
     /// 3. Chooses a bibliography orchestration path based on frontmatter and document blocks.
+    ///
+    /// # Errors
+    ///
+    /// Returns `ProcessorError::ParseError` when the document's frontmatter
+    /// fails to parse.
     #[allow(
         clippy::string_slice,
         reason = "parser-guaranteed boundaries and indices"
@@ -51,7 +57,7 @@ impl Processor {
         content: &str,
         parser: &P,
         format: DocumentFormat,
-    ) -> String
+    ) -> Result<String, ProcessorError>
     where
         P: CitationParser,
         F: crate::render::format::OutputFormat<Output = String>,
@@ -59,8 +65,10 @@ impl Processor {
         let mut parsed = parser.parse_document(content, &self.locale);
 
         if let Some(err) = &parsed.frontmatter_error {
-            eprintln!("citum: error: frontmatter parse error: {err}");
-            std::process::exit(1);
+            return Err(ProcessorError::ParseError(
+                "FRONTMATTER".to_string(),
+                err.clone(),
+            ));
         }
 
         // `options.*` fields take precedence over the legacy top-level fields.
@@ -103,21 +111,22 @@ impl Processor {
             .unwrap_or(self);
         let body = &content[parsed.body_start..];
         if let Some(groups) = parsed.frontmatter_groups.take() {
-            return processor.process_document_with_frontmatter_groups::<P, F>(
+            return Ok(processor.process_document_with_frontmatter_groups::<P, F>(
                 body, parsed, groups, parser, format,
-            );
+            ));
         }
 
         if !parsed.bibliography_blocks.is_empty() {
-            return processor.process_document_with_bibliography_blocks::<P, F>(
+            return Ok(processor.process_document_with_bibliography_blocks::<P, F>(
                 body,
                 std::mem::take(&mut parsed.bibliography_blocks),
                 parser,
                 format,
-            );
+            ));
         }
 
-        processor.process_document_with_default_bibliography::<P, F>(body, parsed, parser, format)
+        Ok(processor
+            .process_document_with_default_bibliography::<P, F>(body, parsed, parser, format))
     }
 
     /// Orchestrate document processing with custom frontmatter bibliography groups.
