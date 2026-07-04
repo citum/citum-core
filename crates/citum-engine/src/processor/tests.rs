@@ -977,6 +977,58 @@ fn test_parsed_style_no_date_terms_match_expected_variants() {
     );
 }
 
+/// Given a style whose `options.dates.no-date-form` is `long`, when a citation's
+/// issued date is missing, then the rendered "no date" term uses the long form;
+/// and given the same style without the option set, then it falls back to the
+/// short form. This is now a declarative option, not a hardcoded style-id check.
+#[test]
+fn given_no_date_form_option_when_issued_date_missing_then_term_form_matches_option() {
+    let mut bib = Bibliography::new();
+    bib.insert(
+        "undated".to_string(),
+        Reference::from(LegacyReference {
+            id: "undated".to_string(),
+            ref_type: "book".to_string(),
+            author: Some(vec![Name::new("Doe", "Jane")]),
+            title: Some("Untitled Work".to_string()),
+            ..Default::default()
+        }),
+    );
+    let citation = Citation {
+        id: Some("c1".into()),
+        items: vec![crate::reference::CitationItem {
+            id: "undated".to_string(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+
+    let mut long_style = make_style();
+    long_style.options = Some(Config {
+        dates: Some(citum_schema::options::DateConfig {
+            no_date_form: Some(citum_schema::options::NoDateForm::Long),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    let long_rendered = Processor::new(long_style, bib.clone())
+        .process_citation(&citation)
+        .unwrap();
+    assert_eq!(
+        long_rendered, "(Doe, no date)",
+        "no-date-form: long should render the long no-date term"
+    );
+
+    let short_style = make_style();
+    let short_rendered = Processor::new(short_style, bib)
+        .process_citation(&citation)
+        .unwrap();
+    assert_eq!(
+        short_rendered, "(Doe, n.d.)",
+        "default no-date-form should render the short no-date term"
+    );
+}
+
 /// Tests the behavior of `test_render_bibliography`.
 #[test]
 fn test_render_bibliography() {
