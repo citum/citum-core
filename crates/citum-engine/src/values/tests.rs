@@ -1943,7 +1943,7 @@ fn test_et_al_use_last_overlap() {
     assert_eq!(values.value, "Alpha & Beta, … Gamma");
 }
 
-/// Tests the behavior of `test_et_al_use_last_multiple_first_names_delimiter`.
+/// When et-al-use-last shows more than one leading name, the configured delimiter precedes the ellipsis (citeproc-js behavior).
 #[test]
 fn test_et_al_use_last_multiple_first_names_delimiter() {
     // citeproc-js: "Smith, J., Jones, K., … Zebra, Z." — the name delimiter
@@ -2000,7 +2000,7 @@ fn test_et_al_use_last_multiple_first_names_delimiter() {
     assert_eq!(values.value, "Smith, Jones, … Zebra");
 }
 
-/// Tests the behavior of `test_et_al_uses_configured_delimiter`.
+/// Uses the configured name delimiter (not a hardcoded ", ") before "et al." when a delimiter is required.
 #[test]
 fn test_et_al_uses_configured_delimiter() {
     // citeproc-js: a "; "-delimited name list places "; " (not a hardcoded
