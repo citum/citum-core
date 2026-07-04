@@ -220,9 +220,18 @@ fn apply_et_al(
     use citum_schema::options::DelimiterPrecedesLast;
 
     if !formatted_last.is_empty() {
-        // et-al-use-last: result + ellipsis + last names
-        // CSL typically uses an ellipsis (...) for this.
-        return format!("{} … {}", result, formatted_last.join(et_al.delimiter));
+        // et-al-use-last: result + ellipsis + last names. citeproc-js places
+        // the configured name delimiter before the ellipsis whenever more
+        // than one name is shown before it (continuing the same list
+        // punctuation used between those names); a single shown name is
+        // followed by a plain space instead. This placement does not consult
+        // `delimiter-precedes-et-al` — citeproc-js ignores that option here.
+        let joined_last = formatted_last.join(et_al.delimiter);
+        return if et_al.first_count > 1 {
+            format!("{result}{}… {joined_last}", et_al.delimiter)
+        } else {
+            format!("{result} … {joined_last}")
+        };
     }
 
     // Determine delimiter before "et al." based on delimiter_precedes_et_al option
@@ -248,7 +257,7 @@ fn apply_et_al(
     };
 
     if use_delimiter {
-        format!("{result}, {and_others_term}")
+        format!("{result}{}{and_others_term}", et_al.delimiter)
     } else {
         format!("{result} {and_others_term}")
     }
