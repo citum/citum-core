@@ -54,6 +54,7 @@ options:
     uncertainty-marker: "?"
     approximation-marker: "ca. "
     range-delimiter: –
+    no-date-form: long
   titles:
     monograph:
       emph: true

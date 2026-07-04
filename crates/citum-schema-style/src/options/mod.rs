@@ -27,7 +27,7 @@ pub use contributors::{
     DemoteNonDroppingParticle, DisplayAsSort, NameForm, RoleLabelPreset, RoleOptions,
     RoleOptionsEntry, RoleRendering, ShortenListOptions,
 };
-pub use dates::{DateConfig, DateConfigEntry};
+pub use dates::{DateConfig, DateConfigEntry, NoDateForm};
 pub use integral_name_memory::{
     IntegralNameContexts, IntegralNameMemoryConfig, IntegralNameScope, OrgAbbreviationMemoryConfig,
     ResolvedIntegralNameMemoryConfig, ResolvedOrgAbbreviationMemoryConfig, ShortNameDisplay,

@@ -4072,6 +4072,17 @@
             "null"
           ]
         },
+        "no-date-form": {
+          "description": "Locale term form used for the \"no date\" fallback when a template's\n`issued` date is empty: `short` renders \"n.d.\", `long` renders\n\"no date\". Defaults to short.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NoDateForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "custom": {
           "description": "Custom user-defined fields for extensions.",
           "type": [
@@ -4124,6 +4135,21 @@
         "long",
         "short",
         "numeric"
+      ]
+    },
+    "NoDateForm": {
+      "description": "Term form for the \"no date\" fallback when `issued` is empty.",
+      "oneOf": [
+        {
+          "description": "Render the locale's short term (e.g. \"n.d.\").",
+          "type": "string",
+          "const": "short"
+        },
+        {
+          "description": "Render the locale's long term (e.g. \"no date\").",
+          "type": "string",
+          "const": "long"
+        }
       ]
     },
     "TimeFormat": {

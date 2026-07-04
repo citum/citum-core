@@ -1258,18 +1258,19 @@ impl Renderer<'_> {
         }
     }
 
+    /// Term form used for the "no date" fallback, from `options.dates.no-date-form`
+    /// (default `short`).
     fn preferred_no_date_term_form(&self) -> citum_schema::locale::TermForm {
         match self
-            .style
-            .info
-            .source
+            .config
+            .dates
             .as_ref()
-            .map(|source| source.csl_id.as_str())
+            .and_then(|dates| dates.no_date_form)
         {
-            Some("http://www.zotero.org/styles/harvard-cite-them-right") => {
-                citum_schema::locale::TermForm::Long
+            Some(citum_schema::options::NoDateForm::Long) => citum_schema::locale::TermForm::Long,
+            Some(citum_schema::options::NoDateForm::Short) | None => {
+                citum_schema::locale::TermForm::Short
             }
-            _ => citum_schema::locale::TermForm::Short,
         }
     }
 
