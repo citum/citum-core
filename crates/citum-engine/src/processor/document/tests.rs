@@ -5,7 +5,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use crate::error::ProcessorError;
 use crate::processor::Processor;
-use crate::processor::document::{CitationParser, DocumentFormat, djot::DjotParser};
+use crate::processor::document::{
+    CitationParser, DocumentFormat, djot::DjotParser, markdown::MarkdownParser,
+};
 use crate::reference::{Bibliography, Reference};
 use crate::render::plain::PlainText;
 use crate::render::typst::Typst;
@@ -1110,5 +1112,27 @@ fn test_grouped_style_document_bibliography_contains_only_cited_references() {
     assert_eq!(
         result,
         "Text (Doe, 2020).\n\n# Bibliography\n\nJohn Doe (2020)"
+    );
+}
+
+#[test]
+fn test_markdown_document_with_frontmatter_renders_citation_in_place() {
+    // Regression: MarkdownParser must emit body-relative offsets, matching
+    // DjotParser. The pipeline slices the body (post-frontmatter) before
+    // indexing it with the parser's citation offsets; absolute offsets here
+    // previously desynced as soon as frontmatter was present, panicking with
+    // an out-of-bounds slice.
+    let bib = make_test_bib();
+    let processor = Processor::new(make_author_date_style(), bib);
+    let parser = MarkdownParser;
+
+    let content = "---\ntitle: T\n---\n\nText [@item1] here.";
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
+
+    assert_eq!(
+        result,
+        "Text (Doe, 2020) here.\n\n# Bibliography\n\nJohn Doe (2020)"
     );
 }

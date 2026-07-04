@@ -372,6 +372,13 @@ impl Processor {
         let normalized = self.normalize_integral_name_citations(&parsed);
 
         for (parsed, citation) in parsed.citations.iter().zip(normalized) {
+            debug_assert!(
+                parsed.end <= content.len(),
+                "citation offset {} exceeds body length {}; parser must emit \
+                 body-relative offsets",
+                parsed.end,
+                content.len()
+            );
             result.push_str(&content[last_idx..parsed.start]);
             match self.process_citation_with_format::<F>(&citation) {
                 Ok(rendered) => result.push_str(&placeholders.push_inline(rendered)),
@@ -398,6 +405,13 @@ impl Processor {
         let normalized = self.normalize_integral_name_citations(&parsed);
 
         for (parsed, citation) in parsed.citations.iter().zip(normalized) {
+            debug_assert!(
+                parsed.end <= content.len(),
+                "citation offset {} exceeds body length {}; parser must emit \
+                 body-relative offsets",
+                parsed.end,
+                content.len()
+            );
             result.push_str(&content[last_idx..parsed.start]);
             match self.process_citation_with_format::<F>(&citation) {
                 Ok(rendered) => result.push_str(&rendered),
@@ -426,6 +440,13 @@ impl Processor {
         let normalized = self.normalize_integral_name_citations(&parsed);
 
         for (parsed, citation) in parsed.citations.iter().zip(normalized) {
+            debug_assert!(
+                parsed.end <= content.len(),
+                "citation offset {} exceeds body length {}; parser must emit \
+                 body-relative offsets",
+                parsed.end,
+                content.len()
+            );
             result.push_str(&content[last_idx..parsed.start]);
             match self.process_citation_with_format::<crate::render::html::Html>(&citation) {
                 Ok(rendered) => result.push_str(&placeholders.push_inline(rendered)),
