@@ -202,6 +202,35 @@ mod tests {
     }
 
     #[test]
+    fn test_html_title_escapes_active_characters() {
+        let component = ProcTemplateComponent {
+            template_component: tc_title!(Primary),
+            value: "Design & use of <T> arenas".to_string(),
+            ..Default::default()
+        };
+
+        let result = render_component_with_format::<Html>(&component);
+        assert_eq!(
+            result,
+            r#"<span class="citum-title">Design &amp; use of &lt;T&gt; arenas</span>"#
+        );
+    }
+
+    #[test]
+    fn test_html_citation_escapes_data_ref_ids() {
+        let fmt = Html;
+        let result = fmt.citation(
+            vec![r#""><script>alert(1)</script>"#.to_string()],
+            "content".to_string(),
+        );
+
+        assert_eq!(
+            result,
+            r#"<span class="citum-citation" data-ref="&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;">content</span>"#
+        );
+    }
+
+    #[test]
     fn test_typst_title() {
         let component = ProcTemplateComponent {
             template_component: tc_title!(Primary, emph = true),
