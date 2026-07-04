@@ -5,7 +5,7 @@ status: in-progress
 type: task
 priority: normal
 created_at: 2026-07-04T15:49:57Z
-updated_at: 2026-07-04T17:11:56Z
+updated_at: 2026-07-04T17:13:00Z
 ---
 
 Implement approved triage of audit csl26-inb7 (PR #1002, branch audit/citum-engine-review-part2-2026-07). Fix F1, F20, F2, F3, F4, F8, F17 as follow-up commits; beans for the rest; disposition table appended to the part-2 audit doc.
@@ -18,5 +18,5 @@ Implement approved triage of audit csl26-inb7 (PR #1002, branch audit/citum-engi
 - [x] Commit 6: F8 et-al delimiter joins (19f8abf0)
 - [x] Commit 7: F17 LaTeX href escaping (080648f8)
 - [x] Commit 8: follow-up beans: csl26-k6ty, -3m45, -ebs3, -mc0c, -c361, -2ubj, -o33x, -ztxq, -92mg, -esq8, -boql, -ol1j, -ejaf; widened csl26-dr0r
-- [ ] Commit 9: disposition table in audit doc
+- [x] Commit 9: disposition table in audit doc
 - [ ] Push + CI green on PR #1002

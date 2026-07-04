@@ -452,6 +452,36 @@ render-error fallbacks to raw source text (part-1 finding 1's
 - Plain-text emph/strong render as pseudo-markup (`_…_`, `**…**`) by
   design.
 
+## Triage (2026-07-04)
+
+Every finding has a disposition: fixed on this branch (PR #1002) or
+deferred to a bean. Nothing is untracked.
+
+| Finding | Severity | Disposition |
+|---|---|---|
+| 1 — Markdown frontmatter offset panic | High | fixed: `a32d3a5a` markdown offsets are body-relative |
+| 2 — Ungated anonymous-entry rewrite/suppression | High | fixed: `57143fba` gate anonymous-entry bib policy (option `bibliography.options.anonymous-entries`; divergence `div-010`) |
+| 3 — HTML output unescaped | High | fixed: `f28f931c` escape html text output and data-ref; Djot/Org metachar policy deferred: [[csl26-ejaf]] |
+| 4 — Case transforms flatten mixed-case words | Medium | fixed: `88dbbc0f` preserve mixed-case words in casing (CSL semantics) |
+| 5 — Date ranges bypass locale patterns | Medium | deferred: [[csl26-k6ty]] |
+| 6 — EDTF seasons never render | Medium | deferred: [[csl26-3m45]] |
+| 7 — No year suffixes for undated works | Medium | deferred: [[csl26-ebs3]] |
+| 8 — Et-al joins ignore configured delimiter | Medium | fixed: `19f8abf0` honor delimiter in et-al joins (use-last shape verified against citeproc-js) |
+| 9 — delimiter-precedes-last partially ignored | Medium | deferred: [[csl26-mc0c]] (oracle-first batch) |
+| 10 — NumberForm ordinal/roman ignored | Medium | deferred: [[csl26-c361]] |
+| 11 — Range formats disagree; CMOS rule | Medium | deferred: [[csl26-2ubj]] |
+| 12 — Locale quote terms dead | Medium | deferred: [[csl26-o33x]] |
+| 13 — Punctuation boundaries HTML-only | Medium | deferred: [[csl26-ztxq]] |
+| 14 — Hardcoded per-type presentation rules | Medium | deferred: [[csl26-92mg]] |
+| 15 — Parser syntax parity + silent drops | Medium | deferred: [[csl26-esq8]] (also covers the `@key.` trailing-punctuation greediness found while fixing 1) |
+| 16 — Substitute-title quoting; auto role labels | Medium | deferred: [[csl26-mc0c]] (oracle-first batch) |
+| 17 — LaTeX href escaping gaps | Low | fixed: `080648f8` escape latex href targets; broader `finish()` policy folded into [[csl26-ejaf]] scope decision |
+| 18 — Plural-label heuristic over-fires | Low | deferred: [[csl26-4l5t]] |
+| 19 — Inverted-name suffix join | Low | deferred: [[csl26-mc0c]] (oracle-first batch) |
+| 20 — Frontmatter delimiter scan | Low | fixed: `4029bb1a` anchor frontmatter to line starts |
+| 21 — Note rules hardcoded; notes.rs duplication | Low | deferred: [[csl26-boql]] |
+| 22 — Assorted silent fallbacks | Low | deferred: [[csl26-ol1j]]; Unknown-role list widened in [[csl26-dr0r]] |
+
 ## Recommended Follow-ups (prioritized)
 
 1. Fix the Markdown offset base and add a frontmatter+markdown test
