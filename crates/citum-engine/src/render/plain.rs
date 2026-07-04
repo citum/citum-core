@@ -27,6 +27,11 @@ impl OutputFormat for PlainText {
         output
     }
 
+    fn heading(&self, level: u8, content: Self::Output) -> Self::Output {
+        let marks = "#".repeat(level.max(1) as usize);
+        format!("{marks} {content}\n\n")
+    }
+
     fn emph(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;

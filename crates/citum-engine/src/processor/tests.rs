@@ -355,7 +355,7 @@ fn make_grouped_compound_selection_processor(leader_note: &str, sibling_note: &s
 }
 
 fn extract_selected_group_body(output: &str) -> String {
-    let heading = "# Selected\n\n";
+    let heading = "## Selected\n\n";
     let start = output
         .find(heading)
         .unwrap_or_else(|| panic!("missing selected heading in output: {output}"));
@@ -3118,7 +3118,7 @@ fn test_bibliography_per_group_disambiguation() {
     // Group 2 restarts the sequence (locally scoped) at a→"C title", b→"D title".
     assert_eq!(
         result,
-        "# Group 1\n\nKuhn, Thomas (1962a). _B title_\n\nKuhn, Thomas (1962b). _A title_\n\n# Group 2\n\nKuhn, Thomas (1962a). _C title_\n\nKuhn, Thomas (1962b). _D title_"
+        "## Group 1\n\nKuhn, Thomas (1962a). _B title_\n\nKuhn, Thomas (1962b). _A title_\n\n## Group 2\n\nKuhn, Thomas (1962a). _C title_\n\nKuhn, Thomas (1962b). _D title_"
     );
 }
 

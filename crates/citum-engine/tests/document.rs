@@ -955,12 +955,12 @@ fn given_grouped_primary_and_secondary_sources_when_rendered_then_both_group_hea
 
     assert_output_has_line(
         &output,
-        "# Primary Sources",
+        "## Primary Sources",
         "grouped bibliography should include the primary heading",
     );
     assert_output_has_line(
         &output,
-        "# Secondary Sources",
+        "## Secondary Sources",
         "grouped bibliography should include the secondary heading",
     );
     assert_output_includes(
@@ -1016,12 +1016,12 @@ fn given_group_local_disambiguation_when_rendering_multilingual_groups_then_year
 
     // Split on the known group headings to get per-group bibliography text.
     let vi_block = output
-        .split("# Vietnamese Sources")
+        .split("## Vietnamese Sources")
         .nth(1)
-        .and_then(|s| s.split("# Western Sources").next())
+        .and_then(|s| s.split("## Western Sources").next())
         .unwrap_or_else(|| panic!("Vietnamese Sources section missing: {output}"));
     let en_block = output
-        .split("# Western Sources")
+        .split("## Western Sources")
         .nth(1)
         .unwrap_or_else(|| panic!("Western Sources section missing: {output}"));
 
@@ -1063,16 +1063,16 @@ fn given_juris_m_legal_grouping_when_rendered_then_headings_follow_the_expected_
         .expect("document should render");
 
     let cases = output
-        .find("# Cases")
+        .find("## Cases")
         .expect("missing cases heading in grouped bibliography");
     let statutes = output
-        .find("# Statutes")
+        .find("## Statutes")
         .expect("missing statutes heading in grouped bibliography");
     let treaties = output
-        .find("# Treaties and International Agreements")
+        .find("## Treaties and International Agreements")
         .expect("missing treaties heading in grouped bibliography");
     let secondary = output
-        .find("# Secondary Sources")
+        .find("## Secondary Sources")
         .expect("missing secondary heading in grouped bibliography");
 
     assert!(cases < statutes, "expected Cases before Statutes: {output}");
@@ -1110,12 +1110,12 @@ fn given_an_english_locale_variant_when_group_headings_are_localized_then_the_la
     // en-GB should fall back to the language tag (en).
     assert_output_has_line(
         &output,
-        "# Primary Sources",
+        "## Primary Sources",
         "English locale fallback should resolve the primary heading",
     );
     assert_output_has_line(
         &output,
-        "# Secondary Sources",
+        "## Secondary Sources",
         "English locale fallback should resolve the secondary heading",
     );
 }
