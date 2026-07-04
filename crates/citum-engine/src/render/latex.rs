@@ -12,6 +12,21 @@ use citum_schema::template::WrapPunctuation;
 #[derive(Debug, Clone, Default)]
 pub struct Latex;
 
+impl Latex {
+    /// Escapes characters that break a LaTeX `\href{...}` URL argument.
+    ///
+    /// Minimal set for the audit finding: a bare `%` starts a LaTeX comment
+    /// and truncates the rest of the line, `#` breaks `{}`-grouping (macro
+    /// parameter syntax), and `\` would otherwise be read as a control
+    /// sequence. `\` is escaped first so the backslash-introducing escapes
+    /// for `%`/`#` are not themselves re-escaped.
+    fn escape_href_target(url: &str) -> String {
+        url.replace('\\', r"\textbackslash{}")
+            .replace('%', r"\%")
+            .replace('#', r"\#")
+    }
+}
+
 impl OutputFormat for Latex {
     type Output = String;
 
@@ -117,7 +132,8 @@ impl OutputFormat for Latex {
     }
 
     fn link(&self, url: &str, content: Self::Output) -> Self::Output {
-        format!(r"\href{{{url}}}{{{content}}}")
+        let target = Self::escape_href_target(url);
+        format!(r"\href{{{target}}}{{{content}}}")
     }
 
     // ── Block-level body markup methods ────────────────────────────────────

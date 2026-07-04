@@ -305,4 +305,20 @@ mod tests {
         let result = render_component_with_format::<Typst>(&component);
         assert_eq!(result, r#"#link("https://doi.org/10.1001/test")[My Title]"#);
     }
+
+    #[test]
+    fn test_latex_link_escapes_href_target() {
+        let component = ProcTemplateComponent {
+            template_component: tc_variable!(Url),
+            value: "10.5555/example".to_string(),
+            url: Some("https://doi.org/10.5555/exa%2Fmple#frag".to_string()),
+            ..Default::default()
+        };
+
+        let result = render_component_with_format::<Latex>(&component);
+        assert_eq!(
+            result,
+            r"\href{https://doi.org/10.5555/exa\%2Fmple\#frag}{10.5555/example}"
+        );
+    }
 }
