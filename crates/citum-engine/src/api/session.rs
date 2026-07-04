@@ -24,7 +24,7 @@ use super::{
     unknown_reference_field_warnings,
 };
 use crate::processor::Processor;
-use crate::reference::Citation;
+use crate::reference::{Bibliography, Citation};
 
 /// Position context for inserting or moving a citation in a session.
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -84,13 +84,23 @@ pub enum DocumentSessionError {
 }
 
 /// Stateful facade over whole-document citation rendering.
+///
+/// The session caches its inputs in resolved form: the style is stored
+/// already resolved (see [`DocumentSession::new`]) and references are parsed
+/// once in [`DocumentSession::put_references`]. Each mutation still clones
+/// both into a fresh [`Processor`] (including disambiguation-hint
+/// calculation) and re-renders every citation plus the bibliography —
+/// incremental re-rendering is not yet implemented.
 #[derive(Debug, Clone)]
 pub struct DocumentSession {
     style: Style,
     locale: Option<String>,
     output_format: OutputFormatKind,
     document_options: Option<DocumentOptions>,
-    refs: Option<RefsInput>,
+    /// Resolved references, parsed once per `put_references` call.
+    bibliography_cache: Bibliography,
+    /// Bibliography-derived warnings, computed once per `put_references` call.
+    ref_warnings: Vec<Warning>,
     citations: Vec<CitationOccurrence>,
     /// Reference IDs registered for bibliography-only inclusion (nocite).
     ///
@@ -117,7 +127,8 @@ impl DocumentSession {
             locale,
             output_format,
             document_options,
-            refs: None,
+            bibliography_cache: Bibliography::new(),
+            ref_warnings: Vec::new(),
             citations: Vec::new(),
             nocite: Vec::new(),
             version: 0,
@@ -133,8 +144,21 @@ impl DocumentSession {
     }
 
     /// Replace the full reference set used by this session.
-    pub fn put_references(&mut self, refs: RefsInput) {
-        self.refs = Some(refs);
+    ///
+    /// The input is parsed here, once, and the resolved bibliography (plus
+    /// its reference-level warnings) is cached for all subsequent mutations
+    /// and previews. Calling this again replaces the cache wholesale.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error when the reference input cannot be parsed.
+    pub fn put_references(&mut self, refs: RefsInput) -> Result<(), DocumentSessionError> {
+        let bibliography = refs.resolve_local()?;
+        let mut ref_warnings = unknown_reference_class_warnings(&bibliography);
+        ref_warnings.extend(unknown_reference_field_warnings(&bibliography));
+        self.bibliography_cache = bibliography;
+        self.ref_warnings = ref_warnings;
+        Ok(())
     }
 
     /// Set the nocite list and re-render the session bibliography.
@@ -338,14 +362,10 @@ impl DocumentSession {
             });
         }
 
-        let bibliography = self
-            .refs
-            .clone()
-            .unwrap_or_else(|| RefsInput::Json(serde_json::json!({})))
-            .resolve_local()?;
-        let mut processor = Processor::new(self.style.clone(), bibliography);
-        warnings.extend(unknown_reference_class_warnings(&processor.bibliography));
-        warnings.extend(unknown_reference_field_warnings(&processor.bibliography));
+        // References were resolved once in `put_references`; each render still
+        // clones the style and bibliography into a fresh processor.
+        let mut processor = Processor::new(self.style.clone(), self.bibliography_cache.clone());
+        warnings.extend(self.ref_warnings.iter().cloned());
         warnings.extend(unknown_enum_warnings(&processor));
 
         if let Some(opts) = &self.document_options {
@@ -768,7 +788,7 @@ mod tests {
             OutputFormatKind::Plain,
             None,
         );
-        session.put_references(refs());
+        session.put_references(refs()).expect("refs should resolve");
         session
     }
 
@@ -868,7 +888,9 @@ mod tests {
             OutputFormatKind::Plain,
             None,
         );
-        session.put_references(smith_refs());
+        session
+            .put_references(smith_refs())
+            .expect("refs should resolve");
         session
             .insert_citations_batch(vec![citation("c1", "smith2020")])
             .expect("batch insert should render");
@@ -935,7 +957,9 @@ mod tests {
             OutputFormatKind::Plain,
             None,
         );
-        session_base.put_references(two_author_refs.clone());
+        session_base
+            .put_references(two_author_refs.clone())
+            .expect("refs should resolve");
         let result_base = session_base
             .insert_citations_batch(vec![citation("c1", "duo2024")])
             .expect("base session should render");
@@ -955,7 +979,9 @@ mod tests {
             OutputFormatKind::Plain,
             None,
         );
-        session_override.put_references(two_author_refs);
+        session_override
+            .put_references(two_author_refs)
+            .expect("refs should resolve");
         let result_override = session_override
             .insert_citations_batch(vec![citation("c1", "duo2024")])
             .expect("override session should render");
@@ -1087,7 +1113,9 @@ mod tests {
                 ..Default::default()
             }),
         );
-        session.put_references(smith_refs());
+        session
+            .put_references(smith_refs())
+            .expect("refs should resolve");
         let result = session
             .insert_citations_batch(vec![
                 integral_citation("c1", "smith2020"),
@@ -1142,7 +1170,9 @@ mod tests {
                 ..Default::default()
             }),
         );
-        session.put_references(smith_refs());
+        session
+            .put_references(smith_refs())
+            .expect("refs should resolve");
         let result = session
             .insert_citations_batch(vec![
                 integral_citation("c1", "smith2020"),
@@ -1184,7 +1214,9 @@ mod tests {
             OutputFormatKind::Plain,
             None,
         );
-        session.put_references(smith_refs());
+        session
+            .put_references(smith_refs())
+            .expect("refs should resolve");
         let result = session
             .insert_citations_batch(vec![
                 integral_citation("c1", "smith2020"),
@@ -1235,7 +1267,7 @@ mod tests {
             OutputFormatKind::Plain,
             None,
         );
-        session.put_references(refs());
+        session.put_references(refs()).expect("refs should resolve");
         session
             .insert_citations_batch(vec![citation("c1", "smith2020")])
             .expect("citation insert should succeed");
@@ -1270,5 +1302,60 @@ mod tests {
                 .any(|e| e.id == "doe2021"),
             "non-cited, non-nocite ref should not appear in bibliography"
         );
+    }
+
+    #[test]
+    fn put_references_with_malformed_input_returns_error() {
+        // given: a fresh session
+        let mut session = DocumentSession::new(
+            style(),
+            StyleInput::Yaml(String::new()),
+            None,
+            OutputFormatKind::Plain,
+            None,
+        );
+
+        // when: references are supplied as unparseable YAML
+        let result = session.put_references(RefsInput::Yaml("not: [valid".to_string()));
+
+        // then: the parse error surfaces at put time, not on the next mutation
+        assert!(
+            matches!(result, Err(DocumentSessionError::Format(_))),
+            "malformed refs input should error at put_references"
+        );
+    }
+
+    #[test]
+    fn put_references_replaces_cached_reference_set() {
+        // given: a session rendering smith2020 from the initial reference set
+        let mut session = session();
+        let first = session
+            .insert_citations_batch(vec![citation("c1", "smith2020")])
+            .expect("initial insert should render");
+        let first_text = first.affected_citations[0].text.clone();
+
+        // when: put_references replaces the set with a different smith2020 year
+        let mut replacement = Bibliography::new();
+        replacement.insert(
+            "smith2020".to_string(),
+            reference("smith2020", "Smith", "2024"),
+        );
+        session
+            .put_references(RefsInput::Json(
+                serde_json::to_value(replacement).expect("replacement refs should serialize"),
+            ))
+            .expect("replacement refs should resolve");
+        let second = session
+            .insert_citations_batch(vec![citation("c1", "smith2020")])
+            .expect("re-render should succeed");
+
+        // then: subsequent renders use the replaced (re-resolved) references —
+        // identical output except the issued year
+        assert_eq!(
+            second.affected_citations[0].text,
+            first_text.replace("2020", "2024"),
+            "render after put_references should reflect the replaced reference set"
+        );
+        assert_ne!(second.affected_citations[0].text, first_text);
     }
 }

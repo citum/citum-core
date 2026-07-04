@@ -503,7 +503,9 @@ impl RpcDispatcher {
     ) -> Result<Value, (Option<Value>, RpcDispatchError)> {
         let params: PutReferencesParams = parse_session_params(params, &request_id)?;
         let session = self.session_mut(params.session_id.as_deref(), &request_id)?;
-        session.put_references(params.refs);
+        session
+            .put_references(params.refs)
+            .map_err(|e| (Some(request_id), RpcDispatchError::Message(e.to_string())))?;
         Ok(json!({ "id": id, "result": {} }))
     }
 
