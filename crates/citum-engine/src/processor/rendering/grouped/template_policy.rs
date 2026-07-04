@@ -15,7 +15,7 @@ use super::component_predicates::{
     reference_has_online_access, reference_has_pages,
 };
 use crate::reference::Reference;
-use citum_schema::options::ArticleJournalNoPageFallback;
+use citum_schema::options::{AnonymousEntriesMode, ArticleJournalNoPageFallback};
 use citum_schema::template::{SimpleVariable, TemplateComponent};
 use std::borrow::Cow;
 
@@ -107,6 +107,8 @@ impl Renderer<'_> {
         reference: &Reference,
         template: &[TemplateComponent],
     ) -> Option<AnonymousEntryBibliographyMode> {
+        let configured_mode = self.bibliography_config.as_ref()?.anonymous_entries?;
+
         if !matches!(
             reference.ref_type().as_str(),
             "entry-dictionary" | "entry-encyclopedia" | "chapter"
@@ -126,13 +128,24 @@ impl Renderer<'_> {
             return None;
         }
 
-        if reference_has_online_access(reference) {
-            if template_has_pattern_message(template) {
-                return None;
+        match configured_mode {
+            AnonymousEntriesMode::ContainerLed => {
+                if reference_has_online_access(reference) && template_has_pattern_message(template)
+                {
+                    return None;
+                }
+                Some(AnonymousEntryBibliographyMode::ContainerLed)
             }
-            Some(AnonymousEntryBibliographyMode::ContainerLed)
-        } else {
-            Some(AnonymousEntryBibliographyMode::SuppressPrintLike)
+            AnonymousEntriesMode::NotesOnly => {
+                if reference_has_online_access(reference) {
+                    if template_has_pattern_message(template) {
+                        return None;
+                    }
+                    Some(AnonymousEntryBibliographyMode::ContainerLed)
+                } else {
+                    Some(AnonymousEntryBibliographyMode::SuppressPrintLike)
+                }
+            }
         }
     }
 

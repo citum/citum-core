@@ -18,9 +18,9 @@ pub mod substitute;
 
 pub use crate::presets::{MultilingualConfigEntry, MultilingualPreset};
 pub use bibliography::{
-    ArticleJournalBibliographyConfig, ArticleJournalNoPageFallback, BibliographyConfig,
-    BibliographyPartitionHeading, BibliographyPartitionKind, BibliographyPartitionMode,
-    BibliographySortPartitioning, SubsequentAuthorSubstituteRule,
+    AnonymousEntriesMode, ArticleJournalBibliographyConfig, ArticleJournalNoPageFallback,
+    BibliographyConfig, BibliographyPartitionHeading, BibliographyPartitionKind,
+    BibliographyPartitionMode, BibliographySortPartitioning, SubsequentAuthorSubstituteRule,
 };
 pub use contributors::{
     AndOptions, AndOtherOptions, ContributorConfig, ContributorConfigEntry, DelimiterPrecedesLast,
@@ -354,6 +354,11 @@ pub struct BibliographyOptions {
     /// Partitioning policy for multilingual bibliography sorting and sections.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort_partitioning: Option<bibliography::BibliographySortPartitioning>,
+    /// Policy for reference-work entries (dictionary/encyclopedia and
+    /// dictionary-shaped chapters) with no visible author. See
+    /// [`AnonymousEntriesMode`].
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub anonymous_entries: Option<AnonymousEntriesMode>,
     /// Hyperlink configuration.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub links: Option<LinksConfig>,
@@ -698,6 +703,7 @@ impl BibliographyOptions {
             custom: None,
             compound_numeric: self.compound_numeric.clone(),
             sort_partitioning: self.sort_partitioning.clone(),
+            anonymous_entries: self.anonymous_entries,
             unknown_fields: std::collections::BTreeMap::new(),
         }
     }
@@ -757,6 +763,7 @@ impl BibliographyOptions {
             separator,
             compound_numeric,
             sort_partitioning,
+            anonymous_entries,
             label_mode,
             label_wrap,
             date_position,

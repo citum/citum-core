@@ -65,6 +65,14 @@ pub struct BibliographyConfig {
     /// Partitioning policy for multilingual bibliography sorting and sections.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort_partitioning: Option<BibliographySortPartitioning>,
+    /// Policy for reference-work entries (dictionary/encyclopedia and
+    /// dictionary-shaped chapters) with no visible author. When unset, no
+    /// special handling applies. `container-led` rewrites the entry to lead
+    /// with the container title; `notes-only` additionally suppresses
+    /// print-like entries (no DOI/URL) from the bibliography entirely
+    /// (Chicago's "well-known reference works are cited in notes only").
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub anonymous_entries: Option<AnonymousEntriesMode>,
     /// Forward-compat: captures unknown keys when an older engine reads a
     /// style produced by a newer schema. Empty by default; treated as a
     /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
@@ -104,6 +112,20 @@ pub struct ArticleJournalBibliographyConfig {
 pub enum ArticleJournalNoPageFallback {
     /// Replace the standard article detail block with the DOI component.
     Doi,
+}
+
+/// Named policies for anonymous (no visible author) reference-work entries.
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum AnonymousEntriesMode {
+    /// Rewrite the entry to lead with the container title.
+    ContainerLed,
+    /// Rewrite the entry to lead with the container title, and additionally
+    /// suppress print-like entries (no DOI/URL) from the bibliography
+    /// entirely — Chicago's "well-known reference works are cited in notes
+    /// only" convention.
+    NotesOnly,
 }
 
 /// Bibliography partitioning policy for multilingual sort order and sections.
@@ -297,6 +319,7 @@ impl Default for BibliographyConfig {
             custom: None,
             compound_numeric: None,
             sort_partitioning: None,
+            anonymous_entries: None,
             unknown_fields: std::collections::BTreeMap::new(),
         }
     }
@@ -383,6 +406,27 @@ mod tests {
                 no_page_fallback: Some(ArticleJournalNoPageFallback::Doi),
                 ..Default::default()
             }),
+            ..Default::default()
+        };
+        let json = serde_json::to_string(&config).unwrap();
+        let deserialized: BibliographyConfig = serde_json::from_str(&json).unwrap();
+        assert_eq!(config, deserialized);
+    }
+
+    #[test]
+    fn test_anonymous_entries_deserializes() {
+        let json = r#"{"anonymous-entries":"notes-only"}"#;
+        let config: BibliographyConfig = serde_json::from_str(json).unwrap();
+        assert_eq!(
+            config.anonymous_entries,
+            Some(AnonymousEntriesMode::NotesOnly)
+        );
+    }
+
+    #[test]
+    fn test_anonymous_entries_roundtrip() {
+        let config = BibliographyConfig {
+            anonymous_entries: Some(AnonymousEntriesMode::ContainerLed),
             ..Default::default()
         };
         let json = serde_json::to_string(&config).unwrap();

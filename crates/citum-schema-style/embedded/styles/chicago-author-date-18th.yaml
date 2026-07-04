@@ -184,6 +184,7 @@ bibliography:
     hanging-indent: true
     entry-suffix: .
     separator: ". "
+    anonymous-entries: notes-only
   groups:
   - id: primary-sources
     heading:
