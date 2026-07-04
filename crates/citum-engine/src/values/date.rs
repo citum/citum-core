@@ -10,7 +10,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use crate::reference::{EdtfString, Reference};
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
-use citum_edtf::{Day, Edtf, MonthOrSeason, Timezone, UnspecifiedYear, Year};
+use citum_edtf::{Edtf, Timezone, UnspecifiedYear, Year};
 use citum_schema::locale::{GeneralTerm, TermForm};
 use citum_schema::options::dates::TimeFormat;
 use citum_schema::reference::types::RefDate;
@@ -204,63 +204,6 @@ fn extract_display_year_legacy(date: &EdtfString, before_era: Option<&str>) -> S
     }
 }
 
-fn extract_range_end(
-    date: &EdtfString,
-    months: &[String],
-    date_terms: &citum_schema::locale::DateTerms,
-    era_labels: &citum_schema::options::dates::EraLabels,
-    neg_unspecified: &citum_schema::options::dates::NegativeUnspecifiedYears,
-    range_delimiter: &str,
-) -> Option<String> {
-    match date.parse() {
-        RefDate::Edtf(edtf) => match edtf {
-            Edtf::Interval(interval) => {
-                let end = &interval.end;
-                let year = format_display_year(
-                    &end.year,
-                    date_terms,
-                    era_labels,
-                    neg_unspecified,
-                    range_delimiter,
-                );
-                let month = match end.month_or_season {
-                    Some(MonthOrSeason::Month(m)) => Some(m),
-                    _ => None,
-                };
-                let day = match end.day {
-                    Some(Day::Day(d)) => Some(d),
-                    _ => None,
-                };
-
-                match (month, day) {
-                    (Some(m), Some(d)) if m > 0 && d > 0 => {
-                        let month_str = month_to_string(m, months);
-                        Some(format!("{} {}, {}", month_str, d, year))
-                    }
-                    (Some(m), _) if m > 0 => {
-                        let month_str = month_to_string(m, months);
-                        Some(format!("{} {}", month_str, year))
-                    }
-                    _ => Some(year),
-                }
-            }
-            Edtf::IntervalFrom(_date) => None, // Open-ended
-            Edtf::IntervalTo(date) => {
-                let year = format_display_year(
-                    &date.year,
-                    date_terms,
-                    era_labels,
-                    neg_unspecified,
-                    range_delimiter,
-                );
-                Some(year)
-            }
-            _ => None,
-        },
-        RefDate::Literal(_) => None,
-    }
-}
-
 /// Formats a time with the specified format, optionally including seconds and timezone.
 ///
 /// Converts 24-hour time to 12-hour format if specified, and appends localized
@@ -321,153 +264,113 @@ fn format_time(
     }
 }
 
-/// Format the start portion of a date range according to the given form.
-fn format_range_start(
+/// Format a single date or a date range (open or closed) according to the
+/// given form, delegating both endpoints of a range to
+/// [`format_single_date`] so locale patterns apply symmetrically.
+fn format_date_range(
     date: &EdtfString,
     form: &DateForm,
     locale: &citum_schema::locale::Locale,
     date_config: Option<&citum_schema::options::dates::DateConfig>,
-) -> String {
-    let default_era = citum_schema::options::dates::EraLabels::Default;
-    let default_neg_unspec = citum_schema::options::dates::NegativeUnspecifiedYears::default();
-    let era_labels = date_config.map(|c| &c.era_labels).unwrap_or(&default_era);
-    let neg_unspecified = date_config
-        .map(|c| &c.negative_unspecified_years)
-        .unwrap_or(&default_neg_unspec);
-    let range_delimiter = date_config.map_or("–", |c| c.range_delimiter.as_str());
+) -> Option<String> {
+    let delimiter = date_config.map_or("–", |c| c.range_delimiter.as_str());
 
-    let extract_year = |d: &EdtfString| -> String {
-        match d.parse() {
-            RefDate::Edtf(edtf) => match edtf {
-                Edtf::Date(date) => format_display_year(
-                    &date.year,
-                    &locale.dates,
-                    era_labels,
-                    neg_unspecified,
-                    range_delimiter,
-                ),
-                Edtf::Interval(interval) => format_display_year(
-                    &interval.start.year,
-                    &locale.dates,
-                    era_labels,
-                    neg_unspecified,
-                    range_delimiter,
-                ),
-                Edtf::IntervalFrom(date) | Edtf::IntervalTo(date) => format_display_year(
-                    &date.year,
-                    &locale.dates,
-                    era_labels,
-                    neg_unspecified,
-                    range_delimiter,
-                ),
-            },
-            RefDate::Literal(_) => String::new(),
+    match date.parse() {
+        RefDate::Edtf(Edtf::Interval(interval)) => {
+            format_closed_range(date, &interval, form, locale, date_config, delimiter)
         }
-    };
-
-    match form {
-        DateForm::Year => extract_year(date),
-        DateForm::YearMonth => {
-            let month = extract_month(date, &locale.dates.months.long);
-            let year = extract_year(date);
-            if month.is_empty() {
-                year
+        RefDate::Edtf(Edtf::IntervalFrom(_)) => {
+            // Open-ended range (e.g., "1990/..'): the accessors on the whole
+            // interval already resolve to the start point.
+            let start = format_single_date(date, form, locale, date_config)?;
+            if let Some(end_marker) = date_config
+                .and_then(|c| c.open_range_marker.as_deref())
+                .or(locale.dates.open_ended_term.as_deref())
+            {
+                Some(format!("{start}{delimiter}{end_marker}"))
             } else {
-                format!("{month} {year}")
+                Some(start)
             }
         }
-        DateForm::Month => extract_month(date, &locale.dates.months.long),
-        DateForm::MonthDay => {
-            let month = extract_month(date, &locale.dates.months.long);
-            let day = date.day();
-            match day {
-                Some(d) => format!("{month} {d}"),
-                None => month,
-            }
-        }
-        DateForm::Full => {
-            let year = extract_year(date);
-            let month = extract_month(date, &locale.dates.months.long);
-            let day = date.day();
-            match (month.is_empty(), day) {
-                (true, _) => year,
-                (false, None) => format!("{month} {year}"),
-                (false, Some(d)) => format!("{month} {d}, {year}"),
-            }
-        }
-        DateForm::YearMonthDay => {
-            let year = extract_year(date);
-            let month = extract_month(date, &locale.dates.months.long);
-            let day = date.day();
-            match (month.is_empty(), day) {
-                (true, _) => year,
-                (false, None) => format!("{year}, {month}"),
-                (false, Some(d)) => format!("{year}, {month} {d}"),
-            }
-        }
-        DateForm::DayMonthAbbrYear => {
-            let year = extract_year(date);
-            let month = extract_month(date, &locale.dates.months.short);
-            let day = date.day();
-            match (month.is_empty(), day) {
-                (true, _) => year,
-                (false, None) => format!("{month} {year}"),
-                (false, Some(d)) => format!("{d} {month} {year}"),
-            }
-        }
-        DateForm::MonthAbbrDayYear => {
-            let year = extract_year(date);
-            let month = extract_month(date, &locale.dates.months.short);
-            let day = date.day();
-            match (month.is_empty(), day) {
-                (true, _) => year,
-                (false, None) => format!("{month} {year}"),
-                (false, Some(d)) => format!("{month} {d}, {year}"),
-            }
-        }
-        _ => extract_year(date),
+        // Non-range dates and open-ended-from-start ranges ("../2020") only
+        // have one known point, which the accessors already expose.
+        _ => format_single_date(date, form, locale, date_config),
     }
 }
 
-/// Format a date range with start date and delimiter.
-fn format_date_range(
-    start: String,
+/// Format a closed date range, collapsing the start point's year when both
+/// endpoints share a year and the form displays a month.
+fn format_closed_range(
     date: &EdtfString,
+    interval: &citum_edtf::Interval,
+    form: &DateForm,
     locale: &citum_schema::locale::Locale,
     date_config: Option<&citum_schema::options::dates::DateConfig>,
+    delimiter: &str,
 ) -> Option<String> {
-    let era_labels = date_config
-        .map(|c| &c.era_labels)
-        .unwrap_or(&citum_schema::options::dates::EraLabels::Default);
-    let neg_unspecified = date_config
-        .map(|c| &c.negative_unspecified_years)
-        .unwrap_or(&citum_schema::options::dates::NegativeUnspecifiedYears::Range);
-    let delimiter = date_config.map_or("–", |c| c.range_delimiter.as_str());
+    let same_year = interval.start.year.value == interval.end.year.value;
+    let both_have_month =
+        interval.start.month_or_season.is_some() && interval.end.month_or_season.is_some();
 
-    if date.is_open_range() {
-        // Open-ended range (e.g., "1990/..")
-        if let Some(end_marker) = date_config
-            .and_then(|c| c.open_range_marker.as_deref())
-            .or(locale.dates.open_ended_term.as_deref())
-        {
-            Some(format!("{start}{delimiter}{end_marker}"))
-        } else {
-            // No open-ended term available - return start date only
-            Some(start)
-        }
-    } else if let Some(end) = extract_range_end(
-        date,
-        &locale.dates.months.long,
-        &locale.dates,
-        era_labels,
-        neg_unspecified,
-        delimiter,
-    ) {
-        // Closed range with end date
-        Some(format!("{start}{delimiter}{end}"))
-    } else {
-        Some(start)
+    if same_year
+        && both_have_month
+        && let Some(collapsed) = format_same_year_range(
+            &interval.start,
+            &interval.end,
+            form,
+            locale,
+            date_config,
+            delimiter,
+        )
+    {
+        return Some(collapsed);
     }
+
+    let start = format_single_date(date, form, locale, date_config);
+    let end = format_single_date(
+        &EdtfString(interval.end.to_string()),
+        form,
+        locale,
+        date_config,
+    );
+
+    match (start, end) {
+        (Some(s), Some(e)) => Some(format!("{s}{delimiter}{e}")),
+        (Some(s), None) => Some(s),
+        (None, Some(e)) => Some(e),
+        (None, None) => None,
+    }
+}
+
+/// Format a closed range whose endpoints share a year, suppressing the
+/// redundant year on one side (e.g. "May 14–June 2, 2023").
+///
+/// Only forms with a defined month-suppressed companion collapse; other
+/// forms (e.g. abbreviated-month forms with no such companion) return
+/// `None` so the caller falls back to the uncollapsed rendering.
+fn format_same_year_range(
+    start: &citum_edtf::Date,
+    end: &citum_edtf::Date,
+    form: &DateForm,
+    locale: &citum_schema::locale::Locale,
+    date_config: Option<&citum_schema::options::dates::DateConfig>,
+    delimiter: &str,
+) -> Option<String> {
+    let (start_form, end_form) = match form {
+        DateForm::Full => (DateForm::MonthDay, DateForm::Full),
+        DateForm::YearMonth => (DateForm::Month, DateForm::YearMonth),
+        DateForm::YearMonthDay => (DateForm::YearMonthDay, DateForm::MonthDay),
+        _ => return None,
+    };
+
+    let start_str = format_single_date(
+        &EdtfString(start.to_string()),
+        &start_form,
+        locale,
+        date_config,
+    )?;
+    let end_str = format_single_date(&EdtfString(end.to_string()), &end_form, locale, date_config)?;
+    Some(format!("{start_str}{delimiter}{end_str}"))
 }
 
 /// Apply uncertainty and approximation markers to formatted date.
@@ -804,14 +707,7 @@ impl ComponentValues for TemplateDate {
         let date_config = options.config.dates.as_ref();
         let effective_form = self.form.clone();
 
-        let formatted = if date.is_range() {
-            // Handle date ranges
-            let start = format_range_start(&date, &effective_form, locale, date_config);
-            format_date_range(start, &date, locale, date_config)
-        } else {
-            // Single date (not a range)
-            format_single_date(&date, &effective_form, locale, date_config)
-        };
+        let formatted = format_date_range(&date, &effective_form, locale, date_config);
 
         // Apply uncertainty and approximation markers
         let formatted = formatted.map(|value| apply_date_markers(value, &date, date_config));
@@ -1409,5 +1305,101 @@ mod locale_pattern_tests {
         // hardcoded `{month} {year}` assembly. (A future pattern.date-year-month
         // can fix this for inflected locales — out of scope for this bean.)
         assert_eq!(full(&es_es(), "2023-01"), "enero 2023");
+    }
+}
+
+#[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    reason = "Panicking is acceptable in tests."
+)]
+mod range_tests {
+    use super::*;
+    use citum_schema::locale::Locale;
+
+    fn en_us() -> Locale {
+        Locale::from_yaml_str(include_str!("../../../../locales/en-US.yaml"))
+            .expect("en-US locale should parse")
+    }
+
+    fn es_es() -> Locale {
+        Locale::from_yaml_str(include_str!("../../../../locales/es-ES.yaml"))
+            .expect("es-ES locale should parse")
+    }
+
+    fn range(locale: &Locale, edtf: &str, form: DateForm) -> Option<String> {
+        format_date_range(&EdtfString(edtf.to_string()), &form, locale, None)
+    }
+
+    #[test]
+    fn closed_range_year_form_regression() {
+        // given a closed range with distinct years and the Year form
+        // then it renders as a plain year-to-year range (no collapse)
+        assert_eq!(
+            range(&en_us(), "2020/2022", DateForm::Year).as_deref(),
+            Some("2020–2022")
+        );
+    }
+
+    #[test]
+    fn closed_range_full_form_different_years() {
+        // given a closed range spanning two years, Full form
+        // then both endpoints render in full
+        assert_eq!(
+            range(&en_us(), "2023-05-14/2024-06-02", DateForm::Full).as_deref(),
+            Some("May 14, 2023–June 2, 2024")
+        );
+    }
+
+    #[test]
+    fn closed_range_full_form_same_year_collapses() {
+        // given a closed range within a single year, Full form
+        // then the start's year is suppressed and trails the end instead
+        assert_eq!(
+            range(&en_us(), "2023-05-14/2023-06-02", DateForm::Full).as_deref(),
+            Some("May 14–June 2, 2023")
+        );
+    }
+
+    #[test]
+    fn closed_range_year_month_day_same_year_collapses() {
+        // given a closed range within a single year, YearMonthDay form
+        // then the leading year renders once and the end's year is suppressed
+        assert_eq!(
+            range(&en_us(), "2023-05-14/2023-06-02", DateForm::YearMonthDay).as_deref(),
+            Some("2023, May 14–June 2")
+        );
+    }
+
+    #[test]
+    fn closed_range_full_form_es_es_locale_pattern() {
+        // given a closed range spanning two years under a locale that
+        // declares pattern.date-full
+        // then both endpoints render through the Spanish pattern
+        assert_eq!(
+            range(&es_es(), "2023-01-12/2024-02-03", DateForm::Full).as_deref(),
+            Some("12 de enero de 2023–3 de febrero de 2024")
+        );
+    }
+
+    #[test]
+    fn interval_to_year_form() {
+        // given an open-ended-from-start range ("../2020")
+        // then it renders as the single known (end) point
+        assert_eq!(
+            range(&en_us(), "../2020", DateForm::Year).as_deref(),
+            Some("2020")
+        );
+    }
+
+    #[test]
+    fn closed_range_year_month_same_year_collapses() {
+        // given month-only endpoints in the same year, YearMonth form
+        // then the start month renders without the (shared) year
+        assert_eq!(
+            range(&en_us(), "2023-05/2023-06", DateForm::YearMonth).as_deref(),
+            Some("May–June 2023")
+        );
     }
 }
