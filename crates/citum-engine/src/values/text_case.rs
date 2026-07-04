@@ -110,13 +110,71 @@ pub(crate) fn apply_note_start_text_case(
     apply_text_case(value, resolve_text_case(case, language))
 }
 
-/// Convert text to sentence case: lowercase everything, then capitalize the first word.
+/// Returns true if any character in `word` other than the first is uppercase.
+///
+/// Per CSL 1.0 / citeproc-js, a word carrying internal capitalization (an
+/// all-caps acronym like "DNA", or a mixed-case brand/name like "McDonald" or
+/// "iPhone") is presumed deliberately cased and is left untouched by the
+/// sentence- and title-case transforms; only words whose casing is limited to
+/// (at most) a leading capital are transformed. Uses `char::is_uppercase` so
+/// non-ASCII scripts with case are handled correctly.
+fn has_internal_uppercase(word: &str) -> bool {
+    let mut chars = word.chars();
+    chars.next();
+    chars.any(char::is_uppercase)
+}
+
+/// Rebuild `text` with each whitespace-delimited word replaced by the
+/// corresponding entry in `parts`, preserving the original whitespace runs
+/// (leading/trailing/internal spacing) exactly as written.
+fn rebuild_with_original_whitespace(text: &str, parts: &[String]) -> String {
+    let mut result = String::with_capacity(text.len());
+    let mut word_iter = parts.iter();
+    let mut in_word = false;
+    let mut current_word = word_iter.next();
+
+    for ch in text.chars() {
+        if ch.is_whitespace() {
+            if in_word {
+                in_word = false;
+                current_word = word_iter.next();
+            }
+            result.push(ch);
+        } else if !in_word && let Some(word) = current_word {
+            result.push_str(word);
+            in_word = true;
+        }
+    }
+
+    result
+}
+
+/// Convert text to sentence case: lowercase every word and capitalize the
+/// first, except words carrying internal capitalization (acronyms, mixed-case
+/// names), which are preserved exactly as written — including the first word,
+/// which is left unmodified rather than force-capitalized.
 fn to_sentence_case(text: &str) -> String {
     if text.is_empty() {
         return String::new();
     }
-    let lowered = text.to_lowercase();
-    capitalize_first_word(&lowered)
+
+    let words: Vec<&str> = text.split_whitespace().collect();
+    if words.is_empty() {
+        return text.to_string();
+    }
+
+    let mut parts: Vec<String> = Vec::with_capacity(words.len());
+    for (i, word) in words.iter().enumerate() {
+        if has_internal_uppercase(word) {
+            parts.push((*word).to_string());
+        } else if i == 0 {
+            parts.push(capitalize_first_word(&word.to_lowercase()));
+        } else {
+            parts.push(word.to_lowercase());
+        }
+    }
+
+    rebuild_with_original_whitespace(text, &parts)
 }
 
 /// Capitalize the first alphabetic character of the string,
@@ -323,23 +381,29 @@ fn to_title_case(text: &str) -> String {
     let mut capitalize_next = false;
 
     for (i, word) in words.iter().enumerate() {
-        let lower = word.to_lowercase();
-        if i == 0 || i == last_idx || capitalize_next {
-            if contains_hyphen_like(&lower) {
-                parts.push(capitalize_hyphenated(&lower, true));
-            } else {
-                parts.push(capitalize_first_word(&lower));
-            }
+        if has_internal_uppercase(word) {
+            // Acronym or mixed-case name (e.g. "DNA", "McDonald", "iPhone"):
+            // preserve exactly as written, regardless of position.
+            parts.push((*word).to_string());
         } else {
-            // Strip leading/trailing punctuation when checking stop words so that
-            // words like "(and" or "and)" are still treated as the stop word "and".
-            let alpha_core = lower.trim_matches(|c: char| !c.is_alphanumeric());
-            if TITLE_CASE_STOP_WORDS.contains(&alpha_core) {
-                parts.push(lower);
-            } else if contains_hyphen_like(&lower) {
-                parts.push(capitalize_hyphenated(&lower, false));
+            let lower = word.to_lowercase();
+            if i == 0 || i == last_idx || capitalize_next {
+                if contains_hyphen_like(&lower) {
+                    parts.push(capitalize_hyphenated(&lower, true));
+                } else {
+                    parts.push(capitalize_first_word(&lower));
+                }
             } else {
-                parts.push(capitalize_first_word(&lower));
+                // Strip leading/trailing punctuation when checking stop words so that
+                // words like "(and" or "and)" are still treated as the stop word "and".
+                let alpha_core = lower.trim_matches(|c: char| !c.is_alphanumeric());
+                if TITLE_CASE_STOP_WORDS.contains(&alpha_core) {
+                    parts.push(lower);
+                } else if contains_hyphen_like(&lower) {
+                    parts.push(capitalize_hyphenated(&lower, false));
+                } else {
+                    parts.push(capitalize_first_word(&lower));
+                }
             }
         }
         // Capitalize the next word after sentence-ending punctuation or a colon,
@@ -350,26 +414,7 @@ fn to_title_case(text: &str) -> String {
             || punctuation_core.ends_with('!');
     }
 
-    // Rebuild with original whitespace structure
-    let mut result = String::with_capacity(text.len());
-    let mut word_iter = parts.iter();
-    let mut in_word = false;
-    let mut current_word = word_iter.next();
-
-    for ch in text.chars() {
-        if ch.is_whitespace() {
-            if in_word {
-                in_word = false;
-                current_word = word_iter.next();
-            }
-            result.push(ch);
-        } else if !in_word && let Some(word) = current_word {
-            result.push_str(word);
-            in_word = true;
-        }
-    }
-
-    result
+    rebuild_with_original_whitespace(text, &parts)
 }
 
 #[cfg(test)]
@@ -503,12 +548,40 @@ mod tests {
 
     #[test]
     fn test_sentence_case_all_caps() {
-        assert_eq!(to_sentence_case("DNA REPLICATION"), "Dna replication");
+        // All-caps words are presumed deliberately cased (acronyms) and are
+        // preserved verbatim, including as the first word.
+        assert_eq!(to_sentence_case("DNA REPLICATION"), "DNA REPLICATION");
     }
 
     #[test]
     fn test_sentence_case_empty() {
         assert_eq!(to_sentence_case(""), "");
+    }
+
+    #[test]
+    fn given_mixed_case_word_when_sentence_case_then_preserved() {
+        assert_eq!(
+            to_sentence_case("An Introduction to DNA"),
+            "An introduction to DNA"
+        );
+    }
+
+    #[test]
+    fn given_lowercase_iphone_when_sentence_case_then_lowercased() {
+        assert_eq!(to_sentence_case("the iphone problem"), "The iphone problem");
+    }
+
+    #[test]
+    fn given_mixed_case_iphone_when_sentence_case_then_preserved() {
+        assert_eq!(to_sentence_case("the iPhone problem"), "The iPhone problem");
+    }
+
+    #[test]
+    fn given_mixed_case_surname_when_sentence_case_then_preserved() {
+        assert_eq!(
+            to_sentence_case("a study of McDonald"),
+            "A study of McDonald"
+        );
     }
 
     // --- to_title_case ---
@@ -627,10 +700,17 @@ mod tests {
 
     #[test]
     fn test_title_case_structured() {
+        // "DNA" is already mixed-case in the source data and must be
+        // preserved verbatim by the title-case transform.
         let (main, subs) =
-            apply_to_structured_parts("the dna of empire", &["a new perspective"], TextCase::Title);
-        assert_eq!(main, "The Dna of Empire");
+            apply_to_structured_parts("the DNA of empire", &["a new perspective"], TextCase::Title);
+        assert_eq!(main, "The DNA of Empire");
         assert_eq!(subs, vec!["A New Perspective"]);
+    }
+
+    #[test]
+    fn given_mixed_case_surname_when_title_case_then_preserved() {
+        assert_eq!(to_title_case("a study of McDonald"), "A Study of McDonald");
     }
 
     // --- resolve_text_case ---
