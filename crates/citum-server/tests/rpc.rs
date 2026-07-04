@@ -433,6 +433,35 @@ fn stdio_dispatcher_keeps_default_session_across_requests() {
 }
 
 #[test]
+fn put_references_with_malformed_refs_errors_at_put_time() {
+    let mut dispatcher = RpcDispatcher::new_stdio();
+    dispatcher
+        .dispatch(make_request(
+            30,
+            "open_session",
+            json!({
+                "style": {
+                    "kind": "path",
+                    "value": apa_style_path()
+                }
+            }),
+        ))
+        .expect("open_session should succeed");
+
+    let err = dispatcher
+        .dispatch(make_request(
+            31,
+            "put_references",
+            json!({
+                "session_id": "default",
+                "refs": { "kind": "yaml", "value": "not: [valid" }
+            }),
+        ))
+        .expect_err("malformed refs should error when they are put, not on the next mutation");
+    assert_eq!(err.0, Some(json!(31)));
+}
+
+#[test]
 fn http_dispatcher_generates_independent_session_ids() {
     let mut dispatcher = RpcDispatcher::new_http();
     let first = dispatcher

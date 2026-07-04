@@ -303,7 +303,9 @@ impl WasmDocumentSession {
             None,
         );
         if let Some(refs_json) = refs_json {
-            inner.put_references(refs_input_from_json(&refs_json)?);
+            inner
+                .put_references(refs_input_from_json(&refs_json)?)
+                .map_err(|e| e.to_string())?;
         }
         Ok(Self { inner })
     }
@@ -314,8 +316,9 @@ impl WasmDocumentSession {
     ///
     /// Returns an error if the refs JSON cannot be parsed.
     pub fn put_references(&mut self, refs_json: &str) -> Result<(), String> {
-        self.inner.put_references(refs_input_from_json(refs_json)?);
-        Ok(())
+        self.inner
+            .put_references(refs_input_from_json(refs_json)?)
+            .map_err(|e| e.to_string())
     }
 
     /// Replace the full ordered citation list and return a session mutation result JSON string.

@@ -20,7 +20,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! | `validate_style` | `style_path` | none | validation object |
 //! | `format_document` | `style`, `refs`, `citations` | `output_format`, `locale`, `document_options` | `{formatted_citations, bibliography, warnings}` |
 //! | `open_session` ¹ | `style` | `style_overrides`, `locale`, `output_format`, `document_options` | `{session_id}` |
-//! | `put_references` ¹ | `refs` | `session_id` | `{}` |
+//! | `put_references` ¹ | `refs` | `session_id` | `{}` (errors when `refs` cannot be parsed) |
 //! | `insert_citations_batch` ¹ | `citations` | `session_id` | session mutation result |
 //! | `insert_citation` ¹ | `citation` | `session_id`, `position` | session mutation result |
 //! | `update_citation` ¹ | `citation_id`, `citation` | `session_id`, `position` | session mutation result |
