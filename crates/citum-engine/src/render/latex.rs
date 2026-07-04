@@ -171,6 +171,16 @@ impl OutputFormat for Latex {
         format!("{cmd}{{{content}}}\n\n")
     }
 
+    fn unnumbered_heading(&self, level: u8, content: Self::Output) -> Self::Output {
+        let cmd = match level {
+            1 => "\\section*",
+            2 => "\\subsection*",
+            3 => "\\subsubsection*",
+            _ => "\\paragraph*",
+        };
+        format!("{cmd}{{{content}}}\n\n")
+    }
+
     fn code_block(&self, _lang: Option<&str>, content: Self::Output) -> Self::Output {
         format!("\\begin{{verbatim}}\n{content}\\end{{verbatim}}\n\n")
     }

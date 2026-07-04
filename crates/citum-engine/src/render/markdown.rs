@@ -63,6 +63,12 @@ impl OutputFormat for Markdown {
         output
     }
 
+    /// Render a heading using ATX syntax (`#`, `##`, ...).
+    fn heading(&self, level: u8, content: Self::Output) -> Self::Output {
+        let marks = "#".repeat(level.max(1) as usize);
+        format!("{marks} {content}\n\n")
+    }
+
     /// Render emphasis as `*content*` (CommonMark italic).
     fn emph(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {

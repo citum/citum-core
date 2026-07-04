@@ -375,7 +375,7 @@ options:
 
     assert_eq!(
         processor.render_grouped_bibliography_with_format::<PlainText>(),
-        "# Cyrillic\n\nБета\n\n# Latin\n\nAlpha\n\n# Han\n\n東京"
+        "## Cyrillic\n\nБета\n\n## Latin\n\nAlpha\n\n## Han\n\n東京"
     );
 }
 
@@ -449,7 +449,7 @@ fn language_partition_sections_reset_subsequent_author_substitution_per_section(
 
     assert_eq!(
         processor.render_grouped_bibliography_with_format::<PlainText>(),
-        "# Russian\n\nSmith, John. Alpha.\n\n———. Beta.\n\n# English\n\nSmith, John. Gamma."
+        "## Russian\n\nSmith, John. Alpha.\n\n———. Beta.\n\n## English\n\nSmith, John. Gamma."
     );
 }
 
@@ -4203,7 +4203,7 @@ groups:
 
     assert_eq!(
         rendered,
-        "# Primary Sources Section\n\nFirst Book\n\n# Secondary Sources Section\n\nAn Archival Manuscript"
+        "## Primary Sources Section\n\nFirst Book\n\n## Secondary Sources Section\n\nAn Archival Manuscript"
     );
 }
 

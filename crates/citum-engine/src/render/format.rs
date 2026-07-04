@@ -143,6 +143,16 @@ pub trait OutputFormat: Default + Clone {
         content
     }
 
+    /// Render an unnumbered heading at the given level.
+    ///
+    /// Used for generated section headings (e.g. bibliography group
+    /// headings) that must not participate in document section numbering.
+    /// Defaults to [`Self::heading`]; formats with numbered headings
+    /// (LaTeX) override this with their unnumbered variants.
+    fn unnumbered_heading(&self, level: u8, content: Self::Output) -> Self::Output {
+        self.heading(level, content)
+    }
+
     /// Render a fenced or indented code block with an optional language hint.
     ///
     /// `content` is the raw (unescaped) code text.

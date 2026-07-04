@@ -26,6 +26,30 @@ mod tests {
     use citum_schema::{tc_contributor, tc_title, tc_variable};
 
     #[test]
+    fn test_heading_numbered_vs_unnumbered() {
+        // Group/bibliography headings must not participate in LaTeX section
+        // numbering, while document body headings keep numbered commands.
+        let latex = Latex;
+        assert_eq!(
+            latex.heading(2, "Sources".to_string()),
+            "\\subsection{Sources}\n\n"
+        );
+        assert_eq!(
+            latex.unnumbered_heading(2, "Sources".to_string()),
+            "\\subsection*{Sources}\n\n"
+        );
+        // Formats without heading numbering share both variants.
+        assert_eq!(
+            Html.unnumbered_heading(2, "Sources".to_string()),
+            Html.heading(2, "Sources".to_string())
+        );
+        assert_eq!(
+            Typst.unnumbered_heading(2, "Sources".to_string()),
+            Typst.heading(2, "Sources".to_string())
+        );
+    }
+
+    #[test]
     fn test_html_title() {
         let component = ProcTemplateComponent {
             template_component: tc_title!(Primary, emph = true),

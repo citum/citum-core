@@ -58,6 +58,11 @@ impl OutputFormat for Html {
         output
     }
 
+    fn heading(&self, level: u8, content: Self::Output) -> Self::Output {
+        let level = level.clamp(1, 6);
+        format!("<h{level}>{content}</h{level}>\n\n")
+    }
+
     fn emph(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {
             return content;

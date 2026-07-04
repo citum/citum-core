@@ -27,6 +27,12 @@ impl OutputFormat for OrgOutputFormat {
         output
     }
 
+    /// Render a heading using org-mode stars (`*`, `**`, ...).
+    fn heading(&self, level: u8, content: Self::Output) -> Self::Output {
+        let marks = "*".repeat(level.max(1) as usize);
+        format!("{marks} {content}\n\n")
+    }
+
     /// Render content with emphasis (italics in org-mode: /text/).
     fn emph(&self, content: Self::Output) -> Self::Output {
         if content.is_empty() {

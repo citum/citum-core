@@ -824,10 +824,7 @@ impl Processor {
     where
         F: OutputFormat<Output = String>,
     {
-        if std::any::type_name::<F>() == std::any::type_name::<crate::render::html::Html>() {
-            return format!("<h2>{heading}</h2>\n\n");
-        }
-
-        format!("# {heading}\n\n")
+        let fmt = F::default();
+        fmt.finish(fmt.unnumbered_heading(2, fmt.text(heading)))
     }
 }
