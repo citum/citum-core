@@ -97,14 +97,17 @@ impl CitationParser for MarkdownParser {
 
         let (raw_note_refs, manual_note_labels, footnote_ranges) = scan_manual_notes_markdown(body);
 
-        // Adjust footnote reference offsets and build deduped note order.
+        // All offsets below are relative to `body` (the frontmatter-stripped
+        // slice), matching the DjotParser convention. The pipeline splices
+        // citations into `body`, not the original `content`, so absolute
+        // offsets here would desync as soon as frontmatter is present.
         let mut seen_labels = HashSet::new();
         let mut manual_note_order = Vec::new();
         let manual_note_references: Vec<ManualNoteReference> = raw_note_refs
             .into_iter()
             .map(|r| ManualNoteReference {
                 label: r.label.clone(),
-                start: body_start + r.start,
+                start: r.start,
             })
             .inspect(|r| {
                 if seen_labels.insert(r.label.clone()) {
@@ -113,24 +116,13 @@ impl CitationParser for MarkdownParser {
             })
             .collect();
 
-        // Adjust footnote definition ranges by the body offset.
-        let adjusted_ranges: Vec<FootnoteRange> = footnote_ranges
-            .into_iter()
-            .map(|fr| FootnoteRange {
-                label: fr.label,
-                content: (body_start + fr.content.start)..(body_start + fr.content.end),
-            })
-            .collect();
-
         let citations = find_citations(body, locale)
             .into_iter()
             .map(|(start, end, citation)| {
-                let abs_start = body_start + start;
-                let abs_end = body_start + end;
-                let placement = footnote_placement(abs_start, abs_end, &adjusted_ranges);
+                let placement = footnote_placement(start, end, &footnote_ranges);
                 ParsedCitation {
-                    start: abs_start,
-                    end: abs_end,
+                    start,
+                    end,
                     citation,
                     placement,
                     structure: CitationStructure::default(),
@@ -477,6 +469,7 @@ fn remap_nul_tokens(s: &str) -> (String, Vec<(String, String)>) {
     clippy::expect_used,
     clippy::panic,
     clippy::indexing_slicing,
+    clippy::string_slice,
     clippy::todo,
     clippy::unimplemented,
     clippy::unreachable,
@@ -545,6 +538,26 @@ mod tests {
             citation.items[0].locator,
             Some(CitationLocator::single(LocatorType::Page, "10"))
         );
+    }
+
+    #[test]
+    fn given_frontmatter_when_parse_document_then_citation_offsets_are_body_relative() {
+        let parser = MarkdownParser;
+        let content = "---\ntitle: T\n---\n\nText [@kuhn1962] here.";
+        let parsed = parser.parse_document(content, &Locale::en_us());
+
+        assert_eq!(parsed.citations.len(), 1);
+        let citation = &parsed.citations[0];
+        let body = &content[parsed.body_start..];
+
+        // Offsets must index `body` (post-frontmatter), not `content`.
+        assert!(
+            citation.end <= body.len(),
+            "citation end {} must be within body of length {}",
+            citation.end,
+            body.len()
+        );
+        assert_eq!(&body[citation.start..citation.end], "[@kuhn1962]");
     }
 
     #[test]
