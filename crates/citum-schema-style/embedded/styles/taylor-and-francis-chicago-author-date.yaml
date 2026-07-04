@@ -8,3 +8,4 @@ options:
 bibliography:
   options:
     date-position: after-author
+    anonymous-entries: notes-only

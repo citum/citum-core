@@ -90,6 +90,7 @@ bibliography:
     hanging-indent: true
     entry-suffix: .
     separator: ". "
+    anonymous-entries: container-led
   type-variants:
     article-magazine:
       remove:

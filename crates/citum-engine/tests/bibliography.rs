@@ -626,6 +626,8 @@ info:
   title: Anonymous Entry Policy Test
   id: anonymous-entry-policy-test
 bibliography:
+  options:
+    anonymous-entries: notes-only
   type-variants:
     entry-dictionary:
       - contributor: author

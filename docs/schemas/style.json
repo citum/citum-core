@@ -6105,6 +6105,17 @@
             }
           ]
         },
+        "anonymous-entries": {
+          "description": "Policy for reference-work entries (dictionary/encyclopedia and\ndictionary-shaped chapters) with no visible author. See\n[`AnonymousEntriesMode`].",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AnonymousEntriesMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "links": {
           "description": "Hyperlink configuration.",
           "anyOf": [
@@ -6427,6 +6438,21 @@
           "required": [
             "localized"
           ]
+        }
+      ]
+    },
+    "AnonymousEntriesMode": {
+      "description": "Named policies for anonymous (no visible author) reference-work entries.",
+      "oneOf": [
+        {
+          "description": "Rewrite the entry to lead with the container title.",
+          "type": "string",
+          "const": "container-led"
+        },
+        {
+          "description": "Rewrite the entry to lead with the container title, and additionally\nsuppress print-like entries (no DOI/URL) from the bibliography\nentirely — Chicago's \"well-known reference works are cited in notes\nonly\" convention.",
+          "type": "string",
+          "const": "notes-only"
         }
       ]
     },
