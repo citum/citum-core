@@ -233,22 +233,22 @@ fn render_doc_with_output_format(
             let parser = DjotParser;
             match output_format {
                 OutputFormat::Plain => {
-                    Ok(processor.process_document::<_, PlainText>(content, &parser, doc_format))
+                    Ok(processor.process_document::<_, PlainText>(content, &parser, doc_format)?)
                 }
                 OutputFormat::Html => {
-                    Ok(processor.process_document::<_, Html>(content, &parser, doc_format))
+                    Ok(processor.process_document::<_, Html>(content, &parser, doc_format)?)
                 }
                 OutputFormat::Djot => {
-                    Ok(processor.process_document::<_, Djot>(content, &parser, doc_format))
+                    Ok(processor.process_document::<_, Djot>(content, &parser, doc_format)?)
                 }
                 OutputFormat::Markdown => {
-                    Ok(processor.process_document::<_, Markdown>(content, &parser, doc_format))
+                    Ok(processor.process_document::<_, Markdown>(content, &parser, doc_format)?)
                 }
                 OutputFormat::Latex => {
-                    Ok(processor.process_document::<_, Latex>(content, &parser, doc_format))
+                    Ok(processor.process_document::<_, Latex>(content, &parser, doc_format)?)
                 }
                 OutputFormat::Typst => {
-                    Ok(processor.process_document::<_, Typst>(content, &parser, doc_format))
+                    Ok(processor.process_document::<_, Typst>(content, &parser, doc_format)?)
                 }
             }
         }
@@ -256,22 +256,22 @@ fn render_doc_with_output_format(
             let parser = MarkdownParser;
             match output_format {
                 OutputFormat::Plain => {
-                    Ok(processor.process_document::<_, PlainText>(content, &parser, doc_format))
+                    Ok(processor.process_document::<_, PlainText>(content, &parser, doc_format)?)
                 }
                 OutputFormat::Html => {
-                    Ok(processor.process_document::<_, Html>(content, &parser, doc_format))
+                    Ok(processor.process_document::<_, Html>(content, &parser, doc_format)?)
                 }
                 OutputFormat::Djot => {
-                    Ok(processor.process_document::<_, Djot>(content, &parser, doc_format))
+                    Ok(processor.process_document::<_, Djot>(content, &parser, doc_format)?)
                 }
                 OutputFormat::Markdown => {
-                    Ok(processor.process_document::<_, Markdown>(content, &parser, doc_format))
+                    Ok(processor.process_document::<_, Markdown>(content, &parser, doc_format)?)
                 }
                 OutputFormat::Latex => {
-                    Ok(processor.process_document::<_, Latex>(content, &parser, doc_format))
+                    Ok(processor.process_document::<_, Latex>(content, &parser, doc_format)?)
                 }
                 OutputFormat::Typst => {
-                    Ok(processor.process_document::<_, Typst>(content, &parser, doc_format))
+                    Ok(processor.process_document::<_, Typst>(content, &parser, doc_format)?)
                 }
             }
         }

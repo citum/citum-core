@@ -3,6 +3,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
+use crate::error::ProcessorError;
 use crate::processor::Processor;
 use crate::processor::document::{CitationParser, DocumentFormat, djot::DjotParser};
 use crate::reference::{Bibliography, Reference};
@@ -231,8 +232,9 @@ fn test_author_date_documents_still_render_inline() {
     let parser = DjotParser;
 
     let content = "Visible citation: [@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -247,8 +249,9 @@ fn test_note_style_prose_citation_generates_footnote() {
     let parser = DjotParser;
 
     let content = "Text [@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -263,8 +266,9 @@ fn test_manual_footnote_citations_render_in_place() {
     let parser = DjotParser;
 
     let content = "Text[^m1].\n\n[^m1]: See [@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -279,8 +283,9 @@ fn test_manual_footnote_definition_is_not_duplicated() {
     let parser = DjotParser;
 
     let content = "Text[^m1].\n\n[^m1]: See [@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -295,8 +300,9 @@ fn test_mixed_manual_and_auto_notes_share_sequence() {
     let parser = DjotParser;
 
     let content = "Manual[^m1]. Auto [@item2]. Later[^m2].\n\n[^m1]: First [@item1].\n\n[^m2]: Second [@item2].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -311,8 +317,9 @@ fn test_multiple_citations_in_manual_footnote_are_preserved() {
     let parser = DjotParser;
 
     let content = "Text[^m1].\n\n[^m1]: See [@item1]. Compare [@item2].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -327,8 +334,9 @@ fn test_multi_cite_prose_marker_produces_one_generated_note() {
     let parser = DjotParser;
 
     let content = "Text [@item1; @item2].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -343,8 +351,9 @@ fn test_note_style_preserves_surrounding_punctuation() {
     let parser = DjotParser;
 
     let content = "Sentence [@item1]. Next, [@item2] (see [@item1]).";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -359,8 +368,9 @@ fn test_note_style_default_rule_places_marker_after_period() {
     let parser = DjotParser;
 
     let content = "Sentence [@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -383,8 +393,9 @@ fn test_note_style_config_can_place_marker_before_period() {
     let parser = DjotParser;
 
     let content = "Sentence [@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -407,8 +418,9 @@ fn test_note_style_config_moves_marker_inside_quotes() {
     let parser = DjotParser;
 
     let content = "\"Quoted [@item1].\"";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -423,8 +435,9 @@ fn test_note_order_uses_manual_reference_order_not_definition_order() {
     let parser = DjotParser;
 
     let content = "Manual[^m1]. Later [@item1].\n\n[^m1]: See [@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -439,11 +452,9 @@ fn test_note_style_html_output_contains_footnotes() {
     let parser = DjotParser;
 
     let content = "Text [@item1].";
-    let result = processor.process_document::<_, crate::render::html::Html>(
-        content,
-        &parser,
-        DocumentFormat::Html,
-    );
+    let result = processor
+        .process_document::<_, crate::render::html::Html>(content, &parser, DocumentFormat::Html)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -462,8 +473,9 @@ fn test_note_style_integral_citation_keeps_prose_anchor() {
     let parser = DjotParser;
 
     let content = "Narrative [+@item1] continues.";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -540,8 +552,9 @@ fn test_repro_djot_rendering() {
     let parser = DjotParser;
 
     let content = "Integral: [+@item1]. SuppressAuthor: [-@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(result, "Integral: Doe (2020). SuppressAuthor: (2020).");
 }
@@ -557,8 +570,9 @@ fn test_real_chicago_note_style_generates_djot_footnotes() {
     let parser = DjotParser;
 
     let content = "Text [@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -587,8 +601,9 @@ bibliography:
 
 Some text [@item1]."#;
 
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     // Should have the frontmatter heading and bibliography groups rendered
     // Groups are rendered as H2 sub-headings under the H1 Bibliography heading.
@@ -605,8 +620,9 @@ fn test_document_without_bibliography_blocks_uses_default() {
     let parser = DjotParser;
 
     let content = "Text [@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     // Should have default bibliography heading
     assert_eq!(
@@ -622,7 +638,9 @@ fn test_document_without_bibliography_blocks_uses_typst_heading() {
     let parser = DjotParser;
 
     let content = "Text [@item1].";
-    let result = processor.process_document::<_, Typst>(content, &parser, DocumentFormat::Typst);
+    let result = processor
+        .process_document::<_, Typst>(content, &parser, DocumentFormat::Typst)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -640,8 +658,9 @@ fn test_document_with_inline_bibliography_block() {
     // that citation processing still works. Full inline block attribute parsing
     // would require the block to use proper djot syntax.
     let content = "Text [@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -670,7 +689,9 @@ bibliography:
 
 Some text [@item1]."#;
 
-    let result = processor.process_document::<_, Typst>(content, &parser, DocumentFormat::Typst);
+    let result = processor
+        .process_document::<_, Typst>(content, &parser, DocumentFormat::Typst)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -702,11 +723,9 @@ bibliography:
 
 Some text [@item1]."#;
 
-    let result = processor.process_document::<_, crate::render::html::Html>(
-        content,
-        &parser,
-        DocumentFormat::Html,
-    );
+    let result = processor
+        .process_document::<_, crate::render::html::Html>(content, &parser, DocumentFormat::Html)
+        .expect("document should render");
 
     // Group heading must be a pre-rendered HTML <h2>, not a Markdown ## that leaked through.
     assert!(
@@ -744,8 +763,9 @@ bibliography:
 
 Some text [@item1]."#;
 
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     // Empty "Cases" group must produce no heading or body.
     assert!(
@@ -772,8 +792,9 @@ fn test_integral_name_memory_full_then_short_in_one_document() {
     let parser = DjotParser;
 
     let content = "First [+@item1]. Later [+@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -794,8 +815,9 @@ fn test_suppress_author_counts_as_seen_for_later_integral_name_memory() {
     let parser = DjotParser;
 
     let content = "Hidden [-@item1]. Later [+@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -816,8 +838,9 @@ fn test_integral_name_memory_chapter_reset_uses_full_name_again() {
     let parser = DjotParser;
 
     let content = "# One\n\n[+@item1]. [+@item1].\n\n# Two\n\n[+@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -838,8 +861,9 @@ fn test_integral_name_memory_section_reset_uses_full_name_again() {
     let parser = DjotParser;
 
     let content = "## One\n\n[+@item1]. [+@item1].\n\n## Two\n\n[+@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -858,8 +882,9 @@ fn test_integral_name_memory_body_only_ignores_note_mentions() {
 
     let content =
         "Lead[^n1]. First body [+@item1]. Later body [+@item1].\n\n[^n1]: Note [+@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -880,8 +905,9 @@ fn test_integral_name_memory_body_and_notes_keeps_body_first_after_note_first() 
     let parser = DjotParser;
 
     let content = "Lead[^n1]. First body [+@item1].\n\n[^n1]: First note [+@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -902,8 +928,9 @@ fn test_integral_name_memory_repeated_note_then_body_transitions_correctly() {
     let parser = DjotParser;
 
     let content = "Lead[^n1] and again[^n2]. First body [+@item1]. Later[^n3].\n\n[^n1]: One [+@item1].\n\n[^n2]: Two [+@item1].\n\n[^n3]: Three [+@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -929,8 +956,9 @@ integral-name-memory:
 ---
 
 First [+@item1]. Later [+@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -963,7 +991,9 @@ integral-name-memory:
 # Two
 
 [+@item1].";
-    let result = processor.process_document::<_, Typst>(content, &parser, DocumentFormat::Typst);
+    let result = processor
+        .process_document::<_, Typst>(content, &parser, DocumentFormat::Typst)
+        .expect("document should render");
 
     assert_eq!(
         result,
@@ -999,8 +1029,9 @@ integral-name-memory:
 ---
 
 First [+@item1]. Later [+@item1]."#;
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     // Groups are H2 sub-headings. Unmatched refs (Jane Smith, not cited) are not
     // rendered — use an explicit catch-all group with `selector: {}` to capture them.
@@ -1008,6 +1039,26 @@ First [+@item1]. Later [+@item1]."#;
         result,
         "First John Doe. Later Doe.\n\n# Bibliography\n\n## Cited Works\n\nJohn Doe (2020)"
     );
+}
+
+#[test]
+fn test_document_frontmatter_parse_error_returns_err() {
+    let bib = make_test_bib();
+    let processor = Processor::new(make_author_date_style(), bib);
+    let parser = DjotParser;
+
+    // Malformed YAML (unclosed flow sequence) inside the frontmatter fence
+    // fails `serde_yaml` deserialization, which must surface as an `Err`
+    // rather than terminating the process.
+    let content = "---\noptions: [unclosed\n---\n\nText [@item1].";
+
+    let result =
+        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+
+    match result {
+        Err(ProcessorError::ParseError(name, _)) => assert_eq!(name, "FRONTMATTER"),
+        other => panic!("expected frontmatter ParseError, got {other:?}"),
+    }
 }
 
 /// Build `make_author_date_style` with a catch-all `bibliography.groups` entry so
@@ -1035,8 +1086,9 @@ fn test_grouped_style_document_with_no_citations_omits_bibliography() {
     let parser = DjotParser;
 
     let content = "Some text with no citations.";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(result, "Some text with no citations.");
 }
@@ -1051,8 +1103,9 @@ fn test_grouped_style_document_bibliography_contains_only_cited_references() {
 
     // item1 (Doe 2020) is cited; item2 (Smith 2010) must not appear.
     let content = "Text [@item1].";
-    let result =
-        processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
+    let result = processor
+        .process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain)
+        .expect("document should render");
 
     assert_eq!(
         result,
