@@ -40,14 +40,24 @@ impl Html {
             .replace('<', "&lt;")
             .replace('>', "&gt;")
     }
+
+    /// Escapes the three HTML-active characters (`&`, `<`, `>`) in text content.
+    ///
+    /// Order matters: `&` must be escaped first, otherwise the entities emitted
+    /// for `<` and `>` would themselves be escaped.
+    fn escape_text(value: &str) -> String {
+        value
+            .replace('&', "&amp;")
+            .replace('<', "&lt;")
+            .replace('>', "&gt;")
+    }
 }
 
 impl OutputFormat for Html {
     type Output = String;
 
     fn text(&self, s: &str) -> Self::Output {
-        // As requested, we avoid escaping and use raw Unicode.
-        s.to_string()
+        Self::escape_text(s)
     }
 
     fn join(&self, items: Vec<Self::Output>, delimiter: &str) -> Self::Output {
@@ -155,7 +165,7 @@ impl OutputFormat for Html {
         if content.is_empty() {
             return content;
         }
-        let ids_str = ids.join(" ");
+        let ids_str = Self::escape_attribute_value(&ids.join(" "));
         format!(r#"<span class="citum-citation" data-ref="{ids_str}">{content}</span>"#)
     }
 
