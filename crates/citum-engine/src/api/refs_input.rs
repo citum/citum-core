@@ -28,8 +28,8 @@ use serde::{Deserialize, Serialize};
 pub enum RefsInput {
     /// Local filesystem path to a refs file.
     ///
-    /// YAML/JSON/CBOR extensions are loaded as native Citum refs; `.bib`
-    /// extensions are parsed as BibLaTeX.
+    /// `.bib` extensions are parsed as BibLaTeX; all other extensions are
+    /// parsed as native Citum YAML (JSON parses as a YAML subset).
     Path(String),
     /// Inline YAML refs string.
     Yaml(String),
@@ -190,7 +190,8 @@ impl RefsInput {
     /// Resolve refs input locally from Path, Yaml, Json, or Biblatex variants.
     ///
     /// For `Path` inputs, `.bib` files are parsed as BibLaTeX; all other
-    /// extensions are parsed as native Citum YAML/JSON/CBOR.
+    /// extensions are parsed as native Citum YAML (JSON parses as a YAML
+    /// subset).
     ///
     /// # Errors
     ///
@@ -216,7 +217,12 @@ impl RefsInput {
                         path, e
                     ))
                 })?;
-                let yaml_str = String::from_utf8_lossy(&bytes);
+                let yaml_str = String::from_utf8(bytes).map_err(|_| {
+                    crate::api::FormatDocumentError::RefsInputParse(format!(
+                        "Refs input file '{}' is not valid UTF-8",
+                        path
+                    ))
+                })?;
                 parse_yaml_bibliography(&yaml_str).map_err(|e| {
                     crate::api::FormatDocumentError::RefsInputParse(format!(
                         "Failed to parse refs input from '{}': {}",
@@ -366,6 +372,26 @@ mod tests {
                 assert!(msg.contains("Failed to read"));
             }
             _ => panic!("Expected RefsInputPath error"),
+        }
+    }
+
+    #[test]
+    fn refs_input_path_invalid_utf8_returns_parse_error() {
+        let mut tmp = tempfile::Builder::new()
+            .suffix(".yaml")
+            .tempfile()
+            .expect("Failed to create temp .yaml file");
+        tmp.write_all(&[0xff, 0xfe, 0x00, 0x01])
+            .expect("Failed to write temp file");
+        tmp.flush().expect("Failed to flush temp file");
+
+        let input = RefsInput::Path(tmp.path().to_string_lossy().to_string());
+        let result = input.resolve_local();
+        match result {
+            Err(crate::api::FormatDocumentError::RefsInputParse(msg)) => {
+                assert!(msg.contains("not valid UTF-8"));
+            }
+            _ => panic!("Expected RefsInputParse error"),
         }
     }
 
