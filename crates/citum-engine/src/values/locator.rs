@@ -81,14 +81,19 @@ fn render_with_pattern(
                 let form = kind_cfg
                     .and_then(|cfg| cfg.label_form)
                     .unwrap_or(config.default_label_form);
-                render_segment_with_label(seg, kind_cfg, form, config.strip_label_periods, locale)
+                render_segment_with_label(
+                    seg,
+                    kind_cfg,
+                    form,
+                    config,
+                    config.strip_label_periods,
+                    locale,
+                )
             } else {
-                let kind_range_fmt = kind_cfg
-                    .and_then(|k| k.range_format.clone())
-                    .unwrap_or_else(|| config.range_format.clone());
-                apply_range_format(
+                let range_format = effective_range_format(kind_cfg, config);
+                crate::values::number::format_page_range(
                     seg.value.value_str(),
-                    kind_range_fmt,
+                    Some(&range_format),
                     locale.grammar_options.page_range_delimiter.as_str(),
                 )
             };
@@ -104,12 +109,10 @@ fn render_with_pattern(
         let form = kind_cfg
             .and_then(|cfg| cfg.label_form)
             .unwrap_or(config.default_label_form);
-        let kind_range_fmt = kind_cfg
-            .and_then(|k| k.range_format.clone())
-            .unwrap_or_else(|| config.range_format.clone());
-        let value_str = apply_range_format(
+        let range_format = effective_range_format(kind_cfg, config);
+        let value_str = crate::values::number::format_page_range(
             seg.value.value_str(),
-            kind_range_fmt,
+            Some(&range_format),
             locale.grammar_options.page_range_delimiter.as_str(),
         );
         let rendered_segment = if matches!(form, LabelForm::None) {
@@ -141,16 +144,21 @@ fn render_default(segments: &[LocatorSegment], config: &LocatorConfig, locale: &
             .unwrap_or(config.default_label_form);
 
         let rendered_segment = if matches!(form, LabelForm::None) {
-            let kind_range_fmt = kind_cfg
-                .and_then(|k| k.range_format.clone())
-                .unwrap_or_else(|| config.range_format.clone());
-            apply_range_format(
+            let range_format = effective_range_format(kind_cfg, config);
+            crate::values::number::format_page_range(
                 seg.value.value_str(),
-                kind_range_fmt,
+                Some(&range_format),
                 locale.grammar_options.page_range_delimiter.as_str(),
             )
         } else {
-            render_segment_with_label(seg, kind_cfg, form, config.strip_label_periods, locale)
+            render_segment_with_label(
+                seg,
+                kind_cfg,
+                form,
+                config,
+                config.strip_label_periods,
+                locale,
+            )
         };
 
         rendered.push(rendered_segment);
@@ -164,15 +172,14 @@ fn render_segment_with_label(
     seg: &LocatorSegment,
     kind_cfg: Option<&citum_schema::options::LocatorKindConfig>,
     form: LabelForm,
+    config: &LocatorConfig,
     global_strip: Option<bool>,
     locale: &Locale,
 ) -> String {
-    let kind_range_fmt = kind_cfg
-        .and_then(|k| k.range_format.clone())
-        .unwrap_or(PageRangeFormat::Expanded);
-    let value_str = apply_range_format(
+    let range_format = effective_range_format(kind_cfg, config);
+    let value_str = crate::values::number::format_page_range(
         seg.value.value_str(),
-        kind_range_fmt,
+        Some(&range_format),
         locale.grammar_options.page_range_delimiter.as_str(),
     );
     render_segment_with_label_str(seg, kind_cfg, form, &value_str, global_strip, locale)
@@ -214,71 +221,14 @@ fn render_segment_with_label_str(
     }
 }
 
-/// Apply range format to a value string containing a range separator.
-fn apply_range_format(value: &str, format: PageRangeFormat, delimiter: &str) -> String {
-    // Only act on values containing a range separator
-    let sep_pos = value.find(['-', '–', '—']);
-    let Some(pos) = sep_pos else {
-        return value.to_string();
-    };
-    #[allow(clippy::string_slice, reason = "index from find()")]
-    let start = &value[..pos];
-    // Find end of separator (handle multi-byte em/en-dash)
-    #[allow(clippy::string_slice, reason = "index from find()")]
-    let sep_end = value[pos..]
-        .chars()
-        .next()
-        .map_or(pos + 1, |c| pos + c.len_utf8());
-    #[allow(clippy::string_slice, reason = "index from find() + char len")]
-    let end = value[sep_end..].trim_start();
-    match format {
-        PageRangeFormat::Expanded => {
-            // Expand abbreviated end: "33-5" → "33-35", "100-3" → "100-103"
-            let expanded_end = expand_range_end(start.trim(), end);
-            format!("{start}{delimiter}{expanded_end}")
-        }
-        PageRangeFormat::Minimal => {
-            // Minimal: trim shared prefix from end
-            let minimal_end = minimal_range_end(start.trim(), end);
-            format!("{start}{delimiter}{minimal_end}")
-        }
-        PageRangeFormat::MinimalTwo => {
-            // MinimalTwo: keep at least 2 digits on end
-            let minimal_end = minimal_range_end(start.trim(), end);
-            format!("{start}{delimiter}{minimal_end}")
-        }
-        PageRangeFormat::Chicago | PageRangeFormat::Chicago16 | _ => {
-            // Chicago rules (simplified: same as expanded for now)
-            let expanded_end = expand_range_end(start.trim(), end);
-            format!("{start}{delimiter}{expanded_end}")
-        }
-    }
-}
-
-/// Expand an abbreviated range end relative to start.
-fn expand_range_end(start: &str, end: &str) -> String {
-    if end.len() >= start.len() {
-        return end.to_string();
-    }
-    #[allow(clippy::string_slice, reason = "length checked")]
-    let prefix = &start[..start.len() - end.len()];
-    format!("{prefix}{end}")
-}
-
-/// Compute minimal range end (drop shared leading digits).
-fn minimal_range_end(start: &str, end: &str) -> String {
-    if end.len() >= start.len() {
-        return end.to_string();
-    }
-    // Find how many leading chars are shared
-    let shared = start
-        .chars()
-        .zip(end.chars())
-        .take_while(|(a, b)| a == b)
-        .count();
-    #[allow(clippy::string_slice, reason = "shared is a character boundary")]
-    let result = end[shared..].to_string();
-    result
+/// Resolve the effective range format for a locator segment.
+fn effective_range_format(
+    kind_cfg: Option<&citum_schema::options::LocatorKindConfig>,
+    config: &LocatorConfig,
+) -> PageRangeFormat {
+    kind_cfg
+        .and_then(|k| k.range_format.clone())
+        .unwrap_or_else(|| config.range_format.clone())
 }
 
 /// Check if a reference type matches a TypeClass.
@@ -413,6 +363,99 @@ mod tests {
         assert!(
             !result.contains("p."),
             "label period should be stripped: {result}"
+        );
+    }
+
+    #[test]
+    fn test_render_global_range_format_applies_to_labeled_and_unlabeled_locators() {
+        let config = LocatorConfig {
+            default_label_form: LabelForm::Short,
+            range_format: PageRangeFormat::Chicago,
+            ..Default::default()
+        };
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: en-US
+locators:
+  page:
+    short:
+      singular: "page"
+      plural: "page"
+"#,
+        )
+        .expect("custom locale should parse");
+        let locator = CitationLocator::Single(LocatorSegment {
+            label: LocatorType::Page,
+            value: LocatorValue::Text("3-10".to_string()),
+        });
+
+        assert_eq!(
+            render_locator(&locator, "book", &config, &locale),
+            "page 3–10"
+        );
+
+        let unlabeled_config = LocatorConfig {
+            default_label_form: LabelForm::None,
+            range_format: PageRangeFormat::Chicago,
+            ..Default::default()
+        };
+
+        assert_eq!(
+            render_locator(&locator, "book", &unlabeled_config, &locale),
+            "3–10"
+        );
+    }
+
+    #[test]
+    fn test_render_kind_range_override_applies_to_labeled_and_unlabeled_locators() {
+        let mut kinds = std::collections::HashMap::new();
+        kinds.insert(
+            LocatorType::Page,
+            citum_schema::options::LocatorKindConfig {
+                range_format: Some(PageRangeFormat::Chicago),
+                ..Default::default()
+            },
+        );
+        let config = LocatorConfig {
+            default_label_form: LabelForm::Short,
+            range_format: PageRangeFormat::Expanded,
+            kinds,
+            ..Default::default()
+        };
+        let locale = Locale::from_yaml_str(
+            r#"
+locale: en-US
+locators:
+  page:
+    short:
+      singular: "page"
+      plural: "page"
+"#,
+        )
+        .expect("custom locale should parse");
+        let labeled = CitationLocator::Single(LocatorSegment {
+            label: LocatorType::Page,
+            value: LocatorValue::Text("505-517".to_string()),
+        });
+        let unlabeled = CitationLocator::Single(LocatorSegment {
+            label: LocatorType::Page,
+            value: LocatorValue::Text("1002-1006".to_string()),
+        });
+
+        assert_eq!(
+            render_locator(&labeled, "book", &config, &locale),
+            "page 505–17"
+        );
+
+        let unlabeled_config = LocatorConfig {
+            default_label_form: LabelForm::None,
+            range_format: PageRangeFormat::Expanded,
+            kinds: config.kinds.clone(),
+            ..Default::default()
+        };
+        assert_eq!(
+            render_locator(&unlabeled, "book", &unlabeled_config, &locale),
+            "1002–6"
         );
     }
 
