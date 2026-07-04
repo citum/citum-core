@@ -17,19 +17,30 @@ pub(crate) fn serialize_any<T: serde::Serialize>(
     match ext {
         "yaml" | "yml" => serde_yaml::to_string(obj)
             .map(String::into_bytes)
-            .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string())),
+            .map_err(|e| ProcessorError::RefsParse {
+                name: "YAML".to_string(),
+                message: e.to_string(),
+            }),
         "json" => serde_json::to_string_pretty(obj)
             .map(String::into_bytes)
-            .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string())),
+            .map_err(|e| ProcessorError::RefsParse {
+                name: "JSON".to_string(),
+                message: e.to_string(),
+            }),
         "cbor" => {
             let mut buf = Vec::new();
-            ciborium::ser::into_writer(obj, &mut buf)
-                .map_err(|e| ProcessorError::ParseError("CBOR".to_string(), e.to_string()))?;
+            ciborium::ser::into_writer(obj, &mut buf).map_err(|e| ProcessorError::RefsParse {
+                name: "CBOR".to_string(),
+                message: e.to_string(),
+            })?;
             Ok(buf)
         }
         _ => serde_yaml::to_string(obj)
             .map(String::into_bytes)
-            .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string())),
+            .map_err(|e| ProcessorError::RefsParse {
+                name: "YAML".to_string(),
+                message: e.to_string(),
+            }),
     }
 }
 

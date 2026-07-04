@@ -1058,8 +1058,8 @@ fn test_document_frontmatter_parse_error_returns_err() {
         processor.process_document::<_, PlainText>(content, &parser, DocumentFormat::Plain);
 
     match result {
-        Err(ProcessorError::ParseError(name, _)) => assert_eq!(name, "FRONTMATTER"),
-        other => panic!("expected frontmatter ParseError, got {other:?}"),
+        Err(ProcessorError::FrontmatterParse(_)) => {}
+        other => panic!("expected frontmatter parse error, got {other:?}"),
     }
 }
 

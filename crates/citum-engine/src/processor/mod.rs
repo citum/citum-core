@@ -159,22 +159,19 @@ pub fn validate_compound_sets(
         let mut seen_in_set: std::collections::HashSet<String> = std::collections::HashSet::new();
         for member in members {
             if !seen_in_set.insert(member.clone()) {
-                return Err(crate::error::ProcessorError::ParseError(
-                    "BIBLIOGRAPHY".to_string(),
+                return Err(crate::error::ProcessorError::CompoundSetValidation(
                     format!(
                         "reference '{member}' appears more than once in compound set '{set_id}'"
                     ),
                 ));
             }
             if !bibliography.contains_key(member) {
-                return Err(crate::error::ProcessorError::ParseError(
-                    "BIBLIOGRAPHY".to_string(),
+                return Err(crate::error::ProcessorError::CompoundSetValidation(
                     format!("compound set '{set_id}' references unknown id '{member}'"),
                 ));
             }
             if let Some(existing) = member_owner.insert(member.clone(), set_id.clone()) {
-                return Err(crate::error::ProcessorError::ParseError(
-                    "BIBLIOGRAPHY".to_string(),
+                return Err(crate::error::ProcessorError::CompoundSetValidation(
                     format!(
                         "reference '{member}' appears in both compound sets '{existing}' and '{set_id}'"
                     ),

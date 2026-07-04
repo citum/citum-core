@@ -16,6 +16,8 @@ use citum_schema::InputBibliography;
 ///
 /// Returns an error when the file cannot be read or parsed as BibLaTeX.
 pub(crate) fn load_biblatex_bibliography(path: &Path) -> Result<InputBibliography, ProcessorError> {
-    citum_refs::formats::biblatex::load_biblatex(path)
-        .map_err(|e| ProcessorError::ParseError("BibLaTeX".to_string(), e.to_string()))
+    citum_refs::formats::biblatex::load_biblatex(path).map_err(|e| ProcessorError::RefsParse {
+        name: "BibLaTeX".to_string(),
+        message: e.to_string(),
+    })
 }

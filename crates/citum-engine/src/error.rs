@@ -28,16 +28,31 @@ pub enum ProcessorError {
     #[error("File I/O error: {0}")]
     FileIO(#[from] std::io::Error),
 
-    /// Parsing a named input failed with a message describing the problem.
-    #[error("Parse error ({0}): {1}")]
-    ParseError(String, String),
+    /// Frontmatter parsing failed for a document input.
+    #[error("Frontmatter parse error: {0}")]
+    FrontmatterParse(String),
+
+    /// Compound-set validation failed for a bibliography input.
+    #[error("Compound set validation error: {0}")]
+    CompoundSetValidation(String),
+
+    /// Parsing a named reference input failed with a message describing the problem.
+    #[error("Parse error ({name}): {message}")]
+    RefsParse {
+        /// Name of the input format or source that failed to parse.
+        name: String,
+        /// Human-readable parser message.
+        message: String,
+    },
 }
 
 impl From<citum_refs::RefsError> for ProcessorError {
     fn from(e: citum_refs::RefsError) -> Self {
         match e {
             citum_refs::RefsError::FileIO(io) => ProcessorError::FileIO(io),
-            citum_refs::RefsError::ParseError(name, msg) => ProcessorError::ParseError(name, msg),
+            citum_refs::RefsError::ParseError(name, message) => {
+                ProcessorError::RefsParse { name, message }
+            }
         }
     }
 }

@@ -4,7 +4,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
 use super::*;
-use crate::{Bibliography, Citation, CitationItem, Reference};
+use crate::{Bibliography, Citation, CitationItem, ProcessorError, Reference};
 use citum_schema::BibliographyOptions;
 use citum_schema::options::{
     AndOptions, ContributorConfig, DisplayAsSort, GivennameRule, LabelConfig, LabelPreset,
@@ -5003,11 +5003,13 @@ fn given_duplicate_compound_membership_when_using_checked_constructors_then_an_e
     sets.insert("group-2".to_string(), vec!["ref-a".to_string()]);
 
     let err = Processor::try_with_compound_sets(style, bib, sets).expect_err("must reject sets");
-    assert!(
-        err.to_string()
-            .contains("appears in both compound sets 'group-1' and 'group-2'"),
-        "unexpected error: {err}"
-    );
+    match err {
+        ProcessorError::CompoundSetValidation(msg) => assert!(
+            msg.contains("appears in both compound sets 'group-1' and 'group-2'"),
+            "unexpected error: {msg}"
+        ),
+        other => panic!("unexpected error: {other:?}"),
+    }
 }
 
 /// Verifies forgiving constructors drop invalid compound sets while checked ones error.
@@ -5045,11 +5047,13 @@ fn given_invalid_compound_sets_when_using_forgiving_constructors_then_they_fall_
 
     let err = Processor::try_with_locale_and_compound_sets(style, bib, Locale::en_us(), sets)
         .expect_err("checked constructor must reject invalid sets");
-    assert!(
-        err.to_string()
-            .contains("appears in both compound sets 'group-1' and 'group-2'"),
-        "unexpected error: {err}"
-    );
+    match err {
+        ProcessorError::CompoundSetValidation(msg) => assert!(
+            msg.contains("appears in both compound sets 'group-1' and 'group-2'"),
+            "unexpected error: {msg}"
+        ),
+        other => panic!("unexpected error: {other:?}"),
+    }
 }
 
 /// Tests that grouped integral citations with an explicit integral template

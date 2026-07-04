@@ -88,44 +88,29 @@ pub struct FormatDocumentResult {
 }
 
 /// Errors that can occur during document formatting.
-#[derive(Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum FormatDocumentError {
     /// The style ID or URI requires a resolver chain not available in the engine.
+    #[error("Unresolved style input: {0}")]
     UnresolvedInput(String),
     /// Failed to parse the style YAML.
+    #[error("Style parse error: {0}")]
     StyleParse(String),
     /// Failed to read or locate the style file.
+    #[error("Style path error: {0}")]
     StylePath(String),
     /// Failed to read a local refs input path.
+    #[error("Refs input path error: {0}")]
     RefsInputPath(String),
     /// Failed to parse refs input data.
+    #[error("Refs input parse error: {0}")]
     RefsInputParse(String),
     /// The processor encountered an error during rendering.
-    Processing(ProcessorError),
+    #[error("Processing error: {0}")]
+    Processing(#[from] ProcessorError),
     /// Style inheritance (`extends`) could not be resolved.
+    #[error("Style resolution error: {0}")]
     StyleResolution(String),
-}
-
-impl std::fmt::Display for FormatDocumentError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::UnresolvedInput(msg) => write!(f, "Unresolved style input: {}", msg),
-            Self::StyleParse(msg) => write!(f, "Style parse error: {}", msg),
-            Self::StylePath(msg) => write!(f, "Style path error: {}", msg),
-            Self::RefsInputPath(msg) => write!(f, "Refs input path error: {}", msg),
-            Self::RefsInputParse(msg) => write!(f, "Refs input parse error: {}", msg),
-            Self::Processing(err) => write!(f, "Processing error: {}", err),
-            Self::StyleResolution(msg) => write!(f, "Style resolution error: {}", msg),
-        }
-    }
-}
-
-impl std::error::Error for FormatDocumentError {}
-
-impl From<ProcessorError> for FormatDocumentError {
-    fn from(err: ProcessorError) -> Self {
-        Self::Processing(err)
-    }
 }
 
 /// Parse a partial-style overlay (YAML or JSON) and merge it over `style` in place.
