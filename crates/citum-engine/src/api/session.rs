@@ -70,32 +70,17 @@ pub struct PreviewCitationResult {
 }
 
 /// Errors returned by the stateful session API.
-#[derive(Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum DocumentSessionError {
     /// The requested citation does not exist in the session.
+    #[error("citation not found: {0}")]
     CitationNotFound(String),
     /// The requested insertion position is invalid.
+    #[error("invalid citation position: {0}")]
     InvalidPosition(String),
     /// Rendering failed while recomputing session output.
-    Format(FormatDocumentError),
-}
-
-impl std::fmt::Display for DocumentSessionError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::CitationNotFound(id) => write!(f, "citation not found: {id}"),
-            Self::InvalidPosition(msg) => write!(f, "invalid citation position: {msg}"),
-            Self::Format(err) => write!(f, "{err}"),
-        }
-    }
-}
-
-impl std::error::Error for DocumentSessionError {}
-
-impl From<FormatDocumentError> for DocumentSessionError {
-    fn from(err: FormatDocumentError) -> Self {
-        Self::Format(err)
-    }
+    #[error(transparent)]
+    Format(#[from] FormatDocumentError),
 }
 
 /// Stateful facade over whole-document citation rendering.

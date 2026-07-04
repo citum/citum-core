@@ -54,33 +54,39 @@ pub fn load_citations(path: &Path) -> Result<Vec<Citation>, ProcessorError> {
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
 
     if ext == "json" {
-        let _: serde_json::Value = serde_json::from_slice(&bytes)
-            .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+        let _: serde_json::Value =
+            serde_json::from_slice(&bytes).map_err(|e| ProcessorError::RefsParse {
+                name: "JSON".to_string(),
+                message: e.to_string(),
+            })?;
 
         if let Ok(citations) = serde_json::from_slice::<Vec<Citation>>(&bytes) {
             return Ok(citations);
         }
         match serde_json::from_slice::<Citation>(&bytes) {
             Ok(citation) => Ok(vec![citation]),
-            Err(e) => Err(ProcessorError::ParseError(
-                "JSON".to_string(),
-                e.to_string(),
-            )),
+            Err(e) => Err(ProcessorError::RefsParse {
+                name: "JSON".to_string(),
+                message: e.to_string(),
+            }),
         }
     } else {
         let content = String::from_utf8_lossy(&bytes);
-        let _: serde_yaml::Value = serde_yaml::from_str(&content)
-            .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))?;
+        let _: serde_yaml::Value =
+            serde_yaml::from_str(&content).map_err(|e| ProcessorError::RefsParse {
+                name: "YAML".to_string(),
+                message: e.to_string(),
+            })?;
 
         if let Ok(citations) = serde_yaml::from_str::<Vec<Citation>>(&content) {
             return Ok(citations);
         }
         match serde_yaml::from_str::<Citation>(&content) {
             Ok(citation) => Ok(vec![citation]),
-            Err(e) => Err(ProcessorError::ParseError(
-                "YAML".to_string(),
-                e.to_string(),
-            )),
+            Err(e) => Err(ProcessorError::RefsParse {
+                name: "YAML".to_string(),
+                message: e.to_string(),
+            }),
         }
     }
 }
@@ -98,18 +104,32 @@ pub fn load_annotations(path: &Path) -> Result<HashMap<String, String>, Processo
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("yaml");
 
     if ext == "json" {
-        let _: serde_json::Value = serde_json::from_slice(&bytes)
-            .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+        let _: serde_json::Value =
+            serde_json::from_slice(&bytes).map_err(|e| ProcessorError::RefsParse {
+                name: "JSON".to_string(),
+                message: e.to_string(),
+            })?;
 
-        serde_json::from_slice::<HashMap<String, String>>(&bytes)
-            .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))
+        serde_json::from_slice::<HashMap<String, String>>(&bytes).map_err(|e| {
+            ProcessorError::RefsParse {
+                name: "JSON".to_string(),
+                message: e.to_string(),
+            }
+        })
     } else {
         let content = String::from_utf8_lossy(&bytes);
-        let _: serde_yaml::Value = serde_yaml::from_str(&content)
-            .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))?;
+        let _: serde_yaml::Value =
+            serde_yaml::from_str(&content).map_err(|e| ProcessorError::RefsParse {
+                name: "YAML".to_string(),
+                message: e.to_string(),
+            })?;
 
-        serde_yaml::from_str::<HashMap<String, String>>(&content)
-            .map_err(|e| ProcessorError::ParseError("YAML".to_string(), e.to_string()))
+        serde_yaml::from_str::<HashMap<String, String>>(&content).map_err(|e| {
+            ProcessorError::RefsParse {
+                name: "YAML".to_string(),
+                message: e.to_string(),
+            }
+        })
     }
 }
 
@@ -219,8 +239,11 @@ pub fn write_output_bibliography(
                 .iter()
                 .map(formats::input_reference_to_csl_json)
                 .collect();
-            let json = serde_json::to_string_pretty(&refs)
-                .map_err(|e| ProcessorError::ParseError("JSON".to_string(), e.to_string()))?;
+            let json =
+                serde_json::to_string_pretty(&refs).map_err(|e| ProcessorError::RefsParse {
+                    name: "JSON".to_string(),
+                    message: e.to_string(),
+                })?;
             fs::write(path, json)?;
         }
         RefsFormat::Biblatex => {

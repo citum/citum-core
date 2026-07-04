@@ -46,8 +46,8 @@ impl Processor {
     ///
     /// # Errors
     ///
-    /// Returns `ProcessorError::ParseError` when the document's frontmatter
-    /// fails to parse.
+    /// Returns `ProcessorError::FrontmatterParse` when the document's
+    /// frontmatter fails to parse.
     #[allow(
         clippy::string_slice,
         reason = "parser-guaranteed boundaries and indices"
@@ -65,10 +65,7 @@ impl Processor {
         let mut parsed = parser.parse_document(content, &self.locale);
 
         if let Some(err) = &parsed.frontmatter_error {
-            return Err(ProcessorError::ParseError(
-                "FRONTMATTER".to_string(),
-                err.clone(),
-            ));
+            return Err(ProcessorError::FrontmatterParse(err.clone()));
         }
 
         // `options.*` fields take precedence over the legacy top-level fields.
