@@ -17,4 +17,6 @@ grammar-options:
   nbsp-before-colon: false
   serial-comma: true
   page-range-delimiter: "\u2013"
+  title-subtitle-delimiter: ": "
+  subtitle-delimiter: "; "
 legacy-term-aliases: {}

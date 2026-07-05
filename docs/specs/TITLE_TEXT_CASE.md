@@ -1,10 +1,12 @@
 # Title Text-Case Semantics Specification
 
 **Status:** Active
-**Version:** 1.0
-**Date:** 2026-03-11
+**Version:** 1.2
+**Date:** 2026-07-05
 **Supersedes:** none
-**Related:** `csl26-wv5o`, `csl26-suz3`, `docs/specs/DJOT_RICH_TEXT.md`
+**Related:** `csl26-wv5o`, `csl26-suz3`, `csl26-01jy`, GitHub issue
+[#1010](https://github.com/citum/citum-core/issues/1010),
+`docs/specs/DJOT_RICH_TEXT.md`
 
 ## Purpose
 
@@ -119,6 +121,61 @@ recognize at least these punctuation boundaries:
 
 Semicolon does not create a subtitle boundary by default.
 
+### Structured Title Delimiters
+
+Structured title rendering must distinguish the delimiter between the main
+title and the subtitle group from the delimiter between subtitle parts.
+
+Normative rules:
+
+- Locale `grammar-options.title-subtitle-delimiter` joins the main title to
+  the subtitle group.
+- Locale `grammar-options.subtitle-delimiter` joins subtitle parts to each
+  other and is repeated for each additional subtitle part.
+- Locale defaults are `": "` for `title-subtitle-delimiter` and `"; "` for
+  `subtitle-delimiter`.
+- `options.titles.<category>.primary-delimiter` overrides the locale main
+  title to subtitle delimiter for that title category.
+- `options.titles.<category>.subtitle-delimiter` overrides the locale
+  subtitle-to-subtitle delimiter for that title category.
+- `options.titles.default` applies delimiter overrides to all title categories
+  that do not have a more specific category entry.
+- A style may set only one delimiter; the unset delimiter keeps the locale
+  default.
+- Empty strings are valid explicit delimiter values.
+- `form: short` renders only the main title and ignores both delimiter options.
+- Delimiter defaults are locale-owned. Style delimiter keys express
+  style-specific overrides; they are not the default source of language
+  punctuation. This spec does not require an MF2 message path for structured
+  title assembly.
+
+For example:
+
+```yaml
+options:
+  titles:
+    monograph:
+      primary-delimiter: ": "
+      subtitle-delimiter: ". "
+```
+
+renders a structured title as:
+
+```text
+Main title: subtitle 1. subtitle 2
+```
+
+To set the same delimiter overrides for all title categories, author them under
+`options.titles.default`:
+
+```yaml
+options:
+  titles:
+    default:
+      primary-delimiter: ". "
+      subtitle-delimiter: "; "
+```
+
 ### Case Protection
 
 Citum must define an internal case-protection concept that all case transforms
@@ -228,6 +285,8 @@ capabilities are required, even if the final YAML or Rust surface differs:
 - a way to carry semantic span roles where they are useful
 - a way to model explicit main-title and subtitle structure, including multiple
   subtitles
+- a style-level way to configure the main-title-to-subtitle delimiter and the
+  delimiter repeated between subtitle parts
 - a way to declare when a field intentionally deviates from the sentence-case
   default assumption
 
@@ -341,6 +400,8 @@ direction. The remaining disagreements or unresolved choices are:
       compatible with Djot spans, CSL `.nocase`, and BibTeX-style protection
 - [ ] The specification states that structured title parts, including multiple
       subtitles, are the normative rendering model
+- [ ] The specification defines style-owned structured-title delimiters for
+      the main/subtitle boundary and subtitle/subtitle boundaries
 - [ ] The specification distinguishes generic protected spans from richer
       semantic span roles
 - [ ] The specification adopts sentence case as the default portability
@@ -355,6 +416,8 @@ direction. The remaining disagreements or unresolved choices are:
 - v1.0 (2026-03-11): Initial draft synthesized from `perplexity.md` and
   `gem.md`.
 - v1.1 (2026-03-12): Implementation notes added.
+- v1.2 (2026-07-05): Added style-owned structured title delimiters for
+  main/subtitle and subtitle/subtitle boundaries.
 
 ## Deferred Behavior
 

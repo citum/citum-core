@@ -15,7 +15,8 @@ use crate::values::text_case::{self, apply_text_case, capitalize_first_word};
 use crate::values::{
     ComponentValues, ProcHints, ProcValues, RenderOptions, effective_component_language,
 };
-use citum_schema::options::titles::TextCase;
+use citum_schema::locale::Locale;
+use citum_schema::options::titles::{TextCase, TitleRendering};
 use citum_schema::reference::ClassExtension;
 use citum_schema::reference::types::{StructuredTitle, Subtitle, Title};
 use citum_schema::template::{TemplateComponent, TemplateTitle, TitleForm, TitleType};
@@ -219,6 +220,8 @@ fn render_structured_title<F: crate::render::format::OutputFormat<Output = Strin
     case: Option<TextCase>,
     short: bool,
     quote_depth: usize,
+    primary_delimiter: &str,
+    subtitle_delimiter: &str,
 ) -> (String, bool) {
     let (main_rendered, has_link) = render_part_with_case(&st.main, fmt, case, quote_depth);
     if short {
@@ -230,21 +233,29 @@ fn render_structured_title<F: crate::render::format::OutputFormat<Output = Strin
         other => other,
     });
 
-    let mut parts = vec![main_rendered];
     let mut has_link = has_link;
 
     let subs: Vec<&str> = match &st.sub {
         Subtitle::String(s) => vec![s.as_str()],
         Subtitle::Vector(v) => v.iter().map(std::string::String::as_str).collect(),
     };
+    if subs.is_empty() {
+        return (main_rendered, has_link);
+    }
 
+    let mut rendered_subtitles = Vec::with_capacity(subs.len());
     for sub in subs {
         let (sub_rendered, sub_link) = render_part_with_case(sub, fmt, subtitle_case, quote_depth);
         has_link |= sub_link;
-        parts.push(sub_rendered);
+        rendered_subtitles.push(sub_rendered);
     }
+    let subtitle_group = rendered_subtitles.join(subtitle_delimiter);
 
-    (parts.join(": "), has_link)
+    let mut rendered = main_rendered;
+    rendered.push_str(primary_delimiter);
+    rendered.push_str(&subtitle_group);
+
+    (rendered, has_link)
 }
 
 /// Resolve the effective text-case for this title component.
@@ -298,6 +309,35 @@ pub(crate) fn resolve_substitute_text_case(
     )?;
     let tc = rendering.text_case?;
     Some(apply_language_fallback(tc, reference))
+}
+
+fn resolve_effective_title_rendering(
+    template: &TemplateTitle,
+    reference: &Reference,
+    options: &RenderOptions<'_>,
+) -> Option<TitleRendering> {
+    let component = TemplateComponent::Title(template.clone());
+    let item_language = effective_component_language(reference, &component);
+    let ref_type = reference.ref_type();
+    crate::render::component::get_title_category_title_rendering(
+        &template.title,
+        Some(&ref_type),
+        item_language.as_deref(),
+        &options.config,
+    )
+}
+
+fn structured_title_delimiters<'a>(
+    rendering: Option<&'a TitleRendering>,
+    locale: &'a Locale,
+) -> (&'a str, &'a str) {
+    let primary_delimiter = rendering
+        .and_then(|rendering| rendering.primary_delimiter.as_deref())
+        .unwrap_or(locale.grammar_options.title_subtitle_delimiter.as_str());
+    let subtitle_delimiter = rendering
+        .and_then(|rendering| rendering.subtitle_delimiter.as_deref())
+        .unwrap_or(locale.grammar_options.subtitle_delimiter.as_str());
+    (primary_delimiter, subtitle_delimiter)
 }
 
 fn effective_title_quote_depth(
@@ -370,10 +410,12 @@ impl ComponentValues for TemplateTitle {
 
         let title = resolve_primary_title(reference, &self.title)?;
         let effective_case = resolve_effective_text_case(self, reference, options);
+        let effective_title_rendering = resolve_effective_title_rendering(self, reference, options);
         let (value, has_explicit_link, pre_formatted) = render_title_variant::<F>(
             &title,
             self.form.as_ref(),
             effective_case,
+            effective_title_rendering.as_ref(),
             options,
             quote_depth,
         );
@@ -432,6 +474,7 @@ fn render_title_variant<F: crate::render::format::OutputFormat<Output = String>>
     title: &Title,
     form: Option<&TitleForm>,
     effective_case: Option<TextCase>,
+    effective_title_rendering: Option<&TitleRendering>,
     options: &RenderOptions<'_>,
     quote_depth: usize,
 ) -> (String, bool, bool) {
@@ -439,8 +482,17 @@ fn render_title_variant<F: crate::render::format::OutputFormat<Output = String>>
     match title {
         Title::Structured(st) => {
             let short = matches!(form, Some(TitleForm::Short));
-            let (value, has_link) =
-                render_structured_title(st, &fmt, effective_case, short, quote_depth);
+            let (primary_delimiter, subtitle_delimiter) =
+                structured_title_delimiters(effective_title_rendering, options.locale);
+            let (value, has_link) = render_structured_title(
+                st,
+                &fmt,
+                effective_case,
+                short,
+                quote_depth,
+                primary_delimiter,
+                subtitle_delimiter,
+            );
             let pre_formatted = if short {
                 looks_like_djot_markup(&st.main)
             } else {

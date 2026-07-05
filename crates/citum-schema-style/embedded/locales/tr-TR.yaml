@@ -803,6 +803,8 @@ grammar-options:
   close-inner-quote: "'"
   serial-comma: false
   page-range-delimiter: "-"
+  title-subtitle-delimiter: ": "
+  subtitle-delimiter: "; "
 
 legacy-term-aliases:
   page: term.page-label

@@ -470,6 +470,12 @@ pub struct GrammarOptions {
     /// Delimiter between page range endpoints.
     #[serde(default = "default_page_range_delimiter")]
     pub page_range_delimiter: String,
+    /// Delimiter between a structured title's main title and subtitle group.
+    #[serde(default = "default_title_subtitle_delimiter")]
+    pub title_subtitle_delimiter: String,
+    /// Delimiter between subtitle parts inside a structured title.
+    #[serde(default = "default_subtitle_delimiter")]
+    pub subtitle_delimiter: String,
 }
 
 impl Default for GrammarOptions {
@@ -483,6 +489,8 @@ impl Default for GrammarOptions {
             close_inner_quote: default_close_inner_quote(),
             serial_comma: false,
             page_range_delimiter: default_page_range_delimiter(),
+            title_subtitle_delimiter: default_title_subtitle_delimiter(),
+            subtitle_delimiter: default_subtitle_delimiter(),
         }
     }
 }
@@ -505,6 +513,14 @@ fn default_close_inner_quote() -> String {
 
 fn default_page_range_delimiter() -> String {
     "\u{2013}".into()
+}
+
+fn default_title_subtitle_delimiter() -> String {
+    ": ".into()
+}
+
+fn default_subtitle_delimiter() -> String {
+    "; ".into()
 }
 
 /// Message syntax variant active in a locale file.

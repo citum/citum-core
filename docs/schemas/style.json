@@ -4500,6 +4500,20 @@
             }
           ]
         },
+        "primary-delimiter": {
+          "description": "Delimiter between the main title and the first subtitle.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "subtitle-delimiter": {
+          "description": "Delimiter between subtitle parts when a title has multiple subtitles.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "emph": {
           "type": [
             "boolean",

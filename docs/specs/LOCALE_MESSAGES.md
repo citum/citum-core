@@ -571,6 +571,8 @@ grammar-options:
   close-inner-quote:    "\u2019"
   serial-comma:         true
   page-range-delimiter: "\u2013"
+  title-subtitle-delimiter: ": "
+  subtitle-delimiter:   "; "
 
 legacy-term-aliases:
   page:          term.page-label
@@ -648,6 +650,8 @@ grammar-options:
   close-inner-quote:    "\u2018"
   serial-comma:         false
   page-range-delimiter: "\u2013"
+  title-subtitle-delimiter: ": "
+  subtitle-delimiter:   "; "
 ```
 
 The same message IDs (`term.page-label`, `role.editor.verb`) carry
@@ -663,6 +667,8 @@ language-specific realizations without any change to the style YAML.
 | `open-inner-quote` / `close-inner-quote` | `string` | Nested quotation marks. |
 | `serial-comma` | `bool` | Oxford comma before final list conjunction. |
 | `page-range-delimiter` | `string` | Default separator between page range endpoints. |
+| `title-subtitle-delimiter` | `string` | Default separator between a structured title's main title and subtitle group. |
+| `subtitle-delimiter` | `string` | Default separator between subtitle parts inside a structured title. |
 
 ---
 
@@ -863,6 +869,8 @@ pub struct RawGrammarOptions {
     pub close_inner_quote: Option<String>,
     pub serial_comma: Option<bool>,
     pub page_range_delimiter: Option<String>,
+    pub title_subtitle_delimiter: Option<String>,
+    pub subtitle_delimiter: Option<String>,
 }
 ```
 

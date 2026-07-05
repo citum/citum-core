@@ -117,6 +117,12 @@ pub struct TitleRendering {
     /// Text-case transform to apply to this title category.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text_case: Option<TextCase>,
+    /// Delimiter between the main title and the first subtitle.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub primary_delimiter: Option<String>,
+    /// Delimiter between subtitle parts when a title has multiple subtitles.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub subtitle_delimiter: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub emph: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -144,6 +150,8 @@ pub struct TitleRendering {
 }
 
 impl TitleRendering {
+    /// Convert title rendering fields shared by generic components into a
+    /// template rendering configuration.
     pub fn to_rendering(&self) -> crate::template::Rendering {
         crate::template::Rendering {
             text_case: self.text_case,
@@ -157,6 +165,27 @@ impl TitleRendering {
         }
     }
 
+    /// Merge another title rendering configuration into this one.
+    ///
+    /// The other rendering takes precedence, overwriting any fields that are present.
+    pub fn merge(&mut self, other: &TitleRendering) {
+        crate::merge_options!(
+            self,
+            other,
+            text_case,
+            primary_delimiter,
+            subtitle_delimiter,
+            emph,
+            quote,
+            strong,
+            small_caps,
+            prefix,
+            suffix,
+            locale_overrides,
+        );
+    }
+
+    /// Return the most specific language override for a language tag.
     pub fn locale_override(&self, language: Option<&str>) -> Option<&TitleRendering> {
         let overrides = self.locale_overrides.as_ref()?;
         let language = language?;
