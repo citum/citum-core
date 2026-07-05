@@ -843,22 +843,10 @@ pub(super) fn from_dataset_ref(
 ) -> InputReference {
     let original = legacy_original_relation(&legacy);
     let version = legacy_extra_str(&legacy, "version");
-    let synthesized_title = ctx.title.clone().or_else(|| {
-        legacy
-            .genre
-            .as_ref()
-            .map(|genre| format!("[{genre}]"))
-            .map(|title| {
-                version
-                    .as_ref()
-                    .map(|version| format!("{title} (Version {version})"))
-                    .unwrap_or(title)
-            })
-    });
 
     InputReference::Dataset(Box::new(Dataset {
         id: ctx.id,
-        title: build_title(synthesized_title, ctx.short_title.clone()),
+        title: build_title(ctx.title.clone(), ctx.short_title.clone()),
         author: legacy.author.map(Contributor::from),
         original,
         created: ctx.created,
@@ -868,6 +856,7 @@ pub(super) fn from_dataset_ref(
             place: legacy.publisher_place.map(Into::into),
         }),
         version,
+        genre: legacy.genre,
         format: legacy.medium,
         size: None,
         repository: None,

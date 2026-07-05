@@ -97,6 +97,13 @@ pub struct Locale {
     /// Vocabulary maps for genre and medium display text.
     #[serde(default, skip_serializing_if = "VocabMap::is_empty")]
     pub vocab: VocabMap,
+    /// Reference-type description terms, keyed by CSL-style `ref_type`
+    /// spelling (e.g. `"dataset"`, `"article-journal"`). Used by the
+    /// `type-label` template component to resolve a localized fallback
+    /// label when a reference has no `genre`/`medium` override. See
+    /// `docs/specs/TYPE_CLASSIFICATION_CENTRALIZATION.md`.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub type_terms: HashMap<String, SimpleTerm>,
     /// Message evaluator implementation (not serialized; set during load).
     #[serde(skip, default = "default_evaluator")]
     #[cfg_attr(feature = "schema", schemars(skip))]
@@ -126,6 +133,7 @@ impl Default for Locale {
             grammar_options: GrammarOptions::default(),
             legacy_term_aliases: HashMap::default(),
             vocab: VocabMap::default(),
+            type_terms: HashMap::default(),
             evaluator: default_evaluator(),
         }
     }
@@ -149,6 +157,7 @@ impl fmt::Debug for Locale {
             .field("grammar_options", &self.grammar_options)
             .field("legacy_term_aliases", &self.legacy_term_aliases)
             .field("vocab", &self.vocab)
+            .field("type_terms", &self.type_terms)
             .field("evaluator", &"<MessageEvaluator>")
             .finish()
     }

@@ -97,6 +97,7 @@ macro_rules! dispatch_component {
             $crate::template::TemplateComponent::Message($inner) => $action,
             $crate::template::TemplateComponent::Group($inner) => $action,
             $crate::template::TemplateComponent::Term($inner) => $action,
+            $crate::template::TemplateComponent::TypeLabel($inner) => $action,
         }
     };
 }

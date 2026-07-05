@@ -396,6 +396,25 @@ impl Locale {
             .map(ToOwned::to_owned)
     }
 
+    /// Resolve a reference-type description term (e.g. `"dataset"`,
+    /// `"article-journal"`) for the `type-label` template component.
+    ///
+    /// Looks up `ref_type` in [`Locale::type_terms`] directly — unlike
+    /// [`Self::resolved_general_term`], there is no MF2 message path for
+    /// these terms yet, since they are dynamically keyed by an open
+    /// `ref_type` string rather than the closed [`GeneralTerm`] enum.
+    #[must_use]
+    pub fn resolved_type_term(&self, ref_type: &str, form: &TermForm) -> Option<String> {
+        let simple = self.type_terms.get(ref_type)?;
+        match form {
+            TermForm::Short => Self::resolve_gendered_value(&simple.short, None)
+                .filter(|value| !value.is_empty())
+                .or_else(|| Self::resolve_gendered_value(&simple.long, None)),
+            _ => Self::resolve_gendered_value(&simple.long, None),
+        }
+        .map(ToOwned::to_owned)
+    }
+
     /// Resolve an archive hierarchy label, using MF2 messages.
     /// Returns singular form (count=1) by default.
     pub fn resolved_archive_term(&self, field: ArchiveHierarchyField) -> Option<String> {

@@ -186,16 +186,19 @@ locale content.
 
 ## Acceptance Criteria
 
-- [ ] All six audit sites call into the centralized module / new component;
+- [x] All six audit sites call into the centralized module / new component;
       no per-type `match`/`contains` on `ref_type` remains at those sites.
-- [ ] No user-visible label text is an English literal in engine code or in
-      a style `suffix` for the dataset case.
-- [ ] Part A produces byte-identical output to HEAD across the engine test
+- [x] No user-visible label text is an English literal in engine code or in
+      a style `suffix` for the dataset case. (`TypeLabel` resolves through
+      `genre`/`medium`/locale-term lookup; the version label uses the new
+      `GeneralTerm::Version` locale term, not a literal string.)
+- [x] Part A produces byte-identical output to HEAD across the engine test
       suite and the APA oracle (titled + titleless datasets).
-- [ ] Adding a new reference type requires editing exactly one table to
+- [x] Adding a new reference type requires editing exactly one table to
       affect title-category, TypeClass, serial-parent, selector-alias, and
       DOI-URL behavior.
-- [ ] `just pre-commit` clean; schemas regenerated if Part B lands.
+- [x] `just pre-commit` clean; schemas regenerated for Part B (`TypeLabel`
+      component, `Dataset.genre` field, `GeneralTerm::Version`).
 
 ## Changelog
 - v1.0 (2026-07-05): Initial draft.
@@ -204,3 +207,14 @@ locale content.
   `wrap: brackets`; resolved all four open decisions into settled Design
   Decisions following PR #1008 review; confirmed `ref_type()` vocabulary is
   finite and never emits `"ancient"`. Status: Draft → Active.
+- v1.2 (2026-07-05): Part B implemented. Added `TemplateComponent::TypeLabel`
+  (genre → medium → locale-term fallback via new `Locale::type_terms`, an
+  explicit allowlist of known reference-type description keys — not a
+  blanket capture, to avoid sweeping in unrelated dead locale data like
+  `version`/`printing`/era terms). Removed the `scholarly.rs` baked-title
+  synthesis for titleless datasets in favor of a real `Dataset.genre` field
+  plus the existing `variable: version`. The version label itself resolves
+  through a new `GeneralTerm::Version` locale term (`term: version` +
+  `text-case: capitalize-first`), not a hardcoded string — an early draft
+  used `wrap.inner-prefix: "Version "` and was corrected during review for
+  reintroducing exactly the locale-coupling this spec exists to remove.

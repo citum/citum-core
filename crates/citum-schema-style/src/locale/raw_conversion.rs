@@ -272,6 +272,12 @@ impl Locale {
                     if let Some(general_term) = Self::parse_general_term(key) {
                         let simple = Self::extract_simple_term_from_raw(value);
                         locale.terms.general.insert(general_term, simple);
+                    } else {
+                        let normalized = Self::normalize_term_key(key);
+                        if Self::is_known_type_term_key(&normalized) {
+                            let simple = Self::extract_simple_term_from_raw(value);
+                            locale.type_terms.insert(normalized, simple);
+                        }
                     }
                 }
             }
@@ -564,8 +570,70 @@ impl Locale {
             "chapter" => Some(GeneralTerm::Chapter),
             "edition" => Some(GeneralTerm::Edition),
             "section" => Some(GeneralTerm::Section),
+            "version" => Some(GeneralTerm::Version),
             _ => None,
         }
+    }
+
+    /// Reference-type description term keys recognized for
+    /// [`Locale::type_terms`] (the `type-label` component's fallback data).
+    ///
+    /// Legacy locale files (`terms:`) carry a wide mix of CSL 1.0 term keys
+    /// — general terms, locator labels, and reference-type descriptions —
+    /// under one flat map. General terms and locators are already claimed by
+    /// `parse_general_term` and `parse_builtin_locator_type` above; this is
+    /// an explicit allowlist of the *remaining* keys that are genuinely
+    /// reference-type descriptions, cross-referenced against the finite set
+    /// of strings `citum_schema_data`'s `Reference::ref_type()` can actually
+    /// produce (see `citum-engine/src/values/type_class.rs` module docs).
+    ///
+    /// This is deliberately an explicit list, not "capture anything
+    /// unclaimed" — the unclaimed remainder also includes unrelated dead
+    /// data (era terms, punctuation terms, number-variable labels like
+    /// `version`/`printing`) that must not leak into `type_terms`.
+    fn is_known_type_term_key(normalized_key: &str) -> bool {
+        const KNOWN_TYPE_TERM_KEYS: &[&str] = &[
+            "article-journal",
+            "article-magazine",
+            "article-newspaper",
+            "broadcast",
+            "classic",
+            "collection",
+            "dataset",
+            "document",
+            "entry",
+            "entry-dictionary",
+            "entry-encyclopedia",
+            "event",
+            "graphic",
+            "hearing",
+            "interview",
+            "legal-case",
+            "manuscript",
+            "map",
+            "motion-picture",
+            "musical-score",
+            "pamphlet",
+            "paper-conference",
+            "performance",
+            "periodical",
+            "personal-communication",
+            "post",
+            "post-weblog",
+            "preprint",
+            "regulation",
+            "report",
+            "review",
+            "review-book",
+            "software",
+            "song",
+            "speech",
+            "standard",
+            "thesis",
+            "treaty",
+            "webpage",
+        ];
+        KNOWN_TYPE_TERM_KEYS.contains(&normalized_key)
     }
 
     fn extract_simple_term_from_raw(value: &raw::RawTermValue) -> SimpleTerm {
