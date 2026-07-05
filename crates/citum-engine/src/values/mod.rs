@@ -28,6 +28,10 @@ pub mod term;
 pub mod text_case;
 /// Title extraction and title-formatting helpers.
 pub mod title;
+/// Single source of truth for reference-type classification (title
+/// category, `TypeClass` membership, serial-parent-ness, selector aliases,
+/// DOI-URL synthesis).
+pub(crate) mod type_class;
 /// Generic variable extraction helpers.
 pub mod variable;
 

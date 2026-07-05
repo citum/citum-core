@@ -220,7 +220,7 @@ fn resolve_variable_value(
     match variable {
         SimpleVariable::Doi => reference.doi(),
         SimpleVariable::Url => reference.url().map(|u| u.to_string()).or_else(|| {
-            (reference.ref_type() == "dataset")
+            crate::values::type_class::synthesizes_doi_url(&reference.ref_type())
                 .then(|| reference.doi().map(|doi| format!("https://doi.org/{doi}")))
                 .flatten()
         }),

@@ -46,7 +46,7 @@ pub fn render_locator(
 
         // Check type_class gate if present
         if let Some(type_class) = p.type_class
-            && !type_class_matches(ref_type, type_class)
+            && !crate::values::type_class::matches_type_class(ref_type, type_class)
         {
             return false;
         }
@@ -229,30 +229,6 @@ fn effective_range_format(
     kind_cfg
         .and_then(|k| k.range_format.clone())
         .unwrap_or_else(|| config.range_format.clone())
-}
-
-/// Check if a reference type matches a TypeClass.
-fn type_class_matches(ref_type: &str, type_class: citum_schema::options::TypeClass) -> bool {
-    use citum_schema::options::TypeClass;
-
-    match type_class {
-        TypeClass::Legal => {
-            ref_type == "legal-case"
-                || ref_type == "legal_case"
-                || ref_type == "statute"
-                || ref_type == "treaty"
-                || ref_type == "regulation"
-                || ref_type == "bill"
-                || ref_type == "legislation"
-        }
-        TypeClass::Classical => {
-            ref_type == "classic"
-                || ref_type.contains("ancient")
-                || ref_type == "religious-text"
-                || ref_type == "religious_text"
-        }
-        TypeClass::Standard => true, // Always matches
-    }
 }
 
 #[cfg(test)]
