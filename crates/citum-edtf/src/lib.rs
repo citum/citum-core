@@ -55,6 +55,24 @@ impl Edtf {
         }
     }
 
+    /// Extract the EDTF season as a 1-based index (1=Spring..4=Winter) if
+    /// present. For intervals, this is the start season.
+    pub fn season(&self) -> Option<u32> {
+        let m_opt = match self {
+            Self::Date(date) => date.month_or_season,
+            Self::Interval(interval) => interval.start.month_or_season,
+            Self::IntervalFrom(date) => date.month_or_season,
+            Self::IntervalTo(date) => date.month_or_season,
+        };
+        match m_opt {
+            Some(MonthOrSeason::Spring) => Some(1),
+            Some(MonthOrSeason::Summer) => Some(2),
+            Some(MonthOrSeason::Autumn) => Some(3),
+            Some(MonthOrSeason::Winter) => Some(4),
+            _ => None,
+        }
+    }
+
     /// Extract the day component if present. For intervals, this is the start day.
     pub fn day(&self) -> Option<u32> {
         let d_opt = match self {
@@ -733,6 +751,29 @@ mod tests {
         let res = parse_date(&mut input).unwrap();
         assert_eq!(res.month_or_season, Some(MonthOrSeason::Spring));
         assert_eq!(res.to_string(), "2023-21");
+    }
+
+    #[test]
+    fn test_edtf_season_accessor() {
+        let mut input = "2023-24";
+        let res = parse(&mut input).unwrap();
+        assert_eq!(res.season(), Some(4));
+        assert_eq!(res.month(), None);
+    }
+
+    #[test]
+    fn test_edtf_season_accessor_interval_start() {
+        let mut input = "2023-21/2023-23";
+        let res = parse(&mut input).unwrap();
+        assert_eq!(res.season(), Some(1));
+    }
+
+    #[test]
+    fn test_edtf_season_accessor_none_for_month_date() {
+        let mut input = "2023-05";
+        let res = parse(&mut input).unwrap();
+        assert_eq!(res.season(), None);
+        assert_eq!(res.month(), Some(5));
     }
 
     #[test]
