@@ -591,6 +591,15 @@ impl Locale {
     /// unclaimed" — the unclaimed remainder also includes unrelated dead
     /// data (era terms, punctuation terms, number-variable labels like
     /// `version`/`printing`) that must not leak into `type_terms`.
+    ///
+    /// Membership here only makes `en-US.yaml`'s existing term *reachable*;
+    /// it does not guarantee every `ref_type()` output has a term to reach.
+    /// A handful of real `ref_type()` outputs currently have no authored
+    /// term in `en-US.yaml` at all — `book`, `brief`, `bill-proceeding`,
+    /// `bill-record`, `chapter`, `figure`, `manual`, `statute` — so
+    /// `type-label` falls back to an empty label for those types today.
+    /// That is a locale-content gap (nothing to allowlist), not a bug in
+    /// this function; only `dataset` is exercised by a shipped style so far.
     fn is_known_type_term_key(normalized_key: &str) -> bool {
         const KNOWN_TYPE_TERM_KEYS: &[&str] = &[
             "article-journal",
@@ -609,6 +618,7 @@ impl Locale {
             "hearing",
             "interview",
             "legal-case",
+            "legislation",
             "manuscript",
             "map",
             "motion-picture",
