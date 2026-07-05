@@ -476,7 +476,13 @@ test('apa-7th concision regression reflects preset-first success', () => {
   // APA's disambiguation now uses the `author-date-full` preset instead of an inline
   // custom block, and chapter container introductions use a localized message
   // phrase instead of a separate term-plus-title group, so concision improves.
-  assert.equal(concision.score, 64, `expected embedded APA concision, got ${concision.score}`);
+  // The dataset variant's small concision dip (64 -> 63.4) is an intentional
+  // tradeoff: the old " [Dataset]." title suffix was a hardcoded English
+  // literal that dropped the version field entirely for titled datasets; the
+  // type-label + term:version group correctly localizes and renders both, at
+  // the cost of a few extra template components. See
+  // docs/specs/TYPE_CLASSIFICATION_CENTRALIZATION.md.
+  assert.equal(concision.score, 63.4, `expected embedded APA concision, got ${concision.score}`);
 });
 
 test('report-core exposes expected benchmark labels for representative styles', () => {
