@@ -5,7 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! HTML output format.
 
-use super::format::{OutputFormat, SemanticAttribute};
+use super::format::{OutputFormat, QuoteMarks, SemanticAttribute};
 use citum_schema::template::WrapPunctuation;
 use std::fmt::Write;
 
@@ -101,11 +101,12 @@ impl OutputFormat for Html {
         format!("<sup>{content}</sup>")
     }
 
-    fn quote(&self, content: Self::Output) -> Self::Output {
+    fn quote(&self, content: Self::Output, marks: &QuoteMarks) -> Self::Output {
         if content.is_empty() {
             return content;
         }
-        format!("\u{201C}{content}\u{201D}")
+        let (open, close) = marks.for_depth(0);
+        format!("{open}{content}{close}")
     }
 
     fn affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output {
@@ -116,11 +117,16 @@ impl OutputFormat for Html {
         format!("{prefix}{content}{suffix}")
     }
 
-    fn wrap_punctuation(&self, wrap: &WrapPunctuation, content: Self::Output) -> Self::Output {
+    fn wrap_punctuation(
+        &self,
+        wrap: &WrapPunctuation,
+        content: Self::Output,
+        marks: &QuoteMarks,
+    ) -> Self::Output {
         match wrap {
             WrapPunctuation::Parentheses => format!("({content})"),
             WrapPunctuation::Brackets => format!("[{content}]"),
-            WrapPunctuation::Quotes => format!("\u{201C}{content}\u{201D}"),
+            WrapPunctuation::Quotes => self.quote(content, marks),
         }
     }
 

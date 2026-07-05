@@ -5,7 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Djot and org-mode inline markup rendering for free-text fields.
 
-use super::format::OutputFormat;
+use super::format::{OutputFormat, QuoteMarks};
 use jotdown::{Attributes, Container, Event, Parser};
 
 /// Ambient context used while rendering inline rich text.
@@ -52,8 +52,13 @@ fn opening_quote_depth(
     }
 }
 
-fn push_open_quote<F: OutputFormat<Output = String>>(frame: &mut DjotFrame, fmt: &F, depth: usize) {
-    let (open, _) = fmt.quote_marks(depth);
+fn push_open_quote<F: OutputFormat<Output = String>>(
+    frame: &mut DjotFrame,
+    fmt: &F,
+    depth: usize,
+    marks: &QuoteMarks,
+) {
+    let (open, _) = fmt.quote_marks(depth, marks);
     let logical_char = open.chars().next();
     frame.push_rendered(fmt.text(open), logical_char);
 }
@@ -62,8 +67,9 @@ fn push_close_quote<F: OutputFormat<Output = String>>(
     frame: &mut DjotFrame,
     fmt: &F,
     depth: usize,
+    marks: &QuoteMarks,
 ) {
-    let (_, close) = fmt.quote_marks(depth);
+    let (_, close) = fmt.quote_marks(depth, marks);
     let logical_char = close.chars().last();
     frame.push_rendered(fmt.text(close), logical_char);
 }
@@ -71,6 +77,11 @@ fn push_close_quote<F: OutputFormat<Output = String>>(
 struct QuoteRenderState {
     depth: usize,
     stack: Vec<usize>,
+    // Inline djot/org markup has no locale in scope here, so this falls back to
+    // the Unicode default; the primary `quote`/`wrap: quotes` template path (see
+    // `render::component`) uses the resolved locale marks. Cached once per render
+    // rather than per quote token to avoid repeated `String` allocations.
+    marks: QuoteMarks,
 }
 
 impl QuoteRenderState {
@@ -78,6 +89,7 @@ impl QuoteRenderState {
         Self {
             depth: context.quote_depth,
             stack: Vec::new(),
+            marks: QuoteMarks::default(),
         }
     }
 
@@ -91,13 +103,13 @@ impl QuoteRenderState {
     ) {
         if opens_quote {
             let depth = opening_quote_depth(context, self.depth, source_inner);
-            push_open_quote(frame, fmt, depth);
+            push_open_quote(frame, fmt, depth, &self.marks);
             self.stack.push(depth);
             self.depth = depth + 1;
         } else {
             let fallback_depth = context.quote_depth + usize::from(source_inner);
             let depth = self.stack.pop().unwrap_or(fallback_depth);
-            push_close_quote(frame, fmt, depth);
+            push_close_quote(frame, fmt, depth, &self.marks);
             self.depth = self.stack.last().map_or(context.quote_depth, |d| d + 1);
         }
     }

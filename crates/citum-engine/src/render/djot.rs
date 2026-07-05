@@ -5,7 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Djot output format.
 
-use super::format::OutputFormat;
+use super::format::{OutputFormat, QuoteMarks};
 use citum_schema::template::WrapPunctuation;
 
 #[derive(Default, Clone)]
@@ -61,11 +61,12 @@ impl OutputFormat for Djot {
         format!("[{content}]{{.superscript}}")
     }
 
-    fn quote(&self, content: Self::Output) -> Self::Output {
+    fn quote(&self, content: Self::Output, marks: &QuoteMarks) -> Self::Output {
         if content.is_empty() {
             return content;
         }
-        format!("\u{201C}{content}\u{201D}")
+        let (open, close) = marks.for_depth(0);
+        format!("{open}{content}{close}")
     }
 
     fn affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output {
@@ -76,11 +77,16 @@ impl OutputFormat for Djot {
         format!("{prefix}{content}{suffix}")
     }
 
-    fn wrap_punctuation(&self, wrap: &WrapPunctuation, content: Self::Output) -> Self::Output {
+    fn wrap_punctuation(
+        &self,
+        wrap: &WrapPunctuation,
+        content: Self::Output,
+        marks: &QuoteMarks,
+    ) -> Self::Output {
         match wrap {
             WrapPunctuation::Parentheses => format!("({content})"),
             WrapPunctuation::Brackets => format!("[{content}]"),
-            WrapPunctuation::Quotes => format!("\u{201C}{content}\u{201D}"),
+            WrapPunctuation::Quotes => self.quote(content, marks),
         }
     }
 
@@ -165,10 +171,24 @@ mod tests {
     #[test]
     fn test_djot_quote() {
         let fmt = Djot;
+        let marks = QuoteMarks::default();
 
         for (input, expected) in [("", ""), ("text", "\u{201C}text\u{201D}")] {
-            assert_eq!(fmt.quote(input.to_string()), expected);
+            assert_eq!(fmt.quote(input.to_string(), &marks), expected);
         }
+    }
+
+    #[test]
+    fn test_djot_quote_uses_locale_marks() {
+        let fmt = Djot;
+        let marks = QuoteMarks {
+            open: "\u{ab}".to_string(),
+            close: "\u{bb}".to_string(),
+            open_inner: "\u{2039}".to_string(),
+            close_inner: "\u{203a}".to_string(),
+        };
+
+        assert_eq!(fmt.quote("text".to_string(), &marks), "\u{ab}text\u{bb}");
     }
 
     #[test]
@@ -196,13 +216,17 @@ mod tests {
     #[test]
     fn test_djot_wrap_punctuation() {
         let fmt = Djot;
+        let marks = QuoteMarks::default();
 
         for (wrap, input, expected) in [
             (WrapPunctuation::Parentheses, "text", "(text)"),
             (WrapPunctuation::Brackets, "text", "[text]"),
             (WrapPunctuation::Quotes, "text", "\u{201C}text\u{201D}"),
         ] {
-            assert_eq!(fmt.wrap_punctuation(&wrap, input.to_string()), expected);
+            assert_eq!(
+                fmt.wrap_punctuation(&wrap, input.to_string(), &marks),
+                expected
+            );
         }
     }
 }
