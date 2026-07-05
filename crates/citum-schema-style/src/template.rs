@@ -476,6 +476,7 @@ pub enum TemplateComponent {
     Message(TemplateMessage),
     Group(TemplateGroup),
     Term(TemplateTerm),
+    TypeLabel(TemplateTypeLabel),
 }
 
 impl Default for TemplateComponent {
@@ -1291,6 +1292,47 @@ pub struct TemplateTerm {
     /// Explicit grammatical gender override for term selection.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub gender: Option<GrammaticalGender>,
+    #[serde(flatten, default)]
+    pub rendering: Rendering,
+
+    /// Custom user-defined fields for extensions.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub custom: Option<HashMap<String, serde_json::Value>>,
+}
+
+/// Where a [`TemplateTypeLabel`] resolves its text from.
+///
+/// `#[non_exhaustive]` with a single variant today: the label always
+/// describes the reference's own type. Kept as an enum (rather than a bare
+/// marker field) so a future label source can be added without a schema
+/// break.
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+#[non_exhaustive]
+pub enum TypeLabelSource {
+    /// Resolve the label from the reference's own type: prefer its
+    /// `genre`/`medium`, falling back to a locale term keyed by `ref_type`.
+    #[default]
+    ReferenceType,
+}
+
+/// A localized label describing the reference's own type (e.g. "Dataset",
+/// "Classical work"), resolved from `genre`/`medium` with a locale-term
+/// fallback keyed by `ref_type`.
+///
+/// Emits only the resolved term text — wrap it in `wrap: brackets` (or any
+/// other `Rendering` option) at the style level to match a particular
+/// style's presentation, the same as any other component.
+///
+/// See `docs/specs/TYPE_CLASSIFICATION_CENTRALIZATION.md`.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct TemplateTypeLabel {
+    /// The label's text source. Currently always `reference-type`.
+    #[serde(rename = "type-label")]
+    pub type_label: TypeLabelSource,
     #[serde(flatten, default)]
     pub rendering: Rendering,
 

@@ -16,6 +16,7 @@ const COMPONENT_KINDS: &[&str] = &[
     "message",
     "group",
     "term",
+    "type-label",
 ];
 
 const RENDERING_FIELDS: &[&str] = &[
@@ -368,6 +369,7 @@ fn component_allowed_fields(kind: &str) -> &'static [&'static str] {
         "message" => &["message", "form", "gender", "args", "custom"],
         "term" => &["term", "form", "gender", "custom"],
         "group" => &["group", "render-when", "delimiter", "custom"],
+        "type-label" => &["type-label", "custom"],
         _ => &[],
     }
 }
@@ -382,6 +384,7 @@ fn component_type_name(kind: &str) -> &'static str {
         "message" => "TemplateMessage",
         "term" => "TemplateTerm",
         "group" => "TemplateGroup",
+        "type-label" => "TemplateTypeLabel",
         _ => "TemplateComponent",
     }
 }

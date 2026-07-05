@@ -431,9 +431,26 @@ bibliography:
       wrap:
         punctuation: parentheses
       prefix: " "
+      suffix: "."
     - title: primary
       emph: false
-      suffix: " [Dataset]."
+      prefix: " "
+    - group:
+      - type-label: reference-type
+        text-case: capitalize-first
+        wrap:
+          punctuation: brackets
+      - group:
+        - term: version
+          text-case: capitalize-first
+        - variable: version
+          prefix: " "
+        delimiter: ""
+        wrap:
+          punctuation: parentheses
+      delimiter: " "
+      prefix: " "
+      suffix: "."
     - variable: publisher
       prefix: " "
       suffix: "."

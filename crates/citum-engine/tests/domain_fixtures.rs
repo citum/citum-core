@@ -150,12 +150,14 @@ fn test_scientific_fixture_is_covered_in_processor_tests() {
         software, "(R Core Team, 2021)",
         "Software citation should include team name and year"
     );
-    // Verify bibliography includes resource type labels (full dataset entry >= 30 chars)
+    // Verify bibliography includes resource type labels and version
+    // (full dataset entry >= 30 chars)
     assert!(
         rendered_bib.contains(
-            "Chemical and mineral compositions of sediments from ODP Site 127-797 [Dataset]."
+            "Chemical and mineral compositions of sediments from ODP Site 127-797 \
+             [Dataset] (Version 1.0)."
         ),
-        "Bibliography should label dataset entries"
+        "Bibliography should label dataset entries and render their version"
     );
     assert!(
         rendered_bib.contains("_Bicycle with adjustable suspension_. U.S. Patent No. 7,347,809."),

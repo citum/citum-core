@@ -2618,6 +2618,13 @@
                 "null"
               ]
             },
+            "genre": {
+              "description": "Freeform genre/description (e.g., \"Untitled dataset\", \"survey data\").\nUsed as the `type-label` component's fallback text when no title is\npresent, taking precedence over the locale's generic \"dataset\" term.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "format": {
               "description": "File format. Prefer IANA media types (e.g., `\"text/csv\"`) or common\nabbreviations (e.g., `\"NetCDF\"`, `\"HDF5\"`) where no IANA type exists.",
               "type": [

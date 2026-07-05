@@ -404,6 +404,9 @@
         },
         {
           "$ref": "#/$defs/TemplateTerm"
+        },
+        {
+          "$ref": "#/$defs/TemplateTypeLabel"
         }
       ]
     },
@@ -2668,6 +2671,150 @@
           "description": "The label for personal communications (e.g., \"personal communication\").",
           "type": "string",
           "const": "personal-communication"
+        },
+        {
+          "description": "The general term for a version/release label (e.g., \"version\" in \"Version 2.1\").",
+          "type": "string",
+          "const": "version"
+        }
+      ]
+    },
+    "TemplateTypeLabel": {
+      "description": "A localized label describing the reference's own type (e.g. \"Dataset\",\n\"Classical work\"), resolved from `genre`/`medium` with a locale-term\nfallback keyed by `ref_type`.\n\nEmits only the resolved term text — wrap it in `wrap: brackets` (or any\nother `Rendering` option) at the style level to match a particular\nstyle's presentation, the same as any other component.\n\nSee `docs/specs/TYPE_CLASSIFICATION_CENTRALIZATION.md`.",
+      "type": "object",
+      "properties": {
+        "type-label": {
+          "description": "The label's text source. Currently always `reference-type`.",
+          "$ref": "#/$defs/TypeLabelSource"
+        },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "emph": {
+          "description": "Render in italics/emphasis.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "quote": {
+          "description": "Render in quotes.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "strong": {
+          "description": "Render in bold/strong.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "small-caps": {
+          "description": "Render in small caps.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "vertical-align": {
+          "description": "Vertical alignment to apply to rendered output.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VerticalAlign"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "prefix": {
+          "description": "Text to prepend to the rendered value (outside any wrap).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suffix": {
+          "description": "Text to append to the rendered value (outside any wrap).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "wrap": {
+          "description": "Wrapping punctuation and optional inner affixes (text inside the wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WrapConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "suppress": {
+          "description": "If true, suppress this component entirely (render as empty string).\nUseful for type-specific overrides like suppressing publisher for journals.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "initialize-with": {
+          "description": "Override name initialization (e.g., \". \" or \"\").",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name-form": {
+          "description": "Override name form (e.g., initials, full, family-only).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NameForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "strip-periods": {
+          "description": "Strip trailing periods from rendered value.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "custom": {
+          "description": "Custom user-defined fields for extensions.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "type-label"
+      ]
+    },
+    "TypeLabelSource": {
+      "description": "Where a [`TemplateTypeLabel`] resolves its text from.\n\n`#[non_exhaustive]` with a single variant today: the label always\ndescribes the reference's own type. Kept as an enum (rather than a bare\nmarker field) so a future label source can be added without a schema\nbreak.",
+      "oneOf": [
+        {
+          "description": "Resolve the label from the reference's own type: prefer its\n`genre`/`medium`, falling back to a locale term keyed by `ref_type`.",
+          "type": "string",
+          "const": "reference-type"
         }
       ]
     },

@@ -32,6 +32,8 @@ pub mod title;
 /// category, `TypeClass` membership, serial-parent-ness, selector aliases,
 /// DOI-URL synthesis).
 pub(crate) mod type_class;
+/// `type-label` component rendering (localized reference-type description).
+pub mod type_label;
 /// Generic variable extraction helpers.
 pub mod variable;
 
@@ -662,6 +664,7 @@ impl ComponentValues for TemplateComponent {
             TemplateComponent::Message(m) => m.values::<F>(reference, hints, options),
             TemplateComponent::Group(l) => l.values::<F>(reference, hints, options),
             TemplateComponent::Term(t) => t.values::<F>(reference, hints, options),
+            TemplateComponent::TypeLabel(t) => t.values::<F>(reference, hints, options),
             _ => None,
         }
     }

@@ -242,7 +242,9 @@ crate::str_enum! {
         /// The general term for section locators (e.g., "section", "§").
         Section = "section",
         /// The label for personal communications (e.g., "personal communication").
-        PersonalCommunication = "personal-communication"
+        PersonalCommunication = "personal-communication",
+        /// The general term for a version/release label (e.g., "version" in "Version 2.1").
+        Version = "version"
     }
 }
 

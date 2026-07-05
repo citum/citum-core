@@ -51,6 +51,7 @@ impl Locale {
             GeneralTerm::Chapter => "chapter",
             GeneralTerm::Edition => "edition",
             GeneralTerm::Section => "section",
+            GeneralTerm::Version => "version",
             GeneralTerm::OriginalWorkPublished => "original-work-published",
             GeneralTerm::PersonalCommunication => "personal-communication",
             GeneralTerm::Unknown(s) => s.as_str(),

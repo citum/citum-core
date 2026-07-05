@@ -412,6 +412,11 @@ pub struct Dataset {
     /// Version number
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
+    /// Freeform genre/description (e.g., "Untitled dataset", "survey data").
+    /// Used as the `type-label` component's fallback text when no title is
+    /// present, taking precedence over the locale's generic "dataset" term.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub genre: Option<String>,
     /// File format. Prefer IANA media types (e.g., `"text/csv"`) or common
     /// abbreviations (e.g., `"NetCDF"`, `"HDF5"`) where no IANA type exists.
     #[serde(skip_serializing_if = "Option::is_none")]

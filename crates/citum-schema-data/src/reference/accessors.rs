@@ -770,6 +770,7 @@ impl InputReference {
                 .genre
                 .as_ref()
                 .map(|g| Self::normalize_genre_medium(g)),
+            ClassExtension::Dataset(r) => r.genre.as_ref().map(|g| Self::normalize_genre_medium(g)),
             _ => None,
         }
     }
