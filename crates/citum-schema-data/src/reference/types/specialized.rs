@@ -412,9 +412,14 @@ pub struct Dataset {
     /// Version number
     #[serde(skip_serializing_if = "Option::is_none")]
     pub version: Option<String>,
-    /// Freeform genre/description (e.g., "Untitled dataset", "survey data").
-    /// Used as the `type-label` component's fallback text when no title is
-    /// present, taking precedence over the locale's generic "dataset" term.
+    /// Genre/description (e.g. "untitled dataset", "survey data"). Like
+    /// every other reference type's `genre` field, this is normalized to a
+    /// kebab-case canonical key by `Reference::genre()` and re-expanded for
+    /// display by `Locale::lookup_genre()` — internal capitalization or
+    /// punctuation beyond simple words will not round-trip exactly (e.g. an
+    /// acronym loses its casing). Used as the `type-label` component's
+    /// fallback text when no title is present, taking precedence over the
+    /// locale's generic "dataset" term.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub genre: Option<String>,
     /// File format. Prefer IANA media types (e.g., `"text/csv"`) or common

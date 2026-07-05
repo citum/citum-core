@@ -2619,7 +2619,7 @@
               ]
             },
             "genre": {
-              "description": "Freeform genre/description (e.g., \"Untitled dataset\", \"survey data\").\nUsed as the `type-label` component's fallback text when no title is\npresent, taking precedence over the locale's generic \"dataset\" term.",
+              "description": "Genre/description (e.g. \"untitled dataset\", \"survey data\"). Like\nevery other reference type's `genre` field, this is normalized to a\nkebab-case canonical key by `Reference::genre()` and re-expanded for\ndisplay by `Locale::lookup_genre()` — internal capitalization or\npunctuation beyond simple words will not round-trip exactly (e.g. an\nacronym loses its casing). Used as the `type-label` component's\nfallback text when no title is present, taking precedence over the\nlocale's generic \"dataset\" term.",
               "type": [
                 "string",
                 "null"
