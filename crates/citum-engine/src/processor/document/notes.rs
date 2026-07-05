@@ -18,6 +18,7 @@ use crate::Citation;
 use crate::processor::Processor;
 use crate::processor::rendering::{CompoundRenderData, Renderer, RendererResources};
 use std::collections::HashMap;
+use std::rc::Rc;
 
 impl Processor {
     #[allow(
@@ -499,8 +500,8 @@ impl Processor {
                 style: &self.style,
                 bibliography: &self.bibliography,
                 locale: &self.locale,
-                config: self.get_config(),
-                bibliography_config: Some(self.get_bibliography_options().into_owned()),
+                config: Rc::new(self.get_config().clone()),
+                bibliography_config: Some(Rc::new(self.get_bibliography_options().into_owned())),
                 first_note_by_id: Some(&self.first_note_by_id),
             },
             &self.hints,

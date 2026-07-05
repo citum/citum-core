@@ -21,6 +21,7 @@ use citum_schema::options::{Config, GivennameRule};
 use citum_schema::template::DelimiterPunctuation;
 use indexmap::IndexMap;
 use std::collections::HashMap;
+use std::rc::Rc;
 
 /// Join rendered integral (narrative) groups with localized conjunctions.
 ///
@@ -406,13 +407,14 @@ impl Processor {
         };
         let scoped_hints = self.citation_scoped_by_cite_hints(&sorted_items, &citation_config);
         let renderer_hints = scoped_hints.as_ref().unwrap_or(&self.hints);
+        let citation_config = Rc::new(citation_config.into_owned());
         let renderer = Renderer::new(
             RendererResources {
                 style: &self.style,
                 bibliography: &self.bibliography,
                 locale: &self.locale,
-                config: &citation_config,
-                bibliography_config: Some(self.get_bibliography_options().into_owned()),
+                config: citation_config.clone(),
+                bibliography_config: Some(Rc::new(self.get_bibliography_options().into_owned())),
                 first_note_by_id: Some(&self.first_note_by_id),
             },
             renderer_hints,

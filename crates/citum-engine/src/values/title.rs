@@ -267,7 +267,7 @@ fn resolve_effective_text_case(
         &template.title,
         Some(&ref_type),
         lang_str,
-        options.config,
+        &options.config,
     ) && let Some(tc) = rendering.text_case
     {
         return Some(apply_language_fallback(tc, reference));
@@ -294,7 +294,7 @@ pub(crate) fn resolve_substitute_text_case(
         title_type,
         Some(&ref_type),
         lang.as_deref(),
-        options.config,
+        &options.config,
     )?;
     let tc = rendering.text_case?;
     Some(apply_language_fallback(tc, reference))
@@ -311,7 +311,7 @@ fn effective_title_quote_depth(
         &template.title,
         options.ref_type.as_deref(),
         item_language.as_deref(),
-        options.config,
+        &options.config,
     )
     .unwrap_or_default();
     rendering.merge(&template.rendering);

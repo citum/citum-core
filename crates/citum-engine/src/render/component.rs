@@ -5,6 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use citum_schema::options::{Config, bibliography::BibliographyConfig};
 use citum_schema::template::{Rendering, TemplateComponent, TemplateTitle, TitleType};
+use std::rc::Rc;
 
 /// A processed template component with its rendered value.
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -24,9 +25,9 @@ pub struct ProcTemplateComponent {
     /// Reference type for type-specific overrides.
     pub ref_type: Option<String>,
     /// Optional global configuration.
-    pub config: Option<Config>,
+    pub config: Option<Rc<Config>>,
     /// Optional bibliography-only configuration.
-    pub bibliography_config: Option<BibliographyConfig>,
+    pub bibliography_config: Option<Rc<BibliographyConfig>>,
     /// Effective language for this rendered component.
     pub item_language: Option<String>,
     /// Whether this component begins a sentence according to processor-owned render context.
