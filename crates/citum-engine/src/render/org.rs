@@ -5,7 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Org-mode output format.
 
-use super::format::OutputFormat;
+use super::format::{OutputFormat, QuoteMarks};
 use citum_schema::template::WrapPunctuation;
 
 /// Renders processed citations and bibliography entries as org-mode markup.
@@ -64,12 +64,13 @@ impl OutputFormat for OrgOutputFormat {
         format!("^{content}^")
     }
 
-    fn quote(&self, content: Self::Output) -> Self::Output {
+    fn quote(&self, content: Self::Output, marks: &QuoteMarks) -> Self::Output {
         if content.is_empty() {
             return content;
         }
-        // Org-mode doesn't have native quotation marks, use as-is with Unicode
-        format!("\u{201C}{content}\u{201D}")
+        // Org-mode doesn't have native quotation marks; use the locale marks as-is.
+        let (open, close) = marks.for_depth(0);
+        format!("{open}{content}{close}")
     }
 
     fn affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output {
@@ -80,11 +81,16 @@ impl OutputFormat for OrgOutputFormat {
         format!("{prefix}{content}{suffix}")
     }
 
-    fn wrap_punctuation(&self, wrap: &WrapPunctuation, content: Self::Output) -> Self::Output {
+    fn wrap_punctuation(
+        &self,
+        wrap: &WrapPunctuation,
+        content: Self::Output,
+        marks: &QuoteMarks,
+    ) -> Self::Output {
         match wrap {
             WrapPunctuation::Parentheses => format!("({content})"),
             WrapPunctuation::Brackets => format!("[{content}]"),
-            WrapPunctuation::Quotes => format!("\u{201C}{content}\u{201D}"),
+            WrapPunctuation::Quotes => self.quote(content, marks),
         }
     }
 

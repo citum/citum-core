@@ -504,6 +504,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.clone().into()),
             url: None,
             item_language: None,
+            quote_marks: Default::default(),
             sentence_initial: false,
             pre_formatted: false,
         };
@@ -528,6 +529,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.into()),
             url: None,
             item_language: None,
+            quote_marks: Default::default(),
             sentence_initial: false,
             pre_formatted: false,
         };
@@ -576,6 +578,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.clone().into()),
             url: None,
             item_language: None,
+            quote_marks: Default::default(),
             sentence_initial: false,
             pre_formatted: false,
         };
@@ -595,6 +598,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.into()),
             url: None,
             item_language: None,
+            quote_marks: Default::default(),
             sentence_initial: false,
             pre_formatted: false,
         };
@@ -696,6 +700,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.clone().into()),
             url: None,
             item_language: None,
+            quote_marks: Default::default(),
             sentence_initial: false,
             pre_formatted: false,
         };
@@ -718,6 +723,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.into()),
             url: None,
             item_language: None,
+            quote_marks: Default::default(),
             sentence_initial: false,
             pre_formatted: false,
         };
@@ -761,6 +767,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.clone().into()),
             url: None,
             item_language: None,
+            quote_marks: Default::default(),
             sentence_initial: false,
             pre_formatted: false,
         };
@@ -780,6 +787,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.into()),
             url: None,
             item_language: None,
+            quote_marks: Default::default(),
             sentence_initial: false,
             pre_formatted: false,
         };
@@ -832,6 +840,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.clone().into()),
             url: None,
             item_language: None,
+            quote_marks: Default::default(),
             sentence_initial: false,
             pre_formatted: false,
         };
@@ -855,6 +864,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.clone().into()),
             url: None,
             item_language: None,
+            quote_marks: Default::default(),
             sentence_initial: false,
             pre_formatted: false,
         };
@@ -877,6 +887,7 @@ mod tests {
             bibliography_config: Some(bibliography_config.into()),
             url: None,
             item_language: None,
+            quote_marks: Default::default(),
             sentence_initial: false,
             pre_formatted: false,
         };
@@ -929,6 +940,7 @@ mod tests {
                 url: None,
                 bibliography_config: None,
                 item_language: None,
+                quote_marks: Default::default(),
                 sentence_initial: false,
                 pre_formatted: false,
             }],

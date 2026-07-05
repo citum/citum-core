@@ -487,7 +487,8 @@ fn resolve_title_substitute<F: OutputFormat<Output = String>>(
         None => title_str,
     };
     let value = if options.context == RenderContext::Citation && quote_in_citation {
-        fmt.quote(fmt.text(&title_str))
+        let marks = crate::render::format::QuoteMarks::from(&options.locale.grammar_options);
+        fmt.quote(fmt.text(&title_str), &marks)
     } else {
         fmt.text(&title_str)
     };

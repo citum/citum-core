@@ -5,7 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! LaTeX output format.
 
-use super::format::OutputFormat;
+use super::format::{OutputFormat, QuoteMarks};
 use citum_schema::template::WrapPunctuation;
 
 /// LaTeX renderer.
@@ -87,16 +87,9 @@ impl OutputFormat for Latex {
         format!(r"\textsuperscript{{{content}}}")
     }
 
-    fn quote_marks(&self, depth: usize) -> (&'static str, &'static str) {
-        if depth.is_multiple_of(2) {
-            ("``", "''")
-        } else {
-            ("`", "'")
-        }
-    }
-
-    fn quote(&self, content: Self::Output) -> Self::Output {
-        format!("``{content}''")
+    fn quote(&self, content: Self::Output, marks: &QuoteMarks) -> Self::Output {
+        let (open, close) = marks.for_depth(0);
+        format!("{open}{content}{close}")
     }
 
     fn affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output {
@@ -107,11 +100,16 @@ impl OutputFormat for Latex {
         format!("{}{}{}", self.text(prefix), content, self.text(suffix))
     }
 
-    fn wrap_punctuation(&self, wrap: &WrapPunctuation, content: Self::Output) -> Self::Output {
+    fn wrap_punctuation(
+        &self,
+        wrap: &WrapPunctuation,
+        content: Self::Output,
+        marks: &QuoteMarks,
+    ) -> Self::Output {
         match wrap {
             WrapPunctuation::Parentheses => format!("({content})"),
             WrapPunctuation::Brackets => format!("[{content}]"),
-            WrapPunctuation::Quotes => self.quote(content),
+            WrapPunctuation::Quotes => self.quote(content, marks),
         }
     }
 

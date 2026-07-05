@@ -550,7 +550,8 @@ impl Processor {
             } else {
                 output
             };
-            fmt.wrap_punctuation(&wrap.punctuation, inner_wrapped)
+            let marks = crate::render::format::QuoteMarks::from(&self.locale.grammar_options);
+            fmt.wrap_punctuation(&wrap.punctuation, inner_wrapped, &marks)
         } else if !spec_prefix.is_empty() || !spec_suffix.is_empty() {
             fmt.affix(spec_prefix, output, spec_suffix)
         } else {

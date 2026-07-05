@@ -379,7 +379,8 @@ impl Renderer<'_> {
                     .and_then(|w| w.inner_suffix.as_deref())
                     .unwrap_or("");
                 let inner = fmt.inner_affix(inner_prefix, joined, inner_suffix);
-                Some(fmt.wrap_punctuation(wrap_punct, inner))
+                let marks = crate::render::format::QuoteMarks::from(&self.locale.grammar_options);
+                Some(fmt.wrap_punctuation(wrap_punct, inner, &marks))
             } else {
                 None
             };
@@ -1092,6 +1093,9 @@ impl Renderer<'_> {
             config: Some(ctx.options.config.clone()),
             bibliography_config: ctx.options.bibliography_config.clone(),
             item_language,
+            quote_marks: crate::render::format::QuoteMarks::from(
+                &ctx.options.locale.grammar_options,
+            ),
             sentence_initial: false,
             pre_formatted: values.pre_formatted,
         })
@@ -1140,6 +1144,9 @@ impl Renderer<'_> {
             item_language: crate::values::effective_component_language(
                 ctx.reference,
                 &group_component,
+            ),
+            quote_marks: crate::render::format::QuoteMarks::from(
+                &ctx.options.locale.grammar_options,
             ),
             sentence_initial: false,
             pre_formatted: true,

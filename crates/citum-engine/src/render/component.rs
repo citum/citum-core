@@ -3,6 +3,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
+use super::format::QuoteMarks;
 use citum_schema::options::{Config, bibliography::BibliographyConfig, titles::TitleRendering};
 use citum_schema::template::{Rendering, TemplateComponent, TitleType};
 use std::rc::Rc;
@@ -30,6 +31,12 @@ pub struct ProcTemplateComponent {
     pub bibliography_config: Option<Rc<BibliographyConfig>>,
     /// Effective language for this rendered component.
     pub item_language: Option<String>,
+    /// Locale-resolved quote mark characters, threaded from the active [`Locale`]'s
+    /// [`GrammarOptions`](citum_schema::locale::GrammarOptions) so `quote`/`wrap: quotes`
+    /// render the style's actual quotation convention instead of a hardcoded default.
+    ///
+    /// [`Locale`]: citum_schema::locale::Locale
+    pub quote_marks: QuoteMarks,
     /// Whether this component begins a sentence according to processor-owned render context.
     pub sentence_initial: bool,
     /// Whether the value is already pre-formatted (e.g. from a List or substitution).
@@ -183,7 +190,7 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
         .as_ref()
         .is_some_and(|w| w.punctuation == citum_schema::template::WrapPunctuation::Quotes);
     if rendering.quote == Some(true) && !wrapped_in_quotes {
-        output = fmt.quote(output);
+        output = fmt.quote(output, &component.quote_marks);
     }
 
     // 2. Apply links if URL is present
@@ -209,7 +216,7 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
 
     // 4. Wrap
     if let Some(wrap_config) = rendering.wrap.as_ref() {
-        output = fmt.wrap_punctuation(&wrap_config.punctuation, output);
+        output = fmt.wrap_punctuation(&wrap_config.punctuation, output, &component.quote_marks);
     }
 
     // 5. Outer affixes

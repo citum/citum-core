@@ -5,6 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Output format trait for pluggable renderers.
 
+use citum_schema::locale::GrammarOptions;
 use citum_schema::template::WrapPunctuation;
 
 /// Return Unicode quote marks for a nesting depth.
@@ -16,6 +17,60 @@ pub fn unicode_quote_marks(depth: usize) -> (&'static str, &'static str) {
         ("\u{201C}", "\u{201D}")
     } else {
         ("\u{2018}", "\u{2019}")
+    }
+}
+
+/// Locale-resolved quote mark characters, threaded from
+/// [`GrammarOptions`](citum_schema::locale::GrammarOptions) through to rendering so that
+/// styles using non-English quotation conventions (e.g. fr-FR guillemets) render correctly.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct QuoteMarks {
+    /// Opening outer quotation mark.
+    pub open: String,
+    /// Closing outer quotation mark.
+    pub close: String,
+    /// Opening inner (nested) quotation mark.
+    pub open_inner: String,
+    /// Closing inner (nested) quotation mark.
+    pub close_inner: String,
+}
+
+impl QuoteMarks {
+    /// Return the opening and closing quote delimiters for a nesting depth.
+    ///
+    /// Depth 0 (and other even depths) use the outer pair; odd depths use the inner pair.
+    #[must_use]
+    pub fn for_depth(&self, depth: usize) -> (&str, &str) {
+        if depth.is_multiple_of(2) {
+            (&self.open, &self.close)
+        } else {
+            (&self.open_inner, &self.close_inner)
+        }
+    }
+}
+
+impl Default for QuoteMarks {
+    /// The historical hardcoded English fallback, used when no resolved locale is available.
+    fn default() -> Self {
+        let (open, close) = unicode_quote_marks(0);
+        let (open_inner, close_inner) = unicode_quote_marks(1);
+        Self {
+            open: open.to_string(),
+            close: close.to_string(),
+            open_inner: open_inner.to_string(),
+            close_inner: close_inner.to_string(),
+        }
+    }
+}
+
+impl From<&GrammarOptions> for QuoteMarks {
+    fn from(options: &GrammarOptions) -> Self {
+        Self {
+            open: options.open_quote.clone(),
+            close: options.close_quote.clone(),
+            open_inner: options.open_inner_quote.clone(),
+            close_inner: options.close_inner_quote.clone(),
+        }
     }
 }
 
@@ -69,20 +124,27 @@ pub trait OutputFormat: Default + Clone {
     /// Return the opening and closing quote delimiters for a nesting depth.
     ///
     /// Depth 0 is an outer quote pair, depth 1 is the first inner quote pair,
-    /// and deeper levels alternate between those two pairs.
-    fn quote_marks(&self, depth: usize) -> (&'static str, &'static str) {
-        unicode_quote_marks(depth)
+    /// and deeper levels alternate between those two pairs. `marks` carries the
+    /// locale-resolved quote characters; callers with no resolved locale can pass
+    /// `&QuoteMarks::default()` to keep the historical English fallback.
+    fn quote_marks<'a>(&self, depth: usize, marks: &'a QuoteMarks) -> (&'a str, &'a str) {
+        marks.for_depth(depth)
     }
 
     /// Render content enclosed in quotation marks at a specific nesting depth.
-    fn quote_with_depth(&self, content: Self::Output, depth: usize) -> Self::Output {
-        let (open, close) = self.quote_marks(depth);
+    fn quote_with_depth(
+        &self,
+        content: Self::Output,
+        depth: usize,
+        marks: &QuoteMarks,
+    ) -> Self::Output {
+        let (open, close) = self.quote_marks(depth, marks);
         self.affix(open, content, close)
     }
 
     /// Render content enclosed in outer quotation marks.
-    fn quote(&self, content: Self::Output) -> Self::Output {
-        self.quote_with_depth(content, 0)
+    fn quote(&self, content: Self::Output, marks: &QuoteMarks) -> Self::Output {
+        self.quote_with_depth(content, 0, marks)
     }
 
     /// Apply outer prefix and suffix strings to the content.
@@ -96,7 +158,14 @@ pub trait OutputFormat: Default + Clone {
     fn inner_affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output;
 
     /// Wrap the content in specific punctuation (parentheses, brackets, or quotes).
-    fn wrap_punctuation(&self, wrap: &WrapPunctuation, content: Self::Output) -> Self::Output;
+    ///
+    /// `marks` supplies the locale-resolved quote characters for the `Quotes` variant.
+    fn wrap_punctuation(
+        &self,
+        wrap: &WrapPunctuation,
+        content: Self::Output,
+        marks: &QuoteMarks,
+    ) -> Self::Output;
 
     /// Apply a semantic identifier (class) to the content.
     ///
@@ -280,7 +349,12 @@ mod tests {
         fn inner_affix(&self, prefix: &str, content: Self::Output, suffix: &str) -> Self::Output {
             format!("{prefix}{content}{suffix}")
         }
-        fn wrap_punctuation(&self, _wrap: &WrapPunctuation, content: Self::Output) -> Self::Output {
+        fn wrap_punctuation(
+            &self,
+            _wrap: &WrapPunctuation,
+            content: Self::Output,
+            _marks: &QuoteMarks,
+        ) -> Self::Output {
             content
         }
         fn semantic(&self, class: &str, content: Self::Output) -> Self::Output {
