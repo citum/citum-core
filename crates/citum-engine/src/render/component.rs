@@ -301,6 +301,8 @@ pub fn get_title_category_rendering(
     // Use type_mapping if available to resolve category
     let mapped_category = ref_type.and_then(|rt| titles_config.type_mapping.get(rt));
 
+    use crate::values::type_class::TitleCategory;
+
     let rendering = match title_type {
         TitleType::ContainerTitle => {
             if let Some(cat) = mapped_category {
@@ -314,18 +316,13 @@ pub fn get_title_category_rendering(
                     _ => titles_config.default.as_ref(),
                 }
             } else if let Some(rt) = ref_type {
-                if matches!(
-                    rt,
-                    "article-journal" | "article-magazine" | "article-newspaper" | "broadcast"
-                ) {
-                    titles_config.periodical.as_ref()
-                } else if matches!(rt, "chapter" | "paper-conference") {
-                    titles_config
+                match crate::values::type_class::container_title_category(rt) {
+                    TitleCategory::Periodical => titles_config.periodical.as_ref(),
+                    TitleCategory::ContainerMonograph => titles_config
                         .container_monograph
                         .as_ref()
-                        .or(titles_config.monograph.as_ref())
-                } else {
-                    titles_config.default.as_ref()
+                        .or(titles_config.monograph.as_ref()),
+                    _ => titles_config.default.as_ref(),
                 }
             } else {
                 titles_config.default.as_ref()
@@ -339,13 +336,9 @@ pub fn get_title_category_rendering(
                     _ => titles_config.periodical.as_ref(),
                 }
             } else if let Some(rt) = ref_type {
-                if matches!(
-                    rt,
-                    "article-journal" | "article-magazine" | "article-newspaper"
-                ) {
-                    titles_config.periodical.as_ref()
-                } else {
-                    titles_config.serial.as_ref()
+                match crate::values::type_class::parent_serial_title_category(rt) {
+                    TitleCategory::Periodical => titles_config.periodical.as_ref(),
+                    _ => titles_config.serial.as_ref(),
                 }
             } else {
                 titles_config.periodical.as_ref()
@@ -368,26 +361,10 @@ pub fn get_title_category_rendering(
                     _ => titles_config.default.as_ref(),
                 }
             } else if let Some(rt) = ref_type {
-                // Legacy hardcoded logic
-                // "Component" titles: articles, chapters, entries - typically quoted
-                if matches!(
-                    rt,
-                    "article-journal"
-                        | "article-magazine"
-                        | "article-newspaper"
-                        | "chapter"
-                        | "entry"
-                        | "entry-dictionary"
-                        | "entry-encyclopedia"
-                        | "paper-conference"
-                        | "post"
-                        | "post-weblog"
-                ) {
-                    titles_config.component.as_ref()
-                } else if matches!(rt, "book" | "thesis" | "report") {
-                    titles_config.monograph.as_ref()
-                } else {
-                    titles_config.default.as_ref()
+                match crate::values::type_class::title_category(rt) {
+                    TitleCategory::Component => titles_config.component.as_ref(),
+                    TitleCategory::Monograph => titles_config.monograph.as_ref(),
+                    _ => titles_config.default.as_ref(),
                 }
             } else {
                 titles_config.default.as_ref()

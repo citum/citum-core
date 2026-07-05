@@ -123,7 +123,7 @@ fn parent_short_title(reference: &Reference, title_type: &TitleType) -> Option<S
             }
         }
         TitleType::ParentSerial => {
-            if reference.ref_type().contains("article") || reference.ref_type() == "broadcast" {
+            if crate::values::type_class::is_serial_parent_type(&reference.ref_type()) {
                 reference.container_title().and_then(|t| match t {
                     Title::Shorthand(short, _) => Some(short),
                     Title::Single(s) => Some(s),

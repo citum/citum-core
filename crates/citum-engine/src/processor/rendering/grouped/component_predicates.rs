@@ -20,7 +20,7 @@ pub(in crate::processor::rendering) fn resolve_type_variant<'a>(
     >,
     ref_type: &str,
 ) -> Option<&'a [TemplateComponent]> {
-    let selector_candidates = aliased_type_selector_candidates(ref_type);
+    let selector_candidates = crate::values::type_class::type_selector_aliases(ref_type);
     type_variants?.iter().find_map(|(selector, variant)| {
         if selector_candidates
             .iter()
@@ -31,13 +31,6 @@ pub(in crate::processor::rendering) fn resolve_type_variant<'a>(
             None
         }
     })
-}
-
-pub(super) fn aliased_type_selector_candidates(ref_type: &str) -> Vec<&str> {
-    match ref_type {
-        "chapter" => vec!["chapter", "entry-dictionary"],
-        _ => vec![ref_type],
-    }
 }
 
 pub(super) fn is_term_only_component(component: &TemplateComponent) -> bool {

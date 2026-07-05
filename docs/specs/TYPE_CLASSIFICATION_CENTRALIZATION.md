@@ -1,7 +1,7 @@
 # Type-Classification Centralization Specification
 
-**Status:** Draft
-**Version:** 1.0
+**Status:** Active
+**Version:** 1.1
 **Date:** 2026-07-05
 **Supersedes:** None
 **Related:** `csl26-92mg`, `csl26-8m2p`, audit `docs/architecture/audits/2026-07-04_CITUM_ENGINE_REVIEW_PART2.md` (Finding 14)
@@ -11,9 +11,10 @@
 Replace six inconsistent, engine-hardcoded per-reference-type presentation
 rules with a single authoritative classification surface, and replace the
 English-string `[Dataset]` suffix hack with a localizable, term-driven
-type-label. The goal is that adding or renaming a reference type changes
-rendering in exactly one place, and that no user-visible label text is an
-English literal embedded in engine code or in a style's `suffix`.
+type-label. This is an internal-design correction, not an effort to match
+citeproc output — the goal is that adding or renaming a reference type
+changes rendering in exactly one place, and that no user-visible label text
+is an English literal embedded in engine code or in a style's `suffix`.
 
 ## Scope
 
@@ -46,17 +47,21 @@ Out of scope:
 | 6 | `processor/rendering/grouped/component_predicates.rs:36-41` `aliased_type_selector_candidates` | `chapter` silently aliases to `entry-dictionary` type-variants |
 
 Sites 2–6 are mechanical centralization: moving existing logic into one
-module without changing behavior. Site 1 is a small localizable feature —
-citeproc/APA's `[Dataset]` is not a title suffix but a bracketed
-**description** group emitting a localized `term="dataset"` with a
+module without changing behavior. Site 1 is a small localizable feature.
+Citum currently collapses the dataset type-label into an English literal
+glued to the title, which then requires an engine-side de-dup against the
+synthesized `[Untitled dataset]` value produced for titleless datasets
+(`citum-schema-data/src/reference/conversion/scholarly.rs:846-857`). A
+generic "suppress this suffix" style flag was considered and rejected: it
+still encodes the label text as an English literal in the style, which is
+the coupling this spec exists to remove.
+
+As prior art (not a normative target): citeproc/APA's `[Dataset]` is a
+bracketed **description** group emitting a localized `term="dataset"` with a
 `genre`/`medium` fallback (see `styles-legacy/apa.csl`, macros `description`
-and `description-format-term-generic`). Citum currently collapses that into
-an English literal glued to the title, which then requires an engine-side
-de-dup against the synthesized `[Untitled dataset]` value produced for
-titleless datasets (`citum-schema-data/src/reference/conversion/scholarly.rs:846-857`).
-A generic "suppress this suffix" style flag was considered and rejected: it
-still encodes the label text as an English literal in the style, which is the
-coupling this spec exists to remove.
+and `description-format-term-generic`). Citum's fix independently arrives at
+the same shape — a localized, term-driven label — because it is the correct
+internal design, not because it reproduces citeproc.
 
 ## Design
 
@@ -71,8 +76,13 @@ single home for reference-type classification facts. Proposed surface:
   keeps consulting the style's declarative `titles.type_mapping` first, then
   falls back to this table (behavior-preserving).
 - `matches_type_class(ref_type, TypeClass) -> bool` — moves `type_class_matches`
-  here verbatim (dropping the `contains("ancient")` fuzzy match in favor of an
-  explicit member list; see Open Decisions).
+  here, dropping the `contains("ancient")` fuzzy match for an explicit member
+  list (`classic`, `religious-text`). `ref_type()`
+  (`citum-schema-data/src/reference/accessors.rs:1432`) emits a finite,
+  enumerable CSL-string set derived from `ReferenceClass` + genre; the
+  `Classic` class always emits the literal string `"classic"`, so
+  `ref_type()` never produces a string containing `"ancient"` — the fuzzy
+  match matches nothing the data model can produce and is dead weight.
 - `is_serial_parent_type(ref_type) -> bool` — replaces
   `ref_type().contains("article") || == "broadcast"` in `parent_short_title`
   with an explicit list aligned to the `periodical`/`serial` category.
@@ -93,14 +103,23 @@ This part is schema-version-neutral and touches no style YAML or locale data.
 ### Part B — Localizable type-label (site 1)
 
 Retire `apa-7th.yaml`'s `suffix: " [Dataset]."` and the engine de-dup at
-`render/component.rs:271-283`. Model the label the way citeproc does: a
-bracketed **type-label** element rendered after the title, whose text is a
-*localized term*, with a `genre`/`medium` → reference-type-term fallback.
+`render/component.rs:271-283`. Add a new **`TypeLabel`** template component
+whose text is a *localized term* for the reference's own type, with a
+`genre`/`medium` fallback, rendered like any other component (`rendering`
+carries `prefix`/`suffix`/`wrap`/`text-case` as normal).
+
+The component itself emits only the resolved term text. Brackets are **not**
+baked into the component — they come from the existing `wrap: brackets`
+rendering option (`Rendering.wrap: Option<WrapConfig>`,
+`citum-schema-style/src/template.rs:127-129`), exactly like any other
+bracketed component in a style. This keeps the component reusable for styles
+that don't bracket type labels.
 
 Citum already has: `TemplateComponent::Term`, per-type template-variants,
-locale vocab for `genre`/`medium` (`locale/vocab.rs`), and term lookup. The
-missing capability is a component that resolves *the term for the reference's
-own type* (with the genre/medium fallback) rather than a fixed term name.
+locale vocab for `genre`/`medium` (`locale/vocab.rs`), and term lookup. A
+dedicated `TypeLabel` variant (rather than overloading `Term`, which
+resolves a *named* term, not "the term for this reference's own type") keeps
+the "fixed term" and "type-driven term" cases distinct and each simple.
 
 The dataset type-variant in `apa-7th.yaml` becomes, conceptually:
 
@@ -109,7 +128,9 @@ dataset:
 - contributor: author   # unchanged
 - date: issued          # unchanged
 - title: primary        # no more " [Dataset]." suffix
-- <type-label>          # new: localized term, wrapped in brackets
+- type-label:            # new: resolves the localized term for this
+                          # reference's type (genre/medium fallback first)
+    wrap: brackets
 - variable: publisher   # unchanged
 - variable: url         # unchanged
 ```
@@ -120,7 +141,28 @@ synthesized in `scholarly.rs:846-857` and the type-label are distinct,
 locale-driven elements, and the fallback rule (prefer genre/medium, else the
 type term) prevents `[Untitled dataset] [Dataset]`.
 
-The exact component shape is the main open decision (see below).
+The `dataset` type term already exists in the shipped locale
+(`crates/citum-schema-style/embedded/locales/en-US.yaml:406`), so Part B's
+implementation has a term to resolve against without also authoring new
+locale content.
+
+## Design Decisions (resolved 2026-07-05, PR #1008 review)
+
+1. **Sequencing.** Two PRs: Part A (schema-neutral centralization) lands
+   first; Part B (`feat`, `TypeLabel` component) follows as a separate PR so
+   the mechanical centralization is not gated on the label design.
+2. **Type-label component shape.** A new dedicated `TemplateComponent::TypeLabel`
+   that resolves the reference-type term with genre/medium fallback, using
+   standard `Rendering` (`wrap`, `text-case`, etc.) like every other
+   component — brackets are a style-level `wrap: brackets`, not baked into
+   the component.
+3. **`type_class` module home.** `values/type_class.rs`, next to today's
+   `type_class_matches`.
+4. **`contains("ancient")` fate.** Replaced with an explicit member list
+   (`classic`, `religious-text`). `ref_type()` is a finite, enumerable
+   CSL-string set (see Part A above) and never produces a string containing
+   `"ancient"`, so the fuzzy match is confirmed dead weight, not a
+   forward-compat hedge.
 
 ## Implementation Notes
 
@@ -142,30 +184,6 @@ The exact component shape is the main open decision (see below).
   English literal in the same area; note it as adjacent debt but leave it to
   a follow-up unless the type-label work forces it.
 
-## Open Decisions
-
-1. **Sequencing.** (a) Two PRs — land Part A (schema-neutral) first, then
-   Part B as a `feat`; or (b) one combined PR. Recommendation: **(a)**, so
-   the mechanical centralization is not gated on the type-label design.
-2. **Type-label component shape for Part B.** Options:
-   - A new dedicated `TemplateComponent` (e.g. `TypeLabel`) that resolves
-     the reference-type term with genre/medium fallback and standard
-     wrap/text-case rendering. Cleanest semantic match to citeproc's
-     `description` macro; largest schema surface.
-   - Extend `TemplateComponent::Term` with a "term = this reference's type"
-     selector plus a fallback list, reusing existing term rendering. Smaller
-     surface; overloads `Term`.
-   - Keep the current title-suffix mechanism but source the label from a
-     locale term instead of the literal string (interim, removes
-     locale-coupling only; still a de-dup hack). Smallest; least correct.
-3. **`type_class` module home.** `values/type_class.rs` (next to today's
-   `type_class_matches`) vs. a crate-root `type_class.rs`. Recommendation:
-   **`values/type_class.rs`**.
-4. **`contains("ancient")` fate.** Replace with an explicit member list
-   (e.g. `ancient`, `ancient-text`?) — needs the actual set of classical
-   ref_types Citum recognizes. Requires confirming the type vocabulary
-   before Part A lands.
-
 ## Acceptance Criteria
 
 - [ ] All six audit sites call into the centralized module / new component;
@@ -181,3 +199,8 @@ The exact component shape is the main open decision (see below).
 
 ## Changelog
 - v1.0 (2026-07-05): Initial draft.
+- v1.1 (2026-07-05): Reframed away from citeproc-matching as a goal (prior
+  art only); clarified `TypeLabel` emits term text only, brackets via
+  `wrap: brackets`; resolved all four open decisions into settled Design
+  Decisions following PR #1008 review; confirmed `ref_type()` vocabulary is
+  finite and never emits `"ancient"`. Status: Draft → Active.
