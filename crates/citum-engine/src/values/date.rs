@@ -30,15 +30,18 @@ fn month_to_string(month: u32, months: &[String]) -> String {
     }
 }
 
-fn extract_month(date: &EdtfString, months: &[String]) -> String {
+fn extract_month(date: &EdtfString, months: &[String], seasons: &[String]) -> String {
     let parsed_date = date.parse();
-    let month: Option<u32> = match parsed_date {
-        RefDate::Edtf(edtf) => edtf.month(),
-        RefDate::Literal(_) => None,
+    let edtf = match parsed_date {
+        RefDate::Edtf(edtf) => edtf,
+        RefDate::Literal(_) => return String::new(),
     };
-    match month {
+    match edtf.month() {
         Some(month) => month_to_string(month, months),
-        None => String::new(),
+        None => match edtf.season() {
+            Some(season) => month_to_string(season, seasons),
+            None => String::new(),
+        },
     }
 }
 
@@ -515,7 +518,7 @@ fn format_single_date(
             if year.is_empty() {
                 return None;
             }
-            let month = extract_month(date, &locale.dates.months.long);
+            let month = extract_month(date, &locale.dates.months.long, &locale.dates.seasons);
             let month_opt = (!month.is_empty()).then_some(month.as_str());
             if let Some(rendered) =
                 locale.resolve_date_pattern("pattern.date-year-month", Some(&year), month_opt, None)
@@ -529,11 +532,11 @@ fn format_single_date(
             }
         }
         DateForm::Month => {
-            let month = extract_month(date, &locale.dates.months.long);
+            let month = extract_month(date, &locale.dates.months.long, &locale.dates.seasons);
             if month.is_empty() { None } else { Some(month) }
         }
         DateForm::MonthDay => {
-            let month = extract_month(date, &locale.dates.months.long);
+            let month = extract_month(date, &locale.dates.months.long, &locale.dates.seasons);
             if month.is_empty() {
                 return None;
             }
@@ -553,7 +556,7 @@ fn format_single_date(
             if year.is_empty() {
                 return None;
             }
-            let month = extract_month(date, &locale.dates.months.long);
+            let month = extract_month(date, &locale.dates.months.long, &locale.dates.seasons);
             let day = date.day();
             let base = locale
                 .resolve_date_pattern(
@@ -593,7 +596,7 @@ fn format_single_date(
             if year.is_empty() {
                 return None;
             }
-            let month = extract_month(date, &locale.dates.months.long);
+            let month = extract_month(date, &locale.dates.months.long, &locale.dates.seasons);
             let day = date.day();
             let month_opt = (!month.is_empty()).then_some(month.as_str());
             if let Some(rendered) = locale.resolve_date_pattern(
@@ -615,7 +618,7 @@ fn format_single_date(
             if year.is_empty() {
                 return None;
             }
-            let month = extract_month(date, &locale.dates.months.short);
+            let month = extract_month(date, &locale.dates.months.short, &locale.dates.seasons);
             let day = date.day();
             let month_opt = (!month.is_empty()).then_some(month.as_str());
             if let Some(rendered) = locale.resolve_date_pattern(
@@ -637,7 +640,7 @@ fn format_single_date(
             if year.is_empty() {
                 return None;
             }
-            let month = extract_month(date, &locale.dates.months.short);
+            let month = extract_month(date, &locale.dates.months.short, &locale.dates.seasons);
             let day = date.day();
             let month_opt = (!month.is_empty()).then_some(month.as_str());
             if let Some(rendered) = locale.resolve_date_pattern(
@@ -1154,6 +1157,46 @@ mod locale_pattern_tests {
     }
 
     #[test]
+    fn en_us_month_form_renders_season_name() {
+        // given an EDTF season date and the month-only form
+        let out = format_single_date(
+            &EdtfString("2023-21".to_string()),
+            &DateForm::Month,
+            &en_us(),
+            None,
+        );
+        // then the locale's season term renders in place of a month name
+        assert_eq!(out.as_deref(), Some("Spring"));
+    }
+
+    #[test]
+    fn en_us_year_month_form_renders_season_and_year() {
+        let out = format_single_date(
+            &EdtfString("2023-21".to_string()),
+            &DateForm::YearMonth,
+            &en_us(),
+            None,
+        );
+        assert_eq!(out.as_deref(), Some("Spring 2023"));
+    }
+
+    #[test]
+    fn en_us_full_form_renders_season_and_year() {
+        assert_eq!(full(&en_us(), "2023-21"), "Spring 2023");
+    }
+
+    #[test]
+    fn es_es_year_month_form_renders_localized_season() {
+        let out = format_single_date(
+            &EdtfString("2023-23".to_string()),
+            &DateForm::YearMonth,
+            &es_es(),
+            None,
+        );
+        assert_eq!(out.as_deref(), Some("otoño de 2023"));
+    }
+
+    #[test]
     fn es_es_full_uses_locale_pattern() {
         // Spanish day-first assembly via pattern.date-full.
         assert_eq!(full(&es_es(), "2023-01-12"), "12 de enero de 2023");
@@ -1400,6 +1443,16 @@ mod range_tests {
         assert_eq!(
             range(&en_us(), "2023-05/2023-06", DateForm::YearMonth).as_deref(),
             Some("May–June 2023")
+        );
+    }
+
+    #[test]
+    fn closed_range_season_same_year_collapses() {
+        // given EDTF season endpoints in the same year, YearMonth form
+        // then the start season renders without the (shared) year
+        assert_eq!(
+            range(&en_us(), "2023-21/2023-22", DateForm::YearMonth).as_deref(),
+            Some("Spring–Summer 2023")
         );
     }
 }
