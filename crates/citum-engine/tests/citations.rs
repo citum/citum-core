@@ -31,12 +31,12 @@ use citum_schema::{
     citation::{Citation, CitationItem, CitationMode, IntegralNameState},
     grouping::{GroupSort, GroupSortEntry, GroupSortKey, SortKey as GroupSortKeyType},
     options::{
-        AndOptions, Config, ContributorConfig, DelimiterPrecedesLast, DisplayAsSort, GivennameRule,
-        IntegralNameContexts, IntegralNameMemoryConfig, IntegralNameScope, MultilingualConfig,
-        MultilingualMode, NameForm, Processing, ProcessingCustom, ShortenListOptions,
-        SubsequentNameForm,
+        AndOptions, Config, ContributorConfig, DateConfig, DelimiterPrecedesLast, DisplayAsSort,
+        GivennameRule, IntegralNameContexts, IntegralNameMemoryConfig, IntegralNameScope,
+        MultilingualConfig, MultilingualMode, NameForm, Processing, ProcessingCustom,
+        ShortenListOptions, SubsequentNameForm,
     },
-    reference::InputReference,
+    reference::{EdtfString, InputReference},
 };
 
 // --- Helper Functions ---
@@ -133,6 +133,14 @@ fn build_author_date_style_with_givenname_rule(rule: GivennameRule) -> Style {
     }
 
     style
+}
+
+fn make_undated_book(id: &str, family: &str, given: &str, title: &str) -> InputReference {
+    let mut reference = make_book(id, family, given, 2020, title);
+    if let ClassExtension::Monograph(monograph) = reference.extension_mut() {
+        monograph.issued = EdtfString(String::new());
+    }
+    reference
 }
 
 fn by_cite_scope_fixture() -> Vec<InputReference> {
@@ -504,6 +512,63 @@ fn disambiguation_year_suffix_follows_article_stripped_title_order() {
     let expected = "Garcia, (2019a), (2019b)";
 
     run_test_case_native(&input, &citation_items, expected, "citation");
+}
+
+#[test]
+fn disambiguation_year_suffix_applies_to_no_date_terms() {
+    let input = vec![
+        make_undated_book("alpha", "Smith", "Jane", "Alpha"),
+        make_undated_book("beta", "Smith", "Jane", "Beta"),
+    ];
+    let citation_items = vec![vec!["alpha", "beta"]];
+
+    run_test_case_native_with_options(common::TestCaseOptions {
+        input: &input,
+        citation_items: &citation_items,
+        expected: "Smith, (n.d.-a), (n.d.-b)",
+        mode: "citation",
+        disambiguate_year_suffix: true,
+        disambiguate_names: false,
+        disambiguate_givenname: false,
+        et_al_min: None,
+        et_al_use_first: None,
+    });
+}
+
+#[test]
+fn disambiguation_no_date_year_suffix_uses_configured_delimiter() {
+    let mut style = common::build_author_date_style(true, false, false, None, None);
+    if let Some(options) = style.options.as_mut() {
+        options.dates = Some(DateConfig {
+            no_date_year_suffix_delimiter: String::new(),
+            ..Default::default()
+        });
+    }
+    let bibliography = indexmap::indexmap! {
+        "alpha".to_string() => make_undated_book("alpha", "Smith", "Jane", "Alpha"),
+        "beta".to_string() => make_undated_book("beta", "Smith", "Jane", "Beta"),
+    };
+    let processor = Processor::new(style, bibliography);
+    let citation = Citation {
+        items: vec![
+            CitationItem {
+                id: "alpha".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "beta".to_string(),
+                ..Default::default()
+            },
+        ],
+        mode: CitationMode::NonIntegral,
+        ..Default::default()
+    };
+
+    let result = processor
+        .process_citation(&citation)
+        .expect("undated disambiguation citation should render");
+
+    assert_eq!(result, "Smith, (n.d.a), (n.d.b)");
 }
 
 /// Row 114 regression: same-surname, different-given-name authors in the same

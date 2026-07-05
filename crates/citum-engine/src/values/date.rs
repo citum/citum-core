@@ -405,21 +405,29 @@ fn compute_disamb_suffix<F: crate::render::format::OutputFormat<Output = String>
     fmt: &F,
 ) -> Option<String> {
     if hints.disamb_condition && date_form_displays_year(form) && !date.year().is_empty() {
-        // Check if year suffix is enabled, resolving the processing default
-        // centrally so an unset `processing` matches the rest of the engine.
-        let use_suffix = options
-            .config
-            .effective_processing()
-            .config()
-            .disambiguate
-            .as_ref()
-            .is_some_and(|d| d.year_suffix);
+        compute_disamb_suffix_label(hints, options, fmt)
+    } else {
+        None
+    }
+}
 
-        if use_suffix {
-            int_to_letter(hints.group_index as u32).map(|s| fmt.text(&s))
-        } else {
-            None
-        }
+fn compute_disamb_suffix_label<F: crate::render::format::OutputFormat<Output = String>>(
+    hints: &ProcHints,
+    options: &RenderOptions<'_>,
+    fmt: &F,
+) -> Option<String> {
+    // Check if year suffix is enabled, resolving the processing default
+    // centrally so an unset `processing` matches the rest of the engine.
+    let use_suffix = options
+        .config
+        .effective_processing()
+        .config()
+        .disambiguate
+        .as_ref()
+        .is_some_and(|d| d.year_suffix);
+
+    if hints.disamb_condition && use_suffix {
+        int_to_letter(hints.group_index as u32).map(|s| fmt.text(&s))
     } else {
         None
     }
@@ -427,6 +435,14 @@ fn compute_disamb_suffix<F: crate::render::format::OutputFormat<Output = String>
 
 fn date_form_displays_year(form: &DateForm) -> bool {
     !matches!(form, DateForm::MonthDay)
+}
+
+fn append_no_date_disamb_suffix(value: &mut String, suffix: &str, options: &RenderOptions<'_>) {
+    let delimiter = options.config.dates.as_ref().map_or("-", |date_config| {
+        date_config.no_date_year_suffix_delimiter.as_str()
+    });
+    value.push_str(delimiter);
+    value.push_str(suffix);
 }
 
 fn inline_disamb_suffix(formatted: &str, form: &DateForm, year: &str, suffix: &str) -> String {
@@ -688,12 +704,15 @@ impl ComponentValues for TemplateDate {
             }
             // For issued dates, substitute the locale's "no-date" term (e.g. "n.d.")
             if matches!(self.date, TemplateDateVar::Issued)
-                && let Some(nd) = options.locale.resolved_general_term(
+                && let Some(mut nd) = options.locale.resolved_general_term(
                     &GeneralTerm::NoDate,
                     &TermForm::Short,
                     None,
                 )
             {
+                if let Some(suffix) = compute_disamb_suffix_label(hints, options, &fmt) {
+                    append_no_date_disamb_suffix(&mut nd, &suffix, options);
+                }
                 return Some(ProcValues {
                     value: nd,
                     prefix: None,
