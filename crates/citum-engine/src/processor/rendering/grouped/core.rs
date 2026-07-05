@@ -926,7 +926,7 @@ impl Renderer<'_> {
         } = request;
         let ref_type = reference.ref_type();
         let options = RenderOptions {
-            config: self.config,
+            config: self.config.clone(),
             bibliography_config: self.bibliography_config.clone(),
             locale: self.locale,
             context,

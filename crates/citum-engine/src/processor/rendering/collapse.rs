@@ -7,6 +7,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use super::Renderer;
 use crate::values::range::{ConsecutiveSegment, consecutive_segments};
+#[cfg(test)]
+use std::rc::Rc;
 
 impl Renderer<'_> {
     /// Collapse consecutive numeric citation chunks into ranges (e.g., "1–3").
@@ -223,13 +225,13 @@ mod tests {
         style: &'a citum_schema::Style,
         bib: &'a Bibliography,
         loc: &'a Locale,
-        cfg: &'a Config,
+        cfg: Rc<Config>,
         hints: &'a HashMap<String, ProcHints>,
         citation_numbers: &'a RefCell<HashMap<String, usize>>,
         compound_set_by_ref: &'a HashMap<String, String>,
         compound_member_index: &'a HashMap<String, usize>,
         compound_sets: &'a IndexMap<String, Vec<String>>,
-        bibliography_config: Option<BibliographyConfig>,
+        bibliography_config: Option<Rc<BibliographyConfig>>,
     ) -> Renderer<'a> {
         Renderer {
             style,
@@ -255,7 +257,7 @@ mod tests {
         let style = citum_schema::Style::default();
         let bib = Bibliography::default();
         let loc = Locale::default();
-        let cfg = Config::default();
+        let cfg = Rc::new(Config::default());
         let hints = HashMap::new();
 
         let mut nums = HashMap::new();
@@ -272,7 +274,7 @@ mod tests {
             &style,
             &bib,
             &loc,
-            &cfg,
+            cfg,
             &hints,
             &citation_numbers,
             &empty_map_string,
