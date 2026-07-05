@@ -71,10 +71,9 @@ struct DisambiguationFlags {
 
 struct GroupDisambiguationContext<'a> {
     key: &'a str,
-    group: &'a [&'a Reference],
+    group: &'a [&'a CachedReference<'a>],
     flags: DisambiguationFlags,
     author_group_lengths: &'a HashMap<String, usize>,
-    cache: &'a ReferenceCache,
 }
 
 #[derive(Clone, Copy)]
@@ -93,11 +92,11 @@ enum HintOrder {
 }
 
 enum GroupHintAction<'a> {
-    Singleton(&'a Reference),
+    Singleton(&'a CachedReference<'a>),
     LabelYearSuffix,
     NamePartitions {
         min_names_to_show: usize,
-        partitions: HashMap<String, Vec<&'a Reference>>,
+        partitions: HashMap<String, Vec<&'a CachedReference<'a>>>,
     },
     GivennameResolution,
     CombinedResolution {
@@ -107,7 +106,20 @@ enum GroupHintAction<'a> {
     FallbackYearSuffix,
 }
 
-type ReferenceCache = HashMap<usize, CachedReferenceData>;
+type ReferenceCache<'a> = Vec<CachedReference<'a>>;
+
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+enum ReferenceCacheKey {
+    Id(String),
+    Index(usize),
+}
+
+struct CachedReference<'a> {
+    reference: &'a Reference,
+    #[allow(dead_code, reason = "Cache key policy is asserted in unit tests.")]
+    key: ReferenceCacheKey,
+    data: CachedReferenceData,
+}
 
 struct CachedReferenceData {
     author_key: String,
@@ -187,8 +199,8 @@ impl<'a> Disambiguator<'a> {
         // whether a group_sort is configured.
         let needs_title_key = flags.year_suffix;
         let cache = self.build_reference_cache(&refs, needs_title_key);
-        let grouped = self.group_references(&refs, &cache);
-        let author_group_lengths = self.author_group_lengths(&refs, &cache);
+        let grouped = self.group_references(&cache);
+        let author_group_lengths = self.author_group_lengths(&cache);
 
         for (key, group) in grouped {
             self.apply_group_hints(
@@ -198,7 +210,6 @@ impl<'a> Disambiguator<'a> {
                     group: &group,
                     flags,
                     author_group_lengths: &author_group_lengths,
-                    cache: &cache,
                 },
             );
         }
@@ -230,35 +241,39 @@ impl<'a> Disambiguator<'a> {
 
     /// Builds an internal cache of reference data (author keys, group keys, titles)
     /// to avoid redundant string generation during disambiguation.
-    fn build_reference_cache(&self, refs: &[&Reference], needs_title_key: bool) -> ReferenceCache {
-        let mut cache = HashMap::with_capacity(refs.len());
+    fn build_reference_cache<'b>(
+        &self,
+        refs: &[&'b Reference],
+        needs_title_key: bool,
+    ) -> ReferenceCache<'b> {
+        refs.iter()
+            .enumerate()
+            .map(|(index, reference)| {
+                let names = reference.author().map_or_else(Vec::new, |authors| {
+                    self.render_name_for_disambiguation(&authors)
+                });
+                let author_key = self.build_author_slot_key(reference, &names);
+                let group_key = self.build_group_key(index, reference, &author_key);
+                // Year-suffix letters (a, b, c…) must follow the effective bibliography
+                // sort order. Reuse the bibliography title sort key (leading-article
+                // stripping + locale collation) so suffix assignment cannot diverge from
+                // the rendered order — a raw lowercased title sorts "An Ecology" before
+                // "Biology", producing `2019b` before `2019a` (DISAMBIGUATION.md §3).
+                let title_key = needs_title_key
+                    .then(|| crate::sort_support::title_sort_key(reference, self.locale));
 
-        for reference in refs {
-            let names = reference.author().map_or_else(Vec::new, |authors| {
-                self.render_name_for_disambiguation(&authors)
-            });
-            let author_key = self.build_author_slot_key(reference, &names);
-            let group_key = self.build_group_key(reference, &author_key);
-            // Year-suffix letters (a, b, c…) must follow the effective bibliography
-            // sort order. Reuse the bibliography title sort key (leading-article
-            // stripping + locale collation) so suffix assignment cannot diverge from
-            // the rendered order — a raw lowercased title sorts "An Ecology" before
-            // "Biology", producing `2019b` before `2019a` (DISAMBIGUATION.md §3).
-            let title_key = needs_title_key
-                .then(|| crate::sort_support::title_sort_key(reference, self.locale));
-
-            cache.insert(
-                Self::reference_cache_key(reference),
-                CachedReferenceData {
-                    author_key,
-                    group_key,
-                    names,
-                    title_key,
-                },
-            );
-        }
-
-        cache
+                CachedReference {
+                    reference,
+                    key: Self::reference_cache_key(index, reference),
+                    data: CachedReferenceData {
+                        author_key,
+                        group_key,
+                        names,
+                        title_key,
+                    },
+                }
+            })
+            .collect()
     }
 
     fn build_author_slot_key(
@@ -320,14 +335,10 @@ impl<'a> Disambiguator<'a> {
     /// The returned map is keyed only by `author_key` and is later used when
     /// populating `ProcHints::group_length`, rather than representing the size
     /// of a per-`group_key` collision group.
-    fn author_group_lengths(
-        &self,
-        refs: &[&Reference],
-        cache: &ReferenceCache,
-    ) -> HashMap<String, usize> {
+    fn author_group_lengths(&self, refs: &ReferenceCache<'_>) -> HashMap<String, usize> {
         let mut author_group_lengths = HashMap::new();
         for reference in refs {
-            let author_key = &self.reference_data(reference, cache).author_key;
+            let author_key = &reference.data.author_key;
             if !author_key.is_empty() {
                 *author_group_lengths.entry(author_key.clone()).or_insert(0) += 1;
             }
@@ -348,7 +359,6 @@ impl<'a> Disambiguator<'a> {
                     hints,
                     reference,
                     context.author_group_lengths,
-                    context.cache,
                     ProcHints::default(),
                 );
             }
@@ -430,7 +440,7 @@ impl<'a> Disambiguator<'a> {
     fn select_singleton_hint<'b>(
         &self,
         context: &GroupDisambiguationContext<'b>,
-    ) -> Option<&'b Reference> {
+    ) -> Option<&'b CachedReference<'b>> {
         if context.group.len() == 1 {
             #[allow(clippy::indexing_slicing, reason = "context.group.len() == 1")]
             return Some(context.group[0]);
@@ -448,11 +458,11 @@ impl<'a> Disambiguator<'a> {
     fn select_name_partitions<'b>(
         &self,
         context: &GroupDisambiguationContext<'b>,
-    ) -> Option<(usize, HashMap<String, Vec<&'b Reference>>)> {
+    ) -> Option<(usize, HashMap<String, Vec<&'b CachedReference<'b>>>)> {
         context
             .flags
             .add_names
-            .then(|| self.partition_by_name_expansion(context.group, context.cache))
+            .then(|| self.partition_by_name_expansion(context.group))
             .flatten()
     }
 
@@ -461,8 +471,7 @@ impl<'a> Disambiguator<'a> {
         // Use full-expansion keys to determine whether givenname expansion can help at all.
         // (With n=1, the full and primary-only keys are equivalent — both inspect only the
         // primary author — so no separate primary-only check is needed here.)
-        context.flags.add_givenname
-            && self.check_givenname_resolution(context.group, context.cache, None, false)
+        context.flags.add_givenname && self.check_givenname_resolution(context.group, None, false)
     }
 
     /// Selects collision resolution by using both more names AND given name expansion.
@@ -479,14 +488,9 @@ impl<'a> Disambiguator<'a> {
             return None;
         }
 
-        let min_names_to_show = self.find_combined_resolution(context.group, context.cache)?;
+        let min_names_to_show = self.find_combined_resolution(context.group)?;
         let primary_only_requires_suffix = context.flags.primary_givenname_only
-            && !self.check_givenname_resolution(
-                context.group,
-                context.cache,
-                Some(min_names_to_show),
-                true,
-            );
+            && !self.check_givenname_resolution(context.group, Some(min_names_to_show), true);
 
         Some((min_names_to_show, primary_only_requires_suffix))
     }
@@ -497,7 +501,7 @@ impl<'a> Disambiguator<'a> {
         hints: &mut HashMap<String, ProcHints>,
         context: &GroupDisambiguationContext<'_>,
         min_names_to_show: usize,
-        partitions: &HashMap<String, Vec<&Reference>>,
+        partitions: &HashMap<String, Vec<&CachedReference<'_>>>,
     ) {
         for subgroup in partitions.values() {
             if subgroup.len() == 1 {
@@ -506,23 +510,13 @@ impl<'a> Disambiguator<'a> {
             }
 
             if context.flags.add_givenname
-                && self.check_givenname_resolution(
-                    subgroup,
-                    context.cache,
-                    Some(min_names_to_show),
-                    false,
-                )
+                && self.check_givenname_resolution(subgroup, Some(min_names_to_show), false)
             {
                 // Under primary-name rules, secondary given names are not rendered.
                 // If the full-expansion check passes but primary-only does not, the
                 // subgroup must fall back to year-suffix (with expansion retained).
                 if context.flags.primary_givenname_only
-                    && !self.check_givenname_resolution(
-                        subgroup,
-                        context.cache,
-                        Some(min_names_to_show),
-                        true,
-                    )
+                    && !self.check_givenname_resolution(subgroup, Some(min_names_to_show), true)
                 {
                     self.apply_year_suffix_for_group(
                         hints,
@@ -549,28 +543,24 @@ impl<'a> Disambiguator<'a> {
 
     /// Searches for the minimum number of names that, when combined with given name expansion,
     /// resolves the collision group.
-    fn find_combined_resolution(
-        &self,
-        group: &[&Reference],
-        cache: &ReferenceCache,
-    ) -> Option<usize> {
+    fn find_combined_resolution(&self, group: &[&CachedReference<'_>]) -> Option<usize> {
         let max_authors = group
             .iter()
-            .map(|reference| self.reference_data(reference, cache).names.len())
+            .map(|reference| reference.data.names.len())
             .max()
             .unwrap_or(0);
 
         // Use full-expansion keys (primary_only: false) to find the minimum name count.
         // The caller is responsible for verifying the result under primary-only rendering
         // when primary_givenname_only is active.
-        (2..=max_authors).find(|&n| self.check_givenname_resolution(group, cache, Some(n), false))
+        (2..=max_authors).find(|&n| self.check_givenname_resolution(group, Some(n), false))
     }
 
     /// Finalizes a successful disambiguation strategy by inserting the calculated hints into the map.
     fn apply_resolution(
         &self,
         hints: &mut HashMap<String, ProcHints>,
-        group: &[&Reference],
+        group: &[&CachedReference<'_>],
         context: &GroupDisambiguationContext<'_>,
         expand_given_names: bool,
         min_names_to_show: Option<usize>,
@@ -587,7 +577,6 @@ impl<'a> Disambiguator<'a> {
                 disamb_condition: false,
             },
             HintOrder::Encountered,
-            context.cache,
         );
     }
 
@@ -595,25 +584,26 @@ impl<'a> Disambiguator<'a> {
     fn insert_hint(
         &self,
         hints: &mut HashMap<String, ProcHints>,
-        reference: &Reference,
+        reference: &CachedReference<'_>,
         author_group_lengths: &HashMap<String, usize>,
-        cache: &ReferenceCache,
         mut hint: ProcHints,
     ) {
         hint.group_length = self
-            .author_group_length(reference, author_group_lengths, cache)
+            .author_group_length(reference, author_group_lengths)
             .unwrap_or(1);
-        hints.insert(reference.id().unwrap_or_default().to_string(), hint);
+        hints.insert(
+            reference.reference.id().unwrap_or_default().to_string(),
+            hint,
+        );
     }
 
     /// Retrieves the number of references sharing the author key for a specific reference.
     fn author_group_length(
         &self,
-        reference: &Reference,
+        reference: &CachedReference<'_>,
         author_group_lengths: &HashMap<String, usize>,
-        cache: &ReferenceCache,
     ) -> Option<usize> {
-        let author_key = &self.reference_data(reference, cache).author_key;
+        let author_key = &reference.data.author_key;
         author_group_lengths.get(author_key).copied()
     }
 
@@ -638,7 +628,7 @@ impl<'a> Disambiguator<'a> {
     fn apply_year_suffix_for_group(
         &self,
         hints: &mut HashMap<String, ProcHints>,
-        group: &[&Reference],
+        group: &[&CachedReference<'_>],
         context: &GroupDisambiguationContext<'_>,
         expand_given_names: bool,
         min_names_to_show: Option<usize>,
@@ -655,7 +645,6 @@ impl<'a> Disambiguator<'a> {
                 disamb_condition: true,
             },
             HintOrder::GroupSorted,
-            context.cache,
         );
     }
 
@@ -663,39 +652,20 @@ impl<'a> Disambiguator<'a> {
     fn insert_group_hints(
         &self,
         hints: &mut HashMap<String, ProcHints>,
-        group: &[&Reference],
+        group: &[&CachedReference<'_>],
         author_group_lengths: &HashMap<String, usize>,
         plan: HintPlan<'_>,
         order: HintOrder,
-        cache: &ReferenceCache,
     ) {
         match order {
             HintOrder::Encountered => {
                 for (idx, reference) in group.iter().enumerate() {
-                    self.insert_planned_hint(
-                        hints,
-                        reference,
-                        author_group_lengths,
-                        plan,
-                        idx + 1,
-                        cache,
-                    );
+                    self.insert_planned_hint(hints, reference, author_group_lengths, plan, idx + 1);
                 }
             }
             HintOrder::GroupSorted => {
-                for (idx, reference) in self
-                    .sort_group_for_year_suffix(group, cache)
-                    .iter()
-                    .enumerate()
-                {
-                    self.insert_planned_hint(
-                        hints,
-                        reference,
-                        author_group_lengths,
-                        plan,
-                        idx + 1,
-                        cache,
-                    );
+                for (idx, reference) in self.sort_group_for_year_suffix(group).iter().enumerate() {
+                    self.insert_planned_hint(hints, reference, author_group_lengths, plan, idx + 1);
                 }
             }
         }
@@ -705,17 +675,15 @@ impl<'a> Disambiguator<'a> {
     fn insert_planned_hint(
         &self,
         hints: &mut HashMap<String, ProcHints>,
-        reference: &Reference,
+        reference: &CachedReference<'_>,
         author_group_lengths: &HashMap<String, usize>,
         plan: HintPlan<'_>,
         group_index: usize,
-        cache: &ReferenceCache,
     ) {
         self.insert_hint(
             hints,
             reference,
             author_group_lengths,
-            cache,
             ProcHints {
                 disamb_condition: plan.disamb_condition,
                 group_index,
@@ -732,48 +700,41 @@ impl<'a> Disambiguator<'a> {
     /// It uses the provided group sort specification or falls back to title-based sorting.
     fn sort_group_for_year_suffix<'b>(
         &self,
-        group: &[&'b Reference],
-        cache: &ReferenceCache,
-    ) -> Vec<&'b Reference> {
+        group: &[&'b CachedReference<'b>],
+    ) -> Vec<&'b CachedReference<'b>> {
         if let Some(sort_spec) = self.group_sort {
             let sorter = GroupSorter::new(self.locale);
             // Pre-sort by title_key so that entries which compare equal under the primary
             // sort_spec retain a stable, deterministic order (title ascending as tiebreaker).
             // GroupSorter::sort_references uses sort_by (stable), so the pre-sort order is
             // preserved for entries that compare equal under the primary key.
-            let mut pre_sorted: Vec<&Reference> = group.to_vec();
+            let mut pre_sorted: Vec<&CachedReference<'_>> = group.to_vec();
             pre_sorted.sort_by(|a, b| {
-                let a_title = self
-                    .reference_data(a, cache)
-                    .title_key
-                    .as_deref()
-                    .unwrap_or_default();
-                let b_title = self
-                    .reference_data(b, cache)
-                    .title_key
-                    .as_deref()
-                    .unwrap_or_default();
-                a_title
-                    .cmp(b_title)
-                    .then_with(|| year_suffix_date_key(a).cmp(&year_suffix_date_key(b)))
+                let a_title = a.data.title_key.as_deref().unwrap_or_default();
+                let b_title = b.data.title_key.as_deref().unwrap_or_default();
+                a_title.cmp(b_title).then_with(|| {
+                    year_suffix_date_key(a.reference).cmp(&year_suffix_date_key(b.reference))
+                })
             });
-            sorter.sort_references(pre_sorted, sort_spec)
+            pre_sorted.sort_by(|a, b| {
+                for sort_key in &sort_spec.template {
+                    let cmp = sorter.compare_by_key(a.reference, b.reference, sort_key);
+                    if cmp != std::cmp::Ordering::Equal {
+                        return cmp;
+                    }
+                }
+
+                std::cmp::Ordering::Equal
+            });
+            pre_sorted
         } else {
-            let mut sorted: Vec<&Reference> = group.to_vec();
+            let mut sorted: Vec<&CachedReference<'_>> = group.to_vec();
             sorted.sort_by(|a, b| {
-                let a_title = self
-                    .reference_data(a, cache)
-                    .title_key
-                    .as_deref()
-                    .unwrap_or_default();
-                let b_title = self
-                    .reference_data(b, cache)
-                    .title_key
-                    .as_deref()
-                    .unwrap_or_default();
-                a_title
-                    .cmp(b_title)
-                    .then_with(|| year_suffix_date_key(a).cmp(&year_suffix_date_key(b)))
+                let a_title = a.data.title_key.as_deref().unwrap_or_default();
+                let b_title = b.data.title_key.as_deref().unwrap_or_default();
+                a_title.cmp(b_title).then_with(|| {
+                    year_suffix_date_key(a.reference).cmp(&year_suffix_date_key(b.reference))
+                })
             });
             sorted
         }
@@ -783,20 +744,19 @@ impl<'a> Disambiguator<'a> {
     /// distinction when some references still have hidden trailing names.
     fn partition_by_name_expansion<'b>(
         &self,
-        group: &[&'b Reference],
-        cache: &ReferenceCache,
-    ) -> Option<(usize, HashMap<String, Vec<&'b Reference>>)> {
+        group: &[&'b CachedReference<'b>],
+    ) -> Option<(usize, HashMap<String, Vec<&'b CachedReference<'b>>>)> {
         let max_authors = group
             .iter()
-            .map(|reference| self.reference_data(reference, cache).names.len())
+            .map(|reference| reference.data.names.len())
             .max()
             .unwrap_or(0);
 
         let mut buf = String::new();
         for n in 2..=max_authors {
-            let mut partitions: HashMap<String, Vec<&Reference>> = HashMap::new();
+            let mut partitions: HashMap<String, Vec<&'b CachedReference<'b>>> = HashMap::new();
             for reference in group {
-                let names = &self.reference_data(reference, cache).names;
+                let names = &reference.data.names;
                 buf.clear();
                 self.append_name_expansion_key(&mut buf, names, n);
                 if let Some(v) = partitions.get_mut(buf.as_str()) {
@@ -824,8 +784,7 @@ impl<'a> Disambiguator<'a> {
     /// candidate expansion still works under restricted rendering before committing.
     fn check_givenname_resolution(
         &self,
-        group: &[&Reference],
-        cache: &ReferenceCache,
+        group: &[&CachedReference<'_>],
         min_names: Option<usize>,
         primary_only: bool,
     ) -> bool {
@@ -833,7 +792,7 @@ impl<'a> Disambiguator<'a> {
         let mut buf = String::new();
         let n = min_names.unwrap_or(1);
         for reference in group {
-            let names = &self.reference_data(reference, cache).names;
+            let names = &reference.data.names;
             buf.clear();
             self.append_givenname_resolution_key(&mut buf, names, n, primary_only);
             if !seen.insert(buf.clone()) {
@@ -846,14 +805,13 @@ impl<'a> Disambiguator<'a> {
     /// Group references by their base collision key for disambiguation.
     fn group_references<'b>(
         &self,
-        references: &[&'b Reference],
-        cache: &ReferenceCache,
-    ) -> HashMap<String, Vec<&'b Reference>> {
-        let mut groups: HashMap<String, Vec<&'b Reference>> = HashMap::new();
+        references: &'b ReferenceCache<'b>,
+    ) -> HashMap<String, Vec<&'b CachedReference<'b>>> {
+        let mut groups: HashMap<String, Vec<&'b CachedReference<'b>>> = HashMap::new();
 
         for reference in references {
-            let key = self.reference_data(reference, cache).group_key.clone();
-            groups.entry(key).or_default().push(*reference);
+            let key = reference.data.group_key.clone();
+            groups.entry(key).or_default().push(reference);
         }
 
         groups
@@ -911,7 +869,7 @@ impl<'a> Disambiguator<'a> {
     }
 
     /// Create a grouping key for a reference based on its base citation form.
-    fn build_group_key(&self, reference: &Reference, author_key: &str) -> String {
+    fn build_group_key(&self, index: usize, reference: &Reference, author_key: &str) -> String {
         // In label mode, group by base label string rather than author-year.
         // This ensures disambiguation happens at the label level (Knu84a/Knu84b)
         // rather than the author-year level.
@@ -928,7 +886,7 @@ impl<'a> Disambiguator<'a> {
             if let Some(ref_id) = reference.id().filter(|id| !id.is_empty()) {
                 return format!("anon:{ref_id}");
             }
-            return format!("anon:{}", Self::reference_cache_key(reference));
+            return format!("anon:index:{index}");
         }
 
         let mut key = String::with_capacity(author_key.len() + 8);
@@ -1030,28 +988,13 @@ impl<'a> Disambiguator<'a> {
         }
     }
 
-    /// Returns an internal cache key for a reference based on its current pointer address.
-    ///
-    /// This key is only intended for in-memory caching during the current run. Its
-    /// uniqueness and stability are limited to the lifetime of the referenced
-    /// allocation, so it must not be treated as globally unique or persisted.
-    fn reference_cache_key(reference: &Reference) -> usize {
-        std::ptr::from_ref(reference) as usize
-    }
-
-    /// Retrieves cached metadata for a specific reference.
-    #[allow(
-        clippy::expect_used,
-        reason = "Internal cache hydration guarantees presence"
-    )]
-    fn reference_data<'b>(
-        &self,
-        reference: &Reference,
-        cache: &'b ReferenceCache,
-    ) -> &'b CachedReferenceData {
-        cache
-            .get(&Self::reference_cache_key(reference))
-            .expect("disambiguation cache missing reference")
+    /// Returns the stable per-run cache key used for disambiguation metadata.
+    fn reference_cache_key(index: usize, reference: &Reference) -> ReferenceCacheKey {
+        reference
+            .id()
+            .map_or(ReferenceCacheKey::Index(index), |id| {
+                ReferenceCacheKey::Id(id.to_string())
+            })
     }
 }
 
@@ -1536,7 +1479,11 @@ mod tests {
         let disabled_flags = disabled.disambiguation_flags();
         // year_suffix=false → title_key must be None
         let disabled_cache = disabled.build_reference_cache(&refs, disabled_flags.year_suffix);
-        assert!(disabled_cache.values().all(|data| data.title_key.is_none()));
+        assert!(
+            disabled_cache
+                .iter()
+                .all(|reference| reference.data.title_key.is_none())
+        );
 
         let enabled_config = Config {
             processing: Some(Processing::Custom(ProcessingCustom {
@@ -1554,7 +1501,36 @@ mod tests {
         let enabled_flags = enabled.disambiguation_flags();
         // year_suffix=true → title_key must be Some regardless of group_sort
         let enabled_cache = enabled.build_reference_cache(&refs, enabled_flags.year_suffix);
-        assert!(enabled_cache.values().all(|data| data.title_key.is_some()));
+        assert!(
+            enabled_cache
+                .iter()
+                .all(|reference| reference.data.title_key.is_some())
+        );
+    }
+
+    #[test]
+    fn test_reference_cache_key_uses_reference_id_or_index_fallback() {
+        let with_id = make_ref("r1", "Smith", "John", 2020);
+        let without_id = make_ref_without_id("missing-id", "Smith", "Jane", 2020);
+
+        assert_eq!(
+            Disambiguator::reference_cache_key(7, &with_id),
+            ReferenceCacheKey::Id("r1".to_string())
+        );
+        assert_eq!(
+            Disambiguator::reference_cache_key(7, &without_id),
+            ReferenceCacheKey::Index(7)
+        );
+
+        let mut bib = Bibliography::new();
+        bib.insert("r1".to_string(), with_id);
+        bib.insert("missing".to_string(), without_id);
+        let refs: Vec<&Reference> = bib.values().collect();
+        let cache = Disambiguator::new(&bib, &Config::default(), &Locale::en_us())
+            .build_reference_cache(&refs, false);
+
+        assert_eq!(cache[0].key, ReferenceCacheKey::Id("r1".to_string()));
+        assert_eq!(cache[1].key, ReferenceCacheKey::Index(1));
     }
 
     #[test]
@@ -1587,7 +1563,7 @@ mod tests {
         let disambiguator = Disambiguator::new(&bib, &config, &locale);
         let refs: Vec<&Reference> = bib.values().collect();
         let cache = disambiguator.build_reference_cache(&refs, false);
-        let grouped = disambiguator.group_references(&refs, &cache);
+        let grouped = disambiguator.group_references(&cache);
 
         assert_eq!(grouped.len(), 4);
         assert!(!grouped.contains_key("anon:"));
@@ -1769,10 +1745,20 @@ mod tests {
         let cache_translit = Disambiguator::new(&bib, &config_translit, &locale)
             .build_reference_cache(&[bib.get("r1").unwrap(), bib.get("r2").unwrap()], false);
 
-        let ck_r1 = Disambiguator::reference_cache_key(bib.get("r1").unwrap());
-        let ck_r2 = Disambiguator::reference_cache_key(bib.get("r2").unwrap());
-        let ak_r1 = &cache_translit[&ck_r1].author_key;
-        let ak_r2 = &cache_translit[&ck_r2].author_key;
+        let ck_r1 = ReferenceCacheKey::Id("r1".to_string());
+        let ck_r2 = ReferenceCacheKey::Id("r2".to_string());
+        let ak_r1 = &cache_translit
+            .iter()
+            .find(|reference| reference.key == ck_r1)
+            .expect("r1 cache entry")
+            .data
+            .author_key;
+        let ak_r2 = &cache_translit
+            .iter()
+            .find(|reference| reference.key == ck_r2)
+            .expect("r2 cache entry")
+            .data
+            .author_key;
 
         assert_eq!(
             ak_r1, ak_r2,
@@ -1789,8 +1775,18 @@ mod tests {
         let cache_primary = Disambiguator::new(&bib, &config_primary, &locale)
             .build_reference_cache(&[bib.get("r1").unwrap(), bib.get("r2").unwrap()], false);
 
-        let ak_r1_primary = &cache_primary[&ck_r1].author_key;
-        let ak_r2_primary = &cache_primary[&ck_r2].author_key;
+        let ak_r1_primary = &cache_primary
+            .iter()
+            .find(|reference| reference.key == ck_r1)
+            .expect("r1 cache entry")
+            .data
+            .author_key;
+        let ak_r2_primary = &cache_primary
+            .iter()
+            .find(|reference| reference.key == ck_r2)
+            .expect("r2 cache entry")
+            .data
+            .author_key;
 
         assert_ne!(
             ak_r1_primary, ak_r2_primary,
