@@ -4230,6 +4230,11 @@
             }
           ]
         },
+        "no-date-year-suffix-delimiter": {
+          "description": "Delimiter inserted between the no-date term and a year-suffix disambiguator.",
+          "type": "string",
+          "default": "-"
+        },
         "custom": {
           "description": "Custom user-defined fields for extensions.",
           "type": [

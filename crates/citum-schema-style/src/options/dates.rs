@@ -111,6 +111,9 @@ pub struct DateConfig {
     /// "no date". Defaults to short.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub no_date_form: Option<NoDateForm>,
+    /// Delimiter inserted between the no-date term and a year-suffix disambiguator.
+    #[serde(default = "default_no_date_year_suffix_delimiter")]
+    pub no_date_year_suffix_delimiter: String,
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub custom: Option<HashMap<String, serde_json::Value>>,
@@ -145,6 +148,10 @@ fn default_range_delimiter() -> String {
     "–".to_string() // U+2013 en-dash
 }
 
+fn default_no_date_year_suffix_delimiter() -> String {
+    "-".to_string()
+}
+
 impl Default for DateConfig {
     fn default() -> Self {
         Self {
@@ -154,6 +161,7 @@ impl Default for DateConfig {
             range_delimiter: default_range_delimiter(),
             open_range_marker: None,
             no_date_form: None,
+            no_date_year_suffix_delimiter: default_no_date_year_suffix_delimiter(),
             custom: None,
             time_format: None,
             show_seconds: false,
@@ -179,5 +187,21 @@ future-key: true
         let cfg: DateConfig = serde_yaml::from_str(yaml).unwrap();
         assert!(cfg.unknown_fields.contains_key("future-key"));
         assert_eq!(cfg.month, MonthFormat::Long);
+    }
+
+    #[test]
+    fn defaults_no_date_year_suffix_delimiter_to_hyphen() {
+        assert_eq!(DateConfig::default().no_date_year_suffix_delimiter, "-");
+    }
+
+    #[test]
+    fn parses_no_date_year_suffix_delimiter() {
+        let yaml = r#"
+month: long
+no-date-year-suffix-delimiter: ""
+"#;
+        let cfg: DateConfig = serde_yaml::from_str(yaml).unwrap();
+
+        assert_eq!(cfg.no_date_year_suffix_delimiter, "");
     }
 }
