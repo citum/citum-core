@@ -3,7 +3,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
-use citum_schema::options::{Config, bibliography::BibliographyConfig};
+use citum_schema::options::{Config, bibliography::BibliographyConfig, titles::TitleRendering};
 use citum_schema::template::{Rendering, TemplateComponent, TitleType};
 use std::rc::Rc;
 
@@ -282,6 +282,21 @@ pub fn get_title_category_rendering(
     language: Option<&str>,
     config: &Config,
 ) -> Option<Rendering> {
+    get_title_category_title_rendering(title_type, ref_type, language, config)
+        .map(|rendering| rendering.to_rendering())
+}
+
+/// Resolve title-category-specific title rendering options for a title component.
+///
+/// The returned rendering reflects title type, mapped reference category, and
+/// optional language-specific overrides from the style configuration.
+#[must_use]
+pub fn get_title_category_title_rendering(
+    title_type: &TitleType,
+    ref_type: Option<&str>,
+    language: Option<&str>,
+    config: &Config,
+) -> Option<TitleRendering> {
     let titles_config = config.titles.as_ref()?;
 
     // Use type_mapping if available to resolve category
@@ -360,9 +375,9 @@ pub fn get_title_category_rendering(
     };
 
     let selected = rendering.or(titles_config.default.as_ref())?;
-    let mut effective = selected.to_rendering();
+    let mut effective = selected.clone();
     if let Some(override_rendering) = selected.locale_override(language) {
-        effective.merge(&override_rendering.to_rendering());
+        effective.merge(override_rendering);
     }
     Some(effective)
 }

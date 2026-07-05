@@ -25,6 +25,8 @@ grammar-options:
   delimiter-precedes-last: never
   # Chicago German uses no serial (Oxford) comma
   serial-comma: false
+  title-subtitle-delimiter: ": "
+  subtitle-delimiter: "; "
 
 messages:
   # Chicago-German chapter entries introduce the container by adjacency; the

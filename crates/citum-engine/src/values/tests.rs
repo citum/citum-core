@@ -4085,6 +4085,60 @@ fn title_value_with_config(title_str: &str, ref_type: &str, config: &Config) -> 
         .value
 }
 
+fn structured_title_value_with_config(
+    title: citum_schema::reference::types::StructuredTitle,
+    config: &Config,
+    language: Option<&str>,
+    form: Option<TitleForm>,
+) -> String {
+    let locale = make_locale();
+    structured_title_value_with_config_and_locale(title, config, &locale, language, form)
+}
+
+fn structured_title_value_with_config_and_locale(
+    title: citum_schema::reference::types::StructuredTitle,
+    config: &Config,
+    locale: &Locale,
+    language: Option<&str>,
+    form: Option<TitleForm>,
+) -> String {
+    let options = RenderOptions {
+        config: Rc::new(config.clone()),
+        bibliography_config: None,
+        locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let hints = ProcHints::default();
+
+    let mut reference = Reference::from(LegacyReference {
+        id: "structured-delimiter".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("placeholder".to_string()),
+        language: language.map(Into::into),
+        ..Default::default()
+    });
+    if let ClassExtension::Monograph(monograph) = reference.extension_mut() {
+        monograph.title = Some(Title::Structured(title));
+    }
+
+    let component = TemplateTitle {
+        title: TitleType::Primary,
+        form,
+        ..Default::default()
+    };
+    component
+        .values::<PlainText>(&reference, &hints, &options)
+        .unwrap()
+        .value
+}
+
 #[test]
 fn test_text_case_sentence_apa_basic() {
     use citum_schema::options::titles::{TextCase, TitleRendering, TitlesConfig};
@@ -4259,8 +4313,195 @@ fn test_text_case_structured_title_sentence_apa() {
     // APA: first word of main + each subtitle capitalized
     assert_eq!(
         values.value,
-        "Understanding citation systems: History and practice: A comparative view"
+        "Understanding citation systems: History and practice; A comparative view"
     );
+}
+
+#[test]
+fn test_structured_title_default_delimiters_use_locale_grammar_options() {
+    use citum_schema::reference::types::{StructuredTitle, Subtitle};
+
+    let result = structured_title_value_with_config(
+        StructuredTitle {
+            full: None,
+            main: "Main title".to_string(),
+            sub: Subtitle::Vector(vec!["Subtitle one".to_string(), "Subtitle two".to_string()]),
+        },
+        &Config::default(),
+        None,
+        None,
+    );
+
+    assert_eq!(result, "Main title: Subtitle one; Subtitle two");
+}
+
+#[test]
+fn test_structured_title_locale_grammar_options_provide_fallback_delimiters() {
+    use citum_schema::reference::types::{StructuredTitle, Subtitle};
+
+    let mut locale = make_locale();
+    locale.grammar_options.title_subtitle_delimiter = " — ".to_string();
+    locale.grammar_options.subtitle_delimiter = " / ".to_string();
+
+    let result = structured_title_value_with_config_and_locale(
+        StructuredTitle {
+            full: None,
+            main: "Main title".to_string(),
+            sub: Subtitle::Vector(vec!["Subtitle one".to_string(), "Subtitle two".to_string()]),
+        },
+        &Config::default(),
+        &locale,
+        None,
+        None,
+    );
+
+    assert_eq!(result, "Main title — Subtitle one / Subtitle two");
+}
+
+#[test]
+fn test_structured_title_primary_delimiter_separates_main_from_subtitle() {
+    use citum_schema::options::titles::{TitleRendering, TitlesConfig};
+    use citum_schema::reference::types::{StructuredTitle, Subtitle};
+
+    let config = make_config_with_titles(TitlesConfig {
+        monograph: Some(TitleRendering {
+            primary_delimiter: Some(". ".to_string()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    let result = structured_title_value_with_config(
+        StructuredTitle {
+            full: None,
+            main: "Main title".to_string(),
+            sub: Subtitle::String("Subtitle".to_string()),
+        },
+        &config,
+        None,
+        None,
+    );
+
+    assert_eq!(result, "Main title. Subtitle");
+}
+
+#[test]
+fn test_structured_title_subtitle_delimiter_separates_subtitle_parts() {
+    use citum_schema::options::titles::{TitleRendering, TitlesConfig};
+    use citum_schema::reference::types::{StructuredTitle, Subtitle};
+
+    let config = make_config_with_titles(TitlesConfig {
+        monograph: Some(TitleRendering {
+            primary_delimiter: Some(": ".to_string()),
+            subtitle_delimiter: Some(". ".to_string()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    let result = structured_title_value_with_config(
+        StructuredTitle {
+            full: None,
+            main: "Main title".to_string(),
+            sub: Subtitle::Vector(vec!["Subtitle one".to_string(), "Subtitle two".to_string()]),
+        },
+        &config,
+        None,
+        None,
+    );
+
+    assert_eq!(result, "Main title: Subtitle one. Subtitle two");
+}
+
+#[test]
+fn test_structured_title_default_title_options_apply_delimiters_to_all_categories() {
+    use citum_schema::options::titles::{TitleRendering, TitlesConfig};
+    use citum_schema::reference::types::{StructuredTitle, Subtitle};
+
+    let config = make_config_with_titles(TitlesConfig {
+        default: Some(TitleRendering {
+            primary_delimiter: Some(". ".to_string()),
+            subtitle_delimiter: Some(" / ".to_string()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    let result = structured_title_value_with_config(
+        StructuredTitle {
+            full: None,
+            main: "Main title".to_string(),
+            sub: Subtitle::Vector(vec!["Subtitle one".to_string(), "Subtitle two".to_string()]),
+        },
+        &config,
+        None,
+        None,
+    );
+
+    assert_eq!(result, "Main title. Subtitle one / Subtitle two");
+}
+
+#[test]
+fn test_structured_title_locale_override_can_change_delimiters() {
+    use citum_schema::options::titles::{TitleRendering, TitlesConfig};
+    use citum_schema::reference::types::{StructuredTitle, Subtitle};
+    use std::collections::HashMap;
+
+    let config = make_config_with_titles(TitlesConfig {
+        monograph: Some(TitleRendering {
+            primary_delimiter: Some(": ".to_string()),
+            subtitle_delimiter: Some(": ".to_string()),
+            locale_overrides: Some(HashMap::from([(
+                "de".to_string(),
+                TitleRendering {
+                    primary_delimiter: Some(". ".to_string()),
+                    subtitle_delimiter: Some("; ".to_string()),
+                    ..Default::default()
+                },
+            )])),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    let result = structured_title_value_with_config(
+        StructuredTitle {
+            full: None,
+            main: "Haupttitel".to_string(),
+            sub: Subtitle::Vector(vec![
+                "Untertitel eins".to_string(),
+                "Untertitel zwei".to_string(),
+            ]),
+        },
+        &config,
+        Some("de-DE"),
+        None,
+    );
+
+    assert_eq!(result, "Haupttitel. Untertitel eins; Untertitel zwei");
+}
+
+#[test]
+fn test_structured_title_form_short_ignores_configured_delimiters() {
+    use citum_schema::options::titles::{TitleRendering, TitlesConfig};
+    use citum_schema::reference::types::{StructuredTitle, Subtitle};
+
+    let config = make_config_with_titles(TitlesConfig {
+        monograph: Some(TitleRendering {
+            primary_delimiter: Some(". ".to_string()),
+            subtitle_delimiter: Some("; ".to_string()),
+            ..Default::default()
+        }),
+        ..Default::default()
+    });
+    let result = structured_title_value_with_config(
+        StructuredTitle {
+            full: None,
+            main: "Main title".to_string(),
+            sub: Subtitle::Vector(vec!["Subtitle one".to_string(), "Subtitle two".to_string()]),
+        },
+        &config,
+        None,
+        Some(TitleForm::Short),
+    );
+
+    assert_eq!(result, "Main title");
 }
 
 #[test]
@@ -4470,7 +4711,7 @@ fn test_structured_title_form_short_returns_main_only() {
         .unwrap();
     assert_eq!(
         full.value,
-        "Homeland Security Act of 2002: Hearings on H.R. 5005: Day 3"
+        "Homeland Security Act of 2002: Hearings on H.R. 5005; Day 3"
     );
 
     // With form: short — main only, subtitles suppressed

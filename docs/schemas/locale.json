@@ -586,6 +586,16 @@
           "description": "Delimiter between page range endpoints.",
           "type": "string",
           "default": "–"
+        },
+        "title-subtitle-delimiter": {
+          "description": "Delimiter between a structured title's main title and subtitle group.",
+          "type": "string",
+          "default": ": "
+        },
+        "subtitle-delimiter": {
+          "description": "Delimiter between subtitle parts inside a structured title.",
+          "type": "string",
+          "default": "; "
         }
       }
     },

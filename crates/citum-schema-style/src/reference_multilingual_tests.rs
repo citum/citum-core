@@ -16,6 +16,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
     reason = "Panicking is acceptable and often desired in tests."
 )]
 mod tests {
+    use crate::locale::Locale;
     use crate::options::{Config, MultilingualMode};
     use crate::reference::contributor::MultilingualName;
     use crate::reference::types::{Monograph, Title};
@@ -113,18 +114,52 @@ translations:
 titles:
   component:
     quote: true
+    primary-delimiter: ". "
+    subtitle-delimiter: "; "
     locale-overrides:
       de:
         emph: true
+        primary-delimiter: ": "
       en-US:
         quote: false
+        subtitle-delimiter: ". "
 "#;
         let config: Config = serde_yaml::from_str(yaml).unwrap();
         let titles = config.titles.unwrap();
         let component = titles.component.unwrap();
+        assert_eq!(component.primary_delimiter.as_deref(), Some(". "));
+        assert_eq!(component.subtitle_delimiter.as_deref(), Some("; "));
         let overrides = component.locale_overrides.unwrap();
         assert_eq!(overrides.get("de").unwrap().emph, Some(true));
+        assert_eq!(
+            overrides.get("de").unwrap().primary_delimiter.as_deref(),
+            Some(": ")
+        );
         assert_eq!(overrides.get("en-US").unwrap().quote, Some(false));
+        assert_eq!(
+            overrides
+                .get("en-US")
+                .unwrap()
+                .subtitle_delimiter
+                .as_deref(),
+            Some(". ")
+        );
+    }
+
+    #[test]
+    fn test_locale_title_delimiters_deserialization() {
+        let yaml = r#"
+locale: x-test
+grammar-options:
+  title-subtitle-delimiter: " — "
+  subtitle-delimiter: " / "
+"#;
+        let locale = Locale::from_yaml_str(yaml).unwrap();
+        assert_eq!(
+            locale.grammar_options.title_subtitle_delimiter.as_str(),
+            " — "
+        );
+        assert_eq!(locale.grammar_options.subtitle_delimiter.as_str(), " / ");
     }
 
     #[test]
