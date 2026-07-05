@@ -5,6 +5,178 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.72.0] - 2026-07-05
+
+### Bug Fixes
+
+**docs**
+
+- Minor clarifications in code docs ([`4c38cab`](https://github.com/citum/citum-core/commit/4c38cabb624c73aff6a591f81f5a57772c0d62c4))
+
+
+**engine**
+
+- Resolve substitute/title-case gaps ([`95f5dea`](https://github.com/citum/citum-core/commit/95f5dea0b0cc3c99757db748450798c03cba5eca))
+
+- Render chicago shared-corpus facts ([`8d37eac`](https://github.com/citum/citum-core/commit/8d37eac3dae72902270c1d1c64f6e925bfaf4380))
+
+- Return error from process_document ([`466c041`](https://github.com/citum/citum-core/commit/466c041860590f9bdea3ba662e91342d8fd6c57b))
+
+- Render group headings via format ([`d192bf5`](https://github.com/citum/citum-core/commit/d192bf54a778532a71e47122e07a7a97fe2ee578))
+
+- Scan sub-spec templates for unknowns ([`f3844a7`](https://github.com/citum/citum-core/commit/f3844a754d50f08611816734b235b4683a3e98b0))
+
+- Reject non-UTF-8 refs input files ([`ddae43f`](https://github.com/citum/citum-core/commit/ddae43ff41953d38be9f4e341b3bc6623bdfd534))
+
+- Markdown offsets are body-relative ([`1f5fb10`](https://github.com/citum/citum-core/commit/1f5fb10dda547e5d0951c50182b58ced529630c7))
+
+- Anchor frontmatter to line starts ([`98c39d8`](https://github.com/citum/citum-core/commit/98c39d8a31248ba8e419e3cda1000471c464e3f2))
+
+- Escape html text output and data-ref ([`1d4eab7`](https://github.com/citum/citum-core/commit/1d4eab7b9e2b2c69086e3081bd490594309f3789))
+
+- Preserve mixed-case words in casing ([`3418128`](https://github.com/citum/citum-core/commit/34181280d5b6a0e9a31a97bf5f0b3e4015b5a283))
+
+- Honor delimiter in et-al joins ([`e0be49c`](https://github.com/citum/citum-core/commit/e0be49ca63cc808dce7071355f8aa19c34c290e3))
+
+- Escape latex href targets ([`15e868e`](https://github.com/citum/citum-core/commit/15e868ed7f8efb1fe2f5fdaafda52df02fa5b833))
+
+- Unify range formatting ([`d4f5ee1`](https://github.com/citum/citum-core/commit/d4f5ee122e1b7763833de48fe43933c8864b6d98))
+
+- Type engine error variants ([`5cbc6d4`](https://github.com/citum/citum-core/commit/5cbc6d473525cad80b0c3351dca329c062367ff6))
+
+- Format date ranges via single path ([`90e5239`](https://github.com/citum/citum-core/commit/90e52391665f53782629ccd3cf89315dadfe5c46))
+
+- Centralize type classification ([`f8aff62`](https://github.com/citum/citum-core/commit/f8aff6274606af83bc960020a0b91f98d1cd6305))
+
+- Map EDTF seasons to locale terms ([`47b6061`](https://github.com/citum/citum-core/commit/47b6061410fef5d20fa79183c3a9f764c5ef750a))
+
+- Thread locale quote marks in render ([`530f396`](https://github.com/citum/citum-core/commit/530f396998f5e38f6809fad576755511db6223ae))
+
+
+**locale**
+
+- Form-aware general_term for no-date ([`a51bf9b`](https://github.com/citum/citum-core/commit/a51bf9b825c1720c164398146c48ed82662d5221))
+
+
+**migrate**
+
+- Validate note-field type override ([`2341762`](https://github.com/citum/citum-core/commit/2341762d410757774c368cedbe779c6f8c161e0b))
+
+
+**schema**
+
+- Merge partial locale raw maps ([`c855395`](https://github.com/citum/citum-core/commit/c855395b7d10d184c57902eac45abb5fe720705f))
+
+
+**styles**
+
+- Tune chicago author-date periodicals ([`bae9d2f`](https://github.com/citum/citum-core/commit/bae9d2fd70f9bbfa3b359970976b0f38d07a44ee))
+
+- Tune chicago author-date fidelity ([`3ca2fad`](https://github.com/citum/citum-core/commit/3ca2fad1f717e62da513c9d48c659de249b6649b))
+
+- Drop anchors and hardcoded text ([`c6f1dd3`](https://github.com/citum/citum-core/commit/c6f1dd3cf981502afe767cb3ba0fa880807fedca))
+
+- Chicago author-date bib cluster lift ([`7146419`](https://github.com/citum/citum-core/commit/71464195d60153ac9e398f5ed75a5ee8442a7d0a))
+
+- Wire chicago 18th reprint trailers ([`e83be2e`](https://github.com/citum/citum-core/commit/e83be2e06f4d9d8edfabfc62daa8e397a037fecf))
+
+- Restore fidelity after locale switch ([`ba5d176`](https://github.com/citum/citum-core/commit/ba5d176020b2841282946d5bf2fbb67e923e4677))
+
+
+
+### Documentation
+
+**engine**
+
+- Record 2026-07 crate review audit ([`ef85824`](https://github.com/citum/citum-core/commit/ef858248547ee4dbf8f912d83db9bff4441c8f93))
+
+- Refresh stale crate layout notes ([`49e4787`](https://github.com/citum/citum-core/commit/49e4787f2e0043e187b9b3953c9dd0d1b12f9edf))
+
+- Record part 2 crate review audit ([`b308389`](https://github.com/citum/citum-core/commit/b308389ac466c168c4f887058ee1d3667239ff35))
+
+- Record part 2 triage dispositions ([`582fa28`](https://github.com/citum/citum-core/commit/582fa281688f5a9e4fd65d125b315d9e57f59c0f))
+
+- Spec type-classification centralize ([`97858b4`](https://github.com/citum/citum-core/commit/97858b4d148123d4ba6ed4b3b29528ffbf6db2e1))
+
+- Address Copilot review comments ([`32a01b9`](https://github.com/citum/citum-core/commit/32a01b9031c4e8f1e688f5f2c6c77786ce12ffed))
+
+
+**report**
+
+- Make report-core fidelity source ([`5acbae0`](https://github.com/citum/citum-core/commit/5acbae05fed13898b045daed76693a20c385189d))
+
+
+**spec**
+
+- Add csl type conversion contract ([`5bab1c6`](https://github.com/citum/citum-core/commit/5bab1c6f937d9775ce119990eed86770cb1afbc8))
+
+
+
+### Features
+
+**engine**
+
+- Add localized type-label component ([`ff9763c`](https://github.com/citum/citum-core/commit/ff9763c4efea5673e2eb2cd52397de0a43e70c6a))
+
+
+**report**
+
+- Support citation-only oracle scope ([`a59fc85`](https://github.com/citum/citum-core/commit/a59fc85ef7f983b675a3ab925fe07d97f5b8c10d))
+
+- Gate chicago-shared-corpus fidelity ([`75b61b1`](https://github.com/citum/citum-core/commit/75b61b1390915066d045c2195db32623f669ad73))
+
+
+**schema**
+
+- Close csl 1.0.2 type routing gaps ([`78078cf`](https://github.com/citum/citum-core/commit/78078cf530883469e1b31e057ec452fa4b93a846))
+
+- Add original-publication conditions ([`60369f9`](https://github.com/citum/citum-core/commit/60369f9077d4139ce5785306cc3afbb00a66eadb))
+
+- Add dates no-date-form style option ([`7f88e39`](https://github.com/citum/citum-core/commit/7f88e39b5199a92743e005d9b0b75233f51740cc))
+
+- Gate anonymous-entry bib policy ([`888dafb`](https://github.com/citum/citum-core/commit/888dafba2163f3ce2f79ef426381a3c73debf4e1))
+
+- Configure title delimiters ([`50f2aa5`](https://github.com/citum/citum-core/commit/50f2aa5992e8694714f1fb648a8062d36226ade4))
+
+
+**styles**
+
+- Add chicago-18-base component root ([`8532982`](https://github.com/citum/citum-core/commit/85329825479b2aa29285c2d60f64b107c7fab4bc))
+
+
+
+### Performance
+
+**engine**
+
+- Use id stubs for custom-group path ([`9a45df9`](https://github.com/citum/citum-core/commit/9a45df94bc221c93d5b7e2de0bebe53464ad8542))
+
+- Cache resolved session refs ([`e19b574`](https://github.com/citum/citum-core/commit/e19b5749fa77d31b9a570165c9ee07acda8e4bd9))
+
+- Share render configs via Rc ([`80516f6`](https://github.com/citum/citum-core/commit/80516f6c9614a20ac32d822c7463bee2b7017c81))
+
+
+
+### Refactor
+
+**engine**
+
+- Select disambiguation action ([`3e8fab7`](https://github.com/citum/citum-core/commit/3e8fab7ccd521c9f89605d09743d33034573502b))
+
+
+**locale**
+
+- Derive en-US from embedded YAML ([`96fa6c5`](https://github.com/citum/citum-core/commit/96fa6c53e1ef75cafaa5359e64193455ba8c5e97))
+
+
+
+### Testing
+
+**report**
+
+- Update pinned APA concision score ([`284398c`](https://github.com/citum/citum-core/commit/284398ce8306f17db4d30229bea9626662e046a0))
+
+
 ## [0.71.0] - 2026-06-28
 
 ### Bug Fixes
