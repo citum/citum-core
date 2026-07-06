@@ -13,6 +13,13 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! rendering in some sites but not others. This module centralizes those
 //! facts as data so each site becomes a thin call-through.
 //!
+//! The ref-type → title-category tables (`title_category`,
+//! `container_title_category`, `parent_serial_title_category`) live in
+//! `citum-schema-style` (re-exported here) since `citum-migrate`'s SQI
+//! pruning pass must consume the exact same tables — see
+//! `docs/architecture/audits/2026-07-06_CITUM_MIGRATE_REVIEW.md` (Finding
+//! F1). The remaining classification helpers below are engine-local.
+//!
 //! See `docs/specs/TYPE_CLASSIFICATION_CENTRALIZATION.md` for the design
 //! rationale and `docs/architecture/audits/2026-07-04_CITUM_ENGINE_REVIEW_PART2.md`
 //! (Finding 14) for the original audit.
@@ -27,84 +34,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use citum_schema::options::TypeClass;
 
-/// Title-category buckets used to select which `TitlesConfig` rendering
-/// applies to a title component when the style has no explicit
-/// `titles.type_mapping` entry for the reference's type.
-///
-/// Different `TitleType`s use different subsets of these buckets and fall
-/// back differently (e.g. `ParentSerial` never falls to `Default`, while
-/// `ContainerTitle` does) — that divergence is preserved intentionally
-/// (behavior-preserving centralization), not flattened into one shared
-/// table. See `title_category`, `container_title_category`, and
-/// `parent_serial_title_category`.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum TitleCategory {
-    /// Titles of works contained in a larger work (articles, chapters, entries).
-    Component,
-    /// Titles of standalone monographic works (books, theses, reports).
-    Monograph,
-    /// Titles of periodicals (journals, magazines, newspapers, broadcasts).
-    Periodical,
-    /// Titles of serials, when distinguished from periodicals proper.
-    Serial,
-    /// Titles of monographic containers (books containing chapters).
-    ContainerMonograph,
-    /// No specific category; use the style's default title rendering.
-    Default,
-}
-
-/// Resolve the default title category for a reference type.
-///
-/// This is the fallback used when the style provides no explicit
-/// `titles.type_mapping` entry for `ref_type`. Callers consult the style's
-/// declarative mapping first and only fall back to this table, so adding a
-/// `type_mapping` entry to a style always takes precedence.
-#[must_use]
-pub(crate) fn title_category(ref_type: &str) -> TitleCategory {
-    match ref_type {
-        "article-journal" | "article-magazine" | "article-newspaper" | "chapter" | "entry"
-        | "entry-dictionary" | "entry-encyclopedia" | "paper-conference" | "post"
-        | "post-weblog" => TitleCategory::Component,
-        "book" | "thesis" | "report" => TitleCategory::Monograph,
-        _ => TitleCategory::Default,
-    }
-}
-
-/// Resolve the default *parent-container* title category for a reference
-/// type — the category of the title borne by the reference's container
-/// (`ContainerTitle`/`ParentSerial`/`ParentMonograph`), not the reference's
-/// own title.
-///
-/// Mirrors `title_category` in spirit but reflects that a periodical parent
-/// (journal, magazine, newspaper, broadcast) reads differently from a
-/// monographic parent (book containing a chapter).
-#[must_use]
-pub(crate) fn container_title_category(ref_type: &str) -> TitleCategory {
-    match ref_type {
-        "article-journal" | "article-magazine" | "article-newspaper" | "broadcast" => {
-            TitleCategory::Periodical
-        }
-        "chapter" | "paper-conference" => TitleCategory::ContainerMonograph,
-        _ => TitleCategory::Default,
-    }
-}
-
-/// Resolve the default title category for a `ParentSerial` title component
-/// (the short title shown for a serial container, e.g. a journal name next
-/// to an article).
-///
-/// Unlike `container_title_category`, this bucket never falls to `Default`
-/// — an unrecognized type still renders as `Serial` — and does not treat
-/// `broadcast` as periodical. This divergence from `container_title_category`
-/// already existed before centralization and is preserved rather than
-/// unified, since unifying the two would change rendered output.
-#[must_use]
-pub(crate) fn parent_serial_title_category(ref_type: &str) -> TitleCategory {
-    match ref_type {
-        "article-journal" | "article-magazine" | "article-newspaper" => TitleCategory::Periodical,
-        _ => TitleCategory::Serial,
-    }
-}
+pub(crate) use citum_schema::options::{
+    TitleCategory, container_title_category, parent_serial_title_category, title_category,
+};
 
 /// Whether a reference type's container is a serial (periodical/journal)
 /// parent, as opposed to a monographic one — determines whether a parent's
@@ -188,63 +120,6 @@ pub(crate) fn synthesizes_doi_url(ref_type: &str) -> bool {
 )]
 mod tests {
     use super::*;
-
-    #[test]
-    fn given_component_ref_type_when_title_category_then_component() {
-        // given a chapter reference type
-        // when resolving its default title category
-        let category = title_category("chapter");
-        // then it falls into the component bucket
-        assert_eq!(category, TitleCategory::Component);
-    }
-
-    #[test]
-    fn given_monograph_ref_type_when_title_category_then_monograph() {
-        let category = title_category("book");
-        assert_eq!(category, TitleCategory::Monograph);
-    }
-
-    #[test]
-    fn given_unclassified_ref_type_when_title_category_then_default() {
-        let category = title_category("dataset");
-        assert_eq!(category, TitleCategory::Default);
-    }
-
-    #[test]
-    fn given_periodical_ref_type_when_container_title_category_then_periodical() {
-        let category = container_title_category("article-journal");
-        assert_eq!(category, TitleCategory::Periodical);
-    }
-
-    #[test]
-    fn given_chapter_ref_type_when_container_title_category_then_container_monograph() {
-        let category = container_title_category("chapter");
-        assert_eq!(category, TitleCategory::ContainerMonograph);
-    }
-
-    #[test]
-    fn given_journal_article_when_parent_serial_title_category_then_periodical() {
-        let category = parent_serial_title_category("article-journal");
-        assert_eq!(category, TitleCategory::Periodical);
-    }
-
-    #[test]
-    fn given_book_when_parent_serial_title_category_then_serial() {
-        // given a non-article reference type
-        // when resolving its ParentSerial title category
-        // then it falls back to Serial, not Default -- this bucket never
-        // falls to Default, matching pre-centralization behavior
-        let category = parent_serial_title_category("book");
-        assert_eq!(category, TitleCategory::Serial);
-    }
-
-    #[test]
-    fn given_broadcast_when_parent_serial_title_category_then_serial_not_periodical() {
-        // Unlike container_title_category, ParentSerial does not treat
-        // broadcast as periodical -- preserving the pre-existing divergence.
-        let category = parent_serial_title_category("broadcast");
-        assert_eq!(category, TitleCategory::Serial);
-    }
 
     #[test]
     fn given_journal_article_when_is_serial_parent_type_then_true() {
