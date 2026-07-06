@@ -1,11 +1,11 @@
 ---
 # csl26-8hxp
 title: Fix scoring denominator asymmetry and vestigial tokenizer split
-status: todo
+status: in-progress
 type: task
 priority: low
 created_at: 2026-07-06T18:42:31Z
-updated_at: 2026-07-06T18:42:31Z
+updated_at: 2026-07-06T23:23:51Z
 parent: csl26-al39
 ---
 

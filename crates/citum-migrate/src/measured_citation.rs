@@ -298,6 +298,10 @@ pub(crate) fn heldout_bibliography_validation(
 }
 
 /// Aggregate score for one candidate over the fixture items.
+///
+/// `items` always counts scored *reference* units, not rendered output
+/// units, so the success path ([`score_bibliography_entries`]) and the
+/// render-panic fallback ([`invalid_candidate_score`]) stay comparable.
 #[derive(Clone, Copy)]
 pub(crate) struct CandidateScore {
     pub(crate) passes: usize,
@@ -750,13 +754,19 @@ struct BibliographyPairCandidate {
     similarity: f64,
 }
 
+/// Score bibliography candidates against citeproc references.
+///
+/// `CandidateScore::items` always counts scored *reference* units, never
+/// rendered output, so this success path stays comparable to
+/// [`invalid_candidate_score`]'s failure path: a candidate whose renderer
+/// emits spurious extra bibliography entries must not be penalized with an
+/// inflated denominator relative to one that failed to render at all.
 fn score_bibliography_entries(references: &[String], rendered: &[String]) -> CandidateScore {
     let mut candidates = Vec::new();
     for (reference_index, reference) in references.iter().enumerate() {
         let normalized_reference = normalize_text(reference);
         for (rendered_index, rendered_entry) in rendered.iter().enumerate() {
-            let similarity =
-                token_jaccard_normalized(&normalized_reference, &normalize_text(rendered_entry));
+            let similarity = token_jaccard(&normalized_reference, &normalize_text(rendered_entry));
             if similarity >= 0.20 {
                 candidates.push(BibliographyPairCandidate {
                     reference_index,
@@ -814,7 +824,6 @@ fn score_bibliography_entries(references: &[String], rendered: &[String]) -> Can
     }
 
     score.items += used_references.iter().filter(|used| !**used).count();
-    score.items += used_rendered.iter().filter(|used| !**used).count();
     score
 }
 
@@ -1167,7 +1176,7 @@ fn compare_text(expected_text: &str, actual_text: &str) -> TextComparison {
         };
     }
 
-    let similarity = token_jaccard_normalized(&expected, &actual);
+    let similarity = token_jaccard(&expected, &actual);
     TextComparison {
         matches: similarity >= PASS_THRESHOLD,
         similarity,
@@ -1261,22 +1270,10 @@ fn strip_bibliography_label(text: &str) -> String {
     after_dot.trim_start().to_string()
 }
 
-/// Bag-of-words Jaccard similarity over raw alphanumeric tokens.
-///
-/// Citation selection keeps this historical raw scorer because some citation
-/// styles, notably BibTeX labels, use punctuation such as underscores as
-/// meaningful token separators. Bibliography selection uses
-/// [`compare_text`], which performs oracle-style normalization before its
-/// similarity fallback.
+/// Bag-of-words Jaccard similarity over lowercased alphanumeric tokens.
 fn token_jaccard(left_text: &str, right_text: &str) -> f64 {
     let left = tokenize(left_text);
     let right = tokenize(right_text);
-    token_jaccard_from_tokens(&left, &right)
-}
-
-fn token_jaccard_normalized(left_text: &str, right_text: &str) -> f64 {
-    let left = tokenize_normalized(left_text);
-    let right = tokenize_normalized(right_text);
     token_jaccard_from_tokens(&left, &right)
 }
 
@@ -1314,18 +1311,14 @@ fn token_jaccard_from_tokens(left: &[String], right: &[String]) -> f64 {
     ratio
 }
 
-fn tokenize_normalized(text: &str) -> Vec<String> {
+/// Split text into lowercased alphanumeric tokens, dropping single-character
+/// tokens.
+fn tokenize(text: &str) -> Vec<String> {
     text.to_lowercase()
         .split(|c: char| !c.is_alphanumeric())
         .filter(|token| token.chars().count() > 1)
         .map(str::to_string)
         .collect()
-}
-
-/// Split text into lowercased alphanumeric tokens, dropping single-character
-/// tokens.
-fn tokenize(text: &str) -> Vec<String> {
-    tokenize_normalized(text)
 }
 
 #[cfg(test)]
