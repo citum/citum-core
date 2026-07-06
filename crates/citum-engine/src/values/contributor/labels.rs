@@ -190,6 +190,10 @@ fn apply_label_case(
 /// Resolve a contributor's explicit `label` config to `(prefix, suffix)`.
 ///
 /// Honours the term key, short/long form, optional `text-case`, and placement.
+/// `label.term` keys recognized by [`resolve_explicit_label`]. Shared with
+/// the style-load-time warning scan (`api::warnings`) so the two can't drift.
+pub(crate) const RECOGNIZED_LABEL_TERMS: &[&str] = &["chair", "editor", "translator"];
+
 fn resolve_explicit_label<F: OutputFormat<Output = String>>(
     label_config: &citum_schema::template::RoleLabel,
     component: &TemplateContributor,

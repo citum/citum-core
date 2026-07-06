@@ -1594,6 +1594,26 @@ fn per_role_preset_none_suppresses_the_hardcoded_editor_suffix() {
     assert_eq!(result, "John Smith");
 }
 
+#[test]
+fn unrecognized_label_term_falls_back_to_the_component_own_role_term() {
+    // resolve_explicit_label recognizes only "chair"/"editor"/"translator"
+    // as label.term keys; any other string silently substitutes the
+    // component's own role term instead of erroring. This test locks in
+    // that render behavior is unchanged by the new unknown_role_label_term
+    // warning (a diagnostic-only addition) -- the editor's own "(ed.)"-style
+    // term is still used even though "not-a-real-role" is not recognized.
+    let yaml = "info:\n  title: Test\nbibliography:\n  template:\n    - contributor: editor\n      form: long\n      label: {term: not-a-real-role, placement: suffix}\n";
+    let style = citum_schema::Style::from_yaml_str(yaml).expect("style should parse");
+
+    let bib = citum_schema::bib_map![
+        "ITEM-1" => make_multi_editor_only_book("ITEM-1", "Title", "2020", vec![("Smith", "John")]),
+    ];
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert_eq!(result, "John Smith, ed.");
+}
+
 /// Format selector for rstest-parameterized format tests.
 enum TestOutputFormat {
     Plain,
