@@ -106,6 +106,8 @@ pub mod reference;
 pub mod render;
 mod sort_partitioning;
 mod sort_support;
+/// Bibliography and citation reference sorting.
+pub mod sorting;
 /// Template value resolution and formatting helpers.
 pub mod values;
 
@@ -133,6 +135,7 @@ pub use processor::document::DocumentFormat;
 pub use processor::{ProcessedReferences, Processor};
 pub use reference::{Bibliography, Citation, CitationItem, Reference};
 pub use render::{ProcTemplate, ProcTemplateComponent, citation_to_string, refs_to_string};
+pub use sorting::ReferenceSorter;
 pub use values::{ComponentValues, ProcHints, ProcValues, RenderContext, RenderOptions};
 
 // Re-export Locale from citum_schema for convenience

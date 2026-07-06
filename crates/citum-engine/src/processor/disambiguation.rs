@@ -9,7 +9,7 @@ use citum_schema::options::{Config, GivennameRule};
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write as _;
 
-use crate::grouping::GroupSorter;
+use crate::sorting::ReferenceSorter;
 use citum_schema::grouping::GroupSort;
 use citum_schema::locale::Locale;
 use citum_schema::options::{Substitute, SubstituteKey};
@@ -703,10 +703,10 @@ impl<'a> Disambiguator<'a> {
         group: &[&'b CachedReference<'b>],
     ) -> Vec<&'b CachedReference<'b>> {
         if let Some(sort_spec) = self.group_sort {
-            let sorter = GroupSorter::new(self.locale);
+            let sorter = ReferenceSorter::new(self.locale);
             // Pre-sort by title_key so that entries which compare equal under the primary
             // sort_spec retain a stable, deterministic order (title ascending as tiebreaker).
-            // GroupSorter::sort_references uses sort_by (stable), so the pre-sort order is
+            // ReferenceSorter::sort_references uses sort_by (stable), so the pre-sort order is
             // preserved for entries that compare equal under the primary key.
             let mut pre_sorted: Vec<&CachedReference<'_>> = group.to_vec();
             pre_sorted.sort_by(|a, b| {

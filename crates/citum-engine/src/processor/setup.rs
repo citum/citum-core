@@ -485,11 +485,11 @@ impl Processor {
     pub fn sort_references<'a>(&self, references: Vec<&'a Reference>) -> Vec<&'a Reference> {
         let mut sorted_refs = match self.resolved_bibliography_sort() {
             Some((sort_spec, true)) => {
-                let sorter = crate::grouping::GroupSorter::new(&self.locale);
+                let sorter = crate::sorting::ReferenceSorter::new(&self.locale);
                 sorter.sort_references_with_id_tiebreak(references, &sort_spec)
             }
             Some((sort_spec, false)) => {
-                let sorter = crate::grouping::GroupSorter::new(&self.locale);
+                let sorter = crate::sorting::ReferenceSorter::new(&self.locale);
                 sorter.sort_references(references, &sort_spec)
             }
             None => references,
@@ -526,7 +526,7 @@ impl Processor {
                 .collect();
 
             let resolved_sort = sort_spec.resolve();
-            let sorter = crate::grouping::GroupSorter::new(&self.locale);
+            let sorter = crate::sorting::ReferenceSorter::new(&self.locale);
             items_with_refs.sort_by(|left, right| {
                 for sort_key in &resolved_sort.template {
                     let cmp = sorter.compare_by_key(left.1, right.1, sort_key);

@@ -16,9 +16,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
     reason = "Panicking is acceptable and often desired in test, benchmark, and example code."
 )]
 
-use citum_engine::grouping::GroupSorter;
 use citum_engine::processor::disambiguation::Disambiguator;
 use citum_engine::render::plain::PlainText;
+use citum_engine::sorting::ReferenceSorter;
 use citum_engine::{
     Bibliography, Citation, CitationItem, Contributor, EdtfString, Locale, Monograph,
     MonographType, MultilingualString, Processor, Reference, StructuredName, Title,
@@ -337,7 +337,7 @@ where
 
 fn bench_group_sorting(c: &mut Criterion) {
     let locale = Locale::en_us();
-    let sorter = GroupSorter::new(&locale);
+    let sorter = ReferenceSorter::new(&locale);
     let bibliography = make_group_sort_bibliography();
     let references: Vec<&Reference> = bibliography.values().collect();
     let sort_spec = GroupSort {
@@ -367,7 +367,7 @@ fn bench_group_sorting(c: &mut Criterion) {
         ],
     };
 
-    let mut bench_group = c.benchmark_group("GroupSorter::sort_references");
+    let mut bench_group = c.benchmark_group("ReferenceSorter::sort_references");
     bench_group.bench_function("Explicit type order + author", |b| {
         b.iter_batched(
             || references.clone(),
