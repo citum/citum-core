@@ -587,6 +587,42 @@ impl SortEntry {
     }
 }
 
+impl Sort {
+    /// Convert this config-level sort to a [`crate::grouping::GroupSort`].
+    ///
+    /// Keys with no group-sort equivalent are skipped rather than mapped:
+    /// `CitationNumber` keeps registry order, since citation-number sorting
+    /// is registry order by definition (see the engine's
+    /// `citation_number_sort_not_supported` style-load warning). The match is
+    /// deliberately exhaustive so adding a `SortKey` variant forces an
+    /// explicit mapping decision here.
+    pub fn group_sort(&self) -> crate::grouping::GroupSort {
+        let template = self
+            .template
+            .iter()
+            .filter_map(|sort| {
+                let key = match sort.key {
+                    SortKey::Author => crate::grouping::SortKey::Author,
+                    SortKey::Year => crate::grouping::SortKey::Issued,
+                    SortKey::Title => crate::grouping::SortKey::Title,
+                    // No group-sort equivalent: citation-number sorting is
+                    // registry order by definition (see the engine's
+                    // `citation_number_sort_not_supported` warning).
+                    SortKey::CitationNumber => return None,
+                };
+                Some(crate::grouping::GroupSortKey {
+                    key,
+                    ascending: sort.ascending,
+                    order: None,
+                    sort_order: None,
+                })
+            })
+            .collect();
+
+        crate::grouping::GroupSort { template }
+    }
+}
+
 /// A single sort specification.
 ///
 /// Defines one sort dimension with its key and direction.
@@ -869,6 +905,44 @@ mod tests {
 
         // Verify it resolves to a valid Sort
         assert!(!sort.template.is_empty());
+    }
+
+    /// Test that `Sort::group_sort()` maps author/year/title keys and skips
+    /// `CitationNumber` (which has no group-sort equivalent).
+    #[test]
+    fn test_sort_group_sort_maps_keys_and_skips_citation_number() {
+        let sort = Sort {
+            shorten_names: false,
+            render_substitutions: false,
+            template: vec![
+                SortSpec {
+                    key: SortKey::Author,
+                    ascending: true,
+                },
+                SortSpec {
+                    key: SortKey::Year,
+                    ascending: false,
+                },
+                SortSpec {
+                    key: SortKey::Title,
+                    ascending: true,
+                },
+                SortSpec {
+                    key: SortKey::CitationNumber,
+                    ascending: true,
+                },
+            ],
+        };
+
+        let group_sort = sort.group_sort();
+
+        assert_eq!(group_sort.template.len(), 3);
+        assert_eq!(group_sort.template[0].key, crate::grouping::SortKey::Author);
+        assert!(group_sort.template[0].ascending);
+        assert_eq!(group_sort.template[1].key, crate::grouping::SortKey::Issued);
+        assert!(!group_sort.template[1].ascending);
+        assert_eq!(group_sort.template[2].key, crate::grouping::SortKey::Title);
+        assert!(group_sort.template[2].ascending);
     }
 
     /// Test that SortEntry::resolve() returns explicit sort for Explicit variant.
