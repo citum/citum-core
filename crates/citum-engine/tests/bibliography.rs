@@ -1528,6 +1528,72 @@ fn build_editor_verb_prefix_style(title_suffix: Option<&str>) -> Style {
     }
 }
 
+fn build_bare_long_form_editor_style(role: Option<ContributorConfig>) -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Bare Long Form Editor Test".to_string()),
+            id: Some("bare-long-form-editor-test".into()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            contributors: role,
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![citum_schema::tc_contributor!(Editor, Long)]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+#[test]
+fn bare_long_form_editor_gets_hardcoded_short_suffix_by_default() {
+    // With no label config, no role.omit, and no configured role preset, a
+    // Long-form editor component auto-appends a " (ed.)"-style suffix. This
+    // is a long-standing engine default (real embedded styles, e.g.
+    // elsevier-with-titles-core.yaml, depend on it with zero configuration)
+    // rather than a bug -- locking in the default here. See div-012 in
+    // docs/adjudication/DIVERGENCE_REGISTER.md.
+    let style = build_bare_long_form_editor_style(None);
+    let bib = citum_schema::bib_map![
+        "ITEM-1" => make_multi_editor_only_book("ITEM-1", "Title", "2020", vec![("Smith", "John")]),
+    ];
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert_eq!(result, "John Smith (ed.)");
+}
+
+#[test]
+fn per_role_preset_none_suppresses_the_hardcoded_editor_suffix() {
+    // contributors.role.roles.editor.preset: none already suppresses the
+    // hardcoded default for that role specifically -- a working, if
+    // undocumented-until-now, escape hatch. See div-012.
+    let mut roles = HashMap::new();
+    roles.insert(
+        "editor".to_string(),
+        citum_schema::options::contributors::RoleRendering {
+            preset: Some(citum_schema::options::contributors::RoleLabelPreset::None),
+            ..Default::default()
+        },
+    );
+    let style = build_bare_long_form_editor_style(Some(ContributorConfig {
+        role: Some(citum_schema::options::contributors::RoleOptions {
+            roles: Some(roles),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }));
+    let bib = citum_schema::bib_map![
+        "ITEM-1" => make_multi_editor_only_book("ITEM-1", "Title", "2020", vec![("Smith", "John")]),
+    ];
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert_eq!(result, "John Smith");
+}
+
 /// Format selector for rstest-parameterized format tests.
 enum TestOutputFormat {
     Plain,
