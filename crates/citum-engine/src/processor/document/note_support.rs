@@ -278,7 +278,7 @@ pub(super) fn merge_note_rule(default: NoteRule, config: &StyleNoteConfig) -> No
     }
 }
 
-fn map_quote_placement(value: NoteQuotePlacement) -> PunctuationRule {
+pub(super) fn map_quote_placement(value: NoteQuotePlacement) -> PunctuationRule {
     match value {
         NoteQuotePlacement::Inside => PunctuationRule::Inside,
         NoteQuotePlacement::Outside => PunctuationRule::Outside,
@@ -286,7 +286,7 @@ fn map_quote_placement(value: NoteQuotePlacement) -> PunctuationRule {
     }
 }
 
-fn map_number_placement(value: NoteNumberPlacement) -> NumberRule {
+pub(super) fn map_number_placement(value: NoteNumberPlacement) -> NumberRule {
     match value {
         NoteNumberPlacement::Inside => NumberRule::Inside,
         NoteNumberPlacement::Outside => NumberRule::Outside,
@@ -294,15 +294,11 @@ fn map_number_placement(value: NoteNumberPlacement) -> NumberRule {
     }
 }
 
-fn map_note_order(value: NoteMarkerOrder) -> NoteOrder {
+pub(super) fn map_note_order(value: NoteMarkerOrder) -> NoteOrder {
     match value {
         NoteMarkerOrder::Before => NoteOrder::Before,
         NoteMarkerOrder::After => NoteOrder::After,
     }
-}
-
-pub(super) fn language_tag(locale: &str) -> &str {
-    locale.split('-').next().unwrap_or(locale)
 }
 
 pub(super) fn render_note_reference_in_prose(
