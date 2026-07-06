@@ -116,6 +116,29 @@ fn build_sorted_style(sort: Vec<SortSpec>) -> Style {
     }
 }
 
+/// `Sort::group_sort()` has no group-sort equivalent for `CitationNumber`
+/// (citation-number sorting is registry order by definition), so a style
+/// whose config-level sort names it should still resolve and render, but
+/// the style-load-time compat scan should flag the key as unsupported
+/// rather than silently keeping registry order unremarked.
+#[test]
+fn citation_number_bibliography_sort_key_produces_a_compat_warning() {
+    let style = build_sorted_style(vec![SortSpec {
+        key: SortKey::CitationNumber,
+        ascending: true,
+    }]);
+    let processor = Processor::new(style, IndexMap::new());
+
+    let warnings = citum_engine::api::unknown_enum_warnings(&processor);
+
+    assert!(
+        warnings
+            .iter()
+            .any(|w| w.code == "citation_number_sort_not_supported"),
+        "expected a warning for the citation-number bibliography sort key, got: {warnings:?}"
+    );
+}
+
 fn build_title_year_sorted_style(sort: Vec<SortSpec>) -> Style {
     Style {
         info: StyleInfo {
