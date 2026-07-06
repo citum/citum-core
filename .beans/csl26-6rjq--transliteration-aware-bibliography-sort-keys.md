@@ -7,7 +7,7 @@ priority: normal
 tags:
     - multilingual
 created_at: 2026-05-01T11:32:10Z
-updated_at: 2026-05-16T12:48:56Z
+updated_at: 2026-07-06T18:47:52Z
 ---
 
 Support romanization/transliteration-based sort keys so Arabic, Cyrillic, CJK names can optionally sort under their romanized forms. Currently explicitly out of scope in the Unicode sorting spec — deferred by design.
@@ -20,3 +20,7 @@ Before implementing, three policy questions must be answered:
 - Is transliteration applied globally or only for specific scripts/locales?
 
 These choices affect both the data model and the user-visible bibliography output, so they warrant a spec before any implementation. Likely requires a new schema option (see csl26-xz2t) and possibly new reference data fields for pre-supplied romanized sort keys.
+
+## Recommended Design (2026-07-06)
+
+Answered jointly with csl26-xz2t — the full recommended design (schema sketch, three policy answers, phasing) is recorded there. Summary of this bean's part: primary mechanism is data-supplied `sort_as` keys on contributor names and titles (biblatex sortname/sorttitle prior art), hidden from rendered output, activated per-script via `options.sorting.multilingual: romanized`; generated transliteration deferred to a feature-gated phase 3. Remains draft pending sign-off on the policy answers in csl26-xz2t.
