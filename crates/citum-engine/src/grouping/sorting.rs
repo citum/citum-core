@@ -3,12 +3,17 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
-//! Group-specific sorting for bibliography grouping.
+//! Reference sorting for bibliographies, groups, and citations.
 //!
-//! This module implements per-group sorting with support for:
+//! `GroupSorter` is the engine's single sorting stack: bibliography sorts
+//! (explicit `bibliography.sort`, processing presets, and config-level
+//! `sort:` mapped via `Sort::group_sort()`), per-group sorting, citation-item
+//! ordering, and disambiguation all route through it. Sort keys are compiled
+//! once and cached per reference (Schwartzian transform), so collation and
+//! article stripping are not re-derived on every comparison. Supports:
 //! - Type-order sorting (explicit sequence like [legal-case, statute, treaty])
 //! - Name-order sorting (family-given vs given-family for multilingual bibliographies)
-//! - Integration with standard sort keys (author, title, issued)
+//! - Standard sort keys (author, title, issued) and an opt-in reference-ID tiebreak
 
 use std::collections::HashMap;
 
@@ -38,6 +43,11 @@ pub struct GroupSorter<'a> {
 struct CachedReference<'a> {
     reference: &'a Reference,
     sort_values: Vec<CachedSortValue>,
+    /// Reference ID, cached once per reference so the ID tiebreak does not
+    /// re-derive it on every pairwise comparison. Populated only when sorting
+    /// via [`GroupSorter::sort_references_with_id_tiebreak`]; `None` otherwise
+    /// to keep ID-less sorts allocation-free.
+    id: Option<String>,
 }
 
 enum CachedSortValue {
@@ -89,10 +99,42 @@ impl<'a> GroupSorter<'a> {
     #[must_use]
     pub fn sort_references<'b>(
         &self,
-        mut references: Vec<&'b Reference>,
+        references: Vec<&'b Reference>,
         sort_spec: &GroupSort,
     ) -> Vec<&'b Reference> {
+        self.sort_references_impl(references, sort_spec, false)
+    }
+
+    /// Sort references according to a group sort specification, breaking ties
+    /// between references whose keys compare equal by comparing reference IDs.
+    ///
+    /// References without an ID sort after references with one. The tiebreak
+    /// makes config-driven bibliography sorts fully deterministic, and is
+    /// opt-in because most `GroupSorter` call sites (grouping/render paths)
+    /// rely on stable-sort/registry order for equal keys instead.
+    ///
+    /// An empty sort template is a no-op: with no keys to compare, references
+    /// keep registry order rather than being reordered by ID alone.
+    #[must_use]
+    pub fn sort_references_with_id_tiebreak<'b>(
+        &self,
+        references: Vec<&'b Reference>,
+        sort_spec: &GroupSort,
+    ) -> Vec<&'b Reference> {
+        self.sort_references_impl(references, sort_spec, true)
+    }
+
+    fn sort_references_impl<'b>(
+        &self,
+        mut references: Vec<&'b Reference>,
+        sort_spec: &GroupSort,
+        id_tiebreak: bool,
+    ) -> Vec<&'b Reference> {
         let compiled_keys = self.compile_sort_keys(sort_spec);
+        if compiled_keys.is_empty() {
+            return references;
+        }
+
         let mut cached_references = references
             .drain(..)
             .map(|reference| CachedReference {
@@ -101,14 +143,33 @@ impl<'a> GroupSorter<'a> {
                     .iter()
                     .map(|sort_key| self.cache_sort_value(reference, sort_key))
                     .collect(),
+                id: id_tiebreak.then(|| reference.id().map(|id| id.0)).flatten(),
             })
             .collect::<Vec<_>>();
 
-        cached_references.sort_by(|a, b| self.compare_cached_references(a, b, &compiled_keys));
+        cached_references.sort_by(|a, b| {
+            let cmp = self.compare_cached_references(a, b, &compiled_keys);
+            if cmp != std::cmp::Ordering::Equal || !id_tiebreak {
+                return cmp;
+            }
+            Self::compare_cached_ids(a, b)
+        });
         cached_references
             .into_iter()
             .map(|entry| entry.reference)
             .collect()
+    }
+
+    /// Deterministic tiebreaker: compare cached reference IDs as `&str`.
+    ///
+    /// `None` IDs sort last (missing ID > any present ID).
+    fn compare_cached_ids(a: &CachedReference<'_>, b: &CachedReference<'_>) -> std::cmp::Ordering {
+        match (&a.id, &b.id) {
+            (Some(a_id), Some(b_id)) => a_id.as_str().cmp(b_id.as_str()),
+            (Some(_), None) => std::cmp::Ordering::Less,
+            (None, Some(_)) => std::cmp::Ordering::Greater,
+            (None, None) => std::cmp::Ordering::Equal,
+        }
     }
 
     /// Compare two references by a single sort key.
@@ -759,5 +820,83 @@ mod tests {
         assert_eq!(refs[0].id().unwrap(), "r2");
         assert_eq!(refs[1].id().unwrap(), "r1");
         assert_eq!(refs[2].id().unwrap(), "r3");
+    }
+
+    /// Given references whose sort keys are all equal, when sorted with the
+    /// ID tiebreak, then they come out in ID order.
+    #[test]
+    fn test_id_tiebreak_orders_equal_keys_by_id() {
+        let locale = make_locale();
+        let sorter = GroupSorter::new(&locale);
+
+        let c = make_reference("r-c", "book", "Smith", "Same Title", 2000);
+        let a = make_reference("r-a", "book", "Smith", "Same Title", 2000);
+        let b = make_reference("r-b", "book", "Smith", "Same Title", 2000);
+
+        let refs = vec![&c, &a, &b];
+
+        let sort_spec = GroupSort {
+            template: vec![GroupSortKey {
+                key: GroupSortKeyType::Author,
+                ascending: true,
+                order: None,
+                sort_order: Some(NameSortOrder::FamilyGiven),
+            }],
+        };
+
+        let sorted = sorter.sort_references_with_id_tiebreak(refs, &sort_spec);
+
+        assert_eq!(sorted[0].id().unwrap(), "r-a");
+        assert_eq!(sorted[1].id().unwrap(), "r-b");
+        assert_eq!(sorted[2].id().unwrap(), "r-c");
+    }
+
+    /// Given one reference with no ID and one with equal sort keys, when
+    /// sorted with the ID tiebreak, then the ID-less reference sorts last.
+    #[test]
+    fn test_id_tiebreak_places_missing_id_last() {
+        let locale = make_locale();
+        let sorter = GroupSorter::new(&locale);
+
+        let with_id = make_reference("r1", "book", "Smith", "Same Title", 2000);
+        let mut no_id = make_reference("r2", "book", "Smith", "Same Title", 2000);
+        if let ClassExtension::Monograph(monograph) = no_id.extension_mut() {
+            monograph.id = None;
+        }
+
+        let refs = vec![&with_id, &no_id];
+
+        let sort_spec = GroupSort {
+            template: vec![GroupSortKey {
+                key: GroupSortKeyType::Author,
+                ascending: true,
+                order: None,
+                sort_order: Some(NameSortOrder::FamilyGiven),
+            }],
+        };
+
+        let sorted = sorter.sort_references_with_id_tiebreak(refs, &sort_spec);
+
+        assert_eq!(sorted[0].id().unwrap(), "r1");
+        assert!(sorted[1].id().is_none());
+    }
+
+    /// Given an empty sort template, when sorted with the ID tiebreak, then
+    /// references keep registry order instead of being reordered by ID alone.
+    #[test]
+    fn test_id_tiebreak_with_empty_template_keeps_registry_order() {
+        let locale = make_locale();
+        let sorter = GroupSorter::new(&locale);
+
+        let c = make_reference("r-c", "book", "Smith", "Title C", 2000);
+        let a = make_reference("r-a", "book", "Jones", "Title A", 2001);
+
+        let refs = vec![&c, &a];
+        let sort_spec = GroupSort { template: vec![] };
+
+        let sorted = sorter.sort_references_with_id_tiebreak(refs, &sort_spec);
+
+        assert_eq!(sorted[0].id().unwrap(), "r-c");
+        assert_eq!(sorted[1].id().unwrap(), "r-a");
     }
 }

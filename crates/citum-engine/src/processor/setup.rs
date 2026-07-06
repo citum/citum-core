@@ -12,7 +12,6 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use super::Processor;
 use super::disambiguation::Disambiguator;
-use super::sorting::Sorter;
 use crate::error::ProcessorError;
 use crate::reference::{Bibliography, CitationItem, Reference};
 use crate::values::ProcHints;
@@ -169,22 +168,43 @@ impl Processor {
 
     /// Resolve the effective bibliography sort specification.
     ///
-    /// Accounts for style overrides and preset defaults.
-    fn resolved_bibliography_sort(&self) -> Option<citum_schema::grouping::GroupSort> {
+    /// Accounts for style overrides, processing-family preset defaults, and
+    /// (when neither applies) an explicit config-level `sort:`. The returned
+    /// `bool` is `true` only when the sort originates from that last,
+    /// explicit config-level step; the caller then applies the deterministic
+    /// entry-ID tiebreaker so config-driven sorts (`Processing::Numeric` /
+    /// `Custom` with an explicit `sort:`) stay oracle-fidelity-stable.
+    /// Styles with a processing-family preset default (`AuthorDate*`, `Note`,
+    /// `Label`) never reach the config-level step; those without any
+    /// `processing:` fall back to the default family (`AuthorDate`), whose
+    /// config carries the author-date sort preset.
+    fn resolved_bibliography_sort(&self) -> Option<(citum_schema::grouping::GroupSort, bool)> {
         if let Some(sort_spec) = self
             .style
             .bibliography
             .as_ref()
             .and_then(|bibliography| bibliography.sort.as_ref())
         {
-            return Some(sort_spec.resolve());
+            return Some((sort_spec.resolve(), false));
         }
 
-        self.get_bibliography_config()
+        let bibliography_config = self.get_bibliography_config();
+
+        if let Some(preset) = bibliography_config
             .processing
             .as_ref()
             .and_then(citum_schema::options::Processing::default_bibliography_sort)
-            .map(|preset| preset.group_sort())
+        {
+            return Some((preset.group_sort(), false));
+        }
+
+        bibliography_config
+            .processing
+            .clone()
+            .unwrap_or_default()
+            .config()
+            .sort
+            .map(|sort_entry| (sort_entry.resolve().group_sort(), true))
     }
 
     /// Initialize numeric citation numbers from bibliography insertion order.
@@ -463,13 +483,16 @@ impl Processor {
     ///
     /// Uses style-specified sort keys (author, title, issued, etc.) and sort order.
     pub fn sort_references<'a>(&self, references: Vec<&'a Reference>) -> Vec<&'a Reference> {
-        let mut sorted_refs = if let Some(sort_spec) = self.resolved_bibliography_sort() {
-            let sorter = crate::grouping::GroupSorter::new(&self.locale);
-            sorter.sort_references(references, &sort_spec)
-        } else {
-            let bibliography_config = self.get_bibliography_config();
-            let sorter = Sorter::new(&bibliography_config, &self.locale);
-            sorter.sort_references(references)
+        let mut sorted_refs = match self.resolved_bibliography_sort() {
+            Some((sort_spec, true)) => {
+                let sorter = crate::grouping::GroupSorter::new(&self.locale);
+                sorter.sort_references_with_id_tiebreak(references, &sort_spec)
+            }
+            Some((sort_spec, false)) => {
+                let sorter = crate::grouping::GroupSorter::new(&self.locale);
+                sorter.sort_references(references, &sort_spec)
+            }
+            None => references,
         };
 
         let bibliography_options = self.get_bibliography_options();
@@ -532,7 +555,7 @@ impl Processor {
         let config = citation_config.as_ref();
         let bibliography_sort = self.resolved_bibliography_sort();
 
-        let disambiguator = if let Some(resolved_sort) = &bibliography_sort {
+        let disambiguator = if let Some((resolved_sort, _id_tiebreak)) = &bibliography_sort {
             Disambiguator::with_group_sort(&self.bibliography, config, &self.locale, resolved_sort)
         } else {
             Disambiguator::new(&self.bibliography, config, &self.locale)

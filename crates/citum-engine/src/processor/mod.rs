@@ -42,8 +42,6 @@ pub mod labels;
 pub mod matching;
 /// Template rendering orchestration and per-component state handling.
 pub mod rendering;
-/// Citation and bibliography sorting helpers.
-pub mod sorting;
 
 #[cfg(test)]
 #[allow(
