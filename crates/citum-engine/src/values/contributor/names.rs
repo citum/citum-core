@@ -626,27 +626,27 @@ fn assemble_inverted_long_name(
     suffix: &str,
     sort_separator: &str,
 ) -> String {
-    let mut suffix_part = String::new();
+    // citeproc-js places the sort-separator before a generational suffix
+    // ("Smith, J., Jr."), not a plain space ("Smith, J. Jr.") — the suffix
+    // gets its own separator-joined segment, same as the family/given split.
+    let mut given_particle_part = String::new();
     if !given_part.is_empty() {
-        suffix_part.push_str(&given_part);
+        given_particle_part.push_str(&given_part);
     }
     if !particle_part.is_empty() {
-        if !suffix_part.is_empty() {
-            suffix_part.push(' ');
+        if !given_particle_part.is_empty() {
+            given_particle_part.push(' ');
         }
-        suffix_part.push_str(&particle_part);
-    }
-    if !suffix.is_empty() {
-        if !suffix_part.is_empty() {
-            suffix_part.push(' ');
-        }
-        suffix_part.push_str(suffix);
+        given_particle_part.push_str(&particle_part);
     }
 
-    if suffix_part.is_empty() {
-        family_part
-    } else {
-        format!("{family_part}{sort_separator}{suffix_part}")
+    match (given_particle_part.is_empty(), suffix.is_empty()) {
+        (true, true) => family_part,
+        (false, true) => format!("{family_part}{sort_separator}{given_particle_part}"),
+        (true, false) => format!("{family_part}{sort_separator}{suffix}"),
+        (false, false) => {
+            format!("{family_part}{sort_separator}{given_particle_part}{sort_separator}{suffix}")
+        }
     }
 }
 

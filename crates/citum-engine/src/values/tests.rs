@@ -3625,6 +3625,25 @@ fn test_sort_separator_space() {
     assert_eq!(result_default, "Smith, J");
 }
 
+/// citeproc-js places the sort-separator before a generational suffix in
+/// inverted name order ("Smith, J., Jr."), not a plain space
+/// ("Smith, J. Jr."). No prior test populated `FlatName.suffix` for an
+/// inverted name.
+#[test]
+fn test_suffix_uses_sort_separator_not_space() {
+    let name = FlatName {
+        family: Some("Smith".to_string()),
+        given: Some("J.".to_string()),
+        suffix: Some("Jr.".to_string()),
+        ..Default::default()
+    };
+
+    let ctx =
+        make_name_format_context(Some(DisplayAsSort::All), None, None, None, None, None, None);
+    let result = contributor::format_single_name(&name, &ContributorForm::Long, 0, &ctx, false);
+    assert_eq!(result, "Smith, J., Jr.");
+}
+
 #[test]
 fn katakana_names_use_script_delimiter_in_original_order() {
     let name = FlatName {
