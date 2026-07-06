@@ -9,8 +9,9 @@ use std::fmt::Write;
 
 use super::note_support::{
     GeneratedNote, NoteOccurrence, NoteRule, adjust_manual_note_citation_rendering,
-    assign_note_numbers, build_note_order_indices, collect_note_occurrences, language_tag,
-    merge_note_rule, ordered_note_citations_and_contexts, render_note_reference_in_prose,
+    assign_note_numbers, build_note_order_indices, collect_note_occurrences, map_note_order,
+    map_number_placement, map_quote_placement, merge_note_rule,
+    ordered_note_citations_and_contexts, render_note_reference_in_prose,
 };
 use super::output::HtmlPlaceholderRegistry;
 use super::{CitationPlacement, ParsedDocument};
@@ -20,22 +21,69 @@ use crate::processor::rendering::{CompoundRenderData, Renderer, RendererResource
 use std::collections::HashMap;
 use std::rc::Rc;
 
+/// Destination for a rendered note fragment. Plain text passes it through
+/// unchanged; HTML routes it through the placeholder registry so already-
+/// rendered markup survives later Djot inline processing untouched.
+trait NoteOutputSink {
+    fn finalize(&mut self, rendered: String) -> String;
+}
+
+struct PlainNoteSink;
+
+impl NoteOutputSink for PlainNoteSink {
+    fn finalize(&mut self, rendered: String) -> String {
+        rendered
+    }
+}
+
+struct HtmlNoteSink<'p> {
+    placeholders: &'p mut HtmlPlaceholderRegistry,
+}
+
+impl NoteOutputSink for HtmlNoteSink<'_> {
+    fn finalize(&mut self, rendered: String) -> String {
+        self.placeholders.push_inline(rendered)
+    }
+}
+
 impl Processor {
+    pub(super) fn process_note_document<F>(&self, content: &str, parsed: ParsedDocument) -> String
+    where
+        F: crate::render::format::OutputFormat<Output = String>,
+    {
+        self.render_note_document::<F, _>(content, parsed, &mut PlainNoteSink)
+    }
+
+    pub(super) fn process_note_document_html(
+        &self,
+        content: &str,
+        parsed: ParsedDocument,
+        placeholders: &mut HtmlPlaceholderRegistry,
+    ) -> String {
+        self.render_note_document::<crate::render::html::Html, _>(
+            content,
+            parsed,
+            &mut HtmlNoteSink { placeholders },
+        )
+    }
+
     #[allow(
         clippy::string_slice,
         clippy::indexing_slicing,
         reason = "parser-guaranteed boundaries and indices"
     )]
-    pub(super) fn process_note_document<F>(
+    fn render_note_document<F, S>(
         &self,
         content: &str,
         mut parsed: ParsedDocument,
+        sink: &mut S,
     ) -> String
     where
         F: crate::render::format::OutputFormat<Output = String>,
+        S: NoteOutputSink,
     {
         let (generated_notes, rendered_notes) =
-            self.prepare_note_citations::<F>(content, &mut parsed);
+            self.prepare_note_citations::<F, S>(content, &mut parsed, sink);
         let generated_note_by_index: HashMap<usize, &GeneratedNote> = generated_notes
             .iter()
             .map(|note| (note.citation_index, note))
@@ -63,83 +111,7 @@ impl Processor {
                         ) && let Ok(anchor) = self
                             .render_note_integral_anchor_with_format::<F>(&parsed_citation.citation)
                         {
-                            result.push_str(&anchor);
-                        }
-                        let consumed_right = render_note_reference_in_prose(
-                            &mut result,
-                            &content[parsed_citation.end..],
-                            &format!("[^{}]", note.label),
-                            note_rule,
-                        );
-                        last_idx = parsed_citation.end + consumed_right;
-                    } else {
-                        result.push_str(&content[parsed_citation.start..parsed_citation.end]);
-                        last_idx = parsed_citation.end;
-                    }
-                }
-            }
-        }
-        result.push_str(&content[last_idx..]);
-
-        if !generated_notes.is_empty() {
-            if !result.ends_with('\n') {
-                result.push('\n');
-            }
-            result.push('\n');
-
-            for note in &generated_notes {
-                if let Some(rendered) = rendered_notes.get(&note.citation_index) {
-                    let _ = writeln!(result, "[^{}]: {}", note.label, rendered);
-                }
-            }
-        }
-
-        result
-    }
-
-    #[allow(
-        clippy::string_slice,
-        clippy::indexing_slicing,
-        reason = "parser-guaranteed boundaries and indices"
-    )]
-    pub(super) fn process_note_document_html(
-        &self,
-        content: &str,
-        mut parsed: ParsedDocument,
-        placeholders: &mut HtmlPlaceholderRegistry,
-    ) -> String {
-        let (generated_notes, rendered_notes) =
-            self.prepare_note_citations_html(content, &mut parsed, placeholders);
-        let generated_note_by_index: HashMap<usize, &GeneratedNote> = generated_notes
-            .iter()
-            .map(|note| (note.citation_index, note))
-            .collect();
-        let note_rule = self.note_rule();
-
-        let mut result = String::new();
-        let mut last_idx = 0;
-        for (index, parsed_citation) in parsed.citations.iter().enumerate() {
-            result.push_str(&content[last_idx..parsed_citation.start]);
-            match &parsed_citation.placement {
-                CitationPlacement::ManualFootnote { .. } => {
-                    if let Some(rendered) = rendered_notes.get(&index) {
-                        result.push_str(rendered);
-                    } else {
-                        result.push_str(&content[parsed_citation.start..parsed_citation.end]);
-                    }
-                    last_idx = parsed_citation.end;
-                }
-                CitationPlacement::InlineProse => {
-                    if let Some(note) = generated_note_by_index.get(&index) {
-                        if matches!(
-                            parsed_citation.citation.mode,
-                            citum_schema::citation::CitationMode::Integral
-                        ) && let Ok(anchor) = self
-                            .render_note_integral_anchor_with_format::<crate::render::html::Html>(
-                                &parsed_citation.citation,
-                            )
-                        {
-                            result.push_str(&placeholders.push_inline(anchor));
+                            result.push_str(&sink.finalize(anchor));
                         }
                         let consumed_right = render_note_reference_in_prose(
                             &mut result,
@@ -210,13 +182,15 @@ impl Processor {
         clippy::indexing_slicing,
         reason = "parser-guaranteed boundaries and indices"
     )]
-    fn prepare_note_citations<F>(
+    fn prepare_note_citations<F, S>(
         &self,
         content: &str,
         parsed: &mut ParsedDocument,
+        sink: &mut S,
     ) -> (Vec<GeneratedNote>, HashMap<usize, String>)
     where
         F: crate::render::format::OutputFormat<Output = String>,
+        S: NoteOutputSink,
     {
         let (generated_notes, manual_citations) = self.prepare_note_citation_state(parsed);
         let mut rendered_notes: HashMap<usize, String> = HashMap::new();
@@ -232,7 +206,7 @@ impl Processor {
                         ..parsed.citations[generated.citation_index].end]
                         .to_string()
                 });
-            rendered_notes.insert(generated.citation_index, rendered);
+            rendered_notes.insert(generated.citation_index, sink.finalize(rendered));
         }
 
         for indices in manual_citations.values() {
@@ -245,64 +219,11 @@ impl Processor {
                         content[parsed.citations[*index].start..parsed.citations[*index].end]
                             .to_string()
                     });
-                rendered_notes.insert(
-                    *index,
-                    adjust_manual_note_citation_rendering(
-                        &rendered,
-                        &content[parsed.citations[*index].end..],
-                    ),
+                let rendered = adjust_manual_note_citation_rendering(
+                    &rendered,
+                    &content[parsed.citations[*index].end..],
                 );
-            }
-        }
-
-        (generated_notes, rendered_notes)
-    }
-
-    #[allow(
-        clippy::string_slice,
-        clippy::indexing_slicing,
-        reason = "parser-guaranteed boundaries and indices"
-    )]
-    fn prepare_note_citations_html(
-        &self,
-        content: &str,
-        parsed: &mut ParsedDocument,
-        placeholders: &mut HtmlPlaceholderRegistry,
-    ) -> (Vec<GeneratedNote>, HashMap<usize, String>) {
-        let (generated_notes, manual_citations) = self.prepare_note_citation_state(parsed);
-        let mut rendered_notes = HashMap::new();
-
-        for generated in &generated_notes {
-            let note_citation = self.note_render_citation_for_generated(
-                &parsed.citations[generated.citation_index].citation,
-            );
-            let rendered = self
-                .process_citation_with_format::<crate::render::html::Html>(&note_citation)
-                .unwrap_or_else(|_| {
-                    content[parsed.citations[generated.citation_index].start
-                        ..parsed.citations[generated.citation_index].end]
-                        .to_string()
-                });
-            rendered_notes.insert(generated.citation_index, placeholders.push_inline(rendered));
-        }
-
-        for indices in manual_citations.values() {
-            for index in indices {
-                let rendered = self
-                    .render_manual_note_citation_with_format::<crate::render::html::Html>(
-                        &parsed.citations[*index].citation,
-                    )
-                    .unwrap_or_else(|_| {
-                        content[parsed.citations[*index].start..parsed.citations[*index].end]
-                            .to_string()
-                    });
-                rendered_notes.insert(
-                    *index,
-                    placeholders.push_inline(adjust_manual_note_citation_rendering(
-                        &rendered,
-                        &content[parsed.citations[*index].end..],
-                    )),
-                );
+                rendered_notes.insert(*index, sink.finalize(rendered));
             }
         }
 
@@ -541,29 +462,11 @@ impl Processor {
     }
 
     fn locale_note_rule(&self) -> NoteRule {
-        let locale = self
-            .style
-            .info
-            .default_locale
-            .as_deref()
-            .unwrap_or(self.locale.locale.as_str())
-            .to_ascii_lowercase();
-        match locale.as_str() {
-            "en-us" => NoteRule {
-                punctuation: super::note_support::PunctuationRule::Inside,
-                number: super::note_support::NumberRule::Outside,
-                order: super::note_support::NoteOrder::After,
-            },
-            tag if language_tag(tag) == "fr" => NoteRule {
-                punctuation: super::note_support::PunctuationRule::Adaptive,
-                number: super::note_support::NumberRule::Same,
-                order: super::note_support::NoteOrder::Before,
-            },
-            _ => NoteRule {
-                punctuation: super::note_support::PunctuationRule::Adaptive,
-                number: super::note_support::NumberRule::Outside,
-                order: super::note_support::NoteOrder::After,
-            },
+        let grammar = &self.locale.grammar_options;
+        NoteRule {
+            punctuation: map_quote_placement(grammar.note_punctuation),
+            number: map_number_placement(grammar.note_number),
+            order: map_note_order(grammar.note_marker_order),
         }
     }
 }
