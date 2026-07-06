@@ -818,15 +818,32 @@ fn score_bibliography_entries(references: &[String], rendered: &[String]) -> Can
     score
 }
 
+/// Guards one-time installation of [`candidate_panic_hook`], so repeated
+/// candidate scoring never swaps the process-global panic hook per call.
+static CANDIDATE_PANIC_HOOK_INIT: std::sync::Once = std::sync::Once::new();
+
 fn catch_candidate_unwind<F, T>(f: F) -> Result<T, Box<dyn std::any::Any + Send>>
 where
     F: FnOnce() -> T,
 {
-    let previous_hook = std::panic::take_hook();
-    std::panic::set_hook(Box::new(|_| {}));
-    let result = std::panic::catch_unwind(AssertUnwindSafe(f));
-    std::panic::set_hook(previous_hook);
-    result
+    CANDIDATE_PANIC_HOOK_INIT.call_once(|| {
+        std::panic::set_hook(Box::new(candidate_panic_hook));
+    });
+    std::panic::catch_unwind(AssertUnwindSafe(f))
+}
+
+/// Replacement panic hook installed once for the process: logs the panic
+/// payload instead of the default stderr print, so a candidate render panic
+/// stays visible (via `RUST_LOG=citum_migrate=debug`) rather than being fully
+/// discarded, without repeatedly swapping the global hook per candidate.
+fn candidate_panic_hook(info: &std::panic::PanicHookInfo<'_>) {
+    let payload = info
+        .payload()
+        .downcast_ref::<&str>()
+        .map(|message| (*message).to_string())
+        .or_else(|| info.payload().downcast_ref::<String>().cloned())
+        .unwrap_or_else(|| "non-string panic payload".to_string());
+    tracing::debug!(panic.message = %payload, location = %info.location().map_or_else(|| "unknown".to_string(), ToString::to_string), "candidate render panicked");
 }
 
 fn invalid_candidate_score(references: &BTreeMap<String, Option<String>>) -> CandidateScore {
@@ -1323,8 +1340,8 @@ fn tokenize(text: &str) -> Vec<String> {
 mod tests {
     use super::{
         CandidateBudget, CandidateScore, PASS_THRESHOLD, bibliography_candidate_patches,
-        bibliography_mutation_candidates, candidate_beats, compare_text, normalize_text,
-        scenario_citation, token_jaccard, tokenize,
+        bibliography_mutation_candidates, candidate_beats, catch_candidate_unwind, compare_text,
+        normalize_text, scenario_citation, token_jaccard, tokenize,
     };
     use citum_schema::Style;
     use citum_schema::citation::Position;
@@ -1529,5 +1546,16 @@ mod tests {
         budget.truncate_mutations(&mut mutations, 2);
 
         assert_eq!(mutations, vec![0]);
+    }
+
+    #[test]
+    fn catch_candidate_unwind_reports_panics_as_err_without_reinstalling_the_hook_per_call() {
+        let first = catch_candidate_unwind(|| panic!("bad candidate template"));
+        let second = catch_candidate_unwind(|| panic!("another bad candidate template"));
+        let ok = catch_candidate_unwind(|| 42);
+
+        assert!(first.is_err());
+        assert!(second.is_err());
+        assert_eq!(ok.unwrap(), 42);
     }
 }
