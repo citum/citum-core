@@ -739,6 +739,7 @@ dependencies = [
  "dhat",
  "indexmap 2.14.0",
  "roxmltree 0.21.1",
+ "rstest",
  "serde",
  "serde_json",
  "serde_yaml_ng",
