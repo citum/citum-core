@@ -256,6 +256,18 @@ fn scan_template_for_unknowns(
                         message: format!("Style {location} uses unknown contributor role '{s}'; this role may be ignored."),
                     });
                 }
+                if let Some(label) = &c.label {
+                    let term = label.term.as_str();
+                    if !crate::values::contributor::labels::RECOGNIZED_LABEL_TERMS.contains(&term) {
+                        warnings.push(Warning {
+                            level: WarningLevel::Warning,
+                            code: "unknown_role_label_term".to_string(),
+                            citation_id: None,
+                            ref_id: None,
+                            message: format!("Style {location} uses unrecognized role-label term '{term}'; falling back to the contributor's own role term instead of the requested one."),
+                        });
+                    }
+                }
             }
             TemplateComponent::Date(d) => {
                 if let citum_schema::template::DateForm::Unknown(s) = &d.form {
@@ -293,6 +305,35 @@ mod tests {
                 .iter()
                 .any(|w| w.message.contains("not-a-real-term") && w.message.contains("(integral)")),
             "expected a warning for the unknown term in citation.integral.template, got: {warnings:?}"
+        );
+    }
+
+    #[test]
+    fn unknown_enum_warnings_reports_unknown_role_label_term() {
+        let yaml = "info:\n  title: Test\nbibliography:\n  template:\n    - contributor: editor\n      form: long\n      label: {term: not-a-real-role}\n";
+        let style = citum_schema::Style::from_yaml_str(yaml).unwrap();
+        let processor = Processor::new(style, Bibliography::new());
+
+        let warnings = unknown_enum_warnings(&processor);
+        assert!(
+            warnings
+                .iter()
+                .any(|w| w.code == "unknown_role_label_term"
+                    && w.message.contains("not-a-real-role")),
+            "expected a warning for the unrecognized role-label term, got: {warnings:?}"
+        );
+    }
+
+    #[test]
+    fn unknown_enum_warnings_does_not_flag_recognized_role_label_terms() {
+        let yaml = "info:\n  title: Test\nbibliography:\n  template:\n    - contributor: editor\n      form: long\n      label: {term: editor}\n";
+        let style = citum_schema::Style::from_yaml_str(yaml).unwrap();
+        let processor = Processor::new(style, Bibliography::new());
+
+        let warnings = unknown_enum_warnings(&processor);
+        assert!(
+            !warnings.iter().any(|w| w.code == "unknown_role_label_term"),
+            "did not expect a warning for a recognized role-label term, got: {warnings:?}"
         );
     }
 

@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! This module handles contributor rendering with support for name ordering,
 //! role labels, et-al formatting, and multilingual name resolution.
 
-mod labels;
+pub(crate) mod labels;
 pub mod names;
 mod substitute;
 
