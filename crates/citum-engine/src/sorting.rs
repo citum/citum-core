@@ -5,7 +5,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Reference sorting for bibliographies, groups, and citations.
 //!
-//! `GroupSorter` is the engine's single sorting stack: bibliography sorts
+//! `ReferenceSorter` is the engine's single sorting stack: bibliography sorts
 //! (explicit `bibliography.sort`, processing presets, and config-level
 //! `sort:` mapped via `Sort::group_sort()`), per-group sorting, citation-item
 //! ordering, and disambiguation all route through it. Sort keys are compiled
@@ -35,7 +35,7 @@ fn compare_optional_years(a_year: Option<i32>, b_year: Option<i32>) -> std::cmp:
 }
 
 /// Sorts grouped bibliography entries using group-specific sort rules.
-pub struct GroupSorter<'a> {
+pub struct ReferenceSorter<'a> {
     locale: &'a Locale,
     text_collator: TextCollator,
 }
@@ -45,7 +45,7 @@ struct CachedReference<'a> {
     sort_values: Vec<CachedSortValue>,
     /// Reference ID, cached once per reference so the ID tiebreak does not
     /// re-derive it on every pairwise comparison. Populated only when sorting
-    /// via [`GroupSorter::sort_references_with_id_tiebreak`]; `None` otherwise
+    /// via [`ReferenceSorter::sort_references_with_id_tiebreak`]; `None` otherwise
     /// to keep ID-less sorts allocation-free.
     id: Option<String>,
 }
@@ -78,7 +78,7 @@ enum CompiledSortKey<'a> {
     },
 }
 
-impl<'a> GroupSorter<'a> {
+impl<'a> ReferenceSorter<'a> {
     /// Create a sorter that uses `locale` for locale-sensitive comparisons.
     #[must_use]
     pub fn new(locale: &'a Locale) -> Self {
@@ -110,7 +110,7 @@ impl<'a> GroupSorter<'a> {
     ///
     /// References without an ID sort after references with one. The tiebreak
     /// makes config-driven bibliography sorts fully deterministic, and is
-    /// opt-in because most `GroupSorter` call sites (grouping/render paths)
+    /// opt-in because most `ReferenceSorter` call sites (grouping/render paths)
     /// rely on stable-sort/registry order for equal keys instead.
     ///
     /// An empty sort template is a no-op: with no keys to compare, references
@@ -493,7 +493,7 @@ mod tests {
     #[test]
     fn test_type_order_sorting() {
         let locale = make_locale();
-        let sorter = GroupSorter::new(&locale);
+        let sorter = ReferenceSorter::new(&locale);
 
         // Use standard CSL JSON types for testing
         let journal = make_reference("r1", "article-journal", "Smith", "Title J", 1990);
@@ -528,7 +528,7 @@ mod tests {
     #[test]
     fn test_author_family_given_order() {
         let locale = make_locale();
-        let sorter = GroupSorter::new(&locale);
+        let sorter = ReferenceSorter::new(&locale);
 
         let smith = make_reference("r1", "book", "Smith", "Title", 2000);
         let jones = make_reference("r2", "book", "Jones", "Title", 2000);
@@ -557,7 +557,7 @@ mod tests {
     #[cfg(feature = "icu")]
     fn test_author_sort_uses_unicode_collation_for_accented_names() {
         let locale = make_locale();
-        let sorter = GroupSorter::new(&locale);
+        let sorter = ReferenceSorter::new(&locale);
 
         let celik = make_reference("r1", "book", "Çelik", "Title", 2000);
         let zimring = make_reference("r2", "book", "Zimring", "Title", 2000);
@@ -585,7 +585,7 @@ mod tests {
     #[cfg(feature = "icu")]
     fn test_title_sort_uses_unicode_collation_for_accented_titles() {
         let locale = make_locale();
-        let sorter = GroupSorter::new(&locale);
+        let sorter = ReferenceSorter::new(&locale);
 
         let accent = make_reference_no_author("r1", "book", "Órbitas del sur", 2000);
         let plain = make_reference_no_author("r2", "book", "Origins of Theory", 2000);
@@ -612,7 +612,7 @@ mod tests {
     #[test]
     fn test_issued_descending() {
         let locale = make_locale();
-        let sorter = GroupSorter::new(&locale);
+        let sorter = ReferenceSorter::new(&locale);
 
         let old = make_reference("r1", "book", "Smith", "Title", 1990);
         let new = make_reference("r2", "book", "Jones", "Title", 2020);
@@ -640,7 +640,7 @@ mod tests {
     #[test]
     fn test_issued_ascending_places_undated_last() {
         let locale = make_locale();
-        let sorter = GroupSorter::new(&locale);
+        let sorter = ReferenceSorter::new(&locale);
 
         let dated_early = make_reference("r1", "book", "Smith", "Book D", 1999);
         let dated_late = make_reference("r2", "book", "Jones", "Book B", 2000);
@@ -670,7 +670,7 @@ mod tests {
     #[test]
     fn test_issued_sort_uses_created_when_issued_is_missing() {
         let locale = make_locale();
-        let sorter = GroupSorter::new(&locale);
+        let sorter = ReferenceSorter::new(&locale);
 
         let dated = make_reference("r1", "book", "Smith", "Book D", 1999);
         let mut created_only = make_reference("r2", "book", "Jones", "Book C", 2000);
@@ -699,7 +699,7 @@ mod tests {
     #[test]
     fn test_composite_sort() {
         let locale = make_locale();
-        let sorter = GroupSorter::new(&locale);
+        let sorter = ReferenceSorter::new(&locale);
 
         let smith2020 = make_reference("r1", "book", "Smith", "Title", 2020);
         let smith2010 = make_reference("r2", "book", "Smith", "Title", 2010);
@@ -735,7 +735,7 @@ mod tests {
     #[test]
     fn test_author_sort_falls_back_to_title_for_missing_names() {
         let locale = make_locale();
-        let sorter = GroupSorter::new(&locale);
+        let sorter = ReferenceSorter::new(&locale);
 
         let no_author = make_reference_no_author("r1", "legal-case", "Brown v. Board", 1954);
         let brown = make_reference("r2", "book", "Brown", "Title", 2000);
@@ -762,7 +762,7 @@ mod tests {
     #[test]
     fn test_legal_citation_sort() {
         let locale = make_locale();
-        let sorter = GroupSorter::new(&locale);
+        let sorter = ReferenceSorter::new(&locale);
 
         let case_a = make_reference("r1", "legal-case", "", "Doe v. Smith", 1990);
         let case_b = make_reference("r2", "legal-case", "", "Brown v. Board", 1954);
@@ -793,7 +793,7 @@ mod tests {
     #[test]
     fn test_legal_hierarchy_sort() {
         let locale = make_locale();
-        let sorter = GroupSorter::new(&locale);
+        let sorter = ReferenceSorter::new(&locale);
 
         let statute = make_reference("r1", "statute", "", "Clean Air Act", 1970);
         let case = make_reference("r2", "legal-case", "", "Roe v. Wade", 1973);
@@ -827,7 +827,7 @@ mod tests {
     #[test]
     fn test_id_tiebreak_orders_equal_keys_by_id() {
         let locale = make_locale();
-        let sorter = GroupSorter::new(&locale);
+        let sorter = ReferenceSorter::new(&locale);
 
         let c = make_reference("r-c", "book", "Smith", "Same Title", 2000);
         let a = make_reference("r-a", "book", "Smith", "Same Title", 2000);
@@ -856,7 +856,7 @@ mod tests {
     #[test]
     fn test_id_tiebreak_places_missing_id_last() {
         let locale = make_locale();
-        let sorter = GroupSorter::new(&locale);
+        let sorter = ReferenceSorter::new(&locale);
 
         let with_id = make_reference("r1", "book", "Smith", "Same Title", 2000);
         let mut no_id = make_reference("r2", "book", "Smith", "Same Title", 2000);
@@ -886,7 +886,7 @@ mod tests {
     #[test]
     fn test_id_tiebreak_with_empty_template_keeps_registry_order() {
         let locale = make_locale();
-        let sorter = GroupSorter::new(&locale);
+        let sorter = ReferenceSorter::new(&locale);
 
         let c = make_reference("r-c", "book", "Smith", "Title C", 2000);
         let a = make_reference("r-a", "book", "Jones", "Title A", 2001);

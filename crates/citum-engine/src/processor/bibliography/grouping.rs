@@ -7,13 +7,14 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use super::RenderedBibliographyGroup;
 use crate::api::AnnotationStyle;
-use crate::grouping::{GroupSorter, SelectorEvaluator};
+use crate::grouping::SelectorEvaluator;
 use crate::processor::Processor;
 use crate::processor::disambiguation::Disambiguator;
 use crate::processor::rendering::{CompoundRenderData, Renderer, RendererResources};
 use crate::reference::{Bibliography, Reference};
 use crate::render::ProcEntry;
 use crate::render::format::{OutputFormat, ProcEntryMetadata};
+use crate::sorting::ReferenceSorter;
 use crate::values::{
     ProcHints, RenderContext, RenderOptions, format_contributors_short, resolve_multilingual_name,
     resolve_multilingual_string,
@@ -392,7 +393,7 @@ impl Processor {
         let fmt = F::default();
         let cited_ids = self.cited_ids.borrow();
         let evaluator = SelectorEvaluator::new(&cited_ids);
-        let sorter = GroupSorter::new(&self.locale);
+        let sorter = ReferenceSorter::new(&self.locale);
 
         let mut assigned = HashSet::new();
         let mut result = String::new();
@@ -685,7 +686,7 @@ impl Processor {
         let bibliography = self.sorted_id_stubs();
         let cited_ids = self.cited_ids.borrow();
         let evaluator = SelectorEvaluator::new(&cited_ids);
-        let sorter = GroupSorter::new(&self.locale);
+        let sorter = ReferenceSorter::new(&self.locale);
 
         let matching_refs =
             self.collect_matching_group_refs(&bibliography, assigned, &evaluator, group);
