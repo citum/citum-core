@@ -217,6 +217,52 @@ fn process_citation_ids(processor: &Processor, ids: &[&str]) -> String {
         .expect("citation should render")
 }
 
+#[test]
+fn two_names_citation_never_uses_delimiter_even_when_always_is_declared() {
+    // Two-name citation lists never use the delimiter before the
+    // conjunction, regardless of the declared delimiter-precedes-last value:
+    // real styles (APA) rely on this suppression for correct in-text
+    // citation formatting ("Irino & Tada, 2009", not "Irino, & Tada, 2009"),
+    // reserving the comma for 3+ names. See div-013 in
+    // docs/adjudication/DIVERGENCE_REGISTER.md.
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Two Author Citation And Test".to_string()),
+            id: Some("two-author-citation-and-test".into()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            contributors: Some(ContributorConfig {
+                and: Some(AndOptions::Text),
+                delimiter_precedes_last: Some(DelimiterPrecedesLast::Always),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        citation: Some(CitationSpec {
+            template: Some(vec![citum_schema::tc_contributor!(Author, Long)]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert(
+        "item1".to_string(),
+        make_book_multi_author(
+            "item1",
+            vec![("Smith", "John"), ("Jones", "Jane")],
+            2020,
+            "Title",
+        ),
+    );
+    let processor = Processor::new(style, bibliography);
+
+    let result = process_citation_ids(&processor, &["item1"]);
+
+    assert_eq!(result, "John Smith and Jane Jones");
+}
+
 fn integral_name_state_overrides_processor_memory() {
     let mut bibliography = indexmap::IndexMap::new();
     bibliography.insert(

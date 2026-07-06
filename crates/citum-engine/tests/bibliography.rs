@@ -2137,6 +2137,76 @@ fn hyphenated_non_dropping_particles_render_correctly_in_display_order() {
     assert_eq!(result, "Mary Marple\n\nAlan al-One\n\nPaul Participle");
 }
 
+fn make_two_author_and_style(
+    delimiter_precedes_last: DelimiterPrecedesLast,
+    name_order: Option<citum_schema::template::NameOrder>,
+) -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Two Author And Test".to_string()),
+            id: Some("two-author-and-test".into()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            contributors: Some(ContributorConfig {
+                and: Some(AndOptions::Text),
+                delimiter_precedes_last: Some(delimiter_precedes_last),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Contributor(
+                citum_schema::template::TemplateContributor {
+                    contributor: citum_schema::template::ContributorRole::Author,
+                    form: citum_schema::template::ContributorForm::Long,
+                    name_order,
+                    ..Default::default()
+                },
+            )]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+#[test]
+fn two_names_bibliography_given_first_order_never_uses_delimiter() {
+    // Given-first bibliography name lists (e.g. an editor/chair group) never
+    // use the delimiter before the conjunction, regardless of the declared
+    // delimiter-precedes-last value -- there is no per-component override
+    // for this option today, and real styles (APA) rely on this suppression
+    // for correct given-first-name-list formatting (e.g. "F. A. Editor &
+    // S. Editor" rather than "F. A. Editor, & S. Editor"). See div-013 in
+    // docs/adjudication/DIVERGENCE_REGISTER.md.
+    let style = make_two_author_and_style(
+        DelimiterPrecedesLast::Always,
+        Some(citum_schema::template::NameOrder::GivenFirst),
+    );
+    let bib = citum_schema::bib_map![
+        "ITEM-1" => make_book_multi_author("ITEM-1", vec![("Smith", "John"), ("Jones", "Jane")], 2020, "Title"),
+    ];
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert_eq!(result, "John Smith and Jane Jones");
+}
+
+#[test]
+fn two_names_bibliography_contextual_omits_delimiter_for_two_names() {
+    // CSL's "contextual" delimiter-precedes-last means "delimiter only when
+    // 3 or more names are joined"; for exactly two names no delimiter should
+    // precede the conjunction. Previously this was hardcoded to `true`.
+    let style = make_two_author_and_style(DelimiterPrecedesLast::Contextual, None);
+    let bib = citum_schema::bib_map![
+        "ITEM-1" => make_book_multi_author("ITEM-1", vec![("Smith", "John"), ("Jones", "Jane")], 2020, "Title"),
+    ];
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert_eq!(result, "John Smith and Jane Jones");
+}
+
 // --- Numeric Bibliography Tests ---
 
 fn numeric_bibliography_uses_assigned_citation_numbers() {

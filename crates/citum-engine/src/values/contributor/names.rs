@@ -133,27 +133,34 @@ fn join_names_with_conjunction(
             formatted_first.join(delimiter)
         }
         Some(conjunction) if formatted_first.len() == 2 => {
-            // For two names: citations don't use delimiter before conjunction,
-            // but bibliographies do (contextual Oxford comma).
-            let use_delimiter = if context == crate::values::RenderContext::Bibliography {
-                if matches!(ctx.name_order, Some(NameOrder::GivenFirst)) {
-                    false
-                } else {
-                    // In bibliography, check delimiter-precedes-last setting
-                    match delimiter_precedes_last {
-                        Some(DelimiterPrecedesLast::Always) => true,
-                        Some(DelimiterPrecedesLast::Never) => false,
-                        Some(DelimiterPrecedesLast::Contextual) | None => true, // Default: use comma in bibliography
-                        Some(DelimiterPrecedesLast::AfterInvertedName) => {
-                            ctx.display_as_sort.as_ref().is_some_and(|das| {
-                                matches!(das, DisplayAsSort::All | DisplayAsSort::First)
-                            })
-                        }
+            // Two-name lists never use the delimiter before the conjunction
+            // in citation context, and never in a given-first bibliography
+            // name list (e.g. an editor/chair group rendered
+            // "F. A. Editor & S. Editor" rather than "..., & ..."), regardless
+            // of the declared delimiter-precedes-last value: there is no
+            // per-component override for this option today, and real styles
+            // (APA) rely on this suppression in both cases for correct
+            // output. See div-013.
+            let use_delimiter = if context == crate::values::RenderContext::Citation
+                || matches!(ctx.name_order, Some(NameOrder::GivenFirst))
+            {
+                false
+            } else {
+                // Bibliography, not given-first: honor delimiter-precedes-last,
+                // mirroring the 3+-name arm below except that `Contextual`/
+                // unset means "delimiter only for 3+ names", so it resolves
+                // to `false` here (previously hardcoded to `true`).
+                match delimiter_precedes_last {
+                    Some(DelimiterPrecedesLast::Always) => true,
+                    Some(DelimiterPrecedesLast::Never) => false,
+                    Some(DelimiterPrecedesLast::Contextual) | None => false,
+                    Some(DelimiterPrecedesLast::AfterInvertedName) => {
+                        ctx.display_as_sort.as_ref().is_some_and(|das| {
+                            matches!(das, DisplayAsSort::All)
+                                || (matches!(das, DisplayAsSort::First) && first_names_len == 1)
+                        })
                     }
                 }
-            } else {
-                // In citations, never use delimiter before conjunction for 2 names
-                false
             };
 
             #[allow(clippy::indexing_slicing, reason = "length checked")]
