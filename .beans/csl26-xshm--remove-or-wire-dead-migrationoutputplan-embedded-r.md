@@ -1,10 +1,11 @@
 ---
 # csl26-xshm
 title: Remove or wire dead MigrationOutputPlan embedded-root variants
-status: todo
+status: in-progress
 type: task
+priority: normal
 created_at: 2026-07-06T18:42:20Z
-updated_at: 2026-07-06T18:42:20Z
+updated_at: 2026-07-06T23:23:51Z
 parent: csl26-al39
 ---
 

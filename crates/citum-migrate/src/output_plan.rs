@@ -107,7 +107,6 @@ pub(crate) fn count_yaml_lines(style: &Style) -> Result<usize, Box<dyn std::erro
 }
 
 /// Log the selected migration output plan.
-#[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
 pub(crate) fn log_migration_output_plan(lineage: &StyleLineage) {
     match lineage.output_plan() {
         MigrationOutputPlan::Standalone => {
@@ -121,12 +120,6 @@ pub(crate) fn log_migration_output_plan(lineage: &StyleLineage) {
             tracing::debug!(
                 "Migration output plan: existing-wrapper parent={parent_style_id} form={implementation_form:?} preserve-template-deltas={preserve_template_deltas}"
             );
-        }
-        plan if plan.requires_multi_artifact_write() => {
-            tracing::debug!("Migration output plan: multi-artifact {plan:?}");
-        }
-        plan => {
-            tracing::debug!("Migration output plan: {plan:?}");
         }
     }
 }
@@ -201,7 +194,6 @@ fn describe_emitted_form(lineage: &StyleLineage, minimized: bool) -> EmittedForm
             preserve_template_deltas,
             minimized,
         },
-        _ => EmittedForm::Standalone,
     }
 }
 

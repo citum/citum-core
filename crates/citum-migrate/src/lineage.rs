@@ -4,6 +4,13 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
 //! Migration-time style lineage and wrapper classification.
+//!
+//! `diff_value` cannot express deletions: it only emits keys present in the
+//! child that differ from the parent, so a key the parent set but the
+//! standalone child form lacked is silently inherited by the wrapper rather
+//! than being suppressed. This is invisible in the emitted YAML; watch for
+//! it via the `tracing::debug!` emitted when a key drops between parent and
+//! child.
 
 use crate::evidence::{
     EmittedForm, FamilyCandidate, MeasuredSelectionEvidence, MigrationEvidence,
@@ -54,31 +61,6 @@ pub enum MigrationOutputPlan {
         /// Whether local template-bearing deltas are allowed in the wrapper.
         preserve_template_deltas: bool,
     },
-    /// Emit a new hidden embedded root and a public wrapper.
-    CreateEmbeddedRootAndWrapper {
-        /// Hidden embedded root style ID to create.
-        root_style_id: String,
-        /// Public style ID for the wrapper.
-        public_style_id: String,
-    },
-    /// Update an existing hidden embedded root and its public wrapper.
-    UpgradeEmbeddedRootAndWrapper {
-        /// Hidden embedded root style ID to update.
-        root_style_id: String,
-        /// Public style ID for the wrapper.
-        public_style_id: String,
-    },
-}
-
-impl MigrationOutputPlan {
-    /// Return whether this plan writes more than one style artifact.
-    #[must_use]
-    pub fn requires_multi_artifact_write(&self) -> bool {
-        matches!(
-            self,
-            Self::CreateEmbeddedRootAndWrapper { .. } | Self::UpgradeEmbeddedRootAndWrapper { .. }
-        )
-    }
 }
 
 /// Migration-time lineage for one style target.
@@ -899,6 +881,20 @@ fn diff_value(
                 path.pop();
             }
 
+            for (key, _) in parent_map {
+                let Some(segment) = key.as_str() else {
+                    continue;
+                };
+                if !child_map.contains_key(key) {
+                    path.push(segment.to_string());
+                    tracing::debug!(
+                        "diff_value: child dropped parent key at {}; wrapper will silently inherit it from parent",
+                        path.join(".")
+                    );
+                    path.pop();
+                }
+            }
+
             if diff.is_empty() {
                 None
             } else {
@@ -1094,32 +1090,6 @@ mod tests {
         assert_eq!(lineage.implementation_form, ImplementationForm::Unknown);
         assert!(lineage.parent_style_id.is_none());
         assert_eq!(lineage.output_plan(), MigrationOutputPlan::Standalone);
-    }
-
-    #[test]
-    fn embedded_root_wrapper_plans_require_multi_artifact_writes() {
-        assert!(
-            MigrationOutputPlan::CreateEmbeddedRootAndWrapper {
-                root_style_id: "publisher-core".to_string(),
-                public_style_id: "publisher".to_string(),
-            }
-            .requires_multi_artifact_write()
-        );
-        assert!(
-            MigrationOutputPlan::UpgradeEmbeddedRootAndWrapper {
-                root_style_id: "publisher-core".to_string(),
-                public_style_id: "publisher".to_string(),
-            }
-            .requires_multi_artifact_write()
-        );
-        assert!(
-            !MigrationOutputPlan::ExistingWrapper {
-                parent_style_id: "publisher-core".to_string(),
-                implementation_form: ImplementationForm::ConfigWrapper,
-                preserve_template_deltas: false,
-            }
-            .requires_multi_artifact_write()
-        );
     }
 
     #[test]
