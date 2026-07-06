@@ -3134,6 +3134,17 @@
               "type": "string"
             }
           }
+        },
+        "title-quote": {
+          "description": "Quoting policy for a title substituted into the author position in\ncitation context (the `title` substitute key). Unset (or `always`)\npreserves the historical unconditional-quote behavior; `by-category`\ndefers to the style's `titles:` category rendering, so e.g. a book\ntitle italicizes instead of quoting. See divergence register div-011.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SubstituteTitleQuoteMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "unevaluatedProperties": false
@@ -3147,6 +3158,21 @@
         "parent-serial",
         "title",
         "translator"
+      ]
+    },
+    "SubstituteTitleQuoteMode": {
+      "description": "How a title used as an author substitute is quoted in citation context.",
+      "oneOf": [
+        {
+          "description": "Always quote the substituted title in citation context (historical\nCitum default; matches prior behavior regardless of reference type).",
+          "type": "string",
+          "const": "always"
+        },
+        {
+          "description": "Resolve quoting via the normal title-category rendering machinery\n(`titles:` config), the same way a non-substitute title would be\nquoted/italicized for that reference type.",
+          "type": "string",
+          "const": "by-category"
+        }
       ]
     },
     "Processing": {

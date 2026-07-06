@@ -50,7 +50,7 @@ pub use scoped::{
     BibliographyLabelMode, BibliographyLabelWrap, CitationGroupDelimiter, DatePosition, LabelWrap,
     RepeatedAuthorRendering, TitleTerminator,
 };
-pub use substitute::{Substitute, SubstituteConfig, SubstituteKey};
+pub use substitute::{Substitute, SubstituteConfig, SubstituteKey, SubstituteTitleQuoteMode};
 
 use crate::template::DelimiterPunctuation;
 #[cfg(feature = "schema")]
