@@ -967,6 +967,9 @@ grammar-options:
   page-range-delimiter: "–"
   title-subtitle-delimiter: ": "
   subtitle-delimiter: "; "
+  note-punctuation: inside
+  note-number: outside
+  note-marker-order: after
 
 legacy-term-aliases:
   page: term.page-label
