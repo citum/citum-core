@@ -172,8 +172,47 @@ pub fn unknown_enum_warnings(processor: &Processor) -> Vec<Warning> {
             }
         }
     }
+    scan_bibliography_config_sort_for_citation_number(processor, &mut warnings);
 
     warnings
+}
+
+/// Warn when the bibliography's explicit config-level sort lists
+/// `citation-number` as a key. `Sort::group_sort` drops the key rather than
+/// mapping it, so it contributes nothing to bibliography ordering — a silent
+/// no-op the style author almost certainly did not intend. The
+/// `citation-number` *preset* (`SortEntry::Preset`) is exempt: it is the
+/// documented way to say "no bibliography sort" for numeric styles.
+fn scan_bibliography_config_sort_for_citation_number(
+    processor: &Processor,
+    warnings: &mut Vec<Warning>,
+) {
+    let Some(citum_schema::options::SortEntry::Explicit(sort)) = processor
+        .get_bibliography_config()
+        .processing
+        .as_ref()
+        .map(citum_schema::options::Processing::config)
+        .and_then(|config| config.sort)
+    else {
+        return;
+    };
+
+    let uses_citation_number = sort
+        .template
+        .iter()
+        .any(|spec| matches!(spec.key, citum_schema::options::SortKey::CitationNumber));
+
+    if uses_citation_number {
+        warnings.push(Warning {
+            level: WarningLevel::Warning,
+            code: "citation_number_sort_not_supported".to_string(),
+            citation_id: None,
+            ref_id: None,
+            message: "Style bibliography configuration lists 'citation-number' as an explicit \
+                      sort key; it is not supported and is ignored for bibliography ordering."
+                .to_string(),
+        });
+    }
 }
 
 /// Recursively scan a [`citum_schema::CitationSpec`] and its mode/position
