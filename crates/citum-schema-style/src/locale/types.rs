@@ -476,6 +476,19 @@ pub struct GrammarOptions {
     /// Delimiter between subtitle parts inside a structured title.
     #[serde(default = "default_subtitle_delimiter")]
     pub subtitle_delimiter: String,
+    /// Default placement of movable punctuation relative to closing
+    /// quotation marks when a footnote marker is introduced. Overridable
+    /// per-style via `options.notes.punctuation`.
+    #[serde(default)]
+    pub note_punctuation: crate::options::NoteQuotePlacement,
+    /// Default placement of the footnote number marker relative to closing
+    /// quotation marks. Overridable per-style via `options.notes.number`.
+    #[serde(default)]
+    pub note_number: crate::options::NoteNumberPlacement,
+    /// Default order of the footnote marker relative to adjacent movable
+    /// punctuation. Overridable per-style via `options.notes.order`.
+    #[serde(default)]
+    pub note_marker_order: crate::options::NoteMarkerOrder,
 }
 
 impl Default for GrammarOptions {
@@ -491,6 +504,9 @@ impl Default for GrammarOptions {
             page_range_delimiter: default_page_range_delimiter(),
             title_subtitle_delimiter: default_title_subtitle_delimiter(),
             subtitle_delimiter: default_subtitle_delimiter(),
+            note_punctuation: crate::options::NoteQuotePlacement::default(),
+            note_number: crate::options::NoteNumberPlacement::default(),
+            note_marker_order: crate::options::NoteMarkerOrder::default(),
         }
     }
 }

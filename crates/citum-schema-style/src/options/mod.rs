@@ -430,7 +430,7 @@ pub struct NoteConfig {
 }
 
 /// Controls where movable punctuation is placed relative to closing quotation marks.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum NoteQuotePlacement {
@@ -441,17 +441,19 @@ pub enum NoteQuotePlacement {
     /// Follow org-cite-style adaptive behavior: punctuation stays inside when
     /// it is already flush with the closing quote, otherwise it is placed
     /// outside.
+    #[default]
     Adaptive,
 }
 
 /// Controls where a footnote number marker is placed relative to closing quotation marks.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum NoteNumberPlacement {
     /// Place the note marker inside the closing quotation mark.
     Inside,
     /// Place the note marker outside the closing quotation mark.
+    #[default]
     Outside,
     /// Place the note marker on the same side as the movable punctuation when
     /// only one side has punctuation; otherwise default to outside.
@@ -459,13 +461,14 @@ pub enum NoteNumberPlacement {
 }
 
 /// Controls whether a note marker appears before or after adjacent movable punctuation.
-#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub enum NoteMarkerOrder {
     /// Place the note marker before the closest movable punctuation mark.
     Before,
     /// Place the note marker after the closest movable punctuation mark.
+    #[default]
     After,
 }
 

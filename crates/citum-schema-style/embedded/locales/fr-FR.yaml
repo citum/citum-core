@@ -918,6 +918,9 @@ grammar-options:
   page-range-delimiter: "‑"
   title-subtitle-delimiter: " : "
   subtitle-delimiter: " ; "
+  note-punctuation: adaptive
+  note-number: same
+  note-marker-order: before
 
 legacy-term-aliases:
   page: term.page-label
