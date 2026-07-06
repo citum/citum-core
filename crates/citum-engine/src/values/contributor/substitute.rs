@@ -14,7 +14,7 @@ use crate::render::format::OutputFormat;
 use crate::values::text_case::apply_text_case;
 use crate::values::title::resolve_substitute_text_case;
 use crate::values::{ProcHints, ProcValues, RenderContext, RenderOptions};
-use citum_schema::options::{RoleLabelPreset, SubstituteKey};
+use citum_schema::options::{RoleLabelPreset, SubstituteKey, SubstituteTitleQuoteMode};
 use citum_schema::reference::Title;
 use citum_schema::reference::{ClassExtension, ContributorRole as DataRole};
 use citum_schema::template::{
@@ -510,6 +510,24 @@ fn resolve_title_substitute<F: OutputFormat<Output = String>>(
     }
 }
 
+/// Resolve whether a substituted title should be quoted per the reference's
+/// title-category rendering (`titles:` config), mirroring how a normal
+/// (non-substitute) title component resolves quoting — see
+/// `effective_title_quote_depth`. Defaults to no quoting when the style has
+/// no `titles:` config for the category, matching that function's default.
+fn resolve_category_quote(reference: &Reference, options: &RenderOptions<'_>) -> bool {
+    let ref_type = reference.ref_type();
+    let lang = reference.language();
+    crate::render::component::get_title_category_rendering(
+        &TitleType::Primary,
+        Some(&ref_type),
+        lang.as_deref(),
+        &options.config,
+    )
+    .and_then(|rendering| rendering.quote)
+    .unwrap_or(false)
+}
+
 fn title_substitute_text(title: Title, context: RenderContext) -> String {
     if context != RenderContext::Citation {
         return title.to_string();
@@ -594,6 +612,12 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
             }
             SubstituteKey::Title => {
                 if let Some(title) = reference.title() {
+                    let quote_in_citation = match substitute.title_quote {
+                        Some(SubstituteTitleQuoteMode::ByCategory) => {
+                            resolve_category_quote(reference, options)
+                        }
+                        Some(SubstituteTitleQuoteMode::Always) | None => true,
+                    };
                     return Some(resolve_title_substitute(
                         title,
                         &TitleType::Primary,
@@ -601,7 +625,7 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
                         options,
                         reference,
                         fmt,
-                        true,
+                        quote_in_citation,
                     ));
                 }
             }

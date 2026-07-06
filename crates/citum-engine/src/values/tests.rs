@@ -2986,6 +2986,7 @@ fn test_translator_substitute_uses_locale_aware_role_label() {
         template: vec![SubstituteKey::Translator],
         overrides: std::collections::HashMap::new(),
         role_substitute: std::collections::HashMap::new(),
+        title_quote: None,
         unknown_fields: Default::default(),
     }));
 
@@ -3194,6 +3195,7 @@ fn test_role_specific_name_order_applies_in_substitute_path() {
         template: vec![SubstituteKey::Translator],
         overrides: std::collections::HashMap::new(),
         role_substitute: std::collections::HashMap::new(),
+        title_quote: None,
         unknown_fields: Default::default(),
     }));
 

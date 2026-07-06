@@ -34,9 +34,10 @@ use citum_schema::{
         AndOptions, Config, ContributorConfig, DateConfig, DelimiterPrecedesLast, DisplayAsSort,
         GivennameRule, IntegralNameContexts, IntegralNameMemoryConfig, IntegralNameScope,
         MultilingualConfig, MultilingualMode, NameForm, Processing, ProcessingCustom,
-        ShortenListOptions, SubsequentNameForm,
+        ShortenListOptions, SubsequentNameForm, Substitute, SubstituteConfig,
+        SubstituteTitleQuoteMode, TitleRendering, TitlesConfig,
     },
-    reference::{EdtfString, InputReference},
+    reference::{EdtfString, InputReference, Monograph, MonographType, Title},
 };
 
 // --- Helper Functions ---
@@ -261,6 +262,77 @@ fn two_names_citation_never_uses_delimiter_even_when_always_is_declared() {
     let result = process_citation_ids(&processor, &["item1"]);
 
     assert_eq!(result, "John Smith and Jane Jones");
+}
+
+fn make_authorless_book(id: &str, title: &str) -> InputReference {
+    InputReference::Monograph(Box::new(Monograph {
+        id: Some(id.into()),
+        r#type: MonographType::Book,
+        title: Some(Title::Single(title.to_string())),
+        ..Default::default()
+    }))
+}
+
+fn substitute_title_style(title_quote: Option<SubstituteTitleQuoteMode>) -> Style {
+    Style {
+        info: StyleInfo {
+            title: Some("Substitute Title Quote Test".to_string()),
+            id: Some("substitute-title-quote-test".into()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            substitute: Some(SubstituteConfig::Explicit(Substitute {
+                template: vec![citum_schema::options::SubstituteKey::Title],
+                title_quote,
+                ..Default::default()
+            })),
+            titles: Some(TitlesConfig {
+                monograph: Some(TitleRendering {
+                    quote: Some(false),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        citation: Some(CitationSpec {
+            template: Some(vec![citum_schema::tc_contributor!(Author, Long)]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }
+}
+
+#[test]
+fn authorless_book_cited_by_title_in_citation_is_not_quoted_when_category_quoting_is_enabled() {
+    // With `title-quote: by-category`, a substituted book title defers to the
+    // style's `titles.monograph` config (quote: false here), matching how
+    // APA/citeproc-js render an authorless book by title (italicized, not
+    // quoted). See div-011 in docs/adjudication/DIVERGENCE_REGISTER.md.
+    let style = substitute_title_style(Some(SubstituteTitleQuoteMode::ByCategory));
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert("item1".to_string(), make_authorless_book("item1", "Title"));
+    let processor = Processor::new(style, bibliography);
+
+    let result = process_citation_ids(&processor, &["item1"]);
+
+    assert_eq!(result, "Title");
+}
+
+#[test]
+fn authorless_book_cited_by_title_in_citation_defaults_to_unconditional_quoting() {
+    // Unset `title-quote` preserves the historical behavior: the substituted
+    // title is quoted unconditionally in citation context regardless of the
+    // reference's title-category config, so existing styles' output does
+    // not change by default.
+    let style = substitute_title_style(None);
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert("item1".to_string(), make_authorless_book("item1", "Title"));
+    let processor = Processor::new(style, bibliography);
+
+    let result = process_citation_ids(&processor, &["item1"]);
+
+    assert_eq!(result, "\u{201c}Title\u{201d}");
 }
 
 fn integral_name_state_overrides_processor_memory() {
