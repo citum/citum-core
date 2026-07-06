@@ -72,6 +72,13 @@ pub struct Substitute {
     /// do not have a dedicated template enum variant.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub role_substitute: HashMap<String, Vec<String>>,
+    /// Quoting policy for a title substituted into the author position in
+    /// citation context (the `title` substitute key). Unset (or `always`)
+    /// preserves the historical unconditional-quote behavior; `by-category`
+    /// defers to the style's `titles:` category rendering, so e.g. a book
+    /// title italicizes instead of quoting. See divergence register div-011.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub title_quote: Option<SubstituteTitleQuoteMode>,
     /// Forward-compat: captures unknown keys when an older engine reads a
     /// style produced by a newer schema. Empty by default; treated as a
     /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
@@ -96,9 +103,24 @@ impl Default for Substitute {
             ],
             overrides: HashMap::new(),
             role_substitute: HashMap::new(),
+            title_quote: None,
             unknown_fields: std::collections::BTreeMap::new(),
         }
     }
+}
+
+/// How a title used as an author substitute is quoted in citation context.
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum SubstituteTitleQuoteMode {
+    /// Always quote the substituted title in citation context (historical
+    /// Citum default; matches prior behavior regardless of reference type).
+    Always,
+    /// Resolve quoting via the normal title-category rendering machinery
+    /// (`titles:` config), the same way a non-substitute title would be
+    /// quoted/italicized for that reference type.
+    ByCategory,
 }
 
 impl Substitute {
@@ -115,6 +137,9 @@ impl Substitute {
         }
         self.overrides.extend(other.overrides.clone());
         self.role_substitute.extend(other.role_substitute.clone());
+        if other.title_quote.is_some() {
+            self.title_quote = other.title_quote;
+        }
     }
 
     /// Create a merged substitute config from base and override.
