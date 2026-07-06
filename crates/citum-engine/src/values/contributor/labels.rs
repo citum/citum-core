@@ -298,7 +298,12 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
         );
     }
 
-    // Form-based defaults
+    // Form-based defaults. The Long-form arm below auto-appends a
+    // "(short-term)"-style suffix for a fixed set of roles when no
+    // explicit label, role.omit, or configured preset applies. To opt a
+    // specific role out of this default without disabling role.omit's
+    // broader (verb-form-including) effect, set
+    // `contributors.role.roles.<role>.preset: none` for that role.
     match (&component.form, &component.contributor) {
         (ContributorForm::Verb | ContributorForm::VerbShort, role) => {
             let plural = names_count > 1;
