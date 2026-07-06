@@ -11,7 +11,10 @@ use crate::{
 };
 use citum_schema::{
     BibliographySpec, CitationSpec, Style, TemplateVariant,
-    options::{AndOptions, ContributorConfig, DisplayAsSort},
+    options::{
+        AndOptions, ContributorConfig, DisplayAsSort, TitleCategory, container_title_category,
+        parent_serial_title_category, title_category,
+    },
     template::{
         NameOrder, Rendering, TemplateComponent, TemplateContributor, TemplateTitle, TitleType,
         TypeSelector,
@@ -420,18 +423,13 @@ fn effective_title_rendering(
                     _ => titles.default.as_ref(),
                 }
             } else if let Some(ref_type) = ref_type {
-                if matches!(
-                    ref_type,
-                    "article-journal" | "article-magazine" | "article-newspaper" | "broadcast"
-                ) {
-                    titles.periodical.as_ref()
-                } else if matches!(ref_type, "chapter" | "paper-conference") {
-                    titles
+                match container_title_category(ref_type) {
+                    TitleCategory::Periodical => titles.periodical.as_ref(),
+                    TitleCategory::ContainerMonograph => titles
                         .container_monograph
                         .as_ref()
-                        .or(titles.monograph.as_ref())
-                } else {
-                    titles.default.as_ref()
+                        .or(titles.monograph.as_ref()),
+                    _ => titles.default.as_ref(),
                 }
             } else {
                 titles.default.as_ref()
@@ -445,13 +443,9 @@ fn effective_title_rendering(
                     _ => titles.periodical.as_ref(),
                 }
             } else if let Some(ref_type) = ref_type {
-                if matches!(
-                    ref_type,
-                    "article-journal" | "article-magazine" | "article-newspaper"
-                ) {
-                    titles.periodical.as_ref()
-                } else {
-                    titles.serial.as_ref()
+                match parent_serial_title_category(ref_type) {
+                    TitleCategory::Periodical => titles.periodical.as_ref(),
+                    _ => titles.serial.as_ref(),
                 }
             } else {
                 titles.periodical.as_ref()
@@ -474,24 +468,10 @@ fn effective_title_rendering(
                     _ => titles.default.as_ref(),
                 }
             } else if let Some(ref_type) = ref_type {
-                if matches!(
-                    ref_type,
-                    "article-journal"
-                        | "article-magazine"
-                        | "article-newspaper"
-                        | "chapter"
-                        | "entry"
-                        | "entry-dictionary"
-                        | "entry-encyclopedia"
-                        | "paper-conference"
-                        | "post"
-                        | "post-weblog"
-                ) {
-                    titles.component.as_ref()
-                } else if matches!(ref_type, "book" | "thesis" | "report") {
-                    titles.monograph.as_ref()
-                } else {
-                    titles.default.as_ref()
+                match title_category(ref_type) {
+                    TitleCategory::Component => titles.component.as_ref(),
+                    TitleCategory::Monograph => titles.monograph.as_ref(),
+                    _ => titles.default.as_ref(),
                 }
             } else {
                 titles.default.as_ref()
@@ -624,11 +604,12 @@ mod tests {
     use super::*;
     use citum_engine::{Processor, reference::Bibliography};
     use citum_schema::{
-        options::{NameForm, TextCase, TitleRendering, TitlesConfig},
+        options::{NameForm, TextCase, TitleRendering, TitlesConfig, classified_ref_types},
         template::{
             ContributorForm, ContributorRole, TemplateGroup, TemplateTitle, TemplateVariable,
         },
     };
+    use rstest::rstest;
 
     fn author(and: Option<AndOptions>) -> TemplateComponent {
         TemplateComponent::Contributor(TemplateContributor {
@@ -1158,6 +1139,121 @@ mod tests {
         let mut bibliography = Bibliography::new();
         bibliography.insert("item-1".to_string(), legacy.into());
         bibliography
+    }
+
+    fn reference_with_type(ref_type: &str) -> Bibliography {
+        let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(&format!(
+            r#"{{
+                "id": "item-1",
+                "type": "{ref_type}",
+                "author": [{{"family": "Kuhn", "given": "Thomas S."}}],
+                "title": "The Structure of Scientific Revolutions",
+                "container-title": "Journal of the History of Ideas",
+                "issued": {{"date-parts": [[1962]]}},
+                "publisher": "University of Chicago Press"
+            }}"#
+        ))
+        .expect("fixture should parse");
+        let mut bibliography = Bibliography::new();
+        bibliography.insert("item-1".to_string(), legacy.into());
+        bibliography
+    }
+
+    /// Mirrors `effective_title_rendering`'s fallback classification, using
+    /// the same shared `citum_schema::options` functions, to build a
+    /// template whose explicit rendering equals what SQI pruning would
+    /// consider redundant with the engine's default.
+    fn category_rendering(
+        title_type: &TitleType,
+        ref_type: &str,
+        titles: &TitlesConfig,
+    ) -> Option<TitleRendering> {
+        match title_type {
+            TitleType::Primary => match title_category(ref_type) {
+                TitleCategory::Component => titles.component.clone(),
+                TitleCategory::Monograph => titles.monograph.clone(),
+                _ => titles.default.clone(),
+            },
+            TitleType::ContainerTitle => match container_title_category(ref_type) {
+                TitleCategory::Periodical => titles.periodical.clone(),
+                TitleCategory::ContainerMonograph => titles
+                    .container_monograph
+                    .clone()
+                    .or_else(|| titles.monograph.clone()),
+                _ => titles.default.clone(),
+            },
+            TitleType::ParentSerial => match parent_serial_title_category(ref_type) {
+                TitleCategory::Periodical => titles.periodical.clone(),
+                _ => titles.serial.clone(),
+            },
+            _ => None,
+        }
+    }
+
+    #[rstest]
+    #[case::primary(TitleType::Primary)]
+    #[case::container_title(TitleType::ContainerTitle)]
+    #[case::parent_serial(TitleType::ParentSerial)]
+    fn sqi_pruning_matches_engine_rendering_for_every_classified_type(
+        #[case] title_type: TitleType,
+    ) {
+        let titles = TitlesConfig {
+            component: Some(TitleRendering {
+                text_case: Some(TextCase::Title),
+                ..TitleRendering::default()
+            }),
+            monograph: Some(TitleRendering {
+                text_case: Some(TextCase::SentenceApa),
+                ..TitleRendering::default()
+            }),
+            container_monograph: Some(TitleRendering {
+                text_case: Some(TextCase::SentenceNlm),
+                ..TitleRendering::default()
+            }),
+            periodical: Some(TitleRendering {
+                text_case: Some(TextCase::Uppercase),
+                ..TitleRendering::default()
+            }),
+            serial: Some(TitleRendering {
+                text_case: Some(TextCase::Lowercase),
+                ..TitleRendering::default()
+            }),
+            default: Some(TitleRendering {
+                text_case: Some(TextCase::CapitalizeFirst),
+                ..TitleRendering::default()
+            }),
+            ..TitlesConfig::default()
+        };
+
+        for ref_type in classified_ref_types() {
+            let rendering = category_rendering(&title_type, ref_type, &titles)
+                .expect("every classified ref_type resolves to a configured category");
+
+            let style = Style {
+                options: Some(citum_schema::options::Config {
+                    titles: Some(titles.clone()),
+                    ..citum_schema::options::Config::default()
+                }),
+                bibliography: Some(BibliographySpec {
+                    template: Some(vec![TemplateComponent::Title(TemplateTitle {
+                        title: title_type.clone(),
+                        rendering: rendering.to_rendering(),
+                        ..TemplateTitle::default()
+                    })]),
+                    ..BibliographySpec::default()
+                }),
+                ..Style::default()
+            };
+            let bibliography = reference_with_type(ref_type);
+
+            let before = Processor::new(style.clone(), bibliography.clone()).render_bibliography();
+            let after = Processor::new(refine_style(style), bibliography).render_bibliography();
+
+            assert_eq!(
+                after, before,
+                "ref_type={ref_type} title_type={title_type:?}"
+            );
+        }
     }
 
     #[test]

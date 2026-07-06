@@ -25,6 +25,9 @@ serde_yaml = { package = "serde_yaml_ng", version = "0.10" }
 serde = { version = "1.0", features = ["derive"] }
 dhat = { version = "0.3", optional = true }
 
+[dev-dependencies]
+rstest = "0.26"
+
 [features]
 default = []
 dhat-heap = ["dep:dhat"]
