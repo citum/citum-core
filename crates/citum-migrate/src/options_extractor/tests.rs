@@ -288,12 +288,13 @@ fn test_extract_processing_disambiguation_variant_names() {
     assert_eq!(config.processing, Some(Processing::AuthorDateNames));
 }
 
-/// names + givenname with no explicit `givenname-disambiguation-rule`: the CSL
-/// default is `by-cite`. Since `author-date-full` now denotes the primary-name
-/// guide profile, this must NOT fold to that preset — it stays a custom block
-/// that preserves `by-cite` (fidelity to the source).
+/// names + givenname with no explicit `givenname-disambiguation-rule` still
+/// folds to `author-date-full`, per the folding table in
+/// `docs/reference/PROCESSING_MIGRATION.md`: the named preset is chosen from
+/// the names/givenname signal alone, and its own canonical `primary-name`
+/// rule applies without needing to be restated in the CSL.
 #[test]
-fn test_extract_full_disambiguation_default_rule_stays_by_cite_custom() {
+fn test_extract_full_disambiguation_default_rule_folds_to_full() {
     let xml = r#"<style class="in-text">
         <citation disambiguate-add-names="true" disambiguate-add-givenname="true">
             <layout><text macro="year"/></layout>
@@ -303,11 +304,7 @@ fn test_extract_full_disambiguation_default_rule_stays_by_cite_custom() {
     let style = parse_csl(xml).unwrap();
     let config = OptionsExtractor::extract(&style);
 
-    assert_ne!(config.processing, Some(Processing::AuthorDateFull));
-    let disamb = config.processing.unwrap().config().disambiguate.unwrap();
-    assert!(disamb.names);
-    assert!(disamb.add_givenname);
-    assert_eq!(disamb.givenname_rule, GivennameRule::ByCite);
+    assert_eq!(config.processing, Some(Processing::AuthorDateFull));
 }
 
 /// names + givenname + explicit `primary-name` matches the `author-date-full`

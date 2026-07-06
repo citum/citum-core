@@ -73,61 +73,113 @@ pub fn detect_processing_mode(style: &Style) -> Option<Processing> {
         nodes_have_author_date_signal(&style.citation.layout.children, style, &mut visited_macros);
 
     if is_author_date {
-        let mut custom = Processing::AuthorDate.config();
-
-        let sort = style.citation.sort.as_ref().and_then(extract_sort);
-        if let Some(sort) = sort {
-            // Preset sorts already carry their canonical group via the base
-            // config; only derive group from explicit (non-preset) sort keys.
-            if let SortEntry::Explicit(explicit_sort) = &sort {
-                custom.group = extract_group_from_sort(explicit_sort);
-            }
-            custom.sort = Some(sort);
-        }
-
-        if let Some(disamb) = custom.disambiguate.as_mut() {
-            if let Some(names) = style.citation.disambiguate_add_names {
-                disamb.names = names;
-            }
-            if let Some(add_givenname) = style.citation.disambiguate_add_givenname {
-                disamb.add_givenname = add_givenname;
-            }
-            if let Some(year_suffix) = style.citation.disambiguate_add_year_suffix {
-                disamb.year_suffix = year_suffix;
-            }
-            disamb.givenname_rule = match style.citation.disambiguate_givenname_rule.as_deref() {
-                Some("primary-name") => GivennameRule::PrimaryName,
-                Some("primary-name-with-initials") => GivennameRule::PrimaryNameWithInitials,
-                Some("all-names-with-initials") => GivennameRule::AllNamesWithInitials,
-                Some("all-names") => GivennameRule::AllNames,
-                _ => GivennameRule::default(),
-            };
-        }
-
-        return Some(fold_to_named_processing(custom));
+        let overrides = ProcessingOverrides::from_style(style);
+        return Some(fold_to_named_processing(&overrides));
     }
 
     None
 }
 
-/// Substitute a `Processing::Custom` for the named variant whose
-/// canonical `config()` matches it. Keeps the migrated YAML idiomatic
-/// (`processing: author-date`) instead of dumping a `!custom` block when
-/// the derived config is just the named-variant default.
-fn fold_to_named_processing(custom: ProcessingCustom) -> Processing {
-    for candidate in [
-        Processing::AuthorDate,
-        Processing::AuthorDateGivenname,
-        Processing::AuthorDateNames,
-        Processing::AuthorDateFull,
-        Processing::Numeric,
-        Processing::Note,
-    ] {
-        if candidate.config() == custom {
-            return candidate;
+/// Sparse CSL processing overrides for the author-date family.
+///
+/// Every field is `None` when the CSL never stated the corresponding
+/// attribute, as opposed to eagerly materializing a default value. Folding
+/// (see [`fold_to_named_processing`]) applies these overrides on top of a
+/// disambiguation-nearest named preset instead of comparing a fully
+/// materialized struct against every preset, so an absent attribute never
+/// clobbers the chosen preset's own default.
+struct ProcessingOverrides {
+    sort: Option<SortEntry>,
+    group: Option<Group>,
+    disamb_names: Option<bool>,
+    disamb_add_givenname: Option<bool>,
+    disamb_year_suffix: Option<bool>,
+    givenname_rule: Option<GivennameRule>,
+}
+
+impl ProcessingOverrides {
+    fn from_style(style: &Style) -> Self {
+        let sort = style.citation.sort.as_ref().and_then(extract_sort);
+        // Preset sorts already carry their canonical group via the base
+        // config; only derive group from explicit (non-preset) sort keys.
+        let group = match sort.as_ref() {
+            Some(SortEntry::Explicit(explicit_sort)) => extract_group_from_sort(explicit_sort),
+            _ => None,
+        };
+        let givenname_rule = style
+            .citation
+            .disambiguate_givenname_rule
+            .as_deref()
+            .map(|rule| match rule {
+                "primary-name" => GivennameRule::PrimaryName,
+                "primary-name-with-initials" => GivennameRule::PrimaryNameWithInitials,
+                "all-names-with-initials" => GivennameRule::AllNamesWithInitials,
+                "all-names" => GivennameRule::AllNames,
+                _ => GivennameRule::ByCite,
+            });
+
+        Self {
+            sort,
+            group,
+            disamb_names: style.citation.disambiguate_add_names,
+            disamb_add_givenname: style.citation.disambiguate_add_givenname,
+            disamb_year_suffix: style.citation.disambiguate_add_year_suffix,
+            givenname_rule,
         }
     }
-    Processing::Custom(custom)
+
+    /// Disambiguation-nearest named author-date preset for the explicit
+    /// names/given-name signal, per the folding table in
+    /// `docs/reference/PROCESSING_MIGRATION.md`.
+    fn author_date_preset(&self) -> Processing {
+        match (
+            self.disamb_names.unwrap_or(false),
+            self.disamb_add_givenname.unwrap_or(false),
+        ) {
+            (false, false) => Processing::AuthorDate,
+            (false, true) => Processing::AuthorDateGivenname,
+            (true, false) => Processing::AuthorDateNames,
+            (true, true) => Processing::AuthorDateFull,
+        }
+    }
+
+    /// Overlay the remaining explicit overrides (sort/group/year-suffix/
+    /// givenname-rule) onto a preset-seeded config. Names/given-name are not
+    /// re-applied here: [`author_date_preset`](Self::author_date_preset)
+    /// already selected a preset whose canonical values match them.
+    fn apply(&self, mut custom: ProcessingCustom) -> ProcessingCustom {
+        if let Some(sort) = self.sort.clone() {
+            custom.sort = Some(sort);
+        }
+        if self.group.is_some() {
+            custom.group = self.group.clone();
+        }
+        if let Some(disamb) = custom.disambiguate.as_mut() {
+            if let Some(year_suffix) = self.disamb_year_suffix {
+                disamb.year_suffix = year_suffix;
+            }
+            if let Some(givenname_rule) = self.givenname_rule.clone() {
+                disamb.givenname_rule = givenname_rule;
+            }
+        }
+        custom
+    }
+}
+
+/// Fold sparse processing overrides onto the disambiguation-nearest named
+/// preset, falling back to `Processing::Custom` only when the remaining
+/// overrides (sort/group/year-suffix/givenname-rule) diverge from that
+/// preset's canonical config. Keeps the migrated YAML idiomatic
+/// (`processing: author-date`) instead of dumping a `!custom` block for
+/// styles that never stated a divergent attribute.
+fn fold_to_named_processing(overrides: &ProcessingOverrides) -> Processing {
+    let preset = overrides.author_date_preset();
+    let custom = overrides.apply(preset.config());
+    if custom == preset.config() {
+        preset
+    } else {
+        Processing::Custom(custom)
+    }
 }
 
 fn nodes_have_author_date_signal(
@@ -310,6 +362,7 @@ fn parse_sort_key(name: &str) -> Option<SortKey> {
 mod tests {
     use super::*;
     use roxmltree::Document;
+    use rstest::rstest;
 
     fn parse(xml: &str) -> Style {
         let doc = Document::parse(xml).expect("test style XML should parse");
@@ -321,6 +374,21 @@ mod tests {
             r#"<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="{class}">
   <info><title>t</title><id>https://example.org/t</id></info>
   <citation><layout prefix="[" suffix="]">{layout_body}</layout></citation>
+</style>"#
+        ))
+    }
+
+    /// An author-date-signaling citation (via `<date variable="issued"/>`)
+    /// with the given citation-level attributes and an optional `<sort>`
+    /// body, for exercising the disambiguation folding table.
+    fn author_date_style(citation_attrs: &str, sort_body: &str) -> Style {
+        parse(&format!(
+            r#"<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="in-text">
+  <info><title>t</title><id>https://example.org/t</id></info>
+  <citation {citation_attrs}>
+    {sort_body}
+    <layout prefix="[" suffix="]"><date variable="issued"/></layout>
+  </citation>
 </style>"#
         ))
     }
@@ -371,5 +439,74 @@ mod tests {
             matches!(mode, Some(Processing::Numeric)),
             "expected Processing::Numeric, got: {mode:?}"
         );
+    }
+
+    #[rstest]
+    #[case::bare("", Processing::AuthorDate)]
+    #[case::givenname(
+        r#"disambiguate-add-givenname="true""#,
+        Processing::AuthorDateGivenname
+    )]
+    #[case::names(r#"disambiguate-add-names="true""#, Processing::AuthorDateNames)]
+    #[case::full(
+        r#"disambiguate-add-names="true" disambiguate-add-givenname="true""#,
+        Processing::AuthorDateFull
+    )]
+    fn folds_disambiguation_signal_to_named_preset(
+        #[case] citation_attrs: &str,
+        #[case] expected: Processing,
+    ) {
+        // given a style whose only explicit signal is the disambiguation
+        // attribute table row, with no other divergent attribute
+        let style = author_date_style(citation_attrs, "");
+
+        // when processing mode is detected
+        let mode = detect_processing_mode(&style);
+
+        // then it folds to the disambiguation-nearest named preset, per
+        // docs/reference/PROCESSING_MIGRATION.md's folding table
+        assert_eq!(mode, Some(expected));
+    }
+
+    #[test]
+    fn absent_givenname_rule_does_not_clobber_the_chosen_presets_default() {
+        // given an author-date-full-shaped style (names + given-name signal)
+        // that never states `givenname-disambiguation-rule` explicitly
+        let style = author_date_style(
+            r#"disambiguate-add-names="true" disambiguate-add-givenname="true""#,
+            "",
+        );
+
+        // when processing mode is detected
+        let mode = detect_processing_mode(&style);
+
+        // then it still folds to the named preset: AuthorDateFull's own
+        // canonical givenname_rule (PrimaryName) is not overwritten back to
+        // GivennameRule::default() just because the CSL never stated it
+        assert_eq!(mode, Some(Processing::AuthorDateFull));
+    }
+
+    #[test]
+    #[allow(clippy::panic, reason = "Panicking is acceptable in tests.")]
+    fn explicit_non_preset_sort_diverges_to_custom_without_materializing_defaults() {
+        // given a bare author-date style with an explicit, non-preset sort
+        // (a single `title` key, which does not match the author-date-title
+        // preset's canonical multi-key spec)
+        let style = author_date_style("", "<sort><key variable=\"title\"/></sort>");
+
+        // when processing mode is detected
+        let mode = detect_processing_mode(&style);
+
+        // then it falls to Custom for the divergent sort, but the
+        // disambiguation portion still matches the AuthorDate preset exactly
+        // rather than being eagerly materialized from scratch
+        let Some(Processing::Custom(custom)) = mode else {
+            panic!("expected Processing::Custom, got: {mode:?}");
+        };
+        assert_eq!(
+            custom.disambiguate,
+            Processing::AuthorDate.config().disambiguate
+        );
+        assert_ne!(custom.sort, Processing::AuthorDate.config().sort);
     }
 }
