@@ -5,6 +5,122 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.73.0] - 2026-07-07
+
+### Bug Fixes
+
+**ci**
+
+- Replace wretry.action with manual retry ([`58c846f`](https://github.com/citum/citum-core/commit/58c846feface11ad98b0479d7f0747489a689581))
+
+
+**engine**
+
+- Key disambiguation cache by id ([`f42eec9`](https://github.com/citum/citum-core/commit/f42eec98d41eabe8859335fc239cf92e4c45354f))
+
+- Suffix undated year labels ([`7d949db`](https://github.com/citum/citum-core/commit/7d949db62e38d29be8500d2abde5de075665006e))
+
+- Dedupe note pipeline; use locale rule ([`cc39e31`](https://github.com/citum/citum-core/commit/cc39e313d7175ffcdb4dc551a0fd7a55eabc2707))
+
+- Honor delimiter-precedes-last ([`4a5c5d8`](https://github.com/citum/citum-core/commit/4a5c5d8eccf057ade3c725672c4fac34484687a6))
+
+- Suffix joins with sort-separator ([`4e9dea3`](https://github.com/citum/citum-core/commit/4e9dea38fcc2820937b7743af9c6ae98031d8fd4))
+
+- Dedupe leading grouping contributor ([`24ba58d`](https://github.com/citum/citum-core/commit/24ba58d0b2dd8f4455e02506a6168149ad6a0f7a))
+
+
+**migrate**
+
+- Consume shared title-category table ([`732f3e8`](https://github.com/citum/citum-core/commit/732f3e84a5a07e461546a5af56885e0779da8f27))
+
+- Install candidate panic hook once ([`0b66cfd`](https://github.com/citum/citum-core/commit/0b66cfda813a98528a5e058c6bd16f506a2a29e6))
+
+- Remove dead output-plan variants ([`2bab204`](https://github.com/citum/citum-core/commit/2bab2041a0bdfbc055ee4e09dc104088d91e4ba7))
+
+- Unify scoring, dedupe tokenizer ([`d7133ba`](https://github.com/citum/citum-core/commit/d7133ba0f934bd0b7cd742a9c975f209eece18f0))
+
+- Sparse-extract processing overrides ([`ae78468`](https://github.com/citum/citum-core/commit/ae78468265bdc15e17de168b88f5512983bd34a3))
+
+- Introduce crate-level MigrateError ([`5022c2b`](https://github.com/citum/citum-core/commit/5022c2bfcdee2fe0f5f933df7e57ad607b420d61))
+
+
+**schema**
+
+- Add note-placement locale defaults ([`e6fdffd`](https://github.com/citum/citum-core/commit/e6fdffd37c4a60a20ef18fd4acc0ecad9b55847e))
+
+
+**security**
+
+- Bump crossbeam-epoch to 0.9.20 ([`b3627cb`](https://github.com/citum/citum-core/commit/b3627cb3117e59a6c97d3e55a6da349d5f77cb60))
+
+
+**styles**
+
+- Declare editor labels per csl oracle ([`a48067c`](https://github.com/citum/citum-core/commit/a48067c509681443df890f0b3fdc0eefb72fc5d1))
+
+
+
+### Documentation
+
+**migrate**
+
+- Add crate review audit ([`68b8971`](https://github.com/citum/citum-core/commit/68b8971ae5a05a6d4d1199a9aeef194f0c61d7fa))
+
+
+
+### Features
+
+**engine**
+
+- Gate substitute-title quoting ([`3af5ad5`](https://github.com/citum/citum-core/commit/3af5ad56cb980da797a257ca5fc53837c98fa998))
+
+- Warn on unknown label term keys ([`2bf2bae`](https://github.com/citum/citum-core/commit/2bf2baeb5469e7ac3d6b28815388698fd44a3cf1))
+
+- Warn on citation-number sort key ([`c402959`](https://github.com/citum/citum-core/commit/c402959382782671162d743910eda4a14c046f09))
+
+- Remove implicit role auto-label ([`4185629`](https://github.com/citum/citum-core/commit/41856292812cd6f4f55f7880f3c803b882a92ec7))
+
+
+**migrate**
+
+- Emit custom processing base delta ([`2f1998f`](https://github.com/citum/citum-core/commit/2f1998f307029cf5df4fdf5f799aa117ecd834f9))
+
+
+**schema**
+
+- Add gated substitute title-quote ([`efc6edd`](https://github.com/citum/citum-core/commit/efc6edd88a36793da6fe81c6fb1fb1e3137cddac))
+
+- Add processing base delta field ([`3051e60`](https://github.com/citum/citum-core/commit/3051e609176c1c17b421c2eee39fbdff350324b4))
+
+- Add role-label defaults bundles ([`8cbd169`](https://github.com/citum/citum-core/commit/8cbd1693d0518b901845e90cef036d5d89ba802a))
+
+- Add explicit role-label affixes ([`ea688fb`](https://github.com/citum/citum-core/commit/ea688fb6ebefc47127e3c1864ef17129ef3f3b6e))
+
+
+
+### Performance
+
+**engine**
+
+- Unify Sorter into cached GroupSorter ([`cc97dff`](https://github.com/citum/citum-core/commit/cc97dfff9ee352f6c79667ff5c838eac19fc61a0))
+
+
+
+### Refactor
+
+**engine**
+
+- Relocate sorter to crate root ([`3ef0107`](https://github.com/citum/citum-core/commit/3ef010712357ac126353620787722c4a8aa9e7ff))
+
+
+
+### Testing
+
+**engine**
+
+- Lock in role-label default ([`d169b81`](https://github.com/citum/citum-core/commit/d169b81778b87003d2a4809ee118fca58565ed72))
+
+
 ## [0.72.0] - 2026-07-05
 
 ### Bug Fixes
