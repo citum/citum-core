@@ -168,6 +168,21 @@ impl ContributorConfig {
             .and_then(|role_options| role_options.effective_label_preset(role))
     }
 
+    /// Resolve the bibliography-context default label preset for a role.
+    ///
+    /// Returns the preset the configured [`RoleLabelDefaults`] bundle
+    /// assigns to `role`, or `None` when no bundle is set or the bundle
+    /// does not label this role.
+    pub fn default_role_label_preset(
+        &self,
+        role: &crate::template::ContributorRole,
+    ) -> Option<RoleLabelPreset> {
+        self.role
+            .as_ref()
+            .and_then(|role_options| role_options.defaults)
+            .and_then(|defaults| defaults.preset_for(role))
+    }
+
     /// Return the configured name-order override for a specific contributor role.
     pub fn effective_role_name_order(
         &self,
@@ -208,6 +223,52 @@ impl RoleLabelPreset {
             "short-comma" => Some(Self::ShortSuffixComma),
             "long" => Some(Self::LongSuffix),
             _ => None,
+        }
+    }
+}
+
+/// Named bundles of per-role default label presets, matching a style
+/// guide's documented bibliography-context convention.
+///
+/// Applied only where a style has no explicit `label`, no configured
+/// preset, and no `role.omit` for the role, and only when rendering in
+/// bibliography context — no examined style guide (APA, MLA, Chicago,
+/// Vancouver/NLM) carries a role label into the in-text citation. See
+/// div-012 in `docs/adjudication/DIVERGENCE_REGISTER.md`.
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum RoleLabelDefaults {
+    /// No automatic role labels (the engine default when unset).
+    None,
+    /// APA-style convention: abbreviated suffix for editors only, rendered
+    /// with the locale's short editor term (`" (ed.)"` in en-US; apply a
+    /// `text-case` transform for capitalized `" (Ed.)"`).
+    Apa,
+    /// MLA convention: word-form comma-joined suffix (`", editor"`) for
+    /// its documented role set (editor, translator, director,
+    /// illustrator, interviewer).
+    Mla,
+}
+
+impl RoleLabelDefaults {
+    /// Resolve this bundle to the default label preset for a role, if any.
+    pub fn preset_for(&self, role: &crate::template::ContributorRole) -> Option<RoleLabelPreset> {
+        use crate::template::ContributorRole;
+        match self {
+            Self::None => None,
+            Self::Apa => {
+                matches!(role, ContributorRole::Editor).then_some(RoleLabelPreset::ShortSuffix)
+            }
+            Self::Mla => matches!(
+                role,
+                ContributorRole::Editor
+                    | ContributorRole::Translator
+                    | ContributorRole::Director
+                    | ContributorRole::Illustrator
+                    | ContributorRole::Interviewer
+            )
+            .then_some(RoleLabelPreset::LongSuffix),
         }
     }
 }
@@ -323,6 +384,9 @@ pub struct RoleOptions {
     /// Formatting for specific roles.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub roles: Option<HashMap<String, RoleRendering>>,
+    /// Named bundle of bibliography-context default label presets.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub defaults: Option<RoleLabelDefaults>,
 }
 
 impl RoleOptions {
@@ -465,4 +529,90 @@ where
 {
     let value: Option<RoleOptionsEntry> = Option::deserialize(deserializer)?;
     Ok(value.map(|entry| entry.resolve()))
+}
+
+#[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
+mod tests {
+    use super::*;
+    use crate::template::ContributorRole;
+
+    #[test]
+    fn role_label_defaults_none_labels_no_role() {
+        // given the `none` bundle
+        // then no role receives a default label preset
+        assert_eq!(
+            RoleLabelDefaults::None.preset_for(&ContributorRole::Editor),
+            None
+        );
+        assert_eq!(
+            RoleLabelDefaults::None.preset_for(&ContributorRole::Translator),
+            None
+        );
+    }
+
+    #[test]
+    fn role_label_defaults_apa_labels_editor_only() {
+        // given the `apa` bundle
+        let apa = RoleLabelDefaults::Apa;
+        // then editor gets the abbreviated suffix and other roles nothing
+        assert_eq!(
+            apa.preset_for(&ContributorRole::Editor),
+            Some(RoleLabelPreset::ShortSuffix)
+        );
+        assert_eq!(apa.preset_for(&ContributorRole::Translator), None);
+        assert_eq!(apa.preset_for(&ContributorRole::Chair), None);
+    }
+
+    #[test]
+    fn role_label_defaults_mla_labels_documented_role_set() {
+        // given the `mla` bundle
+        let mla = RoleLabelDefaults::Mla;
+        // then its documented roles get the word-form comma suffix
+        for role in [
+            ContributorRole::Editor,
+            ContributorRole::Translator,
+            ContributorRole::Director,
+            ContributorRole::Illustrator,
+            ContributorRole::Interviewer,
+        ] {
+            assert_eq!(mla.preset_for(&role), Some(RoleLabelPreset::LongSuffix));
+        }
+        // and roles outside the set get nothing
+        assert_eq!(mla.preset_for(&ContributorRole::Composer), None);
+    }
+
+    #[test]
+    fn role_label_defaults_round_trips_through_yaml() {
+        // given a role options block declaring a defaults bundle
+        let yaml = "defaults: apa\n";
+        // when deserialized and re-serialized
+        let opts: RoleOptions = serde_yaml::from_str(yaml).expect("valid role options yaml");
+        // then the bundle survives the round trip
+        assert_eq!(opts.defaults, Some(RoleLabelDefaults::Apa));
+        let out = serde_yaml::to_string(&opts).expect("serializable role options");
+        assert_eq!(out, "defaults: apa\n");
+    }
+
+    #[test]
+    fn contributor_config_resolves_default_role_label_preset() {
+        // given a contributor config with the `mla` defaults bundle
+        let config: ContributorConfig =
+            serde_yaml::from_str("role:\n  defaults: mla\n").expect("valid contributor config");
+        // then the bundle's per-role preset is exposed
+        assert_eq!(
+            config.default_role_label_preset(&ContributorRole::Translator),
+            Some(RoleLabelPreset::LongSuffix)
+        );
+        assert_eq!(
+            config.default_role_label_preset(&ContributorRole::Composer),
+            None
+        );
+    }
 }
