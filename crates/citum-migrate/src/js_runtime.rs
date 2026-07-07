@@ -3,6 +3,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
+use crate::error::MigrateError;
 use deno_core::{JsRuntime, RuntimeOptions, serde_v8, v8};
 use serde::Serialize;
 use std::fs;
@@ -50,21 +51,30 @@ pub(crate) struct EmbeddedTemplateRuntime {
 }
 
 impl EmbeddedTemplateRuntime {
-    pub(crate) fn new(workspace_root: &Path) -> Result<Self, String> {
+    pub(crate) fn new(workspace_root: &Path) -> Result<Self, MigrateError> {
         let mut runtime = JsRuntime::new(RuntimeOptions::default());
         runtime
             .execute_script("<embedded-template-runtime>", EMBEDDED_RUNTIME_BUNDLE)
-            .map_err(|err| format!("failed to initialize embedded runtime bundle: {err:#}"))?;
+            .map_err(|err| {
+                MigrateError::Runtime(format!(
+                    "failed to initialize embedded runtime bundle: {err:#}"
+                ))
+            })?;
 
         let fixtures = load_fixtures(workspace_root)?;
         let heldout = load_heldout_fixtures(workspace_root)?;
         let locale_xml = load_locale_xml(workspace_root)?;
-        let fixtures_json = serde_json::to_string(&fixtures)
-            .map_err(|err| format!("failed to serialize embedded fixtures: {err}"))?;
-        let heldout_json = serde_json::to_string(&heldout)
-            .map_err(|err| format!("failed to serialize embedded held-out fixtures: {err}"))?;
-        let locale_json = serde_json::to_string(&locale_xml)
-            .map_err(|err| format!("failed to serialize embedded locale XML: {err}"))?;
+        let fixtures_json = serde_json::to_string(&fixtures).map_err(|err| {
+            MigrateError::Fixture(format!("failed to serialize embedded fixtures: {err}"))
+        })?;
+        let heldout_json = serde_json::to_string(&heldout).map_err(|err| {
+            MigrateError::Fixture(format!(
+                "failed to serialize embedded held-out fixtures: {err}"
+            ))
+        })?;
+        let locale_json = serde_json::to_string(&locale_xml).map_err(|err| {
+            MigrateError::Fixture(format!("failed to serialize embedded locale XML: {err}"))
+        })?;
 
         let bootstrap = format!(
             "globalThis.{EMBEDDED_FIXTURES_GLOBAL} = {fixtures_json};\n\
@@ -73,7 +83,11 @@ impl EmbeddedTemplateRuntime {
         );
         runtime
             .execute_script("<embedded-template-runtime-bootstrap>", bootstrap)
-            .map_err(|err| format!("failed to bootstrap embedded runtime data: {err:#}"))?;
+            .map_err(|err| {
+                MigrateError::Runtime(format!(
+                    "failed to bootstrap embedded runtime data: {err:#}"
+                ))
+            })?;
 
         Ok(Self { runtime })
     }
@@ -83,7 +97,7 @@ impl EmbeddedTemplateRuntime {
         style_name: &str,
         style_xml: &str,
         section: &str,
-    ) -> Result<String, String> {
+    ) -> Result<String, MigrateError> {
         self.call_bundle_function(
             "infer_template_fragment",
             style_name,
@@ -103,7 +117,7 @@ impl EmbeddedTemplateRuntime {
         style_name: &str,
         style_xml: &str,
         fixture_set: FixtureSet,
-    ) -> Result<String, String> {
+    ) -> Result<String, MigrateError> {
         self.call_bundle_function(
             "render_citation_strings",
             style_name,
@@ -122,7 +136,7 @@ impl EmbeddedTemplateRuntime {
         style_name: &str,
         style_xml: &str,
         fixture_set: FixtureSet,
-    ) -> Result<String, String> {
+    ) -> Result<String, MigrateError> {
         self.call_bundle_function(
             "render_bibliography_strings",
             style_name,
@@ -139,7 +153,7 @@ impl EmbeddedTemplateRuntime {
         style_xml: &str,
         section: &str,
         fixture_set: FixtureSet,
-    ) -> Result<String, String> {
+    ) -> Result<String, MigrateError> {
         let input = EmbeddedCallInput {
             style_name,
             style_xml,
@@ -150,90 +164,119 @@ impl EmbeddedTemplateRuntime {
             let context = scope.get_current_context();
             let global = context.global(scope);
 
-            let infer_key = v8::String::new(scope, function_name)
-                .ok_or_else(|| format!("failed to create {function_name} key"))?;
-            let infer_value = global
-                .get(scope, infer_key.into())
-                .ok_or_else(|| format!("failed to read globalThis.{function_name}"))?;
-            let infer_function = v8::Local::<v8::Function>::try_from(infer_value)
-                .map_err(|_| format!("globalThis.{function_name} is not a function"))?;
+            let infer_key = v8::String::new(scope, function_name).ok_or_else(|| {
+                MigrateError::Runtime(format!("failed to create {function_name} key"))
+            })?;
+            let infer_value = global.get(scope, infer_key.into()).ok_or_else(|| {
+                MigrateError::Runtime(format!("failed to read globalThis.{function_name}"))
+            })?;
+            let infer_function =
+                v8::Local::<v8::Function>::try_from(infer_value).map_err(|_| {
+                    MigrateError::Runtime(format!("globalThis.{function_name} is not a function"))
+                })?;
 
-            let input_value = serde_v8::to_v8(scope, &input)
-                .map_err(|err| format!("failed to serialize embedded inference input: {err}"))?;
-            let input_object = v8::Local::<v8::Object>::try_from(input_value)
-                .map_err(|_| "failed to create embedded inference input object".to_string())?;
+            let input_value = serde_v8::to_v8(scope, &input).map_err(|err| {
+                MigrateError::Runtime(format!(
+                    "failed to serialize embedded inference input: {err}"
+                ))
+            })?;
+            let input_object = v8::Local::<v8::Object>::try_from(input_value).map_err(|_| {
+                MigrateError::Runtime(
+                    "failed to create embedded inference input object".to_string(),
+                )
+            })?;
 
             let fixtures_global = fixture_set.global_name();
-            let fixtures_key = v8::String::new(scope, fixtures_global)
-                .ok_or_else(|| "failed to create embedded fixtures key".to_string())?;
-            let fixtures_value = global
-                .get(scope, fixtures_key.into())
-                .ok_or_else(|| format!("failed to read globalThis.{fixtures_global}"))?;
-            let test_items_key = v8::String::new(scope, "testItems")
-                .ok_or_else(|| "failed to create testItems key".to_string())?;
+            let fixtures_key = v8::String::new(scope, fixtures_global).ok_or_else(|| {
+                MigrateError::Runtime("failed to create embedded fixtures key".to_string())
+            })?;
+            let fixtures_value = global.get(scope, fixtures_key.into()).ok_or_else(|| {
+                MigrateError::Runtime(format!("failed to read globalThis.{fixtures_global}"))
+            })?;
+            let test_items_key = v8::String::new(scope, "testItems").ok_or_else(|| {
+                MigrateError::Runtime("failed to create testItems key".to_string())
+            })?;
             if input_object
                 .set(scope, test_items_key.into(), fixtures_value)
                 .is_none()
             {
-                return Err("failed to set testItems on embedded input".to_string());
+                return Err(MigrateError::Runtime(
+                    "failed to set testItems on embedded input".to_string(),
+                ));
             }
 
-            let locale_key = v8::String::new(scope, EMBEDDED_LOCALE_GLOBAL)
-                .ok_or_else(|| "failed to create embedded locale key".to_string())?;
-            let locale_value = global
-                .get(scope, locale_key.into())
-                .ok_or_else(|| format!("failed to read globalThis.{EMBEDDED_LOCALE_GLOBAL}"))?;
-            let locale_xml_key = v8::String::new(scope, "localeXml")
-                .ok_or_else(|| "failed to create localeXml key".to_string())?;
+            let locale_key = v8::String::new(scope, EMBEDDED_LOCALE_GLOBAL).ok_or_else(|| {
+                MigrateError::Runtime("failed to create embedded locale key".to_string())
+            })?;
+            let locale_value = global.get(scope, locale_key.into()).ok_or_else(|| {
+                MigrateError::Runtime(format!(
+                    "failed to read globalThis.{EMBEDDED_LOCALE_GLOBAL}"
+                ))
+            })?;
+            let locale_xml_key = v8::String::new(scope, "localeXml").ok_or_else(|| {
+                MigrateError::Runtime("failed to create localeXml key".to_string())
+            })?;
             if input_object
                 .set(scope, locale_xml_key.into(), locale_value)
                 .is_none()
             {
-                return Err("failed to set localeXml on embedded input".to_string());
+                return Err(MigrateError::Runtime(
+                    "failed to set localeXml on embedded input".to_string(),
+                ));
             }
 
             let output = infer_function
                 .call(scope, global.into(), &[input_object.into()])
-                .ok_or_else(|| "embedded inference function call failed".to_string())?;
+                .ok_or_else(|| {
+                    MigrateError::Runtime("embedded inference function call failed".to_string())
+                })?;
 
             v8::Global::new(scope, output)
         };
 
         deno_core::scope!(scope, &mut self.runtime);
         let local = v8::Local::new(scope, value);
-        let output = serde_v8::from_v8::<Option<String>>(scope, local)
-            .map_err(|err| format!("failed to deserialize embedded inference output: {err}"))?;
+        let output = serde_v8::from_v8::<Option<String>>(scope, local).map_err(|err| {
+            MigrateError::Runtime(format!(
+                "failed to deserialize embedded inference output: {err}"
+            ))
+        })?;
 
-        output.ok_or_else(|| "embedded inference returned null".to_string())
+        output.ok_or_else(|| MigrateError::Runtime("embedded inference returned null".to_string()))
     }
 }
 
 /// Load the selection fixture items used for inference and candidate scoring.
-pub(crate) fn load_fixtures(workspace_root: &Path) -> Result<serde_json::Value, String> {
+pub(crate) fn load_fixtures(workspace_root: &Path) -> Result<serde_json::Value, MigrateError> {
     load_fixture_file(workspace_root, "references-expanded.json")
 }
 
 /// Load the held-out fixture items reserved for post-selection validation.
-pub(crate) fn load_heldout_fixtures(workspace_root: &Path) -> Result<serde_json::Value, String> {
+pub(crate) fn load_heldout_fixtures(
+    workspace_root: &Path,
+) -> Result<serde_json::Value, MigrateError> {
     load_fixture_file(workspace_root, "references-heldout.json")
 }
 
-fn load_fixture_file(workspace_root: &Path, file_name: &str) -> Result<serde_json::Value, String> {
+fn load_fixture_file(
+    workspace_root: &Path,
+    file_name: &str,
+) -> Result<serde_json::Value, MigrateError> {
     let path = workspace_root
         .join("tests")
         .join("fixtures")
         .join(file_name);
     let text = fs::read_to_string(&path).map_err(|err| {
-        format!(
+        MigrateError::Fixture(format!(
             "failed to read embedded fixture file {}: {err}",
             path.display()
-        )
+        ))
     })?;
     let mut value = serde_json::from_str::<serde_json::Value>(&text).map_err(|err| {
-        format!(
+        MigrateError::Parse(format!(
             "failed to parse embedded fixture file {}: {err}",
             path.display()
-        )
+        ))
     })?;
 
     if let Some(map) = value.as_object_mut() {
@@ -243,13 +286,13 @@ fn load_fixture_file(workspace_root: &Path, file_name: &str) -> Result<serde_jso
     Ok(value)
 }
 
-fn load_locale_xml(workspace_root: &Path) -> Result<String, String> {
+fn load_locale_xml(workspace_root: &Path) -> Result<String, MigrateError> {
     let path = workspace_root.join("scripts").join("locales-en-US.xml");
     fs::read_to_string(&path).map_err(|err| {
-        format!(
+        MigrateError::Fixture(format!(
             "failed to read embedded locale file {}: {err}",
             path.display()
-        )
+        ))
     })
 }
 

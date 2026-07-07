@@ -121,7 +121,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         bibliography_contributor_overrides: &bibliography_contributor_overrides,
     };
     let (standalone_style, measured_selection) =
-        apply_measured_selection_pipeline(&assembly, &style_name, &text, &workspace_root);
+        apply_measured_selection_pipeline(&assembly, &style_name, &text, &workspace_root)?;
     let standalone_style = sqi_refinement::refine_style(standalone_style);
     // Measure the standalone form first so the evidence record can report
     // the compression delta without re-running the pipeline. Cheap: one YAML
@@ -154,9 +154,12 @@ fn apply_measured_selection_pipeline(
     style_name: &str,
     style_xml: &str,
     workspace_root: &Path,
-) -> (citum_schema::Style, Option<MeasuredSelectionEvidence>) {
+) -> Result<
+    (citum_schema::Style, Option<MeasuredSelectionEvidence>),
+    citum_migrate::error::MigrateError,
+> {
     let mut source_selection = TemplateSourceSelection::default();
-    let standalone_style = assembly.assemble_with_selection(source_selection);
+    let standalone_style = assembly.assemble_with_selection(source_selection)?;
     let (standalone_style, use_xml_citation, citation_selection) =
         apply_measured_citation_selection(
             standalone_style,
@@ -165,7 +168,7 @@ fn apply_measured_selection_pipeline(
             style_name,
             style_xml,
             workspace_root,
-        );
+        )?;
     source_selection.suppress_inferred_citation = use_xml_citation;
     let (standalone_style, _, bibliography_selection) = apply_measured_bibliography_selection(
         standalone_style,
@@ -174,15 +177,15 @@ fn apply_measured_selection_pipeline(
         style_name,
         style_xml,
         workspace_root,
-    );
+    )?;
     let measured_selection = MeasuredSelectionEvidence {
         citation: citation_selection,
         bibliography: bibliography_selection,
     };
-    (
+    Ok((
         standalone_style,
         (!measured_selection.is_empty()).then_some(measured_selection),
-    )
+    ))
 }
 
 #[cfg(test)]
