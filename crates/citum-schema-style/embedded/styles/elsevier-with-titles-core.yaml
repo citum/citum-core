@@ -128,6 +128,13 @@ bibliography:
                 contributor: editor
                 form: long
                 initialize-with: "."
+                label:
+                  term: editor
+                  form: short
+                  placement: suffix
+                  prefix: " ("
+                  suffix: ")"
+                  text-case: capitalize-first
         - title: parent-monograph
         - delimiter: " "
           group:
@@ -181,6 +188,13 @@ bibliography:
               container:
                 contributor: editor
                 form: long
+                label:
+                  term: editor
+                  form: short
+                  placement: suffix
+                  prefix: " ("
+                  suffix: ")"
+                  text-case: capitalize-first
         - title: parent-monograph
         - delimiter: " "
           group:
@@ -236,6 +250,13 @@ bibliography:
               container:
                 contributor: editor
                 form: long
+                label:
+                  term: editor
+                  form: short
+                  placement: suffix
+                  prefix: " ("
+                  suffix: ")"
+                  text-case: capitalize-first
         - title: parent-monograph
         - delimiter: " "
           group:
@@ -339,6 +360,13 @@ bibliography:
               - contributor: editor
                 form: long
                 suffix: ", "
+                label:
+                  term: editor
+                  form: short
+                  placement: suffix
+                  prefix: " ("
+                  suffix: ")"
+                  text-case: capitalize-first
               - title: parent-monograph
             delimiter: " "
     - variable: publisher
@@ -372,6 +400,13 @@ bibliography:
               container:
                 contributor: editor
                 form: long
+                label:
+                  term: editor
+                  form: short
+                  placement: suffix
+                  prefix: " ("
+                  suffix: ")"
+                  text-case: capitalize-first
         - title: parent-monograph
         - delimiter: " "
           group:
@@ -522,6 +557,13 @@ bibliography:
               container:
                 contributor: editor
                 form: long
+                label:
+                  term: editor
+                  form: short
+                  placement: suffix
+                  prefix: " ("
+                  suffix: ")"
+                  text-case: capitalize-first
         - title: parent-monograph
         - delimiter: " "
           group:
@@ -641,6 +683,13 @@ bibliography:
             container:
               contributor: editor
               form: long
+              label:
+                term: editor
+                form: short
+                placement: suffix
+                prefix: " ("
+                suffix: ")"
+                text-case: capitalize-first
       - title: parent-monograph
       - delimiter: " "
         group:
