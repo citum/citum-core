@@ -678,6 +678,17 @@ pub struct RoleLabel {
     /// requires). When unset the term is rendered as the locale stores it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub text_case: Option<crate::options::titles::TextCase>,
+    /// Optional affix rendered before the label term, overriding the
+    /// placement-derived default (`", "` for suffix placement, empty for
+    /// prefix placement). Mirrors CSL 1.0 `cs:label` `prefix` (e.g. `" ("`
+    /// for elsevier's `" (Eds.)"`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prefix: Option<String>,
+    /// Optional affix rendered after the label term, overriding the
+    /// placement-derived default (empty for suffix placement, `" "` for
+    /// prefix placement). Mirrors CSL 1.0 `cs:label` `suffix` (e.g. `")"`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub suffix: Option<String>,
 }
 
 /// Term form for role labels.

@@ -225,17 +225,26 @@ fn resolve_explicit_label<F: OutputFormat<Output = String>>(
         })
         .map(|t| apply_label_case(t, label_config.text_case, options.locale.locale.as_str()));
 
+    // Explicit label affixes override the placement-derived defaults,
+    // mirroring CSL 1.0 `cs:label` prefix/suffix (e.g. `" ("`/`")"`).
+    let (default_before, default_after) = match label_config.placement {
+        LabelPlacement::Prefix => ("", " "),
+        LabelPlacement::Suffix => (", ", ""),
+    };
+    let before = label_config.prefix.as_deref().unwrap_or(default_before);
+    let after = label_config.suffix.as_deref().unwrap_or(default_after);
+
     match label_config.placement {
         LabelPlacement::Prefix => (
             term_text.map(|t| {
-                super::format_role_term::<F>(&t, fmt, effective_rendering, options, "", " ")
+                super::format_role_term::<F>(&t, fmt, effective_rendering, options, before, after)
             }),
             None,
         ),
         LabelPlacement::Suffix => (
             None,
             term_text.map(|t| {
-                super::format_role_term::<F>(&t, fmt, effective_rendering, options, ", ", "")
+                super::format_role_term::<F>(&t, fmt, effective_rendering, options, before, after)
             }),
         ),
     }

@@ -695,6 +695,20 @@
               "type": "null"
             }
           ]
+        },
+        "prefix": {
+          "description": "Optional affix rendered before the label term, overriding the\nplacement-derived default (`\", \"` for suffix placement, empty for\nprefix placement). Mirrors CSL 1.0 `cs:label` `prefix` (e.g. `\" (\"`\nfor elsevier's `\" (Eds.)\"`).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suffix": {
+          "description": "Optional affix rendered after the label term, overriding the\nplacement-derived default (empty for suffix placement, `\" \"` for\nprefix placement). Mirrors CSL 1.0 `cs:label` `suffix` (e.g. `\")\"`).",
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "required": [

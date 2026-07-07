@@ -331,6 +331,8 @@ fn test_spanish_role_label_uses_feminine_form_for_single_editor() {
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            prefix: None,
+            suffix: None,
         }),
         ..Default::default()
     };
@@ -371,6 +373,8 @@ fn test_spanish_role_label_uses_plural_feminine_form_for_matching_group() {
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            prefix: None,
+            suffix: None,
         }),
         ..Default::default()
     };
@@ -411,6 +415,8 @@ fn test_spanish_role_label_prefers_common_form_for_mixed_group() {
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            prefix: None,
+            suffix: None,
         }),
         ..Default::default()
     };
@@ -465,6 +471,8 @@ roles:
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            prefix: None,
+            suffix: None,
         }),
         ..Default::default()
     };
@@ -504,6 +512,8 @@ fn test_french_role_label_uses_feminine_form_for_single_contributor() {
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            prefix: None,
+            suffix: None,
         }),
         ..Default::default()
     };
@@ -543,6 +553,8 @@ fn test_arabic_role_label_uses_feminine_form_for_single_contributor() {
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            prefix: None,
+            suffix: None,
         }),
         ..Default::default()
     };
@@ -583,6 +595,8 @@ fn test_french_role_label_falls_back_to_masculine_plural_for_mixed_group() {
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            prefix: None,
+            suffix: None,
         }),
         ..Default::default()
     };
@@ -623,6 +637,8 @@ fn test_arabic_role_label_falls_back_to_verbal_noun_for_mixed_group() {
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            prefix: None,
+            suffix: None,
         }),
         ..Default::default()
     };
@@ -682,6 +698,8 @@ fn test_arabic_role_label_falls_back_to_roles_common_when_gender_missing() {
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            prefix: None,
+            suffix: None,
         }),
         ..Default::default()
     };
@@ -725,6 +743,8 @@ fn test_collection_editor_role_label_derives_gender_from_reference_data() {
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            prefix: None,
+            suffix: None,
         }),
         ..Default::default()
     };
