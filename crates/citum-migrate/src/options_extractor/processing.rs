@@ -4,8 +4,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 */
 
 use citum_schema::options::{
-    GivennameRule, Group, LabelConfig, LabelPreset, Processing, ProcessingCustom, Sort, SortEntry,
-    SortKey, SortSpec,
+    GivennameRule, Group, LabelConfig, LabelPreset, Processing, ProcessingBase, ProcessingCustom,
+    Sort, SortEntry, SortKey, SortSpec,
 };
 use citum_schema::presets::SortPreset;
 use csl_legacy::model::{CslNode, Style};
@@ -131,15 +131,15 @@ impl ProcessingOverrides {
     /// Disambiguation-nearest named author-date preset for the explicit
     /// names/given-name signal, per the folding table in
     /// `docs/reference/PROCESSING_MIGRATION.md`.
-    fn author_date_preset(&self) -> Processing {
+    fn author_date_preset(&self) -> ProcessingBase {
         match (
             self.disamb_names.unwrap_or(false),
             self.disamb_add_givenname.unwrap_or(false),
         ) {
-            (false, false) => Processing::AuthorDate,
-            (false, true) => Processing::AuthorDateGivenname,
-            (true, false) => Processing::AuthorDateNames,
-            (true, true) => Processing::AuthorDateFull,
+            (false, false) => ProcessingBase::AuthorDate,
+            (false, true) => ProcessingBase::AuthorDateGivenname,
+            (true, false) => ProcessingBase::AuthorDateNames,
+            (true, true) => ProcessingBase::AuthorDateFull,
         }
     }
 
@@ -170,16 +170,32 @@ impl ProcessingOverrides {
 /// preset, falling back to `Processing::Custom` only when the remaining
 /// overrides (sort/group/year-suffix/givenname-rule) diverge from that
 /// preset's canonical config. Keeps the migrated YAML idiomatic
-/// (`processing: author-date`) instead of dumping a `!custom` block for
+/// (`processing: author-date`) instead of dumping a custom block for
 /// styles that never stated a divergent attribute.
+///
+/// The custom fallback is emitted as a delta: `base:` names the chosen
+/// preset and only the fields that diverge from its config are written,
+/// so the YAML never materializes defaults the CSL never stated.
 fn fold_to_named_processing(overrides: &ProcessingOverrides) -> Processing {
-    let preset = overrides.author_date_preset();
-    let custom = overrides.apply(preset.config());
-    if custom == preset.config() {
-        preset
-    } else {
-        Processing::Custom(custom)
+    let base = overrides.author_date_preset();
+    let preset = base.processing();
+    let base_config = preset.config();
+    let custom = overrides.apply(base_config.clone());
+    if custom == base_config {
+        return preset;
     }
+    Processing::Custom(ProcessingCustom {
+        base: Some(base),
+        sort: (custom.sort != base_config.sort)
+            .then_some(custom.sort)
+            .flatten(),
+        group: (custom.group != base_config.group)
+            .then_some(custom.group)
+            .flatten(),
+        disambiguate: (custom.disambiguate != base_config.disambiguate)
+            .then_some(custom.disambiguate)
+            .flatten(),
+    })
 }
 
 fn nodes_have_author_date_signal(
@@ -497,16 +513,52 @@ mod tests {
         // when processing mode is detected
         let mode = detect_processing_mode(&style);
 
-        // then it falls to Custom for the divergent sort, but the
-        // disambiguation portion still matches the AuthorDate preset exactly
-        // rather than being eagerly materialized from scratch
+        // then it falls to a Custom delta on the author-date base carrying
+        // only the divergent sort (and its derived group): disambiguation is
+        // not materialized in the emitted config at all
         let Some(Processing::Custom(custom)) = mode else {
             panic!("expected Processing::Custom, got: {mode:?}");
         };
+        assert_eq!(custom.base, Some(ProcessingBase::AuthorDate));
+        assert_eq!(custom.disambiguate, None);
         assert_eq!(
-            custom.disambiguate,
+            custom.group,
+            Some(Group {
+                template: vec![SortKey::Title]
+            })
+        );
+        assert_ne!(custom.sort, None);
+        assert_ne!(custom.sort, Processing::AuthorDate.config().sort);
+
+        // and the resolved config still inherits the preset's disambiguation
+        assert_eq!(
+            custom.resolved().disambiguate,
             Processing::AuthorDate.config().disambiguate
         );
-        assert_ne!(custom.sort, Processing::AuthorDate.config().sort);
+    }
+
+    #[test]
+    #[allow(clippy::panic, reason = "Panicking is acceptable in tests.")]
+    fn explicit_year_suffix_false_emits_base_delta_with_disambiguation_only() {
+        // given an author-date style that contradicts the class default with
+        // an explicit disambiguate-add-year-suffix="false"
+        let style = author_date_style(r#"disambiguate-add-year-suffix="false""#, "");
+
+        // when processing mode is detected
+        let mode = detect_processing_mode(&style);
+
+        // then it emits a delta on the author-date base whose only override
+        // is the diverging disambiguation block; sort/group stay inherited
+        let Some(Processing::Custom(custom)) = mode else {
+            panic!("expected Processing::Custom, got: {mode:?}");
+        };
+        assert_eq!(custom.base, Some(ProcessingBase::AuthorDate));
+        assert_eq!(custom.sort, None);
+        assert_eq!(custom.group, None);
+        let disamb = custom
+            .disambiguate
+            .as_ref()
+            .unwrap_or_else(|| panic!("expected diverging disambiguation override"));
+        assert!(!disamb.year_suffix);
     }
 }
