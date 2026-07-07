@@ -93,7 +93,7 @@ pub use grouped_fallback::GroupRenderParams;
 pub use grouped_fallback::TemplateRenderParams;
 pub(super) use helpers::{
     find_grouping_component, has_contributor_component, leading_group_affix,
-    strip_author_component, strip_leading_group_affixes,
+    remove_first_contributor_with_role, strip_author_component, strip_leading_group_affixes,
 };
 
 /// Internal render request used to keep template-processing call sites compact.

@@ -87,3 +87,41 @@ pub fn has_contributor_component(component: &TemplateComponent) -> bool {
         _ => false,
     }
 }
+
+/// Remove the first contributor component with `role` from `component`,
+/// descending into groups the same way [`find_grouping_component`] does.
+///
+/// Returns the component with the match removed (`None` when nothing
+/// remains) and whether a match was removed. Used to keep grouped-citation
+/// item parts symmetric with the author part when a citation template
+/// leads with a non-author contributor (the grouping component).
+pub fn remove_first_contributor_with_role(
+    component: TemplateComponent,
+    role: &citum_schema::template::ContributorRole,
+) -> (Option<TemplateComponent>, bool) {
+    match component {
+        TemplateComponent::Contributor(ref c) if &c.contributor == role => (None, true),
+        TemplateComponent::Group(mut list) => {
+            let mut removed = false;
+            let mut kept = Vec::with_capacity(list.group.len());
+            for child in list.group.drain(..) {
+                if removed {
+                    kept.push(child);
+                    continue;
+                }
+                let (remaining, child_removed) = remove_first_contributor_with_role(child, role);
+                removed = child_removed;
+                if let Some(remaining) = remaining {
+                    kept.push(remaining);
+                }
+            }
+            if kept.is_empty() {
+                (None, removed)
+            } else {
+                list.group = kept;
+                (Some(TemplateComponent::Group(list)), removed)
+            }
+        }
+        other => (Some(other), false),
+    }
+}

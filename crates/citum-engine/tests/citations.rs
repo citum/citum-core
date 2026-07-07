@@ -3061,3 +3061,58 @@ fn role_label_defaults_bundle_never_fires_in_citation_context() {
 
     assert_eq!(result, "John Smith");
 }
+
+#[test]
+fn leading_non_author_contributor_renders_once_in_grouped_citation() {
+    // The grouped-citation fallback renders an "author part" from the first
+    // grouping component of the template -- any contributor role, not just
+    // author. The item-part template previously stripped only author
+    // components, so a citation template leading with e.g. a translator
+    // rendered its names twice ("Tr Translatorsen, Tr Translatorsen").
+    // filter_author_from_template now strips the same leading contributor
+    // the author part rendered. Bean csl26-7g1i.
+    use citum_schema::reference::{Contributor, ContributorList, StructuredName};
+
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Leading Translator Citation Test".to_string()),
+            id: Some("leading-translator-citation-test".into()),
+            ..Default::default()
+        },
+        citation: Some(CitationSpec {
+            template: Some(vec![citum_schema::tc_contributor!(Translator, Long)]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert(
+        "item1".to_string(),
+        InputReference::Monograph(Box::new(Monograph {
+            id: Some("item1".into()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single("Title".to_string())),
+            editor: Some(Contributor::ContributorList(ContributorList(vec![
+                Contributor::StructuredName(StructuredName {
+                    given: "Ed".into(),
+                    family: "Editorsen".into(),
+                    ..Default::default()
+                }),
+            ]))),
+            translator: Some(Contributor::ContributorList(ContributorList(vec![
+                Contributor::StructuredName(StructuredName {
+                    given: "Tr".into(),
+                    family: "Translatorsen".into(),
+                    ..Default::default()
+                }),
+            ]))),
+            issued: EdtfString("2020".to_string()),
+            ..Default::default()
+        })),
+    );
+    let processor = Processor::new(style, bibliography);
+
+    let result = process_citation_ids(&processor, &["item1"]);
+
+    assert_eq!(result, "Tr Translatorsen");
+}
