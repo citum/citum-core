@@ -1,11 +1,11 @@
 ---
 # csl26-kuwj
 title: Add ProcessingCustom.base schema field for custom-as-delta processing
-status: in-progress
+status: completed
 type: task
 priority: normal
 created_at: 2026-07-06T23:39:03Z
-updated_at: 2026-07-07T01:18:38Z
+updated_at: 2026-07-07T01:38:29Z
 parent: csl26-al39
 ---
 
@@ -29,6 +29,16 @@ Needs a schema review pass first (deferred from csl26-vpae per its own sizing no
 ## Todo
 
 - [x] feat(schema): ProcessingBase enum, ProcessingCustom.base, resolved() overlay, delegation, deserializer, tests, schema-gen
-- [ ] feat(migrate): fold_to_named_processing emits base+delta; update regression tests
-- [ ] docs/reference/PROCESSING_MIGRATION.md: Custom-as-delta section
-- [ ] just pre-commit green; end-to-end style verification; PR + CI
+- [x] feat(migrate): fold_to_named_processing emits base+delta; update regression tests
+- [x] docs/reference/PROCESSING_MIGRATION.md: Custom-as-delta section
+- [x] just pre-commit green; end-to-end style verification; PR + CI
+
+## Summary of Changes
+
+Implemented both layers of the custom-as-delta design per the confirmed decisions:
+
+**feat(schema)**: Added `ProcessingBase` enum (named presets only — nesting impossible by construction) and `ProcessingCustom.base`. `ProcessingCustom::resolved()` overlays present fields wholesale onto the base preset's config; `Processing::config()` now resolves Custom through it, so all engine call sites pick the overlay up for free. `regime_family()` / `is_author_date_family()` delegate to the base; `default_bibliography_sort()` delegates only when no explicit sort overrides it (preserving the entry-ID-tiebreak path). Deserializer accepts `base:` in the bare custom map; schemas regenerated (docs/schemas/style.json).
+
+**feat(migrate)**: `fold_to_named_processing` now emits the Custom fallback as `base: <preset>` plus only the diverging fields — emitted YAML no longer materializes disambiguation defaults the CSL never stated. Documented in PROCESSING_MIGRATION.md ('Custom as Delta').
+
+Verified end-to-end on acta-botanica-croatica.csl (year-first citation sort): emits `base: author-date-full` + sort/group only; workflow-test fidelity identical to main (18/20 citations, 47/47 bibliography). Full suite: 1832 tests green.

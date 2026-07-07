@@ -65,3 +65,30 @@ CSL disambiguation attributes, and compares the result with named presets:
 `givenname-disambiguation-rule` defaults to `by-cite` when omitted. An explicit
 non-default rule is preserved in custom processing unless the full configuration
 still exactly matches a named preset.
+
+## Custom as Delta
+
+When folding cannot reach a named preset, migration emits custom processing as
+a *delta* on the disambiguation-nearest preset rather than a fully materialized
+block. The `base:` field names the preset and only fields that diverge from its
+configuration are written:
+
+```yaml
+processing:
+  base: author-date
+  sort:
+    template:
+      - key: title
+```
+
+Resolution overlays present fields onto the base preset's configuration
+**wholesale** — a present `sort`, `group`, or `disambiguate` replaces the
+base's value entirely; absent fields inherit from the base. There is no
+sub-field merge: overriding one disambiguation flag requires restating the
+whole `disambiguate` block.
+
+A custom block with a `base` also belongs to the base's processing family:
+`regime_family()` and `is_author_date_family()` delegate to the base, and the
+default bibliography sort follows the base when no explicit `sort` overrides
+it. A `base:` with zero overrides behaves identically to the bare preset.
+Base-less custom blocks keep their previous fully-explicit semantics.
