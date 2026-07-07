@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use super::contributor_role_to_reference_role;
 use crate::reference::Reference;
 use crate::render::format::OutputFormat;
-use crate::values::RenderOptions;
+use crate::values::{RenderContext, RenderOptions};
 use citum_schema::locale::{GrammaticalGender, TermForm};
 use citum_schema::options::RoleLabelPreset;
 use citum_schema::reference::ContributorGender;
@@ -302,12 +302,37 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
         );
     }
 
-    // Form-based defaults. The Long-form arm below auto-appends a
-    // "(short-term)"-style suffix for a fixed set of roles when no
-    // explicit label, role.omit, or configured preset applies. To opt a
-    // specific role out of this default without disabling role.omit's
-    // broader (verb-form-including) effect, set
-    // `contributors.role.roles.<role>.preset: none` for that role.
+    // Style-declared default bundle (`contributors.role.defaults`). Role
+    // labels are a bibliography-only convention in every examined style
+    // guide (div-012), so the bundle never fires in citation context.
+    if options.context == RenderContext::Bibliography
+        && !matches!(
+            component.form,
+            ContributorForm::Verb | ContributorForm::VerbShort
+        )
+        && let Some(preset) = options
+            .config
+            .contributors
+            .as_ref()
+            .and_then(|contributors| contributors.default_role_label_preset(&component.contributor))
+    {
+        let requested_gender = requested_role_gender(component, reference);
+        return resolve_role_label_preset(
+            &component.contributor,
+            preset,
+            names_count,
+            RoleLabelTermOptions {
+                gender: requested_gender,
+                text_case: None,
+            },
+            effective_rendering,
+            options,
+            fmt,
+        );
+    }
+
+    // Form-based defaults: verb forms carry their structural verb phrase;
+    // no other form receives an automatic label.
     match (&component.form, &component.contributor) {
         (ContributorForm::Verb | ContributorForm::VerbShort, role) => {
             let plural = names_count > 1;
@@ -324,32 +349,6 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
                     super::format_role_term::<F>(&t, fmt, effective_rendering, options, "", " ")
                 }),
                 None,
-            )
-        }
-        (
-            ContributorForm::Long,
-            ContributorRole::Editor
-            | ContributorRole::Chair
-            | ContributorRole::Translator
-            | ContributorRole::Interviewer
-            | ContributorRole::Director
-            | ContributorRole::Illustrator
-            | ContributorRole::Composer,
-        ) => {
-            let plural = names_count > 1;
-            let requested_gender = requested_role_gender(component, reference);
-            let term = resolve_role_term_by_request(
-                options.locale,
-                &component.contributor,
-                plural,
-                TermForm::Short,
-                requested_gender,
-            );
-            (
-                None,
-                term.map(|t| {
-                    super::format_role_term::<F>(&t, fmt, effective_rendering, options, " (", ")")
-                }),
             )
         }
         _ => (None, None),

@@ -35,6 +35,19 @@ fn make_config() -> Config {
     }
 }
 
+/// A `make_config` variant declaring the APA role-label defaults bundle,
+/// for tests that exercise other behavior through the editor suffix.
+fn make_config_with_apa_role_defaults() -> Config {
+    let mut config = make_config();
+    if let Some(contributors) = &mut config.contributors {
+        contributors.role = Some(RoleOptions {
+            defaults: Some(RoleLabelDefaults::Apa),
+            ..Default::default()
+        });
+    }
+    config
+}
+
 fn make_locale() -> Locale {
     Locale::en_us()
 }
@@ -866,7 +879,7 @@ fn test_message_component_renders_in_container_argument_with_formatting() {
 
 #[test]
 fn test_message_component_renders_grouped_container_argument() {
-    let config = make_config();
+    let config = make_config_with_apa_role_defaults();
     let mut locale = make_locale();
     locale
         .messages
@@ -3381,7 +3394,7 @@ fn test_date_fallback() {
 /// Tests the behavior of `test_strip_periods_global_config`.
 #[test]
 fn test_strip_periods_global_config() {
-    let mut config = make_config();
+    let mut config = make_config_with_apa_role_defaults();
     config.strip_periods = Some(true);
     let locale = make_locale();
     let reference = Reference::from(LegacyReference {
@@ -3426,7 +3439,7 @@ fn test_strip_periods_global_config() {
 /// Tests the behavior of `test_strip_periods_component_override`.
 #[test]
 fn test_strip_periods_component_override() {
-    let mut config = make_config();
+    let mut config = make_config_with_apa_role_defaults();
     config.strip_periods = Some(false); // Global is false
     let locale = make_locale();
     let reference = Reference::from(LegacyReference {
@@ -3476,7 +3489,7 @@ fn test_strip_periods_component_override() {
 /// Tests the behavior of `test_strip_periods_no_strip_by_default`.
 #[test]
 fn test_strip_periods_no_strip_by_default() {
-    let config = make_config();
+    let config = make_config_with_apa_role_defaults();
     let locale = make_locale();
     let reference = Reference::from(LegacyReference {
         id: "editor1".to_string(),
