@@ -6,7 +6,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use super::super::{
     GroupRenderParams, Renderer, TemplateComponentTracker, TemplateRenderParams,
     TemplateRenderRequest, find_grouping_component, get_variable_key, has_contributor_component,
-    leading_group_affix, strip_author_component, strip_leading_group_affixes,
+    leading_group_affix, remove_first_contributor_with_role, strip_author_component,
+    strip_leading_group_affixes,
 };
 use super::component_predicates::{is_term_only_component, resolve_type_variant};
 use super::group_citation_items_by_author;
@@ -1320,8 +1321,32 @@ pub(super) fn template_uses_first_ref_note_number(template: &[TemplateComponent]
 pub(super) fn filter_author_from_template(
     template: &[TemplateComponent],
 ) -> (Vec<TemplateComponent>, Option<String>, bool) {
+    // The author part rendered by `render_author_for_grouping_with_format`
+    // is the first grouping component of the leading template component —
+    // any contributor role, not just author. Strip that exact contributor
+    // from the item parts too, or a template leading with e.g. a translator
+    // renders its names twice (once as author part, once in the item part).
+    let grouping_role = template
+        .first()
+        .and_then(find_grouping_component)
+        .and_then(|component| match component {
+            TemplateComponent::Contributor(contributor)
+                if contributor.contributor != citum_schema::template::ContributorRole::Author =>
+            {
+                Some(contributor.contributor.clone())
+            }
+            _ => None,
+        });
     let mut filtered: Vec<TemplateComponent> =
         template.iter().filter_map(strip_author_component).collect();
+    if let Some(role) = grouping_role
+        && !filtered.is_empty()
+    {
+        let first = filtered.remove(0);
+        if let (Some(remaining), _) = remove_first_contributor_with_role(first, &role) {
+            filtered.insert(0, remaining);
+        }
+    }
     let stripped_leading_affix = filtered.first().and_then(leading_group_affix);
     let leading_affix = stripped_leading_affix.clone().or_else(|| {
         filtered
