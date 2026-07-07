@@ -25,8 +25,8 @@ pub use bibliography::{
 };
 pub use contributors::{
     AndOptions, AndOtherOptions, ContributorConfig, ContributorConfigEntry, DelimiterPrecedesLast,
-    DemoteNonDroppingParticle, DisplayAsSort, NameForm, RoleLabelPreset, RoleOptions,
-    RoleOptionsEntry, RoleRendering, ShortenListOptions,
+    DemoteNonDroppingParticle, DisplayAsSort, NameForm, RoleLabelDefaults, RoleLabelPreset,
+    RoleOptions, RoleOptionsEntry, RoleRendering, ShortenListOptions,
 };
 pub use dates::{DateConfig, DateConfigEntry, NoDateForm};
 pub use integral_name_memory::{

@@ -4156,6 +4156,17 @@
           "additionalProperties": {
             "$ref": "#/$defs/RoleRendering"
           }
+        },
+        "defaults": {
+          "description": "Named bundle of bibliography-context default label presets.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RoleLabelDefaults"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
     },
@@ -4215,6 +4226,26 @@
           ]
         }
       }
+    },
+    "RoleLabelDefaults": {
+      "description": "Named bundles of per-role default label presets, matching a style\nguide's documented bibliography-context convention.\n\nApplied only where a style has no explicit `label`, no configured\npreset, and no `role.omit` for the role, and only when rendering in\nbibliography context — no examined style guide (APA, MLA, Chicago,\nVancouver/NLM) carries a role label into the in-text citation. See\ndiv-012 in `docs/adjudication/DIVERGENCE_REGISTER.md`.",
+      "oneOf": [
+        {
+          "description": "No automatic role labels (the engine default when unset).",
+          "type": "string",
+          "const": "none"
+        },
+        {
+          "description": "APA-style convention: abbreviated suffix for editors only, rendered\nwith the locale's short editor term (`\" (ed.)\"` in en-US; apply a\n`text-case` transform for capitalized `\" (Ed.)\"`).",
+          "type": "string",
+          "const": "apa"
+        },
+        {
+          "description": "MLA convention: word-form comma-joined suffix (`\", editor\"`) for\nits documented role set (editor, translator, director,\nillustrator, interviewer).",
+          "type": "string",
+          "const": "mla"
+        }
+      ]
     },
     "DemoteNonDroppingParticle": {
       "description": "Options for demoting non-dropping particles.",
