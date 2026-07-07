@@ -180,14 +180,63 @@ pub enum CitationSortPolicy {
     ExplicitOnly,
 }
 
+/// Named processing preset usable as the base of a custom delta.
+///
+/// Restricting `ProcessingCustom::base` to this enum makes nested custom
+/// configurations impossible by construction: a base is always one of the
+/// named presets, never another custom block.
+#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+#[non_exhaustive]
+pub enum ProcessingBase {
+    /// Delta base equivalent to `Processing::AuthorDate`.
+    AuthorDate,
+    /// Delta base equivalent to `Processing::AuthorDateGivenname`.
+    AuthorDateGivenname,
+    /// Delta base equivalent to `Processing::AuthorDateNames`.
+    AuthorDateNames,
+    /// Delta base equivalent to `Processing::AuthorDateFull`.
+    AuthorDateFull,
+    /// Delta base equivalent to `Processing::Numeric`.
+    Numeric,
+    /// Delta base equivalent to `Processing::Note`.
+    Note,
+    /// Delta base equivalent to `Processing::Label` with default label config.
+    Label,
+}
+
+impl ProcessingBase {
+    /// The named `Processing` variant this base stands for.
+    ///
+    /// `Label` maps to `Processing::Label(LabelConfig::default())`; all other
+    /// variants map to their unit counterparts.
+    pub fn processing(&self) -> Processing {
+        match self {
+            Self::AuthorDate => Processing::AuthorDate,
+            Self::AuthorDateGivenname => Processing::AuthorDateGivenname,
+            Self::AuthorDateNames => Processing::AuthorDateNames,
+            Self::AuthorDateFull => Processing::AuthorDateFull,
+            Self::Numeric => Processing::Numeric,
+            Self::Note => Processing::Note,
+            Self::Label => Processing::Label(LabelConfig::default()),
+        }
+    }
+}
+
 /// Custom processing configuration.
 ///
-/// Allows explicit specification of sorting, grouping, and disambiguation rules
-/// without relying on preset defaults.
+/// Allows explicit specification of sorting, grouping, and disambiguation rules.
+/// With a `base`, the block is a *delta*: present fields override the named
+/// preset's configuration wholesale and absent fields inherit from it (the same
+/// philosophy as style `extends:`). Without a `base`, present fields stand alone.
 #[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct ProcessingCustom {
+    /// Named preset whose configuration seeds unset fields (optional).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub base: Option<ProcessingBase>,
     /// Bibliography sorting configuration (optional).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort: Option<SortEntry>,
@@ -197,6 +246,34 @@ pub struct ProcessingCustom {
     /// Disambiguation settings (optional).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub disambiguate: Option<Disambiguation>,
+}
+
+impl ProcessingCustom {
+    /// Resolve the effective configuration by overlaying present fields onto
+    /// the base preset's config.
+    ///
+    /// Each present field (`sort`, `group`, `disambiguate`) replaces the base's
+    /// value wholesale; absent fields inherit the base's. Without a `base`,
+    /// returns the stored fields as-is. The result carries no `base` — it is
+    /// fully materialized.
+    #[must_use]
+    pub fn resolved(&self) -> ProcessingCustom {
+        let mut config = match self.base {
+            Some(base) => base.processing().config(),
+            None => ProcessingCustom::default(),
+        };
+        config.base = None;
+        if self.sort.is_some() {
+            config.sort = self.sort.clone();
+        }
+        if self.group.is_some() {
+            config.group = self.group.clone();
+        }
+        if self.disambiguate.is_some() {
+            config.disambiguate = self.disambiguate.clone();
+        }
+        config
+    }
 }
 
 /// Coarse citation regime family for cross-regime compatibility checks.
@@ -228,6 +305,7 @@ fn author_date_config(
     givenname_rule: GivennameRule,
 ) -> ProcessingCustom {
     ProcessingCustom {
+        base: None,
         sort: Some(SortEntry::Preset(SortPreset::AuthorDateTitle)),
         group: Some(Group {
             template: vec![SortKey::Author, SortKey::Year],
@@ -247,7 +325,10 @@ impl Processing {
     /// Returns the standard bibliography sort order for the processing mode:
     /// - `AuthorDate` / `Label`: author, year, title
     /// - `Note`: author, title, year
-    /// - `Numeric` / `Custom`: None (no automatic sort)
+    /// - `Numeric`: None (no automatic sort)
+    /// - `Custom`: the base preset's default when a `base` is set and no
+    ///   explicit `sort` overrides it; otherwise None (an explicit custom sort
+    ///   resolves through `config()` instead, keeping the entry-ID tiebreak)
     pub fn default_bibliography_sort(&self) -> Option<SortPreset> {
         match self {
             Processing::AuthorDate
@@ -257,22 +338,21 @@ impl Processing {
             Processing::Numeric => None,
             Processing::Note => Some(SortPreset::AuthorTitleDate),
             Processing::Label(_) => Some(SortPreset::AuthorDateTitle),
-            Processing::Custom(_) => None,
+            Processing::Custom(custom) => match (custom.base, custom.sort.as_ref()) {
+                (Some(base), None) => base.processing().default_bibliography_sort(),
+                _ => None,
+            },
         }
     }
 
     /// Returns `true` for all author-date family variants.
     ///
+    /// A `Custom` delta whose `base` is an author-date preset counts as
+    /// author-date: a delta on author-date is still an author-date style.
     /// Centralizes the author-date family check so new variants don't require
     /// updating scattered `matches!` blocks across the codebase.
     pub fn is_author_date_family(&self) -> bool {
-        matches!(
-            self,
-            Self::AuthorDate
-                | Self::AuthorDateGivenname
-                | Self::AuthorDateNames
-                | Self::AuthorDateFull
-        )
+        self.regime_family() == RegimeFamily::AuthorDate
     }
 
     /// Coarse citation regime family for cross-regime compatibility checks.
@@ -281,8 +361,10 @@ impl Processing {
     /// citation-mode sub-specs (integral, non-integral) belong to a different
     /// regime and should be reset when the child supplies its own base template.
     ///
-    /// `Custom` is its own family and never triggers automatic sub-spec resets,
-    /// preserving fully-custom authored styles.
+    /// A base-less `Custom` is its own family and never triggers automatic
+    /// sub-spec resets, preserving fully-custom authored styles. A `Custom`
+    /// delta with a `base` belongs to its base's family: a delta on
+    /// author-date is still an author-date style.
     ///
     /// See `docs/specs/CITATION_REGIME.md` for the full invariant.
     pub fn regime_family(&self) -> RegimeFamily {
@@ -294,7 +376,10 @@ impl Processing {
             Self::Numeric => RegimeFamily::Numeric,
             Self::Note => RegimeFamily::Note,
             Self::Label(_) => RegimeFamily::Label,
-            Self::Custom(_) => RegimeFamily::Custom,
+            Self::Custom(custom) => match custom.base {
+                Some(base) => base.processing().regime_family(),
+                None => RegimeFamily::Custom,
+            },
         }
     }
 
@@ -326,12 +411,9 @@ impl Processing {
             Processing::AuthorDateFull => {
                 author_date_config(true, true, GivennameRule::PrimaryName)
             }
-            Processing::Numeric => ProcessingCustom {
-                sort: None,
-                group: None,
-                disambiguate: None,
-            },
+            Processing::Numeric => ProcessingCustom::default(),
             Processing::Note => ProcessingCustom {
+                base: None,
                 sort: Some(SortEntry::Preset(SortPreset::AuthorTitleDate)),
                 group: None,
                 disambiguate: Some(Disambiguation {
@@ -342,6 +424,7 @@ impl Processing {
                 }),
             },
             Processing::Label(_) => ProcessingCustom {
+                base: None,
                 sort: Some(SortEntry::Preset(SortPreset::AuthorDateTitle)),
                 group: None,
                 disambiguate: Some(Disambiguation {
@@ -351,7 +434,7 @@ impl Processing {
                     year_suffix: true,
                 }),
             },
-            Processing::Custom(custom) => custom.clone(),
+            Processing::Custom(custom) => custom.resolved(),
         }
     }
 }
@@ -434,24 +517,30 @@ impl<'de> Deserialize<'de> for Processing {
                         let config: LabelConfig = map.next_value()?;
                         Ok(Processing::Label(config))
                     }
-                    "sort" | "group" | "disambiguate" => {
+                    "base" | "sort" | "group" | "disambiguate" => {
                         // This is a custom processing config
                         // We need to deserialize the whole map as ProcessingCustom
                         // Unfortunately we can't easily re-parse from the middle of map access.
                         // Instead, collect fields and build manually
+                        let mut base = None;
                         let mut sort = None;
                         let mut group = None;
                         let mut disambiguate = None;
 
+                        // Values deserialize as `Option<_>` so an explicit
+                        // null (`base: ~`) reads as absent, matching derived
+                        // serde semantics and the JSON schema contract.
+
                         // Handle the first key we already read
                         match key.as_str() {
-                            "sort" => sort = Some(map.next_value()?),
-                            "group" => group = Some(map.next_value()?),
-                            "disambiguate" => disambiguate = Some(map.next_value()?),
+                            "base" => base = map.next_value()?,
+                            "sort" => sort = map.next_value()?,
+                            "group" => group = map.next_value()?,
+                            "disambiguate" => disambiguate = map.next_value()?,
                             _ => {
                                 return Err(de::Error::unknown_field(
                                     &key,
-                                    &["sort", "group", "disambiguate"],
+                                    &["base", "sort", "group", "disambiguate"],
                                 ));
                             }
                         }
@@ -459,19 +548,21 @@ impl<'de> Deserialize<'de> for Processing {
                         // Read remaining keys
                         while let Some(k) = map.next_key::<String>()? {
                             match k.as_str() {
-                                "sort" => sort = Some(map.next_value()?),
-                                "group" => group = Some(map.next_value()?),
-                                "disambiguate" => disambiguate = Some(map.next_value()?),
+                                "base" => base = map.next_value()?,
+                                "sort" => sort = map.next_value()?,
+                                "group" => group = map.next_value()?,
+                                "disambiguate" => disambiguate = map.next_value()?,
                                 other => {
                                     return Err(de::Error::unknown_field(
                                         other,
-                                        &["sort", "group", "disambiguate"],
+                                        &["base", "sort", "group", "disambiguate"],
                                     ));
                                 }
                             }
                         }
 
                         Ok(Processing::Custom(ProcessingCustom {
+                            base,
                             sort,
                             group,
                             disambiguate,
@@ -479,7 +570,7 @@ impl<'de> Deserialize<'de> for Processing {
                     }
                     other => Err(de::Error::unknown_field(
                         other,
-                        &["label", "sort", "group", "disambiguate"],
+                        &["label", "base", "sort", "group", "disambiguate"],
                     )),
                 }
             }
@@ -885,6 +976,171 @@ mod tests {
             let deserialized: Processing = serde_yaml::from_str(name).unwrap();
             assert_eq!(deserialized, processing);
         }
+    }
+
+    /// Test that a custom map with `base:` and an explicit sort round-trips
+    /// through YAML preserving the sparse delta shape.
+    #[test]
+    fn test_processing_custom_base_round_trip() {
+        // given: a custom delta on author-date with only an explicit sort
+        let processing = Processing::Custom(ProcessingCustom {
+            base: Some(ProcessingBase::AuthorDate),
+            sort: Some(SortEntry::Preset(SortPreset::AuthorTitleDate)),
+            group: None,
+            disambiguate: None,
+        });
+
+        // when: serialized to YAML and parsed back
+        let yaml = serde_yaml::to_string(&processing).unwrap();
+        let parsed: Processing = serde_yaml::from_str(&yaml).unwrap();
+
+        // then: the YAML stays sparse (base + sort only) and round-trips
+        assert_eq!(yaml.trim(), "base: author-date\nsort: author-title-date");
+        assert_eq!(parsed, processing);
+    }
+
+    /// Test that a map with only `base:` parses and resolves to the bare
+    /// preset's config.
+    #[test]
+    fn test_processing_custom_base_only_resolves_to_preset_config() {
+        // given: YAML declaring only a base
+        let parsed: Processing = serde_yaml::from_str("base: author-date-full").unwrap();
+
+        // then: it parses as Custom with the base and no overrides
+        assert_eq!(
+            parsed,
+            Processing::Custom(ProcessingCustom {
+                base: Some(ProcessingBase::AuthorDateFull),
+                sort: None,
+                group: None,
+                disambiguate: None,
+            })
+        );
+
+        // and: config() matches the bare preset's config
+        assert_eq!(parsed.config(), Processing::AuthorDateFull.config());
+    }
+
+    /// Test that resolved() overlays present fields wholesale and inherits
+    /// absent fields from the base preset.
+    #[test]
+    fn test_processing_custom_resolved_overlay_semantics() {
+        // given: a delta on author-date overriding only the sort
+        let custom = ProcessingCustom {
+            base: Some(ProcessingBase::AuthorDate),
+            sort: Some(SortEntry::Preset(SortPreset::AuthorTitleDate)),
+            group: None,
+            disambiguate: None,
+        };
+
+        // when: resolved against the base
+        let resolved = custom.resolved();
+
+        // then: the explicit sort wins; group/disambiguate inherit; no base remains
+        let base_config = Processing::AuthorDate.config();
+        assert_eq!(resolved.base, None);
+        assert_eq!(
+            resolved.sort,
+            Some(SortEntry::Preset(SortPreset::AuthorTitleDate))
+        );
+        assert_eq!(resolved.group, base_config.group);
+        assert_eq!(resolved.disambiguate, base_config.disambiguate);
+    }
+
+    /// Test that resolved() without a base returns the stored fields as-is.
+    #[test]
+    fn test_processing_custom_resolved_without_base_is_identity() {
+        let custom = ProcessingCustom {
+            base: None,
+            sort: Some(SortEntry::Preset(SortPreset::AuthorDateTitle)),
+            group: None,
+            disambiguate: None,
+        };
+
+        assert_eq!(custom.resolved(), custom);
+    }
+
+    /// Test that regime_family and is_author_date_family delegate to the base
+    /// when present and stay Custom without one.
+    #[test]
+    fn test_processing_custom_base_family_delegation() {
+        // given: a delta on author-date and a base-less custom
+        let with_base = Processing::Custom(ProcessingCustom {
+            base: Some(ProcessingBase::AuthorDate),
+            ..Default::default()
+        });
+        let without_base = Processing::Custom(ProcessingCustom::default());
+
+        // then: family checks follow the base only when one is set
+        assert_eq!(with_base.regime_family(), RegimeFamily::AuthorDate);
+        assert!(with_base.is_author_date_family());
+        assert_eq!(without_base.regime_family(), RegimeFamily::Custom);
+        assert!(!without_base.is_author_date_family());
+
+        // and: a numeric base maps to the numeric family
+        let numeric_base = Processing::Custom(ProcessingCustom {
+            base: Some(ProcessingBase::Numeric),
+            ..Default::default()
+        });
+        assert_eq!(numeric_base.regime_family(), RegimeFamily::Numeric);
+        assert!(!numeric_base.is_author_date_family());
+    }
+
+    /// Test that default_bibliography_sort delegates to the base only when the
+    /// custom carries no explicit sort.
+    #[test]
+    fn test_processing_custom_base_default_bibliography_sort() {
+        // given: a base-carrying custom without an explicit sort
+        let inherited = Processing::Custom(ProcessingCustom {
+            base: Some(ProcessingBase::AuthorDate),
+            ..Default::default()
+        });
+        // then: the base's preset default applies
+        assert_eq!(
+            inherited.default_bibliography_sort(),
+            Some(SortPreset::AuthorDateTitle)
+        );
+
+        // given: the same base with an explicit sort override
+        let overridden = Processing::Custom(ProcessingCustom {
+            base: Some(ProcessingBase::AuthorDate),
+            sort: Some(SortEntry::Preset(SortPreset::AuthorTitleDate)),
+            ..Default::default()
+        });
+        // then: no preset default — the explicit sort resolves via config()
+        assert_eq!(overridden.default_bibliography_sort(), None);
+    }
+
+    /// Test that explicit null values in a custom map read as absent fields,
+    /// matching derived-serde `Option` semantics and the JSON schema.
+    #[test]
+    fn test_processing_custom_map_accepts_explicit_nulls() {
+        // given: a custom map with explicit nulls alongside a real field
+        let parsed: Processing =
+            serde_yaml::from_str("base: ~\nsort: author-title-date\ndisambiguate: null").unwrap();
+
+        // then: null fields are absent, the real field is kept
+        assert_eq!(
+            parsed,
+            Processing::Custom(ProcessingCustom {
+                base: None,
+                sort: Some(SortEntry::Preset(SortPreset::AuthorTitleDate)),
+                group: None,
+                disambiguate: None,
+            })
+        );
+    }
+
+    /// Test that invalid `base:` values are rejected at parse time.
+    #[test]
+    fn test_processing_custom_base_rejects_invalid_values() {
+        // given: a nested map and an unknown preset name as base
+        let nested = serde_yaml::from_str::<Processing>("base: { sort: author-date-title }");
+        let unknown = serde_yaml::from_str::<Processing>("base: fancy-date");
+
+        // then: both fail to parse
+        assert!(nested.is_err());
+        assert!(unknown.is_err());
     }
 
     /// Test that Disambiguation defaults have correct values.

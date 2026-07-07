@@ -361,6 +361,7 @@ pub fn build_author_date_style(
         },
         options: Some(Config {
             processing: Some(Processing::Custom(ProcessingCustom {
+                base: None,
                 disambiguate,
                 ..Default::default()
             })),

@@ -3325,9 +3325,20 @@
       ]
     },
     "ProcessingCustom": {
-      "description": "Custom processing configuration.\n\nAllows explicit specification of sorting, grouping, and disambiguation rules\nwithout relying on preset defaults.",
+      "description": "Custom processing configuration.\n\nAllows explicit specification of sorting, grouping, and disambiguation rules.\nWith a `base`, the block is a *delta*: present fields override the named\npreset's configuration wholesale and absent fields inherit from it (the same\nphilosophy as style `extends:`). Without a `base`, present fields stand alone.",
       "type": "object",
       "properties": {
+        "base": {
+          "description": "Named preset whose configuration seeds unset fields (optional).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ProcessingBase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "sort": {
           "description": "Bibliography sorting configuration (optional).",
           "anyOf": [
@@ -3362,6 +3373,46 @@
           ]
         }
       }
+    },
+    "ProcessingBase": {
+      "description": "Named processing preset usable as the base of a custom delta.\n\nRestricting `ProcessingCustom::base` to this enum makes nested custom\nconfigurations impossible by construction: a base is always one of the\nnamed presets, never another custom block.",
+      "oneOf": [
+        {
+          "description": "Delta base equivalent to `Processing::AuthorDate`.",
+          "type": "string",
+          "const": "author-date"
+        },
+        {
+          "description": "Delta base equivalent to `Processing::AuthorDateGivenname`.",
+          "type": "string",
+          "const": "author-date-givenname"
+        },
+        {
+          "description": "Delta base equivalent to `Processing::AuthorDateNames`.",
+          "type": "string",
+          "const": "author-date-names"
+        },
+        {
+          "description": "Delta base equivalent to `Processing::AuthorDateFull`.",
+          "type": "string",
+          "const": "author-date-full"
+        },
+        {
+          "description": "Delta base equivalent to `Processing::Numeric`.",
+          "type": "string",
+          "const": "numeric"
+        },
+        {
+          "description": "Delta base equivalent to `Processing::Note`.",
+          "type": "string",
+          "const": "note"
+        },
+        {
+          "description": "Delta base equivalent to `Processing::Label` with default label config.",
+          "type": "string",
+          "const": "label"
+        }
+      ]
     },
     "SortEntry": {
       "description": "Sort configuration: either a preset name or explicit configuration.\n\nCan be a preset name like `author-date-title` or a full `Sort` struct with explicit settings.",
