@@ -120,6 +120,10 @@ bibliography:
               delimiter-precedes-last: never
             and: text
             suppress: true
+            label:
+              term: editor
+              form: short
+              placement: suffix
           - title: parent-serial
             emph: true
             suffix: '. '
@@ -240,6 +244,10 @@ bibliography:
                 and-others: et-al
                 delimiter-precedes-last: never
               and: text
+              label:
+                term: editor
+                form: short
+                placement: suffix
             - title: parent-serial
               emph: true
             - group:

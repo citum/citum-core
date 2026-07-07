@@ -89,6 +89,13 @@ bibliography:
             - contributor: editor
               form: long
               name-order: family-first
+              strip-periods: true
+              label:
+                term: editor
+                form: short
+                placement: suffix
+                prefix: " ("
+                suffix: ")"
             - title: parent-monograph
           delimiter: " "
     - title: parent-serial
@@ -287,6 +294,13 @@ bibliography:
   - contributor: editor
     form: long
     name-order: family-first
+    strip-periods: true
+    label:
+      term: editor
+      form: short
+      placement: suffix
+      prefix: " ("
+      suffix: ")"
   - date: issued
     form: year
     wrap:
@@ -304,6 +318,13 @@ bibliography:
             - contributor: editor
               form: long
               name-order: family-first
+              strip-periods: true
+              label:
+                term: editor
+                form: short
+                placement: suffix
+                prefix: " ("
+                suffix: ")"
             - title: parent-monograph
           delimiter: " "
   - title: parent-serial

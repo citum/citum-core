@@ -66,12 +66,24 @@ breaking existing styles.
 
 ## Compatibility
 
-A before/after `scripts/report-core.js` fidelity diff verified that **no
-embedded style required compensating configuration**: zero styles
-regressed, and two Chicago-family styles each gained a bibliography pass
-because the old implicit `" (interviewer)"` suffix diverged from the
-citeproc-js oracle. Styles that *want* automatic labels opt in via a
-`defaults` bundle or per-role presets.
+A raw-output diff (not just pass counts — the report normalizes both
+sides, e.g. `" (Eds.)"` ↔ `"editors"`, so its `match` field tolerates
+role-label differences) classified every affected fixture entry against
+its citeproc-js oracle:
+
+- Interviewer/director suffixes (Chicago, Taylor & Francis, MHRA,
+  Hart's): the oracle has no label — removal moved output toward the
+  oracle. Kept.
+- Editor labels (elsevier-with-titles family, hawaii/HICSS,
+  springer-basic): the CSL sources request explicit labels
+  (`" (Eds.)"`, `" (eds)"`, `", eds."`). These styles had silently
+  relied on the engine default (rendering a not-quite-right `" (eds.)"`)
+  — they now declare component-level `label:` config matching their CSL
+  exactly, including affixes via the `RoleLabel` `prefix`/`suffix`
+  fields added for this (mirroring CSL 1.0 `cs:label` affixes).
+
+Styles that want automatic labels opt in via a `defaults` bundle,
+per-role presets, or explicit component labels.
 
 `citum-migrate` does not rely on the implicit default: CSL 1.0 expresses
 labels explicitly (`cs:label`), which migrates to explicit `label:` config.
