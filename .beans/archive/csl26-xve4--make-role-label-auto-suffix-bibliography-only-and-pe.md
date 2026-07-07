@@ -1,13 +1,13 @@
 ---
 # csl26-xve4
 title: Make role-label auto-suffix bibliography-only and per-style
-status: todo
+status: completed
 type: task
 priority: normal
 tags:
     - contributors
 created_at: 2026-07-06T14:02:46Z
-updated_at: 2026-07-06T14:21:11Z
+updated_at: 2026-07-07T15:50:33Z
 parent: csl26-8m2p
 ---
 
@@ -33,3 +33,17 @@ Must not change output for any style currently passing oracle fidelity without t
 - crates/citum-schema-style/src/options/contributors.rs (RoleOptions, RoleLabelPreset)
 - Audit finding 16b, docs/architecture/audits/2026-07-04_CITUM_ENGINE_REVIEW_PART2.md
 - Bean csl26-mc0c (closed the audit finding without this deeper fix; PR #1017)
+
+## Implementation Notes (2026-07-07)
+
+- Baseline vs after `report-core.js` diff: only chicago-author-date-18th and taylor-and-francis-chicago-author-date changed, both IMPROVED (+1 bibliography pass each; the removed " (interviewer)" suffix moved output toward the citeproc-js oracle). No embedded style regressed, so none needed compensating YAML config.
+- User decision: no `legacy` compatibility variant. Engine default is `none`; bundles `apa` (editor-only short-suffix) and `mla` (word-form long-suffix for its documented role set) are opt-in, bibliography-context only.
+- Spec: docs/specs/ROLE_LABEL_DEFAULTS.md; div-012 marked resolved.
+
+## Summary of Changes
+
+- Removed the engine-hardcoded 7-role Long-form auto-suffix from resolve_role_labels (crates/citum-engine/src/values/contributor/labels.rs). No legacy variant kept: the engine default is now no automatic role label.
+- Added RoleLabelDefaults bundles (none/apa/mla) + RoleOptions.defaults field (crates/citum-schema-style/src/options/contributors.rs), applied only in bibliography context and never for verb/verb-short forms; per-role presets and explicit labels still win and remain context-independent.
+- Fidelity: before/after report-core diff shows zero regressions; chicago-author-date-18th and taylor-and-francis-chicago-author-date each gained +1 bibliography pass (the old " (interviewer)" suffix diverged from the citeproc-js oracle). No embedded style needed compensating YAML.
+- Tests: new schema round-trip/bundle tests, bibliography defaults-bundle tests, citation-context suppression test; updated tests that encoded the old implicit default.
+- Docs: spec docs/specs/ROLE_LABEL_DEFAULTS.md (Active); div-012 marked resolved in DIVERGENCE_REGISTER.md; schemas regenerated.

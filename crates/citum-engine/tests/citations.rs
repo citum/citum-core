@@ -3003,3 +3003,61 @@ fn test_sentence_start_false_leaves_output_unchanged() {
         "expected 'see also …' (lowercase) but got: {result}"
     );
 }
+
+#[test]
+fn role_label_defaults_bundle_never_fires_in_citation_context() {
+    // Role labels are a bibliography-only convention in every examined style
+    // guide (APA, MLA, Chicago, Vancouver/NLM) -- see div-012 in
+    // docs/adjudication/DIVERGENCE_REGISTER.md and
+    // docs/specs/ROLE_LABEL_DEFAULTS.md. Even with the APA defaults bundle
+    // declared, a Long-form editor in a citation template renders bare.
+    use citum_schema::reference::{Contributor, ContributorList, StructuredName};
+
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Role Label Defaults Citation Test".to_string()),
+            id: Some("role-label-defaults-citation-test".into()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::Numeric),
+            contributors: Some(ContributorConfig {
+                role: Some(citum_schema::options::contributors::RoleOptions {
+                    defaults: Some(citum_schema::options::contributors::RoleLabelDefaults::Apa),
+                    ..Default::default()
+                }),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }),
+        citation: Some(CitationSpec {
+            template: Some(vec![citum_schema::tc_contributor!(Editor, Long)]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert(
+        "item1".to_string(),
+        InputReference::Monograph(Box::new(Monograph {
+            id: Some("item1".into()),
+            r#type: MonographType::Book,
+            title: Some(Title::Single("Title".to_string())),
+            editor: Some(Contributor::ContributorList(ContributorList(vec![
+                Contributor::StructuredName(StructuredName {
+                    given: "John".into(),
+                    family: "Smith".into(),
+                    ..Default::default()
+                }),
+            ]))),
+            issued: EdtfString("2020".to_string()),
+            ..Default::default()
+        })),
+    );
+    let processor = Processor::new(style, bibliography);
+
+    let result = process_citation_ids(&processor, &["item1"]);
+
+    assert_eq!(result, "John Smith");
+}

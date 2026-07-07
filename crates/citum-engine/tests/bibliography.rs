@@ -1573,14 +1573,34 @@ fn build_bare_long_form_editor_style(role: Option<ContributorConfig>) -> Style {
 }
 
 #[test]
-fn bare_long_form_editor_gets_hardcoded_short_suffix_by_default() {
-    // With no label config, no role.omit, and no configured role preset, a
-    // Long-form editor component auto-appends a " (ed.)"-style suffix. This
-    // is a long-standing engine default (real embedded styles, e.g.
-    // elsevier-with-titles-core.yaml, depend on it with zero configuration)
-    // rather than a bug -- locking in the default here. See div-012 in
-    // docs/adjudication/DIVERGENCE_REGISTER.md.
+fn bare_long_form_editor_gets_no_label_by_default() {
+    // With no label config, no role.omit, no configured role preset, and no
+    // `role.defaults` bundle, a Long-form editor component renders bare: the
+    // old engine-hardcoded " (ed.)" suffix was removed in favor of explicit
+    // per-style `contributors.role.defaults` bundles. See div-012 in
+    // docs/adjudication/DIVERGENCE_REGISTER.md and
+    // docs/specs/ROLE_LABEL_DEFAULTS.md.
     let style = build_bare_long_form_editor_style(None);
+    let bib = citum_schema::bib_map![
+        "ITEM-1" => make_multi_editor_only_book("ITEM-1", "Title", "2020", vec![("Smith", "John")]),
+    ];
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert_eq!(result, "John Smith");
+}
+
+#[test]
+fn apa_role_label_defaults_bundle_restores_editor_suffix_in_bibliography() {
+    // A style declaring `contributors.role.defaults: apa` opts back into the
+    // abbreviated editor suffix in bibliography context.
+    let style = build_bare_long_form_editor_style(Some(ContributorConfig {
+        role: Some(citum_schema::options::contributors::RoleOptions {
+            defaults: Some(citum_schema::options::contributors::RoleLabelDefaults::Apa),
+            ..Default::default()
+        }),
+        ..Default::default()
+    }));
     let bib = citum_schema::bib_map![
         "ITEM-1" => make_multi_editor_only_book("ITEM-1", "Title", "2020", vec![("Smith", "John")]),
     ];
@@ -1591,10 +1611,11 @@ fn bare_long_form_editor_gets_hardcoded_short_suffix_by_default() {
 }
 
 #[test]
-fn per_role_preset_none_suppresses_the_hardcoded_editor_suffix() {
-    // contributors.role.roles.editor.preset: none already suppresses the
-    // hardcoded default for that role specifically -- a working, if
-    // undocumented-until-now, escape hatch. See div-012.
+fn per_role_preset_none_overrides_the_defaults_bundle() {
+    // contributors.role.roles.<role>.preset: none wins over a declared
+    // `role.defaults` bundle: configured presets are resolved before the
+    // bundle, so a style can opt one role out of its bundle. See div-012
+    // and docs/specs/ROLE_LABEL_DEFAULTS.md.
     let mut roles = HashMap::new();
     roles.insert(
         "editor".to_string(),
@@ -1606,6 +1627,7 @@ fn per_role_preset_none_suppresses_the_hardcoded_editor_suffix() {
     let style = build_bare_long_form_editor_style(Some(ContributorConfig {
         role: Some(citum_schema::options::contributors::RoleOptions {
             roles: Some(roles),
+            defaults: Some(citum_schema::options::contributors::RoleLabelDefaults::Apa),
             ..Default::default()
         }),
         ..Default::default()
