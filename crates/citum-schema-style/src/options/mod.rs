@@ -45,7 +45,8 @@ pub use multilingual::{
 };
 pub use processing::{
     CitationSortPolicy, Disambiguation, GivennameRule, Group, LabelConfig, LabelParams,
-    LabelPreset, Processing, ProcessingCustom, RegimeFamily, Sort, SortEntry, SortKey, SortSpec,
+    LabelPreset, Processing, ProcessingBase, ProcessingCustom, RegimeFamily, Sort, SortEntry,
+    SortKey, SortSpec,
 };
 pub use scoped::{
     BibliographyLabelMode, BibliographyLabelWrap, CitationGroupDelimiter, DatePosition, LabelWrap,

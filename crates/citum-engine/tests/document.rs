@@ -982,6 +982,7 @@ fn given_group_local_disambiguation_when_rendering_multilingual_groups_then_year
         .options
         .get_or_insert_with(Default::default)
         .processing = Some(Processing::Custom(ProcessingCustom {
+        base: None,
         disambiguate: Some(Disambiguation {
             year_suffix: false,
             ..Default::default()
@@ -994,6 +995,7 @@ fn given_group_local_disambiguation_when_rendering_multilingual_groups_then_year
         .options
         .get_or_insert_with(Default::default)
         .processing = Some(Processing::Custom(ProcessingCustom {
+        base: None,
         disambiguate: Some(Disambiguation {
             year_suffix: true,
             ..Default::default()

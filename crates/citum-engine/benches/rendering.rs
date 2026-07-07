@@ -118,6 +118,7 @@ fn bench_disambiguation(c: &mut Criterion) {
     };
     let default_title_sort_config = Config {
         processing: Some(Processing::Custom(ProcessingCustom {
+            base: None,
             disambiguate: Some(Disambiguation {
                 names: false,
                 add_givenname: false,
@@ -167,6 +168,7 @@ fn bench_disambiguation(c: &mut Criterion) {
 fn make_custom_config(names: bool, add_givenname: bool, year_suffix: bool) -> Config {
     Config {
         processing: Some(Processing::Custom(ProcessingCustom {
+            base: None,
             sort: Some(SortEntry::Explicit(Sort {
                 shorten_names: false,
                 render_substitutions: false,

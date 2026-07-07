@@ -1190,6 +1190,7 @@ fn test_disambiguation_givenname() {
     let mut style = make_style();
     style.options = Some(Config {
         processing: Some(Processing::Custom(ProcessingCustom {
+            base: None,
             sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
                 shorten_names: false,
                 render_substitutions: false,
@@ -1289,6 +1290,7 @@ fn test_disambiguation_add_names() {
     let mut style = make_style();
     style.options = Some(Config {
         processing: Some(Processing::Custom(ProcessingCustom {
+            base: None,
             sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
                 shorten_names: false,
                 render_substitutions: false,
@@ -1409,6 +1411,7 @@ fn test_disambiguation_combined_expansion() {
     let mut style = make_style();
     style.options = Some(Config {
         processing: Some(Processing::Custom(ProcessingCustom {
+            base: None,
             sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
                 shorten_names: false,
                 render_substitutions: false,
@@ -3100,6 +3103,7 @@ fn test_bibliography_per_group_disambiguation() {
     // Ensure year-suffix is enabled in style
     style.options.as_mut().unwrap().processing = Some(citum_schema::options::Processing::Custom(
         citum_schema::options::ProcessingCustom {
+            base: None,
             disambiguate: Some(citum_schema::options::Disambiguation {
                 year_suffix: true,
                 ..Default::default()
@@ -5708,6 +5712,7 @@ fn test_disambiguation_givenname_primary_only_flag() {
         let mut style = make_style();
         style.options = Some(Config {
             processing: Some(Processing::Custom(ProcessingCustom {
+                base: None,
                 sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
                     shorten_names: false,
                     render_substitutions: false,
@@ -5839,6 +5844,7 @@ fn test_disambiguation_givenname_primary_only_rendered() {
         let mut style = make_style();
         style.options = Some(Config {
             processing: Some(Processing::Custom(ProcessingCustom {
+                base: None,
                 sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
                     shorten_names: false,
                     render_substitutions: false,

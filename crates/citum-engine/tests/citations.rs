@@ -464,6 +464,7 @@ fn disambiguation_two_level_author_collisions_get_distinct_suffixes() {
     let mut style = build_author_date_style(true, true, false, Some(3), Some(1));
     style.options = Some(Config {
         processing: Some(Processing::Custom(ProcessingCustom {
+            base: None,
             disambiguate: Some(citum_schema::options::Disambiguation {
                 year_suffix: true,
                 names: true,
@@ -1008,6 +1009,7 @@ fn subsequent_et_al_thresholds_shorten_the_repeat_citation() {
         },
         options: Some(Config {
             processing: Some(Processing::Custom(ProcessingCustom {
+                base: None,
                 disambiguate: Some(Disambiguation {
                     year_suffix: false,
                     names: false,

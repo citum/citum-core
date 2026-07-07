@@ -92,6 +92,7 @@ fn build_sorted_style(sort: Vec<SortSpec>) -> Style {
         },
         options: Some(Config {
             processing: Some(Processing::Custom(ProcessingCustom {
+                base: None,
                 sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
                     template: sort,
                     shorten_names: false,
@@ -148,6 +149,7 @@ fn build_title_year_sorted_style(sort: Vec<SortSpec>) -> Style {
         },
         options: Some(Config {
             processing: Some(Processing::Custom(ProcessingCustom {
+                base: None,
                 sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
                     template: sort,
                     shorten_names: false,
@@ -1706,6 +1708,7 @@ fn make_name_particle_style(display_as_sort: DisplayAsSort) -> Style {
         },
         options: Some(Config {
             processing: Some(Processing::Custom(ProcessingCustom {
+                base: None,
                 sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
                     template: vec![SortSpec {
                         key: SortKey::Author,

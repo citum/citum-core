@@ -1185,6 +1185,7 @@ mod tests {
         let style = make_author_date_style(
             Config {
                 processing: Some(Processing::Custom(ProcessingCustom {
+                    base: None,
                     disambiguate: Some(Disambiguation {
                         names: false,
                         add_givenname: false,
@@ -1283,6 +1284,7 @@ mod tests {
 
         let config = Config {
             processing: Some(Processing::Custom(ProcessingCustom {
+                base: None,
                 disambiguate: Some(Disambiguation {
                     names: false,
                     add_givenname: true,
@@ -1315,6 +1317,7 @@ mod tests {
         let style = make_author_date_style(
             Config {
                 processing: Some(Processing::Custom(ProcessingCustom {
+                    base: None,
                     disambiguate: Some(Disambiguation {
                         names: false,
                         add_givenname: true,
@@ -1386,6 +1389,7 @@ mod tests {
 
         let config = Config {
             processing: Some(Processing::Custom(ProcessingCustom {
+                base: None,
                 disambiguate: Some(Disambiguation {
                     names: true,
                     add_givenname: true,
@@ -1465,6 +1469,7 @@ mod tests {
 
         let disabled_config = Config {
             processing: Some(Processing::Custom(ProcessingCustom {
+                base: None,
                 disambiguate: Some(Disambiguation {
                     names: false,
                     add_givenname: true,
@@ -1487,6 +1492,7 @@ mod tests {
 
         let enabled_config = Config {
             processing: Some(Processing::Custom(ProcessingCustom {
+                base: None,
                 disambiguate: Some(Disambiguation {
                     names: false,
                     add_givenname: false,
@@ -1550,6 +1556,7 @@ mod tests {
         let locale = Locale::en_us();
         let config = Config {
             processing: Some(Processing::Custom(ProcessingCustom {
+                base: None,
                 disambiguate: Some(Disambiguation {
                     names: true,
                     add_givenname: true,
@@ -1602,6 +1609,7 @@ mod tests {
 
         let config = Config {
             processing: Some(Processing::Custom(ProcessingCustom {
+                base: None,
                 disambiguate: Some(Disambiguation {
                     names: true,
                     add_givenname: false,
