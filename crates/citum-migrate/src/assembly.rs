@@ -14,6 +14,7 @@ use crate::{
 use citum_migrate::{
     analysis,
     compilation::XmlCompilationOutput as XmlFallback,
+    error::MigrateError,
     fixups::{
         ensure_numeric_locator_citation_component, ensure_personal_communication_omitted,
         gate_web_only_url_accessed, move_group_wrap_to_citation_items,
@@ -79,7 +80,10 @@ struct CompiledOutput {
 
 impl StandaloneAssembly<'_> {
     /// Assemble a standalone style using the requested source suppression.
-    pub(crate) fn assemble_with_selection(&self, selection: TemplateSourceSelection) -> Style {
+    pub(crate) fn assemble_with_selection(
+        &self,
+        selection: TemplateSourceSelection,
+    ) -> Result<Style, MigrateError> {
         let masked;
         let resolved =
             if selection.suppress_inferred_bibliography || selection.suppress_inferred_citation {
@@ -106,7 +110,7 @@ impl StandaloneAssembly<'_> {
                 resolved,
                 self.xml_fallback,
                 self.legacy_style,
-            );
+            )?;
 
         let (mut new_cit, citation_subsequent_override, citation_ibid_override) =
             select_citation_template(
@@ -115,7 +119,7 @@ impl StandaloneAssembly<'_> {
                 inferred_bib_source,
                 self.legacy_style,
                 &mut type_templates,
-            );
+            )?;
 
         override_bibliography_options_if_inferred(
             resolved,
@@ -126,7 +130,7 @@ impl StandaloneAssembly<'_> {
         let (citation_wrap, citation_prefix, citation_suffix, citation_delimiter) =
             resolve_citation_metadata(resolved, self.legacy_style, self.options, &mut new_cit);
 
-        build_final_style(
+        Ok(build_final_style(
             self.legacy_style,
             CompiledOutput {
                 options: self.options.clone(),
@@ -143,7 +147,7 @@ impl StandaloneAssembly<'_> {
                 citation_subsequent_override,
                 citation_ibid_override,
             },
-        )
+        ))
     }
 }
 
@@ -160,32 +164,37 @@ pub(crate) fn apply_measured_citation_selection(
     style_name: &str,
     style_xml: &str,
     workspace_root: &Path,
-) -> (
-    Style,
-    bool,
-    Option<citum_migrate::evidence::CitationSelectionEvidence>,
-) {
+) -> Result<
+    (
+        Style,
+        bool,
+        Option<citum_migrate::evidence::CitationSelectionEvidence>,
+    ),
+    MigrateError,
+> {
     let Some(out) = assembly.xml_fallback.as_ref() else {
-        return (current, false, None);
+        return Ok((current, false, None));
     };
     if out.citation.is_empty() {
-        return (current, false, None);
+        return Ok((current, false, None));
     }
 
     let alternative = assembly.assemble_with_selection(TemplateSourceSelection {
         suppress_inferred_citation: true,
         ..source_selection
-    });
-    match citum_migrate::synthesis::synthesize_citation(
-        &current,
-        &alternative,
-        style_name,
-        style_xml,
-        workspace_root,
-    ) {
-        Ok(selection) => apply_citation_selection_result(current, style_name, selection),
-        Err(err) => measured_selection_unavailable(current, style_name, "citation", err),
-    }
+    })?;
+    Ok(
+        match citum_migrate::synthesis::synthesize_citation(
+            &current,
+            &alternative,
+            style_name,
+            style_xml,
+            workspace_root,
+        ) {
+            Ok(selection) => apply_citation_selection_result(current, style_name, selection),
+            Err(err) => measured_selection_unavailable(current, style_name, "citation", err),
+        },
+    )
 }
 
 /// Replace the current bibliography template when a measured candidate renders
@@ -197,33 +206,38 @@ pub(crate) fn apply_measured_bibliography_selection(
     style_name: &str,
     style_xml: &str,
     workspace_root: &Path,
-) -> (
-    Style,
-    bool,
-    Option<citum_migrate::evidence::BibliographySelectionEvidence>,
-) {
+) -> Result<
+    (
+        Style,
+        bool,
+        Option<citum_migrate::evidence::BibliographySelectionEvidence>,
+    ),
+    MigrateError,
+> {
     let Some(out) = assembly.xml_fallback.as_ref() else {
-        return (current, false, None);
+        return Ok((current, false, None));
     };
     if out.bibliography.is_empty() {
-        return (current, false, None);
+        return Ok((current, false, None));
     }
 
     let bibliography_source = assembly.assemble_with_selection(TemplateSourceSelection {
         suppress_inferred_bibliography: true,
         ..source_selection
-    });
+    })?;
     let alternative = style_with_bibliography_from(current.clone(), bibliography_source);
-    match citum_migrate::synthesis::synthesize_bibliography(
-        &current,
-        &alternative,
-        style_name,
-        style_xml,
-        workspace_root,
-    ) {
-        Ok(selection) => apply_bibliography_selection_result(current, style_name, selection),
-        Err(err) => measured_selection_unavailable(current, style_name, "bibliography", err),
-    }
+    Ok(
+        match citum_migrate::synthesis::synthesize_bibliography(
+            &current,
+            &alternative,
+            style_name,
+            style_xml,
+            workspace_root,
+        ) {
+            Ok(selection) => apply_bibliography_selection_result(current, style_name, selection),
+            Err(err) => measured_selection_unavailable(current, style_name, "bibliography", err),
+        },
+    )
 }
 
 /// Resolve migrated bibliography sort only when it differs from the processing default.
@@ -327,7 +341,7 @@ fn select_and_process_bibliography_template(
     resolved: &template_resolver::ResolvedTemplates,
     xml_fallback: &Option<XmlFallback>,
     legacy_style: &csl_legacy::model::Style,
-) -> (Vec<TemplateComponent>, Option<TypeTemplateMap>, bool) {
+) -> Result<(Vec<TemplateComponent>, Option<TypeTemplateMap>, bool), MigrateError> {
     let (mut new_bib, mut type_templates, inferred_bib_source) =
         if let Some(ref resolved_bib) = resolved.bibliography {
             let inferred_bib = is_inferred_bib_source(&resolved_bib.source);
@@ -344,17 +358,18 @@ fn select_and_process_bibliography_template(
                 inferred_bib,
             )
         } else {
-            #[allow(clippy::expect_used, reason = "fatal bootstrap error")]
-            let out = xml_fallback
-                .as_ref()
-                .expect("XML fallback must exist when bibliography is unresolved");
+            let Some(out) = xml_fallback.as_ref() else {
+                return Err(MigrateError::Render(
+                    "XML fallback must exist when bibliography is unresolved".to_string(),
+                ));
+            };
             (out.bibliography.clone(), out.type_templates.clone(), false)
         };
 
     // Phase 1: semantic fixups operate only on full concrete templates.
     postprocess_bibliography_templates(&mut new_bib, &mut type_templates, legacy_style);
 
-    (new_bib, type_templates, inferred_bib_source)
+    Ok((new_bib, type_templates, inferred_bib_source))
 }
 
 fn select_citation_template(
@@ -363,11 +378,14 @@ fn select_citation_template(
     inferred_bib_source: bool,
     legacy_style: &csl_legacy::model::Style,
     type_templates: &mut Option<TypeTemplateMap>,
-) -> (
-    Vec<TemplateComponent>,
-    Option<Vec<TemplateComponent>>,
-    Option<Vec<TemplateComponent>>,
-) {
+) -> Result<
+    (
+        Vec<TemplateComponent>,
+        Option<Vec<TemplateComponent>>,
+        Option<Vec<TemplateComponent>>,
+    ),
+    MigrateError,
+> {
     let mut citation_subsequent_override: Option<Vec<TemplateComponent>> = None;
     let mut citation_ibid_override: Option<Vec<TemplateComponent>> = None;
     let new_cit = if let Some(ref resolved_cit) = resolved.citation {
@@ -385,10 +403,11 @@ fn select_citation_template(
         }
         resolved_cit.template.clone()
     } else {
-        #[allow(clippy::expect_used, reason = "fatal bootstrap error")]
-        let out = xml_fallback
-            .as_ref()
-            .expect("XML fallback must exist when citation is unresolved");
+        let Some(out) = xml_fallback.as_ref() else {
+            return Err(MigrateError::Render(
+                "XML fallback must exist when citation is unresolved".to_string(),
+            ));
+        };
         citation_subsequent_override = out.citation_overrides.subsequent.clone();
         citation_ibid_override = out.citation_overrides.ibid.clone();
         out.citation.clone()
@@ -398,11 +417,11 @@ fn select_citation_template(
         ensure_personal_communication_omitted(legacy_style, &new_cit, type_templates);
     }
 
-    (
+    Ok((
         new_cit,
         citation_subsequent_override,
         citation_ibid_override,
-    )
+    ))
 }
 
 #[allow(clippy::cognitive_complexity, reason = "macro-heavy output code")]
@@ -616,7 +635,7 @@ fn measured_selection_unavailable<T>(
     current: Style,
     style_name: &str,
     section: &str,
-    err: String,
+    err: MigrateError,
 ) -> (Style, bool, Option<T>) {
     tracing::debug!("Measured {section} selection unavailable for {style_name}: {err}");
     (current, false, None)

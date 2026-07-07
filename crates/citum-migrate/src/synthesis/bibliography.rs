@@ -14,6 +14,7 @@ use super::core::{
     HistoryEntry, MAX_SYNTHESIS_ROUNDS, RoundsContext, RoundsOutcome, accepted_mutation_names,
     heldout_gate, pick_seed, run_rounds,
 };
+use crate::error::MigrateError;
 use crate::js_runtime::{EmbeddedTemplateRuntime, FixtureSet};
 use crate::measured_citation::{
     CandidateBudget, CandidateScore, CandidateStyle, MeasuredBibliographySelection,
@@ -44,7 +45,7 @@ pub fn synthesize_bibliography(
     style_name: &str,
     style_xml: &str,
     workspace_root: &Path,
-) -> Result<MeasuredBibliographySelection, String> {
+) -> Result<MeasuredBibliographySelection, MigrateError> {
     synthesize_bibliography_rounds(
         inferred_style,
         xml_style,
@@ -64,12 +65,16 @@ pub(crate) fn synthesize_bibliography_rounds(
     style_xml: &str,
     workspace_root: &Path,
     max_rounds: usize,
-) -> Result<MeasuredBibliographySelection, String> {
+) -> Result<MeasuredBibliographySelection, MigrateError> {
     let mut runtime = EmbeddedTemplateRuntime::new(workspace_root)?;
     let reference_json =
         runtime.render_bibliography_strings(style_name, style_xml, FixtureSet::Selection)?;
     let references: BTreeMap<String, Option<String>> = serde_json::from_str(&reference_json)
-        .map_err(|err| format!("failed to parse citeproc bibliography references: {err}"))?;
+        .map_err(|err| {
+            MigrateError::Parse(format!(
+                "failed to parse citeproc bibliography references: {err}"
+            ))
+        })?;
     let bibliography = fixture_bibliography(workspace_root)?;
     let budget = CandidateBudget::default();
     let debug = std::env::var_os("CITUM_MIGRATE_DEBUG_BIB_SELECTION").is_some();
@@ -92,7 +97,9 @@ pub(crate) fn synthesize_bibliography_rounds(
     }
     let seed = pick_seed(&scored, "bibliography")?;
     let Some(seed_candidate) = candidates.get(seed.seed_index) else {
-        return Err("selected bibliography candidate was not generated".to_string());
+        return Err(MigrateError::Render(
+            "selected bibliography candidate was not generated".to_string(),
+        ));
     };
 
     let context = RoundsContext {
@@ -127,7 +134,9 @@ pub(crate) fn synthesize_bibliography_rounds(
     };
     let (selected_index, heldout) = heldout_gate(&outcome.history, &mut heldout_of, &context);
     let Some(selected) = outcome.history.get(selected_index) else {
-        return Err("selected bibliography candidate was not generated".to_string());
+        return Err(MigrateError::Render(
+            "selected bibliography candidate was not generated".to_string(),
+        ));
     };
     let accepted_mutations = accepted_mutation_names(&outcome.accepted, selected_index);
     let (selected_family, selected_section, selected_affected_types) =

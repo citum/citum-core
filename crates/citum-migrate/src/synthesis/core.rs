@@ -11,6 +11,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! section-specific scoring and template accessors and call into this core.
 
 use super::operators;
+use crate::error::MigrateError;
 use crate::measured_citation::{
     CandidateBudget, CandidateScore, HeldOutValidation, candidate_beats,
 };
@@ -65,16 +66,22 @@ pub(super) struct SeedScores {
 pub(super) fn pick_seed(
     scored: &[CandidateScore],
     section: &'static str,
-) -> Result<SeedScores, String> {
+) -> Result<SeedScores, MigrateError> {
     let Some(inferred) = scored.first().copied() else {
-        return Err(format!("no {section} candidates were generated"));
+        return Err(MigrateError::Render(format!(
+            "no {section} candidates were generated"
+        )));
     };
     let Some(xml) = scored.get(1).copied() else {
-        return Err(format!("XML {section} candidate was not generated"));
+        return Err(MigrateError::Render(format!(
+            "XML {section} candidate was not generated"
+        )));
     };
     let seed_index = best_candidate_index(scored);
     let Some(seed_score) = scored.get(seed_index).copied() else {
-        return Err(format!("selected {section} candidate was not scored"));
+        return Err(MigrateError::Render(format!(
+            "selected {section} candidate was not scored"
+        )));
     };
     Ok(SeedScores {
         inferred,

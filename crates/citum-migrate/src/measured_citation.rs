@@ -20,6 +20,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! same token-similarity fallback. Selection therefore optimizes the same
 //! measure the oracle reports without hiding strict bibliography case errors.
 
+use crate::error::MigrateError;
 use crate::js_runtime::{self, EmbeddedTemplateRuntime, FixtureSet};
 use citum_engine::Processor;
 use citum_engine::reference::{Bibliography, Citation};
@@ -196,7 +197,7 @@ pub fn select(
     style_name: &str,
     style_xml: &str,
     workspace_root: &Path,
-) -> Result<MeasuredCitationSelection, String> {
+) -> Result<MeasuredCitationSelection, MigrateError> {
     crate::synthesis::synthesize_citation_rounds(
         inferred_style,
         xml_style,
@@ -262,7 +263,7 @@ pub fn select_bibliography(
     style_name: &str,
     style_xml: &str,
     workspace_root: &Path,
-) -> Result<MeasuredBibliographySelection, String> {
+) -> Result<MeasuredBibliographySelection, MigrateError> {
     crate::synthesis::synthesize_bibliography_rounds(
         inferred_style,
         xml_style,
@@ -494,25 +495,29 @@ impl ComponentMatcher {
 }
 
 /// Load the embedded fixture items as an engine bibliography.
-pub(crate) fn fixture_bibliography(workspace_root: &Path) -> Result<Bibliography, String> {
+pub(crate) fn fixture_bibliography(workspace_root: &Path) -> Result<Bibliography, MigrateError> {
     bibliography_from_fixtures(js_runtime::load_fixtures(workspace_root)?)
 }
 
 /// Load the held-out fixture items as an engine bibliography.
-fn heldout_bibliography(workspace_root: &Path) -> Result<Bibliography, String> {
+fn heldout_bibliography(workspace_root: &Path) -> Result<Bibliography, MigrateError> {
     bibliography_from_fixtures(js_runtime::load_heldout_fixtures(workspace_root)?)
 }
 
 /// Convert a loaded fixture JSON object into an engine bibliography.
-fn bibliography_from_fixtures(fixtures: serde_json::Value) -> Result<Bibliography, String> {
-    let map = fixtures
-        .as_object()
-        .ok_or_else(|| "embedded fixture file is not a JSON object".to_string())?;
+fn bibliography_from_fixtures(fixtures: serde_json::Value) -> Result<Bibliography, MigrateError> {
+    let map = fixtures.as_object().ok_or_else(|| {
+        MigrateError::Parse("embedded fixture file is not a JSON object".to_string())
+    })?;
 
     let mut bibliography = Bibliography::new();
     for (id, item) in map {
         let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(item.clone())
-            .map_err(|err| format!("fixture item {id} failed to parse as CSL JSON: {err}"))?;
+            .map_err(|err| {
+                MigrateError::Parse(format!(
+                    "fixture item {id} failed to parse as CSL JSON: {err}"
+                ))
+            })?;
         bibliography.insert(id.clone(), legacy.into());
     }
     Ok(bibliography)

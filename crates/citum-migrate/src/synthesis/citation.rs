@@ -13,6 +13,7 @@ use super::core::{
     HistoryEntry, MAX_SYNTHESIS_ROUNDS, RoundsContext, accepted_mutation_names, heldout_gate,
     pick_seed, run_rounds,
 };
+use crate::error::MigrateError;
 use crate::js_runtime::{EmbeddedTemplateRuntime, FixtureSet};
 use crate::measured_citation::{
     CandidateBudget, CandidateScore, MeasuredCitationSelection, citation_mutation_candidates,
@@ -40,7 +41,7 @@ pub fn synthesize_citation(
     style_name: &str,
     style_xml: &str,
     workspace_root: &Path,
-) -> Result<MeasuredCitationSelection, String> {
+) -> Result<MeasuredCitationSelection, MigrateError> {
     synthesize_citation_rounds(
         inferred_style,
         xml_style,
@@ -60,13 +61,16 @@ pub(crate) fn synthesize_citation_rounds(
     style_xml: &str,
     workspace_root: &Path,
     max_rounds: usize,
-) -> Result<MeasuredCitationSelection, String> {
+) -> Result<MeasuredCitationSelection, MigrateError> {
     let mut runtime = EmbeddedTemplateRuntime::new(workspace_root)?;
     let reference_json =
         runtime.render_citation_strings(style_name, style_xml, FixtureSet::Selection)?;
-    let references: BTreeMap<String, Vec<Option<String>>> =
-        serde_json::from_str(&reference_json)
-            .map_err(|err| format!("failed to parse citeproc citation references: {err}"))?;
+    let references: BTreeMap<String, Vec<Option<String>>> = serde_json::from_str(&reference_json)
+        .map_err(|err| {
+        MigrateError::Parse(format!(
+            "failed to parse citeproc citation references: {err}"
+        ))
+    })?;
     let bibliography = fixture_bibliography(workspace_root)?;
     let budget = CandidateBudget::default();
     let debug = std::env::var_os("CITUM_MIGRATE_DEBUG_CITATION_SELECTION").is_some();
@@ -94,7 +98,9 @@ pub(crate) fn synthesize_citation_rounds(
     }
     let seed = pick_seed(&scored, "citation")?;
     let Some((seed_name, seed_style)) = candidates.get(seed.seed_index) else {
-        return Err("selected citation candidate was not generated".to_string());
+        return Err(MigrateError::Render(
+            "selected citation candidate was not generated".to_string(),
+        ));
     };
 
     let context = RoundsContext {
@@ -129,7 +135,9 @@ pub(crate) fn synthesize_citation_rounds(
     };
     let (selected_index, heldout) = heldout_gate(&outcome.history, &mut heldout_of, &context);
     let Some(selected) = outcome.history.get(selected_index) else {
-        return Err("selected citation candidate was not generated".to_string());
+        return Err(MigrateError::Render(
+            "selected citation candidate was not generated".to_string(),
+        ));
     };
     let accepted_mutations = accepted_mutation_names(&outcome.accepted, selected_index);
     if debug {
