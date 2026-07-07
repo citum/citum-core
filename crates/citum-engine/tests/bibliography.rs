@@ -4731,3 +4731,20 @@ fn given_multilingual_ref_when_rendering_html_then_data_attrs_match_displayed_fo
         "data-author must use transliterated name, not original CJK: {rendered}"
     );
 }
+
+#[test]
+fn explicit_label_affixes_override_placement_defaults() {
+    // RoleLabel prefix/suffix mirror CSL 1.0 cs:label affixes: a suffix
+    // placement normally joins with ", ", but an explicit " ("/")" pair
+    // wraps the term in parentheses (elsevier's " (Eds.)" shape, with
+    // text-case capitalizing the locale's lowercase "eds.").
+    let yaml = "info:\n  title: Label Affix Test\nbibliography:\n  template:\n    - contributor: editor\n      form: long\n      label:\n        term: editor\n        form: short\n        placement: suffix\n        prefix: \" (\"\n        suffix: \")\"\n        text-case: capitalize-first\n";
+    let style = citum_schema::Style::from_yaml_str(yaml).expect("style should parse");
+    let bib = citum_schema::bib_map![
+        "ITEM-1" => make_multi_editor_only_book("ITEM-1", "Title", "2020", vec![("Smith", "John"), ("Doe", "Jane")]),
+    ];
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert_eq!(result, "John Smith, Jane Doe (Eds.)");
+}

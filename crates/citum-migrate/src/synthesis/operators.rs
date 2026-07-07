@@ -295,6 +295,8 @@ mod tests {
                     form: RoleLabelForm::Short,
                     placement: Default::default(),
                     text_case: None,
+                    prefix: None,
+                    suffix: None,
                 }),
                 ..Default::default()
             }),
