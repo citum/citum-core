@@ -14,7 +14,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use citum_schema::CitationSpec;
 use citum_schema::Style;
 use citum_schema::options::{
-    BibliographyOptions, CitationOptions, Config, LocatorConfig, SubstituteConfig,
+    BibliographyOptions, CitationOptions, Config, LocatorConfig, SortingConfig, SubstituteConfig,
 };
 
 /// A single populated `unknown_fields` capture located in a parsed [`Style`].
@@ -89,6 +89,9 @@ fn walk_config(out: &mut Vec<UnknownFieldPath>, base: &str, c: &Config) {
     }
     if let Some(dates) = &c.dates {
         push_keys(out, &format!("{base}.dates"), dates.unknown_fields.keys());
+    }
+    if let Some(sorting) = &c.sorting {
+        walk_sorting_config(out, &format!("{base}.sorting"), sorting);
     }
     if let Some(titles) = &c.titles {
         push_keys(out, &format!("{base}.titles"), titles.unknown_fields.keys());
@@ -184,6 +187,9 @@ fn walk_bibliography_options_nested(
     if let Some(dates) = &bo.dates {
         push_keys(out, &format!("{base}.dates"), dates.unknown_fields.keys());
     }
+    if let Some(sorting) = &bo.sorting {
+        walk_sorting_config(out, &format!("{base}.sorting"), sorting);
+    }
     if let Some(titles) = &bo.titles {
         push_keys(out, &format!("{base}.titles"), titles.unknown_fields.keys());
     }
@@ -208,6 +214,10 @@ fn walk_bibliography_options_nested(
             partitioning.unknown_fields.keys(),
         );
     }
+}
+
+fn walk_sorting_config(out: &mut Vec<UnknownFieldPath>, base: &str, sorting: &SortingConfig) {
+    push_keys(out, base, sorting.unknown_fields.keys());
 }
 
 fn push_keys<'a, I>(out: &mut Vec<UnknownFieldPath>, path: &str, keys: I)

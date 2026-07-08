@@ -1,13 +1,13 @@
 ---
 # csl26-xz2t
 title: Public schema options for multilingual sort policy
-status: in-progress
+status: completed
 type: feature
 priority: normal
 tags:
     - multilingual
 created_at: 2026-05-01T11:32:12Z
-updated_at: 2026-07-08T12:10:55Z
+updated_at: 2026-07-08T13:22:11Z
 ---
 
 Expose schema/style configuration for multilingual bibliography sort behavior once multiple modes exist (e.g. single-locale, per-script, transliterated). Currently all sort policy is hardcoded. Depends on per-script partitioning and/or transliteration features being implemented first. Deferred by design per UNICODE_BIBLIOGRAPHY_SORTING.md.
@@ -44,9 +44,13 @@ Schema change ⇒ `just schema-gen` in the implementing commit; spec doc in docs
 
 ## Todo
 
-- [ ] Spec commit: docs/specs/MULTILINGUAL_SORTING.md (Draft) + scope edits to UNICODE_BIBLIOGRAPHY_SORTING.md, SORTING.md, MULTILINGUAL.md §4.1, MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md — awaiting Bruce review
-- [ ] Phase 1 schema: SortingConfig (locale, multilingual) on Config + BibliographyOptions override, merge machinery, roundtrip tests
-- [ ] Phase 1 engine: three-step romanized sort-key chain in sort_support.rs / Sorter paths
-- [ ] just schema-gen in the implementing commit; spec Draft → Active
-- [ ] Phase 2: per-script shorthand expands to sort-partitioning {by: script, mode: sort-only} when absent; explicit block authoritative; precedence tests
-- [ ] Create follow-up bean for Phase 3 (feature-gated transliteration registry)
+- [x] Spec commit: docs/specs/MULTILINGUAL_SORTING.md (Draft) + scope edits to UNICODE_BIBLIOGRAPHY_SORTING.md, SORTING.md, MULTILINGUAL.md §4.1, MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md — spec design approved by Bruce 2026-07-08
+- [x] Phase 1 schema: SortingConfig (locale, multilingual) on Config + BibliographyOptions override, merge machinery, roundtrip tests
+- [x] Phase 1 engine: three-step romanized sort-key chain in sort_support.rs / Sorter paths
+- [x] just schema-gen in the implementing commit; spec Draft → Active
+- [x] Phase 2: per-script shorthand expands to sort-partitioning {by: script, mode: sort-only} when absent; explicit block authoritative; precedence tests
+- [x] Create follow-up bean for Phase 3 (feature-gated transliteration registry): csl26-rxik
+
+## Summary of Changes
+
+Implemented Phases 1–2 from docs/specs/MULTILINGUAL_SORTING.md: added options.sorting with style/bibliography merge behavior, wired romanized sort-key policy through bibliography sorting, implemented per-script shorthand precedence, regenerated schemas, and created Phase 3 follow-up bean csl26-rxik.

@@ -644,6 +644,9 @@ pub struct MultilingualComplex {
     pub original: String,
     /// ISO 639/BCP 47 language code for the original text.
     pub lang: Option<LangID>,
+    /// Hidden text key used only for bibliography sorting.
+    #[serde(rename = "sort-as", skip_serializing_if = "Option::is_none")]
+    pub sort_as: Option<String>,
     /// Transliterations/Transcriptions of the original text into other scripts.
     ///
     /// Keys are typically script codes (e.g., "Latn" for Latin) or full BCP 47 tags.

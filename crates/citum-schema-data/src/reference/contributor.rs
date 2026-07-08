@@ -50,6 +50,9 @@ pub struct MultilingualName {
     /// ISO 639/BCP 47 language code for the original name.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub lang: Option<crate::reference::types::LangID>,
+    /// Hidden whole-name key used only for bibliography sorting.
+    #[serde(rename = "sort-as", skip_serializing_if = "Option::is_none")]
+    pub sort_as: Option<String>,
     /// Transliterations/Transcriptions of the name.
     #[serde(default, skip_serializing_if = "std::collections::HashMap::is_empty")]
     pub transliterations: std::collections::HashMap<String, StructuredName>,

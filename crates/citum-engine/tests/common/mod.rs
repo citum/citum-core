@@ -150,6 +150,7 @@ pub fn make_multilingual_book(params: MultilingualBookParams) -> Reference {
                 ..Default::default()
             },
             lang: Some(params.lang.into()),
+            sort_as: None,
             transliterations,
             translations: HashMap::new(),
         })),

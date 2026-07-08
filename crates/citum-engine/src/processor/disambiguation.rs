@@ -1713,6 +1713,7 @@ mod tests {
                     ..Default::default()
                 },
                 lang: Some("ja".into()),
+                sort_as: None,
                 transliterations,
                 translations: HashMap::new(),
             })),

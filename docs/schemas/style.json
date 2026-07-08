@@ -2887,6 +2887,17 @@
             }
           ]
         },
+        "sorting": {
+          "description": "Bibliography sorting policy.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SortingConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "contributors": {
           "description": "Contributor formatting defaults. Accepts a preset name (e.g., \"apa\")\nor explicit configuration.",
           "anyOf": [
@@ -3831,6 +3842,58 @@
           ]
         }
       }
+    },
+    "SortingConfig": {
+      "description": "Style-level or bibliography-local bibliography sorting policy.",
+      "type": "object",
+      "properties": {
+        "locale": {
+          "description": "Collator locale used for text comparisons.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SortingLocale"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "multilingual": {
+          "description": "Multilingual sort-key mode.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SortingMultilingualMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "SortingLocale": {
+      "description": "\"auto\" or an explicit BCP 47 locale tag used for collation.",
+      "type": "string"
+    },
+    "SortingMultilingualMode": {
+      "description": "Multilingual bibliography sort-key mode.",
+      "oneOf": [
+        {
+          "description": "Use the existing single-collator sort key behavior.",
+          "type": "string",
+          "const": "uniform"
+        },
+        {
+          "description": "Prefer hidden romanized sort keys when supplied by reference data.",
+          "type": "string",
+          "const": "romanized"
+        },
+        {
+          "description": "Expand to script partitioning when no explicit partitioning is configured.",
+          "type": "string",
+          "const": "per-script"
+        }
+      ]
     },
     "ContributorConfigEntry": {
       "description": "Contributor config: either a preset name or explicit configuration.\n\nAllows styles to write `contributors: apa` as shorthand, or provide\nfull explicit configuration with field-level overrides.",
@@ -6259,6 +6322,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/MultilingualConfigEntry"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sorting": {
+          "description": "Bibliography sorting policy.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SortingConfig"
             },
             {
               "type": "null"

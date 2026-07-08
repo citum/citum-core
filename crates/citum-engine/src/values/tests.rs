@@ -3957,6 +3957,7 @@ fn preferred_transliteration_exact_match() {
     let s = MultilingualString::Complex(MultilingualComplex {
         original: "战争".to_string(),
         lang: None,
+        sort_as: None,
         transliterations: vec![
             ("zh-Latn-wadegile".to_string(), "Chan-cheng".to_string()),
             ("zh-Latn-pinyin".to_string(), "Zhànzhēng".to_string()),
@@ -3984,6 +3985,7 @@ fn preferred_transliteration_substring_match() {
     let s = MultilingualString::Complex(MultilingualComplex {
         original: "战争".to_string(),
         lang: None,
+        sort_as: None,
         transliterations: vec![("zh-Latn-pinyin".to_string(), "Zhànzhēng".to_string())]
             .into_iter()
             .collect(),
@@ -4008,6 +4010,7 @@ fn preferred_transliteration_fallback_to_preferred_script() {
     let s = MultilingualString::Complex(MultilingualComplex {
         original: "战争".to_string(),
         lang: None,
+        sort_as: None,
         transliterations: vec![("zh-Latn-pinyin".to_string(), "Zhànzhēng".to_string())]
             .into_iter()
             .collect(),
@@ -4033,6 +4036,7 @@ fn preferred_transliteration_fallback_to_original() {
     let s = MultilingualString::Complex(MultilingualComplex {
         original: "战争".to_string(),
         lang: None,
+        sort_as: None,
         transliterations: HashMap::new(),
         translations: HashMap::new(),
     });

@@ -39,6 +39,7 @@ fn primary_mode_returns_original_family_name() {
     let m = MultilingualName {
         original: original.clone(),
         lang: None,
+        sort_as: None,
         transliterations: HashMap::new(),
         translations: HashMap::new(),
     };
@@ -90,6 +91,7 @@ fn given_a_priority_list_when_resolving_then_the_highest_matching_script_wins(
             ..Default::default()
         },
         lang: None,
+        sort_as: None,
         transliterations,
         translations: HashMap::new(),
     });
@@ -128,6 +130,7 @@ fn substring_script_preference_matches_containing_transliteration() {
             ..Default::default()
         },
         lang: None,
+        sort_as: None,
         transliterations,
         translations: HashMap::new(),
     });
@@ -165,6 +168,7 @@ fn transliterated_mode_with_preferred_script_latn_returns_romanized_cjk_name() {
             ..Default::default()
         },
         lang: None,
+        sort_as: None,
         transliterations,
         translations: HashMap::new(),
     });
@@ -201,6 +205,7 @@ fn primary_mode_keeps_native_cjk_script_ignoring_preferred_script() {
             ..Default::default()
         },
         lang: None,
+        sort_as: None,
         transliterations,
         translations: HashMap::new(),
     });

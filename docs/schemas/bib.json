@@ -3578,6 +3578,13 @@
             }
           ]
         },
+        "sort-as": {
+          "description": "Hidden text key used only for bibliography sorting.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "transliterations": {
           "description": "Transliterations/Transcriptions of the original text into other scripts.\n\nKeys are typically script codes (e.g., \"Latn\" for Latin) or full BCP 47 tags.\nValues are the transliterated or transcribed text.",
           "type": "object",
@@ -3730,6 +3737,13 @@
             {
               "type": "null"
             }
+          ]
+        },
+        "sort-as": {
+          "description": "Hidden whole-name key used only for bibliography sorting.",
+          "type": [
+            "string",
+            "null"
           ]
         },
         "transliterations": {
