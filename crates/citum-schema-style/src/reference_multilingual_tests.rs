@@ -26,6 +26,7 @@ mod tests {
         let yaml = r#"
 original: "战争与和平"
 lang: "zh"
+sort-as: "Zhanzheng yu Heping"
 transliterations:
   zh-Latn-pinyin: "Zhànzhēng yǔ Hépíng"
 translations:
@@ -35,6 +36,7 @@ translations:
         if let Title::Multilingual(m) = title {
             assert_eq!(m.original, "战争与和平");
             assert_eq!(m.lang, Some("zh".into()));
+            assert_eq!(m.sort_as.as_deref(), Some("Zhanzheng yu Heping"));
             assert_eq!(m.translations.get("en").unwrap(), "War and Peace");
         } else {
             panic!("Expected Title::Multilingual");
@@ -48,6 +50,7 @@ original:
   family: "Tolstoy"
   given: "Leo"
 lang: "ru"
+sort-as: "Tolstoy"
 transliterations:
   Latn:
     family: "Tolstoy"
@@ -56,6 +59,7 @@ transliterations:
         let name: MultilingualName = serde_yaml::from_str(yaml).unwrap();
         assert_eq!(name.original.family.to_string(), "Tolstoy");
         assert_eq!(name.lang, Some("ru".into()));
+        assert_eq!(name.sort_as.as_deref(), Some("Tolstoy"));
         assert!(name.transliterations.contains_key("Latn"));
     }
 

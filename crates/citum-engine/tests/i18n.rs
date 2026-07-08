@@ -179,6 +179,7 @@ fn given_primary_mode_when_resolving_a_multilingual_title_then_the_original_scri
     let complex = MultilingualComplex {
         original: "战争与和平".to_string(),
         lang: Some("zh".into()),
+        sort_as: None,
         transliterations: {
             let mut map = HashMap::new();
             map.insert(
@@ -210,6 +211,7 @@ fn given_an_exact_transliteration_match_when_resolving_then_that_transliteration
     let complex = MultilingualComplex {
         original: "東京".to_string(),
         lang: Some("ja".into()),
+        sort_as: None,
         transliterations: {
             let mut map = HashMap::new();
             map.insert("ja-Latn-hepburn".to_string(), "Tōkyō".to_string());
@@ -240,6 +242,7 @@ fn given_a_transliteration_prefix_match_when_resolving_then_the_matching_transli
     let complex = MultilingualComplex {
         original: "東京".to_string(),
         lang: Some("ja".into()),
+        sort_as: None,
         transliterations: {
             let mut map = HashMap::new();
             map.insert("ja-Latn-hepburn".to_string(), "Tōkyō".to_string());
@@ -265,6 +268,7 @@ fn given_no_transliteration_when_transliterated_mode_is_requested_then_the_origi
     let complex = MultilingualComplex {
         original: "东京".to_string(),
         lang: Some("zh".into()),
+        sort_as: None,
         transliterations: HashMap::new(), // No transliterations available
         translations: HashMap::new(),
     };
@@ -286,6 +290,7 @@ fn given_translated_mode_when_resolving_then_the_requested_locale_translation_is
     let complex = MultilingualComplex {
         original: "战争与和平".to_string(),
         lang: Some("zh".into()),
+        sort_as: None,
         transliterations: HashMap::new(),
         translations: {
             let mut map = HashMap::new();
@@ -323,6 +328,7 @@ fn given_translated_mode_with_region_locale_when_resolving_then_the_base_languag
     let complex = MultilingualComplex {
         original: "引用の社会的機能".to_string(),
         lang: Some("ja".into()),
+        sort_as: None,
         transliterations: HashMap::new(),
         translations: {
             let mut map = HashMap::new();
@@ -348,6 +354,7 @@ fn given_combined_mode_when_transliteration_and_translation_exist_then_both_are_
     let complex = MultilingualComplex {
         original: "战争与和平".to_string(),
         lang: Some("zh".into()),
+        sort_as: None,
         transliterations: {
             let mut map = HashMap::new();
             map.insert(
@@ -381,6 +388,7 @@ fn given_combined_mode_with_preferred_script_and_region_locale_then_transliterat
     let complex = MultilingualComplex {
         original: "引用の社会的機能".to_string(),
         lang: Some("ja".into()),
+        sort_as: None,
         transliterations: {
             let mut map = HashMap::new();
             map.insert(
@@ -417,6 +425,7 @@ fn given_combined_mode_without_transliteration_when_resolving_then_original_and_
     let complex = MultilingualComplex {
         original: "东京".to_string(),
         lang: Some("zh".into()),
+        sort_as: None,
         transliterations: HashMap::new(),
         translations: {
             let mut map = HashMap::new();
@@ -466,6 +475,7 @@ fn given_a_multilingual_name_with_requested_script_when_resolved_then_the_transl
             non_dropping_particle: None,
         },
         lang: Some("ru".into()),
+        sort_as: None,
         transliterations: {
             let mut map = HashMap::new();
             map.insert(
@@ -507,6 +517,7 @@ fn given_a_multilingual_name_with_a_script_prefix_match_when_resolved_then_the_m
             non_dropping_particle: None,
         },
         lang: Some("ru".into()),
+        sort_as: None,
         transliterations: {
             let mut map = HashMap::new();
             map.insert(
@@ -549,6 +560,7 @@ fn given_a_multilingual_name_without_transliterations_when_resolved_then_the_ori
             non_dropping_particle: None,
         },
         lang: Some("ru".into()),
+        sort_as: None,
         transliterations: HashMap::new(),
         translations: HashMap::new(),
     });
@@ -685,6 +697,7 @@ fn given_translated_numeric_integral_citations_when_rendered_then_the_translated
                         ..Default::default()
                     },
                     lang: Some("ru".into()),
+                    sort_as: None,
                     transliterations: HashMap::new(),
                     translations,
                 })),
@@ -717,6 +730,7 @@ fn given_field_language_overrides_when_resolving_the_effective_field_language_th
         title: Some(Title::Multilingual(MultilingualComplex {
             original: "Titel".to_string(),
             lang: Some("de".into()),
+            sort_as: None,
             transliterations: HashMap::new(),
             translations: HashMap::new(),
         })),
@@ -745,6 +759,7 @@ fn given_no_item_language_when_resolving_the_effective_item_language_then_the_mu
         title: Some(Title::Multilingual(MultilingualComplex {
             original: "東京".to_string(),
             lang: Some("ja".into()),
+            sort_as: None,
             transliterations: HashMap::new(),
             translations: HashMap::new(),
         })),
@@ -922,6 +937,7 @@ fn given_localized_bibliography_templates_when_only_the_multilingual_title_has_a
             title: Some(Title::Multilingual(MultilingualComplex {
                 original: "東京".to_string(),
                 lang: Some("ja".into()),
+                sort_as: None,
                 transliterations: HashMap::new(),
                 translations: HashMap::new(),
             })),
@@ -1105,6 +1121,7 @@ fn given_apa_multilingual_title_mode_when_rendering_a_japanese_article_then_titl
         title: Some(Title::Multilingual(MultilingualComplex {
             original: "引用の社会的機能：学術知識の構築における参照実践".to_string(),
             lang: Some("ja".into()),
+            sort_as: None,
             transliterations: HashMap::from([(
                 "ja-Latn".to_string(),
                 "In'yo no shakaiteki kino: Gakujutsu chishiki no kochiku ni okeru sansho jissen"
@@ -1123,6 +1140,7 @@ fn given_apa_multilingual_title_mode_when_rendering_a_japanese_article_then_titl
                 title: Some(Title::Multilingual(MultilingualComplex {
                     original: "科学社会学研究".to_string(),
                     lang: Some("ja".into()),
+                    sort_as: None,
                     transliterations: HashMap::from([(
                         "ja-Latn".to_string(),
                         "Kagaku Shakai-gaku Kenkyu".to_string(),
@@ -1207,6 +1225,7 @@ fn chicago_pattern_renders_three_way_japanese_title() {
         title: Some(Title::Multilingual(MultilingualComplex {
             original: "引用の社会的機能".to_string(),
             lang: Some("ja".into()),
+            sort_as: None,
             transliterations: HashMap::from([(
                 "ja-Latn".to_string(),
                 "In'yo no shakaiteki kino".to_string(),
@@ -1287,6 +1306,7 @@ fn mla_pattern_renders_original_and_translation_chinese_title() {
         title: Some(Title::Multilingual(MultilingualComplex {
             original: "战争与和平".to_string(),
             lang: Some("zh".into()),
+            sort_as: None,
             transliterations: HashMap::from([(
                 "zh-Latn-pinyin".to_string(),
                 "Zhànzhēng yǔ Hépíng".to_string(),
@@ -1317,6 +1337,7 @@ fn given_mla_pattern_mode_when_original_and_translation_exist_then_original_prec
     let complex = MultilingualComplex {
         original: "战争与和平".to_string(),
         lang: Some("zh".into()),
+        sort_as: None,
         transliterations: HashMap::new(), // MLA may omit transliteration
         translations: {
             let mut map = HashMap::new();
@@ -1347,6 +1368,7 @@ fn given_chicago_pattern_mode_when_all_three_views_exist_then_romanized_original
     let complex = MultilingualComplex {
         original: "战争与和平".to_string(),
         lang: Some("zh".into()),
+        sort_as: None,
         transliterations: {
             let mut map = HashMap::new();
             map.insert(
@@ -1395,6 +1417,7 @@ fn given_pattern_mode_when_transliteration_equals_original_then_duplicate_is_sup
     let complex = MultilingualComplex {
         original: "Tokyo".to_string(),
         lang: Some("ja".into()),
+        sort_as: None,
         transliterations: {
             let mut map = HashMap::new();
             map.insert("ja-Latn".to_string(), "Tokyo".to_string()); // same as original
@@ -1439,6 +1462,7 @@ fn given_pattern_mode_when_translation_is_missing_then_missing_segment_is_skippe
     let complex = MultilingualComplex {
         original: "引用の社会的機能".to_string(),
         lang: Some("ja".into()),
+        sort_as: None,
         transliterations: {
             let mut map = HashMap::new();
             map.insert(

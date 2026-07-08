@@ -17,7 +17,10 @@ use crate::reference::{Bibliography, CitationItem, Reference};
 use crate::values::ProcHints;
 use citum_schema::Style;
 use citum_schema::locale::Locale;
-use citum_schema::options::{Config, bibliography::BibliographyConfig};
+use citum_schema::options::{
+    BibliographyPartitionKind, BibliographyPartitionMode, BibliographySortPartitioning, Config,
+    SortingMultilingualMode, bibliography::BibliographyConfig,
+};
 use indexmap::IndexMap;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
@@ -483,20 +486,28 @@ impl Processor {
     ///
     /// Uses style-specified sort keys (author, title, issued, etc.) and sort order.
     pub fn sort_references<'a>(&self, references: Vec<&'a Reference>) -> Vec<&'a Reference> {
+        let bibliography_config = self.get_bibliography_config();
         let mut sorted_refs = match self.resolved_bibliography_sort() {
             Some((sort_spec, true)) => {
-                let sorter = crate::sorting::ReferenceSorter::new(&self.locale);
+                let sorter = crate::sorting::ReferenceSorter::with_bibliography_config(
+                    &self.locale,
+                    &bibliography_config,
+                );
                 sorter.sort_references_with_id_tiebreak(references, &sort_spec)
             }
             Some((sort_spec, false)) => {
-                let sorter = crate::sorting::ReferenceSorter::new(&self.locale);
+                let sorter = crate::sorting::ReferenceSorter::with_bibliography_config(
+                    &self.locale,
+                    &bibliography_config,
+                );
                 sorter.sort_references(references, &sort_spec)
             }
             None => references,
         };
 
         let bibliography_options = self.get_bibliography_options();
-        if let Some(partitioning) = bibliography_options.sort_partitioning.as_ref()
+        if let Some(partitioning) =
+            effective_sort_partitioning(&bibliography_options, &bibliography_config).as_ref()
             && crate::sort_partitioning::should_sort_flat(partitioning)
         {
             crate::sort_partitioning::sort_by_partition(
@@ -563,4 +574,27 @@ impl Processor {
 
         disambiguator.calculate_hints()
     }
+}
+
+fn effective_sort_partitioning(
+    bibliography_options: &BibliographyConfig,
+    bibliography_config: &Config,
+) -> Option<BibliographySortPartitioning> {
+    if let Some(partitioning) = &bibliography_options.sort_partitioning {
+        return Some(partitioning.clone());
+    }
+
+    bibliography_config
+        .sorting
+        .as_ref()
+        .is_some_and(|sorting| {
+            sorting.effective_multilingual() == SortingMultilingualMode::PerScript
+        })
+        .then(|| BibliographySortPartitioning {
+            by: BibliographyPartitionKind::Script,
+            mode: BibliographyPartitionMode::SortOnly,
+            order: Vec::new(),
+            headings: HashMap::new(),
+            unknown_fields: Default::default(),
+        })
 }

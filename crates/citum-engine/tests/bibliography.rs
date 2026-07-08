@@ -32,12 +32,13 @@ use citum_schema::{
         BibliographyPartitionMode, BibliographySortPartitioning, Config, ContributorConfig,
         DelimiterPrecedesLast, DemoteNonDroppingParticle, DisplayAsSort, LinkAnchor, LinkTarget,
         LinksConfig, MultilingualConfig, MultilingualMode, Processing, ProcessingCustom, Sort,
-        SortKey, SortSpec,
+        SortKey, SortSpec, SortingConfig, SortingMultilingualMode,
     },
     reference::{
-        Contributor, EdtfString, InputReference, Monograph, MonographType, Numbering,
-        NumberingType, Serial, SerialComponent, SerialComponentType, SerialType, StructuredName,
-        Title, WorkRelation,
+        Contributor, ContributorList, EdtfString, InputReference, Monograph, MonographType,
+        Numbering, NumberingType, Serial, SerialComponent, SerialComponentType, SerialType,
+        StructuredName, Title, WorkRelation,
+        contributor::MultilingualName,
         types::{ArchiveInfo, EprintInfo, MultilingualComplex, MultilingualString},
     },
     template::{
@@ -258,6 +259,51 @@ fn language_partition_bibliography() -> IndexMap<String, InputReference> {
     ])
 }
 
+fn romanized_partition_reference(
+    id: &str,
+    family: &str,
+    sort_as: Option<&str>,
+    title: &str,
+) -> InputReference {
+    InputReference::Monograph(Box::new(Monograph {
+        id: Some(id.into()),
+        r#type: MonographType::Book,
+        title: Some(Title::Single(title.to_string())),
+        author: Some(Contributor::ContributorList(ContributorList(vec![
+            Contributor::Multilingual(MultilingualName {
+                original: StructuredName {
+                    family: family.into(),
+                    given: "Test".into(),
+                    ..Default::default()
+                },
+                lang: Some("ru".into()),
+                sort_as: sort_as.map(str::to_string),
+                transliterations: HashMap::new(),
+                translations: HashMap::new(),
+            }),
+        ]))),
+        issued: EdtfString("1900".to_string()),
+        ..Default::default()
+    }))
+}
+
+fn romanized_partition_bibliography() -> IndexMap<String, InputReference> {
+    IndexMap::from([
+        (
+            "latin".to_string(),
+            romanized_partition_reference("latin", "Smith", None, "Latin title"),
+        ),
+        (
+            "pushkin".to_string(),
+            romanized_partition_reference("pushkin", "Пушкин", Some("Zulu"), "Pushkin title"),
+        ),
+        (
+            "tolstoy".to_string(),
+            romanized_partition_reference("tolstoy", "Толстой", Some("Aardvark"), "Tolstoy title"),
+        ),
+    ])
+}
+
 fn language_partition_reference(
     id: &str,
     family: &str,
@@ -352,6 +398,118 @@ options:
     let processor = Processor::new(style, script_partition_bibliography());
 
     assert_eq!(processor.render_bibliography(), "Бета\n\nAlpha\n\n東京");
+}
+
+#[test]
+#[cfg(feature = "icu")]
+fn given_per_script_sorting_shorthand_when_no_partitioning_then_script_sort_only_is_applied() {
+    announce_behavior(
+        "The multilingual per-script sorting shorthand expands to script sort-only partitioning when no explicit partitioning block exists.",
+    );
+    let shorthand_style = build_partition_style(
+        r#"
+options:
+  sorting:
+    multilingual: per-script
+"#,
+        "",
+    );
+    let explicit_style = build_partition_style(
+        r#"
+options:
+  sort-partitioning:
+    by: script
+    mode: sort-only
+"#,
+        "",
+    );
+
+    let shorthand =
+        Processor::new(shorthand_style, script_partition_bibliography()).render_bibliography();
+    let explicit =
+        Processor::new(explicit_style, script_partition_bibliography()).render_bibliography();
+
+    assert_eq!(shorthand, explicit);
+    assert_eq!(shorthand, "Бета\n\n東京\n\nAlpha");
+}
+
+#[test]
+#[cfg(feature = "icu")]
+fn given_per_script_shorthand_and_explicit_partitioning_then_explicit_partitioning_wins() {
+    announce_behavior(
+        "An explicit sort-partitioning block is authoritative over the per-script sorting shorthand.",
+    );
+    let style = build_partition_style(
+        r#"
+options:
+  sorting:
+    multilingual: per-script
+  sort-partitioning:
+    by: script
+    mode: sort-only
+    order: [Latn, Cyrl, Hani]
+"#,
+        "",
+    );
+    let processor = Processor::new(style, script_partition_bibliography());
+
+    assert_eq!(processor.render_bibliography(), "Alpha\n\nБета\n\n東京");
+}
+
+#[test]
+#[cfg(feature = "icu")]
+fn given_romanized_sorting_with_explicit_script_partitioning_then_romanized_order_applies_within_partitions()
+ {
+    announce_behavior(
+        "Romanized sorting composes with explicit script partitioning by applying hidden sort keys inside each script partition.",
+    );
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Romanized Partition Test".to_string()),
+            id: Some("romanized-partition-test".into()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            sorting: Some(SortingConfig {
+                multilingual: Some(SortingMultilingualMode::Romanized),
+                ..Default::default()
+            }),
+            processing: Some(Processing::Custom(ProcessingCustom {
+                base: None,
+                sort: Some(citum_schema::options::SortEntry::Explicit(Sort {
+                    template: vec![SortSpec {
+                        key: SortKey::Author,
+                        ascending: true,
+                    }],
+                    shorten_names: false,
+                    render_substitutions: false,
+                })),
+                ..Default::default()
+            })),
+            ..Default::default()
+        }),
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                sort_partitioning: Some(BibliographySortPartitioning {
+                    by: BibliographyPartitionKind::Script,
+                    mode: BibliographyPartitionMode::SortOnly,
+                    order: vec!["Cyrl".to_string(), "Latn".to_string()],
+                    headings: HashMap::new(),
+                    unknown_fields: Default::default(),
+                }),
+                ..Default::default()
+            }),
+            template: Some(vec![citum_schema::tc_title!(Primary)]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+    let processor = Processor::new(style, romanized_partition_bibliography());
+
+    assert_eq!(
+        processor.render_bibliography(),
+        "Tolstoy title\n\nPushkin title\n\nLatin title"
+    );
 }
 
 #[test]
@@ -1036,6 +1194,7 @@ fn make_multilingual_archive_name_reference() -> InputReference {
             name: Some(MultilingualString::Complex(MultilingualComplex {
                 original: "東京国立博物館".to_string(),
                 lang: Some("ja".into()),
+                sort_as: None,
                 transliterations: HashMap::from([(
                     "ja-Latn-hepburn".to_string(),
                     "Tokyo National Museum".to_string(),
@@ -4678,6 +4837,7 @@ fn given_multilingual_ref_when_rendering_html_then_data_attrs_match_displayed_fo
             title: Some(Title::Multilingual(MultilingualComplex {
                 original: "引用の社会的機能：学術知識の構築における参照実践".to_string(),
                 lang: None,
+                sort_as: None,
                 transliterations: HashMap::from([(
                     "ja-Latn".to_string(),
                     "In'yo no shakaiteki kino: Gakujutsu chishiki".to_string(),
@@ -4697,6 +4857,7 @@ fn given_multilingual_ref_when_rendering_html_then_data_attrs_match_displayed_fo
                             ..Default::default()
                         },
                         lang: None,
+                        sort_as: None,
                         transliterations: HashMap::from([(
                             "ja-Latn".to_string(),
                             StructuredName {

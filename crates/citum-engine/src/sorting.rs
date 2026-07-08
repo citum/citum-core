@@ -19,11 +19,15 @@ use std::collections::HashMap;
 
 use citum_schema::grouping::{GroupSort, GroupSortKey, NameSortOrder, SortKey as GroupSortKeyType};
 use citum_schema::locale::Locale;
+use citum_schema::options::Config;
 #[cfg(test)]
 use citum_schema::reference::ClassExtension;
 
 use crate::reference::Reference;
-use crate::sort_support::{TextCollator, author_sort_key_opt, normalize_sort_text, title_sort_key};
+use crate::sort_support::{
+    SortKeyOptions, TextCollator, author_sort_key_opt_with_options, collator_locale_id,
+    normalize_sort_text, title_sort_key_with_options,
+};
 
 fn compare_optional_years(a_year: Option<i32>, b_year: Option<i32>) -> std::cmp::Ordering {
     match (a_year, b_year) {
@@ -38,6 +42,7 @@ fn compare_optional_years(a_year: Option<i32>, b_year: Option<i32>) -> std::cmp:
 pub struct ReferenceSorter<'a> {
     locale: &'a Locale,
     text_collator: TextCollator,
+    sort_key_options: SortKeyOptions,
 }
 
 struct CachedReference<'a> {
@@ -85,6 +90,17 @@ impl<'a> ReferenceSorter<'a> {
         Self {
             locale,
             text_collator: TextCollator::new(locale),
+            sort_key_options: SortKeyOptions::uniform(),
+        }
+    }
+
+    /// Create a bibliography sorter using the effective bibliography config.
+    #[must_use]
+    pub fn with_bibliography_config(locale: &'a Locale, config: &Config) -> Self {
+        Self {
+            locale,
+            text_collator: TextCollator::new_for_locale_id(collator_locale_id(locale, config)),
+            sort_key_options: SortKeyOptions::from_config(config),
         }
     }
 
@@ -386,7 +402,13 @@ impl<'a> ReferenceSorter<'a> {
         reference: &Reference,
         name_order: NameSortOrder,
     ) -> Option<String> {
-        author_sort_key_opt(reference, name_order, self.locale, true)
+        author_sort_key_opt_with_options(
+            reference,
+            name_order,
+            self.locale,
+            true,
+            &self.sort_key_options,
+        )
     }
 
     /// Public helper retained for tests/debugging.
@@ -420,7 +442,7 @@ impl<'a> ReferenceSorter<'a> {
     }
 
     fn title_sort_key(&self, reference: &Reference) -> String {
-        title_sort_key(reference, self.locale)
+        title_sort_key_with_options(reference, self.locale, &self.sort_key_options)
     }
 
     fn issued_year(reference: &Reference) -> Option<i32> {
@@ -454,6 +476,14 @@ impl<'a> ReferenceSorter<'a> {
 mod tests {
     use super::*;
     use citum_schema::grouping::GroupSortKey;
+    use citum_schema::options::{MultilingualConfig, SortingConfig, SortingMultilingualMode};
+    use citum_schema::reference::contributor::MultilingualName;
+    use citum_schema::reference::types::MultilingualComplex;
+    use citum_schema::reference::{
+        Contributor, ContributorList, EdtfString, Monograph, MonographType, MultilingualString,
+        StructuredName, Title,
+    };
+    use std::collections::HashMap;
 
     fn make_locale() -> Locale {
         Locale::en_us()
@@ -488,6 +518,77 @@ mod tests {
         });
         let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(json).unwrap();
         legacy.into()
+    }
+
+    fn romanized_config() -> Config {
+        Config {
+            sorting: Some(SortingConfig {
+                multilingual: Some(SortingMultilingualMode::Romanized),
+                ..Default::default()
+            }),
+            multilingual: Some(MultilingualConfig {
+                preferred_transliteration: Some(vec!["ru-Latn-alalc97".to_string()]),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }
+    }
+
+    fn multilingual_author_reference(
+        id: &str,
+        original_family: MultilingualString,
+        sort_as: Option<&str>,
+        transliteration_family: Option<&str>,
+        title: Title,
+    ) -> Reference {
+        let transliterations = transliteration_family.map_or_else(HashMap::new, |family| {
+            HashMap::from([(
+                "ru-Latn-alalc97".to_string(),
+                StructuredName {
+                    family: family.into(),
+                    given: "Lev".into(),
+                    ..Default::default()
+                },
+            )])
+        });
+
+        Reference::Monograph(Box::new(Monograph {
+            id: Some(id.into()),
+            r#type: MonographType::Book,
+            title: Some(title),
+            author: Some(Contributor::ContributorList(ContributorList(vec![
+                Contributor::Multilingual(MultilingualName {
+                    original: StructuredName {
+                        family: original_family,
+                        given: "Лев".into(),
+                        ..Default::default()
+                    },
+                    lang: Some("ru".into()),
+                    sort_as: sort_as.map(str::to_string),
+                    transliterations,
+                    translations: HashMap::new(),
+                }),
+            ]))),
+            issued: EdtfString("1869".to_string()),
+            ..Default::default()
+        }))
+    }
+
+    fn title_sort(sorter: &ReferenceSorter<'_>, references: Vec<&Reference>) -> Vec<String> {
+        let sort_spec = GroupSort {
+            template: vec![GroupSortKey {
+                key: GroupSortKeyType::Title,
+                ascending: true,
+                order: None,
+                sort_order: None,
+            }],
+        };
+
+        sorter
+            .sort_references(references, &sort_spec)
+            .into_iter()
+            .map(|reference| reference.id().expect("test reference id").to_string())
+            .collect()
     }
 
     #[test]
@@ -898,5 +999,113 @@ mod tests {
 
         assert_eq!(sorted[0].id().unwrap(), "r-c");
         assert_eq!(sorted[1].id().unwrap(), "r-a");
+    }
+
+    #[test]
+    fn romanized_author_sort_uses_hidden_sort_as() {
+        let locale = make_locale();
+        let config = romanized_config();
+        let sorter = ReferenceSorter::with_bibliography_config(&locale, &config);
+        let reference = multilingual_author_reference(
+            "tolstoy",
+            "Толстой".into(),
+            Some("Tolstoy"),
+            Some("Tolstoĭ"),
+            Title::Single("War and Peace".to_string()),
+        );
+
+        assert_eq!(
+            sorter.extract_author_sort_key(&reference, NameSortOrder::FamilyGiven),
+            "Tolstoy"
+        );
+    }
+
+    #[test]
+    fn uniform_author_sort_ignores_hidden_sort_as() {
+        let locale = make_locale();
+        let sorter = ReferenceSorter::new(&locale);
+        let reference = multilingual_author_reference(
+            "tolstoy",
+            "Толстой".into(),
+            Some("Tolstoy"),
+            Some("Tolstoĭ"),
+            Title::Single("War and Peace".to_string()),
+        );
+
+        assert_eq!(
+            sorter.extract_author_sort_key(&reference, NameSortOrder::FamilyGiven),
+            "Толстой"
+        );
+    }
+
+    #[test]
+    fn romanized_author_sort_falls_back_to_matched_transliteration() {
+        let locale = make_locale();
+        let config = romanized_config();
+        let sorter = ReferenceSorter::with_bibliography_config(&locale, &config);
+        let reference = multilingual_author_reference(
+            "tolstoy",
+            "Толстой".into(),
+            None,
+            Some("Tolstoĭ"),
+            Title::Single("War and Peace".to_string()),
+        );
+
+        assert_eq!(
+            sorter.extract_author_sort_key(&reference, NameSortOrder::FamilyGiven),
+            "Tolstoĭ"
+        );
+    }
+
+    #[test]
+    fn holistic_sort_as_wins_over_part_level_sort_as() {
+        let locale = make_locale();
+        let config = romanized_config();
+        let sorter = ReferenceSorter::with_bibliography_config(&locale, &config);
+        let family = MultilingualString::Complex(MultilingualComplex {
+            original: "Толстой".to_string(),
+            lang: Some("ru".into()),
+            sort_as: Some("Part Level".to_string()),
+            transliterations: HashMap::new(),
+            translations: HashMap::new(),
+        });
+        let reference = multilingual_author_reference(
+            "tolstoy",
+            family,
+            Some("Whole Name"),
+            Some("Tolstoĭ"),
+            Title::Single("War and Peace".to_string()),
+        );
+
+        assert_eq!(
+            sorter.extract_author_sort_key(&reference, NameSortOrder::FamilyGiven),
+            "Whole Name"
+        );
+    }
+
+    #[test]
+    fn title_sort_uses_hidden_sort_as_under_romanized_mode() {
+        let locale = make_locale();
+        let config = romanized_config();
+        let sorter = ReferenceSorter::with_bibliography_config(&locale, &config);
+        let cyrillic = multilingual_author_reference(
+            "cyrillic-title",
+            "Smith".into(),
+            None,
+            None,
+            Title::Multilingual(MultilingualComplex {
+                original: "Война и мир".to_string(),
+                lang: Some("ru".into()),
+                sort_as: Some("Academic War and Peace".to_string()),
+                transliterations: HashMap::new(),
+                translations: HashMap::new(),
+            }),
+        );
+        let latin = make_reference_no_author("latin-title", "book", "Beta Studies", 2000);
+
+        assert_eq!(
+            title_sort(&sorter, vec![&latin, &cyrillic]),
+            vec!["cyrillic-title".to_string(), "latin-title".to_string()]
+        );
     }
 }

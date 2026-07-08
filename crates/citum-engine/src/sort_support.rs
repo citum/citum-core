@@ -10,6 +10,9 @@ use std::cmp::Ordering;
 use crate::reference::Reference;
 use citum_schema::grouping::NameSortOrder;
 use citum_schema::locale::Locale;
+use citum_schema::options::{Config, SortingLocale, SortingMultilingualMode};
+use citum_schema::reference::contributor::{Contributor, MultilingualName, StructuredName};
+use citum_schema::reference::types::{MultilingualComplex, MultilingualString, Title};
 
 #[cfg(feature = "icu")]
 use icu_collator::options::{AlternateHandling, CaseLevel, CollatorOptions, Strength};
@@ -33,6 +36,12 @@ impl TextCollator {
     /// - Alternate handling shifted (punctuation/spaces ignorable at primary/secondary)
     #[must_use]
     pub(crate) fn new(locale: &Locale) -> Self {
+        Self::new_for_locale_id(&locale.locale)
+    }
+
+    /// Create a collator for a locale identifier.
+    #[must_use]
+    pub(crate) fn new_for_locale_id(locale_id: &str) -> Self {
         #[cfg(feature = "icu")]
         {
             let mut options = CollatorOptions::default();
@@ -43,13 +52,13 @@ impl TextCollator {
             // configurable at the ICU4X collator API level; they follow CLDR
             // defaults for the resolved locale.
             #[allow(clippy::expect_used, reason = "ICU bootstrap failure is fatal")]
-            let collator = CollatorBorrowed::try_new(collator_preferences(locale), options)
+            let collator = CollatorBorrowed::try_new(collator_preferences(locale_id), options)
                 .expect("ICU4X compiled collation data should be available");
             Self { collator }
         }
         #[cfg(not(feature = "icu"))]
         {
-            let _ = locale;
+            let _ = locale_id;
             Self {}
         }
     }
@@ -68,6 +77,76 @@ impl TextCollator {
     }
 }
 
+/// Sort-key construction options for bibliography text keys.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub(crate) struct SortKeyOptions {
+    mode: SortingMultilingualMode,
+    preferred_transliteration: Option<Vec<String>>,
+    preferred_script: Option<String>,
+}
+
+impl SortKeyOptions {
+    /// Build sort-key options from effective bibliography configuration.
+    #[must_use]
+    pub(crate) fn from_config(config: &Config) -> Self {
+        let mode = config
+            .sorting
+            .as_ref()
+            .map_or(SortingMultilingualMode::Uniform, |sorting| {
+                sorting.effective_multilingual()
+            });
+        let preferred_transliteration = config
+            .multilingual
+            .as_ref()
+            .and_then(|ml| ml.preferred_transliteration.clone());
+        let preferred_script = config
+            .multilingual
+            .as_ref()
+            .and_then(|ml| ml.preferred_script.clone())
+            .or_else(|| (mode == SortingMultilingualMode::Romanized).then(|| "Latn".to_string()));
+
+        Self {
+            mode,
+            preferred_transliteration,
+            preferred_script,
+        }
+    }
+
+    /// Return uniform sort-key behavior.
+    #[must_use]
+    pub(crate) fn uniform() -> Self {
+        Self::default()
+    }
+
+    /// Return whether romanized hidden keys should be considered.
+    #[must_use]
+    pub(crate) fn is_romanized(&self) -> bool {
+        self.mode == SortingMultilingualMode::Romanized
+    }
+
+    fn preferred_transliteration(&self) -> Option<&[String]> {
+        self.preferred_transliteration.as_deref()
+    }
+
+    fn preferred_script(&self) -> Option<&String> {
+        self.preferred_script.as_ref()
+    }
+}
+
+/// Resolve the locale ID used by the sorting collator.
+#[must_use]
+pub(crate) fn collator_locale_id<'a>(
+    bibliography_locale: &'a Locale,
+    config: &'a Config,
+) -> &'a str {
+    config
+        .sorting
+        .as_ref()
+        .and_then(|sorting| sorting.locale.as_ref())
+        .and_then(SortingLocale::as_explicit_tag)
+        .unwrap_or(bibliography_locale.locale.as_str())
+}
+
 /// Build the normalized author sort key using existing fallback rules.
 #[must_use]
 pub(crate) fn author_sort_key_opt(
@@ -76,30 +155,57 @@ pub(crate) fn author_sort_key_opt(
     locale: &Locale,
     fallback_to_title: bool,
 ) -> Option<String> {
+    author_sort_key_opt_with_options(
+        reference,
+        name_order,
+        locale,
+        fallback_to_title,
+        &SortKeyOptions::uniform(),
+    )
+}
+
+/// Build the normalized author sort key using configured multilingual behavior.
+#[must_use]
+pub(crate) fn author_sort_key_opt_with_options(
+    reference: &Reference,
+    name_order: NameSortOrder,
+    locale: &Locale,
+    fallback_to_title: bool,
+    options: &SortKeyOptions,
+) -> Option<String> {
     reference
         .author()
-        .and_then(|c| c.to_names_vec().first().cloned())
-        .map(|name| match name_order {
-            NameSortOrder::FamilyGiven | NameSortOrder::GivenFamily => {
-                normalize_sort_text(name.family_or_literal())
-            }
-        })
+        .and_then(|c| contributor_sort_key(&c, name_order, options))
         .filter(|key| !key.is_empty())
         .or_else(|| {
             reference
                 .editor()
-                .and_then(|c| c.to_names_vec().first().cloned())
-                .map(|name| normalize_sort_text(name.family_or_literal()))
+                .and_then(|c| contributor_sort_key(&c, name_order, options))
                 .filter(|key| !key.is_empty())
         })
-        .or_else(|| fallback_to_title.then(|| title_sort_key(reference, locale)))
+        .or_else(|| {
+            fallback_to_title.then(|| title_sort_key_with_options(reference, locale, options))
+        })
         .filter(|key| !key.is_empty())
 }
 
 /// Build the normalized title sort key with locale article stripping.
 #[must_use]
 pub(crate) fn title_sort_key(reference: &Reference, locale: &Locale) -> String {
-    let title = reference.title().map(|t| t.to_string()).unwrap_or_default();
+    title_sort_key_with_options(reference, locale, &SortKeyOptions::uniform())
+}
+
+/// Build the normalized title sort key with configured multilingual behavior.
+#[must_use]
+pub(crate) fn title_sort_key_with_options(
+    reference: &Reference,
+    locale: &Locale,
+    options: &SortKeyOptions,
+) -> String {
+    let title = reference
+        .title()
+        .map(|title| title_sort_text(&title, options))
+        .unwrap_or_default();
     normalize_sort_text(locale.strip_sort_articles(&title))
 }
 
@@ -114,9 +220,142 @@ pub(crate) fn normalize_sort_text(text: &str) -> String {
     text.to_string()
 }
 
+fn contributor_sort_key(
+    contributor: &Contributor,
+    name_order: NameSortOrder,
+    options: &SortKeyOptions,
+) -> Option<String> {
+    let key = match contributor {
+        Contributor::SimpleName(name) => multilingual_string_sort_text(&name.name, options),
+        Contributor::StructuredName(name) => structured_name_sort_text(name, name_order, options),
+        Contributor::Multilingual(name) => multilingual_name_sort_text(name, name_order, options),
+        Contributor::ContributorList(list) => list
+            .0
+            .first()
+            .and_then(|contributor| contributor_sort_key(contributor, name_order, options))?,
+    };
+
+    non_empty_normalized(key.as_str())
+}
+
+fn multilingual_name_sort_text(
+    name: &MultilingualName,
+    name_order: NameSortOrder,
+    options: &SortKeyOptions,
+) -> String {
+    if options.is_romanized() {
+        if let Some(sort_as) = non_empty_str(name.sort_as.as_deref()) {
+            return sort_as.to_string();
+        }
+        if let Some(part_key) = structured_name_sort_as_text(&name.original, name_order) {
+            return part_key.to_string();
+        }
+        if let Some(transliterated) = select_structured_transliteration(name, options) {
+            return structured_name_original_text(transliterated, name_order);
+        }
+    }
+
+    structured_name_sort_text(&name.original, name_order, options)
+}
+
+fn structured_name_sort_text(
+    name: &StructuredName,
+    name_order: NameSortOrder,
+    options: &SortKeyOptions,
+) -> String {
+    match name_order {
+        NameSortOrder::FamilyGiven | NameSortOrder::GivenFamily => {
+            multilingual_string_sort_text(&name.family, options)
+        }
+    }
+}
+
+fn structured_name_original_text(name: &StructuredName, name_order: NameSortOrder) -> String {
+    match name_order {
+        NameSortOrder::FamilyGiven | NameSortOrder::GivenFamily => name.family.to_string(),
+    }
+}
+
+fn structured_name_sort_as_text(name: &StructuredName, name_order: NameSortOrder) -> Option<&str> {
+    match name_order {
+        NameSortOrder::FamilyGiven | NameSortOrder::GivenFamily => {
+            multilingual_string_sort_as_text(&name.family)
+        }
+    }
+}
+
+fn title_sort_text(title: &Title, options: &SortKeyOptions) -> String {
+    match title {
+        Title::Multilingual(complex) => multilingual_complex_sort_text(complex, options),
+        _ => title.to_string(),
+    }
+}
+
+fn multilingual_string_sort_text(string: &MultilingualString, options: &SortKeyOptions) -> String {
+    match string {
+        MultilingualString::Simple(value) => value.clone(),
+        MultilingualString::Complex(complex) => multilingual_complex_sort_text(complex, options),
+    }
+}
+
+fn multilingual_complex_sort_text(
+    complex: &MultilingualComplex,
+    options: &SortKeyOptions,
+) -> String {
+    if options.is_romanized() {
+        if let Some(sort_as) = non_empty_str(complex.sort_as.as_deref()) {
+            return sort_as.to_string();
+        }
+        if let Some(transliteration) = resolve_transliteration(&complex.transliterations, options) {
+            return transliteration.to_string();
+        }
+    }
+
+    complex.original.clone()
+}
+
+fn multilingual_string_sort_as_text(string: &MultilingualString) -> Option<&str> {
+    match string {
+        MultilingualString::Complex(complex) => non_empty_str(complex.sort_as.as_deref()),
+        MultilingualString::Simple(_) => None,
+    }
+}
+
+fn select_structured_transliteration<'a>(
+    name: &'a MultilingualName,
+    options: &SortKeyOptions,
+) -> Option<&'a StructuredName> {
+    crate::values::resolve_preferred_variant(
+        &name.transliterations,
+        options.preferred_transliteration(),
+        options.preferred_script(),
+    )
+}
+
+fn resolve_transliteration<'a>(
+    transliterations: &'a std::collections::HashMap<String, String>,
+    options: &SortKeyOptions,
+) -> Option<&'a str> {
+    crate::values::resolve_preferred_variant(
+        transliterations,
+        options.preferred_transliteration(),
+        options.preferred_script(),
+    )
+    .map(String::as_str)
+    .and_then(|value| non_empty_str(Some(value)))
+}
+
+fn non_empty_normalized(value: &str) -> Option<String> {
+    non_empty_str(Some(value)).map(normalize_sort_text)
+}
+
+fn non_empty_str(value: Option<&str>) -> Option<&str> {
+    value.map(str::trim).filter(|value| !value.is_empty())
+}
+
 #[cfg(feature = "icu")]
-fn collator_preferences(locale: &Locale) -> CollatorPreferences {
-    parse_icu_locale(&locale.locale)
+fn collator_preferences(locale_id: &str) -> CollatorPreferences {
+    parse_icu_locale(locale_id)
         .unwrap_or_else(default_icu_locale)
         .into()
 }

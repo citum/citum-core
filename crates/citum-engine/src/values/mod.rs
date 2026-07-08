@@ -61,47 +61,67 @@ use std::rc::Rc;
 pub use contributor::format_contributors_short;
 pub use date::int_to_letter;
 
-/// Resolve preferred transliteration from a map of transliterations.
+/// Resolve the preferred variant from a map keyed by BCP 47 tag or script code.
 ///
 /// Applies priority-based matching:
 /// 1. Preferred transliteration list: exact match
 /// 2. Preferred transliteration list: substring match
 /// 3. Preferred script: exact match
 /// 4. Preferred script: substring match
+///
+/// Substring passes select the lexicographically smallest matching key:
+/// HashMap iteration order is randomized per process, and both rendering and
+/// bibliography sorting need a reproducible choice when several keys match.
+pub(crate) fn resolve_preferred_variant<'a, T>(
+    variants: &'a std::collections::HashMap<String, T>,
+    preferred_transliteration: Option<&[String]>,
+    preferred_script: Option<&String>,
+) -> Option<&'a T> {
+    let substring_match = |needle: &str| {
+        variants
+            .iter()
+            .filter(|(key, _)| key.contains(needle))
+            .min_by(|(a, _), (b, _)| a.cmp(b))
+            .map(|(_, value)| value)
+    };
+
+    if let Some(tags) = preferred_transliteration {
+        for tag in tags {
+            if let Some(value) = variants.get(tag) {
+                return Some(value);
+            }
+        }
+        for tag in tags {
+            if let Some(value) = substring_match(tag) {
+                return Some(value);
+            }
+        }
+    }
+
+    if let Some(script) = preferred_script {
+        if let Some(value) = variants.get(script) {
+            return Some(value);
+        }
+        if let Some(value) = substring_match(script) {
+            return Some(value);
+        }
+    }
+
+    None
+}
+
+/// Resolve preferred transliteration from a map of transliterations.
 fn resolve_transliteration<'a>(
     transliterations: &'a std::collections::HashMap<String, String>,
     preferred_transliteration: Option<&[String]>,
     preferred_script: Option<&String>,
 ) -> Option<&'a str> {
-    // 1. Priority list: exact match
-    if let Some(tags) = preferred_transliteration {
-        for tag in tags {
-            if let Some(v) = transliterations.get(tag) {
-                return Some(v.as_str());
-            }
-        }
-        // 2. Priority list: substring match
-        for tag in tags {
-            for (k, v) in transliterations {
-                if k.contains(tag.as_str()) {
-                    return Some(v.as_str());
-                }
-            }
-        }
-    }
-    // 3. preferred_script exact match
-    if let Some(script) = preferred_script {
-        if let Some(v) = transliterations.get(script) {
-            return Some(v.as_str());
-        }
-        // 4. preferred_script substring match
-        for (k, v) in transliterations {
-            if k.contains(script.as_str()) {
-                return Some(v.as_str());
-            }
-        }
-    }
-    None
+    resolve_preferred_variant(
+        transliterations,
+        preferred_transliteration,
+        preferred_script,
+    )
+    .map(String::as_str)
 }
 
 fn resolve_translation<'a>(

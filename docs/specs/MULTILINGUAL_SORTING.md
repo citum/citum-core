@@ -1,7 +1,7 @@
 # Multilingual Sorting Specification
 
-**Status:** Draft
-**Version:** 1.0
+**Status:** Active
+**Version:** 1.1
 **Date:** 2026-07-08
 **Related:** beans `csl26-xz2t`, `csl26-6rjq`;
   [`SORTING.md`](./SORTING.md),
@@ -271,34 +271,36 @@ Phases 1–2 ship in the PR that activates this spec; Phase 3 is deferred.
 
 ## Acceptance Criteria
 
-- [ ] Existing styles and data produce byte-identical output when
+- [x] Existing styles and data produce byte-identical output when
       `options.sorting` is absent or `multilingual: uniform` (default no-op),
       including when references carry `sort-as` data.
-- [ ] Under `romanized`, a Cyrillic name with `sort-as: "Tolstoy"` files under
+- [x] Under `romanized`, a Cyrillic name with `sort-as: "Tolstoy"` files under
       T among Latin peers while rendering in Cyrillic (archival ALA-LC case).
-- [ ] Under `romanized`, a reference with no `sort-as` but a
+- [x] Under `romanized`, a reference with no `sort-as` but a
       `ru-Latn-alalc97` transliteration sorts by that transliteration
       (step-2 fallback).
-- [ ] Under `romanized`, a reference with neither key sorts identically to
+- [x] Under `romanized`, a reference with neither key sorts identically to
       `uniform` (step-3 fallback), and Latin-script references are unaffected.
-- [ ] Holistic `MultilingualName.sort-as` takes precedence over a part-level
+- [x] Holistic `MultilingualName.sort-as` takes precedence over a part-level
       `MultilingualComplex.sort-as` on the same name.
-- [ ] `sort-as` never appears in rendered citation or bibliography output in
+- [x] `sort-as` never appears in rendered citation or bibliography output in
       any mode/display combination.
-- [ ] `multilingual: per-script` with no explicit `sort-partitioning` matches
+- [x] `multilingual: per-script` with no explicit `sort-partitioning` matches
       the output of `sort-partitioning: { by: script, mode: sort-only }`.
-- [ ] An explicit `sort-partitioning` block wins over the `per-script`
+- [x] An explicit `sort-partitioning` block wins over the `per-script`
       shorthand.
-- [ ] `multilingual: romanized` composes with an explicit `sort-partitioning`
+- [x] `multilingual: romanized` composes with an explicit `sort-partitioning`
       block (romanized order within script partitions).
-- [ ] `sorting.locale` accepts `auto` and explicit BCP 47 tags, both subject
+- [x] `sorting.locale` accepts `auto` and explicit BCP 47 tags, both subject
       to the documented fallback chain.
-- [ ] Generated schemas include `options.sorting`, the bibliography override,
+- [x] Generated schemas include `options.sorting`, the bibliography override,
       and the `sort-as` fields; all new public Rust items are documented.
-- [ ] Mixed-script regression fixtures cover entries with and without
+- [x] Mixed-script regression fixtures cover entries with and without
       `sort-as` in one bibliography.
 
 ## Changelog
 
 - v1.0 (2026-07-08): Initial draft — joint design for beans `csl26-xz2t` and
   `csl26-6rjq`.
+- v1.1 (2026-07-08): Activated Phases 1–2; Phase 3 generated
+  transliteration is tracked by bean `csl26-rxik`.

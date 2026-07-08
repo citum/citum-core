@@ -393,7 +393,8 @@ impl Processor {
         let fmt = F::default();
         let cited_ids = self.cited_ids.borrow();
         let evaluator = SelectorEvaluator::new(&cited_ids);
-        let sorter = ReferenceSorter::new(&self.locale);
+        let bibliography_config = self.get_bibliography_config();
+        let sorter = ReferenceSorter::with_bibliography_config(&self.locale, &bibliography_config);
 
         let mut assigned = HashSet::new();
         let mut result = String::new();
@@ -686,7 +687,8 @@ impl Processor {
         let bibliography = self.sorted_id_stubs();
         let cited_ids = self.cited_ids.borrow();
         let evaluator = SelectorEvaluator::new(&cited_ids);
-        let sorter = ReferenceSorter::new(&self.locale);
+        let bibliography_config = self.get_bibliography_config();
+        let sorter = ReferenceSorter::with_bibliography_config(&self.locale, &bibliography_config);
 
         let matching_refs =
             self.collect_matching_group_refs(&bibliography, assigned, &evaluator, group);

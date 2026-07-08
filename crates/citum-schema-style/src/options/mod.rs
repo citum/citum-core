@@ -14,6 +14,7 @@ pub mod locators;
 pub mod multilingual;
 pub mod processing;
 pub mod scoped;
+pub mod sorting;
 pub mod substitute;
 pub mod title_class;
 
@@ -52,6 +53,7 @@ pub use scoped::{
     BibliographyLabelMode, BibliographyLabelWrap, CitationGroupDelimiter, DatePosition, LabelWrap,
     RepeatedAuthorRendering, TitleTerminator,
 };
+pub use sorting::{SortingConfig, SortingLocale, SortingMultilingualMode};
 pub use substitute::{Substitute, SubstituteConfig, SubstituteKey, SubstituteTitleQuoteMode};
 
 use crate::template::DelimiterPunctuation;
@@ -90,6 +92,9 @@ pub struct Config {
     )]
     #[cfg_attr(feature = "schema", schemars(with = "Option<MultilingualConfigEntry>"))]
     pub multilingual: Option<MultilingualConfig>,
+    /// Bibliography sorting policy.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sorting: Option<SortingConfig>,
     /// Contributor formatting defaults. Accepts a preset name (e.g., "apa")
     /// or explicit configuration.
     #[serde(
@@ -296,6 +301,9 @@ pub struct BibliographyOptions {
     )]
     #[cfg_attr(feature = "schema", schemars(with = "Option<MultilingualConfigEntry>"))]
     pub multilingual: Option<MultilingualConfig>,
+    /// Bibliography sorting policy.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sorting: Option<SortingConfig>,
     /// Contributor formatting defaults.
     #[serde(
         skip_serializing_if = "Option::is_none",
@@ -585,6 +593,14 @@ impl Config {
             custom,
         );
 
+        if let Some(other_sorting) = &other.sorting {
+            if let Some(this_sorting) = &mut self.sorting {
+                this_sorting.merge(other_sorting);
+            } else {
+                self.sorting = Some(other_sorting.clone());
+            }
+        }
+
         if let Some(other_substitute) = &other.substitute {
             if let Some(this_substitute) = &self.substitute {
                 self.substitute = Some(SubstituteConfig::merged(this_substitute, other_substitute));
@@ -626,6 +642,7 @@ impl CitationOptions {
             locale_override: None,
             localize: self.localize.clone(),
             multilingual: self.multilingual.clone(),
+            sorting: None,
             contributors: self.contributors.clone(),
             dates: self.dates.clone(),
             titles: self.titles.clone(),
@@ -726,6 +743,7 @@ impl BibliographyOptions {
             locale_override: None,
             localize: self.localize.clone(),
             multilingual: self.multilingual.clone(),
+            sorting: self.sorting.clone(),
             contributors: self.contributors.clone(),
             dates: self.dates.clone(),
             titles: self.titles.clone(),
@@ -785,6 +803,14 @@ impl BibliographyOptions {
     }
 
     fn merge_shared_fields(&mut self, other: &BibliographyOptions) {
+        if let Some(other_sorting) = &other.sorting {
+            if let Some(this_sorting) = &mut self.sorting {
+                this_sorting.merge(other_sorting);
+            } else {
+                self.sorting = Some(other_sorting.clone());
+            }
+        }
+
         if let Some(other_substitute) = &other.substitute {
             if let Some(this_substitute) = &self.substitute {
                 self.substitute = Some(SubstituteConfig::merged(this_substitute, other_substitute));
@@ -894,6 +920,8 @@ impl<'de> Deserialize<'de> for Config {
                 default
             )]
             multilingual: Option<MultilingualConfig>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            sorting: Option<SortingConfig>,
             #[serde(
                 skip_serializing_if = "Option::is_none",
                 deserialize_with = "deserialize_contributor_config",
@@ -957,6 +985,7 @@ impl<'de> Deserialize<'de> for Config {
             locale_override: wire.locale_override,
             localize: wire.localize,
             multilingual: wire.multilingual,
+            sorting: wire.sorting,
             contributors: wire.contributors,
             dates: wire.dates,
             titles: wire.titles,
@@ -1068,6 +1097,77 @@ contributors:
         assert_eq!(
             config.contributors.as_ref().unwrap().and,
             Some(AndOptions::Symbol)
+        );
+    }
+
+    #[test]
+    fn test_sorting_config_deserializes_and_roundtrips() {
+        let yaml = r#"
+sorting:
+  locale: sv-SE
+  multilingual: romanized
+"#;
+        let config: Config = serde_yaml::from_str(yaml).unwrap();
+        let sorting = config.sorting.as_ref().expect("sorting should parse");
+
+        assert_eq!(
+            sorting.locale,
+            Some(SortingLocale::Bcp47("sv-SE".to_string()))
+        );
+        assert_eq!(
+            sorting.multilingual,
+            Some(SortingMultilingualMode::Romanized)
+        );
+
+        let serialized = serde_yaml::to_string(&config).unwrap();
+        let reparsed: Config = serde_yaml::from_str(&serialized).unwrap();
+        assert_eq!(reparsed.sorting, config.sorting);
+    }
+
+    #[test]
+    fn test_sorting_config_defaults_and_unknown_fields() {
+        let yaml = r#"
+sorting:
+  future-key: true
+"#;
+        let config: Config = serde_yaml::from_str(yaml).unwrap();
+        let sorting = config.sorting.as_ref().expect("sorting should parse");
+
+        assert_eq!(sorting.effective_locale(), SortingLocale::Auto);
+        assert_eq!(
+            sorting.effective_multilingual(),
+            SortingMultilingualMode::Uniform
+        );
+        assert!(sorting.unknown_fields.contains_key("future-key"));
+    }
+
+    #[test]
+    fn test_bibliography_sorting_override_merges_partially() {
+        let base: Config = serde_yaml::from_str(
+            r#"
+sorting:
+  locale: de-DE
+  multilingual: uniform
+"#,
+        )
+        .unwrap();
+        let bib: BibliographyOptions = serde_yaml::from_str(
+            r#"
+sorting:
+  multilingual: romanized
+"#,
+        )
+        .unwrap();
+
+        let merged = bib.merged_with(&base);
+        let sorting = merged.sorting.expect("merged sorting should exist");
+        assert_eq!(
+            sorting.locale,
+            Some(SortingLocale::Bcp47("de-DE".to_string()))
+        );
+        assert_eq!(
+            sorting.multilingual,
+            Some(SortingMultilingualMode::Romanized)
         );
     }
 

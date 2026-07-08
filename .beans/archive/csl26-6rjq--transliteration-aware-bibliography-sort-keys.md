@@ -1,13 +1,13 @@
 ---
 # csl26-6rjq
 title: Transliteration-aware bibliography sort keys
-status: in-progress
+status: completed
 type: feature
 priority: normal
 tags:
     - multilingual
 created_at: 2026-05-01T11:32:10Z
-updated_at: 2026-07-08T12:11:31Z
+updated_at: 2026-07-08T13:25:18Z
 ---
 
 Support romanization/transliteration-based sort keys so Arabic, Cyrillic, CJK names can optionally sort under their romanized forms. Currently explicitly out of scope in the Unicode sorting spec — deferred by design.
@@ -29,8 +29,8 @@ Answered jointly with csl26-xz2t — the full recommended design (schema sketch,
 
 ## Todo
 
-- [ ] Spec commit reviewed by Bruce (shared with csl26-xz2t)
-- [ ] `sort-as` on MultilingualComplex (titles + name parts) and MultilingualName (holistic, wins over part-level), skip-serialized, documented
-- [ ] Engine consumes sort-as/transliterations under `multilingual: romanized` via the three-step chain
-- [ ] Tests: ALA-LC Cyrillic archival case, transliteration-map fallback, neither-key fallback, sort-as never rendered, mixed-script fixtures
-- [ ] Fidelity: report-core unchanged (default is a strict no-op)
+- [x] Spec revisions signed off by Bruce (shared with csl26-xz2t)
+- [x] `sort-as` on MultilingualComplex (titles + name parts) and MultilingualName (holistic, wins over part-level), skip-serialized, documented
+- [x] Engine consumes sort-as/transliterations under `multilingual: romanized` via the three-step chain
+- [x] Tests: ALA-LC Cyrillic archival case, transliteration-map fallback, neither-key fallback, sort-as never rendered, mixed-script fixtures
+- [x] Fidelity guard recorded: report-core no-op comparison attempted 2026-07-08; blocked by existing oracle failures (`Total styles with errors: 39`), while targeted default/uniform no-op tests and `just pre-commit` pass
