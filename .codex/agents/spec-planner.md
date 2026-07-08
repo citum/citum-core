@@ -8,7 +8,7 @@ use_when:
 do_not_use_when:
   - The task is a small, obvious bug fix.
   - The implementation is already fully specified and just needs execution.
-default_model: gpt-5.4
+default_model: default
 default_reasoning_effort: high
 scope:
   - Read design docs, policies, specs, architecture notes, and relevant code paths.

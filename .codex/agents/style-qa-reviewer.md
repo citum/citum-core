@@ -8,7 +8,7 @@ use_when:
 do_not_use_when:
   - The task is to implement a fix.
   - There is no concrete style, oracle, or report evidence to review.
-default_model: gpt-5.4-mini
+default_model: default-mini
 default_reasoning_effort: low
 scope:
   - Read-only review of style outputs, oracle results, reports, and affected docs or beans.

@@ -9,7 +9,7 @@ do_not_use_when:
   - The main problem is still ambiguous and needs architectural clarification.
   - The task is purely documentation or style QA.
   - The requested change is primarily style-authoring rather than Rust implementation.
-default_model: gpt-5.4
+default_model: default
 default_reasoning_effort: medium
 scope:
   - Write scope is the smallest set of Rust and adjacent test files needed to complete the task.

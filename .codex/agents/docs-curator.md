@@ -8,7 +8,7 @@ use_when:
 do_not_use_when:
   - The task is primarily code implementation with no documentation impact.
   - The user needs a code-review style bug hunt instead of documentation work.
-default_model: gpt-5.4-mini
+default_model: default-mini
 default_reasoning_effort: low
 scope:
   - Write or refine docs under the repo's documented placement rules.

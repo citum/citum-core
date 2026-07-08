@@ -17,7 +17,8 @@ Authoritative shared process docs:
 
 These files are intentionally thin host wrappers:
 - use the shared docs for process logic
-- keep only host-local purpose, model, scope, and output-contract metadata here
+- keep only host-local purpose, model preference, scope, and output-contract metadata here
+- use stable model aliases such as `default` and `default-mini`, not dated model IDs
 - do not duplicate the shared workflow loop in each agent file
 
 Runnable Codex fallback:
