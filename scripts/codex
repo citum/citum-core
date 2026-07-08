@@ -117,10 +117,10 @@ EOF
 model_for_role() {
   case "$1" in
     rust-implementer|spec-planner|test-soundness-review)
-      echo "gpt-5.4"
+      echo "default"
       ;;
     *)
-      echo "gpt-5.4-mini"
+      echo "default-mini"
       ;;
   esac
 }

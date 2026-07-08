@@ -9,7 +9,7 @@ do_not_use_when:
   - The task is a one-off style YAML fix.
   - The mismatch is clearly an engine rendering defect.
   - The change requires new schema design or broader architecture work.
-default_model: gpt-5.4-mini
+default_model: default-mini
 default_reasoning_effort: medium
 scope:
   - Primary write scope is `crates/citum_migrate/`
