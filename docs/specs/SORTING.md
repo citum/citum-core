@@ -5,6 +5,7 @@
 **Related:** [`EXPLICIT_DEFAULT_SORTING.md`](./EXPLICIT_DEFAULT_SORTING.md),
   [`UNICODE_BIBLIOGRAPHY_SORTING.md`](./UNICODE_BIBLIOGRAPHY_SORTING.md),
   [`MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](./MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md),
+  [`MULTILINGUAL_SORTING.md`](./MULTILINGUAL_SORTING.md),
   sorting sections of [`MULTILINGUAL.md`](./MULTILINGUAL.md)
 
 ## Purpose
@@ -20,7 +21,8 @@ presets, collation, secondary/tiebreak rules, grouping interplay.
 
 **Out of scope:** script/language partitioning (see
 [`MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](./MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md)),
-transliteration-aware sort keys, per-entry sort overrides.
+transliteration-aware sort keys and multilingual sort modes (see
+[`MULTILINGUAL_SORTING.md`](./MULTILINGUAL_SORTING.md)), per-entry sort overrides.
 
 ## Core Separation of Concerns
 
@@ -108,6 +110,9 @@ Configuration:
 
 Full collation semantics are specified in
 [`UNICODE_BIBLIOGRAPHY_SORTING.md`](./UNICODE_BIBLIOGRAPHY_SORTING.md).
+Optional multilingual sort modes (`options.sorting` — romanized sort keys,
+per-script shorthand) layer on top of this collator and are specified in
+[`MULTILINGUAL_SORTING.md`](./MULTILINGUAL_SORTING.md).
 
 ## Deterministic Tiebreaking
 
@@ -152,3 +157,4 @@ behavior. Bibliography-specific sort tests: `mod sorting` in
 ## Changelog
 
 - 2026-05-31: Initial version — documents shipped behavior; references narrow sub-specs.
+- 2026-07-08: Reference `MULTILINGUAL_SORTING.md` for multilingual sort modes and transliteration-aware sort keys.

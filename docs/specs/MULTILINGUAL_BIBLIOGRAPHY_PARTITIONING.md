@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Date:** 2026-05-01
-**Related:** `csl26-al0f`, `csl26-xz2t`, [`UNICODE_BIBLIOGRAPHY_SORTING.md`](./UNICODE_BIBLIOGRAPHY_SORTING.md)
+**Related:** `csl26-al0f`, `csl26-xz2t`, [`UNICODE_BIBLIOGRAPHY_SORTING.md`](./UNICODE_BIBLIOGRAPHY_SORTING.md), [`MULTILINGUAL_SORTING.md`](./MULTILINGUAL_SORTING.md)
 
 ## Purpose
 
@@ -10,7 +10,7 @@ Define style-controlled bibliography partitioning for multilingual bibliographie
 
 ## Scope
 
-In scope: flat partition-aware bibliography sorting, optional automatic bibliography sections, script partition detection from rendered sort text, language partitioning from effective item language, schema options, and regression tests. Out of scope: transliteration-aware sort keys, language-specific display names invented by the engine, and replacing explicit `bibliography.groups`.
+In scope: flat partition-aware bibliography sorting, optional automatic bibliography sections, script partition detection from rendered sort text, language partitioning from effective item language, schema options, and regression tests. Out of scope: transliteration-aware sort keys (see [`MULTILINGUAL_SORTING.md`](./MULTILINGUAL_SORTING.md), which also defines the `sorting.multilingual: per-script` shorthand that expands to this spec's mechanism), language-specific display names invented by the engine, and replacing explicit `bibliography.groups`.
 
 ## Design
 

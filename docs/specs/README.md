@@ -106,6 +106,7 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 | [`EXPLICIT_DEFAULT_SORTING.md`](./EXPLICIT_DEFAULT_SORTING.md) — processing-family bibliography defaults; `citation.sort` explicit-only policy | Draft | `sort_oracle.rs` |
 | [`UNICODE_BIBLIOGRAPHY_SORTING.md`](./UNICODE_BIBLIOGRAPHY_SORTING.md) — locale-aware UCA/CLDR collation for bibliography sort keys | Active | `sort_oracle.rs` |
 | [`MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](./MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md) — sort and section multilingual bibliographies by script or language | Active | `sort_oracle.rs`, `multilingual.rs` |
+| [`MULTILINGUAL_SORTING.md`](./MULTILINGUAL_SORTING.md) — `options.sorting` multilingual sort modes and hidden `sort-as` romanized sort keys | Draft | — |
 
 ### Localization & Multilingual
 
