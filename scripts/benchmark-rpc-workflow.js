@@ -27,20 +27,67 @@ const REFS_COUNT = parseInt(getArg('--refs', '500'), 10);
 const CITATIONS_COUNT = parseInt(getArg('--cites', '100'), 10);
 const REFRESH_INTERVAL = parseInt(getArg('--interval', '20'), 10);
 const STYLE_PATH = getArg('--style', 'styles/embedded/apa-7th.yaml');
+const SERVER_NAME = 'citum-server';
 const SERVER_BIN = path.resolve(__dirname, '../target/release/citum-server');
+
+function isExecutable(filePath) {
+  try {
+    fs.accessSync(filePath, fs.constants.X_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function resolveServerBinary() {
+  const pathEntries = (process.env.PATH || '').split(path.delimiter).filter(Boolean);
+
+  for (const entry of pathEntries) {
+    const candidate = path.join(entry, SERVER_NAME);
+    if (isExecutable(candidate)) {
+      return candidate;
+    }
+
+    if (process.platform === 'win32') {
+      const pathext = (process.env.PATHEXT || '.EXE;.CMD;.BAT;.COM')
+        .split(path.delimiter)
+        .filter(Boolean);
+      for (const ext of pathext) {
+        const extCandidate = `${candidate}${ext}`;
+        if (isExecutable(extCandidate)) {
+          return extCandidate;
+        }
+      }
+    }
+  }
+
+  if (isExecutable(SERVER_BIN)) {
+    return SERVER_BIN;
+  }
+
+  return null;
+}
 
 // --- State ---
 let requestId = 0;
 const pendingRequests = new Map();
+
+function resolvePendingRequests(response) {
+  for (const [id, resolver] of pendingRequests.entries()) {
+    pendingRequests.delete(id);
+    resolver(response);
+  }
+}
 
 async function runBenchmark() {
   console.log('====================================================');
   console.log('   Citum RPC: Word Processor Workflow Benchmark');
   console.log('====================================================');
 
-  if (!fs.existsSync(SERVER_BIN)) {
-    console.error(`Error: Server binary not found at ${SERVER_BIN}`);
-    console.error('Please run: cargo build --release -p citum-server');
+  const serverBin = resolveServerBinary();
+  if (!serverBin) {
+    console.error(`Error: Server binary not found on PATH or at ${SERVER_BIN}`);
+    console.error('Please run: cargo build --release -p citum-server or install citum-server on PATH');
     process.exit(1);
   }
 
@@ -50,8 +97,29 @@ async function runBenchmark() {
   console.log(`[Config] Refresh:    Every ${REFRESH_INTERVAL} citations`);
   console.log('----------------------------------------------------');
 
-  const server = spawn(SERVER_BIN, [], { stdio: ['pipe', 'pipe', 'inherit'] });
+  const server = spawn(serverBin, [], { stdio: ['pipe', 'pipe', 'inherit'] });
   const rl = readline.createInterface({ input: server.stdout });
+  let serverClosed = false;
+  let serverFailure = null;
+
+  server.on('error', (error) => {
+    serverClosed = true;
+    serverFailure = `Failed to start server: ${error.message}`;
+    resolvePendingRequests({ error: serverFailure });
+  });
+
+  server.on('exit', (code, signal) => {
+    serverClosed = true;
+    serverFailure = signal
+      ? `Server exited unexpectedly (signal ${signal})`
+      : `Server exited unexpectedly (exit code ${code ?? 'unknown'})`;
+  });
+
+  rl.on('close', () => {
+    if (pendingRequests.size > 0) {
+      resolvePendingRequests({ error: serverFailure || 'Server output closed unexpectedly' });
+    }
+  });
 
   rl.on('line', (line) => {
     try {
@@ -74,7 +142,23 @@ async function runBenchmark() {
         const end = performance.now();
         resolve({ ...res, duration: end - start });
       });
-      server.stdin.write(JSON.stringify({ id, method, params }) + '\n');
+
+      if (serverClosed || server.stdin.destroyed) {
+        pendingRequests.delete(id);
+        resolve({ error: 'Server is not available', duration: 0 });
+        return;
+      }
+
+      server.stdin.write(JSON.stringify({ id, method, params }) + '\n', (error) => {
+        if (!error) {
+          return;
+        }
+
+        if (pendingRequests.has(id)) {
+          pendingRequests.delete(id);
+          resolve({ error: `Failed to send request: ${error.message}`, duration: 0 });
+        }
+      });
     });
   };
 
