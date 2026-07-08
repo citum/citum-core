@@ -5,7 +5,8 @@
 **Date**: 2026-05-26
 
 **Normative specs:** [`MULTILINGUAL_NAMES.md`](./MULTILINGUAL_NAMES.md),
-[`MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](./MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md)
+[`MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](./MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md),
+[`MULTILINGUAL_SORTING.md`](./MULTILINGUAL_SORTING.md)
 
 ## Overview
 
@@ -296,8 +297,14 @@ Sorting mixed scripts (e.g., Hanzi vs. Latin) requires Unicode Collation Algorit
 ### 4.1 Implementation
 
 *   **Library**: Use `icu_collation` (ICU4X) for robust, locale-aware sorting.
-*   **Logic**:
-    *   If a sort key is `author` or `title`, the processor should prefer the `transliteration` variant if available, even if the bibliography displays the `original` script. This ensures that "Tolstoy" (Cyrillic) sorts near "Tolstoy" (Latin) in an English bibliography.
+*   **Logic**: Normatively specified in
+    [`MULTILINGUAL_SORTING.md`](./MULTILINGUAL_SORTING.md). Transliteration-aware
+    sorting is opt-in via `options.sorting.multilingual: romanized`; in that mode
+    `author` and `title` sort keys resolve through a three-step chain — explicit
+    `sort-as` key → transliteration variant matched per §1.3 → original text —
+    even if the bibliography displays the `original` script. This ensures that
+    "Толстой" (Cyrillic) sorts near "Tolstoy" (Latin) in an English bibliography.
+    Under the default (`uniform`) mode, sorting always compares the original text.
 
 ### 4.2 Performance & Feature Flags
 

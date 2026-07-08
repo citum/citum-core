@@ -1,18 +1,18 @@
 ---
 # csl26-xz2t
 title: Public schema options for multilingual sort policy
-status: draft
+status: in-progress
 type: feature
 priority: normal
 tags:
     - multilingual
 created_at: 2026-05-01T11:32:12Z
-updated_at: 2026-07-06T18:47:52Z
+updated_at: 2026-07-08T12:10:55Z
 ---
 
 Expose schema/style configuration for multilingual bibliography sort behavior once multiple modes exist (e.g. single-locale, per-script, transliterated). Currently all sort policy is hardcoded. Depends on per-script partitioning and/or transliteration features being implemented first. Deferred by design per UNICODE_BIBLIOGRAPHY_SORTING.md.
 
-## Recommended Design (2026-07-06, joint with csl26-6rjq — needs policy sign-off)
+## Design (joint with csl26-6rjq — signed off 2026-07-08; normative spec: docs/specs/MULTILINGUAL_SORTING.md)
 
 Decide the two beans together; csl26-6rjq's data-model answer determines this bean's schema surface.
 
@@ -32,10 +32,21 @@ Recommended answers to csl26-6rjq's three policy questions:
 3. **Scope:** per-script via the `multilingual` mode, never a global text transform.
 
 **Phasing (unblocks archival users without a transliteration engine):**
-- Phase 1: reference-data `sort_as` fields + engine consumes them when present under `multilingual: romanized`; absent keys fall back to UCA collation (UNICODE_BIBLIOGRAPHY_SORTING.md unchanged). Small, self-contained.
+- Phase 1: reference-data `sort-as` fields + `options.sorting` with `uniform`/`romanized`. Under `romanized`, keys resolve via the three-step chain (explicit `sort-as` → §1.3-matched transliteration → UCA on original text; see spec §Design 3). Small, self-contained.
 - Phase 2: `per-script` partition mode (partition order = locale convention, spec addendum needed).
 - Phase 3: generated transliteration behind a cargo feature.
 
 Schema change ⇒ `just schema-gen` in the implementing commit; spec doc in docs/specs/ superseding the out-of-scope declarations in UNICODE_BIBLIOGRAPHY_SORTING.md §Scope.
 
 **Left in draft deliberately:** the three policy answers above are recommendations; promote to todo after Bruce confirms them.
+
+**Sign-off (2026-07-08):** Bruce confirmed the three policy answers and chose: (a) this PR carries Phases 1+2, Phase 3 gets a follow-up bean; (b) romanized-mode fallback is the three-step chain (sort-as → matched transliteration → UCA on original). Normative spec: docs/specs/MULTILINGUAL_SORTING.md.
+
+## Todo
+
+- [ ] Spec commit: docs/specs/MULTILINGUAL_SORTING.md (Draft) + scope edits to UNICODE_BIBLIOGRAPHY_SORTING.md, SORTING.md, MULTILINGUAL.md §4.1, MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md — awaiting Bruce review
+- [ ] Phase 1 schema: SortingConfig (locale, multilingual) on Config + BibliographyOptions override, merge machinery, roundtrip tests
+- [ ] Phase 1 engine: three-step romanized sort-key chain in sort_support.rs / Sorter paths
+- [ ] just schema-gen in the implementing commit; spec Draft → Active
+- [ ] Phase 2: per-script shorthand expands to sort-partitioning {by: script, mode: sort-only} when absent; explicit block authoritative; precedence tests
+- [ ] Create follow-up bean for Phase 3 (feature-gated transliteration registry)

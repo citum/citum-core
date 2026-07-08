@@ -10,7 +10,7 @@ Define locale-aware bibliography sorting for Citum so accented and other non-ASC
 
 ## Scope
 
-In scope: bibliography author/title sort comparisons in the engine, shared sort-key normalization, regression fixtures, examples, and tests. Out of scope: new public schema options, transliteration-aware sorting, per-script partitioning, or broader multilingual rendering redesign.
+In scope: bibliography author/title sort comparisons in the engine, shared sort-key normalization, regression fixtures, examples, and tests. Out of scope: broader multilingual rendering redesign. The core Unicode collation defined here remains a single-collator pass; transliteration-aware sorting and its schema options are governed by [`MULTILINGUAL_SORTING.md`](./MULTILINGUAL_SORTING.md), and per-script partitioning by [`MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](./MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md) — both are optional layers on top of this baseline.
 
 ## Collation Policy
 
@@ -18,7 +18,7 @@ Citum sorts bibliography strings using a locale-tailored collator derived from t
 
 **Fallback chain:** When the requested locale identifier cannot be parsed or has no tailored collation data, Citum attempts to find a valid locale by progressively removing locale subtags (for example, `de-DE-foo_bar` → `de-DE` → `de`). If no subtag-reduced variant is recognized, Citum falls back to `en-US` as the final default. The `en-US` fallback is a consistency guarantee — it produces a stable, reproducible order across all systems — but it is NOT linguistically correct for scripts that have their own tailored ordering rules (Arabic, Hangul, Han characters, etc.). Domain experts and maintainers should understand this limitation: a bibliography sorted under a fallback collator for an unsupported language will not sort the same way a native speaker would expect.
 
-**Single pass:** One collator is used for the entire bibliography in a single sort pass. Per-script partitioning (e.g., sorting Latin names separately from Arabic names) is explicitly out of scope. Transliteration-based sorting (e.g., Romanizing Arabic for ASCII-only systems) is explicitly out of scope.
+**Single pass:** One collator is used for the entire bibliography in a single sort pass. This is the default and baseline behavior. Styles may opt in to per-script partitioning (e.g., sorting Latin names separately from Arabic names) per [`MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`](./MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md) and to transliteration-based sort keys (e.g., filing Cyrillic names under their romanized forms) per [`MULTILINGUAL_SORTING.md`](./MULTILINGUAL_SORTING.md); both layers feed the collator specified here.
 
 ## Collation Options
 
@@ -58,3 +58,4 @@ This ensures reproducible, deterministic results in all scenarios.
 
 - 2026-04-16: Initial version.
 - 2026-05-01: Expand spec with domain-expert-friendly Collation Policy, option table, and tie-breaking semantics; clarify fallback guarantees and limitations.
+- 2026-07-08: Rescope — transliteration-aware sorting and per-script partitioning are no longer out of scope globally; they are optional layers governed by `MULTILINGUAL_SORTING.md` and `MULTILINGUAL_BIBLIOGRAPHY_PARTITIONING.md`.
