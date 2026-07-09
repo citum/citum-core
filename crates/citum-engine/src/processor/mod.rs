@@ -32,6 +32,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 mod bibliography;
 mod citation;
 mod note_context;
+mod run_state;
 mod setup;
 
 /// Author/date disambiguation and year-suffix assignment.
@@ -64,8 +65,8 @@ use citum_schema::Style;
 use citum_schema::locale::Locale;
 use citum_schema::options::Config;
 use indexmap::IndexMap;
-use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
+use run_state::RunState;
+use std::collections::HashMap;
 
 /// The Citum processor facade.
 ///
@@ -83,33 +84,12 @@ pub struct Processor {
     pub default_config: Config,
     /// Pre-calculated processing hints.
     pub hints: HashMap<String, ProcHints>,
-    /// Citation numbers assigned to references (for numeric styles).
-    pub citation_numbers: RefCell<HashMap<String, usize>>,
-    /// IDs of items that were cited in a visible way.
-    pub cited_ids: RefCell<HashSet<String>>,
     /// Compound sets keyed by set ID.
     pub compound_sets: IndexMap<String, Vec<String>>,
     /// Reverse lookup for set membership by reference ID.
     pub compound_set_by_ref: HashMap<String, String>,
     /// Position within a set (0-based) for each reference ID.
     pub compound_member_index: HashMap<String, usize>,
-    /// Compound numeric groups: citation number → ordered ref IDs in the group.
-    pub compound_groups: RefCell<IndexMap<usize, Vec<String>>>,
-    /// Dynamic equivalent of `compound_set_by_ref` for cite-time groups.
-    ///
-    /// Maps each dynamic group member (head and tails) to the head's ref ID,
-    /// which acts as the set identifier. Merged with static data at render time.
-    pub dynamic_compound_set_by_ref: RefCell<HashMap<String, String>>,
-    /// Dynamic equivalent of `compound_member_index` for cite-time groups.
-    ///
-    /// Maps each dynamic group member to its 0-based position within the group.
-    /// Merged with static data at render time.
-    pub dynamic_compound_member_index: RefCell<HashMap<String, usize>>,
-    /// Dynamic equivalent of `compound_sets` for cite-time groups.
-    ///
-    /// Maps each dynamic group's head ref ID to the ordered list of all members.
-    /// Merged with static `compound_sets` at render time so sub-label lookup works.
-    pub dynamic_compound_sets: RefCell<IndexMap<String, Vec<String>>>,
     /// Whether to output semantic markup (HTML spans, Djot attributes).
     /// Defaults to true; set to false to suppress class attributes (e.g. `--no-semantics`).
     pub show_semantics: bool,
@@ -117,9 +97,14 @@ pub struct Processor {
     pub inject_ast_indices: bool,
     /// Document-level abbreviation map for post-render substitution.
     pub abbreviation_map: Option<crate::api::AbbreviationMap>,
-    /// First note number in which each reference was cited (note styles only).
-    /// Populated during `normalize_note_context`; keyed by reference ID.
-    pub first_note_by_id: RefCell<HashMap<String, u32>>,
+    /// Mutable per-render-run state (citation numbers, cite-order tracking,
+    /// dynamic compound groups, first-note tracking).
+    ///
+    /// See `docs/specs/EXPLICIT_RENDER_RUN_STATE.md`. This is a transitional
+    /// single-run-per-processor shape; a later migration step will thread
+    /// `RunState` explicitly through registration/render calls instead of
+    /// storing it on `Processor`.
+    pub(crate) run_state: RunState,
 }
 
 /// Processed output containing citations and bibliography.

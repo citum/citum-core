@@ -148,7 +148,7 @@ impl Processor {
     where
         F: OutputFormat<Output = String>,
     {
-        let compound_groups = self.compound_groups.borrow();
+        let compound_groups = self.run_state.compound_groups.borrow();
         if compound_groups.is_empty() {
             return entries;
         }

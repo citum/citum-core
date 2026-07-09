@@ -4108,7 +4108,7 @@ fn test_compound_numeric_number_assignment() {
     // Trigger number initialization via process_references
     let _ = processor.process_references();
 
-    let numbers = processor.citation_numbers.borrow();
+    let numbers = processor.run_state.citation_numbers.borrow();
     // ref-a and ref-b share the same set membership -> same citation number.
     assert_eq!(
         numbers.get("ref-a"),
@@ -4125,7 +4125,7 @@ fn test_compound_numeric_number_assignment() {
     assert_eq!(numbers.get("ref-c"), Some(&2), "ungrouped ref should be 2");
 
     // Verify compound_groups tracking
-    let groups = processor.compound_groups.borrow();
+    let groups = processor.run_state.compound_groups.borrow();
     assert!(
         groups.contains_key(&1),
         "compound_groups should track group 1"

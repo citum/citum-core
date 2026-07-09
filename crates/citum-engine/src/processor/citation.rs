@@ -111,7 +111,7 @@ impl Processor {
     /// IDs that are absent from `self.bibliography` are silently ignored here;
     /// callers are responsible for emitting `nocite_missing_ref` warnings first.
     pub fn register_nocite_ids(&self, ids: impl IntoIterator<Item = String>) {
-        let mut cited_ids = self.cited_ids.borrow_mut();
+        let mut cited_ids = self.run_state.cited_ids.borrow_mut();
         for id in ids {
             cited_ids.insert(id);
         }
@@ -123,7 +123,7 @@ impl Processor {
     /// that numeric styles have a stable numbering map.
     fn track_cited_ids_and_init_numbers(&self, citation: &Citation) {
         self.initialize_numeric_citation_numbers();
-        let mut cited_ids = self.cited_ids.borrow_mut();
+        let mut cited_ids = self.run_state.cited_ids.borrow_mut();
         for item in &citation.items {
             cited_ids.insert(item.id.clone());
         }
@@ -207,8 +207,8 @@ impl Processor {
         // Because this method is called before cited_ids is updated for the current
         // citation, `cited_ids` contains only references from earlier citations.
         {
-            let dyn_set = self.dynamic_compound_set_by_ref.borrow();
-            let cited = self.cited_ids.borrow();
+            let dyn_set = self.run_state.dynamic_compound_set_by_ref.borrow();
+            let cited = self.run_state.cited_ids.borrow();
 
             if dyn_set.contains_key(head_id.as_str()) || cited.contains(head_id.as_str()) {
                 return;
@@ -221,7 +221,7 @@ impl Processor {
         }
 
         let head_number = {
-            let numbers = self.citation_numbers.borrow();
+            let numbers = self.run_state.citation_numbers.borrow();
             let Some(&n) = numbers.get(head_id.as_str()) else {
                 return;
             };
@@ -230,7 +230,7 @@ impl Processor {
 
         // Assign all tails the same citation number as the head.
         {
-            let mut numbers = self.citation_numbers.borrow_mut();
+            let mut numbers = self.run_state.citation_numbers.borrow_mut();
             for tail in &tail_ids {
                 numbers.insert(tail.clone(), head_number);
             }
@@ -243,8 +243,8 @@ impl Processor {
 
         // Populate dynamic index maps so the renderer can assign sub-labels.
         {
-            let mut dyn_set = self.dynamic_compound_set_by_ref.borrow_mut();
-            let mut dyn_idx = self.dynamic_compound_member_index.borrow_mut();
+            let mut dyn_set = self.run_state.dynamic_compound_set_by_ref.borrow_mut();
+            let mut dyn_idx = self.run_state.dynamic_compound_member_index.borrow_mut();
             for (idx, member) in all_members.iter().enumerate() {
                 dyn_set.insert(member.clone(), head_id.clone());
                 dyn_idx.insert(member.clone(), idx);
@@ -253,7 +253,7 @@ impl Processor {
 
         // Inject into compound_groups for bibliography rendering.
         {
-            let mut groups = self.compound_groups.borrow_mut();
+            let mut groups = self.run_state.compound_groups.borrow_mut();
             let members = groups
                 .entry(head_number)
                 .or_insert_with(|| vec![head_id.clone()]);
@@ -265,7 +265,8 @@ impl Processor {
         }
 
         // Register dynamic set so citation_sub_label_for_ref can find members.
-        self.dynamic_compound_sets
+        self.run_state
+            .dynamic_compound_sets
             .borrow_mut()
             .insert(head_id.clone(), all_members);
     }
@@ -340,25 +341,30 @@ impl Processor {
         Option<HashMap<String, usize>>,
         Option<IndexMap<String, Vec<String>>>,
     ) {
-        if self.dynamic_compound_set_by_ref.borrow().is_empty() {
+        if self
+            .run_state
+            .dynamic_compound_set_by_ref
+            .borrow()
+            .is_empty()
+        {
             return (None, None, None);
         }
         let merged_set: HashMap<String, String> = self
             .compound_set_by_ref
             .iter()
-            .chain(self.dynamic_compound_set_by_ref.borrow().iter())
+            .chain(self.run_state.dynamic_compound_set_by_ref.borrow().iter())
             .map(|(k, v)| (k.clone(), v.clone()))
             .collect();
         let merged_idx: HashMap<String, usize> = self
             .compound_member_index
             .iter()
-            .chain(self.dynamic_compound_member_index.borrow().iter())
+            .chain(self.run_state.dynamic_compound_member_index.borrow().iter())
             .map(|(k, v)| (k.clone(), *v))
             .collect();
         let merged_sets: IndexMap<String, Vec<String>> = self
             .compound_sets
             .iter()
-            .chain(self.dynamic_compound_sets.borrow().iter())
+            .chain(self.run_state.dynamic_compound_sets.borrow().iter())
             .map(|(k, v)| (k.clone(), v.clone()))
             .collect();
         (Some(merged_set), Some(merged_idx), Some(merged_sets))
@@ -415,10 +421,10 @@ impl Processor {
                 locale: &self.locale,
                 config: citation_config.clone(),
                 bibliography_config: Some(Rc::new(self.get_bibliography_options().into_owned())),
-                first_note_by_id: Some(&self.first_note_by_id),
+                first_note_by_id: Some(&self.run_state.first_note_by_id),
             },
             renderer_hints,
-            &self.citation_numbers,
+            &self.run_state.citation_numbers,
             CompoundRenderData {
                 set_by_ref: effective_set_by_ref,
                 member_index: effective_member_index,

@@ -22,8 +22,7 @@ use citum_schema::options::{
     SortingMultilingualMode, bibliography::BibliographyConfig,
 };
 use indexmap::IndexMap;
-use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 impl Default for Processor {
     fn default() -> Self {
@@ -36,19 +35,13 @@ impl Default for Processor {
             locale: Locale::en_us(),
             default_config: Config::default(),
             hints: HashMap::new(),
-            citation_numbers: RefCell::new(HashMap::new()),
-            cited_ids: RefCell::new(HashSet::new()),
             compound_sets,
             compound_set_by_ref,
             compound_member_index,
-            compound_groups: RefCell::new(IndexMap::new()),
-            dynamic_compound_set_by_ref: RefCell::new(HashMap::new()),
-            dynamic_compound_member_index: RefCell::new(HashMap::new()),
-            dynamic_compound_sets: RefCell::new(IndexMap::new()),
             show_semantics: true,
             inject_ast_indices: false,
             abbreviation_map: None,
-            first_note_by_id: RefCell::new(HashMap::new()),
+            run_state: super::run_state::RunState::default(),
         }
     }
 }
@@ -86,19 +79,13 @@ impl Processor {
             locale,
             default_config: Config::default(),
             hints: HashMap::new(),
-            citation_numbers: RefCell::new(HashMap::new()),
-            cited_ids: RefCell::new(HashSet::new()),
             compound_sets,
             compound_set_by_ref,
             compound_member_index,
-            compound_groups: RefCell::new(IndexMap::new()),
-            dynamic_compound_set_by_ref: RefCell::new(HashMap::new()),
-            dynamic_compound_member_index: RefCell::new(HashMap::new()),
-            dynamic_compound_sets: RefCell::new(IndexMap::new()),
             show_semantics: true,
             inject_ast_indices: false,
             abbreviation_map: None,
-            first_note_by_id: RefCell::new(HashMap::new()),
+            run_state: super::run_state::RunState::default(),
         };
 
         // Pre-calculate hints for disambiguation.
@@ -238,7 +225,7 @@ impl Processor {
 
     /// Initialize citation numbers if the map is currently empty.
     fn initialize_numeric_numbers(&self, ordered_ids: Vec<String>) {
-        if !self.citation_numbers.borrow().is_empty() {
+        if !self.run_state.citation_numbers.borrow().is_empty() {
             return;
         }
 
@@ -268,7 +255,7 @@ impl Processor {
     /// Also populates compound groups for numeric styles that enable compound
     /// numbering.
     fn initialize_numeric_citation_numbers_from_ordered_ids(&self, ordered_ids: Vec<String>) {
-        let mut numbers = self.citation_numbers.borrow_mut();
+        let mut numbers = self.run_state.citation_numbers.borrow_mut();
         if !numbers.is_empty() {
             return;
         }
@@ -278,7 +265,7 @@ impl Processor {
         if compound_config.is_some() {
             let mut set_first_seen: IndexMap<String, usize> = IndexMap::new();
             let mut current_number = 1usize;
-            let mut compound_groups = self.compound_groups.borrow_mut();
+            let mut compound_groups = self.run_state.compound_groups.borrow_mut();
             compound_groups.clear();
 
             for ref_id in &ordered_ids {

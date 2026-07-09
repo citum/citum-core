@@ -227,7 +227,7 @@ impl Processor {
                 first_note_by_id: None,
             },
             hints,
-            &self.citation_numbers,
+            &self.run_state.citation_numbers,
             CompoundRenderData {
                 set_by_ref: &self.compound_set_by_ref,
                 member_index: &self.compound_member_index,
@@ -244,6 +244,7 @@ impl Processor {
         for (index, reference) in sorted_refs.into_iter().enumerate() {
             let ref_id = reference.id().unwrap_or_default().to_string();
             let entry_number = self
+                .run_state
                 .citation_numbers
                 .borrow()
                 .get(&ref_id)
@@ -391,7 +392,7 @@ impl Processor {
         F: OutputFormat<Output = String>,
     {
         let fmt = F::default();
-        let cited_ids = self.cited_ids.borrow();
+        let cited_ids = self.run_state.cited_ids.borrow();
         let evaluator = SelectorEvaluator::new(&cited_ids);
         let bibliography_config = self.get_bibliography_config();
         let sorter = ReferenceSorter::with_bibliography_config(&self.locale, &bibliography_config);
@@ -518,7 +519,7 @@ impl Processor {
         F: OutputFormat<Output = String>,
     {
         let fmt = F::default();
-        let cited_ids = self.cited_ids.borrow();
+        let cited_ids = self.run_state.cited_ids.borrow();
         let cited_entries: Vec<ProcEntry> = bibliography
             .iter()
             .filter(|entry| cited_ids.contains(&entry.id))
@@ -570,7 +571,7 @@ impl Processor {
     /// document-string (`process_document`) path all funnel through here.
     ///
     /// When `restrict_to_cited` is `true` (the document case), only references present
-    /// in `self.cited_ids` — cited in-text or registered via `nocite` — are included.
+    /// in `self.run_state.cited_ids` — cited in-text or registered via `nocite` — are included.
     /// When `false`, all loaded references are eligible; this hook is reserved for the
     /// `allrefs` escape hatch (csl26-f9ri) and is not yet exposed publicly.
     ///
@@ -591,7 +592,7 @@ impl Processor {
             annotation_style,
         );
         // Collect IDs before calling process_* so the RefCell borrow is released.
-        let cited_ids: Vec<String> = self.cited_ids.borrow().iter().cloned().collect();
+        let cited_ids: Vec<String> = self.run_state.cited_ids.borrow().iter().cloned().collect();
         let entries = if restrict_to_cited {
             self.process_selected_references_with_format::<F, _>(cited_ids)
                 .bibliography
@@ -604,7 +605,7 @@ impl Processor {
     /// Shared implementation for grouped bibliography rendering.
     ///
     /// When `restrict_to_cited` is `true`, each branch limits its candidate
-    /// set to references present in `self.cited_ids`. When `false`, all
+    /// set to references present in `self.run_state.cited_ids`. When `false`, all
     /// loaded references are eligible (the original all-refs behaviour used
     /// by standalone `render refs`, FFI, and tests).
     fn render_grouped_bibliography_inner<F>(
@@ -624,7 +625,7 @@ impl Processor {
         {
             let id_stubs = self.sorted_id_stubs();
             let selected = if restrict_to_cited {
-                let cited = self.cited_ids.borrow();
+                let cited = self.run_state.cited_ids.borrow();
                 id_stubs
                     .iter()
                     .filter(|e| cited.contains(&e.id))
@@ -652,7 +653,7 @@ impl Processor {
             self.initialize_numeric_bibliography_numbers();
             let mut refs: Vec<&Reference> = self.bibliography.values().collect();
             if restrict_to_cited {
-                let cited = self.cited_ids.borrow();
+                let cited = self.run_state.cited_ids.borrow();
                 refs.retain(|r| r.id().as_deref().is_some_and(|id| cited.contains(id)));
             }
             let sorted_refs = self.sort_references(refs);
@@ -685,7 +686,7 @@ impl Processor {
         F: OutputFormat<Output = String>,
     {
         let bibliography = self.sorted_id_stubs();
-        let cited_ids = self.cited_ids.borrow();
+        let cited_ids = self.run_state.cited_ids.borrow();
         let evaluator = SelectorEvaluator::new(&cited_ids);
         let bibliography_config = self.get_bibliography_config();
         let sorter = ReferenceSorter::with_bibliography_config(&self.locale, &bibliography_config);
