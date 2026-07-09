@@ -62,7 +62,7 @@ impl Processor {
                 first_note_by_id: None,
             },
             &self.hints,
-            &self.citation_numbers,
+            &self.run_state.citation_numbers,
             CompoundRenderData {
                 set_by_ref: &self.compound_set_by_ref,
                 member_index: &self.compound_member_index,
@@ -100,6 +100,7 @@ impl Processor {
         for (index, reference) in sorted_refs.enumerate() {
             let ref_id = reference.id().unwrap_or_default().to_string();
             let entry_number = self
+                .run_state
                 .citation_numbers
                 .borrow()
                 .get(&ref_id)

@@ -423,10 +423,10 @@ impl Processor {
                 locale: &self.locale,
                 config: Rc::new(self.get_config().clone()),
                 bibliography_config: Some(Rc::new(self.get_bibliography_options().into_owned())),
-                first_note_by_id: Some(&self.first_note_by_id),
+                first_note_by_id: Some(&self.run_state.first_note_by_id),
             },
             &self.hints,
-            &self.citation_numbers,
+            &self.run_state.citation_numbers,
             CompoundRenderData {
                 set_by_ref: &self.compound_set_by_ref,
                 member_index: &self.compound_member_index,

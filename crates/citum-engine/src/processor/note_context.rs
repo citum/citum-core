@@ -138,7 +138,7 @@ impl Processor {
         // Build first-occurrence note number map: id → note_number of first cite.
         // Clear first so repeated calls (e.g. reprocessing after insertion/reordering)
         // don't accumulate stale entries from prior runs.
-        let mut first_note = self.first_note_by_id.borrow_mut();
+        let mut first_note = self.run_state.first_note_by_id.borrow_mut();
         first_note.clear();
         for citation in &normalized {
             if let Some(note_number) = citation.note_number {
