@@ -7,7 +7,7 @@ use citum_engine::ffi::{
 use libfuzzer_sys::fuzz_target;
 use std::ffi::CString;
 
-fn processor() -> *mut citum_engine::Processor {
+fn processor() -> *mut citum_engine::ffi::FfiSession {
     let style = serde_json::to_string(&citum_schema::Style::default()).unwrap_or_default();
     let style = CString::new(style).unwrap_or_default();
     let bibliography = CString::new("{}").unwrap_or_default();

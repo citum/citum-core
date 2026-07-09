@@ -14,6 +14,7 @@ mod grouping;
 
 use super::matching::Matcher;
 use super::rendering::{CompoundRenderData, Renderer, RendererResources};
+use super::run_state::FinalizedRun;
 use super::{ProcessedReferences, Processor};
 use crate::api::AnnotationStyle;
 use crate::reference::Reference;
@@ -49,7 +50,11 @@ pub(crate) struct DocumentBibliography {
 
 impl Processor {
     /// Create a bibliography renderer with effective shared and bibliography-only config.
-    fn with_bibliography_renderer<T>(&self, render: impl FnOnce(Renderer<'_>) -> T) -> T {
+    fn with_bibliography_renderer<T>(
+        &self,
+        run: &FinalizedRun,
+        render: impl FnOnce(Renderer<'_>) -> T,
+    ) -> T {
         let bibliography_shared_config = self.get_bibliography_config();
         let bibliography_config = self.get_bibliography_options().into_owned();
         let renderer = Renderer::new(
@@ -62,7 +67,7 @@ impl Processor {
                 first_note_by_id: None,
             },
             &self.hints,
-            &self.run_state.citation_numbers,
+            &run.state().citation_numbers,
             CompoundRenderData {
                 set_by_ref: &self.compound_set_by_ref,
                 member_index: &self.compound_member_index,
@@ -86,6 +91,7 @@ impl Processor {
         &self,
         sorted_refs: I,
         process_fn: impl Fn(&Reference, usize) -> Option<ProcTemplate>,
+        run: &FinalizedRun,
     ) -> Vec<ProcEntry>
     where
         I: Iterator<Item = &'a Reference>,
@@ -99,8 +105,8 @@ impl Processor {
 
         for (index, reference) in sorted_refs.enumerate() {
             let ref_id = reference.id().unwrap_or_default().to_string();
-            let entry_number = self
-                .run_state
+            let entry_number = run
+                .state()
                 .citation_numbers
                 .borrow()
                 .get(&ref_id)
@@ -112,7 +118,7 @@ impl Processor {
                     && let Some(previous) = previous_reference
                     && self.contributors_match(previous, reference)
                 {
-                    self.with_bibliography_renderer(|renderer| {
+                    self.with_bibliography_renderer(run, |renderer| {
                         renderer.apply_author_substitution_with_format::<F>(
                             &mut processed,
                             substitute_string,
@@ -134,26 +140,36 @@ impl Processor {
 
     /// Process all bibliography references and render them.
     ///
-    /// Returns sorted and formatted bibliography entries. For numeric styles,
-    /// citations must have been processed first to assign citation numbers.
+    /// This is a one-shot convenience wrapper: it begins a throwaway
+    /// [`super::run_state::RunState`] internally, so it has no continuity
+    /// with any citations processed elsewhere. Use
+    /// [`Processor::process_references_with_format`] with an explicit,
+    /// shared `FinalizedRun` to render a bibliography that reflects prior
+    /// citation registration in the same document.
     pub fn process_references(&self) -> ProcessedReferences {
-        self.process_references_with_format::<crate::render::plain::PlainText>()
+        let run = self.begin_run().finalize();
+        self.process_references_with_format::<crate::render::plain::PlainText>(&run)
     }
 
     /// Process all bibliography references using the requested output format.
     ///
     /// This preserves format-specific inline markup in per-entry API output.
-    pub fn process_references_with_format<F>(&self) -> ProcessedReferences
+    /// `run` should reflect all citations already processed for this
+    /// document (or be a fresh [`Processor::begin_run`] for a standalone
+    /// bibliography with no citations); see
+    /// [`Processor::process_references_with_format_standalone`] for a
+    /// one-shot convenience.
+    pub fn process_references_with_format<F>(&self, run: &FinalizedRun) -> ProcessedReferences
     where
         F: OutputFormat<Output = String>,
     {
-        self.initialize_numeric_bibliography_numbers();
         let sorted_refs = self.sort_references(self.bibliography.values().collect());
         let bibliography = self.process_sorted_refs::<_, F>(
             sorted_refs.iter().copied(),
             |reference, entry_number| {
-                self.process_bibliography_entry_with_format::<F>(reference, entry_number)
+                self.process_bibliography_entry_with_format::<F>(reference, entry_number, run)
             },
+            run,
         );
         ProcessedReferences {
             bibliography,
@@ -172,12 +188,12 @@ impl Processor {
     pub(crate) fn process_selected_references_with_format<F, I>(
         &self,
         item_ids: I,
+        run: &FinalizedRun,
     ) -> ProcessedReferences
     where
         F: OutputFormat<Output = String>,
         I: IntoIterator<Item = String>,
     {
-        self.initialize_numeric_bibliography_numbers();
         let selected: HashSet<String> = item_ids.into_iter().collect();
         let sorted_refs = self.sort_references(self.bibliography.values().collect());
         let bibliography = self.process_sorted_refs::<_, F>(
@@ -186,8 +202,9 @@ impl Processor {
                 .filter(|r| r.id().as_deref().is_some_and(|id| selected.contains(id)))
                 .copied(),
             |reference, entry_number| {
-                self.process_bibliography_entry_with_format::<F>(reference, entry_number)
+                self.process_bibliography_entry_with_format::<F>(reference, entry_number, run)
             },
+            run,
         );
         ProcessedReferences {
             bibliography,
@@ -200,8 +217,9 @@ impl Processor {
         &self,
         reference: &Reference,
         entry_number: usize,
+        run: &FinalizedRun,
     ) -> Option<ProcTemplate> {
-        self.with_bibliography_renderer(|renderer| {
+        self.with_bibliography_renderer(run, |renderer| {
             renderer.process_bibliography_entry(reference, entry_number)
         })
     }
@@ -211,11 +229,12 @@ impl Processor {
         &self,
         reference: &Reference,
         entry_number: usize,
+        run: &FinalizedRun,
     ) -> Option<ProcTemplate>
     where
         F: OutputFormat<Output = String>,
     {
-        self.with_bibliography_renderer(|renderer| {
+        self.with_bibliography_renderer(run, |renderer| {
             renderer.process_bibliography_entry_with_format::<F>(reference, entry_number)
         })
     }
@@ -228,21 +247,12 @@ impl Processor {
         matcher.contributors_match(prev, current)
     }
 
-    /// Replace the primary contributor with a substitution string.
-    ///
-    /// Used for subsequent author substitution (e.g., "———").
-    pub fn apply_author_substitution(&self, proc: &mut ProcTemplate, substitute: &str) {
-        self.with_bibliography_renderer(|renderer| {
-            renderer.apply_author_substitution(proc, substitute);
-        });
-    }
-
     /// Render the bibliography to a string using a specific format.
-    pub fn render_bibliography_with_format<F>(&self) -> String
+    pub fn render_bibliography_with_format<F>(&self, run: &FinalizedRun) -> String
     where
         F: OutputFormat<Output = String>,
     {
-        self.render_bibliography_with_format_and_annotations::<F>(None, None)
+        self.render_bibliography_with_format_and_annotations::<F>(None, None, run)
     }
 
     /// Render the bibliography to a string with annotations.
@@ -250,6 +260,7 @@ impl Processor {
         &self,
         annotations: Option<&HashMap<String, String>>,
         annotation_style: Option<&AnnotationStyle>,
+        run: &FinalizedRun,
     ) -> String
     where
         F: OutputFormat<Output = String>,
@@ -258,16 +269,23 @@ impl Processor {
             self.bibliography.keys().cloned().collect::<Vec<_>>(),
             annotations,
             annotation_style,
+            run,
         )
     }
 
     /// Render a selected bibliography subset to a string using a specific format.
-    pub fn render_selected_bibliography_with_format<F, I>(&self, item_ids: I) -> String
+    pub fn render_selected_bibliography_with_format<F, I>(
+        &self,
+        item_ids: I,
+        run: &FinalizedRun,
+    ) -> String
     where
         F: OutputFormat<Output = String>,
         I: IntoIterator<Item = String>,
     {
-        self.render_selected_bibliography_with_format_and_annotations::<F, _>(item_ids, None, None)
+        self.render_selected_bibliography_with_format_and_annotations::<F, _>(
+            item_ids, None, None, run,
+        )
     }
 
     /// Render a selected bibliography subset to a string with annotations.
@@ -281,6 +299,7 @@ impl Processor {
         item_ids: I,
         annotations: Option<&HashMap<String, String>>,
         annotation_style: Option<&AnnotationStyle>,
+        run: &FinalizedRun,
     ) -> String
     where
         F: OutputFormat<Output = String>,
@@ -303,6 +322,7 @@ impl Processor {
                 &selected,
                 annotations,
                 annotation_style,
+                run,
             );
         }
 
@@ -311,7 +331,6 @@ impl Processor {
         if let Some(partitioning) = bibliography_options.sort_partitioning.as_ref()
             && crate::sort_partitioning::should_render_sections(partitioning)
         {
-            self.initialize_numeric_bibliography_numbers();
             let all_sorted = self.sort_references(self.bibliography.values().collect());
             let selected_sorted: Vec<&Reference> = all_sorted
                 .into_iter()
@@ -322,11 +341,11 @@ impl Processor {
                 partitioning,
                 annotations,
                 annotation_style,
+                run,
             );
         }
 
         // 3. Fallback to flat rendering
-        self.initialize_numeric_bibliography_numbers();
         let sorted_refs = self.sort_references(self.bibliography.values().collect());
 
         let bibliography = self.process_sorted_refs::<_, F>(
@@ -335,16 +354,121 @@ impl Processor {
                 .filter(|r| r.id().as_deref().is_some_and(|id| selected.contains(id)))
                 .copied(),
             |reference, entry_number| {
-                self.process_bibliography_entry_with_format::<F>(reference, entry_number)
+                self.process_bibliography_entry_with_format::<F>(reference, entry_number, run)
             },
+            run,
         );
 
-        let bibliography = self.merge_compound_entries::<F>(bibliography);
+        let bibliography = self.merge_compound_entries::<F>(bibliography, run);
         crate::render::refs_to_string_with_format::<F>(bibliography, annotations, annotation_style)
     }
 
     /// Render the entire bibliography to a formatted string.
+    ///
+    /// One-shot convenience wrapper: begins a throwaway run internally, so
+    /// it has no continuity with any citations processed elsewhere. Use
+    /// [`Processor::render_bibliography_with_format`] with an explicit,
+    /// shared `FinalizedRun` for a bibliography that reflects prior citation
+    /// registration.
     pub fn render_bibliography(&self) -> String {
-        self.render_bibliography_with_format::<crate::render::plain::PlainText>()
+        let run = self.begin_run().finalize();
+        self.render_bibliography_with_format::<crate::render::plain::PlainText>(&run)
+    }
+
+    /// One-shot convenience for [`Processor::process_references_with_format`]:
+    /// begins a throwaway run internally.
+    pub fn process_references_with_format_standalone<F>(&self) -> ProcessedReferences
+    where
+        F: OutputFormat<Output = String>,
+    {
+        let run = self.begin_run().finalize();
+        self.process_references_with_format::<F>(&run)
+    }
+
+    /// One-shot convenience for [`Processor::process_bibliography_entry`]:
+    /// begins a throwaway run internally.
+    pub fn process_bibliography_entry_standalone(
+        &self,
+        reference: &Reference,
+        entry_number: usize,
+    ) -> Option<ProcTemplate> {
+        let run = self.begin_run().finalize();
+        self.process_bibliography_entry(reference, entry_number, &run)
+    }
+
+    /// One-shot convenience for [`Processor::process_bibliography_entry_with_format`]:
+    /// begins a throwaway run internally.
+    pub fn process_bibliography_entry_with_format_standalone<F>(
+        &self,
+        reference: &Reference,
+        entry_number: usize,
+    ) -> Option<ProcTemplate>
+    where
+        F: OutputFormat<Output = String>,
+    {
+        let run = self.begin_run().finalize();
+        self.process_bibliography_entry_with_format::<F>(reference, entry_number, &run)
+    }
+
+    /// One-shot convenience for [`Processor::render_bibliography_with_format`]:
+    /// begins a throwaway run internally.
+    pub fn render_bibliography_with_format_standalone<F>(&self) -> String
+    where
+        F: OutputFormat<Output = String>,
+    {
+        let run = self.begin_run().finalize();
+        self.render_bibliography_with_format::<F>(&run)
+    }
+
+    /// One-shot convenience for
+    /// [`Processor::render_bibliography_with_format_and_annotations`]:
+    /// begins a throwaway run internally.
+    pub fn render_bibliography_with_format_and_annotations_standalone<F>(
+        &self,
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
+    ) -> String
+    where
+        F: OutputFormat<Output = String>,
+    {
+        let run = self.begin_run().finalize();
+        self.render_bibliography_with_format_and_annotations::<F>(
+            annotations,
+            annotation_style,
+            &run,
+        )
+    }
+
+    /// One-shot convenience for [`Processor::render_selected_bibliography_with_format`]:
+    /// begins a throwaway run internally.
+    pub fn render_selected_bibliography_with_format_standalone<F, I>(&self, item_ids: I) -> String
+    where
+        F: OutputFormat<Output = String>,
+        I: IntoIterator<Item = String>,
+    {
+        let run = self.begin_run().finalize();
+        self.render_selected_bibliography_with_format::<F, I>(item_ids, &run)
+    }
+
+    /// One-shot convenience for
+    /// [`Processor::render_selected_bibliography_with_format_and_annotations`]:
+    /// begins a throwaway run internally.
+    pub fn render_selected_bibliography_with_format_and_annotations_standalone<F, I>(
+        &self,
+        item_ids: I,
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
+    ) -> String
+    where
+        F: OutputFormat<Output = String>,
+        I: IntoIterator<Item = String>,
+    {
+        let run = self.begin_run().finalize();
+        self.render_selected_bibliography_with_format_and_annotations::<F, I>(
+            item_ids,
+            annotations,
+            annotation_style,
+            &run,
+        )
     }
 }

@@ -557,7 +557,7 @@ options:
     let processor = Processor::new(style, script_partition_bibliography());
 
     assert_eq!(
-        processor.render_grouped_bibliography_with_format::<PlainText>(),
+        processor.render_grouped_bibliography_with_format_standalone::<PlainText>(),
         "## Cyrillic\n\nБета\n\n## Latin\n\nAlpha\n\n## Han\n\n東京"
     );
 }
@@ -590,7 +590,7 @@ groups:
     );
     let processor = Processor::new(style, script_partition_bibliography());
 
-    let output = processor.render_grouped_bibliography_with_format::<PlainText>();
+    let output = processor.render_grouped_bibliography_with_format_standalone::<PlainText>();
 
     // Manual groups gate wins; auto-partition section headings must not appear
     assert_eq!(output, "Бета\n\nAlpha\n\n東京");
@@ -631,7 +631,7 @@ fn language_partition_sections_reset_subsequent_author_substitution_per_section(
     let processor = Processor::new(style, bibliography);
 
     assert_eq!(
-        processor.render_grouped_bibliography_with_format::<PlainText>(),
+        processor.render_grouped_bibliography_with_format_standalone::<PlainText>(),
         "## Russian\n\nSmith, John. Alpha.\n\n———. Beta.\n\n## English\n\nSmith, John. Gamma."
     );
 }
@@ -1280,7 +1280,7 @@ bibliography:
     bib.insert("ITEM-1".to_string(), legacy.into());
 
     let processor = Processor::new(style, bib).with_inject_ast_indices(true);
-    let rendered = processor.render_bibliography_with_format::<Html>();
+    let rendered = processor.render_bibliography_with_format_standalone::<Html>();
 
     assert!(
         rendered.contains(r#"class="citum-author" data-index="0""#),
@@ -1381,7 +1381,7 @@ fn assert_list_preview_inherits_parent_index(use_type_template: bool) {
 
     let processor = Processor::new(build_list_index_preview_style(use_type_template), bib)
         .with_inject_ast_indices(true);
-    let rendered = processor.render_bibliography_with_format::<Html>();
+    let rendered = processor.render_bibliography_with_format_standalone::<Html>();
 
     assert!(
         rendered.contains(r#"class="citum-author" data-index="0""#),
@@ -1830,10 +1830,12 @@ enum TestOutputFormat {
 
 fn render_bibliography_in_format(processor: &Processor, fmt: TestOutputFormat) -> String {
     match fmt {
-        TestOutputFormat::Plain => processor.render_bibliography_with_format::<PlainText>(),
-        TestOutputFormat::Html => processor.render_bibliography_with_format::<Html>(),
-        TestOutputFormat::Latex => processor.render_bibliography_with_format::<Latex>(),
-        TestOutputFormat::Typst => processor.render_bibliography_with_format::<Typst>(),
+        TestOutputFormat::Plain => {
+            processor.render_bibliography_with_format_standalone::<PlainText>()
+        }
+        TestOutputFormat::Html => processor.render_bibliography_with_format_standalone::<Html>(),
+        TestOutputFormat::Latex => processor.render_bibliography_with_format_standalone::<Latex>(),
+        TestOutputFormat::Typst => processor.render_bibliography_with_format_standalone::<Typst>(),
     }
 }
 
@@ -2751,7 +2753,7 @@ bibliography:
     bibliography.insert("with-pages".to_string(), with_pages.into());
 
     let processor = Processor::new(style, bibliography);
-    let rendered = processor.render_selected_bibliography_with_format::<PlainText, _>([
+    let rendered = processor.render_selected_bibliography_with_format_standalone::<PlainText, _>([
         "without-pages".to_string(),
         "with-pages".to_string(),
     ]);
@@ -2826,7 +2828,7 @@ fn anonymous_entry_type_variants_reorder_online_entries_and_drop_print_fallback_
     bibliography.insert("authorful-encyclopedia".to_string(), authorful_encyclopedia);
 
     let processor = Processor::new(style, bibliography);
-    let rendered = processor.render_selected_bibliography_with_format::<PlainText, _>([
+    let rendered = processor.render_selected_bibliography_with_format_standalone::<PlainText, _>([
         "print-dictionary".to_string(),
         "print-encyclopedia".to_string(),
         "online-encyclopedia".to_string(),
@@ -2849,8 +2851,9 @@ fn elsevier_harvard_entry_encyclopedia_uses_entry_template_instead_of_chapter_de
     .expect("expanded bibliography should load");
 
     let processor = Processor::new(style, bibliography);
-    let rendered =
-        processor.render_selected_bibliography_with_format::<PlainText, _>(["ITEM-18".to_string()]);
+    let rendered = processor.render_selected_bibliography_with_format_standalone::<PlainText, _>([
+        "ITEM-18".to_string(),
+    ]);
 
     assert_eq!(
         rendered.trim(),
@@ -2877,7 +2880,7 @@ fn apa_dataset_without_title_falls_back_to_bracketed_label_version_and_doi() {
     bibliography.insert("apa-titleless-dataset".to_string(), legacy.into());
 
     let processor = Processor::new(style, bibliography);
-    let rendered = processor.render_selected_bibliography_with_format::<PlainText, _>([
+    let rendered = processor.render_selected_bibliography_with_format_standalone::<PlainText, _>([
         "apa-titleless-dataset".to_string(),
     ]);
 
@@ -2941,7 +2944,7 @@ fn apa_web_native_entries_render_without_retrieved_fallbacks() {
         .collect();
 
     let processor = Processor::new(style, bibliography);
-    let rendered = processor.render_selected_bibliography_with_format::<PlainText, _>([
+    let rendered = processor.render_selected_bibliography_with_format_standalone::<PlainText, _>([
         "6188419/IC98IKSD".to_string(),
         "6188419/XA2MLUAS".to_string(),
         "6188419/HCFRWJZR".to_string(),
@@ -3000,7 +3003,7 @@ fn apa_magazine_and_newspaper_entries_keep_special_format_translators_and_direct
         .collect();
 
     let processor = Processor::new(style, bibliography);
-    let rendered = processor.render_selected_bibliography_with_format::<PlainText, _>([
+    let rendered = processor.render_selected_bibliography_with_format_standalone::<PlainText, _>([
         "6188419/BXMWCMVJ".to_string(),
         "6188419/389M98AT".to_string(),
     ]);
@@ -3080,7 +3083,7 @@ fn apa_structural_entries_use_component_packaging_instead_of_generic_fallbacks()
         .collect();
 
     let processor = Processor::new(style, bibliography);
-    let rendered = processor.render_selected_bibliography_with_format::<PlainText, _>([
+    let rendered = processor.render_selected_bibliography_with_format_standalone::<PlainText, _>([
         "6188419/RYT8J733".to_string(),
         "6188419/Q2MWRA2D".to_string(),
         "6188419/2G36L2LR".to_string(),
@@ -3138,7 +3141,7 @@ fn render_structural_bibliography_case(value: serde_json::Value) -> String {
     let processor = Processor::new(style, bibliography);
 
     processor
-        .render_selected_bibliography_with_format::<PlainText, _>([id])
+        .render_selected_bibliography_with_format_standalone::<PlainText, _>([id])
         .lines()
         .find(|line| !line.trim().is_empty())
         .expect("expected one bibliography line")
@@ -3281,7 +3284,7 @@ fn apa_personal_communication_entries_do_not_render_in_bibliography() {
     ]);
 
     let processor = Processor::new(style, bibliography);
-    let rendered = processor.render_selected_bibliography_with_format::<PlainText, _>([
+    let rendered = processor.render_selected_bibliography_with_format_standalone::<PlainText, _>([
         "ITEM-28".to_string(),
         "sr-recipient".to_string(),
     ]);
@@ -3324,7 +3327,7 @@ fn bibliography_local_entry_links_apply_on_the_default_render_path() {
     let bib = citum_schema::bib_map!["linked-book" => reference];
 
     let processor = Processor::new(style, bib);
-    let rendered = processor.render_bibliography_with_format::<Html>();
+    let rendered = processor.render_bibliography_with_format_standalone::<Html>();
 
     assert!(
         rendered.contains(r#"href="https://example.com/linked-book""#),
@@ -3445,7 +3448,7 @@ fn royal_society_of_chemistry_restores_legacy_page_less_doi_behavior() {
     .expect("expanded bibliography should load");
     let processor = Processor::new(style, bib);
     let result = processor
-        .render_selected_bibliography_with_format::<citum_engine::render::plain::PlainText, _>(
+        .render_selected_bibliography_with_format_standalone::<citum_engine::render::plain::PlainText, _>(
             vec!["ITEM-1".to_string()],
         );
 
@@ -3468,7 +3471,7 @@ fn editor_author_substitute_omits_verb_role_label_in_bibliography() {
     let bib = make_editor_substitute_bibliography();
     let processor = Processor::new(style, bib);
     let result = processor
-        .render_selected_bibliography_with_format::<citum_engine::render::plain::PlainText, _>(
+        .render_selected_bibliography_with_format_standalone::<citum_engine::render::plain::PlainText, _>(
             vec!["ancient-tale".to_string(), "ipcc2023".to_string()],
         );
 
@@ -3504,7 +3507,7 @@ fn editor_author_substitute_renders_comma_short_capitalized_label() {
     let bib = make_editor_substitute_bibliography();
     let processor = Processor::new(style, bib);
     let result = processor
-        .render_selected_bibliography_with_format::<citum_engine::render::plain::PlainText, _>(
+        .render_selected_bibliography_with_format_standalone::<citum_engine::render::plain::PlainText, _>(
             vec!["ancient-tale".to_string(), "ipcc2023".to_string()],
         );
 
@@ -4019,7 +4022,7 @@ fn original_published_date_variable_renders_when_reference_has_original_date() {
     let bibliography = IndexMap::from([("gatsby".to_string(), reference)]);
     let processor = Processor::new(style, bibliography);
     let rendered = processor
-        .render_selected_bibliography_with_format::<PlainText, _>(["gatsby".to_string()])
+        .render_selected_bibliography_with_format_standalone::<PlainText, _>(["gatsby".to_string()])
         .trim()
         .to_string();
 
@@ -4081,7 +4084,7 @@ fn original_published_date_variable_renders_for_patent_references() {
     let bibliography = IndexMap::from([("patent".to_string(), reference)]);
     let processor = Processor::new(style, bibliography);
     let rendered = processor
-        .render_selected_bibliography_with_format::<PlainText, _>(["patent".to_string()])
+        .render_selected_bibliography_with_format_standalone::<PlainText, _>(["patent".to_string()])
         .trim()
         .to_string();
 
@@ -4180,7 +4183,9 @@ fn given_original_publication_fields_when_a_bibliography_group_checks_field_pres
     let bibliography = IndexMap::from([("primary".to_string(), reference)]);
     let processor = Processor::new(style, bibliography);
     let rendered = processor
-        .render_selected_bibliography_with_format::<PlainText, _>(["primary".to_string()])
+        .render_selected_bibliography_with_format_standalone::<PlainText, _>(
+            ["primary".to_string()],
+        )
         .trim()
         .to_string();
 
@@ -4237,7 +4242,9 @@ fn original_title_variable_renders_the_original_language_title() {
     let bibliography = IndexMap::from([("memory-police".to_string(), reference)]);
     let processor = Processor::new(style, bibliography);
     let rendered = processor
-        .render_selected_bibliography_with_format::<PlainText, _>(["memory-police".to_string()])
+        .render_selected_bibliography_with_format_standalone::<PlainText, _>([
+            "memory-police".to_string()
+        ])
         .trim()
         .to_string();
 
@@ -4288,7 +4295,9 @@ fn given_a_number_component_with_free_text_when_a_text_case_override_is_set_then
     let bibliography = IndexMap::from([("reprint".to_string(), reference)]);
     let processor = Processor::new(style, bibliography);
     let rendered = processor
-        .render_selected_bibliography_with_format::<PlainText, _>(["reprint".to_string()])
+        .render_selected_bibliography_with_format_standalone::<PlainText, _>(
+            ["reprint".to_string()],
+        )
         .trim()
         .to_string();
 
@@ -4473,10 +4482,11 @@ fn processor_renders_bibliography_annotations() {
 
     let annotation_style = AnnotationStyle::default();
 
-    let rendered = processor.render_bibliography_with_format_and_annotations::<PlainText>(
-        Some(&annotations),
-        Some(&annotation_style),
-    );
+    let rendered = processor
+        .render_bibliography_with_format_and_annotations_standalone::<PlainText>(
+            Some(&annotations),
+            Some(&annotation_style),
+        );
 
     assert_eq!(rendered, "Test Book\n\nThis is an annotation.");
 }
@@ -4518,7 +4528,7 @@ groups:
     );
 
     let processor = Processor::new(style, bib);
-    let rendered = processor.render_grouped_bibliography_with_format::<PlainText>();
+    let rendered = processor.render_grouped_bibliography_with_format_standalone::<PlainText>();
 
     assert_eq!(rendered, "First Book\n\nSecond Book");
 }
@@ -4564,7 +4574,7 @@ groups:
     );
 
     let processor = Processor::new(style, bib);
-    let rendered = processor.render_grouped_bibliography_with_format::<PlainText>();
+    let rendered = processor.render_grouped_bibliography_with_format_standalone::<PlainText>();
 
     assert_eq!(
         rendered,
@@ -4619,7 +4629,7 @@ fn given_grouped_html_bibliography_when_journal_article_rendered_then_container_
     );
 
     let processor = Processor::new(style, bib);
-    let rendered = processor.render_grouped_bibliography_with_format::<Html>();
+    let rendered = processor.render_grouped_bibliography_with_format_standalone::<Html>();
 
     assert!(
         rendered.contains("<em>Journal of Testing</em>"),
@@ -4678,7 +4688,7 @@ fn given_grouped_html_bibliography_when_title_has_inline_djot_markup_then_markup
     );
 
     let processor = Processor::new(style, bib);
-    let rendered = processor.render_grouped_bibliography_with_format::<Html>();
+    let rendered = processor.render_grouped_bibliography_with_format_standalone::<Html>();
 
     assert!(
         rendered.contains("<em>in vitro</em>"),
@@ -4754,7 +4764,7 @@ fn given_quoted_title_with_inner_quotes_when_html_bibliography_rendered_then_inn
         quoted_title_style(false),
         title_with_inner_quotes_bibliography(),
     );
-    let rendered = processor.render_bibliography_with_format::<Html>();
+    let rendered = processor.render_bibliography_with_format_standalone::<Html>();
 
     assert!(
         rendered.contains("“The ‘Parmenides’ dialogue”"),
@@ -4777,7 +4787,7 @@ fn given_quoted_title_with_inner_quotes_when_grouped_html_bibliography_rendered_
         quoted_title_style(true),
         title_with_inner_quotes_bibliography(),
     );
-    let rendered = processor.render_grouped_bibliography_with_format::<Html>();
+    let rendered = processor.render_grouped_bibliography_with_format_standalone::<Html>();
 
     assert!(
         rendered.contains("“The ‘Parmenides’ dialogue”"),
@@ -4877,7 +4887,7 @@ fn given_multilingual_ref_when_rendering_html_then_data_attrs_match_displayed_fo
     );
 
     let processor = Processor::new(style, bib);
-    let rendered = processor.render_grouped_bibliography_with_format::<Html>();
+    let rendered = processor.render_grouped_bibliography_with_format_standalone::<Html>();
 
     // data-title must be set to the combined (transliterated [translated]) form on the attribute
     assert!(

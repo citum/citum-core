@@ -121,7 +121,7 @@ fn test_romanized_translated_preset_uses_parallel_metadata() {
         .process_citation(&single_item_citation("CJK-JAPANESE-BOOK"))
         .expect("Japanese book citation should render");
     let entry = processor
-        .render_selected_bibliography_with_format::<citum_engine::render::plain::PlainText, _>(
+        .render_selected_bibliography_with_format_standalone::<citum_engine::render::plain::PlainText, _>(
             vec!["CJK-JAPANESE-BOOK".to_string()],
         );
 
@@ -151,11 +151,11 @@ fn test_bibliography_locales_switch_full_entry_layouts() {
     let processor = Processor::new(style, bibliography);
 
     let japanese_entry = processor
-        .render_selected_bibliography_with_format::<citum_engine::render::plain::PlainText, _>(
+        .render_selected_bibliography_with_format_standalone::<citum_engine::render::plain::PlainText, _>(
             vec!["CJK-JAPANESE-LANGUAGE-TAGGED".to_string()],
         );
     let default_entry = processor
-        .render_selected_bibliography_with_format::<citum_engine::render::plain::PlainText, _>(
+        .render_selected_bibliography_with_format_standalone::<citum_engine::render::plain::PlainText, _>(
             vec!["CSL-ET-AL-LATIN".to_string()],
         );
 

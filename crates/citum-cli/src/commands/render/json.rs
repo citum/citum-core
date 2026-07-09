@@ -65,10 +65,11 @@ where
                         mode: citum_schema::citation::CitationMode::NonIntegral,
                         ..Default::default()
                     };
+                    let mut run = ctx.processor.begin_run();
                     json!({
                         "id": id,
                         "text": ctx.processor
-                            .process_citation_with_format::<F>(&citation)
+                            .process_citation_with_format::<F>(&citation, &mut run)
                             .unwrap_or_else(|e| e.to_string())
                     })
                 })
@@ -87,10 +88,11 @@ where
                         mode: citum_schema::citation::CitationMode::Integral,
                         ..Default::default()
                     };
+                    let mut run = ctx.processor.begin_run();
                     json!({
                         "id": id,
                         "text": ctx.processor
-                            .process_citation_with_format::<F>(&citation)
+                            .process_citation_with_format::<F>(&citation, &mut run)
                             .unwrap_or_else(|e| e.to_string())
                     })
                 })

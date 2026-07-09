@@ -527,7 +527,8 @@ fn test_normalize_note_context_assigns_missing_numbers() {
         },
     ];
 
-    let normalized = processor.normalize_note_context(&citations);
+    let mut run = processor.begin_run();
+    let normalized = processor.normalize_note_context(&citations, &mut run);
     assert_eq!(normalized[0].note_number, Some(1));
     assert_eq!(normalized[1].note_number, Some(7));
     assert_eq!(normalized[2].note_number, Some(8));
@@ -1713,6 +1714,80 @@ fn test_numeric_citation_numbers_with_repeated_refs() {
     assert_eq!(cit3, "[1]", "Second citation of ref1 should still be [1]");
 }
 
+/// Verifies the headline property `docs/specs/EXPLICIT_RENDER_RUN_STATE.md`
+/// exists to make possible: rendering the same citation list twice through
+/// one reused `Processor`, each with its own fresh `RunState` from
+/// `begin_run`, produces identical output. Before this refactor `Processor`
+/// accumulated state across its whole lifetime, so this property was not
+/// just untested — it was not expressible.
+#[test]
+fn test_processor_is_reusable_across_independent_runs() {
+    let style = make_style();
+    let mut bib = make_bibliography();
+    bib.insert(
+        "smith2020".to_string(),
+        Reference::from(LegacyReference {
+            id: "smith2020".to_string(),
+            ref_type: "book".to_string(),
+            author: Some(vec![Name::new("Smith", "Jane")]),
+            title: Some("A Later Study".to_string()),
+            issued: Some(DateVariable::year(2020)),
+            ..Default::default()
+        }),
+    );
+    let processor = Processor::new(style, bib);
+
+    let citations = vec![
+        Citation {
+            id: Some("c1".into()),
+            items: vec![crate::reference::CitationItem {
+                id: "kuhn1962".to_string(),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+        Citation {
+            id: Some("c2".into()),
+            items: vec![crate::reference::CitationItem {
+                id: "smith2020".to_string(),
+                ..Default::default()
+            }],
+            ..Default::default()
+        },
+    ];
+
+    let mut first_run = processor.begin_run();
+    let first_pass = processor
+        .process_citations_with_format::<crate::render::plain::PlainText>(
+            &citations,
+            &mut first_run,
+        )
+        .unwrap();
+    let first_run = first_run.finalize();
+    let first_bibliography =
+        processor.render_bibliography_with_format::<crate::render::plain::PlainText>(&first_run);
+
+    let mut second_run = processor.begin_run();
+    let second_pass = processor
+        .process_citations_with_format::<crate::render::plain::PlainText>(
+            &citations,
+            &mut second_run,
+        )
+        .unwrap();
+    let second_run = second_run.finalize();
+    let second_bibliography =
+        processor.render_bibliography_with_format::<crate::render::plain::PlainText>(&second_run);
+
+    assert_eq!(
+        first_pass, second_pass,
+        "rendering the same citations through two independent runs must produce identical citation text"
+    );
+    assert_eq!(
+        first_bibliography, second_bibliography,
+        "rendering the same citations through two independent runs must produce an identical bibliography"
+    );
+}
+
 /// Tests the behavior of `test_numeric_citation_numbers_follow_registry_order`.
 #[test]
 fn test_numeric_citation_numbers_follow_registry_order() {
@@ -2030,7 +2105,7 @@ fn test_whole_entry_linking_html() {
     );
 
     let processor = Processor::new(style, bib);
-    let result = processor.render_bibliography_with_format::<Html>();
+    let result = processor.render_bibliography_with_format_standalone::<Html>();
 
     assert_eq!(
         result,
@@ -2065,7 +2140,7 @@ fn test_global_title_linking_html() {
     );
 
     let processor = Processor::new(style, bib);
-    let result = processor.render_bibliography_with_format::<Html>();
+    let result = processor.render_bibliography_with_format_standalone::<Html>();
 
     // The title should be automatically hyperlinked because of global config.
     // Note: In this test, title substitutes for author, so it gets citum-author class.
@@ -2114,7 +2189,7 @@ fn test_inline_title_link_takes_precedence_over_global_title_link_html() {
     );
 
     let processor = Processor::new(style, bib);
-    let result = processor.render_bibliography_with_format::<Html>();
+    let result = processor.render_bibliography_with_format_standalone::<Html>();
 
     assert_eq!(
         result,
@@ -2156,7 +2231,7 @@ fn test_chicago_title_preset_preserves_djot_markup_html() {
     );
 
     let processor = Processor::new(style, bib);
-    let result = processor.render_bibliography_with_format::<Html>();
+    let result = processor.render_bibliography_with_format_standalone::<Html>();
 
     assert!(
         result.contains(
@@ -2193,7 +2268,7 @@ fn test_whole_entry_linking_typst() {
     );
 
     let processor = Processor::new(style, bib);
-    let result = processor.render_bibliography_with_format::<Typst>();
+    let result = processor.render_bibliography_with_format_standalone::<Typst>();
 
     assert_eq!(
         result,
@@ -2217,8 +2292,9 @@ fn test_typst_single_item_citation_links_to_bibliography_entry() {
         ..Default::default()
     };
 
+    let mut run = processor.begin_run();
     let result = processor
-        .process_citation_with_format::<Typst>(&citation)
+        .process_citation_with_format::<Typst>(&citation, &mut run)
         .unwrap();
 
     assert_eq!(result, "(#link(<ref-kuhn1962>)[Kuhn, 1962])");
@@ -3113,8 +3189,8 @@ fn test_bibliography_per_group_disambiguation() {
     ));
 
     let processor = Processor::new(style, bib);
-    let result =
-        processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
+    let result = processor
+        .render_grouped_bibliography_with_format_standalone::<crate::render::plain::PlainText>();
 
     // Year-suffix letters follow the article-stripped bibliography sort (§3): the
     // leading "A" of "A title" is a sort article, so it normalizes to "title" and
@@ -3225,8 +3301,8 @@ fn test_grouped_numeric_bibliography_rerender_preserves_numbers_and_substitution
     );
 
     let processor = Processor::new(style, bib);
-    let result =
-        processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
+    let result = processor
+        .render_grouped_bibliography_with_format_standalone::<crate::render::plain::PlainText>();
 
     assert!(
         result.contains("[2] Smith, John"),
@@ -3311,8 +3387,8 @@ fn test_group_heading_localized_uses_processor_locale() {
     locale.locale = "vi-VN".to_string();
 
     let processor = Processor::with_locale(style, bib, locale);
-    let output =
-        processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
+    let output = processor
+        .render_grouped_bibliography_with_format_standalone::<crate::render::plain::PlainText>();
 
     // The localized heading from the first group should be resolved and displayed.
     // The processor locale is "vi-VN" so it should use the "vi" entry.
@@ -3395,8 +3471,8 @@ fn test_group_heading_term_resolves_from_locale() {
     );
 
     let processor = Processor::new(style, bib);
-    let output =
-        processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
+    let output = processor
+        .render_grouped_bibliography_with_format_standalone::<crate::render::plain::PlainText>();
 
     // The term heading from the first group should be resolved from the locale.
     // For English, GeneralTerm::And should resolve to "and".
@@ -3432,7 +3508,7 @@ fn test_grouped_bibliography_html_suppresses_heading_for_single_group() {
     }]);
 
     let processor = Processor::new(style, make_bibliography());
-    let output = processor.render_grouped_bibliography_with_format::<Html>();
+    let output = processor.render_grouped_bibliography_with_format_standalone::<Html>();
 
     // When all references fall into a single group with no unassigned entries,
     // the group heading is suppressed, so no heading markup should appear.
@@ -3509,7 +3585,7 @@ fn test_grouped_bibliography_html_uses_html_headings() {
     );
 
     let processor = Processor::new(style, bib);
-    let output = processor.render_grouped_bibliography_with_format::<Html>();
+    let output = processor.render_grouped_bibliography_with_format_standalone::<Html>();
 
     // When there are multiple groups, headings should be rendered.
     // The first group heading should contain at least 30 chars to satisfy the test assertion rule.
@@ -4105,10 +4181,10 @@ fn test_compound_numeric_number_assignment() {
     );
 
     let processor = Processor::with_compound_sets(style, bib, sets);
-    // Trigger number initialization via process_references
-    let _ = processor.process_references();
+    // begin_run triggers number initialization from bibliography order.
+    let run = processor.begin_run();
 
-    let numbers = processor.run_state.citation_numbers.borrow();
+    let numbers = run.citation_numbers.borrow();
     // ref-a and ref-b share the same set membership -> same citation number.
     assert_eq!(
         numbers.get("ref-a"),
@@ -4125,7 +4201,7 @@ fn test_compound_numeric_number_assignment() {
     assert_eq!(numbers.get("ref-c"), Some(&2), "ungrouped ref should be 2");
 
     // Verify compound_groups tracking
-    let groups = processor.run_state.compound_groups.borrow();
+    let groups = &run.compound_groups;
     assert!(
         groups.contains_key(&1),
         "compound_groups should track group 1"
@@ -4241,8 +4317,8 @@ bibliography:
 #[test]
 fn test_grouped_compound_bibliography_leader_only_match_stays_singleton() {
     let processor = make_grouped_compound_selection_processor("selected", "other");
-    let output =
-        processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
+    let output = processor
+        .render_grouped_bibliography_with_format_standalone::<crate::render::plain::PlainText>();
     let selected_body = extract_selected_group_body(&output);
 
     assert!(
@@ -4266,8 +4342,8 @@ fn test_grouped_compound_bibliography_leader_only_match_stays_singleton() {
 #[test]
 fn test_grouped_compound_bibliography_non_leader_match_renders_selected_member() {
     let processor = make_grouped_compound_selection_processor("other", "selected");
-    let output =
-        processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
+    let output = processor
+        .render_grouped_bibliography_with_format_standalone::<crate::render::plain::PlainText>();
     let selected_body = extract_selected_group_body(&output);
 
     assert!(
@@ -4291,8 +4367,8 @@ fn test_grouped_compound_bibliography_non_leader_match_renders_selected_member()
 #[test]
 fn test_grouped_compound_bibliography_matching_members_merge_within_group() {
     let processor = make_grouped_compound_selection_processor("selected", "selected");
-    let output =
-        processor.render_grouped_bibliography_with_format::<crate::render::plain::PlainText>();
+    let output = processor
+        .render_grouped_bibliography_with_format_standalone::<crate::render::plain::PlainText>();
     let selected_body = extract_selected_group_body(&output);
 
     assert!(
@@ -4313,11 +4389,13 @@ fn test_grouped_compound_bibliography_matching_members_merge_within_group() {
 #[test]
 fn test_document_bibliography_block_selects_members_before_compound_merge() {
     let processor = make_grouped_compound_selection_processor("other", "selected");
+    let run = processor.begin_run().finalize();
     let rendered = processor.render_document_bibliography_block::<crate::render::plain::PlainText>(
         &make_selected_bibliography_group(),
         &mut std::collections::HashSet::new(),
         None,
         None,
+        &run,
     );
 
     assert_eq!(rendered.heading.as_deref(), Some("Selected"));
@@ -4352,18 +4430,21 @@ fn test_multi_bibliography_block_excludes_first_block_entries() {
         disambiguate: None,
     };
 
+    let run = processor.begin_run().finalize();
     let mut assigned = std::collections::HashSet::new();
     let block1 = processor.render_document_bibliography_block::<crate::render::plain::PlainText>(
         &make_selected_bibliography_group(),
         &mut assigned,
         None,
         None,
+        &run,
     );
     let block2 = processor.render_document_bibliography_block::<crate::render::plain::PlainText>(
         &catchall,
         &mut assigned,
         None,
         None,
+        &run,
     );
 
     assert!(
@@ -4699,7 +4780,7 @@ bibliography:
     );
 
     let processor = Processor::with_compound_sets(style, bib, sets);
-    let result = processor.render_bibliography_with_format::<Html>();
+    let result = processor.render_bibliography_with_format_standalone::<Html>();
 
     assert_eq!(
         result.matches("<div class=\"citum-bibliography\">").count(),
@@ -4775,9 +4856,9 @@ bibliography:
 
     let processor = Processor::with_compound_sets(style, bib, sets);
     let result = processor
-        .render_selected_bibliography_with_format::<crate::render::plain::PlainText, _>(vec![
-            "ref-b".to_string(),
-        ]);
+        .render_selected_bibliography_with_format_standalone::<crate::render::plain::PlainText, _>(
+            vec!["ref-b".to_string()],
+        );
 
     assert!(
         result.contains("Jones"),
@@ -5460,8 +5541,17 @@ fn test_dynamic_group_first_occurrence_wins() {
         ..Default::default()
     };
 
-    let rendered_first = processor.process_citation(&first).unwrap();
-    let rendered_second = processor.process_citation(&second).unwrap();
+    // Both citations must share one run: dynamic grouping's "first occurrence
+    // wins" rule depends on cited_ids/dynamic-group state accumulated across
+    // calls, which the one-shot `process_citation` convenience does not
+    // provide (each call begins its own throwaway run).
+    let mut run = processor.begin_run();
+    let rendered_first = processor
+        .process_citation_with_format::<crate::render::plain::PlainText>(&first, &mut run)
+        .unwrap();
+    let rendered_second = processor
+        .process_citation_with_format::<crate::render::plain::PlainText>(&second, &mut run)
+        .unwrap();
 
     // First citation: ref-a and ref-b form a group — renders as [1a,1b].
     assert_eq!(
@@ -5521,8 +5611,15 @@ fn test_dynamic_group_ungrouped_first_occurrence_wins() {
         ..Default::default()
     };
 
-    let rendered_first = processor.process_citation(&first).unwrap();
-    let rendered_second = processor.process_citation(&second).unwrap();
+    // Both citations must share one run — see the comment in
+    // test_dynamic_group_first_occurrence_wins.
+    let mut run = processor.begin_run();
+    let rendered_first = processor
+        .process_citation_with_format::<crate::render::plain::PlainText>(&first, &mut run)
+        .unwrap();
+    let rendered_second = processor
+        .process_citation_with_format::<crate::render::plain::PlainText>(&second, &mut run)
+        .unwrap();
 
     // First citation: ref-a is standalone, no sub-label.
     assert_eq!(

@@ -13,6 +13,7 @@ use super::output::{
 use super::{BibliographyBlock, CitationParser, DocumentFormat, ParsedDocument};
 use crate::error::ProcessorError;
 use crate::processor::Processor;
+use crate::processor::run_state::{FinalizedRun, RunState};
 
 /// Format a bibliography section heading for the trailing-bibliography path.
 ///
@@ -106,10 +107,11 @@ impl Processor {
             .or(owned_org.as_ref())
             .or(owned_integral.as_ref())
             .unwrap_or(self);
+        let run = processor.begin_run();
         let body = &content[parsed.body_start..];
         if let Some(groups) = parsed.frontmatter_groups.take() {
             return Ok(processor.process_document_with_frontmatter_groups::<P, F>(
-                body, parsed, groups, parser, format,
+                body, parsed, groups, parser, format, run,
             ));
         }
 
@@ -119,11 +121,12 @@ impl Processor {
                 std::mem::take(&mut parsed.bibliography_blocks),
                 parser,
                 format,
+                run,
             ));
         }
 
         Ok(processor
-            .process_document_with_default_bibliography::<P, F>(body, parsed, parser, format))
+            .process_document_with_default_bibliography::<P, F>(body, parsed, parser, format, run))
     }
 
     /// Orchestrate document processing with custom frontmatter bibliography groups.
@@ -135,6 +138,10 @@ impl Processor {
     /// silently; references not matched by any group selector are not rendered
     /// (use a catch-all group with `selector: {}` or a `not:` negation to
     /// capture unmatched entries).
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "internal helper, all params load-bearing"
+    )]
     fn process_document_with_frontmatter_groups<P, F>(
         &self,
         body: &str,
@@ -142,6 +149,7 @@ impl Processor {
         groups: Vec<citum_schema::grouping::BibliographyGroup>,
         parser: &P,
         format: DocumentFormat,
+        run: RunState,
     ) -> String
     where
         P: CitationParser,
@@ -152,9 +160,10 @@ impl Processor {
             parsed,
             parser,
             format,
-            |processor| {
+            run,
+            |processor, run| {
                 let rendered_blocks =
-                    processor.render_document_bibliography_blocks::<F>(&groups, None, None);
+                    processor.render_document_bibliography_blocks::<F>(&groups, None, None, run);
                 let mut output = String::new();
                 for block in rendered_blocks {
                     if block.entries.is_empty() {
@@ -180,6 +189,7 @@ impl Processor {
         blocks: Vec<BibliographyBlock>,
         parser: &P,
         format: DocumentFormat,
+        mut run: RunState,
     ) -> String
     where
         P: CitationParser,
@@ -187,8 +197,9 @@ impl Processor {
     {
         let staged = stage_document_bibliography_blocks(body, &blocks);
         let parsed_staged = parser.parse_document(&staged, &self.locale);
-        let mut rendered = self.render_document_body::<F>(&staged, parsed_staged, format);
-        self.replace_document_bibliography_blocks::<F>(&mut rendered, &blocks, format);
+        let mut rendered = self.render_document_body::<F>(&staged, parsed_staged, format, &mut run);
+        let run = run.finalize();
+        self.replace_document_bibliography_blocks::<F>(&mut rendered, &blocks, format, &run);
         self.finalize_document_output::<P, F>(parser, format, rendered)
     }
 
@@ -212,11 +223,14 @@ impl Processor {
         P: CitationParser,
         F: crate::render::format::OutputFormat<Output = String>,
     {
+        let mut run = self.begin_run();
         let parsed = parser.parse_document(content, &self.locale);
         let body = content.get(parsed.body_start..).unwrap_or(content);
-        let mut rendered = self.render_document_body::<F>(body, parsed, format);
+        let mut rendered = self.render_document_body::<F>(body, parsed, format, &mut run);
+        let run = run.finalize();
         // Render ordered sectional blocks via the unified primitive.
-        let rendered_groups = self.render_document_bibliography_blocks::<F>(blocks, None, None);
+        let rendered_groups =
+            self.render_document_bibliography_blocks::<F>(blocks, None, None, &run);
         for rendered_group in rendered_groups {
             let section = render_document_bibliography_block_replacement(
                 rendered.placeholders.as_mut(),
@@ -237,6 +251,7 @@ impl Processor {
         parsed: ParsedDocument,
         parser: &P,
         format: DocumentFormat,
+        run: RunState,
     ) -> String
     where
         P: CitationParser,
@@ -247,29 +262,38 @@ impl Processor {
             parsed,
             parser,
             format,
-            |p: &super::super::Processor| {
-                p.render_document_bibliography::<F>(true, None, None)
+            run,
+            |p: &super::super::Processor, run| {
+                p.render_document_bibliography::<F>(true, None, None, run)
                     .content
             },
         )
     }
 
     /// Generic helper for rendering document body + trailing bibliography.
+    ///
+    /// Owns `run` for the whole body-then-bibliography sequence: the body is
+    /// rendered while `run` accumulates cite-order state (`&mut RunState`),
+    /// then `run` is finalized once, and `render_bibliography` receives the
+    /// resulting `&FinalizedRun` — so bibliography rendering always sees the
+    /// complete state left by every citation in the body.
     fn render_document_with_trailing_bibliography<P, F, B>(
         &self,
         body: &str,
         parsed: ParsedDocument,
         parser: &P,
         format: DocumentFormat,
+        mut run: RunState,
         render_bibliography: B,
     ) -> String
     where
         P: CitationParser,
         F: crate::render::format::OutputFormat<Output = String>,
-        B: FnOnce(&Self) -> String,
+        B: FnOnce(&Self, &FinalizedRun) -> String,
     {
-        let mut rendered = self.render_document_body::<F>(body, parsed, format);
-        let bibliography = render_bibliography(self);
+        let mut rendered = self.render_document_body::<F>(body, parsed, format, &mut run);
+        let run = run.finalize();
+        let bibliography = render_bibliography(self, &run);
         append_document_bibliography(&mut rendered, format, bibliography);
         self.finalize_document_output::<P, F>(parser, format, rendered)
     }
@@ -285,6 +309,7 @@ impl Processor {
         content: &str,
         parsed: ParsedDocument,
         format: DocumentFormat,
+        run: &mut RunState,
     ) -> RenderedDocumentBody
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -292,9 +317,9 @@ impl Processor {
         if matches!(format, DocumentFormat::Html) {
             let mut placeholders = HtmlPlaceholderRegistry::default();
             let content = if self.is_note_style() {
-                self.process_note_document_html(content, parsed, &mut placeholders)
+                self.process_note_document_html(content, parsed, &mut placeholders, run)
             } else {
-                self.process_inline_document_html(content, parsed, &mut placeholders)
+                self.process_inline_document_html(content, parsed, &mut placeholders, run)
             };
             return RenderedDocumentBody {
                 content,
@@ -313,12 +338,13 @@ impl Processor {
             // body renderer does not yet model, so keep that narrow legacy
             // exception isolated from author-date terminal conversion.
             let content = if self.is_note_style() {
-                self.process_note_document::<F>(content, parsed)
+                self.process_note_document::<F>(content, parsed, run)
             } else {
                 self.process_inline_document_with_placeholders::<F>(
                     content,
                     parsed,
                     &mut placeholders,
+                    run,
                 )
             };
             return RenderedDocumentBody {
@@ -333,9 +359,9 @@ impl Processor {
         }
 
         let content = if self.is_note_style() {
-            self.process_note_document::<F>(content, parsed)
+            self.process_note_document::<F>(content, parsed, run)
         } else {
-            self.process_inline_document::<F>(content, parsed)
+            self.process_inline_document::<F>(content, parsed, run)
         };
 
         RenderedDocumentBody {
@@ -360,13 +386,14 @@ impl Processor {
         content: &str,
         parsed: ParsedDocument,
         placeholders: &mut HtmlPlaceholderRegistry,
+        run: &mut RunState,
     ) -> String
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let mut result = String::new();
         let mut last_idx = 0;
-        let normalized = self.normalize_integral_name_citations(&parsed);
+        let normalized = self.normalize_integral_name_citations(&parsed, run);
 
         for (parsed, citation) in parsed.citations.iter().zip(normalized) {
             debug_assert!(
@@ -377,7 +404,7 @@ impl Processor {
                 content.len()
             );
             result.push_str(&content[last_idx..parsed.start]);
-            match self.process_citation_with_format::<F>(&citation) {
+            match self.process_citation_with_format::<F>(&citation, run) {
                 Ok(rendered) => result.push_str(&placeholders.push_inline(rendered)),
                 Err(_) => result.push_str(&content[parsed.start..parsed.end]),
             }
@@ -393,13 +420,18 @@ impl Processor {
         clippy::string_slice,
         reason = "parser-guaranteed boundaries and indices"
     )]
-    fn process_inline_document<F>(&self, content: &str, parsed: ParsedDocument) -> String
+    fn process_inline_document<F>(
+        &self,
+        content: &str,
+        parsed: ParsedDocument,
+        run: &mut RunState,
+    ) -> String
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let mut result = String::new();
         let mut last_idx = 0;
-        let normalized = self.normalize_integral_name_citations(&parsed);
+        let normalized = self.normalize_integral_name_citations(&parsed, run);
 
         for (parsed, citation) in parsed.citations.iter().zip(normalized) {
             debug_assert!(
@@ -410,7 +442,7 @@ impl Processor {
                 content.len()
             );
             result.push_str(&content[last_idx..parsed.start]);
-            match self.process_citation_with_format::<F>(&citation) {
+            match self.process_citation_with_format::<F>(&citation, run) {
                 Ok(rendered) => result.push_str(&rendered),
                 Err(_) => result.push_str(&content[parsed.start..parsed.end]),
             }
@@ -431,10 +463,11 @@ impl Processor {
         content: &str,
         parsed: ParsedDocument,
         placeholders: &mut HtmlPlaceholderRegistry,
+        run: &mut RunState,
     ) -> String {
         let mut result = String::new();
         let mut last_idx = 0;
-        let normalized = self.normalize_integral_name_citations(&parsed);
+        let normalized = self.normalize_integral_name_citations(&parsed, run);
 
         for (parsed, citation) in parsed.citations.iter().zip(normalized) {
             debug_assert!(
@@ -445,7 +478,7 @@ impl Processor {
                 content.len()
             );
             result.push_str(&content[last_idx..parsed.start]);
-            match self.process_citation_with_format::<crate::render::html::Html>(&citation) {
+            match self.process_citation_with_format::<crate::render::html::Html>(&citation, run) {
                 Ok(rendered) => result.push_str(&placeholders.push_inline(rendered)),
                 Err(_) => result.push_str(&content[parsed.start..parsed.end]),
             }
@@ -462,11 +495,13 @@ impl Processor {
         rendered: &mut RenderedDocumentBody,
         blocks: &[BibliographyBlock],
         format: DocumentFormat,
+        run: &FinalizedRun,
     ) where
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let groups: Vec<_> = blocks.iter().map(|b| b.group.clone()).collect();
-        let rendered_groups = self.render_document_bibliography_blocks::<F>(&groups, None, None);
+        let rendered_groups =
+            self.render_document_bibliography_blocks::<F>(&groups, None, None, run);
         for (index, rendered_group) in rendered_groups.into_iter().enumerate() {
             let placeholder = bibliography_block_placeholder(index);
             let replacement = render_document_bibliography_block_replacement(

@@ -213,6 +213,7 @@ pub fn run_test_case_native_with_options(options: TestCaseOptions) {
     }
 
     let processor = Processor::new(style, bibliography);
+    let mut run = processor.begin_run();
 
     if options.mode == "citation" {
         let mut results = Vec::new();
@@ -233,7 +234,9 @@ pub fn run_test_case_native_with_options(options: TestCaseOptions) {
             };
 
             let res = processor
-                .process_citation(&citation)
+                .process_citation_with_format::<citum_engine::render::plain::PlainText>(
+                    &citation, &mut run,
+                )
                 .expect("Failed to process citation");
             results.push(res);
         }
@@ -258,11 +261,17 @@ pub fn run_test_case_native_with_options(options: TestCaseOptions) {
                     items,
                     ..Default::default()
                 };
-                processor.process_citation(&citation).ok();
+                processor
+                    .process_citation_with_format::<citum_engine::render::plain::PlainText>(
+                        &citation, &mut run,
+                    )
+                    .ok();
             }
         }
 
-        let actual = processor.render_bibliography();
+        let run = run.finalize();
+        let actual = processor
+            .render_bibliography_with_format::<citum_engine::render::plain::PlainText>(&run);
         assert_eq!(
             actual.trim(),
             options.expected.trim(),

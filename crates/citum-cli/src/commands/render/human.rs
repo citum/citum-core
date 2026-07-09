@@ -107,7 +107,11 @@ fn render_citations_section<F>(
                 mode: citum_schema::citation::CitationMode::NonIntegral,
                 ..Default::default()
             };
-            match ctx.processor.process_citation_with_format::<F>(&citation) {
+            let mut run = ctx.processor.begin_run();
+            match ctx
+                .processor
+                .process_citation_with_format::<F>(&citation, &mut run)
+            {
                 Ok(text) => {
                     if show_keys {
                         let _ = writeln!(output, "  [{id}] {text}");
@@ -133,7 +137,11 @@ fn render_citations_section<F>(
                 mode: citum_schema::citation::CitationMode::Integral,
                 ..Default::default()
             };
-            match ctx.processor.process_citation_with_format::<F>(&citation) {
+            let mut run = ctx.processor.begin_run();
+            match ctx
+                .processor
+                .process_citation_with_format::<F>(&citation, &mut run)
+            {
                 Ok(text) => {
                     if show_keys {
                         let _ = writeln!(output, "  [{id}] {text}");
@@ -184,7 +192,7 @@ where
         // We use render_selected_bibliography_with_format_and_annotations to respect the CLI's item_ids filter and propagate annotations.
         let rendered = ctx
             .processor
-            .render_selected_bibliography_with_format_and_annotations::<F, _>(
+            .render_selected_bibliography_with_format_and_annotations_standalone::<F, _>(
                 ctx.item_ids.to_vec(),
                 ctx.annotations,
                 Some(ctx.annotation_style),
@@ -212,8 +220,9 @@ where
         .is_some_and(|processing| matches!(processing, Processing::Numeric));
 
     if is_numeric {
+        let mut run = processor.begin_run();
         processor
-            .process_citations_with_format::<F>(citations)
+            .process_citations_with_format::<F>(citations, &mut run)
             .unwrap_or_else(|_| render_citation_file_entries_one_by_one::<F>(processor, citations))
     } else {
         render_citation_file_entries_one_by_one::<F>(processor, citations)
@@ -235,8 +244,9 @@ where
     citations
         .iter()
         .map(|citation| {
+            let mut run = processor.begin_run();
             processor
-                .process_citation_with_format::<F>(citation)
+                .process_citation_with_format::<F>(citation, &mut run)
                 .unwrap_or_else(format_citation_file_render_error)
         })
         .collect()

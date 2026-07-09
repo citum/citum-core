@@ -6,6 +6,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! Compound-entry merging for numeric bibliography styles.
 
 use super::Processor;
+use crate::processor::FinalizedRun;
 use crate::render::ProcEntry;
 use crate::render::bibliography::render_entry_body_components_with_format;
 use crate::render::component::ProcTemplateComponent;
@@ -144,11 +145,15 @@ impl Processor {
         }
     }
 
-    pub(super) fn merge_compound_entries<F>(&self, entries: Vec<ProcEntry>) -> Vec<ProcEntry>
+    pub(super) fn merge_compound_entries<F>(
+        &self,
+        entries: Vec<ProcEntry>,
+        run: &FinalizedRun,
+    ) -> Vec<ProcEntry>
     where
         F: OutputFormat<Output = String>,
     {
-        let compound_groups = self.run_state.compound_groups.borrow();
+        let compound_groups = &run.state().compound_groups;
         if compound_groups.is_empty() {
             return entries;
         }
@@ -157,7 +162,7 @@ impl Processor {
             return entries;
         };
 
-        let ref_to_group = Self::build_compound_group_lookup(&compound_groups);
+        let ref_to_group = Self::build_compound_group_lookup(compound_groups);
         if ref_to_group.is_empty() {
             return entries;
         }

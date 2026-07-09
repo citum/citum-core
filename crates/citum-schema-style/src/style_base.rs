@@ -381,7 +381,7 @@ mod tests {
         assert_eq!(base, StyleBase::ChicagoNotes18th);
 
         let back = serde_yaml::to_string(&base).expect("serialization failed");
-        assert!(back.trim() == "chicago-notes-18th");
+        assert_eq!(back.trim(), "chicago-notes-18th");
     }
 
     #[test]

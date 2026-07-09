@@ -1091,7 +1091,7 @@ fn render_single_bibliography_entry(style: Style, reference: Reference) -> Strin
     bibliography.insert(id, reference);
 
     Processor::new(style, bibliography)
-        .render_bibliography_with_format::<crate::render::plain::PlainText>()
+        .render_bibliography_with_format_standalone::<crate::render::plain::PlainText>()
 }
 
 fn bibliography_style_with_template(template: Vec<TemplateComponent>) -> Style {

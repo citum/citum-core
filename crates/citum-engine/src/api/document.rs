@@ -282,14 +282,19 @@ pub fn format_document_with_style(
     // document scope). Safe no-op when no memory config is present.
     processor.annotate_flat_integral_name_states(&mut citations);
 
+    // One run threads registration (citation numbers, cite-order, dynamic
+    // compound groups, first-note tracking) across citations and nocite
+    // registration below, then finalizes once for bibliography rendering.
+    let mut run = processor.begin_run();
+
     // Process citations
     let formatted_citations = match request.output_format {
-        OutputFormatKind::Plain => format_by_kind::<PlainText>(&processor, &citations)?,
-        OutputFormatKind::Html => format_by_kind::<Html>(&processor, &citations)?,
-        OutputFormatKind::Djot => format_by_kind::<Djot>(&processor, &citations)?,
-        OutputFormatKind::Latex => format_by_kind::<Latex>(&processor, &citations)?,
-        OutputFormatKind::Typst => format_by_kind::<Typst>(&processor, &citations)?,
-        OutputFormatKind::Markdown => format_by_kind::<Markdown>(&processor, &citations)?,
+        OutputFormatKind::Plain => format_by_kind::<PlainText>(&processor, &citations, &mut run)?,
+        OutputFormatKind::Html => format_by_kind::<Html>(&processor, &citations, &mut run)?,
+        OutputFormatKind::Djot => format_by_kind::<Djot>(&processor, &citations, &mut run)?,
+        OutputFormatKind::Latex => format_by_kind::<Latex>(&processor, &citations, &mut run)?,
+        OutputFormatKind::Typst => format_by_kind::<Typst>(&processor, &citations, &mut run)?,
+        OutputFormatKind::Markdown => format_by_kind::<Markdown>(&processor, &citations, &mut run)?,
     };
 
     // Register nocite IDs: validate against bibliography, warn on missing, then add
@@ -312,7 +317,11 @@ pub fn format_document_with_style(
             }
         })
         .collect();
-    processor.register_nocite_ids(nocite_ids);
+    processor.register_nocite_ids(nocite_ids, &mut run);
+
+    // Registration is complete: finalize so bibliography rendering below sees
+    // the full cite-order state from every citation processed above.
+    let run = run.finalize();
 
     // Process bibliography
     let bibliography = match request.output_format {
@@ -320,31 +329,37 @@ pub fn format_document_with_style(
             &processor,
             request.output_format,
             request.document_options.as_ref(),
+            &run,
         )?,
         OutputFormatKind::Html => format_bibliography::<Html>(
             &processor,
             request.output_format,
             request.document_options.as_ref(),
+            &run,
         )?,
         OutputFormatKind::Djot => format_bibliography::<Djot>(
             &processor,
             request.output_format,
             request.document_options.as_ref(),
+            &run,
         )?,
         OutputFormatKind::Latex => format_bibliography::<Latex>(
             &processor,
             request.output_format,
             request.document_options.as_ref(),
+            &run,
         )?,
         OutputFormatKind::Typst => format_bibliography::<Typst>(
             &processor,
             request.output_format,
             request.document_options.as_ref(),
+            &run,
         )?,
         OutputFormatKind::Markdown => format_bibliography::<Markdown>(
             &processor,
             request.output_format,
             request.document_options.as_ref(),
+            &run,
         )?,
     };
 
@@ -354,31 +369,37 @@ pub fn format_document_with_style(
             &processor,
             &request.bibliography_blocks,
             request.document_options.as_ref(),
+            &run,
         )?,
         OutputFormatKind::Html => format_bibliography_blocks::<Html>(
             &processor,
             &request.bibliography_blocks,
             request.document_options.as_ref(),
+            &run,
         )?,
         OutputFormatKind::Djot => format_bibliography_blocks::<Djot>(
             &processor,
             &request.bibliography_blocks,
             request.document_options.as_ref(),
+            &run,
         )?,
         OutputFormatKind::Latex => format_bibliography_blocks::<Latex>(
             &processor,
             &request.bibliography_blocks,
             request.document_options.as_ref(),
+            &run,
         )?,
         OutputFormatKind::Typst => format_bibliography_blocks::<Typst>(
             &processor,
             &request.bibliography_blocks,
             request.document_options.as_ref(),
+            &run,
         )?,
         OutputFormatKind::Markdown => format_bibliography_blocks::<Markdown>(
             &processor,
             &request.bibliography_blocks,
             request.document_options.as_ref(),
+            &run,
         )?,
     };
 
@@ -394,11 +415,12 @@ pub fn format_document_with_style(
 pub(crate) fn format_by_kind<F>(
     processor: &Processor,
     citations: &[Citation],
+    run: &mut crate::processor::RunState,
 ) -> Result<Vec<FormattedCitation>, FormatDocumentError>
 where
     F: OutputFormat<Output = String>,
 {
-    let texts = processor.process_citations_with_format::<F>(citations)?;
+    let texts = processor.process_citations_with_format::<F>(citations, run)?;
 
     let formatted = citations
         .iter()
@@ -427,6 +449,7 @@ pub(crate) fn format_bibliography<F>(
     processor: &Processor,
     format_kind: OutputFormatKind,
     doc_opts: Option<&DocumentOptions>,
+    run: &crate::processor::FinalizedRun,
 ) -> Result<FormattedBibliography, FormatDocumentError>
 where
     F: OutputFormat<Output = String>,
@@ -440,6 +463,7 @@ where
             Some(&annotations)
         },
         annotation_style.as_ref(),
+        run,
     );
     let entries = doc_bib
         .entries
@@ -471,6 +495,7 @@ pub(crate) fn format_bibliography_blocks<F>(
     processor: &Processor,
     requests: &[super::BibliographyBlockRequest],
     doc_opts: Option<&DocumentOptions>,
+    run: &crate::processor::FinalizedRun,
 ) -> Result<Vec<super::FormattedBibliographyBlock>, FormatDocumentError>
 where
     F: OutputFormat<Output = String>,
@@ -489,6 +514,7 @@ where
             Some(&annotations)
         },
         annotation_style.as_ref(),
+        run,
     );
 
     Ok(requests

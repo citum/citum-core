@@ -28,7 +28,8 @@ impl TemplateCompiler {
 
         // Check if we should use a substitute instead of the primary
         // Rare contributor roles (composer, illustrator) often have author as first substitute
-        let role = if let Some(role) = primary_role {
+        let role = {
+            let role = primary_role?;
             // If primary is a rare role and we have substitutes, prefer the first common one
             let rare_roles = [
                 ContributorRole::Composer,
@@ -53,8 +54,6 @@ impl TemplateCompiler {
             } else {
                 role
             }
-        } else {
-            return None;
         };
 
         let form = match names.options.mode {

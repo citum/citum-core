@@ -1555,7 +1555,7 @@ fn djot_note_preserves_italic_markup_in_html_bibliography() {
         )),
     );
 
-    let output = Processor::new(style, bib).render_bibliography_with_format::<Html>();
+    let output = Processor::new(style, bib).render_bibliography_with_format_standalone::<Html>();
     assert_eq!(
         output,
         "<div class=\"citum-bibliography\">\n<div class=\"citum-entry\" id=\"ref-ref1\" data-year=\"2024\" data-title=\"Test Book\"><span class=\"citum-note\"><em>italic</em></span></div>\n</div>",
@@ -1606,7 +1606,7 @@ fn djot_note_sentence_case_does_not_restart_across_markup_boundaries() {
         )),
     );
 
-    let output = Processor::new(style, bib).render_bibliography_with_format::<Html>();
+    let output = Processor::new(style, bib).render_bibliography_with_format_standalone::<Html>();
     assert_eq!(
         output,
         "<div class=\"citum-bibliography\">\n<div class=\"citum-entry\" id=\"ref-ref1\" data-year=\"2024\" data-title=\"Test Book\"><span class=\"citum-note\">Foo <em>bar</em> baz</span></div>\n</div>",

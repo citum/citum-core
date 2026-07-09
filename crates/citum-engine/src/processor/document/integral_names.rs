@@ -19,6 +19,7 @@ use super::{
     CitationPlacement, CitationStructure, DocumentIntegralNameOverride, DocumentOptionsOverride,
     DocumentOrgAbbreviationOverride, ParsedDocument,
 };
+use crate::processor::run_state::RunState;
 use crate::reference::{CitationItem, Contributor};
 use crate::{Citation, Processor};
 use citum_schema::citation::{CitationMode, IntegralNameState};
@@ -58,6 +59,7 @@ impl Processor {
     pub(super) fn normalize_integral_name_citations(
         &self,
         parsed: &ParsedDocument,
+        run: &mut RunState,
     ) -> Vec<Citation> {
         let mut normalized: Vec<Citation> = parsed
             .citations
@@ -92,7 +94,7 @@ impl Processor {
         for (citation, index) in ordered_citations.into_iter().zip(ordered_indices) {
             normalized[index] = citation;
         }
-        self.normalize_note_context(&normalized)
+        self.normalize_note_context(&normalized, run)
     }
 
     /// Annotate integral-name First/Subsequent state across a flat, ordered
