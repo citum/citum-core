@@ -1,14 +1,14 @@
 ---
 # csl26-dog9
 title: 'Design: explicit render-run state for Processor'
-status: todo
+status: in-progress
 type: task
 priority: normal
 tags:
     - state
     - rendering
 created_at: 2026-07-04T02:42:26Z
-updated_at: 2026-07-06T18:47:31Z
+updated_at: 2026-07-09T11:49:55Z
 parent: csl26-8m2p
 ---
 
@@ -52,3 +52,18 @@ Verified current state: `processor/mod.rs` holds seven `RefCell` fields (citatio
 **Migration plan (each step green on its own):** (a) introduce RunState wrapping the existing RefCells and move the fields, callers unchanged; (b) change internal call chains to `&mut RunState` and delete the RefCells; (c) add the FinalizedRun typestate and convert bibliography entry points; (d) update FFI session plumbing. Step (a)-(b) are Sonnet-executable; (c)-(d) want a review pass.
 
 Post-finalize, the csl26-qi7l note applies: `FinalizedRun` is where Rc→Arc + rayon over `render_group_entries` becomes safe — out of scope here, gated on a real workload.
+
+## Implementation Checklist (2026-07-09)
+
+- [ ] (0) Spec: docs/specs/EXPLICIT_RENDER_RUN_STATE.md (Draft)
+- [ ] (a) Introduce RunState wrapping existing RefCells, callers unchanged
+- [ ] (b) Thread &mut RunState through registration; delete transitional field; add begin_run
+- [ ] (c) Add FinalizedRun typestate; convert bibliography/render entry points
+- [ ] (d) FFI/WASM session plumbing (opaque handle swap)
+- [ ] Idempotency test: same citations through one reused Processor + two begin_run calls -> identical output
+- [ ] just pre-commit green at each phase
+- [ ] workflow-test + report-core fidelity check (no regression)
+- [ ] Spec Draft -> Active in the typestate-landing commit
+- [ ] File follow-up bean for Rc->Arc/rayon (csl26-qi7l note), out of scope here
+
+**Spec:** docs/specs/EXPLICIT_RENDER_RUN_STATE.md (Draft, 2026-07-09)

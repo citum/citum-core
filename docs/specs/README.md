@@ -200,3 +200,4 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 | [`CLI_UX_REDESIGN.md`](./CLI_UX_REDESIGN.md) — clean command model for style discovery, registry management, and CLI validation UX | Active | — |
 | [`AUTHORING_AGENT_SKILL.md`](./AUTHORING_AGENT_SKILL.md) — Citum Authoring Agent Skill specification for AI-assisted style authoring | Active | — |
 | [`REPO_LOCAL_HARNESS.md`](./REPO_LOCAL_HARNESS.md) — repo-owned control surfaces for Claude/Codex workflow and skill boundaries | Active | — |
+| [`EXPLICIT_RENDER_RUN_STATE.md`](./EXPLICIT_RENDER_RUN_STATE.md) — typed per-run state (`RunState`/`FinalizedRun`) replacing `Processor`'s `RefCell` fields | Draft | `processor/tests.rs` |
