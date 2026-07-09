@@ -433,50 +433,69 @@ impl DocumentSession {
                 }
             })
             .collect();
-        processor.register_nocite_ids(nocite_ids);
+
+        // One run threads registration across citations and nocite
+        // registration, then finalizes once for bibliography rendering.
+        let mut run = processor.begin_run();
 
         let formatted_citations = match self.output_format {
             OutputFormatKind::Plain => {
-                format_by_kind::<PlainText>(&processor, &processor_citations)?
+                format_by_kind::<PlainText>(&processor, &processor_citations, &mut run)?
             }
-            OutputFormatKind::Html => format_by_kind::<Html>(&processor, &processor_citations)?,
-            OutputFormatKind::Djot => format_by_kind::<Djot>(&processor, &processor_citations)?,
-            OutputFormatKind::Latex => format_by_kind::<Latex>(&processor, &processor_citations)?,
-            OutputFormatKind::Typst => format_by_kind::<Typst>(&processor, &processor_citations)?,
+            OutputFormatKind::Html => {
+                format_by_kind::<Html>(&processor, &processor_citations, &mut run)?
+            }
+            OutputFormatKind::Djot => {
+                format_by_kind::<Djot>(&processor, &processor_citations, &mut run)?
+            }
+            OutputFormatKind::Latex => {
+                format_by_kind::<Latex>(&processor, &processor_citations, &mut run)?
+            }
+            OutputFormatKind::Typst => {
+                format_by_kind::<Typst>(&processor, &processor_citations, &mut run)?
+            }
             OutputFormatKind::Markdown => {
-                format_by_kind::<Markdown>(&processor, &processor_citations)?
+                format_by_kind::<Markdown>(&processor, &processor_citations, &mut run)?
             }
         };
+        processor.register_nocite_ids(nocite_ids, &mut run);
+        let run = run.finalize();
         let bibliography = match self.output_format {
             OutputFormatKind::Plain => format_bibliography::<PlainText>(
                 &processor,
                 self.output_format,
                 self.document_options.as_ref(),
+                &run,
             )?,
             OutputFormatKind::Html => format_bibliography::<Html>(
                 &processor,
                 self.output_format,
                 self.document_options.as_ref(),
+                &run,
             )?,
             OutputFormatKind::Djot => format_bibliography::<Djot>(
                 &processor,
                 self.output_format,
                 self.document_options.as_ref(),
+                &run,
             )?,
             OutputFormatKind::Latex => format_bibliography::<Latex>(
                 &processor,
                 self.output_format,
                 self.document_options.as_ref(),
+                &run,
             )?,
             OutputFormatKind::Typst => format_bibliography::<Typst>(
                 &processor,
                 self.output_format,
                 self.document_options.as_ref(),
+                &run,
             )?,
             OutputFormatKind::Markdown => format_bibliography::<Markdown>(
                 &processor,
                 self.output_format,
                 self.document_options.as_ref(),
+                &run,
             )?,
         };
 

@@ -389,11 +389,14 @@ fn bench_bibliography_type_variants(c: &mut Criterion) {
         .bibliography
         .get("article-no-pages")
         .expect("type-variant benchmark reference should exist");
+    let run = processor.begin_run().finalize();
 
     let mut bench_group = c.benchmark_group("Renderer::process_bibliography_entry");
     bench_group.bench_function("Type variant + article-journal fallback", |b| {
         b.iter(|| {
-            black_box(processor.process_bibliography_entry_with_format::<PlainText>(reference, 1));
+            black_box(
+                processor.process_bibliography_entry_with_format::<PlainText>(reference, 1, &run),
+            );
         });
     });
     bench_group.finish();
@@ -405,11 +408,12 @@ fn bench_compound_bibliography(c: &mut Criterion) {
         make_compound_bibliography(),
         make_compound_sets(),
     );
+    let run = processor.begin_run().finalize();
 
     let mut bench_group = c.benchmark_group("Processor::render_bibliography_with_format");
     bench_group.bench_function("Compound bibliography merge", |b| {
         b.iter(|| {
-            black_box(processor.render_bibliography_with_format::<PlainText>());
+            black_box(processor.render_bibliography_with_format::<PlainText>(&run));
         });
     });
     bench_group.finish();

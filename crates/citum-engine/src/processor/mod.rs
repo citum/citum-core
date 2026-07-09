@@ -65,7 +65,7 @@ use citum_schema::Style;
 use citum_schema::locale::Locale;
 use citum_schema::options::Config;
 use indexmap::IndexMap;
-use run_state::RunState;
+pub use run_state::{FinalizedRun, RunState};
 use std::collections::HashMap;
 
 /// The Citum processor facade.
@@ -97,14 +97,6 @@ pub struct Processor {
     pub inject_ast_indices: bool,
     /// Document-level abbreviation map for post-render substitution.
     pub abbreviation_map: Option<crate::api::AbbreviationMap>,
-    /// Mutable per-render-run state (citation numbers, cite-order tracking,
-    /// dynamic compound groups, first-note tracking).
-    ///
-    /// See `docs/specs/EXPLICIT_RENDER_RUN_STATE.md`. This is a transitional
-    /// single-run-per-processor shape; a later migration step will thread
-    /// `RunState` explicitly through registration/render calls instead of
-    /// storing it on `Processor`.
-    pub(crate) run_state: RunState,
 }
 
 /// Processed output containing citations and bibliography.

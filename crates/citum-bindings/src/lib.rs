@@ -221,8 +221,9 @@ pub fn render_citation(
         citation.mode = m_enum;
     }
     let processor = Processor::new(style, refs);
+    let mut run = processor.begin_run();
     processor
-        .process_citation_with_format::<HtmlRenderer>(&citation)
+        .process_citation_with_format::<HtmlRenderer>(&citation, &mut run)
         .map_err(|e| format!("Render error: {e}"))
 }
 
@@ -240,7 +241,7 @@ pub fn render_bibliography(style_yaml: &str, refs_json: &str) -> Result<String, 
     ensure_style_has_templates(&mut style);
     let refs = parse_references(refs_json)?;
     let processor = Processor::new(style, refs);
-    Ok(processor.render_bibliography_with_format::<HtmlRenderer>())
+    Ok(processor.render_bibliography_with_format_standalone::<HtmlRenderer>())
 }
 
 /// Validate a Citum style string.

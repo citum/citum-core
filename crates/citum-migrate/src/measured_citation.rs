@@ -734,7 +734,7 @@ pub(crate) fn score_bibliography_candidate(
 ) -> CandidateScore {
     let Ok(processed) = catch_candidate_unwind(|| {
         let processor = Processor::new(style.clone(), bibliography.clone());
-        processor.process_references_with_format::<PlainText>()
+        processor.process_references_with_format_standalone::<PlainText>()
     }) else {
         return invalid_candidate_score(references);
     };

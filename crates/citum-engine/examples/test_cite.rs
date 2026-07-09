@@ -53,7 +53,8 @@ fn main() {
         }],
     };
 
-    match processor.process_citation_with_format::<Latex>(&cite) {
+    let mut run = processor.begin_run();
+    match processor.process_citation_with_format::<Latex>(&cite, &mut run) {
         Ok(res) => tracing::debug!("CITATION: {res}"),
         Err(e) => tracing::debug!("ERROR: {e:?}"),
     }
@@ -64,7 +65,7 @@ fn main() {
         suppress_author: true,
         ..cite.clone()
     };
-    match processor.process_citation_with_format::<Latex>(&cite_sa) {
+    match processor.process_citation_with_format::<Latex>(&cite_sa, &mut run) {
         Ok(res) => tracing::debug!("CITATION SA: {res}"),
         Err(e) => tracing::debug!("ERROR: {e:?}"),
     }

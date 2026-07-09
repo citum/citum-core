@@ -18,6 +18,7 @@ use super::{CitationPlacement, ParsedDocument};
 use crate::Citation;
 use crate::processor::Processor;
 use crate::processor::rendering::{CompoundRenderData, Renderer, RendererResources};
+use crate::processor::run_state::RunState;
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -47,11 +48,16 @@ impl NoteOutputSink for HtmlNoteSink<'_> {
 }
 
 impl Processor {
-    pub(super) fn process_note_document<F>(&self, content: &str, parsed: ParsedDocument) -> String
+    pub(super) fn process_note_document<F>(
+        &self,
+        content: &str,
+        parsed: ParsedDocument,
+        run: &mut RunState,
+    ) -> String
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
-        self.render_note_document::<F, _>(content, parsed, &mut PlainNoteSink)
+        self.render_note_document::<F, _>(content, parsed, &mut PlainNoteSink, run)
     }
 
     pub(super) fn process_note_document_html(
@@ -59,11 +65,13 @@ impl Processor {
         content: &str,
         parsed: ParsedDocument,
         placeholders: &mut HtmlPlaceholderRegistry,
+        run: &mut RunState,
     ) -> String {
         self.render_note_document::<crate::render::html::Html, _>(
             content,
             parsed,
             &mut HtmlNoteSink { placeholders },
+            run,
         )
     }
 
@@ -77,13 +85,14 @@ impl Processor {
         content: &str,
         mut parsed: ParsedDocument,
         sink: &mut S,
+        run: &mut RunState,
     ) -> String
     where
         F: crate::render::format::OutputFormat<Output = String>,
         S: NoteOutputSink,
     {
         let (generated_notes, rendered_notes) =
-            self.prepare_note_citations::<F, S>(content, &mut parsed, sink);
+            self.prepare_note_citations::<F, S>(content, &mut parsed, sink, run);
         let generated_note_by_index: HashMap<usize, &GeneratedNote> = generated_notes
             .iter()
             .map(|note| (note.citation_index, note))
@@ -108,9 +117,10 @@ impl Processor {
                         if matches!(
                             parsed_citation.citation.mode,
                             citum_schema::citation::CitationMode::Integral
-                        ) && let Ok(anchor) = self
-                            .render_note_integral_anchor_with_format::<F>(&parsed_citation.citation)
-                        {
+                        ) && let Ok(anchor) = self.render_note_integral_anchor_with_format::<F>(
+                            &parsed_citation.citation,
+                            run,
+                        ) {
                             result.push_str(&sink.finalize(anchor));
                         }
                         let consumed_right = render_note_reference_in_prose(
@@ -148,10 +158,11 @@ impl Processor {
     fn prepare_note_citation_state(
         &self,
         parsed: &mut ParsedDocument,
+        run: &mut RunState,
     ) -> (Vec<GeneratedNote>, HashMap<String, Vec<usize>>) {
         let (note_occurrences, manual_citations) = collect_note_occurrences(parsed);
         let generated_notes = assign_note_numbers(parsed, &note_occurrences, &manual_citations);
-        self.apply_note_citation_annotations(parsed, &note_occurrences, &manual_citations);
+        self.apply_note_citation_annotations(parsed, &note_occurrences, &manual_citations, run);
         (generated_notes, manual_citations)
     }
 
@@ -164,12 +175,13 @@ impl Processor {
         parsed: &mut ParsedDocument,
         note_occurrences: &[NoteOccurrence],
         manual_citations: &HashMap<String, Vec<usize>>,
+        run: &mut RunState,
     ) {
         let ordered_indices = build_note_order_indices(note_occurrences, manual_citations);
         let (mut ordered_citations, ordered_contexts) =
             ordered_note_citations_and_contexts(parsed, &ordered_indices);
         self.annotate_integral_name_states(&mut ordered_citations, &ordered_contexts);
-        ordered_citations = self.normalize_note_context(&ordered_citations);
+        ordered_citations = self.normalize_note_context(&ordered_citations, run);
         self.annotate_positions(&mut ordered_citations);
 
         for (citation, index) in ordered_citations.into_iter().zip(ordered_indices) {
@@ -187,12 +199,13 @@ impl Processor {
         content: &str,
         parsed: &mut ParsedDocument,
         sink: &mut S,
+        run: &mut RunState,
     ) -> (Vec<GeneratedNote>, HashMap<usize, String>)
     where
         F: crate::render::format::OutputFormat<Output = String>,
         S: NoteOutputSink,
     {
-        let (generated_notes, manual_citations) = self.prepare_note_citation_state(parsed);
+        let (generated_notes, manual_citations) = self.prepare_note_citation_state(parsed, run);
         let mut rendered_notes: HashMap<usize, String> = HashMap::new();
 
         for generated in &generated_notes {
@@ -200,7 +213,7 @@ impl Processor {
                 &parsed.citations[generated.citation_index].citation,
             );
             let rendered = self
-                .process_citation_with_format::<F>(&note_citation)
+                .process_citation_with_format::<F>(&note_citation, run)
                 .unwrap_or_else(|_| {
                     content[parsed.citations[generated.citation_index].start
                         ..parsed.citations[generated.citation_index].end]
@@ -214,6 +227,7 @@ impl Processor {
                 let rendered = self
                     .render_manual_note_citation_with_format::<F>(
                         &parsed.citations[*index].citation,
+                        run,
                     )
                     .unwrap_or_else(|_| {
                         content[parsed.citations[*index].start..parsed.citations[*index].end]
@@ -233,16 +247,17 @@ impl Processor {
     fn render_manual_note_citation_with_format<F>(
         &self,
         citation: &Citation,
+        run: &mut RunState,
     ) -> Result<String, crate::error::ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
         if self.should_compose_integral_ibid_in_manual_notes(citation) {
             return self
-                .render_manual_note_integral_ibid_with_format::<F>(citation)
-                .or_else(|_| self.process_citation_with_format::<F>(citation));
+                .render_manual_note_integral_ibid_with_format::<F>(citation, run)
+                .or_else(|_| self.process_citation_with_format::<F>(citation, run));
         }
-        self.process_citation_with_format::<F>(citation)
+        self.process_citation_with_format::<F>(citation, run)
     }
 
     fn should_compose_integral_ibid_in_manual_notes(&self, citation: &Citation) -> bool {
@@ -291,12 +306,13 @@ impl Processor {
     fn render_manual_note_integral_ibid_with_format<F>(
         &self,
         citation: &Citation,
+        run: &RunState,
     ) -> Result<String, crate::error::ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let anchor = self
-            .render_note_integral_anchor_with_format::<F>(citation)
+            .render_note_integral_anchor_with_format::<F>(citation, run)
             .unwrap_or_default();
         let reduced = self.render_default_note_ibid_text_with_format::<F>(citation)?;
         if anchor.trim().is_empty() {
@@ -392,6 +408,7 @@ impl Processor {
     fn render_note_integral_anchor_with_format<F>(
         &self,
         citation: &Citation,
+        run: &RunState,
     ) -> Result<String, crate::error::ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -423,10 +440,10 @@ impl Processor {
                 locale: &self.locale,
                 config: Rc::new(self.get_config().clone()),
                 bibliography_config: Some(Rc::new(self.get_bibliography_options().into_owned())),
-                first_note_by_id: Some(&self.run_state.first_note_by_id),
+                first_note_by_id: Some(&run.first_note_by_id),
             },
             &self.hints,
-            &self.run_state.citation_numbers,
+            &run.citation_numbers,
             CompoundRenderData {
                 set_by_ref: &self.compound_set_by_ref,
                 member_index: &self.compound_member_index,

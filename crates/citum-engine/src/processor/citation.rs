@@ -8,10 +8,21 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! This module resolves the effective citation spec for each citation, prepares
 //! renderer delimiters and affixes. Template-level rendering, including
 //! sentence-initial note-start handling, lives in `rendering`.
+//!
+//! Registration (`&mut RunState`) and rendering (`&RunState`) are interleaved
+//! per citation, in document order: each citation's disambiguation,
+//! position, and dynamic grouping depend on the cumulative state left by
+//! every citation processed before it, and citation numbers may be assigned
+//! lazily during one citation's render that a later citation's registration
+//! then reads. This is why citation processing takes `&mut RunState`
+//! end-to-end rather than the `&FinalizedRun` used by bibliography
+//! rendering, which requires the complete, final state from all citations.
+//! See `docs/specs/EXPLICIT_RENDER_RUN_STATE.md`.
 
 use super::Processor;
 use super::disambiguation::Disambiguator;
 use super::rendering::{CompoundRenderData, GroupRenderParams, Renderer, RendererResources};
+use super::run_state::RunState;
 use crate::error::ProcessorError;
 use crate::reference::Citation;
 use crate::values::ProcHints;
@@ -110,10 +121,9 @@ impl Processor {
     ///
     /// IDs that are absent from `self.bibliography` are silently ignored here;
     /// callers are responsible for emitting `nocite_missing_ref` warnings first.
-    pub fn register_nocite_ids(&self, ids: impl IntoIterator<Item = String>) {
-        let mut cited_ids = self.run_state.cited_ids.borrow_mut();
+    pub fn register_nocite_ids(&self, ids: impl IntoIterator<Item = String>, run: &mut RunState) {
         for id in ids {
-            cited_ids.insert(id);
+            run.cited_ids.insert(id);
         }
     }
 
@@ -121,11 +131,10 @@ impl Processor {
     ///
     /// This maintains the set of all references cited in the document and ensures
     /// that numeric styles have a stable numbering map.
-    fn track_cited_ids_and_init_numbers(&self, citation: &Citation) {
-        self.initialize_numeric_citation_numbers();
-        let mut cited_ids = self.run_state.cited_ids.borrow_mut();
+    fn track_cited_ids_and_init_numbers(&self, citation: &Citation, run: &mut RunState) {
+        self.initialize_numeric_citation_numbers(run);
         for item in &citation.items {
-            cited_ids.insert(item.id.clone());
+            run.cited_ids.insert(item.id.clone());
         }
     }
 
@@ -178,7 +187,7 @@ impl Processor {
     ///
     /// This method must be called before `track_cited_ids_and_init_numbers` so that
     /// `cited_ids` reflects only references from prior citations, not the current one.
-    fn resolve_dynamic_group(&self, citation: &Citation) {
+    fn resolve_dynamic_group(&self, citation: &Citation, run: &mut RunState) {
         if self.get_bibliography_options().compound_numeric.is_none() {
             return;
         }
@@ -206,22 +215,23 @@ impl Processor {
         // context — whether via a prior dynamic group or a previous ungrouped citation.
         // Because this method is called before cited_ids is updated for the current
         // citation, `cited_ids` contains only references from earlier citations.
+        if run
+            .dynamic_compound_set_by_ref
+            .contains_key(head_id.as_str())
+            || run.cited_ids.contains(head_id.as_str())
         {
-            let dyn_set = self.run_state.dynamic_compound_set_by_ref.borrow();
-            let cited = self.run_state.cited_ids.borrow();
-
-            if dyn_set.contains_key(head_id.as_str()) || cited.contains(head_id.as_str()) {
+            return;
+        }
+        for tail in &tail_ids {
+            if run.dynamic_compound_set_by_ref.contains_key(tail.as_str())
+                || run.cited_ids.contains(tail.as_str())
+            {
                 return;
-            }
-            for tail in &tail_ids {
-                if dyn_set.contains_key(tail.as_str()) || cited.contains(tail.as_str()) {
-                    return;
-                }
             }
         }
 
         let head_number = {
-            let numbers = self.run_state.citation_numbers.borrow();
+            let numbers = run.citation_numbers.borrow();
             let Some(&n) = numbers.get(head_id.as_str()) else {
                 return;
             };
@@ -230,7 +240,7 @@ impl Processor {
 
         // Assign all tails the same citation number as the head.
         {
-            let mut numbers = self.run_state.citation_numbers.borrow_mut();
+            let mut numbers = run.citation_numbers.borrow_mut();
             for tail in &tail_ids {
                 numbers.insert(tail.clone(), head_number);
             }
@@ -242,19 +252,17 @@ impl Processor {
             .collect();
 
         // Populate dynamic index maps so the renderer can assign sub-labels.
-        {
-            let mut dyn_set = self.run_state.dynamic_compound_set_by_ref.borrow_mut();
-            let mut dyn_idx = self.run_state.dynamic_compound_member_index.borrow_mut();
-            for (idx, member) in all_members.iter().enumerate() {
-                dyn_set.insert(member.clone(), head_id.clone());
-                dyn_idx.insert(member.clone(), idx);
-            }
+        for (idx, member) in all_members.iter().enumerate() {
+            run.dynamic_compound_set_by_ref
+                .insert(member.clone(), head_id.clone());
+            run.dynamic_compound_member_index
+                .insert(member.clone(), idx);
         }
 
         // Inject into compound_groups for bibliography rendering.
         {
-            let mut groups = self.run_state.compound_groups.borrow_mut();
-            let members = groups
+            let members = run
+                .compound_groups
                 .entry(head_number)
                 .or_insert_with(|| vec![head_id.clone()]);
             for tail in &tail_ids {
@@ -265,9 +273,7 @@ impl Processor {
         }
 
         // Register dynamic set so citation_sub_label_for_ref can find members.
-        self.run_state
-            .dynamic_compound_sets
-            .borrow_mut()
+        run.dynamic_compound_sets
             .insert(head_id.clone(), all_members);
     }
 
@@ -336,35 +342,31 @@ impl Processor {
     /// at least one dynamic group is registered.
     fn merged_compound_data(
         &self,
+        run: &RunState,
     ) -> (
         Option<HashMap<String, String>>,
         Option<HashMap<String, usize>>,
         Option<IndexMap<String, Vec<String>>>,
     ) {
-        if self
-            .run_state
-            .dynamic_compound_set_by_ref
-            .borrow()
-            .is_empty()
-        {
+        if run.dynamic_compound_set_by_ref.is_empty() {
             return (None, None, None);
         }
         let merged_set: HashMap<String, String> = self
             .compound_set_by_ref
             .iter()
-            .chain(self.run_state.dynamic_compound_set_by_ref.borrow().iter())
+            .chain(run.dynamic_compound_set_by_ref.iter())
             .map(|(k, v)| (k.clone(), v.clone()))
             .collect();
         let merged_idx: HashMap<String, usize> = self
             .compound_member_index
             .iter()
-            .chain(self.run_state.dynamic_compound_member_index.borrow().iter())
+            .chain(run.dynamic_compound_member_index.iter())
             .map(|(k, v)| (k.clone(), *v))
             .collect();
         let merged_sets: IndexMap<String, Vec<String>> = self
             .compound_sets
             .iter()
-            .chain(self.run_state.dynamic_compound_sets.borrow().iter())
+            .chain(run.dynamic_compound_sets.iter())
             .map(|(k, v)| (k.clone(), v.clone()))
             .collect();
         (Some(merged_set), Some(merged_idx), Some(merged_sets))
@@ -381,6 +383,7 @@ impl Processor {
         renderer_delimiter: &str,
         renderer_inter_delimiter: &str,
         note_start_text_case: Option<NoteStartTextCase>,
+        run: &RunState,
     ) -> Result<String, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -395,7 +398,7 @@ impl Processor {
 
         // Build merged compound lookup maps (static + dynamic).
         // Return owned maps only when dynamic groups exist; otherwise use static maps directly.
-        let (dyn_set_owned, dyn_idx_owned, dyn_sets_owned) = self.merged_compound_data();
+        let (dyn_set_owned, dyn_idx_owned, dyn_sets_owned) = self.merged_compound_data(run);
         let effective_set_by_ref = dyn_set_owned.as_ref().unwrap_or(&self.compound_set_by_ref);
         let effective_member_index = dyn_idx_owned
             .as_ref()
@@ -421,10 +424,10 @@ impl Processor {
                 locale: &self.locale,
                 config: citation_config.clone(),
                 bibliography_config: Some(Rc::new(self.get_bibliography_options().into_owned())),
-                first_note_by_id: Some(&self.run_state.first_note_by_id),
+                first_note_by_id: Some(&run.first_note_by_id),
             },
             renderer_hints,
-            &self.run_state.citation_numbers,
+            &run.citation_numbers,
             CompoundRenderData {
                 set_by_ref: effective_set_by_ref,
                 member_index: effective_member_index,
@@ -567,25 +570,30 @@ impl Processor {
 
     /// Render a single citation to plain text.
     ///
-    /// This is the primary entry point for citation processing. It handles:
-    /// 1. Looking up references in the bibliography.
-    /// 2. Annotating positions (ibid, subsequent, etc.).
-    /// 3. Resolving disambiguation (name expansion, year suffixes).
-    /// 4. Applying the style's citation template.
-    ///
-    /// Returns the formatted citation string or an error if processing fails.
+    /// This is a one-shot convenience wrapper: it begins a throwaway
+    /// [`RunState`] internally, so it has no continuity with any other call.
+    /// Use [`Processor::process_citations`] (or the run-threaded
+    /// `_with_format` variants with an explicit, shared `RunState`) to render
+    /// multiple citations from one document with correct cumulative
+    /// numbering, cite-order tracking, and dynamic compound grouping.
     ///
     /// # Errors
     ///
     /// Returns an error when referenced items are missing or rendering fails.
     pub fn process_citation(&self, citation: &Citation) -> Result<String, ProcessorError> {
-        self.process_citation_with_format::<crate::render::plain::PlainText>(citation)
+        let mut run = self.begin_run();
+        self.process_citation_with_format::<crate::render::plain::PlainText>(citation, &mut run)
     }
 
     /// Render a citation to a string using a specific output format.
     ///
     /// This resolves the effective citation spec for the citation's mode and
-    /// position, renders the citation body, and applies input and style affixes.
+    /// position, renders the citation body, and applies input and style
+    /// affixes. `run` accumulates cite-order state (citation numbers, cited
+    /// IDs, dynamic compound groups) across calls; pass the same `RunState`
+    /// for every citation in one document to get correct cumulative
+    /// behavior, or a fresh one (via [`Processor::begin_run`]) for an
+    /// isolated, one-off render.
     ///
     /// # Errors
     ///
@@ -593,6 +601,7 @@ impl Processor {
     pub fn process_citation_with_format<F>(
         &self,
         citation: &Citation,
+        run: &mut RunState,
     ) -> Result<String, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
@@ -603,11 +612,11 @@ impl Processor {
         // cited_ids with the current citation's items. This ensures the first-occurrence
         // check in resolve_dynamic_group sees only references from prior citations.
         if citation.grouped {
-            self.initialize_numeric_citation_numbers();
-            self.resolve_dynamic_group(citation);
+            self.initialize_numeric_citation_numbers(run);
+            self.resolve_dynamic_group(citation, run);
         }
 
-        self.track_cited_ids_and_init_numbers(citation);
+        self.track_cited_ids_and_init_numbers(citation, run);
 
         let effective_spec = self.resolve_effective_citation_spec(citation);
         let note_start_text_case =
@@ -620,6 +629,7 @@ impl Processor {
             renderer_delimiter,
             renderer_inter_delimiter,
             note_start_text_case,
+            run,
         )?;
         let output = self.apply_citation_input_affixes(citation, content, &fmt);
         let wrapped = self.apply_spec_wrap_and_affixes(citation, &effective_spec, output, &fmt);
@@ -643,16 +653,27 @@ impl Processor {
 
     /// Render multiple citations in document order.
     ///
-    /// For note-based styles, normalizes context and assigns citation positions.
+    /// For note-based styles, normalizes context and assigns citation
+    /// positions. This is a one-shot convenience wrapper: it begins a
+    /// throwaway [`RunState`] internally, shared across all citations in
+    /// `citations` (so cumulative numbering/grouping within this call is
+    /// correct) but not shared with any other call.
     ///
     /// # Errors
     ///
     /// Returns an error when any citation in the sequence fails to render.
     pub fn process_citations(&self, citations: &[Citation]) -> Result<Vec<String>, ProcessorError> {
-        self.process_citations_with_format::<crate::render::plain::PlainText>(citations)
+        let mut run = self.begin_run();
+        self.process_citations_with_format::<crate::render::plain::PlainText>(citations, &mut run)
     }
 
     /// Render multiple citations with a custom output format.
+    ///
+    /// `run` is threaded through every citation in `citations`, in order, so
+    /// numbering/cite-order/dynamic-grouping state accumulates correctly
+    /// across the whole batch. Pass the same `run` on to bibliography
+    /// rendering (after [`RunState::finalize`]) to render a consistent
+    /// document.
     ///
     /// # Errors
     ///
@@ -660,15 +681,16 @@ impl Processor {
     pub fn process_citations_with_format<F>(
         &self,
         citations: &[Citation],
+        run: &mut RunState,
     ) -> Result<Vec<String>, ProcessorError>
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
-        let mut normalized = self.normalize_note_context(citations);
+        let mut normalized = self.normalize_note_context(citations, run);
         self.annotate_positions(&mut normalized);
         normalized
             .iter()
-            .map(|citation| self.process_citation_with_format::<F>(citation))
+            .map(|citation| self.process_citation_with_format::<F>(citation, run))
             .collect()
     }
 }

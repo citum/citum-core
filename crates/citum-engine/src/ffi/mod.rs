@@ -10,7 +10,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 #![allow(unsafe_code, reason = "FFI interface")]
 
-use crate::processor::Processor;
+use crate::processor::{Processor, RunState};
 use crate::reference::{Bibliography, Citation, Reference};
 use crate::render::djot::Djot;
 use crate::render::html::Html;
@@ -28,6 +28,32 @@ use std::ptr;
 
 thread_local! {
     static LAST_ERROR: RefCell<Option<String>> = const { RefCell::new(None) };
+}
+
+/// Opaque per-handle FFI session: an owned [`Processor`] plus its current
+/// render-run state.
+///
+/// `pub` only so the `pub extern "C"` functions below may name it in their
+/// signatures (Rust's private-interface lint); its fields stay private, so
+/// it should be treated as an opaque handle by every caller exactly as
+/// `Processor` was before this type existed, even though `citum_engine::ffi`
+/// is itself a public module. This replaces the implicit per-`Processor`
+/// mutable state with an explicit [`RunState`] per
+/// docs/specs/EXPLICIT_RENDER_RUN_STATE.md.
+/// Citation-rendering calls (`citum_render_citation_*`) register into `run`
+/// via `&mut`; bibliography calls (`citum_render_bibliography_*`) render
+/// from a cloned, finalized snapshot of `run` so accumulation across calls
+/// on one handle is preserved without pausing further citation registration.
+pub struct FfiSession {
+    processor: Processor,
+    run: RunState,
+}
+
+impl FfiSession {
+    fn new(processor: Processor) -> Self {
+        let run = processor.begin_run();
+        Self { processor, run }
+    }
 }
 
 /// Set the last error message.
@@ -155,7 +181,7 @@ pub unsafe extern "C" fn citum_get_last_error() -> *mut c_char {
 pub unsafe extern "C" fn citum_processor_new(
     style_json: *const c_char,
     bib_json: *const c_char,
-) -> *mut Processor {
+) -> *mut FfiSession {
     let Ok(style_str) = (unsafe { parse_c_str(style_json, "style_json") }) else {
         return ptr::null_mut();
     };
@@ -179,8 +205,8 @@ pub unsafe extern "C" fn citum_processor_new(
         }
     };
 
-    let processor = Box::new(Processor::new(style, bib));
-    Box::into_raw(processor)
+    let session = Box::new(FfiSession::new(Processor::new(style, bib)));
+    Box::into_raw(session)
 }
 
 /// Create a new processor instance with a specific locale.
@@ -192,7 +218,7 @@ pub unsafe extern "C" fn citum_processor_new_with_locale(
     style_json: *const c_char,
     bib_json: *const c_char,
     locale_json: *const c_char,
-) -> *mut Processor {
+) -> *mut FfiSession {
     let Ok(style_str) = (unsafe { parse_c_str(style_json, "style_json") }) else {
         return ptr::null_mut();
     };
@@ -227,8 +253,8 @@ pub unsafe extern "C" fn citum_processor_new_with_locale(
         }
     };
 
-    let processor = Box::new(Processor::with_locale(style, bib, locale));
-    Box::into_raw(processor)
+    let session = Box::new(FfiSession::new(Processor::with_locale(style, bib, locale)));
+    Box::into_raw(session)
 }
 
 /// Create a new processor instance from YAML strings with default English locale.
@@ -241,7 +267,7 @@ pub unsafe extern "C" fn citum_processor_new_with_locale(
 pub unsafe extern "C" fn citum_processor_new_from_yaml(
     style_yaml: *const c_char,
     bib_yaml: *const c_char,
-) -> *mut Processor {
+) -> *mut FfiSession {
     let Ok(style_str) = (unsafe { parse_c_str(style_yaml, "style_yaml") }) else {
         return ptr::null_mut();
     };
@@ -265,8 +291,8 @@ pub unsafe extern "C" fn citum_processor_new_from_yaml(
         }
     };
 
-    let processor = Box::new(Processor::new(style, bib));
-    Box::into_raw(processor)
+    let session = Box::new(FfiSession::new(Processor::new(style, bib)));
+    Box::into_raw(session)
 }
 
 /// Create a new processor instance with a specific locale from YAML strings.
@@ -279,7 +305,7 @@ pub unsafe extern "C" fn citum_processor_new_with_locale_from_yaml(
     style_yaml: *const c_char,
     bib_yaml: *const c_char,
     locale_yaml: *const c_char,
-) -> *mut Processor {
+) -> *mut FfiSession {
     let Ok(style_str) = (unsafe { parse_c_str(style_yaml, "style_yaml") }) else {
         return ptr::null_mut();
     };
@@ -314,8 +340,8 @@ pub unsafe extern "C" fn citum_processor_new_with_locale_from_yaml(
         }
     };
 
-    let processor = Box::new(Processor::with_locale(style, bib, locale));
-    Box::into_raw(processor)
+    let session = Box::new(FfiSession::new(Processor::with_locale(style, bib, locale)));
+    Box::into_raw(session)
 }
 
 /// Free a processor instance.
@@ -325,14 +351,14 @@ pub unsafe extern "C" fn citum_processor_new_with_locale_from_yaml(
 /// Passing the same pointer more than once, or passing a pointer allocated by
 /// any other API, is undefined behavior.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn citum_processor_free(processor: *mut Processor) {
+pub unsafe extern "C" fn citum_processor_free(processor: *mut FfiSession) {
     if !processor.is_null() {
         let _ = unsafe { Box::from_raw(processor) };
     }
 }
 
 /// Helper to render a citation to a string using a specific format.
-unsafe fn render_citation<F>(processor: *mut Processor, cite_json: *const c_char) -> *mut c_char
+unsafe fn render_citation<F>(processor: *mut FfiSession, cite_json: *const c_char) -> *mut c_char
 where
     F: crate::render::format::OutputFormat<Output = String>,
 {
@@ -341,7 +367,7 @@ where
         return ptr::null_mut();
     }
 
-    let processor = unsafe { &*processor };
+    let session = unsafe { &mut *processor };
     let Ok(cite_str) = (unsafe { parse_c_str(cite_json, "cite_json") }) else {
         return ptr::null_mut();
     };
@@ -354,7 +380,10 @@ where
         }
     };
 
-    match processor.process_citation_with_format::<F>(&citation) {
+    match session
+        .processor
+        .process_citation_with_format::<F>(&citation, &mut session.run)
+    {
         Ok(rendered) => safe_c_string(rendered),
         Err(e) => {
             set_error(format!("Rendering error: {e}"));
@@ -371,7 +400,7 @@ where
 /// string must be freed with `citum_string_free`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn citum_render_citation_latex(
-    processor: *mut Processor,
+    processor: *mut FfiSession,
     cite_json: *const c_char,
 ) -> *mut c_char {
     unsafe { render_citation::<Latex>(processor, cite_json) }
@@ -385,7 +414,7 @@ pub unsafe extern "C" fn citum_render_citation_latex(
 /// string must be freed with `citum_string_free`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn citum_render_citation_html(
-    processor: *mut Processor,
+    processor: *mut FfiSession,
     cite_json: *const c_char,
 ) -> *mut c_char {
     unsafe { render_citation::<Html>(processor, cite_json) }
@@ -399,7 +428,7 @@ pub unsafe extern "C" fn citum_render_citation_html(
 /// string must be freed with `citum_string_free`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn citum_render_citation_plain(
-    processor: *mut Processor,
+    processor: *mut FfiSession,
     cite_json: *const c_char,
 ) -> *mut c_char {
     unsafe { render_citation::<PlainText>(processor, cite_json) }
@@ -411,7 +440,7 @@ pub unsafe extern "C" fn citum_render_citation_plain(
 /// See `citum_render_citation_html`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn citum_render_citation_djot(
-    processor: *mut Processor,
+    processor: *mut FfiSession,
     cite_json: *const c_char,
 ) -> *mut c_char {
     unsafe { render_citation::<Djot>(processor, cite_json) }
@@ -423,14 +452,18 @@ pub unsafe extern "C" fn citum_render_citation_djot(
 /// See `citum_render_citation_html`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn citum_render_citation_typst(
-    processor: *mut Processor,
+    processor: *mut FfiSession,
     cite_json: *const c_char,
 ) -> *mut c_char {
     unsafe { render_citation::<Typst>(processor, cite_json) }
 }
 
 /// Helper to render the bibliography to a string using a specific format.
-unsafe fn render_bibliography<F>(processor: *mut Processor) -> *mut c_char
+///
+/// Renders from a cloned, finalized snapshot of the session's current run so
+/// citation registration on the original `session.run` is unaffected — the
+/// handle can keep accumulating citations after this call.
+unsafe fn render_bibliography<F>(processor: *mut FfiSession) -> *mut c_char
 where
     F: crate::render::format::OutputFormat<Output = String>,
 {
@@ -439,8 +472,9 @@ where
         return ptr::null_mut();
     }
 
-    let processor = unsafe { &*processor };
-    let rendered = processor.render_bibliography_with_format::<F>();
+    let session = unsafe { &*processor };
+    let run = session.run.clone().finalize();
+    let rendered = session.processor.render_bibliography_with_format::<F>(&run);
     safe_c_string(rendered)
 }
 
@@ -450,7 +484,9 @@ where
 /// The caller must ensure that `processor` is a valid pointer.
 /// The returned string must be freed with `citum_string_free`.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn citum_render_bibliography_latex(processor: *mut Processor) -> *mut c_char {
+pub unsafe extern "C" fn citum_render_bibliography_latex(
+    processor: *mut FfiSession,
+) -> *mut c_char {
     unsafe { render_bibliography::<Latex>(processor) }
 }
 
@@ -460,7 +496,7 @@ pub unsafe extern "C" fn citum_render_bibliography_latex(processor: *mut Process
 /// The caller must ensure that `processor` is a valid pointer.
 /// The returned string must be freed with `citum_string_free`.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn citum_render_bibliography_html(processor: *mut Processor) -> *mut c_char {
+pub unsafe extern "C" fn citum_render_bibliography_html(processor: *mut FfiSession) -> *mut c_char {
     unsafe { render_bibliography::<Html>(processor) }
 }
 
@@ -470,7 +506,9 @@ pub unsafe extern "C" fn citum_render_bibliography_html(processor: *mut Processo
 /// The caller must ensure that `processor` is a valid pointer.
 /// The returned string must be freed with `citum_string_free`.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn citum_render_bibliography_plain(processor: *mut Processor) -> *mut c_char {
+pub unsafe extern "C" fn citum_render_bibliography_plain(
+    processor: *mut FfiSession,
+) -> *mut c_char {
     unsafe { render_bibliography::<PlainText>(processor) }
 }
 
@@ -479,7 +517,7 @@ pub unsafe extern "C" fn citum_render_bibliography_plain(processor: *mut Process
 /// # Safety
 /// See `citum_render_bibliography_html`.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn citum_render_bibliography_djot(processor: *mut Processor) -> *mut c_char {
+pub unsafe extern "C" fn citum_render_bibliography_djot(processor: *mut FfiSession) -> *mut c_char {
     unsafe { render_bibliography::<Djot>(processor) }
 }
 
@@ -488,12 +526,17 @@ pub unsafe extern "C" fn citum_render_bibliography_djot(processor: *mut Processo
 /// # Safety
 /// See `citum_render_bibliography_html`.
 #[unsafe(no_mangle)]
-pub unsafe extern "C" fn citum_render_bibliography_typst(processor: *mut Processor) -> *mut c_char {
+pub unsafe extern "C" fn citum_render_bibliography_typst(
+    processor: *mut FfiSession,
+) -> *mut c_char {
     unsafe { render_bibliography::<Typst>(processor) }
 }
 
 /// Helper to render the grouped bibliography to a string using a specific format.
-unsafe fn render_grouped_bibliography<F>(processor: *mut Processor) -> *mut c_char
+///
+/// See `render_bibliography` for why this clones-and-finalizes a snapshot
+/// rather than consuming the session's own run.
+unsafe fn render_grouped_bibliography<F>(processor: *mut FfiSession) -> *mut c_char
 where
     F: crate::render::format::OutputFormat<Output = String>,
 {
@@ -502,8 +545,11 @@ where
         return ptr::null_mut();
     }
 
-    let processor = unsafe { &*processor };
-    let rendered = processor.render_grouped_bibliography_with_format::<F>();
+    let session = unsafe { &*processor };
+    let run = session.run.clone().finalize();
+    let rendered = session
+        .processor
+        .render_grouped_bibliography_with_format::<F>(&run);
     safe_c_string(rendered)
 }
 
@@ -513,7 +559,7 @@ where
 /// See `citum_render_bibliography_html`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn citum_render_bibliography_grouped_html(
-    processor: *mut Processor,
+    processor: *mut FfiSession,
 ) -> *mut c_char {
     unsafe { render_grouped_bibliography::<Html>(processor) }
 }
@@ -524,7 +570,7 @@ pub unsafe extern "C" fn citum_render_bibliography_grouped_html(
 /// See `citum_render_bibliography_html`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn citum_render_bibliography_grouped_plain(
-    processor: *mut Processor,
+    processor: *mut FfiSession,
 ) -> *mut c_char {
     unsafe { render_grouped_bibliography::<PlainText>(processor) }
 }
@@ -536,7 +582,7 @@ pub unsafe extern "C" fn citum_render_bibliography_grouped_plain(
 /// The returned JSON string must be freed with `citum_string_free`.
 #[unsafe(no_mangle)]
 pub unsafe extern "C" fn citum_render_citations_json(
-    processor: *mut Processor,
+    processor: *mut FfiSession,
     citations_json: *const c_char,
     format: *const c_char,
 ) -> *mut c_char {
@@ -545,7 +591,7 @@ pub unsafe extern "C" fn citum_render_citations_json(
         return ptr::null_mut();
     }
 
-    let processor = unsafe { &*processor };
+    let session = unsafe { &mut *processor };
     let Ok(citations_str) = (unsafe { parse_c_str(citations_json, "citations_json") }) else {
         return ptr::null_mut();
     };
@@ -563,13 +609,15 @@ pub unsafe extern "C" fn citum_render_citations_json(
         return ptr::null_mut();
     };
 
+    let processor = &session.processor;
+    let run = &mut session.run;
     let result = match format_str {
-        "html" => processor.process_citations_with_format::<Html>(&citations),
-        "latex" => processor.process_citations_with_format::<Latex>(&citations),
-        "djot" => processor.process_citations_with_format::<Djot>(&citations),
-        "typst" => processor.process_citations_with_format::<Typst>(&citations),
-        "markdown" => processor.process_citations_with_format::<Markdown>(&citations),
-        _ => processor.process_citations_with_format::<PlainText>(&citations),
+        "html" => processor.process_citations_with_format::<Html>(&citations, run),
+        "latex" => processor.process_citations_with_format::<Latex>(&citations, run),
+        "djot" => processor.process_citations_with_format::<Djot>(&citations, run),
+        "typst" => processor.process_citations_with_format::<Typst>(&citations, run),
+        "markdown" => processor.process_citations_with_format::<Markdown>(&citations, run),
+        _ => processor.process_citations_with_format::<PlainText>(&citations, run),
     };
 
     match result {
@@ -628,7 +676,7 @@ mod tests {
         CString::new(value).expect("test string has no interior NUL")
     }
 
-    fn processor() -> *mut Processor {
+    fn processor() -> *mut FfiSession {
         let style = serde_json::to_string(&Style::default()).expect("style serializes");
         let bibliography = "{}";
         unsafe { citum_processor_new(c_string(&style).as_ptr(), c_string(bibliography).as_ptr()) }

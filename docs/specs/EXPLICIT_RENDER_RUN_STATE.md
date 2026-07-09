@@ -1,6 +1,6 @@
 # Explicit Render-Run State for `Processor` Specification
 
-**Status:** Draft
+**Status:** Active
 **Date:** 2026-07-09
 **Supersedes:** (none)
 **Related:** bean `csl26-dog9`; `docs/architecture/audits/2026-07-03_CITUM_ENGINE_REVIEW.md` finding 6; follow-up note in bean `csl26-qi7l`
@@ -131,8 +131,9 @@ sources `citation_numbers: &run.0.citation_numbers` and
 ### Idempotency, precisely stated
 
 The render phase is **idempotent under repeated calls with the same
-`FinalizedRun`**, and **pure with respect to the six non-`RefCell` run
-fields**. It is *not* strictly read-only for `citation_numbers`:
+`FinalizedRun`**, and **pure with respect to the five non-`RefCell` run
+fields** (`cited_ids`, `compound_groups`, and the three dynamic compound
+maps). It is *not* strictly read-only for `citation_numbers`:
 `Renderer::get_or_assign_citation_number` (`rendering/grouped/core.rs:799`)
 lazily assigns a citation number the first time a reference is rendered, if
 one is not already present. This assignment is monotonic and
@@ -197,27 +198,56 @@ Migration proceeds in four phases, each independently green
 Steps (a)-(b) are mechanical (mostly signature threading). Steps (c)-(d)
 touch cross-crate boundaries (FFI/WASM) and want a human review pass.
 
+**Deviation from the phase split above (discovered during implementation):**
+Rust's borrow checker rejects `self.method(&mut self.run_state)` — a method
+receiver (`&self`) and a mutable borrow of one of its own fields cannot be
+passed as two arguments to the same call, even though they are logically
+disjoint. This means `Processor` cannot hold `RunState` as a field *and* have
+its methods take `&mut RunState` as an explicit parameter; the two are
+mutually exclusive. Phases (b) and (c) were therefore implemented together as
+one change: `RunState` was removed from `Processor` entirely (not left as a
+"transitional field") in the same step that threaded `&mut RunState` through
+registration methods and introduced `FinalizedRun`. Every caller (FFI,
+`api/session.rs`, `api/document.rs`, CLI, server, `citum-migrate`, and both
+the in-crate and integration test suites) had to be updated in that same
+change to keep compiling, so the four-phase commit split became one
+comprehensive pass instead. Convenience wrappers (`process_citation`,
+`process_citations`, and a `*_standalone` family added for the bibliography
+methods) preserve the pre-refactor zero-argument call shape for the ~150
+call sites that don't need cross-call continuity.
+
 ## Acceptance Criteria
 
-- [ ] `Processor` no longer declares any of the seven `RefCell` fields;
+- [x] `Processor` no longer declares any of the seven `RefCell` fields;
       they live on `RunState`.
-- [ ] `RunState::finalize(self) -> FinalizedRun` exists; render methods that
+- [x] `RunState::finalize(self) -> FinalizedRun` exists; render methods that
       depend on cite order or citation numbers take `&FinalizedRun`, not
       `&self`-only.
-- [ ] It is a compile error to call a bibliography/citation-number-dependent
+- [x] It is a compile error to call a bibliography/citation-number-dependent
       render method before `finalize()` — i.e. there is no path to construct
       a `FinalizedRun` other than through `RunState::finalize`.
-- [ ] A test demonstrates running the same citation list twice through one
+- [x] A test demonstrates running the same citation list twice through one
       reused `Processor` with two independent `begin_run()` calls and
       asserts identical output (the property that was previously
-      impossible to state, let alone test).
-- [ ] `cargo nextest run` and `just pre-commit` pass at every phase.
-- [ ] No oracle/fidelity regression (`just workflow-test`, `report-core.js`
-      before/after).
-- [ ] FFI/WASM C ABI signatures are unchanged; a call sequence of
-      `citum_render_citation_*` ×N followed by `citum_render_bibliography_*`
-      on one handle produces the same output as before the refactor.
+      impossible to state, let alone test) —
+      `test_processor_is_reusable_across_independent_runs` in
+      `crates/citum-engine/src/processor/tests.rs`.
+- [x] `cargo nextest run` and `just pre-commit` pass (fmt + clippy
+      `-D warnings` + 1854 tests, `--workspace --all-features`).
+- [x] No oracle/fidelity regression: `just workflow-test styles-legacy/apa.csl`
+      (author-date, 20/20 citations, 45/46 bibliography) and
+      `styles-legacy/apa-numeric-superscript.csl` (numeric/compound, 20/20
+      citations, 17/51 bibliography) both match byte-for-byte against a
+      `git stash`-isolated pre-refactor baseline — the shortfalls are
+      pre-existing migration-fidelity gaps, unchanged by this refactor.
+- [x] FFI/WASM C ABI signatures are unchanged: `ffi/mod.rs` now boxes an
+      opaque `FfiSession { processor, run }` behind the same pointer shape;
+      `citum_render_citation_*` mutates the session's `run`,
+      `citum_render_bibliography_*` renders from a cloned, finalized
+      snapshot so accumulation across calls on one handle is preserved.
 
 ## Changelog
 
 - 2026-07-09: Initial draft.
+- 2026-07-09: Implemented (phases a-d, see Implementation Notes for the
+  phase-split deviation); Status → Active.

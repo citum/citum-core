@@ -372,14 +372,13 @@ fn derive_template_variant_diff(
                 after: None,
                 component: component.clone(),
             }
-        } else if let Some(after) = last_anchor.clone() {
+        } else {
+            let after = last_anchor.clone()?;
             TemplateAddOperation {
                 before: None,
                 after: Some(after),
                 component: component.clone(),
             }
-        } else {
-            return None;
         };
         diff.add.push(add);
         last_anchor = Some(component_selector);

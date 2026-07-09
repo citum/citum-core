@@ -776,7 +776,8 @@ fn render_citation(params: &Value, id: Value) -> Result<Value, ServerError> {
     processor.set_inject_ast_indices(inject_ast_indices);
 
     let output_format = params.output_format.unwrap_or_default();
-    let result = render_citation_with_format(&processor, &citation, output_format)
+    let mut run = processor.begin_run();
+    let result = render_citation_with_format(&processor, &citation, output_format, &mut run)
         .map_err(|e| ServerError::CitationError(e.to_string()))?;
 
     Ok(json!({
@@ -830,13 +831,16 @@ fn render_citation_with_format(
     processor: &Processor,
     citation: &Citation,
     format: OutputFormat,
+    run: &mut citum_engine::processor::RunState,
 ) -> Result<String, ServerError> {
     match format {
-        OutputFormat::Plain => Ok(processor.process_citation_with_format::<PlainText>(citation)?),
-        OutputFormat::Html => Ok(processor.process_citation_with_format::<Html>(citation)?),
-        OutputFormat::Djot => Ok(processor.process_citation_with_format::<Djot>(citation)?),
-        OutputFormat::Latex => Ok(processor.process_citation_with_format::<Latex>(citation)?),
-        OutputFormat::Typst => Ok(processor.process_citation_with_format::<Typst>(citation)?),
+        OutputFormat::Plain => {
+            Ok(processor.process_citation_with_format::<PlainText>(citation, run)?)
+        }
+        OutputFormat::Html => Ok(processor.process_citation_with_format::<Html>(citation, run)?),
+        OutputFormat::Djot => Ok(processor.process_citation_with_format::<Djot>(citation, run)?),
+        OutputFormat::Latex => Ok(processor.process_citation_with_format::<Latex>(citation, run)?),
+        OutputFormat::Typst => Ok(processor.process_citation_with_format::<Typst>(citation, run)?),
     }
 }
 
@@ -845,11 +849,13 @@ fn render_bibliography_with_format(
     format: OutputFormat,
 ) -> Result<String, ServerError> {
     match format {
-        OutputFormat::Plain => Ok(processor.render_bibliography_with_format::<PlainText>()),
-        OutputFormat::Html => Ok(processor.render_bibliography_with_format::<Html>()),
-        OutputFormat::Djot => Ok(processor.render_bibliography_with_format::<Djot>()),
-        OutputFormat::Latex => Ok(processor.render_bibliography_with_format::<Latex>()),
-        OutputFormat::Typst => Ok(processor.render_bibliography_with_format::<Typst>()),
+        OutputFormat::Plain => {
+            Ok(processor.render_bibliography_with_format_standalone::<PlainText>())
+        }
+        OutputFormat::Html => Ok(processor.render_bibliography_with_format_standalone::<Html>()),
+        OutputFormat::Djot => Ok(processor.render_bibliography_with_format_standalone::<Djot>()),
+        OutputFormat::Latex => Ok(processor.render_bibliography_with_format_standalone::<Latex>()),
+        OutputFormat::Typst => Ok(processor.render_bibliography_with_format_standalone::<Typst>()),
     }
 }
 

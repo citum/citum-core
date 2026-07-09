@@ -10,6 +10,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! and `Ibid` before citation rendering begins.
 
 use super::Processor;
+use super::run_state::RunState;
 use crate::reference::{Citation, CitationItem};
 use citum_schema::citation::Position;
 
@@ -112,8 +113,14 @@ impl Processor {
     /// Normalize citation note context for note styles.
     ///
     /// Document/plugin layers should provide explicit `note_number` values.
-    /// When missing, this method assigns sequential note numbers in citation order.
-    pub fn normalize_note_context(&self, citations: &[Citation]) -> Vec<Citation> {
+    /// When missing, this method assigns sequential note numbers in citation
+    /// order and records each reference's first-occurrence note number into
+    /// `run`.
+    pub fn normalize_note_context(
+        &self,
+        citations: &[Citation],
+        run: &mut RunState,
+    ) -> Vec<Citation> {
         if !self.is_note_style() {
             return citations.to_vec();
         }
@@ -138,7 +145,7 @@ impl Processor {
         // Build first-occurrence note number map: id → note_number of first cite.
         // Clear first so repeated calls (e.g. reprocessing after insertion/reordering)
         // don't accumulate stale entries from prior runs.
-        let mut first_note = self.run_state.first_note_by_id.borrow_mut();
+        let mut first_note = run.first_note_by_id.borrow_mut();
         first_note.clear();
         for citation in &normalized {
             if let Some(note_number) = citation.note_number {
@@ -147,6 +154,7 @@ impl Processor {
                 }
             }
         }
+        drop(first_note);
 
         normalized
     }

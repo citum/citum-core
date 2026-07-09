@@ -12,6 +12,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use super::Processor;
 use super::disambiguation::Disambiguator;
+use super::run_state::RunState;
 use crate::error::ProcessorError;
 use crate::reference::{Bibliography, CitationItem, Reference};
 use crate::values::ProcHints;
@@ -41,7 +42,6 @@ impl Default for Processor {
             show_semantics: true,
             inject_ast_indices: false,
             abbreviation_map: None,
-            run_state: super::run_state::RunState::default(),
         }
     }
 }
@@ -85,7 +85,6 @@ impl Processor {
             show_semantics: true,
             inject_ast_indices: false,
             abbreviation_map: None,
-            run_state: super::run_state::RunState::default(),
         };
 
         // Pre-calculate hints for disambiguation.
@@ -206,30 +205,30 @@ impl Processor {
     /// When the style declares an explicit bibliography sort, or the
     /// processing family provides a bibliography default, citation numbers
     /// must follow that resolved bibliography order.
-    pub(crate) fn initialize_numeric_citation_numbers(&self) {
+    pub(crate) fn initialize_numeric_citation_numbers(&self, run: &mut RunState) {
         if !self.is_numeric_style() {
             return;
         }
 
-        self.initialize_numeric_numbers(self.sort_citation_number_order());
+        self.initialize_numeric_numbers(run, self.sort_citation_number_order());
     }
 
     /// Initialize numeric bibliography numbers from resolved bibliography order.
-    pub(crate) fn initialize_numeric_bibliography_numbers(&self) {
+    pub(crate) fn initialize_numeric_bibliography_numbers(&self, run: &mut RunState) {
         if !self.is_numeric_bibliography_style() {
             return;
         }
 
-        self.initialize_numeric_numbers(self.sort_bibliography_number_order());
+        self.initialize_numeric_numbers(run, self.sort_bibliography_number_order());
     }
 
     /// Initialize citation numbers if the map is currently empty.
-    fn initialize_numeric_numbers(&self, ordered_ids: Vec<String>) {
-        if !self.run_state.citation_numbers.borrow().is_empty() {
+    fn initialize_numeric_numbers(&self, run: &mut RunState, ordered_ids: Vec<String>) {
+        if !run.citation_numbers.borrow().is_empty() {
             return;
         }
 
-        self.initialize_numeric_citation_numbers_from_ordered_ids(ordered_ids);
+        self.initialize_numeric_citation_numbers_from_ordered_ids(run, ordered_ids);
     }
 
     /// Calculate the document-wide reference order for citation numbering.
@@ -254,8 +253,12 @@ impl Processor {
     ///
     /// Also populates compound groups for numeric styles that enable compound
     /// numbering.
-    fn initialize_numeric_citation_numbers_from_ordered_ids(&self, ordered_ids: Vec<String>) {
-        let mut numbers = self.run_state.citation_numbers.borrow_mut();
+    fn initialize_numeric_citation_numbers_from_ordered_ids(
+        &self,
+        run: &mut RunState,
+        ordered_ids: Vec<String>,
+    ) {
+        let mut numbers = run.citation_numbers.borrow_mut();
         if !numbers.is_empty() {
             return;
         }
@@ -265,8 +268,7 @@ impl Processor {
         if compound_config.is_some() {
             let mut set_first_seen: IndexMap<String, usize> = IndexMap::new();
             let mut current_number = 1usize;
-            let mut compound_groups = self.run_state.compound_groups.borrow_mut();
-            compound_groups.clear();
+            run.compound_groups.clear();
 
             for ref_id in &ordered_ids {
                 if let Some(set_id) = self.compound_set_by_ref.get(ref_id) {
@@ -284,7 +286,7 @@ impl Processor {
                                 numbers.insert(member.clone(), current_number);
                             }
                             if present_members.len() > 1 {
-                                compound_groups.insert(current_number, present_members);
+                                run.compound_groups.insert(current_number, present_members);
                             }
                         } else {
                             numbers.insert(ref_id.clone(), current_number);
@@ -301,6 +303,23 @@ impl Processor {
                 numbers.insert(ref_id, index + 1);
             }
         }
+    }
+
+    /// Begin a new render run.
+    ///
+    /// Allocates fresh per-run state (citation numbers, cite-order tracking,
+    /// dynamic compound groups, first-note tracking) and performs numeric
+    /// citation-number pre-initialization from the processor's immutable
+    /// bibliography/style data. Registration methods (`&self, &mut RunState`)
+    /// populate the returned `RunState` in citation-processing order; call
+    /// [`RunState::finalize`] before rendering. See
+    /// `docs/specs/EXPLICIT_RENDER_RUN_STATE.md`.
+    #[must_use]
+    pub fn begin_run(&self) -> RunState {
+        let mut run = RunState::default();
+        self.initialize_numeric_citation_numbers(&mut run);
+        self.initialize_numeric_bibliography_numbers(&mut run);
+        run
     }
 
     /// Create a new processor with default English locale (en-US).

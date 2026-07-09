@@ -2201,8 +2201,9 @@ citation:
         ..Default::default()
     };
 
+    let mut run = processor.begin_run();
     let rendered = processor
-        .process_citation_with_format::<Html>(&citation)
+        .process_citation_with_format::<Html>(&citation, &mut run)
         .expect("citation should render");
 
     assert!(

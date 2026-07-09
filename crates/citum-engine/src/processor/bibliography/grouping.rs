@@ -8,6 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use super::RenderedBibliographyGroup;
 use crate::api::AnnotationStyle;
 use crate::grouping::SelectorEvaluator;
+use crate::processor::FinalizedRun;
 use crate::processor::Processor;
 use crate::processor::disambiguation::Disambiguator;
 use crate::processor::rendering::{CompoundRenderData, Renderer, RendererResources};
@@ -122,7 +123,8 @@ impl Processor {
     /// Used for grouping paths that only need IDs for selector matching — avoids
     /// the full PlainText render pass that `process_references` performs.
     pub(super) fn sorted_id_stubs(&self) -> Vec<ProcEntry> {
-        self.initialize_numeric_bibliography_numbers();
+        // Numeric citation numbers are already populated by `Processor::begin_run`,
+        // which every `FinalizedRun` this module consumes was produced from.
         self.sort_references(self.bibliography.values().collect())
             .into_iter()
             .filter_map(|r| {
@@ -206,6 +208,7 @@ impl Processor {
         sorted_refs: Vec<&Reference>,
         group: &BibliographyGroup,
         local_hints: Option<&HashMap<String, ProcHints>>,
+        run: &FinalizedRun,
     ) -> Vec<ProcEntry>
     where
         F: OutputFormat<Output = String>,
@@ -227,7 +230,7 @@ impl Processor {
                 first_note_by_id: None,
             },
             hints,
-            &self.run_state.citation_numbers,
+            &run.state().citation_numbers,
             CompoundRenderData {
                 set_by_ref: &self.compound_set_by_ref,
                 member_index: &self.compound_member_index,
@@ -243,8 +246,8 @@ impl Processor {
 
         for (index, reference) in sorted_refs.into_iter().enumerate() {
             let ref_id = reference.id().unwrap_or_default().to_string();
-            let entry_number = self
-                .run_state
+            let entry_number = run
+                .state()
                 .citation_numbers
                 .borrow()
                 .get(&ref_id)
@@ -343,6 +346,7 @@ impl Processor {
         partitioning: &BibliographySortPartitioning,
         annotations: Option<&HashMap<String, String>>,
         annotation_style: Option<&AnnotationStyle>,
+        run: &FinalizedRun,
     ) -> String
     where
         F: OutputFormat<Output = String>,
@@ -356,12 +360,20 @@ impl Processor {
             let heading = partition_key
                 .as_ref()
                 .and_then(|key| partitioning.headings.get(key));
-            let entries = self.merge_compound_entries::<F>(self.process_sorted_refs::<_, F>(
-                references.into_iter(),
-                |reference, entry_number| {
-                    self.process_bibliography_entry_with_format::<F>(reference, entry_number)
-                },
-            ));
+            let entries = self.merge_compound_entries::<F>(
+                self.process_sorted_refs::<_, F>(
+                    references.into_iter(),
+                    |reference, entry_number| {
+                        self.process_bibliography_entry_with_format::<F>(
+                            reference,
+                            entry_number,
+                            run,
+                        )
+                    },
+                    run,
+                ),
+                run,
+            );
             self.append_rendered_partition::<F>(
                 &mut result,
                 heading,
@@ -387,13 +399,14 @@ impl Processor {
         selected: &HashSet<String>,
         annotations: Option<&HashMap<String, String>>,
         annotation_style: Option<&AnnotationStyle>,
+        run: &FinalizedRun,
     ) -> String
     where
         F: OutputFormat<Output = String>,
     {
         let fmt = F::default();
-        let cited_ids = self.run_state.cited_ids.borrow();
-        let evaluator = SelectorEvaluator::new(&cited_ids);
+        let cited_ids = &run.state().cited_ids;
+        let evaluator = SelectorEvaluator::new(cited_ids);
         let bibliography_config = self.get_bibliography_config();
         let sorter = ReferenceSorter::with_bibliography_config(&self.locale, &bibliography_config);
 
@@ -424,12 +437,16 @@ impl Processor {
                 matching_refs
             };
             let local_hints = self.build_group_local_hints(&sorted_refs, group);
-            let entries = self.merge_compound_entries::<F>(self.render_group_entries::<F>(
-                all_entries,
-                sorted_refs,
-                group,
-                local_hints.as_ref(),
-            ));
+            let entries = self.merge_compound_entries::<F>(
+                self.render_group_entries::<F>(
+                    all_entries,
+                    sorted_refs,
+                    group,
+                    local_hints.as_ref(),
+                    run,
+                ),
+                run,
+            );
 
             populated_groups.push((group, entries));
         }
@@ -462,11 +479,16 @@ impl Processor {
             selected,
             annotations,
             annotation_style,
+            run,
         );
         fmt.finish(result)
     }
 
     /// Append unassigned bibliography entries to the output string.
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "internal helper, all params load-bearing"
+    )]
     fn append_unassigned_entries_filtered<F>(
         &self,
         result: &mut String,
@@ -475,6 +497,7 @@ impl Processor {
         selected: &HashSet<String>,
         annotations: Option<&HashMap<String, String>>,
         annotation_style: Option<&AnnotationStyle>,
+        run: &FinalizedRun,
     ) where
         F: OutputFormat<Output = String>,
     {
@@ -490,12 +513,16 @@ impl Processor {
 
         // Re-process references to ensure correct author substitution and disambiguation
         // within the unassigned subset.
-        let unassigned = self.merge_compound_entries::<F>(self.process_sorted_refs::<_, F>(
-            unassigned_refs.into_iter(),
-            |reference, entry_number| {
-                self.process_bibliography_entry_with_format::<F>(reference, entry_number)
-            },
-        ));
+        let unassigned = self.merge_compound_entries::<F>(
+            self.process_sorted_refs::<_, F>(
+                unassigned_refs.into_iter(),
+                |reference, entry_number| {
+                    self.process_bibliography_entry_with_format::<F>(reference, entry_number, run)
+                },
+                run,
+            ),
+            run,
+        );
 
         if !result.is_empty() {
             result.push_str("\n\n");
@@ -514,12 +541,13 @@ impl Processor {
         bibliography: &[ProcEntry],
         annotations: Option<&HashMap<String, String>>,
         annotation_style: Option<&AnnotationStyle>,
+        run: &FinalizedRun,
     ) -> String
     where
         F: OutputFormat<Output = String>,
     {
         let fmt = F::default();
-        let cited_ids = self.run_state.cited_ids.borrow();
+        let cited_ids = &run.state().cited_ids;
         let cited_entries: Vec<ProcEntry> = bibliography
             .iter()
             .filter(|entry| cited_ids.contains(&entry.id))
@@ -545,11 +573,11 @@ impl Processor {
     /// before compound numeric rows are merged, so each rendered group only
     /// includes the members that matched its selector. Otherwise, falls back to
     /// hardcoded cited/uncited grouping for backward compatibility.
-    pub fn render_grouped_bibliography_with_format<F>(&self) -> String
+    pub fn render_grouped_bibliography_with_format<F>(&self, run: &FinalizedRun) -> String
     where
         F: OutputFormat<Output = String>,
     {
-        self.render_grouped_bibliography_with_format_and_annotations::<F>(None, None)
+        self.render_grouped_bibliography_with_format_and_annotations::<F>(None, None, run)
     }
 
     /// Render the bibliography with grouping and annotations.
@@ -557,11 +585,41 @@ impl Processor {
         &self,
         annotations: Option<&HashMap<String, String>>,
         annotation_style: Option<&AnnotationStyle>,
+        run: &FinalizedRun,
     ) -> String
     where
         F: OutputFormat<Output = String>,
     {
-        self.render_grouped_bibliography_inner::<F>(false, annotations, annotation_style)
+        self.render_grouped_bibliography_inner::<F>(false, annotations, annotation_style, run)
+    }
+
+    /// One-shot convenience for [`Processor::render_grouped_bibliography_with_format`]:
+    /// begins a throwaway run internally.
+    pub fn render_grouped_bibliography_with_format_standalone<F>(&self) -> String
+    where
+        F: OutputFormat<Output = String>,
+    {
+        let run = self.begin_run().finalize();
+        self.render_grouped_bibliography_with_format::<F>(&run)
+    }
+
+    /// One-shot convenience for
+    /// [`Processor::render_grouped_bibliography_with_format_and_annotations`]:
+    /// begins a throwaway run internally.
+    pub fn render_grouped_bibliography_with_format_and_annotations_standalone<F>(
+        &self,
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
+    ) -> String
+    where
+        F: OutputFormat<Output = String>,
+    {
+        let run = self.begin_run().finalize();
+        self.render_grouped_bibliography_with_format_and_annotations::<F>(
+            annotations,
+            annotation_style,
+            &run,
+        )
     }
 
     /// Unified document bibliography facade — returns content and per-entry data together.
@@ -571,7 +629,7 @@ impl Processor {
     /// document-string (`process_document`) path all funnel through here.
     ///
     /// When `restrict_to_cited` is `true` (the document case), only references present
-    /// in `self.run_state.cited_ids` — cited in-text or registered via `nocite` — are included.
+    /// in `run`'s `cited_ids` — cited in-text or registered via `nocite` — are included.
     /// When `false`, all loaded references are eligible; this hook is reserved for the
     /// `allrefs` escape hatch (csl26-f9ri) and is not yet exposed publicly.
     ///
@@ -582,6 +640,7 @@ impl Processor {
         restrict_to_cited: bool,
         annotations: Option<&HashMap<String, String>>,
         annotation_style: Option<&AnnotationStyle>,
+        run: &FinalizedRun,
     ) -> super::DocumentBibliography
     where
         F: OutputFormat<Output = String>,
@@ -590,14 +649,14 @@ impl Processor {
             restrict_to_cited,
             annotations,
             annotation_style,
+            run,
         );
-        // Collect IDs before calling process_* so the RefCell borrow is released.
-        let cited_ids: Vec<String> = self.run_state.cited_ids.borrow().iter().cloned().collect();
+        let cited_ids: Vec<String> = run.state().cited_ids.iter().cloned().collect();
         let entries = if restrict_to_cited {
-            self.process_selected_references_with_format::<F, _>(cited_ids)
+            self.process_selected_references_with_format::<F, _>(cited_ids, run)
                 .bibliography
         } else {
-            self.process_references_with_format::<F>().bibliography
+            self.process_references_with_format::<F>(run).bibliography
         };
         super::DocumentBibliography { content, entries }
     }
@@ -605,7 +664,7 @@ impl Processor {
     /// Shared implementation for grouped bibliography rendering.
     ///
     /// When `restrict_to_cited` is `true`, each branch limits its candidate
-    /// set to references present in `self.run_state.cited_ids`. When `false`, all
+    /// set to references present in `run`'s `cited_ids`. When `false`, all
     /// loaded references are eligible (the original all-refs behaviour used
     /// by standalone `render refs`, FFI, and tests).
     fn render_grouped_bibliography_inner<F>(
@@ -613,6 +672,7 @@ impl Processor {
         restrict_to_cited: bool,
         annotations: Option<&HashMap<String, String>>,
         annotation_style: Option<&AnnotationStyle>,
+        run: &FinalizedRun,
     ) -> String
     where
         F: OutputFormat<Output = String>,
@@ -625,7 +685,7 @@ impl Processor {
         {
             let id_stubs = self.sorted_id_stubs();
             let selected = if restrict_to_cited {
-                let cited = self.run_state.cited_ids.borrow();
+                let cited = &run.state().cited_ids;
                 id_stubs
                     .iter()
                     .filter(|e| cited.contains(&e.id))
@@ -643,6 +703,7 @@ impl Processor {
                 &selected,
                 annotations,
                 annotation_style,
+                run,
             );
         }
 
@@ -650,10 +711,9 @@ impl Processor {
         if let Some(partitioning) = bibliography_options.sort_partitioning.as_ref()
             && crate::sort_partitioning::should_render_sections(partitioning)
         {
-            self.initialize_numeric_bibliography_numbers();
             let mut refs: Vec<&Reference> = self.bibliography.values().collect();
             if restrict_to_cited {
-                let cited = self.run_state.cited_ids.borrow();
+                let cited = &run.state().cited_ids;
                 refs.retain(|r| r.id().as_deref().is_some_and(|id| cited.contains(id)));
             }
             let sorted_refs = self.sort_references(refs);
@@ -662,14 +722,16 @@ impl Processor {
                 partitioning,
                 annotations,
                 annotation_style,
+                run,
             );
         }
 
-        let all_entries = self.process_references_with_format::<F>().bibliography;
+        let all_entries = self.process_references_with_format::<F>(run).bibliography;
         self.render_with_legacy_grouping::<F>(
-            &self.merge_compound_entries::<F>(all_entries),
+            &self.merge_compound_entries::<F>(all_entries, run),
             annotations,
             annotation_style,
+            run,
         )
     }
 
@@ -681,13 +743,14 @@ impl Processor {
         &self,
         group: &BibliographyGroup,
         assigned: &mut HashSet<String>,
+        run: &FinalizedRun,
     ) -> Vec<crate::render::ProcEntry>
     where
         F: OutputFormat<Output = String>,
     {
         let bibliography = self.sorted_id_stubs();
-        let cited_ids = self.run_state.cited_ids.borrow();
-        let evaluator = SelectorEvaluator::new(&cited_ids);
+        let cited_ids = &run.state().cited_ids;
+        let evaluator = SelectorEvaluator::new(cited_ids);
         let bibliography_config = self.get_bibliography_config();
         let sorter = ReferenceSorter::with_bibliography_config(&self.locale, &bibliography_config);
 
@@ -706,24 +769,33 @@ impl Processor {
         };
 
         let local_hints = self.build_group_local_hints(&sorted_refs, group);
-        self.merge_compound_entries::<F>(self.render_group_entries::<F>(
-            &bibliography,
-            sorted_refs,
-            group,
-            local_hints.as_ref(),
-        ))
+        self.merge_compound_entries::<F>(
+            self.render_group_entries::<F>(
+                &bibliography,
+                sorted_refs,
+                group,
+                local_hints.as_ref(),
+                run,
+            ),
+            run,
+        )
     }
 
     /// Render one bibliography block for document output.
     ///
     /// Returns heading and body separately so callers can insert headings
     /// in their own output format.
+    #[allow(
+        clippy::too_many_arguments,
+        reason = "internal helper, all params load-bearing"
+    )]
     pub(crate) fn render_document_bibliography_block<F>(
         &self,
         group: &BibliographyGroup,
         assigned: &mut HashSet<String>,
         annotations: Option<&HashMap<String, String>>,
         annotation_style: Option<&AnnotationStyle>,
+        run: &FinalizedRun,
     ) -> RenderedBibliographyGroup
     where
         F: OutputFormat<Output = String>,
@@ -734,7 +806,7 @@ impl Processor {
             .take()
             .and_then(|group_heading| self.resolve_group_heading(&group_heading));
 
-        let entries = self.entries_for_bibliography_group::<F>(&headingless, assigned);
+        let entries = self.entries_for_bibliography_group::<F>(&headingless, assigned, run);
         let body = crate::render::refs_to_string_slice_with_format::<F>(
             &entries,
             annotations,
@@ -757,6 +829,7 @@ impl Processor {
         groups: &[BibliographyGroup],
         annotations: Option<&HashMap<String, String>>,
         annotation_style: Option<&AnnotationStyle>,
+        run: &FinalizedRun,
     ) -> Vec<RenderedBibliographyGroup>
     where
         F: OutputFormat<Output = String>,
@@ -770,6 +843,7 @@ impl Processor {
                     &mut assigned,
                     annotations,
                     annotation_style,
+                    run,
                 )
             })
             .collect()
