@@ -93,10 +93,20 @@ fn bench_rendering(c: &mut Criterion) {
     });
 
     // Benchmark Bibliography Processing at a scale large enough to show
-    // rayon parallel-rendering gains (see `PARALLEL_MIN_ENTRIES` in
-    // `processor/bibliography/mod.rs`; default-on `parallel` feature).
+    // rayon parallel-rendering gains when this benchmark is run with
+    // `--features parallel` (see `PARALLEL_MIN_ENTRIES` in
+    // `processor/bibliography/mod.rs`). Without that feature these cases are
+    // the sequential baseline.
     c.bench_function("Process Bibliography (APA, 200 items)", |b| {
         let large_bib = make_large_bibliography(200);
+        let processor = Processor::new(style.clone(), large_bib);
+        b.iter(|| {
+            processor.process_references();
+        });
+    });
+
+    c.bench_function("Process Bibliography (APA, 400 items)", |b| {
+        let large_bib = make_large_bibliography(400);
         let processor = Processor::new(style.clone(), large_bib);
         b.iter(|| {
             processor.process_references();

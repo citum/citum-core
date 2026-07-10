@@ -30,7 +30,7 @@ the dispatch overhead.
 - `RwLock` instead of `RefCell` for `RunState::citation_numbers` and
   `RunState::first_note_by_id`, with `PoisonError::into_inner` recovery at
   every lock site (the repo forbids `unwrap`/`expect`).
-- A new `parallel` cargo feature on `citum-engine`, on by default, gating a
+- A new opt-in `parallel` cargo feature on `citum-engine` gating a
   `rayon`-backed parallel map over bibliography entries in both rendering
   paths: `Processor::process_sorted_refs` (flat bibliographies) and
   `GroupedBibliography`'s `render_group_entries` (custom groups).
@@ -67,19 +67,35 @@ the dispatch overhead.
 rayon = { version = "1", optional = true }
 
 [features]
-default = ["icu", "parallel"]
+default = ["icu"]
 parallel = ["dep:rayon"]
 ```
 
-`parallel` is on by default for native builds (CLI, server, migrate). WASM is
-unaffected: `citum-bindings` already builds `citum-engine` with
+`parallel` is **opt-in**, not a default feature: measurements (below) found
+the parallel path performance-neutral on desktop workloads, so consumers
+should enable it only where profiling shows bibliography entry rendering as
+an actual bottleneck. (It was default-on in this spec's first draft; the
+measurement section records why that was reversed.) WASM cannot use it
+regardless: `citum-bindings` builds `citum-engine` with
 `default-features = false` (there is no thread pool in a WASM target), so it
 never pulls in `rayon`. `cargo check -p citum-engine --no-default-features
 --features icu` and `-p citum-bindings` are part of this change's
 verification precisely to keep that boundary honest — the sequential code
 path is not `#[cfg]`-gated at all (it's the only path when `parallel` is
 off, or below the threshold), so a build without the feature is exercised
-by the same tests as one with it, just without the parallel branch.
+by the same tests as one with it, just without the parallel branch. CI runs
+`cargo nextest run --all-features`, which is what exercises the
+feature-gated parallel-vs-sequential equality tests.
+
+### Public API migration
+
+The `Rc` → `Arc` and `RefCell` → `RwLock` changes are intentional public API
+changes for the low-level rendering types. Callers constructing
+`RendererResources`, `Renderer`, `RenderOptions`, or `ProcTemplateComponent`
+must update configuration fields from `Rc<T>` to `Arc<T>` and run-state maps
+from `RefCell<T>` to `RwLock<T>`. The high-level `Processor` API remains the
+preferred integration surface. This compatibility change is accepted while
+the project remains pre-1.0 and should be called out in release notes.
 
 ### `PARALLEL_MIN_ENTRIES`
 
@@ -92,18 +108,36 @@ pub(crate) const PARALLEL_MIN_ENTRIES: usize = 32;
 Below this many entries, rendering stays sequential even with `parallel`
 enabled — rayon's thread-pool dispatch has a fixed cost that isn't worth
 paying for a short bibliography. The value is a conservative starting point;
-`cargo bench --bench rendering` compares 10-item and 200-item bibliographies
-so the crossover point can be tuned from real measurements without changing
-the shape of the code.
+`cargo bench --bench rendering` provides the sequential baseline for 10-,
+200-, and 400-item bibliographies. Run the same command with
+`--features parallel` to measure the opt-in parallel path and compare the
+medians under the same machine conditions.
 
-Initial measurements (2026-07-09, 8-core desktop under sustained ~5.0 load
-average from ambient desktop processes) were inconclusive: run-to-run
-variance on identical binaries reached ±75% (10-item case) and the
-sequential/parallel bands at 200 items overlapped entirely (5.2–6.3 ms
-sequential vs 5.6–7.4 ms parallel, medians across repeated runs). Neither a
-speedup nor a regression is demonstrable under that noise; tuning the
-threshold — and validating the feature's value — needs a quiet machine or
-citum-server's concurrent production context.
+### Measurements (2026-07-09/10, 8-core desktop)
+
+Three findings, in the order they arrived:
+
+1. **Loaded machines cannot measure this.** Under a sustained ~5.0 load
+   average (ambient desktop apps), run-to-run variance on identical binaries
+   reached ±75%; every sequential/parallel delta was inside the noise band.
+2. **The first implementation had real parallel overhead.** On a quiet
+   machine (load < 1), parallel was 22% *slower* than sequential at 400
+   entries (9.69 ms vs 7.95 ms): the flat path rebuilt its `Renderer` —
+   including a full config merge, deep clone, and two `Arc` allocations —
+   *per entry*, and eight threads doing that simultaneously contend on the
+   allocator. Hoisting the merge into a per-pass `EntryRenderContext` (the
+   optimization deferred from bean `csl26-qi7l`) removed the penalty and
+   sped up the *sequential* path as well (200 items: 4.99 ms → 4.36 ms).
+3. **After the fix, parallel is performance-neutral at realistic scale.**
+   Back-to-back quiet-machine runs: 10 items 575.5 µs parallel vs 575.8 µs
+   sequential; 200 items 4.42 ms vs 4.36 ms; 400 items 8.46 ms vs 8.54 ms.
+   Entry rendering is allocation/memory-bound, not compute-bound, so
+   additional cores buy nothing at these sizes.
+
+Consequence: `parallel` was demoted from default to opt-in. The durable wins
+of this work are the `Send + Sync` groundwork (a `Processor` can now be
+shared across server request threads without any rayon involvement) and the
+hoisted config merge.
 
 ### Restructuring the two render loops
 
@@ -116,7 +150,8 @@ substitution in the same iteration. Both now split into three steps:
    `(reference, entry_number)` pairs, reading `run`'s shared
    `citation_numbers` map once per reference. Always sequential — it's a
    single read pass over a shared map, not the expensive part.
-2. **Render** (`render_entries` / `render_group_numbered_refs`): an
+2. **Render** (`render_numbered_refs`, shared by the flat and grouped
+   paths via `EntryRenderContext`): an
    order-preserving map from `(reference, entry_number)` to
    `Option<ProcTemplate>`. This is the parallel step: `rayon::par_iter`
    when `parallel` is enabled and `numbered_refs.len() >=
@@ -133,7 +168,7 @@ substitution in the same iteration. Both now split into three steps:
    matches the pre-refactor behavior exactly.
 
 `render_group_entries`'s parallel branch additionally builds a **fresh
-`Renderer` per task** (`GroupRenderContext` bundles the `Arc`-wrapped
+`Renderer` per task** (`EntryRenderContext` bundles the `Arc`-wrapped
 config plus style/hints/run so each task's `Renderer::new` call is cheap)
 rather than sharing one `Renderer` across threads. `Renderer` has a
 per-render scratch field, `filtered_to_original_index: RefCell<...>`, that
@@ -192,13 +227,19 @@ strictly in that order — see the equality tests below.
       citation numbers).
 - [x] `just pre-commit` passes (fmt + clippy `-D warnings` + `cargo nextest
       run`, `--workspace --all-features`).
-- [x] `cargo bench --bench rendering` includes a 200-item bibliography case
-      (`Process Bibliography (APA, 200 items)`) alongside the existing
-      10-item one, so the parallel crossover is measurable, not just
-      asserted.
+- [x] `cargo bench --bench rendering` includes 10-, 200-, and 400-item
+      bibliography cases, with the sequential and `--features parallel`
+      commands documented separately so the parallel crossover is measurable,
+      not just asserted.
 
 ## Changelog
 
 - 2026-07-09: Initial draft; implemented in the same change (Rc→Arc,
   RunState RwLock, feature-gated rayon parallel bibliography rendering).
   Status → Active.
+- 2026-07-10: Post-review measurement pass: hoisted the per-entry config
+  merge into `EntryRenderContext` (unifying the flat and grouped render
+  paths, closing the follow-up deferred from bean `csl26-qi7l`) and demoted
+  `parallel` from default feature to opt-in — quiet-machine benchmarks show
+  the parallel path performance-neutral at 10–400 entries (see
+  Measurements).

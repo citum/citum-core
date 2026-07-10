@@ -6,12 +6,11 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! Parallel-vs-sequential equality tests for bibliography rendering.
 //!
 //! Only meaningful under the `parallel` feature: without it there is no
-//! parallel path (`render_entries_parallel`, `render_group_numbered_refs_parallel`)
-//! to compare against, so this whole module is feature-gated.
+//! parallel path (`Processor::render_numbered_refs_parallel`) to compare
+//! against, so this whole module is feature-gated.
 
 #![cfg(feature = "parallel")]
 
-use super::grouping::GroupRenderContext;
 use super::*;
 use crate::reference::Bibliography;
 use crate::render::plain::PlainText;
@@ -158,20 +157,21 @@ fn given_large_author_date_bibliography_when_rendered_sequential_or_parallel_the
     let sorted_refs = processor.sort_references(processor.bibliography.values().collect());
     let numbered_refs = number_sorted_refs(sorted_refs.into_iter(), &run);
 
-    let process_fn = |reference: &Reference, entry_number: usize| {
-        processor.process_bibliography_entry_with_format::<PlainText>(reference, entry_number, &run)
-    };
+    let ctx = processor.flat_render_context(&run);
+    let sequential_rendered =
+        processor.render_numbered_refs_sequential::<PlainText>(&numbered_refs, &ctx);
+    let parallel_rendered =
+        processor.render_numbered_refs_parallel::<PlainText>(&numbered_refs, &ctx);
 
-    let sequential_rendered = render_entries_sequential(&numbered_refs, &process_fn);
-    let parallel_rendered = render_entries_parallel(&numbered_refs, &process_fn);
-
-    let bibliography_options = processor.get_bibliography_options();
-    let substitute = bibliography_options.subsequent_author_substitute.as_ref();
+    let substitute = ctx
+        .bibliography_config
+        .subsequent_author_substitute
+        .as_ref();
 
     let sequential_entries =
-        processor.apply_substitution_post_pass::<PlainText>(sequential_rendered, substitute, &run);
+        processor.apply_substitution_post_pass::<PlainText>(sequential_rendered, substitute, &ctx);
     let parallel_entries =
-        processor.apply_substitution_post_pass::<PlainText>(parallel_rendered, substitute, &run);
+        processor.apply_substitution_post_pass::<PlainText>(parallel_rendered, substitute, &ctx);
 
     assert_eq!(sequential_entries.len(), 48);
     assert_eq!(sequential_entries, parallel_entries);
@@ -207,20 +207,21 @@ fn given_numeric_bibliography_when_rendered_sequential_or_parallel_then_entries_
     let sorted_refs = processor.sort_references(processor.bibliography.values().collect());
     let numbered_refs = number_sorted_refs(sorted_refs.into_iter(), &run);
 
-    let process_fn = |reference: &Reference, entry_number: usize| {
-        processor.process_bibliography_entry_with_format::<PlainText>(reference, entry_number, &run)
-    };
+    let ctx = processor.flat_render_context(&run);
+    let sequential_rendered =
+        processor.render_numbered_refs_sequential::<PlainText>(&numbered_refs, &ctx);
+    let parallel_rendered =
+        processor.render_numbered_refs_parallel::<PlainText>(&numbered_refs, &ctx);
 
-    let sequential_rendered = render_entries_sequential(&numbered_refs, &process_fn);
-    let parallel_rendered = render_entries_parallel(&numbered_refs, &process_fn);
-
-    let bibliography_options = processor.get_bibliography_options();
-    let substitute = bibliography_options.subsequent_author_substitute.as_ref();
+    let substitute = ctx
+        .bibliography_config
+        .subsequent_author_substitute
+        .as_ref();
 
     let sequential_entries =
-        processor.apply_substitution_post_pass::<PlainText>(sequential_rendered, substitute, &run);
+        processor.apply_substitution_post_pass::<PlainText>(sequential_rendered, substitute, &ctx);
     let parallel_entries =
-        processor.apply_substitution_post_pass::<PlainText>(parallel_rendered, substitute, &run);
+        processor.apply_substitution_post_pass::<PlainText>(parallel_rendered, substitute, &ctx);
 
     assert_eq!(sequential_entries.len(), 40);
     assert_eq!(sequential_entries, parallel_entries);
@@ -230,14 +231,14 @@ fn given_numeric_bibliography_when_rendered_sequential_or_parallel_then_entries_
 fn given_large_bibliography_group_when_rendered_sequential_or_parallel_then_entries_match() {
     // Exercises the grouped-bibliography render path, which builds a fresh
     // `Renderer` per task in the parallel branch instead of sharing one
-    // `Renderer` across threads (see `GroupRenderContext`'s docs).
+    // `Renderer` across threads (see `EntryRenderContext`'s docs).
     let processor = Processor::new(author_date_style(), make_bibliography(48));
     let run = processor.begin_run().finalize();
 
     let sorted_refs = processor.sort_references(processor.bibliography.values().collect());
     let numbered_refs = number_sorted_refs(sorted_refs.into_iter(), &run);
 
-    let ctx = GroupRenderContext {
+    let ctx = EntryRenderContext {
         style: &processor.style,
         hints: &processor.hints,
         config: Arc::new(processor.get_bibliography_config().into_owned()),
@@ -246,19 +247,54 @@ fn given_large_bibliography_group_when_rendered_sequential_or_parallel_then_entr
     };
 
     let sequential_rendered =
-        processor.render_group_numbered_refs_sequential::<PlainText>(&numbered_refs, &ctx);
+        processor.render_numbered_refs_sequential::<PlainText>(&numbered_refs, &ctx);
     let parallel_rendered =
-        processor.render_group_numbered_refs_parallel::<PlainText>(&numbered_refs, &ctx);
+        processor.render_numbered_refs_parallel::<PlainText>(&numbered_refs, &ctx);
 
     let substitute = ctx
         .bibliography_config
         .subsequent_author_substitute
         .as_ref();
     let sequential_entries =
-        processor.apply_substitution_post_pass::<PlainText>(sequential_rendered, substitute, &run);
+        processor.apply_substitution_post_pass::<PlainText>(sequential_rendered, substitute, &ctx);
     let parallel_entries =
-        processor.apply_substitution_post_pass::<PlainText>(parallel_rendered, substitute, &run);
+        processor.apply_substitution_post_pass::<PlainText>(parallel_rendered, substitute, &ctx);
 
     assert_eq!(sequential_entries.len(), 48);
     assert_eq!(sequential_entries, parallel_entries);
+}
+
+#[test]
+fn given_bibliography_size_when_dispatching_then_selected_path_matches_sequential_output() {
+    for size in [8, 48] {
+        let processor = Processor::new(author_date_style(), make_bibliography(size));
+        let run = processor.begin_run().finalize();
+        let sorted_refs = processor.sort_references(processor.bibliography.values().collect());
+        let numbered_refs = number_sorted_refs(sorted_refs.into_iter(), &run);
+        let ctx = processor.flat_render_context(&run);
+
+        let dispatched = processor.render_numbered_refs::<PlainText>(&numbered_refs, &ctx);
+        let sequential =
+            processor.render_numbered_refs_sequential::<PlainText>(&numbered_refs, &ctx);
+
+        assert_eq!(
+            dispatched, sequential,
+            "dispatch changed output for {size} entries"
+        );
+
+        let expected = processor.apply_substitution_post_pass::<PlainText>(
+            sequential,
+            ctx.bibliography_config
+                .subsequent_author_substitute
+                .as_ref(),
+            &ctx,
+        );
+        let actual = processor
+            .process_references_with_format::<PlainText>(&run)
+            .bibliography;
+        assert_eq!(
+            actual, expected,
+            "public rendering changed output for {size} entries"
+        );
+    }
 }
