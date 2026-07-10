@@ -21,7 +21,7 @@ use indexmap::IndexMap;
 use std::borrow::Cow;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
 /// The renderer for citation and bibliography templates.
 ///
@@ -41,7 +41,11 @@ pub struct Renderer<'a> {
     /// Pre-calculated hints for optimization.
     pub hints: &'a HashMap<String, ProcHints>,
     /// Shared state for citation numbers (used in numeric styles).
-    pub citation_numbers: &'a RefCell<HashMap<String, usize>>,
+    ///
+    /// `RwLock`, not `RefCell`: bibliography entries render in parallel
+    /// (behind the `parallel` feature) once above `PARALLEL_MIN_ENTRIES`,
+    /// and each per-entry `Renderer` borrows this same run-scoped map.
+    pub citation_numbers: &'a RwLock<HashMap<String, usize>>,
     /// Optional compound set membership indexed by reference id.
     pub compound_set_by_ref: &'a HashMap<String, String>,
     /// Optional 0-based member index within each compound set.
@@ -57,7 +61,7 @@ pub struct Renderer<'a> {
     /// Document-level abbreviation map for post-render substitution.
     pub abbreviation_map: Option<&'a crate::api::AbbreviationMap>,
     /// First note number per reference id (populated by normalize_note_context).
-    pub first_note_by_id: Option<&'a RefCell<HashMap<String, u32>>>,
+    pub first_note_by_id: Option<&'a RwLock<HashMap<String, u32>>>,
 }
 
 /// Borrowed compound-set context for rendering.
@@ -186,7 +190,7 @@ pub struct RendererResources<'a> {
     /// The active bibliography-only configuration.
     pub bibliography_config: Option<Arc<BibliographyConfig>>,
     /// First note number per reference id (note styles; `None` for bibliography rendering).
-    pub first_note_by_id: Option<&'a RefCell<HashMap<String, u32>>>,
+    pub first_note_by_id: Option<&'a RwLock<HashMap<String, u32>>>,
 }
 
 impl<'a> Renderer<'a> {
@@ -194,7 +198,7 @@ impl<'a> Renderer<'a> {
     pub fn new(
         resources: RendererResources<'a>,
         hints: &'a HashMap<String, ProcHints>,
-        citation_numbers: &'a RefCell<HashMap<String, usize>>,
+        citation_numbers: &'a RwLock<HashMap<String, usize>>,
         compound: CompoundRenderData<'a>,
         show_semantics: bool,
         inject_ast_indices: bool,
@@ -433,10 +437,12 @@ impl<'a> Renderer<'a> {
             note_start_text_case,
             integral_name_state: item.integral_name_state,
             org_abbreviation_state: item.org_abbreviation_state,
-            first_reference_note_number: self
-                .first_note_by_id
-                .as_ref()
-                .and_then(|m| m.borrow().get(&item.id).copied()),
+            first_reference_note_number: self.first_note_by_id.as_ref().and_then(|m| {
+                m.read()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner)
+                    .get(&item.id)
+                    .copied()
+            }),
         }
     }
 

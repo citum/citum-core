@@ -797,7 +797,10 @@ impl Renderer<'_> {
     /// Get the citation number for a reference, assigning one if not yet cited.
     #[must_use]
     pub fn get_or_assign_citation_number(&self, ref_id: &str) -> usize {
-        let mut numbers = self.citation_numbers.borrow_mut();
+        let mut numbers = self
+            .citation_numbers
+            .write()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         let next_num = numbers.len() + 1;
         *numbers.entry(ref_id.to_string()).or_insert(next_num)
     }

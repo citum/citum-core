@@ -231,7 +231,10 @@ impl Processor {
         }
 
         let head_number = {
-            let numbers = run.citation_numbers.borrow();
+            let numbers = run
+                .citation_numbers
+                .read()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
             let Some(&n) = numbers.get(head_id.as_str()) else {
                 return;
             };
@@ -240,7 +243,10 @@ impl Processor {
 
         // Assign all tails the same citation number as the head.
         {
-            let mut numbers = run.citation_numbers.borrow_mut();
+            let mut numbers = run
+                .citation_numbers
+                .write()
+                .unwrap_or_else(std::sync::PoisonError::into_inner);
             for tail in &tail_ids {
                 numbers.insert(tail.clone(), head_number);
             }
