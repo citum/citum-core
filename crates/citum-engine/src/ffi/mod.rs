@@ -7,6 +7,14 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //!
 //! This module provides a C-compatible interface for other languages
 //! (like Lua, Python, or JavaScript) to use the processor.
+//!
+//! Exports use `#[cfg_attr(not(test), unsafe(no_mangle))]`: the lib-test
+//! binary links `citum-engine` twice (once compiled for tests, once as an
+//! rlib behind the `citum-io` dev-dependency), and two copies of an
+//! unmangled symbol are a duplicate-symbol link error under lld when the
+//! `ffi` feature is enabled. Mangling the test-build copies keeps
+//! `cargo test --all-features` linkable while the in-module unit tests
+//! still call the functions by their Rust names.
 
 #![allow(unsafe_code, reason = "FFI interface")]
 
@@ -162,7 +170,7 @@ fn parse_bibliography_yaml(bib_str: &str) -> Result<Bibliography, String> {
 ///
 /// # Safety
 /// The returned string must be freed with `citum_string_free`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_get_last_error() -> *mut c_char {
     LAST_ERROR.with(|e| {
         e.borrow()
@@ -177,7 +185,7 @@ pub unsafe extern "C" fn citum_get_last_error() -> *mut c_char {
 /// The caller must ensure that `style_json` and `bib_json` are valid
 /// null-terminated C strings. The returned pointer must be freed
 /// with `citum_processor_free`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_processor_new(
     style_json: *const c_char,
     bib_json: *const c_char,
@@ -213,7 +221,7 @@ pub unsafe extern "C" fn citum_processor_new(
 ///
 /// # Safety
 /// The caller must ensure all string pointers are valid null-terminated C strings.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_processor_new_with_locale(
     style_json: *const c_char,
     bib_json: *const c_char,
@@ -263,7 +271,7 @@ pub unsafe extern "C" fn citum_processor_new_with_locale(
 /// The caller must ensure that `style_yaml` and `bib_yaml` are valid
 /// null-terminated C strings. The returned pointer must be freed
 /// with `citum_processor_free`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_processor_new_from_yaml(
     style_yaml: *const c_char,
     bib_yaml: *const c_char,
@@ -300,7 +308,7 @@ pub unsafe extern "C" fn citum_processor_new_from_yaml(
 /// # Safety
 /// The caller must ensure all string pointers are valid null-terminated C strings.
 /// The returned pointer must be freed with `citum_processor_free`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_processor_new_with_locale_from_yaml(
     style_yaml: *const c_char,
     bib_yaml: *const c_char,
@@ -350,7 +358,7 @@ pub unsafe extern "C" fn citum_processor_new_with_locale_from_yaml(
 /// The pointer must have been created by a `citum_processor_new` function.
 /// Passing the same pointer more than once, or passing a pointer allocated by
 /// any other API, is undefined behavior.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_processor_free(processor: *mut FfiSession) {
     if !processor.is_null() {
         let _ = unsafe { Box::from_raw(processor) };
@@ -398,7 +406,7 @@ where
 /// The caller must ensure that `processor` is a valid pointer and
 /// `cite_json` is a valid null-terminated C string. The returned
 /// string must be freed with `citum_string_free`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_render_citation_latex(
     processor: *mut FfiSession,
     cite_json: *const c_char,
@@ -412,7 +420,7 @@ pub unsafe extern "C" fn citum_render_citation_latex(
 /// The caller must ensure that `processor` is a valid pointer and
 /// `cite_json` is a valid null-terminated C string. The returned
 /// string must be freed with `citum_string_free`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_render_citation_html(
     processor: *mut FfiSession,
     cite_json: *const c_char,
@@ -426,7 +434,7 @@ pub unsafe extern "C" fn citum_render_citation_html(
 /// The caller must ensure that `processor` is a valid pointer and
 /// `cite_json` is a valid null-terminated C string. The returned
 /// string must be freed with `citum_string_free`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_render_citation_plain(
     processor: *mut FfiSession,
     cite_json: *const c_char,
@@ -438,7 +446,7 @@ pub unsafe extern "C" fn citum_render_citation_plain(
 ///
 /// # Safety
 /// See `citum_render_citation_html`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_render_citation_djot(
     processor: *mut FfiSession,
     cite_json: *const c_char,
@@ -450,7 +458,7 @@ pub unsafe extern "C" fn citum_render_citation_djot(
 ///
 /// # Safety
 /// See `citum_render_citation_html`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_render_citation_typst(
     processor: *mut FfiSession,
     cite_json: *const c_char,
@@ -483,7 +491,7 @@ where
 /// # Safety
 /// The caller must ensure that `processor` is a valid pointer.
 /// The returned string must be freed with `citum_string_free`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_render_bibliography_latex(
     processor: *mut FfiSession,
 ) -> *mut c_char {
@@ -495,7 +503,7 @@ pub unsafe extern "C" fn citum_render_bibliography_latex(
 /// # Safety
 /// The caller must ensure that `processor` is a valid pointer.
 /// The returned string must be freed with `citum_string_free`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_render_bibliography_html(processor: *mut FfiSession) -> *mut c_char {
     unsafe { render_bibliography::<Html>(processor) }
 }
@@ -505,7 +513,7 @@ pub unsafe extern "C" fn citum_render_bibliography_html(processor: *mut FfiSessi
 /// # Safety
 /// The caller must ensure that `processor` is a valid pointer.
 /// The returned string must be freed with `citum_string_free`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_render_bibliography_plain(
     processor: *mut FfiSession,
 ) -> *mut c_char {
@@ -516,7 +524,7 @@ pub unsafe extern "C" fn citum_render_bibliography_plain(
 ///
 /// # Safety
 /// See `citum_render_bibliography_html`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_render_bibliography_djot(processor: *mut FfiSession) -> *mut c_char {
     unsafe { render_bibliography::<Djot>(processor) }
 }
@@ -525,7 +533,7 @@ pub unsafe extern "C" fn citum_render_bibliography_djot(processor: *mut FfiSessi
 ///
 /// # Safety
 /// See `citum_render_bibliography_html`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_render_bibliography_typst(
     processor: *mut FfiSession,
 ) -> *mut c_char {
@@ -557,7 +565,7 @@ where
 ///
 /// # Safety
 /// See `citum_render_bibliography_html`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_render_bibliography_grouped_html(
     processor: *mut FfiSession,
 ) -> *mut c_char {
@@ -568,7 +576,7 @@ pub unsafe extern "C" fn citum_render_bibliography_grouped_html(
 ///
 /// # Safety
 /// See `citum_render_bibliography_html`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_render_bibliography_grouped_plain(
     processor: *mut FfiSession,
 ) -> *mut c_char {
@@ -580,7 +588,7 @@ pub unsafe extern "C" fn citum_render_bibliography_grouped_plain(
 /// # Safety
 /// `citations_json` must be a null-terminated JSON array of `Citation` objects.
 /// The returned JSON string must be freed with `citum_string_free`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_render_citations_json(
     processor: *mut FfiSession,
     citations_json: *const c_char,
@@ -641,7 +649,7 @@ pub unsafe extern "C" fn citum_render_citations_json(
 /// The pointer must have been returned by one of the rendering functions.
 /// Passing the same pointer more than once, or passing a pointer allocated by
 /// any other API, is undefined behavior.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_string_free(s: *mut c_char) {
     if !s.is_null() {
         let _ = unsafe { CString::from_raw(s) };
@@ -652,7 +660,7 @@ pub unsafe extern "C" fn citum_string_free(s: *mut c_char) {
 ///
 /// # Safety
 /// The returned string must be freed with `citum_string_free`.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn citum_version() -> *mut c_char {
     safe_c_string(env!("CARGO_PKG_VERSION").to_string())
 }
