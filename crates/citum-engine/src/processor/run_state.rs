@@ -23,17 +23,21 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! of the same in-progress run that is registering it.
 //!
 //! Two fields, `citation_numbers` and `first_note_by_id`, stay behind a
-//! `RefCell` even inside `RunState`/`FinalizedRun`: the render layer
+//! `RwLock` even inside `RunState`/`FinalizedRun`: the render layer
 //! (`Renderer::get_or_assign_citation_number`) lazily assigns a citation
 //! number the first time a reference is rendered, which is a monotonic,
 //! assign-once operation, not a read. This does not weaken the ordering
 //! contract this type adds — it only means "render before registration is
 //! complete" is a compile error, not that rendering can never touch interior
-//! state.
+//! state. `RwLock` (rather than `RefCell`) is required so that `FinalizedRun`
+//! is `Sync` and bibliography entries can render across threads (see
+//! `docs/specs/PARALLEL_BIBLIOGRAPHY_RENDERING.md`); lock poisoning is
+//! recovered from rather than propagated, since a panicking reader/writer
+//! does not invalidate the numbering data already in the map.
 
 use indexmap::IndexMap;
-use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
+use std::sync::RwLock;
 
 /// Mutable per-render-run state: citation numbering, cite-order tracking,
 /// and dynamic (cite-time) compound-group membership.
@@ -45,17 +49,20 @@ use std::collections::{HashMap, HashSet};
 /// `Clone` is provided for long-lived callers (e.g. the FFI session handle)
 /// that need to render a bibliography from a snapshot of the current state
 /// without pausing ongoing citation registration on the original `RunState`.
-#[derive(Debug, Clone)]
+/// Implemented by hand (rather than derived) because `RwLock<T>` is not
+/// `Clone` even when `T` is; the impl below clones the locked contents into
+/// fresh locks instead.
+#[derive(Debug)]
 pub struct RunState {
     /// Citation numbers assigned to references (for numeric styles).
     ///
-    /// Stays `RefCell`: the render layer lazily assigns numbers the first
+    /// Stays `RwLock`: the render layer lazily assigns numbers the first
     /// time a reference is rendered (see module docs).
-    pub(super) citation_numbers: RefCell<HashMap<String, usize>>,
+    pub(super) citation_numbers: RwLock<HashMap<String, usize>>,
     /// First note number in which each reference was cited (note styles only).
     ///
-    /// Stays `RefCell` for the same reason as `citation_numbers`.
-    pub(super) first_note_by_id: RefCell<HashMap<String, u32>>,
+    /// Stays `RwLock` for the same reason as `citation_numbers`.
+    pub(super) first_note_by_id: RwLock<HashMap<String, u32>>,
     /// IDs of items that were cited in a visible way.
     pub(super) cited_ids: HashSet<String>,
     /// Compound numeric groups: citation number → ordered ref IDs in the group.
@@ -77,11 +84,37 @@ pub struct RunState {
     pub(super) dynamic_compound_sets: IndexMap<String, Vec<String>>,
 }
 
+impl Clone for RunState {
+    /// Snapshot the current state, including the interior-mutable citation
+    /// numbers and first-note map, into a fresh, independently-lockable copy.
+    fn clone(&self) -> Self {
+        Self {
+            citation_numbers: RwLock::new(
+                self.citation_numbers
+                    .read()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner)
+                    .clone(),
+            ),
+            first_note_by_id: RwLock::new(
+                self.first_note_by_id
+                    .read()
+                    .unwrap_or_else(std::sync::PoisonError::into_inner)
+                    .clone(),
+            ),
+            cited_ids: self.cited_ids.clone(),
+            compound_groups: self.compound_groups.clone(),
+            dynamic_compound_set_by_ref: self.dynamic_compound_set_by_ref.clone(),
+            dynamic_compound_member_index: self.dynamic_compound_member_index.clone(),
+            dynamic_compound_sets: self.dynamic_compound_sets.clone(),
+        }
+    }
+}
+
 impl Default for RunState {
     fn default() -> Self {
         Self {
-            citation_numbers: RefCell::new(HashMap::new()),
-            first_note_by_id: RefCell::new(HashMap::new()),
+            citation_numbers: RwLock::new(HashMap::new()),
+            first_note_by_id: RwLock::new(HashMap::new()),
             cited_ids: HashSet::new(),
             compound_groups: IndexMap::new(),
             dynamic_compound_set_by_ref: HashMap::new(),

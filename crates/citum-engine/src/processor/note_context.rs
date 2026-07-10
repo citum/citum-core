@@ -145,7 +145,10 @@ impl Processor {
         // Build first-occurrence note number map: id → note_number of first cite.
         // Clear first so repeated calls (e.g. reprocessing after insertion/reordering)
         // don't accumulate stale entries from prior runs.
-        let mut first_note = run.first_note_by_id.borrow_mut();
+        let mut first_note = run
+            .first_note_by_id
+            .write()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         first_note.clear();
         for citation in &normalized {
             if let Some(note_number) = citation.note_number {

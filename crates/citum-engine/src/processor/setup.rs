@@ -224,7 +224,12 @@ impl Processor {
 
     /// Initialize citation numbers if the map is currently empty.
     fn initialize_numeric_numbers(&self, run: &mut RunState, ordered_ids: Vec<String>) {
-        if !run.citation_numbers.borrow().is_empty() {
+        if !run
+            .citation_numbers
+            .read()
+            .unwrap_or_else(std::sync::PoisonError::into_inner)
+            .is_empty()
+        {
             return;
         }
 
@@ -258,7 +263,10 @@ impl Processor {
         run: &mut RunState,
         ordered_ids: Vec<String>,
     ) {
-        let mut numbers = run.citation_numbers.borrow_mut();
+        let mut numbers = run
+            .citation_numbers
+            .write()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         if !numbers.is_empty() {
             return;
         }

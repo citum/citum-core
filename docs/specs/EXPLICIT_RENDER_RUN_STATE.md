@@ -77,12 +77,12 @@ pub struct RunState {
     dynamic_compound_set_by_ref: HashMap<String, String>,
     dynamic_compound_member_index: HashMap<String, usize>,
     dynamic_compound_sets: IndexMap<String, Vec<String>>,
-    // Kept RefCell internally: the render layer (`Renderer`) lazily assigns
+    // Kept RwLock internally: the render layer (`Renderer`) lazily assigns
     // citation numbers and first-note numbers *during* rendering (see
     // "Idempotency" below). The typestate boundary still enforces that
     // registration is complete before a `FinalizedRun` can exist.
-    citation_numbers: RefCell<HashMap<String, usize>>,
-    first_note_by_id: RefCell<HashMap<String, u32>>,
+    citation_numbers: RwLock<HashMap<String, usize>>,
+    first_note_by_id: RwLock<HashMap<String, u32>>,
 }
 
 /// A `RunState` that has completed the registration phase. Rendering
@@ -125,7 +125,7 @@ Render methods (`render_citation_content`, and everything under
 `processor/bibliography/`) take `(&self, run: &FinalizedRun)`. `Renderer::new`
 sources `citation_numbers: &run.0.citation_numbers` and
 `first_note_by_id: Some(&run.0.first_note_by_id)` — `Renderer`'s existing
-`&'a RefCell<...>` field types are unchanged, only their origin moves from
+`&'a RwLock<...>` field types are unchanged, only their origin moves from
 `Processor` to `RunState`.
 
 ### Idempotency, precisely stated
@@ -139,12 +139,14 @@ lazily assigns a citation number the first time a reference is rendered, if
 one is not already present. This assignment is monotonic and
 assign-once-per-id — rendering the same `FinalizedRun` twice, or rendering
 citations and then the bibliography from the same run, produces stable,
-consistent numbers. It is *not* safe to construct two `FinalizedRun`s
-concurrently over shared mutable numbering state; that is why
-`citation_numbers` stays behind a `RefCell` inside `RunState` rather than
-becoming a plain field read via `&FinalizedRun` — the compile-time contract
-this spec adds is "registration precedes rendering," not "rendering never
-touches interior state."
+consistent numbers. Concurrent renders against the *same* `FinalizedRun` (as
+`parallel` bibliography rendering does — see
+`docs/specs/PARALLEL_BIBLIOGRAPHY_RENDERING.md`) synchronize on this map via
+`RwLock` rather than racing; that is why `citation_numbers` stays behind
+interior mutability inside `RunState` rather than becoming a plain field read
+via `&FinalizedRun` — the compile-time contract this spec adds is
+"registration precedes rendering," not "rendering never touches interior
+state."
 
 ### FFI / WASM
 
@@ -251,3 +253,6 @@ call sites that don't need cross-call continuity.
 - 2026-07-09: Initial draft.
 - 2026-07-09: Implemented (phases a-d, see Implementation Notes for the
   phase-split deviation); Status → Active.
+- 2026-07-09: citation_numbers/first_note_by_id changed RefCell → RwLock for
+  the parallel-rendering follow-up (bean csl26-nitz); see
+  docs/specs/PARALLEL_BIBLIOGRAPHY_RENDERING.md.

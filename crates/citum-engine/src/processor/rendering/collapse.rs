@@ -22,7 +22,10 @@ impl Renderer<'_> {
         &self,
         chunks: Vec<(Vec<String>, String)>,
     ) -> Vec<(Vec<String>, String)> {
-        let citation_numbers = self.citation_numbers.borrow();
+        let citation_numbers = self
+            .citation_numbers
+            .read()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         let mut collapsed = Vec::new();
         let mut i = 0;
 
@@ -113,7 +116,10 @@ impl Renderer<'_> {
             return chunks;
         }
 
-        let citation_numbers = self.citation_numbers.borrow();
+        let citation_numbers = self
+            .citation_numbers
+            .read()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         let mut collapsed = Vec::new();
         let mut i = 0;
 
@@ -219,6 +225,7 @@ mod tests {
     use indexmap::IndexMap;
     use std::cell::RefCell;
     use std::collections::HashMap;
+    use std::sync::RwLock;
 
     #[allow(clippy::too_many_arguments, reason = "test helper")]
     fn make_renderer<'a>(
@@ -227,7 +234,7 @@ mod tests {
         loc: &'a Locale,
         cfg: Arc<Config>,
         hints: &'a HashMap<String, ProcHints>,
-        citation_numbers: &'a RefCell<HashMap<String, usize>>,
+        citation_numbers: &'a RwLock<HashMap<String, usize>>,
         compound_set_by_ref: &'a HashMap<String, String>,
         compound_member_index: &'a HashMap<String, usize>,
         compound_sets: &'a IndexMap<String, Vec<String>>,
@@ -265,7 +272,7 @@ mod tests {
         nums.insert("B".to_string(), 2);
         nums.insert("C".to_string(), 3);
         nums.insert("D".to_string(), 4);
-        let citation_numbers = RefCell::new(nums);
+        let citation_numbers = RwLock::new(nums);
         let empty_map_string = HashMap::new();
         let empty_map_usize = HashMap::new();
         let empty_index = IndexMap::new();

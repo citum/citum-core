@@ -4184,7 +4184,10 @@ fn test_compound_numeric_number_assignment() {
     // begin_run triggers number initialization from bibliography order.
     let run = processor.begin_run();
 
-    let numbers = run.citation_numbers.borrow();
+    let numbers = run
+        .citation_numbers
+        .read()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
     // ref-a and ref-b share the same set membership -> same citation number.
     assert_eq!(
         numbers.get("ref-a"),
@@ -5998,4 +6001,21 @@ fn test_disambiguation_givenname_primary_only_rendered() {
     let all = Processor::new(make_style_with_rule(GivennameRule::AllNames), make_bib());
     assert_eq!(cite(&all, "ref1"), "(A. Smith, C. Brown, 2020)");
     assert_eq!(cite(&all, "ref2"), "(B. Smith, C. Brown, 2020)");
+}
+
+/// Compile-time-only check: instantiating this with a type asserts `T: Send + Sync`.
+///
+/// No assertions to run — a failure here is a compile error, not a test failure.
+fn assert_send_sync<T: Send + Sync>() {}
+
+#[test]
+fn given_arc_config_and_rwlock_run_state_when_checked_then_processor_and_finalized_run_are_send_sync()
+ {
+    // `Processor` and `FinalizedRun` must be `Send + Sync` for bibliography entries to
+    // render across threads behind the `parallel` feature (rayon requires both bounds
+    // on data shared into worker closures). This held only once `Config`/
+    // `BibliographyConfig` sharing moved from `Rc` to `Arc` and `RunState`'s
+    // `citation_numbers`/`first_note_by_id` moved from `RefCell` to `RwLock`.
+    assert_send_sync::<Processor>();
+    assert_send_sync::<FinalizedRun>();
 }

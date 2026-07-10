@@ -108,7 +108,8 @@ impl Processor {
             let entry_number = run
                 .state()
                 .citation_numbers
-                .borrow()
+                .read()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
                 .get(&ref_id)
                 .copied()
                 .unwrap_or(index + 1);

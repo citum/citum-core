@@ -404,7 +404,7 @@ fn affix_content_normalizes_prefix_and_suffix_spacing() {
     let locale = Locale::default();
     let config = Config::default();
     let hints = HashMap::new();
-    let citation_numbers = RefCell::new(HashMap::new());
+    let citation_numbers = RwLock::new(HashMap::new());
     let compound_set_by_ref = HashMap::new();
     let compound_member_index = HashMap::new();
     let compound_sets = IndexMap::new();
@@ -603,7 +603,7 @@ fn grouping_helper_matches_citation_wide_preserve_behavior() {
             ..Default::default()
         },
     );
-    let citation_numbers = RefCell::new(HashMap::new());
+    let citation_numbers = RwLock::new(HashMap::new());
     let compound_set_by_ref = HashMap::new();
     let compound_member_index = HashMap::new();
     let compound_sets = IndexMap::new();
@@ -1038,7 +1038,7 @@ fn test_bibliography_type_specific_rendering() {
     // But we are specifying the interviewer component explicitly.
     let config = Config::default();
     let disambig = HashMap::new();
-    let series_map = RefCell::new(HashMap::new());
+    let series_map = RwLock::new(HashMap::new());
     let set_by_ref = HashMap::new();
     let member_index = HashMap::new();
     let sets = IndexMap::new();
