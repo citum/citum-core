@@ -489,6 +489,41 @@ fn test_process_citation() {
     assert_eq!(result, "(Kuhn, 1962)");
 }
 
+/// Citation sorting must retain unresolved items so rendering reports them.
+#[test]
+fn citation_sort_preserves_missing_reference_error() {
+    let mut style = make_style();
+    style.citation.as_mut().expect("citation spec").sort = Some(
+        citum_schema::grouping::GroupSortEntry::Explicit(citum_schema::grouping::GroupSort {
+            template: vec![citum_schema::grouping::GroupSortKey {
+                key: citum_schema::grouping::SortKey::Author,
+                ascending: true,
+                order: None,
+                sort_order: None,
+            }],
+        }),
+    );
+    let processor = Processor::new(style, make_bibliography());
+    let citation = Citation {
+        items: vec![
+            CitationItem {
+                id: "missing-reference".to_string(),
+                ..Default::default()
+            },
+            CitationItem {
+                id: "kuhn1962".to_string(),
+                ..Default::default()
+            },
+        ],
+        ..Default::default()
+    };
+
+    assert!(matches!(
+        processor.process_citation(&citation),
+        Err(ProcessorError::ReferenceNotFound(id)) if id == "missing-reference"
+    ));
+}
+
 /// Tests that note citations receive proper sequential numbering.
 ///
 /// Verifies that citations with missing note numbers are auto-assigned,

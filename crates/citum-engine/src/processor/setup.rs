@@ -541,25 +541,29 @@ impl Processor {
         spec: &citum_schema::CitationSpec,
     ) -> Vec<CitationItem> {
         if let Some(sort_spec) = &spec.sort {
-            let mut items_with_refs: Vec<(CitationItem, &Reference)> = items
+            let mut items_with_refs: Vec<(CitationItem, Option<&Reference>)> = items
                 .into_iter()
-                .filter_map(|item| {
-                    self.bibliography
-                        .get(&item.id)
-                        .map(|reference| (item, reference))
+                .map(|item| {
+                    let reference = self.bibliography.get(&item.id);
+                    (item, reference)
                 })
                 .collect();
 
             let resolved_sort = sort_spec.resolve();
             let sorter = crate::sorting::ReferenceSorter::new(&self.locale);
-            items_with_refs.sort_by(|left, right| {
-                for sort_key in &resolved_sort.template {
-                    let cmp = sorter.compare_by_key(left.1, right.1, sort_key);
-                    if cmp != std::cmp::Ordering::Equal {
-                        return cmp;
+            items_with_refs.sort_by(|left, right| match (left.1, right.1) {
+                (Some(left_reference), Some(right_reference)) => {
+                    for sort_key in &resolved_sort.template {
+                        let cmp = sorter.compare_by_key(left_reference, right_reference, sort_key);
+                        if cmp != std::cmp::Ordering::Equal {
+                            return cmp;
+                        }
                     }
+                    std::cmp::Ordering::Equal
                 }
-                std::cmp::Ordering::Equal
+                (Some(_), None) => std::cmp::Ordering::Less,
+                (None, Some(_)) => std::cmp::Ordering::Greater,
+                (None, None) => std::cmp::Ordering::Equal,
             });
 
             return items_with_refs
