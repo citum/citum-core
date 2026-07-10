@@ -266,7 +266,7 @@ fn test_contributor_values() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -308,7 +308,7 @@ fn test_spanish_role_label_uses_feminine_form_for_single_editor() {
     let config = make_config();
     let locale = make_spanish_gendered_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -349,7 +349,7 @@ fn test_spanish_role_label_uses_plural_feminine_form_for_matching_group() {
     let config = make_config();
     let locale = make_spanish_gendered_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -391,7 +391,7 @@ fn test_spanish_role_label_prefers_common_form_for_mixed_group() {
     let config = make_config();
     let locale = make_spanish_gendered_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -447,7 +447,7 @@ roles:
     )
     .expect("locale should parse");
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -489,7 +489,7 @@ fn test_french_role_label_uses_feminine_form_for_single_contributor() {
     let config = make_config();
     let locale = make_french_gendered_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -530,7 +530,7 @@ fn test_arabic_role_label_uses_feminine_form_for_single_contributor() {
     let config = make_config();
     let locale = make_arabic_gendered_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -571,7 +571,7 @@ fn test_french_role_label_falls_back_to_masculine_plural_for_mixed_group() {
     let config = make_config();
     let locale = make_french_gendered_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -613,7 +613,7 @@ fn test_arabic_role_label_falls_back_to_verbal_noun_for_mixed_group() {
     let config = make_config();
     let locale = make_arabic_gendered_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -655,7 +655,7 @@ fn test_arabic_role_label_falls_back_to_roles_common_when_gender_missing() {
     let config = make_config();
     let locale = make_arabic_gendered_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -717,7 +717,7 @@ fn test_collection_editor_role_label_derives_gender_from_reference_data() {
     let config = make_config();
     let locale = make_spanish_gendered_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -762,7 +762,7 @@ fn test_date_values() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -800,7 +800,7 @@ fn test_message_component_renders_accessed_date_argument() {
         .messages
         .insert("pattern.accessed-date".into(), "accessed {$date}".into());
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -853,7 +853,7 @@ fn test_message_component_renders_in_container_argument_with_formatting() {
         .messages
         .insert("pattern.in-container".into(), "in {$container}".into());
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -905,7 +905,7 @@ fn test_message_component_renders_grouped_container_argument() {
         .messages
         .insert("pattern.in-container".into(), "in {$container}".into());
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -984,7 +984,7 @@ fn test_message_component_reorders_locale_phrase_arguments() {
         "{$url} <<retrieved>>".into(),
     );
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -1068,7 +1068,7 @@ fn test_message_component_resolves_term_backed_messages() {
     let config = make_config();
     let locale = make_embedded_english_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -1108,7 +1108,7 @@ fn test_message_component_preserves_term_rendering_options() {
     config.strip_periods = Some(true);
     let locale = make_embedded_english_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -1153,7 +1153,7 @@ fn test_message_component_renders_embedded_container_author_group() {
         .messages
         .insert("pattern.in-container".into(), "in {$container}".into());
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -1240,7 +1240,7 @@ fn test_message_component_renders_legacy_container_author_group() {
         .messages
         .insert("pattern.in-container".into(), "in {$container}".into());
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -1306,7 +1306,7 @@ fn test_year_month_day_dates_inline_disambiguation_suffix_on_year() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -1353,7 +1353,7 @@ fn test_et_al() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -1417,7 +1417,7 @@ fn test_et_al_delimiter_never() {
 
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -1474,7 +1474,7 @@ fn test_role_substitute_uses_custom_fallback_roles_without_silent_drop() {
 
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -1527,7 +1527,7 @@ fn test_et_al_delimiter_always() {
 
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -1826,7 +1826,7 @@ fn test_template_list_suppression() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -1878,7 +1878,7 @@ fn test_et_al_use_last() {
 
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -1933,7 +1933,7 @@ fn test_et_al_use_last_overlap() {
 
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -1994,7 +1994,7 @@ fn test_et_al_use_last_multiple_first_names_delimiter() {
 
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -2053,7 +2053,7 @@ fn test_et_al_uses_configured_delimiter() {
 
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -2099,7 +2099,7 @@ fn test_title_hyperlink() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -2148,7 +2148,7 @@ fn test_title_hyperlink_url_fallback() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -2195,7 +2195,7 @@ fn test_title_values_smarten_leading_single_quotes() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -2237,7 +2237,7 @@ fn test_title_values_smarten_starting_apostrophe() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -2282,7 +2282,7 @@ fn test_title_values_smarten_french_apostrophes() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -2325,7 +2325,7 @@ fn test_title_values_smarten_double_quotes() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -2363,7 +2363,7 @@ fn test_title_values_flip_flop_outer_single_inner_double_quotes() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -2401,7 +2401,7 @@ fn test_title_values_flip_flop_outer_double_inner_single_quotes() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -2439,7 +2439,7 @@ fn test_title_values_preserve_ambiguous_double_quotes() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -2477,7 +2477,7 @@ fn test_title_values_render_djot_markup_as_preformatted() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -2516,7 +2516,7 @@ fn test_title_values_smarten_djot_text_leaves() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -2555,7 +2555,7 @@ fn test_title_values_smarten_djot_double_quotes() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Citation,
@@ -2594,7 +2594,7 @@ fn test_title_values_inline_link_suppresses_outer_title_link() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -2643,7 +2643,7 @@ fn test_variable_hyperlink() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -2687,7 +2687,7 @@ fn test_report_number_variable_uses_report_number_accessor() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -2740,7 +2740,7 @@ fn test_number_variable_excludes_report_number_accessor() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -2799,7 +2799,7 @@ locators:
     )
     .expect("custom locale should parse");
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -2865,7 +2865,7 @@ locators:
     )
     .expect("custom locale should parse");
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -2910,7 +2910,7 @@ fn test_template_number_gender_overrides_locator_label_resolution() {
     let config = make_config();
     let locale = make_gendered_locator_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -2980,7 +2980,7 @@ fn test_role_label_preset_applies_to_translator_component() {
     }
 
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -3031,7 +3031,7 @@ fn test_translator_substitute_uses_locale_aware_role_label() {
     });
 
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -3087,7 +3087,7 @@ fn test_editor_substitute_suppresses_verb_prefix_role_label() {
     });
 
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -3140,7 +3140,7 @@ fn test_editor_component_keeps_verb_prefix_role_label() {
     });
 
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -3181,7 +3181,7 @@ fn test_role_substitute_normalizes_primary_role_lookup_keys() {
 
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -3257,7 +3257,7 @@ fn test_role_specific_name_order_applies_in_substitute_path() {
     });
 
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -3295,7 +3295,7 @@ fn test_term_values() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -3329,7 +3329,7 @@ fn test_template_list_term_suppression() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -3372,7 +3372,7 @@ fn test_date_fallback() {
     let config = make_config();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -3429,7 +3429,7 @@ fn test_strip_periods_global_config() {
     let hints = ProcHints::default();
 
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -3474,7 +3474,7 @@ fn test_strip_periods_component_override() {
     let hints = ProcHints::default();
 
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -3523,7 +3523,7 @@ fn test_strip_periods_no_strip_by_default() {
     let hints = ProcHints::default();
 
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -3569,7 +3569,7 @@ fn test_should_strip_periods_precedence() {
     };
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -3602,7 +3602,7 @@ fn test_should_strip_periods_precedence() {
     // Defaults to false when both are None
     let config_none = Config::default();
     let options_none = RenderOptions {
-        config: Rc::new(config_none),
+        config: Arc::new(config_none),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -4114,7 +4114,7 @@ fn make_config_with_titles(titles: citum_schema::options::TitlesConfig) -> Confi
 fn title_value_with_config(title_str: &str, ref_type: &str, config: &Config) -> String {
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config.clone()),
+        config: Arc::new(config.clone()),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -4161,7 +4161,7 @@ fn structured_title_value_with_config_and_locale(
     form: Option<TitleForm>,
 ) -> String {
     let options = RenderOptions {
-        config: Rc::new(config.clone()),
+        config: Arc::new(config.clone()),
         bibliography_config: None,
         locale,
         context: RenderContext::Bibliography,
@@ -4328,7 +4328,7 @@ fn test_text_case_structured_title_sentence_apa() {
     });
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -4576,7 +4576,7 @@ fn test_text_case_structured_title_sentence_nlm() {
     });
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -4631,7 +4631,7 @@ fn test_text_case_non_english_falls_back_to_as_is() {
     });
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -4677,7 +4677,7 @@ fn test_text_case_template_level_override() {
     });
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -4728,7 +4728,7 @@ fn test_structured_title_form_short_returns_main_only() {
     let config = Config::default();
     let locale = make_locale();
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &locale,
         context: RenderContext::Bibliography,
@@ -4803,7 +4803,7 @@ fn given_abbreviation_map_when_title_matches_then_abbreviation_returned() {
 
     let abbrev_map_obj = crate::api::AbbreviationMap(abbrev_map);
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &make_locale(),
         context: RenderContext::Bibliography,
@@ -4850,7 +4850,7 @@ fn given_abbreviation_map_when_title_not_in_map_then_original_returned() {
 
     let abbrev_map_obj = crate::api::AbbreviationMap(abbrev_map);
     let options = RenderOptions {
-        config: Rc::new(config),
+        config: Arc::new(config),
         bibliography_config: None,
         locale: &make_locale(),
         context: RenderContext::Bibliography,

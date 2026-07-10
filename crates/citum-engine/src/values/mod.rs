@@ -56,7 +56,7 @@ use citum_schema::locale::Locale;
 use citum_schema::options::{Config, bibliography::BibliographyConfig};
 use citum_schema::reference::types::Title;
 use citum_schema::template::{TemplateComponent, TitleType};
-use std::rc::Rc;
+use std::sync::Arc;
 
 pub use contributor::format_contributors_short;
 pub use date::int_to_letter;
@@ -633,9 +633,9 @@ pub enum RenderContext {
 #[derive(Clone)]
 pub struct RenderOptions<'a> {
     /// Effective configuration after style and default resolution.
-    pub config: Rc<Config>,
+    pub config: Arc<Config>,
     /// Effective bibliography-only configuration when rendering bibliography behavior.
-    pub bibliography_config: Option<Rc<BibliographyConfig>>,
+    pub bibliography_config: Option<Arc<BibliographyConfig>>,
     /// Locale used for term lookup and locale-sensitive formatting.
     pub locale: &'a Locale,
     /// Whether the current render target is a citation or bibliography.

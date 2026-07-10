@@ -6,7 +6,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use super::format::QuoteMarks;
 use citum_schema::options::{Config, bibliography::BibliographyConfig, titles::TitleRendering};
 use citum_schema::template::{Rendering, TemplateComponent, TitleType};
-use std::rc::Rc;
+use std::sync::Arc;
 
 /// A processed template component with its rendered value.
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -26,9 +26,9 @@ pub struct ProcTemplateComponent {
     /// Reference type for type-specific overrides.
     pub ref_type: Option<String>,
     /// Optional global configuration.
-    pub config: Option<Rc<Config>>,
+    pub config: Option<Arc<Config>>,
     /// Optional bibliography-only configuration.
-    pub bibliography_config: Option<Rc<BibliographyConfig>>,
+    pub bibliography_config: Option<Arc<BibliographyConfig>>,
     /// Effective language for this rendered component.
     pub item_language: Option<String>,
     /// Locale-resolved quote mark characters, threaded from the active [`Locale`]'s

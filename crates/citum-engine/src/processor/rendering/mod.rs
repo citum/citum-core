@@ -21,7 +21,7 @@ use indexmap::IndexMap;
 use std::borrow::Cow;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
-use std::rc::Rc;
+use std::sync::Arc;
 
 /// The renderer for citation and bibliography templates.
 ///
@@ -35,9 +35,9 @@ pub struct Renderer<'a> {
     /// The locale used for terms and formatting.
     pub locale: &'a Locale,
     /// The active configuration options.
-    pub config: Rc<Config>,
+    pub config: Arc<Config>,
     /// The active bibliography-only configuration.
-    pub bibliography_config: Option<Rc<BibliographyConfig>>,
+    pub bibliography_config: Option<Arc<BibliographyConfig>>,
     /// Pre-calculated hints for optimization.
     pub hints: &'a HashMap<String, ProcHints>,
     /// Shared state for citation numbers (used in numeric styles).
@@ -182,9 +182,9 @@ pub struct RendererResources<'a> {
     /// The locale used for terms and formatting.
     pub locale: &'a Locale,
     /// The active configuration options.
-    pub config: Rc<Config>,
+    pub config: Arc<Config>,
     /// The active bibliography-only configuration.
-    pub bibliography_config: Option<Rc<BibliographyConfig>>,
+    pub bibliography_config: Option<Arc<BibliographyConfig>>,
     /// First note number per reference id (note styles; `None` for bibliography rendering).
     pub first_note_by_id: Option<&'a RefCell<HashMap<String, u32>>>,
 }

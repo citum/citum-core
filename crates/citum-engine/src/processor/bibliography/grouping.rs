@@ -24,7 +24,7 @@ use citum_schema::grouping::{BibliographyGroup, DisambiguationScope, GroupHeadin
 use citum_schema::options::{BibliographyPartitionHeading, BibliographySortPartitioning};
 use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
-use std::rc::Rc;
+use std::sync::Arc;
 
 impl Processor {
     /// Resolve a localized or literal group heading.
@@ -225,8 +225,8 @@ impl Processor {
                 style: &effective_style,
                 bibliography: &self.bibliography,
                 locale: &self.locale,
-                config: Rc::new(bibliography_config.into_owned()),
-                bibliography_config: Some(Rc::new(bibliography_options)),
+                config: Arc::new(bibliography_config.into_owned()),
+                bibliography_config: Some(Arc::new(bibliography_options)),
                 first_note_by_id: None,
             },
             hints,
@@ -850,10 +850,10 @@ impl Processor {
     }
 
     pub(super) fn extract_metadata(&self, reference: &Reference) -> ProcEntryMetadata {
-        let bibliography_config = Rc::new(self.get_bibliography_config().into_owned());
+        let bibliography_config = Arc::new(self.get_bibliography_config().into_owned());
         let options = RenderOptions {
             config: bibliography_config.clone(),
-            bibliography_config: Some(Rc::new(self.get_bibliography_options().into_owned())),
+            bibliography_config: Some(Arc::new(self.get_bibliography_options().into_owned())),
             locale: &self.locale,
             context: RenderContext::Bibliography,
             mode: citum_schema::citation::CitationMode::NonIntegral,
