@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Citum Docs</title>
     <meta name="description" content="Documentation for Citum: a Rust citation engine and YAML style system for structured bibliographies, multilingual terms, reusable style families, and verifiable output." />
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="assets/citum-theme.css" />
 </head>
 <body>
@@ -63,6 +62,13 @@
                     <a class="citum-button-primary" href="guides/style-authoring/start.html">Write a style</a>
                     <a class="citum-button-secondary" href="developer.html">Integrate Citum</a>
                 </div>
+                <div class="install-block" style="margin-top: 1.75rem;">
+                    <code>curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | sh</code>
+                </div>
+                <p class="install-block-note">
+                    Installs the <code>citum</code> CLI to <code>~/.local/bin</code> (SHA-256 verified).
+                    More options &mdash; components, Cargo, WASM &mdash; in <a href="developer.html#install">Integrate</a>.
+                </p>
             </div>
             <aside class="workshop-block">
                 <div class="workshop-label">Djot input → rendered output</div>

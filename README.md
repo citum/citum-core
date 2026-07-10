@@ -4,6 +4,24 @@ Citum is a citation engine with a richer reference data model and style language
 
 > **Researchers and style authors:** see [citum.org](https://citum.org) and [docs.citum.org](https://docs.citum.org) instead of this document.
 
+## Install
+
+Prebuilt binaries (Linux, macOS arm64, Windows via Git Bash):
+
+```bash
+curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | sh
+```
+
+The installer verifies SHA-256 checksums and installs to `~/.local/bin`. Select components with `CITUM_COMPONENTS` (`citum`, `citum-server`, `citum-migrate`, or `all`):
+
+```bash
+curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | CITUM_COMPONENTS=all sh
+```
+
+From source: `cargo install citum --locked` (also: `citum-server`, `citum-migrate`).
+
+JavaScript/TypeScript (WASM): `npx jsr add @citum/engine`
+
 ## Why Citum
 
 - **Richer reference and style model** — expressive reference types, dates, and relationships beyond what CSL 1.0 can represent; see [capabilities](https://docs.citum.org/examples.html)

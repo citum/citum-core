@@ -5,12 +5,12 @@
 
 :root {
   /* Colors */
-  --citum-citation-color: var(--citum-blue-dark, oklch(0.47 0.12 238));
-  --citum-citation-hover-bg: var(--citum-blue-soft, oklch(0.94 0.025 238));
+  --citum-citation-color: var(--citum-blue-dark, #1B3266);
+  --citum-citation-hover-bg: var(--citum-blue-soft, #F0F0EC);
   --citum-highlight-bg: oklch(0.94 0.07 86);
   --citum-highlight-border: var(--citum-warning, oklch(0.66 0.13 74));
-  --citum-tooltip-bg: var(--citum-ink-strong, oklch(0.19 0.025 255));
-  --citum-tooltip-color: oklch(0.985 0.008 238);
+  --citum-tooltip-bg: var(--citum-ink-strong, #131312);
+  --citum-tooltip-color: #FBFBF9;
   
   /* Sidebar */
   --citum-sidebar-width: 300px;
@@ -35,7 +35,7 @@
   transition: all var(--citum-transition-speed) ease;
   padding: 0 4px;
   margin: 0 -2px;
-  border-radius: 4px;
+  border-radius: 2px;
   font-weight: 500;
 }
 
@@ -47,7 +47,7 @@
 .citum-citation.is-highlighted {
   background-color: var(--citum-highlight-bg);
   box-shadow: 0 0 0 2px var(--citum-highlight-bg);
-  color: var(--citum-ink-strong, oklch(0.19 0.025 255));
+  color: var(--citum-ink-strong, #131312);
 }
 
 /* Bibliography */
@@ -97,8 +97,8 @@
 }
 
 .demo-reproduce pre {
-  background: var(--citum-paper-deep, #f5f2eb);
-  border-radius: 4px;
+  background: var(--citum-paper-deep, #F0F0EC);
+  border-radius: 2px;
   padding: 0.75rem 1rem;
   font-size: 0.85rem;
   overflow-x: auto;
@@ -108,12 +108,12 @@
   margin-bottom: var(--citum-entry-spacing);
   padding: 0.5rem 1rem;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: 2px;
   transition: all var(--citum-transition-speed) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .citum-entry:hover {
-  background-color: var(--citum-surface, oklch(0.995 0.006 86));
+  background-color: var(--citum-surface, #FFFFFF);
 }
 
 .citum-entry:target,
@@ -142,8 +142,8 @@
   max-height: calc(100vh - 4rem);
   overflow-y: auto;
   padding: 0 1.5rem 1rem 2rem;
-  border: 1px solid var(--citum-border, oklch(0.88 0.024 238));
-  border-radius: 12px;
+  border: 1px solid var(--citum-border, #E3E3DE);
+  border-radius: 2px;
   scrollbar-width: thin;
   scrollbar-color: #ddd transparent;
 }
@@ -163,7 +163,7 @@
   background: var(--citum-tooltip-bg);
   color: var(--citum-tooltip-color);
   padding: 0.75rem;
-  border-radius: 4px;
+  border-radius: 2px;
   font-size: 0.875rem;
   max-width: 250px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.15);

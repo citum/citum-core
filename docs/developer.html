@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Developer | Citum Docs</title>
     <meta name="description" content="Integrate Citum into your application via the Rust library, CLI, JSR (Deno / Node / browser), WASM, C FFI, or JSON-RPC server." />
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="assets/citum-theme.css" />
 </head>
 <body>
@@ -59,6 +58,24 @@
                 Pick the one that fits your environment &mdash; or start from one of the recipes below.
             </p>
         </header>
+
+        <section class="doc-section" id="install">
+            <div class="doc-section-header">
+                <h2>Install</h2>
+                <p>Prebuilt binaries for Linux, macOS (arm64), and Windows (via Git Bash). The installer verifies SHA-256 checksums and installs to <code>~/.local/bin</code>.</p>
+            </div>
+            <div class="workshop-block">
+                <div class="workshop-label">Install (prebuilt binary)</div>
+                <pre><code>curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | sh</code></pre>
+            </div>
+            <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
+                Select components with <code>CITUM_COMPONENTS</code> (<code>citum</code>, <code>citum-server</code>,
+                <code>citum-migrate</code>, or <code>all</code>). From source:
+                <code>cargo install citum --locked</code> (also: <code>citum-server</code>, <code>citum-migrate</code>).
+                JavaScript/TypeScript (WASM): <code>npx jsr add @citum/engine</code>.
+                See the <a href="#cli">CLI section</a> for component examples and common commands.
+            </p>
+        </section>
 
         <section class="doc-section">
             <div class="doc-section-header">

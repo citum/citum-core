@@ -107,27 +107,24 @@ const TEMPLATE = `<!-- PAGE_ID: demo -->
   <title>Citum | Demo</title>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
-  <link
-      href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap"
-      rel="stylesheet" />
   <script>
       tailwind.config = {
           darkMode: "class",
           theme: {
               extend: {
                   colors: {
-                      "primary": "#2a94d6",
-                      "background-light": "#fdfbf7",
-                      "accent-cream": "#f5f2eb",
+                      "primary": "#23407F",
+                      "background-light": "#FBFBF9",
+                      "accent-cream": "#F0F0EC",
                   },
                   fontFamily: {
-                      "display": ["Libre Franklin", "sans-serif"],
-                      "mono": ["JetBrains Mono", "monospace"]
+                      "display": ["Archivo", "sans-serif"],
+                      "mono": ["ui-monospace", "JetBrains Mono", "Cascadia Code", "monospace"]
                   },
                   borderRadius: {
-                      "DEFAULT": "0.25rem",
-                      "lg": "0.5rem",
-                      "xl": "0.75rem",
+                      "DEFAULT": "2px",
+                      "lg": "2px",
+                      "xl": "2px",
                       "full": "9999px"
                   },
               },
@@ -136,18 +133,18 @@ const TEMPLATE = `<!-- PAGE_ID: demo -->
   </script>
   <style type="text/tailwindcss">
     .glass-nav {
-        background: rgba(253, 251, 247, 0.85);
+        background: rgba(251, 251, 249, 0.93);
         backdrop-filter: blur(12px);
-        border-bottom: 1px solid rgba(42, 148, 214, 0.1);
+        border-bottom: 1px solid #E3E3DE;
     }
     body {
-      font-family: 'Libre Franklin', sans-serif;
+      font-family: 'Archivo', system-ui, sans-serif;
       line-height: 1.6;
       color: var(--citum-ink);
       background: var(--citum-paper);
     }
     .font-mono {
-        font-family: 'JetBrains Mono', monospace;
+        font-family: ui-monospace, 'JetBrains Mono', 'Cascadia Code', monospace;
     }
     .container-demo {
       max-width: 1000px;
@@ -167,7 +164,7 @@ const TEMPLATE = `<!-- PAGE_ID: demo -->
       text-decoration: none;
       font-size: 0.9rem;
       padding: 0.4rem 0.8rem;
-      border-radius: 4px;
+      border-radius: 2px;
       background: var(--citum-blue-soft);
       transition: all 0.2s;
     }
@@ -178,7 +175,7 @@ const TEMPLATE = `<!-- PAGE_ID: demo -->
     .controls {
       background: var(--citum-paper-deep);
       padding: 1rem;
-      border-radius: 8px;
+      border-radius: 2px;
       margin-bottom: 1.5rem;
       display: flex;
       gap: 1rem;
@@ -188,14 +185,14 @@ const TEMPLATE = `<!-- PAGE_ID: demo -->
       transition: all 0.3s ease;
     }
     h1 { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
-    .subtitle { color: #666; font-size: 1.1rem; }
+    .subtitle { color: #5F5F5A; font-size: 1.1rem; }
 
     /* Bibliography section heading — larger than body, scoped to demo page */
     #Bibliography > h1 {
       font-size: 1.4rem;
       font-weight: 600;
       letter-spacing: -0.01em;
-      color: var(--citum-ink-strong, #1a1a2e);
+      color: var(--citum-ink-strong, #131312);
       margin-bottom: 1rem;
     }
 
@@ -204,27 +201,27 @@ const TEMPLATE = `<!-- PAGE_ID: demo -->
       padding: 0.5rem 1rem;
       border: 1px solid var(--citum-border);
       background: var(--citum-surface);
-      border-radius: 4px;
+      border-radius: 2px;
       cursor: pointer;
     }
     .btn.active {
       background: var(--citum-blue);
-      color: oklch(0.985 0.008 238);
+      color: #FBFBF9;
       border-color: var(--citum-blue);
     }
 
     /* Demo notice */
     .demo-notice {
-      background: var(--citum-blue-soft, #eef6fc);
-      border-left: 3px solid var(--citum-blue, #2a94d6);
-      border-radius: 4px;
+      background: var(--citum-blue-soft, #F0F0EC);
+      border-left: 3px solid var(--citum-blue, #23407F);
+      border-radius: 2px;
       padding: 0.75rem 1rem;
       font-size: 0.9rem;
-      color: var(--citum-muted, #555);
+      color: var(--citum-muted, #5F5F5A);
       margin-bottom: 2rem;
     }
     .demo-notice strong {
-      color: var(--citum-ink, #222);
+      color: var(--citum-ink, #131312);
     }
     .feature-tags {
       margin-top: 0.5rem;
@@ -234,11 +231,11 @@ const TEMPLATE = `<!-- PAGE_ID: demo -->
     }
     .feature-tag {
       background: white;
-      border: 1px solid var(--citum-border, #ddd);
-      border-radius: 12px;
+      border: 1px solid var(--citum-border, #E3E3DE);
+      border-radius: 2px;
       padding: 0.15rem 0.6rem;
       font-size: 0.8rem;
-      color: var(--citum-muted, #555);
+      color: var(--citum-muted, #5F5F5A);
     }
   </style>
   <link rel="stylesheet" href="assets/citum-theme.css">

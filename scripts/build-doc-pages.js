@@ -65,7 +65,6 @@ const TEMPLATE = `<!-- PAGE_ID: docs -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{TITLE}} | Citum Docs</title>
     <meta name="description" content="{{DESCRIPTION}}" />
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="{{ROOT}}assets/citum-theme.css" />
 </head>
 <body>

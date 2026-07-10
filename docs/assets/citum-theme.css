@@ -1,4 +1,64 @@
 /* ------------------------------------------------------------------ */
+/* Webfonts (self-hosted)                                               */
+/* ------------------------------------------------------------------ */
+
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url("fonts/Archivo-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Archivo";
+  font-style: normal;
+  font-weight: 100 900;
+  font-stretch: 62% 125%;
+  font-display: swap;
+  src: url("fonts/Archivo-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("fonts/Newsreader-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("fonts/Newsreader-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: italic;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("fonts/Newsreader-Italic-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  font-style: italic;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("fonts/Newsreader-Italic-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ------------------------------------------------------------------ */
 /* Utilities                                                            */
 /* ------------------------------------------------------------------ */
 
@@ -9,31 +69,31 @@
 /* ------------------------------------------------------------------ */
 
 :root {
-  --citum-blue: oklch(0.64 0.13 238);
-  --citum-blue-dark: oklch(0.47 0.12 238);
-  --citum-blue-soft: oklch(0.94 0.025 238);
-  --citum-paper: oklch(0.985 0.012 86);
-  --citum-paper-deep: oklch(0.955 0.018 86);
-  --citum-surface: oklch(0.995 0.006 86);
-  --citum-surface-cool: oklch(0.965 0.013 247);
-  --citum-surface-dark: oklch(0.18 0.02 255);
-  --citum-ink: oklch(0.29 0.025 255);
-  --citum-ink-strong: oklch(0.19 0.025 255);
-  --citum-muted: oklch(0.47 0.025 255);
-  --citum-faint: oklch(0.64 0.018 255);
-  --citum-border: oklch(0.88 0.024 238);
-  --citum-border-strong: oklch(0.79 0.05 238);
+  --citum-blue: #23407F;
+  --citum-blue-dark: #1B3266;
+  --citum-blue-soft: #F0F0EC;
+  --citum-paper: #FBFBF9;
+  --citum-paper-deep: #F0F0EC;
+  --citum-surface: #FFFFFF;
+  --citum-surface-cool: #F0F0EC;
+  --citum-surface-dark: #131312;
+  --citum-ink: #131312;
+  --citum-ink-strong: #131312;
+  --citum-muted: #5F5F5A;
+  --citum-faint: #8A8A84;
+  --citum-border: #E3E3DE;
+  --citum-border-strong: #CFCFC8;
   --citum-success: oklch(0.55 0.12 158);
   --citum-warning: oklch(0.66 0.13 74);
   --citum-danger: oklch(0.54 0.15 28);
-  --citum-shadow: 0 2px 12px oklch(0.21 0.025 255 / 0.06);
-  --citum-shadow-lift: 0 16px 36px oklch(0.21 0.025 255 / 0.08);
-  --citum-radius-sm: 8px;
-  --citum-radius-md: 12px;
-  --citum-radius-lg: 18px;
-  --citum-font-serif: "Newsreader", serif;
-  --citum-font-sans: "Libre Franklin", sans-serif;
-  --citum-font-mono: "JetBrains Mono", monospace;
+  --citum-shadow: 0 1px 2px rgba(19, 19, 18, 0.04);
+  --citum-shadow-lift: 0 2px 8px rgba(19, 19, 18, 0.07);
+  --citum-radius-sm: 2px;
+  --citum-radius-md: 2px;
+  --citum-radius-lg: 2px;
+  --citum-font-serif: "Newsreader", 'Iowan Old Style', Georgia, serif;
+  --citum-font-sans: "Archivo", system-ui, sans-serif;
+  --citum-font-mono: ui-monospace, 'JetBrains Mono', 'Cascadia Code', monospace;
 }
 
 /* ------------------------------------------------------------------ */
@@ -51,9 +111,7 @@ html {
 }
 
 body {
-  background:
-    radial-gradient(circle at 14% -10%, oklch(0.93 0.04 238 / 0.72), transparent 30rem),
-    linear-gradient(180deg, var(--citum-paper) 0%, oklch(0.975 0.011 86) 52%, var(--citum-paper-deep) 100%);
+  background: var(--citum-paper);
   color: var(--citum-ink);
   font-family: var(--citum-font-sans);
   -webkit-font-smoothing: antialiased;
@@ -78,7 +136,8 @@ a {
 /* ------------------------------------------------------------------ */
 
 .site-nav {
-  background: oklch(0.985 0.012 86 / 0.9);
+  background: rgba(251, 251, 249, 0.93);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--citum-border);
   inset-inline: 0;
@@ -108,9 +167,9 @@ a {
 
 .site-brand-mark {
   align-items: center;
-  background: var(--citum-blue);
+  background: var(--citum-ink);
   border-radius: var(--citum-radius-sm);
-  color: oklch(0.985 0.008 238);
+  color: #FBFBF9;
   display: inline-flex;
   flex: 0 0 auto;
   font-family: var(--citum-font-mono);
@@ -143,10 +202,12 @@ a {
 }
 
 .site-nav-link {
-  border-radius: 999px;
+  border-radius: var(--citum-radius-sm);
   color: var(--citum-muted);
+  font-family: var(--citum-font-sans);
   font-size: 0.9rem;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: 0.01em;
   padding: 0.5rem 0.8rem;
   text-decoration: none;
   transition: background-color 0.2s ease, color 0.2s ease;
@@ -162,10 +223,11 @@ a {
   align-items: center;
   background: var(--citum-blue);
   border-radius: var(--citum-radius-sm);
-  color: oklch(0.985 0.008 238);
+  color: #FBFBF9;
   display: inline-flex;
   font-size: 0.9rem;
-  font-weight: 800;
+  font-weight: 700;
+  letter-spacing: 0.01em;
   gap: 0.45rem;
   margin-left: 0.25rem;
   padding: 0.55rem 0.9rem;
@@ -197,7 +259,9 @@ a {
 }
 
 .mobile-nav {
-  background: oklch(0.985 0.012 86 / 0.98);
+  background: rgba(251, 251, 249, 0.98);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   border-top: 1px solid var(--citum-border);
   display: flex;
   flex-direction: column;
@@ -210,7 +274,9 @@ a {
 /* ------------------------------------------------------------------ */
 
 .site-footer {
-  background: var(--citum-surface);
+  background: rgba(251, 251, 249, 0.93);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   border-top: 1px solid var(--citum-border);
   padding: 3rem 0;
 }
@@ -229,9 +295,11 @@ a {
   color: var(--citum-muted);
   display: flex;
   flex-wrap: wrap;
+  font-family: var(--citum-font-sans);
   font-size: 0.9rem;
-  font-weight: 700;
+  font-weight: 600;
   gap: 1.5rem;
+  letter-spacing: 0.01em;
 }
 
 .site-footer-links a {
@@ -467,7 +535,7 @@ a {
 
 .workshop-block {
   background: var(--citum-surface-cool);
-  border: 1px solid oklch(0.86 0.018 247);
+  border: 1px solid var(--citum-border);
   border-radius: var(--citum-radius-sm);
   color: var(--citum-ink);
   font-family: var(--citum-font-mono);
@@ -513,7 +581,7 @@ a {
 }
 
 .code-dark pre {
-  color: oklch(0.82 0.018 247);
+  color: #E3E3DE;
   font-family: var(--citum-font-mono);
   font-size: 0.85rem;
   line-height: 1.6;
@@ -522,7 +590,7 @@ a {
 }
 
 .code-dark-label {
-  color: oklch(0.55 0.018 247);
+  color: #8A8A84;
   font-family: var(--citum-font-sans);
   font-size: 0.72rem;
   font-weight: 700;
@@ -608,7 +676,7 @@ a {
 }
 
 .example-io-panel.output {
-  border-color: oklch(0.82 0.06 158);
+  border-color: #A9C6B5;
 }
 
 .example-intro-note {
@@ -712,11 +780,11 @@ a {
 }
 
 .example-note-box-accent {
-  border-color: oklch(0.72 0.11 278);
+  border-color: var(--citum-blue);
 }
 
 .example-note-box-info {
-  border-color: oklch(0.76 0.1 238);
+  border-color: #A9B7D4;
 }
 
 .example-scroll-panel {
@@ -727,7 +795,7 @@ a {
 .example-code-sample {
   background: var(--citum-surface-dark);
   border-radius: var(--citum-radius-sm);
-  color: oklch(0.82 0.018 247);
+  color: #E3E3DE;
   font-family: var(--citum-font-mono);
   font-size: 0.78rem;
   line-height: 1.55;
@@ -738,7 +806,7 @@ a {
 
 .example-badge {
   background: var(--citum-blue-soft);
-  border-radius: 999px;
+  border-radius: var(--citum-radius-sm);
   color: var(--citum-blue-dark);
   display: inline-flex;
   font-family: var(--citum-font-sans);
@@ -751,8 +819,8 @@ a {
 }
 
 .example-badge-warning {
-  background: oklch(0.95 0.045 74);
-  color: oklch(0.42 0.08 74);
+  background: #F6EFDC;
+  color: #7A5B21;
 }
 
 .example-badge-info {
@@ -815,7 +883,7 @@ a {
 
 .example-inline-code {
   background: var(--citum-blue-soft);
-  border-radius: 0.25rem;
+  border-radius: 2px;
   color: var(--citum-ink-strong);
   font-family: var(--citum-font-mono);
   font-size: 0.82em;
@@ -864,8 +932,8 @@ a {
 }
 
 .callout.warning {
-  background: oklch(0.96 0.04 74);
-  border-color: oklch(0.82 0.08 74);
+  background: #F8F1DF;
+  border-color: #DCC287;
 }
 
 /* ------------------------------------------------------------------ */
@@ -876,8 +944,8 @@ a {
   align-items: center;
   background: var(--citum-blue);
   border-radius: var(--citum-radius-sm);
-  box-shadow: 0 4px 14px oklch(0.64 0.13 238 / 0.26);
-  color: oklch(0.985 0.008 238);
+  box-shadow: 0 1px 2px rgba(35, 64, 127, 0.2);
+  color: #FBFBF9;
   display: inline-flex;
   font-size: 0.94rem;
   font-weight: 700;
@@ -888,7 +956,8 @@ a {
 }
 
 .citum-button-primary:hover {
-  box-shadow: 0 8px 22px oklch(0.64 0.13 238 / 0.32);
+  background: var(--citum-blue-dark);
+  box-shadow: 0 2px 6px rgba(35, 64, 127, 0.25);
   transform: translateY(-1px);
 }
 
@@ -919,7 +988,7 @@ a {
 .citum-kicker {
   background: var(--citum-blue-soft);
   border: 1px solid var(--citum-border-strong);
-  border-radius: 999px;
+  border-radius: var(--citum-radius-sm);
   color: var(--citum-blue-dark);
   display: inline-block;
   font-size: 0.78rem;
@@ -979,7 +1048,7 @@ a {
 }
 
 .install-block code {
-  color: oklch(0.72 0.12 158);
+  color: #8FC7A6;
   flex: 1;
   font-family: var(--citum-font-mono);
   font-size: 0.88rem;
