@@ -12,6 +12,20 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 mod compound;
 mod grouping;
 
+#[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    clippy::todo,
+    clippy::unimplemented,
+    clippy::unreachable,
+    clippy::get_unwrap,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
+mod tests;
+
 use super::matching::Matcher;
 use super::rendering::{CompoundRenderData, Renderer, RendererResources};
 use super::run_state::FinalizedRun;
@@ -46,6 +60,97 @@ pub(crate) struct DocumentBibliography {
     pub(crate) content: String,
     /// Flat per-entry data, one entry per cited reference.
     pub(crate) entries: Vec<crate::render::ProcEntry>,
+}
+
+/// Bibliography entries render in parallel (behind the `parallel` feature,
+/// on by default) once a bibliography reaches this many entries; below the
+/// threshold, thread-pool dispatch overhead isn't worth paying and entries
+/// render sequentially instead. The value is a conservative starting
+/// estimate, not yet bench-tuned (`cargo bench --bench rendering` runs on a
+/// loaded desktop were inconclusive); see
+/// `docs/specs/PARALLEL_BIBLIOGRAPHY_RENDERING.md` for the rationale.
+#[cfg(feature = "parallel")]
+pub(crate) const PARALLEL_MIN_ENTRIES: usize = 32;
+
+/// Resolve `(reference, entry_number)` pairs for `sorted_refs`, in order.
+///
+/// Reads each reference's already-assigned citation number from `run` when
+/// present — numeric styles pre-assign these at `begin_run`
+/// (`initialize_numeric_bibliography_numbers`) — and falls back to its
+/// 1-based position in `sorted_refs` otherwise. This is a sequential,
+/// read-only pass over `run`'s shared `citation_numbers` map, done up front
+/// so the render step that follows (parallel or not) is free of further
+/// lock contention.
+fn number_sorted_refs<'a>(
+    sorted_refs: impl Iterator<Item = &'a Reference>,
+    run: &FinalizedRun,
+) -> Vec<(&'a Reference, usize)> {
+    sorted_refs
+        .enumerate()
+        .map(|(index, reference)| {
+            let ref_id = reference.id().unwrap_or_default().to_string();
+            let entry_number = run
+                .state()
+                .citation_numbers
+                .read()
+                .unwrap_or_else(std::sync::PoisonError::into_inner)
+                .get(&ref_id)
+                .copied()
+                .unwrap_or(index + 1);
+            (reference, entry_number)
+        })
+        .collect()
+}
+
+/// Render each numbered reference through `process_fn`, preserving input
+/// order.
+///
+/// Sequential fallback used when the `parallel` feature is disabled, or the
+/// bibliography is below [`PARALLEL_MIN_ENTRIES`] (see [`render_entries`]).
+fn render_entries_sequential<'a>(
+    numbered_refs: &[(&'a Reference, usize)],
+    process_fn: &impl Fn(&Reference, usize) -> Option<ProcTemplate>,
+) -> Vec<(&'a Reference, Option<ProcTemplate>)> {
+    numbered_refs
+        .iter()
+        .map(|&(reference, entry_number)| (reference, process_fn(reference, entry_number)))
+        .collect()
+}
+
+/// Render each numbered reference through `process_fn` across the rayon
+/// thread pool, preserving input order.
+///
+/// Reference order in the output matches `numbered_refs` exactly (`par_iter`
+/// over a slice is order-preserving under `collect`), so the caller's
+/// subsequent-author-substitution post-pass sees the same sequence it would
+/// under [`render_entries_sequential`].
+#[cfg(feature = "parallel")]
+fn render_entries_parallel<'a>(
+    numbered_refs: &[(&'a Reference, usize)],
+    process_fn: &(impl Fn(&Reference, usize) -> Option<ProcTemplate> + Sync),
+) -> Vec<(&'a Reference, Option<ProcTemplate>)> {
+    use rayon::prelude::*;
+    numbered_refs
+        .par_iter()
+        .map(|&(reference, entry_number)| (reference, process_fn(reference, entry_number)))
+        .collect()
+}
+
+/// Choose the sequential or parallel render path for `numbered_refs` and
+/// apply it.
+///
+/// Parallel rendering requires both the `parallel` feature and
+/// `numbered_refs.len() >= PARALLEL_MIN_ENTRIES`; otherwise this falls back
+/// to [`render_entries_sequential`].
+fn render_entries<'a>(
+    numbered_refs: &[(&'a Reference, usize)],
+    process_fn: &(impl Fn(&Reference, usize) -> Option<ProcTemplate> + Send + Sync),
+) -> Vec<(&'a Reference, Option<ProcTemplate>)> {
+    #[cfg(feature = "parallel")]
+    if numbered_refs.len() >= PARALLEL_MIN_ENTRIES {
+        return render_entries_parallel(numbered_refs, process_fn);
+    }
+    render_entries_sequential(numbered_refs, process_fn)
 }
 
 impl Processor {
@@ -87,53 +192,79 @@ impl Processor {
     ///
     /// This is the core iterator for bibliography rendering, handling the choice
     /// between entry-specific rendering and subsequent-author placeholders.
+    ///
+    /// Entry numbers are resolved sequentially first (a single pass over
+    /// `run`'s shared `citation_numbers` map), then entries render via
+    /// [`render_entries`] — sequentially, or across the rayon thread pool
+    /// once the bibliography is large enough (see [`PARALLEL_MIN_ENTRIES`]) —
+    /// and finally [`apply_substitution_post_pass`](Self::apply_substitution_post_pass)
+    /// walks the (order-preserved) results sequentially to apply
+    /// subsequent-author substitution, which depends on cite-order.
     fn process_sorted_refs<'a, I, F>(
         &self,
         sorted_refs: I,
-        process_fn: impl Fn(&Reference, usize) -> Option<ProcTemplate>,
+        process_fn: impl Fn(&Reference, usize) -> Option<ProcTemplate> + Send + Sync,
         run: &FinalizedRun,
     ) -> Vec<ProcEntry>
     where
         I: Iterator<Item = &'a Reference>,
         F: OutputFormat<Output = String>,
     {
-        let mut bibliography = Vec::new();
-        let mut previous_reference: Option<&Reference> = None;
-
         let bibliography_options = self.get_bibliography_options();
         let substitute = bibliography_options.subsequent_author_substitute.as_ref();
 
-        for (index, reference) in sorted_refs.enumerate() {
-            let ref_id = reference.id().unwrap_or_default().to_string();
-            let entry_number = run
-                .state()
-                .citation_numbers
-                .read()
-                .unwrap_or_else(std::sync::PoisonError::into_inner)
-                .get(&ref_id)
-                .copied()
-                .unwrap_or(index + 1);
+        let numbered_refs = number_sorted_refs(sorted_refs, run);
+        let rendered = render_entries(&numbered_refs, &process_fn);
 
-            if let Some(mut processed) = process_fn(reference, entry_number) {
-                if let Some(substitute_string) = substitute
-                    && let Some(previous) = previous_reference
-                    && self.contributors_match(previous, reference)
-                {
-                    self.with_bibliography_renderer(run, |renderer| {
-                        renderer.apply_author_substitution_with_format::<F>(
-                            &mut processed,
-                            substitute_string,
-                        );
-                    });
-                }
+        self.apply_substitution_post_pass::<F>(rendered, substitute, run)
+    }
 
-                bibliography.push(ProcEntry {
-                    id: ref_id,
-                    template: processed,
-                    metadata: self.extract_metadata(reference),
+    /// Apply subsequent-author substitution to already-rendered entries and
+    /// assemble [`ProcEntry`]s, in order.
+    ///
+    /// This is the sequential part of bibliography rendering: substitution
+    /// depends on the *previous successfully rendered* reference, so it
+    /// cannot itself run in parallel. `rendered` must already be in final
+    /// bibliography order (as produced by [`render_entries`], parallel or
+    /// not); entries where `process_fn` returned `None` are skipped
+    /// entirely and do not advance the "previous reference" used for
+    /// contributor matching.
+    fn apply_substitution_post_pass<F>(
+        &self,
+        rendered: Vec<(&Reference, Option<ProcTemplate>)>,
+        substitute: Option<&String>,
+        run: &FinalizedRun,
+    ) -> Vec<ProcEntry>
+    where
+        F: OutputFormat<Output = String>,
+    {
+        let mut bibliography = Vec::with_capacity(rendered.len());
+        let mut previous_reference: Option<&Reference> = None;
+
+        for (reference, processed) in rendered {
+            let Some(mut processed) = processed else {
+                continue;
+            };
+
+            if let Some(substitute_string) = substitute
+                && let Some(previous) = previous_reference
+                && self.contributors_match(previous, reference)
+            {
+                self.with_bibliography_renderer(run, |renderer| {
+                    renderer.apply_author_substitution_with_format::<F>(
+                        &mut processed,
+                        substitute_string,
+                    );
                 });
-                previous_reference = Some(reference);
             }
+
+            let ref_id = reference.id().unwrap_or_default().to_string();
+            bibliography.push(ProcEntry {
+                id: ref_id,
+                template: processed,
+                metadata: self.extract_metadata(reference),
+            });
+            previous_reference = Some(reference);
         }
 
         bibliography
