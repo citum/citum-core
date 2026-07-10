@@ -3,7 +3,7 @@
 `citum-engine` is the Rust citation and bibliography processor for Citum. Use
 it when your application already has, or can load, Citum styles, reference data,
 and citation occurrences, and needs formatted citations or bibliographies as
-plain text, HTML, Djot, LaTeX, or Typst.
+plain text, HTML, Djot, LaTeX, Typst, or CommonMark/Markdown.
 
 The engine is intentionally narrower than the full Citum application stack. It
 does not manage registries, fetch remote styles, or persist user data. Those
@@ -14,10 +14,10 @@ or application-specific resolver.
 
 ```toml
 [dependencies]
-citum-engine = "0.53"
+citum-engine = "0.73"
 
 # Optional, but recommended when loading bibliography files.
-citum-io = "0.53"
+citum-io = "0.73"
 ```
 
 Default features include `icu`, which enables ICU-backed collation and locale
@@ -27,6 +27,7 @@ support used by sorting and rendering. Optional features:
 |---|---|
 | `ffi` | Enables the C ABI module. |
 | `schema` | Enables JSON Schema generation support for API-facing types. |
+| `parallel` | Opts into Rayon bibliography rendering above the internal size threshold; profile before enabling. |
 
 ## Which API to Use
 
@@ -122,7 +123,7 @@ The document-level API expects:
 | Style | `StyleInput`; optionally a separate resolved `Style` | `format_document` resolves local path or inline YAML values from `request.style`. `format_document_with_style` uses its explicit `Style` argument, but the request still includes a `style` field. |
 | References | `RefsInput` | Local bibliography path, inline YAML, inline JSON, or legacy bare JSON map. |
 | Citations | `Vec<CitationOccurrence>` | Ordered as they appear in the document so note positions and repeated citations can be processed. |
-| Output format | `OutputFormatKind` | `plain`, `html`, `djot`, `latex`, or `typst`. |
+| Output format | `OutputFormatKind` | `plain`, `html`, `djot`, `latex`, `typst`, or `markdown`. |
 
 The result contains formatted citations, a formatted bibliography, per-entry
 bibliography metadata, and structured warnings. Missing references and
