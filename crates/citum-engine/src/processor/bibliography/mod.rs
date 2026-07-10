@@ -21,7 +21,7 @@ use crate::reference::Reference;
 use crate::render::format::OutputFormat;
 use crate::render::{ProcEntry, ProcTemplate};
 use std::collections::{HashMap, HashSet};
-use std::rc::Rc;
+use std::sync::Arc;
 
 /// Rendered bibliography block data for document integration.
 #[derive(Debug, Clone, Default)]
@@ -62,8 +62,8 @@ impl Processor {
                 style: &self.style,
                 bibliography: &self.bibliography,
                 locale: &self.locale,
-                config: Rc::new(bibliography_shared_config.into_owned()),
-                bibliography_config: Some(Rc::new(bibliography_config)),
+                config: Arc::new(bibliography_shared_config.into_owned()),
+                bibliography_config: Some(Arc::new(bibliography_config)),
                 first_note_by_id: None,
             },
             &self.hints,

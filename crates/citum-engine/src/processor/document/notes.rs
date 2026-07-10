@@ -20,7 +20,7 @@ use crate::processor::Processor;
 use crate::processor::rendering::{CompoundRenderData, Renderer, RendererResources};
 use crate::processor::run_state::RunState;
 use std::collections::HashMap;
-use std::rc::Rc;
+use std::sync::Arc;
 
 /// Destination for a rendered note fragment. Plain text passes it through
 /// unchanged; HTML routes it through the placeholder registry so already-
@@ -438,8 +438,8 @@ impl Processor {
                 style: &self.style,
                 bibliography: &self.bibliography,
                 locale: &self.locale,
-                config: Rc::new(self.get_config().clone()),
-                bibliography_config: Some(Rc::new(self.get_bibliography_options().into_owned())),
+                config: Arc::new(self.get_config().clone()),
+                bibliography_config: Some(Arc::new(self.get_bibliography_options().into_owned())),
                 first_note_by_id: Some(&run.first_note_by_id),
             },
             &self.hints,
