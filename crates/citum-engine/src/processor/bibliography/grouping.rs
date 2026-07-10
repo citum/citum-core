@@ -11,51 +11,21 @@ use crate::grouping::SelectorEvaluator;
 use crate::processor::FinalizedRun;
 use crate::processor::Processor;
 use crate::processor::disambiguation::Disambiguator;
-use crate::processor::rendering::{CompoundRenderData, Renderer, RendererResources};
 use crate::reference::{Bibliography, Reference};
+use crate::render::ProcEntry;
 use crate::render::format::{OutputFormat, ProcEntryMetadata};
-use crate::render::{ProcEntry, ProcTemplate};
 use crate::sorting::ReferenceSorter;
 use crate::values::{
     ProcHints, RenderContext, RenderOptions, format_contributors_short, resolve_multilingual_name,
     resolve_multilingual_string,
 };
 use citum_schema::grouping::{BibliographyGroup, DisambiguationScope, GroupHeading};
-use citum_schema::options::{
-    BibliographyPartitionHeading, BibliographySortPartitioning, Config,
-    bibliography::BibliographyConfig,
-};
+use citum_schema::options::{BibliographyPartitionHeading, BibliographySortPartitioning};
 use std::borrow::Cow;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
-#[cfg(feature = "parallel")]
-use super::PARALLEL_MIN_ENTRIES;
-
-/// Resources needed to build a per-entry `Renderer` for one bibliography
-/// group, bundled so the sequential/parallel render helpers stay within
-/// clippy's argument-count limit.
-///
-/// `config`/`bibliography_config` are `Arc`-wrapped so the parallel render
-/// path (see
-/// [`render_group_numbered_refs_parallel`](Processor::render_group_numbered_refs_parallel))
-/// can cheaply clone them into a fresh `Renderer` per task instead of
-/// sharing one `Renderer` across threads — `Renderer` holds a per-render
-/// scratch `RefCell` (`filtered_to_original_index`) that is intentionally
-/// not `Sync`.
-pub(super) struct GroupRenderContext<'a> {
-    /// The (possibly group-overridden) style used to render this group.
-    pub(super) style: &'a citum_schema::Style,
-    /// Pre-calculated hints for optimization, scoped to this group if the
-    /// caller supplied `local_hints`.
-    pub(super) hints: &'a HashMap<String, ProcHints>,
-    /// The effective shared configuration for bibliography rendering.
-    pub(super) config: Arc<Config>,
-    /// The effective bibliography-only configuration.
-    pub(super) bibliography_config: Arc<BibliographyConfig>,
-    /// The finalized run providing citation numbers and note-order state.
-    pub(super) run: &'a FinalizedRun,
-}
+use super::EntryRenderContext;
 
 impl Processor {
     /// Resolve a localized or literal group heading.
@@ -235,10 +205,10 @@ impl Processor {
     /// Render bibliography entries for a specific group.
     ///
     /// Entry numbers are resolved sequentially first, then entries render
-    /// via [`render_group_numbered_refs`](Self::render_group_numbered_refs)
-    /// — sequentially through one shared `Renderer`, or across the rayon
-    /// thread pool (one fresh `Renderer` per task; see the module docs on
-    /// [`GroupRenderContext`]) once the group is large enough — and finally
+    /// via [`render_numbered_refs`](Self::render_numbered_refs) —
+    /// sequentially through one shared `Renderer`, or across the rayon
+    /// thread pool (one fresh `Renderer` per task; see
+    /// [`EntryRenderContext`]) once the group is large enough — and finally
     /// [`apply_substitution_post_pass`](super::Processor::apply_substitution_post_pass)
     /// applies subsequent-author substitution sequentially over the
     /// (order-preserved) results.
@@ -255,121 +225,23 @@ impl Processor {
     {
         // Always process entries with format F so that group components (pre_formatted=true)
         // contain markup in the target format rather than PlainText (_..._).
-        let hints = local_hints.unwrap_or(&self.hints);
         let effective_style = self.effective_group_style(group);
-        let bibliography_config = self.get_bibliography_config();
-        let bibliography_options = self.get_bibliography_options().into_owned();
-        let substitute = bibliography_options.subsequent_author_substitute.clone();
-
-        let ctx = GroupRenderContext {
+        let ctx = EntryRenderContext {
             style: &effective_style,
-            hints,
-            config: Arc::new(bibliography_config.into_owned()),
-            bibliography_config: Arc::new(bibliography_options),
+            hints: local_hints.unwrap_or(&self.hints),
+            config: Arc::new(self.get_bibliography_config().into_owned()),
+            bibliography_config: Arc::new(self.get_bibliography_options().into_owned()),
             run,
         };
 
         let numbered_refs = super::number_sorted_refs(sorted_refs.into_iter(), run);
-        let rendered = self.render_group_numbered_refs::<F>(&numbered_refs, &ctx);
+        let rendered = self.render_numbered_refs::<F>(&numbered_refs, &ctx);
 
-        self.apply_substitution_post_pass::<F>(rendered, substitute.as_ref(), run)
-    }
-
-    /// Choose the sequential or parallel render path for a bibliography
-    /// group's numbered references and apply it.
-    ///
-    /// Parallel rendering requires both the `parallel` feature and
-    /// `numbered_refs.len() >= PARALLEL_MIN_ENTRIES`; otherwise this falls
-    /// back to the single-shared-`Renderer` sequential path.
-    fn render_group_numbered_refs<'a, F>(
-        &self,
-        numbered_refs: &[(&'a Reference, usize)],
-        ctx: &GroupRenderContext<'_>,
-    ) -> Vec<(&'a Reference, Option<ProcTemplate>)>
-    where
-        F: OutputFormat<Output = String>,
-    {
-        #[cfg(feature = "parallel")]
-        if numbered_refs.len() >= PARALLEL_MIN_ENTRIES {
-            return self.render_group_numbered_refs_parallel::<F>(numbered_refs, ctx);
-        }
-        self.render_group_numbered_refs_sequential::<F>(numbered_refs, ctx)
-    }
-
-    /// Render a bibliography group's numbered references through one shared
-    /// `Renderer`, preserving input order.
-    pub(super) fn render_group_numbered_refs_sequential<'a, F>(
-        &self,
-        numbered_refs: &[(&'a Reference, usize)],
-        ctx: &GroupRenderContext<'_>,
-    ) -> Vec<(&'a Reference, Option<ProcTemplate>)>
-    where
-        F: OutputFormat<Output = String>,
-    {
-        let renderer = self.group_renderer(ctx);
-        numbered_refs
-            .iter()
-            .map(|&(reference, entry_number)| {
-                (
-                    reference,
-                    renderer.process_bibliography_entry_with_format::<F>(reference, entry_number),
-                )
-            })
-            .collect()
-    }
-
-    /// Render a bibliography group's numbered references across the rayon
-    /// thread pool, preserving input order.
-    ///
-    /// Builds a fresh `Renderer` per task rather than sharing one across
-    /// threads: `Renderer::filtered_to_original_index` is a per-render
-    /// scratch `RefCell`, which is intentionally not `Sync` (see
-    /// `docs/specs/PARALLEL_BIBLIOGRAPHY_RENDERING.md`). The `Arc`-wrapped
-    /// config in `ctx` makes each `Renderer::new` call cheap.
-    #[cfg(feature = "parallel")]
-    pub(super) fn render_group_numbered_refs_parallel<'a, F>(
-        &self,
-        numbered_refs: &[(&'a Reference, usize)],
-        ctx: &GroupRenderContext<'_>,
-    ) -> Vec<(&'a Reference, Option<ProcTemplate>)>
-    where
-        F: OutputFormat<Output = String>,
-    {
-        use rayon::prelude::*;
-        numbered_refs
-            .par_iter()
-            .map(|&(reference, entry_number)| {
-                let renderer = self.group_renderer(ctx);
-                (
-                    reference,
-                    renderer.process_bibliography_entry_with_format::<F>(reference, entry_number),
-                )
-            })
-            .collect()
-    }
-
-    /// Build the `Renderer` used for one bibliography-group entry.
-    fn group_renderer<'a>(&'a self, ctx: &GroupRenderContext<'a>) -> Renderer<'a> {
-        Renderer::new(
-            RendererResources {
-                style: ctx.style,
-                bibliography: &self.bibliography,
-                locale: &self.locale,
-                config: ctx.config.clone(),
-                bibliography_config: Some(ctx.bibliography_config.clone()),
-                first_note_by_id: None,
-            },
-            ctx.hints,
-            &ctx.run.state().citation_numbers,
-            CompoundRenderData {
-                set_by_ref: &self.compound_set_by_ref,
-                member_index: &self.compound_member_index,
-                sets: &self.compound_sets,
-            },
-            self.show_semantics,
-            self.inject_ast_indices,
-            self.abbreviation_map.as_ref(),
-        )
+        let substitute = ctx
+            .bibliography_config
+            .subsequent_author_substitute
+            .as_ref();
+        self.apply_substitution_post_pass::<F>(rendered, substitute, &ctx)
     }
 
     /// Append a rendered bibliography group to the output string.
@@ -454,17 +326,7 @@ impl Processor {
                 .as_ref()
                 .and_then(|key| partitioning.headings.get(key));
             let entries = self.merge_compound_entries::<F>(
-                self.process_sorted_refs::<_, F>(
-                    references.into_iter(),
-                    |reference, entry_number| {
-                        self.process_bibliography_entry_with_format::<F>(
-                            reference,
-                            entry_number,
-                            run,
-                        )
-                    },
-                    run,
-                ),
+                self.process_sorted_refs::<_, F>(references.into_iter(), run),
                 run,
             );
             self.append_rendered_partition::<F>(
@@ -607,13 +469,7 @@ impl Processor {
         // Re-process references to ensure correct author substitution and disambiguation
         // within the unassigned subset.
         let unassigned = self.merge_compound_entries::<F>(
-            self.process_sorted_refs::<_, F>(
-                unassigned_refs.into_iter(),
-                |reference, entry_number| {
-                    self.process_bibliography_entry_with_format::<F>(reference, entry_number, run)
-                },
-                run,
-            ),
+            self.process_sorted_refs::<_, F>(unassigned_refs.into_iter(), run),
             run,
         );
 
@@ -942,11 +798,15 @@ impl Processor {
             .collect()
     }
 
-    pub(super) fn extract_metadata(&self, reference: &Reference) -> ProcEntryMetadata {
-        let bibliography_config = Arc::new(self.get_bibliography_config().into_owned());
+    pub(super) fn extract_metadata(
+        &self,
+        reference: &Reference,
+        ctx: &EntryRenderContext<'_>,
+    ) -> ProcEntryMetadata {
+        let bibliography_config = &ctx.config;
         let options = RenderOptions {
             config: bibliography_config.clone(),
-            bibliography_config: Some(Arc::new(self.get_bibliography_options().into_owned())),
+            bibliography_config: Some(ctx.bibliography_config.clone()),
             locale: &self.locale,
             context: RenderContext::Bibliography,
             mode: citum_schema::citation::CitationMode::NonIntegral,

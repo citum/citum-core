@@ -34,6 +34,8 @@ use crate::api::AnnotationStyle;
 use crate::reference::Reference;
 use crate::render::format::OutputFormat;
 use crate::render::{ProcEntry, ProcTemplate};
+use crate::values::ProcHints;
+use citum_schema::options::{Config, bibliography::BibliographyConfig};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
@@ -62,13 +64,13 @@ pub(crate) struct DocumentBibliography {
     pub(crate) entries: Vec<crate::render::ProcEntry>,
 }
 
-/// Bibliography entries render in parallel (behind the `parallel` feature,
-/// on by default) once a bibliography reaches this many entries; below the
+/// Bibliography entries render in parallel (behind the opt-in `parallel`
+/// feature) once a bibliography reaches this many entries; below the
 /// threshold, thread-pool dispatch overhead isn't worth paying and entries
-/// render sequentially instead. The value is a conservative starting
-/// estimate, not yet bench-tuned (`cargo bench --bench rendering` runs on a
-/// loaded desktop were inconclusive); see
-/// `docs/specs/PARALLEL_BIBLIOGRAPHY_RENDERING.md` for the rationale.
+/// render sequentially instead. Measurements on an 8-core desktop found the
+/// parallel path performance-neutral at 10–400 entries (rendering is
+/// allocation-bound, not compute-bound); see
+/// `docs/specs/PARALLEL_BIBLIOGRAPHY_RENDERING.md` for the numbers.
 #[cfg(feature = "parallel")]
 pub(crate) const PARALLEL_MIN_ENTRIES: usize = 32;
 
@@ -85,16 +87,16 @@ fn number_sorted_refs<'a>(
     sorted_refs: impl Iterator<Item = &'a Reference>,
     run: &FinalizedRun,
 ) -> Vec<(&'a Reference, usize)> {
+    let numbers = run
+        .state()
+        .citation_numbers
+        .read()
+        .unwrap_or_else(std::sync::PoisonError::into_inner);
     sorted_refs
         .enumerate()
         .map(|(index, reference)| {
-            let ref_id = reference.id().unwrap_or_default().to_string();
-            let entry_number = run
-                .state()
-                .citation_numbers
-                .read()
-                .unwrap_or_else(std::sync::PoisonError::into_inner)
-                .get(&ref_id)
+            let entry_number = numbers
+                .get(reference.id().unwrap_or_default().as_str())
                 .copied()
                 .unwrap_or(index + 1);
             (reference, entry_number)
@@ -102,58 +104,143 @@ fn number_sorted_refs<'a>(
         .collect()
 }
 
-/// Render each numbered reference through `process_fn`, preserving input
-/// order.
+/// Resources needed to build a per-entry [`Renderer`] for one bibliography
+/// render pass (flat or grouped), resolved and `Arc`-wrapped once per pass.
 ///
-/// Sequential fallback used when the `parallel` feature is disabled, or the
-/// bibliography is below [`PARALLEL_MIN_ENTRIES`] (see [`render_entries`]).
-fn render_entries_sequential<'a>(
-    numbered_refs: &[(&'a Reference, usize)],
-    process_fn: &impl Fn(&Reference, usize) -> Option<ProcTemplate>,
-) -> Vec<(&'a Reference, Option<ProcTemplate>)> {
-    numbered_refs
-        .iter()
-        .map(|&(reference, entry_number)| (reference, process_fn(reference, entry_number)))
-        .collect()
-}
-
-/// Render each numbered reference through `process_fn` across the rayon
-/// thread pool, preserving input order.
-///
-/// Reference order in the output matches `numbered_refs` exactly (`par_iter`
-/// over a slice is order-preserving under `collect`), so the caller's
-/// subsequent-author-substitution post-pass sees the same sequence it would
-/// under [`render_entries_sequential`].
-#[cfg(feature = "parallel")]
-fn render_entries_parallel<'a>(
-    numbered_refs: &[(&'a Reference, usize)],
-    process_fn: &(impl Fn(&Reference, usize) -> Option<ProcTemplate> + Sync),
-) -> Vec<(&'a Reference, Option<ProcTemplate>)> {
-    use rayon::prelude::*;
-    numbered_refs
-        .par_iter()
-        .map(|&(reference, entry_number)| (reference, process_fn(reference, entry_number)))
-        .collect()
-}
-
-/// Choose the sequential or parallel render path for `numbered_refs` and
-/// apply it.
-///
-/// Parallel rendering requires both the `parallel` feature and
-/// `numbered_refs.len() >= PARALLEL_MIN_ENTRIES`; otherwise this falls back
-/// to [`render_entries_sequential`].
-fn render_entries<'a>(
-    numbered_refs: &[(&'a Reference, usize)],
-    process_fn: &(impl Fn(&Reference, usize) -> Option<ProcTemplate> + Send + Sync),
-) -> Vec<(&'a Reference, Option<ProcTemplate>)> {
-    #[cfg(feature = "parallel")]
-    if numbered_refs.len() >= PARALLEL_MIN_ENTRIES {
-        return render_entries_parallel(numbered_refs, process_fn);
-    }
-    render_entries_sequential(numbered_refs, process_fn)
+/// Hoisting the config merge and `Arc` construction out of the per-entry
+/// loop matters twice over: it removes an O(entries) deep-clone cost from
+/// the sequential path (the follow-up deferred in bean `csl26-qi7l`), and
+/// it keeps the parallel path (see
+/// [`render_numbered_refs_parallel`](Processor::render_numbered_refs_parallel))
+/// from hammering the allocator with per-entry config clones across
+/// threads. Each parallel task clones only the `Arc`s into a fresh
+/// `Renderer`, never sharing one across threads — `Renderer` holds a
+/// per-render scratch `RefCell` (`filtered_to_original_index`) that is
+/// intentionally not `Sync`.
+struct EntryRenderContext<'a> {
+    /// The style to render with (group-overridden for grouped passes).
+    style: &'a citum_schema::Style,
+    /// Pre-calculated processing hints, group-scoped when applicable.
+    hints: &'a HashMap<String, ProcHints>,
+    /// The effective shared configuration, merged once per pass.
+    config: Arc<Config>,
+    /// The effective bibliography-only configuration, merged once per pass.
+    bibliography_config: Arc<BibliographyConfig>,
+    /// The finalized run providing citation numbers and note-order state.
+    run: &'a FinalizedRun,
 }
 
 impl Processor {
+    /// Build the [`EntryRenderContext`] for a flat (ungrouped) bibliography
+    /// pass: processor-level style, hints, and merged configs.
+    fn flat_render_context<'a>(&'a self, run: &'a FinalizedRun) -> EntryRenderContext<'a> {
+        EntryRenderContext {
+            style: &self.style,
+            hints: &self.hints,
+            config: Arc::new(self.get_bibliography_config().into_owned()),
+            bibliography_config: Arc::new(self.get_bibliography_options().into_owned()),
+            run,
+        }
+    }
+
+    /// Build the `Renderer` used for one bibliography entry.
+    fn entry_renderer<'a>(&'a self, ctx: &EntryRenderContext<'a>) -> Renderer<'a> {
+        Renderer::new(
+            RendererResources {
+                style: ctx.style,
+                bibliography: &self.bibliography,
+                locale: &self.locale,
+                config: ctx.config.clone(),
+                bibliography_config: Some(ctx.bibliography_config.clone()),
+                first_note_by_id: None,
+            },
+            ctx.hints,
+            &ctx.run.state().citation_numbers,
+            CompoundRenderData {
+                set_by_ref: &self.compound_set_by_ref,
+                member_index: &self.compound_member_index,
+                sets: &self.compound_sets,
+            },
+            self.show_semantics,
+            self.inject_ast_indices,
+            self.abbreviation_map.as_ref(),
+        )
+    }
+
+    /// Choose the sequential or parallel render path for `numbered_refs`
+    /// and apply it.
+    ///
+    /// Parallel rendering requires both the `parallel` feature and
+    /// `numbered_refs.len() >= PARALLEL_MIN_ENTRIES`; otherwise this falls
+    /// back to the single-shared-`Renderer` sequential path.
+    fn render_numbered_refs<'a, F>(
+        &self,
+        numbered_refs: &[(&'a Reference, usize)],
+        ctx: &EntryRenderContext<'_>,
+    ) -> Vec<(&'a Reference, Option<ProcTemplate>)>
+    where
+        F: OutputFormat<Output = String>,
+    {
+        #[cfg(feature = "parallel")]
+        if numbered_refs.len() >= PARALLEL_MIN_ENTRIES {
+            return self.render_numbered_refs_parallel::<F>(numbered_refs, ctx);
+        }
+        self.render_numbered_refs_sequential::<F>(numbered_refs, ctx)
+    }
+
+    /// Render numbered references through one shared `Renderer`, preserving
+    /// input order.
+    fn render_numbered_refs_sequential<'a, F>(
+        &self,
+        numbered_refs: &[(&'a Reference, usize)],
+        ctx: &EntryRenderContext<'_>,
+    ) -> Vec<(&'a Reference, Option<ProcTemplate>)>
+    where
+        F: OutputFormat<Output = String>,
+    {
+        let renderer = self.entry_renderer(ctx);
+        numbered_refs
+            .iter()
+            .map(|&(reference, entry_number)| {
+                (
+                    reference,
+                    renderer.process_bibliography_entry_with_format::<F>(reference, entry_number),
+                )
+            })
+            .collect()
+    }
+
+    /// Render numbered references across the rayon thread pool, preserving
+    /// input order.
+    ///
+    /// Builds a fresh `Renderer` per task from `ctx`'s `Arc`s (cheap; see
+    /// [`EntryRenderContext`] for why one `Renderer` cannot be shared across
+    /// threads). `par_iter` over a slice is order-preserving under
+    /// `collect`, so the subsequent-author-substitution post-pass sees the
+    /// same sequence it would under
+    /// [`render_numbered_refs_sequential`](Self::render_numbered_refs_sequential).
+    #[cfg(feature = "parallel")]
+    fn render_numbered_refs_parallel<'a, F>(
+        &self,
+        numbered_refs: &[(&'a Reference, usize)],
+        ctx: &EntryRenderContext<'_>,
+    ) -> Vec<(&'a Reference, Option<ProcTemplate>)>
+    where
+        F: OutputFormat<Output = String>,
+    {
+        use rayon::prelude::*;
+        numbered_refs
+            .par_iter()
+            .map(|&(reference, entry_number)| {
+                let renderer = self.entry_renderer(ctx);
+                (
+                    reference,
+                    renderer.process_bibliography_entry_with_format::<F>(reference, entry_number),
+                )
+            })
+            .collect()
+    }
+
     /// Create a bibliography renderer with effective shared and bibliography-only config.
     fn with_bibliography_renderer<T>(
         &self,
@@ -190,33 +277,29 @@ impl Processor {
     ///
     /// Returns bibliography entries with optional author substitution applied.
     ///
-    /// This is the core iterator for bibliography rendering, handling the choice
-    /// between entry-specific rendering and subsequent-author placeholders.
-    ///
-    /// Entry numbers are resolved sequentially first (a single pass over
-    /// `run`'s shared `citation_numbers` map), then entries render via
-    /// [`render_entries`] — sequentially, or across the rayon thread pool
-    /// once the bibliography is large enough (see [`PARALLEL_MIN_ENTRIES`]) —
-    /// and finally [`apply_substitution_post_pass`](Self::apply_substitution_post_pass)
+    /// This is the core iterator for flat bibliography rendering. Entry
+    /// numbers are resolved sequentially first (a single pass over `run`'s
+    /// shared `citation_numbers` map), then entries render via
+    /// [`render_numbered_refs`](Self::render_numbered_refs) — sequentially,
+    /// or across the rayon thread pool once the bibliography is large enough
+    /// (see [`PARALLEL_MIN_ENTRIES`]) — and finally
+    /// [`apply_substitution_post_pass`](Self::apply_substitution_post_pass)
     /// walks the (order-preserved) results sequentially to apply
     /// subsequent-author substitution, which depends on cite-order.
-    fn process_sorted_refs<'a, I, F>(
-        &self,
-        sorted_refs: I,
-        process_fn: impl Fn(&Reference, usize) -> Option<ProcTemplate> + Send + Sync,
-        run: &FinalizedRun,
-    ) -> Vec<ProcEntry>
+    fn process_sorted_refs<'a, I, F>(&self, sorted_refs: I, run: &FinalizedRun) -> Vec<ProcEntry>
     where
         I: Iterator<Item = &'a Reference>,
         F: OutputFormat<Output = String>,
     {
-        let bibliography_options = self.get_bibliography_options();
-        let substitute = bibliography_options.subsequent_author_substitute.as_ref();
-
+        let ctx = self.flat_render_context(run);
         let numbered_refs = number_sorted_refs(sorted_refs, run);
-        let rendered = render_entries(&numbered_refs, &process_fn);
+        let rendered = self.render_numbered_refs::<F>(&numbered_refs, &ctx);
 
-        self.apply_substitution_post_pass::<F>(rendered, substitute, run)
+        let substitute = ctx
+            .bibliography_config
+            .subsequent_author_substitute
+            .as_ref();
+        self.apply_substitution_post_pass::<F>(rendered, substitute, &ctx)
     }
 
     /// Apply subsequent-author substitution to already-rendered entries and
@@ -225,19 +308,21 @@ impl Processor {
     /// This is the sequential part of bibliography rendering: substitution
     /// depends on the *previous successfully rendered* reference, so it
     /// cannot itself run in parallel. `rendered` must already be in final
-    /// bibliography order (as produced by [`render_entries`], parallel or
-    /// not); entries where `process_fn` returned `None` are skipped
-    /// entirely and do not advance the "previous reference" used for
-    /// contributor matching.
+    /// bibliography order (as produced by
+    /// [`render_numbered_refs`](Self::render_numbered_refs), parallel or
+    /// not); entries whose render produced `None` are skipped entirely and
+    /// do not advance the "previous reference" used for contributor
+    /// matching.
     fn apply_substitution_post_pass<F>(
         &self,
         rendered: Vec<(&Reference, Option<ProcTemplate>)>,
         substitute: Option<&String>,
-        run: &FinalizedRun,
+        ctx: &EntryRenderContext<'_>,
     ) -> Vec<ProcEntry>
     where
         F: OutputFormat<Output = String>,
     {
+        let renderer = substitute.map(|_| self.entry_renderer(ctx));
         let mut bibliography = Vec::with_capacity(rendered.len());
         let mut previous_reference: Option<&Reference> = None;
 
@@ -247,22 +332,19 @@ impl Processor {
             };
 
             if let Some(substitute_string) = substitute
+                && let Some(renderer) = renderer.as_ref()
                 && let Some(previous) = previous_reference
                 && self.contributors_match(previous, reference)
             {
-                self.with_bibliography_renderer(run, |renderer| {
-                    renderer.apply_author_substitution_with_format::<F>(
-                        &mut processed,
-                        substitute_string,
-                    );
-                });
+                renderer
+                    .apply_author_substitution_with_format::<F>(&mut processed, substitute_string);
             }
 
             let ref_id = reference.id().unwrap_or_default().to_string();
             bibliography.push(ProcEntry {
                 id: ref_id,
                 template: processed,
-                metadata: self.extract_metadata(reference),
+                metadata: self.extract_metadata(reference, ctx),
             });
             previous_reference = Some(reference);
         }
@@ -296,13 +378,7 @@ impl Processor {
         F: OutputFormat<Output = String>,
     {
         let sorted_refs = self.sort_references(self.bibliography.values().collect());
-        let bibliography = self.process_sorted_refs::<_, F>(
-            sorted_refs.iter().copied(),
-            |reference, entry_number| {
-                self.process_bibliography_entry_with_format::<F>(reference, entry_number, run)
-            },
-            run,
-        );
+        let bibliography = self.process_sorted_refs::<_, F>(sorted_refs.iter().copied(), run);
         ProcessedReferences {
             bibliography,
             citations: None,
@@ -333,9 +409,6 @@ impl Processor {
                 .iter()
                 .filter(|r| r.id().as_deref().is_some_and(|id| selected.contains(id)))
                 .copied(),
-            |reference, entry_number| {
-                self.process_bibliography_entry_with_format::<F>(reference, entry_number, run)
-            },
             run,
         );
         ProcessedReferences {
@@ -485,9 +558,6 @@ impl Processor {
                 .iter()
                 .filter(|r| r.id().as_deref().is_some_and(|id| selected.contains(id)))
                 .copied(),
-            |reference, entry_number| {
-                self.process_bibliography_entry_with_format::<F>(reference, entry_number, run)
-            },
             run,
         );
 

@@ -34,15 +34,16 @@ schemars = { version = "1.2.1", features = ["derive"], optional = true }
 rayon = { version = "1", optional = true }
 
 [features]
-default = ["icu", "parallel"]
+default = ["icu"]
 icu = ["dep:icu_collator", "dep:icu_locale"]
 ffi = []
 schema = ["dep:schemars", "citum-schema/schema", "citum-schema-data/schema"]
-# Renders bibliography entries across threads with rayon once a bibliography
-# is large enough to amortize the thread-pool overhead (see
-# `PARALLEL_MIN_ENTRIES` in `processor/bibliography/mod.rs`). Off by default
-# for WASM (`citum-bindings` builds with `default-features = false`), where
-# there is no thread pool.
+# Opt-in: renders bibliography entries across threads with rayon once a
+# bibliography is large enough to amortize the thread-pool overhead (see
+# `PARALLEL_MIN_ENTRIES` in `processor/bibliography/mod.rs`). Not a default
+# feature: measured performance-neutral on desktop workloads (rendering is
+# allocation-bound); enable it only where profiling shows entry rendering as
+# a bottleneck. Unavailable on WASM (no thread pool).
 parallel = ["dep:rayon"]
 
 [dev-dependencies]
