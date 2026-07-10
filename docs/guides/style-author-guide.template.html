@@ -8,15 +8,7 @@
 
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries,typography"></script>
         <link
-            href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&amp;display=swap"
-            rel="stylesheet"
-        />
-        <link
             href="https://fonts.googleapis.com/icon?family=Material+Icons"
-            rel="stylesheet"
-        />
-        <link
-            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
             rel="stylesheet"
         />
 
@@ -26,18 +18,18 @@
                 theme: {
                     extend: {
                         colors: {
-                            primary: "#2a94d6",
-                            "background-light": "#fdfbf7",
-                            "accent-cream": "#f5f2eb",
+                            primary: "#23407F",
+                            "background-light": "#FBFBF9",
+                            "accent-cream": "#F0F0EC",
                         },
                         fontFamily: {
-                            display: ["Libre Franklin", "sans-serif"],
-                            mono: ["JetBrains Mono", "monospace"],
+                            display: ["Archivo", "sans-serif"],
+                            mono: ["ui-monospace", "JetBrains Mono", "Cascadia Code", "monospace"],
                         },
                         borderRadius: {
-                            DEFAULT: "0.25rem",
-                            lg: "0.5rem",
-                            xl: "0.75rem",
+                            DEFAULT: "2px",
+                            lg: "2px",
+                            xl: "2px",
                             full: "9999px",
                         },
                     },
@@ -46,16 +38,16 @@
         </script>
         <style type="text/tailwindcss">
             body {
-                font-family: "Libre Franklin", sans-serif;
+                font-family: "Archivo", system-ui, sans-serif;
                 color: #374151;
             }
             .font-mono {
-                font-family: "JetBrains Mono", monospace;
+                font-family: ui-monospace, "JetBrains Mono", "Cascadia Code", monospace;
             }
             .glass-nav {
-                background: rgba(253, 251, 247, 0.85);
+                background: rgba(251, 251, 249, 0.93);
                 backdrop-filter: blur(12px);
-                border-bottom: 1px solid rgba(42, 148, 214, 0.1);
+                border-bottom: 1px solid #E3E3DE;
             }
             .sidebar-link {
                 @apply flex items-center gap-2 px-3 py-2 rounded text-sm text-slate-600 hover:text-primary hover:bg-primary/5 transition-all;

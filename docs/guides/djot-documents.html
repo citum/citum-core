@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Djot document authoring | Citum Docs</title>
     <meta name="description" content="What you can do with Djot documents in Citum: citation syntax, name memory, bibliography grouping, rich text in reference fields, EDTF dates, multilingual sources, and multiple output formats." />
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="../assets/citum-theme.css" />
     <style>
         .syntax-table {
@@ -18,49 +17,49 @@
         .syntax-table th {
             text-align: left;
             padding: 0.5rem 0.75rem;
-            border-bottom: 2px solid var(--citum-border, #ddd);
+            border-bottom: 2px solid var(--citum-border, #E3E3DE);
             font-weight: 600;
-            color: var(--citum-ink-strong, #1a1a2e);
+            color: var(--citum-ink-strong, #131312);
         }
         .syntax-table td {
             padding: 0.45rem 0.75rem;
-            border-bottom: 1px solid var(--citum-border, #ddd);
+            border-bottom: 1px solid var(--citum-border, #E3E3DE);
             vertical-align: top;
         }
         .syntax-table tr:last-child td {
             border-bottom: none;
         }
         .syntax-table code {
-            font-family: 'JetBrains Mono', monospace;
+            font-family: var(--citum-font-mono, monospace);
             font-size: 0.85em;
-            background: var(--citum-paper-deep, #f5f2eb);
+            background: var(--citum-paper-deep, #F0F0EC);
             padding: 0.1em 0.3em;
-            border-radius: 3px;
+            border-radius: 2px;
         }
         .note-aside {
-            background: var(--citum-blue-soft, #eef6fc);
-            border-left: 3px solid var(--citum-blue, #2a94d6);
-            border-radius: 4px;
+            background: var(--citum-blue-soft, #F0F0EC);
+            border-left: 3px solid var(--citum-blue, #23407F);
+            border-radius: 2px;
             padding: 0.75rem 1rem;
             font-size: 0.9rem;
-            color: var(--citum-muted, #555);
+            color: var(--citum-muted, #5F5F5A);
             margin: 1rem 0;
         }
         .note-aside strong {
-            color: var(--citum-ink, #222);
+            color: var(--citum-ink, #131312);
         }
         .toc-link {
             display: block;
             padding: 0.3rem 0.5rem;
-            color: var(--citum-muted, #666);
+            color: var(--citum-muted, #5F5F5A);
             text-decoration: none;
             font-size: 0.88rem;
-            border-radius: 4px;
+            border-radius: 2px;
             transition: background 0.15s, color 0.15s;
         }
         .toc-link:hover {
-            background: var(--citum-blue-soft, #eef6fc);
-            color: var(--citum-blue, #2a94d6);
+            background: var(--citum-blue-soft, #F0F0EC);
+            color: var(--citum-blue, #23407F);
         }
     </style>
 </head>
@@ -77,7 +76,7 @@
             <div class="site-nav-links" role="navigation" aria-label="Primary docs navigation">
                 <a class="site-nav-link " href="../index.html">Overview</a>
                 <a class="site-nav-link " href="../examples.html">Capabilities</a>
-                <a class="site-nav-link active" href="../guides/style-authoring/start.html">Style Authoring</a>
+                <a class="site-nav-link " href="../guides/style-authoring/start.html">Style Authoring</a>
                 <a class="site-nav-link " href="../developer.html">Integrate</a>
                 <a class="site-nav-link " href="../demo.html">Demo</a>
                 <a class="site-nav-link " href="../schemas/">Schemas</a>
@@ -96,7 +95,7 @@
         <div id="mobile-nav" class="mobile-nav hidden" data-mobile-menu>
             <a class="site-nav-link " href="../index.html">Overview</a>
             <a class="site-nav-link " href="../examples.html">Capabilities</a>
-            <a class="site-nav-link active" href="../guides/style-authoring/start.html">Style Authoring</a>
+            <a class="site-nav-link " href="../guides/style-authoring/start.html">Style Authoring</a>
             <a class="site-nav-link " href="../developer.html">Integrate</a>
             <a class="site-nav-link " href="../demo.html">Demo</a>
             <a class="site-nav-link " href="../schemas/">Schemas</a>
