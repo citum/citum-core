@@ -31,12 +31,19 @@ icu_collator = { version = "2.2.0", features = ["compiled_data"], optional = tru
 icu_locale = { version = "2.2.0", optional = true }
 unicode-script = "0.5.8"
 schemars = { version = "1.2.1", features = ["derive"], optional = true }
+rayon = { version = "1", optional = true }
 
 [features]
-default = ["icu"]
+default = ["icu", "parallel"]
 icu = ["dep:icu_collator", "dep:icu_locale"]
 ffi = []
 schema = ["dep:schemars", "citum-schema/schema", "citum-schema-data/schema"]
+# Renders bibliography entries across threads with rayon once a bibliography
+# is large enough to amortize the thread-pool overhead (see
+# `PARALLEL_MIN_ENTRIES` in `processor/bibliography/mod.rs`). Off by default
+# for WASM (`citum-bindings` builds with `default-features = false`), where
+# there is no thread pool.
+parallel = ["dep:rayon"]
 
 [dev-dependencies]
 criterion = { version = "0.8", features = ["html_reports"] }

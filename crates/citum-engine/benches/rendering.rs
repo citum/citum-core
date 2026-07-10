@@ -92,6 +92,17 @@ fn bench_rendering(c: &mut Criterion) {
         });
     });
 
+    // Benchmark Bibliography Processing at a scale large enough to show
+    // rayon parallel-rendering gains (see `PARALLEL_MIN_ENTRIES` in
+    // `processor/bibliography/mod.rs`; default-on `parallel` feature).
+    c.bench_function("Process Bibliography (APA, 200 items)", |b| {
+        let large_bib = make_large_bibliography(200);
+        let processor = Processor::new(style.clone(), large_bib);
+        b.iter(|| {
+            processor.process_references();
+        });
+    });
+
     bench_disambiguation(c);
     bench_group_sorting(c);
     bench_bibliography_type_variants(c);
@@ -221,6 +232,37 @@ fn make_ref_with_title(id: &str, family: &str, given: &str, year: i32, title: &s
         issued: EdtfString(year.to_string()),
         ..Default::default()
     }))
+}
+
+/// Generate a synthetic bibliography of `n` entries with varied authors,
+/// given names, and years — large enough (at `n = 200`) to exercise
+/// bibliography rendering above `PARALLEL_MIN_ENTRIES`, unlike the 10-item
+/// `comprehensive.yaml` fixture used elsewhere in this benchmark.
+fn make_large_bibliography(n: usize) -> Bibliography {
+    const FAMILIES: &[&str] = &[
+        "Adams", "Baker", "Clark", "Davis", "Evans", "Foster", "Garcia", "Harris", "Ibrahim",
+        "Jones", "Kim", "Lopez", "Miller", "Nguyen", "Owens", "Patel", "Quinn", "Rossi", "Silva",
+        "Turner",
+    ];
+    const GIVENS: &[&str] = &["Alex", "Bailey", "Casey", "Drew", "Elliot"];
+
+    let mut bib = Bibliography::new();
+    for i in 0..n {
+        let family = FAMILIES[i % FAMILIES.len()];
+        let given = GIVENS[i % GIVENS.len()];
+        #[allow(
+            clippy::cast_possible_wrap,
+            clippy::cast_possible_truncation,
+            reason = "benchmark fixture: n is small and well within i32 range"
+        )]
+        let year = 1990 + (i % 30) as i32;
+        let id = format!("bench-ref-{i:04}");
+        bib.insert(
+            id.clone(),
+            make_ref_with_title(&id, family, given, year, &format!("Benchmark Title {i:04}")),
+        );
+    }
+    bib
 }
 
 fn make_no_collision_bibliography() -> Bibliography {

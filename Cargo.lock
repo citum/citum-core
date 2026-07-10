@@ -698,6 +698,7 @@ dependencies = [
  "jotdown",
  "orgize",
  "pulldown-cmark",
+ "rayon",
  "rstest",
  "schemars",
  "serde",
