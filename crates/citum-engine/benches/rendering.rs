@@ -26,8 +26,9 @@ use citum_engine::{
 };
 use citum_schema::grouping::{GroupSort, GroupSortKey, NameSortOrder, SortKey as GroupSortKeyKind};
 use citum_schema::options::{
-    BibliographyOptions, Config, Disambiguation, GivennameRule, Group, LabelConfig, LabelPreset,
-    Processing, ProcessingCustom, Sort, SortEntry, SortKey, SortSpec,
+    BibliographyOptions, BibliographyPartitionKind, BibliographyPartitionMode,
+    BibliographySortPartitioning, Config, Disambiguation, GivennameRule, Group, LabelConfig,
+    LabelPreset, Processing, ProcessingCustom, Sort, SortEntry, SortKey, SortSpec,
     bibliography::CompoundNumericConfig,
 };
 use citum_schema::{
@@ -119,6 +120,7 @@ fn bench_rendering(c: &mut Criterion) {
     bench_bibliography_type_variants(c);
     bench_compound_bibliography(c);
     bench_document_bibliography(c, &style);
+    bench_grouped_partition_bibliography(c, &style);
 }
 
 /// Benchmark the document bibliography facade (`csl26-plaz`) on the shape it
@@ -146,6 +148,38 @@ fn bench_document_bibliography(c: &mut Criterion, style: &Style) {
                     processor
                         .process_document::<_, PlainText>(&document, &parser, DocumentFormat::Plain)
                         .unwrap(),
+                );
+            });
+        },
+    );
+}
+
+/// Benchmark the all-references grouped path while automatic partition sections are active.
+///
+/// Unlike a disabled-groups benchmark, this has identical output before and after
+/// `csl26-mnoo`, so its timing remains a valid behavioral no-op comparison.
+fn bench_grouped_partition_bibliography(c: &mut Criterion, style: &Style) {
+    let mut partitioned_style = style.clone();
+    let bibliography = partitioned_style
+        .bibliography
+        .as_mut()
+        .expect("APA benchmark style should define a bibliography");
+    let options = bibliography.options.get_or_insert_default();
+    options.sort_partitioning = Some(BibliographySortPartitioning {
+        by: BibliographyPartitionKind::Language,
+        mode: BibliographyPartitionMode::Sections,
+        order: Vec::new(),
+        headings: Default::default(),
+        unknown_fields: Default::default(),
+    });
+
+    let processor = Processor::new(partitioned_style, make_large_bibliography(400));
+    c.bench_function(
+        "Render Grouped Partition Bibliography (APA, 400 all refs)",
+        |b| {
+            b.iter(|| {
+                black_box(
+                    processor.render_grouped_bibliography_with_format_standalone::<PlainText>(),
                 );
             });
         },

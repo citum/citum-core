@@ -1,11 +1,11 @@
 ---
 # csl26-mnoo
 title: render_grouped_bibliography_inner ignores groups_enabled
-status: todo
+status: completed
 type: bug
 priority: normal
 created_at: 2026-07-11T12:10:07Z
-updated_at: 2026-07-11T12:20:24Z
+updated_at: 2026-07-11T14:22:59Z
 parent: csl26-8m2p
 ---
 
@@ -53,12 +53,12 @@ out of scope.
 
 ## Checklist
 
-- [ ] Add the same `.filter(|bibliography| bibliography.groups_enabled)` gate
+- [x] Add the same `.filter(|bibliography| bibliography.groups_enabled)` gate
       to `render_grouped_bibliography_inner`'s custom-groups check
-- [ ] Add regression test(s) covering `groups_enabled: false` + `groups:`
+- [x] Add regression test(s) covering `groups_enabled: false` + `groups:`
       still present via the standalone bibliography API
       (`render_bibliography` / `render_grouped_bibliography_with_format_standalone`)
-- [ ] Consider a shared helper (e.g. `Processor::effective_custom_groups(&self) -> Option<&[BibliographyGroup]>`)
+- [x] Consider a shared helper (e.g. `Processor::effective_custom_groups(&self) -> Option<&[BibliographyGroup]>`)
       so this condition can't drift between call sites again — three call
       sites currently duplicate the same check inline
 
@@ -103,3 +103,32 @@ separate either way — group-local disambiguation and per-group templates
 need a different data shape than a flat entries pass, which is exactly why
 PR #1037 left custom groups on the historical two-pass render in the first
 place.
+
+## Implementation
+
+The bounded refactor and its selection/layout contract are specified in `docs/specs/BIBLIOGRAPHY_RENDERING_PIPELINE.md` v1.1. Compound-numeric rendering remains an explicit compatibility path.
+
+## Validation
+
+- `just pre-commit`: 1,865 tests passed; formatting and all-target/all-feature Clippy clean.
+- New disabled-group, live-run all-references, partition-precedence, and compound characterization tests pass.
+- Rendering benchmarks were checked against an unchanged 400-entry control. Sustained-load slowdown affected the control by about 91%; both target paths degraded less, so no path-specific regression was observed.
+- Frontmatter validation and the changed-Rust review-smell audit pass.
+
+## Summary of Changes
+
+Centralized the groups_enabled gate in Processor::effective_custom_groups and
+routed all three former inline checks through it. Fixed standalone/live-run
+all-references rendering (restrict_to_cited is now honored end-to-end),
+replaced render_with_legacy_grouping with render_flat_compound_entries, and
+unified flat routing through render_flat_bibliography while keeping the
+partition and compound compatibility paths. Added disabled-group,
+partition-precedence, live-run, and compound regression tests plus a grouped
+partition benchmark; updated the two active bibliography specs.
+
+Post-review cleanups (same branch): removed the unconditional rendered.clone()
+on the flat no-partitioning path, extracted sorted_eligible_refs to dedupe the
+cited-eligibility filter, and converted short contains() test assertions to a
+full-string assert_eq per CODING_STANDARDS. Review also surfaced a pre-existing
+compound edge case, filed as [[csl26-uidd]] (merged row dropped when only a
+non-leader member is cited).

@@ -187,6 +187,9 @@ bibliography:
 
 Style-level groups apply to every document rendered with that style unless
 the document provides its own frontmatter `bibliography:` list or caller blocks.
+`bibliography.groups-enabled: false` disables only these manual style groups;
+the retained `groups:` configuration is ignored and any automatic
+`sort-partitioning` sections remain active.
 
 ## Per-Document Frontmatter Groups
 
