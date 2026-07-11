@@ -17,6 +17,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 )]
 
 use citum_engine::processor::disambiguation::Disambiguator;
+use citum_engine::processor::document::{DocumentFormat, djot::DjotParser};
 use citum_engine::render::plain::PlainText;
 use citum_engine::sorting::ReferenceSorter;
 use citum_engine::{
@@ -117,6 +118,38 @@ fn bench_rendering(c: &mut Criterion) {
     bench_group_sorting(c);
     bench_bibliography_type_variants(c);
     bench_compound_bibliography(c);
+    bench_document_bibliography(c, &style);
+}
+
+/// Benchmark the document bibliography facade (`csl26-plaz`) on the shape it
+/// targets: a large loaded library with only a handful of cited references.
+/// Drives the public `Processor::process_document` entry point — the same
+/// path `format_document` and `DocumentSession` use — rather than calling
+/// the `pub(crate)` facade directly, so the measurement reflects real caller
+/// behavior end to end.
+fn bench_document_bibliography(c: &mut Criterion, style: &Style) {
+    let large_bib = make_large_bibliography(400);
+    let cited_ids: Vec<String> = large_bib.keys().take(10).cloned().collect();
+    let document: String = cited_ids
+        .iter()
+        .map(|id| format!("Work {id} [@{id}]."))
+        .collect::<Vec<_>>()
+        .join(" ");
+    let parser = DjotParser;
+
+    c.bench_function(
+        "Process Document Bibliography (APA, 400 loaded, 10 cited)",
+        |b| {
+            let processor = Processor::new(style.clone(), large_bib.clone());
+            b.iter(|| {
+                black_box(
+                    processor
+                        .process_document::<_, PlainText>(&document, &parser, DocumentFormat::Plain)
+                        .unwrap(),
+                );
+            });
+        },
+    );
 }
 
 fn bench_disambiguation(c: &mut Criterion) {

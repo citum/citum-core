@@ -4352,6 +4352,129 @@ bibliography:
     );
 }
 
+/// Verifies the document bibliography facade keeps its historical two-pass
+/// render for compound-numeric groups: `render_document_bibliography`'s
+/// single-pass fast path (`csl26-plaz`) must not activate when a run has
+/// active compound groups, because merging a compound entry needs to see
+/// every configured group member — cited or not — while `entries` must stay
+/// cited-only and unmerged.
+#[test]
+fn test_render_document_bibliography_compound_groups_use_full_render() {
+    use indexmap::IndexMap;
+
+    let yaml = r#"
+info:
+  title: Test Compound Numeric Document
+  id: test-compound-numeric-document
+options:
+  processing: numeric
+bibliography:
+  options:
+    compound-numeric:
+      sub-label: alphabetic
+      sub-label-suffix: ")"
+      sub-delimiter: ", "
+    entry-suffix: .
+    separator: ". "
+  template:
+    - number: citation-number
+      wrap: brackets
+      suffix: " "
+    - contributor: author
+      form: long
+    - title: primary
+"#;
+    let style: Style = serde_yaml::from_str(yaml).unwrap();
+
+    let refs_json = r#"[
+        {
+            "id": "ref-a",
+            "class": "monograph",
+            "type": "book",
+            "title": "Article A",
+            "author": [{"family": "Smith", "given": "A."}],
+            "issued": "2020"
+        },
+        {
+            "id": "ref-b",
+            "class": "monograph",
+            "type": "book",
+            "title": "Article B",
+            "author": [{"family": "Jones", "given": "B."}],
+            "issued": "2021"
+        },
+        {
+            "id": "ref-c",
+            "class": "monograph",
+            "type": "book",
+            "title": "Standalone Article",
+            "author": [{"family": "Brown", "given": "C."}],
+            "issued": "2022"
+        }
+    ]"#;
+    let refs: Vec<crate::reference::Reference> = serde_json::from_str(refs_json).unwrap();
+    let mut bib = crate::reference::Bibliography::new();
+    for r in refs {
+        if let Some(id) = r.id() {
+            bib.insert(id.to_string(), r);
+        }
+    }
+
+    let mut sets = IndexMap::new();
+    sets.insert(
+        "group-1".to_string(),
+        vec!["ref-a".to_string(), "ref-b".to_string()],
+    );
+
+    let processor = Processor::with_compound_sets(style, bib, sets);
+
+    // Cite only "ref-a" — the other compound-group member ("ref-b") and the
+    // standalone reference ("ref-c") are never cited.
+    let citation = Citation {
+        items: vec![CitationItem {
+            id: "ref-a".to_string(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let mut run = processor.begin_run();
+    processor
+        .process_citation_with_format::<crate::render::plain::PlainText>(&citation, &mut run)
+        .unwrap();
+    let run = run.finalize();
+
+    let doc_bib = processor
+        .render_document_bibliography::<crate::render::plain::PlainText>(true, None, None, &run);
+
+    // Content must still show the full merged compound entry — both sub-labels —
+    // even though "ref-b" itself was never cited; the historical whole-library
+    // render is what makes this correct.
+    assert!(
+        doc_bib.content.contains("a)") && doc_bib.content.contains("b)"),
+        "compound-numeric content should merge every configured group member \
+         regardless of citation status: {}",
+        doc_bib.content
+    );
+    assert!(
+        !doc_bib.content.contains("Standalone Article"),
+        "uncited, non-grouped references must not appear in document content: {}",
+        doc_bib.content
+    );
+
+    // Entries stay cited-only and unmerged.
+    assert_eq!(
+        doc_bib.entries.len(),
+        1,
+        "entries should contain only the cited reference: {:?}",
+        doc_bib
+            .entries
+            .iter()
+            .map(|entry| &entry.id)
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(doc_bib.entries[0].id, "ref-a");
+}
+
 #[test]
 fn test_grouped_compound_bibliography_leader_only_match_stays_singleton() {
     let processor = make_grouped_compound_selection_processor("selected", "other");

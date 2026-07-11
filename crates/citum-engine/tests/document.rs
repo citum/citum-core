@@ -27,8 +27,9 @@ use citum_io::load_bibliography;
 use citum_schema::{
     BibliographySpec, Locale, Style, StyleInfo,
     options::{
-        BibliographyOptions, Config, Disambiguation, LocatorPreset, OrgAbbreviationMemoryConfig,
-        Processing, ProcessingCustom,
+        BibliographyOptions, BibliographyPartitionKind, BibliographyPartitionMode,
+        BibliographySortPartitioning, Config, Disambiguation, LocatorPreset,
+        OrgAbbreviationMemoryConfig, Processing, ProcessingCustom,
     },
     reference::{
         Contributor, EdtfString, InputReference as Reference, Monograph, MonographType, SimpleName,
@@ -1690,6 +1691,362 @@ mod grouped_bibliography {
     }
 }
 
+// --- Document bibliography single-pass fast path (csl26-plaz) ---
+//
+// `Processor::render_document_bibliography` renders each cited reference's
+// template exactly once for the flat and sort-partitioned-sections cases
+// instead of once for the appended bibliography string and again for the
+// per-entry API data. These scenarios exercise that facade through the
+// public `process_document` entry point (not the lower-level `Processor`
+// methods used directly elsewhere in this file), since that facade is the
+// one whose render pass was unified.
+
+/// A book-tagged legacy JSON reference with an explicit `language`, used to
+/// drive [`BibliographyPartitionKind::Language`] sectioning.
+fn language_tagged_reference(
+    id: &str,
+    family: &str,
+    given: &str,
+    title: &str,
+    language: &str,
+) -> Reference {
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_value(serde_json::json!({
+        "id": id,
+        "type": "book",
+        "title": title,
+        "language": language,
+        "author": [{ "family": family, "given": given }]
+    }))
+    .expect("language-tagged fixture should parse");
+    legacy.into()
+}
+
+fn given_a_large_library_and_a_small_cited_subset_when_rendering_a_flat_document_bibliography_then_only_cited_entries_appear()
+ {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Flat Fast Path Test".to_string()),
+            id: Some("flat-fast-path-test".into()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::AuthorDate),
+            ..Default::default()
+        }),
+        citation: None,
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                entry_suffix: Some(".".to_string()),
+                ..Default::default()
+            }),
+            template: Some(vec![
+                citum_schema::tc_contributor!(Author, Long),
+                citum_schema::tc_title!(Primary, prefix = ". "),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    // A "large library" of never-cited filler references, plus two cited ones.
+    let mut bibliography = indexmap::IndexMap::new();
+    for i in 0..10 {
+        let id = format!("filler{i:02}");
+        bibliography.insert(
+            id.clone(),
+            make_book(
+                &id,
+                &format!("Filler{i:02}"),
+                "F.",
+                2000 + i,
+                &format!("Filler Title {i:02}"),
+            ),
+        );
+    }
+    bibliography.insert(
+        "cited-a".to_string(),
+        make_book("cited-a", "Cited", "Alice", 2015, "Cited Alpha"),
+    );
+    bibliography.insert(
+        "cited-b".to_string(),
+        make_book("cited-b", "Cited", "Zed", 2016, "Cited Beta"),
+    );
+
+    let processor = Processor::new(style, bibliography);
+    let document = "Alpha work [@cited-a] and beta work [@cited-b].";
+    let parser = DjotParser;
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            document,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
+
+    assert_output_includes(
+        &output,
+        "Alice Cited. Cited Alpha.",
+        "the first cited entry should render in full",
+    );
+    assert_output_includes(
+        &output,
+        "Zed Cited. Cited Beta.",
+        "the second cited entry should render in full",
+    );
+    for i in 0..10 {
+        assert_output_excludes(
+            &output,
+            &format!("Filler Title {i:02}"),
+            "uncited references from a large library must not appear in a flat document bibliography",
+        );
+    }
+}
+
+fn given_an_uncited_reference_between_two_same_author_cited_entries_when_rendering_a_flat_document_bibliography_then_the_second_cited_entry_still_substitutes()
+ {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Flat Substitution Gap Test".to_string()),
+            id: Some("flat-substitution-gap-test".into()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::AuthorDate),
+            ..Default::default()
+        }),
+        citation: None,
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                entry_suffix: Some(".".to_string()),
+                subsequent_author_substitute: Some("———".to_string()),
+                ..Default::default()
+            }),
+            template: Some(vec![
+                citum_schema::tc_contributor!(Author, Long),
+                citum_schema::tc_title!(Primary, prefix = ". "),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert(
+        "smith-a".to_string(),
+        make_book("smith-a", "Smith", "Ann", 2018, "Alpha"),
+    );
+    // Never cited: sits between the two cited Smith entries in sorted order.
+    bibliography.insert(
+        "smith-b".to_string(),
+        make_book("smith-b", "Smith", "Ann", 2019, "Beta"),
+    );
+    bibliography.insert(
+        "smith-c".to_string(),
+        make_book("smith-c", "Smith", "Ann", 2020, "Gamma"),
+    );
+
+    let processor = Processor::new(style, bibliography);
+    let document = "First work [@smith-a] and second work [@smith-c].";
+    let parser = DjotParser;
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            document,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
+
+    assert_output_includes(
+        &output,
+        "Ann Smith. Alpha.",
+        "the first cited entry should render its author in full",
+    );
+    assert_output_includes(
+        &output,
+        "———. Gamma.",
+        "the second cited entry should substitute, since the immediately preceding \
+         *cited* entry shares its author — the uncited entry between them in the \
+         full library must not break the substitution chain",
+    );
+    assert_output_excludes(&output, "Beta", "the uncited entry must not appear");
+}
+
+fn given_sort_partitioned_sections_and_subsequent_author_substitution_when_rendering_a_document_bibliography_then_substitution_resets_at_each_section_boundary()
+ {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Partition Substitution Boundary Test".to_string()),
+            id: Some("partition-substitution-boundary-test".into()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::AuthorDate),
+            ..Default::default()
+        }),
+        citation: None,
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                entry_suffix: Some(".".to_string()),
+                subsequent_author_substitute: Some("———".to_string()),
+                sort_partitioning: Some(BibliographySortPartitioning {
+                    by: BibliographyPartitionKind::Language,
+                    mode: BibliographyPartitionMode::Sections,
+                    order: vec!["ru".to_string(), "en".to_string()],
+                    headings: std::collections::HashMap::new(),
+                    unknown_fields: std::collections::BTreeMap::new(),
+                }),
+                ..Default::default()
+            }),
+            template: Some(vec![
+                citum_schema::tc_contributor!(Author, Long),
+                citum_schema::tc_title!(Primary, prefix = ". "),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert(
+        "ru-a".to_string(),
+        language_tagged_reference("ru-a", "Smith", "John", "Alpha", "ru"),
+    );
+    bibliography.insert(
+        "ru-b".to_string(),
+        language_tagged_reference("ru-b", "Smith", "John", "Beta", "ru"),
+    );
+    // Same author as the Russian-section entries, but placed in a different
+    // partition section by language.
+    bibliography.insert(
+        "en-a".to_string(),
+        language_tagged_reference("en-a", "Smith", "John", "Gamma", "en"),
+    );
+
+    let processor = Processor::new(style, bibliography);
+    let document = "[@ru-a] [@ru-b] [@en-a]";
+    let parser = DjotParser;
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            document,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
+
+    assert_output_includes(
+        &output,
+        "John Smith. Alpha.",
+        "the first entry in the Russian section should render its author in full",
+    );
+    assert_output_in_order(
+        &output,
+        "John Smith. Alpha.",
+        "———. Beta.",
+        "the second entry in the same (Russian) section should substitute",
+    );
+    assert_output_includes(
+        &output,
+        "John Smith. Gamma.",
+        "the English-section entry shares an author with the Russian section, \
+         but substitution must reset at the section boundary rather than \
+         carrying over from the previous section's last entry",
+    );
+    assert_output_excludes(
+        &output,
+        "———. Gamma.",
+        "substitution must not cross a partition section boundary",
+    );
+}
+
+fn given_groups_enabled_false_with_groups_still_configured_when_rendering_a_document_bibliography_then_it_renders_flat()
+ {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Groups Disabled Fast Path Test".to_string()),
+            id: Some("groups-disabled-fast-path-test".into()),
+            ..Default::default()
+        },
+        options: Some(Config {
+            processing: Some(Processing::AuthorDate),
+            ..Default::default()
+        }),
+        citation: None,
+        bibliography: Some(BibliographySpec {
+            options: Some(BibliographyOptions {
+                entry_suffix: Some(".".to_string()),
+                ..Default::default()
+            }),
+            groups_enabled: false,
+            // Selector matches only the "book" entry, leaving the "article-journal"
+            // entry unassigned — this makes the group-vs-flat routing decision
+            // observable: taking the (buggy) custom-groups branch would populate
+            // exactly one group with a non-empty unassigned remainder, so the
+            // group's heading would NOT be suppressed by the single-group
+            // heading-suppression rule and would render, unlike the flat path.
+            groups: Some(vec![citum_schema::grouping::BibliographyGroup {
+                id: "ignored".to_string(),
+                heading: Some(citum_schema::grouping::GroupHeading::Literal {
+                    literal: "Should Not Appear".to_string(),
+                }),
+                selector: citum_schema::grouping::GroupSelector {
+                    ref_type: Some(citum_schema::template::TypeSelector::Single(
+                        "book".to_string(),
+                    )),
+                    ..Default::default()
+                },
+                sort: None,
+                template: None,
+                disambiguate: None,
+            }]),
+            template: Some(vec![
+                citum_schema::tc_contributor!(Author, Long),
+                citum_schema::tc_title!(Primary, prefix = ". "),
+            ]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let mut bibliography = indexmap::IndexMap::new();
+    bibliography.insert(
+        "alpha".to_string(),
+        make_book("alpha", "Adams", "A.", 2020, "Alpha"),
+    );
+    bibliography.insert(
+        "beta".to_string(),
+        make_article("beta", "Baker", "B.", 2021, "Beta"),
+    );
+
+    let processor = Processor::new(style, bibliography);
+    let document = "First [@alpha] and second [@beta].";
+    let parser = DjotParser;
+    let output = processor
+        .process_document::<_, citum_engine::render::plain::PlainText>(
+            document,
+            &parser,
+            DocumentFormat::Plain,
+        )
+        .expect("document should render");
+
+    assert_output_includes(
+        &output,
+        "Alpha",
+        "the first cited entry should still render when groups_enabled is false",
+    );
+    assert_output_includes(
+        &output,
+        "Beta",
+        "the second cited entry should still render when groups_enabled is false",
+    );
+    assert_output_excludes(
+        &output,
+        "Should Not Appear",
+        "groups_enabled: false must disable groups: configuration entirely — no group \
+         heading should render, matching the documented \"render a flat bibliography \
+         instead\" contract",
+    );
+}
+
 // --- Body markup conversion for terminal formats (#824) ---
 
 fn given_markdown_block_quote_when_rendered_as_typst_then_quote_block_is_emitted() {
@@ -1870,6 +2227,42 @@ fn given_markdown_citation_inside_prose_when_rendered_as_typst_then_citation_and
         &["Kuhn", "1962"],
         "citation should render in Typst output",
     );
+}
+
+mod flat_and_partitioned_bibliography_fast_path {
+    use super::announce_behavior;
+
+    #[test]
+    fn large_library_with_small_cited_subset_renders_only_cited_entries() {
+        announce_behavior(
+            "A flat document bibliography over a large library should render only the cited subset, not every loaded reference.",
+        );
+        super::given_a_large_library_and_a_small_cited_subset_when_rendering_a_flat_document_bibliography_then_only_cited_entries_appear();
+    }
+
+    #[test]
+    fn uncited_gap_does_not_break_subsequent_author_substitution() {
+        announce_behavior(
+            "An uncited reference sitting between two same-author cited entries must not break subsequent-author substitution for the second cited entry.",
+        );
+        super::given_an_uncited_reference_between_two_same_author_cited_entries_when_rendering_a_flat_document_bibliography_then_the_second_cited_entry_still_substitutes();
+    }
+
+    #[test]
+    fn partition_sections_reset_subsequent_author_substitution_at_each_boundary() {
+        announce_behavior(
+            "Subsequent-author substitution in a sort-partitioned document bibliography must reset at each section boundary rather than carrying over from the previous section.",
+        );
+        super::given_sort_partitioned_sections_and_subsequent_author_substitution_when_rendering_a_document_bibliography_then_substitution_resets_at_each_section_boundary();
+    }
+
+    #[test]
+    fn groups_enabled_false_disables_groups_configuration_and_renders_flat() {
+        announce_behavior(
+            "groups_enabled: false must disable groups: configuration entirely and render a flat document bibliography, even when groups: is still present.",
+        );
+        super::given_groups_enabled_false_with_groups_still_configured_when_rendering_a_document_bibliography_then_it_renders_flat();
+    }
 }
 
 mod body_markup_terminal_formats {
