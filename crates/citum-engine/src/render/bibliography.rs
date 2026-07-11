@@ -197,7 +197,7 @@ pub(crate) fn render_entry_body_components_with_format<F: OutputFormat<Output = 
         _ => {}
     }
 
-    cleanup_dangling_punctuation(&mut entry_output);
+    cleanup_dangling_punctuation::<F>(&mut entry_output);
     entry_output
 }
 
@@ -370,36 +370,92 @@ fn terminal_link<F: OutputFormat<Output = String>>(output: &str) -> TerminalLink
     }
 }
 
-fn cleanup_dangling_punctuation(output: &mut String) {
-    let patterns = [
-        (", .", "."),
-        (", ,", ","),
-        (": .", "."),
-        ("; .", "."),
-        // NOTE: Removed (".,", ".") pattern - it was too aggressive and removed legitimate
-        // component suffixes like "S.," from author initials. In Citum, component suffixes are
-        // explicit and well-defined, so we don't have the CSL 1.0 dual-punctuation issue.
-        (" ,", ","),
-        (" ;", ";"),
-        (" :", ":"),
-        (" .", "."),
-        (",  ", ", "),
-        (". .", "."),
-        (".. ", ". "),
-        ("..", "."),
-        ("  ", " "), // Double space to single
-    ];
+/// Dangling-punctuation patterns to collapse, tried in order at each fixed-point step.
+const DANGLING_PUNCTUATION_PATTERNS: [(&str, &str); 13] = [
+    (", .", "."),
+    (", ,", ","),
+    (": .", "."),
+    ("; .", "."),
+    // NOTE: Removed (".,", ".") pattern - it was too aggressive and removed legitimate
+    // component suffixes like "S.," from author initials. In Citum, component suffixes are
+    // explicit and well-defined, so we don't have the CSL 1.0 dual-punctuation issue.
+    (" ,", ","),
+    (" ;", ";"),
+    (" :", ":"),
+    (" .", "."),
+    (",  ", ", "),
+    (". .", "."),
+    (".. ", ". "),
+    ("..", "."),
+    ("  ", " "), // Double space to single
+];
 
-    let mut changed = true;
-    while changed {
-        changed = false;
-        for (pattern, replacement) in &patterns {
-            if output.contains(pattern) {
-                *output = output.replace(pattern, replacement);
-                changed = true;
+/// Collapse dangling/duplicated punctuation (`". ."` → `"."`, doubled spaces,
+/// etc.) without corrupting interleaved markup, URLs, or attribute values.
+///
+/// The pattern table above is matched against the format `F`'s *visible*
+/// projection of `output` only. A match's replacement is written at the
+/// raw position of the match's first visible byte, and the match's other
+/// visible bytes are deleted from the raw string — any markup interleaved
+/// between them (e.g. a LaTeX `\emph{Title.}` boundary sitting between the
+/// separator's leading space and its period) is left untouched. Re-derives
+/// the visible projection after every edit (entries are short, so this is
+/// cheap) since an edit can expose a new match.
+#[allow(
+    clippy::string_slice,
+    reason = "byte ranges come from OutputFormat::visible_runs, which always yields char boundaries"
+)]
+fn cleanup_dangling_punctuation<F: OutputFormat<Output = String>>(output: &mut String) {
+    let fmt = F::default();
+    loop {
+        let runs = fmt.visible_runs(output);
+        let mut visible = String::with_capacity(output.len());
+        let mut raw_pos = Vec::with_capacity(output.len());
+        for run in &runs {
+            if let Some(slice) = output.get(run.clone()) {
+                visible.push_str(slice);
+                raw_pos.extend(run.clone());
             }
         }
+
+        let Some((pat, replacement, visible_at)) = DANGLING_PUNCTUATION_PATTERNS
+            .iter()
+            .find_map(|&(pat, repl)| visible.find(pat).map(|idx| (pat, repl, idx)))
+        else {
+            break;
+        };
+
+        let matched_raw_positions: Vec<usize> = (visible_at..visible_at + pat.len())
+            .filter_map(|k| raw_pos.get(k).copied())
+            .collect();
+        if matched_raw_positions.len() != pat.len() {
+            // Projection/pattern mismatch (shouldn't happen for ASCII patterns
+            // against char-boundary-safe runs) — bail rather than risk a bad edit.
+            break;
+        }
+
+        apply_minimal_raw_edit(output, &matched_raw_positions, replacement);
     }
+}
+
+/// Rewrite `output` so the raw byte at `positions[0]` is replaced by
+/// `replacement` and the raw bytes at `positions[1..]` are deleted, leaving
+/// every other byte (including any interleaved markup) untouched.
+fn apply_minimal_raw_edit(output: &mut String, positions: &[usize], replacement: &str) {
+    let Some((&front, rest)) = positions.split_first() else {
+        return;
+    };
+    let drop: std::collections::HashSet<usize> = rest.iter().copied().collect();
+
+    let mut new_output = String::with_capacity(output.len() + replacement.len());
+    for (pos, ch) in output.char_indices() {
+        if pos == front {
+            new_output.push_str(replacement);
+        } else if !drop.contains(&pos) {
+            new_output.push(ch);
+        }
+    }
+    *output = new_output;
 }
 
 #[cfg(test)]
@@ -1069,6 +1125,48 @@ mod tests {
         assert!(
             !Latex.visible_text(&entry_output).contains(".."),
             "no doubled period, got: {entry_output}"
+        );
+    }
+
+    #[test]
+    fn cleanup_dangling_punctuation_collapses_across_a_latex_markup_boundary() {
+        // A literal doubled period straddling an `\emph{...}` boundary (e.g.
+        // from an explicitly authored suffix) must still collapse to one
+        // period, and the emph markup must survive intact.
+        let mut output = r"\emph{Title.}. Next".to_string();
+        cleanup_dangling_punctuation::<Latex>(&mut output);
+
+        assert_eq!(Latex.visible_text(&output), "Title. Next");
+        assert!(
+            output.contains(r"\emph{Title"),
+            "emph markup must survive: {output}"
+        );
+    }
+
+    #[test]
+    fn cleanup_dangling_punctuation_never_touches_the_href_target() {
+        // The URL inside \href{...} is not visible text; a dangling-punctuation
+        // pattern inside it must survive even though the identical pattern
+        // outside the link gets collapsed.
+        let mut output = r"\href{https://example.com/a, .b}{Link}, .".to_string();
+        cleanup_dangling_punctuation::<Latex>(&mut output);
+
+        assert!(
+            output.contains("https://example.com/a, .b"),
+            "href target must be untouched: {output}"
+        );
+        assert_eq!(Latex.visible_text(&output), "Link.");
+    }
+
+    #[test]
+    fn cleanup_dangling_punctuation_collapses_across_a_typst_markup_boundary() {
+        let mut output = "#emph[Title.]. Next".to_string();
+        cleanup_dangling_punctuation::<Typst>(&mut output);
+
+        assert_eq!(Typst.visible_text(&output), "Title. Next");
+        assert!(
+            output.contains("#emph[Title"),
+            "emph markup must survive: {output}"
         );
     }
 }
