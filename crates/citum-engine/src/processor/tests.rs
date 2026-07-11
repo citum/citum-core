@@ -4640,7 +4640,9 @@ fn test_grouped_compound_bibliography_matching_members_merge_within_group() {
 fn test_document_bibliography_block_selects_members_before_compound_merge() {
     let processor = make_grouped_compound_selection_processor("other", "selected");
     let run = processor.begin_run().finalize();
+    let spine = processor.sorted_id_stubs();
     let rendered = processor.render_document_bibliography_block::<crate::render::plain::PlainText>(
+        &spine,
         &make_selected_bibliography_group(),
         &mut std::collections::HashSet::new(),
         None,
@@ -4681,8 +4683,10 @@ fn test_multi_bibliography_block_excludes_first_block_entries() {
     };
 
     let run = processor.begin_run().finalize();
+    let spine = processor.sorted_id_stubs();
     let mut assigned = std::collections::HashSet::new();
     let block1 = processor.render_document_bibliography_block::<crate::render::plain::PlainText>(
+        &spine,
         &make_selected_bibliography_group(),
         &mut assigned,
         None,
@@ -4690,6 +4694,7 @@ fn test_multi_bibliography_block_excludes_first_block_entries() {
         &run,
     );
     let block2 = processor.render_document_bibliography_block::<crate::render::plain::PlainText>(
+        &spine,
         &catchall,
         &mut assigned,
         None,

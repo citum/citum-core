@@ -24,7 +24,10 @@ use citum_engine::{
     Bibliography, Citation, CitationItem, Contributor, EdtfString, Locale, Monograph,
     MonographType, MultilingualString, Processor, Reference, StructuredName, Title,
 };
-use citum_schema::grouping::{GroupSort, GroupSortKey, NameSortOrder, SortKey as GroupSortKeyKind};
+use citum_schema::grouping::{
+    BibliographyGroup, FieldMatcher, GroupSelector, GroupSort, GroupSortKey, NameSortOrder,
+    SortKey as GroupSortKeyKind,
+};
 use citum_schema::options::{
     BibliographyOptions, BibliographyPartitionKind, BibliographyPartitionMode,
     BibliographySortPartitioning, Config, Disambiguation, GivennameRule, Group, LabelConfig,
@@ -42,6 +45,7 @@ use citum_schema::{
 use criterion::{BatchSize, Criterion, criterion_group, criterion_main};
 use csl_legacy::csl_json::Reference as LegacyReference;
 use indexmap::IndexMap;
+use std::collections::HashMap;
 use std::fs;
 use std::hint::black_box;
 use std::path::PathBuf;
@@ -121,6 +125,7 @@ fn bench_rendering(c: &mut Criterion) {
     bench_compound_bibliography(c);
     bench_document_bibliography(c, &style);
     bench_grouped_partition_bibliography(c, &style);
+    bench_document_bibliography_blocks(c, &style);
 }
 
 /// Benchmark the document bibliography facade (`csl26-plaz`) on the shape it
@@ -180,6 +185,62 @@ fn bench_grouped_partition_bibliography(c: &mut Criterion, style: &Style) {
             b.iter(|| {
                 black_box(
                     processor.render_grouped_bibliography_with_format_standalone::<PlainText>(),
+                );
+            });
+        },
+    );
+}
+
+/// Benchmark the repeated per-group ID-spine sort targeted by `csl26-u2kb`.
+///
+/// Partitions a large library into several disjoint `language` groups so that
+/// `render_document_bibliography_blocks` — driven here through the public
+/// `Processor::process_document_with_caller_blocks` entry point, the same
+/// path frontmatter/custom bibliography-block documents use — must resolve
+/// `g` independently rendered blocks. Before caching the sorted ID spine,
+/// each block independently re-sorted the whole library (`g * O(n log n)`
+/// total); after, the spine is computed once per call and reused across all
+/// `g` blocks.
+fn bench_document_bibliography_blocks(c: &mut Criterion, style: &Style) {
+    const GROUP_COUNT: usize = 8;
+    let large_bib = make_grouped_bibliography(400, GROUP_COUNT);
+    let cited_ids: Vec<String> = large_bib.keys().take(10).cloned().collect();
+    let document: String = cited_ids
+        .iter()
+        .map(|id| format!("Work {id} [@{id}]."))
+        .collect::<Vec<_>>()
+        .join(" ");
+    let parser = DjotParser;
+
+    let groups: Vec<BibliographyGroup> = (0..GROUP_COUNT)
+        .map(|i| BibliographyGroup {
+            id: format!("group-{i}"),
+            heading: None,
+            selector: GroupSelector {
+                field: Some(HashMap::from([(
+                    "language".to_string(),
+                    FieldMatcher::Exact(format!("lang-{i}")),
+                )])),
+                ..GroupSelector::default()
+            },
+            sort: None,
+            template: None,
+            disambiguate: None,
+        })
+        .collect();
+
+    c.bench_function(
+        "Render Document Bibliography Blocks (APA, 400 refs / 8 groups)",
+        |b| {
+            let processor = Processor::new(style.clone(), large_bib.clone());
+            b.iter(|| {
+                black_box(
+                    processor.process_document_with_caller_blocks::<_, PlainText>(
+                        &document,
+                        &groups,
+                        &parser,
+                        DocumentFormat::Plain,
+                    ),
                 );
             });
         },
@@ -337,6 +398,51 @@ fn make_large_bibliography(n: usize) -> Bibliography {
         bib.insert(
             id.clone(),
             make_ref_with_title(&id, family, given, year, &format!("Benchmark Title {i:04}")),
+        );
+    }
+    bib
+}
+
+/// Generate a synthetic bibliography of `n` entries split evenly across
+/// `num_groups` disjoint `language` values (`lang-0`, `lang-1`, ...), for
+/// benchmarking per-group bibliography-block selector matching.
+fn make_grouped_bibliography(n: usize, num_groups: usize) -> Bibliography {
+    const FAMILIES: &[&str] = &[
+        "Adams", "Baker", "Clark", "Davis", "Evans", "Foster", "Garcia", "Harris", "Ibrahim",
+        "Jones", "Kim", "Lopez", "Miller", "Nguyen", "Owens", "Patel", "Quinn", "Rossi", "Silva",
+        "Turner",
+    ];
+    const GIVENS: &[&str] = &["Alex", "Bailey", "Casey", "Drew", "Elliot"];
+
+    let mut bib = Bibliography::new();
+    for i in 0..n {
+        let family = FAMILIES[i % FAMILIES.len()];
+        let given = GIVENS[i % GIVENS.len()];
+        #[allow(
+            clippy::cast_possible_wrap,
+            clippy::cast_possible_truncation,
+            reason = "benchmark fixture: n is small and well within i32 range"
+        )]
+        let year = 1990 + (i % 30) as i32;
+        let id = format!("bench-grp-ref-{i:04}");
+        let language = format!("lang-{}", i % num_groups);
+        bib.insert(
+            id.clone(),
+            Reference::Monograph(Box::new(Monograph {
+                id: Some(id.clone().into()),
+                r#type: MonographType::Book,
+                title: Some(Title::Single(format!("Benchmark Title {i:04}"))),
+                author: Some(Contributor::StructuredName(StructuredName {
+                    family: MultilingualString::Simple(family.to_string()),
+                    given: MultilingualString::Simple(given.to_string()),
+                    suffix: None,
+                    dropping_particle: None,
+                    non_dropping_particle: None,
+                })),
+                issued: EdtfString(year.to_string()),
+                language: Some(language.into()),
+                ..Default::default()
+            })),
         );
     }
     bib
