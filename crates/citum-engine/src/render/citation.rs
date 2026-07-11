@@ -59,19 +59,27 @@ fn resolve_punctuation_collision(first: char, second: char) -> String {
 /// Three cases are handled in priority order:
 /// 1. **Punctuation-in-quote** – when `punctuation_in_quote` is set and `delim` starts with
 ///    a comma, the comma is pulled *inside* a preceding closing quotation mark (`"` or `\u{201D}`)
-///    before appending the rest of the delimiter.
-/// 2. **Punctuation collision** – when the last char of `content` and the first char of `delim`
-///    are both terminal punctuation, the pair is resolved via [`resolve_punctuation_collision`]
-///    (e.g. `".` + `". "` → `". "` rather than `".. "`).
+///    before appending the rest of the delimiter. Quote marks are literal Unicode characters
+///    in every backend, not markup, so this case looks at the raw last char directly.
+/// 2. **Punctuation collision** – when format `F`'s *visible* last char of `content` and the
+///    first char of `delim` are both terminal punctuation, the pair is resolved via
+///    [`resolve_punctuation_collision`] (e.g. `".` + `". "` → `". "` rather than `".. "`). If
+///    the raw content genuinely ends with that char, it's popped and merged as before; if the
+///    visible terminal punctuation is hidden behind trailing markup (e.g. a LaTeX `\emph{...}`
+///    close brace), the raw markup is left alone and the delimiter's redundant leading
+///    punctuation is dropped instead.
 /// 3. **Default** – append `delim` verbatim.
 #[inline]
 #[allow(
     clippy::string_slice,
     reason = "UTF-8 safe slicing based on char boundary checks"
 )]
-fn push_delimiter(content: &mut String, delim: &str, punctuation_in_quote: bool) {
+fn push_delimiter<F: OutputFormat<Output = String>>(
+    content: &mut String,
+    delim: &str,
+    punctuation_in_quote: bool,
+) {
     let delim_first = delim.chars().next();
-    let content_last = content.chars().last();
 
     if punctuation_in_quote
         && delim_first == Some(',')
@@ -83,17 +91,31 @@ fn push_delimiter(content: &mut String, delim: &str, punctuation_in_quote: bool)
         content.push(',');
         content.push(if is_curly { '\u{201D}' } else { '"' });
         content.push_str(&delim[1..]);
-    } else if let (Some(last), Some(first)) = (content_last, delim_first)
-        && is_terminal_punctuation(last)
-        && is_terminal_punctuation(first)
-    {
-        // Case 2: two adjacent terminal punctuation marks — merge them and skip the duplicate.
-        content.pop();
-        content.push_str(&resolve_punctuation_collision(last, first));
-        content.push_str(&delim[first.len_utf8()..]);
-    } else {
+        return;
+    }
+
+    let Some(first) = delim_first else {
+        content.push_str(delim);
+        return;
+    };
+    let Some(visible_last) = F::default().visible_text(content).chars().last() else {
+        content.push_str(delim);
+        return;
+    };
+
+    if !is_terminal_punctuation(visible_last) || !is_terminal_punctuation(first) {
         // Case 3: no special rule — append the delimiter verbatim.
         content.push_str(delim);
+    } else if content.ends_with(visible_last) {
+        // Case 2a: raw content genuinely ends with the visible terminal char — merge as before.
+        content.pop();
+        content.push_str(&resolve_punctuation_collision(visible_last, first));
+        content.push_str(&delim[first.len_utf8()..]);
+    } else {
+        // Case 2b: the visible terminal punctuation is behind trailing markup (e.g. LaTeX
+        // `}`) — leave the raw markup alone and just drop the delimiter's redundant leading
+        // punctuation instead of popping from `content`.
+        content.push_str(&delim[first.len_utf8()..]);
     }
 }
 
@@ -136,7 +158,7 @@ pub fn citation_to_string_with_format<F: OutputFormat<Output = String>>(
     let mut content = String::new();
     for (i, part) in parts.iter().enumerate() {
         if i > 0 {
-            push_delimiter(&mut content, delim, punctuation_in_quote);
+            push_delimiter::<F>(&mut content, delim, punctuation_in_quote);
         }
         content.push_str(part);
     }
