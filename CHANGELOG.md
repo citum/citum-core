@@ -5,6 +5,70 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.74.0] - 2026-07-11
+
+### Bug Fixes
+
+**engine**
+
+- Mangle ffi symbols in test builds ([`b5df83d`](https://github.com/citum/citum-core/commit/b5df83d2b309b2b1fd0a24a3470a7558930c81c2))
+
+- Preserve unresolved sorted citations ([`d0f2cb5`](https://github.com/citum/citum-core/commit/d0f2cb53d1fda4b73e65796634184b93348075ac))
+
+- Unify bibliography group routing ([`a44b04d`](https://github.com/citum/citum-core/commit/a44b04d3b34abf9b3fe236d5bb3e5ad217a20f41))
+
+- Keep compound row for cited members ([`8b661a4`](https://github.com/citum/citum-core/commit/8b661a46d9eafef1d21c77b36bdec85505f06087))
+
+
+**scripts**
+
+- Resolve citum-server from PATH ([`3e37008`](https://github.com/citum/citum-core/commit/3e370086a5f78192eec2ca5ebecac4084782b876))
+
+
+
+### Documentation
+
+**spec**
+
+- Add multilingual sorting spec ([`b789c9f`](https://github.com/citum/citum-core/commit/b789c9f437b89df8d49135d8577864d33dad7f9b))
+
+
+
+### Features
+
+**engine**
+
+- Support multilingual sort keys ([`9d039b3`](https://github.com/citum/citum-core/commit/9d039b337fe4892e9979421e2b77bb7aef119317))
+
+- Parallel bibliography rendering ([`fb190cf`](https://github.com/citum/citum-core/commit/fb190cf17dda8671bbc0f4c9a4c1e4023c2332f2))
+
+
+
+### Performance
+
+**engine**
+
+- Hoist configs, make parallel opt-in ([`9283534`](https://github.com/citum/citum-core/commit/9283534cbb090c7a5fa7a12699ef27b60c3f560b))
+
+- Render bibliography entries once ([`17eb6f6`](https://github.com/citum/citum-core/commit/17eb6f6e5ef48686ff8d66df45206660fd017e84))
+
+- Cache sorted-ID spine per doc call ([`2c0dea1`](https://github.com/citum/citum-core/commit/2c0dea15999b1c405768bb2a9365de77844a7e9b))
+
+
+
+### Refactor
+
+**engine**
+
+- Move render fields into RunState ([`e99d5bd`](https://github.com/citum/citum-core/commit/e99d5bd3d79d19a00d0f91e27b2a8642055c71c0))
+
+- Make render-run state explicit ([`2399218`](https://github.com/citum/citum-core/commit/23992188468f5558b3488fa2cb41b8aff5f8dea8))
+
+- Use Arc for config sharing ([`84211bc`](https://github.com/citum/citum-core/commit/84211bc5f8c8629d69c824e6261ede1451d3a12c))
+
+- Make run-state maps thread-safe ([`5824ac2`](https://github.com/citum/citum-core/commit/5824ac2590908abe9f8f9f378553ac562b14dc46))
+
+
 ## [0.73.0] - 2026-07-07
 
 ### Bug Fixes
