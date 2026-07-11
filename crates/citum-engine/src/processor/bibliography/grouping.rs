@@ -584,6 +584,18 @@ impl Processor {
     ///
     /// Both `content` and `entries` are computed from the same cited subset so
     /// subsequent-author substitution stays consistent across both outputs.
+    ///
+    /// The flat and sort-partitioned-sections cases (the common document shape)
+    /// render each cited reference's template exactly once — see
+    /// [`render_flat_document_bibliography`](Self::render_flat_document_bibliography)
+    /// — instead of once for `content` and again for `entries`. Custom
+    /// bibliography groups (`style.bibliography.groups`) need group-local
+    /// disambiguation and per-group templates that a flat entry list can't
+    /// carry, compound-numeric merging needs to see every configured group
+    /// member whether cited or not (see
+    /// [`merge_compound_entries`](Self::merge_compound_entries)), and the
+    /// unrestricted `allrefs` case always needs the full library — those three
+    /// keep the historical two-pass render.
     pub(crate) fn render_document_bibliography<F>(
         &self,
         restrict_to_cited: bool,
@@ -594,19 +606,151 @@ impl Processor {
     where
         F: OutputFormat<Output = String>,
     {
-        let content = self.render_grouped_bibliography_inner::<F>(
-            restrict_to_cited,
+        let has_custom_groups = self
+            .style
+            .bibliography
+            .as_ref()
+            .filter(|bibliography| bibliography.groups_enabled)
+            .and_then(|bibliography| bibliography.groups.as_ref())
+            .is_some();
+
+        if !restrict_to_cited || has_custom_groups || !run.state().compound_groups.is_empty() {
+            let content = self.render_grouped_bibliography_inner::<F>(
+                restrict_to_cited,
+                annotations,
+                annotation_style,
+                run,
+            );
+            let cited_ids: Vec<String> = run.state().cited_ids.iter().cloned().collect();
+            let entries = if restrict_to_cited {
+                self.process_selected_references_with_format::<F, _>(cited_ids, run)
+                    .bibliography
+            } else {
+                self.process_references_with_format::<F>(run).bibliography
+            };
+            return super::DocumentBibliography { content, entries };
+        }
+
+        let bibliography_options = self.get_bibliography_options();
+        let partitioning = bibliography_options
+            .sort_partitioning
+            .as_ref()
+            .filter(|partitioning| crate::sort_partitioning::should_render_sections(partitioning));
+
+        self.render_flat_document_bibliography::<F>(
+            partitioning,
             annotations,
             annotation_style,
             run,
-        );
-        let cited_ids: Vec<String> = run.state().cited_ids.iter().cloned().collect();
-        let entries = if restrict_to_cited {
-            self.process_selected_references_with_format::<F, _>(cited_ids, run)
-                .bibliography
+        )
+    }
+
+    /// Render the flat, cited-only document bibliography in one pass.
+    ///
+    /// Fast path for [`render_document_bibliography`](Self::render_document_bibliography)
+    /// once the caller has established there are no custom bibliography groups
+    /// and no compound-numeric groups active for this run. Renders each cited
+    /// reference's template exactly once (`render_numbered_refs` — the
+    /// expensive step, resolving names/dates/titles through the full template)
+    /// and reuses that render for both outputs:
+    ///
+    /// - `entries`: one continuous subsequent-author-substitution pass over the
+    ///   flat, globally sorted cited set — matches the historical
+    ///   `process_selected_references_with_format` contract, including its
+    ///   ordering.
+    /// - `content`: without partitioning, the same flat pass rendered to a
+    ///   string. With `partitioning` requesting visible sections, an
+    ///   independent substitution pass runs *per section* — substitution
+    ///   state must reset at each section boundary to match historical
+    ///   [`render_with_partition_sections`](Self::render_with_partition_sections)
+    ///   output — reusing the one template render already produced above.
+    ///   Only this lightweight linear post-pass reruns per section; the
+    ///   expensive template render does not.
+    ///
+    /// Entry numbering (`number_sorted_refs`) is resolved once, in flat sorted
+    /// order, for both outputs. Numeric bibliography styles pre-assign
+    /// citation numbers document-wide during `begin_run` and look them up from
+    /// that shared map regardless of section membership, so this is a no-op
+    /// difference for them. Only the position-based fallback used by
+    /// non-numeric styles could differ from a per-section index — but
+    /// non-numeric styles do not render a citation-number variable, so that
+    /// fallback value is never observable in output.
+    fn render_flat_document_bibliography<F>(
+        &self,
+        partitioning: Option<&BibliographySortPartitioning>,
+        annotations: Option<&HashMap<String, String>>,
+        annotation_style: Option<&AnnotationStyle>,
+        run: &FinalizedRun,
+    ) -> super::DocumentBibliography
+    where
+        F: OutputFormat<Output = String>,
+    {
+        let cited = &run.state().cited_ids;
+        let mut refs: Vec<&Reference> = self.bibliography.values().collect();
+        refs.retain(|reference| {
+            reference
+                .id()
+                .as_deref()
+                .is_some_and(|id| cited.contains(id))
+        });
+        let sorted_refs = self.sort_references(refs);
+
+        let ctx = self.flat_render_context(run);
+        let numbered_refs = super::number_sorted_refs(sorted_refs.iter().copied(), run);
+        let rendered = self.render_numbered_refs::<F>(&numbered_refs, &ctx);
+
+        let substitute = ctx
+            .bibliography_config
+            .subsequent_author_substitute
+            .as_ref();
+
+        let entries = self.apply_substitution_post_pass::<F>(rendered.clone(), substitute, &ctx);
+
+        let content = if let Some(partitioning) = partitioning {
+            let mut result = String::new();
+            for (partition_key, refs_in_section) in crate::sort_partitioning::partition_references(
+                sorted_refs,
+                &self.locale,
+                partitioning,
+            ) {
+                let heading = partition_key
+                    .as_ref()
+                    .and_then(|key| partitioning.headings.get(key));
+                let section_ids: HashSet<String> = refs_in_section
+                    .iter()
+                    .filter_map(|reference| reference.id().map(|id| id.to_string()))
+                    .collect();
+                let section_rendered: Vec<_> = rendered
+                    .iter()
+                    .filter(|(reference, _)| {
+                        reference
+                            .id()
+                            .as_deref()
+                            .is_some_and(|id| section_ids.contains(id))
+                    })
+                    .cloned()
+                    .collect();
+                let section_entries =
+                    self.apply_substitution_post_pass::<F>(section_rendered, substitute, &ctx);
+                self.append_rendered_partition::<F>(
+                    &mut result,
+                    heading,
+                    section_entries,
+                    annotations,
+                    annotation_style,
+                );
+            }
+            F::default().finish(result)
+        } else if entries.is_empty() {
+            String::new()
         } else {
-            self.process_references_with_format::<F>(run).bibliography
+            crate::render::refs_to_string_slice_with_format::<F>(
+                &entries,
+                annotations,
+                annotation_style,
+            )
         };
+
         super::DocumentBibliography { content, entries }
     }
 
