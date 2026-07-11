@@ -5,7 +5,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Typst output format.
 
+use std::ops::Range;
+
 use super::format::{OutputFormat, QuoteMarks};
+use super::visible_scan::{RunBuilder, skip_balanced};
 use citum_schema::template::WrapPunctuation;
 
 /// Typst renderer.
@@ -262,5 +265,118 @@ impl OutputFormat for Typst {
         };
 
         format!("{} <{}>", content, self.format_id(id))
+    }
+
+    /// Strip `#func(...)[...]` wrappers (function name, parenthesized
+    /// arguments — e.g. a `#link("url")` target — and the content group's
+    /// `[`/`]` delimiters), keeping the bracketed content visible. A literal
+    /// `[content]` not preceded by `#func` (i.e. from
+    /// [`Self::wrap_punctuation`]'s `WrapPunctuation::Brackets`) keeps its
+    /// brackets visible, since those are house-style punctuation, not
+    /// markup. Backslash-escaped characters are visible as themselves.
+    fn visible_runs(&self, fragment: &str) -> Vec<Range<usize>> {
+        let mut runs = RunBuilder::default();
+        let chars: Vec<(usize, char)> = fragment.char_indices().collect();
+        let mut i = 0;
+        let mut bracket_stack: Vec<bool> = Vec::new();
+        while let Some(&(pos, ch)) = chars.get(i) {
+            match ch {
+                '\\' => {
+                    if let Some(&(epos, echar)) = chars.get(i + 1) {
+                        runs.push_visible(epos, epos + echar.len_utf8());
+                    }
+                    i += 2;
+                }
+                '#' => i = consume_function_head(&chars, i, &mut bracket_stack),
+                '[' => {
+                    bracket_stack.push(false);
+                    runs.push_visible(pos, pos + 1);
+                    i += 1;
+                }
+                ']' => {
+                    if !bracket_stack.pop().unwrap_or(false) {
+                        runs.push_visible(pos, pos + 1);
+                    }
+                    i += 1;
+                }
+                _ => {
+                    runs.push_visible(pos, pos + ch.len_utf8());
+                    i += 1;
+                }
+            }
+        }
+        runs.finish()
+    }
+}
+
+/// Consume a `#ident(...)?[`-style function head starting at the `#` at
+/// `chars[i]`: the identifier and any parenthesized arguments are markup
+/// (invisible); if a content group `[` follows, push `true` onto
+/// `bracket_stack` so its matching `]` is later recognized as markup too.
+fn consume_function_head(
+    chars: &[(usize, char)],
+    i: usize,
+    bracket_stack: &mut Vec<bool>,
+) -> usize {
+    let mut j = i + 1;
+    while chars
+        .get(j)
+        .is_some_and(|&(_, c)| c.is_ascii_alphanumeric() || c == '_')
+    {
+        j += 1;
+    }
+    if chars.get(j).map(|&(_, c)| c) == Some('(') {
+        j = skip_balanced(chars, j, '(', ')', true);
+    }
+    if chars.get(j).map(|&(_, c)| c) == Some('[') {
+        bracket_stack.push(true);
+        j += 1;
+    }
+    j
+}
+
+#[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn visible_text_strips_emph_function_and_brackets() {
+        let fmt = Typst;
+        assert_eq!(fmt.visible_text("#emph[Title.]"), "Title.");
+    }
+
+    #[test]
+    fn visible_text_hides_link_target_keeps_content() {
+        let fmt = Typst;
+        assert_eq!(
+            fmt.visible_text(r#"#link("https://example.com/a.b")[Example]"#),
+            "Example"
+        );
+    }
+
+    #[test]
+    fn visible_text_handles_nested_functions() {
+        let fmt = Typst;
+        assert_eq!(fmt.visible_text("#strong[#emph[Title.]]"), "Title.");
+    }
+
+    #[test]
+    fn visible_text_keeps_literal_wrap_brackets_visible() {
+        let fmt = Typst;
+        // WrapPunctuation::Brackets: bare `[content]`, not a function call.
+        assert_eq!(fmt.visible_text("[Dataset]"), "[Dataset]");
+    }
+
+    #[test]
+    fn visible_text_keeps_escaped_punctuation() {
+        let fmt = Typst;
+        assert_eq!(fmt.visible_text(r"A \# B"), "A # B");
     }
 }

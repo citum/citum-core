@@ -5,7 +5,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Djot output format.
 
+use std::ops::Range;
+
 use super::format::{OutputFormat, QuoteMarks};
+use super::visible_scan::{RunBuilder, find_matching, skip_balanced};
 use citum_schema::template::WrapPunctuation;
 
 #[derive(Default, Clone)]
@@ -124,6 +127,59 @@ impl OutputFormat for Djot {
             content
         }
     }
+
+    /// Strip `_`/`*` emphasis delimiters and a `[content]{.class}` span's or
+    /// `[content](url)` link's bracket-plus-attribute markup, keeping the
+    /// bracketed content visible. A bracket pair followed by neither `{` nor
+    /// `(` (i.e. from [`Self::wrap_punctuation`]'s `WrapPunctuation::Brackets`)
+    /// keeps its brackets visible, since those are house-style punctuation.
+    ///
+    /// Djot's [`Self::text`] does not escape its input ("no escaping for
+    /// Djot as requested"), so a data field containing a literal `_`, `*`,
+    /// `[`, or `]` is inherently ambiguous with markup here — the same
+    /// ambiguity the Djot renderer itself already has.
+    fn visible_runs(&self, fragment: &str) -> Vec<Range<usize>> {
+        let mut runs = RunBuilder::default();
+        let chars: Vec<(usize, char)> = fragment.char_indices().collect();
+        let mut i = 0;
+        let mut pending_close: Option<usize> = None;
+        while let Some(&(pos, ch)) = chars.get(i) {
+            match ch {
+                '_' | '*' => i += 1,
+                '[' => {
+                    let close_i = find_matching(&chars, i, '[', ']', false);
+                    let after = close_i.and_then(|c| chars.get(c + 1).map(|&(_, next)| next));
+                    if matches!(after, Some('{' | '(')) {
+                        pending_close = close_i;
+                        i += 1;
+                    } else {
+                        runs.push_visible(pos, pos + 1);
+                        i += 1;
+                    }
+                }
+                ']' => {
+                    if pending_close == Some(i) {
+                        pending_close = None;
+                        let mut j = i + 1;
+                        match chars.get(j).map(|&(_, c)| c) {
+                            Some('{') => j = skip_balanced(&chars, j, '{', '}', false),
+                            Some('(') => j = skip_balanced(&chars, j, '(', ')', false),
+                            _ => {}
+                        }
+                        i = j;
+                    } else {
+                        runs.push_visible(pos, pos + 1);
+                        i += 1;
+                    }
+                }
+                _ => {
+                    runs.push_visible(pos, pos + ch.len_utf8());
+                    i += 1;
+                }
+            }
+        }
+        runs.finish()
+    }
 }
 
 #[cfg(test)]
@@ -228,5 +284,34 @@ mod tests {
                 expected
             );
         }
+    }
+
+    #[test]
+    fn visible_text_strips_emph_and_strong_delimiters() {
+        let fmt = Djot;
+        assert_eq!(fmt.visible_text("_Title._"), "Title.");
+        assert_eq!(fmt.visible_text("*Title.*"), "Title.");
+    }
+
+    #[test]
+    fn visible_text_strips_semantic_span_attributes() {
+        let fmt = Djot;
+        assert_eq!(fmt.visible_text("[Smith]{.author}"), "Smith");
+    }
+
+    #[test]
+    fn visible_text_hides_link_url_keeps_text() {
+        let fmt = Djot;
+        assert_eq!(
+            fmt.visible_text("[Example](https://example.com/a.b)"),
+            "Example"
+        );
+    }
+
+    #[test]
+    fn visible_text_keeps_literal_wrap_brackets_visible() {
+        let fmt = Djot;
+        // WrapPunctuation::Brackets: bare `[content]`, no `{...}`/`(...)` follows.
+        assert_eq!(fmt.visible_text("[Dataset]"), "[Dataset]");
     }
 }

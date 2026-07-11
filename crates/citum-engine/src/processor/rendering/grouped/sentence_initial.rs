@@ -60,7 +60,7 @@ impl Renderer<'_> {
                 continue;
             }
 
-            if component_starts_new_sentence(
+            if component_starts_new_sentence::<F>(
                 &entry_output,
                 &rendered,
                 &default_separator,
@@ -71,7 +71,7 @@ impl Renderer<'_> {
             }
 
             let rendered = render_component_with_format::<F>(component);
-            append_rendered_component(
+            append_rendered_component::<F>(
                 &mut entry_output,
                 &rendered,
                 &default_separator,

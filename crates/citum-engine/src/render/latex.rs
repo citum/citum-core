@@ -5,7 +5,11 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! LaTeX output format.
 
+use std::borrow::Cow;
+use std::ops::Range;
+
 use super::format::{OutputFormat, QuoteMarks};
+use super::visible_scan::{RunBuilder, skip_balanced};
 use citum_schema::template::WrapPunctuation;
 
 /// LaTeX renderer.
@@ -227,5 +231,209 @@ impl OutputFormat for Latex {
         _metadata: &super::format::ProcEntryMetadata,
     ) -> Self::Output {
         format!("\\noindent\\hangindent=2em\\hangafter=1 {content}")
+    }
+
+    /// Strip LaTeX commands (`\emph`, `\textbf`, ...) and their brace
+    /// delimiters, keeping brace *contents* visible. A backslash-escaped
+    /// punctuation mark (`\&`, `\_`, `\%`, `\#`, `\$`, `\{`, `\}`) is visible
+    /// as the escaped character itself. `\href{target}{content}` is
+    /// special-cased so the URL target stays invisible — it must not
+    /// participate in separator/dedup decisions — while `content` does.
+    ///
+    /// Named commands that stand in for a single visible character
+    /// (`\textbackslash{}`, `\textasciitilde{}`, `\textasciicircum{}`) have
+    /// no backing byte range here — see [`Self::visible_text`], which
+    /// synthesizes them for boundary decisions.
+    fn visible_runs(&self, fragment: &str) -> Vec<Range<usize>> {
+        let mut runs = RunBuilder::default();
+        let chars: Vec<(usize, char)> = fragment.char_indices().collect();
+        let mut i = 0;
+        while let Some(&(pos, ch)) = chars.get(i) {
+            if ch == '\\' {
+                let (escape, next_i) = scan_backslash_escape(&chars, i);
+                if let LatexEscape::Punct(_) = escape
+                    && let Some(&(epos, echar)) = chars.get(i + 1)
+                {
+                    runs.push_visible(epos, epos + echar.len_utf8());
+                }
+                i = next_i;
+                continue;
+            }
+            if ch == '{' || ch == '}' {
+                i += 1;
+                continue;
+            }
+            runs.push_visible(pos, pos + ch.len_utf8());
+            i += 1;
+        }
+        runs.finish()
+    }
+
+    /// As [`Self::visible_runs`], but additionally synthesizes the single
+    /// visible character that `\textbackslash{}`/`\textasciitilde{}`/
+    /// `\textasciicircum{}` stand in for (`\`, `~`, `^`), since those have no
+    /// backing byte range in the raw fragment. Used for read-only boundary
+    /// decisions (first/last visible char); `visible_runs` stays raw-byte
+    /// accurate for `cleanup_dangling_punctuation`'s in-place raw edits.
+    fn visible_text<'a>(&self, fragment: &'a str) -> Cow<'a, str> {
+        let chars: Vec<(usize, char)> = fragment.char_indices().collect();
+        let mut i = 0;
+        let mut owned = String::with_capacity(fragment.len());
+        let mut any_markup = false;
+        while let Some(&(_, ch)) = chars.get(i) {
+            if ch == '\\' {
+                any_markup = true;
+                let (escape, next_i) = scan_backslash_escape(&chars, i);
+                match escape {
+                    LatexEscape::Punct(c) => owned.push(c),
+                    LatexEscape::Command { synth: Some(c) } => owned.push(c),
+                    LatexEscape::Command { synth: None } | LatexEscape::Bare => {}
+                }
+                i = next_i;
+                continue;
+            }
+            if ch == '{' || ch == '}' {
+                any_markup = true;
+                i += 1;
+                continue;
+            }
+            owned.push(ch);
+            i += 1;
+        }
+        if any_markup {
+            Cow::Owned(owned)
+        } else {
+            Cow::Borrowed(fragment)
+        }
+    }
+}
+
+/// Outcome of classifying the backslash escape at `chars[i]`.
+enum LatexEscape {
+    /// An escaped punctuation mark (`\&`, `\_`, ...); visible as the escaped char.
+    Punct(char),
+    /// A named ascii-alpha command. `synth` holds the single character it
+    /// stands in for (`\textbackslash{}` → `\`, etc.), when applicable.
+    Command { synth: Option<char> },
+    /// A lone backslash with no recognized continuation.
+    Bare,
+}
+
+/// Classify the `\` at `chars[i]`, returning the outcome and the index just
+/// past it — past the command name (and past `\href`'s target brace group),
+/// or past the escaped char for punctuation escapes.
+fn scan_backslash_escape(chars: &[(usize, char)], i: usize) -> (LatexEscape, usize) {
+    match chars.get(i + 1).map(|&(_, c)| c) {
+        Some(c @ ('{' | '}' | '$' | '&' | '#' | '_' | '%')) => (LatexEscape::Punct(c), i + 2),
+        Some(c) if c.is_ascii_alphabetic() => {
+            let mut j = i + 1;
+            let mut command = String::new();
+            while let Some(&(_, cc)) = chars.get(j) {
+                if !cc.is_ascii_alphabetic() {
+                    break;
+                }
+                command.push(cc);
+                j += 1;
+            }
+            let synth = match command.as_str() {
+                "textbackslash" => Some('\\'),
+                "textasciitilde" => Some('~'),
+                "textasciicircum" => Some('^'),
+                _ => None,
+            };
+            let end = if command == "href" {
+                skip_balanced(chars, j, '{', '}', false)
+            } else {
+                j
+            };
+            (LatexEscape::Command { synth }, end)
+        }
+        _ => (LatexEscape::Bare, i + 1),
+    }
+}
+
+#[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::panic,
+    clippy::indexing_slicing,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn visible_text_strips_emph_command_and_braces() {
+        let fmt = Latex;
+        assert_eq!(fmt.visible_text(r"\emph{Title.}"), "Title.");
+    }
+
+    #[test]
+    fn visible_text_keeps_escaped_punctuation() {
+        let fmt = Latex;
+        assert_eq!(fmt.visible_text(r"Smith \& Jones"), "Smith & Jones");
+    }
+
+    #[test]
+    fn visible_text_hides_href_target_keeps_content() {
+        let fmt = Latex;
+        assert_eq!(
+            fmt.visible_text(r"\href{https://example.com/a.b}{Example}"),
+            "Example"
+        );
+    }
+
+    #[test]
+    fn visible_text_handles_nested_commands() {
+        let fmt = Latex;
+        assert_eq!(fmt.visible_text(r"\textbf{\emph{Title.}}"), "Title.");
+    }
+
+    #[test]
+    fn visible_text_is_borrowed_when_no_markup() {
+        let fmt = Latex;
+        assert_eq!(fmt.visible_text("Plain text."), "Plain text.");
+    }
+
+    #[test]
+    fn visible_text_synthesizes_escaped_backslash() {
+        let fmt = Latex;
+        assert_eq!(fmt.visible_text(r"C:\textbackslash{}Users"), r"C:\Users");
+    }
+
+    #[test]
+    fn visible_text_synthesizes_escaped_tilde() {
+        let fmt = Latex;
+        assert_eq!(
+            fmt.visible_text(r"Title\textasciitilde{}Subtitle"),
+            "Title~Subtitle"
+        );
+    }
+
+    #[test]
+    fn visible_text_synthesizes_escaped_caret() {
+        let fmt = Latex;
+        assert_eq!(fmt.visible_text(r"x\textasciicircum{}2"), "x^2");
+    }
+
+    #[test]
+    fn visible_text_synthesized_char_is_seen_as_the_trailing_char() {
+        // A field ending in an escaped tilde must expose that tilde as the
+        // last visible char, not disappear (the gap this fixes: the raw
+        // fragment's last char is `}`, not `~`).
+        let fmt = Latex;
+        let rendered = fmt.emph(r"Title\textasciitilde{}".to_string());
+        assert_eq!(fmt.visible_text(&rendered).chars().last(), Some('~'));
+    }
+
+    #[test]
+    fn visible_runs_does_not_claim_a_byte_range_for_synthesized_chars() {
+        // visible_runs stays raw-byte accurate (used for in-place raw edits
+        // in cleanup_dangling_punctuation) — the synthesized char has no
+        // backing byte, so it must not appear as a run.
+        let fmt = Latex;
+        let runs = fmt.visible_runs(r"\textasciitilde{}");
+        assert!(runs.is_empty(), "expected no visible runs, got {runs:?}");
     }
 }

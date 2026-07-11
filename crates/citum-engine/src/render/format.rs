@@ -5,6 +5,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 //! Output format trait for pluggable renderers.
 
+use std::borrow::Cow;
+use std::ops::Range;
+
 use citum_schema::locale::GrammarOptions;
 use citum_schema::template::WrapPunctuation;
 
@@ -260,6 +263,45 @@ pub trait OutputFormat: Default + Clone {
     /// Render a full citation container with one or more reference IDs.
     fn citation(&self, _ids: Vec<String>, content: Self::Output) -> Self::Output {
         content
+    }
+
+    // ── Visible-text methods ────────────────────────────────────────────────
+    // Used by bibliography/citation punctuation-boundary logic so separator
+    // and dedup decisions look at logical text, not backend markup (the
+    // "backends differ only in markup" rule — see DESIGN_PRINCIPLES §7).
+
+    /// Byte ranges of `fragment` that are visible (non-markup) text, in order.
+    ///
+    /// The default treats the whole fragment as visible, which is correct
+    /// for [`PlainText`](crate::render::plain::PlainText) and safe for any
+    /// third-party format that hasn't implemented a lexer: boundary logic
+    /// simply falls back to looking at raw characters, as it always has.
+    /// Backends whose inline methods (`emph`, `link`, `wrap_punctuation`,
+    /// ...) emit markup should override this to exclude it.
+    fn visible_runs(&self, fragment: &str) -> Vec<Range<usize>> {
+        let mut runs = Vec::new();
+        if !fragment.is_empty() {
+            runs.push(0..fragment.len());
+        }
+        runs
+    }
+
+    /// The visible (markup-stripped) text of a rendered fragment.
+    ///
+    /// Borrows `fragment` unchanged when it is entirely visible (the common
+    /// case); otherwise stitches the visible runs into an owned `String`.
+    fn visible_text<'a>(&self, fragment: &'a str) -> Cow<'a, str> {
+        let runs = self.visible_runs(fragment);
+        if runs.len() == 1 && runs.first() == Some(&(0..fragment.len())) {
+            return Cow::Borrowed(fragment);
+        }
+        let mut owned = String::with_capacity(fragment.len());
+        for run in runs {
+            if let Some(slice) = fragment.get(run) {
+                owned.push_str(slice);
+            }
+        }
+        Cow::Owned(owned)
     }
 
     /// Hyperlink the content to a URL.

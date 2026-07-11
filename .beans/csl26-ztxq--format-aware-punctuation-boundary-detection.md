@@ -1,14 +1,14 @@
 ---
 # csl26-ztxq
 title: Format-aware punctuation boundary detection
-status: todo
+status: in-progress
 type: task
 priority: normal
 tags:
     - punctuation
     - rendering
 created_at: 2026-07-04T17:11:33Z
-updated_at: 2026-07-06T18:45:57Z
+updated_at: 2026-07-11T19:09:00Z
 parent: csl26-8m2p
 ---
 
