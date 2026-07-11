@@ -132,7 +132,10 @@ impl Processor {
     ///
     /// Used for grouping paths that only need IDs for selector matching — avoids
     /// the full PlainText render pass that `process_references` performs.
-    pub(super) fn sorted_id_stubs(&self) -> Vec<ProcEntry> {
+    /// `pub(crate)` so callers that render multiple bibliography blocks in one
+    /// pass (or exercise that path in tests) can compute this once and share
+    /// it, instead of each block independently re-sorting the bibliography.
+    pub(crate) fn sorted_id_stubs(&self) -> Vec<ProcEntry> {
         // Numeric citation numbers are already populated by `Processor::begin_run`,
         // which every `FinalizedRun` this module consumes was produced from.
         self.sort_references(self.bibliography.values().collect())
@@ -905,9 +908,16 @@ impl Processor {
     /// Extract and render entries for a bibliography group.
     ///
     /// Returns the individual processed entries for the group, threading
-    /// the `assigned` dedup set to ensure each reference appears in only one group.
+    /// the `assigned` dedup set to ensure each reference appears in only one
+    /// group. `spine` is the document-wide sorted ID stub list (see
+    /// [`sorted_id_stubs`](Self::sorted_id_stubs)); callers that render
+    /// multiple groups in one pass (e.g.
+    /// [`render_document_bibliography_blocks`](Self::render_document_bibliography_blocks))
+    /// compute it once and pass the same slice to every group instead of
+    /// re-sorting the whole bibliography per group.
     fn entries_for_bibliography_group<F>(
         &self,
+        spine: &[ProcEntry],
         group: &BibliographyGroup,
         assigned: &mut HashSet<String>,
         run: &FinalizedRun,
@@ -915,14 +925,12 @@ impl Processor {
     where
         F: OutputFormat<Output = String>,
     {
-        let bibliography = self.sorted_id_stubs();
         let cited_ids = &run.state().cited_ids;
         let evaluator = SelectorEvaluator::new(cited_ids);
         let bibliography_config = self.get_bibliography_config();
         let sorter = ReferenceSorter::with_bibliography_config(&self.locale, &bibliography_config);
 
-        let matching_refs =
-            self.collect_matching_group_refs(&bibliography, assigned, &evaluator, group);
+        let matching_refs = self.collect_matching_group_refs(spine, assigned, &evaluator, group);
         Self::mark_group_members_assigned(assigned, &matching_refs);
 
         if matching_refs.is_empty() {
@@ -937,13 +945,7 @@ impl Processor {
 
         let local_hints = self.build_group_local_hints(&sorted_refs, group);
         self.merge_compound_entries::<F>(
-            self.render_group_entries::<F>(
-                &bibliography,
-                sorted_refs,
-                group,
-                local_hints.as_ref(),
-                run,
-            ),
+            self.render_group_entries::<F>(spine, sorted_refs, group, local_hints.as_ref(), run),
             run,
         )
     }
@@ -952,12 +954,20 @@ impl Processor {
     ///
     /// Returns heading and body separately so callers can insert headings
     /// in their own output format.
+    ///
+    /// `spine` is the document-wide sorted ID spine (see
+    /// [`sorted_id_stubs`](Self::sorted_id_stubs)). Standalone callers pass
+    /// their own `self.sorted_id_stubs()`;
+    /// [`render_document_bibliography_blocks`](Self::render_document_bibliography_blocks)
+    /// computes it once and shares the same slice across every block,
+    /// avoiding a full bibliography re-sort per block.
     #[allow(
         clippy::too_many_arguments,
         reason = "internal helper, all params load-bearing"
     )]
     pub(crate) fn render_document_bibliography_block<F>(
         &self,
+        spine: &[ProcEntry],
         group: &BibliographyGroup,
         assigned: &mut HashSet<String>,
         annotations: Option<&HashMap<String, String>>,
@@ -973,7 +983,7 @@ impl Processor {
             .take()
             .and_then(|group_heading| self.resolve_group_heading(&group_heading));
 
-        let entries = self.entries_for_bibliography_group::<F>(&headingless, assigned, run);
+        let entries = self.entries_for_bibliography_group::<F>(spine, &headingless, assigned, run);
         let body = crate::render::refs_to_string_slice_with_format::<F>(
             &entries,
             annotations,
@@ -990,7 +1000,11 @@ impl Processor {
     /// Render an ordered sequence of sectional bibliography blocks.
     ///
     /// Threads a single `assigned` dedup set so each reference appears in
-    /// only one block. Returns rendered groups with heading, body, and entries.
+    /// only one block. Returns rendered groups with heading, body, and
+    /// entries. Computes the sorted ID spine once for the whole call (see
+    /// [`sorted_id_stubs`](Self::sorted_id_stubs)) and shares it across every
+    /// block, instead of each block independently re-sorting the full
+    /// bibliography.
     pub(crate) fn render_document_bibliography_blocks<F>(
         &self,
         groups: &[BibliographyGroup],
@@ -1001,11 +1015,13 @@ impl Processor {
     where
         F: OutputFormat<Output = String>,
     {
+        let spine = self.sorted_id_stubs();
         let mut assigned = std::collections::HashSet::new();
         groups
             .iter()
             .map(|group| {
                 self.render_document_bibliography_block::<F>(
+                    &spine,
                     group,
                     &mut assigned,
                     annotations,
