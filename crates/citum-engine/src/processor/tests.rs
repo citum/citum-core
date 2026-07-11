@@ -4352,14 +4352,7 @@ bibliography:
     );
 }
 
-/// Verifies the document bibliography facade keeps its historical two-pass
-/// render for compound-numeric groups: `render_document_bibliography`'s
-/// single-pass fast path (`csl26-plaz`) must not activate when a run has
-/// active compound groups, because merging a compound entry needs to see
-/// every configured group member — cited or not — while `entries` must stay
-/// cited-only and unmerged.
-#[test]
-fn test_render_document_bibliography_compound_groups_use_full_render() {
+fn make_compound_document_processor(partitioned: bool) -> Processor {
     use indexmap::IndexMap;
 
     let yaml = r#"
@@ -4384,7 +4377,22 @@ bibliography:
       form: long
     - title: primary
 "#;
-    let style: Style = serde_yaml::from_str(yaml).unwrap();
+    let mut style: Style = serde_yaml::from_str(yaml).unwrap();
+    if partitioned {
+        style
+            .bibliography
+            .as_mut()
+            .unwrap()
+            .options
+            .get_or_insert_default()
+            .sort_partitioning = Some(citum_schema::options::BibliographySortPartitioning {
+            by: citum_schema::options::BibliographyPartitionKind::Language,
+            mode: citum_schema::options::BibliographyPartitionMode::Sections,
+            order: Vec::new(),
+            headings: HashMap::new(),
+            unknown_fields: Default::default(),
+        });
+    }
 
     let refs_json = r#"[
         {
@@ -4426,7 +4434,31 @@ bibliography:
         vec!["ref-a".to_string(), "ref-b".to_string()],
     );
 
-    let processor = Processor::with_compound_sets(style, bib, sets);
+    Processor::with_compound_sets(style, bib, sets)
+}
+
+#[test]
+fn test_partitioned_compound_bibliography_preserves_all_references_merge() {
+    let processor = make_compound_document_processor(true);
+    let partitioned = processor
+        .render_grouped_bibliography_with_format_standalone::<crate::render::plain::PlainText>();
+    assert_eq!(
+        partitioned,
+        "[1] a) A. Smith. Article A., b) B. Jones. Article B.\n\n[2] C. Brown. Standalone Article.",
+        "partitioned all-references content should merge both compound members under one \
+         label and retain standalone entries"
+    );
+}
+
+/// Verifies the document bibliography facade keeps its historical two-pass
+/// render for compound-numeric groups: `render_document_bibliography`'s
+/// single-pass fast path (`csl26-plaz`) must not activate when a run has
+/// active compound groups, because merging a compound entry needs to see
+/// every configured group member — cited or not — while `entries` must stay
+/// cited-only and unmerged.
+#[test]
+fn test_render_document_bibliography_compound_groups_use_full_render() {
+    let processor = make_compound_document_processor(false);
 
     // Cite only "ref-a" — the other compound-group member ("ref-b") and the
     // standalone reference ("ref-c") are never cited.

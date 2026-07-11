@@ -21,8 +21,8 @@ use citum_schema::reference::ClassExtension;
 use common::*;
 
 use citum_engine::{
-    Processor, render::html::Html, render::latex::Latex, render::plain::PlainText,
-    render::typst::Typst,
+    Citation, CitationItem, Processor, render::html::Html, render::latex::Latex,
+    render::plain::PlainText, render::typst::Typst,
 };
 use citum_schema::{
     BibliographySpec, CitationSpec, Style, StyleInfo,
@@ -211,9 +211,18 @@ bibliography:
 }
 
 fn partition_reference(id: &str, title: &str, language: Option<&str>) -> InputReference {
+    typed_partition_reference(id, "book", title, language)
+}
+
+fn typed_partition_reference(
+    id: &str,
+    ref_type: &str,
+    title: &str,
+    language: Option<&str>,
+) -> InputReference {
     let mut fixture = serde_json::json!({
         "id": id,
-        "type": "book",
+        "type": ref_type,
         "title": title
     });
     if let Some(language) = language {
@@ -605,6 +614,108 @@ groups:
     assert!(
         !output.contains("Han"),
         "auto-partition heading 'Han' must not appear when manual groups are configured: {output}"
+    );
+}
+
+#[test]
+fn disabled_manual_groups_render_every_reference_flat() {
+    announce_behavior(
+        "Disabling a retained manual groups block renders the complete standalone bibliography without group headings.",
+    );
+    let style = build_partition_style(
+        "",
+        r#"
+groups-enabled: false
+groups:
+  - id: disabled-books
+    heading: { literal: "Disabled Books" }
+    selector:
+      type: book
+"#,
+    );
+    let bibliography = IndexMap::from([
+        (
+            "book".to_string(),
+            typed_partition_reference("book", "book", "Alpha Book", Some("en")),
+        ),
+        (
+            "article".to_string(),
+            typed_partition_reference("article", "article-journal", "Beta Article", Some("en")),
+        ),
+    ]);
+    let processor = Processor::new(style, bibliography);
+
+    assert_eq!(
+        processor.render_grouped_bibliography_with_format_standalone::<PlainText>(),
+        "Alpha Book\n\nBeta Article"
+    );
+}
+
+#[test]
+fn grouped_live_run_remains_all_references() {
+    announce_behavior(
+        "Grouped rendering against a live run includes the whole library even when only one reference has been cited.",
+    );
+    let style = build_partition_style("", "");
+    let bibliography = IndexMap::from([
+        (
+            "cited".to_string(),
+            typed_partition_reference("cited", "book", "Alpha Cited", Some("en")),
+        ),
+        (
+            "uncited".to_string(),
+            typed_partition_reference("uncited", "article-journal", "Beta Uncited", Some("en")),
+        ),
+    ]);
+    let processor = Processor::new(style, bibliography);
+    let citation = Citation {
+        items: vec![CitationItem {
+            id: "cited".to_string(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let mut run = processor.begin_run();
+    processor
+        .process_citation_with_format::<PlainText>(&citation, &mut run)
+        .expect("citation should render");
+    let run = run.finalize();
+
+    assert_eq!(
+        processor.render_grouped_bibliography_with_format::<PlainText>(&run),
+        "Alpha Cited\n\nBeta Uncited"
+    );
+}
+
+#[test]
+fn disabled_manual_groups_fall_through_to_partition_sections() {
+    announce_behavior(
+        "Disabling manual groups leaves automatic bibliography partition sections active.",
+    );
+    let style = build_partition_style(
+        r#"
+options:
+  sort-partitioning:
+    by: language
+    mode: sections
+    order: [ru, en]
+    headings:
+      ru: { literal: "Russian" }
+      en: { literal: "English" }
+"#,
+        r#"
+groups-enabled: false
+groups:
+  - id: disabled
+    heading: { literal: "Disabled Manual Group" }
+    selector: {}
+"#,
+    );
+    let processor = Processor::new(style, language_partition_bibliography());
+
+    assert_eq!(
+        processor.render_grouped_bibliography_with_format_standalone::<PlainText>(),
+        "## Russian\n\nBeta\n\n## English\n\nAlpha\n\nGamma"
     );
 }
 

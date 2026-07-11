@@ -35,6 +35,7 @@ use crate::reference::Reference;
 use crate::render::format::OutputFormat;
 use crate::render::{ProcEntry, ProcTemplate};
 use crate::values::ProcHints;
+use citum_schema::grouping::BibliographyGroup;
 use citum_schema::options::{Config, bibliography::BibliographyConfig};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -54,13 +55,13 @@ pub(crate) struct RenderedBibliographyGroup {
 ///
 /// Returned by [`Processor::render_document_bibliography`] — the unified facade
 /// used by the batch, session, and document-string rendering paths. Both fields
-/// are computed from the same cited subset so subsequent-author substitution
+/// are computed from the same eligible subset so subsequent-author substitution
 /// stays consistent between the rendered string and the per-entry data.
 #[derive(Debug, Clone, Default)]
 pub(crate) struct DocumentBibliography {
     /// The full rendered bibliography string for the document.
     pub(crate) content: String,
-    /// Flat per-entry data, one entry per cited reference.
+    /// Flat per-entry data, one entry per eligible reference.
     pub(crate) entries: Vec<crate::render::ProcEntry>,
 }
 
@@ -131,6 +132,19 @@ struct EntryRenderContext<'a> {
 }
 
 impl Processor {
+    /// Return the manual bibliography groups that are currently enabled.
+    ///
+    /// Keeping the `groups_enabled` gate here ensures every bibliography
+    /// rendering surface interprets a retained but disabled `groups:` block
+    /// identically.
+    fn effective_custom_groups(&self) -> Option<&[BibliographyGroup]> {
+        self.style
+            .bibliography
+            .as_ref()
+            .filter(|bibliography| bibliography.groups_enabled)
+            .and_then(|bibliography| bibliography.groups.as_deref())
+    }
+
     /// Build the [`EntryRenderContext`] for a flat (ungrouped) bibliography
     /// pass: processor-level style, hints, and merged configs.
     fn flat_render_context<'a>(&'a self, run: &'a FinalizedRun) -> EntryRenderContext<'a> {
@@ -513,13 +527,7 @@ impl Processor {
         let selected: HashSet<String> = item_ids.into_iter().collect();
 
         // 1. Check for custom bibliography groups
-        if let Some(groups) = self
-            .style
-            .bibliography
-            .as_ref()
-            .filter(|bibliography| bibliography.groups_enabled)
-            .and_then(|bibliography| bibliography.groups.as_ref())
-        {
+        if let Some(groups) = self.effective_custom_groups() {
             let all_entries = self.sorted_id_stubs();
             return self.render_with_custom_groups_filtered::<F>(
                 &all_entries,
