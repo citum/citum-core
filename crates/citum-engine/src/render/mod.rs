@@ -32,6 +32,7 @@ pub mod org;
 pub mod plain;
 pub mod rich_text;
 pub mod typst;
+mod visible_scan;
 
 #[cfg(test)]
 #[allow(

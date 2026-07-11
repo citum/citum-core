@@ -20,7 +20,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! consumers must enable the extension:
 //! `pandoc --from commonmark+footnotes` (or `--from gfm`).
 
+use std::ops::Range;
+
 use super::format::{OutputFormat, QuoteMarks};
+use super::visible_scan::{RunBuilder, find_matching, skip_balanced};
 use citum_schema::template::WrapPunctuation;
 
 /// Escape CommonMark-active characters in raw bibliography data text.
@@ -172,6 +175,77 @@ impl OutputFormat for Markdown {
             content
         }
     }
+
+    /// Strip `*`/`**` emphasis delimiters, `<span>`/`<sup>` raw-HTML wrappers,
+    /// and a `[content](url)` link's `[`/`](url)` markup — keeping link text
+    /// visible but the URL hidden. A bracket pair *not* followed by `(url)`
+    /// (i.e. from [`Self::wrap_punctuation`]'s `WrapPunctuation::Brackets`)
+    /// keeps its brackets visible, since those are house-style punctuation.
+    /// Backslash-escaped characters are visible as themselves.
+    fn visible_runs(&self, fragment: &str) -> Vec<Range<usize>> {
+        let mut runs = RunBuilder::default();
+        let chars: Vec<(usize, char)> = fragment.char_indices().collect();
+        let mut i = 0;
+        let mut in_tag = false;
+        let mut pending_link_close: Option<usize> = None;
+        while let Some(&(pos, ch)) = chars.get(i) {
+            if in_tag {
+                if ch == '>' {
+                    in_tag = false;
+                }
+                i += 1;
+                continue;
+            }
+            match ch {
+                '\\' => {
+                    if let Some(&(epos, echar)) = chars.get(i + 1) {
+                        runs.push_visible(epos, epos + echar.len_utf8());
+                    }
+                    i += 2;
+                }
+                '<' => {
+                    in_tag = true;
+                    i += 1;
+                }
+                '*' => {
+                    i += 1;
+                    if chars.get(i).map(|&(_, c)| c) == Some('*') {
+                        i += 1;
+                    }
+                }
+                '[' => {
+                    let close_i = find_matching(&chars, i, '[', ']', true);
+                    let is_link = close_i
+                        .is_some_and(|c| chars.get(c + 1).map(|&(_, next)| next) == Some('('));
+                    if is_link {
+                        pending_link_close = close_i;
+                        i += 1;
+                    } else {
+                        runs.push_visible(pos, pos + 1);
+                        i += 1;
+                    }
+                }
+                ']' => {
+                    if pending_link_close == Some(i) {
+                        pending_link_close = None;
+                        let mut j = i + 1;
+                        if chars.get(j).map(|&(_, c)| c) == Some('(') {
+                            j = skip_balanced(&chars, j, '(', ')', true);
+                        }
+                        i = j;
+                    } else {
+                        runs.push_visible(pos, pos + 1);
+                        i += 1;
+                    }
+                }
+                _ => {
+                    runs.push_visible(pos, pos + ch.len_utf8());
+                    i += 1;
+                }
+            }
+        }
+        runs.finish()
+    }
 }
 
 #[cfg(test)]
@@ -287,5 +361,44 @@ mod tests {
         assert_eq!(fmt.text("<doi:10.1/x>"), "\\<doi:10.1/x\\>");
         assert_eq!(fmt.text("Smith & Jones"), "Smith \\& Jones");
         assert_eq!(fmt.text("<em>bold</em>"), "\\<em\\>bold\\</em\\>");
+    }
+
+    #[test]
+    fn visible_text_strips_emph_and_strong_delimiters() {
+        let fmt = Markdown;
+        assert_eq!(fmt.visible_text("*Title.*"), "Title.");
+        assert_eq!(fmt.visible_text("**Title.**"), "Title.");
+    }
+
+    #[test]
+    fn visible_text_hides_link_url_keeps_text() {
+        let fmt = Markdown;
+        assert_eq!(
+            fmt.visible_text("[Example](https://example.com/a.b)"),
+            "Example"
+        );
+    }
+
+    #[test]
+    fn visible_text_keeps_literal_wrap_brackets_visible() {
+        let fmt = Markdown;
+        // WrapPunctuation::Brackets: bare `[content]`, not a link.
+        assert_eq!(fmt.visible_text("[Dataset]"), "[Dataset]");
+    }
+
+    #[test]
+    fn visible_text_strips_raw_html_spans() {
+        let fmt = Markdown;
+        assert_eq!(
+            fmt.visible_text("<span style=\"font-variant:small-caps\">Smith</span>"),
+            "Smith"
+        );
+        assert_eq!(fmt.visible_text("<sup>2</sup>"), "2");
+    }
+
+    #[test]
+    fn visible_text_keeps_escaped_punctuation() {
+        let fmt = Markdown;
+        assert_eq!(fmt.visible_text(r"A \* B"), "A * B");
     }
 }

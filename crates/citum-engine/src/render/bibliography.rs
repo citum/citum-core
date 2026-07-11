@@ -22,39 +22,26 @@ fn is_sentence_ending_punctuation(c: char) -> bool {
     matches!(c, '.' | '!' | '?')
 }
 
-/// Extracts the visible (non-markup) text content from a rendered fragment.
-fn visible_text(input: &str) -> String {
-    let mut output = String::with_capacity(input.len());
-    let mut in_tag = false;
-
-    for ch in input.chars() {
-        match ch {
-            '<' => in_tag = true,
-            '>' if in_tag => in_tag = false,
-            _ if !in_tag => output.push(ch),
-            _ => {}
-        }
-    }
-
-    output
-}
-
-/// Returns the first character of the visible (tag-stripped) text, which may be whitespace.
-fn first_visible_char(input: &str) -> Option<char> {
-    visible_text(input).chars().next()
+/// Returns the first character of the visible (markup-stripped) text for
+/// format `F`, which may be whitespace.
+fn first_visible_char<F: OutputFormat<Output = String>>(input: &str) -> Option<char> {
+    F::default().visible_text(input).chars().next()
 }
 
 /// Returns the last non-whitespace visible character, used for punctuation deduplication.
-fn last_visible_non_space_char(input: &str) -> Option<char> {
-    visible_text(input)
+fn last_visible_non_space_char<F: OutputFormat<Output = String>>(input: &str) -> Option<char> {
+    F::default()
+        .visible_text(input)
         .chars()
         .rev()
         .find(|ch| !ch.is_whitespace())
 }
 
 /// Returns true if the rendered output ends with sentence-ending punctuation, used to suppress trailing period addition.
-fn ends_with_sentence_ending_visible_punctuation(input: &str) -> bool {
-    let visible = visible_text(input);
+fn ends_with_sentence_ending_visible_punctuation<F: OutputFormat<Output = String>>(
+    input: &str,
+) -> bool {
+    let visible = F::default().visible_text(input);
     let mut chars = visible.chars().rev().filter(|ch| !ch.is_whitespace());
     match chars.next() {
         Some(ch) if is_sentence_ending_punctuation(ch) => true,
@@ -66,7 +53,7 @@ fn ends_with_sentence_ending_visible_punctuation(input: &str) -> bool {
 /// Returns true when the next rendered component should be treated as sentence-initial
 /// under the same join semantics used by bibliography rendering.
 #[must_use]
-pub(crate) fn component_starts_new_sentence(
+pub(crate) fn component_starts_new_sentence<F: OutputFormat<Output = String>>(
     entry_output: &str,
     rendered: &str,
     default_separator: &str,
@@ -76,19 +63,19 @@ pub(crate) fn component_starts_new_sentence(
         return true;
     }
 
-    let first_char = first_visible_char(rendered).unwrap_or(' ');
+    let first_char = first_visible_char::<F>(rendered).unwrap_or(' ');
     let starts_with_separator = matches!(first_char, ',' | ';' | ':' | ' ' | '.' | '(');
 
     if starts_with_separator {
         return false;
     }
 
-    if ends_with_sentence_ending_visible_punctuation(entry_output) {
+    if ends_with_sentence_ending_visible_punctuation::<F>(entry_output) {
         return true;
     }
 
     let last_char = entry_output.chars().last().unwrap_or(' ');
-    let trimmed_last = last_visible_non_space_char(entry_output).unwrap_or(' ');
+    let trimmed_last = last_visible_non_space_char::<F>(entry_output).unwrap_or(' ');
     if !last_char.is_whitespace()
         && !first_char.is_whitespace()
         && !is_final_punctuation(trimmed_last)
@@ -151,7 +138,7 @@ pub(crate) fn render_entry_body_components_with_format<F: OutputFormat<Output = 
         }
 
         if let Some((_, _, previous)) = pending_component.replace((index, component, rendered)) {
-            append_rendered_component(
+            append_rendered_component::<F>(
                 &mut entry_output,
                 &previous,
                 default_separator,
@@ -173,7 +160,7 @@ pub(crate) fn render_entry_body_components_with_format<F: OutputFormat<Output = 
         } else {
             rendered
         };
-        append_rendered_component(
+        append_rendered_component::<F>(
             &mut entry_output,
             &final_rendered,
             default_separator,
@@ -189,7 +176,7 @@ pub(crate) fn render_entry_body_components_with_format<F: OutputFormat<Output = 
         Some(suffix) if !suffix.is_empty() => {
             // The suffix is suppressed after a terminal URL/DOI by default; a
             // style may force it back on per link kind (IEEE: DOI, MLA: URL).
-            let suppress = match terminal_link(&entry_output) {
+            let suppress = match terminal_link::<F>(&entry_output) {
                 TerminalLink::Doi => !bib_cfg.is_some_and(|b| b.entry_suffix_after_doi),
                 TerminalLink::Url => !bib_cfg.is_some_and(|b| b.entry_suffix_after_url),
                 TerminalLink::None => false,
@@ -220,7 +207,7 @@ pub(crate) fn render_entry_body_components_with_format<F: OutputFormat<Output = 
 /// The separator logic inspects the boundary between the accumulated output
 /// and the incoming `rendered` string; `punctuation_in_quote` controls whether
 /// a period should be pulled inside a preceding closing quotation mark.
-pub(crate) fn append_rendered_component(
+pub(crate) fn append_rendered_component<F: OutputFormat<Output = String>>(
     entry_output: &mut String,
     rendered: &str,
     default_separator: &str,
@@ -228,9 +215,9 @@ pub(crate) fn append_rendered_component(
 ) {
     if !entry_output.is_empty() {
         let last_char = entry_output.chars().last().unwrap_or(' ');
-        let first_char = first_visible_char(rendered).unwrap_or(' ');
+        let first_char = first_visible_char::<F>(rendered).unwrap_or(' ');
         let sep_first_char = default_separator.chars().next().unwrap_or('.');
-        let trimmed_last = last_visible_non_space_char(entry_output).unwrap_or(' ');
+        let trimmed_last = last_visible_non_space_char::<F>(entry_output).unwrap_or(' ');
         let ends_with_punctuation = is_final_punctuation(trimmed_last);
         // The incoming component already carries its own leading separator (e.g. ", " or "; ").
         let starts_with_separator = matches!(first_char, ',' | ';' | ':' | ' ' | '.' | '(');
@@ -329,7 +316,7 @@ pub fn refs_to_string_slice_with_format<F: OutputFormat<Output = String>>(
             }
         }
 
-        if visible_text(&entry_output).trim().is_empty() {
+        if fmt.visible_text(&entry_output).trim().is_empty() {
             continue;
         }
 
@@ -367,8 +354,8 @@ enum TerminalLink {
 }
 
 /// Classify whether an entry ends in a DOI, a plain URL, or neither.
-fn terminal_link(output: &str) -> TerminalLink {
-    let visible = visible_text(output);
+fn terminal_link<F: OutputFormat<Output = String>>(output: &str) -> TerminalLink {
+    let visible = F::default().visible_text(output);
     let trimmed = visible.trim_end_matches('.').trim_end();
     let last = trimmed.rsplit_once(' ').map_or(trimmed, |(_, last)| last);
     let is_doi = last.contains("doi.org/")
@@ -430,25 +417,38 @@ fn cleanup_dangling_punctuation(output: &mut String) {
 mod tests {
     use super::*;
     use crate::render::component::ProcTemplateComponent;
+    use crate::render::djot::Djot;
+    use crate::render::html::Html;
+    use crate::render::latex::Latex;
+    use crate::render::markdown::Markdown;
+    use crate::render::typst::Typst;
     use citum_schema::template::{Rendering, TemplateComponent, WrapConfig, WrapPunctuation};
 
     #[test]
     fn terminal_link_classifies_url_doi_and_plain_text() {
         // given a DOI in url form, doi: form, or bare 10.x form → Doi
-        assert!(terminal_link("Author. Title. https://doi.org/10.1/x") == TerminalLink::Doi);
-        assert!(terminal_link("Author. Title. doi:10.1038/abc") == TerminalLink::Doi);
-        assert!(terminal_link("Author. Title. doi: 10.1038/abc") == TerminalLink::Doi);
+        assert!(
+            terminal_link::<PlainText>("Author. Title. https://doi.org/10.1/x")
+                == TerminalLink::Doi
+        );
+        assert!(terminal_link::<PlainText>("Author. Title. doi:10.1038/abc") == TerminalLink::Doi);
+        assert!(terminal_link::<PlainText>("Author. Title. doi: 10.1038/abc") == TerminalLink::Doi);
         // given a plain URL → Url
-        assert!(terminal_link("Author. Title. https://example.com/page") == TerminalLink::Url);
+        assert!(
+            terminal_link::<PlainText>("Author. Title. https://example.com/page")
+                == TerminalLink::Url
+        );
         // given prose with no terminal link → None
-        assert!(terminal_link("Author. Title. Publisher, 2020") == TerminalLink::None);
+        assert!(terminal_link::<PlainText>("Author. Title. Publisher, 2020") == TerminalLink::None);
         // a trailing period is ignored when classifying
-        assert!(terminal_link("Author. https://example.com/page.") == TerminalLink::Url);
+        assert!(
+            terminal_link::<PlainText>("Author. https://example.com/page.") == TerminalLink::Url
+        );
     }
 
     #[test]
     fn test_component_starts_new_sentence_at_entry_start() {
-        assert!(component_starts_new_sentence(
+        assert!(component_starts_new_sentence::<PlainText>(
             "",
             "Edited by Grimm, Jacob",
             ". ",
@@ -458,7 +458,7 @@ mod tests {
 
     #[test]
     fn test_component_starts_new_sentence_after_period() {
-        assert!(component_starts_new_sentence(
+        assert!(component_starts_new_sentence::<PlainText>(
             "Collected Essays.",
             "edited by Grimm, Jacob",
             ". ",
@@ -468,7 +468,7 @@ mod tests {
 
     #[test]
     fn test_component_does_not_start_new_sentence_after_colon() {
-        assert!(!component_starts_new_sentence(
+        assert!(!component_starts_new_sentence::<PlainText>(
             "Collected Essays:",
             "edited by Grimm, Jacob",
             ". ",
@@ -618,7 +618,7 @@ mod tests {
         // (IEEE house style: separator ", ", punctuation-in-quote enabled)
         let mut entry_output = String::from("\u{201C}Deep Learning\u{201D}");
         // when the next component (the journal title) is appended
-        append_rendered_component(&mut entry_output, "Nature", ", ", true);
+        append_rendered_component::<PlainText>(&mut entry_output, "Nature", ", ", true);
         // then the comma is pulled inside the closing quotation mark
         assert_eq!(entry_output, "\u{201C}Deep Learning,\u{201D} Nature");
     }
@@ -628,7 +628,7 @@ mod tests {
         // given a quoted title followed by a period-delimited separator
         let mut entry_output = String::from("\u{201C}Deep Learning\u{201D}");
         // when the next component is appended
-        append_rendered_component(&mut entry_output, "Nature", ". ", true);
+        append_rendered_component::<PlainText>(&mut entry_output, "Nature", ". ", true);
         // then the period is pulled inside the closing quotation mark (unchanged behaviour)
         assert_eq!(entry_output, "\u{201C}Deep Learning.\u{201D} Nature");
     }
@@ -638,7 +638,7 @@ mod tests {
         // given punctuation-in-quote disabled
         let mut entry_output = String::from("\u{201C}Deep Learning\u{201D}");
         // when the next component is appended with a comma separator
-        append_rendered_component(&mut entry_output, "Nature", ", ", false);
+        append_rendered_component::<PlainText>(&mut entry_output, "Nature", ", ", false);
         // then the comma stays outside the closing quotation mark
         assert_eq!(entry_output, "\u{201C}Deep Learning\u{201D}, Nature");
     }
@@ -1018,6 +1018,57 @@ mod tests {
         assert!(
             blank_line_count <= 1,
             "should not have spurious blank lines: {result}"
+        );
+    }
+
+    // ── Cross-backend punctuation-boundary regressions (bean csl26-ztxq) ────
+    // DESIGN_PRINCIPLES §7: backends may differ only in markup, not in
+    // citation logic. See docs/architecture/audits/2026-07-04_CITUM_ENGINE_REVIEW_PART2.md
+    // finding 13.
+
+    #[test]
+    fn visible_text_is_identical_across_backends_for_the_same_logical_content() {
+        // Each markup backend's emph() wraps "Title." in its own markup; the
+        // visible text must be identical across all of them. `PlainText` is
+        // excluded: it has no markup lexer to strip — its `emph()` output
+        // (`_Title._`) *is* the literal plain-text rendering, not markup
+        // hiding "Title.", so the parity claim doesn't apply to it.
+        assert_eq!(
+            Html.visible_text(&Html.emph("Title.".to_string())),
+            "Title."
+        );
+        assert_eq!(
+            Latex.visible_text(&Latex.emph("Title.".to_string())),
+            "Title."
+        );
+        assert_eq!(
+            Typst.visible_text(&Typst.emph("Title.".to_string())),
+            "Title."
+        );
+        assert_eq!(
+            Markdown.visible_text(&Markdown.emph("Title.".to_string())),
+            "Title."
+        );
+        assert_eq!(
+            Djot.visible_text(&Djot.emph("Title.".to_string())),
+            "Title."
+        );
+    }
+
+    #[test]
+    fn append_rendered_component_does_not_double_punctuate_an_emphasized_latex_title() {
+        // Regression for finding 13: `\emph{Title.}` ends in a raw `}`, but its
+        // *visible* last char is the period. append_rendered_component must see
+        // that (via first_visible_char/last_visible_non_space_char) and not
+        // additionally insert the ". " separator's period, which used to
+        // produce "\emph{Title.}. Next" (rendering as "Title.. Next").
+        let mut entry_output = Latex.emph("Title.".to_string());
+        append_rendered_component::<Latex>(&mut entry_output, "Next", ". ", false);
+
+        assert_eq!(Latex.visible_text(&entry_output), "Title. Next");
+        assert!(
+            !Latex.visible_text(&entry_output).contains(".."),
+            "no doubled period, got: {entry_output}"
         );
     }
 }

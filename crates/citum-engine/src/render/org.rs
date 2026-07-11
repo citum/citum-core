@@ -9,6 +9,14 @@ use super::format::{OutputFormat, QuoteMarks};
 use citum_schema::template::WrapPunctuation;
 
 /// Renders processed citations and bibliography entries as org-mode markup.
+///
+/// Does not override [`OutputFormat::visible_runs`]: org-mode's `/.../`,
+/// `*...*`, `~...~`, `^...^` markers are unescaped single characters (see
+/// [`OutputFormat::text`] below), so a data field containing a literal
+/// instance of one is already indistinguishable from markup in the rendered
+/// output itself — a lexer here could not resolve that ambiguity any better
+/// than the renderer did. Boundary/dedup logic for this backend falls back
+/// to the raw text default, a known, documented gap (see bean `csl26-ztxq`).
 #[derive(Default, Clone)]
 pub struct OrgOutputFormat;
 

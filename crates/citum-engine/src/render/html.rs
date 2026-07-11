@@ -230,4 +230,18 @@ impl OutputFormat for Html {
 
         format!(r#"<div class="citum-entry" {attrs}>{content}</div>"#)
     }
+
+    fn visible_runs(&self, fragment: &str) -> Vec<std::ops::Range<usize>> {
+        let mut runs = super::visible_scan::RunBuilder::default();
+        let mut in_tag = false;
+        for (i, ch) in fragment.char_indices() {
+            match ch {
+                '<' => in_tag = true,
+                '>' if in_tag => in_tag = false,
+                _ if !in_tag => runs.push_visible(i, i + ch.len_utf8()),
+                _ => {}
+            }
+        }
+        runs.finish()
+    }
 }
