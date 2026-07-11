@@ -496,9 +496,12 @@ impl Processor {
     /// Render already-merged compound entries as a flat bibliography.
     ///
     /// The compound path renders every configured member before merging. A
-    /// cited-only document then filters the merged rows by their retained
-    /// leader ID, preserving the historical compound-selection contract.
-    /// All-references callers render every merged row.
+    /// compound set is a single bibliographic unit: a cited-only document
+    /// retains a merged row if *any* configured member of that set is cited,
+    /// showing the full row (leader plus every tail) rather than hiding
+    /// non-cited members. Rows outside any compound set still filter by
+    /// their own cited status. All-references callers render every merged
+    /// row.
     fn render_flat_compound_entries<F>(
         &self,
         bibliography: &[ProcEntry],
@@ -512,10 +515,19 @@ impl Processor {
     {
         let fmt = F::default();
         let selected = if restrict_to_cited {
+            let cited_ids = &run.state().cited_ids;
+            let compound_groups = &run.state().compound_groups;
+            let ref_to_group = Self::build_compound_group_lookup(compound_groups);
+            let row_is_cited = |id: &str| match ref_to_group.get(id) {
+                Some(group_number) => compound_groups
+                    .get(group_number)
+                    .is_some_and(|members| members.iter().any(|member| cited_ids.contains(member))),
+                None => cited_ids.contains(id),
+            };
             Cow::Owned(
                 bibliography
                     .iter()
-                    .filter(|entry| run.state().cited_ids.contains(&entry.id))
+                    .filter(|entry| row_is_cited(&entry.id))
                     .cloned()
                     .collect(),
             )

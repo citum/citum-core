@@ -4507,6 +4507,63 @@ fn test_render_document_bibliography_compound_groups_use_full_render() {
     assert_eq!(doc_bib.entries[0].id, "ref-a");
 }
 
+/// Mirrors `test_render_document_bibliography_compound_groups_use_full_render`
+/// with citation status swapped: only the non-leader member ("ref-b") is
+/// cited. A compound set is a single bibliographic unit, so the merged row
+/// (keyed under the leader "ref-a") must still render in full — dropping the
+/// row would silently exclude the cited "ref-b" (csl26-uidd).
+#[test]
+fn given_only_non_leader_compound_member_cited_when_document_bibliography_rendered_then_full_row_is_retained()
+ {
+    let processor = make_compound_document_processor(false);
+
+    // Cite only "ref-b" — the compound-group leader ("ref-a") and the
+    // standalone reference ("ref-c") are never cited.
+    let citation = Citation {
+        items: vec![CitationItem {
+            id: "ref-b".to_string(),
+            ..Default::default()
+        }],
+        ..Default::default()
+    };
+    let mut run = processor.begin_run();
+    processor
+        .process_citation_with_format::<crate::render::plain::PlainText>(&citation, &mut run)
+        .unwrap();
+    let run = run.finalize();
+
+    let doc_bib = processor
+        .render_document_bibliography::<crate::render::plain::PlainText>(true, None, None, &run);
+
+    // Content must show the full merged compound entry — both sub-labels —
+    // even though the row is keyed under the uncited leader "ref-a"; the row
+    // must not be dropped just because the leader itself was never cited.
+    assert!(
+        doc_bib.content.contains("a)") && doc_bib.content.contains("b)"),
+        "compound-numeric content should merge every configured group member \
+         when any member is cited, regardless of which member: {}",
+        doc_bib.content
+    );
+    assert!(
+        !doc_bib.content.contains("Standalone Article"),
+        "uncited, non-grouped references must not appear in document content: {}",
+        doc_bib.content
+    );
+
+    // Entries stay cited-only and unmerged.
+    assert_eq!(
+        doc_bib.entries.len(),
+        1,
+        "entries should contain only the cited reference: {:?}",
+        doc_bib
+            .entries
+            .iter()
+            .map(|entry| &entry.id)
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(doc_bib.entries[0].id, "ref-b");
+}
+
 #[test]
 fn test_grouped_compound_bibliography_leader_only_match_stays_singleton() {
     let processor = make_grouped_compound_selection_processor("selected", "other");
