@@ -8,7 +8,7 @@ tags:
     - punctuation
     - rendering
 created_at: 2026-07-05T17:18:48Z
-updated_at: 2026-07-06T18:45:57Z
+updated_at: 2026-07-12T18:52:06Z
 ---
 
 Follow-up from GitHub issue #1010 / csl26-01jy.
@@ -39,3 +39,12 @@ Key simplification: the check is **semantic, not presentational** — test the t
 3. **Tests:** rstest matrix over ?/!/…/. mains × default and overridden delimiters × long/short forms × quoted mains, plus one multi-subtitle case, in values/tests.rs. Oracle spot-check on a style exercising structured titles (GitHub issue #1010 example).
 
 Sizing: Sonnet-executable once the spec decision (mark set + locale field name) is confirmed.
+
+## Update 2026-07-12
+
+The "spec first" step is now tracked as `csl26-0vo3` (design
+locale-configurable punctuation-collision system), which blocks this bean.
+docs/specs/PUNCTUATION_NORMALIZATION.md now has a Recommended Design
+section covering this — the suppression-set field this bean needs (default
+"?!…") is meant to be the same field that design produces, not a second
+one. Wait on `csl26-0vo3` before implementing.
