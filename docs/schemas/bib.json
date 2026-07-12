@@ -65,6 +65,13 @@
             "string",
             "null"
           ]
+        },
+        "version": {
+          "description": "Version identifier for the bibliography dataset.",
+          "type": [
+            "string",
+            "null"
+          ]
         }
       }
     },

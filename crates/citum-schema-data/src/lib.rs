@@ -69,4 +69,7 @@ pub struct InputBibliographyInfo {
     /// Creator or maintainer of the bibliography dataset.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub author: Option<String>,
+    /// Version identifier for the bibliography dataset.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version: Option<String>,
 }
