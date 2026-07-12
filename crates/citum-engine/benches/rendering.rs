@@ -281,32 +281,51 @@ fn bench_disambiguation(c: &mut Criterion) {
 
     let mut bench_group = c.benchmark_group("Disambiguator::calculate_hints");
     bench_group.bench_function("No collisions", |b| {
-        let disambiguator = Disambiguator::new(&no_collision_bib, &no_collision_config, &locale);
+        let disambiguator = Disambiguator::new(
+            &no_collision_bib,
+            &no_collision_config,
+            &no_collision_config,
+            &locale,
+        );
         b.iter(|| {
             black_box(disambiguator.calculate_hints());
         });
     });
     bench_group.bench_function("Given-name collisions", |b| {
-        let disambiguator = Disambiguator::new(&givenname_bib, &givenname_config, &locale);
+        let disambiguator = Disambiguator::new(
+            &givenname_bib,
+            &givenname_config,
+            &givenname_config,
+            &locale,
+        );
         b.iter(|| {
             black_box(disambiguator.calculate_hints());
         });
     });
     bench_group.bench_function("Name partition with suffix fallback", |b| {
-        let disambiguator = Disambiguator::new(&partition_bib, &partition_config, &locale);
+        let disambiguator = Disambiguator::new(
+            &partition_bib,
+            &partition_config,
+            &partition_config,
+            &locale,
+        );
         b.iter(|| {
             black_box(disambiguator.calculate_hints());
         });
     });
     bench_group.bench_function("Label-mode suffix collisions", |b| {
-        let disambiguator = Disambiguator::new(&label_bib, &label_config, &locale);
+        let disambiguator = Disambiguator::new(&label_bib, &label_config, &label_config, &locale);
         b.iter(|| {
             black_box(disambiguator.calculate_hints());
         });
     });
     bench_group.bench_function("Default title-order suffix collisions", |b| {
-        let disambiguator =
-            Disambiguator::new(&default_title_sort_bib, &default_title_sort_config, &locale);
+        let disambiguator = Disambiguator::new(
+            &default_title_sort_bib,
+            &default_title_sort_config,
+            &default_title_sort_config,
+            &locale,
+        );
         b.iter(|| {
             black_box(disambiguator.calculate_hints());
         });

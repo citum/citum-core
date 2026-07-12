@@ -189,12 +189,6 @@ pub(crate) fn author_sort_key_opt_with_options(
         .filter(|key| !key.is_empty())
 }
 
-/// Build the normalized title sort key with locale article stripping.
-#[must_use]
-pub(crate) fn title_sort_key(reference: &Reference, locale: &Locale) -> String {
-    title_sort_key_with_options(reference, locale, &SortKeyOptions::uniform())
-}
-
 /// Build the normalized title sort key with configured multilingual behavior.
 #[must_use]
 pub(crate) fn title_sort_key_with_options(

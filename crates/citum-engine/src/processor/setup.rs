@@ -582,12 +582,24 @@ impl Processor {
     pub fn calculate_hints(&self) -> HashMap<String, ProcHints> {
         let citation_config = self.get_citation_config();
         let config = citation_config.as_ref();
+        let bibliography_config = self.get_bibliography_config();
         let bibliography_sort = self.resolved_bibliography_sort();
 
         let disambiguator = if let Some((resolved_sort, _id_tiebreak)) = &bibliography_sort {
-            Disambiguator::with_group_sort(&self.bibliography, config, &self.locale, resolved_sort)
+            Disambiguator::with_group_sort(
+                &self.bibliography,
+                config,
+                &bibliography_config,
+                &self.locale,
+                resolved_sort,
+            )
         } else {
-            Disambiguator::new(&self.bibliography, config, &self.locale)
+            Disambiguator::new(
+                &self.bibliography,
+                config,
+                &bibliography_config,
+                &self.locale,
+            )
         };
 
         disambiguator.calculate_hints()

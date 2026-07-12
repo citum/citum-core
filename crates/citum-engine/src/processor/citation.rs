@@ -316,8 +316,14 @@ impl Processor {
             return Some(scoped_hints);
         }
 
-        let local_hints =
-            Disambiguator::new(&scoped_bibliography, config, &self.locale).calculate_hints();
+        let bibliography_config = self.get_bibliography_config();
+        let local_hints = Disambiguator::new(
+            &scoped_bibliography,
+            config,
+            &bibliography_config,
+            &self.locale,
+        )
+        .calculate_hints();
 
         for item in items {
             let Some(local) = local_hints.get(&item.id) else {
