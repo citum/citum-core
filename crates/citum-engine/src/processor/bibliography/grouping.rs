@@ -188,11 +188,17 @@ impl Processor {
             Disambiguator::with_group_sort(
                 &group_bibliography,
                 &bibliography_config,
+                &bibliography_config,
                 &self.locale,
                 sort,
             )
         } else {
-            Disambiguator::new(&group_bibliography, &bibliography_config, &self.locale)
+            Disambiguator::new(
+                &group_bibliography,
+                &bibliography_config,
+                &bibliography_config,
+                &self.locale,
+            )
         };
 
         Some(disambiguator.calculate_hints())

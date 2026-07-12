@@ -56,6 +56,11 @@ use citum_schema::reference::{ClassExtension, Title};
 pub struct Disambiguator<'a> {
     bibliography: &'a Bibliography,
     config: &'a Config,
+    /// Effective bibliography config governing multilingual/locale sort-key
+    /// policy (`sorting.multilingual`, `sorting.locale`, `sort-as`,
+    /// preferred transliterations). Year-suffix ordering must use this —
+    /// not `config` — so it agrees with the rendered bibliography order.
+    sort_config: &'a Config,
     locale: &'a Locale,
     group_sort: Option<&'a GroupSort>,
 }
@@ -130,27 +135,43 @@ struct CachedReferenceData {
 
 impl<'a> Disambiguator<'a> {
     /// Creates a disambiguator that uses the default title-based fallback order.
+    ///
+    /// `sort_config` is the effective bibliography config (multilingual/locale
+    /// sort-key policy); pass the same config used to sort the final
+    /// bibliography so year-suffix order agrees with the rendered order.
     #[must_use]
-    pub fn new(bibliography: &'a Bibliography, config: &'a Config, locale: &'a Locale) -> Self {
+    pub fn new(
+        bibliography: &'a Bibliography,
+        config: &'a Config,
+        sort_config: &'a Config,
+        locale: &'a Locale,
+    ) -> Self {
         Self {
             bibliography,
             config,
+            sort_config,
             locale,
             group_sort: None,
         }
     }
 
     /// Creates a disambiguator with an explicit per-group sort specification.
+    ///
+    /// `sort_config` is the effective bibliography config (multilingual/locale
+    /// sort-key policy); pass the same config used to sort the final
+    /// bibliography so year-suffix order agrees with the rendered order.
     #[must_use]
     pub fn with_group_sort(
         bibliography: &'a Bibliography,
         config: &'a Config,
+        sort_config: &'a Config,
         locale: &'a Locale,
         group_sort: &'a GroupSort,
     ) -> Self {
         Self {
             bibliography,
             config,
+            sort_config,
             locale,
             group_sort: Some(group_sort),
         }
@@ -259,8 +280,13 @@ impl<'a> Disambiguator<'a> {
                 // stripping + locale collation) so suffix assignment cannot diverge from
                 // the rendered order — a raw lowercased title sorts "An Ecology" before
                 // "Biology", producing `2019b` before `2019a` (DISAMBIGUATION.md §3).
-                let title_key = needs_title_key
-                    .then(|| crate::sort_support::title_sort_key(reference, self.locale));
+                let title_key = needs_title_key.then(|| {
+                    crate::sort_support::title_sort_key_with_options(
+                        reference,
+                        self.locale,
+                        &crate::sort_support::SortKeyOptions::from_config(self.sort_config),
+                    )
+                });
 
                 CachedReference {
                     reference,
@@ -703,7 +729,7 @@ impl<'a> Disambiguator<'a> {
         group: &[&'b CachedReference<'b>],
     ) -> Vec<&'b CachedReference<'b>> {
         if let Some(sort_spec) = self.group_sort {
-            let sorter = ReferenceSorter::new(self.locale);
+            let sorter = ReferenceSorter::with_bibliography_config(self.locale, self.sort_config);
             // Pre-sort by title_key so that entries which compare equal under the primary
             // sort_spec retain a stable, deterministic order (title ascending as tiebreaker).
             // ReferenceSorter::sort_references uses sort_by (stable), so the pre-sort order is
@@ -1031,7 +1057,11 @@ mod tests {
     use crate::Processor;
     use citum_schema::citation::Citation;
     use citum_schema::grouping::{GroupSort, GroupSortKey, SortKey};
-    use citum_schema::options::{Config, ContributorConfig, DisplayAsSort, NameForm};
+    use citum_schema::options::{
+        Config, ContributorConfig, DisplayAsSort, MultilingualConfig, NameForm, SortingConfig,
+        SortingMultilingualMode,
+    };
+    use citum_schema::reference::types::MultilingualComplex;
     use citum_schema::reference::{
         Contributor, EdtfString, InputReference as Reference, Monograph, MonographType,
         MultilingualString, StructuredName, Title,
@@ -1160,7 +1190,7 @@ mod tests {
 
         // 1. Default sorting (by title): r1 should be 'a', r2 should be 'b'.
         // Title r1 < Title r2 alphabetically, so r1 gets group_index 1.
-        let disamb_default = Disambiguator::new(&bib, &config, &locale);
+        let disamb_default = Disambiguator::new(&bib, &config, &config, &locale);
         let hints_default = disamb_default.calculate_hints();
 
         assert_eq!(hints_default.get("r1").unwrap().group_index, 1);
@@ -1176,7 +1206,8 @@ mod tests {
             }],
         };
 
-        let disamb_custom = Disambiguator::with_group_sort(&bib, &config, &locale, &sort_spec);
+        let disamb_custom =
+            Disambiguator::with_group_sort(&bib, &config, &config, &locale, &sort_spec);
         let hints_custom = disamb_custom.calculate_hints();
 
         assert_eq!(hints_custom.get("r2").unwrap().group_index, 1);
@@ -1234,7 +1265,7 @@ mod tests {
         };
         let locale = Locale::en_us();
 
-        let disamb = Disambiguator::new(&bib, &config, &locale);
+        let disamb = Disambiguator::new(&bib, &config, &config, &locale);
         let hints = disamb.calculate_hints();
         let r1_hints = hints.get("r1").unwrap();
         let r2_hints = hints.get("r2").unwrap();
@@ -1297,7 +1328,7 @@ mod tests {
         };
         let locale = Locale::en_us();
 
-        let disamb = Disambiguator::new(&bib, &config, &locale);
+        let disamb = Disambiguator::new(&bib, &config, &config, &locale);
         let hints = disamb.calculate_hints();
 
         // Both should have expand_given_names set to true to resolve the Smith (2020) collision
@@ -1410,7 +1441,7 @@ mod tests {
         };
         let locale = Locale::en_us();
 
-        let hints = Disambiguator::new(&bib, &config, &locale).calculate_hints();
+        let hints = Disambiguator::new(&bib, &config, &config, &locale).calculate_hints();
 
         let h1 = hints.get("r1").expect("r1 must have a hint");
         let h2 = hints.get("r2").expect("r2 must have a hint");
@@ -1480,7 +1511,7 @@ mod tests {
             })),
             ..Default::default()
         };
-        let disabled = Disambiguator::new(&bib, &disabled_config, &locale);
+        let disabled = Disambiguator::new(&bib, &disabled_config, &disabled_config, &locale);
         let disabled_flags = disabled.disambiguation_flags();
         // year_suffix=false → title_key must be None
         let disabled_cache = disabled.build_reference_cache(&refs, disabled_flags.year_suffix);
@@ -1503,7 +1534,7 @@ mod tests {
             })),
             ..Default::default()
         };
-        let enabled = Disambiguator::new(&bib, &enabled_config, &locale);
+        let enabled = Disambiguator::new(&bib, &enabled_config, &enabled_config, &locale);
         let enabled_flags = enabled.disambiguation_flags();
         // year_suffix=true → title_key must be Some regardless of group_sort
         let enabled_cache = enabled.build_reference_cache(&refs, enabled_flags.year_suffix);
@@ -1532,8 +1563,13 @@ mod tests {
         bib.insert("r1".to_string(), with_id);
         bib.insert("missing".to_string(), without_id);
         let refs: Vec<&Reference> = bib.values().collect();
-        let cache = Disambiguator::new(&bib, &Config::default(), &Locale::en_us())
-            .build_reference_cache(&refs, false);
+        let cache = Disambiguator::new(
+            &bib,
+            &Config::default(),
+            &Config::default(),
+            &Locale::en_us(),
+        )
+        .build_reference_cache(&refs, false);
 
         assert_eq!(cache[0].key, ReferenceCacheKey::Id("r1".to_string()));
         assert_eq!(cache[1].key, ReferenceCacheKey::Index(1));
@@ -1567,7 +1603,7 @@ mod tests {
             })),
             ..Default::default()
         };
-        let disambiguator = Disambiguator::new(&bib, &config, &locale);
+        let disambiguator = Disambiguator::new(&bib, &config, &config, &locale);
         let refs: Vec<&Reference> = bib.values().collect();
         let cache = disambiguator.build_reference_cache(&refs, false);
         let grouped = disambiguator.group_references(&cache);
@@ -1630,7 +1666,7 @@ mod tests {
         };
         let locale = Locale::en_us();
 
-        let hints = Disambiguator::new(&bib, &config, &locale).calculate_hints();
+        let hints = Disambiguator::new(&bib, &config, &config, &locale).calculate_hints();
 
         let unique = hints.get("r1").unwrap();
         assert!(!unique.disamb_condition);
@@ -1666,7 +1702,7 @@ mod tests {
         };
         let locale = Locale::en_us();
 
-        let hints = Disambiguator::new(&bib, &config, &locale).calculate_hints();
+        let hints = Disambiguator::new(&bib, &config, &config, &locale).calculate_hints();
         let first = hints.get("r1").unwrap();
         let second = hints.get("r2").unwrap();
 
@@ -1751,7 +1787,7 @@ mod tests {
             ..Default::default()
         };
 
-        let cache_translit = Disambiguator::new(&bib, &config_translit, &locale)
+        let cache_translit = Disambiguator::new(&bib, &config_translit, &config_translit, &locale)
             .build_reference_cache(&[bib.get("r1").unwrap(), bib.get("r2").unwrap()], false);
 
         let ck_r1 = ReferenceCacheKey::Id("r1".to_string());
@@ -1781,7 +1817,7 @@ mod tests {
         // --- case 2: Primary mode → distinct keys (no collision) ---
         let config_primary = Config::default(); // multilingual: None → falls through to original
 
-        let cache_primary = Disambiguator::new(&bib, &config_primary, &locale)
+        let cache_primary = Disambiguator::new(&bib, &config_primary, &config_primary, &locale)
             .build_reference_cache(&[bib.get("r1").unwrap(), bib.get("r2").unwrap()], false);
 
         let ak_r1_primary = &cache_primary
@@ -1800,6 +1836,181 @@ mod tests {
         assert_ne!(
             ak_r1_primary, ak_r2_primary,
             "primary mode: distinct originals must produce different author keys"
+        );
+    }
+
+    /// Effective bibliography config for `sorting.multilingual: romanized`, with
+    /// a preferred transliteration — mirrors `sorting.rs`'s `romanized_config`.
+    fn romanized_config() -> Config {
+        Config {
+            sorting: Some(SortingConfig {
+                multilingual: Some(SortingMultilingualMode::Romanized),
+                ..Default::default()
+            }),
+            multilingual: Some(MultilingualConfig {
+                preferred_transliteration: Some(vec!["ru-Latn-alalc97".to_string()]),
+                ..Default::default()
+            }),
+            ..Default::default()
+        }
+    }
+
+    /// Two same-author, same-year references whose original (Cyrillic) title
+    /// order is the *opposite* of their `sort-as` (romanized) title order.
+    ///
+    /// - `r-alpha`: original starts with "Я" (sorts last in Cyrillic collation),
+    ///   `sort-as` starts with "Apple" (sorts first once romanized).
+    /// - `r-beta`: original starts with "А" (sorts first in Cyrillic collation),
+    ///   `sort-as` starts with "Zebra" (sorts last once romanized).
+    ///
+    /// So uniform sorting orders them beta-then-alpha, while romanized sorting
+    /// orders them alpha-then-beta — the two policies deliberately disagree.
+    fn multilingual_year_suffix_pair() -> (Reference, Reference) {
+        let make = |id: &str, original: &str, sort_as: &str| {
+            Reference::Monograph(Box::new(Monograph {
+                id: Some(id.into()),
+                r#type: MonographType::Book,
+                title: Some(Title::Multilingual(MultilingualComplex {
+                    original: original.to_string(),
+                    lang: Some("ru".into()),
+                    sort_as: Some(sort_as.to_string()),
+                    transliterations: HashMap::new(),
+                    translations: HashMap::new(),
+                })),
+                short_title: None,
+                container: None,
+                author: Some(Contributor::StructuredName(StructuredName {
+                    family: MultilingualString::Simple("Smith".to_string()),
+                    given: MultilingualString::Simple("Jordan".to_string()),
+                    suffix: None,
+                    dropping_particle: None,
+                    non_dropping_particle: None,
+                })),
+                editor: None,
+                translator: None,
+                issued: EdtfString("2020".to_string()),
+                ..Default::default()
+            }))
+        };
+
+        (
+            make("r-alpha", "Яблоко", "Apple Studies"),
+            make("r-beta", "Абрикос", "Zebra Studies"),
+        )
+    }
+
+    fn title_group_sort() -> GroupSort {
+        GroupSort {
+            template: vec![GroupSortKey {
+                key: SortKey::Title,
+                ascending: true,
+                order: None,
+                sort_order: None,
+            }],
+        }
+    }
+
+    #[test]
+    fn year_suffix_order_follows_romanized_bibliography_sort_policy() {
+        let (r_alpha, r_beta) = multilingual_year_suffix_pair();
+        let mut bib = Bibliography::new();
+        bib.insert("r-alpha".to_string(), r_alpha);
+        bib.insert("r-beta".to_string(), r_beta);
+
+        let locale = Locale::en_us();
+        let config = Config::default();
+        let sort_spec = title_group_sort();
+
+        // Uniform policy (the historical bug): year-suffix order follows the
+        // original Cyrillic title order, independent of any bibliography
+        // multilingual/locale sort configuration.
+        let uniform_disamb =
+            Disambiguator::with_group_sort(&bib, &config, &config, &locale, &sort_spec);
+        let uniform_hints = uniform_disamb.calculate_hints();
+        assert_eq!(
+            uniform_hints.get("r-beta").unwrap().group_index,
+            1,
+            "uniform policy: original-text order puts r-beta ('Абрикос') first"
+        );
+        assert_eq!(
+            uniform_hints.get("r-alpha").unwrap().group_index,
+            2,
+            "uniform policy: original-text order puts r-alpha ('Яблоко') second"
+        );
+
+        // Romanized policy: year-suffix order must follow the same sort-key
+        // policy the final bibliography uses (sort-as / romanized order),
+        // which is the opposite of the uniform original-text order here.
+        let romanized_sort_config = romanized_config();
+        let romanized_disamb = Disambiguator::with_group_sort(
+            &bib,
+            &config,
+            &romanized_sort_config,
+            &locale,
+            &sort_spec,
+        );
+        let romanized_hints = romanized_disamb.calculate_hints();
+        assert_eq!(
+            romanized_hints.get("r-alpha").unwrap().group_index,
+            1,
+            "romanized policy: sort-as order puts r-alpha ('Apple Studies') first"
+        );
+        assert_eq!(
+            romanized_hints.get("r-beta").unwrap().group_index,
+            2,
+            "romanized policy: sort-as order puts r-beta ('Zebra Studies') second"
+        );
+
+        // Tie the assertion explicitly to the final bibliography's own sorter,
+        // so this test fails if the two ever diverge again.
+        let refs: Vec<&Reference> = vec![bib.get("r-alpha").unwrap(), bib.get("r-beta").unwrap()];
+        let sorter = ReferenceSorter::with_bibliography_config(&locale, &romanized_sort_config);
+        let sorted_ids: Vec<String> = sorter
+            .sort_references(refs, &sort_spec)
+            .into_iter()
+            .map(|reference| reference.id().expect("id").to_string())
+            .collect();
+        assert_eq!(
+            sorted_ids,
+            vec!["r-alpha".to_string(), "r-beta".to_string()],
+            "final bibliography order must match the year-suffix group order"
+        );
+    }
+
+    /// Reproduces the group-local disambiguation call site
+    /// (`processor/bibliography/grouping.rs::build_group_local_hints`), which
+    /// passes the same effective bibliography config as both `config` and
+    /// `sort_config`. Confirms the fix applies to the group-local path too,
+    /// not just the global `calculate_hints` path in `processor/setup.rs`.
+    #[test]
+    fn group_local_disambiguation_also_follows_romanized_bibliography_sort_policy() {
+        let (r_alpha, r_beta) = multilingual_year_suffix_pair();
+        let mut group_bibliography = Bibliography::new();
+        group_bibliography.insert("r-alpha".to_string(), r_alpha);
+        group_bibliography.insert("r-beta".to_string(), r_beta);
+
+        let locale = Locale::en_us();
+        let bibliography_config = romanized_config();
+        let sort_spec = title_group_sort();
+
+        let disambiguator = Disambiguator::with_group_sort(
+            &group_bibliography,
+            &bibliography_config,
+            &bibliography_config,
+            &locale,
+            &sort_spec,
+        );
+        let hints = disambiguator.calculate_hints();
+
+        assert_eq!(
+            hints.get("r-alpha").unwrap().group_index,
+            1,
+            "group-local path: romanized sort-as order puts r-alpha first"
+        );
+        assert_eq!(
+            hints.get("r-beta").unwrap().group_index,
+            2,
+            "group-local path: romanized sort-as order puts r-beta second"
         );
     }
 }
