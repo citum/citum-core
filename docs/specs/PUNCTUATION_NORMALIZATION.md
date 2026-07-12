@@ -1,9 +1,9 @@
 # Punctuation Normalization Design
 
-**Status:** Draft
+**Status:** Active
 **Date:** 2026-02-15
-**Updated:** 2026-07-12 (cross-locale research addendum + recommended design
-for the collision-resolution half of this problem; see Changelog)
+**Updated:** 2026-07-12 (locale-configurable collision policy activated; see
+Changelog)
 **Related:** CSL schema#379 (upstream, "Make punctuation collapsing
 localisable" — tracked as bucket-1-partial in
 [2026-07-12_CSL_SCHEMA_ISSUE_TRIAGE.md](../architecture/audits/2026-07-12_CSL_SCHEMA_ISSUE_TRIAGE.md));
@@ -196,38 +196,53 @@ above suggests the realistic cross-locale need is small and enumerable
 (a handful of class-pair policies plus one mark-set field), which is a much
 better fit for Citum's existing style.
 
-**Sketch — punctuation classes** (informed by UAX #14/#29 categories):
+**Punctuation classes** (informed by UAX #14/#29 categories):
 - `StrongTerminal`: `?`, `!`, `…`
 - `WeakTerminal`: `.`, `:`
 - `CommaLike`: `,`, `;`
 
-**Sketch — collision-policy fields** (new `grammar-options` entries,
-locale-default + style-overridable, alongside the existing quote-movement
-three-parameter model — these are complementary axes, not a replacement):
-- A weak-plus-weak collapse rule (`..` → `.`, `:.` → `:`) — likely fixed
-  behavior, not worth a field, since no researched locale disagrees.
-- A weak-plus-strong rule (keep the strong mark) — same, likely fixed.
-- `strong-plus-comma-policy: keep-both | keep-strong` — the schema#379 case.
-  English default `keep-both`; German/French default `keep-strong`.
-- A suppressing-mark set for delimiter suppression (not collision
-  resolution but the same underlying mechanism) — this is exactly
-  `csl26-zfqr`'s proposed field: when a structured-title main part's last
-  character is in this set, a following configured delimiter's punctuation
-  core is suppressed and only its whitespace tail is kept. Default `"?!…"`,
-  locale-overridable, per `csl26-zfqr`'s existing root-cause analysis
-  (`render_structured_title`, `crates/citum-engine/src/values/title.rs:255`;
-  `structured_title_delimiters`, `title.rs:330`).
+**Collision-policy fields** are locale defaults under `grammar-options` and
+may be overridden per style under `options.punctuation`:
+
+- `strong-terminal-comma-policy: keep-both | keep-terminal` controls only a
+  `StrongTerminal` followed by a style-supplied comma. English, Spanish,
+  Basque, and Turkish default to `keep-both`; German and French default to
+  `keep-terminal`.
+- `delimiter-suppressing-terminal-marks` is a string-set field with default
+  `"?!…"`. It is the single field reserved for `csl26-zfqr`: when a
+  structured-title part ends in one of these marks, that follow-up will drop
+  the punctuation core of the configured delimiter while preserving its
+  whitespace tail.
+
+All other punctuation pairs retain Citum's existing resolver matrix. This is
+an explicit compatibility decision: the first localized policy does not
+reinterpret weak/strong/comma-like combinations that existing styles and
+fidelity tests already expose. Broader class-matrix normalization requires
+separate evidence and a separate compatibility review.
+
+The style override has this shape:
+
+```yaml
+options:
+  punctuation:
+    strong-terminal-comma-policy: keep-terminal
+    delimiter-suppressing-terminal-marks: "?!…"
+```
+
+Locale defaults are resolved first and any non-null style field replaces the
+corresponding locale value.
+
+- A suppressing-mark set for delimiter suppression (not collision resolution
+  itself) is therefore shared with `csl26-zfqr`, rather than introducing a
+  second title-specific field.
 - French spacing (NBSP/narrow-NBSP before `: ; ! ?` and around guillemets,
   with a France/Québec variant) is a real, researched need but is scoped as
   a **follow-up**, not required for the schema#379/zfqr fix — track
   separately once the collision-policy fields above are settled, to avoid
   scope creep in the first implementation pass.
 
-This design intentionally leaves the exact field names and the full set of
-class-pair policies as an open implementation decision (tracked in the new
-bean below), not fixed here — the point of this section is the *shape*
-(narrow named fields, not a general table) and the reconciliation with
-`csl26-zfqr`'s already-designed need, not a final schema.
+The compatibility matrix and the two field names above are normative for this
+first implementation.
 
 ## Implementation Notes
 
@@ -270,15 +285,28 @@ However, refactoring current ad-hoc code into a clean function would prevent bug
 - `csln#66` - Multilingual/multiscript support (pre-rename issue tracker; historical reference only)
 - PR #51 (pre-rename) - Curly quote rendering (exposed fragility of current approach)
 
+## Acceptance Criteria
+
+- [x] Locale grammar options expose a strong-terminal/comma policy and one
+  shared delimiter-suppressing mark set.
+- [x] Styles can override either locale value independently.
+- [x] Citation and bibliography joins honor `keep-both` and `keep-terminal`
+  without changing established results for other punctuation pairs.
+- [x] German/French and English-compatible embedded locales declare their
+  intended defaults.
+- [x] French punctuation spacing remains explicitly out of scope.
+
 ## Changelog
 
+- **2026-07-12**: Activated the compatibility-first collision policy. Finalized
+  `strong-terminal-comma-policy`,
+  `delimiter-suppressing-terminal-marks`, direct style overrides, locale
+  defaults, and the fixed compatibility boundary for all other pairs.
 - **2026-07-12**: Added "Cross-Locale Prior Art" and "Recommended Design"
   sections covering the punctuation-*collision* half of this problem
   (distinct from the quote-*movement* model above), motivated by CSL
   schema#379 and reconciled with `csl26-zfqr`'s independently-designed need.
   Decision: narrow named `grammar-options` fields, not a general rewrite
-  table. Updated stale `csln#66`/PR #51 references. Status remains Draft —
-  no implementation in this change; see the new tracking bean for the next
-  step.
+  table. Updated stale `csln#66`/PR #51 references.
 - **2026-02-15**: Initial draft (quote-movement three-parameter model,
   migration path).

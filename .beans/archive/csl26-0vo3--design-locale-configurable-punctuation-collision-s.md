@@ -1,7 +1,7 @@
 ---
 # csl26-0vo3
 title: Design locale-configurable punctuation-collision system
-status: todo
+status: completed
 type: task
 priority: normal
 tags:
@@ -10,7 +10,7 @@ tags:
     - locale
     - schema
 created_at: 2026-07-12T18:51:44Z
-updated_at: 2026-07-12T19:04:43Z
+updated_at: 2026-07-12T20:42:36Z
 blocking:
     - csl26-zfqr
 ---
@@ -40,22 +40,34 @@ than a general pattern-rewrite table (the CSL-M `<punct-handling>`
 proposal, deliberately rejected — see spec for reasoning). This bean is the
 concrete design decision + implementation that section leaves open.
 
-- [ ] Finalize exact grammar-options field names and the full set of
+- [x] Finalize exact grammar-options field names and the full set of
       class-pair collision policies (spec sketches StrongTerminal/WeakTerminal/
       CommaLike classes and a strong-plus-comma-policy field; needs a
       final decision, not just a sketch)
-- [ ] Confirm the terminal-mark suppression-set field csl26-zfqr needs
+- [x] Confirm the terminal-mark suppression-set field csl26-zfqr needs
       (default "?!…") is the same field this design produces, not a
       second competing one
-- [ ] Add new field(s) to citum-schema-style with #[serde(default)],
+- [x] Add new field(s) to citum-schema-style with #[serde(default)],
       regenerate JSON schema in the same commit (per
       crates/citum-schema/CLAUDE.md)
-- [ ] Update docs/guides/AUTHORING_LOCALES.md's grammar-options example
-- [ ] Populate en-US.yaml (and any other embedded locales) with defaults
-- [ ] Wire the new field(s) into resolve_punctuation_collision and/or
+- [x] Update docs/guides/AUTHORING_LOCALES.md's grammar-options example
+- [x] Populate en-US.yaml (and any other embedded locales) with defaults
+- [x] Wire the new field(s) into resolve_punctuation_collision and/or
       DANGLING_PUNCTUATION_PATTERNS as appropriate
-- [ ] Flip docs/specs/PUNCTUATION_NORMALIZATION.md Status to Active in the
+- [x] Flip docs/specs/PUNCTUATION_NORMALIZATION.md Status to Active in the
       implementation commit
-- [ ] French spacing (NBSP/narrow-NBSP before : ; ! ? and guillemets) is
+- [x] French spacing (NBSP/narrow-NBSP before : ; ! ? and guillemets) is
       scoped OUT of this pass per the spec — file as a separate follow-up
       if still wanted after this lands
+
+## Summary of Changes
+
+- Added locale defaults and direct style overrides for strong-terminal comma
+  collisions, with compatibility-first English behavior.
+- Shared the resolved policy across citation and bibliography joins, including
+  markup-aware dangling-punctuation cleanup.
+- Defined `delimiter-suppressing-terminal-marks` for `csl26-zfqr`; structured
+  title consumption remains part of that separate bean.
+- Activated the punctuation-normalization spec, updated locale documentation,
+  and regenerated the public locale and style schemas.
+- Kept French spacing outside this implementation as specified.

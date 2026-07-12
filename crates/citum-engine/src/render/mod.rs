@@ -30,6 +30,7 @@ pub mod markdown;
 pub(crate) mod markup;
 pub mod org;
 pub mod plain;
+pub(crate) mod punctuation;
 pub mod rich_text;
 pub mod typst;
 mod visible_scan;

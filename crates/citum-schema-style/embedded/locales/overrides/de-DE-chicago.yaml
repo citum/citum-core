@@ -27,6 +27,8 @@ grammar-options:
   serial-comma: false
   title-subtitle-delimiter: ": "
   subtitle-delimiter: "; "
+  strong-terminal-comma-policy: keep-terminal
+  delimiter-suppressing-terminal-marks: "?!…"
 
 messages:
   # Chicago-German chapter entries introduce the container by adjacency; the

@@ -146,6 +146,9 @@ pub struct Config {
     /// Defaults to false; en-US locale typically sets this to true.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub punctuation_in_quote: bool,
+    /// Locale-sensitive punctuation-collision overrides.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub punctuation: Option<PunctuationConfig>,
     /// Delimiter between volume/issue and pages for serial sources.
     /// Processor adds trailing space when rendering.
     /// Examples: Comma (APA ", "), Colon (Chicago ": ").
@@ -439,6 +442,43 @@ pub struct NoteConfig {
     pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
+/// Style-level overrides for locale punctuation-collision defaults.
+#[derive(Debug, Default, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub struct PunctuationConfig {
+    /// Policy for a strong terminal mark followed by a style-supplied comma.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub strong_terminal_comma_policy: Option<StrongTerminalCommaPolicy>,
+    /// Terminal marks that suppress a following delimiter's punctuation core.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub delimiter_suppressing_terminal_marks: Option<String>,
+}
+
+impl PunctuationConfig {
+    /// Merge `other` over this configuration field by field.
+    fn merge(&mut self, other: &Self) {
+        if let Some(policy) = other.strong_terminal_comma_policy {
+            self.strong_terminal_comma_policy = Some(policy);
+        }
+        if let Some(marks) = &other.delimiter_suppressing_terminal_marks {
+            self.delimiter_suppressing_terminal_marks = Some(marks.clone());
+        }
+    }
+}
+
+/// Controls how a strong terminal mark collides with a following comma.
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum StrongTerminalCommaPolicy {
+    /// Preserve both the terminal mark and the following comma.
+    #[default]
+    KeepBoth,
+    /// Preserve the terminal mark and suppress the following comma.
+    KeepTerminal,
+}
+
 /// Controls where movable punctuation is placed relative to closing quotation marks.
 #[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
@@ -558,6 +598,17 @@ pub enum LinkAnchor {
 }
 
 impl Config {
+    fn merge_punctuation(&mut self, other: &Config) {
+        let Some(other_punctuation) = &other.punctuation else {
+            return;
+        };
+        if let Some(punctuation) = &mut self.punctuation {
+            punctuation.merge(other_punctuation);
+        } else {
+            self.punctuation = Some(other_punctuation.clone());
+        }
+    }
+
     /// Effective processing mode, falling back to the default when unset.
     ///
     /// Centralizes the `processing: None` fallback so every consumer resolves
@@ -592,6 +643,8 @@ impl Config {
             org_abbreviation_memory,
             custom,
         );
+
+        self.merge_punctuation(other);
 
         if let Some(other_sorting) = &other.sorting {
             if let Some(this_sorting) = &mut self.sorting {
@@ -651,6 +704,7 @@ impl CitationOptions {
             page_range_delimiter: None,
             links: self.links.clone(),
             punctuation_in_quote: self.punctuation_in_quote,
+            punctuation: None,
             volume_pages_delimiter: self.volume_pages_delimiter.clone(),
             strip_periods: self.strip_periods,
             notes: self.notes.clone(),
@@ -752,6 +806,7 @@ impl BibliographyOptions {
             page_range_delimiter: None,
             links: self.links.clone(),
             punctuation_in_quote: self.punctuation_in_quote,
+            punctuation: None,
             volume_pages_delimiter: self.volume_pages_delimiter.clone(),
             strip_periods: self.strip_periods,
             notes: None,
@@ -955,6 +1010,8 @@ impl<'de> Deserialize<'de> for Config {
             #[serde(default, skip_serializing_if = "std::ops::Not::not")]
             punctuation_in_quote: bool,
             #[serde(skip_serializing_if = "Option::is_none")]
+            punctuation: Option<PunctuationConfig>,
+            #[serde(skip_serializing_if = "Option::is_none")]
             volume_pages_delimiter: Option<DelimiterPunctuation>,
             #[serde(skip_serializing_if = "Option::is_none", rename = "strip-periods")]
             strip_periods: Option<bool>,
@@ -994,6 +1051,7 @@ impl<'de> Deserialize<'de> for Config {
             page_range_delimiter: wire.page_range_delimiter,
             links: wire.links,
             punctuation_in_quote: wire.punctuation_in_quote,
+            punctuation: wire.punctuation,
             volume_pages_delimiter: wire.volume_pages_delimiter,
             strip_periods: wire.strip_periods,
             notes: wire.notes,
@@ -1356,6 +1414,43 @@ locale-override: en-US-chicago
         assert_eq!(merged.processing, Some(Processing::AuthorDate));
         assert!(merged.strip_periods.unwrap_or(false));
         assert!(merged.locators.is_some());
+    }
+
+    #[test]
+    fn test_punctuation_config_deserializes_and_merges_field_by_field() {
+        let yaml = r#"
+punctuation:
+  strong-terminal-comma-policy: keep-terminal
+  delimiter-suppressing-terminal-marks: "?!…"
+"#;
+        let config: Config = serde_yaml::from_str(yaml).unwrap();
+        let punctuation = config.punctuation.as_ref().unwrap();
+        assert_eq!(
+            punctuation.strong_terminal_comma_policy,
+            Some(StrongTerminalCommaPolicy::KeepTerminal)
+        );
+        assert_eq!(
+            punctuation.delimiter_suppressing_terminal_marks.as_deref(),
+            Some("?!…")
+        );
+
+        let override_config = Config {
+            punctuation: Some(PunctuationConfig {
+                strong_terminal_comma_policy: Some(StrongTerminalCommaPolicy::KeepBoth),
+                delimiter_suppressing_terminal_marks: None,
+            }),
+            ..Default::default()
+        };
+        let merged = Config::merged(&config, &override_config);
+        let punctuation = merged.punctuation.as_ref().unwrap();
+        assert_eq!(
+            punctuation.strong_terminal_comma_policy,
+            Some(StrongTerminalCommaPolicy::KeepBoth)
+        );
+        assert_eq!(
+            punctuation.delimiter_suppressing_terminal_marks.as_deref(),
+            Some("?!…")
+        );
     }
 
     #[test]

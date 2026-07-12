@@ -967,6 +967,8 @@ grammar-options:
   page-range-delimiter: "–"
   title-subtitle-delimiter: ": "
   subtitle-delimiter: "; "
+  strong-terminal-comma-policy: keep-both
+  delimiter-suppressing-terminal-marks: "?!…"
   note-punctuation: inside
   note-number: outside
   note-marker-order: after

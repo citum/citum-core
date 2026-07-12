@@ -918,6 +918,8 @@ grammar-options:
   page-range-delimiter: "‑"
   title-subtitle-delimiter: " : "
   subtitle-delimiter: " ; "
+  strong-terminal-comma-policy: keep-terminal
+  delimiter-suppressing-terminal-marks: "?!…"
   note-punctuation: adaptive
   note-number: same
   note-marker-order: before

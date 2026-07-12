@@ -476,6 +476,12 @@ pub struct GrammarOptions {
     /// Delimiter between subtitle parts inside a structured title.
     #[serde(default = "default_subtitle_delimiter")]
     pub subtitle_delimiter: String,
+    /// Policy for a strong terminal mark followed by a style-supplied comma.
+    #[serde(default)]
+    pub strong_terminal_comma_policy: crate::options::StrongTerminalCommaPolicy,
+    /// Terminal marks that suppress a following delimiter's punctuation core.
+    #[serde(default = "default_delimiter_suppressing_terminal_marks")]
+    pub delimiter_suppressing_terminal_marks: String,
     /// Default placement of movable punctuation relative to closing
     /// quotation marks when a footnote marker is introduced. Overridable
     /// per-style via `options.notes.punctuation`.
@@ -504,6 +510,8 @@ impl Default for GrammarOptions {
             page_range_delimiter: default_page_range_delimiter(),
             title_subtitle_delimiter: default_title_subtitle_delimiter(),
             subtitle_delimiter: default_subtitle_delimiter(),
+            strong_terminal_comma_policy: crate::options::StrongTerminalCommaPolicy::default(),
+            delimiter_suppressing_terminal_marks: default_delimiter_suppressing_terminal_marks(),
             note_punctuation: crate::options::NoteQuotePlacement::default(),
             note_number: crate::options::NoteNumberPlacement::default(),
             note_marker_order: crate::options::NoteMarkerOrder::default(),
@@ -537,6 +545,10 @@ fn default_title_subtitle_delimiter() -> String {
 
 fn default_subtitle_delimiter() -> String {
     "; ".into()
+}
+
+fn default_delimiter_suppressing_terminal_marks() -> String {
+    "?!…".into()
 }
 
 /// Message syntax variant active in a locale file.

@@ -20,7 +20,7 @@ use citum_schema::Style;
 use citum_schema::locale::Locale;
 use citum_schema::options::{
     BibliographyPartitionKind, BibliographyPartitionMode, BibliographySortPartitioning, Config,
-    SortingMultilingualMode, bibliography::BibliographyConfig,
+    PunctuationConfig, SortingMultilingualMode, bibliography::BibliographyConfig,
 };
 use indexmap::IndexMap;
 use std::collections::HashMap;
@@ -47,6 +47,59 @@ impl Default for Processor {
 }
 
 impl Processor {
+    /// Fill unset style punctuation options from the active locale.
+    fn resolve_punctuation_defaults(&self, config: &mut Config) {
+        let punctuation = config
+            .punctuation
+            .get_or_insert_with(PunctuationConfig::default);
+        punctuation
+            .strong_terminal_comma_policy
+            .get_or_insert(self.locale.grammar_options.strong_terminal_comma_policy);
+        punctuation
+            .delimiter_suppressing_terminal_marks
+            .get_or_insert_with(|| {
+                self.locale
+                    .grammar_options
+                    .delimiter_suppressing_terminal_marks
+                    .clone()
+            });
+    }
+
+    /// Return whether applying locale punctuation defaults would change `config`.
+    fn punctuation_defaults_require_resolution(&self, config: &Config) -> bool {
+        let punctuation = config.punctuation.as_ref();
+        let policy_is_unset = punctuation
+            .and_then(|options| options.strong_terminal_comma_policy)
+            .is_none();
+        let marks_are_unset = punctuation
+            .and_then(|options| options.delimiter_suppressing_terminal_marks.as_ref())
+            .is_none();
+
+        (policy_is_unset
+            && self.locale.grammar_options.strong_terminal_comma_policy
+                != citum_schema::options::StrongTerminalCommaPolicy::default())
+            || (marks_are_unset
+                && self
+                    .locale
+                    .grammar_options
+                    .delimiter_suppressing_terminal_marks
+                    != "?!…")
+    }
+
+    /// Apply locale punctuation defaults only when they change the effective config.
+    fn with_punctuation_defaults<'a>(
+        &self,
+        config: std::borrow::Cow<'a, Config>,
+    ) -> std::borrow::Cow<'a, Config> {
+        if !self.punctuation_defaults_require_resolution(&config) {
+            return config;
+        }
+
+        let mut config = config.into_owned();
+        self.resolve_punctuation_defaults(&mut config);
+        std::borrow::Cow::Owned(config)
+    }
+
     /// Core internal constructor path.
     ///
     /// Resolves the style presets before initializing the processor.
@@ -449,10 +502,11 @@ impl Processor {
 
     /// Return merged config for citation rendering.
     ///
-    /// Combines global style options with citation-specific overrides.
+    /// Combines global style options with citation-specific overrides, borrowing
+    /// the global configuration when no merge or locale resolution is required.
     pub fn get_citation_config(&self) -> std::borrow::Cow<'_, Config> {
         let base = self.get_config();
-        match self
+        let config = match self
             .style
             .citation
             .as_ref()
@@ -460,15 +514,17 @@ impl Processor {
         {
             Some(citation_options) => std::borrow::Cow::Owned(citation_options.merged_with(base)),
             None => std::borrow::Cow::Borrowed(base),
-        }
+        };
+        self.with_punctuation_defaults(config)
     }
 
     /// Return merged shared config for bibliography rendering.
     ///
-    /// Combines global shared style options with bibliography-local shared overrides.
+    /// Combines global shared style options with bibliography-local shared overrides,
+    /// borrowing the global configuration when no merge or locale resolution is required.
     pub fn get_bibliography_config(&self) -> std::borrow::Cow<'_, Config> {
         let base = self.get_config();
-        match self
+        let config = match self
             .style
             .bibliography
             .as_ref()
@@ -478,7 +534,8 @@ impl Processor {
                 std::borrow::Cow::Owned(bibliography_options.merged_with(base))
             }
             None => std::borrow::Cow::Borrowed(base),
-        }
+        };
+        self.with_punctuation_defaults(config)
     }
 
     /// Return effective bibliography-only configuration.
