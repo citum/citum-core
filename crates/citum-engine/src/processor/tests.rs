@@ -145,6 +145,20 @@ fn locale_punctuation_defaults_and_style_overrides_reach_render_configs() {
     );
 }
 
+#[test]
+fn schema_default_punctuation_keeps_render_configs_borrowed() {
+    let processor = Processor::with_locale(make_style(), Bibliography::default(), Locale::en_us());
+
+    assert!(matches!(
+        processor.get_citation_config(),
+        std::borrow::Cow::Borrowed(_)
+    ));
+    assert!(matches!(
+        processor.get_bibliography_config(),
+        std::borrow::Cow::Borrowed(_)
+    ));
+}
+
 fn make_note_style() -> Style {
     let mut style = make_style();
     style.options = Some(Config {

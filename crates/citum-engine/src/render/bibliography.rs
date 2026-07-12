@@ -240,12 +240,14 @@ pub(crate) fn append_rendered_component<F: OutputFormat<Output = String>>(
         } else if ends_with_punctuation {
             // English-compatible locales retain a comma after a strong terminal mark;
             // locales configured for collapsing retain only the terminal mark.
-            if sep_first_char == ','
-                && is_strong_terminal(trimmed_last)
-                && strong_terminal_comma_policy
+            if sep_first_char == ',' && is_strong_terminal(trimmed_last) {
+                if strong_terminal_comma_policy
                     == citum_schema::options::StrongTerminalCommaPolicy::KeepBoth
-            {
-                entry_output.push_str(default_separator);
+                {
+                    entry_output.push_str(default_separator);
+                } else if let Some(separator_tail) = default_separator.strip_prefix(',') {
+                    entry_output.push_str(separator_tail);
+                }
             } else if !last_char.is_whitespace() {
                 entry_output.push(' ');
             }
@@ -772,6 +774,20 @@ mod tests {
             );
             assert_eq!(keep_terminal, format!("Title{terminal} Next"));
         }
+    }
+
+    #[test]
+    fn keep_terminal_policy_preserves_bibliography_separator_tail() {
+        let mut entry_output = "Title?".to_string();
+        append_rendered_component::<PlainText>(
+            &mut entry_output,
+            "Next",
+            ",\u{00A0}",
+            false,
+            citum_schema::options::StrongTerminalCommaPolicy::KeepTerminal,
+        );
+
+        assert_eq!(entry_output, "Title?\u{00A0}Next");
     }
 
     #[test]

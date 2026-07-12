@@ -65,6 +65,41 @@ impl Processor {
             });
     }
 
+    /// Return whether applying locale punctuation defaults would change `config`.
+    fn punctuation_defaults_require_resolution(&self, config: &Config) -> bool {
+        let punctuation = config.punctuation.as_ref();
+        let policy_is_unset = punctuation
+            .and_then(|options| options.strong_terminal_comma_policy)
+            .is_none();
+        let marks_are_unset = punctuation
+            .and_then(|options| options.delimiter_suppressing_terminal_marks.as_ref())
+            .is_none();
+
+        (policy_is_unset
+            && self.locale.grammar_options.strong_terminal_comma_policy
+                != citum_schema::options::StrongTerminalCommaPolicy::default())
+            || (marks_are_unset
+                && self
+                    .locale
+                    .grammar_options
+                    .delimiter_suppressing_terminal_marks
+                    != "?!…")
+    }
+
+    /// Apply locale punctuation defaults only when they change the effective config.
+    fn with_punctuation_defaults<'a>(
+        &self,
+        config: std::borrow::Cow<'a, Config>,
+    ) -> std::borrow::Cow<'a, Config> {
+        if !self.punctuation_defaults_require_resolution(&config) {
+            return config;
+        }
+
+        let mut config = config.into_owned();
+        self.resolve_punctuation_defaults(&mut config);
+        std::borrow::Cow::Owned(config)
+    }
+
     /// Core internal constructor path.
     ///
     /// Resolves the style presets before initializing the processor.
@@ -467,38 +502,40 @@ impl Processor {
 
     /// Return merged config for citation rendering.
     ///
-    /// Combines global style options with citation-specific overrides.
+    /// Combines global style options with citation-specific overrides, borrowing
+    /// the global configuration when no merge or locale resolution is required.
     pub fn get_citation_config(&self) -> std::borrow::Cow<'_, Config> {
         let base = self.get_config();
-        let mut config = match self
+        let config = match self
             .style
             .citation
             .as_ref()
             .and_then(|citation| citation.options.as_ref())
         {
-            Some(citation_options) => citation_options.merged_with(base),
-            None => base.clone(),
+            Some(citation_options) => std::borrow::Cow::Owned(citation_options.merged_with(base)),
+            None => std::borrow::Cow::Borrowed(base),
         };
-        self.resolve_punctuation_defaults(&mut config);
-        std::borrow::Cow::Owned(config)
+        self.with_punctuation_defaults(config)
     }
 
     /// Return merged shared config for bibliography rendering.
     ///
-    /// Combines global shared style options with bibliography-local shared overrides.
+    /// Combines global shared style options with bibliography-local shared overrides,
+    /// borrowing the global configuration when no merge or locale resolution is required.
     pub fn get_bibliography_config(&self) -> std::borrow::Cow<'_, Config> {
         let base = self.get_config();
-        let mut config = match self
+        let config = match self
             .style
             .bibliography
             .as_ref()
             .and_then(|bibliography| bibliography.options.as_ref())
         {
-            Some(bibliography_options) => bibliography_options.merged_with(base),
-            None => base.clone(),
+            Some(bibliography_options) => {
+                std::borrow::Cow::Owned(bibliography_options.merged_with(base))
+            }
+            None => std::borrow::Cow::Borrowed(base),
         };
-        self.resolve_punctuation_defaults(&mut config);
-        std::borrow::Cow::Owned(config)
+        self.with_punctuation_defaults(config)
     }
 
     /// Return effective bibliography-only configuration.
