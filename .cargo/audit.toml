@@ -4,7 +4,7 @@
 # `deny.toml`. cargo-audit does not read deny.toml, so the two tools need
 # parallel suppression lists.
 #
-# All five are *unmaintained* / *unsound* informational advisories on
+# All are *unmaintained* / *unsound* informational advisories on
 # transitive dependencies with no upstream fix available. They are NOT
 # patchable vulnerabilities, so Renovate `vulnerabilityAlerts` will never
 # auto-resolve them — they must be suppressed explicitly.
@@ -17,4 +17,5 @@ ignore = [
     "RUSTSEC-2026-0192",  # ttf-parser unmaintained (transitive via Typst stack)
     "RUSTSEC-2026-0194",  # quick-xml quadratic attr check (transitive via Typst stack; fix needs quick-xml >=0.41 upstream — removal tracked in bean csl26-blyb)
     "RUSTSEC-2026-0195",  # quick-xml NsReader memory-exhaustion DoS (same transitive paths and fix version as 0194 — bean csl26-blyb)
+    "RUSTSEC-2026-0206",  # rustybuzz unmaintained (transitive via krilla/typst-layout/typst-library/usvg)
 ]
