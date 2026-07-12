@@ -2177,6 +2177,7 @@ fn test_title_hyperlink_url_fallback() {
             url: Some(true),
             target: Some(LinkTarget::UrlOrDoi),
             anchor: Some(LinkAnchor::Title),
+            ..Default::default()
         }),
         ..Default::default()
     };
@@ -2680,6 +2681,81 @@ fn test_variable_hyperlink() {
         .unwrap();
     assert_eq!(values.value, "MIT Press");
     assert_eq!(values.url, Some("https://doi.org/10.1234/pub".to_string()));
+}
+
+/// Tests that `strip_protocol` is a no-op when unset (default behavior unchanged).
+#[test]
+fn test_resolve_url_strip_protocol_unset() {
+    let reference = Reference::from(LegacyReference {
+        id: "web2024".to_string(),
+        url: Some("https://example.com/resource".to_string()),
+        ..Default::default()
+    });
+
+    let links = LinksConfig {
+        target: Some(LinkTarget::Url),
+        ..Default::default()
+    };
+
+    let url = resolve_url(&links, &reference);
+    assert_eq!(url, Some("https://example.com/resource".to_string()));
+}
+
+/// Tests that `strip_protocol: Some(true)` strips an `https://` prefix.
+#[test]
+fn test_resolve_url_strip_protocol_https() {
+    let reference = Reference::from(LegacyReference {
+        id: "web2024".to_string(),
+        url: Some("https://example.com/resource".to_string()),
+        ..Default::default()
+    });
+
+    let links = LinksConfig {
+        target: Some(LinkTarget::Url),
+        strip_protocol: Some(true),
+        ..Default::default()
+    };
+
+    let url = resolve_url(&links, &reference);
+    assert_eq!(url, Some("example.com/resource".to_string()));
+}
+
+/// Tests that `strip_protocol: Some(true)` strips an `http://` prefix.
+#[test]
+fn test_resolve_url_strip_protocol_http() {
+    let reference = Reference::from(LegacyReference {
+        id: "web2024".to_string(),
+        url: Some("http://example.com/resource".to_string()),
+        ..Default::default()
+    });
+
+    let links = LinksConfig {
+        target: Some(LinkTarget::Url),
+        strip_protocol: Some(true),
+        ..Default::default()
+    };
+
+    let url = resolve_url(&links, &reference);
+    assert_eq!(url, Some("example.com/resource".to_string()));
+}
+
+/// Tests that `strip_protocol: Some(false)` is an explicit no-op.
+#[test]
+fn test_resolve_url_strip_protocol_explicit_false() {
+    let reference = Reference::from(LegacyReference {
+        id: "web2024".to_string(),
+        url: Some("https://example.com/resource".to_string()),
+        ..Default::default()
+    });
+
+    let links = LinksConfig {
+        target: Some(LinkTarget::Url),
+        strip_protocol: Some(false),
+        ..Default::default()
+    };
+
+    let url = resolve_url(&links, &reference);
+    assert_eq!(url, Some("https://example.com/resource".to_string()));
 }
 
 #[test]

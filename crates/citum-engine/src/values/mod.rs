@@ -510,7 +510,7 @@ pub fn resolve_url(
 
     let target = links.target.as_ref().unwrap_or(&LinkTarget::UrlOrDoi);
 
-    match target {
+    let url = match target {
         LinkTarget::Url => reference.url().map(|u| u.to_string()),
         LinkTarget::Doi => reference.doi().map(|d| format!("https://doi.org/{d}")),
         LinkTarget::UrlOrDoi => reference
@@ -533,6 +533,16 @@ pub fn resolve_url(
                 let result = format!("https://www.ncbi.nlm.nih.gov/pmc/articles/{}/", &id[4..]);
                 result
             }),
+    };
+
+    if links.strip_protocol == Some(true) {
+        url.map(|u| {
+            u.strip_prefix("https://")
+                .or_else(|| u.strip_prefix("http://"))
+                .map_or_else(|| u.clone(), ToString::to_string)
+        })
+    } else {
+        url
     }
 }
 

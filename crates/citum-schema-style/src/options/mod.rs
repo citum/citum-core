@@ -566,6 +566,9 @@ pub struct LinksConfig {
     /// What text should be hyperlinked (title, url, etc.).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub anchor: Option<LinkAnchor>,
+    /// Omit the URL scheme (e.g. `http://`, `https://`) when rendering a link.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub strip_protocol: Option<bool>,
 }
 
 /// Link target options.
