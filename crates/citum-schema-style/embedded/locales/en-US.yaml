@@ -562,6 +562,13 @@ terms:
     long:
       singular: act
       plural: acts
+  algorithm:
+    long:
+      singular: algorithm
+      plural: algorithms
+    short:
+      singular: alg.
+      plural: algs.
   appendix:
     long:
       singular: appendix
@@ -607,6 +614,20 @@ terms:
     short:
       singular: col.
       plural: cols.
+  corollary:
+    long:
+      singular: corollary
+      plural: corollaries
+    short:
+      singular: cor.
+      plural: cors.
+  definition:
+    long:
+      singular: definition
+      plural: definitions
+    short:
+      singular: def.
+      plural: defs.
   elocation:
     long:
       singular: location
@@ -642,6 +663,13 @@ terms:
     short:
       singular: no.
       plural: nos.
+  lemma:
+    long:
+      singular: lemma
+      plural: lemmas
+    short:
+      singular: lem.
+      plural: lems.
   line:
     long:
       singular: line
@@ -687,6 +715,20 @@ terms:
     short:
       singular: pt.
       plural: pts.
+  problem:
+    long:
+      singular: problem
+      plural: problems
+    short:
+      singular: prob.
+      plural: probs.
+  proposition:
+    long:
+      singular: proposition
+      plural: propositions
+    short:
+      singular: prop.
+      plural: props.
   rule:
     long:
       singular: rule
@@ -732,6 +774,13 @@ terms:
     short:
       singular: tbl.
       plural: tbls.
+  theorem:
+    long:
+      singular: theorem
+      plural: theorems
+    short:
+      singular: thm.
+      plural: thms.
   title_locator:
     long:
       singular: title
