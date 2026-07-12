@@ -102,6 +102,49 @@ fn make_style() -> Style {
     }
 }
 
+#[test]
+fn locale_punctuation_defaults_and_style_overrides_reach_render_configs() {
+    let mut locale = Locale::en_us();
+    locale.grammar_options.strong_terminal_comma_policy =
+        citum_schema::options::StrongTerminalCommaPolicy::KeepTerminal;
+    locale.grammar_options.delimiter_suppressing_terminal_marks = "?!…".to_string();
+
+    let processor = Processor::with_locale(make_style(), Bibliography::default(), locale.clone());
+    for config in [
+        processor.get_citation_config(),
+        processor.get_bibliography_config(),
+    ] {
+        let punctuation = config.punctuation.as_ref().unwrap();
+        assert_eq!(
+            punctuation.strong_terminal_comma_policy,
+            Some(citum_schema::options::StrongTerminalCommaPolicy::KeepTerminal)
+        );
+        assert_eq!(
+            punctuation.delimiter_suppressing_terminal_marks.as_deref(),
+            Some("?!…")
+        );
+    }
+
+    let mut style = make_style();
+    style.options.as_mut().unwrap().punctuation = Some(citum_schema::options::PunctuationConfig {
+        strong_terminal_comma_policy: Some(
+            citum_schema::options::StrongTerminalCommaPolicy::KeepBoth,
+        ),
+        delimiter_suppressing_terminal_marks: Some("!?".to_string()),
+    });
+    let processor = Processor::with_locale(style, Bibliography::default(), locale);
+    let config = processor.get_citation_config();
+    let punctuation = config.punctuation.as_ref().unwrap();
+    assert_eq!(
+        punctuation.strong_terminal_comma_policy,
+        Some(citum_schema::options::StrongTerminalCommaPolicy::KeepBoth)
+    );
+    assert_eq!(
+        punctuation.delimiter_suppressing_terminal_marks.as_deref(),
+        Some("!?")
+    );
+}
+
 fn make_note_style() -> Style {
     let mut style = make_style();
     style.options = Some(Config {

@@ -2975,6 +2975,17 @@
           "description": "Whether to place periods/commas inside quotation marks.\ntrue = American style (\"text.\"), false = British style (\"text\".)\nDefaults to false; en-US locale typically sets this to true.",
           "type": "boolean"
         },
+        "punctuation": {
+          "description": "Locale-sensitive punctuation-collision overrides.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PunctuationConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "volume-pages-delimiter": {
           "description": "Delimiter between volume/issue and pages for serial sources.\nProcessor adds trailing space when rendering.\nExamples: Comma (APA \", \"), Colon (Chicago \": \").",
           "anyOf": [
@@ -5003,6 +5014,45 @@
           "description": "No labels",
           "type": "string",
           "const": "none"
+        }
+      ]
+    },
+    "PunctuationConfig": {
+      "description": "Style-level overrides for locale punctuation-collision defaults.",
+      "type": "object",
+      "properties": {
+        "strong-terminal-comma-policy": {
+          "description": "Policy for a strong terminal mark followed by a style-supplied comma.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StrongTerminalCommaPolicy"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "delimiter-suppressing-terminal-marks": {
+          "description": "Terminal marks that suppress a following delimiter's punctuation core.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "StrongTerminalCommaPolicy": {
+      "description": "Controls how a strong terminal mark collides with a following comma.",
+      "oneOf": [
+        {
+          "description": "Preserve both the terminal mark and the following comma.",
+          "type": "string",
+          "const": "keep-both"
+        },
+        {
+          "description": "Preserve the terminal mark and suppress the following comma.",
+          "type": "string",
+          "const": "keep-terminal"
         }
       ]
     },

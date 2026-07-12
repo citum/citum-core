@@ -11,6 +11,7 @@ use super::super::Renderer;
 use crate::render::ProcTemplateComponent;
 use crate::render::bibliography::{append_rendered_component, component_starts_new_sentence};
 use crate::render::component::render_component_with_format;
+use crate::render::punctuation::strong_terminal_comma_policy;
 use crate::values::RenderContext;
 use citum_schema::NoteStartTextCase;
 use citum_schema::locale::GeneralTerm;
@@ -46,6 +47,11 @@ impl Renderer<'_> {
             .first()
             .and_then(|component| component.config.as_ref())
             .is_some_and(|config| config.punctuation_in_quote);
+        let strong_terminal_comma_policy = strong_terminal_comma_policy(
+            components
+                .first()
+                .and_then(|component| component.config.as_deref()),
+        );
         let default_separator = components
             .first()
             .and_then(|component| component.bibliography_config.as_ref())
@@ -76,6 +82,7 @@ impl Renderer<'_> {
                 &rendered,
                 &default_separator,
                 punctuation_in_quote,
+                strong_terminal_comma_policy,
             );
         }
     }

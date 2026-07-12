@@ -20,7 +20,7 @@ use citum_schema::Style;
 use citum_schema::locale::Locale;
 use citum_schema::options::{
     BibliographyPartitionKind, BibliographyPartitionMode, BibliographySortPartitioning, Config,
-    SortingMultilingualMode, bibliography::BibliographyConfig,
+    PunctuationConfig, SortingMultilingualMode, bibliography::BibliographyConfig,
 };
 use indexmap::IndexMap;
 use std::collections::HashMap;
@@ -47,6 +47,24 @@ impl Default for Processor {
 }
 
 impl Processor {
+    /// Fill unset style punctuation options from the active locale.
+    fn resolve_punctuation_defaults(&self, config: &mut Config) {
+        let punctuation = config
+            .punctuation
+            .get_or_insert_with(PunctuationConfig::default);
+        punctuation
+            .strong_terminal_comma_policy
+            .get_or_insert(self.locale.grammar_options.strong_terminal_comma_policy);
+        punctuation
+            .delimiter_suppressing_terminal_marks
+            .get_or_insert_with(|| {
+                self.locale
+                    .grammar_options
+                    .delimiter_suppressing_terminal_marks
+                    .clone()
+            });
+    }
+
     /// Core internal constructor path.
     ///
     /// Resolves the style presets before initializing the processor.
@@ -452,15 +470,17 @@ impl Processor {
     /// Combines global style options with citation-specific overrides.
     pub fn get_citation_config(&self) -> std::borrow::Cow<'_, Config> {
         let base = self.get_config();
-        match self
+        let mut config = match self
             .style
             .citation
             .as_ref()
             .and_then(|citation| citation.options.as_ref())
         {
-            Some(citation_options) => std::borrow::Cow::Owned(citation_options.merged_with(base)),
-            None => std::borrow::Cow::Borrowed(base),
-        }
+            Some(citation_options) => citation_options.merged_with(base),
+            None => base.clone(),
+        };
+        self.resolve_punctuation_defaults(&mut config);
+        std::borrow::Cow::Owned(config)
     }
 
     /// Return merged shared config for bibliography rendering.
@@ -468,17 +488,17 @@ impl Processor {
     /// Combines global shared style options with bibliography-local shared overrides.
     pub fn get_bibliography_config(&self) -> std::borrow::Cow<'_, Config> {
         let base = self.get_config();
-        match self
+        let mut config = match self
             .style
             .bibliography
             .as_ref()
             .and_then(|bibliography| bibliography.options.as_ref())
         {
-            Some(bibliography_options) => {
-                std::borrow::Cow::Owned(bibliography_options.merged_with(base))
-            }
-            None => std::borrow::Cow::Borrowed(base),
-        }
+            Some(bibliography_options) => bibliography_options.merged_with(base),
+            None => base.clone(),
+        };
+        self.resolve_punctuation_defaults(&mut config);
+        std::borrow::Cow::Owned(config)
     }
 
     /// Return effective bibliography-only configuration.

@@ -10,16 +10,17 @@ use crate::api::{AnnotationFormat, AnnotationStyle};
 use crate::render::component::{ProcEntry, ProcTemplateComponent, render_component_with_format};
 use crate::render::format::OutputFormat;
 use crate::render::plain::PlainText;
+use crate::render::punctuation::{is_strong_terminal, strong_terminal_comma_policy};
 use crate::render::rich_text::{render_djot_inline, render_org_inline};
 
 /// Returns true if the character is a sentence-ending or clause-ending punctuation mark.
 fn is_final_punctuation(c: char) -> bool {
-    matches!(c, '.' | ',' | ':' | ';' | '!' | '?')
+    matches!(c, '.' | ',' | ':' | ';' | '!' | '?' | '…')
 }
 
 /// Returns true if the character ends a sentence (period, question mark, exclamation).
 fn is_sentence_ending_punctuation(c: char) -> bool {
-    matches!(c, '.' | '!' | '?')
+    matches!(c, '.' | '!' | '?' | '…')
 }
 
 /// Returns the first character of the visible (markup-stripped) text for
@@ -123,6 +124,11 @@ pub(crate) fn render_entry_body_components_with_format<F: OutputFormat<Output = 
         .first()
         .and_then(|c| c.config.as_ref())
         .is_some_and(|cfg| cfg.punctuation_in_quote);
+    let strong_terminal_comma_policy = strong_terminal_comma_policy(
+        proc_template
+            .first()
+            .and_then(|component| component.config.as_deref()),
+    );
 
     // Get the bibliography separator from the config, defaulting to ". "
     let default_separator = proc_template
@@ -143,6 +149,7 @@ pub(crate) fn render_entry_body_components_with_format<F: OutputFormat<Output = 
                 &previous,
                 default_separator,
                 punctuation_in_quote,
+                strong_terminal_comma_policy,
             );
         }
     }
@@ -165,6 +172,7 @@ pub(crate) fn render_entry_body_components_with_format<F: OutputFormat<Output = 
             &final_rendered,
             default_separator,
             punctuation_in_quote,
+            strong_terminal_comma_policy,
         );
     }
 
@@ -197,7 +205,7 @@ pub(crate) fn render_entry_body_components_with_format<F: OutputFormat<Output = 
         _ => {}
     }
 
-    cleanup_dangling_punctuation::<F>(&mut entry_output);
+    cleanup_dangling_punctuation::<F>(&mut entry_output, strong_terminal_comma_policy);
     entry_output
 }
 
@@ -212,6 +220,7 @@ pub(crate) fn append_rendered_component<F: OutputFormat<Output = String>>(
     rendered: &str,
     default_separator: &str,
     punctuation_in_quote: bool,
+    strong_terminal_comma_policy: citum_schema::options::StrongTerminalCommaPolicy,
 ) {
     if !entry_output.is_empty() {
         let last_char = entry_output.chars().last().unwrap_or(' ');
@@ -229,8 +238,15 @@ pub(crate) fn append_rendered_component<F: OutputFormat<Output = String>>(
                 entry_output.push(' ');
             }
         } else if ends_with_punctuation {
-            // Output already ends in terminal punctuation — just ensure a separating space.
-            if !last_char.is_whitespace() {
+            // English-compatible locales retain a comma after a strong terminal mark;
+            // locales configured for collapsing retain only the terminal mark.
+            if sep_first_char == ','
+                && is_strong_terminal(trimmed_last)
+                && strong_terminal_comma_policy
+                    == citum_schema::options::StrongTerminalCommaPolicy::KeepBoth
+            {
+                entry_output.push_str(default_separator);
+            } else if !last_char.is_whitespace() {
                 entry_output.push(' ');
             }
         } else if punctuation_in_quote
@@ -390,6 +406,9 @@ const DANGLING_PUNCTUATION_PATTERNS: [(&str, &str); 13] = [
     ("  ", " "), // Double space to single
 ];
 
+/// Strong-terminal/comma pairs suppressed by locale policy.
+const STRONG_TERMINAL_COMMA_PATTERNS: [(&str, &str); 3] = [("!,", "!"), ("?,", "?"), ("…,", "…")];
+
 /// Collapse dangling/duplicated punctuation (`". ."` → `"."`, doubled spaces,
 /// etc.) without corrupting interleaved markup, URLs, or attribute values.
 ///
@@ -405,7 +424,10 @@ const DANGLING_PUNCTUATION_PATTERNS: [(&str, &str); 13] = [
     clippy::string_slice,
     reason = "byte ranges come from OutputFormat::visible_runs, which always yields char boundaries"
 )]
-fn cleanup_dangling_punctuation<F: OutputFormat<Output = String>>(output: &mut String) {
+fn cleanup_dangling_punctuation<F: OutputFormat<Output = String>>(
+    output: &mut String,
+    strong_terminal_comma_policy: citum_schema::options::StrongTerminalCommaPolicy,
+) {
     let fmt = F::default();
     loop {
         let runs = fmt.visible_runs(output);
@@ -418,10 +440,20 @@ fn cleanup_dangling_punctuation<F: OutputFormat<Output = String>>(output: &mut S
             }
         }
 
-        let Some((pat, replacement, visible_at)) = DANGLING_PUNCTUATION_PATTERNS
-            .iter()
-            .find_map(|&(pat, repl)| visible.find(pat).map(|idx| (pat, repl, idx)))
-        else {
+        let locale_pattern = if strong_terminal_comma_policy
+            == citum_schema::options::StrongTerminalCommaPolicy::KeepTerminal
+        {
+            STRONG_TERMINAL_COMMA_PATTERNS
+                .iter()
+                .find_map(|&(pat, repl)| visible.find(pat).map(|idx| (pat, repl, idx)))
+        } else {
+            None
+        };
+        let Some((pat, replacement, visible_at)) = locale_pattern.or_else(|| {
+            DANGLING_PUNCTUATION_PATTERNS
+                .iter()
+                .find_map(|&(pat, repl)| visible.find(pat).map(|idx| (pat, repl, idx)))
+        }) else {
             break;
         };
 
@@ -674,7 +706,13 @@ mod tests {
         // (IEEE house style: separator ", ", punctuation-in-quote enabled)
         let mut entry_output = String::from("\u{201C}Deep Learning\u{201D}");
         // when the next component (the journal title) is appended
-        append_rendered_component::<PlainText>(&mut entry_output, "Nature", ", ", true);
+        append_rendered_component::<PlainText>(
+            &mut entry_output,
+            "Nature",
+            ", ",
+            true,
+            Default::default(),
+        );
         // then the comma is pulled inside the closing quotation mark
         assert_eq!(entry_output, "\u{201C}Deep Learning,\u{201D} Nature");
     }
@@ -684,7 +722,13 @@ mod tests {
         // given a quoted title followed by a period-delimited separator
         let mut entry_output = String::from("\u{201C}Deep Learning\u{201D}");
         // when the next component is appended
-        append_rendered_component::<PlainText>(&mut entry_output, "Nature", ". ", true);
+        append_rendered_component::<PlainText>(
+            &mut entry_output,
+            "Nature",
+            ". ",
+            true,
+            Default::default(),
+        );
         // then the period is pulled inside the closing quotation mark (unchanged behaviour)
         assert_eq!(entry_output, "\u{201C}Deep Learning.\u{201D} Nature");
     }
@@ -694,9 +738,40 @@ mod tests {
         // given punctuation-in-quote disabled
         let mut entry_output = String::from("\u{201C}Deep Learning\u{201D}");
         // when the next component is appended with a comma separator
-        append_rendered_component::<PlainText>(&mut entry_output, "Nature", ", ", false);
+        append_rendered_component::<PlainText>(
+            &mut entry_output,
+            "Nature",
+            ", ",
+            false,
+            Default::default(),
+        );
         // then the comma stays outside the closing quotation mark
         assert_eq!(entry_output, "\u{201C}Deep Learning\u{201D}, Nature");
+    }
+
+    #[test]
+    fn strong_terminal_comma_policy_controls_bibliography_separator() {
+        for terminal in ['!', '?', '…'] {
+            let mut keep_both = format!("Title{terminal}");
+            append_rendered_component::<PlainText>(
+                &mut keep_both,
+                "Next",
+                ", ",
+                false,
+                citum_schema::options::StrongTerminalCommaPolicy::KeepBoth,
+            );
+            assert_eq!(keep_both, format!("Title{terminal}, Next"));
+
+            let mut keep_terminal = format!("Title{terminal}");
+            append_rendered_component::<PlainText>(
+                &mut keep_terminal,
+                "Next",
+                ", ",
+                false,
+                citum_schema::options::StrongTerminalCommaPolicy::KeepTerminal,
+            );
+            assert_eq!(keep_terminal, format!("Title{terminal} Next"));
+        }
     }
 
     #[test]
@@ -1119,7 +1194,13 @@ mod tests {
         // additionally insert the ". " separator's period, which used to
         // produce "\emph{Title.}. Next" (rendering as "Title.. Next").
         let mut entry_output = Latex.emph("Title.".to_string());
-        append_rendered_component::<Latex>(&mut entry_output, "Next", ". ", false);
+        append_rendered_component::<Latex>(
+            &mut entry_output,
+            "Next",
+            ". ",
+            false,
+            Default::default(),
+        );
 
         assert_eq!(Latex.visible_text(&entry_output), "Title. Next");
         assert!(
@@ -1134,7 +1215,7 @@ mod tests {
         // from an explicitly authored suffix) must still collapse to one
         // period, and the emph markup must survive intact.
         let mut output = r"\emph{Title.}. Next".to_string();
-        cleanup_dangling_punctuation::<Latex>(&mut output);
+        cleanup_dangling_punctuation::<Latex>(&mut output, Default::default());
 
         assert_eq!(Latex.visible_text(&output), "Title. Next");
         assert!(
@@ -1149,7 +1230,7 @@ mod tests {
         // pattern inside it must survive even though the identical pattern
         // outside the link gets collapsed.
         let mut output = r"\href{https://example.com/a, .b}{Link}, .".to_string();
-        cleanup_dangling_punctuation::<Latex>(&mut output);
+        cleanup_dangling_punctuation::<Latex>(&mut output, Default::default());
 
         assert!(
             output.contains("https://example.com/a, .b"),
@@ -1161,12 +1242,31 @@ mod tests {
     #[test]
     fn cleanup_dangling_punctuation_collapses_across_a_typst_markup_boundary() {
         let mut output = "#emph[Title.]. Next".to_string();
-        cleanup_dangling_punctuation::<Typst>(&mut output);
+        cleanup_dangling_punctuation::<Typst>(&mut output, Default::default());
 
         assert_eq!(Typst.visible_text(&output), "Title. Next");
         assert!(
             output.contains("#emph[Title"),
             "emph markup must survive: {output}"
         );
+    }
+
+    #[test]
+    fn cleanup_dangling_punctuation_applies_locale_policy_across_markup() {
+        let mut latex = r"\emph{Title!}, Next".to_string();
+        cleanup_dangling_punctuation::<Latex>(
+            &mut latex,
+            citum_schema::options::StrongTerminalCommaPolicy::KeepTerminal,
+        );
+        assert_eq!(Latex.visible_text(&latex), "Title! Next");
+        assert!(latex.contains(r"\emph{Title!}"));
+
+        let mut typst = "#emph[Title…], Next".to_string();
+        cleanup_dangling_punctuation::<Typst>(
+            &mut typst,
+            citum_schema::options::StrongTerminalCommaPolicy::KeepTerminal,
+        );
+        assert_eq!(Typst.visible_text(&typst), "Title… Next");
+        assert!(typst.contains("#emph[Title…]"));
     }
 }

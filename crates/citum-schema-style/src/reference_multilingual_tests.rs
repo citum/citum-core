@@ -167,6 +167,25 @@ grammar-options:
     }
 
     #[test]
+    fn test_locale_punctuation_collision_defaults_deserialization() {
+        let yaml = r#"
+locale: x-test
+grammar-options:
+  strong-terminal-comma-policy: keep-terminal
+  delimiter-suppressing-terminal-marks: "?!…"
+"#;
+        let locale = Locale::from_yaml_str(yaml).unwrap();
+        assert_eq!(
+            locale.grammar_options.strong_terminal_comma_policy,
+            crate::options::StrongTerminalCommaPolicy::KeepTerminal
+        );
+        assert_eq!(
+            locale.grammar_options.delimiter_suppressing_terminal_marks,
+            "?!…"
+        );
+    }
+
+    #[test]
     fn test_field_languages_deserialization() {
         let yaml = r#"
 id: chapter-1

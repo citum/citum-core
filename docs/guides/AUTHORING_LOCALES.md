@@ -1,14 +1,19 @@
 # Authoring Locales
 
 This guide tells you when and how to add MessageFormat 2 (MF2) entries to a
-Citum locale file in `locales/`. It is the practical companion to
+Citum locale file in the
+[embedded locale directory](../../crates/citum-schema-style/embedded/locales/).
+It is the practical companion to
 [`docs/specs/LOCALE_MESSAGES.md`](../specs/LOCALE_MESSAGES.md).
 
 ## Status
 
-- MF2 evaluator: live in `crates/citum-schema-style/src/locale/message.rs`.
+- MF2 evaluator: live in
+  [`message.rs`](../../crates/citum-schema-style/src/locale/message.rs).
 - Engine call sites: live. `resolved_locator_term` and `resolved_role_term`
-  are wired in `crates/citum-engine/src/values/` (locator, number, contributor/labels)
+  are wired in the
+  [engine value modules](../../crates/citum-engine/src/values/)
+  (locator, number, contributor/labels)
   and consult the `messages:` map first, falling back to the legacy `terms:` /
   `roles:` / `locators:` maps.
 - Gendered term values: live through `MaybeGendered<T>` in the legacy locale
@@ -61,11 +66,22 @@ grammar-options:
   close-quote: "..."
   serial-comma: false
   page-range-delimiter: "..."
+  strong-terminal-comma-policy: keep-both
+  delimiter-suppressing-terminal-marks: "?!…"
 legacy-term-aliases:
   # bridge old engine keys to new message IDs
 ```
 
-Use `locales/en-US.yaml`, `fr-FR.yaml`, or `de-DE.yaml` as references for
+Use `strong-terminal-comma-policy: keep-terminal` for locales that suppress a
+style-supplied comma after `?`, `!`, or `…` (currently German and French).
+Styles can override either punctuation field under `options.punctuation`.
+`delimiter-suppressing-terminal-marks` is also the shared locale vocabulary
+for structured-title delimiter suppression; title rendering consumes it in
+the separately tracked `csl26-zfqr` work.
+
+Use [`en-US.yaml`](../../crates/citum-schema-style/embedded/locales/en-US.yaml),
+[`fr-FR.yaml`](../../crates/citum-schema-style/embedded/locales/fr-FR.yaml), or
+[`de-DE.yaml`](../../crates/citum-schema-style/embedded/locales/de-DE.yaml) as references for
 gender-invariant messages. `es-ES.yaml` is the current concrete example of a
 locale that carries MF2 messages while keeping gendered role labels in `roles:`
 until MF2 can dispatch on both `$gender` and `$count` in one message. The same
@@ -161,7 +177,8 @@ found: it is a free/open-source rule-based machine translation platform that
 maintains explicit morphological grammars for languages it supports, and its
 wiki (`wiki.apertium.org`) contains relatively rigorous community-curated
 notes on case marking, agreement, and date formation. The Basque locale
-(`locales/eu-ES.yaml`) was bootstrapped from
+([`eu-ES.yaml`](../../crates/citum-schema-style/embedded/locales/eu-ES.yaml))
+was bootstrapped from
 [`wiki.apertium.org/wiki/Basque_to_English`](https://wiki.apertium.org/wiki/Basque_to_English)
 for exactly this reason.
 
@@ -278,7 +295,7 @@ cargo run --bin citum -- render refs \
 Step 4 installs the locale into the user data directory
 (`~/.local/share/citum/locales/` on Linux, `~/Library/Application Support/citum/locales/`
 on macOS) so the renderer can find it under any style — builtin or file-based.
-The resolution order is: sibling `locales/` (file-based styles only) → user
+The resolution order is: sibling locale directory (file-based styles only) → user
 store → embedded.
 
 `citum locale lint <file>` validates MF2 message structure before the render

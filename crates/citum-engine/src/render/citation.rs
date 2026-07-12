@@ -6,53 +6,10 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use crate::render::component::{ProcTemplate, render_component_with_format};
 use crate::render::format::OutputFormat;
 use crate::render::plain::PlainText;
+use crate::render::punctuation::{
+    is_terminal_punctuation, resolve_punctuation_collision, strong_terminal_comma_policy,
+};
 use citum_schema::template::WrapPunctuation;
-
-fn is_terminal_punctuation(ch: char) -> bool {
-    matches!(ch, ':' | '.' | ';' | '!' | '?' | ',')
-}
-
-fn resolve_punctuation_collision(first: char, second: char) -> String {
-    match (first, second) {
-        (':', ':') => ":".to_string(),
-        ('.', ':') => ".:".to_string(),
-        (';', ':') => ";".to_string(),
-        ('!', ':') => "!".to_string(),
-        ('?', ':') => "?".to_string(),
-        (',', ':') => ",:".to_string(),
-        (':', '.') => ":".to_string(),
-        ('.', '.') => ".".to_string(),
-        (';', '.') => ";".to_string(),
-        ('!', '.') => "!".to_string(),
-        ('?', '.') => "?".to_string(),
-        (',', '.') => ",.".to_string(),
-        (':', ';') => ":;".to_string(),
-        ('.', ';') => ".;".to_string(),
-        (';', ';') => ";".to_string(),
-        ('!', ';') => "!;".to_string(),
-        ('?', ';') => "?;".to_string(),
-        (',', ';') => ",;".to_string(),
-        (':', '!') => "!".to_string(),
-        ('.', '!') => ".!".to_string(),
-        (';', '!') => "!".to_string(),
-        ('!', '!') => "!".to_string(),
-        ('?', '!') => "?!".to_string(),
-        (',', '!') => ",!".to_string(),
-        (':', '?') => "?".to_string(),
-        ('.', '?') => ".?".to_string(),
-        (';', '?') => "?".to_string(),
-        ('!', '?') => "!?".to_string(),
-        ('?', '?') => "?".to_string(),
-        (',', '?') => ",?".to_string(),
-        (':', ',') => ":,".to_string(),
-        ('.', ',') => ".,".to_string(),
-        (';', ',') => ";,".to_string(),
-        ('!', ',') => "!,".to_string(),
-        ('?', ',') => "?,".to_string(),
-        (',', ',') => ",".to_string(),
-        _ => format!("{first}{second}"),
-    }
-}
 
 /// Append `delim` to `content`, applying house-style punctuation rules at the join point.
 ///
@@ -78,6 +35,7 @@ fn push_delimiter<F: OutputFormat<Output = String>>(
     content: &mut String,
     delim: &str,
     punctuation_in_quote: bool,
+    strong_terminal_comma_policy: citum_schema::options::StrongTerminalCommaPolicy,
 ) {
     let delim_first = delim.chars().next();
 
@@ -109,13 +67,25 @@ fn push_delimiter<F: OutputFormat<Output = String>>(
     } else if content.ends_with(visible_last) {
         // Case 2a: raw content genuinely ends with the visible terminal char — merge as before.
         content.pop();
-        content.push_str(&resolve_punctuation_collision(visible_last, first));
+        content.push_str(&resolve_punctuation_collision(
+            visible_last,
+            first,
+            strong_terminal_comma_policy,
+        ));
         content.push_str(&delim[first.len_utf8()..]);
     } else {
         // Case 2b: the visible terminal punctuation is behind trailing markup (e.g. LaTeX
-        // `}`) — leave the raw markup alone and just drop the delimiter's redundant leading
-        // punctuation instead of popping from `content`.
-        content.push_str(&delim[first.len_utf8()..]);
+        // `}`). A retained comma can safely follow the markup wrapper; all collapsing cases
+        // leave the raw markup alone and drop the incoming punctuation as before.
+        if first == ','
+            && crate::render::punctuation::is_strong_terminal(visible_last)
+            && strong_terminal_comma_policy
+                == citum_schema::options::StrongTerminalCommaPolicy::KeepBoth
+        {
+            content.push_str(delim);
+        } else {
+            content.push_str(&delim[first.len_utf8()..]);
+        }
     }
 }
 
@@ -154,11 +124,21 @@ pub fn citation_to_string_with_format<F: OutputFormat<Output = String>>(
         .first()
         .and_then(|c| c.config.as_ref())
         .is_some_and(|cfg| cfg.punctuation_in_quote);
+    let strong_terminal_comma_policy = strong_terminal_comma_policy(
+        proc_template
+            .first()
+            .and_then(|component| component.config.as_deref()),
+    );
 
     let mut content = String::new();
     for (i, part) in parts.iter().enumerate() {
         if i > 0 {
-            push_delimiter::<F>(&mut content, delim, punctuation_in_quote);
+            push_delimiter::<F>(
+                &mut content,
+                delim,
+                punctuation_in_quote,
+                strong_terminal_comma_policy,
+            );
         }
         content.push_str(part);
     }
@@ -411,6 +391,101 @@ ENDING IN COMMA
 
         assert_eq!(plain, expected);
         assert_eq!(typst, expected);
+    }
+
+    #[test]
+    fn test_keep_terminal_policy_suppresses_comma_after_strong_terminal_marks() {
+        let config = Config {
+            punctuation: Some(citum_schema::options::PunctuationConfig {
+                strong_terminal_comma_policy: Some(
+                    citum_schema::options::StrongTerminalCommaPolicy::KeepTerminal,
+                ),
+                delimiter_suppressing_terminal_marks: None,
+            }),
+            ..Default::default()
+        };
+        let cases = [
+            ("question", "?", "“question”? comma"),
+            ("exclamation", "!", "“exclamation”! comma"),
+            ("ellipsis", "…", "“ellipsis”… comma"),
+        ];
+
+        for (value, suffix, expected) in cases {
+            let template = full_monty_template(&config, "ENDING IN COMMA", value, suffix);
+            assert_eq!(
+                citation_to_string(&template, None, None, None, Some(", ")),
+                expected
+            );
+        }
+    }
+
+    #[test]
+    fn test_keep_both_policy_preserves_comma_after_ellipsis() {
+        let config = Config::default();
+        let template = full_monty_template(&config, "ENDING IN COMMA", "ellipsis", "…");
+
+        assert_eq!(
+            citation_to_string(&template, None, None, None, Some(", ")),
+            "“ellipsis”…, comma"
+        );
+    }
+
+    #[test]
+    fn test_strong_terminal_comma_policy_applies_across_typst_markup() {
+        let template = |policy| {
+            let config = Config {
+                punctuation: Some(citum_schema::options::PunctuationConfig {
+                    strong_terminal_comma_policy: Some(policy),
+                    delimiter_suppressing_terminal_marks: None,
+                }),
+                ..Default::default()
+            };
+            vec![
+                ProcTemplateComponent {
+                    template_component: TemplateComponent::Title(TemplateTitle {
+                        rendering: Rendering {
+                            emph: Some(true),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    }),
+                    value: "Title!".to_string(),
+                    config: Some(config.clone().into()),
+                    ..Default::default()
+                },
+                ProcTemplateComponent {
+                    template_component: TemplateComponent::Date(TemplateDate {
+                        date: DateVariable::Issued,
+                        form: DateForm::Year,
+                        ..Default::default()
+                    }),
+                    value: "next".to_string(),
+                    config: Some(config.into()),
+                    ..Default::default()
+                },
+            ]
+        };
+
+        assert_eq!(
+            citation_to_string_with_format::<Typst>(
+                &template(citum_schema::options::StrongTerminalCommaPolicy::KeepBoth),
+                None,
+                None,
+                None,
+                Some(", "),
+            ),
+            "#emph[Title!], next"
+        );
+        assert_eq!(
+            citation_to_string_with_format::<Typst>(
+                &template(citum_schema::options::StrongTerminalCommaPolicy::KeepTerminal),
+                None,
+                None,
+                None,
+                Some(", "),
+            ),
+            "#emph[Title!] next"
+        );
     }
 
     fn full_monty_template(

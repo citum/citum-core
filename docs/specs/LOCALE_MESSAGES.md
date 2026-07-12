@@ -573,6 +573,8 @@ grammar-options:
   page-range-delimiter: "\u2013"
   title-subtitle-delimiter: ": "
   subtitle-delimiter:   "; "
+  strong-terminal-comma-policy: keep-both
+  delimiter-suppressing-terminal-marks: "?!…"
 
 legacy-term-aliases:
   page:          term.page-label
@@ -652,6 +654,8 @@ grammar-options:
   page-range-delimiter: "\u2013"
   title-subtitle-delimiter: ": "
   subtitle-delimiter:   "; "
+  strong-terminal-comma-policy: keep-both
+  delimiter-suppressing-terminal-marks: "?!…"
 ```
 
 The same message IDs (`term.page-label`, `role.editor.verb`) carry
@@ -669,6 +673,8 @@ language-specific realizations without any change to the style YAML.
 | `page-range-delimiter` | `string` | Default separator between page range endpoints. |
 | `title-subtitle-delimiter` | `string` | Default separator between a structured title's main title and subtitle group. |
 | `subtitle-delimiter` | `string` | Default separator between subtitle parts inside a structured title. |
+| `strong-terminal-comma-policy` | `keep-both \| keep-terminal` | Whether a comma is retained after `?`, `!`, or `…`. |
+| `delimiter-suppressing-terminal-marks` | `string` | Terminal marks that suppress a following delimiter's punctuation core. |
 
 ---
 
@@ -871,6 +877,8 @@ pub struct RawGrammarOptions {
     pub page_range_delimiter: Option<String>,
     pub title_subtitle_delimiter: Option<String>,
     pub subtitle_delimiter: Option<String>,
+    pub strong_terminal_comma_policy: Option<StrongTerminalCommaPolicy>,
+    pub delimiter_suppressing_terminal_marks: Option<String>,
 }
 ```
 

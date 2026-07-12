@@ -19,4 +19,6 @@ grammar-options:
   page-range-delimiter: "\u2013"
   title-subtitle-delimiter: ": "
   subtitle-delimiter: "; "
+  strong-terminal-comma-policy: keep-both
+  delimiter-suppressing-terminal-marks: "?!…"
 legacy-term-aliases: {}

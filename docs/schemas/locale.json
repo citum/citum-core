@@ -597,6 +597,16 @@
           "type": "string",
           "default": "; "
         },
+        "strong-terminal-comma-policy": {
+          "description": "Policy for a strong terminal mark followed by a style-supplied comma.",
+          "$ref": "#/$defs/StrongTerminalCommaPolicy",
+          "default": "keep-both"
+        },
+        "delimiter-suppressing-terminal-marks": {
+          "description": "Terminal marks that suppress a following delimiter's punctuation core.",
+          "type": "string",
+          "default": "?!…"
+        },
         "note-punctuation": {
           "description": "Default placement of movable punctuation relative to closing\nquotation marks when a footnote marker is introduced. Overridable\nper-style via `options.notes.punctuation`.",
           "$ref": "#/$defs/NoteQuotePlacement",
@@ -613,6 +623,21 @@
           "default": "after"
         }
       }
+    },
+    "StrongTerminalCommaPolicy": {
+      "description": "Controls how a strong terminal mark collides with a following comma.",
+      "oneOf": [
+        {
+          "description": "Preserve both the terminal mark and the following comma.",
+          "type": "string",
+          "const": "keep-both"
+        },
+        {
+          "description": "Preserve the terminal mark and suppress the following comma.",
+          "type": "string",
+          "const": "keep-terminal"
+        }
+      ]
     },
     "NoteQuotePlacement": {
       "description": "Controls where movable punctuation is placed relative to closing quotation marks.",
