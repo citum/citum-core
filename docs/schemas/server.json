@@ -1331,6 +1331,13 @@
               "type": "null"
             }
           ]
+        },
+        "strip-protocol": {
+          "description": "Omit the URL scheme (e.g. `http://`, `https://`) when rendering a link.",
+          "type": [
+            "boolean",
+            "null"
+          ]
         }
       }
     },
