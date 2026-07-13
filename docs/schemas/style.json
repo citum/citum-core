@@ -793,6 +793,11 @@
           "description": "First contributor inverted (\"Family, Given\"); subsequent contributors given-first.",
           "type": "string",
           "const": "family-first-only"
+        },
+        {
+          "description": "Every contributor except the last inverted (\"Family, Given\"); the last\ncontributor rendered given-first. \"Last\" is the last name of the full\ncontributor list; under et-al truncation that name may be elided, in\nwhich case all rendered names invert.",
+          "type": "string",
+          "const": "family-first-except-last"
         }
       ]
     },
