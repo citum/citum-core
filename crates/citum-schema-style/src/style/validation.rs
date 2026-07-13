@@ -253,6 +253,21 @@ impl TemplateResourceBudget {
                 }
             }
             TemplateComponent::Group(group) => {
+                if let Some(cond) = &group.render_when {
+                    match (&cond.field_present, &cond.field_absent) {
+                        (None, None) => {
+                            return Err(format!(
+                                "{location}.group.render-when: must set field-present or field-absent"
+                            ));
+                        }
+                        (Some(present), Some(absent)) if present == absent => {
+                            return Err(format!(
+                                "{location}.group.render-when: field-present and field-absent must not be the same field ({present:?})"
+                            ));
+                        }
+                        _ => {}
+                    }
+                }
                 self.check_template(&group.group, &format!("{location}.group"), depth + 1)?;
             }
             TemplateComponent::Message(message) => {

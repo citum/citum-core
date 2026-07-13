@@ -4303,6 +4303,154 @@ fn given_original_publication_fields_when_a_bibliography_group_checks_field_pres
     assert_eq!(rendered, expected);
 }
 
+#[rstest]
+#[case::original_published_present(Some("1920"), "")]
+#[case::original_published_absent(None, "10.1000/marker-doi")]
+fn given_a_field_absent_only_condition_when_the_probed_field_is_present_or_absent_then_the_group_renders_conditionally(
+    #[case] original_published: Option<&str>,
+    #[case] expected: &str,
+) {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Field-absent-only condition test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![TemplateComponent::Variable(TemplateVariable {
+                    variable: SimpleVariable::Doi,
+                    ..Default::default()
+                })],
+                render_when: Some(TemplateGroupCondition {
+                    field_present: None,
+                    field_absent: Some(TemplateConditionField::OriginalPublished),
+                }),
+                ..Default::default()
+            })]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let mut reference_json = serde_json::json!({
+        "class": "monograph",
+        "type": "book",
+        "id": "primary",
+        "title": "Primary Work",
+        "issued": "1995",
+        "doi": "10.1000/marker-doi",
+    });
+    if let Some(issued) = original_published {
+        reference_json.as_object_mut().unwrap().insert(
+            "original".to_string(),
+            serde_json::json!({
+                "class": "monograph",
+                "type": "book",
+                "id": "orig",
+                "issued": issued,
+            }),
+        );
+    }
+    let reference: InputReference = serde_json::from_value(reference_json).unwrap();
+
+    let bibliography = IndexMap::from([("primary".to_string(), reference)]);
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor
+        .render_selected_bibliography_with_format_standalone::<PlainText, _>(
+            ["primary".to_string()],
+        )
+        .trim()
+        .to_string();
+
+    assert_eq!(rendered, expected);
+}
+
+#[rstest]
+#[case::title_present_and_publisher_absent(
+    true,
+    None,
+    Some("Oxford"),
+    "10.1000/marker-doi, Oxford"
+)]
+#[case::title_present_and_publisher_present(
+    true,
+    Some("Kodansha"),
+    Some("Oxford"),
+    "10.1000/marker-doi"
+)]
+#[case::title_absent(false, None, Some("Oxford"), "")]
+fn given_nested_render_when_conditions_when_outer_and_inner_fields_vary_then_each_group_is_evaluated_independently(
+    #[case] original_title_present: bool,
+    #[case] original_publisher: Option<&str>,
+    #[case] original_publisher_place: Option<&str>,
+    #[case] expected: &str,
+) {
+    let style = Style {
+        info: StyleInfo {
+            title: Some("Nested render-when condition test".to_string()),
+            ..Default::default()
+        },
+        bibliography: Some(BibliographySpec {
+            template: Some(vec![TemplateComponent::Group(TemplateGroup {
+                group: vec![
+                    TemplateComponent::Variable(TemplateVariable {
+                        variable: SimpleVariable::Doi,
+                        ..Default::default()
+                    }),
+                    TemplateComponent::Group(TemplateGroup {
+                        group: vec![TemplateComponent::Variable(TemplateVariable {
+                            variable: SimpleVariable::OriginalPublisherPlace,
+                            ..Default::default()
+                        })],
+                        render_when: Some(TemplateGroupCondition {
+                            field_present: None,
+                            field_absent: Some(TemplateConditionField::OriginalPublisher),
+                        }),
+                        ..Default::default()
+                    }),
+                ],
+                render_when: Some(TemplateGroupCondition {
+                    field_present: Some(TemplateConditionField::OriginalTitle),
+                    field_absent: None,
+                }),
+                ..Default::default()
+            })]),
+            ..Default::default()
+        }),
+        ..Default::default()
+    };
+
+    let mut original = original_publisher_fragment(original_publisher, original_publisher_place);
+    if original_title_present {
+        original
+            .as_object_mut()
+            .expect("original fragment is an object")
+            .insert("title".to_string(), serde_json::json!("Original Title"));
+    }
+
+    let reference: InputReference = serde_json::from_value(serde_json::json!({
+        "class": "monograph",
+        "type": "book",
+        "id": "primary",
+        "title": "Primary Work",
+        "issued": "1995",
+        "doi": "10.1000/marker-doi",
+        "original": original,
+    }))
+    .unwrap();
+
+    let bibliography = IndexMap::from([("primary".to_string(), reference)]);
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor
+        .render_selected_bibliography_with_format_standalone::<PlainText, _>(
+            ["primary".to_string()],
+        )
+        .trim()
+        .to_string();
+
+    assert_eq!(rendered, expected);
+}
+
 #[test]
 fn original_title_variable_renders_the_original_language_title() {
     let style = Style {
