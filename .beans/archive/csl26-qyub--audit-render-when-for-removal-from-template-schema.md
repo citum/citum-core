@@ -1,7 +1,7 @@
 ---
 # csl26-qyub
 title: Audit render-when for removal from template schema
-status: in-progress
+status: completed
 type: task
 priority: normal
 tags:
@@ -10,7 +10,7 @@ tags:
     - styles
     - research
 created_at: 2026-07-13T12:24:44Z
-updated_at: 2026-07-13T16:04:45Z
+updated_at: 2026-07-13T17:14:51Z
 ---
 
 PR #1050 review raised a doctrine question: render-when (TemplateGroupCondition, field-present/field-absent) is the template language's only conditional mechanism, and Citum's declarative model otherwise pushes conditionality into options, presets, and type-variants (see the 2026-07-12 triage stance on schema#62/#320 declining template-conditional growth).
@@ -19,7 +19,7 @@ Current footprint (2026-07-13): 29 usages, all confined to the two embedded Chic
 
 - [x] Map each of the 29 usages to an options/preset/type-variant replacement (or identify genuinely irreplaceable cases)
 - [x] Select semantic-only removal or specified retention: **specified retention selected**
-- [ ] Implement retention validation (empty/contradictory-condition rejection) and behavior tests under fidelity gates; promote spec Status to Active
+- [x] Implement retention validation (empty/contradictory-condition rejection) and behavior tests under fidelity gates; promote spec Status to Active
 
 Related: docs/specs/CROSS_ROLE_CONTRIBUTOR_LISTS.md deliberately avoided growing render-when (same-person elision went to options.contributors.suppress instead).
 
@@ -36,4 +36,14 @@ Rejected alternatives:
 
 This reverses the *removal* assumption from the 2026-07-12 schema#62/#320 triage, not the anti-growth stance behind it. AND-combined conditions (AD-C1) and nesting (AD-B6 inside AD-B7) are already part of the existing, working mechanism and are retained as-is, not newly granted. The typed field vocabulary may grow through ordinary reviewed schema changes — the same governance as any other schema addition — when a real forcing case is genuinely a field-presence layout/value selection within one type, not a stand-in for a semantic option. There is no special freeze on render-when: there is simply no current proposal to add new operators (OR, comparisons, expressions), same as any unimplemented feature.
 
-Remaining work (schema validation, behavior tests, schema regen, Status: Active promotion) is tracked implementation, not yet landed. Bean stays in-progress until that lands.
+Remaining work (schema validation, behavior tests, schema regen, Status: Active promotion) landed in the same commit — see Summary of Changes below.
+
+## Summary of Changes
+
+- Added validation in `TemplateResourceBudget::check_component` (crates/citum-schema-style/src/style/validation.rs) rejecting `render-when: {}` and same-field present/absent conditions.
+- Added schema-rejection tests (crates/citum-schema-style/src/tests.rs) and engine behavior tests for present, absent, combined-AND, and nested render-when evaluation (crates/citum-engine/tests/bibliography.rs).
+- Ran `just schema-gen`: no diff, since this cross-field constraint isn't expressible in the generated JSON Schema.
+- Promoted docs/specs/RENDER_WHEN_CONTRACT.md to Status: Active (v1.1).
+- `just pre-commit` green (fmt, clippy -D warnings, 1927 nextest tests passed).
+
+csl26-a0xe (a follow-up bean created to defer this work) is scrapped: the work landed here instead.

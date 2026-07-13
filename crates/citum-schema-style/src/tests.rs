@@ -1668,6 +1668,44 @@ bibliography:
 }
 
 #[test]
+fn style_loader_reports_empty_render_when() {
+    let yaml = r#"
+bibliography:
+  template:
+  - group:
+    - variable: doi
+    render-when: {}
+"#;
+    let err = Style::from_yaml_str(yaml).expect_err("empty render-when should fail");
+    let message = err.to_string();
+
+    assert!(
+        message.contains("must set field-present or field-absent"),
+        "message should reject an unconditional render-when: {message}"
+    );
+}
+
+#[test]
+fn style_loader_reports_contradictory_render_when() {
+    let yaml = r#"
+bibliography:
+  template:
+  - group:
+    - variable: doi
+    render-when:
+      field-present: title
+      field-absent: title
+"#;
+    let err = Style::from_yaml_str(yaml).expect_err("contradictory render-when should fail");
+    let message = err.to_string();
+
+    assert!(
+        message.contains("must not be the same field"),
+        "message should reject field-present and field-absent naming the same field: {message}"
+    );
+}
+
+#[test]
 fn style_loader_reports_unknown_template_component_key() {
     let yaml = r#"
 bibliography:

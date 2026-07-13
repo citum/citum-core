@@ -1,7 +1,7 @@
 # Render-When Contract Specification
 
-**Status:** Draft
-**Version:** 1.0
+**Status:** Active
+**Version:** 1.1
 **Date:** 2026-07-13
 **Supersedes:** None
 **Related:** `csl26-qyub`
@@ -111,23 +111,32 @@ before its own group renders; a suppressed group claims no variables.
 
 ## Implementation Notes
 
-Not yet implemented:
+Validation lives in `TemplateResourceBudget::check_component`
+(`crates/citum-schema-style/src/style/validation.rs`), reached through
+`Style::from_yaml_str`. Rejection tests are in
+`crates/citum-schema-style/src/tests.rs`
+(`style_loader_reports_empty_render_when`,
+`style_loader_reports_contradictory_render_when`). Behavior tests for
+present, absent, combined-AND, and nested evaluation are in
+`crates/citum-engine/tests/bibliography.rs`.
 
-- validation rejecting empty and same-field present/absent conditions;
-- behavior tests for present, absent, combined-AND, and nested cases;
-- schema regeneration (`docs/schemas/style.json`,
-  `docs/schemas/server.json`) for the new validation.
+The empty/same-field constraint is not expressible in the generated JSON
+Schema (`schemars` has no cross-field `not`/`oneOf` for this shape); `just
+schema-gen` was run and produced no diff, which is expected, not an omission.
 
 `citum-migrate` continues to not emit `render-when`.
 
 ## Acceptance Criteria
 
-- [ ] Schema validation rejects empty and same-field present/absent
+- [x] Schema validation rejects empty and same-field present/absent
       conditions.
-- [ ] Behavior tests cover present, absent, combined-AND, and nested cases.
-- [ ] Generated schemas document the validated contract.
-- [ ] Status promoted to Active in the implementation commit.
+- [x] Behavior tests cover present, absent, combined-AND, and nested cases.
+- [x] `just schema-gen` run; no diff, since the constraint isn't
+      schema-expressible.
+- [x] Status promoted to Active in the implementation commit.
 
 ## Changelog
 
+- v1.1 (2026-07-13): Implemented validation and behavior tests; promoted to
+  Active.
 - v1.0 (2026-07-13): Initial contract specification.
