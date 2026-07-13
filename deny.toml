@@ -2,9 +2,10 @@
 version = 2
 db-urls = ["https://github.com/rustsec/advisory-db"]
 yanked = "deny"
-# NOTE: cargo-audit does not read this file. Its ignore list is maintained
-# separately in .cargo/audit.toml and must be kept in sync with this block.
+# NOTE: Advisory IDs must stay in sync with .cargo/audit.toml. Yank exceptions
+# live only here because cargo-audit cannot ignore an exact yanked package.
 ignore = [
+    { crate = "spin@0.9.8", reason = "Yanked upstream; transitive through Typst and wasmi, whose latest stable releases still require spin 0.9. Remove when wasmi upgrades." },
     { id = "RUSTSEC-2024-0320", reason = "Transitive through syntect in the current Typst stack; no direct dependency or safe local replacement in this PR." },
     { id = "RUSTSEC-2024-0436", reason = "Transitive through V8, hayagriva, and biblatex; no direct dependency or safe local replacement in this PR." },
     { id = "RUSTSEC-2025-0141", reason = "Transitive through deno_core and syntect; no direct dependency or safe local replacement in this PR." },

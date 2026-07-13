@@ -313,7 +313,8 @@ jobs:
           tool: cargo-audit,cargo-deny,cargo-fuzz
 
       - name: Check RustSec advisories
-        run: cargo audit --deny warnings
+        # cargo-deny below enforces yanks and supports exact package exceptions.
+        run: cargo audit --deny warnings --no-yanked
 
       - name: Check dependency policy
         run: cargo deny check advisories licenses bans sources
