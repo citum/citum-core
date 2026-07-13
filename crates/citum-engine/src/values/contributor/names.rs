@@ -17,6 +17,10 @@ use unicode_script::{Script, UnicodeScript};
 pub(crate) struct NameFormatContext<'a> {
     pub(crate) display_as_sort: Option<DisplayAsSort>,
     pub(crate) name_order: Option<&'a NameOrder>,
+    /// Total number of names in the full contributor list (before et-al
+    /// truncation), used by [`NameOrder::FamilyFirstExceptLast`] to identify
+    /// the last name.
+    pub(crate) total_names: usize,
     pub(crate) initialize_with: Option<&'a String>,
     pub(crate) initialize_with_hyphen: Option<bool>,
     pub(crate) name_form: Option<NameForm>,
@@ -311,6 +315,7 @@ pub fn format_names(
     let ctx = NameFormatContext {
         display_as_sort: config.and_then(|c| c.display_as_sort),
         name_order: overrides.name_order,
+        total_names: names.len(),
         initialize_with: overrides
             .initialize_with
             .or_else(|| config.and_then(|c| c.initialize_with.as_ref())),
@@ -738,6 +743,7 @@ fn is_inverted_name_order(index: usize, ctx: &NameFormatContext) -> bool {
             _ => true,
         },
         Some(NameOrder::FamilyFirstOnly) => index == 0,
+        Some(NameOrder::FamilyFirstExceptLast) => index != ctx.total_names.saturating_sub(1),
         None => match ctx.display_as_sort {
             Some(DisplayAsSort::All) => true,
             Some(DisplayAsSort::First) => index == 0,

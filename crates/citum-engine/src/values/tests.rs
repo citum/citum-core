@@ -168,6 +168,7 @@ fn make_name_format_context<'a>(
     super::contributor::NameFormatContext {
         display_as_sort,
         name_order,
+        total_names: 1,
         initialize_with,
         initialize_with_hyphen,
         name_form,
@@ -301,6 +302,57 @@ fn test_contributor_values() {
         .values::<PlainText>(&reference, &hints, &options)
         .unwrap();
     assert_eq!(values.value, "Kuhn");
+}
+
+/// `family-first-except-last` inverts every contributor except the last one
+/// in the full list (CSL schema#134: Bioscene / AJFAND author-list style,
+/// e.g. "Gardner MN, Halweil AO and JM Nono").
+#[test]
+fn test_family_first_except_last_inverts_all_but_last_name() {
+    let mut config = make_config();
+    if let Some(contributors) = &mut config.contributors {
+        contributors.shorten = None;
+        contributors.and = Some(AndOptions::Text);
+    }
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: Arc::new(config),
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let reference = make_custom_role_reference(
+        citum_schema::reference::ContributorRole::Author,
+        &[
+            ContributorGender::Common,
+            ContributorGender::Common,
+            ContributorGender::Common,
+        ],
+    );
+    let hints = ProcHints::default();
+
+    let component = TemplateContributor {
+        contributor: ContributorRole::Author,
+        form: ContributorForm::Long,
+        name_order: Some(NameOrder::FamilyFirstExceptLast),
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &hints, &options)
+        .expect("author list should render");
+
+    assert_eq!(
+        values.value,
+        "Persona0, Nombre0, Persona1, Nombre1, and Nombre2 Persona2"
+    );
 }
 
 #[test]

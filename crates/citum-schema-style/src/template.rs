@@ -769,6 +769,11 @@ pub enum NameOrder {
     FamilyFirst,
     /// First contributor inverted ("Family, Given"); subsequent contributors given-first.
     FamilyFirstOnly,
+    /// Every contributor except the last inverted ("Family, Given"); the last
+    /// contributor rendered given-first. "Last" is the last name of the full
+    /// contributor list; under et-al truncation that name may be elided, in
+    /// which case all rendered names invert.
+    FamilyFirstExceptLast,
 }
 
 /// How to render contributor names.
@@ -1527,6 +1532,17 @@ form: long
         let comp: TemplateContributor = serde_yaml::from_str(yaml).unwrap();
         assert_eq!(comp.contributor, ContributorRole::Author);
         assert_eq!(comp.form, ContributorForm::Long);
+    }
+
+    #[test]
+    fn test_contributor_name_order_family_first_except_last_deserialization() {
+        let yaml = r#"
+contributor: author
+form: long
+name-order: family-first-except-last
+"#;
+        let comp: TemplateContributor = serde_yaml::from_str(yaml).unwrap();
+        assert_eq!(comp.name_order, Some(NameOrder::FamilyFirstExceptLast));
     }
 
     #[test]
