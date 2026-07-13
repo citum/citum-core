@@ -144,6 +144,7 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 | [`TEMPLATE_V2.md`](./TEMPLATE_V2.md) — simplified Template Schema v2 with group-first composition | Active | `bibliography.rs`, `citations.rs` |
 | [`TEMPLATE_V3.md`](./TEMPLATE_V3.md) — Template Schema v3 extensions | Active | `bibliography.rs`, `citations.rs` |
 | [`TEMPLATE_RENDERING_SEMANTICS.md`](./TEMPLATE_RENDERING_SEMANTICS.md) — render-time variable-once and group consumption semantics | Active | `bibliography.rs`, `citations.rs` |
+| [`RENDER_WHEN_CONTRACT.md`](./RENDER_WHEN_CONTRACT.md) — specified retention contract for template field-presence conditions | Draft | Validation and tests pending |
 | [`TITLE_TEXT_CASE.md`](./TITLE_TEXT_CASE.md) — modeling and applying title-like text-case transformations | Active | `bibliography.rs` |
 | [`TITLE_NAME_INFLECTION.md`](./TITLE_NAME_INFLECTION.md) — grammatical inflection of title-adjacent names | Active | `bibliography.rs` |
 | [`PUNCTUATION_NORMALIZATION.md`](./PUNCTUATION_NORMALIZATION.md) — normalization of punctuation at rendered output boundaries | Draft | `bibliography.rs`, `citations.rs` |
