@@ -5,6 +5,67 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.75.0] - 2026-07-14
+
+### Bug Fixes
+
+**ci**
+
+- Scope spin yank exception ([`f91f422`](https://github.com/citum/citum-core/commit/f91f42237a98df9724aa0d908e19f98a6290e212))
+
+- Use issue-id input for vouch manage ([`a302e2a`](https://github.com/citum/citum-core/commit/a302e2a66420aa29822029be4675524efd7532d4))
+
+
+**cli**
+
+- Ship citum-migrate via gnu on Linux ([`13464eb`](https://github.com/citum/citum-core/commit/13464eb9a746125155edb6bdefa59e2b8f5af35b))
+
+
+**engine**
+
+- Span-aware punctuation cleanup ([`07f4279`](https://github.com/citum/citum-core/commit/07f4279919e3928da470820d1df8cbda76c3e24d))
+
+- Markup-aware citation delimiter ([`dad1d9d`](https://github.com/citum/citum-core/commit/dad1d9d3b3d7eac2c6e820127b9dbd15309d9f9f))
+
+- Year-suffix order follows sort policy ([`14a52da`](https://github.com/citum/citum-core/commit/14a52da286a4e41293e2cba14ebaba6f3d59a1f6))
+
+
+
+### Documentation
+
+**spec**
+
+- Add cross-role contributor lists spec ([`9504c9f`](https://github.com/citum/citum-core/commit/9504c9f702985140a3602ea3d13dcfab2309b27c))
+
+- Add render-when contract ([`b9cb1be`](https://github.com/citum/citum-core/commit/b9cb1be335d637d0b56ace035c93089a8f6eae94))
+
+
+
+### Features
+
+**engine**
+
+- Add format-aware visible-text hook ([`beb5b48`](https://github.com/citum/citum-core/commit/beb5b48e48c482fb5e914660ff874bb3cac8a39f))
+
+
+**locale**
+
+- Add math locator terms ([`bb85e91`](https://github.com/citum/citum-core/commit/bb85e9160a3913fe8183c6328a5ad00b75443788))
+
+
+**schema**
+
+- Localize punctuation collisions ([`1d98fdf`](https://github.com/citum/citum-core/commit/1d98fdf099c3248b27da183275fa25b0dd625e2a))
+
+- Add bib info version field ([`5226770`](https://github.com/citum/citum-core/commit/5226770589967cb2c0f24575e2fd9df87ae82710))
+
+- Add strip-protocol link option ([`09c51ba`](https://github.com/citum/citum-core/commit/09c51baec04a70ad5203fd0aa5d98f82058b9997))
+
+- Add family-first-except-last order ([`22ab802`](https://github.com/citum/citum-core/commit/22ab80212956d269aa9df77ffebd2f4ec60df63b))
+
+- Validate render-when conditions ([`de454e0`](https://github.com/citum/citum-core/commit/de454e0512b6d8e2564b552c79dd726043f2b3a1))
+
+
 ## [0.74.0] - 2026-07-11
 
 ### Bug Fixes
