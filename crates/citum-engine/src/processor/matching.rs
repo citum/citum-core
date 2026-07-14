@@ -11,7 +11,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use crate::reference::Reference;
 use citum_schema::Style;
-use citum_schema::options::{Config, Substitute, SubstituteKey};
+use citum_schema::locale::Locale;
+use citum_schema::options::{Config, Substitute};
+use std::borrow::Cow;
 
 /// Matcher for determining if references share the same primary contributors.
 ///
@@ -20,83 +22,65 @@ use citum_schema::options::{Config, Substitute, SubstituteKey};
 pub struct Matcher<'a> {
     /// The active citation style.
     style: &'a Style,
-    /// The default configuration used as a fallback.
-    default_config: &'a Config,
+    /// The effective style configuration used for name resolution and fallbacks.
+    config: &'a Config,
+    /// The locale used to resolve multilingual and merged-list names.
+    locale: &'a Locale,
 }
 
 impl<'a> Matcher<'a> {
-    /// Build a matcher from the active style and default configuration.
+    /// Build a matcher from the active style, effective configuration, and locale.
     #[must_use]
-    pub fn new(style: &'a Style, default_config: &'a Config) -> Self {
+    pub fn new(style: &'a Style, config: &'a Config, locale: &'a Locale) -> Self {
         Self {
             style,
-            default_config,
+            config,
+            locale,
         }
     }
 
     /// Check if primary contributors (authors/editors) match between two references.
-    /// Uses the style's substitution logic to determine the primary contributor.
+    ///
+    /// Delegates to the shared effective-primary resolver
+    /// ([`crate::values::contributor::substitute::effective_primary_names`]) so
+    /// matching honors type overrides and merged-role candidates identically to
+    /// rendering, sorting, and disambiguation. Two references match only when
+    /// both resolve non-empty, equal name lists; a title-substitute result
+    /// (empty names) never matches.
     #[must_use]
     pub fn contributors_match(&self, prev: &Reference, current: &Reference) -> bool {
         let substitute = self.get_substitute_config();
-        let prev_contributors = self.get_primary_contributors(prev, &substitute);
-        let curr_contributors = self.get_primary_contributors(current, &substitute);
-
-        match (prev_contributors, curr_contributors) {
-            (Some(p), Some(c)) => p == c,
-            _ => false,
-        }
+        let prev_names = crate::values::contributor::substitute::effective_primary_names(
+            prev,
+            substitute.as_ref(),
+            self.config,
+            self.locale,
+        );
+        let curr_names = crate::values::contributor::substitute::effective_primary_names(
+            current,
+            substitute.as_ref(),
+            self.config,
+            self.locale,
+        );
+        !prev_names.is_empty() && !curr_names.is_empty() && prev_names == curr_names
     }
 
     /// Gets the substitute configuration from the style or falls back to defaults.
     ///
     /// Resolves the substitute template from the style's options if available,
     /// otherwise falls back to the default configuration's substitute settings.
-    fn get_substitute_config(&self) -> Substitute {
-        self.style
+    fn get_substitute_config(&self) -> Cow<'_, Substitute> {
+        if let Some(config) = self
+            .style
             .options
             .as_ref()
             .and_then(|o| o.substitute.as_ref())
-            .map(citum_schema::options::SubstituteConfig::resolve)
-            .or_else(|| {
-                self.default_config
-                    .substitute
-                    .as_ref()
-                    .map(citum_schema::options::SubstituteConfig::resolve)
-            })
-            .unwrap_or_default()
-    }
-
-    /// Get the primary contributors for a reference based on the style's substitution order.
-    /// Follows the substitute template: Author is always first, then the configured fallbacks.
-    fn get_primary_contributors(
-        &self,
-        reference: &Reference,
-        substitute: &Substitute,
-    ) -> Option<crate::reference::Contributor> {
-        // Author is always the primary contributor
-        if let Some(author) = reference.author() {
-            return Some(author);
+        {
+            return config.resolve_ref();
         }
-
-        // Fall back through the substitute template order
-        for key in &substitute.template {
-            let contributor = match key {
-                SubstituteKey::CollectionEditor => {
-                    reference.contributor(citum_schema::reference::ContributorRole::Unknown(
-                        "collection-editor".to_string(),
-                    ))
-                }
-                SubstituteKey::Editor => reference.editor(),
-                SubstituteKey::Translator => reference.translator(),
-                SubstituteKey::ParentSerial => None,
-                SubstituteKey::Title => None, // Title is not a contributor
-            };
-            if contributor.is_some() {
-                return contributor;
-            }
-        }
-
-        None
+        self.config.substitute.as_ref().map_or_else(
+            || Cow::Owned(Substitute::default()),
+            citum_schema::options::SubstituteConfig::resolve_ref,
+        )
     }
 }

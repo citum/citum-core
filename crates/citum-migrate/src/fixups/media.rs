@@ -203,7 +203,7 @@ pub(super) fn ensure_inferred_media_type_templates(
         }));
         template.push(TemplateComponent::Contributor(
             citum_schema::template::TemplateContributor {
-                contributor: citum_schema::template::ContributorRole::Director,
+                contributor: citum_schema::template::ContributorRole::Director.into(),
                 form: citum_schema::template::ContributorForm::Long,
                 rendering: Rendering {
                     prefix: Some("Directed by ".to_string()),
@@ -221,7 +221,7 @@ pub(super) fn ensure_inferred_media_type_templates(
         let mut template = base_media_template_from_bibliography(bibliography_template);
         template.push(TemplateComponent::Contributor(
             citum_schema::template::TemplateContributor {
-                contributor: citum_schema::template::ContributorRole::Interviewer,
+                contributor: citum_schema::template::ContributorRole::Interviewer.into(),
                 form: citum_schema::template::ContributorForm::Long,
                 ..Default::default()
             },

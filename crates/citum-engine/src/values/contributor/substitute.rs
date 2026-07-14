@@ -14,12 +14,30 @@ use crate::render::format::OutputFormat;
 use crate::values::text_case::apply_text_case;
 use crate::values::title::resolve_substitute_text_case;
 use crate::values::{ProcHints, ProcValues, RenderContext, RenderOptions};
-use citum_schema::options::{RoleLabelPreset, SubstituteKey, SubstituteTitleQuoteMode};
-use citum_schema::reference::Title;
-use citum_schema::reference::{ClassExtension, ContributorRole as DataRole};
-use citum_schema::template::{
-    ContributorRole, Rendering, TemplateComponent, TemplateContributor, TitleType,
+use citum_schema::options::{
+    RoleLabelPreset, SubstituteField, SubstituteKey, SubstituteTitleQuoteMode,
 };
+use citum_schema::reference::Title;
+use citum_schema::reference::{
+    AudioVisualType, ClassExtension, Contributor, ContributorRole as DataRole,
+};
+use citum_schema::template::{
+    ContributorRole, ContributorRoles, Rendering, TemplateComponent, TemplateContributor, TitleType,
+};
+
+/// Resolved value occupying the style's effective primary-contributor slot.
+#[derive(Debug, Clone)]
+pub(crate) enum EffectivePrimary {
+    /// A scalar contributor payload, including existing semantic-author fallback.
+    Contributor {
+        contributor: Box<Contributor>,
+        role: ContributorRole,
+    },
+    /// An ordered cross-role candidate assembled from the native contributor vector.
+    Merged(ContributorRoles),
+    /// A title field used after contributor candidates are exhausted.
+    Title { title: Title, kind: TitleType },
+}
 
 enum ResolvedRole {
     BuiltIn(ContributorRole),
@@ -184,25 +202,23 @@ pub(super) fn resolve_multilingual_for_contrib(
     )
 }
 
-/// Resolve substitute-path role labels for a rendered fallback contributor.
-fn resolve_substitute_role_labels<F: OutputFormat<Output = String>>(
-    component: &TemplateContributor,
-    role: &ResolvedRole,
+struct SubstituteRoleLabelContext<'a, 'b, F> {
+    component: &'a TemplateContributor,
+    role: &'a ResolvedRole,
     names_count: usize,
-    options: &RenderOptions<'_>,
-    effective_rendering: &Rendering,
-    fmt: &F,
-    substitute: &citum_schema::options::Substitute,
-) -> (Option<String>, Option<String>) {
-    if options.context != RenderContext::Bibliography
-        || role
-            .built_in()
-            .is_some_and(|known| super::is_role_label_omitted(options, known))
-    {
-        return (None, None);
-    }
+    reference: &'a Reference,
+    options: &'a RenderOptions<'b>,
+    effective_rendering: &'a Rendering,
+    fmt: &'a F,
+    substitute: &'a citum_schema::options::Substitute,
+}
 
-    let preset = substitute
+fn substitute_role_label_preset(
+    role: &ResolvedRole,
+    options: &RenderOptions<'_>,
+    substitute: &citum_schema::options::Substitute,
+) -> Option<RoleLabelPreset> {
+    substitute
         .contributor_role_form
         .as_deref()
         .and_then(|form| match form {
@@ -212,15 +228,74 @@ fn resolve_substitute_role_labels<F: OutputFormat<Output = String>>(
             _ => None,
         })
         .or_else(|| {
-            options
-                .config
-                .contributors
-                .as_ref()
-                .and_then(|contributors| {
-                    role.built_in()
-                        .and_then(|known| contributors.effective_role_label_preset(known))
-                })
+            let contributors = options.config.contributors.as_ref()?;
+            role.built_in()
+                .and_then(|known| contributors.effective_role_label_preset(known))
+        })
+        .or_else(|| {
+            let contributors = options.config.contributors.as_ref()?;
+            role.built_in()
+                .and_then(|known| contributors.default_role_label_preset(known))
+        })
+}
+
+/// Resolve substitute-path role labels for a rendered fallback contributor.
+fn resolve_substitute_role_labels<F: OutputFormat<Output = String>>(
+    context: &SubstituteRoleLabelContext<'_, '_, F>,
+) -> (Option<String>, Option<String>) {
+    let SubstituteRoleLabelContext {
+        component,
+        role,
+        names_count,
+        reference,
+        options,
+        effective_rendering,
+        fmt,
+        substitute,
+    } = context;
+    if matches!(role.built_in(), Some(ContributorRole::Author)) {
+        return (None, None);
+    }
+    if options.context != RenderContext::Bibliography
+        || role
+            .built_in()
+            .is_some_and(|known| super::is_role_label_omitted(options, known))
+    {
+        return (None, None);
+    }
+
+    if substitute.contributor_role_form.is_none()
+        && substitute.contributor_role_case.is_none()
+        && let Some(known) = role.built_in()
+        && options
+            .config
+            .contributors
+            .as_ref()
+            .is_some_and(|contributors| {
+                contributors.role_label_presentation(known).is_some()
+                    || contributors
+                        .role
+                        .as_ref()
+                        .and_then(|role_options| role_options.defaults)
+                        .and_then(|defaults| defaults.presentation_for(known))
+                        .is_some()
+            })
+    {
+        let mut role_component = (*component).clone();
+        role_component.contributor = known.clone().into();
+        return super::labels::resolve_role_labels::<F>(super::labels::RoleLabelContext {
+            component: &role_component,
+            role: known,
+            reference,
+            names_count: *names_count,
+            effective_rendering,
+            options,
+            fmt: *fmt,
+            role_omitted: super::is_role_label_omitted(options, known),
         });
+    }
+
+    let preset = substitute_role_label_preset(role, options, substitute);
 
     preset
         .and_then(|selected| {
@@ -237,7 +312,7 @@ fn resolve_substitute_role_labels<F: OutputFormat<Output = String>>(
                 super::labels::resolve_role_label_preset::<F>(
                     known,
                     selected,
-                    names_count,
+                    *names_count,
                     super::labels::RoleLabelTermOptions {
                         gender: None,
                         text_case: substitute.contributor_role_case,
@@ -272,6 +347,33 @@ fn resolve_named_substitute<F: OutputFormat<Output = String>>(
         return None;
     }
 
+    // Preserve the scalar author fast path. Semantic authors are not
+    // substitutes, do not carry role labels, and should avoid constructing a
+    // substituted variable key on every bibliography render.
+    if matches!(role.built_in(), Some(ContributorRole::Author)) {
+        let formatted = super::format_contributor_names(
+            component,
+            &ContributorRole::Author,
+            &names_vec,
+            effective_rendering,
+            options,
+            hints,
+        );
+        return Some(ProcValues {
+            value: crate::values::apply_abbreviation(formatted, options.abbreviation_map),
+            prefix: None,
+            suffix: None,
+            url: crate::values::resolve_effective_url(
+                component.links.as_ref(),
+                options.config.links.as_ref(),
+                reference,
+                citum_schema::options::LinkAnchor::Component,
+            ),
+            substituted_key: None,
+            pre_formatted: false,
+        });
+    }
+
     let effective_name_order = component.name_order.as_ref().or_else(|| {
         role.built_in().and_then(|known| {
             options
@@ -298,15 +400,16 @@ fn resolve_named_substitute<F: OutputFormat<Output = String>>(
     };
     let formatted =
         super::names::format_names(&names_vec, &component.form, options, &name_overrides, hints);
-    let (prefix, suffix) = resolve_substitute_role_labels::<F>(
+    let (prefix, suffix) = resolve_substitute_role_labels::<F>(&SubstituteRoleLabelContext {
         component,
         role,
-        names_vec.len(),
+        names_count: names_vec.len(),
+        reference,
         options,
         effective_rendering,
         fmt,
         substitute,
-    );
+    });
 
     let url = crate::values::resolve_effective_url(
         component.links.as_ref(),
@@ -319,7 +422,7 @@ fn resolve_named_substitute<F: OutputFormat<Output = String>>(
         || Some(format!("contributor:{}", role.key())),
         |known| {
             get_variable_key(&TemplateComponent::Contributor(TemplateContributor {
-                contributor: known.clone(),
+                contributor: known.clone().into(),
                 rendering: component.rendering.clone(),
                 ..Default::default()
             }))
@@ -554,6 +657,197 @@ fn resolve_parent_serial_title(reference: &Reference) -> Option<Title> {
     }
 }
 
+fn native_type_key(reference: &Reference) -> Option<&'static str> {
+    reference
+        .as_audio_visual()
+        .and_then(|work| match work.r#type {
+            AudioVisualType::Film => Some("film"),
+            AudioVisualType::Episode => Some("episode"),
+            AudioVisualType::Recording => Some("recording"),
+            AudioVisualType::Broadcast => Some("broadcast"),
+            _ => None,
+        })
+}
+
+fn exact_type_candidates<'a>(
+    reference: &Reference,
+    substitute: &'a citum_schema::options::Substitute,
+) -> Option<&'a [SubstituteKey]> {
+    if let Some(candidates) =
+        native_type_key(reference).and_then(|key| substitute.overrides.get(key))
+    {
+        return Some(candidates.as_slice());
+    }
+
+    substitute
+        .overrides
+        .get(&reference.ref_type())
+        .map(Vec::as_slice)
+}
+
+fn contributor_for_candidate(reference: &Reference, role: &ContributorRole) -> Option<Contributor> {
+    lookup_role_contributor(reference, &ResolvedRole::BuiltIn(role.clone()))
+}
+
+/// An [`EffectivePrimary`] candidate paired with the multilingual names that
+/// justify selecting it, resolved together in a single pass.
+///
+/// `resolve_candidate` needs a candidate's names only to test whether it is
+/// non-empty (to decide whether the candidate qualifies); keeping the
+/// resolved vector alongside the selected variant lets
+/// [`effective_primary_names`] reuse it instead of re-running the same
+/// (potentially expensive, suppression-aware) name assembly a second time.
+struct EffectivePrimaryResolution {
+    primary: EffectivePrimary,
+    names: Vec<crate::reference::FlatName>,
+}
+
+fn resolve_candidate(
+    candidate: &SubstituteKey,
+    reference: &Reference,
+    config: &citum_schema::options::Config,
+    locale: &citum_schema::locale::Locale,
+) -> Option<EffectivePrimaryResolution> {
+    match candidate {
+        SubstituteKey::Contributor(candidate) => {
+            if let Some(role) = candidate.contributor.as_single() {
+                contributor_for_candidate(reference, role).and_then(|contributor| {
+                    let names =
+                        super::merged::semantic_contributor_names(&contributor, config, locale);
+                    (!names.is_empty()).then(|| EffectivePrimaryResolution {
+                        primary: EffectivePrimary::Contributor {
+                            contributor: Box::new(contributor),
+                            role: role.clone(),
+                        },
+                        names,
+                    })
+                })
+            } else {
+                let component = TemplateContributor {
+                    contributor: candidate.contributor.clone(),
+                    ..Default::default()
+                };
+                let names = super::merged::semantic_names(&component, reference, config, locale);
+                (!names.is_empty()).then(|| EffectivePrimaryResolution {
+                    primary: EffectivePrimary::Merged(candidate.contributor.clone()),
+                    names,
+                })
+            }
+        }
+        SubstituteKey::Field(field) => match field {
+            SubstituteField::CollectionEditor => contributor_for_candidate(
+                reference,
+                &ContributorRole::CollectionEditor,
+            )
+            .and_then(|contributor| {
+                let names = super::merged::semantic_contributor_names(&contributor, config, locale);
+                (!names.is_empty()).then(|| EffectivePrimaryResolution {
+                    primary: EffectivePrimary::Contributor {
+                        contributor: Box::new(contributor),
+                        role: ContributorRole::CollectionEditor,
+                    },
+                    names,
+                })
+            }),
+            SubstituteField::Editor => reference.editor().and_then(|contributor| {
+                let names = super::merged::semantic_contributor_names(&contributor, config, locale);
+                (!names.is_empty()).then(|| EffectivePrimaryResolution {
+                    primary: EffectivePrimary::Contributor {
+                        contributor: Box::new(contributor),
+                        role: ContributorRole::Editor,
+                    },
+                    names,
+                })
+            }),
+            SubstituteField::ParentSerial => {
+                resolve_parent_serial_title(reference).map(|title| EffectivePrimaryResolution {
+                    primary: EffectivePrimary::Title {
+                        title,
+                        kind: TitleType::ParentSerial,
+                    },
+                    names: Vec::new(),
+                })
+            }
+            SubstituteField::Title => reference.title().map(|title| EffectivePrimaryResolution {
+                primary: EffectivePrimary::Title {
+                    title,
+                    kind: TitleType::Primary,
+                },
+                names: Vec::new(),
+            }),
+            SubstituteField::Translator => reference.translator().and_then(|contributor| {
+                let names = super::merged::semantic_contributor_names(&contributor, config, locale);
+                (!names.is_empty()).then(|| EffectivePrimaryResolution {
+                    primary: EffectivePrimary::Contributor {
+                        contributor: Box::new(contributor),
+                        role: ContributorRole::Translator,
+                    },
+                    names,
+                })
+            }),
+        },
+    }
+}
+
+/// Resolve the effective-primary candidate and its names together, computing
+/// each candidate's name assembly at most once. Shared by [`effective_primary`]
+/// and [`effective_primary_names`] so neither re-derives the other's work.
+fn resolve_effective_primary(
+    reference: &Reference,
+    substitute: &citum_schema::options::Substitute,
+    config: &citum_schema::options::Config,
+    locale: &citum_schema::locale::Locale,
+) -> Option<EffectivePrimaryResolution> {
+    if let Some(candidates) = exact_type_candidates(reference, substitute) {
+        for candidate in candidates {
+            if let Some(resolved) = resolve_candidate(candidate, reference, config, locale) {
+                return Some(resolved);
+            }
+        }
+    }
+
+    if let Some(contributor) = reference.author() {
+        let names = super::merged::semantic_contributor_names(&contributor, config, locale);
+        if !names.is_empty() {
+            return Some(EffectivePrimaryResolution {
+                primary: EffectivePrimary::Contributor {
+                    contributor: Box::new(contributor),
+                    role: ContributorRole::Author,
+                },
+                names,
+            });
+        }
+    }
+
+    substitute
+        .template
+        .iter()
+        .find_map(|candidate| resolve_candidate(candidate, reference, config, locale))
+}
+
+/// Resolve the single effective-primary value shared by rendering and semantic consumers.
+pub(crate) fn effective_primary(
+    reference: &Reference,
+    substitute: &citum_schema::options::Substitute,
+    config: &citum_schema::options::Config,
+    locale: &citum_schema::locale::Locale,
+) -> Option<EffectivePrimary> {
+    resolve_effective_primary(reference, substitute, config, locale)
+        .map(|resolved| resolved.primary)
+}
+
+/// Resolve effective-primary names for sorting, matching, and disambiguation.
+pub(crate) fn effective_primary_names(
+    reference: &Reference,
+    substitute: &citum_schema::options::Substitute,
+    config: &citum_schema::options::Config,
+    locale: &citum_schema::locale::Locale,
+) -> Vec<crate::reference::FlatName> {
+    resolve_effective_primary(reference, substitute, config, locale)
+        .map(|resolved| resolved.names)
+        .unwrap_or_default()
+}
+
 /// Attempt to substitute an empty author field with editor, title, or translator.
 ///
 /// Returns `Some(ProcValues)` if a substitute was found, `None` if the chain
@@ -567,84 +861,51 @@ pub(super) fn resolve_author_substitute<F: OutputFormat<Output = String>>(
     fmt: &F,
     substitute: &citum_schema::options::Substitute,
 ) -> Option<ProcValues<F::Output>> {
-    for key in &substitute.template {
-        match key {
-            SubstituteKey::CollectionEditor => {
-                if let Some(result) = resolve_contributor_substitute_for_role(
-                    &ResolvedRole::BuiltIn(ContributorRole::CollectionEditor),
-                    component,
-                    hints,
-                    options,
-                    reference,
-                    effective_rendering,
-                    fmt,
-                    substitute,
-                ) {
-                    return Some(result);
-                }
-            }
-            SubstituteKey::Editor => {
-                if let Some(result) = resolve_contributor_substitute_for_role(
-                    &ResolvedRole::BuiltIn(ContributorRole::Editor),
-                    component,
-                    hints,
-                    options,
-                    reference,
-                    effective_rendering,
-                    fmt,
-                    substitute,
-                ) {
-                    return Some(result);
-                }
-            }
-            SubstituteKey::ParentSerial => {
-                if let Some(title) = resolve_parent_serial_title(reference) {
-                    return Some(resolve_title_substitute(
-                        title,
-                        &TitleType::ParentSerial,
-                        component,
-                        options,
-                        reference,
-                        fmt,
-                        false,
-                    ));
-                }
-            }
-            SubstituteKey::Title => {
-                if let Some(title) = reference.title() {
-                    let quote_in_citation = match substitute.title_quote {
-                        Some(SubstituteTitleQuoteMode::ByCategory) => {
-                            resolve_category_quote(reference, options)
-                        }
-                        Some(SubstituteTitleQuoteMode::Always) | None => true,
-                    };
-                    return Some(resolve_title_substitute(
-                        title,
-                        &TitleType::Primary,
-                        component,
-                        options,
-                        reference,
-                        fmt,
-                        quote_in_citation,
-                    ));
-                }
-            }
-            SubstituteKey::Translator => {
-                if let Some(result) = resolve_contributor_substitute_for_role(
-                    &ResolvedRole::BuiltIn(ContributorRole::Translator),
-                    component,
-                    hints,
-                    options,
-                    reference,
-                    effective_rendering,
-                    fmt,
-                    substitute,
-                ) {
-                    return Some(result);
-                }
-            }
+    match effective_primary(reference, substitute, &options.config, options.locale) {
+        Some(EffectivePrimary::Contributor { contributor, role }) => resolve_named_substitute(
+            &ResolvedRole::BuiltIn(role),
+            &contributor,
+            component,
+            hints,
+            options,
+            reference,
+            effective_rendering,
+            fmt,
+            substitute,
+        ),
+        Some(EffectivePrimary::Merged(roles)) => {
+            let mut merged = component.clone();
+            merged.contributor = roles;
+            merged.merge = None;
+            let mut values = super::merged::values(
+                &merged,
+                reference,
+                hints,
+                options,
+                effective_rendering,
+                fmt,
+            )?;
+            values.substituted_key = Some("contributor:effective-primary".to_string());
+            Some(values)
         }
+        Some(EffectivePrimary::Title { title, kind }) => {
+            let quote_in_citation = matches!(kind, TitleType::Primary)
+                && match substitute.title_quote {
+                    Some(SubstituteTitleQuoteMode::ByCategory) => {
+                        resolve_category_quote(reference, options)
+                    }
+                    Some(SubstituteTitleQuoteMode::Always) | None => true,
+                };
+            Some(resolve_title_substitute(
+                title,
+                &kind,
+                component,
+                options,
+                reference,
+                fmt,
+                quote_in_citation,
+            ))
+        }
+        None => None,
     }
-
-    None
 }

@@ -289,12 +289,13 @@ mod tests {
     fn sample_template() -> Vec<TemplateComponent> {
         vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Editor,
+                contributor: ContributorRole::Editor.into(),
                 label: Some(RoleLabel {
                     term: "editor".to_string(),
                     form: RoleLabelForm::Short,
                     placement: Default::default(),
                     text_case: None,
+                    wrap: None,
                     prefix: None,
                     suffix: None,
                 }),

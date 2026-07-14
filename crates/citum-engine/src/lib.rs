@@ -43,7 +43,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //!     citation: Some(CitationSpec {
 //!         template: Some(vec![
 //!             TemplateComponent::Contributor(TemplateContributor {
-//!                 contributor: ContributorRole::Author,
+//!                 contributor: ContributorRole::Author.into(),
 //!                 form: ContributorForm::Short,
 //!                 rendering: Rendering::default(),
 //!                 ..Default::default()

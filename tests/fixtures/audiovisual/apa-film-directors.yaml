@@ -1,0 +1,12 @@
+- id: inside-out
+  class: audio-visual
+  type: film
+  title: Inside out
+  issued: "2015"
+  medium: Film
+  publisher: Walt Disney Pictures; Pixar Animation Studios
+  contributors:
+    - role: director
+      contributor: {family: Docter, given: Pete}
+    - role: director
+      contributor: {family: Del Carmen, given: Ronnie}

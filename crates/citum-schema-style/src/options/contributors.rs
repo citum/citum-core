@@ -81,6 +81,12 @@ pub struct ContributorConfig {
     )]
     #[cfg_attr(feature = "schema", schemars(with = "Option<RoleOptionsEntry>"))]
     pub role: Option<RoleOptions>,
+    /// Style-wide defaults for merged cross-role contributor candidates.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub merge: Option<crate::template::ContributorMerge>,
+    /// Role pairs for which an identical secondary role renders empty.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub suppress: Vec<ContributorSuppressionRule>,
     /// Handling of non-dropping particles (e.g., "van" in "van Gogh").
     #[serde(skip_serializing_if = "Option::is_none")]
     pub demote_non_dropping_particle: Option<DemoteNonDroppingParticle>,
@@ -139,6 +145,12 @@ impl ContributorConfig {
         if other.role.is_some() {
             self.role = other.role.clone();
         }
+        if other.merge.is_some() {
+            self.merge = other.merge.clone();
+        }
+        if !other.suppress.is_empty() {
+            self.suppress = other.suppress.clone();
+        }
         if other.demote_non_dropping_particle.is_some() {
             self.demote_non_dropping_particle = other.demote_non_dropping_particle;
         }
@@ -191,6 +203,42 @@ impl ContributorConfig {
         self.role_rendering(role)
             .and_then(|rendering| rendering.name_order.as_ref())
     }
+
+    /// Return the structural label presentation configured for a role.
+    pub fn role_label_presentation(
+        &self,
+        role: &crate::template::ContributorRole,
+    ) -> Option<&RoleLabelPresentation> {
+        self.role_rendering(role)
+            .and_then(|rendering| rendering.label.as_ref())
+    }
+
+    /// Resolve component merge configuration over style-wide defaults.
+    ///
+    /// Borrows the component-level or style-wide merge block when either is
+    /// present, only allocating an owned default (`ContributorMerge` carries
+    /// a `HashMap`) when neither is configured.
+    #[must_use]
+    pub fn effective_merge<'a>(
+        &'a self,
+        component: Option<&'a crate::template::ContributorMerge>,
+    ) -> std::borrow::Cow<'a, crate::template::ContributorMerge> {
+        match component.or(self.merge.as_ref()) {
+            Some(merge) => std::borrow::Cow::Borrowed(merge),
+            None => std::borrow::Cow::Owned(crate::template::ContributorMerge::default()),
+        }
+    }
+}
+
+/// Suppress one contributor role when its people exactly match another role.
+#[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct ContributorSuppressionRule {
+    /// Contributor role that renders empty when the rule matches.
+    pub role: crate::template::ContributorRole,
+    /// Role whose non-empty person set must exactly match `role`.
+    pub when_identical_to: crate::template::ContributorRole,
 }
 
 /// Named role-label presets for secondary contributor rendering.
@@ -241,9 +289,8 @@ impl RoleLabelPreset {
 pub enum RoleLabelDefaults {
     /// No automatic role labels (the engine default when unset).
     None,
-    /// APA-style convention: abbreviated suffix for editors only, rendered
-    /// with the locale's short editor term (`" (ed.)"` in en-US; apply a
-    /// `text-case` transform for capitalized `" (Ed.)"`).
+    /// APA-style convention: parenthesized editor, writer, and director
+    /// descriptions in the bibliography primary-contributor slot.
     Apa,
     /// MLA convention: word-form comma-joined suffix (`", editor"`) for
     /// its documented role set (editor, translator, director,
@@ -257,9 +304,13 @@ impl RoleLabelDefaults {
         use crate::template::ContributorRole;
         match self {
             Self::None => None,
-            Self::Apa => {
-                matches!(role, ContributorRole::Editor).then_some(RoleLabelPreset::ShortSuffix)
-            }
+            Self::Apa => match role {
+                ContributorRole::Editor => Some(RoleLabelPreset::ShortSuffix),
+                ContributorRole::Writer | ContributorRole::Director => {
+                    Some(RoleLabelPreset::LongSuffix)
+                }
+                _ => None,
+            },
             Self::Mla => matches!(
                 role,
                 ContributorRole::Editor
@@ -270,6 +321,30 @@ impl RoleLabelDefaults {
             )
             .then_some(RoleLabelPreset::LongSuffix),
         }
+    }
+
+    /// Resolve a complete bibliography label presentation supplied by this bundle.
+    #[must_use]
+    pub fn presentation_for(
+        &self,
+        role: &crate::template::ContributorRole,
+    ) -> Option<RoleLabelPresentation> {
+        use crate::template::{ContributorRole, LabelPlacement, RoleLabelForm, WrapPunctuation};
+        let (form, text_case) = match (self, role) {
+            (Self::Apa, ContributorRole::Writer | ContributorRole::Director) => (
+                RoleLabelForm::Long,
+                Some(crate::options::titles::TextCase::Title),
+            ),
+            _ => return None,
+        };
+        Some(RoleLabelPresentation {
+            form,
+            placement: LabelPlacement::Suffix,
+            text_case,
+            wrap: Some(Box::new(WrapPunctuation::Parentheses.into())),
+            prefix: None,
+            suffix: None,
+        })
     }
 }
 
@@ -422,6 +497,9 @@ pub struct RoleRendering {
     /// Per-role label preset override.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub preset: Option<RoleLabelPreset>,
+    /// Structural label presentation for this role without repeating its term.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub label: Option<RoleLabelPresentation>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub prefix: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -434,6 +512,31 @@ pub struct RoleRendering {
     pub small_caps: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub name_order: Option<crate::template::NameOrder>,
+}
+
+/// Style-wide role-label presentation independent of a contributor template.
+#[derive(Debug, Default, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct RoleLabelPresentation {
+    /// Term form used for the role label.
+    #[serde(default)]
+    pub form: crate::template::RoleLabelForm,
+    /// Placement relative to the contributor name or name run.
+    #[serde(default)]
+    pub placement: crate::template::LabelPlacement,
+    /// Optional case transformation for the localized role term.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub text_case: Option<crate::options::titles::TextCase>,
+    /// Optional punctuation wrapped around the localized role term.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub wrap: Option<Box<crate::template::WrapConfig>>,
+    /// Optional outer prefix overriding the placement-derived default.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prefix: Option<String>,
+    /// Optional outer suffix overriding the placement-derived default.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub suffix: Option<String>,
 }
 
 impl RoleRendering {
@@ -558,13 +661,21 @@ mod tests {
     }
 
     #[test]
-    fn role_label_defaults_apa_labels_editor_only() {
+    fn role_label_defaults_apa_labels_primary_audiovisual_roles() {
         // given the `apa` bundle
         let apa = RoleLabelDefaults::Apa;
-        // then editor gets the abbreviated suffix and other roles nothing
+        // then editor and APA audiovisual primary roles receive labels
         assert_eq!(
             apa.preset_for(&ContributorRole::Editor),
             Some(RoleLabelPreset::ShortSuffix)
+        );
+        assert_eq!(
+            apa.preset_for(&ContributorRole::Writer),
+            Some(RoleLabelPreset::LongSuffix)
+        );
+        assert_eq!(
+            apa.preset_for(&ContributorRole::Director),
+            Some(RoleLabelPreset::LongSuffix)
         );
         assert_eq!(apa.preset_for(&ContributorRole::Translator), None);
         assert_eq!(apa.preset_for(&ContributorRole::Chair), None);
@@ -598,6 +709,43 @@ mod tests {
         assert_eq!(opts.defaults, Some(RoleLabelDefaults::Apa));
         let out = serde_yaml::to_string(&opts).expect("serializable role options");
         assert_eq!(out, "defaults: apa\n");
+    }
+
+    #[test]
+    fn style_wide_merge_and_role_presentation_round_trip() {
+        let yaml = r#"role:
+  defaults: apa
+  roles:
+    director:
+      label:
+        form: long
+        placement: suffix
+        text-case: title
+        wrap: parentheses
+merge:
+  order: role
+  labels: collective
+  combine-same-person: true
+"#;
+
+        let config: ContributorConfig =
+            serde_yaml::from_str(yaml).expect("valid contributor defaults");
+
+        assert_eq!(
+            config.merge.as_ref().map(|merge| merge.labels),
+            Some(crate::template::ContributorLabelMode::Collective)
+        );
+        assert!(
+            config
+                .role_label_presentation(&ContributorRole::Director)
+                .and_then(|label| label.wrap.as_ref())
+                .is_some()
+        );
+        let serialized = serde_yaml::to_string(&config).expect("serializable defaults");
+        assert_eq!(
+            serde_yaml::from_str::<ContributorConfig>(&serialized).expect("round-trippable"),
+            config
+        );
     }
 
     #[test]

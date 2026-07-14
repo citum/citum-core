@@ -57,7 +57,7 @@ fn make_author_date_style() -> Style {
         citation: Some(CitationSpec {
             template: Some(vec![
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Short,
                     ..Default::default()
                 }),
@@ -74,7 +74,7 @@ fn make_author_date_style() -> Style {
         bibliography: Some(BibliographySpec {
             template: Some(vec![
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Long,
                     ..Default::default()
                 }),
@@ -137,7 +137,7 @@ fn make_note_style() -> Style {
         bibliography: Some(BibliographySpec {
             template: Some(vec![
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Long,
                     ..Default::default()
                 }),
@@ -181,7 +181,7 @@ fn make_integral_name_style(scope: IntegralNameScope, contexts: IntegralNameCont
         citation: Some(CitationSpec {
             template: Some(vec![
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Short,
                     ..Default::default()
                 }),
@@ -194,7 +194,7 @@ fn make_integral_name_style(scope: IntegralNameScope, contexts: IntegralNameCont
             ]),
             integral: Some(Box::new(CitationSpec {
                 template: Some(vec![TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Long,
                     ..Default::default()
                 })]),
@@ -206,7 +206,7 @@ fn make_integral_name_style(scope: IntegralNameScope, contexts: IntegralNameCont
         bibliography: Some(BibliographySpec {
             template: Some(vec![
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Long,
                     ..Default::default()
                 }),
@@ -507,7 +507,7 @@ fn test_repro_djot_rendering() {
         citation: Some(CitationSpec {
             template: Some(vec![
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Short,
                     ..Default::default()
                 }),
@@ -522,7 +522,7 @@ fn test_repro_djot_rendering() {
             integral: Some(Box::new(citum_schema::CitationSpec {
                 template: Some(vec![
                     TemplateComponent::Contributor(TemplateContributor {
-                        contributor: ContributorRole::Author,
+                        contributor: ContributorRole::Author.into(),
                         form: ContributorForm::Short,
                         ..Default::default()
                     }),

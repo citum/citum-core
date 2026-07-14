@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=https://docs.citum.org/schemas/bib.json
+# Render with: citum render refs -b examples/cross-role-contributors.yaml -s apa-7th -m bib
+---
+info:
+  description: Native audiovisual contributor-role examples
+references:
+  - id: barris-lemons-2017
+    class: audio-visual
+    type: episode
+    title: Lemons
+    issued: "2017-01-11"
+    medium: TV series episode
+    contributors:
+      - roles: [writer, director]
+        contributor:
+          family: Barris
+          given: Kenya
+
+  - id: inside-out-2015
+    class: audio-visual
+    type: film
+    title: Inside out
+    issued: "2015"
+    medium: Film
+    publisher: Walt Disney Pictures; Pixar Animation Studios
+    contributors:
+      - role: director
+        contributor:
+          family: Docter
+          given: Pete
+      - role: director
+        contributor:
+          family: Del Carmen
+          given: Ronnie

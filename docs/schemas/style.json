@@ -415,8 +415,8 @@
       "type": "object",
       "properties": {
         "contributor": {
-          "description": "Which contributor role to render (author, editor, etc.).",
-          "$ref": "#/$defs/ContributorRole"
+          "description": "Which contributor role or ordered role list to render.",
+          "$ref": "#/$defs/ContributorRoles"
         },
         "form": {
           "description": "How to display the contributor (long names, short, with label, etc.).",
@@ -427,6 +427,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/RoleLabel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "merge": {
+          "description": "Configuration used when `contributor` is an ordered role list.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContributorMerge"
             },
             {
               "type": "null"
@@ -624,6 +635,23 @@
         "form"
       ]
     },
+    "ContributorRoles": {
+      "description": "One contributor role or an ordered list of roles rendered as one name list.",
+      "anyOf": [
+        {
+          "description": "A conventional single-role contributor component.",
+          "$ref": "#/$defs/ContributorRole"
+        },
+        {
+          "description": "Two or more contributor roles rendered as a merged list.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContributorRole"
+          },
+          "minItems": 2
+        }
+      ]
+    },
     "ContributorRole": {
       "description": "Contributor roles.",
       "oneOf": [
@@ -645,6 +673,7 @@
             "counsel",
             "composer",
             "writer",
+            "producer",
             "collection-editor",
             "container-author",
             "editorial-director",
@@ -696,8 +725,19 @@
             }
           ]
         },
+        "wrap": {
+          "description": "Optional punctuation wrapped around the resolved label term.\n\nThe wrap is applied before the label's outer `prefix` and `suffix`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WrapConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "prefix": {
-          "description": "Optional affix rendered before the label term, overriding the\nplacement-derived default (`\", \"` for suffix placement, empty for\nprefix placement). Mirrors CSL 1.0 `cs:label` `prefix` (e.g. `\" (\"`\nfor elsevier's `\" (Eds.)\"`).",
+          "description": "Optional affix rendered before the label term, overriding the\nplacement-derived default (a space for a wrapped suffix label, `\", \"`\nfor an unwrapped suffix label, and empty for prefix placement). Mirrors\nCSL 1.0 `cs:label` `prefix` (e.g. `\" (\"` for elsevier's `\" (Eds.)\"`).",
           "type": [
             "string",
             "null"
@@ -775,6 +815,142 @@
           "const": "as-is"
         }
       ]
+    },
+    "WrapConfig": {
+      "description": "Wrapping punctuation and optional inner affixes applied around a rendered value.\n\nCombines the wrap punctuation with optional text that appears inside the wrap\n(between the wrap character and the rendered content).",
+      "type": "object",
+      "properties": {
+        "punctuation": {
+          "description": "The wrapping punctuation style.",
+          "$ref": "#/$defs/WrapPunctuation"
+        },
+        "inner-prefix": {
+          "description": "Text inserted after the opening wrap character but before the content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "inner-suffix": {
+          "description": "Text inserted after the content but before the closing wrap character.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "punctuation"
+      ]
+    },
+    "WrapPunctuation": {
+      "description": "Punctuation to wrap a component in.",
+      "type": "string",
+      "enum": [
+        "parentheses",
+        "brackets",
+        "quotes"
+      ]
+    },
+    "ContributorMerge": {
+      "description": "Configuration for rendering multiple contributor roles as one name list.",
+      "type": "object",
+      "properties": {
+        "order": {
+          "description": "Effective ordering of entries in the merged list.",
+          "$ref": "#/$defs/ContributorMergeOrder",
+          "default": "document"
+        },
+        "labels": {
+          "description": "Default role-label mode for entries in the merged list.",
+          "$ref": "#/$defs/ContributorLabelMode",
+          "default": "individual"
+        },
+        "roles": {
+          "description": "Optional per-role label overrides.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/ContributorMergeRole"
+          }
+        },
+        "combine-same-person": {
+          "description": "Whether identical people in different roles render as one entry.",
+          "type": "boolean",
+          "default": true
+        },
+        "role-conjunction": {
+          "description": "Verbatim connector used when composing a missing combined-role term.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "ContributorMergeOrder": {
+      "description": "Ordering policy for a merged contributor list.",
+      "oneOf": [
+        {
+          "description": "Preserve the unified reference contributor order.",
+          "type": "string",
+          "const": "document"
+        },
+        {
+          "description": "Group entries by the component's declared role order.",
+          "type": "string",
+          "const": "role"
+        }
+      ]
+    },
+    "ContributorLabelMode": {
+      "description": "Role-label placement mode for merged contributor entries.",
+      "oneOf": [
+        {
+          "description": "Attach a singular role label to every rendered person.",
+          "type": "string",
+          "const": "individual"
+        },
+        {
+          "description": "Attach one singular or plural label to each contiguous role run.",
+          "type": "string",
+          "const": "collective"
+        },
+        {
+          "description": "Render names without role labels.",
+          "type": "string",
+          "const": "none"
+        }
+      ]
+    },
+    "ContributorMergeRole": {
+      "description": "Per-role overrides within a merged contributor list.",
+      "type": "object",
+      "properties": {
+        "labels": {
+          "description": "Override the merged list's default label mode for this role.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContributorLabelMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "label": {
+          "description": "Override label term, form, placement, case, and affixes for this role.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RoleLabel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
     },
     "NameOrder": {
       "description": "Name display order.",
@@ -941,42 +1117,6 @@
           "type": "string",
           "const": "subscript"
         }
-      ]
-    },
-    "WrapConfig": {
-      "description": "Wrapping punctuation and optional inner affixes applied around a rendered value.\n\nCombines the wrap punctuation with optional text that appears inside the wrap\n(between the wrap character and the rendered content).",
-      "type": "object",
-      "properties": {
-        "punctuation": {
-          "description": "The wrapping punctuation style.",
-          "$ref": "#/$defs/WrapPunctuation"
-        },
-        "inner-prefix": {
-          "description": "Text inserted after the opening wrap character but before the content.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "inner-suffix": {
-          "description": "Text inserted after the content but before the closing wrap character.",
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      },
-      "required": [
-        "punctuation"
-      ]
-    },
-    "WrapPunctuation": {
-      "description": "Punctuation to wrap a component in.",
-      "type": "string",
-      "enum": [
-        "parentheses",
-        "brackets",
-        "quotes"
       ]
     },
     "LinksConfig": {
@@ -2614,6 +2754,11 @@
           "const": "and"
         },
         {
+          "description": "Verbatim connector used between terms in a combined contributor role.",
+          "type": "string",
+          "const": "role-conjunction"
+        },
+        {
           "description": "The abbreviation for omitted additional names (e.g., \"et al.\").",
           "type": "string",
           "const": "et-al"
@@ -3198,14 +3343,60 @@
       "unevaluatedProperties": false
     },
     "SubstituteKey": {
-      "description": "Fields that can be used as author substitutes.",
-      "type": "string",
-      "enum": [
-        "collection-editor",
-        "editor",
-        "parent-serial",
-        "title",
-        "translator"
+      "description": "One candidate in an effective-primary substitution chain.",
+      "anyOf": [
+        {
+          "description": "A legacy scalar field candidate such as `editor` or `title`.",
+          "$ref": "#/$defs/SubstituteField"
+        },
+        {
+          "description": "A scalar or merged contributor-role candidate.",
+          "$ref": "#/$defs/SubstituteContributor"
+        }
+      ]
+    },
+    "SubstituteField": {
+      "description": "Legacy scalar fields accepted in substitution chains.",
+      "oneOf": [
+        {
+          "description": "The collection editor contributor role.",
+          "type": "string",
+          "const": "collection-editor"
+        },
+        {
+          "description": "The editor contributor role.",
+          "type": "string",
+          "const": "editor"
+        },
+        {
+          "description": "The parent serial title.",
+          "type": "string",
+          "const": "parent-serial"
+        },
+        {
+          "description": "The primary title.",
+          "type": "string",
+          "const": "title"
+        },
+        {
+          "description": "The translator contributor role.",
+          "type": "string",
+          "const": "translator"
+        }
+      ]
+    },
+    "SubstituteContributor": {
+      "description": "A contributor-role candidate in an effective-primary substitution chain.",
+      "type": "object",
+      "properties": {
+        "contributor": {
+          "description": "One contributor role or an ordered list of roles to promote.",
+          "$ref": "#/$defs/ContributorRoles"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "contributor"
       ]
     },
     "SubstituteTitleQuoteMode": {
@@ -4107,6 +4298,24 @@
             }
           ]
         },
+        "merge": {
+          "description": "Style-wide defaults for merged cross-role contributor candidates.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContributorMerge"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "suppress": {
+          "description": "Role pairs for which an identical secondary role renders empty.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContributorSuppressionRule"
+          }
+        },
         "demote-non-dropping-particle": {
           "description": "Handling of non-dropping particles (e.g., \"van\" in \"van Gogh\").",
           "anyOf": [
@@ -4285,6 +4494,17 @@
             }
           ]
         },
+        "label": {
+          "description": "Structural label presentation for this role without repeating its term.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RoleLabelPresentation"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "prefix": {
           "type": [
             "string",
@@ -4327,6 +4547,59 @@
         }
       }
     },
+    "RoleLabelPresentation": {
+      "description": "Style-wide role-label presentation independent of a contributor template.",
+      "type": "object",
+      "properties": {
+        "form": {
+          "description": "Term form used for the role label.",
+          "$ref": "#/$defs/RoleLabelForm",
+          "default": "short"
+        },
+        "placement": {
+          "description": "Placement relative to the contributor name or name run.",
+          "$ref": "#/$defs/LabelPlacement",
+          "default": "suffix"
+        },
+        "text-case": {
+          "description": "Optional case transformation for the localized role term.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "wrap": {
+          "description": "Optional punctuation wrapped around the localized role term.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WrapConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "prefix": {
+          "description": "Optional outer prefix overriding the placement-derived default.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suffix": {
+          "description": "Optional outer suffix overriding the placement-derived default.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
     "RoleLabelDefaults": {
       "description": "Named bundles of per-role default label presets, matching a style\nguide's documented bibliography-context convention.\n\nApplied only where a style has no explicit `label`, no configured\npreset, and no `role.omit` for the role, and only when rendering in\nbibliography context — no examined style guide (APA, MLA, Chicago,\nVancouver/NLM) carries a role label into the in-text citation. See\ndiv-012 in `docs/adjudication/DIVERGENCE_REGISTER.md`.",
       "oneOf": [
@@ -4336,7 +4609,7 @@
           "const": "none"
         },
         {
-          "description": "APA-style convention: abbreviated suffix for editors only, rendered\nwith the locale's short editor term (`\" (ed.)\"` in en-US; apply a\n`text-case` transform for capitalized `\" (Ed.)\"`).",
+          "description": "APA-style convention: parenthesized editor, writer, and director\ndescriptions in the bibliography primary-contributor slot.",
           "type": "string",
           "const": "apa"
         },
@@ -4345,6 +4618,25 @@
           "type": "string",
           "const": "mla"
         }
+      ]
+    },
+    "ContributorSuppressionRule": {
+      "description": "Suppress one contributor role when its people exactly match another role.",
+      "type": "object",
+      "properties": {
+        "role": {
+          "description": "Contributor role that renders empty when the rule matches.",
+          "$ref": "#/$defs/ContributorRole"
+        },
+        "when-identical-to": {
+          "description": "Role whose non-empty person set must exactly match `role`.",
+          "$ref": "#/$defs/ContributorRole"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "when-identical-to"
       ]
     },
     "DemoteNonDroppingParticle": {

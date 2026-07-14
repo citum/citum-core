@@ -513,9 +513,16 @@ fn inherited_name_order_matches(
     defaults: &ContributorConfig,
     name_order: &NameOrder,
 ) -> bool {
-    if defaults
-        .effective_role_name_order(&contributor.contributor)
-        .is_some_and(|default| default == name_order)
+    // Scalar components compact when their single role's effective default
+    // matches; list-form components (e.g. merged [editor, translator]) only
+    // compact when EVERY declared role's effective default agrees, since a
+    // single explicit override can't be pushed onto a role whose own
+    // default differs.
+    let roles = contributor.contributor.as_slice();
+    if !roles.is_empty()
+        && roles
+            .iter()
+            .all(|role| defaults.effective_role_name_order(role) == Some(name_order))
     {
         return true;
     }
@@ -604,7 +611,10 @@ mod tests {
     use super::*;
     use citum_engine::{Processor, reference::Bibliography};
     use citum_schema::{
-        options::{NameForm, TextCase, TitleRendering, TitlesConfig, classified_ref_types},
+        options::{
+            NameForm, RoleOptions, RoleRendering, TextCase, TitleRendering, TitlesConfig,
+            classified_ref_types,
+        },
         template::{
             ContributorForm, ContributorRole, TemplateGroup, TemplateTitle, TemplateVariable,
         },
@@ -613,7 +623,7 @@ mod tests {
 
     fn author(and: Option<AndOptions>) -> TemplateComponent {
         TemplateComponent::Contributor(TemplateContributor {
-            contributor: ContributorRole::Author,
+            contributor: ContributorRole::Author.into(),
             form: ContributorForm::Long,
             and,
             ..TemplateContributor::default()
@@ -622,7 +632,7 @@ mod tests {
 
     fn author_with_name_options() -> TemplateComponent {
         TemplateComponent::Contributor(TemplateContributor {
-            contributor: ContributorRole::Author,
+            contributor: ContributorRole::Author.into(),
             form: ContributorForm::Long,
             name_order: Some(NameOrder::FamilyFirstOnly),
             name_form: Some(NameForm::Initials),
@@ -861,12 +871,73 @@ mod tests {
     }
 
     #[test]
+    fn list_form_contributor_name_order_compacts_only_when_every_role_matches() {
+        // A merged [editor, translator] component's explicit name-order
+        // should compact only when it agrees with EVERY declared role's
+        // effective default, not just the first one.
+        let mut roles = std::collections::HashMap::new();
+        roles.insert(
+            "editor".to_string(),
+            RoleRendering {
+                name_order: Some(NameOrder::FamilyFirstOnly),
+                ..RoleRendering::default()
+            },
+        );
+        roles.insert(
+            "translator".to_string(),
+            RoleRendering {
+                name_order: Some(NameOrder::FamilyFirstOnly),
+                ..RoleRendering::default()
+            },
+        );
+        let options = citum_schema::options::Config {
+            contributors: Some(ContributorConfig {
+                role: Some(RoleOptions {
+                    roles: Some(roles),
+                    ..RoleOptions::default()
+                }),
+                ..ContributorConfig::default()
+            }),
+            ..citum_schema::options::Config::default()
+        };
+
+        let merged = TemplateComponent::Contributor(TemplateContributor {
+            contributor: vec![ContributorRole::Editor, ContributorRole::Translator].into(),
+            form: ContributorForm::Long,
+            name_order: Some(NameOrder::FamilyFirstOnly),
+            ..TemplateContributor::default()
+        });
+        let style = Style {
+            options: Some(options),
+            bibliography: Some(BibliographySpec {
+                template: Some(vec![merged]),
+                ..BibliographySpec::default()
+            }),
+            ..Style::default()
+        };
+
+        let refined = refine_style(style);
+        let template = refined
+            .bibliography
+            .as_ref()
+            .and_then(|bibliography| bibliography.template.as_ref())
+            .expect("bibliography template should exist");
+        let TemplateComponent::Contributor(contributor) = &template[0] else {
+            panic!("component should be contributor");
+        };
+        assert_eq!(
+            contributor.name_order, None,
+            "explicit name-order matching every declared role's default should compact"
+        );
+    }
+
+    #[test]
     fn bibliography_full_variants_are_diffed_before_pruning() {
         let mut type_variants = indexmap::IndexMap::new();
         type_variants.insert(
             TypeSelector::Single("book".to_string()),
             TemplateVariant::Full(vec![TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 form: ContributorForm::Long,
                 and: None,
                 ..TemplateContributor::default()

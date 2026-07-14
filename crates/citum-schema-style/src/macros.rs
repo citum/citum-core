@@ -124,7 +124,7 @@ macro_rules! tc_contributor {
     ($role:ident, $form:ident $(, $key:ident = $val:expr)*) => {
         $crate::template::TemplateComponent::Contributor(
             $crate::template::TemplateContributor {
-                contributor: $crate::template::ContributorRole::$role,
+                contributor: $crate::template::ContributorRole::$role.into(),
                 form: $crate::template::ContributorForm::$form,
                 rendering: $crate::template::Rendering {
                     $( $key: Some($val.into()), )*

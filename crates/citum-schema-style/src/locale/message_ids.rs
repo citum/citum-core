@@ -22,6 +22,7 @@ impl Locale {
     pub(super) fn general_term_to_message_id(term: &GeneralTerm) -> &str {
         match term {
             GeneralTerm::And => "and",
+            GeneralTerm::RoleConjunction => "role-conjunction",
             GeneralTerm::EtAl => "et-al",
             GeneralTerm::AndOthers => "and-others",
             GeneralTerm::Accessed => "accessed",
@@ -140,6 +141,7 @@ impl Locale {
     pub(super) fn general_message_id(term: &GeneralTerm, form: &TermForm) -> Option<&'static str> {
         match (term, form) {
             (GeneralTerm::And, _) => Some("term.and"),
+            (GeneralTerm::RoleConjunction, _) => Some("term.role-conjunction"),
             (GeneralTerm::EtAl, _) => Some("term.et-al"),
             (GeneralTerm::AndOthers, _) => Some("term.and-others"),
             (GeneralTerm::Accessed, _) => Some("term.accessed"),

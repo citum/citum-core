@@ -46,7 +46,7 @@ fn make_style() -> Style {
             options: None,
             template: Some(vec![
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Short,
                     name_order: None,
                     delimiter: None,
@@ -67,7 +67,7 @@ fn make_style() -> Style {
             options: None,
             template: Some(vec![
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Long,
                     name_order: None,
                     delimiter: None,
@@ -335,7 +335,7 @@ fn make_grouped_compound_selection_style() -> Style {
                     ..Default::default()
                 }),
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Long,
                     name_order: None,
                     delimiter: None,
@@ -671,7 +671,7 @@ fn test_process_citation_treats_trimmed_none_delimiter_as_empty() {
     style.citation = Some(CitationSpec {
         template: Some(vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 form: ContributorForm::Short,
                 ..Default::default()
             }),
@@ -712,7 +712,7 @@ fn test_citation_locator_label_renders_term() {
         template: Some(vec![
             citum_schema::TemplateComponent::Contributor(
                 citum_schema::template::TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Short,
                     ..Default::default()
                 },
@@ -763,7 +763,7 @@ fn test_citation_locator_label_renders_term_with_loaded_locale() {
         template: Some(vec![
             citum_schema::TemplateComponent::Contributor(
                 citum_schema::template::TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Short,
                     ..Default::default()
                 },
@@ -817,7 +817,7 @@ fn test_citation_locator_can_suppress_label() {
         template: Some(vec![
             citum_schema::TemplateComponent::Contributor(
                 citum_schema::template::TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Short,
                     ..Default::default()
                 },
@@ -878,7 +878,7 @@ fn test_citation_locator_can_strip_label_periods() {
         template: Some(vec![
             citum_schema::TemplateComponent::Contributor(
                 citum_schema::template::TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Short,
                     ..Default::default()
                 },
@@ -2756,7 +2756,7 @@ fn test_label_integral_citation_uses_author_text() {
     style.citation = Some(citum_schema::CitationSpec {
         template: Some(vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 form: ContributorForm::Short,
                 name_order: None,
                 delimiter: None,
@@ -2891,7 +2891,7 @@ fn test_same_author_integral_multi_cite_collapses_to_grouped_years() {
         delimiter: Some(" ".to_string()),
         template: Some(vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 form: ContributorForm::Short,
                 rendering: Rendering::default(),
                 ..Default::default()
@@ -2963,7 +2963,7 @@ fn test_same_author_non_integral_multi_cite_collapses_to_grouped_years() {
     style.citation = Some(CitationSpec {
         template: Some(vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 form: ContributorForm::Short,
                 rendering: Rendering::default(),
                 ..Default::default()
@@ -3034,7 +3034,7 @@ fn test_same_author_integral_multi_cite_respects_bracket_wrap() {
         delimiter: Some(" ".to_string()),
         template: Some(vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 form: ContributorForm::Short,
                 rendering: Rendering::default(),
                 ..Default::default()
@@ -3103,7 +3103,7 @@ fn test_integral_locator_does_not_duplicate_group_delimiter() {
     style.citation = Some(CitationSpec {
         template: Some(vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 form: ContributorForm::Short,
                 rendering: Rendering::default(),
                 ..Default::default()
@@ -3315,7 +3315,7 @@ fn test_grouped_numeric_bibliography_rerender_preserves_numbers_and_substitution
             ..Default::default()
         }),
         TemplateComponent::Contributor(TemplateContributor {
-            contributor: ContributorRole::Author,
+            contributor: ContributorRole::Author.into(),
             form: ContributorForm::Long,
             name_order: None,
             delimiter: None,
@@ -5464,7 +5464,7 @@ fn test_grouped_integral_citation_renders_all_items() {
     style.citation = Some(CitationSpec {
         template: Some(vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 form: ContributorForm::Short,
                 name_order: None,
                 delimiter: None,
@@ -5483,7 +5483,7 @@ fn test_grouped_integral_citation_renders_all_items() {
         integral: Some(Box::new(CitationSpec {
             template: Some(vec![
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Short,
                     name_order: None,
                     delimiter: None,
@@ -5550,7 +5550,7 @@ fn test_grouped_integral_citation_preserves_later_item_prefixes() {
     style.citation = Some(CitationSpec {
         template: Some(vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 form: ContributorForm::Short,
                 name_order: None,
                 delimiter: None,
@@ -5567,7 +5567,7 @@ fn test_grouped_integral_citation_preserves_later_item_prefixes() {
         integral: Some(Box::new(CitationSpec {
             template: Some(vec![
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Short,
                     name_order: None,
                     delimiter: None,
@@ -5642,7 +5642,7 @@ fn test_label_integral_citation_includes_label() {
     style.citation = Some(CitationSpec {
         template: Some(vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 form: ContributorForm::Short,
                 name_order: None,
                 delimiter: None,

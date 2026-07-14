@@ -399,7 +399,7 @@ pub(super) fn from_collection_component_ref(
     }
     if let Some(container_author) = container_author.clone() {
         contributors.push(ContributorEntry {
-            role: ContributorRole::Unknown("container-author".to_string()),
+            roles: ContributorRole::Unknown("container-author".to_string()).into(),
             contributor: container_author,
             gender: None,
         });
@@ -725,6 +725,14 @@ pub(super) fn from_serial_component_ref(
         &mut contributors,
         ContributorRole::Writer,
         legacy_extra_names(&legacy, "script-writer"),
+    );
+    push_legacy_contributor(
+        &mut contributors,
+        ContributorRole::Director,
+        legacy
+            .director
+            .clone()
+            .or_else(|| legacy_extra_names(&legacy, "director")),
     );
     push_legacy_contributor(
         &mut contributors,
@@ -1069,7 +1077,7 @@ pub(super) fn from_event_ref(
     push_legacy_contributor(&mut contributors, ContributorRole::Host, host_names);
     if let Some(organizer_name) = legacy.publisher.clone() {
         contributors.push(ContributorEntry {
-            role: ContributorRole::Unknown("organizer".to_string()),
+            roles: ContributorRole::Unknown("organizer".to_string()).into(),
             contributor: Contributor::SimpleName(SimpleName {
                 name: organizer_name.into(),
                 location: None,

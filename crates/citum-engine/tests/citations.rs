@@ -2694,7 +2694,7 @@ fn test_personal_communication_citation_rendering_is_style_driven() {
             template: Some(vec![
                 citum_schema::template::TemplateComponent::Contributor(
                     citum_schema::template::TemplateContributor {
-                        contributor: citum_schema::template::ContributorRole::Author,
+                        contributor: citum_schema::template::ContributorRole::Author.into(),
                         form: citum_schema::template::ContributorForm::Long,
                         name_order: Some(citum_schema::template::NameOrder::GivenFirst),
                         rendering: citum_schema::template::Rendering {

@@ -180,7 +180,7 @@ mod tests {
         let template = vec![
             ProcTemplateComponent {
                 template_component: TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Short,
                     name_order: None,
                     delimiter: None,

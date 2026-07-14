@@ -43,6 +43,7 @@ use crate::reference::{
     RefID, WorkCore, WorkRelation,
 };
 use std::collections::HashMap;
+use unicode_normalization::UnicodeNormalization;
 use url::Url;
 
 /// Fold legacy named contributor fields (recipient and interviewer) into a contributors vec.
@@ -67,12 +68,167 @@ fn push_legacy_contributor(
     src: Option<Vec<csl_legacy::csl_json::Name>>,
 ) {
     if let Some(names) = src {
-        entries.push(ContributorEntry {
-            role,
-            contributor: Contributor::from(names),
-            gender: None,
+        let Contributor::ContributorList(list) = Contributor::from(names) else {
+            return;
+        };
+        let mut unmatched = Vec::new();
+        for contributor in list.0 {
+            let identity = legacy_contributor_identity(&contributor);
+            if let Some((entry_index, member_index)) = identity
+                .as_ref()
+                .and_then(|identity| find_legacy_contributor(entries, &role, identity))
+                && merge_legacy_contributor_role(entries, entry_index, member_index, role.clone())
+            {
+                continue;
+            }
+            unmatched.push(contributor);
+        }
+        if !unmatched.is_empty() {
+            let contributor = if unmatched.len() == 1 {
+                let Some(contributor) = unmatched.pop() else {
+                    return;
+                };
+                contributor
+            } else {
+                Contributor::ContributorList(ContributorList(unmatched))
+            };
+            entries.push(ContributorEntry {
+                roles: role.into(),
+                contributor,
+                gender: None,
+            });
+        }
+    }
+}
+
+fn find_legacy_contributor(
+    entries: &[ContributorEntry],
+    role: &ContributorRole,
+    identity: &LegacyContributorIdentity,
+) -> Option<(usize, Option<usize>)> {
+    entries.iter().enumerate().find_map(|(entry_index, entry)| {
+        if entry.roles.contains(role) {
+            return None;
+        }
+        match &entry.contributor {
+            Contributor::ContributorList(list) => list
+                .0
+                .iter()
+                .position(|contributor| {
+                    legacy_contributor_identity(contributor).as_ref() == Some(identity)
+                })
+                .map(|member_index| (entry_index, Some(member_index))),
+            contributor => (legacy_contributor_identity(contributor).as_ref() == Some(identity))
+                .then_some((entry_index, None)),
+        }
+    })
+}
+
+fn merge_legacy_contributor_role(
+    entries: &mut Vec<ContributorEntry>,
+    entry_index: usize,
+    member_index: Option<usize>,
+    role: ContributorRole,
+) -> bool {
+    let Some(member_index) = member_index else {
+        if let Some(entry) = entries.get_mut(entry_index) {
+            entry.roles.insert(role);
+            return true;
+        }
+        return false;
+    };
+    if entry_index >= entries.len() {
+        return false;
+    }
+
+    let ContributorEntry {
+        roles,
+        contributor,
+        gender,
+    } = entries.remove(entry_index);
+    let Contributor::ContributorList(mut list) = contributor else {
+        entries.insert(
+            entry_index,
+            ContributorEntry {
+                roles,
+                contributor,
+                gender,
+            },
+        );
+        return false;
+    };
+    if member_index >= list.0.len() {
+        entries.insert(
+            entry_index,
+            ContributorEntry {
+                roles,
+                contributor: Contributor::ContributorList(list),
+                gender,
+            },
+        );
+        return false;
+    }
+
+    let mut after = list.0.split_off(member_index + 1);
+    let Some(matched) = list.0.pop() else {
+        return false;
+    };
+    let mut matched_roles = roles.clone();
+    matched_roles.insert(role);
+    let mut replacement = Vec::with_capacity(3);
+    if !list.0.is_empty() {
+        replacement.push(ContributorEntry {
+            roles: roles.clone(),
+            contributor: Contributor::ContributorList(list),
+            gender,
         });
     }
+    replacement.push(ContributorEntry {
+        roles: matched_roles,
+        contributor: matched,
+        gender,
+    });
+    if !after.is_empty() {
+        replacement.push(ContributorEntry {
+            roles,
+            contributor: Contributor::ContributorList(ContributorList(std::mem::take(&mut after))),
+            gender,
+        });
+    }
+    entries.splice(entry_index..entry_index, replacement);
+    true
+}
+
+#[derive(Debug, PartialEq, Eq)]
+enum LegacyContributorIdentity {
+    Structured(Vec<String>),
+    Literal(String),
+}
+
+fn legacy_contributor_identity(contributor: &Contributor) -> Option<LegacyContributorIdentity> {
+    let name = contributor.to_names_vec().into_iter().next()?;
+    if let Some(literal) = normalized_identity_part(name.literal.as_deref()) {
+        return Some(LegacyContributorIdentity::Literal(literal));
+    }
+    let parts = [
+        name.given.as_deref(),
+        name.family.as_deref(),
+        name.suffix.as_deref(),
+        name.dropping_particle.as_deref(),
+        name.non_dropping_particle.as_deref(),
+    ]
+    .into_iter()
+    .map(|part| normalized_identity_part(part).unwrap_or_default())
+    .collect::<Vec<_>>();
+    parts
+        .iter()
+        .any(|part| !part.is_empty())
+        .then_some(LegacyContributorIdentity::Structured(parts))
+}
+
+fn normalized_identity_part(value: Option<&str>) -> Option<String> {
+    let trimmed = value?.trim();
+    (!trimmed.is_empty()).then(|| trimmed.nfc().collect())
 }
 
 fn legacy_extra_names(
@@ -742,13 +898,13 @@ mod tests {
             component
                 .contributors
                 .iter()
-                .any(|entry| entry.role == ContributorRole::Writer)
+                .any(|entry| entry.roles.contains(&ContributorRole::Writer))
         );
         assert!(
             component
                 .contributors
                 .iter()
-                .any(|entry| entry.role == ContributorRole::Performer)
+                .any(|entry| entry.roles.contains(&ContributorRole::Performer))
         );
     }
 
@@ -829,7 +985,7 @@ mod tests {
         assert!(
             work.contributors
                 .iter()
-                .any(|entry| entry.role == ContributorRole::Producer)
+                .any(|entry| entry.roles.contains(&ContributorRole::Producer))
         );
     }
 
@@ -866,12 +1022,12 @@ mod tests {
         let composer_count = monograph
             .contributors
             .iter()
-            .filter(|entry| entry.role == ContributorRole::Composer)
+            .filter(|entry| entry.roles.contains(&ContributorRole::Composer))
             .count();
         let producer_count = monograph
             .contributors
             .iter()
-            .filter(|entry| entry.role == ContributorRole::Producer)
+            .filter(|entry| entry.roles.contains(&ContributorRole::Producer))
             .count();
 
         assert_eq!(

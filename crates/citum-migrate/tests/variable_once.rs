@@ -38,14 +38,14 @@ fn test_contributor_cross_list_duplicate_removed() {
     let mut components = vec![
         TemplateComponent::Group(TemplateGroup {
             group: vec![TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 ..Default::default()
             })],
             ..Default::default()
         }),
         TemplateComponent::Group(TemplateGroup {
             group: vec![TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 ..Default::default()
             })],
             ..Default::default()

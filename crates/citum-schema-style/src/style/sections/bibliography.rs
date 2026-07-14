@@ -138,4 +138,20 @@ impl BibliographySpec {
             })
             .or_else(|| self.resolve_template())
     }
+
+    /// Resolve the bibliography template for a reference type and language.
+    pub fn resolve_template_for_type(
+        &self,
+        ref_type: &str,
+        language: Option<&str>,
+    ) -> Option<Template> {
+        if let Some(type_variants) = &self.type_variants {
+            for (selector, variant) in type_variants {
+                if selector.matches(ref_type) {
+                    return variant.clone().into_template();
+                }
+            }
+        }
+        self.resolve_template_for_language(language)
+    }
 }

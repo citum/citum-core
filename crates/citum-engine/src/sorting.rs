@@ -25,9 +25,14 @@ use citum_schema::reference::ClassExtension;
 
 use crate::reference::Reference;
 use crate::sort_support::{
-    SortKeyOptions, TextCollator, author_sort_key_opt_with_options, collator_locale_id,
-    normalize_sort_text, title_sort_key_with_options,
+    SortKeyOptions, TextCollator, collator_locale_id, flat_names_sort_key, normalize_sort_text,
+    title_sort_key_with_options,
 };
+
+enum PrimaryContributorSpec<'a> {
+    Citation(&'a citum_schema::CitationSpec),
+    Bibliography(&'a citum_schema::BibliographySpec),
+}
 
 fn compare_optional_years(a_year: Option<i32>, b_year: Option<i32>) -> std::cmp::Ordering {
     match (a_year, b_year) {
@@ -43,6 +48,9 @@ pub struct ReferenceSorter<'a> {
     locale: &'a Locale,
     text_collator: TextCollator,
     sort_key_options: SortKeyOptions,
+    config: Option<&'a Config>,
+    primary_contributor_spec: Option<PrimaryContributorSpec<'a>>,
+    primary_contributor_may_be_list: bool,
 }
 
 struct CachedReference<'a> {
@@ -91,17 +99,39 @@ impl<'a> ReferenceSorter<'a> {
             locale,
             text_collator: TextCollator::new(locale),
             sort_key_options: SortKeyOptions::uniform(),
+            config: None,
+            primary_contributor_spec: None,
+            primary_contributor_may_be_list: false,
         }
     }
 
     /// Create a bibliography sorter using the effective bibliography config.
     #[must_use]
-    pub fn with_bibliography_config(locale: &'a Locale, config: &Config) -> Self {
+    pub fn with_bibliography_config(locale: &'a Locale, config: &'a Config) -> Self {
         Self {
             locale,
             text_collator: TextCollator::new_for_locale_id(collator_locale_id(locale, config)),
             sort_key_options: SortKeyOptions::from_config(config),
+            config: Some(config),
+            primary_contributor_spec: None,
+            primary_contributor_may_be_list: false,
         }
+    }
+
+    /// Use the effective bibliography template to resolve list-form author keys.
+    #[must_use]
+    pub fn with_bibliography_spec(mut self, spec: &'a citum_schema::BibliographySpec) -> Self {
+        self.primary_contributor_spec = Some(PrimaryContributorSpec::Bibliography(spec));
+        self.primary_contributor_may_be_list = bibliography_may_have_list_primary(spec);
+        self
+    }
+
+    /// Use the effective citation template to resolve list-form author keys.
+    #[must_use]
+    pub fn with_citation_spec(mut self, spec: &'a citum_schema::CitationSpec) -> Self {
+        self.primary_contributor_spec = Some(PrimaryContributorSpec::Citation(spec));
+        self.primary_contributor_may_be_list = citation_may_have_list_primary(spec);
+        self
     }
 
     /// Sort references according to a group sort specification.
@@ -146,7 +176,7 @@ impl<'a> ReferenceSorter<'a> {
         sort_spec: &GroupSort,
         id_tiebreak: bool,
     ) -> Vec<&'b Reference> {
-        let compiled_keys = self.compile_sort_keys(sort_spec);
+        let compiled_keys = self.compile_sort_keys(&sort_spec.template);
         if compiled_keys.is_empty() {
             return references;
         }
@@ -199,6 +229,50 @@ impl<'a> ReferenceSorter<'a> {
         self.compare_by_key_with_context(a, b, sort_key)
     }
 
+    /// Stably sort arbitrary items by a `GroupSort` template, precomputing
+    /// each item's sort key set once instead of re-deriving it (author,
+    /// title, issued resolution) on every pairwise comparison.
+    ///
+    /// This generalizes the Schwartzian-transform caching
+    /// [`Self::sort_references_impl`] applies to `&Reference` slices to any
+    /// item type, via a reference-extraction closure — letting comparator
+    /// call sites that don't sort bare `&Reference` (year-suffix ordering,
+    /// citation-item ordering) share the same cached comparison instead of
+    /// calling [`Self::compare_by_key`] from scratch on every pair.
+    ///
+    /// Items whose extractor returns `None` sort after every item with a
+    /// resolved reference; ties (including `None` vs `None`) preserve their
+    /// relative order (`sort_by` is stable).
+    pub(crate) fn sort_by_keys<T>(
+        &self,
+        mut items: Vec<T>,
+        template: &[GroupSortKey],
+        reference_of: impl Fn(&T) -> Option<&Reference>,
+    ) -> Vec<T> {
+        let compiled_keys = self.compile_sort_keys(template);
+        let mut decorated = items
+            .drain(..)
+            .map(|item| {
+                let sort_values = reference_of(&item).map(|reference| {
+                    compiled_keys
+                        .iter()
+                        .map(|sort_key| self.cache_sort_value(reference, sort_key))
+                        .collect::<Vec<_>>()
+                });
+                (item, sort_values)
+            })
+            .collect::<Vec<_>>();
+
+        decorated.sort_by(|(_, a), (_, b)| match (a, b) {
+            (Some(a), Some(b)) => self.compare_cached_values(a, b, &compiled_keys),
+            (Some(_), None) => std::cmp::Ordering::Less,
+            (None, Some(_)) => std::cmp::Ordering::Greater,
+            (None, None) => std::cmp::Ordering::Equal,
+        });
+
+        decorated.into_iter().map(|(item, _)| item).collect()
+    }
+
     fn compare_by_key_with_context(
         &self,
         a: &Reference,
@@ -245,9 +319,8 @@ impl<'a> ReferenceSorter<'a> {
         }
     }
 
-    fn compile_sort_keys<'b>(&self, sort_spec: &'b GroupSort) -> Vec<CompiledSortKey<'b>> {
-        sort_spec
-            .template
+    fn compile_sort_keys<'b>(&self, template: &'b [GroupSortKey]) -> Vec<CompiledSortKey<'b>> {
+        template
             .iter()
             .map(|sort_key| match &sort_key.key {
                 GroupSortKeyType::RefType => CompiledSortKey::RefType {
@@ -310,12 +383,25 @@ impl<'a> ReferenceSorter<'a> {
         b: &CachedReference<'_>,
         compiled_keys: &[CompiledSortKey<'_>],
     ) -> std::cmp::Ordering {
+        self.compare_cached_values(&a.sort_values, &b.sort_values, compiled_keys)
+    }
+
+    /// Compare two precomputed sort-value sequences key by key, honoring
+    /// each key's ascending/descending direction and stopping at the first
+    /// non-equal comparison. Shared by [`Self::compare_cached_references`]
+    /// (bibliography sorts) and [`Self::sort_by_keys`] (generic item sorts).
+    fn compare_cached_values(
+        &self,
+        a: &[CachedSortValue],
+        b: &[CachedSortValue],
+        compiled_keys: &[CompiledSortKey<'_>],
+    ) -> std::cmp::Ordering {
         for (index, sort_key) in compiled_keys.iter().enumerate() {
             #[allow(
                 clippy::indexing_slicing,
                 reason = "index is derived from compiled_keys"
             )]
-            let cmp = self.compare_cached_value(&a.sort_values[index], &b.sort_values[index]);
+            let cmp = self.compare_cached_value(&a[index], &b[index]);
             let cmp = if Self::is_ascending(sort_key) {
                 cmp
             } else {
@@ -402,13 +488,86 @@ impl<'a> ReferenceSorter<'a> {
         reference: &Reference,
         name_order: NameSortOrder,
     ) -> Option<String> {
-        author_sort_key_opt_with_options(
+        let default_config = Config::default();
+        let config = self.config.unwrap_or(&default_config);
+
+        if let Some(component) = self.primary_contributor_component(reference)
+            && component.contributor.is_multiple()
+        {
+            let names = crate::values::contributor::merged::semantic_names(
+                &component,
+                reference,
+                config,
+                self.locale,
+            );
+            if let Some(key) = flat_names_sort_key(&names, name_order) {
+                return Some(key);
+            }
+            // An empty merged template component (e.g. a type variant's
+            // `[writer, director]` primary with neither present) falls
+            // through to the effective-primary resolver below instead of
+            // jumping straight to the title key, so sorting can still walk
+            // the substitute chain the render path uses
+            // (`merged.rs::resolve_empty_list`) and land on, say, an editor.
+        }
+        let substitute =
+            citum_schema::options::SubstituteConfig::resolve_or_default(config.substitute.as_ref());
+        let primary_key = match crate::values::contributor::substitute::effective_primary(
             reference,
-            name_order,
+            substitute.as_ref(),
+            config,
             self.locale,
-            true,
-            &self.sort_key_options,
-        )
+        ) {
+            Some(crate::values::contributor::substitute::EffectivePrimary::Contributor {
+                contributor,
+                ..
+            }) => crate::sort_support::contributor_sort_key(
+                &contributor,
+                name_order,
+                &self.sort_key_options,
+            ),
+            Some(crate::values::contributor::substitute::EffectivePrimary::Merged(roles)) => {
+                let names = crate::values::contributor::merged::semantic_names(
+                    &citum_schema::template::TemplateContributor {
+                        contributor: roles,
+                        ..Default::default()
+                    },
+                    reference,
+                    config,
+                    self.locale,
+                );
+                flat_names_sort_key(&names, name_order)
+            }
+            Some(crate::values::contributor::substitute::EffectivePrimary::Title { .. }) | None => {
+                None
+            }
+        };
+        primary_key.or_else(|| {
+            Some(title_sort_key_with_options(
+                reference,
+                self.locale,
+                &self.sort_key_options,
+            ))
+            .filter(|key| !key.is_empty())
+        })
+    }
+
+    fn primary_contributor_component(
+        &self,
+        reference: &Reference,
+    ) -> Option<citum_schema::template::TemplateContributor> {
+        if !self.primary_contributor_may_be_list {
+            return None;
+        }
+        let language = reference.language().map(|language| language.to_string());
+        match self.primary_contributor_spec.as_ref()? {
+            PrimaryContributorSpec::Citation(spec) => {
+                primary_contributor_for_citation(spec, reference)
+            }
+            PrimaryContributorSpec::Bibliography(spec) => {
+                primary_contributor_for_bibliography(spec, reference, language.as_deref())
+            }
+        }
     }
 
     /// Public helper retained for tests/debugging.
@@ -459,6 +618,122 @@ impl<'a> ReferenceSorter<'a> {
             _ => String::new(),
         }
     }
+}
+
+fn first_contributor_component_ref(
+    template: &[citum_schema::template::TemplateComponent],
+) -> Option<&citum_schema::template::TemplateContributor> {
+    for component in template {
+        match component {
+            citum_schema::template::TemplateComponent::Contributor(contributor) => {
+                return Some(contributor);
+            }
+            citum_schema::template::TemplateComponent::Group(group) => {
+                if let Some(contributor) = first_contributor_component_ref(&group.group) {
+                    return Some(contributor);
+                }
+            }
+            _ => {}
+        }
+    }
+    None
+}
+
+fn first_contributor_component(
+    template: &[citum_schema::template::TemplateComponent],
+) -> Option<citum_schema::template::TemplateContributor> {
+    first_contributor_component_ref(template).cloned()
+}
+
+fn template_has_list_primary(template: &[citum_schema::template::TemplateComponent]) -> bool {
+    first_contributor_component_ref(template)
+        .is_some_and(|component| component.contributor.is_multiple())
+}
+
+fn variants_may_have_list_primary(variants: &citum_schema::template::TemplateVariants) -> bool {
+    variants
+        .values()
+        .any(|variant| variant.as_template().is_none_or(template_has_list_primary))
+}
+
+/// Return whether any template reachable from this citation spec (base,
+/// locale overrides, type variants, or integral/non-integral/subsequent/ibid
+/// forms) declares a merged-list primary contributor component.
+pub(crate) fn citation_may_have_list_primary(spec: &citum_schema::CitationSpec) -> bool {
+    spec.template
+        .as_deref()
+        .is_some_and(template_has_list_primary)
+        || spec
+            .template_ref
+            .as_ref()
+            .and_then(citum_schema::template::TemplateReference::citation_template)
+            .as_deref()
+            .is_some_and(template_has_list_primary)
+        || spec.locales.as_ref().is_some_and(|locales| {
+            locales
+                .iter()
+                .any(|localized| template_has_list_primary(&localized.template))
+        })
+        || spec
+            .type_variants
+            .as_ref()
+            .is_some_and(variants_may_have_list_primary)
+        || spec
+            .integral
+            .as_deref()
+            .is_some_and(citation_may_have_list_primary)
+        || spec
+            .non_integral
+            .as_deref()
+            .is_some_and(citation_may_have_list_primary)
+        || spec
+            .subsequent
+            .as_deref()
+            .is_some_and(citation_may_have_list_primary)
+        || spec
+            .ibid
+            .as_deref()
+            .is_some_and(citation_may_have_list_primary)
+}
+
+fn bibliography_may_have_list_primary(spec: &citum_schema::BibliographySpec) -> bool {
+    spec.template
+        .as_deref()
+        .is_some_and(template_has_list_primary)
+        || spec
+            .template_ref
+            .as_ref()
+            .and_then(citum_schema::template::TemplateReference::bibliography_template)
+            .as_deref()
+            .is_some_and(template_has_list_primary)
+        || spec.locales.as_ref().is_some_and(|locales| {
+            locales
+                .iter()
+                .any(|localized| template_has_list_primary(&localized.template))
+        })
+        || spec
+            .type_variants
+            .as_ref()
+            .is_some_and(variants_may_have_list_primary)
+}
+
+/// Resolve the first contributor component from a reference's effective citation template.
+pub(crate) fn primary_contributor_for_citation(
+    spec: &citum_schema::CitationSpec,
+    reference: &Reference,
+) -> Option<citum_schema::template::TemplateContributor> {
+    let language = reference.language().map(|language| language.to_string());
+    let template = spec.resolve_template_for_type(&reference.ref_type(), language.as_deref())?;
+    first_contributor_component(&template)
+}
+
+fn primary_contributor_for_bibliography(
+    spec: &citum_schema::BibliographySpec,
+    reference: &Reference,
+    language: Option<&str>,
+) -> Option<citum_schema::template::TemplateContributor> {
+    let template = spec.resolve_template_for_type(&reference.ref_type(), language)?;
+    first_contributor_component(&template)
 }
 
 #[cfg(test)]

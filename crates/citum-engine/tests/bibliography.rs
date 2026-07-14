@@ -1068,7 +1068,7 @@ fn build_inline_article_journal_detail_group_style() -> Style {
         bibliography: Some(BibliographySpec {
             template: Some(vec![
                 TemplateComponent::Contributor(citum_schema::template::TemplateContributor {
-                    contributor: citum_schema::template::ContributorRole::Author,
+                    contributor: citum_schema::template::ContributorRole::Author.into(),
                     form: citum_schema::template::ContributorForm::Long,
                     rendering: Rendering {
                         suffix: Some(". ".to_string()),
@@ -2564,7 +2564,7 @@ fn make_two_author_and_style(
         bibliography: Some(BibliographySpec {
             template: Some(vec![TemplateComponent::Contributor(
                 citum_schema::template::TemplateContributor {
-                    contributor: citum_schema::template::ContributorRole::Author,
+                    contributor: citum_schema::template::ContributorRole::Author.into(),
                     form: citum_schema::template::ContributorForm::Long,
                     name_order,
                     ..Default::default()
@@ -5177,4 +5177,30 @@ fn explicit_label_affixes_override_placement_defaults() {
     let result = processor.render_bibliography();
 
     assert_eq!(result, "John Smith, Jane Doe (Eds.)");
+}
+
+#[test]
+fn explicit_label_wrap_uses_structural_punctuation_and_suffix_spacing() {
+    let yaml = "info:\n  title: Label Wrap Test\nbibliography:\n  template:\n    - contributor: editor\n      form: long\n      label:\n        term: editor\n        form: short\n        placement: suffix\n        wrap: parentheses\n        text-case: capitalize-first\n";
+    let style = citum_schema::Style::from_yaml_str(yaml).expect("style should parse");
+    let bib = citum_schema::bib_map![
+        "ITEM-1" => make_multi_editor_only_book("ITEM-1", "Title", "2020", vec![("Smith", "John"), ("Doe", "Jane")]),
+    ];
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert_eq!(result, "John Smith, Jane Doe (Eds.)");
+}
+
+#[test]
+fn explicit_label_wrap_preserves_prefix_placement_spacing() {
+    let yaml = "info:\n  title: Prefix Label Wrap Test\nbibliography:\n  template:\n    - contributor: editor\n      form: long\n      label:\n        term: editor\n        form: short\n        placement: prefix\n        wrap: parentheses\n        text-case: capitalize-first\n";
+    let style = citum_schema::Style::from_yaml_str(yaml).expect("style should parse");
+    let bib = citum_schema::bib_map![
+        "ITEM-1" => make_multi_editor_only_book("ITEM-1", "Title", "2020", vec![("Smith", "John"), ("Doe", "Jane")]),
+    ];
+    let processor = Processor::new(style, bib);
+    let result = processor.render_bibliography();
+
+    assert_eq!(result, "(Eds.) John Smith, Jane Doe");
 }

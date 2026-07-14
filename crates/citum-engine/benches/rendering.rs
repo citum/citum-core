@@ -725,7 +725,7 @@ fn build_type_variant_bench_style() -> Style {
                     .expect("type selector should parse"),
                 vec![
                     TemplateComponent::Contributor(TemplateContributor {
-                        contributor: ContributorRole::Author,
+                        contributor: ContributorRole::Author.into(),
                         form: citum_schema::template::ContributorForm::Long,
                         ..Default::default()
                     }),
@@ -824,7 +824,7 @@ fn build_compound_bench_style() -> Style {
                     ..Default::default()
                 }),
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: citum_schema::template::ContributorForm::Long,
                     ..Default::default()
                 }),

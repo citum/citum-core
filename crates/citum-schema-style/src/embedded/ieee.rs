@@ -32,7 +32,7 @@ pub fn bibliography() -> Vec<TemplateComponent> {
         ),
         // Author
         TemplateComponent::Contributor(TemplateContributor {
-            contributor: ContributorRole::Author,
+            contributor: ContributorRole::Author.into(),
             form: ContributorForm::Long,
             and: Some(AndOptions::Text),
             rendering: crate::template::Rendering {

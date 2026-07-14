@@ -91,7 +91,7 @@ fn author_date_style() -> Style {
             }),
             template: Some(vec![
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Long,
                     ..Default::default()
                 }),
@@ -131,7 +131,7 @@ fn numeric_style() -> Style {
             ..Default::default()
         }),
         TemplateComponent::Contributor(TemplateContributor {
-            contributor: ContributorRole::Author,
+            contributor: ContributorRole::Author.into(),
             form: ContributorForm::Long,
             ..Default::default()
         }),

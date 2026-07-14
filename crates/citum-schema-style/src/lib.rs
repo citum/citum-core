@@ -82,8 +82,9 @@ pub use style::{
 };
 pub use style_base::StyleBase;
 pub use template::{
-    LocalizedTemplateSpec, Rendering, Template, TemplateAddOperation, TemplateComponent,
-    TemplateComponentSelector, TemplateContributor, TemplateDate, TemplateGroup,
+    ContributorLabelMode, ContributorMerge, ContributorMergeOrder, ContributorMergeRole,
+    ContributorRoles, LocalizedTemplateSpec, Rendering, Template, TemplateAddOperation,
+    TemplateComponent, TemplateComponentSelector, TemplateContributor, TemplateDate, TemplateGroup,
     TemplateModifyOperation, TemplateNumber, TemplatePreset, TemplateReference,
     TemplateRemoveOperation, TemplateTerm, TemplateTitle, TemplateVariable, TemplateVariant,
     TemplateVariantDiff, TemplateVariants, TypeSelector, VerticalAlign, WrapConfig,

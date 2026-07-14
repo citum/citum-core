@@ -901,7 +901,7 @@ mod tests {
 
     fn explicit_author_component() -> TemplateComponent {
         TemplateComponent::Contributor(TemplateContributor {
-            contributor: ContributorRole::Author,
+            contributor: ContributorRole::Author.into(),
             form: ContributorForm::Long,
             name_order: Some(NameOrder::FamilyFirstOnly),
             name_form: Some(NameForm::Initials),

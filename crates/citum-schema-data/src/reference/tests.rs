@@ -50,7 +50,7 @@ fn test_parse_csl_json_structural_author_populates_canonical_contributors() {
             monograph
                 .contributors
                 .iter()
-                .any(|entry| entry.role == ContributorRole::Author),
+                .any(|entry| entry.roles.contains(&ContributorRole::Author)),
             "legacy author should populate canonical contributors"
         ),
         other => panic!("expected monograph, got {:?}", other),
@@ -101,7 +101,7 @@ fn test_parse_csl_json_motion_picture_produces_audio_visual() {
                 work.core
                     .contributors
                     .iter()
-                    .any(|entry| entry.role == ContributorRole::Director)
+                    .any(|entry| entry.roles.contains(&ContributorRole::Director))
             );
         }
         other => panic!("expected audio-visual work, got {:?}", other),
@@ -167,7 +167,7 @@ fn test_parse_csl_json_broadcast_with_producers_stays_serial_component() {
                 component
                     .contributors
                     .iter()
-                    .any(|entry| entry.role == ContributorRole::Producer)
+                    .any(|entry| entry.roles.contains(&ContributorRole::Producer))
             );
             let container_title =
                 component
@@ -296,13 +296,13 @@ fn test_parse_csl_json_broadcast_preserves_writer_cast_network_and_duration() {
                 component
                     .contributors
                     .iter()
-                    .any(|entry| entry.role == ContributorRole::Writer)
+                    .any(|entry| entry.roles.contains(&ContributorRole::Writer))
             );
             assert!(
                 component
                     .contributors
                     .iter()
-                    .any(|entry| entry.role == ContributorRole::Performer)
+                    .any(|entry| entry.roles.contains(&ContributorRole::Performer))
             );
         }
         other => panic!("expected serial component, got {:?}", other),
@@ -399,10 +399,9 @@ fn test_parse_csl_json_event_note_type_routes_to_event_with_chair_and_session() 
         Some(Title::Single("Society conference".to_string()))
     );
     assert!(
-        event
-            .contributors
-            .iter()
-            .any(|entry| entry.role == ContributorRole::Unknown("chair".to_string())),
+        event.contributors.iter().any(|entry| entry
+            .roles
+            .contains(&ContributorRole::Unknown("chair".to_string()))),
         "chair should be preserved as a custom contributor role"
     );
     assert_eq!(
@@ -1026,7 +1025,7 @@ issued: "1962"
         assert!(
             m.contributors
                 .iter()
-                .any(|e| e.role == ContributorRole::Author),
+                .any(|e| e.roles.contains(&ContributorRole::Author)),
             "author shorthand not folded into contributors"
         );
     } else {
@@ -1056,7 +1055,7 @@ issued: "2020"
         let author_count = m
             .contributors
             .iter()
-            .filter(|e| e.role == ContributorRole::Author)
+            .filter(|e| e.roles.contains(&ContributorRole::Author))
             .count();
         assert_eq!(author_count, 1, "duplicate author entry after fold");
     } else {
@@ -1259,14 +1258,11 @@ fn conversion_retains_av_interview_metadata() {
     assert_eq!(reference.medium(), Some("television".to_string()));
 
     match reference.contributor(ContributorRole::Interviewer) {
-        Some(Contributor::ContributorList(list)) => match &list.0[0] {
-            Contributor::StructuredName(name) => {
-                assert_eq!(name.family.to_string(), "Colbert");
-                assert_eq!(name.given.to_string(), "Stephen");
-            }
-            other => panic!("expected structured interviewer, got {:?}", other),
-        },
-        other => panic!("expected interviewer list, got {:?}", other),
+        Some(Contributor::StructuredName(name)) => {
+            assert_eq!(name.family.to_string(), "Colbert");
+            assert_eq!(name.given.to_string(), "Stephen");
+        }
+        other => panic!("expected structured interviewer, got {:?}", other),
     }
 }
 
@@ -1410,7 +1406,9 @@ fn conversion_chapter_without_named_parent_keeps_volume_but_avoids_empty_contain
         component
             .contributors
             .iter()
-            .any(|entry| entry.role == ContributorRole::Editor)
+            .any(|entry| entry.roles.as_slice().len() == 2
+                && entry.roles.contains(&ContributorRole::Editor)
+                && entry.roles.contains(&ContributorRole::Translator))
     );
 
     let collection = match component.container.as_ref() {
@@ -1427,7 +1425,7 @@ fn conversion_chapter_without_named_parent_keeps_volume_but_avoids_empty_contain
         collection
             .contributors
             .iter()
-            .all(|entry| entry.role != ContributorRole::Editor)
+            .all(|entry| entry.roles != ContributorRole::Editor)
     );
     assert!(
         collection
@@ -1735,5 +1733,208 @@ fn conversion_maps_original_relation_for_legal_case_references() {
             .as_ref()
             .and_then(|publisher| publisher.place.clone()),
         Some(Place::from("Boston"))
+    );
+}
+
+#[test]
+fn contributor_roles_are_explicit_and_legacy_scalar_role_is_accepted() {
+    let canonical = r#"
+class: audio-visual
+type: broadcast
+contributors:
+  - roles: [writer, director]
+    contributor: {family: Whedon, given: Joss}
+"#;
+    let reference: InputReference = serde_yaml::from_str(canonical).unwrap();
+    let entry = reference.all_contributor_entries().first().unwrap();
+    assert_eq!(
+        entry.roles.as_slice(),
+        &[ContributorRole::Writer, ContributorRole::Director]
+    );
+
+    let legacy_scalar = canonical.replace("roles: [writer, director]", "role: writer");
+    let reference: InputReference = serde_yaml::from_str(&legacy_scalar).unwrap();
+    let serialized = serde_yaml::to_string(&reference).unwrap();
+    let value: serde_yaml::Value = serde_yaml::from_str(&serialized).unwrap();
+    let contributors = value
+        .get("contributors")
+        .and_then(serde_yaml::Value::as_sequence)
+        .unwrap();
+    assert!(contributors[0].get("roles").is_some());
+    assert!(contributors[0].get("role").is_none());
+}
+
+#[test]
+fn contributor_roles_reject_empty_and_duplicate_lists() {
+    for authored_roles in ["[]", "[writer, writer]"] {
+        let yaml = format!(
+            r#"
+class: audio-visual
+type: broadcast
+contributors:
+  - roles: {authored_roles}
+    contributor: {{family: Doe, given: Jane}}
+"#
+        );
+        assert!(serde_yaml::from_str::<InputReference>(&yaml).is_err());
+    }
+}
+
+#[test]
+fn equal_native_role_shorthands_remain_separate_without_explicit_membership() {
+    let reference: InputReference = serde_yaml::from_str(
+        r#"
+class: monograph
+type: book
+editor: {family: Doe, given: Jane}
+translator: {family: Doe, given: Jane}
+"#,
+    )
+    .unwrap();
+    let entries = reference.all_contributor_entries();
+
+    assert_eq!(entries.len(), 2);
+    assert!(
+        entries
+            .iter()
+            .any(|entry| entry.roles.contains(&ContributorRole::Editor))
+    );
+    assert!(
+        entries
+            .iter()
+            .any(|entry| entry.roles.contains(&ContributorRole::Translator))
+    );
+}
+
+#[test]
+#[allow(
+    clippy::unicode_not_nfc,
+    reason = "decomposed Unicode is the behavior under test"
+)]
+fn legacy_conversion_encodes_nfc_equal_cross_role_names_once() {
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(
+        r#"{
+          "id": "episode",
+          "type": "broadcast",
+          "director": [{"family": "Café", "given": "Jane"}],
+          "script-writer": [{"family": "Café ", "given": " Jane "}]
+        }"#,
+    )
+    .unwrap();
+    let reference: InputReference = legacy.into();
+    let entries = reference.all_contributor_entries();
+
+    assert_eq!(entries.len(), 1);
+    assert_eq!(
+        entries[0].roles.as_slice(),
+        &[ContributorRole::Writer, ContributorRole::Director]
+    );
+}
+
+#[test]
+fn legacy_conversion_splits_a_shared_name_without_reordering_its_role_list() {
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(
+        r#"{
+          "id": "episode",
+          "type": "broadcast",
+          "director": [{"family": "Alpha", "given": "Ann"}],
+          "script-writer": [
+            {"family": "Alpha", "given": "Ann"},
+            {"family": "Beta", "given": "Bob"}
+          ]
+        }"#,
+    )
+    .unwrap();
+    let reference: InputReference = legacy.into();
+    let entries = reference.all_contributor_entries();
+
+    assert_eq!(entries.len(), 2);
+    assert_eq!(
+        entries[0].roles.as_slice(),
+        &[ContributorRole::Writer, ContributorRole::Director]
+    );
+    assert_eq!(
+        entries[0].contributor.to_names_vec()[0].family.as_deref(),
+        Some("Alpha")
+    );
+    assert_eq!(
+        entries[1].contributor.to_names_vec()[0].family.as_deref(),
+        Some("Beta")
+    );
+}
+
+#[test]
+fn legacy_song_conversion_encodes_shared_composer_performer_membership() {
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(
+        r#"{
+          "id": "song",
+          "type": "song",
+          "composer": [{"family": "Rivera", "given": "Alex"}],
+          "performer": [{"family": "Rivera", "given": "Alex"}]
+        }"#,
+    )
+    .unwrap();
+    let reference: InputReference = legacy.into();
+    let entries = reference.all_contributor_entries();
+
+    assert_eq!(entries.len(), 1);
+    assert_eq!(
+        entries[0].roles.as_slice(),
+        &[ContributorRole::Composer, ContributorRole::Performer]
+    );
+}
+
+#[test]
+fn legacy_conversion_preserves_same_role_duplicates_and_form_boundaries() {
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(
+        r#"{
+          "id": "episode",
+          "type": "broadcast",
+          "director": [{"literal": "Jane Doe"}],
+          "script-writer": [
+            {"family": "Doe", "given": "Jane"},
+            {"family": "Doe", "given": "Jane"}
+          ]
+        }"#,
+    )
+    .unwrap();
+    let reference: InputReference = legacy.into();
+    let entries = reference.all_contributor_entries();
+
+    assert_eq!(entries.len(), 2);
+    assert_eq!(
+        entries
+            .iter()
+            .filter(|entry| entry.roles.contains(&ContributorRole::Writer))
+            .flat_map(|entry| entry.contributor.to_names_vec())
+            .count(),
+        2
+    );
+    assert!(
+        entries
+            .iter()
+            .all(|entry| entry.roles.as_slice().len() == 1)
+    );
+}
+
+#[test]
+fn legacy_conversion_rejects_fuzzy_cross_role_identity_matches() {
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(
+        r#"{
+          "id": "episode",
+          "type": "broadcast",
+          "director": [{"family": "Doe", "given": "Jane"}],
+          "script-writer": [{"family": "Doe", "given": "Janet"}]
+        }"#,
+    )
+    .unwrap();
+    let reference: InputReference = legacy.into();
+    let entries = reference.all_contributor_entries();
+
+    assert_eq!(entries.len(), 2);
+    assert!(
+        entries
+            .iter()
+            .all(|entry| entry.roles.as_slice().len() == 1)
     );
 }

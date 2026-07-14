@@ -191,6 +191,59 @@ impl Locale {
             .map(ToOwned::to_owned)
     }
 
+    /// Resolve an authored term for an ordered combination of contributor roles.
+    #[must_use]
+    pub fn resolved_role_combination_term(
+        &self,
+        roles: &[ContributorRole],
+        plural: bool,
+        form: &TermForm,
+        requested_gender: Option<GrammaticalGender>,
+    ) -> Option<String> {
+        if roles.len() < 2 {
+            return None;
+        }
+        let key = if roles.len() == 2
+            && roles.contains(&ContributorRole::Editor)
+            && roles.contains(&ContributorRole::Translator)
+        {
+            "editor-translator".to_string()
+        } else {
+            roles
+                .iter()
+                .map(ContributorRole::as_str)
+                .collect::<Vec<_>>()
+                .join("-")
+        };
+        let term = self.role_combinations.get(&key)?;
+        let simple = if plural { &term.plural } else { &term.singular };
+        let value = match *form {
+            TermForm::Long => Self::resolve_gendered_value(&simple.long, requested_gender),
+            TermForm::Short => {
+                Self::resolve_gendered_value(&simple.short, requested_gender.clone())
+                    .filter(|value| !value.is_empty())
+                    .or_else(|| Self::resolve_gendered_value(&simple.long, requested_gender))
+            }
+            TermForm::Verb => Self::resolve_gendered_value(&term.verb.long, requested_gender),
+            TermForm::VerbShort => {
+                Self::resolve_gendered_value(&term.verb.short, requested_gender.clone())
+                    .filter(|value| !value.is_empty())
+                    .or_else(|| Self::resolve_gendered_value(&term.verb.long, requested_gender))
+            }
+            _ => Self::resolve_gendered_value(&simple.long, requested_gender),
+        };
+        value
+            .filter(|value| !value.is_empty())
+            .map(ToOwned::to_owned)
+    }
+
+    /// Return the locale connector used to compose a missing combined-role term.
+    #[must_use]
+    pub fn role_conjunction(&self) -> &str {
+        self.general_term(&GeneralTerm::RoleConjunction, &TermForm::Long, None)
+            .unwrap_or(" & ")
+    }
+
     /// Get a locator term.
     pub fn locator_term(
         &self,

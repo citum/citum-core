@@ -647,7 +647,7 @@ mod tests {
         let c1 = ProcTemplateComponent {
             template_component: TemplateComponent::Contributor(
                 citum_schema::template::TemplateContributor {
-                    contributor: citum_schema::template::ContributorRole::Editor,
+                    contributor: citum_schema::template::ContributorRole::Editor.into(),
                     rendering: Rendering {
                         wrap: Some(WrapConfig {
                             punctuation: WrapPunctuation::Parentheses,
@@ -830,7 +830,7 @@ mod tests {
         let c1 = ProcTemplateComponent {
             template_component: TemplateComponent::Contributor(
                 citum_schema::template::TemplateContributor {
-                    contributor: citum_schema::template::ContributorRole::Author,
+                    contributor: citum_schema::template::ContributorRole::Author.into(),
                     rendering: Rendering {
                         suffix: Some(", ".to_string()),
                         ..Default::default()

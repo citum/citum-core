@@ -746,7 +746,10 @@ pub fn get_variable_key(component: &TemplateComponent) -> Option<String> {
     }
 
     match component {
-        TemplateComponent::Contributor(c) => make_key("contributor", &c.contributor, &c.rendering),
+        TemplateComponent::Contributor(c) => c.contributor.as_single().map_or_else(
+            || make_key("contributor", &c.contributor, &c.rendering),
+            |role| make_key("contributor", role, &c.rendering),
+        ),
         TemplateComponent::Date(d) => make_key("date", &d.date, &d.rendering),
         TemplateComponent::Variable(v) => make_key("variable", &v.variable, &v.rendering),
         TemplateComponent::Title(t) => {

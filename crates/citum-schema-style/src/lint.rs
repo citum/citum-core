@@ -544,9 +544,11 @@ fn collect_contributor_requirements(
     config: &Config,
     requirements: &mut Vec<LocaleRequirement>,
 ) {
+    let roles = contributor.contributor.as_slice();
+    let primary_role = roles.first().cloned().unwrap_or_default();
+
     if let Some(label) = &contributor.label {
-        let role =
-            role_label_term_to_role(&label.term).unwrap_or_else(|| contributor.contributor.clone());
+        let role = role_label_term_to_role(&label.term).unwrap_or(primary_role);
         let form = match label.form {
             RoleLabelForm::Short => TermForm::Short,
             RoleLabelForm::Long => TermForm::Long,
@@ -558,9 +560,10 @@ fn collect_contributor_requirements(
         return;
     }
 
-    let configured_preset = config.contributors.as_ref().and_then(|contributors| {
-        contributors.effective_role_label_preset(&contributor.contributor)
-    });
+    let configured_preset = config
+        .contributors
+        .as_ref()
+        .and_then(|contributors| contributors.effective_role_label_preset(&primary_role));
     if let Some(role_label_preset) = configured_preset {
         let form = match role_label_preset {
             crate::options::RoleLabelPreset::None => return,
@@ -570,46 +573,56 @@ fn collect_contributor_requirements(
             | crate::options::RoleLabelPreset::ShortSuffixComma => TermForm::Short,
             crate::options::RoleLabelPreset::LongSuffix => TermForm::Long,
         };
-        requirements.push(LocaleRequirement {
-            path: path.to_string(),
-            kind: LocaleRequirementKind::Role {
-                role: contributor.contributor.clone(),
-                form,
-            },
-        });
+        for role in roles {
+            requirements.push(LocaleRequirement {
+                path: path.to_string(),
+                kind: LocaleRequirementKind::Role {
+                    role: role.clone(),
+                    form: form.clone(),
+                },
+            });
+        }
         return;
     }
 
     match contributor.form {
-        ContributorForm::Verb => requirements.push(LocaleRequirement {
-            path: path.to_string(),
-            kind: LocaleRequirementKind::Role {
-                role: contributor.contributor.clone(),
-                form: TermForm::Verb,
-            },
-        }),
-        ContributorForm::VerbShort => requirements.push(LocaleRequirement {
-            path: path.to_string(),
-            kind: LocaleRequirementKind::Role {
-                role: contributor.contributor.clone(),
-                form: TermForm::VerbShort,
-            },
-        }),
-        ContributorForm::Long
-            if matches!(
-                contributor.contributor,
-                ContributorRole::Editor | ContributorRole::Translator
-            ) =>
-        {
-            requirements.push(LocaleRequirement {
-                path: path.to_string(),
-                kind: LocaleRequirementKind::Role {
-                    role: contributor.contributor.clone(),
-                    form: TermForm::Short,
-                },
-            });
+        ContributorForm::Verb => {
+            collect_role_requirements(roles, path, TermForm::Verb, requirements);
+        }
+        ContributorForm::VerbShort => {
+            collect_role_requirements(roles, path, TermForm::VerbShort, requirements);
+        }
+        ContributorForm::Long => {
+            for role in roles.iter().filter(|role| {
+                matches!(role, ContributorRole::Editor | ContributorRole::Translator)
+            }) {
+                requirements.push(LocaleRequirement {
+                    path: path.to_string(),
+                    kind: LocaleRequirementKind::Role {
+                        role: role.clone(),
+                        form: TermForm::Short,
+                    },
+                });
+            }
         }
         _ => {}
+    }
+}
+
+fn collect_role_requirements(
+    roles: &[ContributorRole],
+    path: &str,
+    form: TermForm,
+    requirements: &mut Vec<LocaleRequirement>,
+) {
+    for role in roles {
+        requirements.push(LocaleRequirement {
+            path: path.to_string(),
+            kind: LocaleRequirementKind::Role {
+                role: role.clone(),
+                form: form.clone(),
+            },
+        });
     }
 }
 
@@ -1050,7 +1063,7 @@ mod tests {
         let style = Style {
             citation: Some(CitationSpec {
                 template: Some(vec![TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Editor,
+                    contributor: ContributorRole::Editor.into(),
                     form: ContributorForm::Verb,
                     ..Default::default()
                 })]),

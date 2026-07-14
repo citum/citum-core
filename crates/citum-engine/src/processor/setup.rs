@@ -560,17 +560,23 @@ impl Processor {
         let bibliography_config = self.get_bibliography_config();
         let mut sorted_refs = match self.resolved_bibliography_sort() {
             Some((sort_spec, true)) => {
-                let sorter = crate::sorting::ReferenceSorter::with_bibliography_config(
+                let mut sorter = crate::sorting::ReferenceSorter::with_bibliography_config(
                     &self.locale,
                     &bibliography_config,
                 );
+                if let Some(spec) = self.style.bibliography.as_ref() {
+                    sorter = sorter.with_bibliography_spec(spec);
+                }
                 sorter.sort_references_with_id_tiebreak(references, &sort_spec)
             }
             Some((sort_spec, false)) => {
-                let sorter = crate::sorting::ReferenceSorter::with_bibliography_config(
+                let mut sorter = crate::sorting::ReferenceSorter::with_bibliography_config(
                     &self.locale,
                     &bibliography_config,
                 );
+                if let Some(spec) = self.style.bibliography.as_ref() {
+                    sorter = sorter.with_bibliography_spec(spec);
+                }
                 sorter.sort_references(references, &sort_spec)
             }
             None => references,
@@ -598,7 +604,7 @@ impl Processor {
         spec: &citum_schema::CitationSpec,
     ) -> Vec<CitationItem> {
         if let Some(sort_spec) = &spec.sort {
-            let mut items_with_refs: Vec<(CitationItem, Option<&Reference>)> = items
+            let items_with_refs: Vec<(CitationItem, Option<&Reference>)> = items
                 .into_iter()
                 .map(|item| {
                     let reference = self.bibliography.get(&item.id);
@@ -607,26 +613,16 @@ impl Processor {
                 .collect();
 
             let resolved_sort = sort_spec.resolve();
-            let sorter = crate::sorting::ReferenceSorter::new(&self.locale);
-            items_with_refs.sort_by(|left, right| match (left.1, right.1) {
-                (Some(left_reference), Some(right_reference)) => {
-                    for sort_key in &resolved_sort.template {
-                        let cmp = sorter.compare_by_key(left_reference, right_reference, sort_key);
-                        if cmp != std::cmp::Ordering::Equal {
-                            return cmp;
-                        }
-                    }
-                    std::cmp::Ordering::Equal
-                }
-                (Some(_), None) => std::cmp::Ordering::Less,
-                (None, Some(_)) => std::cmp::Ordering::Greater,
-                (None, None) => std::cmp::Ordering::Equal,
-            });
+            let citation_config = self.get_citation_config();
+            let sorter = crate::sorting::ReferenceSorter::with_bibliography_config(
+                &self.locale,
+                &citation_config,
+            )
+            .with_citation_spec(spec);
+            let sorted =
+                sorter.sort_by_keys(items_with_refs, &resolved_sort.template, |item| item.1);
 
-            return items_with_refs
-                .into_iter()
-                .map(|(item, _reference)| item)
-                .collect();
+            return sorted.into_iter().map(|(item, _reference)| item).collect();
         }
 
         items
@@ -642,7 +638,7 @@ impl Processor {
         let bibliography_config = self.get_bibliography_config();
         let bibliography_sort = self.resolved_bibliography_sort();
 
-        let disambiguator = if let Some((resolved_sort, _id_tiebreak)) = &bibliography_sort {
+        let mut disambiguator = if let Some((resolved_sort, _id_tiebreak)) = &bibliography_sort {
             Disambiguator::with_group_sort(
                 &self.bibliography,
                 config,
@@ -658,6 +654,13 @@ impl Processor {
                 &self.locale,
             )
         };
+
+        if let Some(citation_spec) = self.style.citation.as_ref() {
+            disambiguator = disambiguator.with_citation_spec(citation_spec);
+        }
+        if let Some(bibliography_spec) = self.style.bibliography.as_ref() {
+            disambiguator = disambiguator.with_bibliography_spec(bibliography_spec);
+        }
 
         disambiguator.calculate_hints()
     }

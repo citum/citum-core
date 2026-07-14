@@ -814,7 +814,7 @@ fn template_v3_nested_citation_diff_can_use_outer_template() {
         citation: Some(CitationSpec {
             template: Some(vec![
                 TemplateComponent::Contributor(template::TemplateContributor {
-                    contributor: template::ContributorRole::Author,
+                    contributor: template::ContributorRole::Author.into(),
                     ..Default::default()
                 }),
                 TemplateComponent::Title(template::TemplateTitle {
@@ -1818,4 +1818,275 @@ fn is_template_affix_key(key: &str) -> bool {
 
 fn is_allowed_non_prose_affix(key: &str, text: &str) -> bool {
     (key == "prefix" && text.contains("https://doi.org/")) || (key == "delimiter" && text == "none")
+}
+
+#[test]
+fn contributor_role_scalar_and_list_round_trip_without_shape_loss() {
+    for yaml in [
+        "contributor: author\nform: long\n",
+        "contributor: [writer, director]\nform: long\n",
+    ] {
+        let component: template::TemplateContributor = serde_yaml::from_str(yaml).unwrap();
+        let serialized = serde_yaml::to_string(&component).unwrap();
+        let reparsed: template::TemplateContributor = serde_yaml::from_str(&serialized).unwrap();
+        assert_eq!(component, reparsed);
+    }
+}
+
+#[test]
+fn role_label_wrap_round_trips_without_affix_substitution() {
+    let yaml = r#"
+contributor: writer
+form: long
+label:
+  term: writer
+  form: long
+  placement: suffix
+  wrap: parentheses
+"#;
+    let component: template::TemplateContributor = serde_yaml::from_str(yaml).unwrap();
+    let serialized = serde_yaml::to_string(&component).unwrap();
+    let reparsed: template::TemplateContributor = serde_yaml::from_str(&serialized).unwrap();
+
+    assert_eq!(component, reparsed);
+    assert!(matches!(
+        component.label.and_then(|label| label.wrap).as_deref(),
+        Some(&template::WrapConfig {
+            punctuation: template::WrapPunctuation::Parentheses,
+            inner_prefix: None,
+            inner_suffix: None,
+        })
+    ));
+}
+
+#[test]
+fn contributor_list_defaults_merge_behavior_when_block_is_absent() {
+    let component: template::TemplateContributor =
+        serde_yaml::from_str("contributor: [writer, director]\nform: long\n").unwrap();
+
+    assert!(component.contributor.is_multiple());
+    assert_eq!(component.merge, None);
+    assert_eq!(
+        template::ContributorMerge::default().order,
+        template::ContributorMergeOrder::Document
+    );
+    assert!(template::ContributorMerge::default().combine_same_person);
+}
+
+#[test]
+fn contributor_list_semantic_validation_rejects_invalid_combinations() {
+    let invalid_components = [
+        "- contributor: author\n  merge: {}",
+        "- contributor: [writer]",
+        "- contributor: [writer, writer]",
+        "- contributor: [writer, director]\n  label: {term: writer}",
+        "- contributor: [writer, director]\n  merge:\n    roles:\n      producer: {labels: none}",
+    ];
+    for template in invalid_components {
+        let yaml = format!(
+            "info:\n  title: Invalid contributor test\nbibliography:\n  template:\n{}\n",
+            template
+                .lines()
+                .map(|line| format!("    {line}"))
+                .collect::<Vec<_>>()
+                .join("\n")
+        );
+        assert!(
+            Style::from_yaml_str(&yaml).is_err(),
+            "accepted invalid template:\n{template}"
+        );
+    }
+}
+
+#[test]
+fn contributor_list_resource_validation_reports_authored_field_paths() {
+    fn style_with_contributor(contributor: &str) -> Style {
+        Style::from_yaml_str(&format!(
+            "info:\n  title: Contributor validation test\nbibliography:\n  template:\n    - contributor: {contributor}\n      form: long\n"
+        ))
+        .expect("base contributor style should parse")
+    }
+
+    fn contributor_mut(style: &mut Style) -> &mut template::TemplateContributor {
+        let component = style
+            .bibliography
+            .as_mut()
+            .and_then(|bibliography| bibliography.template.as_mut())
+            .and_then(|template| template.first_mut())
+            .expect("test style should contain a bibliography component");
+        let template::TemplateComponent::Contributor(contributor) = component else {
+            panic!("test component should be a contributor");
+        };
+        contributor
+    }
+
+    let mut scalar = style_with_contributor("author");
+    contributor_mut(&mut scalar).merge = Some(template::ContributorMerge::default());
+    assert_eq!(
+        scalar.validate_resource_limits(),
+        Err("bibliography.template.merge is valid only for a contributor role list".into())
+    );
+
+    let mut list_with_label = style_with_contributor("[writer, director]");
+    contributor_mut(&mut list_with_label).label =
+        Some(serde_yaml::from_str("term: writer").expect("test role label should deserialize"));
+    assert_eq!(
+        list_with_label.validate_resource_limits(),
+        Err("bibliography.template.label is valid only for a single role".into())
+    );
+
+    let mut list_with_undeclared_override = style_with_contributor("[writer, director]");
+    let mut merge = template::ContributorMerge::default();
+    merge.roles.insert(
+        template::ContributorRole::Producer,
+        template::ContributorMergeRole::default(),
+    );
+    contributor_mut(&mut list_with_undeclared_override).merge = Some(merge);
+    assert_eq!(
+        list_with_undeclared_override.validate_resource_limits(),
+        Err("bibliography.template.merge.roles contains undeclared role producer".into())
+    );
+}
+
+#[test]
+fn producer_is_a_known_style_contributor_role() {
+    let component: template::TemplateContributor =
+        serde_yaml::from_str("contributor: producer\nform: long\n").unwrap();
+
+    assert_eq!(
+        component.contributor.as_single(),
+        Some(&template::ContributorRole::Producer)
+    );
+}
+
+#[test]
+fn en_us_resolves_combined_roles_alias_and_connector() {
+    let mut locale = locale::Locale::en_us();
+    let writer_director = [
+        template::ContributorRole::Writer,
+        template::ContributorRole::Director,
+    ];
+    assert_eq!(
+        locale.resolved_role_combination_term(
+            &writer_director,
+            false,
+            &locale::TermForm::Long,
+            None,
+        ),
+        Some("writer & director".to_string())
+    );
+    assert_eq!(
+        locale.resolved_role_combination_term(
+            &writer_director,
+            true,
+            &locale::TermForm::Long,
+            None,
+        ),
+        Some("writers & directors".to_string())
+    );
+    assert_eq!(
+        locale
+            .messages
+            .get("term.role-conjunction")
+            .map(String::as_str),
+        Some(" & ")
+    );
+    locale
+        .messages
+        .insert("term.role-conjunction".to_string(), " + ".to_string());
+    assert_eq!(locale.role_conjunction(), " + ");
+    locale.messages.remove("term.role-conjunction");
+    assert_eq!(locale.role_conjunction(), " & ");
+    assert!(locale.role_combinations.contains_key("editor-translator"));
+    assert!(!locale.role_combinations.contains_key("editortranslator"));
+    assert_eq!(
+        locale.resolved_role_combination_term(
+            &[
+                template::ContributorRole::Translator,
+                template::ContributorRole::Editor,
+            ],
+            false,
+            &locale::TermForm::Short,
+            None,
+        ),
+        Some("ed. & trans.".to_string())
+    );
+}
+
+#[test]
+fn invalid_merge_label_mode_is_rejected_in_unused_type_variant() {
+    let yaml = r#"
+info: {id: invalid-merge-mode, title: Invalid merge mode}
+bibliography:
+  type-variants:
+    episode:
+      - contributor: [writer, director]
+        merge:
+          labels: combined
+  template:
+    - contributor: author
+"#;
+
+    Style::from_yaml_str(yaml).expect_err("invalid label mode must fail style loading");
+}
+
+#[test]
+fn substitution_candidate_role_lists_require_distinct_roles() {
+    let yaml = r#"
+info: {id: invalid-substitution-roles, title: Invalid substitution roles}
+options:
+  substitute:
+    overrides:
+      episode:
+        - contributor: [writer, writer]
+bibliography:
+  template:
+    - contributor: author
+"#;
+
+    Style::from_yaml_str(yaml).expect_err("duplicate substitution roles must fail style loading");
+}
+
+#[cfg(feature = "schema")]
+#[test]
+fn contributor_list_schema_exposes_scalar_list_and_merge_shapes() {
+    let schema = serde_json::to_value(schemars::schema_for!(template::TemplateContributor))
+        .expect("contributor schema should serialize");
+
+    assert_eq!(
+        schema.pointer("/$defs/ContributorRoles/anyOf/0/$ref"),
+        Some(&serde_json::json!("#/$defs/ContributorRole"))
+    );
+    assert_eq!(
+        schema.pointer("/$defs/ContributorRoles/anyOf/1/minItems"),
+        Some(&serde_json::json!(2))
+    );
+    assert_eq!(
+        schema.pointer("/properties/merge/anyOf/0/$ref"),
+        Some(&serde_json::json!("#/$defs/ContributorMerge"))
+    );
+    assert_eq!(
+        schema.pointer("/$defs/ContributorMerge/properties/combine-same-person/default"),
+        Some(&serde_json::json!(true))
+    );
+    assert_eq!(
+        schema.pointer("/$defs/RoleLabel/properties/wrap/anyOf/0/$ref"),
+        Some(&serde_json::json!("#/$defs/WrapConfig"))
+    );
+}
+
+#[cfg(feature = "schema")]
+#[test]
+fn substitute_schema_exposes_scalar_and_contributor_candidates() {
+    let schema = serde_json::to_value(schemars::schema_for!(options::SubstituteKey))
+        .expect("substitution candidate schema should serialize");
+
+    assert_eq!(
+        schema.pointer("/anyOf/0/$ref"),
+        Some(&serde_json::json!("#/$defs/SubstituteField"))
+    );
+    assert_eq!(
+        schema.pointer("/anyOf/1/$ref"),
+        Some(&serde_json::json!("#/$defs/SubstituteContributor"))
+    );
 }

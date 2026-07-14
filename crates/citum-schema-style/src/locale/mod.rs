@@ -58,6 +58,10 @@ pub struct Locale {
     #[serde(default)]
     #[cfg_attr(feature = "schema", schemars(skip))]
     pub roles: HashMap<ContributorRole, ContributorTerm>,
+    /// Authored terms for combinations such as `writer-director`.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    #[cfg_attr(feature = "schema", schemars(skip))]
+    pub role_combinations: HashMap<String, ContributorTerm>,
     /// Locator terms (page, chapter, etc.).
     #[serde(default)]
     #[cfg_attr(feature = "schema", schemars(skip))]
@@ -121,6 +125,7 @@ impl Default for Locale {
             locale: String::default(),
             dates: DateTerms::default(),
             roles: HashMap::default(),
+            role_combinations: HashMap::default(),
             locators: HashMap::default(),
             terms: Terms::default(),
             punctuation_in_quote: false,
@@ -145,6 +150,7 @@ impl fmt::Debug for Locale {
             .field("locale", &self.locale)
             .field("dates", &self.dates)
             .field("roles", &self.roles)
+            .field("role_combinations", &self.role_combinations)
             .field("locators", &self.locators)
             .field("terms", &self.terms)
             .field("punctuation_in_quote", &self.punctuation_in_quote)
