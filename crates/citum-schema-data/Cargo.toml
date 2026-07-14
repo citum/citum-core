@@ -16,6 +16,7 @@ citum-edtf = { workspace = true, features = ["serde"] }
 url = { version = "2.5", features = ["serde"] }
 csl-legacy = { workspace = true, optional = true }
 indexmap = { version = "2", features = ["serde"] }
+unicode-normalization = "0.1.25"
 
 [features]
 default = []
