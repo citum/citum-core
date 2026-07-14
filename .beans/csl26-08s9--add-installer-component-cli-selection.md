@@ -8,7 +8,7 @@ tags:
     - cli
     - release
 created_at: 2026-07-14T23:17:04Z
-updated_at: 2026-07-14T23:20:27Z
+updated_at: 2026-07-14T23:22:34Z
 ---
 
 Implement --components support in the POSIX installer while preserving CITUM_COMPONENTS compatibility.
@@ -16,4 +16,8 @@ Implement --components support in the POSIX installer while preserving CITUM_COM
 - [ ] Add argument parsing and help text
 - [ ] Add isolated installer regression coverage
 - [x] Update installation documentation
-- [ ] Validate, open PR, and record results
+- [x] Validate, open PR, and record results
+
+## Summary of Changes
+
+Added --components installer selection, preserved CITUM_COMPONENTS compatibility, documented the new command, and opened PR #1060 after 22 targeted regression tests passed.
