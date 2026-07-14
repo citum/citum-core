@@ -350,6 +350,7 @@ jobs:
 
       - name: Validate recovery tag
         if: github.event_name == 'workflow_dispatch' && inputs.command == 'publish-crates'
+        shell: bash
         env:
           RELEASE_REF: ${{ inputs.release_ref }}
         run: |
