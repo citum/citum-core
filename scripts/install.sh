@@ -83,13 +83,12 @@ resolve_version() {
 }
 
 # citum-migrate has no musl prebuilt (rusty_v8 doesn't publish musl static
-# libs) but does have a gnu/glibc one — see scripts/release-binary.sh. Maps
-# a musl Linux target to its gnu counterpart so install.sh can fetch
-# citum-migrate from there instead of skipping it.
+# libs) but does have an x86_64 gnu/glibc one — see scripts/release-binary.sh.
+# This maps the x86_64 musl target to that counterpart so install.sh can fetch
+# citum-migrate instead of skipping it.
 migrate_fallback_target() {
   case "$1" in
     x86_64-unknown-linux-musl)  echo "x86_64-unknown-linux-gnu" ;;
-    aarch64-unknown-linux-musl) echo "aarch64-unknown-linux-gnu" ;;
   esac
 }
 
@@ -205,15 +204,17 @@ tar -xzf "${TMP}/${TARBALL}" -C "$TMP"
 STAGE="${TMP}/citum-${VER_BARE}-${TARGET}"
 
 # citum-migrate has no musl prebuilt (see fetch_tarball's doc comment); fetch
-# it from the gnu counterpart tarball so it isn't silently skipped on Linux.
+# it from the x86_64 gnu counterpart tarball when one is available.
 MIGRATE_STAGE=""
 case "$TARGET" in
   *-linux-musl)
     case " $SELECTED " in
       *' citum-migrate '*)
         MIGRATE_TARGET="$(migrate_fallback_target "$TARGET")"
-        say "citum-migrate has no musl prebuilt; fetching it from ${MIGRATE_TARGET} instead"
-        MIGRATE_STAGE="$(fetch_tarball "$MIGRATE_TARGET" || true)"
+        if [ -n "$MIGRATE_TARGET" ]; then
+          say "citum-migrate has no musl prebuilt; fetching it from ${MIGRATE_TARGET} instead"
+          MIGRATE_STAGE="$(fetch_tarball "$MIGRATE_TARGET" || true)"
+        fi
         ;;
     esac
     ;;

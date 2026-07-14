@@ -15,7 +15,12 @@ on:
         type: choice
         options:
           - release-pr
+          - publish-crates
           - publish-jsr
+      release_ref:
+        description: "Release tag to recover (required for publish-crates, e.g. v0.75.0)"
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -303,13 +308,15 @@ jobs:
             fi
           fi
 
-  # ── Step 4: Build cross-platform binaries on tag push ─────────────
-  # Triggered only by `push: tags: ["v*"]` — orthogonal to the
-  # pull_request-gated steps above. Each matrix job builds citum +
-  # citum-server for its target and uploads the tarball + SHA256 as
-  # job artifacts. The `release` job aggregates them in the next step.
+  # ── Step 4: Build cross-platform binaries for a tag or recovery ───
+  # Tag pushes and manual crates.io recovery both run the full build matrix
+  # before publishing. Each matrix job builds citum + citum-server for its
+  # target and uploads the tarball + SHA256 as job artifacts. The `release`
+  # job aggregates them only for tag-push releases.
   build:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && inputs.command == 'publish-crates')
     strategy:
       fail-fast: false
       matrix:
@@ -322,15 +329,11 @@ jobs:
             use_cross: "1"
           # glibc Linux targets: rusty_v8 (citum-migrate's V8 dependency)
           # only publishes prebuilt static libs for gnu/glibc, not musl.
-          # These targets exist so citum-migrate has a prebuilt on Linux at
-          # all — install.sh falls back to them for that one binary while
-          # citum/citum-server keep shipping from the musl targets above.
+          # This target carries the x86_64 Linux citum-migrate prebuilt while
+          # citum/citum-server keep shipping from the musl target above.
           - target: x86_64-unknown-linux-gnu
             os: ubuntu-latest
             use_cross: "0"
-          - target: aarch64-unknown-linux-gnu
-            os: ubuntu-latest
-            use_cross: "1"
           - target: aarch64-apple-darwin
             os: macos-latest
             use_cross: "0"
@@ -343,6 +346,25 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
         with:
           persist-credentials: false
+          ref: ${{ inputs.release_ref || github.ref }}
+
+      - name: Validate recovery tag
+        if: github.event_name == 'workflow_dispatch' && inputs.command == 'publish-crates'
+        env:
+          RELEASE_REF: ${{ inputs.release_ref }}
+        run: |
+          case "$RELEASE_REF" in
+            v[0-9]*) ;;
+            *) echo "publish-crates requires release_ref to be a v* tag" >&2; exit 1 ;;
+          esac
+          if ! git rev-parse -q --verify "refs/tags/${RELEASE_REF}" >/dev/null; then
+            echo "release_ref ${RELEASE_REF} is not a tag in this checkout" >&2
+            exit 1
+          fi
+          if [ "$(git describe --exact-match --tags HEAD)" != "$RELEASE_REF" ]; then
+            echo "checkout does not resolve to ${RELEASE_REF}" >&2
+            exit 1
+          fi
 
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8  # stable
         with:
@@ -367,7 +389,7 @@ jobs:
         env:
           USE_CROSS: ${{ matrix.use_cross }}
           TARGET: ${{ matrix.target }}
-          REF_NAME: ${{ github.ref_name }}
+          REF_NAME: ${{ inputs.release_ref || github.ref_name }}
         run: bash scripts/release-binary.sh "$TARGET" "$REF_NAME"
 
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f  # v6
@@ -431,13 +453,16 @@ jobs:
   # The script is idempotent — re-running after partial failure
   # skips already-published versions.
   publish-crates:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && inputs.command == 'publish-crates')
     needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6
         with:
           persist-credentials: false
+          ref: ${{ inputs.release_ref || github.ref }}
 
       - uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8  # stable
 
