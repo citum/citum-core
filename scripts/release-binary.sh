@@ -25,8 +25,9 @@ USE_CROSS="${USE_CROSS:-0}"
 
 # citum-migrate embeds V8 via deno_core/rusty_v8. rusty_v8 does not publish
 # prebuilt musl static libs, so the build fails with a 404 on musl targets.
-# citum-migrate is a dev-time migration tool, not a container workload, so
-# shipping it only on targets where V8 prebuilts exist is the correct trade-off.
+# It does publish gnu/glibc prebuilts, so the *-unknown-linux-gnu targets in
+# the release matrix carry citum-migrate — install.sh fetches it from there
+# as a fallback when installing on a musl target (see scripts/install.sh).
 case "$TARGET" in
   *-linux-musl) INCLUDE_MIGRATE="0" ;;
   *)             INCLUDE_MIGRATE="1" ;;

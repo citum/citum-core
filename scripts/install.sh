@@ -82,6 +82,51 @@ resolve_version() {
   echo "$VERSION"
 }
 
+# citum-migrate has no musl prebuilt (rusty_v8 doesn't publish musl static
+# libs) but does have a gnu/glibc one — see scripts/release-binary.sh. Maps
+# a musl Linux target to its gnu counterpart so install.sh can fetch
+# citum-migrate from there instead of skipping it.
+migrate_fallback_target() {
+  case "$1" in
+    x86_64-unknown-linux-musl)  echo "x86_64-unknown-linux-gnu" ;;
+    aarch64-unknown-linux-musl) echo "aarch64-unknown-linux-gnu" ;;
+  esac
+}
+
+# Downloads, verifies, and extracts the release tarball for target $1 into
+# $TMP (uses the SHA256SUMS already fetched into $TMP — one manifest covers
+# every target's tarball). Echoes the extracted stage dir path on success.
+# On any failure, warns and returns 1 instead of exiting, so callers can
+# treat this as an optional fetch. Callers capture this via command
+# substitution, so all status output here must go to stderr — stdout is
+# reserved for the single path this function echoes on success.
+fetch_tarball() {
+  t="$1"
+  tarball="citum-${VER_BARE}-${t}.tar.gz"
+
+  printf '%s\n' "citum-installer: downloading ${tarball}" >&2
+  if ! curl --fail --location --silent --show-error \
+    --output "${TMP}/${tarball}" "${BASE_URL}/${tarball}"; then
+    printf '%s\n' "citum-installer: warning: failed to download ${tarball}" >&2
+    return 1
+  fi
+
+  expected=$(awk -v f="$tarball" '$2 == f || $2 == "*"f {print $1}' "${TMP}/SHA256SUMS")
+  if [ -z "$expected" ]; then
+    printf '%s\n' "citum-installer: warning: no checksum entry for ${tarball} in SHA256SUMS" >&2
+    return 1
+  fi
+  actual=$(cd "$TMP" && $SHASUM "$tarball" | awk '{print $1}')
+  if [ "$expected" != "$actual" ]; then
+    printf '%s\n' "citum-installer: warning: checksum mismatch for ${tarball} (expected $expected, got $actual)" >&2
+    return 1
+  fi
+
+  printf '%s\n' "citum-installer: extracting ${tarball}" >&2
+  tar -xzf "${TMP}/${tarball}" -C "$TMP"
+  echo "${TMP}/citum-${VER_BARE}-${t}"
+}
+
 # ---------- main ------------------------------------------------------
 
 need_cmd curl
@@ -159,17 +204,35 @@ say "extracting"
 tar -xzf "${TMP}/${TARBALL}" -C "$TMP"
 STAGE="${TMP}/citum-${VER_BARE}-${TARGET}"
 
+# citum-migrate has no musl prebuilt (see fetch_tarball's doc comment); fetch
+# it from the gnu counterpart tarball so it isn't silently skipped on Linux.
+MIGRATE_STAGE=""
+case "$TARGET" in
+  *-linux-musl)
+    case " $SELECTED " in
+      *' citum-migrate '*)
+        MIGRATE_TARGET="$(migrate_fallback_target "$TARGET")"
+        say "citum-migrate has no musl prebuilt; fetching it from ${MIGRATE_TARGET} instead"
+        MIGRATE_STAGE="$(fetch_tarball "$MIGRATE_TARGET" || true)"
+        ;;
+    esac
+    ;;
+esac
+
 mkdir -p "$INSTALL_DIR"
 for c in $SELECTED; do
   src="${STAGE}/${c}${EXE_SUFFIX}"
+  if [ ! -f "$src" ] && [ "$c" = "citum-migrate" ] && [ -n "$MIGRATE_STAGE" ]; then
+    src="${MIGRATE_STAGE}/${c}${EXE_SUFFIX}"
+  fi
   if [ ! -f "$src" ]; then
-    # citum-migrate is intentionally absent from musl Linux tarballs: rusty_v8
-    # (its embedded V8 dependency) does not publish prebuilt musl static libs.
+    # On musl Linux, a citum-migrate gnu-fallback fetch failure isn't a
+    # packaging regression — fall back to cargo install instead of failing.
     # On all other targets this is a real packaging regression — fail fast.
     case "$TARGET" in
       *-linux-musl)
         if [ "$c" = "citum-migrate" ]; then
-          printf '%s\n' "citum-installer: warning: citum-migrate has no prebuilt binary for ${TARGET}."
+          printf '%s\n' "citum-installer: warning: citum-migrate has no prebuilt binary for ${TARGET} (gnu fallback unavailable)."
           printf '%s\n' "  Install from source: cargo install citum-migrate --locked"
           continue
         fi

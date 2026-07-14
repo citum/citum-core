@@ -320,6 +320,17 @@ jobs:
           - target: aarch64-unknown-linux-musl
             os: ubuntu-latest
             use_cross: "1"
+          # glibc Linux targets: rusty_v8 (citum-migrate's V8 dependency)
+          # only publishes prebuilt static libs for gnu/glibc, not musl.
+          # These targets exist so citum-migrate has a prebuilt on Linux at
+          # all — install.sh falls back to them for that one binary while
+          # citum/citum-server keep shipping from the musl targets above.
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            use_cross: "0"
+          - target: aarch64-unknown-linux-gnu
+            os: ubuntu-latest
+            use_cross: "1"
           - target: aarch64-apple-darwin
             os: macos-latest
             use_cross: "0"
