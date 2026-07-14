@@ -69,8 +69,9 @@
                 <pre><code>curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | sh</code></pre>
             </div>
             <p style="margin-top: 1rem; color: var(--citum-muted); font-size: 0.92rem;">
-                Select components with <code>CITUM_COMPONENTS</code> (<code>citum</code>, <code>citum-server</code>,
-                <code>citum-migrate</code>, or <code>all</code>). From source:
+                Select components with <code>--components</code> (<code>citum</code>, <code>citum-server</code>,
+                <code>citum-migrate</code>, or <code>all</code>). <code>CITUM_COMPONENTS</code> remains available
+                for automation. From source:
                 <code>cargo install citum --locked</code> (also: <code>citum-server</code>, <code>citum-migrate</code>).
                 JavaScript/TypeScript (WASM): <code>npx jsr add @citum/engine</code>.
                 See the <a href="#cli">CLI section</a> for component examples and common commands.
@@ -155,16 +156,16 @@
                 <div class="workshop-label">Install (pre-built binary)</div>
                 <pre><code>curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | sh</code></pre>
                 <p style="margin-top: 0.75rem; color: var(--citum-muted); font-size: 0.92rem;">
-                    Installs <code>citum</code> by default. To pick a different subset, set
-                    <code>CITUM_COMPONENTS</code> to a comma-separated list of
+                    Installs <code>citum</code> by default. To pick a different subset, pass
+                    <code>--components</code> with a comma-separated list of
                     <code>citum</code>, <code>citum-server</code>, <code>citum-migrate</code>,
-                    or <code>all</code>:
+                    or <code>all</code>. <code>CITUM_COMPONENTS</code> remains available for automation:
                 </p>
                 <pre><code># everything
-curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | CITUM_COMPONENTS=all sh
+curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | sh -s -- --components all
 
 # citum + citum-migrate, no server
-curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | CITUM_COMPONENTS=citum,citum-migrate sh</code></pre>
+curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | sh -s -- --components citum,citum-migrate</code></pre>
             </div>
             <div class="workshop-block" style="margin-top: 1rem;">
                 <div class="workshop-label">Install (from source)</div>

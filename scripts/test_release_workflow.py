@@ -3,8 +3,13 @@
 
 from __future__ import annotations
 
+import hashlib
+import io
+import os
 import re
 import subprocess
+import tarfile
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -221,6 +226,139 @@ class ReleaseWorkflowTests(unittest.TestCase):
             r"^\d+\.\d+\.\d+$",
             f"sed did not extract a valid semver from {SCHEMA_LIB}; got: {version!r}",
         )
+
+
+class InstallerTests(unittest.TestCase):
+    """Exercise installer component selection against a local fake release."""
+
+    version = "9.9.9"
+    musl_target = "x86_64-unknown-linux-musl"
+    gnu_target = "x86_64-unknown-linux-gnu"
+
+    def setUp(self) -> None:
+        self.temp_dir = tempfile.TemporaryDirectory()
+        self.root = Path(self.temp_dir.name)
+        self.release_dir = self.root / "release"
+        self.release_dir.mkdir()
+        self.bin_dir = self.root / "bin"
+        self.bin_dir.mkdir()
+        self.curl_log = self.root / "curl.log"
+        self._write_tarball(self.musl_target, ("citum", "citum-server"))
+        self._write_tarball(self.gnu_target, ("citum-migrate",))
+        self._write_checksum_manifest()
+        self._write_fake_curl()
+
+    def tearDown(self) -> None:
+        self.temp_dir.cleanup()
+
+    def _tarball_name(self, target: str) -> str:
+        return f"citum-{self.version}-{target}.tar.gz"
+
+    def _write_tarball(self, target: str, components: tuple[str, ...]) -> None:
+        archive = self.release_dir / self._tarball_name(target)
+        stage = f"citum-{self.version}-{target}"
+        with tarfile.open(archive, "w:gz") as tar:
+            for component in components:
+                contents = f"fixture {component}\n".encode()
+                info = tarfile.TarInfo(f"{stage}/{component}")
+                info.mode = 0o755
+                info.size = len(contents)
+                tar.addfile(info, fileobj=io.BytesIO(contents))
+
+    def _write_checksum_manifest(self) -> None:
+        lines = []
+        for archive in sorted(self.release_dir.glob("*.tar.gz")):
+            digest = hashlib.sha256(archive.read_bytes()).hexdigest()
+            lines.append(f"{digest}  {archive.name}\n")
+        (self.release_dir / "SHA256SUMS").write_text("".join(lines), encoding="utf-8")
+
+    def _write_fake_curl(self) -> None:
+        curl = self.bin_dir / "curl"
+        curl.write_text(
+            "#!/usr/bin/env sh\n"
+            "set -eu\n"
+            "output=\n"
+            "url=\n"
+            "while [ \"$#\" -gt 0 ]; do\n"
+            "  case \"$1\" in\n"
+            "    --output) output=\"$2\"; shift 2 ;;\n"
+            "    *) url=\"$1\"; shift ;;\n"
+            "  esac\n"
+            "done\n"
+            "name=${url##*/}\n"
+            "printf '%s\\n' \"$name\" >> \"$CURL_LOG\"\n"
+            "cp \"$FAKE_RELEASE/$name\" \"$output\"\n",
+            encoding="utf-8",
+        )
+        curl.chmod(0o755)
+
+    def _run_installer(
+        self, *args: str, components: str | None = None
+    ) -> tuple[subprocess.CompletedProcess[str], Path]:
+        install_dir = self.root / f"install-{'-'.join(args) or components or 'default'}"
+        environment = os.environ | {
+            "CITUM_VERSION": self.version,
+            "CITUM_INSTALL_DIR": str(install_dir),
+            "FAKE_RELEASE": str(self.release_dir),
+            "CURL_LOG": str(self.curl_log),
+            "PATH": f"{self.bin_dir}:{os.environ['PATH']}",
+        }
+        if components is not None:
+            environment["CITUM_COMPONENTS"] = components
+        result = subprocess.run(
+            ["sh", str(INSTALL_SCRIPT), *args],
+            cwd=REPO_ROOT,
+            env=environment,
+            capture_output=True,
+            text=True,
+        )
+        return result, install_dir
+
+    def test_components_option_installs_all_with_gnu_migrate_fallback(self) -> None:
+        result, install_dir = self._run_installer("--components", "all")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            sorted(path.name for path in install_dir.iterdir()),
+            ["citum", "citum-migrate", "citum-server"],
+        )
+        self.assertIn(self._tarball_name(self.gnu_target), self.curl_log.read_text())
+
+    def test_components_option_overrides_environment_selection(self) -> None:
+        result, install_dir = self._run_installer(
+            "--components=citum-server", components="citum"
+        )
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual([path.name for path in install_dir.iterdir()], ["citum-server"])
+
+    def test_environment_component_selection_remains_supported(self) -> None:
+        result, install_dir = self._run_installer(components="citum,citum-migrate")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            sorted(path.name for path in install_dir.iterdir()),
+            ["citum", "citum-migrate"],
+        )
+
+    def test_malformed_options_fail_without_downloading(self) -> None:
+        for args, message in (
+            (("--components",), "--components requires a value"),
+            (("--unknown",), "unknown option: --unknown"),
+        ):
+            with self.subTest(args=args):
+                result, _ = self._run_installer(*args)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(message, result.stderr)
+                self.assertFalse(self.curl_log.exists())
+
+    def test_help_explains_cli_component_selection_without_downloading(self) -> None:
+        result, _ = self._run_installer("--help")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn("--components <list>", result.stdout)
+        self.assertIn("sh -s -- --components all", result.stdout)
+        self.assertFalse(self.curl_log.exists())
 
 
 if __name__ == "__main__":

@@ -12,11 +12,13 @@ Prebuilt binaries (Linux, macOS arm64, Windows via Git Bash):
 curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | sh
 ```
 
-The installer verifies SHA-256 checksums and installs to `~/.local/bin`. Select components with `CITUM_COMPONENTS` (`citum`, `citum-server`, `citum-migrate`, or `all`):
+The installer verifies SHA-256 checksums and installs to `~/.local/bin`. It installs `citum` by default. Select components (`citum`, `citum-server`, `citum-migrate`, or `all`) without an environment variable:
 
 ```bash
-curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | CITUM_COMPONENTS=all sh
+curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | sh -s -- --components all
 ```
+
+`CITUM_COMPONENTS` remains supported for non-interactive automation; the command-line option takes precedence.
 
 From source: `cargo install citum --locked` (also: `citum-server`, `citum-migrate`).
 
