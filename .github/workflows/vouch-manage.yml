@@ -23,7 +23,7 @@ jobs:
           persist-credentials: false
       - uses: mitchellh/vouch/action/manage-by-issue@baeb3bf7c7e6c12d6e33bab3870b7e936580a934  # main
         with:
-          issue-number: ${{ github.event.issue.number }}
+          issue-id: ${{ github.event.issue.number }}
           comment-id: ${{ github.event.comment.id }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
