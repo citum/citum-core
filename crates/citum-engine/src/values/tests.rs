@@ -89,7 +89,7 @@ fn make_editor_reference(genders: &[ContributorGender]) -> Reference {
         .iter()
         .enumerate()
         .map(|(idx, gender)| ContributorEntry {
-            role: citum_schema::reference::ContributorRole::Editor,
+            roles: citum_schema::reference::ContributorRole::Editor.into(),
             contributor: Contributor::StructuredName(StructuredName {
                 family: format!("Editor{idx}").into(),
                 given: format!("Nombre{idx}").into(),
@@ -117,7 +117,7 @@ fn make_custom_role_reference(
         .iter()
         .enumerate()
         .map(|(idx, gender)| ContributorEntry {
-            role: role.clone(),
+            roles: role.clone().into(),
             contributor: Contributor::StructuredName(StructuredName {
                 family: format!("Persona{idx}").into(),
                 given: format!("Nombre{idx}").into(),
@@ -283,9 +283,10 @@ fn test_contributor_values() {
     let hints = ProcHints::default();
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Author,
+        contributor: ContributorRole::Author.into(),
         form: ContributorForm::Short,
         label: None,
+        merge: None,
         name_order: None,
         name_form: None,
         delimiter: None,
@@ -339,7 +340,7 @@ fn test_family_first_except_last_inverts_all_but_last_name() {
     let hints = ProcHints::default();
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Author,
+        contributor: ContributorRole::Author.into(),
         form: ContributorForm::Long,
         name_order: Some(NameOrder::FamilyFirstExceptLast),
         ..Default::default()
@@ -376,13 +377,14 @@ fn test_spanish_role_label_uses_feminine_form_for_single_editor() {
     let hints = ProcHints::default();
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Editor,
+        contributor: ContributorRole::Editor.into(),
         form: ContributorForm::Long,
         label: Some(RoleLabel {
             term: "editor".to_string(),
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            wrap: None,
             prefix: None,
             suffix: None,
         }),
@@ -418,13 +420,14 @@ fn test_spanish_role_label_uses_plural_feminine_form_for_matching_group() {
     let hints = ProcHints::default();
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Editor,
+        contributor: ContributorRole::Editor.into(),
         form: ContributorForm::Long,
         label: Some(RoleLabel {
             term: "editor".to_string(),
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            wrap: None,
             prefix: None,
             suffix: None,
         }),
@@ -460,13 +463,14 @@ fn test_spanish_role_label_prefers_common_form_for_mixed_group() {
     let hints = ProcHints::default();
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Editor,
+        contributor: ContributorRole::Editor.into(),
         form: ContributorForm::Long,
         label: Some(RoleLabel {
             term: "editor".to_string(),
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            wrap: None,
             prefix: None,
             suffix: None,
         }),
@@ -516,13 +520,14 @@ roles:
     let hints = ProcHints::default();
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Editor,
+        contributor: ContributorRole::Editor.into(),
         form: ContributorForm::Long,
         label: Some(RoleLabel {
             term: "editor".to_string(),
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            wrap: None,
             prefix: None,
             suffix: None,
         }),
@@ -557,13 +562,14 @@ fn test_french_role_label_uses_feminine_form_for_single_contributor() {
     let hints = ProcHints::default();
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Editor,
+        contributor: ContributorRole::Editor.into(),
         form: ContributorForm::Long,
         label: Some(RoleLabel {
             term: "editor".to_string(),
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            wrap: None,
             prefix: None,
             suffix: None,
         }),
@@ -598,13 +604,14 @@ fn test_arabic_role_label_uses_feminine_form_for_single_contributor() {
     let hints = ProcHints::default();
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Editor,
+        contributor: ContributorRole::Editor.into(),
         form: ContributorForm::Long,
         label: Some(RoleLabel {
             term: "editor".to_string(),
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            wrap: None,
             prefix: None,
             suffix: None,
         }),
@@ -640,13 +647,14 @@ fn test_french_role_label_falls_back_to_masculine_plural_for_mixed_group() {
     let hints = ProcHints::default();
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Editor,
+        contributor: ContributorRole::Editor.into(),
         form: ContributorForm::Long,
         label: Some(RoleLabel {
             term: "editor".to_string(),
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            wrap: None,
             prefix: None,
             suffix: None,
         }),
@@ -682,13 +690,14 @@ fn test_arabic_role_label_falls_back_to_verbal_noun_for_mixed_group() {
     let hints = ProcHints::default();
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Editor,
+        contributor: ContributorRole::Editor.into(),
         form: ContributorForm::Long,
         label: Some(RoleLabel {
             term: "editor".to_string(),
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            wrap: None,
             prefix: None,
             suffix: None,
         }),
@@ -722,7 +731,7 @@ fn test_arabic_role_label_falls_back_to_roles_common_when_gender_missing() {
 
     // Reference with no gender info
     let contributors = vec![ContributorEntry {
-        role: citum_schema::reference::ContributorRole::Editor,
+        roles: citum_schema::reference::ContributorRole::Editor.into(),
         contributor: Contributor::StructuredName(StructuredName {
             family: "Editor".into(),
             given: "Name".into(),
@@ -743,13 +752,14 @@ fn test_arabic_role_label_falls_back_to_roles_common_when_gender_missing() {
     let hints = ProcHints::default();
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Editor,
+        contributor: ContributorRole::Editor.into(),
         form: ContributorForm::Long,
         label: Some(RoleLabel {
             term: "editor".to_string(),
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            wrap: None,
             prefix: None,
             suffix: None,
         }),
@@ -788,13 +798,14 @@ fn test_collection_editor_role_label_derives_gender_from_reference_data() {
     let hints = ProcHints::default();
 
     let component = TemplateContributor {
-        contributor: ContributorRole::CollectionEditor,
+        contributor: ContributorRole::CollectionEditor.into(),
         form: ContributorForm::Long,
         label: Some(RoleLabel {
             term: "collection-editor".to_string(),
             form: RoleLabelForm::Long,
             placement: LabelPlacement::Suffix,
             text_case: None,
+            wrap: None,
             prefix: None,
             suffix: None,
         }),
@@ -984,7 +995,7 @@ fn test_message_component_renders_grouped_container_argument() {
             MessageArgSource::Group(TemplateGroup {
                 group: vec![
                     TemplateComponent::Contributor(TemplateContributor {
-                        contributor: ContributorRole::Editor,
+                        contributor: ContributorRole::Editor.into(),
                         form: ContributorForm::Long,
                         name_order: Some(NameOrder::FamilyFirst),
                         ..Default::default()
@@ -1243,7 +1254,7 @@ fn test_message_component_renders_embedded_container_author_group() {
             MessageArgSource::Group(TemplateGroup {
                 group: vec![
                     TemplateComponent::Contributor(TemplateContributor {
-                        contributor: ContributorRole::ContainerAuthor,
+                        contributor: ContributorRole::ContainerAuthor.into(),
                         form: ContributorForm::Long,
                         name_order: Some(NameOrder::GivenFirst),
                         ..Default::default()
@@ -1319,7 +1330,7 @@ fn test_message_component_renders_legacy_container_author_group() {
             MessageArgSource::Group(TemplateGroup {
                 group: vec![
                     TemplateComponent::Contributor(TemplateContributor {
-                        contributor: ContributorRole::ContainerAuthor,
+                        contributor: ContributorRole::ContainerAuthor.into(),
                         form: ContributorForm::Long,
                         name_order: Some(NameOrder::GivenFirst),
                         ..Default::default()
@@ -1431,9 +1442,10 @@ fn test_et_al() {
     });
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Author,
+        contributor: ContributorRole::Author.into(),
         form: ContributorForm::Short,
         label: None,
+        merge: None,
         name_order: None,
         name_form: None,
         delimiter: None,
@@ -1491,9 +1503,10 @@ fn test_et_al_delimiter_never() {
     });
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Author,
+        contributor: ContributorRole::Author.into(),
         form: ContributorForm::Short,
         label: None,
+        merge: None,
         name_order: None,
         name_form: None,
         delimiter: None,
@@ -1551,7 +1564,7 @@ fn test_role_substitute_uses_custom_fallback_roles_without_silent_drop() {
     let hints = ProcHints::default();
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Editor,
+        contributor: ContributorRole::Editor.into(),
         form: ContributorForm::Long,
         ..Default::default()
     };
@@ -1601,9 +1614,10 @@ fn test_et_al_delimiter_always() {
     });
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Author,
+        contributor: ContributorRole::Author.into(),
         form: ContributorForm::Short,
         label: None,
+        merge: None,
         name_order: None,
         name_form: None,
         delimiter: None,
@@ -1956,7 +1970,7 @@ fn test_et_al_use_last() {
     });
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Author,
+        contributor: ContributorRole::Author.into(),
         form: ContributorForm::Short,
         links: None,
         ..Default::default()
@@ -2011,7 +2025,7 @@ fn test_et_al_use_last_overlap() {
     });
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Author,
+        contributor: ContributorRole::Author.into(),
         form: ContributorForm::Short,
         links: None,
         ..Default::default()
@@ -2073,7 +2087,7 @@ fn test_et_al_use_last_multiple_first_names_delimiter() {
     });
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Author,
+        contributor: ContributorRole::Author.into(),
         form: ContributorForm::Short,
         links: None,
         ..Default::default()
@@ -2131,7 +2145,7 @@ fn test_et_al_uses_configured_delimiter() {
     });
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Author,
+        contributor: ContributorRole::Author.into(),
         form: ContributorForm::Short,
         links: None,
         ..Default::default()
@@ -3121,7 +3135,7 @@ fn test_role_label_preset_applies_to_translator_component() {
         abbreviation_map: None,
     };
     let component = TemplateContributor {
-        contributor: ContributorRole::Translator,
+        contributor: ContributorRole::Translator.into(),
         form: ContributorForm::Long,
         links: None,
         ..Default::default()
@@ -3172,7 +3186,7 @@ fn test_translator_substitute_uses_locale_aware_role_label() {
         abbreviation_map: None,
     };
     let component = TemplateContributor {
-        contributor: ContributorRole::Author,
+        contributor: ContributorRole::Author.into(),
         form: ContributorForm::Long,
         links: None,
         ..Default::default()
@@ -3228,7 +3242,7 @@ fn test_editor_substitute_suppresses_verb_prefix_role_label() {
         abbreviation_map: None,
     };
     let component = TemplateContributor {
-        contributor: ContributorRole::Author,
+        contributor: ContributorRole::Author.into(),
         form: ContributorForm::Long,
         links: None,
         ..Default::default()
@@ -3281,7 +3295,7 @@ fn test_editor_component_keeps_verb_prefix_role_label() {
         abbreviation_map: None,
     };
     let component = TemplateContributor {
-        contributor: ContributorRole::Editor,
+        contributor: ContributorRole::Editor.into(),
         form: ContributorForm::Long,
         links: None,
         ..Default::default()
@@ -3331,7 +3345,7 @@ fn test_role_substitute_normalizes_primary_role_lookup_keys() {
     let hints = ProcHints::default();
 
     let component = TemplateContributor {
-        contributor: ContributorRole::ContainerAuthor,
+        contributor: ContributorRole::ContainerAuthor.into(),
         form: ContributorForm::Long,
         ..Default::default()
     };
@@ -3398,7 +3412,7 @@ fn test_role_specific_name_order_applies_in_substitute_path() {
         abbreviation_map: None,
     };
     let component = TemplateContributor {
-        contributor: ContributorRole::Author,
+        contributor: ContributorRole::Author.into(),
         form: ContributorForm::Long,
         links: None,
         ..Default::default()
@@ -3481,7 +3495,7 @@ fn test_template_list_term_suppression() {
                 ..Default::default()
             }),
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Editor,
+                contributor: ContributorRole::Editor.into(),
                 ..Default::default()
             }),
         ],
@@ -3571,7 +3585,7 @@ fn test_strip_periods_global_config() {
     };
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Editor,
+        contributor: ContributorRole::Editor.into(),
         form: ContributorForm::Long,
         ..Default::default()
     };
@@ -3617,7 +3631,7 @@ fn test_strip_periods_component_override() {
 
     // Component overrides global setting
     let component = TemplateContributor {
-        contributor: ContributorRole::Editor,
+        contributor: ContributorRole::Editor.into(),
         form: ContributorForm::Long,
         rendering: Rendering {
             strip_periods: Some(true),
@@ -3665,7 +3679,7 @@ fn test_strip_periods_no_strip_by_default() {
     };
 
     let component = TemplateContributor {
-        contributor: ContributorRole::Editor,
+        contributor: ContributorRole::Editor.into(),
         form: ContributorForm::Long,
         ..Default::default()
     };

@@ -56,16 +56,31 @@ pub struct NamesOverrides<'a> {
     pub name_form: Option<NameForm>,
 }
 
-/// Partition names into (`first_names`, `use_et_al`, `last_names`) based on et-al options.
-fn partition_et_al<'a>(
-    names: &'a [crate::reference::FlatName],
-    shorten: Option<&'a ShortenListOptions>,
-    hints: &'a ProcHints,
-) -> (
-    Vec<&'a crate::reference::FlatName>,
-    bool,
-    Vec<&'a crate::reference::FlatName>,
-) {
+/// Prefix and suffix attached to a selected name before list joining.
+#[derive(Debug, Clone, Default, PartialEq, Eq)]
+pub(super) struct NameDecoration {
+    /// Text emitted immediately before the formatted name.
+    pub(super) prefix: String,
+    /// Text emitted immediately after the formatted name.
+    pub(super) suffix: String,
+}
+
+/// Return the original indexes retained by et-al selection.
+pub(super) fn selected_name_indices(
+    name_count: usize,
+    shorten: Option<&ShortenListOptions>,
+    hints: &ProcHints,
+) -> Vec<usize> {
+    let (first, _, last) = partition_et_al_indices(name_count, shorten, hints);
+    first.into_iter().chain(last).collect()
+}
+
+/// Partition name indexes into (`first`, `use_et_al`, `last`) based on et-al options.
+fn partition_et_al_indices(
+    name_count: usize,
+    shorten: Option<&ShortenListOptions>,
+    hints: &ProcHints,
+) -> (Vec<usize>, bool, Vec<usize>) {
     if let Some(opts) = shorten {
         // Determine effective min/use_first based on citation position.
         let is_subsequent = matches!(
@@ -96,27 +111,49 @@ fn partition_et_al<'a>(
         };
 
         // Apply et-al only if the list exceeds the minimum threshold
-        if names.len() >= effective_min_threshold {
-            if effective_min >= names.len() {
-                (names.iter().collect::<Vec<_>>(), false, Vec::new())
+        if name_count >= effective_min_threshold {
+            if effective_min >= name_count {
+                ((0..name_count).collect(), false, Vec::new())
             } else {
-                let first: Vec<&crate::reference::FlatName> =
-                    names.iter().take(effective_min).collect();
-                let last: Vec<&crate::reference::FlatName> = if let Some(ul) = opts.use_last {
+                let first = (0..effective_min).collect();
+                let last = if let Some(ul) = opts.use_last {
                     let take_last = ul as usize;
-                    let skip = std::cmp::max(effective_min, names.len().saturating_sub(take_last));
-                    names.iter().skip(skip).collect()
+                    let skip = std::cmp::max(effective_min, name_count.saturating_sub(take_last));
+                    (skip..name_count).collect()
                 } else {
                     Vec::new()
                 };
                 (first, true, last)
             }
         } else {
-            (names.iter().collect::<Vec<_>>(), false, Vec::new())
+            ((0..name_count).collect(), false, Vec::new())
         }
     } else {
-        (names.iter().collect::<Vec<_>>(), false, Vec::new())
+        ((0..name_count).collect(), false, Vec::new())
     }
+}
+
+/// Partition names into (`first_names`, `use_et_al`, `last_names`) based on et-al options.
+fn partition_et_al<'a>(
+    names: &'a [crate::reference::FlatName],
+    shorten: Option<&ShortenListOptions>,
+    hints: &ProcHints,
+) -> (
+    Vec<&'a crate::reference::FlatName>,
+    bool,
+    Vec<&'a crate::reference::FlatName>,
+) {
+    let (first, use_et_al, last) = partition_et_al_indices(names.len(), shorten, hints);
+    (
+        first
+            .into_iter()
+            .filter_map(|index| names.get(index))
+            .collect(),
+        use_et_al,
+        last.into_iter()
+            .filter_map(|index| names.get(index))
+            .collect(),
+    )
 }
 
 /// Join a list of formatted names with a conjunction and Oxford-comma rules.
@@ -293,6 +330,19 @@ pub fn format_names(
     overrides: &NamesOverrides<'_>,
     hints: &ProcHints,
 ) -> String {
+    format_names_decorated(names, form, options, overrides, hints, &[])
+}
+
+/// Format names with per-entry decorations applied before list joining.
+#[must_use]
+pub(super) fn format_names_decorated(
+    names: &[crate::reference::FlatName],
+    form: &ContributorForm,
+    options: &RenderOptions<'_>,
+    overrides: &NamesOverrides<'_>,
+    hints: &ProcHints,
+    decorations: &[NameDecoration],
+) -> String {
     if names.is_empty() {
         return String::new();
     }
@@ -353,48 +403,23 @@ pub fn format_names(
 
     let delimiter = config.and_then(|c| c.delimiter.as_deref()).unwrap_or(", ");
 
-    let formatted_first: Vec<String> = first_names
-        .iter()
-        .enumerate()
-        .map(|(i, name)| {
-            let expand =
-                hints.expand_given_names && !(hints.expand_given_names_primary_only && i > 0);
-            format_single_name(name, form, i, &ctx, expand)
-        })
-        .collect();
-
-    let formatted_last: Vec<String> = last_names
-        .iter()
-        .enumerate()
-        .map(|(i, name)| {
-            let original_idx = names.len() - last_names.len() + i;
-            let expand = hints.expand_given_names
-                && !(hints.expand_given_names_primary_only && original_idx > 0);
-            format_single_name(name, form, original_idx, &ctx, expand)
-        })
-        .collect();
+    let (formatted_first, formatted_last) = format_selected_names(
+        names,
+        &first_names,
+        &last_names,
+        form,
+        &ctx,
+        hints,
+        decorations,
+    );
 
     // Determine "and" setting: use override if provided, else global config
     let and_option = overrides
         .and
         .or_else(|| config.and_then(|c| c.and.as_ref()));
 
-    // Determine conjunction between last two names
-    // Default (None or no config) means no conjunction, matching CSL behavior
-    let and_str = match and_option {
-        Some(AndOptions::Text) => Some(locale.and_term(false)),
-        Some(AndOptions::Symbol) => Some(locale.and_term(true)),
-        Some(AndOptions::None) | None => None, // No conjunction
-        _ => None,                             // Catch-all for future non_exhaustive variants
-    };
-    // When "et al." is applied, most styles expect comma-separated shown names
-    // before the abbreviation (e.g., "Smith, Jones, et al."), not a final
-    // conjunction ("Smith, Jones, and Brown, et al.").
-    let and_str = if use_et_al && formatted_last.is_empty() {
-        None
-    } else {
-        and_str
-    };
+    let and_str =
+        resolve_name_conjunction(and_option, locale, use_et_al, !formatted_last.is_empty());
 
     // Check if delimiter should precede last name (Oxford comma)
     let delimiter_precedes_last = config.and_then(|c| c.delimiter_precedes_last.as_ref());
@@ -430,6 +455,71 @@ pub fn format_names(
         &ctx,
         locale,
     )
+}
+
+fn resolve_name_conjunction<'a>(
+    and_option: Option<&AndOptions>,
+    locale: &'a citum_schema::locale::Locale,
+    use_et_al: bool,
+    has_retained_last_names: bool,
+) -> Option<&'a str> {
+    if use_et_al && !has_retained_last_names {
+        return None;
+    }
+    match and_option {
+        Some(AndOptions::Text) => Some(locale.and_term(false)),
+        Some(AndOptions::Symbol) => Some(locale.and_term(true)),
+        Some(AndOptions::None) | None => None,
+        _ => None,
+    }
+}
+
+fn format_selected_names(
+    names: &[crate::reference::FlatName],
+    first_names: &[&crate::reference::FlatName],
+    last_names: &[&crate::reference::FlatName],
+    form: &ContributorForm,
+    context: &NameFormatContext<'_>,
+    hints: &ProcHints,
+    decorations: &[NameDecoration],
+) -> (Vec<String>, Vec<String>) {
+    let formatted_first = first_names
+        .iter()
+        .enumerate()
+        .map(|(index, name)| {
+            let expand =
+                hints.expand_given_names && !(hints.expand_given_names_primary_only && index > 0);
+            decorate_name(
+                format_single_name(name, form, index, context, expand),
+                index,
+                decorations,
+            )
+        })
+        .collect();
+    let formatted_last = last_names
+        .iter()
+        .enumerate()
+        .map(|(index, name)| {
+            let original_index = names.len() - last_names.len() + index;
+            let expand = hints.expand_given_names
+                && !(hints.expand_given_names_primary_only && original_index > 0);
+            decorate_name(
+                format_single_name(name, form, original_index, context, expand),
+                original_index,
+                decorations,
+            )
+        })
+        .collect();
+    (formatted_first, formatted_last)
+}
+
+fn decorate_name(value: String, index: usize, decorations: &[NameDecoration]) -> String {
+    match decorations.get(index) {
+        Some(decoration) if !decoration.prefix.is_empty() || !decoration.suffix.is_empty() => {
+            format!("{}{value}{}", decoration.prefix, decoration.suffix)
+        }
+        _ => value,
+    }
 }
 
 /// Initialize a given name by extracting initials.

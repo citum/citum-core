@@ -23,38 +23,7 @@ impl TemplateCompiler {
 
     /// Compile a Names block into a Contributor component.
     pub(super) fn compile_names(&self, names: &crate::ir::NamesBlock) -> Option<TemplateComponent> {
-        // Try to map the primary variable to a role
-        let primary_role = self.map_variable_to_role(&names.variable);
-
-        // Check if we should use a substitute instead of the primary
-        // Rare contributor roles (composer, illustrator) often have author as first substitute
-        let role = {
-            let role = primary_role?;
-            // If primary is a rare role and we have substitutes, prefer the first common one
-            let rare_roles = [
-                ContributorRole::Composer,
-                ContributorRole::Illustrator,
-                ContributorRole::Interviewer,
-                ContributorRole::Inventor,
-                ContributorRole::Counsel,
-                ContributorRole::CollectionEditor,
-                ContributorRole::EditorialDirector,
-                ContributorRole::OriginalAuthor,
-                ContributorRole::ReviewedAuthor,
-            ];
-
-            if rare_roles.contains(&role) && !names.options.substitute.is_empty() {
-                // Try to find a common role in the substitute list
-                names
-                    .options
-                    .substitute
-                    .iter()
-                    .find_map(|var| self.map_variable_to_role(var))
-                    .unwrap_or(role) // Fallback to primary if no valid substitute
-            } else {
-                role
-            }
-        };
+        let mut roles = self.resolve_names_roles(names)?;
 
         let form = match names.options.mode {
             Some(crate::ir::NameMode::Short) => ContributorForm::Short,
@@ -105,9 +74,17 @@ impl TemplateCompiler {
             None => None,
         };
 
+        let merge = Self::compile_names_merge(names, &roles);
+        let contributor = if roles.len() == 1 {
+            roles.remove(0).into()
+        } else {
+            roles.into()
+        };
+
         Some(TemplateComponent::Contributor(TemplateContributor {
-            contributor: role,
+            contributor,
             form,
+            merge,
             name_order,
             delimiter: names.options.delimiter.clone(),
             sort_separator: names.options.sort_separator.clone(),
@@ -118,6 +95,96 @@ impl TemplateCompiler {
         }))
     }
 
+    fn resolve_names_roles(&self, names: &crate::ir::NamesBlock) -> Option<Vec<ContributorRole>> {
+        let mut roles = names
+            .variables
+            .iter()
+            .filter_map(|variable| self.map_variable_to_role(variable))
+            .collect::<Vec<_>>();
+        let primary_role = roles.first()?.clone();
+        let rare_roles = [
+            ContributorRole::Composer,
+            ContributorRole::Illustrator,
+            ContributorRole::Interviewer,
+            ContributorRole::Inventor,
+            ContributorRole::Counsel,
+            ContributorRole::CollectionEditor,
+            ContributorRole::EditorialDirector,
+            ContributorRole::OriginalAuthor,
+            ContributorRole::ReviewedAuthor,
+        ];
+        if roles.len() == 1
+            && rare_roles.contains(&primary_role)
+            && let Some(replacement) = names
+                .options
+                .substitute
+                .iter()
+                .find_map(|variable| self.map_variable_to_role(variable))
+            && let Some(role) = roles.first_mut()
+        {
+            *role = replacement;
+        }
+        Some(roles)
+    }
+
+    fn compile_names_merge(
+        names: &crate::ir::NamesBlock,
+        roles: &[ContributorRole],
+    ) -> Option<citum_schema::template::ContributorMerge> {
+        if roles.len() < 2 {
+            return None;
+        }
+        let mut role_overrides = std::collections::HashMap::new();
+        if let Some(label) = &names.options.label {
+            let (form, placement) = match label.form {
+                crate::ir::LabelForm::Short | crate::ir::LabelForm::Symbol => (
+                    citum_schema::template::RoleLabelForm::Short,
+                    citum_schema::template::LabelPlacement::Suffix,
+                ),
+                crate::ir::LabelForm::Verb | crate::ir::LabelForm::VerbShort => (
+                    citum_schema::template::RoleLabelForm::Long,
+                    citum_schema::template::LabelPlacement::Prefix,
+                ),
+                crate::ir::LabelForm::Long => (
+                    citum_schema::template::RoleLabelForm::Long,
+                    citum_schema::template::LabelPlacement::Suffix,
+                ),
+            };
+            // Label every declared role individually: the engine resolves
+            // authored combined terms (e.g. `editor-translator`) from the
+            // locale automatically for combined entries, and resolves
+            // single-role labels by the entry's actual role.
+            for role in roles {
+                role_overrides.insert(
+                    role.clone(),
+                    citum_schema::template::ContributorMergeRole {
+                        labels: Some(citum_schema::template::ContributorLabelMode::Collective),
+                        label: Some(citum_schema::template::RoleLabel {
+                            term: role.as_str().to_string(),
+                            form: form.clone(),
+                            placement: placement.clone(),
+                            text_case: None,
+                            wrap: None,
+                            prefix: label.formatting.prefix.clone(),
+                            suffix: label.formatting.suffix.clone(),
+                        }),
+                    },
+                );
+            }
+        }
+        Some(citum_schema::template::ContributorMerge {
+            order: citum_schema::template::ContributorMergeOrder::Role,
+            labels: if names.options.label.is_some() {
+                citum_schema::template::ContributorLabelMode::Collective
+            } else {
+                citum_schema::template::ContributorLabelMode::None
+            },
+            roles: role_overrides,
+            combine_same_person: true,
+            role_conjunction: None,
+        })
+    }
+
     /// Map a Variable to `ContributorRole`.
     pub(super) fn map_variable_to_role(&self, var: &Variable) -> Option<ContributorRole> {
         match var {
@@ -125,6 +192,12 @@ impl TemplateCompiler {
             Variable::Editor => Some(ContributorRole::Editor),
             Variable::Translator => Some(ContributorRole::Translator),
             Variable::Director => Some(ContributorRole::Director),
+            Variable::Writer => Some(ContributorRole::Writer),
+            Variable::Producer => Some(ContributorRole::Producer),
+            Variable::Performer => Some(ContributorRole::Performer),
+            Variable::Guest => Some(ContributorRole::Guest),
+            Variable::Host => Some(ContributorRole::Unknown("host".to_string())),
+            Variable::Narrator => Some(ContributorRole::Unknown("narrator".to_string())),
             Variable::Composer => Some(ContributorRole::Composer),
             Variable::Illustrator => Some(ContributorRole::Illustrator),
             Variable::Interviewer => Some(ContributorRole::Interviewer),
@@ -192,7 +265,7 @@ impl TemplateCompiler {
         // First, check if it's a contributor role
         if let Some(role) = self.map_variable_to_role(&var.variable) {
             return Some(TemplateComponent::Contributor(TemplateContributor {
-                contributor: role,
+                contributor: role.into(),
                 form: ContributorForm::Long,
                 name_order: None, // Use global setting by default
                 delimiter: None,

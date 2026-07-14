@@ -105,7 +105,13 @@ pub fn to_semantic_items(component: &TemplateComponent, items: &mut Vec<Semantic
         TemplateComponent::Number(n) => items.push(SemanticItem::Number(n.number.clone())),
         TemplateComponent::Date(d) => items.push(SemanticItem::Date(d.date.clone())),
         TemplateComponent::Contributor(c) => {
-            items.push(SemanticItem::Contributor(c.contributor.clone()));
+            items.extend(
+                c.contributor
+                    .as_slice()
+                    .iter()
+                    .cloned()
+                    .map(SemanticItem::Contributor),
+            );
         }
         TemplateComponent::Title(t) => items.push(SemanticItem::Title(t.title.clone())),
         TemplateComponent::Term(t) => items.push(SemanticItem::Term(t.term.clone())),

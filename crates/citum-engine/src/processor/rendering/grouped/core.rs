@@ -1378,13 +1378,61 @@ fn author_group_delimiter_affix(component: &TemplateComponent) -> Option<String>
 
 fn component_starts_with_author(component: &TemplateComponent) -> bool {
     match component {
-        TemplateComponent::Contributor(contributor) => {
-            contributor.contributor == citum_schema::template::ContributorRole::Author
-        }
+        TemplateComponent::Contributor(contributor) => contributor
+            .contributor
+            .contains(&citum_schema::template::ContributorRole::Author),
         TemplateComponent::Group(group) => group
             .group
             .first()
             .is_some_and(component_starts_with_author),
         _ => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use citum_schema::template::{
+        ContributorRole, DelimiterPunctuation, TemplateContributor, TemplateGroup,
+    };
+
+    #[test]
+    fn author_group_delimiter_affix_recognizes_merged_leading_author_component() {
+        // given a group whose leading component is a merged [author, editor]
+        // contributor list rather than a scalar author component
+        let group = TemplateComponent::Group(TemplateGroup {
+            group: vec![TemplateComponent::Contributor(TemplateContributor {
+                contributor: vec![ContributorRole::Author, ContributorRole::Editor].into(),
+                ..Default::default()
+            })],
+            delimiter: Some(DelimiterPunctuation::Comma),
+            ..Default::default()
+        });
+
+        // when resolving the leading author-group delimiter affix
+        let affix = author_group_delimiter_affix(&group);
+
+        // then the merged component is recognized as starting with author
+        assert_eq!(affix, Some(", ".to_string()));
+    }
+
+    #[test]
+    fn author_group_delimiter_affix_ignores_merged_component_without_author() {
+        // given a group whose leading component is a merged [editor,
+        // translator] contributor list that never declares author
+        let group = TemplateComponent::Group(TemplateGroup {
+            group: vec![TemplateComponent::Contributor(TemplateContributor {
+                contributor: vec![ContributorRole::Editor, ContributorRole::Translator].into(),
+                ..Default::default()
+            })],
+            delimiter: Some(DelimiterPunctuation::Comma),
+            ..Default::default()
+        });
+
+        // when resolving the leading author-group delimiter affix
+        let affix = author_group_delimiter_affix(&group);
+
+        // then no affix is produced since the group does not start with author
+        assert_eq!(affix, None);
     }
 }

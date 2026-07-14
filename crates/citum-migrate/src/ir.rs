@@ -73,9 +73,15 @@ pub enum Variable {
     EditorialDirector,
     Illustrator,
     Interviewer,
+    Guest,
+    Host,
+    Narrator,
     OriginalAuthor,
+    Performer,
+    Producer,
     Recipient,
     ReviewedAuthor,
+    Writer,
     Translator,
     Accessed,
     AvailableDate,
@@ -256,7 +262,8 @@ pub struct DateBlock {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NamesBlock {
-    pub variable: Variable,
+    /// Ordered CSL name variables rendered by this names node.
+    pub variables: Vec<Variable>,
     #[serde(flatten)]
     pub options: NamesOptions,
     #[serde(flatten)]

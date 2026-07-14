@@ -55,7 +55,7 @@ fn build_name_style(form: ContributorForm, shorten: Option<ShortenListOptions>) 
         }),
         citation: Some(CitationSpec {
             template: Some(vec![TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 form,
                 ..Default::default()
             })]),

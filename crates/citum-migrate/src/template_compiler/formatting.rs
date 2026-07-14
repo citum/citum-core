@@ -233,7 +233,7 @@ pub(super) fn extract_source_order(node: &Node) -> Option<usize> {
             match node {
                 Node::Variable(v) => format!("Variable({:?})", v.variable),
                 Node::Date(d) => format!("Date({:?})", d.variable),
-                Node::Names(n) => format!("Names({:?})", n.variable),
+                Node::Names(n) => format!("Names({:?})", n.variables),
                 Node::Group(_) => "Group".to_string(),
                 Node::Text { value } => format!("Text({value})"),
                 Node::Condition(_) => "Condition".to_string(),

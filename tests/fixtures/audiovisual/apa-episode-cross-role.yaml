@@ -1,0 +1,9 @@
+- id: lemons
+  class: audio-visual
+  type: episode
+  title: Lemons
+  issued: "2017-01-11"
+  medium: TV series episode
+  contributors:
+    - roles: [writer, director]
+      contributor: {family: Barris, given: Kenya}

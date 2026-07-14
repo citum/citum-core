@@ -180,14 +180,18 @@ fn is_accessed_term(component: &TemplateComponent) -> bool {
 /// Whether `component` carries container/host data introduced by an `in` term.
 fn is_container_component(component: &TemplateComponent) -> bool {
     match component {
-        TemplateComponent::Contributor(contributor) => matches!(
-            contributor.contributor,
-            ContributorRole::Editor
-                | ContributorRole::Translator
-                | ContributorRole::ContainerAuthor
-                | ContributorRole::CollectionEditor
-                | ContributorRole::EditorialDirector
-        ),
+        TemplateComponent::Contributor(contributor) => {
+            contributor.contributor.as_slice().iter().any(|role| {
+                matches!(
+                    role,
+                    ContributorRole::Editor
+                        | ContributorRole::Translator
+                        | ContributorRole::ContainerAuthor
+                        | ContributorRole::CollectionEditor
+                        | ContributorRole::EditorialDirector
+                )
+            })
+        }
         TemplateComponent::Title(title) => matches!(
             title.title,
             TitleType::ContainerTitle | TitleType::ParentSerial | TitleType::ParentMonograph
@@ -219,7 +223,14 @@ mod tests {
 
     fn editor() -> TemplateComponent {
         TemplateComponent::Contributor(TemplateContributor {
-            contributor: ContributorRole::Editor,
+            contributor: ContributorRole::Editor.into(),
+            ..Default::default()
+        })
+    }
+
+    fn merged_editor_translator() -> TemplateComponent {
+        TemplateComponent::Contributor(TemplateContributor {
+            contributor: vec![ContributorRole::Editor, ContributorRole::Translator].into(),
             ..Default::default()
         })
     }
@@ -254,6 +265,30 @@ mod tests {
     #[test]
     fn given_root_in_term_before_container_when_gated_then_wrapped_in_group() {
         let mut template = vec![in_term(), editor(), parent_serial(), issued_date()];
+        gate_leaked_in_term(&mut template);
+        assert_eq!(template.len(), 2);
+        let TemplateComponent::Group(group) = &template[0] else {
+            panic!("expected leading in-term group");
+        };
+        assert_eq!(group.group.len(), 3);
+        assert!(matches!(
+            &group.group[0],
+            TemplateComponent::Term(term) if term.term == GeneralTerm::In
+        ));
+        assert!(matches!(&template[1], TemplateComponent::Date(_)));
+    }
+
+    #[test]
+    fn given_root_in_term_before_merged_container_role_when_gated_then_wrapped_in_group() {
+        // A list-form [editor, translator] component is still a container
+        // companion: the `in` term must be grouped with it rather than
+        // dropped, mirroring the scalar-editor case above.
+        let mut template = vec![
+            in_term(),
+            merged_editor_translator(),
+            parent_serial(),
+            issued_date(),
+        ];
         gate_leaked_in_term(&mut template);
         assert_eq!(template.len(), 2);
         let TemplateComponent::Group(group) = &template[0] else {

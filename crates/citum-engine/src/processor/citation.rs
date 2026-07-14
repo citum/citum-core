@@ -317,13 +317,16 @@ impl Processor {
         }
 
         let bibliography_config = self.get_bibliography_config();
-        let local_hints = Disambiguator::new(
+        let mut disambiguator = Disambiguator::new(
             &scoped_bibliography,
             config,
             &bibliography_config,
             &self.locale,
-        )
-        .calculate_hints();
+        );
+        if let Some(spec) = self.style.citation.as_ref() {
+            disambiguator = disambiguator.with_citation_spec(spec);
+        }
+        let local_hints = disambiguator.calculate_hints();
 
         for item in items {
             let Some(local) = local_hints.get(&item.id) else {

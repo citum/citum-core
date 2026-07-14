@@ -969,7 +969,7 @@ mod tests {
             citation: Some(citum_schema::CitationSpec {
                 template: Some(vec![
                     TemplateComponent::Contributor(TemplateContributor {
-                        contributor: ContributorRole::Author,
+                        contributor: ContributorRole::Author.into(),
                         form: ContributorForm::Short,
                         ..Default::default()
                     }),
@@ -984,7 +984,7 @@ mod tests {
             bibliography: Some(citum_schema::BibliographySpec {
                 template: Some(vec![
                     TemplateComponent::Contributor(TemplateContributor {
-                        contributor: ContributorRole::Author,
+                        contributor: ContributorRole::Author.into(),
                         form: ContributorForm::Long,
                         ..Default::default()
                     }),

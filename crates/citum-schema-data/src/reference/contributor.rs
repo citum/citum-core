@@ -213,14 +213,96 @@ crate::tolerant_enum! {
     }
 }
 
+/// One or more distinct roles explicitly assigned to a contributor entry.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[cfg_attr(feature = "bindings", derive(Type))]
+#[serde(transparent)]
+pub struct ContributorRoles(
+    #[cfg_attr(feature = "schema", schemars(length(min = 1)))] Vec<ContributorRole>,
+);
+
+impl ContributorRoles {
+    /// Return the roles in their authored order.
+    #[must_use]
+    pub fn as_slice(&self) -> &[ContributorRole] {
+        &self.0
+    }
+
+    /// Return whether this entry carries `role`.
+    #[must_use]
+    pub fn contains(&self, role: &ContributorRole) -> bool {
+        self.0.contains(role)
+    }
+
+    /// Add a role when it is not already present.
+    #[cfg(feature = "legacy-convert")]
+    pub(crate) fn insert(&mut self, role: ContributorRole) {
+        if !self.contains(&role) {
+            self.0.push(role);
+        }
+    }
+}
+
+impl From<ContributorRole> for ContributorRoles {
+    fn from(role: ContributorRole) -> Self {
+        Self(vec![role])
+    }
+}
+
+impl PartialEq<ContributorRole> for ContributorRoles {
+    fn eq(&self, other: &ContributorRole) -> bool {
+        self.as_slice() == std::slice::from_ref(other)
+    }
+}
+
+impl TryFrom<Vec<ContributorRole>> for ContributorRoles {
+    type Error = &'static str;
+
+    fn try_from(roles: Vec<ContributorRole>) -> Result<Self, Self::Error> {
+        if roles.is_empty() {
+            return Err("contributor roles must not be empty");
+        }
+        let mut distinct = Vec::with_capacity(roles.len());
+        for role in &roles {
+            if distinct.contains(role) {
+                return Err("contributor roles must be distinct");
+            }
+            distinct.push(role.clone());
+        }
+        Ok(Self(roles))
+    }
+}
+
+impl<'de> Deserialize<'de> for ContributorRoles {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum AuthoredRoles {
+            Single(ContributorRole),
+            Multiple(Vec<ContributorRole>),
+        }
+
+        let roles = match AuthoredRoles::deserialize(deserializer)? {
+            AuthoredRoles::Single(role) => vec![role],
+            AuthoredRoles::Multiple(roles) => roles,
+        };
+        Self::try_from(roles).map_err(serde::de::Error::custom)
+    }
+}
+
 /// A single entry in a reference's contributors list.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[cfg_attr(feature = "bindings", derive(Type))]
 #[serde(rename_all = "kebab-case")]
 pub struct ContributorEntry {
-    /// The role this contributor plays in relation to the work.
-    pub role: ContributorRole,
+    /// The explicit roles this contributor plays in relation to the work.
+    #[serde(rename = "roles", alias = "role")]
+    pub roles: ContributorRoles,
     /// The contributor (name, organization, or list).
     pub contributor: Contributor,
     /// The grammatical gender used for role-label agreement.

@@ -72,7 +72,15 @@ fn resolve_semantic_class(component: &ProcTemplateComponent) -> Option<String> {
             | TitleType::CollectionTitle => Some("citum-container-title".to_string()),
             _ => Some("citum-title".to_string()),
         },
-        TemplateComponent::Contributor(c) => Some(format!("citum-{}", c.contributor.as_str())),
+        TemplateComponent::Contributor(c) => Some(format!(
+            "citum-{}",
+            c.contributor
+                .as_slice()
+                .iter()
+                .map(citum_schema::template::ContributorRole::as_str)
+                .collect::<Vec<_>>()
+                .join("-")
+        )),
         TemplateComponent::Date(d) => Some(format!(
             "citum-{}",
             match d.date {
@@ -262,7 +270,8 @@ pub fn get_effective_rendering(component: &ProcTemplateComponent) -> Rendering {
             TemplateComponent::Contributor(c) => {
                 if let Some(contributors_config) = &config.contributors
                     && let Some(role_config) = &contributors_config.role
-                    && let Some(role_rendering) = role_config.role_rendering(&c.contributor)
+                    && let Some(primary_role) = c.contributor.as_slice().first()
+                    && let Some(role_rendering) = role_config.role_rendering(primary_role)
                 {
                     effective.merge(&role_rendering.to_rendering());
                 }

@@ -245,6 +245,16 @@ roles:
     short: trans.
     verb: translated by
     verb-short: trans. by
+  writer:
+    long:
+      singular: writer
+      plural: writers
+    verb: written by
+  writer-director:
+    long:
+      singular: writer & director
+      plural: writers & directors
+    verb: written & directed by
 terms:
   accessed:
     long: accessed
@@ -256,6 +266,8 @@ terms:
   and:
     long: and
     symbol: "&"
+  role-conjunction:
+    long: " & "
   and others:
     long: and others
   anonymous:
@@ -907,6 +919,7 @@ messages:
   # Conjunctions and connectors
   term.and: "and"
   term.and-symbol: "&"
+  term.role-conjunction: " & "
   term.et-al: "et al."
   term.and-others: "and others"
   # Date and access terms
@@ -1078,6 +1091,7 @@ vocab:
     manuscript: "Manuscript"
     photograph: "Photograph"
     television: "Television"
+    tv-series-episode: "TV series episode"
     radio: "Radio"
     streaming: "Streaming"
     online: "Online"

@@ -284,13 +284,20 @@ impl Locale {
         }
 
         for (key, role_term) in &raw.roles {
+            let contributor_term = ContributorTerm {
+                singular: Self::extract_simple_term(&role_term.long, &role_term.short, false),
+                plural: Self::extract_simple_term(&role_term.long, &role_term.short, true),
+                verb: Self::extract_verb_term(&role_term.verb, &role_term.verb_short),
+            };
             if let Some(role) = Self::parse_role_name(key) {
-                let contributor_term = ContributorTerm {
-                    singular: Self::extract_simple_term(&role_term.long, &role_term.short, false),
-                    plural: Self::extract_simple_term(&role_term.long, &role_term.short, true),
-                    verb: Self::extract_verb_term(&role_term.verb, &role_term.verb_short),
-                };
                 locale.roles.insert(role, contributor_term);
+            } else {
+                let canonical = if key == "editortranslator" {
+                    "editor-translator".to_string()
+                } else {
+                    Self::normalize_term_key(key)
+                };
+                locale.role_combinations.insert(canonical, contributor_term);
             }
         }
 
@@ -392,6 +399,7 @@ impl Locale {
             "performer" => Some(ContributorRole::Performer),
             "composer" => Some(ContributorRole::Composer),
             "writer" => Some(ContributorRole::Writer),
+            "producer" => Some(ContributorRole::Producer),
             _ => None,
         }
     }
@@ -553,6 +561,7 @@ impl Locale {
             "available-at" => Some(GeneralTerm::AvailableAt),
             "ibid" => Some(GeneralTerm::Ibid),
             "and" => Some(GeneralTerm::And),
+            "role-conjunction" => Some(GeneralTerm::RoleConjunction),
             "et-al" => Some(GeneralTerm::EtAl),
             "and-others" => Some(GeneralTerm::AndOthers),
             "forthcoming" => Some(GeneralTerm::Forthcoming),

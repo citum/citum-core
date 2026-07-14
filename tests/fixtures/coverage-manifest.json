@@ -877,6 +877,45 @@
       "notes": "Legal grouping fixture used for Juris-M style hierarchy checks."
     },
     {
+      "fixture": "tests/fixtures/audiovisual/apa-episode-cross-role.yaml",
+      "domain": "core",
+      "kind": "references",
+      "reference_types": [
+        "episode"
+      ],
+      "citation_scenarios": [
+        "non-integral author-date citation"
+      ],
+      "rendering_risks": [
+        "type-aware primary contributor substitution",
+        "same-person writer-director combination",
+        "bibliography-only role labels"
+      ],
+      "used_by": [
+        "crates/citum-engine/tests/cross_role_contributors.rs"
+      ],
+      "ci_status": "required",
+      "notes": "Native APA episode fixture with one explicitly multi-role contributor."
+    },
+    {
+      "fixture": "tests/fixtures/audiovisual/apa-film-directors.yaml",
+      "domain": "core",
+      "kind": "references",
+      "reference_types": [
+        "film"
+      ],
+      "citation_scenarios": [],
+      "rendering_risks": [
+        "type-aware primary contributor substitution",
+        "collective director label pluralization"
+      ],
+      "used_by": [
+        "crates/citum-engine/tests/cross_role_contributors.rs"
+      ],
+      "ci_status": "required",
+      "notes": "Native APA film fixture with a collective directors credit."
+    },
+    {
       "fixture": "tests/fixtures/grouping/multilingual-groups.json",
       "domain": "grouping",
       "kind": "references",

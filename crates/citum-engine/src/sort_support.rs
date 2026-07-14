@@ -7,7 +7,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use std::cmp::Ordering;
 
-use crate::reference::Reference;
+use crate::reference::{FlatName, Reference};
 use citum_schema::grouping::NameSortOrder;
 use citum_schema::locale::Locale;
 use citum_schema::options::{Config, SortingLocale, SortingMultilingualMode};
@@ -189,6 +189,22 @@ pub(crate) fn author_sort_key_opt_with_options(
         .filter(|key| !key.is_empty())
 }
 
+/// Build a sort key from the first name in an already-resolved merged list.
+#[must_use]
+pub(crate) fn flat_names_sort_key(names: &[FlatName], name_order: NameSortOrder) -> Option<String> {
+    let name = names.first()?;
+    if let Some(literal) = non_empty_str(name.literal.as_deref()) {
+        return non_empty_normalized(literal);
+    }
+    let family = non_empty_str(name.family.as_deref()).unwrap_or_default();
+    let given = non_empty_str(name.given.as_deref()).unwrap_or_default();
+    let value = match name_order {
+        NameSortOrder::FamilyGiven => format!("{family}\u{0}{given}"),
+        NameSortOrder::GivenFamily => format!("{given}\u{0}{family}"),
+    };
+    non_empty_normalized(&value)
+}
+
 /// Build the normalized title sort key with configured multilingual behavior.
 #[must_use]
 pub(crate) fn title_sort_key_with_options(
@@ -214,7 +230,8 @@ pub(crate) fn normalize_sort_text(text: &str) -> String {
     text.to_string()
 }
 
-fn contributor_sort_key(
+/// Build a configured sort key directly from a resolved contributor payload.
+pub(crate) fn contributor_sort_key(
     contributor: &Contributor,
     name_order: NameSortOrder,
     options: &SortKeyOptions,

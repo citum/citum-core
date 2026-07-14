@@ -11,8 +11,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use citum_migrate::{compilation, fixups::normalize_author_date_locator_citation_component};
 use citum_schema::template::{
-    DateVariable, NumberVariable, Rendering, SimpleVariable, TemplateComponent, TemplateDate,
-    TemplateNumber, TemplateVariable,
+    ContributorLabelMode, ContributorMergeOrder, ContributorRole, DateVariable, NumberVariable,
+    Rendering, SimpleVariable, TemplateComponent, TemplateDate, TemplateNumber, TemplateVariable,
 };
 use csl_legacy::{
     model::{CslNode, Formatting, Group, Layout, Text},
@@ -83,7 +83,7 @@ fn author_date_locator_prefers_group_delimiter() {
     };
     let mut template = vec![
         TemplateComponent::Contributor(citum_schema::template::TemplateContributor {
-            contributor: citum_schema::template::ContributorRole::Author,
+            contributor: citum_schema::template::ContributorRole::Author.into(),
             form: citum_schema::template::ContributorForm::Short,
             name_order: Some(citum_schema::template::NameOrder::FamilyFirst),
             ..Default::default()
@@ -157,6 +157,100 @@ fn compile_from_xml_maps_citation_label_variable_into_citation_template() {
         "citation-label should compile to a citation-label number component, got: {:?}",
         out.citation
     );
+}
+
+#[test]
+fn compile_from_xml_preserves_all_names_variables_as_a_merged_component() {
+    let legacy_style = parse_legacy_style(
+        r#"
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="in-text">
+  <info>
+    <title>multi-variable-names-test</title>
+    <id>https://example.org/multi-variable-names-test</id>
+  </info>
+  <bibliography>
+    <layout>
+      <names variable="editor translator">
+        <name and="text"/>
+        <label form="short" prefix=", "/>
+      </names>
+    </layout>
+  </bibliography>
+</style>
+"#,
+    );
+
+    let mut options = citum_schema::options::Config::default();
+    let tracker = citum_migrate::provenance::ProvenanceTracker::new(false);
+    let out = compilation::compile_from_xml(&legacy_style, &mut options, false, &tracker);
+    let contributor = out
+        .bibliography
+        .iter()
+        .find_map(|component| match component {
+            TemplateComponent::Contributor(contributor) => Some(contributor),
+            _ => None,
+        })
+        .expect("multi-variable names should compile to a contributor component");
+    let merge = contributor
+        .merge
+        .as_ref()
+        .expect("multi-variable names should retain merge metadata");
+
+    assert_eq!(
+        contributor.contributor.as_slice(),
+        &[ContributorRole::Editor, ContributorRole::Translator]
+    );
+    assert_eq!(merge.order, ContributorMergeOrder::Role);
+    assert_eq!(merge.labels, ContributorLabelMode::Collective);
+    assert!(merge.combine_same_person);
+    assert_eq!(
+        merge
+            .roles
+            .get(&ContributorRole::Editor)
+            .and_then(|role| role.label.as_ref())
+            .map(|label| label.term.as_str()),
+        Some("editor")
+    );
+    assert_eq!(
+        merge
+            .roles
+            .get(&ContributorRole::Translator)
+            .and_then(|role| role.label.as_ref())
+            .map(|label| label.term.as_str()),
+        Some("translator")
+    );
+
+    let actual = serde_yaml::to_value(TemplateComponent::Contributor(contributor.clone()))
+        .expect("compiled component should serialize");
+    let expected: serde_yaml::Value = serde_yaml::from_str(
+        r#"
+contributor: [editor, translator]
+form: long
+merge:
+  order: role
+  labels: collective
+  roles:
+    editor:
+      labels: collective
+      label:
+        term: editor
+        form: short
+        placement: suffix
+        prefix: ", "
+    translator:
+      labels: collective
+      label:
+        term: translator
+        form: short
+        placement: suffix
+        prefix: ", "
+  combine-same-person: true
+and: text
+suppress: false
+"#,
+    )
+    .expect("expected component YAML should parse");
+    assert_eq!(actual, expected);
 }
 
 #[test]

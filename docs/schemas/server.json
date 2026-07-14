@@ -322,6 +322,11 @@
           "const": "and"
         },
         {
+          "description": "Verbatim connector used between terms in a combined contributor role.",
+          "type": "string",
+          "const": "role-conjunction"
+        },
+        {
           "description": "The abbreviation for omitted additional names (e.g., \"et al.\").",
           "type": "string",
           "const": "et-al"
@@ -733,8 +738,8 @@
       "type": "object",
       "properties": {
         "contributor": {
-          "description": "Which contributor role to render (author, editor, etc.).",
-          "$ref": "#/$defs/ContributorRole"
+          "description": "Which contributor role or ordered role list to render.",
+          "$ref": "#/$defs/ContributorRoles"
         },
         "form": {
           "description": "How to display the contributor (long names, short, with label, etc.).",
@@ -745,6 +750,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/RoleLabel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "merge": {
+          "description": "Configuration used when `contributor` is an ordered role list.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContributorMerge"
             },
             {
               "type": "null"
@@ -942,6 +958,23 @@
         "form"
       ]
     },
+    "ContributorRoles": {
+      "description": "One contributor role or an ordered list of roles rendered as one name list.",
+      "anyOf": [
+        {
+          "description": "A conventional single-role contributor component.",
+          "$ref": "#/$defs/ContributorRole"
+        },
+        {
+          "description": "Two or more contributor roles rendered as a merged list.",
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContributorRole"
+          },
+          "minItems": 2
+        }
+      ]
+    },
     "ContributorRole": {
       "description": "Contributor roles.",
       "oneOf": [
@@ -963,6 +996,7 @@
             "counsel",
             "composer",
             "writer",
+            "producer",
             "collection-editor",
             "container-author",
             "editorial-director",
@@ -1014,8 +1048,19 @@
             }
           ]
         },
+        "wrap": {
+          "description": "Optional punctuation wrapped around the resolved label term.\n\nThe wrap is applied before the label's outer `prefix` and `suffix`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WrapConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "prefix": {
-          "description": "Optional affix rendered before the label term, overriding the\nplacement-derived default (`\", \"` for suffix placement, empty for\nprefix placement). Mirrors CSL 1.0 `cs:label` `prefix` (e.g. `\" (\"`\nfor elsevier's `\" (Eds.)\"`).",
+          "description": "Optional affix rendered before the label term, overriding the\nplacement-derived default (a space for a wrapped suffix label, `\", \"`\nfor an unwrapped suffix label, and empty for prefix placement). Mirrors\nCSL 1.0 `cs:label` `prefix` (e.g. `\" (\"` for elsevier's `\" (Eds.)\"`).",
           "type": [
             "string",
             "null"
@@ -1093,6 +1138,142 @@
           "const": "as-is"
         }
       ]
+    },
+    "WrapConfig": {
+      "description": "Wrapping punctuation and optional inner affixes applied around a rendered value.\n\nCombines the wrap punctuation with optional text that appears inside the wrap\n(between the wrap character and the rendered content).",
+      "type": "object",
+      "properties": {
+        "punctuation": {
+          "description": "The wrapping punctuation style.",
+          "$ref": "#/$defs/WrapPunctuation"
+        },
+        "inner-prefix": {
+          "description": "Text inserted after the opening wrap character but before the content.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "inner-suffix": {
+          "description": "Text inserted after the content but before the closing wrap character.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "punctuation"
+      ]
+    },
+    "WrapPunctuation": {
+      "description": "Punctuation to wrap a component in.",
+      "type": "string",
+      "enum": [
+        "parentheses",
+        "brackets",
+        "quotes"
+      ]
+    },
+    "ContributorMerge": {
+      "description": "Configuration for rendering multiple contributor roles as one name list.",
+      "type": "object",
+      "properties": {
+        "order": {
+          "description": "Effective ordering of entries in the merged list.",
+          "$ref": "#/$defs/ContributorMergeOrder",
+          "default": "document"
+        },
+        "labels": {
+          "description": "Default role-label mode for entries in the merged list.",
+          "$ref": "#/$defs/ContributorLabelMode",
+          "default": "individual"
+        },
+        "roles": {
+          "description": "Optional per-role label overrides.",
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/ContributorMergeRole"
+          }
+        },
+        "combine-same-person": {
+          "description": "Whether identical people in different roles render as one entry.",
+          "type": "boolean",
+          "default": true
+        },
+        "role-conjunction": {
+          "description": "Verbatim connector used when composing a missing combined-role term.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "ContributorMergeOrder": {
+      "description": "Ordering policy for a merged contributor list.",
+      "oneOf": [
+        {
+          "description": "Preserve the unified reference contributor order.",
+          "type": "string",
+          "const": "document"
+        },
+        {
+          "description": "Group entries by the component's declared role order.",
+          "type": "string",
+          "const": "role"
+        }
+      ]
+    },
+    "ContributorLabelMode": {
+      "description": "Role-label placement mode for merged contributor entries.",
+      "oneOf": [
+        {
+          "description": "Attach a singular role label to every rendered person.",
+          "type": "string",
+          "const": "individual"
+        },
+        {
+          "description": "Attach one singular or plural label to each contiguous role run.",
+          "type": "string",
+          "const": "collective"
+        },
+        {
+          "description": "Render names without role labels.",
+          "type": "string",
+          "const": "none"
+        }
+      ]
+    },
+    "ContributorMergeRole": {
+      "description": "Per-role overrides within a merged contributor list.",
+      "type": "object",
+      "properties": {
+        "labels": {
+          "description": "Override the merged list's default label mode for this role.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ContributorLabelMode"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "label": {
+          "description": "Override label term, form, placement, case, and affixes for this role.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RoleLabel"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
     },
     "NameOrder": {
       "description": "Name display order.",
@@ -1259,42 +1440,6 @@
           "type": "string",
           "const": "subscript"
         }
-      ]
-    },
-    "WrapConfig": {
-      "description": "Wrapping punctuation and optional inner affixes applied around a rendered value.\n\nCombines the wrap punctuation with optional text that appears inside the wrap\n(between the wrap character and the rendered content).",
-      "type": "object",
-      "properties": {
-        "punctuation": {
-          "description": "The wrapping punctuation style.",
-          "$ref": "#/$defs/WrapPunctuation"
-        },
-        "inner-prefix": {
-          "description": "Text inserted after the opening wrap character but before the content.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "inner-suffix": {
-          "description": "Text inserted after the content but before the closing wrap character.",
-          "type": [
-            "string",
-            "null"
-          ]
-        }
-      },
-      "required": [
-        "punctuation"
-      ]
-    },
-    "WrapPunctuation": {
-      "description": "Punctuation to wrap a component in.",
-      "type": "string",
-      "enum": [
-        "parentheses",
-        "brackets",
-        "quotes"
       ]
     },
     "LinksConfig": {

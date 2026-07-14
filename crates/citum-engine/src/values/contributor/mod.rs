@@ -9,8 +9,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! role labels, et-al formatting, and multilingual name resolution.
 
 pub(crate) mod labels;
+pub(crate) mod merged;
 pub mod names;
-mod substitute;
+pub(crate) mod substitute;
 
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderContext, RenderOptions};
@@ -39,7 +40,7 @@ pub(super) fn contributor_for_role(
 }
 
 /// Map a template contributor role to the corresponding reference contributor role.
-pub(super) fn contributor_role_to_reference_role(
+pub(crate) fn contributor_role_to_reference_role(
     role: &ContributorRole,
 ) -> Option<citum_schema::reference::ContributorRole> {
     match role {
@@ -56,6 +57,7 @@ pub(super) fn contributor_role_to_reference_role(
         ContributorRole::Director => Some(citum_schema::reference::ContributorRole::Director),
         ContributorRole::Composer => Some(citum_schema::reference::ContributorRole::Composer),
         ContributorRole::Writer => Some(citum_schema::reference::ContributorRole::Writer),
+        ContributorRole::Producer => Some(citum_schema::reference::ContributorRole::Producer),
         ContributorRole::Illustrator => Some(citum_schema::reference::ContributorRole::Illustrator),
         ContributorRole::Inventor => Some(citum_schema::reference::ContributorRole::Unknown(
             "inventor".to_string(),
@@ -124,6 +126,15 @@ pub(super) fn format_role_term<F: crate::render::format::OutputFormat<Output = S
     prefix: &str,
     suffix: &str,
 ) -> String {
+    let term_str = normalized_role_term(term, effective_rendering, options);
+    fmt.text(&format!("{prefix}{term_str}{suffix}"))
+}
+
+fn normalized_role_term(
+    term: &str,
+    effective_rendering: &citum_schema::template::Rendering,
+    options: &RenderOptions<'_>,
+) -> String {
     let term_str = if crate::values::should_strip_periods(effective_rendering, options) {
         crate::values::strip_trailing_periods(term)
     } else {
@@ -134,13 +145,41 @@ pub(super) fn format_role_term<F: crate::render::format::OutputFormat<Output = S
     // `pre_formatted`, which skips the generic title/value text-case pass,
     // so a style that positions the verb label as its own clause (e.g.
     // after a `". "` prefix) must opt in here explicitly.
-    let term_str = match effective_rendering.text_case {
+    match effective_rendering.text_case {
         Some(citum_schema::options::titles::TextCase::CapitalizeFirst) => {
             crate::values::text_case::capitalize_first_word(&term_str)
         }
         _ => term_str,
+    }
+}
+
+/// Format a role term with optional structural wrapping.
+///
+/// The unwrapped path delegates to [`format_role_term`] to preserve its exact
+/// escaping and affix behavior. Wrapped labels apply inner affixes, wrapping
+/// punctuation, and finally the outer label affixes.
+pub(super) fn format_wrapped_role_term<F: crate::render::format::OutputFormat<Output = String>>(
+    term: &str,
+    fmt: &F,
+    effective_rendering: &citum_schema::template::Rendering,
+    options: &RenderOptions<'_>,
+    prefix: &str,
+    suffix: &str,
+    wrap: Option<&citum_schema::template::WrapConfig>,
+) -> String {
+    let Some(wrap) = wrap else {
+        return format_role_term(term, fmt, effective_rendering, options, prefix, suffix);
     };
-    fmt.text(&format!("{prefix}{term_str}{suffix}"))
+    let term = normalized_role_term(term, effective_rendering, options);
+    let content = fmt.text(&term);
+    let content = fmt.inner_affix(
+        wrap.inner_prefix.as_deref().unwrap_or_default(),
+        content,
+        wrap.inner_suffix.as_deref().unwrap_or_default(),
+    );
+    let marks = crate::render::format::QuoteMarks::from(&options.locale.grammar_options);
+    let content = fmt.wrap_punctuation(&wrap.punctuation, content, &marks);
+    format!("{}{content}{}", fmt.text(prefix), fmt.text(suffix))
 }
 
 /// Apply the integral-citation subsequent-form rewrite to a contributor on a
@@ -156,7 +195,7 @@ fn apply_integral_subsequent_form(
     if !matches!(options.mode, citum_schema::citation::CitationMode::Integral) {
         return;
     }
-    if !matches!(component.contributor, ContributorRole::Author) {
+    if !component.contributor.contains(&ContributorRole::Author) {
         return;
     }
     if !matches!(
@@ -177,6 +216,7 @@ fn apply_integral_subsequent_form(
 /// Build name overrides and format all names for a contributor component.
 fn format_contributor_names(
     component: &TemplateContributor,
+    role: &ContributorRole,
     names_vec: &[crate::reference::FlatName],
     effective_rendering: &citum_schema::template::Rendering,
     options: &RenderOptions<'_>,
@@ -187,7 +227,7 @@ fn format_contributor_names(
             .config
             .contributors
             .as_ref()?
-            .effective_role_name_order(&component.contributor)
+            .effective_role_name_order(role)
     });
     let effective_shorten = component
         .shorten
@@ -230,37 +270,55 @@ impl ComponentValues for TemplateContributor {
         // Apply integral-citation subsequent-form (FullThenShort rule)
         apply_integral_subsequent_form(&mut component, hints, options);
 
-        // Respect explicit suppression before any contributor substitution logic.
+        // Respect explicit suppression before either contributor rendering path.
         if effective_rendering.suppress == Some(true) {
             return None;
         }
 
-        let contributor = match &component.contributor {
-            ContributorRole::Author => {
-                if options.suppress_author {
-                    None
-                } else {
-                    contributor_for_role(reference, &component.contributor)
-                }
-            }
-            _ => contributor_for_role(reference, &component.contributor),
+        let Some(role) = component.contributor.as_single().cloned() else {
+            return merged::values::<F>(
+                &component,
+                reference,
+                hints,
+                options,
+                &effective_rendering,
+                &fmt,
+            );
         };
 
-        // Resolve substitute config once for all substitute/suppression checks below.
-        let default_substitute = citum_schema::options::SubstituteConfig::default();
-        let substitute_config = options
-            .config
-            .substitute
-            .as_ref()
-            .unwrap_or(&default_substitute);
-        let substitute = substitute_config.resolve();
+        if merged::is_role_suppressed(reference, &role, &options.config) {
+            return None;
+        }
 
-        // Check if this role is suppressed by role-substitute configuration
-        if substitute::is_role_suppressed_by_substitute(
-            &component.contributor,
-            &substitute,
-            reference,
-        ) {
+        // Resolve substitute config once for all substitute/suppression checks below.
+        let substitute = citum_schema::options::SubstituteConfig::resolve_or_default(
+            options.config.substitute.as_ref(),
+        );
+
+        // The author slot is resolved as one effective-primary value so
+        // rendering, sorting, and disambiguation share type overrides and
+        // semantic-author precedence.
+        if matches!(role, ContributorRole::Author) {
+            if options.suppress_author {
+                return None;
+            }
+            return substitute::resolve_author_substitute::<F>(
+                &component,
+                hints,
+                options,
+                reference,
+                &effective_rendering,
+                &fmt,
+                substitute.as_ref(),
+            );
+        }
+
+        let contributor = contributor_for_role(reference, &role);
+
+        // Check if this secondary role is suppressed by role-substitute
+        // configuration. Primary-slot overrides deliberately promote roles
+        // that may also appear in these secondary fallback chains.
+        if substitute::is_role_suppressed_by_substitute(&role, substitute.as_ref(), reference) {
             return None;
         }
 
@@ -271,54 +329,41 @@ impl ComponentValues for TemplateContributor {
             Vec::new()
         };
 
-        // If author is suppressed, don't attempt substitution or formatting.
-        if names_vec.is_empty()
-            && matches!(component.contributor, ContributorRole::Author)
-            && options.suppress_author
-        {
-            return None;
-        }
-
-        // Handle substitution if author is empty.
-        if names_vec.is_empty() && matches!(component.contributor, ContributorRole::Author) {
-            return substitute::resolve_author_substitute::<F>(
-                &component,
-                hints,
-                options,
-                reference,
-                &effective_rendering,
-                &fmt,
-                &substitute,
-            );
-        }
-
         // Handle role-substitute if this role is empty.
         if names_vec.is_empty() {
             return substitute::resolve_role_substitute::<F>(
-                &component.contributor,
+                &role,
                 &component,
                 hints,
                 options,
                 reference,
                 &effective_rendering,
                 &fmt,
-                &substitute,
+                substitute.as_ref(),
             );
         }
 
-        let formatted =
-            format_contributor_names(&component, &names_vec, &effective_rendering, options, hints);
-
-        let role_omitted = is_role_label_omitted(options, &component.contributor);
-        let (role_prefix, role_suffix) = labels::resolve_role_labels::<F>(
+        let formatted = format_contributor_names(
             &component,
-            reference,
-            names_vec.len(),
+            &role,
+            &names_vec,
             &effective_rendering,
             options,
-            &fmt,
-            role_omitted,
+            hints,
         );
+
+        let role_omitted = is_role_label_omitted(options, &role);
+        let (role_prefix, role_suffix) =
+            labels::resolve_role_labels::<F>(labels::RoleLabelContext {
+                component: &component,
+                role: &role,
+                reference,
+                names_count: names_vec.len(),
+                effective_rendering: &effective_rendering,
+                options,
+                fmt: &fmt,
+                role_omitted,
+            });
 
         let is_pre_formatted = role_prefix.is_some() || role_suffix.is_some();
         let formatted = crate::values::apply_abbreviation(formatted, options.abbreviation_map);

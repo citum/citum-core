@@ -734,14 +734,14 @@ mod tests {
     fn template_v3_diff_generator_emits_rendering_modify() {
         let default_template = vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 ..Default::default()
             }),
             title_component(),
         ];
         let target_template = vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 ..Default::default()
             }),
             TemplateComponent::Title(TemplateTitle {
@@ -773,7 +773,7 @@ mod tests {
     fn template_v3_diff_generator_emits_structural_remove_and_add() {
         let default_template = vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 ..Default::default()
             }),
             title_component(),
@@ -784,7 +784,7 @@ mod tests {
         ];
         let target_template = vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 ..Default::default()
             }),
             TemplateComponent::Date(citum_schema::template::TemplateDate {
@@ -832,7 +832,7 @@ mod tests {
     fn template_v3_diff_generator_can_extend_prior_variant() {
         let default_template = vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 ..Default::default()
             }),
             title_component(),
@@ -843,7 +843,7 @@ mod tests {
         ];
         let book_template = vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 ..Default::default()
             }),
             TemplateComponent::Title(TemplateTitle {
@@ -857,7 +857,7 @@ mod tests {
         ];
         let chapter_template = vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 ..Default::default()
             }),
             TemplateComponent::Title(TemplateTitle {
@@ -912,7 +912,7 @@ mod tests {
     fn rare_parent_near_tie_loses_to_default_template() {
         let default_template = vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 ..Default::default()
             }),
             title_component(),
@@ -923,14 +923,14 @@ mod tests {
         ];
         let encyclopedia_template = vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 ..Default::default()
             }),
             title_component(),
         ];
         let webpage_template = vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 ..Default::default()
             }),
             title_component(),

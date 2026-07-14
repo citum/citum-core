@@ -255,7 +255,7 @@ mod tests {
     fn inferred_type_variants_recover_missing_primary_title() {
         let default_template = vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 ..Default::default()
             }),
             TemplateComponent::Date(TemplateDate {
@@ -272,7 +272,7 @@ mod tests {
             TypeSelector::Single("article-newspaper".to_string()),
             vec![
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     ..Default::default()
                 }),
                 TemplateComponent::Date(TemplateDate {
@@ -314,7 +314,7 @@ mod tests {
     fn inferred_type_variants_recover_missing_publisher() {
         let default_template = vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 ..Default::default()
             }),
             TemplateComponent::Date(TemplateDate {
@@ -339,7 +339,7 @@ mod tests {
             TypeSelector::Single("book".to_string()),
             vec![
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     ..Default::default()
                 }),
                 TemplateComponent::Title(TemplateTitle {

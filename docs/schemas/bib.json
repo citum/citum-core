@@ -3783,9 +3783,9 @@
       "description": "A single entry in a reference's contributors list.",
       "type": "object",
       "properties": {
-        "role": {
-          "description": "The role this contributor plays in relation to the work.",
-          "$ref": "#/$defs/ContributorRole"
+        "roles": {
+          "description": "The explicit roles this contributor plays in relation to the work.",
+          "$ref": "#/$defs/ContributorRoles"
         },
         "contributor": {
           "description": "The contributor (name, organization, or list).",
@@ -3804,9 +3804,17 @@
         }
       },
       "required": [
-        "role",
+        "roles",
         "contributor"
       ]
+    },
+    "ContributorRoles": {
+      "description": "One or more distinct roles explicitly assigned to a contributor entry.",
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ContributorRole"
+      },
+      "minItems": 1
     },
     "ContributorRole": {
       "description": "A contributor role for use in the unified contributors list.",

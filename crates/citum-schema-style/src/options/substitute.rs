@@ -6,6 +6,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 #[cfg(feature = "schema")]
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 use std::collections::HashMap;
 
 /// Substitution rules for missing author data.
@@ -32,6 +33,22 @@ impl SubstituteConfig {
             SubstituteConfig::Preset(preset) => preset.config(),
             SubstituteConfig::Explicit(config) => config.clone(),
         }
+    }
+
+    /// Resolve this config without cloning an explicit configuration.
+    pub fn resolve_ref(&self) -> Cow<'_, Substitute> {
+        match self {
+            SubstituteConfig::Preset(preset) => Cow::Owned(preset.config()),
+            SubstituteConfig::Explicit(config) => Cow::Borrowed(config),
+        }
+    }
+
+    /// Resolve an optional config, allocating only when a default or preset is required.
+    pub fn resolve_or_default(config: Option<&Self>) -> Cow<'_, Substitute> {
+        config.map_or_else(
+            || Cow::Owned(Substitute::default()),
+            SubstituteConfig::resolve_ref,
+        )
     }
 
     /// Merge an override substitute config over a base config.
@@ -97,9 +114,9 @@ impl Default for Substitute {
             contributor_role_form: None,
             contributor_role_case: None,
             template: vec![
-                SubstituteKey::Editor,
-                SubstituteKey::Title,
-                SubstituteKey::Translator,
+                SubstituteKey::Field(SubstituteField::Editor),
+                SubstituteKey::Field(SubstituteField::Title),
+                SubstituteKey::Field(SubstituteField::Translator),
             ],
             overrides: HashMap::new(),
             role_substitute: HashMap::new(),
@@ -151,17 +168,59 @@ impl Substitute {
     }
 }
 
-/// Fields that can be used as author substitutes.
+/// One candidate in an effective-primary substitution chain.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
-#[serde(rename_all = "lowercase")]
+#[serde(untagged)]
 pub enum SubstituteKey {
+    /// A legacy scalar field candidate such as `editor` or `title`.
+    Field(SubstituteField),
+    /// A scalar or merged contributor-role candidate.
+    Contributor(SubstituteContributor),
+}
+
+#[allow(
+    non_upper_case_globals,
+    reason = "preserve the legacy SubstituteKey constant API"
+)]
+impl SubstituteKey {
+    /// Legacy `collection-editor` scalar candidate.
+    pub const CollectionEditor: Self = Self::Field(SubstituteField::CollectionEditor);
+    /// Legacy `editor` scalar candidate.
+    pub const Editor: Self = Self::Field(SubstituteField::Editor);
+    /// Legacy `parent-serial` scalar candidate.
+    pub const ParentSerial: Self = Self::Field(SubstituteField::ParentSerial);
+    /// Legacy `title` scalar candidate.
+    pub const Title: Self = Self::Field(SubstituteField::Title);
+    /// Legacy `translator` scalar candidate.
+    pub const Translator: Self = Self::Field(SubstituteField::Translator);
+}
+
+/// A contributor-role candidate in an effective-primary substitution chain.
+#[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct SubstituteContributor {
+    /// One contributor role or an ordered list of roles to promote.
+    pub contributor: crate::template::ContributorRoles,
+}
+
+/// Legacy scalar fields accepted in substitution chains.
+#[derive(Debug, PartialEq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "lowercase")]
+pub enum SubstituteField {
+    /// The collection editor contributor role.
     #[serde(rename = "collection-editor")]
     CollectionEditor,
+    /// The editor contributor role.
     Editor,
+    /// The parent serial title.
     #[serde(rename = "parent-serial")]
     ParentSerial,
+    /// The primary title.
     Title,
+    /// The translator contributor role.
     Translator,
 }
 
@@ -178,8 +237,26 @@ pub enum SubstituteKey {
     reason = "Panicking is acceptable and often desired in tests."
 )]
 mod tests {
-    use super::{Substitute, SubstituteConfig, SubstituteKey};
+    use super::{Substitute, SubstituteConfig, SubstituteField, SubstituteKey};
+    use std::borrow::Cow;
     use std::collections::HashMap;
+
+    #[test]
+    fn explicit_substitute_resolution_borrows_while_presets_are_owned() {
+        let explicit = SubstituteConfig::Explicit(Substitute::default());
+        let preset = SubstituteConfig::Preset(crate::presets::SubstitutePreset::Standard);
+
+        assert!(matches!(explicit.resolve_ref(), Cow::Borrowed(_)));
+        assert!(matches!(preset.resolve_ref(), Cow::Owned(_)));
+        assert!(matches!(
+            SubstituteConfig::resolve_or_default(Some(&explicit)),
+            Cow::Borrowed(_)
+        ));
+        assert!(matches!(
+            SubstituteConfig::resolve_or_default(None),
+            Cow::Owned(_)
+        ));
+    }
 
     #[test]
     fn merged_substitute_configs_preserve_role_substitute_chains() {
@@ -201,10 +278,39 @@ mod tests {
         assert_eq!(
             merged.template,
             vec![
-                SubstituteKey::Editor,
-                SubstituteKey::Title,
-                SubstituteKey::Translator
+                SubstituteKey::Field(SubstituteField::Editor),
+                SubstituteKey::Field(SubstituteField::Title),
+                SubstituteKey::Field(SubstituteField::Translator)
             ]
+        );
+    }
+
+    #[test]
+    fn substitution_candidates_round_trip_scalar_and_merged_roles() {
+        let yaml = r#"template:
+  - editor
+  - contributor: director
+overrides:
+  episode:
+    - contributor: [writer, director]
+"#;
+
+        let parsed: Substitute = serde_yaml::from_str(yaml).expect("valid substitution yaml");
+
+        assert_eq!(
+            parsed.template[0],
+            SubstituteKey::Field(SubstituteField::Editor)
+        );
+        assert_eq!(
+            parsed.template[1],
+            SubstituteKey::Contributor(super::SubstituteContributor {
+                contributor: crate::template::ContributorRole::Director.into(),
+            })
+        );
+        let serialized = serde_yaml::to_string(&parsed).expect("serializable");
+        assert_eq!(
+            serde_yaml::from_str::<Substitute>(&serialized).expect("round-trippable"),
+            parsed
         );
     }
 }

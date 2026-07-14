@@ -446,7 +446,7 @@ impl InputReference {
     pub fn contributor_entries(&self, role: &ContributorRole) -> Vec<&ContributorEntry> {
         self.all_contributor_entries()
             .iter()
-            .filter(|entry| &entry.role == role)
+            .filter(|entry| entry.roles.contains(role))
             .collect()
     }
 
@@ -1627,7 +1627,7 @@ fn collect_contributors_by_role(
 ) -> Option<Contributor> {
     let mut matches = entries
         .iter()
-        .filter(|e| &e.role == role)
+        .filter(|entry| entry.roles.contains(role))
         .map(|e| &e.contributor);
     let first = matches.next()?;
     let Some(second) = matches.next() else {

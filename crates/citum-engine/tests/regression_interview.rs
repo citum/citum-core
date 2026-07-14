@@ -46,7 +46,7 @@ fn test_apa_interview_fidelity_regression() {
             ..Default::default()
         })),
         contributors: vec![ContributorEntry {
-            role: ContributorRole::Interviewer,
+            roles: ContributorRole::Interviewer.into(),
             contributor: Contributor::StructuredName(StructuredName {
                 family: "Young-Bruehl".into(),
                 given: "Elisabeth".into(),

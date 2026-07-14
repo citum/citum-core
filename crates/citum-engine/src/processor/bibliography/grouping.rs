@@ -184,7 +184,7 @@ impl Processor {
             .as_ref()
             .map(citum_schema::GroupSortEntry::resolve);
         let bibliography_config = self.get_bibliography_config();
-        let disambiguator = if let Some(sort) = resolved_sort.as_ref() {
+        let mut disambiguator = if let Some(sort) = resolved_sort.as_ref() {
             Disambiguator::with_group_sort(
                 &group_bibliography,
                 &bibliography_config,
@@ -200,6 +200,13 @@ impl Processor {
                 &self.locale,
             )
         };
+
+        if let Some(spec) = self.style.citation.as_ref() {
+            disambiguator = disambiguator.with_citation_spec(spec);
+        }
+        if let Some(spec) = self.style.bibliography.as_ref() {
+            disambiguator = disambiguator.with_bibliography_spec(spec);
+        }
 
         Some(disambiguator.calculate_hints())
     }
@@ -381,7 +388,11 @@ impl Processor {
         let cited_ids = &run.state().cited_ids;
         let evaluator = SelectorEvaluator::new(cited_ids);
         let bibliography_config = self.get_bibliography_config();
-        let sorter = ReferenceSorter::with_bibliography_config(&self.locale, &bibliography_config);
+        let mut sorter =
+            ReferenceSorter::with_bibliography_config(&self.locale, &bibliography_config);
+        if let Some(spec) = self.style.bibliography.as_ref() {
+            sorter = sorter.with_bibliography_spec(spec);
+        }
 
         let mut assigned = HashSet::new();
         let mut result = String::new();
@@ -934,7 +945,11 @@ impl Processor {
         let cited_ids = &run.state().cited_ids;
         let evaluator = SelectorEvaluator::new(cited_ids);
         let bibliography_config = self.get_bibliography_config();
-        let sorter = ReferenceSorter::with_bibliography_config(&self.locale, &bibliography_config);
+        let mut sorter =
+            ReferenceSorter::with_bibliography_config(&self.locale, &bibliography_config);
+        if let Some(spec) = self.style.bibliography.as_ref() {
+            sorter = sorter.with_bibliography_spec(spec);
+        }
 
         let matching_refs = self.collect_matching_group_refs(spine, assigned, &evaluator, group);
         Self::mark_group_members_assigned(assigned, &matching_refs);

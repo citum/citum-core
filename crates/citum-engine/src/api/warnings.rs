@@ -130,14 +130,16 @@ pub fn unknown_enum_warnings(processor: &Processor) -> Vec<Warning> {
         }
 
         for contributor in reference.all_contributor_entries() {
-            if let ReferenceRole::Unknown(s) = &contributor.role {
-                warnings.push(Warning {
-                    level: WarningLevel::Warning,
-                    code: "unknown_enum_variant".to_string(),
-                    citation_id: None,
-                    ref_id: Some(ref_id.clone()),
-                    message: format!("Reference '{ref_id}' uses unknown contributor role '{s}'; this role may be ignored during rendering."),
-                });
+            for role in contributor.roles.as_slice() {
+                if let ReferenceRole::Unknown(s) = role {
+                    warnings.push(Warning {
+                        level: WarningLevel::Warning,
+                        code: "unknown_enum_variant".to_string(),
+                        citation_id: None,
+                        ref_id: Some(ref_id.clone()),
+                        message: format!("Reference '{ref_id}' uses unknown contributor role '{s}'; this role may be ignored during rendering."),
+                    });
+                }
             }
         }
     }
@@ -286,14 +288,16 @@ fn scan_template_for_unknowns(
                 }
             }
             TemplateComponent::Contributor(c) => {
-                if let TemplateRole::Unknown(s) = &c.contributor {
-                    warnings.push(Warning {
-                        level: WarningLevel::Warning,
-                        code: "unknown_enum_variant".to_string(),
-                        citation_id: None,
-                        ref_id: None,
-                        message: format!("Style {location} uses unknown contributor role '{s}'; this role may be ignored."),
-                    });
+                for role in c.contributor.as_slice() {
+                    if let TemplateRole::Unknown(s) = role {
+                        warnings.push(Warning {
+                            level: WarningLevel::Warning,
+                            code: "unknown_enum_variant".to_string(),
+                            citation_id: None,
+                            ref_id: None,
+                            message: format!("Style {location} uses unknown contributor role '{s}'; this role may be ignored."),
+                        });
+                    }
                 }
                 if let Some(label) = &c.label {
                     let term = label.term.as_str();

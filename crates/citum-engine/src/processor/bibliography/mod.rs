@@ -462,7 +462,8 @@ impl Processor {
     ///
     /// Used for subsequent author substitution in bibliographies.
     pub fn contributors_match(&self, prev: &Reference, current: &Reference) -> bool {
-        let matcher = Matcher::new(&self.style, &self.default_config);
+        let config = self.style.options.as_ref().unwrap_or(&self.default_config);
+        let matcher = Matcher::new(&self.style, config, &self.locale);
         matcher.contributors_match(prev, current)
     }
 

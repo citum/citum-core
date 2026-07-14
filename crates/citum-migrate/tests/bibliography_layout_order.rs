@@ -52,7 +52,10 @@ fn compile_bibliography_base(xml: &str) -> Vec<TemplateComponent> {
 /// Short identification key for a component, for order assertions.
 fn component_key(component: &TemplateComponent) -> String {
     match component {
-        TemplateComponent::Contributor(c) => format!("contributor:{:?}", c.contributor),
+        TemplateComponent::Contributor(c) => c.contributor.as_single().map_or_else(
+            || format!("contributor:{:?}", c.contributor.as_slice()),
+            |role| format!("contributor:{role:?}"),
+        ),
         TemplateComponent::Date(d) => format!("date:{:?}", d.date),
         TemplateComponent::Title(t) => format!("title:{:?}", t.title),
         TemplateComponent::Number(n) => format!("number:{:?}", n.number),

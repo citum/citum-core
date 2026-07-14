@@ -108,7 +108,7 @@ fn make_german_translator_role_style() -> Style {
         bibliography: Some(BibliographySpec {
             template: Some(vec![
                 citum_schema::template::TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Long,
                     ..Default::default()
                 }),
@@ -131,7 +131,7 @@ fn make_german_translator_role_style() -> Style {
                     ..Default::default()
                 }),
                 citum_schema::template::TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Translator,
+                    contributor: ContributorRole::Translator.into(),
                     form: ContributorForm::Long,
                     name_order: Some(NameOrder::GivenFirst),
                     ..Default::default()

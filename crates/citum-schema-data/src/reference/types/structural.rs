@@ -35,10 +35,10 @@ fn fold_contributors(
         if let Some(c) = maybe_c
             && !contributors
                 .iter()
-                .any(|e| &e.role == role && &e.contributor == *c)
+                .any(|entry| entry.roles.contains(role) && &entry.contributor == *c)
         {
             contributors.push(ContributorEntry {
-                role: role.clone(),
+                roles: role.clone().into(),
                 contributor: (*c).clone(),
                 gender: None,
             });
@@ -54,7 +54,7 @@ fn collect_contributors_by_role(
 ) -> Option<Contributor> {
     let matching: Vec<&Contributor> = entries
         .iter()
-        .filter(|entry| &entry.role == role)
+        .filter(|entry| entry.roles.contains(role))
         .map(|entry| &entry.contributor)
         .collect();
 

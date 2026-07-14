@@ -18,7 +18,7 @@ use crate::{
 pub fn author_date_citation() -> Vec<TemplateComponent> {
     vec![
         TemplateComponent::Contributor(TemplateContributor {
-            contributor: ContributorRole::Author,
+            contributor: ContributorRole::Author.into(),
             form: ContributorForm::Short,
             and: Some(AndOptions::Text),
             ..Default::default()

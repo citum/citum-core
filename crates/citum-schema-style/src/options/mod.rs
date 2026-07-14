@@ -25,9 +25,10 @@ pub use bibliography::{
     BibliographyPartitionMode, BibliographySortPartitioning, SubsequentAuthorSubstituteRule,
 };
 pub use contributors::{
-    AndOptions, AndOtherOptions, ContributorConfig, ContributorConfigEntry, DelimiterPrecedesLast,
-    DemoteNonDroppingParticle, DisplayAsSort, NameForm, RoleLabelDefaults, RoleLabelPreset,
-    RoleOptions, RoleOptionsEntry, RoleRendering, ShortenListOptions,
+    AndOptions, AndOtherOptions, ContributorConfig, ContributorConfigEntry,
+    ContributorSuppressionRule, DelimiterPrecedesLast, DemoteNonDroppingParticle, DisplayAsSort,
+    NameForm, RoleLabelDefaults, RoleLabelPresentation, RoleLabelPreset, RoleOptions,
+    RoleOptionsEntry, RoleRendering, ShortenListOptions,
 };
 pub use dates::{DateConfig, DateConfigEntry, NoDateForm};
 pub use integral_name_memory::{
@@ -54,7 +55,10 @@ pub use scoped::{
     RepeatedAuthorRendering, TitleTerminator,
 };
 pub use sorting::{SortingConfig, SortingLocale, SortingMultilingualMode};
-pub use substitute::{Substitute, SubstituteConfig, SubstituteKey, SubstituteTitleQuoteMode};
+pub use substitute::{
+    Substitute, SubstituteConfig, SubstituteContributor, SubstituteField, SubstituteKey,
+    SubstituteTitleQuoteMode,
+};
 
 use crate::template::DelimiterPunctuation;
 #[cfg(feature = "schema")]

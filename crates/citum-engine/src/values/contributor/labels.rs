@@ -37,15 +37,28 @@ pub(super) struct RoleLabelTermOptions {
     pub text_case: Option<citum_schema::options::titles::TextCase>,
 }
 
+/// Inputs shared by contributor role-label resolution paths.
+pub(super) struct RoleLabelContext<'a, 'options, F: OutputFormat<Output = String>> {
+    pub(super) component: &'a TemplateContributor,
+    pub(super) role: &'a ContributorRole,
+    pub(super) reference: &'a Reference,
+    pub(super) names_count: usize,
+    pub(super) effective_rendering: &'a Rendering,
+    pub(super) options: &'a RenderOptions<'options>,
+    pub(super) fmt: &'a F,
+    pub(super) role_omitted: bool,
+}
+
 fn requested_role_gender(
     component: &TemplateContributor,
+    role: &ContributorRole,
     reference: &Reference,
 ) -> Option<RoleGenderRequest> {
     if let Some(gender) = &component.gender {
         return Some(RoleGenderRequest::Specific(gender.clone()));
     }
 
-    let data_role = contributor_role_to_reference_role(&component.contributor)?;
+    let data_role = contributor_role_to_reference_role(role)?;
 
     let entries = reference.contributor_entries(&data_role);
     let mut genders = entries
@@ -173,7 +186,7 @@ pub(super) fn resolve_role_label_preset<F: OutputFormat<Output = String>>(
 ///
 /// Used so a style can render, e.g., "Eds." from the locale's "eds." (IEEE).
 /// `language` gates English-only transforms via [`resolve_text_case`].
-fn apply_label_case(
+pub(super) fn apply_label_case(
     term: String,
     text_case: Option<citum_schema::options::titles::TextCase>,
     language: &str,
@@ -196,16 +209,11 @@ pub(crate) const RECOGNIZED_LABEL_TERMS: &[&str] = &["chair", "editor", "transla
 
 fn resolve_explicit_label<F: OutputFormat<Output = String>>(
     label_config: &citum_schema::template::RoleLabel,
-    component: &TemplateContributor,
-    reference: &Reference,
-    names_count: usize,
-    effective_rendering: &Rendering,
-    options: &RenderOptions<'_>,
-    fmt: &F,
+    context: &RoleLabelContext<'_, '_, F>,
 ) -> (Option<String>, Option<String>) {
-    use citum_schema::template::{LabelPlacement, RoleLabelForm};
+    use citum_schema::template::RoleLabelForm;
 
-    let plural = names_count > 1;
+    let plural = context.names_count > 1;
     let term_form = match label_config.form {
         RoleLabelForm::Short => TermForm::Short,
         RoleLabelForm::Long => TermForm::Long,
@@ -215,21 +223,54 @@ fn resolve_explicit_label<F: OutputFormat<Output = String>>(
         "chair" => Some(ContributorRole::Chair),
         "editor" => Some(ContributorRole::Editor),
         "translator" => Some(ContributorRole::Translator),
-        _ => Some(component.contributor.clone()),
+        _ => Some(context.role.clone()),
     };
 
-    let requested_gender = requested_role_gender(component, reference);
+    let requested_gender =
+        requested_role_gender(context.component, context.role, context.reference);
     let term_text = role
         .and_then(|r| {
-            resolve_role_term_by_request(options.locale, &r, plural, term_form, requested_gender)
+            resolve_role_term_by_request(
+                context.options.locale,
+                &r,
+                plural,
+                term_form,
+                requested_gender,
+            )
         })
-        .map(|t| apply_label_case(t, label_config.text_case, options.locale.locale.as_str()));
+        .map(|t| {
+            apply_label_case(
+                t,
+                label_config.text_case,
+                context.options.locale.locale.as_str(),
+            )
+        });
+
+    place_explicit_term::<F>(
+        label_config,
+        term_text,
+        context.effective_rendering,
+        context.options,
+        context.fmt,
+    )
+}
+
+/// Place an already-resolved term using an explicit role-label configuration.
+pub(super) fn place_explicit_term<F: OutputFormat<Output = String>>(
+    label_config: &citum_schema::template::RoleLabel,
+    term_text: Option<String>,
+    effective_rendering: &Rendering,
+    options: &RenderOptions<'_>,
+    fmt: &F,
+) -> (Option<String>, Option<String>) {
+    use citum_schema::template::LabelPlacement;
 
     // Explicit label affixes override the placement-derived defaults,
     // mirroring CSL 1.0 `cs:label` prefix/suffix (e.g. `" ("`/`")"`).
-    let (default_before, default_after) = match label_config.placement {
-        LabelPlacement::Prefix => ("", " "),
-        LabelPlacement::Suffix => (", ", ""),
+    let (default_before, default_after) = match (&label_config.placement, &label_config.wrap) {
+        (LabelPlacement::Suffix, Some(_)) => (" ", ""),
+        (LabelPlacement::Prefix, _) => ("", " "),
+        (LabelPlacement::Suffix, None) => (", ", ""),
     };
     let before = label_config.prefix.as_deref().unwrap_or(default_before);
     let after = label_config.suffix.as_deref().unwrap_or(default_after);
@@ -237,17 +278,63 @@ fn resolve_explicit_label<F: OutputFormat<Output = String>>(
     match label_config.placement {
         LabelPlacement::Prefix => (
             term_text.map(|t| {
-                super::format_role_term::<F>(&t, fmt, effective_rendering, options, before, after)
+                super::format_wrapped_role_term::<F>(
+                    &t,
+                    fmt,
+                    effective_rendering,
+                    options,
+                    before,
+                    after,
+                    label_config.wrap.as_deref(),
+                )
             }),
             None,
         ),
         LabelPlacement::Suffix => (
             None,
             term_text.map(|t| {
-                super::format_role_term::<F>(&t, fmt, effective_rendering, options, before, after)
+                super::format_wrapped_role_term::<F>(
+                    &t,
+                    fmt,
+                    effective_rendering,
+                    options,
+                    before,
+                    after,
+                    label_config.wrap.as_deref(),
+                )
             }),
         ),
     }
+}
+
+fn configured_structural_label<F: OutputFormat<Output = String>>(
+    context: &RoleLabelContext<'_, '_, F>,
+) -> Option<citum_schema::template::RoleLabel> {
+    if context.options.context != RenderContext::Bibliography {
+        return None;
+    }
+    let contributors = context.options.config.contributors.as_ref()?;
+    let build = |presentation: &citum_schema::options::RoleLabelPresentation| {
+        citum_schema::template::RoleLabel {
+            term: context.role.as_str().to_string(),
+            form: presentation.form.clone(),
+            placement: presentation.placement.clone(),
+            text_case: presentation.text_case,
+            wrap: presentation.wrap.clone(),
+            prefix: presentation.prefix.clone(),
+            suffix: presentation.suffix.clone(),
+        }
+    };
+
+    if let Some(presentation) = contributors.role_label_presentation(context.role) {
+        return Some(build(presentation));
+    }
+    contributors
+        .role
+        .as_ref()?
+        .defaults?
+        .presentation_for(context.role)
+        .map(|presentation| build(&presentation))
 }
 
 /// Resolve the role-label prefix and suffix for a formatted contributor.
@@ -255,25 +342,35 @@ fn resolve_explicit_label<F: OutputFormat<Output = String>>(
 /// Returns `(prefix, suffix)` strings to wrap the formatted name list.
 /// Precedence: explicit `label` config > configured role presets > form-based defaults.
 pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
-    component: &TemplateContributor,
-    reference: &Reference,
-    names_count: usize,
-    effective_rendering: &Rendering,
-    options: &RenderOptions<'_>,
-    fmt: &F,
-    role_omitted: bool,
+    context: RoleLabelContext<'_, '_, F>,
 ) -> (Option<String>, Option<String>) {
-    if let Some(label_config) = &component.label {
-        return resolve_explicit_label(
-            label_config,
-            component,
-            reference,
-            names_count,
-            effective_rendering,
-            options,
-            fmt,
-        );
+    if let Some(label_config) = &context.component.label {
+        return resolve_explicit_label(label_config, &context);
     }
+    // `role.omit` also suppresses a configured style-wide structural label
+    // (an explicit `role_label_presentation` override or a `role.defaults`
+    // preset bundle), subject to the same verb-form exception applied below
+    // to the remaining preset tiers: a `form: verb`/`form: verb-short`
+    // component's label is structural, not decorative, and is never omitted.
+    let verb_form = matches!(
+        context.component.form,
+        ContributorForm::Verb | ContributorForm::VerbShort
+    );
+    if (!context.role_omitted || verb_form)
+        && let Some(label) = configured_structural_label(&context)
+    {
+        return resolve_explicit_label(&label, &context);
+    }
+    let RoleLabelContext {
+        component,
+        role,
+        reference,
+        names_count,
+        effective_rendering,
+        options,
+        fmt,
+        role_omitted,
+    } = context;
 
     // `role.omit` suppresses the *decorative* default/preset label (e.g. a
     // trailing "(Trans.)"), not a `form: verb`/`form: verb-short` label: the
@@ -294,11 +391,11 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
         .config
         .contributors
         .as_ref()
-        .and_then(|contributors| contributors.effective_role_label_preset(&component.contributor))
+        .and_then(|contributors| contributors.effective_role_label_preset(role))
     {
-        let requested_gender = requested_role_gender(component, reference);
+        let requested_gender = requested_role_gender(component, role, reference);
         return resolve_role_label_preset(
-            &component.contributor,
+            role,
             preset,
             names_count,
             RoleLabelTermOptions {
@@ -323,11 +420,11 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
             .config
             .contributors
             .as_ref()
-            .and_then(|contributors| contributors.default_role_label_preset(&component.contributor))
+            .and_then(|contributors| contributors.default_role_label_preset(role))
     {
-        let requested_gender = requested_role_gender(component, reference);
+        let requested_gender = requested_role_gender(component, role, reference);
         return resolve_role_label_preset(
-            &component.contributor,
+            role,
             preset,
             names_count,
             RoleLabelTermOptions {
@@ -342,8 +439,8 @@ pub(super) fn resolve_role_labels<F: OutputFormat<Output = String>>(
 
     // Form-based defaults: verb forms carry their structural verb phrase;
     // no other form receives an automatic label.
-    match (&component.form, &component.contributor) {
-        (ContributorForm::Verb | ContributorForm::VerbShort, role) => {
+    match &component.form {
+        ContributorForm::Verb | ContributorForm::VerbShort => {
             let plural = names_count > 1;
             let term_form = match component.form {
                 ContributorForm::VerbShort => TermForm::VerbShort,

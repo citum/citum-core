@@ -158,10 +158,13 @@ impl Upsampler {
                 }
                 LNode::Substitute(sub) => {
                     for sub_node in &sub.children {
-                        if let LNode::Names(sub_names) = sub_node
-                            && let Some(sub_var) = self.map_variable(&sub_names.variable)
-                        {
-                            options.substitute.push(sub_var);
+                        if let LNode::Names(sub_names) = sub_node {
+                            options.substitute.extend(
+                                sub_names
+                                    .variable
+                                    .split_whitespace()
+                                    .filter_map(|variable| self.map_variable(variable)),
+                            );
                         }
                     }
                 }
@@ -176,20 +179,16 @@ impl Upsampler {
             return None;
         }
 
-        #[allow(clippy::indexing_slicing, reason = "vars is not empty")]
-        let variable = self.map_variable(vars[0])?;
+        let variables = vars
+            .iter()
+            .filter_map(|variable| self.map_variable(variable))
+            .collect::<Vec<_>>();
+        let variable = variables.first()?.clone();
 
         let mut options = ir::NamesOptions {
             delimiter: n.delimiter.clone(),
             ..Default::default()
         };
-
-        // If multiple variables were provided, add the others to substitute
-        for v in vars.iter().skip(1) {
-            if let Some(var) = self.map_variable(v) {
-                options.substitute.push(var);
-            }
-        }
 
         // Extract et-al defaults from Names node, falling back to upsampler defaults
         let mut et_al_min = n.et_al_min.or(self.et_al_min);
@@ -238,7 +237,7 @@ impl Upsampler {
             );
         }
         Some(ir::Node::Names(ir::NamesBlock {
-            variable,
+            variables,
             options,
             formatting: FormattingOptions::default(),
             source_order: n.macro_call_order,
@@ -645,6 +644,12 @@ impl Upsampler {
             "collection-editor" => Some(Variable::CollectionEditor),
             "composer" => Some(Variable::Composer),
             "director" => Some(Variable::Director),
+            "script-writer" => Some(Variable::Writer),
+            "producer" => Some(Variable::Producer),
+            "performer" => Some(Variable::Performer),
+            "guest" => Some(Variable::Guest),
+            "host" => Some(Variable::Host),
+            "narrator" => Some(Variable::Narrator),
             "interviewer" => Some(Variable::Interviewer),
             "recipient" => Some(Variable::Recipient),
             "reviewed-author" => Some(Variable::ReviewedAuthor),

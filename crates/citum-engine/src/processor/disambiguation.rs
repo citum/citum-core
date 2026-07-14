@@ -6,14 +6,13 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use crate::reference::{Bibliography, Reference};
 use crate::values::ProcHints;
 use citum_schema::options::{Config, GivennameRule};
+use citum_schema::reference::Title;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write as _;
 
 use crate::sorting::ReferenceSorter;
 use citum_schema::grouping::GroupSort;
 use citum_schema::locale::Locale;
-use citum_schema::options::{Substitute, SubstituteKey};
-use citum_schema::reference::{ClassExtension, Title};
 
 /// Handles disambiguation logic for author-date citations.
 ///
@@ -63,6 +62,9 @@ pub struct Disambiguator<'a> {
     sort_config: &'a Config,
     locale: &'a Locale,
     group_sort: Option<&'a GroupSort>,
+    citation_spec: Option<&'a citum_schema::CitationSpec>,
+    citation_primary_may_be_list: bool,
+    bibliography_spec: Option<&'a citum_schema::BibliographySpec>,
 }
 
 #[derive(Clone, Copy, Default)]
@@ -152,6 +154,9 @@ impl<'a> Disambiguator<'a> {
             sort_config,
             locale,
             group_sort: None,
+            citation_spec: None,
+            citation_primary_may_be_list: false,
+            bibliography_spec: None,
         }
     }
 
@@ -174,7 +179,25 @@ impl<'a> Disambiguator<'a> {
             sort_config,
             locale,
             group_sort: Some(group_sort),
+            citation_spec: None,
+            citation_primary_may_be_list: false,
+            bibliography_spec: None,
         }
+    }
+
+    /// Resolve disambiguation names from the effective citation template.
+    #[must_use]
+    pub fn with_citation_spec(mut self, spec: &'a citum_schema::CitationSpec) -> Self {
+        self.citation_spec = Some(spec);
+        self.citation_primary_may_be_list = crate::sorting::citation_may_have_list_primary(spec);
+        self
+    }
+
+    /// Resolve year-suffix sort keys from the effective bibliography template.
+    #[must_use]
+    pub fn with_bibliography_spec(mut self, spec: &'a citum_schema::BibliographySpec) -> Self {
+        self.bibliography_spec = Some(spec);
+        self
     }
 
     /// Calculate processing hints for disambiguation across all references.
@@ -267,13 +290,45 @@ impl<'a> Disambiguator<'a> {
         refs: &[&'b Reference],
         needs_title_key: bool,
     ) -> ReferenceCache<'b> {
+        let substitute = citum_schema::options::SubstituteConfig::resolve_or_default(
+            self.config.substitute.as_ref(),
+        );
         refs.iter()
             .enumerate()
             .map(|(index, reference)| {
-                let names = reference.author().map_or_else(Vec::new, |authors| {
-                    self.render_name_for_disambiguation(&authors)
-                });
-                let author_key = self.build_author_slot_key(reference, &names);
+                let names = if self.citation_primary_may_be_list {
+                    self.citation_spec
+                        .and_then(|spec| {
+                            crate::sorting::primary_contributor_for_citation(spec, reference)
+                        })
+                        .filter(|component| component.contributor.is_multiple())
+                        .map_or_else(
+                            || {
+                                crate::values::contributor::substitute::effective_primary_names(
+                                    reference,
+                                    substitute.as_ref(),
+                                    self.config,
+                                    self.locale,
+                                )
+                            },
+                            |component| {
+                                crate::values::contributor::merged::semantic_names(
+                                    &component,
+                                    reference,
+                                    self.config,
+                                    self.locale,
+                                )
+                            },
+                        )
+                } else {
+                    crate::values::contributor::substitute::effective_primary_names(
+                        reference,
+                        substitute.as_ref(),
+                        self.config,
+                        self.locale,
+                    )
+                };
+                let author_key = self.build_author_slot_key(reference, &names, substitute.as_ref());
                 let group_key = self.build_group_key(index, reference, &author_key);
                 // Year-suffix letters (a, b, c…) must follow the effective bibliography
                 // sort order. Reuse the bibliography title sort key (leading-article
@@ -306,55 +361,24 @@ impl<'a> Disambiguator<'a> {
         &self,
         reference: &Reference,
         author_names: &[crate::reference::FlatName],
+        substitute: &citum_schema::options::Substitute,
     ) -> String {
         let author_key = self.build_author_key(author_names);
         if !author_key.is_empty() {
             return author_key;
         }
 
-        let substitute = self
-            .config
-            .substitute
-            .as_ref()
-            .map(citum_schema::options::SubstituteConfig::resolve)
-            .unwrap_or_default();
-
-        self.build_substitute_author_key(reference, &substitute)
-            .unwrap_or_default()
-    }
-
-    fn build_substitute_author_key(
-        &self,
-        reference: &Reference,
-        substitute: &Substitute,
-    ) -> Option<String> {
-        for key in &substitute.template {
-            let resolved = match key {
-                SubstituteKey::CollectionEditor => reference
-                    .contributor(citum_schema::reference::ContributorRole::Unknown(
-                        "collection-editor".to_string(),
-                    ))
-                    .map(|names| {
-                        self.build_author_key(&self.render_name_for_disambiguation(&names))
-                    }),
-                SubstituteKey::Editor => reference.editor().map(|names| {
-                    self.build_author_key(&self.render_name_for_disambiguation(&names))
-                }),
-                SubstituteKey::Translator => reference.translator().map(|names| {
-                    self.build_author_key(&self.render_name_for_disambiguation(&names))
-                }),
-                SubstituteKey::ParentSerial => {
-                    resolve_parent_serial_title(reference).map(Self::title_substitute_key)
-                }
-                SubstituteKey::Title => reference.title().map(Self::title_substitute_key),
-            };
-
-            if let Some(key) = resolved.filter(|key| !key.is_empty()) {
-                return Some(key);
-            }
+        match crate::values::contributor::substitute::effective_primary(
+            reference,
+            substitute,
+            self.config,
+            self.locale,
+        ) {
+            Some(crate::values::contributor::substitute::EffectivePrimary::Title {
+                title, ..
+            }) => Self::title_substitute_key(title),
+            _ => String::new(),
         }
-
-        None
     }
 
     /// Calculates how many references in `refs` share the same `author_key`.
@@ -729,11 +753,17 @@ impl<'a> Disambiguator<'a> {
         group: &[&'b CachedReference<'b>],
     ) -> Vec<&'b CachedReference<'b>> {
         if let Some(sort_spec) = self.group_sort {
-            let sorter = ReferenceSorter::with_bibliography_config(self.locale, self.sort_config);
+            let mut sorter =
+                ReferenceSorter::with_bibliography_config(self.locale, self.sort_config);
+            if let Some(spec) = self.bibliography_spec {
+                sorter = sorter.with_bibliography_spec(spec);
+            } else if let Some(spec) = self.citation_spec {
+                sorter = sorter.with_citation_spec(spec);
+            }
             // Pre-sort by title_key so that entries which compare equal under the primary
             // sort_spec retain a stable, deterministic order (title ascending as tiebreaker).
-            // ReferenceSorter::sort_references uses sort_by (stable), so the pre-sort order is
-            // preserved for entries that compare equal under the primary key.
+            // `sort_by_keys` uses sort_by (stable), so the pre-sort order is preserved for
+            // entries that compare equal under the primary key.
             let mut pre_sorted: Vec<&CachedReference<'_>> = group.to_vec();
             pre_sorted.sort_by(|a, b| {
                 let a_title = a.data.title_key.as_deref().unwrap_or_default();
@@ -742,17 +772,9 @@ impl<'a> Disambiguator<'a> {
                     year_suffix_date_key(a.reference).cmp(&year_suffix_date_key(b.reference))
                 })
             });
-            pre_sorted.sort_by(|a, b| {
-                for sort_key in &sort_spec.template {
-                    let cmp = sorter.compare_by_key(a.reference, b.reference, sort_key);
-                    if cmp != std::cmp::Ordering::Equal {
-                        return cmp;
-                    }
-                }
-
-                std::cmp::Ordering::Equal
-            });
-            pre_sorted
+            sorter.sort_by_keys(pre_sorted, &sort_spec.template, |cached| {
+                Some(cached.reference)
+            })
         } else {
             let mut sorted: Vec<&CachedReference<'_>> = group.to_vec();
             sorted.sort_by(|a, b| {
@@ -841,23 +863,6 @@ impl<'a> Disambiguator<'a> {
         }
 
         groups
-    }
-
-    /// Flattens a contributor to names using the style's active multilingual display
-    /// mode, so the collision key reflects the same surface form the style renders
-    /// (DISAMBIGUATION.md §4). Monolingual contributors fall through to the original.
-    fn render_name_for_disambiguation(
-        &self,
-        contributor: &citum_schema::reference::Contributor,
-    ) -> Vec<crate::reference::FlatName> {
-        let ml = self.config.multilingual.as_ref();
-        crate::values::resolve_multilingual_name(
-            contributor,
-            ml.and_then(|m| m.name_mode.as_ref()),
-            ml.and_then(|m| m.preferred_transliteration.as_deref()),
-            ml.and_then(|m| m.preferred_script.as_ref()),
-            &self.locale.locale,
-        )
     }
 
     /// Generates a normalized author string used for grouping and et-al detection.
@@ -1021,15 +1026,6 @@ impl<'a> Disambiguator<'a> {
             .map_or(ReferenceCacheKey::Index(index), |id| {
                 ReferenceCacheKey::Id(id.to_string())
             })
-    }
-}
-
-fn resolve_parent_serial_title(reference: &Reference) -> Option<Title> {
-    match reference.extension() {
-        ClassExtension::SerialComponent(_)
-        | ClassExtension::LegalCase(_)
-        | ClassExtension::Treaty(_) => reference.container_title(),
-        _ => None,
     }
 }
 

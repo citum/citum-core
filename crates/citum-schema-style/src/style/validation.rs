@@ -56,6 +56,14 @@ impl Style {
     pub fn validate_resource_limits(&self) -> Result<(), String> {
         let mut budget = TemplateResourceBudget::default();
 
+        if let Some(substitute) = self
+            .options
+            .as_ref()
+            .and_then(|options| options.substitute.as_ref())
+        {
+            validate_substitute_candidates(substitute, "options.substitute")?;
+        }
+
         if let Some(templates) = &self.templates {
             for (name, template) in templates {
                 budget.check_template(template, &format!("templates.{name}"), 0)?;
@@ -116,6 +124,47 @@ impl Style {
 
         Ok(())
     }
+}
+
+fn validate_substitute_candidates(
+    config: &crate::options::SubstituteConfig,
+    location: &str,
+) -> Result<(), String> {
+    let resolved = config.resolve();
+    validate_candidate_list(&resolved.template, &format!("{location}.template"))?;
+    for (reference_type, candidates) in &resolved.overrides {
+        validate_candidate_list(
+            candidates,
+            &format!("{location}.overrides.{reference_type}"),
+        )?;
+    }
+    Ok(())
+}
+
+fn validate_candidate_list(
+    candidates: &[crate::options::SubstituteKey],
+    location: &str,
+) -> Result<(), String> {
+    for (index, candidate) in candidates.iter().enumerate() {
+        let crate::options::SubstituteKey::Contributor(candidate) = candidate else {
+            continue;
+        };
+        let crate::template::ContributorRoles::Multiple(roles) = &candidate.contributor else {
+            continue;
+        };
+        if roles.len() < 2 {
+            return Err(format!(
+                "{location}[{index}].contributor must contain at least two roles in list form"
+            ));
+        }
+        let distinct = roles.iter().collect::<std::collections::HashSet<_>>();
+        if distinct.len() != roles.len() {
+            return Err(format!(
+                "{location}[{index}].contributor role list must not contain duplicates"
+            ));
+        }
+    }
+    Ok(())
 }
 
 fn forbidden_profile_template_path(raw_yaml: Option<&serde_yaml::Value>) -> Option<String> {
@@ -281,8 +330,40 @@ impl TemplateResourceBudget {
                     }
                 }
             }
-            TemplateComponent::Contributor(_)
-            | TemplateComponent::Title(_)
+            TemplateComponent::Contributor(contributor) => match &contributor.contributor {
+                crate::template::ContributorRoles::Single(_) => {
+                    if contributor.merge.is_some() {
+                        return Err(format!(
+                            "{location}.merge is valid only for a contributor role list"
+                        ));
+                    }
+                }
+                crate::template::ContributorRoles::Multiple(roles) => {
+                    if roles.len() < 2 {
+                        return Err(format!(
+                            "{location}.contributor must contain at least two roles in list form"
+                        ));
+                    }
+                    let distinct = roles.iter().collect::<std::collections::HashSet<_>>();
+                    if distinct.len() != roles.len() {
+                        return Err(format!(
+                            "{location}.contributor role list must not contain duplicates"
+                        ));
+                    }
+                    if contributor.label.is_some() {
+                        return Err(format!("{location}.label is valid only for a single role"));
+                    }
+                    if let Some(merge) = &contributor.merge
+                        && let Some(role) = merge.roles.keys().find(|role| !roles.contains(role))
+                    {
+                        return Err(format!(
+                            "{location}.merge.roles contains undeclared role {}",
+                            role.as_str()
+                        ));
+                    }
+                }
+            },
+            TemplateComponent::Title(_)
             | TemplateComponent::Number(_)
             | TemplateComponent::Variable(_)
             | TemplateComponent::Term(_)
@@ -347,6 +428,13 @@ impl TemplateResourceBudget {
         location: &str,
         depth: usize,
     ) -> Result<(), String> {
+        if let Some(substitute) = spec
+            .options
+            .as_ref()
+            .and_then(|options| options.substitute.as_ref())
+        {
+            validate_substitute_candidates(substitute, &format!("{location}.options.substitute"))?;
+        }
         if let Some(template) = &spec.template {
             self.check_template(template, &format!("{location}.template"), depth)?;
         }
@@ -376,6 +464,13 @@ impl TemplateResourceBudget {
         location: &str,
         depth: usize,
     ) -> Result<(), String> {
+        if let Some(substitute) = spec
+            .options
+            .as_ref()
+            .and_then(|options| options.substitute.as_ref())
+        {
+            validate_substitute_candidates(substitute, &format!("{location}.options.substitute"))?;
+        }
         if let Some(template) = &spec.template {
             self.check_template(template, &format!("{location}.template"), depth)?;
         }

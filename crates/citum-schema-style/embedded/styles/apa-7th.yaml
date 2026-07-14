@@ -39,14 +39,29 @@ options:
       - editor
       - title
       - translator
+    overrides:
+      episode:
+        - contributor: [writer, director]
+      film:
+        - contributor: director
     role-substitute:
       container-author:
         - editor
         - editorial-director
+      writer:
+        - author
   contributors:
     name-form: initials
     initialize-with: ". "
-    role: short-suffix
+    role:
+      defaults: apa
+    merge:
+      order: document
+      labels: individual
+      roles:
+        director:
+          labels: collective
+      combine-same-person: true
     demote-non-dropping-particle: never
     delimiter-precedes-last: always
     and: symbol

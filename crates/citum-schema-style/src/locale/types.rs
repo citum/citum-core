@@ -209,6 +209,8 @@ crate::str_enum! {
         Ibid = "ibid",
         /// The conjunction "and" (e.g., "Smith and Jones").
         And = "and",
+        /// Verbatim connector used between terms in a combined contributor role.
+        RoleConjunction = "role-conjunction",
         /// The abbreviation for omitted additional names (e.g., "et al.").
         EtAl = "et-al",
         /// The phrase "and others" (generic use).

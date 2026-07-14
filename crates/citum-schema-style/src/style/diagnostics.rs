@@ -344,6 +344,7 @@ fn component_allowed_fields(kind: &str) -> &'static [&'static str] {
             "contributor",
             "form",
             "label",
+            "merge",
             "name-order",
             "name-form",
             "delimiter",

@@ -703,7 +703,7 @@ mod tests {
             citation: Some(CitationSpec {
                 template: Some(vec![
                     TemplateComponent::Contributor(TemplateContributor {
-                        contributor: ContributorRole::Author,
+                        contributor: ContributorRole::Author.into(),
                         form: ContributorForm::Short,
                         rendering: Rendering::default(),
                         ..Default::default()
@@ -1047,7 +1047,7 @@ mod tests {
             citation: Some(CitationSpec {
                 integral: Some(Box::new(CitationSpec {
                     template: Some(vec![TemplateComponent::Contributor(TemplateContributor {
-                        contributor: ContributorRole::Author,
+                        contributor: ContributorRole::Author.into(),
                         form: ContributorForm::Long,
                         rendering: Rendering::default(),
                         ..Default::default()
@@ -1056,7 +1056,7 @@ mod tests {
                 })),
                 template: Some(vec![
                     TemplateComponent::Contributor(TemplateContributor {
-                        contributor: ContributorRole::Author,
+                        contributor: ContributorRole::Author.into(),
                         form: ContributorForm::Short,
                         rendering: Rendering::default(),
                         ..Default::default()

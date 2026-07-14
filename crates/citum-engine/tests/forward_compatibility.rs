@@ -131,8 +131,8 @@ fn template_has_unknowns(components: &[TemplateComponent]) -> bool {
             }
             TemplateComponent::Contributor(c) => {
                 if matches!(
-                    c.contributor,
-                    citum_schema::template::ContributorRole::Unknown(_)
+                    c.contributor.as_single(),
+                    Some(citum_schema::template::ContributorRole::Unknown(_))
                 ) {
                     return true;
                 }
@@ -182,7 +182,13 @@ fn parse_bibliography(yaml: &str) -> Outcome {
                     || reference
                         .all_contributor_entries()
                         .iter()
-                        .any(|c| matches!(c.role, ContributorRole::Unknown(_)))
+                        .any(|contributor| {
+                            contributor
+                                .roles
+                                .as_slice()
+                                .iter()
+                                .any(|role| matches!(role, ContributorRole::Unknown(_)))
+                        })
             });
 
             if has_unknown {
@@ -205,9 +211,9 @@ const STYLE_HEAD: &str =
     "version: \"0.51\"\ninfo:\n  id: forward-compat-fixture\n  title: Forward compat fixture\n";
 
 fn case_attribute_enum_in_template() -> Outcome {
-    // ContributorRole gains hypothetical `producer`.
+    // ContributorRole gains a hypothetical future role.
     let yaml = format!(
-        "{STYLE_HEAD}bibliography:\n  template:\n    - contributor: producer\n      form: long\n"
+        "{STYLE_HEAD}bibliography:\n  template:\n    - contributor: future-contributor\n      form: long\n"
     );
     parse_style(&yaml)
 }

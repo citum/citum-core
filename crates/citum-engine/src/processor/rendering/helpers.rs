@@ -97,7 +97,7 @@ pub fn has_contributor_component(component: &TemplateComponent) -> bool {
 /// leads with a non-author contributor (the grouping component).
 pub fn remove_first_contributor_with_role(
     component: TemplateComponent,
-    role: &citum_schema::template::ContributorRole,
+    role: &citum_schema::template::ContributorRoles,
 ) -> (Option<TemplateComponent>, bool) {
     match component {
         TemplateComponent::Contributor(ref c) if &c.contributor == role => (None, true),

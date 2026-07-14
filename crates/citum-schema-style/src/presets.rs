@@ -665,7 +665,9 @@ pub enum SubstitutePreset {
 impl SubstitutePreset {
     /// Convert this preset to a concrete `Substitute`.
     pub fn config(&self) -> Substitute {
-        use SubstituteKey::{Editor, Title, Translator};
+        let editor = SubstituteKey::Editor;
+        let title = SubstituteKey::Title;
+        let translator = SubstituteKey::Translator;
 
         // Build a substitute from an optional role-label form and a template
         // order; all presets share empty overrides/role-substitute/unknowns.
@@ -676,22 +678,22 @@ impl SubstitutePreset {
         };
 
         match self {
-            SubstitutePreset::Standard => build(None, vec![Editor, Title, Translator]),
-            SubstitutePreset::EditorFirst => build(None, vec![Editor, Translator, Title]),
-            SubstitutePreset::TitleFirst => build(None, vec![Title, Editor, Translator]),
-            SubstitutePreset::EditorShort => build(Some("short"), vec![Editor]),
-            SubstitutePreset::EditorLong => build(Some("long"), vec![Editor]),
+            SubstitutePreset::Standard => build(None, vec![editor, title, translator]),
+            SubstitutePreset::EditorFirst => build(None, vec![editor, translator, title]),
+            SubstitutePreset::TitleFirst => build(None, vec![title, editor, translator]),
+            SubstitutePreset::EditorShort => build(Some("short"), vec![editor]),
+            SubstitutePreset::EditorLong => build(Some("long"), vec![editor]),
             SubstitutePreset::EditorTranslatorShort => {
-                build(Some("short"), vec![Editor, Translator])
+                build(Some("short"), vec![editor, translator])
             }
-            SubstitutePreset::EditorTranslatorLong => build(Some("long"), vec![Editor, Translator]),
-            SubstitutePreset::EditorTitleShort => build(Some("short"), vec![Editor, Title]),
-            SubstitutePreset::EditorTitleLong => build(Some("long"), vec![Editor, Title]),
+            SubstitutePreset::EditorTranslatorLong => build(Some("long"), vec![editor, translator]),
+            SubstitutePreset::EditorTitleShort => build(Some("short"), vec![editor, title]),
+            SubstitutePreset::EditorTitleLong => build(Some("long"), vec![editor, title]),
             SubstitutePreset::EditorTranslatorTitleShort => {
-                build(Some("short"), vec![Editor, Translator, Title])
+                build(Some("short"), vec![editor, translator, title])
             }
             SubstitutePreset::EditorTranslatorTitleLong => {
-                build(Some("long"), vec![Editor, Translator, Title])
+                build(Some("long"), vec![editor, translator, title])
             }
         }
     }

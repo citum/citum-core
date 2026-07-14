@@ -48,7 +48,7 @@ fn grouped_author_date_style() -> Style {
         citation: Some(CitationSpec {
             template: Some(vec![
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Short,
                     rendering: Rendering::default(),
                     ..Default::default()
@@ -87,7 +87,7 @@ fn explicit_author_year_group_style() -> Style {
                 TemplateComponent::Group(TemplateGroup {
                     group: vec![
                         TemplateComponent::Contributor(TemplateContributor {
-                            contributor: ContributorRole::Author,
+                            contributor: ContributorRole::Author.into(),
                             form: ContributorForm::Short,
                             rendering: Rendering::default(),
                             ..Default::default()
@@ -137,7 +137,7 @@ fn explicit_author_year_group_with_locator_delimiter_style() -> Style {
                 TemplateComponent::Group(TemplateGroup {
                     group: vec![
                         TemplateComponent::Contributor(TemplateContributor {
-                            contributor: ContributorRole::Author,
+                            contributor: ContributorRole::Author.into(),
                             form: ContributorForm::Short,
                             rendering: Rendering::default(),
                             ..Default::default()
@@ -188,7 +188,7 @@ fn integral_name_style() -> Style {
         citation: Some(CitationSpec {
             integral: Some(Box::new(CitationSpec {
                 template: Some(vec![TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Long,
                     rendering: Rendering::default(),
                     ..Default::default()
@@ -197,7 +197,7 @@ fn integral_name_style() -> Style {
             })),
             template: Some(vec![
                 TemplateComponent::Contributor(TemplateContributor {
-                    contributor: ContributorRole::Author,
+                    contributor: ContributorRole::Author.into(),
                     form: ContributorForm::Short,
                     rendering: Rendering::default(),
                     ..Default::default()
@@ -312,7 +312,7 @@ fn test_variable_key_includes_context() {
 fn test_substituted_contributor_keys_block_contextual_duplicate_components() {
     let mut tracker = TemplateComponentTracker::default();
     let translated_component = TemplateComponent::Contributor(TemplateContributor {
-        contributor: ContributorRole::Translator,
+        contributor: ContributorRole::Translator.into(),
         form: ContributorForm::Long,
         rendering: Rendering {
             suffix: Some(", translator".to_string()),
@@ -359,11 +359,12 @@ fn test_strip_author_component_nested_list() {
     let nested = TemplateComponent::Group(TemplateGroup {
         group: vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 form: ContributorForm::Short,
                 and: None,
                 shorten: None,
                 label: None,
+                merge: None,
                 name_order: None,
                 name_form: None,
                 delimiter: None,
@@ -785,7 +786,7 @@ fn test_type_specific_rendering() {
         TypeSelector::from_str("article-journal").unwrap(),
         vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 form: ContributorForm::Short,
                 ..Default::default()
             }),
@@ -806,7 +807,7 @@ fn test_type_specific_rendering() {
         TypeSelector::from_str("book").unwrap(),
         vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 form: ContributorForm::Short,
                 ..Default::default()
             }),
@@ -973,7 +974,7 @@ fn test_bibliography_type_specific_rendering() {
         TypeSelector::from_str("interview").unwrap(),
         vec![
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Author,
+                contributor: ContributorRole::Author.into(),
                 form: ContributorForm::Long,
                 name_order: Some(NameOrder::FamilyFirst),
                 ..Default::default()
@@ -998,7 +999,7 @@ fn test_bibliography_type_specific_rendering() {
                 ..Default::default()
             }),
             TemplateComponent::Contributor(TemplateContributor {
-                contributor: ContributorRole::Interviewer,
+                contributor: ContributorRole::Interviewer.into(),
                 form: ContributorForm::Long,
                 name_order: Some(NameOrder::FamilyFirst),
                 rendering: Rendering {
@@ -1120,7 +1121,7 @@ fn sentence_initial_date_group_preserves_no_date_term_case() {
     });
     let style = bibliography_style_with_template(vec![
         TemplateComponent::Contributor(TemplateContributor {
-            contributor: ContributorRole::Author,
+            contributor: ContributorRole::Author.into(),
             form: ContributorForm::Long,
             name_order: Some(NameOrder::FamilyFirst),
             ..Default::default()
@@ -1202,7 +1203,7 @@ fn sentence_initial_group_still_capitalizes_leading_contributor_role_prose() {
     });
     let style = bibliography_style_with_template(vec![TemplateComponent::Group(TemplateGroup {
         group: vec![TemplateComponent::Contributor(TemplateContributor {
-            contributor: ContributorRole::Editor,
+            contributor: ContributorRole::Editor.into(),
             form: ContributorForm::Verb,
             name_order: Some(NameOrder::GivenFirst),
             ..Default::default()

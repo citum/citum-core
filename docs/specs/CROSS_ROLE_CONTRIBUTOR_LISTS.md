@@ -137,7 +137,9 @@ options:
 
 Component `merge` and label declarations remain explicit higher-precedence
 exceptions for generic migrated CSL structures whose primary-slot meaning
-cannot safely be inferred.
+cannot safely be inferred. A component-level `merge:` block replaces the
+style-wide `options.contributors.merge` defaults wholesale — there is no
+per-field layering between the two.
 
 ### Entry ordering (sub-problem A)
 
@@ -230,7 +232,11 @@ role-list order) resolves as:
    by`, …) with full form and plural coverage; `writer-director` is added with
    this feature. Authored terms win because combined labels are not reliably
    composable — abbreviation level, capitalization, and word order may differ
-   from the constituent terms.
+   from the constituent terms. The editor+translator pair is a CSL
+   `editortranslator` compatibility affordance: it resolves its authored term
+   order-insensitively, so both `[editor, translator]` and
+   `[translator, editor]` map to the same `editor-translator` key. Every other
+   combination uses a strict declared-order hyphen-joined key.
 2. **Composed fallback** — when no authored term exists, the constituent role
    terms (each resolved at the label form in effect) are joined with a
    connector inserted verbatim: `merge.role-conjunction` when set on the
@@ -317,6 +323,12 @@ label instead of suppression uses `combine-same-person` and declares no
   from the merged list.
 - **Suppress-author** — `options.suppress_author` removes the author role from
   merged assembly while preserving any other declared roles.
+- **Empty merged component** — when every declared role of a merged component
+  resolves to no entries, the component falls back to the substitution chain
+  keyed on its first declared role: an author-first component falls back
+  through the author-substitute chain, and any other component falls back
+  through the role-substitute chain
+  ([`ROLE_SUBSTITUTE_FALLBACK.md`](./ROLE_SUBSTITUTE_FALLBACK.md)).
 - **Sorting** — the component's sort key is the merged list in rendered order,
   after same-person combination, same as any name list.
 - **Disambiguation** — names in a merged list participate in name-based
@@ -404,6 +416,9 @@ label instead of suppression uses `combine-same-person` and declares no
 
 ## Changelog
 
+- 2026-07-15: Documented empty-merged-component substitution fallback,
+  component-level `merge:` replacing style-wide merge defaults wholesale, and
+  editor-translator combined-term order-insensitivity.
 - 2026-07-13: Activated version 1.0 after implementation and acceptance testing.
 - 2026-07-13: Made native contributor role membership explicit and moved
   legacy name matching to the CSL-JSON conversion boundary.

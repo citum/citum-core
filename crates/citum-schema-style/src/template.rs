@@ -678,10 +678,15 @@ pub struct RoleLabel {
     /// requires). When unset the term is rendered as the locale stores it.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub text_case: Option<crate::options::titles::TextCase>,
+    /// Optional punctuation wrapped around the resolved label term.
+    ///
+    /// The wrap is applied before the label's outer `prefix` and `suffix`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub wrap: Option<Box<WrapConfig>>,
     /// Optional affix rendered before the label term, overriding the
-    /// placement-derived default (`", "` for suffix placement, empty for
-    /// prefix placement). Mirrors CSL 1.0 `cs:label` `prefix` (e.g. `" ("`
-    /// for elsevier's `" (Eds.)"`).
+    /// placement-derived default (a space for a wrapped suffix label, `", "`
+    /// for an unwrapped suffix label, and empty for prefix placement). Mirrors
+    /// CSL 1.0 `cs:label` `prefix` (e.g. `" ("` for elsevier's `" (Eds.)"`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub prefix: Option<String>,
     /// Optional affix rendered after the label term, overriding the
@@ -711,18 +716,165 @@ pub enum LabelPlacement {
     Suffix,
 }
 
+/// One contributor role or an ordered list of roles rendered as one name list.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(untagged)]
+pub enum ContributorRoles {
+    /// A conventional single-role contributor component.
+    Single(ContributorRole),
+    /// Two or more contributor roles rendered as a merged list.
+    Multiple(#[cfg_attr(feature = "schema", schemars(length(min = 2)))] Vec<ContributorRole>),
+}
+
+impl Default for ContributorRoles {
+    fn default() -> Self {
+        Self::Single(ContributorRole::Author)
+    }
+}
+
+impl ContributorRoles {
+    /// Return all declared roles in authoring order.
+    #[must_use]
+    pub fn as_slice(&self) -> &[ContributorRole] {
+        match self {
+            Self::Single(role) => std::slice::from_ref(role),
+            Self::Multiple(roles) => roles,
+        }
+    }
+
+    /// Return the role when this is the scalar form.
+    #[must_use]
+    pub fn as_single(&self) -> Option<&ContributorRole> {
+        match self {
+            Self::Single(role) => Some(role),
+            Self::Multiple(_) => None,
+        }
+    }
+
+    /// Return whether this is the list form.
+    #[must_use]
+    pub fn is_multiple(&self) -> bool {
+        matches!(self, Self::Multiple(_))
+    }
+
+    /// Return whether the declaration contains `role`.
+    #[must_use]
+    pub fn contains(&self, role: &ContributorRole) -> bool {
+        self.as_slice().contains(role)
+    }
+}
+
+impl From<ContributorRole> for ContributorRoles {
+    fn from(role: ContributorRole) -> Self {
+        Self::Single(role)
+    }
+}
+
+impl From<Vec<ContributorRole>> for ContributorRoles {
+    fn from(roles: Vec<ContributorRole>) -> Self {
+        Self::Multiple(roles)
+    }
+}
+
+impl PartialEq<ContributorRole> for ContributorRoles {
+    fn eq(&self, other: &ContributorRole) -> bool {
+        self.as_single() == Some(other)
+    }
+}
+
+/// Ordering policy for a merged contributor list.
+#[derive(Debug, Default, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum ContributorMergeOrder {
+    /// Preserve the unified reference contributor order.
+    #[default]
+    Document,
+    /// Group entries by the component's declared role order.
+    Role,
+}
+
+/// Role-label placement mode for merged contributor entries.
+#[derive(Debug, Default, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum ContributorLabelMode {
+    /// Attach a singular role label to every rendered person.
+    #[default]
+    Individual,
+    /// Attach one singular or plural label to each contiguous role run.
+    Collective,
+    /// Render names without role labels.
+    None,
+}
+
+/// Per-role overrides within a merged contributor list.
+#[derive(Debug, Default, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct ContributorMergeRole {
+    /// Override the merged list's default label mode for this role.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub labels: Option<ContributorLabelMode>,
+    /// Override label term, form, placement, case, and affixes for this role.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub label: Option<RoleLabel>,
+}
+
+/// Configuration for rendering multiple contributor roles as one name list.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct ContributorMerge {
+    /// Effective ordering of entries in the merged list.
+    #[serde(default)]
+    pub order: ContributorMergeOrder,
+    /// Default role-label mode for entries in the merged list.
+    #[serde(default)]
+    pub labels: ContributorLabelMode,
+    /// Optional per-role label overrides.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub roles: HashMap<ContributorRole, ContributorMergeRole>,
+    /// Whether identical people in different roles render as one entry.
+    #[serde(default = "default_combine_same_person")]
+    pub combine_same_person: bool,
+    /// Verbatim connector used when composing a missing combined-role term.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub role_conjunction: Option<String>,
+}
+
+fn default_combine_same_person() -> bool {
+    true
+}
+
+impl Default for ContributorMerge {
+    fn default() -> Self {
+        Self {
+            order: ContributorMergeOrder::Document,
+            labels: ContributorLabelMode::Individual,
+            roles: HashMap::new(),
+            combine_same_person: true,
+            role_conjunction: None,
+        }
+    }
+}
+
 /// A contributor component for rendering names.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Default)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
 pub struct TemplateContributor {
-    /// Which contributor role to render (author, editor, etc.).
-    pub contributor: ContributorRole,
+    /// Which contributor role or ordered role list to render.
+    pub contributor: ContributorRoles,
     /// How to display the contributor (long names, short, with label, etc.).
     pub form: ContributorForm,
     /// Optional role label configuration (e.g., "eds." for editors).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<RoleLabel>,
+    /// Configuration used when `contributor` is an ordered role list.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub merge: Option<ContributorMerge>,
     /// Override the global name order for this specific component.
     /// Use to show editors as "Given Family" even when global setting is "Family, Given".
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -808,6 +960,7 @@ crate::str_enum! {
         Counsel = "counsel",
         Composer = "composer",
         Writer = "writer",
+        Producer = "producer",
         CollectionEditor = "collection-editor",
         ContainerAuthor = "container-author",
         EditorialDirector = "editorial-director",
@@ -1194,7 +1347,7 @@ pub enum MessageArgSource {
     /// A literal string argument.
     Literal { literal: String },
     /// A rendered contributor argument.
-    Contributor(TemplateContributor),
+    Contributor(Box<TemplateContributor>),
     /// A rendered date argument.
     Date(TemplateDate),
     /// A rendered group argument.
@@ -1216,7 +1369,9 @@ impl MessageArgSource {
     pub fn as_template_component(&self) -> Option<TemplateComponent> {
         match self {
             Self::Literal { .. } => None,
-            Self::Contributor(component) => Some(TemplateComponent::Contributor(component.clone())),
+            Self::Contributor(component) => {
+                Some(TemplateComponent::Contributor(component.as_ref().clone()))
+            }
             Self::Date(component) => Some(TemplateComponent::Date(component.clone())),
             Self::Group(component) => Some(TemplateComponent::Group(component.clone())),
             Self::Title(component) => Some(TemplateComponent::Title(component.clone())),
