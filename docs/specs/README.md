@@ -85,7 +85,8 @@ note. The `—` marker in the Tests column means no targeted test exists yet.
 | [`ARTICLE_JOURNAL_NO_PAGE_FALLBACK.md`](./ARTICLE_JOURNAL_NO_PAGE_FALLBACK.md) — external bibliography parameter for article-journal page fallback | Active | `bibliography.rs::article_journal_no_page_fallback` |
 | [`CITATION_BIBLIOGRAPHY_OPTION_SPLIT.md`](./CITATION_BIBLIOGRAPHY_OPTION_SPLIT.md) — strict schema split for citation and bibliography option scopes | Active | `bibliography.rs`, `citations.rs` |
 | [`INLINE_JOURNAL_DETAIL_GROUPING.md`](./INLINE_JOURNAL_DETAIL_GROUPING.md) — inline article-journal detail blocks with mixed delimiters | Active | `bibliography.rs` |
-| [`CROSS_ROLE_CONTRIBUTOR_LISTS.md`](./CROSS_ROLE_CONTRIBUTOR_LISTS.md) — merged multi-role name lists with per-name/collective labels and same-person combination | Draft | — |
+| [`CROSS_ROLE_CONTRIBUTOR_LISTS.md`](./CROSS_ROLE_CONTRIBUTOR_LISTS.md) — merged multi-role name lists with per-name/collective labels and same-person combination | Active | `cross_role_contributors.rs` |
+| [`PRIMARY_CONTRIBUTOR_SUBSTITUTION.md`](./PRIMARY_CONTRIBUTOR_SUBSTITUTION.md) — type-aware scalar and merged contributors promoted into the primary slot | Active | `cross_role_contributors.rs` |
 | [`ROLE_SUBSTITUTE_FALLBACK.md`](./ROLE_SUBSTITUTE_FALLBACK.md) — normative behavior for role-aware contributor fallback chains | Active | `bibliography.rs::substitution` |
 | [`SECONDARY_CONTRIBUTOR_ROLE_FORMATTING.md`](./SECONDARY_CONTRIBUTOR_ROLE_FORMATTING.md) — consistent rendering and verification for secondary contributor roles | Active | `bibliography.rs` |
 

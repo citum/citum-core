@@ -10,7 +10,7 @@
 Define a coherent configuration and verification model for secondary contributor roles so Citum can render editors, translators, interviewers, recipients, and related role-bearing contributors consistently across citation and bibliography contexts.
 
 ## Scope
-In scope: role-label presets, legacy `editor-label-format` compatibility, substitute-path parity, fixture coverage, and oracle diagnostics for secondary contributor rendering. Out of scope: new reference-data model fields for currently unsupported contributor relations and any redesign of the existing contributor or substitute preset systems.
+In scope: role-label presets, style-wide label presentation, substitute-path parity, fixture coverage, and oracle diagnostics for secondary contributor rendering. Out of scope: new reference-data model fields for currently unsupported contributor relations and automatic selection of which roles belong to a secondary contributor block.
 
 ## Design
 Secondary contributor role formatting is additive and non-breaking. Styles may configure a global role-label preset at `options.contributors.role.preset` and override it per role at `options.contributors.role.roles.<role>.preset`.
@@ -40,6 +40,11 @@ contributors:
 
 Repeating the same preset for every role in `roles` is redundant and must be collapsed to the global form.
 
+When a role needs presentation beyond a preset, use
+`role.roles.<role>.label`. This style-wide value carries form, placement,
+text-case, wrapping, and affixes while deriving the term from the map key; it
+must not be repeated in every type template.
+
 This wave defines the following presets:
 
 - `none`: suppress the configured role label.
@@ -50,11 +55,12 @@ This wave defines the following presets:
 
 Preset precedence is:
 
-1. Explicit `TemplateContributor.label`
-2. Per-role preset override
-3. Global role preset
-4. Legacy `editor-label-format` compatibility for editor and translator roles
-5. Existing form-based defaults
+1. Explicit component or merged-role `label`
+2. Style-wide `role.roles.<role>.label`
+3. Per-role preset override
+4. Global role preset
+5. Bibliography-only `role.defaults` strategy
+6. Existing form-based defaults
 
 Role-aware substitution must use the same locale-driven label resolution as normal contributor rendering. When `options.substitute.contributor-role-form` is present, it overrides the configured role-label preset for substitute labels only; otherwise substitute rendering falls back to the same role preset resolution path as ordinary role-bearing contributors.
 
