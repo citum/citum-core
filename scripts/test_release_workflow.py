@@ -110,6 +110,28 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("target: aarch64-apple-darwin", self.workflow)
         self.assertIn("target: x86_64-pc-windows-msvc", self.workflow)
 
+    def test_release_binary_matrix_adds_gnu_linux_targets_for_migrate(self) -> None:
+        """rusty_v8 (citum-migrate's V8 dep) has no musl prebuilt but does
+        have a gnu one — see issue #1054. The matrix must build gnu Linux
+        targets so install.sh has somewhere to fetch citum-migrate from."""
+        self.assertIn("target: x86_64-unknown-linux-gnu", self.workflow)
+        self.assertIn("target: aarch64-unknown-linux-gnu", self.workflow)
+        # musl targets must still be present — they remain the default for
+        # citum/citum-server.
+        self.assertIn("target: x86_64-unknown-linux-musl", self.workflow)
+        self.assertIn("target: aarch64-unknown-linux-musl", self.workflow)
+
+    def test_installer_fetches_migrate_from_gnu_fallback_on_musl(self) -> None:
+        """install.sh must not silently drop citum-migrate on Linux; it
+        should fetch the binary from the gnu tarball instead (issue #1054)."""
+        self.assertIn("migrate_fallback_target", self.install_script)
+        self.assertIn("x86_64-unknown-linux-gnu", self.install_script)
+        self.assertIn("aarch64-unknown-linux-gnu", self.install_script)
+        self.assertIn("fetch_tarball", self.install_script)
+        # The graceful degrade path (gnu fetch itself unavailable) must
+        # remain, so a stale/offline mirror doesn't hard-fail the install.
+        self.assertIn("cargo install citum-migrate --locked", self.install_script)
+
     def test_installer_does_not_map_intel_macos_to_missing_tarball(self) -> None:
         self.assertNotIn('echo "x86_64-apple-darwin"', self.install_script)
         self.assertIn("prebuilt Intel macOS binaries are no longer shipped", self.install_script)
