@@ -128,6 +128,11 @@ class ReleaseWorkflowTests(unittest.TestCase):
         self.assertIn("publish-crates requires release_ref", build.group("block"))
         self.assertIn("ref: ${{ inputs.release_ref || github.ref }}", build.group("block"))
         self.assertIn("ref: ${{ inputs.release_ref || github.ref }}", publish.group("block"))
+        self.assertRegex(
+            build.group("block"),
+            r"- name: Validate recovery tag[\s\S]*?shell: bash",
+            "Tag validation must use Bash on the Windows build matrix entry.",
+        )
 
     def test_release_binary_matrix_drops_intel_macos_but_keeps_windows(self) -> None:
         self.assertNotIn("target: x86_64-apple-darwin", self.workflow)
