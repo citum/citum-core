@@ -3,8 +3,8 @@
 This guide tells you when and how to add MessageFormat 2 (MF2) entries to a
 Citum locale file in the
 [embedded locale directory](../../crates/citum-schema-style/embedded/locales/).
-It is the practical companion to
-[`docs/specs/LOCALE_MESSAGES.md`](../specs/LOCALE_MESSAGES.md).
+It is the practical companion to the
+[locale messages specification](../specs/LOCALE_MESSAGES.md).
 
 ## Status
 
@@ -96,6 +96,7 @@ limitation applies to other gendered locales, including French and Arabic.
 | `term.volume-label`, `term.volume-label-long` | `$count` | |
 | `term.section-label`, `term.section-label-long` | `$count` | |
 | `term.figure-label` | `$count` | |
+| `term.role-conjunction` | — | Connector for dynamically composed combined-role labels; include surrounding spacing. |
 | `term.note-label`, `term.note-label-long` | `$count` | |
 | `term.archive-collection-label` | none | Archive hierarchy: collection name |
 | `term.archive-series-label` | none | Archive hierarchy: series name |

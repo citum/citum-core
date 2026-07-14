@@ -3,13 +3,14 @@
 **Status:** Active
 **Date:** 2026-04-10
 **Supersedes:** None
-**Related:** `docs/specs/SECONDARY_CONTRIBUTOR_ROLE_FORMATTING.md`, `csl26-5ap9`, `csl26-mwnt`
+**Related:** `docs/specs/SECONDARY_CONTRIBUTOR_ROLE_FORMATTING.md`,
+`docs/specs/PRIMARY_CONTRIBUTOR_SUBSTITUTION.md`, `csl26-5ap9`, `csl26-mwnt`
 
 ## Purpose
 Define the normative behavior of `options.substitute.role-substitute` so styles can declare role-aware contributor fallback chains without relying on engine-only assumptions or silently dropped custom roles.
 
 ## Scope
-In scope: parsing and normalization of role names, fallback contributor resolution, suppression behavior for explicit fallback roles, locale-driven label rendering for substitute contributors, and documentation of custom-role handling. Out of scope: new schema keys, substitute preset redesign, or year-suffix/disambiguation behavior.
+In scope: parsing and normalization of role names, fallback contributor resolution, suppression behavior for explicit fallback roles, locale-driven label rendering for substitute contributors, and documentation of custom-role handling. Out of scope: new schema keys, substitute preset redesign, primary author-slot substitution, or year-suffix/disambiguation behavior. Primary author-slot behavior is specified by `PRIMARY_CONTRIBUTOR_SUBSTITUTION.md`.
 
 ## Design
 `options.substitute.role-substitute` is a map from a primary contributor role to an ordered list of fallback roles.

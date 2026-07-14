@@ -1,13 +1,14 @@
 # Cross-Role Contributor Lists Specification
 
-**Status:** Draft
-**Version:** 0.1
+**Status:** Active
+**Version:** 1.0
 **Date:** 2026-07-13
 **Supersedes:** None
 **Related:** bean `csl26-7ip9`,
 [CSL schema#442](https://github.com/citation-style-language/schema/issues/442),
 [`SECONDARY_CONTRIBUTOR_ROLE_FORMATTING.md`](./SECONDARY_CONTRIBUTOR_ROLE_FORMATTING.md),
 [`ROLE_LABEL_DEFAULTS.md`](./ROLE_LABEL_DEFAULTS.md),
+[`PRIMARY_CONTRIBUTOR_SUBSTITUTION.md`](./PRIMARY_CONTRIBUTOR_SUBSTITUTION.md),
 [`ROLE_SUBSTITUTE_FALLBACK.md`](./ROLE_SUBSTITUTE_FALLBACK.md),
 [`CONTRIBUTOR_PHRASE_MESSAGES.md`](./CONTRIBUTOR_PHRASE_MESSAGES.md)
 
@@ -22,7 +23,7 @@ cannot express per-name labels. The motivating requirements come from APA 7
 multimedia references, which need all three behaviors at once:
 
 ```
-Kogen, J. (Writer), Wolodarsky, W. (Writer), & Kirkland, M. (Director). (1992).
+Kogen, J. (Writer), Wolodarsky, W. (Writer), & Kirkland, M. (Director). (1993).
 Whedon, J. (Writer & Director). (2003).
 ```
 
@@ -33,8 +34,10 @@ In scope:
 - Template schema: `contributor:` accepting an ordered role list, plus a `merge:`
   configuration block (ordering, label modes, per-role overrides, same-person
   combination).
+- Reference schema: each contributor entry carries an explicit, non-empty
+  `roles:` list; legacy scalar `role:` input remains accepted.
 - Rendering semantics: entry ordering, individual/collective/none labeling,
-  same-person detection and combined-label resolution.
+  explicit multi-role combination and combined-label resolution.
 - Locale model for combined-role terms and the role-term connector.
 - An options-level same-person role-suppression rule for elision across
   components.
@@ -45,7 +48,7 @@ Out of scope:
 
 - Repositioning contributors into the author slot (e.g. MLA's editor-translator
   as primary entry) — that is substitution, covered by
-  [`ROLE_SUBSTITUTE_FALLBACK.md`](./ROLE_SUBSTITUTE_FALLBACK.md).
+  [`PRIMARY_CONTRIBUTOR_SUBSTITUTION.md`](./PRIMARY_CONTRIBUTOR_SUBSTITUTION.md).
 - `CitationCollapse` — the citation-cluster collapse mechanism is unrelated;
   this spec deliberately avoids the word "collapse" in schema keys.
 - New role-taxonomy values (e.g. a dedicated `executive-producer` sub-role) —
@@ -70,20 +73,22 @@ translations, film, television, and music:
 | **B** — individual vs. collective labels | APA labels each writer individually but producers collectively (`(Producers)`, pluralized) |
 | **C** — same person in multiple roles | `Whedon, J. (Writer & Director)`; `(J. Strachey, Ed. & Trans.)`; MLA `edited and translated by` |
 
-The design constraints: identity detection is per-person, not whole-list; the
+The design constraints: role membership is explicit per person in native data; the
 role-term connector is independent of the name-list conjunction; label placement
 (before/after) and individual/collective mode are style declarations, per role;
 collective labels pluralize; combined labels are declared locale terms, never
 mechanically composed when an authored term exists; and full elision of a
-secondary rendering (APA song: omit `[Recorded by …]` when songwriter and
-performer coincide) must be expressible.
+secondary rendering (APA classical/composer-first song: omit
+`[Recorded by …]` when songwriter and performer coincide) must be expressible.
+Modern-song references normally use the recording artist as author and emit
+`[Song]` directly, so they do not need this suppression rule.
 
 ### Schema surface
 
 `TemplateContributor.contributor` accepts a single role (unchanged) or an
-ordered list of roles. A `merge:` block configures the merged list and is valid
-**only** in list form; the singular `label:` field is valid **only** in
-single-role form (per-role labels move under `merge.roles`). Both misuses are
+ordered list of roles. A component `merge:` block is valid **only** in list
+form; the singular `label:` field is valid **only** in single-role form
+(per-role component exceptions move under `merge.roles`). Both misuses are
 schema-validation errors.
 
 ```yaml
@@ -95,11 +100,10 @@ schema-validation errors.
     roles:                     # optional per-role overrides
       writer:
         label:                 # full RoleLabel: term, form, placement,
-          term: writer         # text-case, prefix, suffix
+          term: writer         # text-case, wrap, prefix, suffix
           form: long
           text-case: capitalize-first
-          prefix: " ("
-          suffix: ")"
+          wrap: parentheses
       producer:
         labels: collective
     combine-same-person: true  # default: true
@@ -114,11 +118,45 @@ All existing whole-list options — `form`, `name-order`, `name-form`,
 `delimiter`, `sort-separator`, `shorten`, `and`, rendering affixes, `links`,
 `gender` — apply to the merged list exactly as they do to a single-role list.
 
+Reusable presentation belongs outside type templates. `options.contributors`
+provides style-wide merge defaults and role-label presentation; role terms are
+derived from the role-map keys rather than repeated in every type variant:
+
+```yaml
+options:
+  contributors:
+    role:
+      defaults: apa
+    merge:
+      order: document
+      labels: individual
+      roles:
+        director: {labels: collective}
+      combine-same-person: true
+```
+
+Component `merge` and label declarations remain explicit higher-precedence
+exceptions for generic migrated CSL structures whose primary-slot meaning
+cannot safely be inferred.
+
 ### Entry ordering (sub-problem A)
 
 The merged list is built from the reference's unified `contributors` vec
 (`ContributorEntry`, `crates/citum-schema-data/src/reference/contributor.rs`),
 filtered to the declared roles.
+
+Native data records role membership directly:
+
+```yaml
+contributors:
+  - roles: [writer, director]
+    contributor: {given: Joss, family: Whedon}
+```
+
+`roles:` must contain at least one distinct role. For compatibility, authored
+`role: writer` is accepted and normalized to `roles: [writer]` when serialized.
+Separate entries remain separate people even when their names happen to compare
+equal; the native renderer never infers identity from display data.
 
 - `order: document` (default) — entries keep the order of the reference's
   contributors vec. This reproduces source-credit order (APA episode: writers
@@ -161,27 +199,25 @@ collective for producers).
 
 ### Same-person combination (sub-problem C)
 
-When `combine-same-person: true` (default), entries in different declared roles
-that resolve to the same person render **once**, at the position of the
-person's first occurrence in the effective ordering, with a combined role
-label. Detection is per-person: contributors who appear in only one role are
-unaffected, fixing the whole-list-only limitation of CSL's `editortranslator`.
+When `combine-same-person: true` (default), a contributor entry carrying more
+than one declared role renders **once**, at that entry's position in the
+effective ordering, with a combined role label. Contributors carrying one role
+are unaffected. No name comparison occurs in this rendering step: explicit
+native role membership is authoritative.
 
-Two entries denote the same person when their names are equal after Unicode NFC
-normalization and whitespace trimming, comparing structured names field-wise
-(family, given, dropping particle, non-dropping particle, suffix — all must
-match exactly) and literal names as whole strings. A structured name and a
-literal name never denote the same person, even when their display forms
-coincide — no display-form normalization is attempted, since it invites false
-positives; mixed-form duplicates are an input-data defect to fix at the
-source. There is no fuzzy matching: `Smith, J.` and `Smith, John` are
-distinct. The data model has no person identifier, so literal equality is the
-deterministic contract (the same rule citeproc-js applies to
-`editortranslator`).
+`combine-same-person: false` expands a multi-role contributor entry once per
+declared role. Each occurrence follows the effective ordering and carries that
+role's label.
 
-`combine-same-person: false` renders the person once per declared role: each
-occurrence keeps its own position in the effective ordering and carries that
-role's label; no occurrence is dropped.
+Legacy CSL-JSON has independent name arrays rather than explicit role
+membership. Its conversion boundary therefore performs the compatibility
+inference once: names are split into individual contributors and equal
+cross-role occurrences are encoded as one `ContributorEntry.roles` list.
+Equality uses Unicode NFC normalization and whitespace trimming, compares
+structured names field-wise (family, given, particles, suffix), never equates
+structured and literal names, and performs no fuzzy matching. Same-role
+duplicates remain separate entries. The engine receives only the normalized
+native representation.
 
 ### Combined-label resolution
 
@@ -198,8 +234,9 @@ role-list order) resolves as:
 2. **Composed fallback** — when no authored term exists, the constituent role
    terms (each resolved at the label form in effect) are joined with a
    connector inserted verbatim: `merge.role-conjunction` when set on the
-   component, otherwise the locale's `role-conjunction` term. The term is a
-   new general locale term (en-US: `" & "`, spacing included), deliberately
+  component, otherwise the locale's MF2 `term.role-conjunction` message. The
+  legacy `terms.role-conjunction` entry remains its compatibility fallback.
+  The en-US value is `" & "` (spacing included), deliberately
    independent of the name-list conjunction — the `&` in `(Ed. & Trans.)`
    joins role terms, not names. Verbatim insertion keeps spacing explicit:
    styles that need `/`, `" and "`, or plain concatenation (`""`) declare
@@ -215,6 +252,11 @@ component and a post-title parenthetical component each carry their own label
 configuration, so the combined label's shape always follows the component
 being rendered, never a global per-role setting.
 
+Role-label wrapping is structural: `wrap: parentheses` wraps the resolved term
+before outer label affixes are applied. A wrapped suffix label uses a space as
+its default separator (`Name (Writer)`); labels without `wrap` retain the
+existing placement-derived affix defaults.
+
 Plural forms apply when two or more persons share the identical role
 combination. Authored combined-role terms are therefore a locale-content
 obligation: every pair term must ship the full form coverage of an ordinary
@@ -225,14 +267,15 @@ resolved identically to `editor-translator`.
 
 ### Same-person role suppression
 
-APA's music rule — omit the `[Recorded by …]` descriptor entirely when
-songwriter and performer are the same person — is a zero-output case that no
-label mechanism can express, because the affected text lives in a different
-template component. It is nevertheless not a template decision: which role is
-redundant when two roles coincide is a property of the style, not of any one
-template position. It is therefore declared in options, not in the template
-language (which this spec leaves untouched — in particular, `render-when`
-grows no new condition kinds):
+APA's classical/composer-first music rule — omit the `[Recorded by …]`
+descriptor entirely when songwriter and performer are the same person — is a
+zero-output case that no label mechanism can express, because the affected
+text lives in a different template component. Modern songs instead normally
+use the recording artist as author and render `[Song]` without this descriptor.
+For the composer-first case, which role is redundant when two roles coincide
+is a property of the style, not of any one template position. It is therefore
+declared in options, not in the template language (which this spec leaves
+untouched — in particular, `render-when` grows no new condition kinds):
 
 ```yaml
 contributors:
@@ -241,9 +284,11 @@ contributors:
       when-identical-to: composer
 ```
 
-A rule fires **if and only if** both roles resolve to non-empty person sets
-that are equal under the same-person rule above. While it fires, the
-suppressed role (`role:`) renders empty in every template component, citation
+A rule fires **if and only if** both roles resolve to the same non-empty set of
+explicit contributor entries. It does not compare names: equal-looking
+separate native entries remain distinct, while a single multi-role entry
+belongs to both sets. While it fires, the suppressed role (`role:`) renders
+empty in every template component, citation
 and bibliography alike; existing group empty-collapse then removes dependent
 descriptors such as the `[Recorded by …]` wrapper, whose group contains the
 performer component.
@@ -261,15 +306,17 @@ label instead of suppression uses `combine-same-person` and declares no
 
 ### Interactions
 
-- **Substitution** — a merged component whose declared roles are all empty
-  renders nothing; if `author` is among the declared roles, the author
-  substitute chain applies exactly as for an empty single-role author
-  component. Role-substitute suppression
+- **Primary substitution** — type-aware scalar or merged role membership is
+  selected by `options.substitute`; templates remain on `contributor: author`.
+  The effective primary is shared by rendering, sorting, and disambiguation as
+  specified by
+  [`PRIMARY_CONTRIBUTOR_SUBSTITUTION.md`](./PRIMARY_CONTRIBUTOR_SUBSTITUTION.md).
+  Role-substitute suppression
   ([`ROLE_SUBSTITUTE_FALLBACK.md`](./ROLE_SUBSTITUTE_FALLBACK.md)) applies
   per declared role: a role consumed by substitution elsewhere is excluded
   from the merged list.
-- **Suppress-author** — `options.suppress_author` suppresses a merged component
-  that declares `author`, mirroring single-role behavior.
+- **Suppress-author** — `options.suppress_author` removes the author role from
+  merged assembly while preserving any other declared roles.
 - **Sorting** — the component's sort key is the merged list in rendered order,
   after same-person combination, same as any name list.
 - **Disambiguation** — names in a merged list participate in name-based
@@ -283,22 +330,28 @@ label instead of suppression uses `combine-same-person` and declares no
 
 | CSL 1.0 | Citum |
 |---|---|
-| `<names variable="editor translator">` | `contributor: [editor, translator]` with `combine-same-person: true` (citeproc-js merges on identical lists; per-person detection is expected to match or improve on it for real-world data — an assumption, not a guarantee: output can differ when distinct same-family contributors lack given names in the data) |
+| `<names variable="editor translator">` | `contributor: [editor, translator]` with `combine-same-person: true`; legacy reference conversion supplies explicit multi-role contributor entries |
 | `editortranslator` term references | authored `editor-translator` locale term (the unhyphenated alias also resolves) |
 | Sequential multi-variable `<names>` with per-variable labels | `order: role` with per-role labels under `merge.roles` |
 
 ## Implementation Notes
 
-- The single-role path in `crates/citum-engine/src/values/contributor/mod.rs`
-  (`values()`) stays as-is; list form dispatches to a new merged-list renderer
-  that builds `(FlatName, role)` entries from the unified contributors vec and
+- Conventional non-primary single-role formatting stays on the established
+  path. The author component delegates to the effective-primary resolver, and
+  list form dispatches to a merged-list renderer
+  that builds `(FlatName, roles)` entries from the unified contributors vec and
   reuses the existing name formatting and `labels.rs::resolve_role_labels`
   per entry/run. `resolve_role_labels` needs the role as a parameter rather
   than reading it from the component.
 - Serde: `contributor:` becomes an untagged single-or-sequence; `merge:` is a
-  new optional struct on `TemplateContributor`. Validation (list ⇔ `merge`,
-  list ⇒ no singular `label:`) belongs in the existing style-validation layer,
-  not deserialization.
+  new optional struct on `TemplateContributor`. Validation (scalar ⇒ no
+  `merge`, list ⇒ at least two distinct roles and no singular `label:`) belongs
+  in the existing style-validation layer, not deserialization. List form
+  without `merge:` uses the documented defaults.
+- Reference serde canonicalizes contributors to explicit `roles:` arrays while
+  accepting scalar `role:` as a compatibility alias. CSL-JSON conversion owns
+  strict cross-role identity normalization; native rendering does not compare
+  names to infer identity.
 - The `contributors.suppress` check slots into the same engine path as
   substitute-driven role suppression
   (`substitute::is_role_suppressed_by_substitute`,
@@ -315,35 +368,43 @@ label instead of suppression uses `combine-same-person` and declares no
 
 ## Acceptance Criteria
 
-- [ ] `contributor:` accepts a single role or an ordered role list; `merge:` is
+- [x] `contributor:` accepts a single role or an ordered role list; `merge:` is
       rejected in single-role form and singular `label:` is rejected in list
       form; both forms round-trip through YAML serialization.
-- [ ] APA TV-episode fixture renders writers and director interleaved in
+- [x] Reference YAML accepts canonical `roles: [writer, director]`, rejects
+      empty or duplicate role lists, and accepts legacy `role: writer` input.
+- [x] APA TV-episode fixture renders writers and director interleaved in
       document order with individual labels and the name-list conjunction
       spanning all entries (sub-problems A + B).
-- [ ] Same-person fixture renders one entry with a combined label
+- [x] Same-person fixture renders one entry with a combined label
       (`(Writer & Director)`) resolved from an authored `writer-director` term,
       and falls back to `role-conjunction` composition when the term is
       absent, including a component-level `merge.role-conjunction` override.
-- [ ] Partial-identity fixture: with shared and unshared contributors across
+- [x] Equal-looking separate native contributor entries remain separate;
+      legacy conversion instead emits explicit multi-role entries using strict
+      NFC identity and preserves same-role duplicates.
+- [x] Partial-identity fixture: with shared and unshared contributors across
       two roles, only the shared person merges; others render per role.
-- [ ] Editor-translator fixture consumes the shipped en-US `editor-translator`
+- [x] Editor-translator fixture consumes the shipped en-US `editor-translator`
       term (`Ed. & Trans.` shape with explicit text-case).
-- [ ] MLA topology fixture renders `order: role` groups with collective
+- [x] MLA topology fixture renders `order: role` groups with collective
       verb-form labels preceding each group.
-- [ ] Collective pluralization fixture: a run of two or more same-role names
+- [x] Collective pluralization fixture: a run of two or more same-role names
       gets a pluralized collective label.
-- [ ] Et-al shortening counts entries after same-person combination: a fixture
+- [x] Et-al shortening counts entries after same-person combination: a fixture
       whose raw credit count exceeds the `shorten` threshold stays unshortened
       because combination brings the rendered entry count below it.
-- [ ] `contributors.suppress` fixtures cover the APA recorded-by case (rule
+- [x] `contributors.suppress` fixtures cover the APA recorded-by case (rule
       fires, descriptor group collapses), the absent-role case (rule does not
       fire), and the partial-overlap case (rule does not fire).
-- [ ] `citum-migrate` converts `<names variable="editor translator">` to a
+- [x] `citum-migrate` converts `<names variable="editor translator">` to a
       merged component and maps `editortranslator` term usage.
-- [ ] Sorting and disambiguation integration tests cover a merged list in the
+- [x] Sorting and disambiguation integration tests cover a merged list in the
       author position.
 
 ## Changelog
 
+- 2026-07-13: Activated version 1.0 after implementation and acceptance testing.
+- 2026-07-13: Made native contributor role membership explicit and moved
+  legacy name matching to the CSL-JSON conversion boundary.
 - 2026-07-13: Initial Draft for bean `csl26-7ip9`.

@@ -15,9 +15,10 @@ Style-guide research (PR #1017, divergence register div-012) established:
 1. Role labels are a **bibliography-only** convention in every examined
    style (APA, MLA, Chicago, Vancouver/NLM). No style carries a role label
    into the in-text citation.
-2. The role set and label form are **per-style**: APA labels editor only,
-   abbreviated; MLA labels a broader set in word form; Chicago prefers
-   post-title phrasing and labels none.
+2. The role set and label form are **per-style**: APA abbreviates editor but
+   uses long parenthetical labels for audiovisual writers and directors; MLA
+   labels a broader set in word form; Chicago prefers post-title phrasing and
+   labels none.
 
 ## Design
 
@@ -35,7 +36,7 @@ contributors:
 | Bundle | Roles labeled | Preset | Rendered shape |
 |---|---|---|---|
 | `none` (= unset) | — | — | no automatic label |
-| `apa` | editor | `short-suffix` | `" (ed.)"` (en-US short term; capitalization needs an explicit `text-case`) |
+| `apa` | editor; writer; director | per-role strategy | editor uses its abbreviated parenthetical; writer/director use title-cased long parentheticals |
 | `mla` | editor, translator, director, illustrator, interviewer | `long-suffix` | `", editor"` |
 
 Resolution order in `resolve_role_labels`
@@ -52,15 +53,19 @@ for the last step:
    context == RenderContext::Bibliography`), and never for verb/verb-short
    forms.
 
+Named bundles resolve a complete label presentation strategy rather than only
+a preset name. The strategy includes term form, placement, text case, wrapping,
+and affixes. Explicit component and per-role configuration still wins.
+
 ### Future extensibility
 
-The bundles currently map each role to a single suffix-shaped preset. MLA
+The bundles may map a role to a complete presentation strategy. MLA
 also uses labels as preceding descriptors in some Contributor-element
 positions; that case is already expressible today via per-role presets
 (`role.preset`, `role.roles.<role>.preset`, `role.form`) and verb/verb-short
 forms, which the bundle never overrides. If the `mla` bundle is later
 extended beyond simple long-suffixes, it should evolve into a per-role
-"default label strategy" (placement + form) rather than a suffix shape —
+"default label strategy" (placement, form, case, and wrapping) rather than a suffix shape —
 the schema surface (`defaults:` as an enum) leaves room for that without
 breaking existing styles.
 
