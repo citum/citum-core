@@ -101,33 +101,58 @@ class ReleaseWorkflowTests(unittest.TestCase):
             "publish-jsr must include a real publish step after dry-run",
         )
 
-    def test_release_workflow_has_fast_manual_jsr_publish_recovery(self) -> None:
+    def test_release_workflow_has_manual_publish_recovery_commands(self) -> None:
         self.assertIn("- publish-jsr", self.workflow)
-        self.assertNotIn("- publish-crates", self.workflow)
+        self.assertIn("- publish-crates", self.workflow)
+
+    def test_manual_crates_publish_recovery_runs_the_build_gate(self) -> None:
+        """Manual crates.io recovery must retain the release build gate."""
+        build = re.search(
+            r"\n  build:\n(?P<block>.*?)(?=\n  [a-zA-Z0-9_-]+:|\Z)",
+            self.workflow,
+            flags=re.DOTALL,
+        )
+        publish = re.search(
+            r"\n  publish-crates:\n(?P<block>.*?)(?=\n  [a-zA-Z0-9_-]+:|\Z)",
+            self.workflow,
+            flags=re.DOTALL,
+        )
+        self.assertIsNotNone(build)
+        self.assertIsNotNone(publish)
+        assert build is not None
+        assert publish is not None
+        self.assertIn("inputs.command == 'publish-crates'", build.group("block"))
+        self.assertIn("inputs.command == 'publish-crates'", publish.group("block"))
+        self.assertIn("needs: build", publish.group("block"))
+        self.assertIn("release_ref", self.workflow)
+        self.assertIn("publish-crates requires release_ref", build.group("block"))
+        self.assertIn("ref: ${{ inputs.release_ref || github.ref }}", build.group("block"))
+        self.assertIn("ref: ${{ inputs.release_ref || github.ref }}", publish.group("block"))
 
     def test_release_binary_matrix_drops_intel_macos_but_keeps_windows(self) -> None:
         self.assertNotIn("target: x86_64-apple-darwin", self.workflow)
         self.assertIn("target: aarch64-apple-darwin", self.workflow)
         self.assertIn("target: x86_64-pc-windows-msvc", self.workflow)
 
-    def test_release_binary_matrix_adds_gnu_linux_targets_for_migrate(self) -> None:
+    def test_release_binary_matrix_keeps_only_x86_64_gnu_migrate_target(self) -> None:
         """rusty_v8 (citum-migrate's V8 dep) has no musl prebuilt but does
-        have a gnu one — see issue #1054. The matrix must build gnu Linux
-        targets so install.sh has somewhere to fetch citum-migrate from."""
+        have an x86_64 gnu one — see issue #1054. The matrix must retain that
+        target without requiring the unsupported ARM GNU V8 link."""
         self.assertIn("target: x86_64-unknown-linux-gnu", self.workflow)
-        self.assertIn("target: aarch64-unknown-linux-gnu", self.workflow)
+        self.assertNotIn("target: aarch64-unknown-linux-gnu", self.workflow)
         # musl targets must still be present — they remain the default for
         # citum/citum-server.
         self.assertIn("target: x86_64-unknown-linux-musl", self.workflow)
         self.assertIn("target: aarch64-unknown-linux-musl", self.workflow)
 
-    def test_installer_fetches_migrate_from_gnu_fallback_on_musl(self) -> None:
+    def test_installer_fetches_migrate_from_x86_64_gnu_fallback_on_musl(self) -> None:
         """install.sh must not silently drop citum-migrate on Linux; it
         should fetch the binary from the gnu tarball instead (issue #1054)."""
         self.assertIn("migrate_fallback_target", self.install_script)
         self.assertIn("x86_64-unknown-linux-gnu", self.install_script)
-        self.assertIn("aarch64-unknown-linux-gnu", self.install_script)
+        self.assertNotIn("aarch64-unknown-linux-gnu", self.install_script)
         self.assertIn("fetch_tarball", self.install_script)
+        self.assertIn('if [ -n "$MIGRATE_TARGET" ]; then', self.install_script)
         # The graceful degrade path (gnu fetch itself unavailable) must
         # remain, so a stale/offline mirror doesn't hard-fail the install.
         self.assertIn("cargo install citum-migrate --locked", self.install_script)
