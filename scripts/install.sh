@@ -8,6 +8,11 @@
 # same release, and installs the selected Citum binaries to
 # $CITUM_INSTALL_DIR (default $HOME/.local/bin).
 #
+# Options:
+#   --components <list> — comma-separated subset of {citum, citum-server,
+#                         citum-migrate}, or the alias `all`
+#   --help              — show usage
+#
 # Environment overrides:
 #   CITUM_VERSION       — release tag (default: latest)
 #   CITUM_INSTALL_DIR   — install destination (default: $HOME/.local/bin)
@@ -17,20 +22,71 @@
 #
 # Examples:
 #   curl -fsSL .../install.sh | sh                                  # citum only
-#   curl -fsSL .../install.sh | CITUM_COMPONENTS=all sh             # everything
-#   curl -fsSL .../install.sh | CITUM_COMPONENTS=citum,citum-migrate sh
+#   curl -fsSL .../install.sh | sh -s -- --components all           # everything
+#   curl -fsSL .../install.sh | sh -s -- --components citum,citum-migrate
 
 set -eu
 
 REPO="${CITUM_REPO:-citum/citum-core}"
 VERSION="${CITUM_VERSION:-latest}"
 INSTALL_DIR="${CITUM_INSTALL_DIR:-$HOME/.local/bin}"
-COMPONENTS_RAW="${CITUM_COMPONENTS:-citum}"
 
 # ---------- helpers ---------------------------------------------------
 
 say()    { printf '%s\n'    "citum-installer: $*"; }
 err()    { printf '%s\n' >&2 "citum-installer: error: $*"; exit 1; }
+
+usage() {
+  cat <<'EOF'
+Usage: install.sh [--components <list>]
+
+Install selected Citum binaries. Components are a comma-separated subset of
+citum, citum-server, and citum-migrate; use `all` to install every component.
+
+Examples:
+  curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | sh
+  curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | sh -s -- --components all
+  curl -fsSL https://github.com/citum/citum-core/releases/latest/download/install.sh | sh -s -- --components citum,citum-migrate
+
+CITUM_COMPONENTS remains available for non-interactive automation. When both
+are set, --components takes precedence.
+EOF
+}
+
+COMPONENTS_ARG=""
+COMPONENTS_ARG_SET=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --components)
+      [ "$#" -ge 2 ] || err "--components requires a value"
+      COMPONENTS_ARG="$2"
+      COMPONENTS_ARG_SET=1
+      shift 2
+      ;;
+    --components=*)
+      COMPONENTS_ARG="${1#--components=}"
+      COMPONENTS_ARG_SET=1
+      shift
+      ;;
+    --help|-h)
+      usage
+      exit 0
+      ;;
+    --)
+      shift
+      [ "$#" -eq 0 ] || err "unexpected positional argument: $1"
+      ;;
+    *) err "unknown option: $1 (try --help)" ;;
+  esac
+done
+
+if [ "$COMPONENTS_ARG_SET" -eq 1 ]; then
+  COMPONENTS_RAW="$COMPONENTS_ARG"
+  COMPONENTS_SOURCE="--components"
+else
+  COMPONENTS_RAW="${CITUM_COMPONENTS:-citum}"
+  COMPONENTS_SOURCE="CITUM_COMPONENTS"
+fi
 
 need_cmd() {
   command -v "$1" >/dev/null 2>&1 || err "required command not found: $1"
@@ -151,7 +207,7 @@ esac
 # carry) to single spaces and trim both ends — `tr` handles the squeeze,
 # `awk` handles trim portably without bashisms.
 SELECTED=$(printf '%s' "$SELECTED" | tr -s '[:space:]' ' ' | awk '{$1=$1; print}')
-[ -z "$SELECTED" ] && err "CITUM_COMPONENTS is empty (valid: citum, citum-server, citum-migrate, all)"
+[ -z "$SELECTED" ] && err "${COMPONENTS_SOURCE} is empty (valid: citum, citum-server, citum-migrate, all)"
 for c in $SELECTED; do
   case "$c" in
     citum|citum-server|citum-migrate) ;;
