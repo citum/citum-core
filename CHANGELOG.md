@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.76.0] - 2026-07-15
+
+### Bug Fixes
+
+**cli**
+
+- Add installer component flag ([`2085ea3`](https://github.com/citum/citum-core/commit/2085ea366a12f2dde737a9f1b6bc1f653ff6b589))
+
+
+**release**
+
+- Recover crate publishing ([`47600a9`](https://github.com/citum/citum-core/commit/47600a967ee4ecdffea0862f6c2c7aa3a63a8d84))
+
+- Use bash for tag recovery ([`ec3f462`](https://github.com/citum/citum-core/commit/ec3f462c08d3c3f8dfcf6a42c1ae77743711b10e))
+
+
+
+### Documentation
+
+**spec**
+
+- Define primary substitution ([`a9abf97`](https://github.com/citum/citum-core/commit/a9abf976d8251a5b01d7bba6d0abc89ca1cdc2c8))
+
+
+
+### Features
+
+**schema**
+
+- Support cross-role contributor lists ([`a66af4a`](https://github.com/citum/citum-core/commit/a66af4a1fe093f1878779103a2a2d30b760ae58c))
+
+
+
+### Build
+
+**schema**
+
+- Add unicode normalization ([`c0bbbee`](https://github.com/citum/citum-core/commit/c0bbbeeae68454f38bc55bfaa0f640a52fd2b541))
+
+
 ## [0.75.0] - 2026-07-14
 
 ### Bug Fixes
