@@ -8,15 +8,15 @@ tags:
     - cli
     - release
 created_at: 2026-07-14T23:17:04Z
-updated_at: 2026-07-14T23:22:34Z
+updated_at: 2026-07-15T10:30:34Z
 ---
 
 Implement --components support in the POSIX installer while preserving CITUM_COMPONENTS compatibility.
 
-- [ ] Add argument parsing and help text
-- [ ] Add isolated installer regression coverage
+- [x] Add argument parsing and help text
+- [x] Add isolated installer regression coverage
 - [x] Update installation documentation
-- [x] Validate, open PR, and record results
+- [ ] Merge PR #1060 and archive bean
 
 ## Summary of Changes
 
