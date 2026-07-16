@@ -271,10 +271,7 @@ pub(super) fn from_monograph_ref(
             numbering,
             created: ctx.created,
             issued: ctx.issued,
-            publisher: legacy.publisher.map(|n| Publisher {
-                name: n.into(),
-                place: legacy.publisher_place.map(Into::into),
-            }),
+            publisher: publisher_from_parts(legacy.publisher, legacy.publisher_place),
             url: ctx.url,
             accessed: ctx.accessed,
             language: ctx.language,
@@ -311,10 +308,7 @@ pub(super) fn from_monograph_ref(
         contributors,
         created: ctx.created,
         issued: ctx.issued,
-        publisher: legacy.publisher.map(|n| Publisher {
-            name: n.into(),
-            place: legacy.publisher_place.map(Into::into),
-        }),
+        publisher: publisher_from_parts(legacy.publisher, legacy.publisher_place),
         url: ctx.url,
         accessed: ctx.accessed,
         language: ctx.language,
@@ -347,6 +341,7 @@ pub(super) fn from_monograph_ref(
         duration,
         references,
         scale,
+        pages: legacy.page.map(NumOrStr::Str),
         unknown_fields: Default::default(),
     }))
 }
@@ -423,10 +418,7 @@ pub(super) fn from_collection_component_ref(
                 title: parent_title,
                 editor: container_editor,
                 contributors: container_contributors,
-                publisher: legacy.publisher.map(|n| Publisher {
-                    name: n.into(),
-                    place: legacy.publisher_place.map(Into::into),
-                }),
+                publisher: publisher_from_parts(legacy.publisher, legacy.publisher_place),
                 edition: parent_edition.clone(),
                 numbering: legacy
                     .number
@@ -469,10 +461,7 @@ pub(super) fn from_collection_component_ref(
                 contributors: container_contributors,
                 created: EdtfString(String::new()),
                 issued: EdtfString(String::new()),
-                publisher: legacy.publisher.map(|n| Publisher {
-                    name: n.into(),
-                    place: legacy.publisher_place.map(Into::into),
-                }),
+                publisher: publisher_from_parts(legacy.publisher, legacy.publisher_place),
                 edition: parent_edition,
                 numbering: parent_volume
                     .clone()
@@ -618,10 +607,7 @@ pub fn input_reference_from_legacy_edited_book(
         issued: issued
             .map(EdtfString::from)
             .unwrap_or(EdtfString(String::new())),
-        publisher: publisher.map(|name| Publisher {
-            name: name.into(),
-            place: publisher_place.clone().map(Into::into),
-        }),
+        publisher: publisher_from_parts(publisher, publisher_place),
         numbering,
         url: url.as_deref().and_then(|value| Url::parse(value).ok()),
         accessed: accessed.map(EdtfString::from),
@@ -788,10 +774,10 @@ pub(super) fn from_serial_component_ref(
                 container: relation_collection_title(collection_title),
                 editor: serial_editor,
                 contributors: serial_contributors,
-                publisher: legacy.publisher.clone().map(|n| Publisher {
-                    name: n.into(),
-                    place: legacy.publisher_place.clone().map(Into::into),
-                }),
+                publisher: publisher_from_parts(
+                    legacy.publisher.clone(),
+                    legacy.publisher_place.clone(),
+                ),
                 url: None,
                 accessed: None,
                 language: None,
@@ -803,6 +789,7 @@ pub(super) fn from_serial_component_ref(
         )))),
         volume,
         issue,
+        number: legacy.number.clone(),
         numbering: {
             let mut numbering = Vec::new();
             if let Some(supplement_number) = supplement_number {
@@ -859,10 +846,7 @@ pub(super) fn from_dataset_ref(
         original,
         created: ctx.created,
         issued: ctx.issued,
-        publisher: legacy.publisher.map(|n| Publisher {
-            name: n.into(),
-            place: legacy.publisher_place.map(Into::into),
-        }),
+        publisher: publisher_from_parts(legacy.publisher, legacy.publisher_place),
         version,
         genre: legacy.genre,
         format: legacy.medium,
@@ -939,10 +923,7 @@ pub(super) fn from_document_ref(
         contributors,
         created: ctx.created,
         issued: ctx.issued,
-        publisher: legacy.publisher.map(|n| Publisher {
-            name: n.into(),
-            place: legacy.publisher_place.map(Into::into),
-        }),
+        publisher: publisher_from_parts(legacy.publisher, legacy.publisher_place),
         url: ctx.url,
         accessed: ctx.accessed,
         language: ctx.language,
@@ -1019,10 +1000,7 @@ pub(super) fn from_preprint_ref(
         contributors,
         created: ctx.created,
         issued: ctx.issued,
-        publisher: legacy.publisher.map(|name| Publisher {
-            name: name.into(),
-            place: legacy.publisher_place.map(Into::into),
-        }),
+        publisher: publisher_from_parts(legacy.publisher, legacy.publisher_place),
         url: ctx.url,
         accessed: ctx.accessed,
         language: ctx.language,

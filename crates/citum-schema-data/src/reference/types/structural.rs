@@ -246,6 +246,10 @@ pub struct Monograph {
     /// Cartographic scale for maps and globes (e.g., `"1:250,000"`).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub scale: Option<String>,
+    /// Cited page or page range rendered as part of the entry (GB/T 7714
+    /// 引文页码; biblatex allows `pages` on `@book`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pages: Option<NumOrStr>,
     /// Forward-compat: captures unknown keys when an older engine reads a
     /// reference produced by a newer schema. Empty by default; treated as a
     /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
@@ -327,6 +331,8 @@ struct MonographDeser {
     duration: Option<String>,
     references: Option<String>,
     scale: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pages: Option<NumOrStr>,
     #[serde(flatten, default)]
     unknown_fields: std::collections::BTreeMap<String, serde_json::Value>,
 }
@@ -380,6 +386,7 @@ impl From<MonographDeser> for Monograph {
             duration: raw.duration,
             references: raw.references,
             scale: raw.scale,
+            pages: raw.pages,
             unknown_fields: raw.unknown_fields,
         };
         monograph.normalize_numbering();

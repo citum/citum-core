@@ -30,6 +30,17 @@ fn month_to_string(month: u32, months: &[String]) -> String {
     }
 }
 
+/// Zero-padded numeric month (`"01"`–`"12"`) for `month: numeric` rendering.
+/// Seasons and literal dates have no numeric form and return `None` so
+/// callers fall back to the textual path.
+fn extract_month_numeric(date: &EdtfString) -> Option<String> {
+    let RefDate::Edtf(edtf) = date.parse() else {
+        return None;
+    };
+    let month = edtf.month()?;
+    (1..=12).contains(&month).then(|| format!("{month:02}"))
+}
+
 fn extract_month(date: &EdtfString, months: &[String], seasons: &[String]) -> String {
     let parsed_date = date.parse();
     let edtf = match parsed_date {
@@ -494,6 +505,11 @@ fn format_single_date(
         .map(|c| &c.negative_unspecified_years)
         .unwrap_or(&default_neg_unspec);
     let range_delimiter = date_config.map_or("–", |c| c.range_delimiter.as_str());
+    // `month: numeric` renders month-bearing forms as zero-padded numerals
+    // joined with hyphens (GB/T 7714, ISO 690). Dates without a real calendar
+    // month (seasons, literals) fall back to the textual path.
+    let numeric_months =
+        date_config.is_some_and(|c| c.month == citum_schema::options::MonthFormat::Numeric);
 
     let extract_year = |d: &EdtfString| -> String {
         match d.parse() {
@@ -534,6 +550,9 @@ fn format_single_date(
             if year.is_empty() {
                 return None;
             }
+            if numeric_months && let Some(month) = extract_month_numeric(date) {
+                return Some(format!("{year}-{month}"));
+            }
             let month = extract_month(date, &locale.dates.months.long, &locale.dates.seasons);
             let month_opt = (!month.is_empty()).then_some(month.as_str());
             if let Some(rendered) =
@@ -548,10 +567,19 @@ fn format_single_date(
             }
         }
         DateForm::Month => {
+            if numeric_months && let Some(month) = extract_month_numeric(date) {
+                return Some(month);
+            }
             let month = extract_month(date, &locale.dates.months.long, &locale.dates.seasons);
             if month.is_empty() { None } else { Some(month) }
         }
         DateForm::MonthDay => {
+            if numeric_months && let Some(month) = extract_month_numeric(date) {
+                return Some(match date.day() {
+                    Some(d) => format!("{month}-{d:02}"),
+                    None => month,
+                });
+            }
             let month = extract_month(date, &locale.dates.months.long, &locale.dates.seasons);
             if month.is_empty() {
                 return None;
@@ -574,13 +602,23 @@ fn format_single_date(
             }
             let month = extract_month(date, &locale.dates.months.long, &locale.dates.seasons);
             let day = date.day();
-            let base = locale
-                .resolve_date_pattern(
-                    "pattern.date-full",
-                    Some(&year),
-                    (!month.is_empty()).then_some(month.as_str()),
-                    day,
-                )
+            let numeric_base = if numeric_months {
+                extract_month_numeric(date).map(|month| match day {
+                    Some(d) => format!("{year}-{month}-{d:02}"),
+                    None => format!("{year}-{month}"),
+                })
+            } else {
+                None
+            };
+            let base = numeric_base
+                .or_else(|| {
+                    locale.resolve_date_pattern(
+                        "pattern.date-full",
+                        Some(&year),
+                        (!month.is_empty()).then_some(month.as_str()),
+                        day,
+                    )
+                })
                 .unwrap_or_else(|| match (month.is_empty(), day) {
                     (true, _) => year.clone(),
                     (false, None) => format!("{month} {year}"),
@@ -611,6 +649,12 @@ fn format_single_date(
             let year = extract_year(date);
             if year.is_empty() {
                 return None;
+            }
+            if numeric_months && let Some(month) = extract_month_numeric(date) {
+                return Some(match date.day() {
+                    Some(d) => format!("{year}-{month}-{d:02}"),
+                    None => format!("{year}-{month}"),
+                });
             }
             let month = extract_month(date, &locale.dates.months.long, &locale.dates.seasons);
             let day = date.day();
@@ -1368,6 +1412,110 @@ mod locale_pattern_tests {
         // hardcoded `{month} {year}` assembly. (A future pattern.date-year-month
         // can fix this for inflected locales — out of scope for this bean.)
         assert_eq!(full(&es_es(), "2023-01"), "enero 2023");
+    }
+}
+
+#[cfg(test)]
+#[allow(
+    clippy::unwrap_used,
+    clippy::expect_used,
+    reason = "Panicking is acceptable in tests."
+)]
+mod numeric_month_tests {
+    use super::*;
+    use citum_schema::locale::Locale;
+    use citum_schema::options::MonthFormat;
+    use citum_schema::options::dates::DateConfig;
+
+    fn en_us() -> Locale {
+        Locale::from_yaml_str(include_str!("../../../../locales/en-US.yaml"))
+            .expect("en-US locale should parse")
+    }
+
+    fn numeric_config() -> DateConfig {
+        DateConfig {
+            month: MonthFormat::Numeric,
+            ..Default::default()
+        }
+    }
+
+    fn render(form: DateForm, edtf: &str) -> Option<String> {
+        format_single_date(
+            &EdtfString(edtf.to_string()),
+            &form,
+            &en_us(),
+            Some(&numeric_config()),
+        )
+    }
+
+    #[test]
+    fn given_month_numeric_when_year_month_day_then_iso_hyphenated() {
+        // GB/T 7714 / ISO 690 access and update dates: [2024-01-15].
+        assert_eq!(
+            render(DateForm::YearMonthDay, "2024-01-15").as_deref(),
+            Some("2024-01-15")
+        );
+    }
+
+    #[test]
+    fn given_month_numeric_when_day_missing_then_year_month_only() {
+        assert_eq!(
+            render(DateForm::YearMonthDay, "2024-01").as_deref(),
+            Some("2024-01")
+        );
+    }
+
+    #[test]
+    fn given_month_numeric_when_year_only_then_plain_year() {
+        assert_eq!(
+            render(DateForm::YearMonthDay, "2024").as_deref(),
+            Some("2024")
+        );
+    }
+
+    #[test]
+    fn given_month_numeric_when_year_month_form_then_hyphenated() {
+        assert_eq!(
+            render(DateForm::YearMonth, "2024-03").as_deref(),
+            Some("2024-03")
+        );
+    }
+
+    #[test]
+    fn given_month_numeric_when_month_day_form_then_zero_padded() {
+        assert_eq!(
+            render(DateForm::MonthDay, "2024-03-05").as_deref(),
+            Some("03-05")
+        );
+    }
+
+    #[test]
+    fn given_month_numeric_when_full_form_then_iso_hyphenated() {
+        assert_eq!(
+            render(DateForm::Full, "2024-01-15").as_deref(),
+            Some("2024-01-15")
+        );
+    }
+
+    #[test]
+    fn given_month_numeric_when_season_date_then_textual_fallback() {
+        // Seasons have no numeric month; the textual path must still render.
+        assert_eq!(
+            render(DateForm::YearMonth, "2024-22").as_deref(),
+            Some("Summer 2024")
+        );
+    }
+
+    #[test]
+    fn given_long_month_config_when_year_month_day_then_unchanged() {
+        // Regression guard: the default textual assembly is untouched.
+        let out = format_single_date(
+            &EdtfString("2024-01-15".to_string()),
+            &DateForm::YearMonthDay,
+            &en_us(),
+            None,
+        );
+        assert_eq!(out.as_deref(), Some("2024, January 15"));
     }
 }
 

@@ -25,10 +25,7 @@ pub(super) fn from_software_ref(
         author: legacy.author.map(Contributor::from),
         created: ctx.created,
         issued: ctx.issued,
-        publisher: legacy.publisher.map(|n| Publisher {
-            name: n.into(),
-            place: legacy.publisher_place.map(Into::into),
-        }),
+        publisher: publisher_from_parts(legacy.publisher, legacy.publisher_place),
         version,
         repository: None,
         license: None,
@@ -80,10 +77,7 @@ pub(super) fn from_audio_visual_ref(
         }),
         event,
         numbering,
-        publisher: legacy.publisher.map(|name| Publisher {
-            name: name.into(),
-            place: legacy.publisher_place.map(Into::into),
-        }),
+        publisher: publisher_from_parts(legacy.publisher, legacy.publisher_place),
         medium: legacy.medium,
         dimensions,
         platform: None,

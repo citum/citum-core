@@ -31,6 +31,29 @@ fn test_parse_csl_json() {
 }
 
 #[test]
+fn book_page_from_legacy_csl_json_converts_to_monograph_pages() {
+    let json = r#"{
+        "id": "bober2023",
+        "type": "book",
+        "title": "The Future of Banking and AI",
+        "issued": {"date-parts": [[2023]]},
+        "publisher": "Tsinghua University Press",
+        "publisher-place": "Beijing",
+        "page": "35"
+    }"#;
+
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(json).unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(
+        reference.pages(),
+        Some(NumOrStr::Str("35".to_string())),
+        "cited page from CSL-JSON `page` (e.g. note cheater syntax `page: 35`) must survive \
+         conversion into Monograph so GB/T 7714 can render 引文页码"
+    );
+}
+
+#[test]
 fn legacy_cstr_extra_is_converted_to_a_supplementary_identifier() {
     let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(
         r#"{

@@ -1189,6 +1189,7 @@ impl InputReference {
     /// Return the pages.
     pub fn pages(&self) -> Option<NumOrStr> {
         match &self.extension {
+            ClassExtension::Monograph(r) => r.pages.clone(),
             ClassExtension::CollectionComponent(r) => r.pages.clone(),
             ClassExtension::SerialComponent(r) => r.pages.clone().map(NumOrStr::Str),
             ClassExtension::LegalCase(r) => r.page.clone().map(NumOrStr::Str),
