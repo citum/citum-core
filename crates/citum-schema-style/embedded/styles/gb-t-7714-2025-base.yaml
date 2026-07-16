@@ -1,0 +1,799 @@
+version: 0.71.0
+info:
+  title: GB/T 7714—2025 shared bibliography base (hidden)
+  description: >-
+    Hidden family root for the bilingual numeric, author-date, and note heads.
+    Numeric and note inherit the complete bibliography grammar. Author-date
+    retains the same recording rules but replaces the ordering-sensitive
+    bibliography because Citum deliberately does not expose CSL-like named
+    template fragments.
+  default-locale: zh-CN
+options:
+  processing: numeric
+  messages:
+    gb-t-7714-type-code: |-
+      .match {$type :select} {$carrier :select}
+      when article - {PP}
+      when article * {PP/{$carrier}}
+      when preprint - {PP}
+      when preprint * {PP/{$carrier}}
+      when article-journal - {J}
+      when article-journal * {J/{$carrier}}
+      when article-magazine - {J}
+      when article-magazine * {J/{$carrier}}
+      when article-newspaper - {N}
+      when article-newspaper * {N/{$carrier}}
+      when book - {M}
+      when book * {M/{$carrier}}
+      when chapter - {M}
+      when chapter * {M/{$carrier}}
+      when entry-dictionary - {M}
+      when entry-dictionary * {M/{$carrier}}
+      when entry-encyclopedia - {M}
+      when entry-encyclopedia * {M/{$carrier}}
+      when dataset - {DS}
+      when dataset * {DS/{$carrier}}
+      when map - {CM}
+      when map * {CM/{$carrier}}
+      when manuscript - {A}
+      when manuscript * {A/{$carrier}}
+      when paper-conference - {C}
+      when paper-conference * {C/{$carrier}}
+      when patent - {P}
+      when patent * {P/{$carrier}}
+      when personal-communication - {A}
+      when personal-communication * {A/{$carrier}}
+      when post - {EB}
+      when post * {EB/{$carrier}}
+      when post-weblog - {EB}
+      when post-weblog * {EB/{$carrier}}
+      when report - {R}
+      when report * {R/{$carrier}}
+      when software - {CP}
+      when software * {CP/{$carrier}}
+      when standard - {S}
+      when standard * {S/{$carrier}}
+      when thesis - {D}
+      when thesis * {D/{$carrier}}
+      when webpage - {EB}
+      when webpage * {EB/{$carrier}}
+      when * OL {EB/OL}
+      when * - {Z}
+      when * * {Z/{$carrier}}
+  contributors:
+    initialize-with: ' '
+    shorten:
+      min: 4
+      use-first: 3
+      and-others: et-al
+      delimiter-precedes-last: contextual
+    delimiter: null
+    demote-non-dropping-particle: never
+    name-form: initials
+  # GB/T 7714 substitutes editor-family roles into the author slot for works
+  # without a primary creator, but never the title: an authorless entry keeps
+  # its title in the title position (source CSL-M author macro substitute).
+  substitute:
+    template:
+      - editor
+    role-substitute:
+      container-author:
+        - editor
+        - editorial-director
+        - collection-editor
+  dates:
+    month: numeric
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
+    range-delimiter: –
+    no-date-year-suffix-delimiter: '-'
+    show-seconds: false
+    show-timezone: false
+    era-labels: default
+    negative-unspecified-years: range
+  page-range-format: expanded
+  page-range-delimiter: '-'
+bibliography:
+  sort: citation-number
+  options:
+    contributors:
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      delimiter: ，
+    separator: ''
+  template:
+  - number: citation-number
+    wrap:
+      punctuation: brackets
+  - number: volume
+  - contributor: author
+    form: long
+    name-order: family-first
+    delimiter: ，
+    sort-separator: ' '
+    and: none
+  - variable: archive-location
+    suppress: true
+  - title: container-title
+    suppress: true
+    strip-periods: true
+  - number: issue
+    prefix: （
+    suffix: ）
+    suppress: true
+  - contributor: container-author
+    form: long
+    name-order: family-first
+    delimiter: ，
+    sort-separator: ' '
+    suppress: true
+  - variable: archive
+    suppress: true
+  - title: primary
+  - number: number
+  - group:
+    - variable: medium
+    delimiter: slash
+    wrap:
+      punctuation: brackets
+  - date: issued
+    form: year
+    fallback: []
+  - number: pages
+  - variable: publisher
+  - variable: publisher-place
+  - variable: version
+    strip-periods: true
+  - contributor: translator
+    form: long
+    name-order: family-first
+    delimiter: ，
+    sort-separator: ' '
+  - group:
+    - number: edition
+    delimiter: space
+  - identifier: cstr
+    prefix: 'CSTR:'
+  - variable: doi
+    prefix: 'DOI:'
+  locales:
+  - locale:
+    - en
+    template:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suppress: false
+    - number: volume
+      suppress: false
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: none
+      suppress: false
+    - variable: archive-location
+      suppress: true
+    - title: container-title
+      suppress: true
+      strip-periods: true
+    - number: issue
+      prefix: （
+      suffix: ）
+      suppress: true
+    - contributor: container-author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      suppress: true
+    - variable: archive
+      suppress: true
+    - title: primary
+      suppress: false
+    - number: number
+      suppress: false
+    - group:
+      - variable: medium
+      delimiter: slash
+      wrap:
+        punctuation: brackets
+      suppress: false
+    - date: issued
+      form: year
+      fallback: []
+      suppress: false
+    - date: accessed
+      form: year
+      wrap:
+        punctuation: brackets
+      suppress: false
+    - number: pages
+      suppress: false
+    - variable: publisher
+      suppress: false
+    - variable: publisher-place
+      suppress: false
+    - variable: version
+      suppress: false
+      strip-periods: true
+    - contributor: translator
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      suppress: false
+    - group:
+      - number: edition
+      delimiter: space
+      suppress: false
+    - variable: url
+      suppress: false
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - variable: doi
+      prefix: 'DOI:'
+      suppress: false
+  - default: true
+    template:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+      suppress: false
+    - number: volume
+      suppress: false
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: none
+      suppress: false
+    - variable: archive-location
+      suppress: true
+    - title: container-title
+      suppress: true
+      strip-periods: true
+    - number: issue
+      prefix: （
+      suffix: ）
+      suppress: true
+    - contributor: container-author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      suppress: true
+    - variable: archive
+      suppress: true
+    - title: primary
+      suppress: false
+    - number: number
+      suppress: false
+    - group:
+      - variable: medium
+      delimiter: slash
+      wrap:
+        punctuation: brackets
+      suppress: false
+    - date: issued
+      form: year
+      fallback: []
+      suppress: false
+    - date: accessed
+      form: year
+      wrap:
+        punctuation: brackets
+      suppress: false
+    - number: pages
+      suppress: false
+    - variable: publisher
+      suppress: false
+    - variable: publisher-place
+      suppress: false
+    - variable: version
+      suppress: false
+      strip-periods: true
+    - contributor: translator
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      suppress: false
+    - group:
+      - number: edition
+      delimiter: space
+      suppress: false
+    - variable: url
+      suppress: false
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - variable: doi
+      prefix: 'DOI:'
+      suppress: false
+  type-variants:
+    article,dataset,preprint:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      suffix: '. '
+    - title: primary
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - variable: version
+      prefix: V
+      suffix: '. '
+      strip-periods: true
+    - variable: publisher
+    - date: issued
+      form: year-month-day
+      fallback: []
+      prefix: （
+      suffix: ）
+    - date: accessed
+      form: year-month-day
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - variable: url
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+    article-journal,article-magazine:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      suffix: '. '
+    - title: primary
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - contributor: translator
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      label:
+        term: translator
+        form: short
+        placement: suffix
+        prefix: ，
+      suffix: '. '
+    - group:
+      - group:
+        - group:
+          - title: container-title
+            strip-periods: true
+          - date: issued
+            form: year
+            fallback: []
+          - number: volume
+          delimiter: ，
+        - number: issue
+          prefix: （
+          suffix: ）
+        delimiter: none
+      - number: pages
+      delimiter: ：
+    - number: number
+      prefix: ：
+    - variable: url
+      prefix: '. '
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+    article-newspaper:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      suffix: '. '
+    - title: primary
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - contributor: translator
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      label:
+        term: translator
+        form: short
+        placement: suffix
+        prefix: ，
+      suffix: '. '
+    - title: container-title
+      strip-periods: true
+      suffix: ，
+    - date: issued
+      form: year-month-day
+      fallback: []
+    - number: pages
+      prefix: （
+      suffix: ）
+    - variable: url
+      prefix: '. '
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+    chapter,entry-dictionary,entry-encyclopedia:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      suffix: '. '
+    - group:
+      - group:
+        - title: primary
+        - message: gb-t-7714-type-code
+          args:
+            type: { reference-type: key }
+            carrier: { carrier: { online: OL, absent: '-' } }
+          wrap:
+            punctuation: brackets
+        delimiter: none
+      - contributor: translator
+        form: long
+        name-order: family-first
+        delimiter: ，
+        sort-separator: ' '
+        label:
+          term: translator
+          form: short
+          placement: suffix
+          prefix: ，
+      delimiter: '. '
+      suffix: //
+    - contributor: container-author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      suffix: '. '
+    - title: container-title
+      suffix: '. '
+    - number: edition
+      suffix: ' 版. '
+    - group:
+      - group:
+        - group:
+          - variable: publisher-place
+          - variable: publisher
+          delimiter: ：
+        - date: issued
+          form: year
+          fallback: []
+        delimiter: ，
+      - number: pages
+      delimiter: ：
+    - variable: url
+      prefix: '. '
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+    manuscript,personal_communication:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      suffix: '. '
+    - title: primary
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - variable: archive-location
+      suffix: ：
+    - variable: archive
+      suffix: ，
+    - date: issued
+      form: year-month-day
+      fallback: []
+    - date: accessed
+      form: year-month-day
+      wrap:
+        punctuation: brackets
+    - variable: url
+      prefix: '. '
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+    book,thesis,map,software:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      suffix: '. '
+    - title: primary
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - contributor: translator
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      label:
+        term: translator
+        form: short
+        placement: suffix
+        prefix: ，
+      suffix: '. '
+    - number: edition
+      suffix: ' 版. '
+    - group:
+      - group:
+        - group:
+          - variable: publisher-place
+          - variable: publisher
+          delimiter: ：
+        - date: issued
+          form: year
+          fallback: []
+        delimiter: ，
+      - number: pages
+      delimiter: ：
+    - variable: url
+      prefix: '. '
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+    paper-conference:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      suffix: '. '
+    - title: primary
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: //
+    - contributor: container-author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      suffix: '. '
+    - title: container-title
+      suffix: '. '
+    - group:
+      - group:
+        - group:
+          - variable: publisher-place
+          - variable: publisher
+          delimiter: ：
+        - date: issued
+          form: year
+          fallback: []
+        delimiter: ，
+      - number: pages
+      delimiter: ：
+    - variable: url
+      prefix: '. '
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+    patent:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      suffix: '. '
+    - title: primary
+    - number: patent-number
+      prefix: ：
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - date: issued
+      form: year-month-day
+      fallback: []
+    - number: pages
+      prefix: ：
+    - variable: url
+      prefix: '. '
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+    webpage,post,post-weblog:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      suffix: '. '
+    - title: primary
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - date: issued
+      form: year-month-day
+      fallback: []
+      prefix: （
+      suffix: ）
+    - date: accessed
+      form: year-month-day
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - variable: url
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+    report:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      suffix: '. '
+    - title: primary
+    - number: report-number
+      prefix: ：
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+      suffix: '. '
+    - group:
+      - group:
+        - group:
+          - variable: publisher-place
+          - variable: publisher
+          delimiter: ：
+        - date: issued
+          form: year-month-day
+          fallback: []
+        delimiter: ，
+      - number: pages
+      delimiter: ：
+    - variable: url
+      prefix: '. '
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+    standard:
+    - number: citation-number
+      wrap:
+        punctuation: brackets
+    - contributor: author
+      form: long
+      name-order: family-first
+      delimiter: ，
+      sort-separator: ' '
+      suffix: '. '
+    - number: standard-number
+      suffix: ' '
+    - title: primary
+    - message: gb-t-7714-type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
+      wrap:
+        punctuation: brackets
+    - variable: url
+      prefix: '. '
+    - identifier: cstr
+      prefix: '. CSTR:'
+    - variable: doi
+      prefix: '. DOI:'
+  groups-enabled: true

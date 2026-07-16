@@ -44,6 +44,9 @@ fn get_style_bytes(name: &str) -> Option<&'static [u8]> {
             "../../embedded/styles/chicago-shortened-notes-bibliography-core.yaml"
         )),
         "chicago-18-base" => Some(include_bytes!("../../embedded/styles/chicago-18-base.yaml")),
+        "gb-t-7714-2025-base" => Some(include_bytes!(
+            "../../embedded/styles/gb-t-7714-2025-base.yaml"
+        )),
         "preset-bases/apa-7th" => Some(include_bytes!("../../embedded/styles/apa-7th.yaml")),
         "preset-bases/chicago-author-date-18th" => Some(include_bytes!(
             "../../embedded/styles/chicago-author-date-18th.yaml"
@@ -80,6 +83,15 @@ fn get_style_bytes(name: &str) -> Option<&'static [u8]> {
             "../../embedded/styles/american-medical-association.yaml"
         )),
         "ieee" => Some(include_bytes!("../../embedded/styles/ieee.yaml")),
+        "gb-t-7714-2025-numeric" => Some(include_bytes!(
+            "../../embedded/styles/gb-t-7714-2025-numeric.yaml"
+        )),
+        "gb-t-7714-2025-author-date" => Some(include_bytes!(
+            "../../embedded/styles/gb-t-7714-2025-author-date.yaml"
+        )),
+        "gb-t-7714-2025-note" => Some(include_bytes!(
+            "../../embedded/styles/gb-t-7714-2025-note.yaml"
+        )),
         "taylor-and-francis-chicago-author-date" => Some(include_bytes!(
             "../../embedded/styles/taylor-and-francis-chicago-author-date.yaml"
         )),
@@ -108,6 +120,8 @@ pub const EMBEDDED_STYLE_ALIASES: &[(&str, &str)] = &[
     ("chicago", "chicago-shortened-notes-bibliography"),
     ("chicago-notes", "chicago-notes-18th"),
     ("chicago-author-date", "chicago-author-date-18th"),
+    ("gb-t-7714-2025", "gb-t-7714-2025-numeric"),
+    ("gb7714-2025", "gb-t-7714-2025-numeric"),
     ("vancouver", "elsevier-vancouver"),
     ("harvard", "elsevier-harvard"),
 ];
@@ -159,6 +173,7 @@ pub const EMBEDDED_STYLE_NAMES: &[&str] = &[
     "taylor-and-francis-national-library-of-medicine-core",
     "chicago-shortened-notes-bibliography-core",
     "chicago-18-base",
+    "gb-t-7714-2025-base",
     "apa-7th",
     "elsevier-harvard",
     "elsevier-with-titles",
@@ -168,6 +183,9 @@ pub const EMBEDDED_STYLE_NAMES: &[&str] = &[
     "springer-basic-brackets",
     "american-medical-association",
     "ieee",
+    "gb-t-7714-2025-numeric",
+    "gb-t-7714-2025-author-date",
+    "gb-t-7714-2025-note",
     "taylor-and-francis-chicago-author-date",
     "taylor-and-francis-council-of-science-editors-author-date",
     "taylor-and-francis-national-library-of-medicine",
@@ -176,3 +194,66 @@ pub const EMBEDDED_STYLE_NAMES: &[&str] = &[
     "chicago-author-date-18th",
     "modern-language-association",
 ];
+
+#[cfg(test)]
+#[allow(
+    clippy::expect_used,
+    clippy::panic,
+    reason = "Panicking is acceptable and often desired in tests."
+)]
+mod tests {
+    use super::*;
+    use crate::style_base::StyleReference;
+
+    const GB_T_7714_HEADS: [&str; 3] = [
+        "gb-t-7714-2025-numeric",
+        "gb-t-7714-2025-author-date",
+        "gb-t-7714-2025-note",
+    ];
+
+    #[test]
+    fn gb_t_7714_heads_inherit_the_hidden_bibliography_base() {
+        let base = get_embedded_style("gb-t-7714-2025-base")
+            .expect("hidden GB/T 7714 base should be embedded")
+            .expect("hidden GB/T 7714 base should parse");
+        assert!(
+            base.citation.is_none(),
+            "the hidden family base should not define a citation grammar"
+        );
+        assert!(
+            base.bibliography.is_some(),
+            "the hidden family base should define the shared bibliography grammar"
+        );
+
+        for name in GB_T_7714_HEADS {
+            let head = get_embedded_style(name)
+                .unwrap_or_else(|| panic!("{name} should be embedded"))
+                .unwrap_or_else(|error| panic!("{name} should parse: {error}"));
+            assert_eq!(
+                head.extends.as_ref().map(StyleReference::key),
+                Some("gb-t-7714-2025-base"),
+                "{name} should inherit the hidden family base"
+            );
+
+            let resolved = head.into_resolved();
+            assert!(
+                resolved.citation.is_some(),
+                "{name} should provide its own citation grammar"
+            );
+            assert!(
+                resolved.bibliography.is_some(),
+                "{name} should inherit the shared bibliography grammar"
+            );
+        }
+    }
+
+    #[test]
+    fn gb_t_7714_family_aliases_resolve_to_the_numeric_head() {
+        for alias in ["gb-t-7714-2025", "gb7714-2025"] {
+            assert_eq!(
+                resolve_embedded_style_name(alias),
+                Some("gb-t-7714-2025-numeric")
+            );
+        }
+    }
+}

@@ -86,6 +86,36 @@ styles:
   description: Institute of Electrical and Electronics Engineers
   fields:
   - engineering
+- id: gb-t-7714-2025-numeric
+  aliases:
+  - gb-t-7714-2025
+  - gb7714-2025
+  builtin: gb-t-7714-2025-numeric
+  kind: base
+  description: GB/T 7714—2025 Numeric (Bilingual)
+  fields:
+  - science
+  - humanities
+  - engineering
+  - medicine
+- id: gb-t-7714-2025-author-date
+  builtin: gb-t-7714-2025-author-date
+  kind: base
+  description: GB/T 7714—2025 Author-Date (Bilingual)
+  fields:
+  - science
+  - humanities
+  - engineering
+  - medicine
+- id: gb-t-7714-2025-note
+  builtin: gb-t-7714-2025-note
+  kind: base
+  description: GB/T 7714—2025 Note (Bilingual)
+  fields:
+  - science
+  - humanities
+  - engineering
+  - medicine
 - id: taylor-and-francis-chicago-author-date
   aliases:
   - annals-of-the-association-of-american-geographers

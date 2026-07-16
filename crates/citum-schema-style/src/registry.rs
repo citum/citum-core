@@ -379,6 +379,36 @@ mod tests {
     }
 
     #[test]
+    fn default_registry_exposes_gb_t_7714_heads_but_hides_the_family_base() {
+        let registry = StyleRegistry::load_default();
+        let public_heads = [
+            "gb-t-7714-2025-numeric",
+            "gb-t-7714-2025-author-date",
+            "gb-t-7714-2025-note",
+        ];
+
+        for id in public_heads {
+            let entry = registry
+                .resolve(id)
+                .unwrap_or_else(|| panic!("{id} should be discoverable"));
+            assert_eq!(entry.id, id);
+            assert_eq!(entry.builtin.as_deref(), Some(id));
+            assert_eq!(entry.kind, Some(StyleKind::Base));
+        }
+
+        for alias in ["gb-t-7714-2025", "gb7714-2025"] {
+            assert_eq!(
+                registry.resolve(alias).map(|entry| entry.id.as_str()),
+                Some("gb-t-7714-2025-numeric")
+            );
+        }
+        assert!(
+            registry.resolve("gb-t-7714-2025-base").is_none(),
+            "the hidden family base should not appear in public discovery"
+        );
+    }
+
+    #[test]
     fn test_load_default_contains_embedded_and_core_http_entries() {
         let registry = StyleRegistry::load_default();
         let embedded = registry.resolve("apa-7th").expect("apa-7th should exist");

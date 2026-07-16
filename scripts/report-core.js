@@ -502,7 +502,10 @@ function discoverCoreStyles(provenanceConfig = loadReportProvenance()) {
         stylePath: path.join(dir, filename),
         name: path.basename(filename, '.yaml'),
       }))
-      .filter((style) => !style.name.endsWith('-core'));
+      // Hidden family roots (-core publisher bases, -base embedded family
+      // roots like gb-t-7714-2025-base) are inheritance targets, not public
+      // styles; they have no CSL source and are excluded from the report.
+      .filter((style) => !style.name.endsWith('-core') && !style.name.endsWith('-base'));
   };
 
   const allStyles = [
@@ -2436,7 +2439,9 @@ async function processStyleReport(runtime, styleSpec, context) {
     };
   }
 
-  const stylePath = path.join(stylesDir, `${styleSpec.sourceName}.csl`);
+  const stylePath = stylePolicy.cslSource
+    ? path.join(PROJECT_ROOT, stylePolicy.cslSource)
+    : path.join(stylesDir, `${styleSpec.sourceName}.csl`);
   const styleYamlPath = styleYamlOverridePath || styleSpec.stylePath || resolveStyleYamlPath(styleSpec.name);
 
   if (citationAuthority.authority === 'citeproc-js' && !fs.existsSync(stylePath)) {

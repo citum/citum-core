@@ -7746,6 +7746,11 @@
           "const": "chicago-18-base"
         },
         {
+          "description": "Hidden GB/T 7714—2025 shared bibliography base.",
+          "type": "string",
+          "const": "gb-t-7714-2025-base"
+        },
+        {
           "description": "Chicago Manual of Style 18th edition — notes without bibliography.",
           "type": "string",
           "const": "chicago-notes-18th"

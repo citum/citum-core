@@ -51,6 +51,9 @@ pub enum StyleBase {
     /// Hidden Chicago 18 shared component base (options-only; both CMOS heads extend it).
     #[serde(rename = "chicago-18-base")]
     Chicago18Base,
+    /// Hidden GB/T 7714—2025 shared bibliography base.
+    #[serde(rename = "gb-t-7714-2025-base")]
+    GbT77142025Base,
     /// Chicago Manual of Style 18th edition — notes without bibliography.
     #[serde(rename = "chicago-notes-18th")]
     ChicagoNotes18th,
@@ -112,6 +115,7 @@ impl StyleBase {
                 "chicago-shortened-notes-bibliography-core"
             }
             StyleBase::Chicago18Base => "chicago-18-base",
+            StyleBase::GbT77142025Base => "gb-t-7714-2025-base",
             StyleBase::ChicagoNotes18th => "chicago-notes-18th",
             StyleBase::ChicagoAuthorDate18th => "chicago-author-date-18th",
             StyleBase::ChicagoShortenedNotesBibliography => "chicago-shortened-notes-bibliography",
@@ -212,6 +216,7 @@ impl StyleBase {
                 "chicago-shortened-notes-bibliography-core"
             }
             StyleBase::Chicago18Base => "chicago-18-base",
+            StyleBase::GbT77142025Base => "gb-t-7714-2025-base",
             StyleBase::ChicagoNotes18th => "chicago-notes-18th",
             StyleBase::ChicagoAuthorDate18th => "chicago-author-date-18th",
             StyleBase::ChicagoShortenedNotesBibliography => "chicago-shortened-notes-bibliography",
@@ -254,6 +259,7 @@ impl StyleBase {
             StyleBase::TaylorAndFrancisNationalLibraryOfMedicineCore,
             StyleBase::ChicagoShortenedNotesBibliographyCore,
             StyleBase::Chicago18Base,
+            StyleBase::GbT77142025Base,
             StyleBase::ChicagoNotes18th,
             StyleBase::ChicagoAuthorDate18th,
             StyleBase::ChicagoShortenedNotesBibliography,
@@ -474,8 +480,8 @@ citation:
         for base in StyleBase::all() {
             let resolved = base.base().into_resolved();
             // Component bases (key ends in `-base`) are never rendered directly:
-            // they carry only shared options for descendants and legitimately
-            // have no citation grammar of their own.
+            // they carry shared family configuration for descendants and
+            // legitimately have no citation grammar of their own.
             if !base.key().ends_with("-base") {
                 assert!(
                     resolved.citation.is_some(),
@@ -534,6 +540,7 @@ citation:
         let tier1 = [
             StyleBase::Apa7th,
             StyleBase::Chicago18Base,
+            StyleBase::GbT77142025Base,
             StyleBase::Ieee,
             StyleBase::AmericanMedicalAssociation,
             StyleBase::ModernLanguageAssociation,

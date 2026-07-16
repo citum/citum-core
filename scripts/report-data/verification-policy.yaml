@@ -153,6 +153,44 @@ styles:
     secondary:
       - biblatex
     fixture_family: note-humanities
+  gb-t-7714-2025-numeric:
+    authority: citeproc-js
+    csl_source: tests/fixtures/csl-m/gb-t-7714-2025-numeric.csl
+    benchmark_runs:
+      - id: gbt-7714-2025-upstream
+        label: GB/T 7714—2025 upstream corpus
+        runner: citeproc-oracle
+        refs_fixture: tests/fixtures/test-items-library/gb-t-7714-2025.json
+        citations_fixture: tests/fixtures/test-items-library/gb-t-7714-2025-numeric-citations.json
+        scope: both
+        count_toward_fidelity: true
+        min_pass_rate: 1.0
+  gb-t-7714-2025-author-date:
+    authority: citeproc-js
+    csl_source: tests/fixtures/csl-m/gb-t-7714-2025-author-date.csl
+    note: Diagnostic only until the author-date tuning wave (follow-up bean);
+      the numeric style carries the GB/T 7714 fidelity gate.
+    benchmark_runs:
+      - id: gbt-7714-2025-upstream
+        label: GB/T 7714—2025 upstream corpus
+        runner: citeproc-oracle
+        refs_fixture: tests/fixtures/test-items-library/gb-t-7714-2025.json
+        citations_fixture: tests/fixtures/test-items-library/gb-t-7714-2025-author-date-citations.json
+        scope: both
+        count_toward_fidelity: false
+  gb-t-7714-2025-note:
+    authority: citeproc-js
+    csl_source: tests/fixtures/csl-m/gb-t-7714-2025-note.csl
+    note: Diagnostic only until the note tuning wave (follow-up bean);
+      the numeric style carries the GB/T 7714 fidelity gate.
+    benchmark_runs:
+      - id: gbt-7714-2025-upstream
+        label: GB/T 7714—2025 upstream corpus
+        runner: citeproc-oracle
+        refs_fixture: tests/fixtures/test-items-library/gb-t-7714-2025.json
+        citations_fixture: tests/fixtures/test-items-library/gb-t-7714-2025-note-citations.json
+        scope: both
+        count_toward_fidelity: false
   chicago-author-date-18th:
     secondary:
       - biblatex
