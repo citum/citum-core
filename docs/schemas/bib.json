@@ -406,6 +406,16 @@
                 "null"
               ]
             },
+            "pages": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/NumOrStr"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "class": {
               "type": "string",
               "const": "monograph"
@@ -4113,6 +4123,20 @@
         "server"
       ]
     },
+    "NumOrStr": {
+      "description": "A value that could be either a number or a string.\n\nUsed for fields that may contain numeric or string values, such as issue numbers,\nvolume numbers, or similar identifiers that can be formatted as either type.\nThe `Display` implementation shows the value in its appropriate form.",
+      "anyOf": [
+        {
+          "description": "A numeric value.",
+          "type": "integer",
+          "format": "int64"
+        },
+        {
+          "description": "A string value.",
+          "type": "string"
+        }
+      ]
+    },
     "SupplementaryIdentifiers": {
       "description": "Extensible standardized identifiers without dedicated Citum fields.",
       "type": "object",
@@ -4132,20 +4156,6 @@
           "description": "A document component that does not fit a more specific subtype.",
           "type": "string",
           "const": "document"
-        }
-      ]
-    },
-    "NumOrStr": {
-      "description": "A value that could be either a number or a string.\n\nUsed for fields that may contain numeric or string values, such as issue numbers,\nvolume numbers, or similar identifiers that can be formatted as either type.\nThe `Display` implementation shows the value in its appropriate form.",
-      "anyOf": [
-        {
-          "description": "A numeric value.",
-          "type": "integer",
-          "format": "int64"
-        },
-        {
-          "description": "A string value.",
-          "type": "string"
         }
       ]
     },

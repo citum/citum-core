@@ -274,6 +274,27 @@ fn legacy_extra_contributor(
     legacy_extra_names(legacy, key).map(Contributor::from)
 }
 
+/// Build a publisher from legacy name/place, preserving a place-only imprint.
+///
+/// `Publisher::name` is non-optional, so when only a place is present (no
+/// publisher name) this returns a `Publisher` with an empty name rather than
+/// dropping the place entirely — GB/T 7714 and other styles render
+/// place-only imprints, so silently discarding `publisher-place` when
+/// `publisher` is absent would lose data.
+fn publisher_from_parts(name: Option<String>, place: Option<String>) -> Option<Publisher> {
+    match (name, place) {
+        (Some(name), place) => Some(Publisher {
+            name: name.into(),
+            place: place.map(Into::into),
+        }),
+        (None, Some(place)) => Some(Publisher {
+            name: String::new().into(),
+            place: Some(place.into()),
+        }),
+        (None, None) => None,
+    }
+}
+
 fn relation_monograph(
     title: Option<Title>,
     author: Option<Contributor>,
@@ -292,17 +313,7 @@ fn relation_monograph(
         return None;
     }
 
-    let publisher = match (publisher, publisher_place) {
-        (Some(name), place) => Some(Publisher {
-            name: name.into(),
-            place: place.map(Into::into),
-        }),
-        (None, Some(place)) => Some(Publisher {
-            name: String::new().into(),
-            place: Some(place.into()),
-        }),
-        (None, None) => None,
-    };
+    let publisher = publisher_from_parts(publisher, publisher_place);
 
     Some(WorkRelation::Embedded(Box::new(InputReference::Monograph(
         Box::new(Monograph {
@@ -1086,6 +1097,32 @@ mod tests {
         assert_eq!(
             component.title,
             Some(Title::Single("Actual Chapter".to_string()))
+        );
+    }
+
+    #[test]
+    fn legacy_publisher_place_without_name_preserves_place() {
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "book-5".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("A history of Chinese mathematics".to_string()),
+            publisher_place: Some("Cambridge, Eng".to_string()),
+            issued: Some(legacy_year(1959)),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        assert_eq!(
+            converted.publisher(),
+            Some(Publisher {
+                name: String::new().into(),
+                place: Some("Cambridge, Eng".to_string().into()),
+            })
+        );
+        assert_eq!(
+            converted.publisher_place(),
+            Some("Cambridge, Eng".to_string())
         );
     }
 }

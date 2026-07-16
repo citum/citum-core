@@ -135,10 +135,7 @@ pub(super) fn from_standard_ref(
         created: ctx.created,
         issued: ctx.issued,
         status: None,
-        publisher: legacy.publisher.map(|n| Publisher {
-            name: n.into(),
-            place: legacy.publisher_place.map(Into::into),
-        }),
+        publisher: publisher_from_parts(legacy.publisher, legacy.publisher_place),
         doi: ctx.doi,
         url: ctx.url,
         accessed: ctx.accessed,
