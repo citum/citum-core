@@ -1,0 +1,230 @@
+extends: gb-t-7714-2025-base
+version: 0.71.0
+info:
+  title: GB/T 7714—2025（注释，双语）
+  id: https://zotero-chinese.com/styles/GB-T-7714—2025（注释，双语）
+  description: GB/T 7714—2025 信息与文献 参考文献著录规则（2026-07-01实施）
+  default-locale: zh-CN
+  source:
+    csl-id: https://zotero-chinese.com/styles/GB-T-7714—2025（注释，双语）
+    adapted-by: citum-migrate
+    license: http://creativecommons.org/licenses/by-sa/3.0/
+    original-authors:
+    - name: Zeping Lee
+      email: zepinglee@gmail.com
+    links:
+    - href: https://zotero-chinese.com/styles/GB-T-7714—2025（注释，双语）
+      rel: self
+    - href: https://zotero-chinese.com/styles/GB-T-7714—2025（顺序编码，双语）
+      rel: template
+    - href: https://std.samr.gov.cn/gb/search/gbDetailed?id=4507EFE13D37CB6AE06397BE0A0A601F
+      rel: documentation
+options:
+  processing: note
+  contributors:
+    initialize-with: ' '
+    shorten:
+      min: 4
+      use-first: 3
+      and-others: et-al
+      delimiter-precedes-last: contextual
+    delimiter: null
+    demote-non-dropping-particle: never
+    name-form: initials
+  dates:
+    month: numeric
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
+    range-delimiter: –
+    no-date-year-suffix-delimiter: '-'
+    show-seconds: false
+    show-timezone: false
+    era-labels: default
+    negative-unspecified-years: range
+  page-range-format: expanded
+citation:
+  template:
+  - contributor: author
+    form: long
+  - title: primary
+  - number: volume
+    label-form: short
+  - number: number
+  - variable: archive-location
+    suppress: true
+  - group:
+    - variable: medium
+    delimiter: slash
+    wrap:
+      punctuation: brackets
+  - contributor: translator
+    form: long
+  - title: container-title
+    suppress: true
+    strip-periods: true
+  - date: issued
+    form: year
+    fallback: []
+  - date: accessed
+    form: year
+    wrap:
+      punctuation: brackets
+  - variable: locator
+  - number: pages
+  - number: issue
+    prefix: （
+    suffix: ）
+    suppress: true
+  - contributor: container-author
+    form: long
+    suppress: true
+  - group:
+    - number: edition
+    delimiter: space
+  - variable: publisher
+  - variable: publisher-place
+  - variable: archive
+    suppress: true
+  - variable: version
+    strip-periods: true
+  - variable: url
+  - identifier: cstr
+    prefix: 'CSTR:'
+  - variable: doi
+    prefix: 'DOI:'
+  locales:
+  - locale:
+    - en
+    template:
+    - contributor: author
+      form: long
+      suppress: false
+    - title: primary
+      suppress: false
+    - number: volume
+      label-form: short
+      suppress: false
+    - number: number
+      suppress: false
+    - variable: archive-location
+      suppress: true
+    - group:
+      - variable: medium
+      delimiter: slash
+      wrap:
+        punctuation: brackets
+      suppress: false
+    - contributor: translator
+      form: long
+      suppress: false
+    - title: container-title
+      suppress: true
+      strip-periods: true
+    - date: issued
+      form: year
+      fallback: []
+      suppress: false
+    - date: accessed
+      form: year
+      wrap:
+        punctuation: brackets
+      suppress: false
+    - variable: locator
+      suppress: false
+    - number: pages
+      suppress: false
+    - number: issue
+      prefix: （
+      suffix: ）
+      suppress: true
+    - contributor: container-author
+      form: long
+      suppress: true
+    - group:
+      - number: edition
+      delimiter: space
+      suppress: false
+    - variable: publisher
+      suppress: false
+    - variable: publisher-place
+      suppress: false
+    - variable: archive
+      suppress: true
+    - variable: version
+      suppress: false
+      strip-periods: true
+    - variable: url
+      suppress: false
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - variable: doi
+      prefix: 'DOI:'
+      suppress: false
+  - default: true
+    template:
+    - contributor: author
+      form: long
+      suppress: false
+    - title: primary
+      suppress: false
+    - number: volume
+      label-form: short
+      suppress: false
+    - number: number
+      suppress: false
+    - variable: archive-location
+      suppress: true
+    - group:
+      - variable: medium
+      delimiter: slash
+      wrap:
+        punctuation: brackets
+      suppress: false
+    - contributor: translator
+      form: long
+      suppress: false
+    - title: container-title
+      suppress: true
+      strip-periods: true
+    - date: issued
+      form: year
+      fallback: []
+      suppress: false
+    - date: accessed
+      form: year
+      wrap:
+        punctuation: brackets
+      suppress: false
+    - variable: locator
+      suppress: false
+    - number: pages
+      suppress: false
+    - number: issue
+      prefix: （
+      suffix: ）
+      suppress: true
+    - contributor: container-author
+      form: long
+      suppress: true
+    - group:
+      - number: edition
+      delimiter: space
+      suppress: false
+    - variable: publisher
+      suppress: false
+    - variable: publisher-place
+      suppress: false
+    - variable: archive
+      suppress: true
+    - variable: version
+      suppress: false
+      strip-periods: true
+    - variable: url
+      suppress: false
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - variable: doi
+      prefix: 'DOI:'
+      suppress: false
+  suffix: .
+  multi-cite-delimiter: ；

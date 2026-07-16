@@ -68,6 +68,40 @@ locators:
       singular: 卷
       plural: 卷
 
+roles:
+  editor:
+    long:
+      singular: 编辑
+      plural: 编辑
+    short:
+      singular: 编
+      plural: 编
+    verb: 编辑
+  editorial-director:
+    long:
+      singular: 主编
+      plural: 主编
+    short:
+      singular: 主编
+      plural: 主编
+    verb: 主编
+  translator:
+    long:
+      singular: 翻译
+      plural: 翻译
+    short:
+      singular: 译
+      plural: 译
+    verb: 翻译
+  illustrator:
+    long:
+      singular: 绘图
+      plural: 绘图
+    short:
+      singular: 绘
+      plural: 绘
+    verb: 绘图
+
 terms:
   and:
     long: 和

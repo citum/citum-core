@@ -2,3 +2,8 @@
 # and git merge treats them as binary (no conflict markers).
 tests/snapshots/csl/*.json linguist-generated=true merge=union
 tests/snapshots/biblatex/*.json linguist-generated=true merge=union
+
+# Vendored upstream fixtures (provenance in tests/fixtures/csl-m/gb-t-7714-2025-SOURCE.md):
+# exact pinned copies, reviewed by SHA attestation rather than line-by-line.
+tests/fixtures/csl-m/*.csl linguist-generated=true
+tests/fixtures/test-items-library/gb-t-7714-2025.json linguist-generated=true

@@ -485,6 +485,23 @@ function evaluateConformanceLayer(styleName, style, rendered, expectationConfig)
 }
 
 function evaluateNotePositionRender(styleName, style, rendered, expectationConfig) {
+  // Note styles without an expectations entry (e.g. a newly embedded style
+  // whose position behavior is not yet characterized) surface as a
+  // configuration gap instead of crashing the report.
+  if (!expectationConfig.styles[styleName]) {
+    const issues = [{
+      kind: 'configuration-gap',
+      message: `No styles.${styleName} entry in note-position-expectations.yaml; add one to enable the note-position audit.`,
+    }];
+    return {
+      status: 'configuration-gap',
+      issues,
+      profile: null,
+      rendered,
+      regression: { status: 'configuration-gap', issues, profile: null },
+      conformance: { status: 'unresolved', issues: [], family: null },
+    };
+  }
   const regression = evaluateRegressionLayer(styleName, style, rendered, expectationConfig);
   const conformance = evaluateConformanceLayer(styleName, style, rendered, expectationConfig);
 

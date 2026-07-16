@@ -52,6 +52,13 @@ const STRICT_CITATION_IDS = new Set([
   'et-al-with-locator',
   'subsequent-author-consecutive',
 ]);
+// Embedded-core GB/T styles require exact normalized bibliography fidelity.
+// Similarity remains available on the comparison result for diagnostics.
+const STRICT_BIBLIOGRAPHY_STYLES = new Set([
+  'gb-t-7714-2025-numeric',
+  'gb-t-7714-2025-author-date',
+  'gb-t-7714-2025-note',
+]);
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -303,8 +310,9 @@ function renderWithCiteprocJs(stylePath, testItems, testCitations, options = {})
 
   const bibResult = citeproc.makeBibliography();
   const bibliography = bibResult ? bibResult[1] : [];
+  const bibliographyIds = bibResult?.[0]?.entry_ids?.map((ids) => ids[0]) || [];
 
-  return { citations, bibliography };
+  return { citations, bibliography, bibliographyIds };
 }
 
 function buildMigrateCommand(absStylePath, migrateOptions = {}, allFeatures = false) {
@@ -459,15 +467,18 @@ function parseCitumRenderOutput(output, testItems) {
   }
 
   const orderedBibliography = [];
+  const bibliographyIds = [];
   Object.keys(testItems).forEach((id) => {
     if (bibliography[id]) {
       orderedBibliography.push(bibliography[id]);
+      bibliographyIds.push(id);
     }
   });
 
   return {
     citations,
     bibliography: orderedBibliography,
+    bibliographyIds,
     bibliographyOrderIds,
     integralCitations,
   };
@@ -640,7 +651,31 @@ function collectCitationTypes(citation, testItems) {
  * Match bibliography entries between oracle and Citum by finding best matches.
  * Uses contributor names and titles to pair entries.
  */
-function matchBibliographyEntries(oracleBib, citumBib) {
+function matchBibliographyEntries(oracleBib, citumBib, oracleIds = [], citumIds = []) {
+  if (oracleIds.length === oracleBib.length && citumIds.length === citumBib.length) {
+    const citumById = new Map(
+      citumIds.map((id, index) => [id, { text: citumBib[index] }])
+    );
+    const oracleIdSet = new Set(oracleIds);
+    const pairs = oracleIds.map((id, index) => {
+      const citum = citumById.get(id);
+      return {
+        id,
+        oracle: oracleBib[index],
+        citum: citum?.text ?? null,
+        score: citum ? textSimilarity(oracleBib[index], citum.text) : 0,
+      };
+    });
+
+    for (let index = 0; index < citumIds.length; index++) {
+      const id = citumIds[index];
+      if (!oracleIdSet.has(id)) {
+        pairs.push({ id, oracle: null, citum: citumBib[index], score: 0 });
+      }
+    }
+    return pairs;
+  }
+
   const pairs = [];
   const usedOracle = new Set();
   const usedCitum = new Set();
@@ -690,6 +725,16 @@ function matchBibliographyEntries(oracleBib, citumBib) {
   return pairs;
 }
 
+function bibliographyComparisonMatches(styleName, comparison, caseSensitive = true) {
+  if (!STRICT_BIBLIOGRAPHY_STYLES.has(styleName)) {
+    return comparison.match;
+  }
+  if (caseSensitive) {
+    return comparison.expected === comparison.actual;
+  }
+  return comparison.expected.toLowerCase() === comparison.actual.toLowerCase();
+}
+
 function runOracle(cliOptions = parseArgs()) {
   const stylePath = cliOptions.stylePath;
   const jsonOutput = cliOptions.jsonOutput;
@@ -711,7 +756,7 @@ function runOracle(cliOptions = parseArgs()) {
     cliOptions.refsFixture,
     cliOptions.citationsFixture
   );
-  const styleName = path.basename(stylePath, '.csl');
+  const styleName = path.basename(stylePath, path.extname(stylePath));
 
   if (!jsonOutput) {
     console.log(`\n=== Structured Diff Oracle: ${styleName} ===\n`);
@@ -758,7 +803,12 @@ function runOracle(cliOptions = parseArgs()) {
   // scope: bibliography skips citations below).
   const pairs = cliOptions.scope === 'citation'
     ? []
-    : matchBibliographyEntries(oracle.bibliography, citum.bibliography);
+    : matchBibliographyEntries(
+      oracle.bibliography,
+      citum.bibliography,
+      oracle.bibliographyIds,
+      citum.bibliographyIds
+    );
 
   const rawResults = {
     style: styleName,
@@ -822,6 +872,7 @@ function runOracle(cliOptions = parseArgs()) {
     const pair = pairs[i];
     const entryResult = {
       index: i + 1,
+      id: pair.id || null,
       oracle: pair.oracle ? normalizeText(pair.oracle) : null,
       citum: pair.citum ? normalizeText(pair.citum) : null,
       match: false,
@@ -845,15 +896,22 @@ function runOracle(cliOptions = parseArgs()) {
       entryResult.oracle = comparison.expected;
       entryResult.citum = comparison.actual;
       entryResult.caseMismatch = comparison.caseMismatch;
+      const match = bibliographyComparisonMatches(
+        styleName,
+        comparison,
+        cliOptions.caseSensitive
+      );
 
-      if (comparison.match) {
+      if (match) {
         entryResult.match = true;
         rawResults.bibliography.passed++;
       } else {
         rawResults.bibliography.failed++;
 
         // Find reference data for this entry
-        const refData = findRefDataForEntry(pair.oracle, testItems);
+        const refData = pair.id
+          ? testItems[pair.id]
+          : findRefDataForEntry(pair.oracle, testItems);
 
         // Parse components (only if reference data found)
         if (refData) {
@@ -974,10 +1032,12 @@ if (require.main === module) {
 }
 
 module.exports = {
+  bibliographyComparisonMatches,
   compareComponents,
   cleanupOracleTempWorkspace,
   createOracleTempWorkspace,
   loadFixtures,
+  matchBibliographyEntries,
   normalizeFixtureItems,
   parseArgs,
   parseCitumRenderOutput,

@@ -144,6 +144,12 @@ function validateVerificationPolicy(policy) {
     if (stylePolicy.regression_baseline != null) {
       ensureAuthority(stylePolicy.regression_baseline, `verification-policy.yaml styles.${styleName}.regression_baseline`);
     }
+    if (stylePolicy.csl_source != null) {
+      assert(
+        typeof stylePolicy.csl_source === 'string' && stylePolicy.csl_source.trim().length > 0,
+        `verification-policy.yaml styles.${styleName}.csl_source must be a non-empty repo-relative path`
+      );
+    }
     if (stylePolicy.scope_authorities != null) {
       assert(
         stylePolicy.scope_authorities && typeof stylePolicy.scope_authorities === 'object' && !Array.isArray(stylePolicy.scope_authorities),
@@ -203,6 +209,7 @@ function resolveVerificationPolicy(styleName, policy) {
     fixtureFamily: stylePolicy.fixture_family || null,
     note: stylePolicy.note || null,
     regressionBaseline: stylePolicy.regression_baseline || null,
+    cslSource: stylePolicy.csl_source || null,
     scopeAuthorities: stylePolicy.scope_authorities || {},
     benchmarkRuns: (stylePolicy.benchmark_runs || []).map((run) => ({
       id: run.id,

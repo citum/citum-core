@@ -426,7 +426,7 @@ function parseComponents(entry, refData) {
     if (yearPos) {
       result.year = {
         found: true,
-        value: entry.substring(yearPos.start, yearPos.end),
+        value: sliceMatchedValue(normalized, yearPos),
         pos: yearPos
       };
     }
@@ -438,7 +438,7 @@ function parseComponents(entry, refData) {
     if (titlePos) {
       result.title = {
         found: true,
-        value: entry.substring(titlePos.start, titlePos.end),
+        value: sliceMatchedValue(normalized, titlePos),
         pos: titlePos
       };
     }
@@ -450,7 +450,7 @@ function parseComponents(entry, refData) {
     if (containerPos) {
       result.containerTitle = {
         found: true,
-        value: entry.substring(containerPos.start, containerPos.end),
+        value: sliceMatchedValue(normalized, containerPos),
         pos: containerPos
       };
     }
@@ -462,7 +462,7 @@ function parseComponents(entry, refData) {
     if (volPos) {
       result.volume = {
         found: true,
-        value: entry.substring(volPos.start, volPos.end),
+        value: sliceMatchedValue(normalized, volPos),
         pos: volPos
       };
     }
@@ -474,7 +474,7 @@ function parseComponents(entry, refData) {
     if (issuePos) {
       result.issue = {
         found: true,
-        value: entry.substring(issuePos.start, issuePos.end),
+        value: sliceMatchedValue(normalized, issuePos),
         pos: issuePos
       };
     }
@@ -486,7 +486,7 @@ function parseComponents(entry, refData) {
     if (pagePos) {
       result.pages = {
         found: true,
-        value: entry.substring(pagePos.start, pagePos.end),
+        value: sliceMatchedValue(normalized, pagePos),
         pos: pagePos
       };
     }
@@ -498,7 +498,7 @@ function parseComponents(entry, refData) {
     if (pubPos) {
       result.publisher = {
         found: true,
-        value: entry.substring(pubPos.start, pubPos.end),
+        value: sliceMatchedValue(normalized, pubPos),
         pos: pubPos
       };
     }
@@ -510,7 +510,7 @@ function parseComponents(entry, refData) {
     if (doiPos) {
       result.doi = {
         found: true,
-        value: entry.substring(doiPos.start, doiPos.end),
+        value: sliceMatchedValue(normalized, doiPos),
         pos: doiPos
       };
     }
@@ -522,7 +522,7 @@ function parseComponents(entry, refData) {
     if (edPos) {
       result.edition = {
         found: true,
-        value: entry.substring(edPos.start, edPos.end),
+        value: sliceMatchedValue(normalized, edPos),
         pos: edPos
       };
     }

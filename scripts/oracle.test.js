@@ -5,10 +5,12 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 const {
+  bibliographyComparisonMatches,
   compareComponents,
   cleanupOracleTempWorkspace,
   createOracleTempWorkspace,
   loadFixtures,
+  matchBibliographyEntries,
   normalizeFixtureItems,
   parseCitumRenderOutput,
   refsDataForProcessor,
@@ -16,6 +18,7 @@ const {
   collapseClusteredCitumCitations,
   resolveAuthoredStylePath,
 } = require('./oracle');
+const { compareText, parseComponents } = require('./oracle-utils');
 const {
   attachRegisteredDivergenceAdjustments,
   detectDiv004OrderDifference,
@@ -659,9 +662,61 @@ test('parseCitumRenderOutput keeps integral citations separate from keyed citati
   assert.deepEqual(parsed.citations, { 'single-item': '(Kuhn, 1962)' });
   assert.deepEqual(parsed.integralCitations, ['Kuhn (1962)']);
   assert.deepEqual(parsed.bibliographyOrderIds, ['ITEM-1']);
+  assert.deepEqual(parsed.bibliographyIds, ['ITEM-1']);
   assert.deepEqual(parsed.bibliography, [
     'Kuhn, T. S. (1962). _The Structure of Scientific Revolutions_.',
   ]);
+});
+
+test('component parsing slices normalized citeproc flush-layout text', () => {
+  const entry = [
+    '  <div class="csl-entry">',
+    '    <div class="csl-left-margin">[189]</div><div class="csl-right-inline">Chernik B E. Introduction to library services for library technicians[M]. Littleton, Colo.：Libraries Unlimited, Inc.，1982.</div>',
+    '  </div>',
+  ].join('\n');
+  const components = parseComponents(entry, {
+    id: 'ITEM-189',
+    type: 'book',
+    author: [{ family: 'Chernik', given: 'B. E.' }],
+    title: 'Introduction to library services for library technicians',
+    publisher: 'Libraries Unlimited, Inc.',
+    issued: { 'date-parts': [[1982]] },
+  });
+
+  assert.equal(components.title.value, 'Introduction to library services for library technicians');
+  assert.equal(components.publisher.value, 'Libraries Unlimited, Inc');
+  assert.equal(components.year.value, '1982');
+});
+
+test('bibliography entries pair by item id instead of text similarity', () => {
+  const pairs = matchBibliographyEntries(
+    ['Oracle alpha', 'Oracle beta'],
+    ['Citum beta', 'Citum alpha'],
+    ['ITEM-A', 'ITEM-B'],
+    ['ITEM-B', 'ITEM-A']
+  );
+
+  assert.equal(pairs.length, 2);
+  assert.deepEqual(
+    pairs.map(({ id, oracle, citum }) => ({ id, oracle, citum })),
+    [
+      { id: 'ITEM-A', oracle: 'Oracle alpha', citum: 'Citum alpha' },
+      { id: 'ITEM-B', oracle: 'Oracle beta', citum: 'Citum beta' },
+    ]
+  );
+});
+
+test('GB/T bibliography grading requires exact normalized equality', () => {
+  const comparison = compareText(
+    'Alpha beta gamma delta',
+    'Alpha beta gamma delta extra'
+  );
+  assert.equal(comparison.match, true, 'similarity remains available for diagnostics');
+  assert.equal(
+    bibliographyComparisonMatches('gb-t-7714-2025-numeric', comparison),
+    false
+  );
+  assert.equal(bibliographyComparisonMatches('apa-7th', comparison), true);
 });
 
 test('compareComponents reports differing component values as mismatches', () => {

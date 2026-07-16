@@ -1,0 +1,529 @@
+extends: gb-t-7714-2025-base
+version: 0.71.0
+info:
+  title: GB/T 7714—2025（著者-出版年，双语）
+  id: https://zotero-chinese.com/styles/GB-T-7714—2025（著者-出版年，双语）
+  description: GB/T 7714—2025 信息与文献 参考文献著录规则（2026-07-01实施）
+  default-locale: zh-CN
+  source:
+    csl-id: https://zotero-chinese.com/styles/GB-T-7714—2025（著者-出版年，双语）
+    adapted-by: citum-migrate
+    license: http://creativecommons.org/licenses/by-sa/3.0/
+    original-authors:
+    - name: Zeping Lee
+      email: zepinglee@gmail.com
+    links:
+    - href: https://zotero-chinese.com/styles/GB-T-7714—2025（著者-出版年，双语）
+      rel: self
+    - href: https://zotero-chinese.com/styles/GB-T-7714—2025（顺序编码，双语）
+      rel: template
+    - href: https://std.samr.gov.cn/gb/search/gbDetailed?id=4507EFE13D37CB6AE06397BE0A0A601F
+      rel: documentation
+options:
+  substitute: standard
+  processing: author-date-givenname
+  contributors:
+    initialize-with: ' '
+    shorten:
+      min: 4
+      use-first: 3
+      and-others: et-al
+      delimiter-precedes-last: contextual
+    delimiter: ，
+    demote-non-dropping-particle: never
+    name-form: initials
+  dates:
+    month: numeric
+    uncertainty-marker: '?'
+    approximation-marker: 'ca. '
+    range-delimiter: –
+    no-date-year-suffix-delimiter: '-'
+    show-seconds: false
+    show-timezone: false
+    era-labels: default
+    negative-unspecified-years: range
+  page-range-format: expanded
+citation:
+  options:
+    contributors:
+      shorten:
+        min: 2
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      delimiter: ，
+      and: text
+  template:
+  - contributor: author
+    form: long
+  - date: issued
+    form: year
+  locales:
+  - locale:
+    - en
+    template:
+    - contributor: author
+      form: short
+      shorten:
+        min: 2
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: text
+    - date: issued
+      form: year
+  - default: true
+    template:
+    - contributor: author
+      form: long
+      shorten:
+        min: 2
+        use-first: 1
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: text
+    - date: issued
+      form: year
+  prefix: （
+  suffix: ）
+  delimiter: ，
+  multi-cite-delimiter: ；
+bibliography:
+  options:
+    contributors:
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      delimiter: null
+    hanging-indent: true
+    separator: ''
+  template:
+  - group:
+    - number: volume
+    - number: issue
+      wrap:
+        punctuation: parentheses
+    delimiter: space
+  - contributor: author
+    form: long
+    and: none
+  - date: issued
+    form: year
+  - variable: archive-location
+    suppress: true
+  - title: container-title
+    suppress: true
+    strip-periods: true
+  - contributor: container-author
+    form: long
+    suppress: true
+  - variable: archive
+    suppress: true
+  - title: primary
+  - number: number
+  - group:
+    - variable: medium
+    delimiter: slash
+    wrap:
+      punctuation: brackets
+  - number: pages
+  - variable: publisher
+  - variable: publisher-place
+  - variable: version
+    strip-periods: true
+  - contributor: translator
+    form: long
+  - group:
+    - number: edition
+    delimiter: space
+  - identifier: cstr
+    prefix: 'CSTR:'
+  - variable: doi
+    prefix: 'DOI:'
+  locales:
+  - locale:
+    - en
+    template:
+    - group:
+      - number: volume
+      - number: issue
+        wrap:
+          punctuation: parentheses
+      delimiter: space
+    - contributor: author
+      form: long
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: none
+      suppress: false
+    - date: issued
+      form: year
+      suppress: false
+    - group: []
+      delimiter: hyphen
+      suppress: false
+    - variable: archive-location
+      suppress: true
+    - title: container-title
+      suppress: true
+      strip-periods: true
+    - contributor: container-author
+      form: long
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      suppress: true
+    - variable: archive
+      suppress: true
+    - title: primary
+      suppress: false
+    - number: number
+      suppress: false
+    - group:
+      - variable: medium
+      delimiter: slash
+      wrap:
+        punctuation: brackets
+      suppress: false
+    - number: pages
+      suppress: false
+    - variable: publisher
+      suppress: false
+    - variable: publisher-place
+      suppress: false
+    - variable: version
+      suppress: false
+      strip-periods: true
+    - contributor: translator
+      form: long
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      suppress: false
+    - group:
+      - number: edition
+      delimiter: space
+      suppress: false
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - group:
+      - date: accessed
+        form: year
+        wrap:
+          punctuation: brackets
+      wrap:
+        punctuation: brackets
+      suppress: false
+    - variable: url
+      suppress: false
+    - variable: doi
+      prefix: 'DOI:'
+      suppress: false
+  - default: true
+    template:
+    - group:
+      - number: volume
+      - number: issue
+        wrap:
+          punctuation: parentheses
+      delimiter: space
+    - contributor: author
+      form: long
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      and: none
+      suppress: false
+    - date: issued
+      form: year
+      suppress: false
+    - group: []
+      delimiter: hyphen
+      suppress: false
+    - variable: archive-location
+      suppress: true
+    - title: container-title
+      suppress: true
+      strip-periods: true
+    - contributor: container-author
+      form: long
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      suppress: true
+    - variable: archive
+      suppress: true
+    - title: primary
+      suppress: false
+    - number: number
+      suppress: false
+    - group:
+      - variable: medium
+      delimiter: slash
+      wrap:
+        punctuation: brackets
+      suppress: false
+    - number: pages
+      suppress: false
+    - variable: publisher
+      suppress: false
+    - variable: publisher-place
+      suppress: false
+    - variable: version
+      suppress: false
+      strip-periods: true
+    - contributor: translator
+      form: long
+      shorten:
+        min: 4
+        use-first: 3
+        and-others: et-al
+        delimiter-precedes-last: contextual
+      suppress: false
+    - group:
+      - number: edition
+      delimiter: space
+      suppress: false
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - group:
+      - date: accessed
+        form: year
+        wrap:
+          punctuation: brackets
+      wrap:
+        punctuation: brackets
+      suppress: false
+    - variable: url
+      suppress: false
+    - variable: doi
+      prefix: 'DOI:'
+      suppress: false
+  type-variants:
+    article,dataset:
+    - contributor: author
+      form: long
+    - title: primary
+    - number: volume
+      label-form: short
+    - variable: medium
+    - variable: version
+      strip-periods: true
+    - variable: version
+    - variable: publisher
+    - date: issued
+      form: full
+      prefix: （
+      suffix: ）
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - variable: doi
+      prefix: 'DOI:'
+    article-journal,article-magazine:
+    - contributor: author
+      form: long
+    - date: issued
+      form: year
+    - title: primary
+    - number: volume
+      label-form: short
+    - variable: medium
+    - contributor: translator
+      form: long
+    - title: container-title
+      strip-periods: true
+    - date: issued
+      form: full
+    - number: volume
+    - number: issue
+      prefix: （
+      suffix: ）
+    - number: pages
+    - number: number
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - variable: doi
+      prefix: 'DOI:'
+    article-newspaper:
+    - contributor: author
+      form: long
+    - title: primary
+    - number: volume
+      label-form: short
+    - variable: medium
+    - contributor: translator
+      form: long
+    - title: container-title
+      strip-periods: true
+    - date: issued
+      form: full
+    - number: pages
+      prefix: （
+      suffix: ）
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - variable: doi
+      prefix: 'DOI:'
+    book,thesis,map,software:
+    - contributor: author
+      form: long
+    - message: term.no-date
+      form: short
+    - title: primary
+    - number: volume
+      label-form: short
+    - variable: medium
+    - contributor: translator
+      form: long
+    - number: edition
+    - number: edition
+      label-form: short
+    - variable: publisher-place
+    - variable: publisher
+    - number: pages
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - variable: doi
+      prefix: 'DOI:'
+    chapter,entry-dictionary,entry-encyclopedia:
+    - contributor: author
+      form: long
+    - message: term.no-date
+      form: short
+    - title: primary
+    - number: volume
+      label-form: short
+    - variable: medium
+    - contributor: translator
+      form: long
+    - contributor: container-author
+      form: long
+    - title: container-title
+    - number: volume
+      label-form: short
+    - number: edition
+    - number: edition
+      label-form: short
+    - variable: publisher-place
+    - variable: publisher
+    - number: pages
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - variable: doi
+      prefix: 'DOI:'
+    manuscript,personal_communication:
+    - contributor: author
+      form: long
+    - title: primary
+    - number: volume
+      label-form: short
+    - variable: archive-location
+    - variable: medium
+    - variable: archive
+    - date: issued
+      form: full
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - variable: doi
+      prefix: 'DOI:'
+    paper-conference:
+    - contributor: author
+      form: long
+    - message: term.no-date
+      form: short
+    - title: primary
+    - number: volume
+      label-form: short
+    - variable: medium
+    - number: pages
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - variable: doi
+      prefix: 'DOI:'
+    patent:
+    - contributor: author
+      form: long
+    - title: primary
+    - number: volume
+      label-form: short
+    - variable: medium
+    - contributor: translator
+      form: long
+    - number: edition
+    - number: edition
+      label-form: short
+    - date: issued
+      form: full
+    - number: pages
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - variable: doi
+      prefix: 'DOI:'
+    webpage,post,post-weblog:
+    - contributor: author
+      form: long
+    - title: primary
+    - number: volume
+      label-form: short
+    - variable: medium
+    - date: issued
+      form: full
+      prefix: （
+      suffix: ）
+    - date: accessed
+      form: full
+      wrap:
+        punctuation: brackets
+    - variable: url
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - variable: doi
+      prefix: 'DOI:'
+    report:
+    - contributor: author
+      form: long
+    - message: term.no-date
+      form: short
+    - title: primary
+    - variable: publisher
+    - number: volume
+      label-form: short
+    - variable: medium
+    - contributor: translator
+      form: long
+    - number: edition
+    - number: edition
+      label-form: short
+    - number: pages
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - variable: doi
+      prefix: 'DOI:'
+    standard:
+    - contributor: author
+      form: long
+    - message: term.no-date
+      form: short
+    - number: number
+    - title: primary
+    - number: volume
+      label-form: short
+    - variable: medium
+    - identifier: cstr
+      prefix: 'CSTR:'
+    - variable: doi
+      prefix: 'DOI:'
+  groups-enabled: true
