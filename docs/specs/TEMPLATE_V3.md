@@ -1,7 +1,7 @@
 # Template Schema v3 Specification
 
 **Status:** Active
-**Version:** 0.4
+**Version:** 0.5
 **Date:** 2026-06-24
 **Supersedes:** `docs/specs/TEMPLATE_V2.md`
 **Related:** csl26-t3v1, `docs/specs/DISTRIBUTED_RESOLVER.md`
@@ -27,7 +27,14 @@ This design explicitly **rejects "Macros"** to avoid the complexity and fragment
 
 **Out of Scope:**
 - Named templates or Macros (Forbidden).
+- Cross-section references to named reusable template fragments (Forbidden).
 - YAML Anchors (MAY be used locally for authoring convenience but MUST NOT be relied upon for cross-style reuse).
+
+Family roots MAY share a complete citation or bibliography section through
+style inheritance. When a family head changes ordering-sensitive structure,
+the head replaces that section explicitly. Some component sequences may
+therefore repeat across heads; that duplication is preferred to reintroducing
+CSL-like macro calls and does not by itself identify a schema gap.
 
 ## Terminology
 
@@ -84,21 +91,38 @@ options:
 ```
 
 #### 2.2 Date Configuration
-Templates SHOULD reference logical date roles (e.g., `date: issued`) while the engine resolves concrete fallbacks using `options.dates`. This keeps fallback logic centralized and prevents macro-like duplication in templates.
+Templates SHOULD reference logical date roles (e.g., `date: issued`) while
+`options.dates` centralizes their formatting policy. A date component MAY use
+`fallback` to define its missing-value behavior. An absent fallback preserves
+the engine default (`issued` uses the locale no-date term); an explicit fallback
+list is authoritative. If every fallback component is empty, including when the
+list itself is empty, the date is omitted.
 
 ```yaml
-options:
-  dates:
-    primary:
-      order: [issued, event-date, available]
-      missing: "omit"
+- date: issued
+  form: year
+  fallback: [] # Omit when issued is unavailable.
 ```
 
-### §2.3 Locale Message Components
+CSL and CSL-M date elements render nothing when their variable is unavailable.
+Migration therefore emits an explicit empty fallback for `issued` dates unless
+the source style supplies another fallback, such as a localized no-date term.
 
-Templates MAY call a locale-authored phrase with `message:`. This component
-lives in the style template schema as `TemplateMessage`; it is evaluated by the
-active `Locale` at render time.
+```yaml
+- date: issued
+  form: year
+  fallback:
+- message: term.no-date
+```
+
+### §2.3 MF2 Message Components
+
+Templates MAY call an MF2 phrase with `message:`. Message bodies normally come
+from the active locale, but a style MAY define specialized messages in
+`options.messages`. A style-owned message takes precedence over a locale
+message with the same ID, and inherited message maps merge by ID. This lets a
+hidden family root own standard-specific textual classifications without
+putting them into every locale.
 
 ```yaml
 - message: pattern.accessed-date
@@ -109,14 +133,38 @@ active `Locale` at render time.
   args:
     container: { title: parent-monograph, emph: true }
   text-case: capitalize-first
+
+options:
+  messages:
+    standard.type-code: |-
+      .match {$type :select} {$carrier :select}
+      when book - {M}
+      when book * {M/{$carrier}}
+      when * * {Z}
+
+bibliography:
+  template:
+    - message: standard.type-code
+      args:
+        type: { reference-type: key }
+        carrier: { carrier: { online: OL, absent: '-' } }
 ```
 
 Each `args` entry is rendered through the normal component pipeline before MF2
 evaluation. Supported argument sources are `literal`, `variable`, `date`,
-`title`, `contributor`, `number`, `term`, and `group`. The resulting strings
-become MF2 named variables (`{$date}`, `{$container}`, etc.).
+`title`, `contributor`, `number`, `term`, `group`, `reference-type`, and
+`carrier`. `reference-type: key` supplies the canonical Citum reference-type
+key. `carrier` supplies the reference's explicit medium when present, otherwise
+the configured `online` value for URL, DOI, or CSTR resources, and the
+configured `absent` value for offline resources. The resulting strings become
+MF2 named variables (`{$date}`, `{$container}`, etc.).
 
-The style owns phrase selection and argument selection; the locale owns word
+Style-owned messages are a textual-realization and classification mechanism.
+They MUST NOT be used to recreate general template control flow, and this spec
+does not add a generic literal template component or CSL-style conditional
+language. Structural selection remains in typed templates and type variants.
+
+The style owns phrase and argument selection; the locale normally owns word
 order and glue text. `term:` components remain readable for compatibility, but
 new localized phrase work SHOULD use `message:` and `pattern.*` locale IDs.
 `term.*` and `role.*` message IDs remain valid for lexical labels,
@@ -173,6 +221,9 @@ Engines SHOULD treat unreachable or invalid parent URIs as resolution errors; st
 
 ## Changelog
 
+- v0.5 (2026-07-15): Clarify family inheritance, forbid named cross-section
+  fragments, define authoritative date-fallback omission semantics, and allow
+  narrowly scoped style-owned MF2 messages for textual classification.
 - v0.4 (2026-06-24): Add `message:` components for locale-authored MF2
   phrase realization, including grouped argument sources, and deprecate
   template `term:` as the long-term phrase realization surface.

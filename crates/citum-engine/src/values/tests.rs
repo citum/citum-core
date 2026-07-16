@@ -961,6 +961,64 @@ fn test_message_component_renders_in_container_argument_with_formatting() {
 }
 
 #[test]
+fn style_owned_mf2_message_selects_reference_type_and_carrier() {
+    let mut config = make_config();
+    config.messages.insert(
+        "gb-t-7714-type-code".into(),
+        ".match {$type :select} {$carrier :select}\nwhen book OL {M/OL}\nwhen book * {M}\nwhen * * {Z}"
+            .into(),
+    );
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: Arc::new(config),
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let reference = Reference::from(LegacyReference {
+        id: "online-book".to_string(),
+        ref_type: "book".to_string(),
+        url: Some("https://example.test/book".to_string()),
+        ..Default::default()
+    });
+    let component = TemplateMessage {
+        message: "gb-t-7714-type-code".into(),
+        args: [
+            (
+                "type".into(),
+                MessageArgSource::ReferenceType {
+                    reference_type: MessageReferenceTypeSource::Key,
+                },
+            ),
+            (
+                "carrier".into(),
+                MessageArgSource::Carrier {
+                    carrier: MessageCarrierSource {
+                        online: "OL".into(),
+                        absent: "none".into(),
+                    },
+                },
+            ),
+        ]
+        .into(),
+        ..Default::default()
+    };
+
+    let values = component
+        .values::<PlainText>(&reference, &ProcHints::default(), &options)
+        .expect("style-owned MF2 message should render");
+
+    assert_eq!(values.value, "M/OL");
+}
+
+#[test]
 fn test_message_component_renders_grouped_container_argument() {
     let config = make_config_with_apa_role_defaults();
     let mut locale = make_locale();
@@ -3551,6 +3609,83 @@ fn test_date_fallback() {
         .values::<PlainText>(&reference, &hints, &options)
         .unwrap();
     assert_eq!(values.value, "n.d.");
+}
+
+/// Given an explicit empty fallback, a missing issued date is omitted instead of
+/// using the implicit locale no-date term.
+#[test]
+fn given_empty_date_fallback_when_issued_missing_then_date_is_omitted() {
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: Arc::new(config),
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let reference = Reference::from(LegacyReference {
+        id: "no-date".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("Poetics".to_string()),
+        ..Default::default()
+    });
+    let component = TemplateDate {
+        date: TemplateDateVar::Issued,
+        form: DateForm::Year,
+        fallback: Some(Vec::new()),
+        ..Default::default()
+    };
+
+    let values = component.values::<PlainText>(&reference, &ProcHints::default(), &options);
+
+    assert!(values.is_none());
+}
+
+/// Given an explicit fallback whose components are also missing, a missing issued
+/// date is omitted instead of continuing to the implicit locale no-date term.
+#[test]
+fn given_exhausted_date_fallback_when_issued_missing_then_date_is_omitted() {
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: Arc::new(config),
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let reference = Reference::from(LegacyReference {
+        id: "no-date-or-doi".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("Poetics".to_string()),
+        ..Default::default()
+    });
+    let component = TemplateDate {
+        date: TemplateDateVar::Issued,
+        form: DateForm::Year,
+        fallback: Some(vec![TemplateComponent::Variable(TemplateVariable {
+            variable: SimpleVariable::Doi,
+            ..Default::default()
+        })]),
+        ..Default::default()
+    };
+
+    let values = component.values::<PlainText>(&reference, &ProcHints::default(), &options);
+
+    assert!(values.is_none());
 }
 
 /// Tests the behavior of `test_strip_periods_global_config`.

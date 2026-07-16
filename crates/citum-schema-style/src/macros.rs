@@ -93,6 +93,7 @@ macro_rules! dispatch_component {
             $crate::template::TemplateComponent::Date($inner) => $action,
             $crate::template::TemplateComponent::Title($inner) => $action,
             $crate::template::TemplateComponent::Number($inner) => $action,
+            $crate::template::TemplateComponent::Identifier($inner) => $action,
             $crate::template::TemplateComponent::Variable($inner) => $action,
             $crate::template::TemplateComponent::Message($inner) => $action,
             $crate::template::TemplateComponent::Group($inner) => $action,

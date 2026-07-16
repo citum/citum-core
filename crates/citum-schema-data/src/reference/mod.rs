@@ -81,7 +81,7 @@ pub use self::contributor::{
 };
 pub use self::date::EdtfString;
 pub(crate) use self::input::EMPTY_FIELD_LANGUAGES;
-pub use self::input::{InputReference, UnknownClassData};
+pub use self::input::{IdentifierName, InputReference, SupplementaryIdentifiers, UnknownClassData};
 pub use self::types::common::{
     FieldLanguageMap, LangID, MultilingualString, NumOrStr, Numbering, NumberingType, Place,
     Publisher, RefID, RichText, Title,

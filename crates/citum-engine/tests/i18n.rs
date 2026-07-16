@@ -50,6 +50,159 @@ use citum_schema::{
 use rstest::rstest;
 use std::collections::HashMap;
 
+#[test]
+fn localized_citation_layouts_select_their_term_locale() {
+    let style: Style = serde_yaml::from_str(
+        r#"
+info:
+  title: Localized terms
+citation:
+  locales:
+    - locale: [en]
+      template:
+        - term: et-al
+    - default: true
+      template:
+        - term: et-al
+"#,
+    )
+    .unwrap();
+    let mut bibliography = indexmap::IndexMap::new();
+    for (id, language) in [("english", "en-US"), ("chinese", "zh-CN")] {
+        let reference: InputReference = serde_json::from_value(serde_json::json!({
+            "class": "monograph",
+            "type": "book",
+            "id": id,
+            "title": id,
+            "language": language
+        }))
+        .unwrap();
+        bibliography.insert(id.to_string(), reference);
+    }
+    let zh_yaml = std::str::from_utf8(
+        citum_schema::embedded::get_locale_bytes("zh-CN").expect("zh-CN must be embedded"),
+    )
+    .unwrap();
+    let processor = Processor::with_locale(
+        style,
+        bibliography,
+        citum_schema::Locale::from_yaml_str(zh_yaml).unwrap(),
+    );
+
+    assert_eq!(
+        processor
+            .process_citation(&citum_schema::cite!("english"))
+            .unwrap(),
+        "et al."
+    );
+    assert_eq!(
+        processor
+            .process_citation(&citum_schema::cite!("chinese"))
+            .unwrap(),
+        "等"
+    );
+}
+
+#[test]
+fn localized_author_date_grouping_uses_the_selected_term_locale() {
+    let style: Style = serde_yaml::from_str(
+        r#"
+info:
+  title: Localized grouped contributors
+options:
+  processing: author-date
+citation:
+  locales:
+    - locale: [en]
+      template:
+        - contributor: author
+          form: short
+          shorten: { min: 2, use-first: 1, and-others: et-al }
+    - default: true
+      template:
+        - contributor: author
+          form: short
+          shorten: { min: 2, use-first: 1, and-others: et-al }
+"#,
+    )
+    .unwrap();
+    let reference: InputReference = serde_json::from_value(serde_json::json!({
+        "class": "monograph",
+        "type": "book",
+        "id": "english",
+        "title": "English item",
+        "language": "en-US",
+        "author": [
+            { "family": "Smith", "given": "Alice" },
+            { "family": "Jones", "given": "Bob" }
+        ]
+    }))
+    .unwrap();
+    let zh_yaml = std::str::from_utf8(
+        citum_schema::embedded::get_locale_bytes("zh-CN").expect("zh-CN must be embedded"),
+    )
+    .unwrap();
+    let processor = Processor::with_locale(
+        style,
+        indexmap::indexmap! { "english".to_string() => reference },
+        citum_schema::Locale::from_yaml_str(zh_yaml).unwrap(),
+    );
+
+    assert_eq!(
+        processor
+            .process_citation(&citum_schema::cite!("english"))
+            .unwrap(),
+        "Smith et al."
+    );
+}
+
+#[test]
+fn supplementary_identifiers_render_and_missing_values_suppress() {
+    let style: Style = serde_yaml::from_str(
+        r#"
+info:
+  title: Supplementary identifier
+bibliography:
+  template:
+    - identifier: cstr
+      prefix: "CSTR: "
+      suffix: "."
+"#,
+    )
+    .unwrap();
+
+    let with_identifier: InputReference = serde_json::from_value(serde_json::json!({
+        "class": "monograph",
+        "type": "book",
+        "id": "present",
+        "title": "Present",
+        "identifiers": { "cstr": "32012.36.1001024.2023.0328" }
+    }))
+    .unwrap();
+    let without_identifier: InputReference = serde_json::from_value(serde_json::json!({
+        "class": "monograph",
+        "type": "book",
+        "id": "missing",
+        "title": "Missing"
+    }))
+    .unwrap();
+
+    let present = Processor::new(
+        style.clone(),
+        indexmap::IndexMap::from([("present".to_string(), with_identifier)]),
+    );
+    assert_eq!(
+        present.render_bibliography(),
+        "CSTR: 32012.36.1001024.2023.0328."
+    );
+
+    let missing = Processor::new(
+        style,
+        indexmap::IndexMap::from([("missing".to_string(), without_identifier)]),
+    );
+    assert_eq!(missing.render_bibliography(), "");
+}
+
 // --- Helper Functions ---
 
 fn build_ml_style(name_mode: MultilingualMode, preferred_script: Option<String>) -> Style {

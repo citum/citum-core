@@ -1,0 +1,112 @@
+locale-schema-version: "2"
+locale: zh-CN
+
+evaluation:
+  message-syntax: mf2
+
+dates:
+  months:
+    long:
+      - 一月
+      - 二月
+      - 三月
+      - 四月
+      - 五月
+      - 六月
+      - 七月
+      - 八月
+      - 九月
+      - 十月
+      - 十一月
+      - 十二月
+    short:
+      - 1月
+      - 2月
+      - 3月
+      - 4月
+      - 5月
+      - 6月
+      - 7月
+      - 8月
+      - 9月
+      - 10月
+      - 11月
+      - 12月
+  seasons:
+    - 春
+    - 夏
+    - 秋
+    - 冬
+
+locators:
+  page:
+    long:
+      singular: 页
+      plural: 页
+    short:
+      singular: 页
+      plural: 页
+  chapter:
+    long:
+      singular: 章
+      plural: 章
+    short:
+      singular: 章
+      plural: 章
+  section:
+    long:
+      singular: 节
+      plural: 节
+    short:
+      singular: 节
+      plural: 节
+  volume:
+    long:
+      singular: 卷
+      plural: 卷
+    short:
+      singular: 卷
+      plural: 卷
+
+terms:
+  and:
+    long: 和
+    symbol: 和
+  et_al:
+    long: 等
+  no_date:
+    long: 无日期
+    short: 无日期
+  volume:
+    long:
+      singular: 卷
+      plural: 卷
+    short:
+      singular: 卷
+      plural: 卷
+  edition:
+    long:
+      singular: 版
+      plural: 版
+    short:
+      singular: 版
+      plural: 版
+
+messages:
+  term.and: "和"
+  term.and-symbol: "和"
+  term.et-al: "等"
+  term.no-date: "无日期"
+  term.no-date-long: "无日期"
+  term.page-label: "页"
+  term.page-label-long: "页"
+  term.chapter-label: "章"
+  term.volume-label: "卷"
+  term.section-label: "节"
+
+legacy-term-aliases:
+  and: term.and
+  et_al: term.et-al
+  no_date: term.no-date
+  page: term.page-label
+  pages: term.page-label

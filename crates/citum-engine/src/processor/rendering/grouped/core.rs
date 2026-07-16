@@ -714,7 +714,8 @@ impl Renderer<'_> {
             return String::new();
         }
 
-        let options = self.citation_render_options(mode.clone(), suppress_author, None, None);
+        let options =
+            self.citation_render_options(reference, mode.clone(), suppress_author, None, None);
 
         // Try to use the first semantically relevant component (including nested lists)
         // so disambiguation hints and component-specific formatting are preserved.
@@ -930,10 +931,11 @@ impl Renderer<'_> {
             first_reference_note_number,
         } = request;
         let ref_type = reference.ref_type();
+        let locale = self.locale_for_reference(reference, context);
         let options = RenderOptions {
             config: self.config.clone(),
             bibliography_config: self.bibliography_config.clone(),
-            locale: self.locale,
+            locale,
             context,
             mode,
             suppress_author,

@@ -701,6 +701,7 @@ impl ComponentValues for TemplateDate {
                         return Some(values);
                     }
                 }
+                return None;
             }
             // For issued dates, substitute the locale's "no-date" term (e.g. "n.d.")
             if matches!(self.date, TemplateDateVar::Issued)

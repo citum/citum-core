@@ -11,7 +11,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
-use citum_schema::locale::MessageArgs;
+use citum_schema::locale::{MessageArgs, MessageEvaluator, Mf2MessageEvaluator};
 use citum_schema::template::{MessageArgSource, TemplateMessage};
 use std::collections::HashMap;
 
@@ -36,12 +36,16 @@ impl ComponentValues for TemplateMessage {
             named,
             ..MessageArgs::default()
         };
-        let mut value = options.locale.resolve_template_message(
-            &self.message,
-            &args,
-            self.form.as_ref(),
-            self.gender.clone(),
-        )?;
+        let mut value = if let Some(pattern) = options.config.messages.get(&self.message) {
+            Mf2MessageEvaluator.evaluate(pattern, &args)?
+        } else {
+            options.locale.resolve_template_message(
+                &self.message,
+                &args,
+                self.form.as_ref(),
+                self.gender.clone(),
+            )?
+        };
 
         if crate::values::should_strip_periods(&self.rendering, options) {
             value = crate::values::strip_trailing_periods(&value);
@@ -72,6 +76,21 @@ fn render_message_arg<F: crate::render::format::OutputFormat<Output = String>>(
 ) -> Option<String> {
     if let MessageArgSource::Literal { literal } = source {
         return Some(literal.clone());
+    }
+    if let MessageArgSource::ReferenceType { .. } = source {
+        return Some(reference.ref_type());
+    }
+    if let MessageArgSource::Carrier { carrier } = source {
+        return Some(reference.medium().unwrap_or_else(|| {
+            let online = reference.url().is_some()
+                || reference.doi().is_some()
+                || reference.identifier("cstr").is_some();
+            if online {
+                carrier.online.clone()
+            } else {
+                carrier.absent.clone()
+            }
+        }));
     }
 
     let component = source.as_template_component()?;

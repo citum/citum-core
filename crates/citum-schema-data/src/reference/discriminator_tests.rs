@@ -7,7 +7,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //!
 //! Extracted from `mod.rs` (was `mod discriminator_tests { ... }`).
 
-use super::{ClassExtension, InputReference, ReferenceClass};
+use super::{ClassExtension, IdentifierName, InputReference, ReferenceClass};
 use serde_json::{Value as JsonValue, json};
 
 fn parse_reference(json: &str) -> Result<InputReference, serde_json::Error> {
@@ -176,6 +176,49 @@ fn public_discriminator_round_trips_flat_unknown_class() {
 
     let round_tripped: InputReference = serde_json::from_value(serialized).unwrap();
     assert_eq!(round_tripped, reference);
+}
+
+#[test]
+fn supplementary_identifiers_round_trip_with_known_references() {
+    let mut reference = parse_reference(
+        r#"{
+            "class": "monograph",
+            "type": "book",
+            "title": "Identifier example",
+            "identifiers": { "cstr": "32012.36.1001024.2023.0328" }
+        }"#,
+    )
+    .unwrap();
+
+    assert_eq!(
+        reference.identifier("cstr"),
+        Some("32012.36.1001024.2023.0328")
+    );
+    reference.insert_identifier(IdentifierName::new("ecli").unwrap(), "ECLI:EU:C:2024:1");
+
+    let serialized = serde_json::to_value(&reference).unwrap();
+    assert_eq!(serialized["identifiers"]["ecli"], json!("ECLI:EU:C:2024:1"));
+    let round_tripped: InputReference = serde_json::from_value(serialized).unwrap();
+    assert_eq!(round_tripped, reference);
+}
+
+#[test]
+fn supplementary_identifiers_reject_reserved_and_malformed_names() {
+    for name in ["doi", "CSTR", "cstr_value", "-cstr", "cstr-"] {
+        let input = json!({
+            "class": "monograph",
+            "type": "book",
+            "title": "Invalid identifier",
+            "identifiers": { name: "value" }
+        });
+        let error = serde_json::from_value::<InputReference>(input)
+            .expect_err("reserved or malformed identifier must be rejected")
+            .to_string();
+        assert!(
+            error.contains("identifier name") || error.contains("reserved"),
+            "unexpected validation error for {name}: {error}"
+        );
+    }
 }
 
 // ──────────────────────────────────────────────────────────────────────

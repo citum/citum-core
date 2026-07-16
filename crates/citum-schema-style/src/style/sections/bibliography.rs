@@ -14,7 +14,8 @@ use serde::{Deserialize, Serialize};
 use crate::grouping;
 use crate::options::BibliographyOptions;
 use crate::template::{
-    LocalizedTemplateSpec, Template, TemplateReference, TemplateVariants, locale_matches,
+    LocalizedTemplateSpec, ResolvedLocalizedTemplate, Template, TemplateReference,
+    TemplateVariants, matched_localized_template,
 };
 
 fn default_true() -> bool {
@@ -34,7 +35,6 @@ pub struct BibliographySpec {
     /// If both `template-ref` and `template` are present, `template` takes precedence.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub template_ref: Option<TemplateReference>,
-    /// The default template for bibliography entries.
     /// Default template for entries when no localized override is selected.
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub template: Option<Template>,
@@ -114,18 +114,16 @@ impl BibliographySpec {
         })
     }
 
-    /// Resolve the template for a language by checking localized overrides,
-    /// then the localized default, then the base template or preset.
-    pub fn resolve_template_for_language(&self, language: Option<&str>) -> Option<Template> {
-        if let Some(language) = language
-            && let Some(locales) = &self.locales
-            && let Some(matched) = locales.iter().find(|spec| {
-                spec.locale
-                    .as_ref()
-                    .is_some_and(|targets| locale_matches(targets, language))
-            })
+    /// Resolve a template and the locale selected by its localized branch.
+    pub fn resolve_localized_template(
+        &self,
+        language: Option<&str>,
+    ) -> Option<ResolvedLocalizedTemplate> {
+        if let Some(matched) = language
+            .zip(self.locales.as_deref())
+            .and_then(|(language, locales)| matched_localized_template(locales, language))
         {
-            return Some(matched.template.clone());
+            return Some(matched);
         }
 
         self.locales
@@ -134,9 +132,44 @@ impl BibliographySpec {
                 locales
                     .iter()
                     .find(|spec| spec.default.unwrap_or(false))
-                    .map(|spec| spec.template.clone())
+                    .map(|spec| ResolvedLocalizedTemplate {
+                        template: spec.template.clone(),
+                        locale: None,
+                    })
             })
-            .or_else(|| self.resolve_template())
+            .or_else(|| {
+                self.resolve_template()
+                    .map(|template| ResolvedLocalizedTemplate {
+                        template,
+                        locale: None,
+                    })
+            })
+    }
+
+    /// Resolve the template for a language while discarding locale metadata.
+    pub fn resolve_template_for_language(&self, language: Option<&str>) -> Option<Template> {
+        self.resolve_localized_template(language)
+            .map(|resolved| resolved.template)
+    }
+
+    /// Resolve a type variant while retaining any locale selected for the reference.
+    pub fn resolve_localized_template_for_type(
+        &self,
+        ref_type: &str,
+        language: Option<&str>,
+    ) -> Option<ResolvedLocalizedTemplate> {
+        let mut resolved = self.resolve_localized_template(language)?;
+        if let Some(template) = self.type_variants.as_ref().and_then(|variants| {
+            variants.iter().find_map(|(selector, variant)| {
+                selector
+                    .matches(ref_type)
+                    .then(|| variant.clone().into_template())
+                    .flatten()
+            })
+        }) {
+            resolved.template = template;
+        }
+        Some(resolved)
     }
 
     /// Resolve the bibliography template for a reference type and language.

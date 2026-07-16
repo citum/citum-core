@@ -25,7 +25,9 @@ use super::types::specialized::{
 use super::types::structural::{
     Collection, CollectionComponent, Monograph, Serial, SerialComponent,
 };
-use super::{ClassExtension, InputReference, ReferenceClass, UnknownClassData};
+use super::{
+    ClassExtension, InputReference, ReferenceClass, SupplementaryIdentifiers, UnknownClassData,
+};
 
 /// Produce a serde duplicate-field error with the canonical
 /// `duplicate field \`<name>\`` shape.
@@ -57,6 +59,7 @@ impl<'de> Deserialize<'de> for InputReference {
                 M: MapAccess<'de>,
             {
                 let mut class = None;
+                let mut identifiers = None;
                 let mut body = JsonMap::new();
 
                 while let Some(key) = map.next_key::<String>()? {
@@ -68,6 +71,11 @@ impl<'de> Deserialize<'de> for InputReference {
                             return Err(duplicate_field_error::<M::Error>("class"));
                         }
                         class = Some(map.next_value::<String>()?);
+                    } else if key == "identifiers" {
+                        if identifiers.is_some() {
+                            return Err(duplicate_field_error::<M::Error>("identifiers"));
+                        }
+                        identifiers = Some(map.next_value::<SupplementaryIdentifiers>()?);
                     } else {
                         let value = map.next_value::<JsonValue>()?;
                         if body.insert(key.clone(), value).is_some() {
@@ -77,7 +85,10 @@ impl<'de> Deserialize<'de> for InputReference {
                 }
 
                 let class = class.ok_or_else(|| de::Error::missing_field("class"))?;
-                deserialize_reference_body(&class, body).map_err(de::Error::custom)
+                let mut reference =
+                    deserialize_reference_body(&class, body).map_err(de::Error::custom)?;
+                reference.identifiers = identifiers.unwrap_or_default();
+                Ok(reference)
             }
         }
 
@@ -92,8 +103,48 @@ impl<'de> Deserialize<'de> for InputReference {
 #[derive(Serialize)]
 struct FlatClassProxy<'a, T: Serialize + ?Sized> {
     class: &'a str,
+    #[serde(skip_serializing_if = "SupplementaryIdentifiers::is_empty")]
+    identifiers: &'a SupplementaryIdentifiers,
     #[serde(flatten)]
     inner: &'a T,
+}
+
+fn serialize_known<S, T>(
+    class: &str,
+    identifiers: &SupplementaryIdentifiers,
+    inner: &T,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+    T: Serialize + ?Sized,
+{
+    FlatClassProxy {
+        class,
+        identifiers,
+        inner,
+    }
+    .serialize(serializer)
+}
+
+fn serialize_unknown<S>(
+    data: &UnknownClassData,
+    identifiers: &SupplementaryIdentifiers,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let extra = usize::from(!identifiers.is_empty());
+    let mut out = serializer.serialize_map(Some(data.fields.len() + 1 + extra))?;
+    out.serialize_entry("class", &data.class)?;
+    if !identifiers.is_empty() {
+        out.serialize_entry("identifiers", identifiers)?;
+    }
+    for (key, value) in &data.fields {
+        out.serialize_entry(key, value)?;
+    }
+    out.end()
 }
 
 impl Serialize for InputReference {
@@ -106,105 +157,64 @@ impl Serialize for InputReference {
         // intermediate `serde_json::Value` allocation per reference. For
         // `Unknown`, the payload is already a `JsonMap`, so we walk it
         // directly.
+        let class = self.extension.class_name();
+        let identifiers = &self.identifiers;
         match &self.extension {
-            ClassExtension::Monograph(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::Monograph(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::CollectionComponent(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::CollectionComponent(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::SerialComponent(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::SerialComponent(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::Collection(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::Collection(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::Serial(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::Serial(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::LegalCase(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::LegalCase(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::Statute(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::Statute(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::Treaty(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::Treaty(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::Hearing(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::Hearing(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::Regulation(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::Regulation(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::Brief(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::Brief(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::Classic(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::Classic(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::Patent(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::Patent(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::Dataset(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::Dataset(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::Standard(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::Standard(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::Software(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::Software(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::Event(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::Event(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::AudioVisual(inner) => FlatClassProxy {
-                class: self.extension.class_name(),
-                inner: inner.as_ref(),
+            ClassExtension::AudioVisual(inner) => {
+                serialize_known(class, identifiers, inner.as_ref(), serializer)
             }
-            .serialize(serializer),
-            ClassExtension::Unknown(data) => {
-                let mut out = serializer.serialize_map(Some(data.fields.len() + 1))?;
-                out.serialize_entry("class", &data.class)?;
-                for (key, value) in &data.fields {
-                    out.serialize_entry(key, value)?;
-                }
-                out.end()
-            }
+            ClassExtension::Unknown(data) => serialize_unknown(data, identifiers, serializer),
         }
     }
 }
@@ -275,6 +285,12 @@ fn reference_schema_branch<T: JsonSchema>(
             "type": "string",
             "const": class
         }),
+    );
+    properties.insert(
+        "identifiers".to_string(),
+        generator
+            .subschema_for::<SupplementaryIdentifiers>()
+            .to_value(),
     );
 
     if !object.get("required").is_some_and(JsonValue::is_array) {

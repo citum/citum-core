@@ -252,7 +252,7 @@ fn determine_match_key(
                 "month" => args.month.map(|s| s.to_string()),
                 "day" => args.day.map(|s| s.to_string()),
                 "main_list" => args.main_list.map(|s| s.to_string()),
-                _ => None,
+                _ => args.named.get(var_name).cloned(),
             }?;
             Some(value)
         }
@@ -568,5 +568,22 @@ mod tests {
         let message = ".match {$gender :select} {$count :plural}\nwhen feminine one {editora}\nwhen * * {equipo editorial}";
 
         assert_eq!(evaluator.evaluate(message, &args), None);
+    }
+
+    #[test]
+    fn test_multi_selector_uses_named_arguments() {
+        let evaluator = Mf2MessageEvaluator;
+        let args = MessageArgs {
+            named: [
+                ("type".to_string(), "book".to_string()),
+                ("carrier".to_string(), "OL".to_string()),
+            ]
+            .into(),
+            ..Default::default()
+        };
+        let message =
+            ".match {$type :select} {$carrier :select}\nwhen book OL {M/OL}\nwhen * * {Z}";
+
+        assert_eq!(evaluator.evaluate(message, &args), Some("M/OL".to_string()));
     }
 }

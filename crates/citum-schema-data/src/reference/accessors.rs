@@ -27,11 +27,32 @@ use super::types::structural::{
     MonographType, Serial, SerialComponent, SerialType,
 };
 use super::{
-    ClassExtension, EMPTY_FIELD_LANGUAGES, InputReference, ReferenceClass, UnknownClassData,
-    WorkRelation,
+    ClassExtension, EMPTY_FIELD_LANGUAGES, IdentifierName, InputReference, ReferenceClass,
+    SupplementaryIdentifiers, UnknownClassData, WorkRelation,
 };
 
 impl InputReference {
+    /// Return all supplementary standardized identifiers.
+    #[must_use]
+    pub fn identifiers(&self) -> &SupplementaryIdentifiers {
+        &self.identifiers
+    }
+
+    /// Return one supplementary standardized identifier.
+    #[must_use]
+    pub fn identifier(&self, name: &str) -> Option<&str> {
+        self.identifiers.get(name)
+    }
+
+    /// Insert one supplementary standardized identifier.
+    pub fn insert_identifier(
+        &mut self,
+        name: IdentifierName,
+        value: impl Into<String>,
+    ) -> Option<String> {
+        self.identifiers.insert(name, value)
+    }
+
     /// Return the typed class discriminator.
     #[must_use]
     pub fn class(&self) -> ReferenceClass {

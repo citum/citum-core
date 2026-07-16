@@ -92,6 +92,10 @@ fn resolve_semantic_class(component: &ProcTemplateComponent) -> Option<String> {
             }
         )),
         TemplateComponent::Number(n) => Some(format!("citum-{}", n.number.as_key())),
+        TemplateComponent::Identifier(identifier) => Some(format!(
+            "citum-identifier-{}",
+            identifier.identifier.as_str()
+        )),
         TemplateComponent::Variable(v) => Some(format!(
             "citum-{}",
             match v.variable {

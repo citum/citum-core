@@ -71,6 +71,9 @@ use std::collections::HashMap;
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case")]
 pub struct Config {
+    /// Style-owned MF2 messages, inherited and merged by message ID.
+    #[serde(default, skip_serializing_if = "HashMap::is_empty")]
+    pub messages: HashMap<String, String>,
     /// Substitution rules for missing data.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub substitute: Option<SubstituteConfig>,
@@ -652,6 +655,7 @@ impl Config {
         );
 
         self.merge_punctuation(other);
+        self.messages.extend(other.messages.clone());
 
         if let Some(other_sorting) = &other.sorting {
             if let Some(this_sorting) = &mut self.sorting {
@@ -697,6 +701,7 @@ impl CitationOptions {
     #[must_use]
     pub fn to_config(&self) -> Config {
         Config {
+            messages: HashMap::new(),
             substitute: self.substitute.clone(),
             processing: self.processing.clone(),
             locale_override: None,
@@ -799,6 +804,7 @@ impl BibliographyOptions {
     #[must_use]
     pub fn to_config(&self) -> Config {
         Config {
+            messages: HashMap::new(),
             substitute: self.substitute.clone(),
             processing: self.processing.clone(),
             locale_override: None,
@@ -961,6 +967,10 @@ where
 }
 
 impl<'de> Deserialize<'de> for Config {
+    #[allow(
+        clippy::too_many_lines,
+        reason = "the local wire type intentionally mirrors the complete public config"
+    )]
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
@@ -968,6 +978,8 @@ impl<'de> Deserialize<'de> for Config {
         #[derive(Deserialize)]
         #[serde(rename_all = "kebab-case")]
         struct ConfigWire {
+            #[serde(default)]
+            messages: HashMap<String, String>,
             #[serde(skip_serializing_if = "Option::is_none")]
             substitute: Option<SubstituteConfig>,
             #[serde(skip_serializing_if = "Option::is_none")]
@@ -1044,6 +1056,7 @@ impl<'de> Deserialize<'de> for Config {
         }
 
         Ok(Self {
+            messages: wire.messages,
             substitute: wire.substitute,
             processing: wire.processing,
             locale_override: wire.locale_override,
