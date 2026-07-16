@@ -108,6 +108,12 @@ rendering. They parse, serialize, and round-trip silently.
 
 Individual `InputReference` types do **not** have `custom` fields.
 
+Renderable standardized identifiers that lack dedicated reference fields use
+the typed `identifiers` map defined by
+[`REFERENCE_IDENTIFIERS.md`](../specs/REFERENCE_IDENTIFIERS.md). This is core
+schema data, not a `custom.*` escape hatch; its keys are validated and styles
+render them through an explicit identifier template component.
+
 ### The dead-weight question
 
 Most of these placements have no concrete use case. `custom` on a

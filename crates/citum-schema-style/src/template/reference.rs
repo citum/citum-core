@@ -126,9 +126,44 @@ pub struct LocalizedTemplateSpec {
     pub unknown_fields: std::collections::BTreeMap<String, serde_yaml::Value>,
 }
 
-pub(crate) fn locale_matches(targets: &[String], language: &str) -> bool {
-    let primary = language.split('-').next().unwrap_or(language);
-    targets.iter().any(|candidate| {
-        candidate == language || candidate.split('-').next().unwrap_or(candidate) == primary
+/// A template resolved together with the locale selected by its localized branch.
+#[derive(Debug, Clone, PartialEq)]
+pub struct ResolvedLocalizedTemplate {
+    /// Concrete template selected for the reference.
+    pub template: Template,
+    /// Locale declared by the matching branch, or `None` for a default/base template.
+    pub locale: Option<String>,
+}
+
+pub(crate) fn matched_localized_template(
+    locales: &[LocalizedTemplateSpec],
+    language: &str,
+) -> Option<ResolvedLocalizedTemplate> {
+    let exact = locales.iter().find_map(|spec| {
+        spec.locale.as_ref()?.iter().find_map(|candidate| {
+            candidate
+                .eq_ignore_ascii_case(language)
+                .then(|| ResolvedLocalizedTemplate {
+                    template: spec.template.clone(),
+                    locale: Some(candidate.clone()),
+                })
+        })
+    });
+    if exact.is_some() {
+        return exact;
+    }
+
+    let primary = language.split(['-', '_']).next().unwrap_or(language);
+    locales.iter().find_map(|spec| {
+        spec.locale.as_ref()?.iter().find_map(|candidate| {
+            candidate
+                .split(['-', '_'])
+                .next()
+                .is_some_and(|candidate_primary| candidate_primary.eq_ignore_ascii_case(primary))
+                .then(|| ResolvedLocalizedTemplate {
+                    template: spec.template.clone(),
+                    locale: Some(candidate.clone()),
+                })
+        })
     })
 }

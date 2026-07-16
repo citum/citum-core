@@ -12,6 +12,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 pub mod contributor;
 /// Date extraction and date-formatting helpers.
 pub mod date;
+/// Supplementary standardized identifier extraction.
+pub mod identifier;
 /// List-component value extraction helpers.
 pub mod list;
 /// Locator rendering logic.
@@ -690,6 +692,7 @@ impl ComponentValues for TemplateComponent {
             TemplateComponent::Date(d) => d.values::<F>(reference, hints, options),
             TemplateComponent::Title(t) => t.values::<F>(reference, hints, options),
             TemplateComponent::Number(n) => n.values::<F>(reference, hints, options),
+            TemplateComponent::Identifier(i) => i.values::<F>(reference, hints, options),
             TemplateComponent::Variable(v) => v.values::<F>(reference, hints, options),
             TemplateComponent::Message(m) => m.values::<F>(reference, hints, options),
             TemplateComponent::Group(l) => l.values::<F>(reference, hints, options),

@@ -21,7 +21,27 @@ use indexmap::IndexMap;
 use std::borrow::Cow;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, OnceLock, RwLock};
+
+fn embedded_render_locales() -> &'static HashMap<String, Locale> {
+    static LOCALES: OnceLock<HashMap<String, Locale>> = OnceLock::new();
+    LOCALES.get_or_init(|| {
+        let mut locales = HashMap::new();
+        for id in citum_schema::embedded::EMBEDDED_LOCALE_IDS {
+            let Some(bytes) = citum_schema::embedded::get_locale_bytes(id) else {
+                continue;
+            };
+            let Ok(yaml) = std::str::from_utf8(bytes) else {
+                continue;
+            };
+            let Ok(locale) = Locale::from_yaml_str(yaml) else {
+                continue;
+            };
+            locales.insert(id.to_ascii_lowercase(), locale);
+        }
+        locales
+    })
+}
 
 /// The renderer for citation and bibliography templates.
 ///
@@ -221,6 +241,42 @@ impl<'a> Renderer<'a> {
             abbreviation_map,
             first_note_by_id: resources.first_note_by_id,
         }
+    }
+
+    /// Select the embedded rendering locale for an explicitly matched localized layout.
+    fn locale_for_reference(&self, reference: &Reference, context: RenderContext) -> &Locale {
+        let language = crate::values::effective_item_language(reference);
+        let selected = match context {
+            RenderContext::Citation => self
+                .style
+                .citation
+                .as_ref()
+                .and_then(|spec| spec.resolve_localized_template(language.as_deref())),
+            RenderContext::Bibliography => self
+                .style
+                .bibliography
+                .as_ref()
+                .and_then(|spec| spec.resolve_localized_template(language.as_deref())),
+        };
+        let Some(locale_id) = selected.and_then(|resolved| resolved.locale) else {
+            return self.locale;
+        };
+
+        let locales = embedded_render_locales();
+        let key = locale_id.to_ascii_lowercase();
+        locales
+            .get(&key)
+            .or_else(|| {
+                let primary = key.split(['-', '_']).next()?;
+                locales.iter().find_map(|(candidate, locale)| {
+                    candidate
+                        .split(['-', '_'])
+                        .next()
+                        .is_some_and(|candidate_primary| candidate_primary == primary)
+                        .then_some(locale)
+                })
+            })
+            .unwrap_or(self.locale)
     }
 
     /// Resolve multilingual contributor names using the style's config.
@@ -500,6 +556,7 @@ impl<'a> Renderer<'a> {
     /// Initialize render options for a citation.
     fn citation_render_options<'b>(
         &'b self,
+        reference: &Reference,
         mode: citum_schema::citation::CitationMode,
         suppress_author: bool,
         locator_raw: Option<&'b CitationLocator>,
@@ -508,7 +565,7 @@ impl<'a> Renderer<'a> {
         RenderOptions {
             config: self.config.clone(),
             bibliography_config: self.bibliography_config.clone(),
-            locale: self.locale,
+            locale: self.locale_for_reference(reference, RenderContext::Citation),
             context: RenderContext::Citation,
             mode,
             suppress_author,
@@ -534,6 +591,7 @@ impl<'a> Renderer<'a> {
     {
         let fmt = F::default();
         let options = self.citation_render_options(
+            reference,
             citum_schema::citation::CitationMode::Integral,
             false,
             item.locator.as_ref(),
@@ -761,6 +819,7 @@ pub fn get_variable_key(component: &TemplateComponent) -> Option<String> {
             Some(key)
         }
         TemplateComponent::Number(n) => make_key("number", &n.number, &n.rendering),
+        TemplateComponent::Identifier(i) => make_key("identifier", &i.identifier, &i.rendering),
         TemplateComponent::Group(_) => None,
         _ => None,
     }

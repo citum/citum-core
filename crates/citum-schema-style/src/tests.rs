@@ -46,6 +46,54 @@ citation:
 }
 
 #[test]
+fn supplementary_identifier_template_components_parse() {
+    let component: TemplateComponent = serde_yaml::from_str(
+        r#"
+identifier: cstr
+prefix: "CSTR: "
+suffix: "."
+"#,
+    )
+    .unwrap();
+
+    let TemplateComponent::Identifier(identifier) = component else {
+        panic!("expected an identifier component");
+    };
+    assert_eq!(identifier.identifier.as_str(), "cstr");
+    assert_eq!(identifier.rendering.prefix.as_deref(), Some("CSTR: "));
+}
+
+#[test]
+fn localized_template_type_variants_retain_the_matched_locale() {
+    let citation: CitationSpec = serde_yaml::from_str(
+        r#"
+template:
+  - title: primary
+locales:
+  - locale: [en]
+    template:
+      - term: et-al
+  - default: true
+    template:
+      - title: primary
+type-variants:
+  book:
+    - number: edition
+"#,
+    )
+    .unwrap();
+
+    let resolved = citation
+        .resolve_localized_template_for_type("book", Some("en-US"))
+        .unwrap();
+    assert_eq!(resolved.locale.as_deref(), Some("en"));
+    assert!(matches!(
+        resolved.template.as_slice(),
+        [TemplateComponent::Number(_)]
+    ));
+}
+
+#[test]
 fn test_style_with_options() {
     let yaml = r#"
 info:
@@ -1662,7 +1710,7 @@ bibliography:
         "message should name the invalid component property: {message}"
     );
     assert!(
-        message.contains("component must contain exactly one of contributor/date/title/number/variable/message/group/term"),
+        message.contains("component must contain exactly one of contributor/date/title/number/identifier/variable/message/group/term/type-label"),
         "message should enumerate valid component kinds: {message}"
     );
 }
@@ -1721,7 +1769,7 @@ bibliography:
         "message should include template item path: {message}"
     );
     assert!(
-        message.contains("component must contain exactly one of contributor/date/title/number/variable/message/group/term"),
+        message.contains("component must contain exactly one of contributor/date/title/number/identifier/variable/message/group/term/type-label"),
         "message should enumerate valid component kinds: {message}"
     );
 }

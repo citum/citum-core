@@ -409,6 +409,9 @@
             "class": {
               "type": "string",
               "const": "monograph"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -665,6 +668,9 @@
             "class": {
               "type": "string",
               "const": "collection-component"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -965,6 +971,9 @@
             "class": {
               "type": "string",
               "const": "serial-component"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -1179,6 +1188,9 @@
             "class": {
               "type": "string",
               "const": "collection"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -1308,6 +1320,9 @@
             "class": {
               "type": "string",
               "const": "serial"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -1457,6 +1472,9 @@
             "class": {
               "type": "string",
               "const": "legal-case"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -1619,6 +1637,9 @@
             "class": {
               "type": "string",
               "const": "statute"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -1764,6 +1785,9 @@
             "class": {
               "type": "string",
               "const": "treaty"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -1891,6 +1915,9 @@
             "class": {
               "type": "string",
               "const": "hearing"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -2032,6 +2059,9 @@
             "class": {
               "type": "string",
               "const": "regulation"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -2170,6 +2200,9 @@
             "class": {
               "type": "string",
               "const": "brief"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -2372,6 +2405,9 @@
             "class": {
               "type": "string",
               "const": "classic"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -2543,6 +2579,9 @@
             "class": {
               "type": "string",
               "const": "patent"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -2721,6 +2760,9 @@
             "class": {
               "type": "string",
               "const": "dataset"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -2870,6 +2912,9 @@
             "class": {
               "type": "string",
               "const": "standard"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -3041,6 +3086,9 @@
             "class": {
               "type": "string",
               "const": "software"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -3208,6 +3256,9 @@
             "class": {
               "type": "string",
               "const": "event"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -3386,6 +3437,9 @@
             "class": {
               "type": "string",
               "const": "audio-visual"
+            },
+            "identifiers": {
+              "$ref": "#/$defs/SupplementaryIdentifiers"
             }
           },
           "required": [
@@ -4058,6 +4112,13 @@
         "id",
         "server"
       ]
+    },
+    "SupplementaryIdentifiers": {
+      "description": "Extensible standardized identifiers without dedicated Citum fields.",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      }
     },
     "MonographComponentType": {
       "description": "Discriminates monograph-component subtypes for style-directed formatting.",

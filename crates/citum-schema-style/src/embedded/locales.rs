@@ -21,13 +21,14 @@ pub fn get_locale_bytes(id: &str) -> Option<&'static [u8]> {
         "eu-ES" => Some(include_bytes!("../../embedded/locales/eu-ES.yaml")),
         "fr-FR" => Some(include_bytes!("../../embedded/locales/fr-FR.yaml")),
         "tr-TR" => Some(include_bytes!("../../embedded/locales/tr-TR.yaml")),
+        "zh-CN" => Some(include_bytes!("../../embedded/locales/zh-CN.yaml")),
         _ => None,
     }
 }
 
 /// All available embedded locale IDs.
 pub const EMBEDDED_LOCALE_IDS: &[&str] = &[
-    "en-US", "ar-AR", "de-DE", "es-ES", "eu-ES", "fr-FR", "tr-TR",
+    "en-US", "ar-AR", "de-DE", "es-ES", "eu-ES", "fr-FR", "tr-TR", "zh-CN",
 ];
 
 /// Raw YAML bytes for an embedded locale override by ID.

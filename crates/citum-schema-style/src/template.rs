@@ -45,8 +45,10 @@ use std::hash::{Hash, Hasher};
 mod reference;
 pub(crate) mod resolution;
 
-pub(crate) use reference::locale_matches;
-pub use reference::{LocalizedTemplateSpec, TemplatePreset, TemplateReference};
+pub(crate) use reference::matched_localized_template;
+pub use reference::{
+    LocalizedTemplateSpec, ResolvedLocalizedTemplate, TemplatePreset, TemplateReference,
+};
 pub(crate) use resolution::{inherited_variant_context, resolve_style_template_variants};
 
 /// Resolve a style's local template variants in place without inherited
@@ -472,6 +474,7 @@ pub enum TemplateComponent {
     Date(TemplateDate),
     Title(TemplateTitle),
     Number(TemplateNumber),
+    Identifier(TemplateIdentifier),
     Variable(TemplateVariable),
     Message(TemplateMessage),
     Group(TemplateGroup),
@@ -978,7 +981,9 @@ crate::str_enum! {
 pub struct TemplateDate {
     pub date: DateVariable,
     pub form: DateForm,
-    /// Fallback components if the primary date is missing.
+    /// Authoritative fallback components used when the primary date is missing.
+    ///
+    /// When every component is empty, including for an empty list, the date is omitted.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub fallback: Option<Vec<TemplateComponent>>,
     #[serde(flatten, default)]
@@ -1311,11 +1316,21 @@ pub struct TemplateVariable {
     pub custom: Option<HashMap<String, serde_json::Value>>,
 }
 
-/// A locale message call inside a citation or bibliography template.
+/// A supplementary standardized identifier component.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct TemplateIdentifier {
+    /// Validated identifier name to render from `reference.identifiers`.
+    pub identifier: crate::reference::IdentifierName,
+    #[serde(flatten, default)]
+    pub rendering: Rendering,
+}
+
+/// An MF2 message call inside a citation or bibliography template.
 ///
 /// The style chooses the message ID and supplies structured argument sources;
-/// the active locale owns the natural-language realization in its `messages`
-/// map.
+/// the message body comes from the style or active locale.
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Default)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
 #[serde(rename_all = "kebab-case", deny_unknown_fields)]
@@ -1346,6 +1361,13 @@ pub struct TemplateMessage {
 pub enum MessageArgSource {
     /// A literal string argument.
     Literal { literal: String },
+    /// The canonical reference-type key used for MF2 selection.
+    ReferenceType {
+        #[serde(rename = "reference-type")]
+        reference_type: MessageReferenceTypeSource,
+    },
+    /// A carrier label derived from raw medium or online-resource metadata.
+    Carrier { carrier: MessageCarrierSource },
     /// A rendered contributor argument.
     Contributor(Box<TemplateContributor>),
     /// A rendered date argument.
@@ -1368,7 +1390,7 @@ impl MessageArgSource {
     #[must_use]
     pub fn as_template_component(&self) -> Option<TemplateComponent> {
         match self {
-            Self::Literal { .. } => None,
+            Self::Literal { .. } | Self::ReferenceType { .. } | Self::Carrier { .. } => None,
             Self::Contributor(component) => {
                 Some(TemplateComponent::Contributor(component.as_ref().clone()))
             }
@@ -1380,6 +1402,26 @@ impl MessageArgSource {
             Self::Term(component) => Some(TemplateComponent::Term(component.clone())),
         }
     }
+}
+
+/// Reference-type value exposed to a style-owned MF2 message.
+#[derive(Debug, Deserialize, Serialize, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum MessageReferenceTypeSource {
+    /// Use the canonical Citum reference-type key.
+    Key,
+}
+
+/// Carrier classification exposed to a style-owned MF2 message.
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case", deny_unknown_fields)]
+pub struct MessageCarrierSource {
+    /// Value used when URL, DOI, or CSTR identifies an online resource.
+    pub online: String,
+    /// Value used when neither a raw medium nor online metadata is available.
+    pub absent: String,
 }
 
 /// Simple string variables.

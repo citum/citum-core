@@ -273,22 +273,41 @@ The processor must distinguish between:
 *   **Data Language**: The language of the source metadata (e.g., Russian).
 *   **Style Locale**: The language of the citation style (e.g., English for "edited by").
 
-Labels ("Ed.", "vol.") will always use the **Style Locale**. Data fields will use the script determined by the **Data Language** and **Multilingual Mode**.
+Labels ("Ed.", "vol.") use the **Style Locale** unless a style explicitly
+selects a locale-scoped layout under `citation.locales[]` or
+`bibliography.locales[]`. A matched locale-scoped layout selects both its
+template structure and its rendering locale. Data fields continue to use the
+script determined by the **Data Language** and **Multilingual Mode**.
 
 When `field-languages` is present, the processor should prefer the field-scoped language over the entry-level language for that specific field. This is how Citum can format a chapter title as English while formatting the containing book title as German in the same entry.
 
-### 3.4 Locale-Selected Bibliography Layouts (experimental)
+### 3.4 Locale-Selected Citation and Bibliography Layouts
 
-`bibliography.locales[]` lets a style swap the *entire* entry template based on
-the reference's effective language. Each branch names the locales it serves
-(`locale: [ja, zh, ko]`) or is marked `default: true`; an entry whose
-entry-level `language` matches a branch renders with that branch's template,
-and all other entries use the default branch (or the top-level
-`bibliography.template` when no default branch exists).
+`citation.locales[]` and `bibliography.locales[]` let a style swap the entire
+template based on the reference's effective language. Each branch names the
+locales it serves (`locale: [ja, zh, ko]`) or is marked `default: true`.
+
+Resolution is deterministic:
+
+1. Match a complete BCP 47 tag, case-insensitively.
+2. If there is no exact match, match the primary language subtag.
+3. Use the branch marked `default: true`.
+4. Use the section's top-level `template` or `template-ref`.
+
+A locale-scoped match uses the branch's declared locale for terms, labels,
+dates, and other locale-sensitive formatting. A default branch or top-level
+template continues to use the style locale. If the selected locale is not
+available to the engine, rendering falls back to the style locale rather than
+failing or silently selecting a different template.
+
+Type variants compose with locale selection: a matching `type-variants` entry
+may replace the resolved template, but it retains the locale selected by the
+reference language. This permits one shared type-specific structure to render
+with different term languages.
 
 This is currently demonstrated by
-`styles/experimental/locale-specific-bibliography-layouts.yaml` and is not yet
-a committed part of the style schema contract.
+`styles/experimental/locale-specific-bibliography-layouts.yaml`. These
+selection and fallback rules are part of the active style schema contract.
 
 ## 4. Sorting & Transliteration
 

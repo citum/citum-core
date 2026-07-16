@@ -717,6 +717,9 @@
           "$ref": "#/$defs/TemplateNumber"
         },
         {
+          "$ref": "#/$defs/TemplateIdentifier"
+        },
+        {
           "$ref": "#/$defs/TemplateVariable"
         },
         {
@@ -1568,7 +1571,7 @@
           "$ref": "#/$defs/DateForm"
         },
         "fallback": {
-          "description": "Fallback components if the primary date is missing.",
+          "description": "Authoritative fallback components used when the primary date is missing.\n\nWhen every component is empty, including for an empty list, the date is omitted.",
           "type": [
             "array",
             "null"
@@ -2145,6 +2148,131 @@
         "symbol"
       ]
     },
+    "TemplateIdentifier": {
+      "description": "A supplementary standardized identifier component.",
+      "type": "object",
+      "properties": {
+        "identifier": {
+          "description": "Validated identifier name to render from `reference.identifiers`.",
+          "$ref": "#/$defs/IdentifierName"
+        },
+        "text-case": {
+          "description": "Text-case transform to apply to the rendered value.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TextCase"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "emph": {
+          "description": "Render in italics/emphasis.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "quote": {
+          "description": "Render in quotes.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "strong": {
+          "description": "Render in bold/strong.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "small-caps": {
+          "description": "Render in small caps.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "vertical-align": {
+          "description": "Vertical alignment to apply to rendered output.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VerticalAlign"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "prefix": {
+          "description": "Text to prepend to the rendered value (outside any wrap).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "suffix": {
+          "description": "Text to append to the rendered value (outside any wrap).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "wrap": {
+          "description": "Wrapping punctuation and optional inner affixes (text inside the wrap).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WrapConfig"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "suppress": {
+          "description": "If true, suppress this component entirely (render as empty string).\nUseful for type-specific overrides like suppressing publisher for journals.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "initialize-with": {
+          "description": "Override name initialization (e.g., \". \" or \"\").",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name-form": {
+          "description": "Override name form (e.g., initials, full, family-only).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NameForm"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "strip-periods": {
+          "description": "Strip trailing periods from rendered value.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "identifier"
+      ]
+    },
+    "IdentifierName": {
+      "description": "A validated name for a supplementary standardized identifier.\n\nNames use lowercase kebab-case. Identifiers with dedicated Citum fields,\nsuch as `doi` and `isbn`, are reserved and cannot be duplicated here.",
+      "type": "string"
+    },
     "TemplateVariable": {
       "description": "A simple variable component (DOI, ISBN, URL, etc.).",
       "type": "object",
@@ -2345,7 +2473,7 @@
       ]
     },
     "TemplateMessage": {
-      "description": "A locale message call inside a citation or bibliography template.\n\nThe style chooses the message ID and supplies structured argument sources;\nthe active locale owns the natural-language realization in its `messages`\nmap.",
+      "description": "An MF2 message call inside a citation or bibliography template.\n\nThe style chooses the message ID and supplies structured argument sources;\nthe message body comes from the style or active locale.",
       "type": "object",
       "properties": {
         "message": {
@@ -2518,6 +2646,30 @@
           ]
         },
         {
+          "description": "The canonical reference-type key used for MF2 selection.",
+          "type": "object",
+          "properties": {
+            "reference-type": {
+              "$ref": "#/$defs/MessageReferenceTypeSource"
+            }
+          },
+          "required": [
+            "reference-type"
+          ]
+        },
+        {
+          "description": "A carrier label derived from raw medium or online-resource metadata.",
+          "type": "object",
+          "properties": {
+            "carrier": {
+              "$ref": "#/$defs/MessageCarrierSource"
+            }
+          },
+          "required": [
+            "carrier"
+          ]
+        },
+        {
           "description": "A rendered contributor argument.",
           "$ref": "#/$defs/TemplateContributor"
         },
@@ -2545,6 +2697,35 @@
           "description": "A rendered locale term argument.",
           "$ref": "#/$defs/TemplateTerm"
         }
+      ]
+    },
+    "MessageReferenceTypeSource": {
+      "description": "Reference-type value exposed to a style-owned MF2 message.",
+      "oneOf": [
+        {
+          "description": "Use the canonical Citum reference-type key.",
+          "type": "string",
+          "const": "key"
+        }
+      ]
+    },
+    "MessageCarrierSource": {
+      "description": "Carrier classification exposed to a style-owned MF2 message.",
+      "type": "object",
+      "properties": {
+        "online": {
+          "description": "Value used when URL, DOI, or CSTR identifies an online resource.",
+          "type": "string"
+        },
+        "absent": {
+          "description": "Value used when neither a raw medium nor online metadata is available.",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "online",
+        "absent"
       ]
     },
     "TemplateGroup": {

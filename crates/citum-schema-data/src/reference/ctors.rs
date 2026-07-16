@@ -26,6 +26,7 @@ macro_rules! boxed_reference_constructor {
         fn $fn_name(reference: Box<$ty>) -> Self {
             Self {
                 extension: ClassExtension::$variant(reference),
+                identifiers: Default::default(),
             }
         }
     };
@@ -50,6 +51,7 @@ impl InputReference {
         let inner = serde_json::from_value(value)?;
         Ok(Self {
             extension: class_extension(Box::new(inner)),
+            identifiers: Default::default(),
         })
     }
 
@@ -198,6 +200,7 @@ impl InputReference {
     pub fn Unknown(reference: Box<UnknownClassData>) -> Self {
         Self {
             extension: ClassExtension::Unknown(reference),
+            identifiers: Default::default(),
         }
     }
 

@@ -365,6 +365,7 @@ impl TemplateResourceBudget {
             },
             TemplateComponent::Title(_)
             | TemplateComponent::Number(_)
+            | TemplateComponent::Identifier(_)
             | TemplateComponent::Variable(_)
             | TemplateComponent::Term(_)
             | TemplateComponent::TypeLabel(_) => {}

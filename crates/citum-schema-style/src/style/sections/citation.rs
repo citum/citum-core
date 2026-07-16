@@ -14,7 +14,8 @@ use serde::{Deserialize, Serialize};
 use crate::grouping;
 use crate::options::CitationOptions;
 use crate::template::{
-    LocalizedTemplateSpec, Template, TemplateReference, TemplateVariants, locale_matches,
+    LocalizedTemplateSpec, ResolvedLocalizedTemplate, Template, TemplateReference,
+    TemplateVariants, matched_localized_template,
 };
 
 /// Citation collapse behavior for multi-item citations.
@@ -141,18 +142,16 @@ impl CitationSpec {
         })
     }
 
-    /// Resolve the template for a language by checking localized overrides,
-    /// then the localized default, then the base template or preset.
-    pub fn resolve_template_for_language(&self, language: Option<&str>) -> Option<Template> {
-        if let Some(language) = language
-            && let Some(locales) = &self.locales
-            && let Some(matched) = locales.iter().find(|spec| {
-                spec.locale
-                    .as_ref()
-                    .is_some_and(|targets| locale_matches(targets, language))
-            })
+    /// Resolve a template and the locale selected by its localized branch.
+    pub fn resolve_localized_template(
+        &self,
+        language: Option<&str>,
+    ) -> Option<ResolvedLocalizedTemplate> {
+        if let Some(matched) = language
+            .zip(self.locales.as_deref())
+            .and_then(|(language, locales)| matched_localized_template(locales, language))
         {
-            return Some(matched.template.clone());
+            return Some(matched);
         }
 
         self.locales
@@ -161,9 +160,24 @@ impl CitationSpec {
                 locales
                     .iter()
                     .find(|spec| spec.default.unwrap_or(false))
-                    .map(|spec| spec.template.clone())
+                    .map(|spec| ResolvedLocalizedTemplate {
+                        template: spec.template.clone(),
+                        locale: None,
+                    })
             })
-            .or_else(|| self.resolve_template())
+            .or_else(|| {
+                self.resolve_template()
+                    .map(|template| ResolvedLocalizedTemplate {
+                        template,
+                        locale: None,
+                    })
+            })
+    }
+
+    /// Resolve the template for a language while discarding locale metadata.
+    pub fn resolve_template_for_language(&self, language: Option<&str>) -> Option<Template> {
+        self.resolve_localized_template(language)
+            .map(|resolved| resolved.template)
     }
 
     /// Resolve the template for a given reference type and language.
@@ -176,14 +190,28 @@ impl CitationSpec {
         ref_type: &str,
         language: Option<&str>,
     ) -> Option<Template> {
-        if let Some(type_variants) = &self.type_variants {
-            for (selector, variant) in type_variants {
-                if selector.matches(ref_type) {
-                    return variant.clone().into_template();
-                }
-            }
+        self.resolve_localized_template_for_type(ref_type, language)
+            .map(|resolved| resolved.template)
+    }
+
+    /// Resolve a type variant while retaining any locale selected for the reference.
+    pub fn resolve_localized_template_for_type(
+        &self,
+        ref_type: &str,
+        language: Option<&str>,
+    ) -> Option<ResolvedLocalizedTemplate> {
+        let mut resolved = self.resolve_localized_template(language)?;
+        if let Some(template) = self.type_variants.as_ref().and_then(|variants| {
+            variants.iter().find_map(|(selector, variant)| {
+                selector
+                    .matches(ref_type)
+                    .then(|| variant.clone().into_template())
+                    .flatten()
+            })
+        }) {
+            resolved.template = template;
         }
-        self.resolve_template_for_language(language)
+        Some(resolved)
     }
 
     /// Resolve the effective spec for a given citation mode.
