@@ -138,6 +138,11 @@ pub struct Macro {
 pub struct Citation {
     /// The `<layout>` block that renders each individual citation.
     pub layout: Layout,
+    /// Ordered CSL-M layouts, including the final unscoped fallback.
+    ///
+    /// This is empty for conventional CSL with zero or one unscoped layout.
+    #[serde(default)]
+    pub localized_layouts: Vec<LocalizedLayout>,
     /// Optional sort order applied to cites within a single citation cluster.
     pub sort: Option<Sort>,
     /// Collapse mode for grouped citations (for example, `"citation-number"`).
@@ -163,6 +168,11 @@ pub struct Citation {
 pub struct Bibliography {
     /// The `<layout>` block that renders each bibliography entry.
     pub layout: Layout,
+    /// Ordered CSL-M layouts, including the final unscoped fallback.
+    ///
+    /// This is empty for conventional CSL with zero or one unscoped layout.
+    #[serde(default)]
+    pub localized_layouts: Vec<LocalizedLayout>,
     /// Optional sort order applied to bibliography entries.
     pub sort: Option<Sort>,
     /// Minimum number of names before et-al truncation kicks in.
@@ -190,6 +200,17 @@ pub struct Layout {
     pub delimiter: Option<String>,
     /// The rendering nodes contained in this layout.
     pub children: Vec<CslNode>,
+}
+
+/// A locale-scoped CSL-M layout in source order.
+///
+/// An empty `locales` list identifies the required final fallback layout.
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct LocalizedLayout {
+    /// Whitespace-separated language tags from the CSL-M `locale` attribute.
+    pub locales: Vec<String>,
+    /// Rendering layout selected for those locales.
+    pub layout: Layout,
 }
 
 /// A sort specification (`<sort>`).

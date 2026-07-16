@@ -64,6 +64,8 @@ pub enum ItemType {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Hash)]
 #[serde(rename_all = "kebab-case")]
 pub enum Variable {
+    /// A supplementary standardized identifier keyed by its canonical Citum name.
+    Identifier(String),
     Author,
     CollectionEditor,
     Composer,

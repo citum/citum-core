@@ -7,7 +7,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 #![allow(missing_docs, reason = "lib/crate")]
 
-use csl_legacy::model::{Choose, ChooseBranch, CslNode, Group, Names, Style, Substitute};
+use csl_legacy::model::{Choose, ChooseBranch, CslNode, Group, Layout, Names, Style, Substitute};
 use std::collections::HashMap;
 
 /// CSL 1.0 analysis utilities.
@@ -481,24 +481,31 @@ impl<'a> MacroInliner<'a> {
     /// Returns a version of the bibliography layout with all macros inlined.
     #[must_use]
     pub fn inline_bibliography(&self, style: &Style) -> Option<Vec<CslNode>> {
-        style.bibliography.as_ref().map(|bib| {
-            // Clone the layout children so we can mutate them
-            let mut layout_nodes = bib.layout.children.clone();
+        style
+            .bibliography
+            .as_ref()
+            .map(|bib| self.inline_bibliography_layout(&bib.layout))
+    }
 
-            // Assign order to layout macro calls before expansion
-            let mut order_counter = 0;
-            Self::assign_layout_order(&mut layout_nodes, &mut order_counter);
-
-            // Expand macros, starting nested macro numbering from where layout assignment left off.
-            // This prevents collisions between layout macro orders and nested macro orders.
-            self.expand_nodes_from_order(&layout_nodes, order_counter)
-        })
+    /// Return a bibliography layout with all macros inlined.
+    #[must_use]
+    pub fn inline_bibliography_layout(&self, layout: &Layout) -> Vec<CslNode> {
+        let mut layout_nodes = layout.children.clone();
+        let mut order_counter = 0;
+        Self::assign_layout_order(&mut layout_nodes, &mut order_counter);
+        self.expand_nodes_from_order(&layout_nodes, order_counter)
     }
 
     /// Returns a version of the citation layout with all macros inlined.
     #[must_use]
     pub fn inline_citation(&self, style: &Style) -> Vec<CslNode> {
-        self.expand_nodes(&style.citation.layout.children)
+        self.inline_citation_layout(&style.citation.layout)
+    }
+
+    /// Return a citation layout with all macros inlined.
+    #[must_use]
+    pub fn inline_citation_layout(&self, layout: &Layout) -> Vec<CslNode> {
+        self.expand_nodes(&layout.children)
     }
 }
 

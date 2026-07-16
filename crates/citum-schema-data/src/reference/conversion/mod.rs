@@ -39,8 +39,8 @@ use crate::reference::types::{
     Statute, StructuredTitle, Subtitle, Title, Treaty,
 };
 use crate::reference::{
-    AudioVisualType, AudioVisualWork, Event, InputReference, LangID, Numbering, NumberingType,
-    RefID, WorkCore, WorkRelation,
+    AudioVisualType, AudioVisualWork, Event, IdentifierName, InputReference, LangID, Numbering,
+    NumberingType, RefID, WorkCore, WorkRelation,
 };
 use std::collections::HashMap;
 use unicode_normalization::UnicodeNormalization;
@@ -471,6 +471,7 @@ fn legacy_type_uses_created(ref_type: &str) -> bool {
 impl From<csl_legacy::csl_json::Reference> for InputReference {
     fn from(mut legacy: csl_legacy::csl_json::Reference) -> Self {
         legacy.parse_note_field_hacks();
+        let cstr = legacy_extra_str(&legacy, "CSTR");
         let ctx = RefContext {
             id: Some(legacy.id.clone().into()),
             title: legacy.title.clone(),
@@ -501,7 +502,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             journal_abbreviation: short_title_from_legacy(&legacy, "journalAbbreviation"),
         };
 
-        match legacy.ref_type.as_str() {
+        let mut reference = match legacy.ref_type.as_str() {
             "software" => media::from_software_ref(legacy, ctx),
             "book"
             | "thesis"
@@ -576,7 +577,13 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
                 );
                 scholarly::from_document_ref(legacy, ctx)
             }
+        };
+        if let Some(cstr) = cstr
+            && let Ok(name) = IdentifierName::new("cstr")
+        {
+            reference.insert_identifier(name, cstr);
         }
+        reference
     }
 }
 

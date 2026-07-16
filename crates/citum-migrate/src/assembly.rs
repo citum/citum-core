@@ -68,7 +68,9 @@ struct CompiledOutput {
     bibliography_options: Option<citum_schema::BibliographyOptions>,
     bibliography_contributor_overrides: Option<citum_schema::options::ContributorConfig>,
     new_cit: Vec<TemplateComponent>,
+    citation_locales: Option<Vec<citum_schema::LocalizedTemplateSpec>>,
     new_bib: Vec<TemplateComponent>,
+    bibliography_locales: Option<Vec<citum_schema::LocalizedTemplateSpec>>,
     type_templates: Option<TypeTemplateMap>,
     citation_wrap: Option<WrapPunctuation>,
     citation_prefix: Option<String>,
@@ -138,7 +140,15 @@ impl StandaloneAssembly<'_> {
                 bibliography_options,
                 bibliography_contributor_overrides: self.bibliography_contributor_overrides.clone(),
                 new_cit,
+                citation_locales: self
+                    .xml_fallback
+                    .as_ref()
+                    .and_then(|output| output.citation_locales.clone()),
                 new_bib,
+                bibliography_locales: self
+                    .xml_fallback
+                    .as_ref()
+                    .and_then(|output| output.bibliography_locales.clone()),
                 type_templates,
                 citation_wrap,
                 citation_prefix,
@@ -315,6 +325,7 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOut
             options: citation_scope_options,
             template_ref: None,
             template: Some(c.new_cit),
+            locales: c.citation_locales,
             collapse: extract_citation_collapse(&legacy_style.citation),
             wrap: c.citation_wrap.map(Into::into),
             prefix: c.citation_prefix,
@@ -329,6 +340,7 @@ fn build_final_style(legacy_style: &csl_legacy::model::Style, mut c: CompiledOut
             options: bibliography_scope_options,
             template_ref: None,
             template: Some(new_bib),
+            locales: c.bibliography_locales,
             type_variants,
             sort: bibliography_sort,
             ..Default::default()
@@ -784,7 +796,9 @@ mod tests {
                 citation_contributor_overrides: None,
                 bibliography_contributor_overrides: None,
                 new_cit: vec![],
+                citation_locales: None,
                 new_bib: vec![],
+                bibliography_locales: None,
                 type_templates: None,
                 citation_wrap: None,
                 citation_prefix: None,
@@ -801,6 +815,58 @@ mod tests {
                 .as_ref()
                 .and_then(|citation| citation.collapse.clone()),
             Some(CitationCollapse::CitationNumber)
+        );
+    }
+
+    #[test]
+    fn assembly_preserves_localized_template_branches() {
+        let localized = citum_schema::LocalizedTemplateSpec {
+            locale: Some(vec!["zh-CN".to_string()]),
+            default: None,
+            template: vec![TemplateComponent::Variable(TemplateVariable {
+                variable: SimpleVariable::Publisher,
+                ..TemplateVariable::default()
+            })],
+            unknown_fields: Default::default(),
+        };
+        let migrated = build_final_style(
+            &minimal_legacy_style(),
+            CompiledOutput {
+                options: citum_schema::options::Config::default(),
+                citation_contributor_overrides: None,
+                bibliography_options: None,
+                bibliography_contributor_overrides: None,
+                new_cit: Vec::new(),
+                citation_locales: Some(vec![localized.clone()]),
+                new_bib: Vec::new(),
+                bibliography_locales: Some(vec![localized]),
+                type_templates: None,
+                citation_wrap: None,
+                citation_prefix: None,
+                citation_suffix: None,
+                citation_delimiter: None,
+                citation_subsequent_override: None,
+                citation_ibid_override: None,
+            },
+        );
+
+        assert_eq!(
+            migrated
+                .citation
+                .as_ref()
+                .and_then(|citation| citation.locales.as_ref())
+                .and_then(|locales| locales.first())
+                .and_then(|localized| localized.locale.as_ref()),
+            Some(&vec!["zh-CN".to_string()])
+        );
+        assert_eq!(
+            migrated
+                .bibliography
+                .as_ref()
+                .and_then(|bibliography| bibliography.locales.as_ref())
+                .and_then(|locales| locales.first())
+                .and_then(|localized| localized.locale.as_ref()),
+            Some(&vec!["zh-CN".to_string()])
         );
     }
 
@@ -888,7 +954,9 @@ mod tests {
                     ..TemplateTitle::default()
                 }),
             ],
+            citation_locales: None,
             new_bib: vec![],
+            bibliography_locales: None,
             type_templates: Some(type_templates),
             citation_wrap: None,
             citation_prefix: None,
@@ -949,6 +1017,7 @@ mod tests {
                     delimiter: None,
                     children: vec![],
                 },
+                localized_layouts: Vec::new(),
                 sort: None,
                 collapse: None,
                 et_al_min: None,

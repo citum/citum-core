@@ -31,6 +31,27 @@ fn test_parse_csl_json() {
 }
 
 #[test]
+fn legacy_cstr_extra_is_converted_to_a_supplementary_identifier() {
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(
+        r#"{
+            "id": "cstr-preprint",
+            "type": "article",
+            "title": "A preprint",
+            "note": "tex.cstr: 32012.36.1001024.2023.0328"
+        }"#,
+    )
+    .unwrap();
+
+    let reference: InputReference = legacy.into();
+
+    assert_eq!(
+        reference.identifier("cstr"),
+        Some("32012.36.1001024.2023.0328")
+    );
+    assert!(reference.note().is_none());
+}
+
+#[test]
 fn test_parse_csl_json_structural_author_populates_canonical_contributors() {
     let json = r#"{
         "id": "legacy-book",

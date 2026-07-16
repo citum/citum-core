@@ -70,6 +70,7 @@ fn make_style_with_date(form: Option<String>) -> Style {
                 delimiter: None,
                 children: vec![date_node],
             },
+            localized_layouts: Vec::new(),
             sort: None,
             collapse: None,
             et_al_min: None,

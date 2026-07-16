@@ -54,6 +54,7 @@ fn test_style_global_initialize_with_co_emits_name_form_initials() {
                 delimiter: None,
                 children: vec![],
             },
+            localized_layouts: Vec::new(),
             sort: None,
             collapse: None,
             et_al_min: None,

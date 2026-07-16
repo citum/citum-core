@@ -269,6 +269,42 @@ impl MeasuredSelectionEvidence {
     }
 }
 
+/// Stable machine-readable warning emitted during migration input conversion.
+#[derive(Debug, Clone, Serialize, PartialEq, Eq)]
+pub struct MigrationDiagnostic {
+    /// Stable diagnostic identifier for programmatic consumers.
+    pub code: String,
+    /// CSL-JSON item identifier associated with the diagnostic, when applicable.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub item_id: Option<String>,
+    /// Concise human-readable explanation of the recovered conflict.
+    pub message: String,
+}
+
+impl From<csl_legacy::csl_json::NoteFieldDiagnostic> for MigrationDiagnostic {
+    fn from(value: csl_legacy::csl_json::NoteFieldDiagnostic) -> Self {
+        match value {
+            csl_legacy::csl_json::NoteFieldDiagnostic::ConflictingSupplementaryIdentifier {
+                item_id,
+                identifier,
+                kept,
+                ignored,
+            } => Self {
+                code: "conflicting-supplementary-identifier".to_string(),
+                item_id: Some(item_id),
+                message: format!(
+                    "conflicting {identifier} values; kept {kept:?} and ignored {}",
+                    ignored
+                        .iter()
+                        .map(|value| format!("{value:?}"))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                ),
+            },
+        }
+    }
+}
+
 /// Full evidence record for a single migration invocation.
 #[derive(Debug, Clone, Serialize)]
 pub struct MigrationEvidence {
@@ -292,6 +328,9 @@ pub struct MigrationEvidence {
     /// Output-driven measured candidate selection summaries.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub measured_selection: Option<MeasuredSelectionEvidence>,
+    /// Recoverable migration warnings with stable codes.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub diagnostics: Vec<MigrationDiagnostic>,
     /// Output size of the standalone form, in lines. Reference point for
     /// downstream compression analysis.
     pub standalone_output_lines: usize,
@@ -348,6 +387,7 @@ mod tests {
             preserved_template_paths: Vec::new(),
             discarded_template_paths: Vec::new(),
             measured_selection: None,
+            diagnostics: Vec::new(),
             standalone_output_lines: 5662,
             emitted_output_lines: 5662,
         }
@@ -384,6 +424,32 @@ mod tests {
         assert!(
             json.contains("\"registry-alias-status\":\"none\"")
                 || json.contains("\"registry_alias_status\":\"none\""),
+        );
+    }
+
+    #[test]
+    fn cstr_conflict_serializes_stable_diagnostic_fields() {
+        let diagnostic = MigrationDiagnostic::from(
+            csl_legacy::csl_json::NoteFieldDiagnostic::ConflictingSupplementaryIdentifier {
+                item_id: "item-1".to_string(),
+                identifier: "cstr".to_string(),
+                kept: "direct".to_string(),
+                ignored: vec!["tex".to_string()],
+            },
+        );
+        let json = serde_json::to_value(diagnostic).expect("diagnostic should serialize");
+
+        assert_eq!(
+            json.get("code").and_then(serde_json::Value::as_str),
+            Some("conflicting-supplementary-identifier")
+        );
+        assert_eq!(
+            json.get("item_id").and_then(serde_json::Value::as_str),
+            Some("item-1")
+        );
+        assert_eq!(
+            json.get("message").and_then(serde_json::Value::as_str),
+            Some("conflicting cstr values; kept \"direct\" and ignored \"tex\"")
         );
     }
 }

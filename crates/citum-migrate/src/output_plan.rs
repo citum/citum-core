@@ -8,7 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use crate::cli::{Args, FamilyCandidateMode};
 use citum_migrate::{
     evidence::{
-        EmittedForm, MeasuredSelectionEvidence, MinimizationDecisionAudit,
+        EmittedForm, MeasuredSelectionEvidence, MigrationDiagnostic, MinimizationDecisionAudit,
         MinimizationDecisionOutcome, MinimizationDecisionSource,
     },
     lineage::{MigrationEvidenceParts, MigrationOutputPlan, StyleLineage},
@@ -20,6 +20,14 @@ use std::{fs, path::Path};
 pub(crate) struct FamilyCandidateRouting {
     /// Evidence audit for the family-candidate decision.
     pub(crate) audit: MinimizationDecisionAudit,
+}
+
+/// Optional measured-selection and diagnostic details for an evidence record.
+pub(crate) struct EvidenceDetails {
+    /// Output-driven template selection summaries.
+    pub(crate) measured_selection: Option<MeasuredSelectionEvidence>,
+    /// Recoverable migration warnings with stable codes.
+    pub(crate) diagnostics: Vec<MigrationDiagnostic>,
 }
 
 /// Promote a discovered family-candidate parent into the lineage's active
@@ -84,7 +92,7 @@ pub(crate) fn write_optional_evidence(
     emitted_lines: usize,
     minimized: bool,
     minimization_decision: MinimizationDecisionAudit,
-    measured_selection: Option<MeasuredSelectionEvidence>,
+    details: EvidenceDetails,
 ) -> Result<(), Box<dyn std::error::Error>> {
     if let Some(evidence_path) = cli.emit_evidence.as_deref() {
         write_evidence_sidecar(
@@ -94,7 +102,7 @@ pub(crate) fn write_optional_evidence(
             emitted_lines,
             minimized,
             minimization_decision,
-            measured_selection,
+            details,
         )?;
     }
     Ok(())
@@ -131,7 +139,7 @@ fn write_evidence_sidecar(
     emitted_lines: usize,
     minimized: bool,
     minimization_decision: MinimizationDecisionAudit,
-    measured_selection: Option<MeasuredSelectionEvidence>,
+    details: EvidenceDetails,
 ) -> Result<(), Box<dyn std::error::Error>> {
     let emitted_form = describe_emitted_form(lineage, minimized);
     let (preserved, discarded) = classify_template_paths(&emitted_form);
@@ -142,7 +150,8 @@ fn write_evidence_sidecar(
         minimization_decision,
         preserved_template_paths: preserved,
         discarded_template_paths: discarded,
-        measured_selection,
+        measured_selection: details.measured_selection,
+        diagnostics: details.diagnostics,
     });
     let json = serde_json::to_string_pretty(&evidence)?;
     fs::write(evidence_path, json)?;

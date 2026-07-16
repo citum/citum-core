@@ -13,8 +13,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 //! child.
 
 use crate::evidence::{
-    EmittedForm, FamilyCandidate, MeasuredSelectionEvidence, MigrationEvidence,
-    MinimizationDecisionAudit, ParentDiscoverySource, RegistryAliasStatus,
+    EmittedForm, FamilyCandidate, MeasuredSelectionEvidence, MigrationDiagnostic,
+    MigrationEvidence, MinimizationDecisionAudit, ParentDiscoverySource, RegistryAliasStatus,
 };
 use citum_schema::Style;
 use citum_schema::embedded;
@@ -114,6 +114,8 @@ pub struct MigrationEvidenceParts {
     pub discarded_template_paths: Vec<String>,
     /// Output-driven measured candidate selection summaries.
     pub measured_selection: Option<MeasuredSelectionEvidence>,
+    /// Recoverable warnings collected while converting migration fixtures.
+    pub diagnostics: Vec<MigrationDiagnostic>,
 }
 
 /// Failure while resolving or rewriting migration lineage.
@@ -395,6 +397,7 @@ impl StyleLineage {
             preserved_template_paths: parts.preserved_template_paths,
             discarded_template_paths: parts.discarded_template_paths,
             measured_selection: parts.measured_selection,
+            diagnostics: parts.diagnostics,
             standalone_output_lines: parts.standalone_lines,
             emitted_output_lines: parts.emitted_lines,
         }
@@ -1403,6 +1406,7 @@ mod tests {
             preserved_template_paths: Vec::new(),
             discarded_template_paths: Vec::new(),
             measured_selection: None,
+            diagnostics: Vec::new(),
         });
         assert_eq!(
             evidence.registry_alias_status,

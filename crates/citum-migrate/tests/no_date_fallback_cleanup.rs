@@ -64,6 +64,20 @@ fn migration_drops_explicit_no_date_terms_when_issued_is_already_present() {
 
     assert!(template.iter().any(component_contains_issued_date));
     assert!(!template.iter().any(component_contains_no_date_term));
+    assert!(template.iter().any(component_has_implicit_no_date_fallback));
+}
+
+fn component_has_implicit_no_date_fallback(component: &TemplateComponent) -> bool {
+    match component {
+        TemplateComponent::Date(date) => {
+            date.date == DateVariable::Issued && date.fallback.is_none()
+        }
+        TemplateComponent::Group(group) => group
+            .group
+            .iter()
+            .any(component_has_implicit_no_date_fallback),
+        _ => false,
+    }
 }
 
 fn component_contains_issued_date(component: &TemplateComponent) -> bool {

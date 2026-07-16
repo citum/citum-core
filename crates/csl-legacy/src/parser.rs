@@ -14,8 +14,8 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use crate::model::{
     Bibliography, Choose, ChooseBranch, Citation, CslNode, Date, DatePart, EtAl, Formatting, Group,
-    Info, Label, Layout, Locale, Macro, Name, Names, Number, Sort, SortKey, Style, Substitute,
-    Term, Text,
+    Info, Label, Layout, Locale, LocalizedLayout, Macro, Name, Names, Number, Sort, SortKey, Style,
+    Substitute, Term, Text,
 };
 use roxmltree::Node;
 
@@ -72,6 +72,7 @@ pub fn parse_style(node: Node) -> Result<Style, String> {
             suffix: None,
             delimiter: None,
         },
+        localized_layouts: Vec::new(),
         sort: None,
         collapse: None,
         et_al_min: None,
@@ -256,12 +257,6 @@ fn parse_macro(node: Node) -> Result<Macro, String> {
 
 /// Parse a `<citation>` element into a [`Citation`].
 fn parse_citation(node: Node) -> Result<Citation, String> {
-    let mut layout = Layout {
-        children: vec![],
-        prefix: None,
-        suffix: None,
-        delimiter: None,
-    };
     let mut sort = None;
     let collapse = node
         .attribute("collapse")
@@ -288,13 +283,15 @@ fn parse_citation(node: Node) -> Result<Citation, String> {
             continue;
         }
         match child.tag_name().name() {
-            "layout" => layout = parse_layout(child)?,
+            "layout" => {}
             "sort" => sort = Some(parse_sort(child)?),
             _ => {}
         }
     }
+    let (layout, localized_layouts) = parse_ordered_layouts(node, "citation")?;
     Ok(Citation {
         layout,
+        localized_layouts,
         sort,
         collapse,
         et_al_min,
@@ -308,12 +305,6 @@ fn parse_citation(node: Node) -> Result<Citation, String> {
 
 /// Parse a `<bibliography>` element into a [`Bibliography`].
 fn parse_bibliography(node: Node) -> Result<Bibliography, String> {
-    let mut layout = Layout {
-        children: vec![],
-        prefix: None,
-        suffix: None,
-        delimiter: None,
-    };
     let mut sort = None;
     let et_al_min = node.attribute("et-al-min").and_then(|s| s.parse().ok());
     let et_al_use_first = node
@@ -333,13 +324,15 @@ fn parse_bibliography(node: Node) -> Result<Bibliography, String> {
             continue;
         }
         match child.tag_name().name() {
-            "layout" => layout = parse_layout(child)?,
+            "layout" => {}
             "sort" => sort = Some(parse_sort(child)?),
             _ => {}
         }
     }
+    let (layout, localized_layouts) = parse_ordered_layouts(node, "bibliography")?;
     Ok(Bibliography {
         layout,
+        localized_layouts,
         sort,
         et_al_min,
         et_al_use_first,
@@ -347,6 +340,73 @@ fn parse_bibliography(node: Node) -> Result<Bibliography, String> {
         subsequent_author_substitute,
         subsequent_author_substitute_rule,
     })
+}
+
+/// Parse conventional or ordered CSL-M layouts while retaining the singular fallback API.
+fn parse_ordered_layouts(
+    node: Node,
+    section: &str,
+) -> Result<(Layout, Vec<LocalizedLayout>), String> {
+    let mut layouts = Vec::new();
+    for child in node.children().filter(Node::is_element) {
+        if child.tag_name().name() != "layout" {
+            continue;
+        }
+        let locales = child
+            .attribute("locale")
+            .map(|value| value.split_whitespace().map(str::to_string).collect())
+            .unwrap_or_default();
+        layouts.push(LocalizedLayout {
+            locales,
+            layout: parse_layout(child)?,
+        });
+    }
+
+    let empty = || Layout {
+        children: Vec::new(),
+        prefix: None,
+        suffix: None,
+        delimiter: None,
+    };
+    match layouts.as_slice() {
+        [] => return Ok((empty(), Vec::new())),
+        [only] if only.locales.is_empty() => return Ok((only.layout.clone(), Vec::new())),
+        _ => {}
+    }
+
+    let mut fallback_index = None;
+    for (index, localized) in layouts.iter().enumerate() {
+        if localized.locales.is_empty() {
+            if fallback_index.is_some() {
+                return Err(format!(
+                    "CSL-M {section} must contain exactly one unscoped fallback layout"
+                ));
+            }
+            fallback_index = Some(index);
+        } else if fallback_index.is_some() {
+            return Err(format!(
+                "CSL-M {section} locale-scoped layout appears after the unscoped fallback"
+            ));
+        }
+    }
+
+    let Some(fallback_index) = fallback_index else {
+        return Err(format!(
+            "CSL-M {section} locale-scoped layouts require a final unscoped fallback"
+        ));
+    };
+    if fallback_index + 1 != layouts.len() {
+        return Err(format!(
+            "CSL-M {section} unscoped fallback layout must be last"
+        ));
+    }
+
+    let fallback = layouts
+        .get(fallback_index)
+        .ok_or_else(|| format!("CSL-M {section} fallback layout index is invalid"))?
+        .layout
+        .clone();
+    Ok((fallback, layouts))
 }
 
 /// Parse a `<layout>` element into a [`Layout`].
@@ -915,6 +975,79 @@ mod tests {
         );
         let style = parse(&xml).unwrap();
         assert_eq!(style.citation.collapse.as_deref(), Some("citation-number"));
+    }
+
+    #[test]
+    fn test_parse_csl_m_layouts_preserves_order_and_locale_list() {
+        let xml = wrap_style("").replace(
+            "<citation><layout/></citation>",
+            r#"<citation>
+              <layout locale="en-US en-GB"><text value="English"/></layout>
+              <layout locale="zh-CN"><text value="Chinese"/></layout>
+              <layout><text value="Fallback"/></layout>
+            </citation>"#,
+        );
+
+        let style = parse(&xml).unwrap();
+
+        assert_eq!(style.citation.localized_layouts.len(), 3);
+        assert_eq!(
+            style.citation.localized_layouts[0].locales,
+            ["en-US", "en-GB"]
+        );
+        assert_eq!(style.citation.localized_layouts[1].locales, ["zh-CN"]);
+        assert!(style.citation.localized_layouts[2].locales.is_empty());
+        match &style.citation.layout.children[0] {
+            CslNode::Text(text) => assert_eq!(text.value.as_deref(), Some("Fallback")),
+            other => panic!("expected fallback text node, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn test_parse_conventional_layout_keeps_localized_list_empty() {
+        let style = parse(&wrap_style("")).unwrap();
+
+        assert!(style.citation.localized_layouts.is_empty());
+        assert!(style.citation.layout.children.is_empty());
+    }
+
+    #[test]
+    fn test_parse_csl_m_layouts_rejects_missing_fallback() {
+        let xml = wrap_style("").replace(
+            "<citation><layout/></citation>",
+            r#"<citation><layout locale="zh-CN"><text value="Chinese"/></layout></citation>"#,
+        );
+
+        assert_eq!(
+            parse(&xml).unwrap_err(),
+            "CSL-M citation locale-scoped layouts require a final unscoped fallback"
+        );
+    }
+
+    #[test]
+    fn test_parse_csl_m_layouts_rejects_multiple_fallbacks() {
+        let xml = wrap_style("").replace(
+            "<citation><layout/></citation>",
+            r#"<citation><layout/><layout/></citation>"#,
+        );
+
+        assert_eq!(
+            parse(&xml).unwrap_err(),
+            "CSL-M citation must contain exactly one unscoped fallback layout"
+        );
+    }
+
+    #[test]
+    fn test_parse_csl_m_layouts_rejects_scoped_layout_after_fallback() {
+        let xml = wrap_style("").replace(
+            "<citation><layout/></citation>",
+            r#"<citation><layout/><layout locale="en"><text value="English"/></layout></citation>"#,
+        );
+
+        assert_eq!(
+            parse(&xml).unwrap_err(),
+            "CSL-M citation locale-scoped layout appears after the unscoped fallback"
+        );
     }
 
     #[test]
