@@ -499,6 +499,50 @@ pub(crate) fn fixture_bibliography(workspace_root: &Path) -> Result<Bibliography
     bibliography_from_fixtures(js_runtime::load_fixtures(workspace_root)?)
 }
 
+/// Collect recoverable CSL-JSON conversion warnings from migration fixture sets.
+///
+/// # Errors
+///
+/// Returns an error when either fixture file is unavailable or an item cannot
+/// be parsed as CSL-JSON.
+pub fn fixture_conversion_diagnostics(
+    workspace_root: &Path,
+) -> Result<Vec<crate::evidence::MigrationDiagnostic>, MigrateError> {
+    let mut diagnostics =
+        fixture_diagnostics_from_value(js_runtime::load_fixtures(workspace_root)?)?;
+    diagnostics.extend(fixture_diagnostics_from_value(
+        js_runtime::load_heldout_fixtures(workspace_root)?,
+    )?);
+    Ok(diagnostics)
+}
+
+fn fixture_diagnostics_from_value(
+    fixtures: serde_json::Value,
+) -> Result<Vec<crate::evidence::MigrationDiagnostic>, MigrateError> {
+    let map = fixtures.as_object().ok_or_else(|| {
+        MigrateError::Parse("embedded fixture file is not a JSON object".to_string())
+    })?;
+    let mut diagnostics = Vec::new();
+    for (id, item) in map {
+        let mut legacy: csl_legacy::csl_json::Reference = serde_json::from_value(item.clone())
+            .map_err(|err| {
+                MigrateError::Parse(format!(
+                    "fixture item {id} failed to parse as CSL JSON: {err}"
+                ))
+            })?;
+        if legacy.id.is_empty() {
+            legacy.id.clone_from(id);
+        }
+        diagnostics.extend(
+            legacy
+                .parse_note_field_hacks_with_diagnostics()
+                .into_iter()
+                .map(crate::evidence::MigrationDiagnostic::from),
+        );
+    }
+    Ok(diagnostics)
+}
+
 /// Load the held-out fixture items as an engine bibliography.
 fn heldout_bibliography(workspace_root: &Path) -> Result<Bibliography, MigrateError> {
     bibliography_from_fixtures(js_runtime::load_heldout_fixtures(workspace_root)?)
@@ -1339,7 +1383,7 @@ mod tests {
     use super::{
         CandidateBudget, CandidateScore, PASS_THRESHOLD, bibliography_candidate_patches,
         bibliography_mutation_candidates, candidate_beats, catch_candidate_unwind, compare_text,
-        normalize_text, scenario_citation, token_jaccard, tokenize,
+        fixture_diagnostics_from_value, normalize_text, scenario_citation, token_jaccard, tokenize,
     };
     use citum_schema::Style;
     use citum_schema::citation::Position;
@@ -1555,5 +1599,23 @@ mod tests {
         assert!(first.is_err());
         assert!(second.is_err());
         assert_eq!(ok.unwrap(), 42);
+    }
+
+    #[test]
+    fn fixture_conversion_diagnostic_keeps_item_id_and_stable_code() {
+        let fixtures = serde_json::json!({
+            "fixture-key": {
+                "id": "cstr-item",
+                "type": "article",
+                "note": "CSTR: direct-value\ntex.cstr: alternate-value"
+            }
+        });
+
+        let diagnostics = fixture_diagnostics_from_value(fixtures)
+            .expect("fixture diagnostics should parse valid CSL-JSON");
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].code, "conflicting-supplementary-identifier");
+        assert_eq!(diagnostics[0].item_id.as_deref(), Some("cstr-item"));
     }
 }

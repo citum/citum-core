@@ -73,8 +73,9 @@ name and defining an explicit migration path for existing supplementary data.
 - [x] Malformed and reserved identifier names fail during deserialization.
 - [x] Generated reference schemas expose `identifiers` on every known reference class.
 - [x] Identifier template components render present values and suppress missing values with their affixes.
-- [ ] CSL-M migration extracts CSTR from Zotero Extra and diagnoses conflicts.
+- [x] CSL-M migration extracts CSTR from Zotero Extra and diagnoses conflicts.
 
 ## Changelog
 
 - v1.0 (2026-07-15): Defined validated supplementary identifiers and template rendering.
+- v1.1 (2026-07-15): Defined CSTR extraction precedence and stable conflict diagnostics.

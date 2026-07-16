@@ -138,6 +138,7 @@ fn test_extract_type_conditional_substitute() {
                 delimiter: None,
                 children: vec![author_names],
             },
+            localized_layouts: Vec::new(),
             sort: None,
             collapse: None,
             et_al_min: None,

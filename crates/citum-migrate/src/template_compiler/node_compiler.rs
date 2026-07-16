@@ -224,10 +224,12 @@ impl TemplateCompiler {
                 None => DateForm::Year,
             },
         };
+        let fallback = matches!(&date_var, DateVariable::Issued).then(Vec::new);
 
         Some(TemplateComponent::Date(TemplateDate {
             date: date_var,
             form,
+            fallback,
             rendering: convert_formatting(&date.formatting),
             ..Default::default()
         }))
@@ -262,6 +264,16 @@ impl TemplateCompiler {
         &self,
         var: &crate::ir::VariableBlock,
     ) -> Option<TemplateComponent> {
+        if let Variable::Identifier(name) = &var.variable {
+            let identifier = citum_schema::reference::IdentifierName::new(name.clone()).ok()?;
+            return Some(TemplateComponent::Identifier(
+                citum_schema::template::TemplateIdentifier {
+                    identifier,
+                    rendering: convert_formatting(&var.formatting),
+                },
+            ));
+        }
+
         // First, check if it's a contributor role
         if let Some(role) = self.map_variable_to_role(&var.variable) {
             return Some(TemplateComponent::Contributor(TemplateContributor {
@@ -378,6 +390,48 @@ impl TemplateCompiler {
             Variable::Annote => Some(SimpleVariable::Annote),
             Variable::Abstract => Some(SimpleVariable::Abstract),
             _ => None,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ir::{DateBlock, DateOptions, FormattingOptions};
+
+    #[test]
+    fn issued_dates_use_an_authoritative_empty_fallback() {
+        let component = TemplateCompiler.compile_date(&DateBlock {
+            variable: Variable::Issued,
+            options: DateOptions::default(),
+            formatting: FormattingOptions::default(),
+            source_order: None,
+        });
+
+        assert!(
+            matches!(&component, Some(TemplateComponent::Date(_))),
+            "issued date compilation must produce a date template component"
+        );
+        if let Some(TemplateComponent::Date(date)) = component {
+            assert_eq!(date.fallback, Some(Vec::new()));
+        }
+    }
+
+    #[test]
+    fn non_issued_dates_keep_their_normal_missing_value_behavior() {
+        let component = TemplateCompiler.compile_date(&DateBlock {
+            variable: Variable::Accessed,
+            options: DateOptions::default(),
+            formatting: FormattingOptions::default(),
+            source_order: None,
+        });
+
+        assert!(
+            matches!(&component, Some(TemplateComponent::Date(_))),
+            "accessed date compilation must produce a date template component"
+        );
+        if let Some(TemplateComponent::Date(date)) = component {
+            assert_eq!(date.fallback, None);
         }
     }
 }

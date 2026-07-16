@@ -9,7 +9,11 @@ use crate::{
     Compressor, MacroInliner, TemplateCompiler, Upsampler, analysis, base_detector, passes,
     provenance::ProvenanceTracker,
 };
-use citum_schema::template::{TemplateComponent, TypeSelector};
+use citum_schema::{
+    LocalizedTemplateSpec,
+    template::{TemplateComponent, TypeSelector},
+};
+use std::collections::{BTreeSet, HashSet};
 
 /// Shorthand for the per-type template map used throughout the migration pipeline.
 pub type TypeTemplateMap = indexmap::IndexMap<TypeSelector, Vec<TemplateComponent>>;
@@ -19,18 +23,24 @@ pub type TypeTemplateMap = indexmap::IndexMap<TypeSelector, Vec<TemplateComponen
 pub struct XmlCompilationOutput {
     /// Base bibliography template.
     pub bibliography: Vec<TemplateComponent>,
+    /// Ordered locale-specific bibliography templates, including the default branch.
+    pub bibliography_locales: Option<Vec<LocalizedTemplateSpec>>,
     /// Type-specific bibliography variants.
     pub type_templates: Option<TypeTemplateMap>,
     /// Base citation template.
     pub citation: Vec<TemplateComponent>,
+    /// Ordered locale-specific citation templates, including the default branch.
+    pub citation_locales: Option<Vec<LocalizedTemplateSpec>>,
     /// Position-specific citation overrides.
     pub citation_overrides: CitationPositionOverrides,
     /// Whether citation position branches could not be migrated cleanly.
     pub unsupported_mixed_conditions: bool,
+    /// Whether localized layouts contain shapes the Citum schema cannot preserve.
+    pub unsupported_localized_layouts: bool,
 }
 
 /// Position-specific citation overrides.
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct CitationPositionOverrides {
     /// Subsequent citation override.
     pub subsequent: Option<Vec<TemplateComponent>>,
@@ -49,6 +59,21 @@ pub struct CitationPositionOverrides {
 /// `docs/specs/OUTPUT_DRIVEN_TEMPLATE_SYNTHESIS.md`. Fixing its output quality is valid work
 /// until then. XML *attribute/options* extraction is permanent and separate from this.
 pub fn compile_from_xml(
+    legacy_style: &csl_legacy::model::Style,
+    options: &mut citum_schema::options::Config,
+    enable_provenance: bool,
+    tracker: &ProvenanceTracker,
+) -> XmlCompilationOutput {
+    let mut output = compile_single_layouts(legacy_style, options, enable_provenance, tracker);
+    let (bibliography_locales, citation_locales, unsupported_localized_layouts) =
+        compile_localized_layouts(legacy_style, options, enable_provenance, tracker, &output);
+    output.bibliography_locales = bibliography_locales;
+    output.citation_locales = citation_locales;
+    output.unsupported_localized_layouts = unsupported_localized_layouts;
+    output
+}
+
+fn compile_single_layouts(
     legacy_style: &csl_legacy::model::Style,
     options: &mut citum_schema::options::Config,
     enable_provenance: bool,
@@ -182,10 +207,211 @@ pub fn compile_from_xml(
 
     XmlCompilationOutput {
         bibliography: new_bib,
+        bibliography_locales: None,
         type_templates: type_templates_opt,
         citation: new_cit,
+        citation_locales: None,
         citation_overrides: citation_position_overrides,
         unsupported_mixed_conditions,
+        unsupported_localized_layouts: false,
+    }
+}
+
+fn compile_localized_layouts(
+    legacy_style: &csl_legacy::model::Style,
+    options: &citum_schema::options::Config,
+    enable_provenance: bool,
+    tracker: &ProvenanceTracker,
+    fallback: &XmlCompilationOutput,
+) -> (
+    Option<Vec<LocalizedTemplateSpec>>,
+    Option<Vec<LocalizedTemplateSpec>>,
+    bool,
+) {
+    let mut unsupported = false;
+    let bibliography_locales = legacy_style.bibliography.as_ref().and_then(|bibliography| {
+        (!bibliography.localized_layouts.is_empty()).then(|| {
+            bibliography
+                .localized_layouts
+                .iter()
+                .map(|localized| {
+                    if localized.locales.is_empty() {
+                        return localized_spec(localized, fallback.bibliography.clone());
+                    }
+
+                    let mut branch_style = legacy_style.clone();
+                    if let Some(branch_bibliography) = branch_style.bibliography.as_mut() {
+                        branch_bibliography.layout = localized.layout.clone();
+                        branch_bibliography.localized_layouts.clear();
+                    }
+                    branch_style.citation.localized_layouts.clear();
+                    let mut branch_options = options.clone();
+                    let branch = compile_single_layouts(
+                        &branch_style,
+                        &mut branch_options,
+                        enable_provenance,
+                        tracker,
+                    );
+                    unsupported |=
+                        !layout_metadata_matches(&localized.layout, &bibliography.layout)
+                            || explicit_type_templates_differ(
+                                legacy_style,
+                                &localized.layout,
+                                &bibliography.layout,
+                                branch.type_templates.as_ref(),
+                                fallback.type_templates.as_ref(),
+                            );
+                    localized_spec(localized, branch.bibliography)
+                })
+                .collect()
+        })
+    });
+
+    let citation_locales = (!legacy_style.citation.localized_layouts.is_empty()).then(|| {
+        legacy_style
+            .citation
+            .localized_layouts
+            .iter()
+            .map(|localized| {
+                if localized.locales.is_empty() {
+                    return localized_spec(localized, fallback.citation.clone());
+                }
+
+                let mut branch_style = legacy_style.clone();
+                branch_style.citation.layout = localized.layout.clone();
+                branch_style.citation.localized_layouts.clear();
+                if let Some(branch_bibliography) = branch_style.bibliography.as_mut() {
+                    branch_bibliography.localized_layouts.clear();
+                }
+                let mut branch_options = options.clone();
+                let branch = compile_single_layouts(
+                    &branch_style,
+                    &mut branch_options,
+                    enable_provenance,
+                    tracker,
+                );
+                unsupported |=
+                    !layout_metadata_matches(&localized.layout, &legacy_style.citation.layout)
+                        || branch.citation_overrides != fallback.citation_overrides
+                        || branch.unsupported_mixed_conditions;
+                localized_spec(localized, branch.citation)
+            })
+            .collect()
+    });
+
+    (bibliography_locales, citation_locales, unsupported)
+}
+
+fn localized_spec(
+    localized: &csl_legacy::model::LocalizedLayout,
+    template: Vec<TemplateComponent>,
+) -> LocalizedTemplateSpec {
+    let is_default = localized.locales.is_empty();
+    LocalizedTemplateSpec {
+        locale: (!is_default).then(|| localized.locales.clone()),
+        default: is_default.then_some(true),
+        template,
+        unknown_fields: std::collections::BTreeMap::new(),
+    }
+}
+
+fn layout_metadata_matches(
+    left: &csl_legacy::model::Layout,
+    right: &csl_legacy::model::Layout,
+) -> bool {
+    left.prefix == right.prefix && left.suffix == right.suffix && left.delimiter == right.delimiter
+}
+
+fn explicit_type_templates_differ(
+    style: &csl_legacy::model::Style,
+    localized: &csl_legacy::model::Layout,
+    fallback: &csl_legacy::model::Layout,
+    localized_templates: Option<&TypeTemplateMap>,
+    fallback_templates: Option<&TypeTemplateMap>,
+) -> bool {
+    let mut types = explicit_layout_types(style, localized);
+    types.extend(explicit_layout_types(style, fallback));
+    types.into_iter().any(|item_type| {
+        matching_type_template(localized_templates, &item_type)
+            != matching_type_template(fallback_templates, &item_type)
+    })
+}
+
+fn matching_type_template<'a>(
+    templates: Option<&'a TypeTemplateMap>,
+    item_type: &str,
+) -> Option<&'a Vec<TemplateComponent>> {
+    templates.and_then(|templates| {
+        templates
+            .iter()
+            .find_map(|(selector, template)| selector.matches(item_type).then_some(template))
+    })
+}
+
+fn explicit_layout_types(
+    style: &csl_legacy::model::Style,
+    layout: &csl_legacy::model::Layout,
+) -> BTreeSet<String> {
+    let mut types = BTreeSet::new();
+    let mut visited_macros = HashSet::new();
+    collect_explicit_types(style, &layout.children, &mut visited_macros, &mut types);
+    types
+}
+
+fn collect_explicit_types(
+    style: &csl_legacy::model::Style,
+    nodes: &[csl_legacy::model::CslNode],
+    visited_macros: &mut HashSet<String>,
+    types: &mut BTreeSet<String>,
+) {
+    use csl_legacy::model::CslNode;
+
+    for node in nodes {
+        match node {
+            CslNode::Text(text) => {
+                if let Some(macro_name) = text.macro_name.as_ref()
+                    && visited_macros.insert(macro_name.clone())
+                    && let Some(macro_definition) = style
+                        .macros
+                        .iter()
+                        .find(|candidate| candidate.name == *macro_name)
+                {
+                    collect_explicit_types(
+                        style,
+                        &macro_definition.children,
+                        visited_macros,
+                        types,
+                    );
+                }
+            }
+            CslNode::Group(group) => {
+                collect_explicit_types(style, &group.children, visited_macros, types);
+            }
+            CslNode::Names(names) => {
+                collect_explicit_types(style, &names.children, visited_macros, types);
+            }
+            CslNode::Substitute(substitute) => {
+                collect_explicit_types(style, &substitute.children, visited_macros, types);
+            }
+            CslNode::Choose(choose) => {
+                for branch in
+                    std::iter::once(&choose.if_branch).chain(choose.else_if_branches.iter())
+                {
+                    if let Some(type_names) = branch.type_.as_deref() {
+                        types.extend(type_names.split_whitespace().map(str::to_owned));
+                    }
+                    collect_explicit_types(style, &branch.children, visited_macros, types);
+                }
+                if let Some(else_branch) = choose.else_branch.as_deref() {
+                    collect_explicit_types(style, else_branch, visited_macros, types);
+                }
+            }
+            CslNode::Date(_)
+            | CslNode::Label(_)
+            | CslNode::Number(_)
+            | CslNode::Name(_)
+            | CslNode::EtAl(_) => {}
+        }
     }
 }
 

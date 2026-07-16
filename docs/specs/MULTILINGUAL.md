@@ -232,6 +232,38 @@ that combine more than two views.  Segments whose resolved text is empty or iden
 previous segment are silently skipped (dedup), so missing transliterations do not produce
 duplicate text.
 
+### 2.4 CSL-M localized layouts
+
+CSL-M may provide an ordered series of `<layout locale="…">` branches followed
+by one unscoped fallback layout. Migration preserves that order as `locales`
+on the citation or bibliography section:
+
+```yaml
+citation:
+  locales:
+    - locale: [en, en-US]
+      template:
+        - title: primary
+    - locale: [zh-CN]
+      template:
+        - contributor: author
+    - default: true
+      template:
+        - identifier: cstr
+```
+
+Resolution tries the exact BCP 47 tag, then its primary language, then the
+explicit default branch. A selected branch also establishes the rendering
+locale for localized terms and dates. Conventional CSL with one unscoped
+layout continues to use the ordinary `template` field.
+
+The migration is intentionally narrow. Locale-specific layout wrappers,
+citation-position overrides, or type-variant structures cannot be represented
+independently inside a localized template and produce the stable
+`unsupported-localized-layout-shape` migration diagnostic. Shared type
+variants remain valid because Citum applies them after selecting the localized
+branch while retaining its rendering locale.
+
 ## 3. Processor Logic
 
 ### 3.1 Value Resolution

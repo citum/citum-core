@@ -21,6 +21,191 @@ use csl_legacy::{
 use roxmltree::Document;
 
 #[test]
+fn compile_from_xml_emits_ordered_localized_templates_with_default() {
+    let legacy_style = parse_legacy_style(
+        r#"
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="in-text">
+  <info><title>localized-test</title><id>https://example.org/localized-test</id></info>
+  <citation>
+    <layout locale="en-US"><text variable="title"/></layout>
+    <layout locale="zh-CN"><text variable="publisher"/></layout>
+    <layout><text variable="DOI"/></layout>
+  </citation>
+  <bibliography>
+    <layout locale="en-US"><text variable="title"/></layout>
+    <layout locale="zh-CN"><text variable="publisher"/></layout>
+    <layout><text variable="DOI"/></layout>
+  </bibliography>
+</style>
+"#,
+    );
+    let mut options = citum_schema::options::Config::default();
+    let tracker = citum_migrate::provenance::ProvenanceTracker::new(false);
+
+    let output = compilation::compile_from_xml(&legacy_style, &mut options, false, &tracker);
+
+    let citation_locales = output
+        .citation_locales
+        .clone()
+        .expect("citation locale branches should be emitted");
+    assert_eq!(citation_locales.len(), 3);
+    assert_eq!(
+        citation_locales
+            .first()
+            .and_then(|branch| branch.locale.as_deref()),
+        Some(&["en-US".to_string()][..])
+    );
+    assert_eq!(
+        citation_locales
+            .get(1)
+            .and_then(|branch| branch.locale.as_deref()),
+        Some(&["zh-CN".to_string()][..])
+    );
+    assert_eq!(
+        citation_locales.get(2).and_then(|branch| branch.default),
+        Some(true)
+    );
+    let citation = citum_schema::CitationSpec {
+        template: Some(output.citation.clone()),
+        locales: Some(citation_locales),
+        ..Default::default()
+    };
+    assert_eq!(
+        citation
+            .resolve_localized_template(Some("en-US"))
+            .expect("exact locale should resolve")
+            .locale
+            .as_deref(),
+        Some("en-US")
+    );
+    assert_eq!(
+        citation
+            .resolve_localized_template(Some("en-GB"))
+            .expect("primary language should resolve")
+            .locale
+            .as_deref(),
+        Some("en-US")
+    );
+    assert_eq!(
+        citation
+            .resolve_localized_template(Some("fr-FR"))
+            .expect("default branch should resolve")
+            .locale,
+        None
+    );
+    assert_eq!(
+        output
+            .bibliography_locales
+            .as_ref()
+            .expect("bibliography locale branches should be emitted")
+            .len(),
+        3
+    );
+    assert!(!output.unsupported_localized_layouts);
+}
+
+#[test]
+fn compile_from_xml_keeps_identical_localized_template_branch() {
+    let legacy_style = parse_legacy_style(
+        r#"
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="in-text">
+  <info><title>identical-test</title><id>https://example.org/identical-test</id></info>
+  <citation>
+    <layout locale="zh-CN"><text variable="title"/></layout>
+    <layout><text variable="title"/></layout>
+  </citation>
+</style>
+"#,
+    );
+    let mut options = citum_schema::options::Config::default();
+    let tracker = citum_migrate::provenance::ProvenanceTracker::new(false);
+
+    let output = compilation::compile_from_xml(&legacy_style, &mut options, false, &tracker);
+
+    assert_eq!(
+        output
+            .citation_locales
+            .as_ref()
+            .expect("identical locale branch should not be deduplicated")
+            .len(),
+        2
+    );
+}
+
+#[test]
+fn compile_from_xml_conventional_layout_has_no_localized_branches() {
+    let legacy_style = parse_legacy_style(
+        r#"
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="in-text">
+  <info><title>conventional-test</title><id>https://example.org/conventional-test</id></info>
+  <citation><layout><text variable="title"/></layout></citation>
+</style>
+"#,
+    );
+    let mut options = citum_schema::options::Config::default();
+    let tracker = citum_migrate::provenance::ProvenanceTracker::new(false);
+
+    let output = compilation::compile_from_xml(&legacy_style, &mut options, false, &tracker);
+
+    assert!(output.citation_locales.is_none());
+    assert!(output.bibliography_locales.is_none());
+    assert!(!output.unsupported_localized_layouts);
+}
+
+#[test]
+fn compile_from_xml_diagnoses_locale_specific_layout_wrapper() {
+    let legacy_style = parse_legacy_style(
+        r#"
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="in-text">
+  <info><title>wrapper-test</title><id>https://example.org/wrapper-test</id></info>
+  <citation>
+    <layout locale="zh-CN" prefix="（" suffix="）"><text variable="title"/></layout>
+    <layout prefix="(" suffix=")"><text variable="title"/></layout>
+  </citation>
+</style>
+"#,
+    );
+    let mut options = citum_schema::options::Config::default();
+    let tracker = citum_migrate::provenance::ProvenanceTracker::new(false);
+
+    let output = compilation::compile_from_xml(&legacy_style, &mut options, false, &tracker);
+
+    assert!(output.unsupported_localized_layouts);
+}
+
+#[test]
+fn compile_from_xml_diagnoses_locale_specific_type_variant() {
+    let legacy_style = parse_legacy_style(
+        r#"
+<style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="in-text">
+  <info><title>type-variant-test</title><id>https://example.org/type-variant-test</id></info>
+  <citation><layout><text variable="title"/></layout></citation>
+  <bibliography>
+    <layout locale="zh-CN">
+      <choose>
+        <if type="book"><text variable="publisher"/></if>
+        <else><text variable="title"/></else>
+      </choose>
+    </layout>
+    <layout>
+      <choose>
+        <if type="book"><text variable="title"/></if>
+        <else><text variable="title"/></else>
+      </choose>
+    </layout>
+  </bibliography>
+</style>
+"#,
+    );
+    let mut options = citum_schema::options::Config::default();
+    let tracker = citum_migrate::provenance::ProvenanceTracker::new(false);
+
+    let output = compilation::compile_from_xml(&legacy_style, &mut options, false, &tracker);
+
+    assert!(output.unsupported_localized_layouts);
+}
+
+#[test]
 fn author_date_locator_prefers_group_delimiter() {
     let layout = Layout {
         prefix: None,

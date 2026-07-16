@@ -592,6 +592,7 @@ impl Upsampler {
 
     fn map_variable(&self, s: &str) -> Option<Variable> {
         match s {
+            "CSTR" => Some(Variable::Identifier("cstr".to_string())),
             "title" => Some(Variable::Title),
             "container-title" => Some(Variable::ContainerTitle),
             "collection-title" => Some(Variable::CollectionTitle),

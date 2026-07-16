@@ -246,6 +246,23 @@ pub struct Reference {
     pub extra: HashMap<String, serde_json::Value>,
 }
 
+/// Machine-readable diagnostic produced while parsing Zotero Extra lines.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "code", rename_all = "kebab-case")]
+pub enum NoteFieldDiagnostic {
+    /// Conflicting values were supplied for one supplementary identifier.
+    ConflictingSupplementaryIdentifier {
+        /// CSL-JSON item identifier carrying the conflicting values.
+        item_id: String,
+        /// Canonical Citum supplementary-identifier name.
+        identifier: String,
+        /// Value retained after applying source precedence.
+        kept: String,
+        /// Distinct lower-precedence values that were ignored.
+        ignored: Vec<String>,
+    },
+}
+
 /// A name (person or organization).
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Default)]
 pub struct Name {
@@ -480,14 +497,29 @@ impl Reference {
     /// 5. Extract type, dates, names, and strings to appropriate fields
     /// 6. Rebuild note with only unrecognized/unparsed lines
     pub fn parse_note_field_hacks(&mut self) {
+        let _ = self.parse_note_field_hacks_with_diagnostics();
+    }
+
+    /// Parse structured CSL variables and return any recoverable conflicts.
+    ///
+    /// In addition to ordinary citeproc-js note-field variables, this accepts
+    /// the CSL-M `CSTR` and Zotero Better BibTeX `tex.cstr` spellings. Both are
+    /// normalized into the canonical `CSTR` entry in [`Reference::extra`]. A
+    /// direct `CSTR` value takes precedence over `tex.cstr`; identical values
+    /// are accepted without a diagnostic.
+    #[must_use]
+    pub fn parse_note_field_hacks_with_diagnostics(&mut self) -> Vec<NoteFieldDiagnostic> {
+        let (mut direct_cstr, mut tex_cstr) = take_cstr_extra_values(&mut self.extra);
         let note = match &self.note {
             Some(n) if !n.is_empty() => n.clone(),
-            _ => return,
+            _ => {
+                return finish_cstr_extraction(self, direct_cstr, tex_cstr);
+            }
         };
 
         let lines: Vec<&str> = note.lines().collect();
         if lines.is_empty() {
-            return;
+            return finish_cstr_extraction(self, direct_cstr, tex_cstr);
         }
 
         let mut parsed_indices = HashSet::new();
@@ -497,6 +529,17 @@ impl Reference {
 
             // Skip blank lines
             if trimmed.is_empty() {
+                continue;
+            }
+
+            if let Some((source, value)) = parse_cstr_key_value(trimmed) {
+                if !value.is_empty() {
+                    match source {
+                        CstrSource::Direct => direct_cstr.push(value.to_string()),
+                        CstrSource::Tex => tex_cstr.push(value.to_string()),
+                    }
+                }
+                parsed_indices.insert(idx);
                 continue;
             }
 
@@ -543,6 +586,98 @@ impl Reference {
         } else {
             self.note = Some(remaining_lines.join("\n"));
         }
+
+        finish_cstr_extraction(self, direct_cstr, tex_cstr)
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum CstrSource {
+    Direct,
+    Tex,
+}
+
+fn parse_cstr_key_value(line: &str) -> Option<(CstrSource, &str)> {
+    let (key, value) = line.split_once(':')?;
+    let source = if key.eq_ignore_ascii_case("CSTR") {
+        CstrSource::Direct
+    } else if key.eq_ignore_ascii_case("tex.cstr") {
+        CstrSource::Tex
+    } else {
+        return None;
+    };
+    Some((source, value.trim()))
+}
+
+fn take_cstr_extra_values(
+    extra: &mut HashMap<String, serde_json::Value>,
+) -> (Vec<String>, Vec<String>) {
+    let mut keys = extra
+        .keys()
+        .filter(|key| key.eq_ignore_ascii_case("CSTR") || key.eq_ignore_ascii_case("tex.cstr"))
+        .cloned()
+        .collect::<Vec<_>>();
+    keys.sort_by_key(|key| {
+        let precedence = if key == "CSTR" {
+            0
+        } else if key.eq_ignore_ascii_case("CSTR") {
+            1
+        } else {
+            2
+        };
+        (precedence, key.clone())
+    });
+
+    let mut direct = Vec::new();
+    let mut tex = Vec::new();
+    for key in keys {
+        let Some(value) = extra.remove(&key).and_then(|value| match value {
+            serde_json::Value::String(value) => Some(value),
+            _ => None,
+        }) else {
+            continue;
+        };
+        if value.trim().is_empty() {
+            continue;
+        }
+        if key.eq_ignore_ascii_case("CSTR") {
+            direct.push(value.trim().to_string());
+        } else {
+            tex.push(value.trim().to_string());
+        }
+    }
+    (direct, tex)
+}
+
+fn finish_cstr_extraction(
+    reference: &mut Reference,
+    direct: Vec<String>,
+    tex: Vec<String>,
+) -> Vec<NoteFieldDiagnostic> {
+    let Some(kept) = direct.first().or_else(|| tex.first()).cloned() else {
+        return Vec::new();
+    };
+    reference
+        .extra
+        .insert("CSTR".to_string(), serde_json::Value::String(kept.clone()));
+
+    let mut ignored = direct
+        .iter()
+        .chain(&tex)
+        .filter(|value| *value != &kept)
+        .cloned()
+        .collect::<Vec<_>>();
+    ignored.sort();
+    ignored.dedup();
+    if ignored.is_empty() {
+        Vec::new()
+    } else {
+        vec![NoteFieldDiagnostic::ConflictingSupplementaryIdentifier {
+            item_id: reference.id.clone(),
+            identifier: "cstr".to_string(),
+            kept,
+            ignored,
+        }]
     }
 }
 
@@ -1326,5 +1461,96 @@ mod tests {
                 .unwrap_or("")
                 .contains("some unrecognized prose line")
         );
+    }
+
+    #[test]
+    fn cstr_note_field_prefers_direct_value_and_reports_conflict() {
+        let mut reference = Reference {
+            id: "preprint-1".to_string(),
+            ref_type: "article".to_string(),
+            note: Some("tex.cstr: 32012.legacy\nCSTR: 32012.direct\nfree-form note".to_string()),
+            ..Default::default()
+        };
+
+        let diagnostics = reference.parse_note_field_hacks_with_diagnostics();
+
+        assert_eq!(
+            reference
+                .extra
+                .get("CSTR")
+                .and_then(serde_json::Value::as_str),
+            Some("32012.direct")
+        );
+        assert_eq!(reference.note.as_deref(), Some("free-form note"));
+        assert_eq!(
+            diagnostics,
+            vec![NoteFieldDiagnostic::ConflictingSupplementaryIdentifier {
+                item_id: "preprint-1".to_string(),
+                identifier: "cstr".to_string(),
+                kept: "32012.direct".to_string(),
+                ignored: vec!["32012.legacy".to_string()],
+            }]
+        );
+    }
+
+    #[test]
+    fn tex_cstr_note_field_is_case_insensitive_and_canonicalized() {
+        let mut reference = Reference {
+            id: "preprint-2".to_string(),
+            ref_type: "article".to_string(),
+            note: Some("TeX.CsTr: 32012.tex".to_string()),
+            ..Default::default()
+        };
+
+        let diagnostics = reference.parse_note_field_hacks_with_diagnostics();
+
+        assert!(diagnostics.is_empty());
+        assert_eq!(
+            reference
+                .extra
+                .get("CSTR")
+                .and_then(serde_json::Value::as_str),
+            Some("32012.tex")
+        );
+        assert!(reference.note.is_none());
+    }
+
+    #[test]
+    fn identical_cstr_spellings_are_quiet() {
+        let mut reference = Reference {
+            id: "preprint-3".to_string(),
+            ref_type: "article".to_string(),
+            note: Some("cstr: 32012.same\nTEX.CSTR: 32012.same".to_string()),
+            ..Default::default()
+        };
+
+        let diagnostics = reference.parse_note_field_hacks_with_diagnostics();
+
+        assert!(diagnostics.is_empty());
+        assert_eq!(
+            reference
+                .extra
+                .get("CSTR")
+                .and_then(serde_json::Value::as_str),
+            Some("32012.same")
+        );
+    }
+
+    #[test]
+    fn unknown_dotted_extra_key_and_note_text_are_preserved() {
+        let mut reference = Reference {
+            id: "preprint-4".to_string(),
+            ref_type: "article".to_string(),
+            note: Some("custom.code: keep-me\nordinary note".to_string()),
+            ..Default::default()
+        };
+
+        reference.parse_note_field_hacks();
+
+        assert_eq!(
+            reference.note.as_deref(),
+            Some("custom.code: keep-me\nordinary note")
+        );
+        assert!(!reference.extra.contains_key("CSTR"));
     }
 }

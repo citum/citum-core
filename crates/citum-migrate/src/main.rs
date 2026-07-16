@@ -20,7 +20,7 @@ use citation_validate::validate_and_normalize_inferred_citations;
 use clap::Parser;
 use cli::{Args, FamilyCandidateMode};
 use output_plan::{
-    apply_family_candidate_routing, count_yaml_lines, log_migration_output_plan,
+    EvidenceDetails, apply_family_candidate_routing, count_yaml_lines, log_migration_output_plan,
     write_optional_evidence,
 };
 use runtime::{
@@ -100,14 +100,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &tracker,
     ));
 
-    if let Some(ref fallback) = xml_fallback
-        && fallback.unsupported_mixed_conditions
-    {
-        tracing::debug!(
-            "Warning: citation position branches could not be migrated cleanly for style {}. Falling back to base citation template only.",
-            legacy_style.info.id
-        );
-    }
+    warn_for_unsupported_layouts(xml_fallback.as_ref(), &legacy_style.info.id);
 
     log_template_sources(&resolved);
 
@@ -134,6 +127,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         lineage.apply_to_migrated_style(standalone_style)?
     };
     let emitted_lines = count_yaml_lines(&style)?;
+    let migration_diagnostics = migration_diagnostics(
+        cli.emit_evidence.is_some(),
+        &workspace_root,
+        xml_fallback.as_ref(),
+        &legacy_style.info.id,
+    )?;
 
     write_optional_evidence(
         &cli,
@@ -142,11 +141,54 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         emitted_lines,
         cli.minimize_wrapper,
         routing.audit,
-        measured_selection,
+        EvidenceDetails {
+            measured_selection,
+            diagnostics: migration_diagnostics,
+        },
     )?;
 
     output_style_and_debug(&style, cli.debug_variable.as_deref(), &tracker)?;
     Ok(())
+}
+
+fn migration_diagnostics(
+    evidence_requested: bool,
+    workspace_root: &Path,
+    xml_fallback: Option<&compilation::XmlCompilationOutput>,
+    style_id: &str,
+) -> Result<Vec<citum_migrate::evidence::MigrationDiagnostic>, Box<dyn std::error::Error>> {
+    if !evidence_requested {
+        return Ok(Vec::new());
+    }
+
+    let mut diagnostics =
+        citum_migrate::measured_citation::fixture_conversion_diagnostics(workspace_root)?;
+    if xml_fallback.is_some_and(|fallback| fallback.unsupported_localized_layouts) {
+        diagnostics.push(citum_migrate::evidence::MigrationDiagnostic {
+            code: "unsupported-localized-layout-shape".to_string(),
+            item_id: None,
+            message: format!(
+                "CSL-M localized layouts in {style_id} contain locale-specific wrapper, position, or type-variant shapes that Citum cannot preserve exactly"
+            ),
+        });
+    }
+    Ok(diagnostics)
+}
+
+fn warn_for_unsupported_layouts(
+    xml_fallback: Option<&compilation::XmlCompilationOutput>,
+    style_id: &str,
+) {
+    if xml_fallback.is_some_and(|fallback| fallback.unsupported_mixed_conditions) {
+        tracing::debug!(
+            "Warning: citation position branches could not be migrated cleanly for style {style_id}. Falling back to base citation template only."
+        );
+    }
+    if xml_fallback.is_some_and(|fallback| fallback.unsupported_localized_layouts) {
+        tracing::warn!(
+            "CSL-M localized layouts in {style_id} contain locale-specific wrapper, position, or type-variant shapes that Citum cannot preserve exactly"
+        );
+    }
 }
 
 fn apply_measured_selection_pipeline(
