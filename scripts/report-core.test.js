@@ -884,6 +884,22 @@ test('determineBenchmarkStatus returns pass/fail/ok/error based on threshold and
   assert.equal(determineBenchmarkStatus(failing, null), 'ok');
 });
 
+test('determineBenchmarkStatus judges conformance against adjusted counts when present, not raw', () => {
+  // A raw mismatch masked by a registered divergence (e.g. div-010) must count
+  // toward the gate — otherwise every registered divergence is purely
+  // decorative and never actually keeps a style's declared min_pass_rate green.
+  const maskedByDivergence = {
+    bibliography: { passed: 5, total: 10 },
+    citations: { passed: 0, total: 0 },
+    adjusted: {
+      bibliography: { passed: 10, total: 10 },
+      citations: { passed: 0, total: 0 },
+    },
+  };
+
+  assert.equal(determineBenchmarkStatus(maskedByDivergence, 1.0), 'pass');
+});
+
 test('comparison text helper supports both live-oracle and native-snapshot entry shapes', () => {
   assert.deepEqual(
     getComparisonEntryTexts({ oracle: 'benchmark text', citum: 'citum text' }),

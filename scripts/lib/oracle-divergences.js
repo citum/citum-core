@@ -15,6 +15,70 @@ const DIV_004_ID = 'div-004';
 const DIV_005_ID = 'div-005';
 const DIV_008_ID = 'div-008';
 const DIV_009_ID = 'div-009';
+const DIV_010_ID = 'div-010';
+
+// Mirrors the fixed 4-character table in `render::component::remap_to_latin_punctuation`
+// (crates/citum-engine/src/render/component.rs) and docs/specs/MULTILINGUAL.md §3.2a.
+const FULL_WIDTH_TO_LATIN_PUNCTUATION = [
+  [/：/g, ': '],
+  [/，/g, ', '],
+  [/（/g, '('],
+  [/）/g, ')'],
+];
+
+// Mirrors `is_latin_script_language` in crates/citum-engine/src/values/mod.rs.
+const NON_LATIN_SCRIPT_SUBTAGS = new Set([
+  'hans', 'hant', 'hani', 'jpan', 'kore', 'hang', 'cyrl', 'arab', 'hebr', 'grek', 'deva',
+]);
+const NON_LATIN_PRIMARY_LANGUAGES = new Set([
+  'zh', 'ja', 'ko', 'yue', 'wuu', 'nan', 'hak', 'cjy', 'cmn', 'hsn',
+  'ru', 'be', 'bg', 'mk', 'sr', 'uk',
+  'ar', 'fa', 'ur',
+  'he', 'yi',
+  'el',
+  'hi', 'mr', 'ne',
+]);
+
+/**
+ * Whether a BCP 47 language tag's script is Latin, for div-010 masking.
+ * An absent or unrecognized tag is treated as not Latin — masking requires
+ * positive evidence of a Latin-script item, mirroring the engine's gate.
+ */
+function isLatinScriptLanguage(lang) {
+  if (!lang) return false;
+  const subtags = String(lang).toLowerCase().split(/[-_]/);
+  const primary = subtags.shift();
+  if (!isMeaningfulLanguagePrimary(primary)) return false;
+
+  for (const subtag of subtags) {
+    if (subtag === 'latn') return true;
+    if (NON_LATIN_SCRIPT_SUBTAGS.has(subtag)) return false;
+  }
+
+  return !NON_LATIN_PRIMARY_LANGUAGES.has(primary);
+}
+
+function isMeaningfulLanguagePrimary(primary) {
+  return typeof primary === 'string'
+    && !['und', 'mul', 'zxx'].includes(primary)
+    && /^[a-z]{2,8}$/.test(primary);
+}
+
+/**
+ * Map CJK full-width delimiters to their Latin half-width equivalents, then
+ * collapse any resulting doubled space. Mirrors
+ * `render::component::remap_to_latin_punctuation` in the Rust engine.
+ */
+function mapFullWidthToLatinPunctuation(text) {
+  let mapped = String(text || '');
+  for (const [pattern, replacement] of FULL_WIDTH_TO_LATIN_PUNCTUATION) {
+    mapped = mapped.replace(pattern, replacement);
+  }
+  while (mapped.includes('  ')) {
+    mapped = mapped.replace('  ', ' ');
+  }
+  return mapped;
+}
 
 function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -318,6 +382,49 @@ function explainCitationMismatchFromDiv005(citationEntry, citationFixture, testI
   };
 }
 
+/**
+ * div-010: GB/T-style bilingual styles hardcode CJK full-width delimiters
+ * (：，（）) for every item, including Latin-script references, where GB/T
+ * practice is Latin half-width punctuation. citeproc-js reproduces the same
+ * hardcoded full-width punctuation, so byte-parity does not catch this —
+ * see docs/specs/MULTILINGUAL.md §3.2a and csl26-fn9x. Masks a mismatch only
+ * when the item(s) are Latin-script and the delta is punctuation-only.
+ */
+function explainCitationMismatchFromDiv010(citationEntry, citationFixture, testItems, divergenceRule) {
+  if (!citationEntry || citationEntry.match || !citationFixture || !divergenceRule) {
+    return null;
+  }
+
+  const itemIds = (citationFixture.items || []).map((item) => item.id).filter(Boolean);
+  if (itemIds.length === 0 || !itemIds.every((id) => isLatinScriptLanguage(testItems[id]?.language))) {
+    return null;
+  }
+
+  const normalizedOracle = mapFullWidthToLatinPunctuation(citationEntry.oracle);
+  const comparison = compareText(normalizedOracle, citationEntry.citum);
+  if (!comparison.match || comparison.caseMismatch) {
+    return null;
+  }
+
+  return { divergenceId: DIV_010_ID, tag: 'latin-script-punctuation-localization', itemIds };
+}
+
+function explainBibliographyMismatchFromDiv010(entry, testItems, divergenceRule) {
+  if (!entry || entry.match || !divergenceRule) return null;
+  const ref = testItems[entry.id];
+  if (!ref || !isLatinScriptLanguage(ref.language)) return null;
+
+  const normalizedOracle = mapFullWidthToLatinPunctuation(entry.oracle);
+  const comparison = compareText(normalizedOracle, entry.citum);
+  if (!comparison.match || comparison.caseMismatch) return null;
+
+  return {
+    divergenceId: DIV_010_ID,
+    tag: 'latin-script-punctuation-localization',
+    itemIds: [entry.id],
+  };
+}
+
 function explainBibliographyMismatchFromDiv009(entry, testItems, divergenceRule) {
   if (!entry || entry.match || !divergenceRule) return null;
   const ref = testItems[entry.id];
@@ -330,7 +437,7 @@ function explainBibliographyMismatchFromDiv009(entry, testItems, divergenceRule)
   return { divergenceId: DIV_009_ID, tag: 'duplicate-url-identifier-tail', itemIds: [entry.id] };
 }
 
-function buildAdjustedOracleResult(rawResults, testCitations, testItems, divergenceInfo, div005Rule, div008Info, div009Rule) {
+function buildAdjustedOracleResult(rawResults, testCitations, testItems, divergenceInfo, div005Rule, div008Info, div009Rule, div010Rule) {
   const adjustedCitationEntries = (rawResults.citations?.entries || []).map((entry, index) => {
     const div004Adjustment = explainCitationMismatchFromDiv004(
       entry,
@@ -348,7 +455,13 @@ function buildAdjustedOracleResult(rawResults, testCitations, testItems, diverge
       testCitations[index],
       div008Info
     );
-    const appliedDivergence = div004Adjustment || div005Adjustment || div008Adjustment;
+    const div010Adjustment = explainCitationMismatchFromDiv010(
+      entry,
+      testCitations[index],
+      testItems,
+      div010Rule
+    );
+    const appliedDivergence = div004Adjustment || div005Adjustment || div008Adjustment || div010Adjustment;
     return {
       ...entry,
       rawMatch: entry.match,
@@ -360,9 +473,13 @@ function buildAdjustedOracleResult(rawResults, testCitations, testItems, diverge
   const adjustedCitationPassed = adjustedCitationEntries.filter((entry) => entry.match).length;
   const adjustedCitationTotal = rawResults.citations?.total || adjustedCitationEntries.length;
   const adjustedBibliographyEntries = (rawResults.bibliography?.entries || []).map((entry) => {
-    const appliedDivergence = explainBibliographyMismatchFromDiv009(entry, testItems, div009Rule);
+    const div009Adjustment = explainBibliographyMismatchFromDiv009(entry, testItems, div009Rule);
+    const div010Adjustment = explainBibliographyMismatchFromDiv010(entry, testItems, div010Rule);
+    const appliedDivergence = div009Adjustment || div010Adjustment;
     return { ...entry, rawMatch: entry.match, match: entry.match || Boolean(appliedDivergence), appliedDivergence };
   });
+  const adjustedBibliographyPassed = adjustedBibliographyEntries.filter((entry) => entry.match).length;
+  const adjustedBibliographyTotal = rawResults.bibliography?.total || adjustedBibliographyEntries.length;
   const divergenceSummary = {};
 
   if (divergenceInfo) {
@@ -413,6 +530,29 @@ function buildAdjustedOracleResult(rawResults, testCitations, testItems, diverge
     divergenceSummary[DIV_009_ID] = { scopes: div009Rule.scopes || [], tags: div009Rule.tags || [], note: div009Rule.note || null, adjustedBibliography: div009Adjustments.length, itemIds: [...new Set(div009Adjustments.flatMap((entry) => entry.itemIds || []))] };
   }
 
+  const div010CitationAdjustments = adjustedCitationEntries
+    .map((entry) => entry.appliedDivergence)
+    .filter((entry) => entry?.divergenceId === DIV_010_ID);
+  const div010BibliographyAdjustments = adjustedBibliographyEntries
+    .map((entry) => entry.appliedDivergence)
+    .filter((entry) => entry?.divergenceId === DIV_010_ID);
+  if (div010Rule && (div010CitationAdjustments.length > 0 || div010BibliographyAdjustments.length > 0)) {
+    divergenceSummary[DIV_010_ID] = {
+      scopes: div010Rule.scopes || [],
+      tags: div010Rule.tags || [],
+      note: div010Rule.note || null,
+      adjustedCitations: div010CitationAdjustments.length,
+      adjustedBibliography: div010BibliographyAdjustments.length,
+      itemIds: [
+        ...new Set(
+          [...div010CitationAdjustments, ...div010BibliographyAdjustments].flatMap(
+            (entry) => entry.itemIds || []
+          )
+        ),
+      ],
+    };
+  }
+
   return {
     citations: {
       ...(rawResults.citations || {}),
@@ -422,6 +562,8 @@ function buildAdjustedOracleResult(rawResults, testCitations, testItems, diverge
     },
     bibliography: {
       ...(rawResults.bibliography || {}),
+      passed: adjustedBibliographyPassed,
+      failed: Math.max(0, adjustedBibliographyTotal - adjustedBibliographyPassed),
       entries: adjustedBibliographyEntries,
     },
     divergenceSummary,
@@ -438,12 +580,15 @@ function attachRegisteredDivergenceAdjustments(rawResults, oracleBibliography, c
   const policy = loadVerificationPolicy();
   const div005Rule = resolveRegisteredDivergence(policy, DIV_005_ID);
   const div009Rule = resolveRegisteredDivergence(policy, DIV_009_ID);
+  const div010Rule = resolveRegisteredDivergence(policy, DIV_010_ID);
 
   if (!shouldInspectOrderDifference) {
     return {
       ...rawResults,
       bibliographyOrder: null,
-      adjusted: buildAdjustedOracleResult(rawResults, testCitations, testItems, null, div005Rule, null, div009Rule),
+      adjusted: buildAdjustedOracleResult(
+        rawResults, testCitations, testItems, null, div005Rule, null, div009Rule, div010Rule
+      ),
     };
   }
 
@@ -480,7 +625,7 @@ function attachRegisteredDivergenceAdjustments(rawResults, oracleBibliography, c
         }
       : null,
     adjusted: buildAdjustedOracleResult(
-      rawResults, testCitations, testItems, divergenceInfo, div005Rule, div008Info, div009Rule
+      rawResults, testCitations, testItems, divergenceInfo, div005Rule, div008Info, div009Rule, div010Rule
     ),
   };
 }
@@ -490,6 +635,7 @@ module.exports = {
   DIV_005_ID,
   DIV_008_ID,
   DIV_009_ID,
+  DIV_010_ID,
   attachRegisteredDivergenceAdjustments,
   buildAdjustedOracleResult,
   buildNumericLabelMap,
@@ -499,5 +645,9 @@ module.exports = {
   explainCitationMismatchFromDiv004,
   explainCitationMismatchFromDiv005,
   explainCitationMismatchFromDiv008,
+  explainCitationMismatchFromDiv010,
   explainBibliographyMismatchFromDiv009,
+  explainBibliographyMismatchFromDiv010,
+  isLatinScriptLanguage,
+  mapFullWidthToLatinPunctuation,
 };

@@ -25,6 +25,9 @@ const {
   detectDiv008OrderDifference,
   explainCitationMismatchFromDiv005,
   explainCitationMismatchFromDiv008,
+  explainCitationMismatchFromDiv010,
+  explainBibliographyMismatchFromDiv010,
+  isLatinScriptLanguage,
 } = require('./lib/oracle-divergences');
 const { loadVerificationPolicy, resolveRegisteredDivergence } = require('./lib/verification-policy');
 
@@ -328,6 +331,45 @@ test('registered divergence adjustments convert sort-derived numeric label drift
   );
 });
 
+test('registered divergence adjustments recompute the bibliography passed/failed aggregate, not just entries', () => {
+  // Regression guard: buildAdjustedOracleResult previously recomputed
+  // citations.passed/failed from adjusted entries but only spread the raw
+  // bibliography.passed/failed through unchanged, silently neutering every
+  // bibliography-scope divergence (div-009, div-010) for any consumer that
+  // reads the aggregate instead of walking entries by hand.
+  const rawResults = {
+    citations: { total: 0, passed: 0, failed: 0, entries: [] },
+    bibliography: {
+      total: 2,
+      passed: 1,
+      failed: 1,
+      entries: [
+        {
+          id: 'gbt-latin-book',
+          oracle: 'New York：Bantam Dell Publishing Group，1988.',
+          citum: 'New York: Bantam Dell Publishing Group, 1988.',
+          match: false,
+        },
+        {
+          id: 'gbt-other-book',
+          oracle: 'Alpha.',
+          citum: 'Alpha.',
+          match: true,
+        },
+      ],
+    },
+  };
+  const testItems = {
+    'gbt-latin-book': { id: 'gbt-latin-book', type: 'book', language: 'en-US' },
+    'gbt-other-book': { id: 'gbt-other-book', type: 'book', language: 'en-US' },
+  };
+
+  const adjusted = attachRegisteredDivergenceAdjustments(rawResults, [], [], testItems, []);
+
+  assert.equal(adjusted.adjusted.bibliography.passed, 2);
+  assert.equal(adjusted.adjusted.bibliography.failed, 0);
+});
+
 test('div-005 recognizes structured archival manuscript detail as an intentional citation divergence', () => {
   const policy = loadVerificationPolicy();
   const divergenceRule = resolveRegisteredDivergence(policy, 'div-005');
@@ -363,6 +405,114 @@ test('div-005 recognizes structured archival manuscript detail as an intentional
 
   assert.equal(adjustment?.divergenceId, 'div-005');
   assert.deepEqual(adjustment?.itemIds, ['dead-sea-scrolls']);
+});
+
+test('div-010 masks a Latin-script citation mismatch that is punctuation-only after remapping', () => {
+  const policy = loadVerificationPolicy();
+  const divergenceRule = resolveRegisteredDivergence(policy, 'div-010');
+  const entry = {
+    id: 'gbt-latin-cite',
+    oracle: '（Boobier，2020）',
+    citum: '(Boobier, 2020)',
+    match: false,
+  };
+  const citationFixture = { id: 'gbt-latin-cite', items: [{ id: 'gbt-latin-book' }] };
+  const testItems = {
+    'gbt-latin-book': { id: 'gbt-latin-book', type: 'book', language: 'en-US' },
+  };
+
+  const adjustment = explainCitationMismatchFromDiv010(entry, citationFixture, testItems, divergenceRule);
+
+  assert.equal(adjustment?.divergenceId, 'div-010');
+  assert.deepEqual(adjustment?.itemIds, ['gbt-latin-book']);
+});
+
+test('div-010 language detection rejects non-informative, private-use, and malformed tags', () => {
+  for (const language of ['und', 'mul', 'zxx', 'x-private', 'x-Latn', 'e', '1en', '123']) {
+    assert.equal(isLatinScriptLanguage(language), false, language);
+  }
+  assert.equal(isLatinScriptLanguage('en-US'), true);
+  assert.equal(isLatinScriptLanguage('zh-Latn'), true);
+});
+
+test('div-010 does not mask non-informative, private-use, or malformed language tags', () => {
+  const policy = loadVerificationPolicy();
+  const divergenceRule = resolveRegisteredDivergence(policy, 'div-010');
+  const entry = {
+    id: 'gbt-unknown-language-cite',
+    oracle: '（Boobier，2020）',
+    citum: '(Boobier, 2020)',
+    match: false,
+  };
+  const citationFixture = { id: entry.id, items: [{ id: 'gbt-unknown-language-book' }] };
+
+  for (const language of ['und', 'mul', 'zxx', 'x-private', 'x-Latn', 'e', '1en', '123']) {
+    const testItems = {
+      'gbt-unknown-language-book': { id: 'gbt-unknown-language-book', type: 'book', language },
+    };
+    assert.equal(
+      explainCitationMismatchFromDiv010(entry, citationFixture, testItems, divergenceRule),
+      null,
+      language
+    );
+  }
+});
+
+test('div-010 does not mask a CJK-script citation, even with the same full-width delta', () => {
+  const policy = loadVerificationPolicy();
+  const divergenceRule = resolveRegisteredDivergence(policy, 'div-010');
+  const entry = {
+    id: 'gbt-cjk-cite',
+    oracle: '（博伯尔，2023）',
+    citum: '（博伯尔，2023）',
+    match: false,
+  };
+  const citationFixture = { id: 'gbt-cjk-cite', items: [{ id: 'gbt-cjk-book' }] };
+  const testItems = {
+    'gbt-cjk-book': { id: 'gbt-cjk-book', type: 'book', language: 'zh-CN' },
+  };
+
+  const adjustment = explainCitationMismatchFromDiv010(entry, citationFixture, testItems, divergenceRule);
+
+  assert.equal(adjustment, null);
+});
+
+test('div-010 does not mask a Latin-script citation when the delta is not punctuation-only', () => {
+  const policy = loadVerificationPolicy();
+  const divergenceRule = resolveRegisteredDivergence(policy, 'div-010');
+  const entry = {
+    id: 'gbt-latin-cite-wrong-year',
+    oracle: '（Boobier，2020）',
+    citum: '(Boobier, 2021)',
+    match: false,
+  };
+  const citationFixture = { id: 'gbt-latin-cite-wrong-year', items: [{ id: 'gbt-latin-book' }] };
+  const testItems = {
+    'gbt-latin-book': { id: 'gbt-latin-book', type: 'book', language: 'en-US' },
+  };
+
+  const adjustment = explainCitationMismatchFromDiv010(entry, citationFixture, testItems, divergenceRule);
+
+  assert.equal(adjustment, null);
+});
+
+test('div-010 masks a Latin-script bibliography mismatch that is punctuation-only after remapping', () => {
+  const policy = loadVerificationPolicy();
+  const divergenceRule = resolveRegisteredDivergence(policy, 'div-010');
+  const entry = {
+    id: 'gbt-latin-book',
+    oracle: 'New York：Bantam Dell Publishing Group，1988.',
+    citum: 'New York: Bantam Dell Publishing Group, 1988.',
+    match: false,
+  };
+  const testItems = {
+    'gbt-latin-book': { id: 'gbt-latin-book', type: 'book', language: 'en-US' },
+  };
+
+  const adjustment = explainBibliographyMismatchFromDiv010(entry, testItems, divergenceRule);
+
+  assert.equal(adjustment?.divergenceId, 'div-010');
+  assert.deepEqual(adjustment?.itemIds, ['gbt-latin-book']);
 });
 
 test('registered divergence adjustments skip order inspection without failures', () => {
