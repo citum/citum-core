@@ -23,6 +23,24 @@ use super::*;
 use csl_legacy::csl_json::CSL_TYPES;
 use serde_json::json;
 
+#[test]
+fn circa_csl_dates_convert_to_approximate_edtf() {
+    let literal: EdtfString = csl_legacy::csl_json::DateVariable {
+        literal: Some("c1988".to_string()),
+        ..Default::default()
+    }
+    .into();
+    let structured: EdtfString = csl_legacy::csl_json::DateVariable {
+        date_parts: Some(vec![vec![1988]]),
+        circa: Some(true),
+        ..Default::default()
+    }
+    .into();
+
+    assert_eq!(literal.0, "1988~");
+    assert_eq!(structured.0, "1988~");
+}
+
 /// Build the minimal legacy reference the contract test converts for a
 /// given CSL type: an id, the type under test, a title, and an issued
 /// year. This is deliberately the *smallest* shape a real CSL-JSON export

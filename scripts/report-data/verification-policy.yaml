@@ -38,6 +38,15 @@ divergences:
       verification masks numeric citation labels that shift solely due to
       within-group reordering of same-family-name items, independent of the
       div-004 anonymous-item adjustment.
+  div-009:
+    scopes:
+      - bibliography
+    tags:
+      - normalized-tex-cstr
+      - duplicate-url-identifier-tail
+    note: Citum normalizes Zotero's tex.cstr alias to canonical CSTR. When the
+      same identifier is already embedded in the URL, citeproc-js omits the
+      canonical tail because it does not recognize the alias.
 
 styles:
   numeric-comp:

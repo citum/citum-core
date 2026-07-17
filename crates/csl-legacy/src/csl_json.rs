@@ -741,7 +741,10 @@ fn handle_date_variable(ref_obj: &mut Reference, key: &str, value: &str) {
     let date = parse_date_variable(value);
 
     match key {
-        "issued" if ref_obj.issued.is_none() => {
+        // A structured note-field interval is an explicit Zotero Extra
+        // override. Prefer it over a single issued date, which can be a
+        // lossy CSL export (for example a range end encoded as `season`).
+        "issued" if ref_obj.issued.is_none() || is_date_range(&date) => {
             ref_obj.issued = Some(date);
         }
         "accessed" if ref_obj.accessed.is_none() => {
@@ -756,6 +759,12 @@ fn handle_date_variable(ref_obj: &mut Reference, key: &str, value: &str) {
         }
         _ => {}
     }
+}
+
+fn is_date_range(date: &DateVariable) -> bool {
+    date.date_parts
+        .as_ref()
+        .is_some_and(|parts| parts.len() == 2)
 }
 
 /// Parse a date string into DateVariable.
@@ -1151,6 +1160,24 @@ mod tests {
         let date = DateVariable::year_month(2023, 6);
         assert_eq!(date.year_value(), Some(2023));
         assert_eq!(date.month_value(), Some(6));
+    }
+
+    #[test]
+    fn note_field_issued_range_overrides_lossy_top_level_date() {
+        let mut ref_obj = Reference {
+            id: "periodical-range".to_string(),
+            ref_type: "book".to_string(),
+            issued: Some(DateVariable::year(1957)),
+            note: Some("issued: 1957/1990".to_string()),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+
+        assert_eq!(
+            ref_obj.issued.and_then(|date| date.date_parts),
+            Some(vec![vec![1957], vec![1990]])
+        );
     }
 
     #[test]

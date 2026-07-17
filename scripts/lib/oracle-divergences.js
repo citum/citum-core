@@ -14,6 +14,7 @@ const {
 const DIV_004_ID = 'div-004';
 const DIV_005_ID = 'div-005';
 const DIV_008_ID = 'div-008';
+const DIV_009_ID = 'div-009';
 
 function escapeRegex(value) {
   return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -317,7 +318,19 @@ function explainCitationMismatchFromDiv005(citationEntry, citationFixture, testI
   };
 }
 
-function buildAdjustedOracleResult(rawResults, testCitations, testItems, divergenceInfo, div005Rule, div008Info) {
+function explainBibliographyMismatchFromDiv009(entry, testItems, divergenceRule) {
+  if (!entry || entry.match || !divergenceRule) return null;
+  const ref = testItems[entry.id];
+  const match = ref?.note?.match(/(?:^|\n)tex\.cstr:\s*([^\n\s]+)/i);
+  if (!match || !ref.URL?.includes(match[1])) return null;
+  const tail = `. CSTR:${match[1]}`;
+  if (!entry.citum?.endsWith(tail)) return null;
+  const comparison = compareText(entry.oracle, entry.citum.slice(0, -tail.length));
+  if (!comparison.match || comparison.caseMismatch) return null;
+  return { divergenceId: DIV_009_ID, tag: 'duplicate-url-identifier-tail', itemIds: [entry.id] };
+}
+
+function buildAdjustedOracleResult(rawResults, testCitations, testItems, divergenceInfo, div005Rule, div008Info, div009Rule) {
   const adjustedCitationEntries = (rawResults.citations?.entries || []).map((entry, index) => {
     const div004Adjustment = explainCitationMismatchFromDiv004(
       entry,
@@ -346,11 +359,10 @@ function buildAdjustedOracleResult(rawResults, testCitations, testItems, diverge
 
   const adjustedCitationPassed = adjustedCitationEntries.filter((entry) => entry.match).length;
   const adjustedCitationTotal = rawResults.citations?.total || adjustedCitationEntries.length;
-  const adjustedBibliographyEntries = (rawResults.bibliography?.entries || []).map((entry) => ({
-    ...entry,
-    rawMatch: entry.match,
-    match: entry.match,
-  }));
+  const adjustedBibliographyEntries = (rawResults.bibliography?.entries || []).map((entry) => {
+    const appliedDivergence = explainBibliographyMismatchFromDiv009(entry, testItems, div009Rule);
+    return { ...entry, rawMatch: entry.match, match: entry.match || Boolean(appliedDivergence), appliedDivergence };
+  });
   const divergenceSummary = {};
 
   if (divergenceInfo) {
@@ -394,6 +406,12 @@ function buildAdjustedOracleResult(rawResults, testCitations, testItems, diverge
       affectedIds: div008Info.affectedIds,
     };
   }
+  const div009Adjustments = adjustedBibliographyEntries
+    .map((entry) => entry.appliedDivergence)
+    .filter((entry) => entry?.divergenceId === DIV_009_ID);
+  if (div009Rule && div009Adjustments.length > 0) {
+    divergenceSummary[DIV_009_ID] = { scopes: div009Rule.scopes || [], tags: div009Rule.tags || [], note: div009Rule.note || null, adjustedBibliography: div009Adjustments.length, itemIds: [...new Set(div009Adjustments.flatMap((entry) => entry.itemIds || []))] };
+  }
 
   return {
     citations: {
@@ -419,12 +437,13 @@ function attachRegisteredDivergenceAdjustments(rawResults, oracleBibliography, c
 
   const policy = loadVerificationPolicy();
   const div005Rule = resolveRegisteredDivergence(policy, DIV_005_ID);
+  const div009Rule = resolveRegisteredDivergence(policy, DIV_009_ID);
 
   if (!shouldInspectOrderDifference) {
     return {
       ...rawResults,
       bibliographyOrder: null,
-      adjusted: buildAdjustedOracleResult(rawResults, testCitations, testItems, null, div005Rule),
+      adjusted: buildAdjustedOracleResult(rawResults, testCitations, testItems, null, div005Rule, null, div009Rule),
     };
   }
 
@@ -461,7 +480,7 @@ function attachRegisteredDivergenceAdjustments(rawResults, oracleBibliography, c
         }
       : null,
     adjusted: buildAdjustedOracleResult(
-      rawResults, testCitations, testItems, divergenceInfo, div005Rule, div008Info
+      rawResults, testCitations, testItems, divergenceInfo, div005Rule, div008Info, div009Rule
     ),
   };
 }
@@ -470,6 +489,7 @@ module.exports = {
   DIV_004_ID,
   DIV_005_ID,
   DIV_008_ID,
+  DIV_009_ID,
   attachRegisteredDivergenceAdjustments,
   buildAdjustedOracleResult,
   buildNumericLabelMap,
@@ -479,4 +499,5 @@ module.exports = {
   explainCitationMismatchFromDiv004,
   explainCitationMismatchFromDiv005,
   explainCitationMismatchFromDiv008,
+  explainBibliographyMismatchFromDiv009,
 };

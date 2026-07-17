@@ -1,7 +1,7 @@
 ---
 # csl26-ra71
 title: 'GB/T numeric wave-3: remaining structural gaps after zmod+49sj'
-status: in-progress
+status: completed
 type: task
 priority: normal
 tags:
@@ -10,7 +10,7 @@ tags:
     - multilingual
     - dates
 created_at: 2026-07-17T10:22:18Z
-updated_at: 2026-07-17T12:13:48Z
+updated_at: 2026-07-17T13:24:03Z
 ---
 
 Remaining ~9 genuine gaps in gb-t-7714-2025-numeric after csl26-zmod (structural long tail) and csl26-49sj (conditional number labels) both landed, bringing the upstream corpus to 190/203. Not counting the 4 ordinal-form entries (tracked separately, see csl26-g49a).
@@ -35,6 +35,13 @@ All style fixes below go in the shared hidden base, `crates/citum-schema-style/e
 
 ## Wave A — monograph metadata fidelity
 
-- [ ] Preserve monograph `volume-title`, map scale/dimensions, and preprint version through conversion and rendering.
-- [ ] Tune shared GB/T base templates for container volumes, volume titles, map metadata, and preprint versions.
+- [x] Preserve monograph `volume-title`, map scale/dimensions, and preprint version through conversion and rendering.
+- [x] Tune shared GB/T base templates for container volumes, volume titles, map metadata, and preprint versions.
 - [x] Regenerate schemas and verify the GB/T fidelity, quality, and Rust gates.
+
+## Summary of Changes
+
+- Converted CSL circa inputs to EDTF approximate dates and rendered GB/T dates with the required `c` marker.
+- Preserved structured note-field issued intervals and added GB/T closed-range endpoint wrapping.
+- Registered the normalized `tex.cstr` duplicate-tail difference as a verification divergence.
+- Deferred the container-editor author-substitution provenance gap to csl26-yhnr; ordinal editor-label rendering remains owned by csl26-g49a.
