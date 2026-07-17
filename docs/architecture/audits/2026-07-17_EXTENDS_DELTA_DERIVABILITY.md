@@ -86,6 +86,31 @@ Notable winners: `harvard-coventry-university` 0.69 → 0.92 over
    (`systemd-run --user --scope -p MemoryMax=6G`) at `--concurrency 1..2`
    until per-pair engine cleanup is added.
 
+## Addendum (same day): tier-0 auto-aliasing — negative result
+
+Executing `csl26-qe4e` tier 0 (auto-register pairs with exact-match rates
+1.0/1.0) failed its verification gate, and the failure is the finding:
+
+- The instrument's exact-match columns are computed on **normalized text**
+  (markup stripped). An independent raw-output check (citations +
+  bibliography, markup included, full expanded fixture set) found only
+  **1 of 90** candidate pairs byte-identical — the other 89 differ in
+  formatting-class output (e.g. `<i>` on container titles).
+- The single raw-identical pair, `oscola-journal-abbreviations → oscola`,
+  is itself unsafe: the variant's one extra `form="short"` is the
+  journal-abbreviation behavior, which the fixture set never exercises
+  (no abbreviation data on any reference item). Fixture-identical ≠
+  behaviorally identical.
+
+**Consequence:** there are currently **zero safely auto-registrable
+aliases**. Automated aliasing requires (a) markup-aware raw matching in the
+instrument, (b) fixture items that exercise abbreviation/short-form data,
+and (c) a declared-variant sniff (name/metadata) before any pair skips
+human review. The 1,674-candidate alias band remains real as a *screen*;
+the automation bar was simply set by normalized similarity, which is too
+weak. Folded into `csl26-qe4e` (revised tiers) and `csl26-10lt`
+(instrument work).
+
 ## Decision: expand the instrument; do not change migrate routing yet
 
 The measured profile (selective, high-value wins; negative mean under naive

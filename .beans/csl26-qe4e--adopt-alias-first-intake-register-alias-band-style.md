@@ -9,7 +9,9 @@ tags:
     - taxonomy
     - migrate
 created_at: 2026-07-17T18:00:12Z
-updated_at: 2026-07-17T20:51:39Z
+updated_at: 2026-07-17T20:59:34Z
+blocked_by:
+    - csl26-10lt
 ---
 
 ACTION ITEM from the 2026-07-17 delta-derivability measurement. 1,674 of 2,844 independent CSL styles (59%) render >=0.98-similar to an already-registered style (scripts/report-data/alias-candidates-band-registered-2026-07-17.tsv). For these, the correct intake is a registry alias in registry/default.yaml, NOT migration: zero YAML to maintain, instant coverage. Do in human-reviewed batches (top-similarity first, per csl26-b4h2 guardrails: no false positives at >=0.98 in reviewed batches). This converts the measurement into coverage: registry entries ~165 -> potentially ~1,800+, and shrinks the future migration surface to the 1,011 near-clone band (delta candidates, csl26-10lt) plus true standalones. Related: csl26-8x90 (checked-in consolidation), csl26-zik7 (compat inheritance view). Context: docs/architecture/audits/2026-07-17_EXTENDS_DELTA_DERIVABILITY.md
@@ -26,3 +28,15 @@ You don't. Blended similarity >=0.98 is a SCREEN, not an acceptance bar (exact-m
 Risk asymmetry: an alias is one registry line, trivially revertible, with a cheap escalation path (promote to delta wrapper on any reported divergence) - so the bar is 'no plausible difference flagged', not 'proven identical'.
 
 Instrument note: consider re-keying the band column on exact-match rates rather than blended similarity (fold into csl26-10lt).
+
+## Tier-0 execution result (2026-07-17): NEGATIVE - nothing registered
+
+Raw-output verification (markup included, full fixture set) reduced the 112 'exact' pairs to 1 byte-identical pair, and that one (oscola-journal-abbreviations -> oscola) is a fixture-blind semantic variant (extra form="short" = journal abbreviation behavior the fixture never exercises). Zero aliases were registered.
+
+Revised tier 0 prerequisites (blocked on csl26-10lt):
+- [ ] markup-aware raw exact-match columns in the instrument
+- [ ] fixture items carrying journalAbbreviation/short-form data
+- [ ] declared-variant sniff (candidate name/metadata vs target) before auto-accept
+- [ ] re-derive the auto-accept set and register with spot-check
+
+See audit addendum: docs/architecture/audits/2026-07-17_EXTENDS_DELTA_DERIVABILITY.md
