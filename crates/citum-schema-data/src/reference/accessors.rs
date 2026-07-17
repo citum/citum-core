@@ -403,6 +403,29 @@ impl InputReference {
         }
     }
 
+    /// Return an editor attached directly to this work, excluding an enclosing container's editor.
+    pub fn local_editor(&self) -> Option<Contributor> {
+        match &self.extension {
+            ClassExtension::Monograph(r) => {
+                collect_contributors_by_role(&r.contributors, &ContributorRole::Editor)
+                    .or_else(|| r.editor.clone())
+            }
+            ClassExtension::Collection(r) => {
+                collect_contributors_by_role(&r.contributors, &ContributorRole::Editor)
+                    .or_else(|| r.editor.clone())
+            }
+            ClassExtension::CollectionComponent(r) => {
+                collect_contributors_by_role(&r.contributors, &ContributorRole::Editor)
+            }
+            ClassExtension::Serial(r) => {
+                collect_contributors_by_role(&r.contributors, &ContributorRole::Editor)
+                    .or_else(|| r.editor.clone())
+            }
+            ClassExtension::Classic(r) => r.editor.clone(),
+            _ => None,
+        }
+    }
+
     /// Return the translator.
     pub fn translator(&self) -> Option<Contributor> {
         match &self.extension {
