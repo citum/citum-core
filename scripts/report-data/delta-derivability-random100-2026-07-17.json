@@ -1,0 +1,113 @@
+{
+  "generated": "2026-07-17T17:35:53.538Z",
+  "commit": "196da8b6",
+  "pairsFile": "/home/bruce/Code/citum/citum-core/scripts/report-data/alias-candidates-band-registered-2026-07-17.tsv",
+  "corpus": "random",
+  "sample": {
+    "seed": 20260610,
+    "requested": 100,
+    "population": 2844,
+    "strata": {
+      "author": 10,
+      "author-date": 1335,
+      "label": 3,
+      "note": 542,
+      "numeric": 954
+    },
+    "allocation": {
+      "author": 5,
+      "author-date": 40,
+      "label": 3,
+      "note": 19,
+      "numeric": 33
+    }
+  },
+  "bandDistribution": {
+    "alias": 1674,
+    "near-clone": 1011,
+    "other": 0
+  },
+  "counts": {
+    "pairsConsidered": 38,
+    "verdictCounts": {
+      "delta-expressible": 6,
+      "not-delta-expressible": 22,
+      "error": 10
+    },
+    "shareDeltaExpressibleExcludingErrors": 21.4,
+    "shareDeltaExpressibleOfAllConsidered": 15.8
+  },
+  "fidelityDelta": {
+    "n": 28,
+    "mean": -14.89,
+    "median": -10.93
+  },
+  "wrapperSize": {
+    "bytes": {
+      "n": 37,
+      "mean": 213,
+      "median": 205,
+      "min": 129,
+      "max": 331
+    },
+    "extraTopLevelKeys": {
+      "n": 37,
+      "mean": 1,
+      "median": 1,
+      "min": 1,
+      "max": 1
+    }
+  },
+  "errors": [
+    {
+      "candidate_id": "freshwater-crayfish",
+      "target_id": "international-journal-of-wildland-fire",
+      "detail": "standalone-oracle: oracle_error (Processor failed: \nError: template variant operation in `bibliography.type-variants[paper-conference]` matched no component\n)"
+    },
+    {
+      "candidate_id": "preslia",
+      "target_id": "international-journal-of-wildland-fire",
+      "detail": "standalone-oracle: oracle_error (Processor failed: \nError: template variant operation in `bibliography.type-variants[paper-conference]` matched no component\n)"
+    },
+    {
+      "candidate_id": "the-international-spectator",
+      "target_id": "international-journal-of-wildland-fire",
+      "detail": "standalone-oracle: oracle_error (Processor failed: \nError: template variant operation in `bibliography.type-variants[paper-conference]` matched no component\n)"
+    },
+    {
+      "candidate_id": "antarctic-science",
+      "target_id": "taylor-and-francis-council-of-science-editors-author-date",
+      "detail": "standalone-oracle: oracle_error (Processor failed: \nError: template variant operation in `bibliography.type-variants[entry-encyclopedia,manuscript]` matched no component\n)"
+    },
+    {
+      "candidate_id": "interkulturelle-germanistik-gottingen",
+      "target_id": "american-sociological-association",
+      "detail": "standalone-oracle: oracle_error (Processor failed: \nError: template variant operation in `bibliography.type-variants[article]` matched no component\n)"
+    },
+    {
+      "candidate_id": "journal-of-advertising-research",
+      "target_id": "american-marketing-association",
+      "detail": "standalone-oracle: oracle_error (Processor failed: \nError: template variant operation in `bibliography.type-variants[entry-encyclopedia,manuscript]` matched no component\n)"
+    },
+    {
+      "candidate_id": "journal-of-contemporary-water-research-and-education",
+      "target_id": "mhra-author-date-publisher-place",
+      "detail": "standalone-migrate: Error: Resolution(TemplateVariantAnchorNotFound { location: \"bibliography.type-variants[entry-dictionary]\" })"
+    },
+    {
+      "candidate_id": "china-information",
+      "target_id": "oscola-no-ibid",
+      "detail": "standalone-oracle: oracle_error (Processor failed: \nError: template variant operation in `bibliography.type-variants[thesis]` matched no component\n)"
+    },
+    {
+      "candidate_id": "stuttgart-media-university",
+      "target_id": "karger-journals-author-date",
+      "detail": "standalone-oracle: oracle_error (Processor failed: \nError: template variant operation in `bibliography.type-variants[patent]` matched no component\n)"
+    },
+    {
+      "candidate_id": "universite-de-sherbrooke-histoire",
+      "target_id": "chicago-notes-bibliography-17th-edition",
+      "detail": "standalone-oracle: oracle_error (Processor failed: \nError: template variant operation in `bibliography.type-variants[paper-conference]` matched no component\n)"
+    }
+  ]
+}
