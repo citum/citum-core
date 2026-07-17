@@ -102,6 +102,24 @@ fn test_parse_csl_json_structural_author_populates_canonical_contributors() {
 }
 
 #[test]
+fn collection_component_distinguishes_local_and_container_editors() {
+    let legacy: csl_legacy::csl_json::Reference = serde_json::from_str(
+        r#"{
+          "id": "editorless-chapter",
+          "type": "chapter",
+          "title": "A Chapter",
+          "container-title": "An Edited Collection",
+          "editor": [{"literal": "Container Editor"}]
+        }"#,
+    )
+    .unwrap();
+    let reference: InputReference = legacy.into();
+
+    assert!(reference.local_editor().is_none());
+    assert!(reference.editor().is_some());
+}
+
+#[test]
 fn csl_json_chapter_preserves_collection_title_as_parent_series() {
     let json = r#"{
         "id": "chapter-with-series",

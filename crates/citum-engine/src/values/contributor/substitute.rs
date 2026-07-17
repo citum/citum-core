@@ -750,7 +750,7 @@ fn resolve_candidate(
                     names,
                 })
             }),
-            SubstituteField::Editor => reference.editor().and_then(|contributor| {
+            SubstituteField::Editor => reference.local_editor().and_then(|contributor| {
                 let names = super::merged::semantic_contributor_names(&contributor, config, locale);
                 (!names.is_empty()).then(|| EffectivePrimaryResolution {
                     primary: EffectivePrimary::Contributor {
