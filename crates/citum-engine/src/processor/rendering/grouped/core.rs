@@ -258,6 +258,7 @@ impl Renderer<'_> {
                     item_str,
                     item.prefix.as_deref(),
                     item.suffix.as_deref(),
+                    Some(item.id.as_str()),
                 ));
                 all_ids.push(item.id.clone());
             }
@@ -411,7 +412,13 @@ impl Renderer<'_> {
 
         Ok(Some(fmt.citation(
             group_ids,
-            self.affix_content(&fmt, content, Some(prefix), suffix),
+            self.affix_content(
+                &fmt,
+                content,
+                Some(prefix),
+                suffix,
+                Some(first_item.id.as_str()),
+            ),
         )))
     }
 
@@ -588,7 +595,13 @@ impl Renderer<'_> {
             ) && !item_str.is_empty()
             {
                 let prefix = (index > 0).then_some(item.prefix.as_deref()).flatten();
-                item_parts.push(self.affix_content(fmt, item_str, prefix, item.suffix.as_deref()));
+                item_parts.push(self.affix_content(
+                    fmt,
+                    item_str,
+                    prefix,
+                    item.suffix.as_deref(),
+                    Some(item.id.as_str()),
+                ));
             }
         }
         Ok((item_parts, group_delimiter, captured_year_wrap))

@@ -42,8 +42,8 @@ pub use locators::{
     LocatorPreset, TypeClass,
 };
 pub use multilingual::{
-    MultilingualConfig, MultilingualMode, MultilingualSegment, MultilingualView, ScriptConfig,
-    SegmentWrap,
+    MultilingualConfig, MultilingualMode, MultilingualSegment, MultilingualView, PunctuationStyle,
+    ScriptConfig, SegmentWrap,
 };
 pub use processing::{
     CitationSortPolicy, Disambiguation, GivennameRule, Group, LabelConfig, LabelParams,

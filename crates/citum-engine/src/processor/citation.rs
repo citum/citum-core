@@ -583,6 +583,34 @@ impl Processor {
         }
     }
 
+    /// Whether `options.multilingual.scripts.latin.punctuation: latin` applies to a
+    /// citation, based on its first item's effective language.
+    ///
+    /// The citation-spec-level `prefix`/`suffix`/`wrap` applied by
+    /// [`Self::apply_spec_wrap_and_affixes`] sits outside all per-component and
+    /// per-item rendering (which already remap their own full-width delimiters —
+    /// see `render::component` and [`super::rendering::Renderer::affix_content`]),
+    /// so a literal full-width wrap like GB/T author-date's `prefix: （ suffix: ）`
+    /// needs the same remap applied to the fully-assembled citation. All items in
+    /// one citation typically share a language; the first item's stands in for
+    /// mixed compound citations as a reasonable approximation.
+    fn wants_latin_punctuation_for_citation(&self, citation: &Citation) -> bool {
+        let configured = self.get_config().multilingual.as_ref().is_some_and(|ml| {
+            ml.scripts.get("latin").is_some_and(|script| {
+                script.punctuation == Some(citum_schema::options::PunctuationStyle::Latin)
+            })
+        });
+
+        configured
+            && citation.items.first().is_some_and(|item| {
+                self.bibliography.get(&item.id).is_some_and(|reference| {
+                    crate::values::is_latin_script_language(
+                        crate::values::effective_item_language(reference).as_deref(),
+                    )
+                })
+            })
+    }
+
     /// Render a single citation to plain text.
     ///
     /// This is a one-shot convenience wrapper: it begins a throwaway
@@ -648,6 +676,11 @@ impl Processor {
         )?;
         let output = self.apply_citation_input_affixes(citation, content, &fmt);
         let wrapped = self.apply_spec_wrap_and_affixes(citation, &effective_spec, output, &fmt);
+        let wrapped = if self.wants_latin_punctuation_for_citation(citation) {
+            crate::render::component::remap_to_latin_punctuation(wrapped)
+        } else {
+            wrapped
+        };
 
         // If the host signals that this cluster opens a sentence, capitalize
         // the leading character of the composed output.  The markup-aware

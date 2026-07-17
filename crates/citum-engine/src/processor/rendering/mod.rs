@@ -410,20 +410,49 @@ impl<'a> Renderer<'a> {
         }
     }
 
+    /// Whether `options.multilingual.scripts.latin.punctuation: latin` applies to the
+    /// reference behind `ref_id`.
+    ///
+    /// Citation-cluster-level `prefix`/`suffix`/`delimiter` (e.g. GB/T author-date's
+    /// full-width `（ ）` wrap) are applied in [`Self::affix_content`], outside each
+    /// component's own rendering — component-internal punctuation is already remapped
+    /// by `render::component::wants_latin_punctuation`. This mirrors that check using
+    /// the citation item's resolved reference.
+    fn wants_latin_punctuation_for_id(&self, ref_id: &str) -> bool {
+        let configured = self.config.multilingual.as_ref().is_some_and(|ml| {
+            ml.scripts.get("latin").is_some_and(|script| {
+                script.punctuation == Some(citum_schema::options::PunctuationStyle::Latin)
+            })
+        });
+
+        configured
+            && self.bibliography.get(ref_id).is_some_and(|reference| {
+                crate::values::is_latin_script_language(
+                    crate::values::effective_item_language(reference).as_deref(),
+                )
+            })
+    }
+
     /// Apply prefix and suffix spacing heuristics to a rendered string.
+    ///
+    /// `ref_id` identifies the reference this content belongs to, so a
+    /// script-aware punctuation remap (see [`Self::wants_latin_punctuation_for_id`])
+    /// can be applied to affixes assembled outside component rendering. Pass
+    /// `None` when no single reference applies (e.g. author-only content).
     fn affix_content<F>(
         &self,
         fmt: &F,
         content: String,
         prefix: Option<&str>,
         suffix: Option<&str>,
+        ref_id: Option<&str>,
     ) -> String
     where
         F: crate::render::format::OutputFormat<Output = String>,
     {
         let prefix = prefix.unwrap_or("");
         let suffix = suffix.unwrap_or("");
-        if prefix.is_empty() && suffix.is_empty() {
+        let affixed = if prefix.is_empty() && suffix.is_empty() {
             content
         } else {
             fmt.affix(
@@ -431,6 +460,12 @@ impl<'a> Renderer<'a> {
                 content,
                 &Self::ensure_suffix_spacing(suffix),
             )
+        };
+
+        if ref_id.is_some_and(|id| self.wants_latin_punctuation_for_id(id)) {
+            crate::render::component::remap_to_latin_punctuation(affixed)
+        } else {
+            affixed
         }
     }
 
@@ -449,7 +484,14 @@ impl<'a> Renderer<'a> {
         if content.is_empty() {
             None
         } else {
-            Some((ids, self.affix_content(fmt, content, prefix, suffix)))
+            let affixed = self.affix_content(
+                fmt,
+                content,
+                prefix,
+                suffix,
+                ids.first().map(String::as_str),
+            );
+            Some((ids, affixed))
         }
     }
 

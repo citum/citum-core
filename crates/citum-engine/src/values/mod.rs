@@ -345,6 +345,61 @@ pub fn effective_component_language(
     }
 }
 
+/// Whether a BCP 47 language tag's script is Latin, for `options.multilingual.scripts.latin`
+/// punctuation mapping.
+///
+/// Prefers an explicit script subtag (e.g. `zh-Latn`, `ja-Hani`) when present; otherwise falls
+/// back to a lookup of primary language subtags for scripts commonly found in bilingual
+/// bibliographic corpora (CJK, Cyrillic, Arabic, Hebrew, Greek, Devanagari). Returns `false` for
+/// an absent or unrecognized tag so punctuation is only remapped on positive evidence of a
+/// Latin-script item.
+#[must_use]
+pub fn is_latin_script_language(lang: Option<&str>) -> bool {
+    const NON_LATIN_SCRIPT_SUBTAGS: &[&str] = &[
+        "hans", "hant", "hani", "jpan", "kore", "hang", "cyrl", "arab", "hebr", "grek", "deva",
+    ];
+    const NON_LATIN_PRIMARY_LANGUAGES: &[&str] = &[
+        // CJK
+        "zh", "ja", "ko", "yue", "wuu", "nan", "hak", "cjy", "cmn", "hsn", // Cyrillic
+        "ru", "be", "bg", "mk", "sr", "uk", // Arabic
+        "ar", "fa", "ur", // Hebrew / Yiddish
+        "he", "yi", // Greek
+        "el", // Devanagari
+        "hi", "mr", "ne",
+    ];
+
+    let Some(lang) = lang else {
+        return false;
+    };
+    let mut subtags = lang.split(['-', '_']).map(str::to_ascii_lowercase);
+    let Some(primary) = subtags.next().filter(|tag| !tag.is_empty()) else {
+        return false;
+    };
+    if !is_meaningful_language_primary(&primary) {
+        return false;
+    }
+
+    for subtag in subtags {
+        if subtag == "latn" {
+            return true;
+        }
+        if NON_LATIN_SCRIPT_SUBTAGS.contains(&subtag.as_str()) {
+            return false;
+        }
+    }
+
+    !NON_LATIN_PRIMARY_LANGUAGES.contains(&primary.as_str())
+}
+
+/// Whether a primary BCP 47 language subtag can provide script evidence.
+fn is_meaningful_language_primary(primary: &str) -> bool {
+    !matches!(primary, "und" | "mul" | "zxx")
+        && (2..=8).contains(&primary.len())
+        && primary
+            .chars()
+            .all(|character| character.is_ascii_alphabetic())
+}
+
 /// Select a structured name from transliteration maps using priority-list then script-match rules.
 fn select_by_transliteration<'a>(
     m: &'a citum_schema::reference::contributor::MultilingualName,

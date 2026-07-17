@@ -23,6 +23,8 @@ use citum_engine::Processor;
 use citum_io::load_bibliography;
 use citum_schema::Style;
 use citum_schema::citation::{Citation, CitationItem};
+use citum_schema::reference::InputReference;
+use indexmap::IndexMap;
 use std::fs;
 use std::path::PathBuf;
 
@@ -253,4 +255,124 @@ fn test_japanese_book_two_authors() {
          最後の「日本人」: 朝河貫一の生涯 [The last “Japanese”: Life of Kan’ichi Asakawa]_ \
          (Iwanami Shoten, 1983)."
     );
+}
+
+/// Build a minimal book reference for the GB/T script-aware punctuation tests.
+fn punctuation_test_book(
+    id: &str,
+    title: &str,
+    language: &str,
+    publisher_place: &str,
+    publisher: &str,
+) -> InputReference {
+    let fixture = serde_json::json!({
+        "id": id,
+        "type": "book",
+        "title": title,
+        "language": language,
+        "publisher": publisher,
+        "publisher-place": publisher_place,
+        "issued": { "date-parts": [[1988]] },
+    });
+    let legacy: csl_legacy::csl_json::Reference =
+        serde_json::from_value(fixture).expect("punctuation test fixture should parse");
+    legacy.into()
+}
+
+#[test]
+fn given_gb_t_numeric_style_when_rendering_latin_script_book_then_delimiters_are_latin_punctuation()
+{
+    announce_behavior(
+        "GB/T 7714 numeric renders Latin-script references with Latin punctuation \
+         (`: , ( )`), not the style's CJK-facing full-width delimiters — csl26-fn9x.",
+    );
+    let style = citum_schema::embedded::get_embedded_style("gb-t-7714-2025-numeric")
+        .expect("gb-t-7714-2025-numeric should be embedded")
+        .expect("gb-t-7714-2025-numeric should parse")
+        .into_resolved();
+    let bibliography = IndexMap::from([(
+        "latin-book".to_string(),
+        punctuation_test_book(
+            "latin-book",
+            "AI and the future of banking",
+            "en",
+            "New York",
+            "Wiley",
+        ),
+    )]);
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_bibliography();
+
+    assert_eq!(
+        rendered,
+        "[1]AI and the future of banking[M]. New York: Wiley, 1988"
+    );
+}
+
+#[test]
+fn given_gb_t_numeric_style_when_rendering_cjk_script_book_then_delimiters_stay_full_width() {
+    announce_behavior(
+        "GB/T 7714 numeric keeps full-width CJK delimiters for CJK-script references — \
+         the Latin-script remap does not affect the style's native-script items.",
+    );
+    let style = citum_schema::embedded::get_embedded_style("gb-t-7714-2025-numeric")
+        .expect("gb-t-7714-2025-numeric should be embedded")
+        .expect("gb-t-7714-2025-numeric should parse")
+        .into_resolved();
+    let bibliography = IndexMap::from([(
+        "cjk-book".to_string(),
+        punctuation_test_book(
+            "cjk-book",
+            "银行业的未来与人工智能",
+            "zh",
+            "北京",
+            "清华大学出版社",
+        ),
+    )]);
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_bibliography();
+
+    assert_eq!(
+        rendered,
+        "[1]银行业的未来与人工智能[M]. 北京：清华大学出版社，1988"
+    );
+}
+
+#[test]
+fn given_style_without_latin_punctuation_option_when_rendering_latin_book_then_full_width_delimiters_are_unchanged()
+ {
+    announce_behavior(
+        "options.multilingual.scripts.latin.punctuation is opt-in: without it, full-width \
+         delimiters render unchanged even for a Latin-script item.",
+    );
+    let yaml = r#"
+info:
+  id: latin-punctuation-gate-test
+  title: Latin Punctuation Gate Test
+  default-locale: en-US
+bibliography:
+  template:
+    - group:
+        - variable: publisher-place
+        - variable: publisher
+      delimiter: ：
+"#;
+    let style: Style = serde_yaml::from_str(yaml).expect("minimal gate-test style should parse");
+    let bibliography = IndexMap::from([(
+        "latin-book".to_string(),
+        punctuation_test_book(
+            "latin-book",
+            "AI and the future of banking",
+            "en",
+            "New York",
+            "Wiley",
+        ),
+    )]);
+
+    let processor = Processor::new(style, bibliography);
+    let rendered = processor.render_bibliography();
+
+    assert_eq!(rendered, "New York：Wiley");
 }

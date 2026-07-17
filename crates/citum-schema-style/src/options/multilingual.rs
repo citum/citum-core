@@ -134,6 +134,22 @@ pub struct ScriptConfig {
     /// Custom delimiter between family and given name when this script is inverted.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub sort_separator: Option<String>,
+    /// Punctuation convention to render for items whose effective language
+    /// resolves to this script (e.g. remap CJK full-width delimiters to Latin
+    /// half-width for Latin-script items in a bilingual style).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub punctuation: Option<PunctuationStyle>,
+}
+
+/// Punctuation convention applied to a script's rendered output.
+#[derive(Debug, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum PunctuationStyle {
+    /// Half-width Latin delimiters (`: , ( )`), with a trailing space after `:` and `,`.
+    Latin,
+    /// Full-width CJK delimiters (`： ， （ ）`), the unmodified default.
+    FullWidth,
 }
 
 /// Custom deserializer for [`MultilingualMode`].

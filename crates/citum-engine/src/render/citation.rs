@@ -150,7 +150,23 @@ pub fn citation_to_string_with_format<F: OutputFormat<Output = String>>(
         _ => (prefix.unwrap_or(""), suffix.unwrap_or("")),
     };
 
-    format!("{open}{content}{close}")
+    let assembled = format!("{open}{content}{close}");
+
+    // The citation-level `delimiter`/`prefix`/`suffix`/`wrap` above are applied
+    // outside each component's own rendering (which already remaps its own
+    // full-width delimiters — see `render::component`), so a literal full-width
+    // wrap like GB/T author-date's `prefix: （ suffix: ）` needs the same
+    // script-aware remap applied here. All components in one citation render
+    // share the same reference, so the first component's language stands in
+    // for the whole citation.
+    if proc_template
+        .first()
+        .is_some_and(crate::render::component::wants_latin_punctuation)
+    {
+        crate::render::component::remap_to_latin_punctuation(assembled)
+    } else {
+        assembled
+    }
 }
 
 #[cfg(test)]

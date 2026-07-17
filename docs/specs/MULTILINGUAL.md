@@ -222,6 +222,8 @@ options:
       cjk:
         use-native-ordering: true # FamilyGiven for CJK
         delimiter: ""            # No space between Family/Given
+      latin:
+        punctuation: latin       # Remap this script's rendered delimiters to Latin form
 ```
 
 ### 2.3 Pattern mode
@@ -298,6 +300,97 @@ For contributors, the processor inspects the rendered given/family name parts to
 Mixed-script names (e.g., family in Han, given in Katakana) collapse to the `cjk` umbrella unless the mix is purely Hiragana + Katakana, which resolves to `kana`. Dominance-based selection for other mixes is deferred.
 
 If no matching script config exists, existing behavior is preserved: non-inverted names use spaces and inverted names use the normal contributor `sort-separator` fallback.
+
+### 3.2a Script-Aware Punctuation
+
+**Status: Active.**
+
+Some bilingual styles hardcode one script's delimiter conventions for every item, regardless
+of the individual reference's own language. GB/T 7714 is the motivating case: the style's
+CJK-facing template punctuation (full-width `：，（）`) is also used, unmodified, for
+Latin-script references — producing entries like `New York：Bantam Dell，1988` where GB/T
+practice for a Latin-script reference is `New York: Bantam Dell, 1988`. This is a
+verification-proxy gap, not a template bug: citeproc-js reproduces the same hardcoded
+full-width punctuation, so byte-parity against citeproc-js does not catch it.
+
+`options.multilingual.scripts.<script>.punctuation` is **not** a general punctuation policy
+layer — it is a fixed, narrowly-scoped delimiter remap, opted into per script, for a single
+known character set (the table below). It lives in the same `scripts.<script>` map that already
+holds `delimiter`, `sort-separator`, and `use-native-ordering` for name rendering ([§3.2](#32-script-aware-name-rendering)),
+following that section's existing per-script config pattern rather than introducing a new one:
+
+```yaml
+options:
+  multilingual:
+    scripts:
+      latin:
+        punctuation: latin   # omit the key (or set full-width) for no remap — the default
+```
+
+**Governing rule: absent or unrecognized evidence never triggers a remap.** Only `latin` is
+implemented, and it only fires for items with positive evidence of a Latin-script effective
+language — see "Script detection" below. `full-width` is not an independent behavior; it is an
+explicit, documented alias for "no remap," identical to omitting the key. No other script value
+is currently recognized.
+
+`punctuation: latin` maps this script's rendered CJK full-width delimiters to Latin half-width
+equivalents:
+
+| Full-width | Latin |
+|---|---|
+| `：` (U+FF1A) | `: ` |
+| `，` (U+FF0C) | `, ` |
+| `（` (U+FF08) | `(` |
+| `）` (U+FF09) | `)` |
+
+This is exactly four characters, chosen because they are GB/T 7714's own template delimiters —
+not a claim that these characters are universally interchangeable punctuation. The `（）`→`()`
+row in particular is justified by GB/T's own usage: the style already uses full-width
+parentheses as its field-wrap convention (issue numbers, citation numbers, the author-date
+citation wrap), so remapping them is continuing that same convention in Latin form, not
+asserting that parenthetical marks are style-neutral in general. A style that uses `（）` for
+some other, non-delimiter purpose would need its own review before opting in here. The mapping
+never runs in the other direction — a style's literal full-width components are untouched for
+items whose script does not opt in.
+
+*Implementation note:* a doubled space produced by the mapping (e.g. adjacent `：` and a
+pre-existing space) is collapsed to one. This is processor-internal cleanup, not a separate
+public guarantee.
+
+**Script detection** reuses the effective-item-language resolution already used for
+locale-scoped layout selection ([§3.4](#34-locale-selected-citation-and-bibliography-layouts)):
+an explicit BCP 47 script subtag wins (`zh-Latn`, `ja-Hani`, …); otherwise a primary-language
+lookup covers the common non-Latin scripts found in bilingual bibliographic corpora (CJK,
+Cyrillic, Arabic, Hebrew, Greek, Devanagari). **An absent or unrecognized language tag is always
+treated as not Latin** — the remap requires positive evidence of a Latin-script item, never
+applying by default or by absence of contrary evidence. This is why Cyrillic items (e.g.
+`ru-RU`) are intentionally left full-width for now rather than falling through to Latin: they
+fail the positive-evidence test just as an untagged item would. Extending positive-evidence
+coverage to other scripts (Cyrillic, Greek, Arabic, …) is a possible follow-up, scoped
+separately — this feature does not anticipate or model their punctuation conventions today.
+
+**Why three insertion points.** Full-width delimiters enter rendered output from three
+independent places, and the remap has to run at each:
+
+1. **Per-component rendering** (`render::component::render_component_with_format_and_renderer`)
+   — a component's own `.value` (e.g. a joined name list) and its literal
+   `prefix`/`suffix`/`wrap` from style YAML (e.g. `- number: issue prefix: （ suffix: ）`).
+   This covers essentially all bibliography-entry punctuation, since bibliography components
+   are otherwise fully assembled per-component.
+2. **Citation-cluster wrap** (`render::citation::citation_to_string_with_format`) — the
+   `wrap`/`prefix`/`suffix`/`delimiter` a citation section applies *around* its already-rendered
+   components (e.g. GB/T author-date's own `citation.delimiter: ，`), which sits outside each
+   component's own rendering.
+3. **Citation-spec wrap** (`processor::citation::apply_spec_wrap_and_affixes`) — the outermost
+   `citation.prefix`/`citation.suffix` wrap for the whole citation cluster (GB/T author-date's
+   `citation: prefix: （ suffix: ）`), applied after all items in the citation are joined.
+
+Each insertion point resolves the effective language independently: components carry their own
+`item_language` already (threaded for locale-scoped rendering); the citation-cluster and
+citation-spec wraps use the first item's reference in the citation as a stand-in for the whole
+cluster (a reasonable approximation — compound citations mixing Latin- and CJK-script items
+under one shared wrap are the unhandled edge case, left for follow-up if it proves to matter in
+practice).
 
 ### 3.3 Locale Separation
 
