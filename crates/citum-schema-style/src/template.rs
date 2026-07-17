@@ -1043,6 +1043,17 @@ pub struct TemplateTitle {
     /// appears in citations only to resolve same-author ambiguity.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub disambiguate_only: Option<bool>,
+    /// When true, remove every period from the rendered title text (e.g. an
+    /// abbreviated journal name "Br. Med. J." → "Br Med J").
+    ///
+    /// Deliberately separate from the shared `Rendering::strip_periods`
+    /// (which only trims a single *trailing* period elsewhere in the
+    /// engine, e.g. term/number rendering): a title can legitimately
+    /// contain a period as ordinary text (a proper noun, a domain name like
+    /// "Merriam-Webster.com"), so full-period removal is opt-in per
+    /// component rather than folded into the general-purpose flag.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub strip_periods_all: Option<bool>,
     #[serde(flatten, default)]
     pub rendering: Rendering,
     /// Structured link options (DOI, URL).
@@ -1107,6 +1118,20 @@ pub struct TemplateNumber {
     /// Explicit grammatical gender override for number/ordinal agreement.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub gender: Option<GrammaticalGender>,
+    /// When set, resolve this number's locale term (e.g. GB/T 7714's `edition`
+    /// or `volume` general terms) at the given form and wrap the value with
+    /// it — but only when the resolved value is numeric (citeproc-style
+    /// `is-numeric`). Non-numeric values — including free-text editions
+    /// (`修订版`) and pre-labeled volumes (`美国卷`) — render bare, since the
+    /// source standard treats those as already-complete strings.
+    ///
+    /// The term text is locale-owned, not style-owned: a term containing a
+    /// literal `%s` (e.g. zh-CN's `第%s卷`, matching the CSL-M source term)
+    /// wraps the value at that position; a term without `%s` (e.g. `版`)
+    /// follows the value as a space-separated suffix. See
+    /// `docs/specs/TEMPLATE_V3.md` §2.4.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub when_numeric: Option<LabelForm>,
 
     /// Custom user-defined fields for extensions.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -1624,6 +1649,12 @@ pub enum TemplateConditionField {
     Archive,
     /// The archive shelfmark or repository location.
     ArchiveLocation,
+    /// The volume number, or the issue number when volume is absent (i.e.
+    /// "does this serial component have any volume/issue identifier at
+    /// all?"). Used to detect online-first articles that have not yet been
+    /// assigned to an issue, which need a full publication date instead of
+    /// a bare year.
+    VolumeOrIssue,
 }
 
 /// Delimiter punctuation options.

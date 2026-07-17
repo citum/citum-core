@@ -101,6 +101,9 @@ fn condition_field_present(reference: &Reference, field: &TemplateConditionField
         TemplateConditionField::Genre => reference.genre().is_some(),
         TemplateConditionField::Archive => reference.archive().is_some(),
         TemplateConditionField::ArchiveLocation => reference.archive_location().is_some(),
+        TemplateConditionField::VolumeOrIssue => {
+            reference.volume().is_some() || reference.issue().is_some()
+        }
     }
 }
 

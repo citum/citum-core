@@ -10,9 +10,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
-use citum_schema::locale::{GrammaticalGender, TermForm};
+use citum_schema::locale::{GeneralTerm, GrammaticalGender, TermForm};
 use citum_schema::reference::ClassExtension;
-use citum_schema::template::{NumberVariable, TemplateNumber};
+use citum_schema::template::{LabelForm, NumberVariable, TemplateNumber};
 
 /// Resolve the raw value string for a number variable from a reference.
 fn resolve_number_value(
@@ -64,7 +64,15 @@ fn resolve_number_value(
             _ => None,
         },
         NumberVariable::PatentNumber => match reference.extension() {
-            ClassExtension::Patent(r) => Some(r.patent_number.clone()),
+            // GB/T 7714 and most citation styles cite the filing/application
+            // number (CSL `call-number`) in preference to the granted
+            // number when both are known; fall back to the granted number
+            // otherwise (e.g. no application number was recorded).
+            ClassExtension::Patent(r) => Some(
+                r.application_number
+                    .clone()
+                    .unwrap_or_else(|| r.patent_number.clone()),
+            ),
             _ => None,
         },
         NumberVariable::StandardNumber => match reference.extension() {
@@ -114,10 +122,19 @@ fn resolve_number_value(
     }
 }
 
+/// Convert a component-level [`LabelForm`] to the locale's [`TermForm`] vocabulary.
+fn label_form_to_term_form(label_form: &LabelForm) -> TermForm {
+    match label_form {
+        LabelForm::Long => TermForm::Long,
+        LabelForm::Short => TermForm::Short,
+        LabelForm::Symbol => TermForm::Symbol,
+    }
+}
+
 /// Resolve a label prefix for a number variable if `label_form` is configured.
 fn resolve_number_label<F: crate::render::format::OutputFormat<Output = String>>(
     number: &NumberVariable,
-    label_form: &citum_schema::template::LabelForm,
+    label_form: &LabelForm,
     value: &str,
     requested_gender: Option<GrammaticalGender>,
     effective_rendering: &citum_schema::template::Rendering,
@@ -127,12 +144,7 @@ fn resolve_number_label<F: crate::render::format::OutputFormat<Output = String>>
     if let Some(locator_type) = number_var_to_locator_type(number) {
         // Check pluralization
         let plural = check_plural(value, &locator_type);
-
-        let term_form = match label_form {
-            citum_schema::template::LabelForm::Long => TermForm::Long,
-            citum_schema::template::LabelForm::Short => TermForm::Short,
-            citum_schema::template::LabelForm::Symbol => TermForm::Symbol,
-        };
+        let term_form = label_form_to_term_form(label_form);
 
         options
             .locale
@@ -148,6 +160,38 @@ fn resolve_number_label<F: crate::render::format::OutputFormat<Output = String>>
             })
     } else {
         None
+    }
+}
+
+/// Maps a number variable to its corresponding general locale term, for
+/// [`TemplateNumber::when_numeric`] resolution. Distinct from
+/// [`number_var_to_locator_type`]: locators are for citation-position labels
+/// (`p. 35`); general terms cover non-locator numbering concepts like
+/// `edition` that a citation would never point a reader to.
+#[must_use]
+fn number_var_to_general_term(var: &NumberVariable) -> Option<GeneralTerm> {
+    match var {
+        NumberVariable::Edition => Some(GeneralTerm::Edition),
+        NumberVariable::Volume => Some(GeneralTerm::Volume),
+        _ => None,
+    }
+}
+
+/// Split a resolved locale term into a `(prefix, suffix)` affix pair around
+/// the value it wraps.
+///
+/// A term containing a literal `%s` (the CSL-M circumfix convention, e.g.
+/// zh-CN's `第%s卷`) splits into the text before and after that marker. A
+/// term without `%s` (e.g. `版`) follows the value as a space-separated
+/// suffix, matching GB/T 7714's `<number/> <label/>` ordering for numeric
+/// editions.
+fn split_numeric_term(term: &str) -> (Option<String>, Option<String>) {
+    if let Some((before, after)) = term.split_once("%s") {
+        let prefix = (!before.is_empty()).then(|| before.to_string());
+        let suffix = (!after.is_empty()).then(|| after.to_string());
+        (prefix, suffix)
+    } else {
+        (None, Some(format!(" {term}")))
     }
 }
 
@@ -181,7 +225,7 @@ impl ComponentValues for TemplateNumber {
             };
 
             // Handle label if label_form is specified
-            let prefix = if let Some(label_form) = &self.label_form {
+            let label_prefix = if let Some(label_form) = &self.label_form {
                 resolve_number_label(
                     &self.number,
                     label_form,
@@ -195,10 +239,37 @@ impl ComponentValues for TemplateNumber {
                 None
             };
 
+            // `when_numeric` resolves this number's locale term (GB/T 7714's
+            // `edition`/`volume` general terms) and wraps the value with it —
+            // only when the resolved value is numeric; free-text values like
+            // `修订版` or a pre-labeled `美国卷` render bare.
+            let (numeric_prefix, numeric_suffix) = self
+                .when_numeric
+                .as_ref()
+                .filter(|_| is_numeric(&value))
+                .and_then(|form| {
+                    let general_term = number_var_to_general_term(&self.number)?;
+                    options.locale.resolved_general_term(
+                        &general_term,
+                        &label_form_to_term_form(form),
+                        self.gender.clone(),
+                    )
+                })
+                .map(|term| split_numeric_term(&term))
+                .unwrap_or((None, None));
+
+            let prefix = match (label_prefix, numeric_prefix) {
+                (Some(label), Some(numeric)) => Some(format!("{label}{numeric}")),
+                (Some(label), None) => Some(label),
+                (None, Some(numeric)) => Some(numeric),
+                (None, None) => None,
+            };
+            let suffix = numeric_suffix;
+
             ProcValues {
                 value,
                 prefix,
-                suffix: None,
+                suffix,
                 url: crate::values::resolve_effective_url(
                     self.links.as_ref(),
                     options.config.links.as_ref(),
@@ -209,6 +280,93 @@ impl ComponentValues for TemplateNumber {
                 pre_formatted: false,
             }
         })
+    }
+}
+
+/// Citeproc-style `is-numeric` check used to gate [`TemplateNumber::when_numeric`]
+/// affixes.
+///
+/// True for digit runs optionally joined by whitespace, commas, hyphens, or
+/// ampersands (bare numerals, ranges, and lists like `"2"`, `"1-3"`,
+/// `"12, 14"`). False for any value that mixes a digit with other text
+/// (`"新1版"`) or contains none (`"修订版"`, `"美国卷"`, `"第二卷"` — the last
+/// uses a CJK numeral character, not an ASCII digit, and so is treated as an
+/// already-complete label rather than a bare number to wrap.
+fn is_numeric(value: &str) -> bool {
+    let value = value.trim();
+    let mut saw_digit = false;
+    for ch in value.chars() {
+        if ch.is_ascii_digit() {
+            saw_digit = true;
+        } else if !matches!(ch, '-' | ',' | '&' | ' ') {
+            return false;
+        }
+    }
+    saw_digit
+}
+
+#[cfg(test)]
+mod is_numeric_tests {
+    use super::is_numeric;
+
+    #[test]
+    fn given_bare_digits_when_checked_then_numeric() {
+        assert!(is_numeric("2"));
+        assert!(is_numeric("510"));
+    }
+
+    #[test]
+    fn given_digit_range_or_list_when_checked_then_numeric() {
+        assert!(is_numeric("1-3"));
+        assert!(is_numeric("12, 14"));
+    }
+
+    #[test]
+    fn given_digit_embedded_in_free_text_when_checked_then_not_numeric() {
+        assert!(!is_numeric("新1版"));
+    }
+
+    #[test]
+    fn given_free_text_without_digits_when_checked_then_not_numeric() {
+        assert!(!is_numeric("修订版"));
+        assert!(!is_numeric("美国卷"));
+    }
+
+    #[test]
+    fn given_cjk_numeral_when_checked_then_not_numeric() {
+        // "二" is a CJK numeral character, not an ASCII digit; GB/T 7714
+        // treats "第二卷" as an already-complete label, not a bare number.
+        assert!(!is_numeric("第二卷"));
+    }
+
+    #[test]
+    fn given_empty_value_when_checked_then_not_numeric() {
+        assert!(!is_numeric(""));
+        assert!(!is_numeric("   "));
+    }
+}
+
+#[cfg(test)]
+mod split_numeric_term_tests {
+    use super::split_numeric_term;
+
+    #[test]
+    fn given_circumfix_term_when_split_then_wraps_around_marker() {
+        assert_eq!(
+            split_numeric_term("第%s卷"),
+            (Some("第".to_string()), Some("卷".to_string()))
+        );
+    }
+
+    #[test]
+    fn given_suffix_only_term_when_split_then_prefix_only_marker() {
+        // "%s卷" (no leading text) has an empty prefix half, so no prefix is emitted.
+        assert_eq!(split_numeric_term("%s卷"), (None, Some("卷".to_string())));
+    }
+
+    #[test]
+    fn given_plain_term_when_split_then_space_separated_suffix() {
+        assert_eq!(split_numeric_term("版"), (None, Some(" 版".to_string())));
     }
 }
 

@@ -397,6 +397,7 @@ fn resolve_named_substitute<F: OutputFormat<Output = String>>(
         and: component.and.as_ref(),
         initialize_with: effective_rendering.initialize_with.as_ref(),
         name_form: effective_name_form,
+        strip_periods: effective_rendering.strip_periods,
     };
     let formatted =
         super::names::format_names(&names_vec, &component.form, options, &name_overrides, hints);

@@ -171,6 +171,59 @@ new localized phrase work SHOULD use `message:` and `pattern.*` locale IDs.
 abbreviations, and inflected role forms; role-plus-name phrases can move to
 `pattern.*` when the locale needs to control placement around rendered names.
 
+### §2.4 Conditional Number Labels (`when-numeric`)
+
+Some numbering vocabulary is only labeled when the resolved value is a bare
+number; free-text values are already a complete label and render unwrapped.
+GB/T 7714 renders a numeric edition as `2 版` but a free-text edition (`修订版`,
+`Rev. ed.`) bare, and a numeric volume as `第4卷` but an already-labeled volume
+(`美国卷`) bare. CSL-M expresses the same rule with `<if is-numeric="…">`.
+
+A `number:` component MAY set `when-numeric: <label-form>` (`long`, `short`, or
+`symbol`, the same vocabulary as `label-form`). When set, and the resolved
+value is numeric — one or more digit runs, optionally joined by the
+punctuation of ranges and lists (`-`, `,`, `&`, space) — the engine resolves
+that number variable's general locale term at the given form and wraps the
+value with it. Non-numeric values render bare, with no label.
+
+The term itself is locale-owned, not style-owned, and follows the CSL-M
+convention: a term containing a literal `%s` (e.g. zh-CN's `第%s卷`, matching
+the pinned upstream term) wraps the value at that position; a term without
+`%s` (e.g. `版`) follows the value as a space-separated suffix, matching
+GB/T 7714's `<number/> <label/>` ordering for numeric editions.
+
+```yaml
+# style (gb-t-7714-2025-base.yaml)
+- number: edition
+  when-numeric: short
+- group:
+  - title: primary
+  - number: volume
+    when-numeric: short
+  delimiter: ：
+```
+
+```yaml
+# locale (zh-CN.yaml)
+terms:
+  edition:
+    short: { singular: 版, plural: 版 }
+  volume:
+    short: { singular: 第%s卷, plural: 第%s卷 }
+```
+
+**Boundary with §2.3:** `when-numeric` is deliberately a typed component field,
+not an MF2 message, even though both resolve locale text. The dividing line is
+what is being decided, not what text results. §2.3's `message:` messages are a
+**total function over closed, structural enums** (reference-type × carrier →
+a fixed classification code) — textual realization of a selection that has
+already been made elsewhere. `when-numeric` is a **conditional on the resolved
+value's form** (numeric or not) — exactly the kind of structural selection
+§2.3 already reserves for typed templates ("MF2 MUST NOT recreate general
+template control flow"). A future style need MUST NOT reach for an MF2
+message to express a presence or numeric conditional; that stays a typed
+component field.
+
 ### §3 — Merge Operations (Formalized)
 
 The engine MUST process each operation list (`modify`, `remove`, `add`) in the order provided. The order of these keys (`modify`, `remove`, `add`) within a variant has no semantic effect.

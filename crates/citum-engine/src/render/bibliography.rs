@@ -397,6 +397,14 @@ const DANGLING_PUNCTUATION_PATTERNS: [(&str, &str); 13] = [
     // NOTE: Removed (".,", ".") pattern - it was too aggressive and removed legitimate
     // component suffixes like "S.," from author initials. In Citum, component suffixes are
     // explicit and well-defined, so we don't have the CSL 1.0 dual-punctuation issue.
+    //
+    // A full-width (".，"/".："/".；") equivalent was tried and reverted for the
+    // same reason: it stripped legitimate abbreviation periods ("Inc.，",
+    // "D.C.：", "Colo.：") wherever they preceded a CJK delimiter. The actual
+    // Jr./Sr. suffix case (`gbt7714.8.3.2:4`) is fixed at the source instead —
+    // see `format_single_name`'s suffix handling in
+    // `values/contributor/names.rs`, which strips a suffix's own trailing
+    // period for styles that don't want name-suffix punctuation.
     (" ,", ","),
     (" ;", ";"),
     (" :", ":"),

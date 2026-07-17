@@ -34,6 +34,9 @@ pub(crate) struct NameFormatContext<'a> {
     pub(crate) use_integral_short_name: bool,
     pub(crate) short_name_display: Option<citum_schema::options::ShortNameDisplay>,
     pub(crate) subsequent_form: Option<citum_schema::options::SubsequentNameForm>,
+    /// Whether a name suffix's own trailing period is stripped before
+    /// rendering. See [`NamesOverrides::strip_periods`].
+    pub(crate) strip_periods: bool,
 }
 
 /// Per-call template overrides passed to [`format_names`].
@@ -54,6 +57,12 @@ pub struct NamesOverrides<'a> {
     pub initialize_with: Option<&'a String>,
     /// Override for the name form (full, initials, family-only).
     pub name_form: Option<NameForm>,
+    /// Override for whether a name suffix's own trailing period (e.g. the
+    /// literal "Jr." stored in source data) is stripped before rendering.
+    /// Styles that don't punctuate name suffixes (e.g. GB/T 7714) set this
+    /// so a suffix immediately followed by a list delimiter doesn't read as
+    /// double-punctuated ("Jr.，" instead of "Jr，").
+    pub strip_periods: Option<bool>,
 }
 
 /// Prefix and suffix attached to a selected name before list joining.
@@ -399,6 +408,10 @@ pub(super) fn format_names_decorated(
             .integral_name_memory
             .as_ref()
             .map(|c| c.resolve().subsequent_form),
+        strip_periods: overrides
+            .strip_periods
+            .or(options.config.strip_periods)
+            .unwrap_or(false),
     };
 
     let delimiter = config.and_then(|c| c.delimiter.as_deref()).unwrap_or(", ");
@@ -884,6 +897,16 @@ fn append_original_script(assembled: String, name: &crate::reference::FlatName) 
     }
 }
 
+/// Resolve a name suffix for rendering, optionally stripping its own
+/// trailing period. See [`NamesOverrides::strip_periods`].
+fn effective_suffix(raw_suffix: &str, strip_periods: bool) -> String {
+    if strip_periods && raw_suffix.ends_with('.') {
+        crate::values::strip_trailing_periods(raw_suffix)
+    } else {
+        raw_suffix.to_string()
+    }
+}
+
 /// Format a single name.
 pub(crate) fn format_single_name(
     name: &crate::reference::FlatName,
@@ -909,7 +932,7 @@ pub(crate) fn format_single_name(
     let given = name.given.as_deref().unwrap_or("");
     let dp = name.dropping_particle.as_deref().unwrap_or("");
     let ndp = name.non_dropping_particle.as_deref().unwrap_or("");
-    let suffix = name.suffix.as_deref().unwrap_or("");
+    let suffix = &effective_suffix(name.suffix.as_deref().unwrap_or(""), ctx.strip_periods);
     let script_config = script_config_for_name(name, ctx);
 
     // Determine if we should invert (Family, Given).
@@ -1039,6 +1062,7 @@ pub fn format_contributors_short(
             and: None,
             initialize_with: None,
             name_form: None,
+            strip_periods: None,
         },
         &ProcHints::default(),
     )

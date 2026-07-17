@@ -331,6 +331,9 @@ pub struct Patent {
     /// Application number
     #[serde(skip_serializing_if = "Option::is_none")]
     pub application_number: Option<String>,
+    /// Page range within the patent gazette or publication.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pages: Option<String>,
     /// Creation or origination date of the patented work.
     #[cfg_attr(feature = "bindings", specta(type = String))]
     #[serde(default, skip_serializing_if = "EdtfString::is_empty")]

@@ -936,6 +936,8 @@ pub(super) fn from_document_ref(
         number,
         genre,
         medium: legacy.medium,
+        edition: legacy.edition.as_ref().map(ToString::to_string),
+        pages: legacy.page.map(NumOrStr::Str),
         archive,
         archive_location: legacy.archive_location,
         archive_info,

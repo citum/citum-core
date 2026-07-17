@@ -181,6 +181,7 @@ fn make_name_format_context<'a>(
         use_integral_short_name: true,
         short_name_display: None,
         subsequent_form: None,
+        strip_periods: false,
     }
 }
 

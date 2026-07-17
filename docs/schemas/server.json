@@ -1774,6 +1774,13 @@
             "null"
           ]
         },
+        "strip-periods-all": {
+          "description": "When true, remove every period from the rendered title text (e.g. an\nabbreviated journal name \"Br. Med. J.\" → \"Br Med J\").\n\nDeliberately separate from the shared `Rendering::strip_periods`\n(which only trims a single *trailing* period elsewhere in the\nengine, e.g. term/number rendering): a title can legitimately\ncontain a period as ordinary text (a proper noun, a domain name like\n\"Merriam-Webster.com\"), so full-period removal is opt-in per\ncomponent rather than folded into the general-purpose flag.",
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
         "text-case": {
           "description": "Text-case transform to apply to the rendered value.",
           "anyOf": [
@@ -2106,6 +2113,17 @@
           "anyOf": [
             {
               "$ref": "#/$defs/GrammaticalGender"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "when-numeric": {
+          "description": "When set, resolve this number's locale term (e.g. GB/T 7714's `edition`\nor `volume` general terms) at the given form and wrap the value with\nit — but only when the resolved value is numeric (citeproc-style\n`is-numeric`). Non-numeric values — including free-text editions\n(`修订版`) and pre-labeled volumes (`美国卷`) — render bare, since the\nsource standard treats those as already-complete strings.\n\nThe term text is locale-owned, not style-owned: a term containing a\nliteral `%s` (e.g. zh-CN's `第%s卷`, matching the CSL-M source term)\nwraps the value at that position; a term without `%s` (e.g. `版`)\nfollows the value as a space-separated suffix. See\n`docs/specs/TEMPLATE_V3.md` §2.4.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LabelForm"
             },
             {
               "type": "null"
@@ -2991,6 +3009,11 @@
           "description": "The archive shelfmark or repository location.",
           "type": "string",
           "const": "archive-location"
+        },
+        {
+          "description": "The volume number, or the issue number when volume is absent (i.e.\n\"does this serial component have any volume/issue identifier at\nall?\"). Used to detect online-first articles that have not yet been\nassigned to an issue, which need a full publication date instead of\na bare year.",
+          "type": "string",
+          "const": "volume-or-issue"
         }
       ]
     },

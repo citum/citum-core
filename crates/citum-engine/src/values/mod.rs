@@ -729,6 +729,17 @@ pub fn strip_trailing_periods(s: &str) -> String {
     s.trim_end_matches('.').to_string()
 }
 
+/// Strip every period from a string.
+///
+/// Matches the CSL `strip-periods` attribute's actual semantics (remove all
+/// periods, not just a trailing one) — used for abbreviated journal titles
+/// like "Br. Med. J." → "Br Med J", where periods can appear after every
+/// abbreviated word, not only at the end.
+#[must_use]
+pub fn strip_all_periods(s: &str) -> String {
+    s.chars().filter(|c| *c != '.').collect()
+}
+
 /// Apply abbreviation substitution if the map contains an entry for `value`.
 ///
 /// Returns the abbreviation if found, otherwise returns the original value unchanged.

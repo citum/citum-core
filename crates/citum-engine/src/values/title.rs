@@ -398,6 +398,11 @@ impl ComponentValues for TemplateTitle {
                 )
             };
             let value = crate::values::apply_abbreviation(value, options.abbreviation_map);
+            let value = if self.strip_periods_all == Some(true) {
+                crate::values::strip_all_periods(&value)
+            } else {
+                value
+            };
             return Some(ProcValues {
                 value,
                 prefix: None,
@@ -426,6 +431,11 @@ impl ComponentValues for TemplateTitle {
 
         use citum_schema::options::LinkAnchor;
         let value = crate::values::apply_abbreviation(value, options.abbreviation_map);
+        let value = if self.strip_periods_all == Some(true) {
+            crate::values::strip_all_periods(&value)
+        } else {
+            value
+        };
         let url = crate::values::resolve_effective_url(
             self.links.as_ref(),
             options.config.links.as_ref(),

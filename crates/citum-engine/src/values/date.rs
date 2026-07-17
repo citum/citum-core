@@ -742,7 +742,40 @@ impl ComponentValues for TemplateDate {
             if let Some(fallbacks) = &self.fallback {
                 for component in fallbacks {
                     if let Some(values) = component.values::<F>(reference, hints, options) {
-                        return Some(values);
+                        // `component.values()` only resolves the raw date
+                        // string — it does not go through the generic
+                        // per-component dispatch that normally applies a
+                        // component's own `wrap`/`prefix`/`suffix` (that
+                        // happens one layer up, outside this recursive
+                        // call). Apply the fallback component's own
+                        // rendering here so e.g. `wrap: brackets` on a
+                        // fallback `accessed` date isn't silently dropped.
+                        let fallback_rendering = component.rendering();
+                        let mut output = if values.pre_formatted {
+                            fmt.join(vec![values.value.clone()], "")
+                        } else {
+                            fmt.text(&values.value)
+                        };
+                        if let Some(wrap_config) = fallback_rendering.wrap.as_ref() {
+                            output = fmt.wrap_punctuation(
+                                &wrap_config.punctuation,
+                                output,
+                                &crate::render::format::QuoteMarks::default(),
+                            );
+                        }
+                        let prefix = fallback_rendering.prefix.as_deref().unwrap_or_default();
+                        let suffix = fallback_rendering.suffix.as_deref().unwrap_or_default();
+                        if !prefix.is_empty() || !suffix.is_empty() {
+                            output = fmt.affix(prefix, output, suffix);
+                        }
+                        return Some(ProcValues {
+                            value: output,
+                            prefix: None,
+                            suffix: None,
+                            url: values.url,
+                            substituted_key: values.substituted_key,
+                            pre_formatted: true,
+                        });
                     }
                 }
                 return None;
