@@ -1,0 +1,57 @@
+candidate_id	target_id	similarity	standalone_fidelity	wrapper_fidelity	wrapper_bytes	wrapper_key_count	verdict	detail
+journal-of-cardiothoracic-and-vascular-anesthesia	angewandte-chemie	0.9783	0.6716	0.4203	218	1	not-delta-expressible	
+social-cognitive-and-affective-neuroscience	cse-name-year	0.9710	0.9851	0.9104	202	1	not-delta-expressible	
+freshwater-crayfish	international-journal-of-wildland-fire	0.9710			179	1	error	standalone-oracle: oracle_error (Processor failed: 
+Error: template variant operation in `bibliography.type-variants[paper-conference]` matched no component
+)
+instituto-de-pesquisas-energeticas-e-nucleares	institute-for-operations-research-and-the-management-sciences	0.9710	0.6119	0.7500	279	1	delta-expressible	
+preslia	international-journal-of-wildland-fire	0.9710			200	1	error	standalone-oracle: oracle_error (Processor failed: 
+Error: template variant operation in `bibliography.type-variants[paper-conference]` matched no component
+)
+soil-science-and-plant-nutrition	international-journal-of-wildland-fire	0.9710	0.8507	0.7463	205	1	not-delta-expressible	
+springer-physics-author-date	springer-basic-author-date-no-et-al	0.9710	0.8358	0.7910	198	1	not-delta-expressible	
+universidade-estadual-paulista-campus-de-dracena-abnt	oxford-journals-scimed-author-date	0.9700	0.7612	0.6471	289	1	not-delta-expressible	
+carolinea	springer-basic-author-date	0.9697	1.0000	0.8060	147	1	not-delta-expressible	
+evolution-letters	institute-of-mathematics-and-its-applications	0.9658	0.9701	0.7353	182	1	not-delta-expressible	
+the-international-spectator	international-journal-of-wildland-fire	0.9648			195	1	error	standalone-oracle: oracle_error (Processor failed: 
+Error: template variant operation in `bibliography.type-variants[paper-conference]` matched no component
+)
+antarctic-science	taylor-and-francis-council-of-science-editors-author-date	0.9607			194	1	error	standalone-oracle: oracle_error (Processor failed: 
+Error: template variant operation in `bibliography.type-variants[entry-encyclopedia,manuscript]` matched no component
+)
+interkulturelle-germanistik-gottingen	american-sociological-association	0.9575			221	1	error	standalone-oracle: oracle_error (Processor failed: 
+Error: template variant operation in `bibliography.type-variants[article]` matched no component
+)
+harvard-coventry-university	new-harts-rules-author-date-space-publisher	0.9504	0.6866	0.9242	214	1	delta-expressible	
+law-technology-and-humans	mhra-shortened-notes-publisher-place	0.9493	0.8358	0.6515	190	1	not-delta-expressible	
+journal-of-advertising-research	american-marketing-association	0.9481			195	1	error	standalone-oracle: oracle_error (Processor failed: 
+Error: template variant operation in `bibliography.type-variants[entry-encyclopedia,manuscript]` matched no component
+)
+chicago-notes-bibliography-access-dates	chicago-notes-bibliography-17th-edition	0.9452	0.7727	0.7015	232	1	not-delta-expressible	
+australian-road-research-board	african-online-scientific-information-systems-harvard	0.9420	0.8060	0.7206	216	1	not-delta-expressible	
+reproduction	institute-of-mathematics-and-its-applications	0.9376	0.9552	0.7353	172	1	not-delta-expressible	
+bulletin-de-correspondance-hellenique	karger-journals-author-date	0.9364	0.6866	0.8507	181	1	delta-expressible	
+institut-national-de-sante-publique-du-quebec-napp	american-sociological-association	0.9326	0.8806	0.8060	261	1	not-delta-expressible	
+anabases	oxford-journals-scimed-author-date	0.9295	0.7015	0.6471	129	1	not-delta-expressible	
+donau-universitat-krems-department-fur-e-governance-in-wirthschaft-und-verwaltung	chicago-notes-bibliography-17th-edition	0.9197	0.8507	0.7015	331	1	not-delta-expressible	
+journal-of-contemporary-water-research-and-education	mhra-author-date-publisher-place	0.9178					error	standalone-migrate: Error: Resolution(TemplateVariantAnchorNotFound { location: "bibliography.type-variants[entry-dictionary]" })
+new-harts-rules-notes-initials-bracket-role-page-range-no-url	new-harts-rules-notes-label-page-no-url	0.9131	0.7761	0.3582	325	1	not-delta-expressible	
+harvard-durham-university-business-school	oxford-journals-scimed-author-date	0.9074	0.8358	0.6471	233	1	not-delta-expressible	
+chicago-in-text-shortened-author-no-url	modern-language-association	0.9058	0.6970	0.7463	237	1	delta-expressible	
+chicago-in-text-shortened-author	modern-language-association	0.9058	0.6212	0.7463	216	1	delta-expressible	
+the-journal-of-transport-history	chicago-notes-bibliography-classic-archive-place-first-no-url	0.8887	0.8657	0.4559	228	1	not-delta-expressible	
+china-information	oscola-no-ibid	0.8723			151	1	error	standalone-oracle: oracle_error (Processor failed: 
+Error: template variant operation in `bibliography.type-variants[thesis]` matched no component
+)
+stuttgart-media-university	karger-journals-author-date	0.8704			197	1	error	standalone-oracle: oracle_error (Processor failed: 
+Error: template variant operation in `bibliography.type-variants[patent]` matched no component
+)
+veterinary-record	inter-research-science-center	0.8695	0.8657	0.8806	166	1	delta-expressible	
+universite-de-sherbrooke-histoire	chicago-notes-bibliography-17th-edition	0.8311			232	1	error	standalone-oracle: oracle_error (Processor failed: 
+Error: template variant operation in `bibliography.type-variants[paper-conference]` matched no component
+)
+early-medieval-europe	new-harts-rules-notes-label-page-no-url	0.8254	0.9000	0.3582	184	1	not-delta-expressible	
+seminaire-saint-sulpice-ecole-theologie	chicago-notes-bibliography-classic-archive-place-first-no-url	0.8046	0.4627	0.4559	258	1	not-delta-expressible	
+journal-of-pediatric-gastroenterology-and-nutrition	elsevier-with-titles	0.8043	1.0000	0.6716	225	1	not-delta-expressible	
+radiation-protection-dosimetry	elsevier-with-titles	0.8043	0.9701	0.6716	183	1	not-delta-expressible	
+histoire-at-politique	chicago-notes-classic-no-url	0.8038	0.8806	0.0303	213	1	not-delta-expressible	

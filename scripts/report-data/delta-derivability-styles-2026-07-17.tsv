@@ -1,0 +1,41 @@
+candidate_id	target_id	similarity	standalone_fidelity	wrapper_fidelity	wrapper_bytes	wrapper_key_count	verdict	detail
+mhra-notes-publisher-place	mhra-notes	0.9796	0.7879	0.6667	197	1	not-delta-expressible	
+mhra-notes	mhra-notes-publisher-place	0.9796	0.7879	0.6515	175	1	not-delta-expressible	
+american-marketing-association	american-sociological-association	0.9783	0.9701	0.8060	196	1	not-delta-expressible	
+american-sociological-association	american-marketing-association	0.9783	0.9104	0.7206	173	1	not-delta-expressible	
+chicago-author-date-classic	springer-humanities-author-date	0.9783			205	1	error	standalone-oracle: oracle_error (Processor failed: 
+Error: template variant operation in `bibliography.type-variants[review-book]` matched no component
+)
+springer-humanities-author-date	chicago-author-date-classic	0.9783			196	1	error	standalone-oracle: oracle_error (Processor failed: 
+Error: template variant operation in `bibliography.type-variants[paper-conference]` matched no component
+)
+bristol-university-press	american-fisheries-society	0.9766			177	1	error	standalone-oracle: oracle_error (Processor failed: 
+Error: template variant operation in `bibliography.type-variants[report,graphic]` matched no component
+)
+inter-research-science-center	the-geological-society-of-london	0.9754					error	standalone-migrate: Error: Resolution(TemplateVariantAnchorNotFound { location: "bibliography.type-variants[patent]" })
+the-geological-society-of-london	inter-research-science-center	0.9754	1.0000	0.8806	196	1	not-delta-expressible	
+springer-humanities-brackets	elsevier-with-titles	0.9728	0.9552	0.6716	192	1	not-delta-expressible	
+institute-of-mathematics-and-its-applications	international-union-of-crystallography	0.9710	0.9701	0.5147	231	1	not-delta-expressible	
+international-union-of-crystallography	institute-of-mathematics-and-its-applications	0.9710	0.9104	0.7353	233	1	not-delta-expressible	
+springer-physics-author-date	springer-basic-author-date-no-et-al	0.9710	0.8358	0.7910	198	1	not-delta-expressible	
+international-journal-of-wildland-fire	springer-basic-author-date	0.9666	0.9851	0.8060	205	1	not-delta-expressible	
+african-online-scientific-information-systems-harvard	harvard-cite-them-right	0.9627			246	1	error	standalone-oracle: oracle_error (Processor failed: 
+Error: template variant operation in `bibliography.type-variants[report]` matched no component
+)
+harvard-cite-them-right	african-online-scientific-information-systems-harvard	0.9627			205	1	error	standalone-oracle: oracle_error (Processor failed: 
+Error: template variant operation in `bibliography.type-variants[paper-conference]` matched no component
+)
+begell-house-chicago-author-date	institute-of-mathematics-and-its-applications	0.9620	0.9403	0.7353	218	1	not-delta-expressible	
+oxford-journals-scimed-author-date	american-fisheries-society	0.9579	1.0000	0.7206	214	1	not-delta-expressible	
+chicago-notes-classic-no-url	chicago-notes-publisher-place-archive-place-first-no-url	0.9563	0.9091	0.0303	260	1	not-delta-expressible	
+chicago-notes-publisher-place-archive-place-first-no-url	chicago-notes-classic-no-url	0.9563	0.9091	0.0303	328	1	not-delta-expressible	
+copernicus-publications	the-geological-society-of-london	0.9511	0.9701	0.7910	181	1	not-delta-expressible	
+chicago-notes-bibliography-17th-edition	new-harts-rules-notes	0.9227	0.7727	0.5606	200	1	not-delta-expressible	
+mhra-shortened-notes-publisher-place	chicago-shortened-notes-bibliography	0.9203	0.7879	0.7273	243	1	not-delta-expressible	
+museum-national-dhistoire-naturelle	begell-house-chicago-author-date	0.9181	0.9851	0.8060	207	1	not-delta-expressible	
+mhra-author-date-publisher-place	new-harts-rules-author-date-space-publisher	0.9070	0.6061	0.9242	242	1	delta-expressible	
+mhra-notes-publisher-place-no-url	new-harts-rules-notes-label-page-no-url	0.9039	0.9394	0.3582	247	1	not-delta-expressible	
+new-harts-rules-notes-label-page-no-url	mhra-notes-publisher-place-no-url	0.9039	0.8657	0.4030	272	1	not-delta-expressible	
+chicago-notes-bibliography-classic-archive-place-first-no-url	new-harts-rules-notes-label-page-no-url	0.8974			310	1	error	standalone-oracle: oracle_error (Processor failed: 
+Error: template variant operation in `bibliography.type-variants[article-newspaper]` matched no component
+)

@@ -11,6 +11,7 @@
  *   node scripts/find-alias-candidates.js --threshold 0.90
  *   node scripts/find-alias-candidates.js --limit 100
  *   node scripts/find-alias-candidates.js --out /tmp/aliases.tsv
+ *   node scripts/find-alias-candidates.js --include-registered --threshold 0.80
  *
  * Output:
  *   TSV file (stdout and --out PATH) with columns:
@@ -59,6 +60,7 @@ function parseArgs() {
     stylesDir: DEFAULT_STYLES_DIR,
     confirmWeb: false,
     updateMetadata: false,
+    includeRegistered: false,
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -73,6 +75,8 @@ function parseArgs() {
       options.confirmWeb = true;
     } else if (arg === '--update-metadata') {
       options.updateMetadata = true;
+    } else if (arg === '--include-registered') {
+      options.includeRegistered = true;
     } else if (arg === '--out') {
       options.out = args[++i];
     } else if (arg === '--refs-fixture') {
@@ -335,9 +339,16 @@ function loadRegistry(registryPath) {
 
 /**
  * Enumerate independent styles in stylesDir, excluding builtins and aliases.
+ *
+ * When `includeRegistered` is true, builtins/known-aliases are NOT excluded —
+ * used to measure near-clone/delta-derivability against styles that are
+ * already registered (e.g. embedded parents), rather than only discovering
+ * brand-new alias candidates. Self-comparison against a candidate's own
+ * fingerprint is guarded separately in processBatch, since an already-
+ * registered style would otherwise trivially "match" itself at similarity 1.
  */
-function enumerateCandidates(stylesDir, builtins, knownAliases) {
-  const exclude = new Set([...builtins, ...knownAliases]);
+function enumerateCandidates(stylesDir, builtins, knownAliases, includeRegistered = false) {
+  const exclude = includeRegistered ? new Set() : new Set([...builtins, ...knownAliases]);
   const candidates = [];
 
   const files = fs.readdirSync(stylesDir);
@@ -397,6 +408,10 @@ async function processBatch(candidates, targetFingerprints, testItems, testCitat
       let bestScore = { similarity: 0, citation_match: 0, bib_match: 0 };
 
       for (const [targetId, targetFp] of Object.entries(targetFingerprints)) {
+        // A registered candidate (see --include-registered) trivially matches
+        // itself at similarity 1; skip self-comparison so it can only be
+        // paired with a *different* registered style.
+        if (targetId === candidate.id) continue;
         const score = scoreFingerprints(fp, targetFp);
         if (score.similarity > bestScore.similarity) {
           bestTarget = targetId;
@@ -568,6 +583,19 @@ async function checkDuckDuckGo(query, targetId) {
 }
 
 /**
+ * Classify a similarity score into a fidelity band.
+ * `alias` candidates (>= 0.98) are near-certain builtin duplicates; `near-clone`
+ * candidates (0.80-0.98) are close enough to be worth a delta-derivability check
+ * but not certain aliases. Scores below 0.80 (only reachable when the caller
+ * lowers --threshold below the near-clone floor) are left unbanded.
+ */
+function bandFor(similarity) {
+  if (similarity >= 0.98) return 'alias';
+  if (similarity >= 0.80) return 'near-clone';
+  return '';
+}
+
+/**
  * Write results as TSV.
  */
 function writeTSV(results, filePath, threshold) {
@@ -577,13 +605,14 @@ function writeTSV(results, filePath, threshold) {
   filtered.sort((a, b) => b.similarity - a.similarity);
 
   const header = [
-    'candidate_id', 
-    'best_target', 
-    'similarity', 
-    'citation_match', 
-    'bib_match', 
-    'evidence_url', 
-    'confidence_note'
+    'candidate_id',
+    'best_target',
+    'similarity',
+    'citation_match',
+    'bib_match',
+    'evidence_url',
+    'confidence_note',
+    'band'
   ];
   const lines = [header.join('\t')];
 
@@ -596,6 +625,7 @@ function writeTSV(results, filePath, threshold) {
       row.bib_match.toFixed(4),
       row.evidence_url || '',
       row.confidence_note || '',
+      bandFor(row.similarity),
     ].join('\t'));
   }
 
@@ -649,7 +679,7 @@ async function main() {
     if (options.updateMetadata) {
       const filtered = await handleUpdateMetadata(options);
       
-      const header = ['candidate_id', 'best_target', 'similarity', 'citation_match', 'bib_match', 'evidence_url', 'confidence_note'];
+      const header = ['candidate_id', 'best_target', 'similarity', 'citation_match', 'bib_match', 'evidence_url', 'confidence_note', 'band'];
       console.log(header.join('\t'));
       for (const row of filtered) {
         console.log([
@@ -660,6 +690,7 @@ async function main() {
           row.bib_match.toFixed(4),
           row.evidence_url || '',
           row.confidence_note || '',
+          bandFor(row.similarity),
         ].join('\t'));
       }
       return;
@@ -696,7 +727,7 @@ async function main() {
     console.error(`Target styles ready: ${Object.keys(targetFingerprints).length}/${builtins.length}`);
 
     // Enumerate candidates
-    const allCandidates = enumerateCandidates(options.stylesDir, builtins, knownAliases);
+    const allCandidates = enumerateCandidates(options.stylesDir, builtins, knownAliases, options.includeRegistered);
     const candidates = options.limit
       ? allCandidates.slice(0, options.limit)
       : allCandidates;
@@ -718,13 +749,14 @@ async function main() {
 
     // Output to stdout
     const header = [
-      'candidate_id', 
-      'best_target', 
-      'similarity', 
-      'citation_match', 
-      'bib_match', 
-      'evidence_url', 
-      'confidence_note'
+      'candidate_id',
+      'best_target',
+      'similarity',
+      'citation_match',
+      'bib_match',
+      'evidence_url',
+      'confidence_note',
+      'band'
     ];
     console.log(header.join('\t'));
     for (const row of filtered) {
@@ -736,6 +768,7 @@ async function main() {
         row.bib_match.toFixed(4),
         row.evidence_url || '',
         row.confidence_note || '',
+        bandFor(row.similarity),
       ].join('\t'));
     }
 
