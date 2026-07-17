@@ -1456,8 +1456,12 @@ function toPublishedBenchmarkRunRecord(benchmarkRunRecord) {
 function determineBenchmarkStatus(oracleResult, minPassRate) {
   if (oracleResult.error) return 'error';
   if (minPassRate != null) {
-    const bib = oracleResult.bibliography || { passed: 0, total: 0 };
-    const cit = oracleResult.citations || { passed: 0, total: 0 };
+    // Registered divergences (verification-policy.yaml `divergences`) mask mismatches that
+    // are known-intentional, not defects — the gate must judge conformance against the
+    // adjusted counts, or every registered divergence is purely decorative and never
+    // actually keeps a style's declared min_pass_rate green.
+    const bib = oracleResult.adjusted?.bibliography || oracleResult.bibliography || { passed: 0, total: 0 };
+    const cit = oracleResult.adjusted?.citations || oracleResult.citations || { passed: 0, total: 0 };
     const totalPassed = (bib.passed || 0) + (cit.passed || 0);
     const totalItems = (bib.total || 0) + (cit.total || 0);
     const matchRate = totalItems > 0 ? totalPassed / totalItems : 0;

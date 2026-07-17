@@ -47,6 +47,22 @@ divergences:
     note: Citum normalizes Zotero's tex.cstr alias to canonical CSTR. When the
       same identifier is already embedded in the URL, citeproc-js omits the
       canonical tail because it does not recognize the alias.
+  div-010:
+    scopes:
+      - citation
+      - bibliography
+    tags:
+      - latin-script-punctuation-localization
+      - verification-proxy-gap
+    note: GB/T-style bilingual styles hardcode CJK full-width delimiters
+      (：，（）) for every item, including Latin-script references, where GB/T
+      practice is Latin half-width punctuation. Citeproc-js reproduces the
+      same hardcoded full-width punctuation, so byte-parity against it does
+      not catch this — the fidelity gate's proxy is weaker than the real
+      requirement (same failure class as the tier-0 alias negative result).
+      Adjusted verification masks mismatches that are punctuation-only after
+      remapping full-width to Latin delimiters, for Latin-script items only.
+      See docs/specs/MULTILINGUAL.md §3.2a and csl26-fn9x.
 
 styles:
   numeric-comp:
