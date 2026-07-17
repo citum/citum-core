@@ -277,10 +277,18 @@ pub struct Name {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub suffix: Option<String>,
     /// Dropping particle (de, van, etc. that sorts with given name)
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "dropping-particle",
+        alias = "dropping_particle",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub dropping_particle: Option<String>,
     /// Non-dropping particle (de, van, etc. that sorts with family name)
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(
+        rename = "non-dropping-particle",
+        alias = "non_dropping_particle",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub non_dropping_particle: Option<String>,
 }
 
@@ -998,8 +1006,19 @@ fn handle_string_variable(ref_obj: &mut Reference, key: &str, value: &str) {
         "publisher" if ref_obj.publisher.is_none() => {
             ref_obj.publisher = Some(trimmed.to_string());
         }
-        "archive-place" | "archive-location" if ref_obj.archive_location.is_none() => {
+        "archive-location" if ref_obj.archive_location.is_none() => {
             ref_obj.archive_location = Some(trimmed.to_string());
+        }
+        // Distinct from `archive-location` (the shelfmark/call number within
+        // the archive): this is the archive's own geographic place (收藏地).
+        // Stored in `extra` rather than a dedicated field so downstream
+        // consumers (`archive_info_from_legacy_flat`) can assemble it into
+        // `ArchiveInfo::place` alongside the archive name.
+        "archive-place" => {
+            ref_obj
+                .extra
+                .entry(key.to_string())
+                .or_insert_with(|| serde_json::Value::String(trimmed.to_string()));
         }
         "archive" if ref_obj.archive.is_none() => {
             ref_obj.archive = Some(trimmed.to_string());

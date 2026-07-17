@@ -152,6 +152,11 @@ pub(super) fn from_patent_ref(
     ctx: RefContext,
 ) -> InputReference {
     let original = legacy_original_relation(&legacy);
+    // GB/T 7714 and most citation styles prefer the filing/application
+    // number (CSL `call-number`) over the granted/publication number when
+    // both are present; `patent_number` still carries the granted number for
+    // consumers that want it.
+    let application_number = legacy_extra_str(&legacy, "call-number");
     InputReference::Patent(Box::new(Patent {
         id: ctx.id,
         title: build_title(ctx.title, ctx.short_title.clone()),
@@ -159,7 +164,8 @@ pub(super) fn from_patent_ref(
         assignee: None,
         original,
         patent_number: legacy.number.unwrap_or_default(),
-        application_number: None,
+        application_number,
+        pages: legacy.page.clone(),
         created: ctx.created,
         filing_date: None,
         issued: ctx.issued,

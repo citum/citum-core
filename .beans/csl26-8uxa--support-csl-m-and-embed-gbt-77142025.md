@@ -10,7 +10,7 @@ tags:
     - schema
     - style
 created_at: 2026-07-15T12:24:38Z
-updated_at: 2026-07-16T16:43:39Z
+updated_at: 2026-07-17T10:29:16Z
 ---
 
 Implement the CSL-M migration and embedded GB/T 7714—2025 family approved from GitHub Discussion #828.
@@ -102,3 +102,16 @@ Numeric upstream corpus: 129/203 → **154/203**; all gates green (2031 Rust tes
 - reverted: unconditional accessed date in book variant (GB shows accessed only when issued is missing — needs conditional design, folded into csl26-zmod)
 
 Wave-3 is beaned: csl26-49sj (conditional number labels / divergences), csl26-zmod (structural long tail, ~20 entries).
+
+### Wave-3 result (2026-07-17)
+
+Numeric upstream corpus: 154/203 → **190/203**. Both wave-3 beans landed:
+
+- **csl26-49sj** (conditional number labels): typed `when-numeric: <label-form>` gate on TemplateNumber, resolving locale-owned terms with CSL-M `%s`-circumfix support (see TEMPLATE_V3.md §2.4 for the design and the MF2-vs-typed-field boundary). Caught and corrected a mid-implementation mistake (hardcoded zh glyphs in the shared bilingual base) before it landed.
+- **csl26-zmod** (structural long tail): dedicated periodical/graphic type-variants, rebuilt archive imprint, conference event-title wiring, patent application-number preference, name-particle/suffix fixes, container-title-short punctuation, conditional accessed-date/full-date handling (164→187/203); map/document edition+pages wiring closed the rest (187→190/203).
+
+Official gate (report-core): numeric fidelity 0.845 (bib 208/250), citations 21/21. `just check-core-quality` clean across all 157 styles (no regressions); `just pre-commit` clean (2040/2040 tests).
+
+Not yet 100%: 13 entries remain, split into a filed ordinal-number-form gap (csl26-g49a — `NumberForm::Ordinal` is schema-only, never implemented in the engine; verified this is NOT a citeproc/oracle divergence, both sides agree on term text) and 9 genuine structural gaps (csl26-ra71, wave-3 follow-up: container-volume-in-chapter, volume-title note append, circa dates, map scale/dimensions, CSTR dedupe, preprint version prefix).
+
+Numeric stays tracked (`count_toward_fidelity: true, min_pass_rate: 1.0` in verification-policy.yaml, unchanged) but not yet baseline-gated in core-quality-baseline.json — matches the acceptance criterion's actual bar, not fudged to the achieved rate. The acceptance-criteria checkbox for 100% fidelity remains unchecked pending csl26-g49a + csl26-ra71.

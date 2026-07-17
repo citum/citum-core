@@ -115,9 +115,12 @@ terms:
     long:
       singular: 卷
       plural: 卷
+    # Short form carries the CSL-M `%s` circumfix convention (matches the
+    # pinned upstream term `第%s卷`): the engine splits on `%s` and wraps the
+    # numeric value, rather than treating the whole string as a plain prefix.
     short:
-      singular: 卷
-      plural: 卷
+      singular: 第%s卷
+      plural: 第%s卷
   edition:
     long:
       singular: 版

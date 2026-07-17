@@ -38,6 +38,9 @@ fn event_place(reference: &Reference) -> Option<String> {
         ClassExtension::AudioVisual(audio_visual) => {
             embedded_event_place(audio_visual.event.as_ref()?)
         }
+        ClassExtension::CollectionComponent(component) => {
+            embedded_container_event_place(component.container.as_ref()?)
+        }
         _ => None,
     }
 }
@@ -51,6 +54,9 @@ fn event_title(reference: &Reference) -> Option<String> {
         }
         ClassExtension::AudioVisual(audio_visual) => {
             embedded_event_title(audio_visual.event.as_ref()?)
+        }
+        ClassExtension::CollectionComponent(component) => {
+            embedded_container_event_title(component.container.as_ref()?)
         }
         _ => None,
     }
@@ -74,6 +80,31 @@ fn embedded_event_place(relation: &WorkRelation) -> Option<String> {
         return None;
     };
     event.location.clone()
+}
+
+/// Reads the originating-event title from a collection component's
+/// container (e.g. a `paper-conference`'s proceedings, whose `event` field
+/// carries the conference name when no separate container-title exists).
+fn embedded_container_event_title(relation: &WorkRelation) -> Option<String> {
+    let WorkRelation::Embedded(reference) = relation else {
+        return None;
+    };
+    let ClassExtension::Collection(collection) = reference.extension() else {
+        return None;
+    };
+    embedded_event_title(collection.event.as_ref()?)
+}
+
+/// Reads the originating-event location from a collection component's
+/// container. See [`embedded_container_event_title`].
+fn embedded_container_event_place(relation: &WorkRelation) -> Option<String> {
+    let WorkRelation::Embedded(reference) = relation else {
+        return None;
+    };
+    let ClassExtension::Collection(collection) = reference.extension() else {
+        return None;
+    };
+    embedded_event_place(collection.event.as_ref()?)
 }
 
 fn dimensions(reference: &Reference) -> Option<String> {

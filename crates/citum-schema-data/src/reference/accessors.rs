@@ -1195,6 +1195,7 @@ impl InputReference {
             ClassExtension::LegalCase(r) => r.page.clone().map(NumOrStr::Str),
             ClassExtension::Statute(r) => r.page.clone().map(NumOrStr::Str),
             ClassExtension::Treaty(r) => r.page.clone().map(NumOrStr::Str),
+            ClassExtension::Patent(r) => r.pages.clone().map(NumOrStr::Str),
             _ => None,
         }
     }

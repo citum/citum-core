@@ -2495,6 +2495,13 @@
                 "null"
               ]
             },
+            "pages": {
+              "description": "Page range within the patent gazette or publication.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "created": {
               "description": "Creation or origination date of the patented work.",
               "$ref": "#/$defs/EdtfString"

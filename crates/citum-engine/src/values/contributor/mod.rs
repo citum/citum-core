@@ -247,6 +247,7 @@ fn format_contributor_names(
         and: component.and.as_ref(),
         initialize_with: effective_rendering.initialize_with.as_ref(),
         name_form: effective_name_form,
+        strip_periods: effective_rendering.strip_periods,
     };
     names::format_names(names_vec, &component.form, options, &name_overrides, hints)
 }

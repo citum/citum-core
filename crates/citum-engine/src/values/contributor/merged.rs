@@ -90,6 +90,7 @@ pub(super) fn values<F: OutputFormat<Output = String>>(
         and: component.and.as_ref(),
         initialize_with: effective_rendering.initialize_with.as_ref(),
         name_form: component.name_form.or(effective_rendering.name_form),
+        strip_periods: effective_rendering.strip_periods,
     };
     let selected_indices =
         super::names::selected_name_indices(names.len(), name_overrides.shorten, hints);
