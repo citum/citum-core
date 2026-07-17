@@ -349,7 +349,15 @@ fn format_closed_range(
     );
 
     match (start, end) {
-        (Some(s), Some(e)) => Some(format!("{s}{delimiter}{e}")),
+        (Some(s), Some(e)) => {
+            let prefix = date_config
+                .and_then(|config| config.range_end_prefix.as_deref())
+                .unwrap_or("");
+            let suffix = date_config
+                .and_then(|config| config.range_end_suffix.as_deref())
+                .unwrap_or("");
+            Some(format!("{s}{delimiter}{prefix}{e}{suffix}"))
+        }
         (Some(s), None) => Some(s),
         (None, Some(e)) => Some(e),
         (None, None) => None,

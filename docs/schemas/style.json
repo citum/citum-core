@@ -4924,6 +4924,20 @@
           "type": "string",
           "default": "–"
         },
+        "range-end-prefix": {
+          "description": "Optional prefix applied to the end of a closed date range.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "range-end-suffix": {
+          "description": "Optional suffix applied to the end of a closed date range.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "open-range-marker": {
           "description": "Marker for open-ended ranges (e.g., \"–present\"). None uses locale default.",
           "type": [

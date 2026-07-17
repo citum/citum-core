@@ -64,6 +64,10 @@ pub enum NoDateForm {
 /// full explicit configuration with field-level overrides.
 #[derive(Debug, PartialEq, Clone, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[allow(
+    clippy::large_enum_variant,
+    reason = "Boxing the explicit configuration would break the public configuration API."
+)]
 #[serde(untagged)]
 pub enum DateConfigEntry {
     /// A named preset (e.g., "long", "short", "numeric", "iso").
@@ -103,6 +107,12 @@ pub struct DateConfig {
     /// Delimiter for date ranges (default: en-dash "–").
     #[serde(default = "default_range_delimiter")]
     pub range_delimiter: String,
+    /// Optional prefix applied to the end of a closed date range.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub range_end_prefix: Option<String>,
+    /// Optional suffix applied to the end of a closed date range.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub range_end_suffix: Option<String>,
     /// Marker for open-ended ranges (e.g., "–present"). None uses locale default.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub open_range_marker: Option<String>,
@@ -159,6 +169,8 @@ impl Default for DateConfig {
             uncertainty_marker: Some("?".to_string()),
             approximation_marker: Some("ca. ".to_string()),
             range_delimiter: default_range_delimiter(),
+            range_end_prefix: None,
+            range_end_suffix: None,
             open_range_marker: None,
             no_date_form: None,
             no_date_year_suffix_delimiter: default_no_date_year_suffix_delimiter(),

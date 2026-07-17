@@ -601,21 +601,39 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
 impl From<csl_legacy::csl_json::DateVariable> for EdtfString {
     fn from(date: csl_legacy::csl_json::DateVariable) -> Self {
         if let Some(literal) = date.literal {
-            return EdtfString(literal);
+            return EdtfString(normalize_csl_circa_literal(&literal).unwrap_or(literal));
         }
         if let Some(parts) = date.date_parts {
             let mut rendered = parts.iter().map(|part| render_date_part(part));
             if let Some(first) = rendered.next() {
                 if let Some(second) = rendered.next() {
-                    return EdtfString(format!("{first}/{second}"));
+                    return EdtfString(apply_csl_circa_marker(
+                        format!("{first}/{second}"),
+                        date.circa,
+                    ));
                 }
-                return EdtfString(first);
+                return EdtfString(apply_csl_circa_marker(first, date.circa));
             }
         }
         if let Some(raw) = date.raw {
-            return EdtfString(raw);
+            return EdtfString(normalize_csl_circa_literal(&raw).unwrap_or(raw));
         }
         EdtfString(String::new())
+    }
+}
+
+/// Convert CSL's common circa spellings into their equivalent EDTF form.
+fn normalize_csl_circa_literal(value: &str) -> Option<String> {
+    let year = value.strip_prefix('c')?.trim();
+    (year.len() == 4 && year.bytes().all(|byte| byte.is_ascii_digit())).then(|| format!("{year}~"))
+}
+
+/// Apply CSL's structured circa flag to an EDTF date that lacks a qualifier.
+fn apply_csl_circa_marker(value: String, circa: Option<bool>) -> String {
+    if circa == Some(true) && !value.ends_with('~') && !value.ends_with('%') {
+        format!("{value}~")
+    } else {
+        value
     }
 }
 
