@@ -135,6 +135,7 @@ impl BibliographySpec {
                     .map(|spec| ResolvedLocalizedTemplate {
                         template: spec.template.clone(),
                         locale: None,
+                        type_variants: spec.type_variants.clone(),
                     })
             })
             .or_else(|| {
@@ -142,6 +143,7 @@ impl BibliographySpec {
                     .map(|template| ResolvedLocalizedTemplate {
                         template,
                         locale: None,
+                        type_variants: None,
                     })
             })
     }
@@ -159,14 +161,25 @@ impl BibliographySpec {
         language: Option<&str>,
     ) -> Option<ResolvedLocalizedTemplate> {
         let mut resolved = self.resolve_localized_template(language)?;
-        if let Some(template) = self.type_variants.as_ref().and_then(|variants| {
-            variants.iter().find_map(|(selector, variant)| {
-                selector
-                    .matches(ref_type)
-                    .then(|| variant.clone().into_template())
-                    .flatten()
+        if let Some(template) = resolved
+            .type_variants
+            .as_ref()
+            .and_then(|variants| {
+                variants.iter().find_map(|(selector, template)| {
+                    selector.matches(ref_type).then(|| template.clone())
+                })
             })
-        }) {
+            .or_else(|| {
+                self.type_variants.as_ref().and_then(|variants| {
+                    variants.iter().find_map(|(selector, variant)| {
+                        selector
+                            .matches(ref_type)
+                            .then(|| variant.clone().into_template())
+                            .flatten()
+                    })
+                })
+            })
+        {
             resolved.template = template;
         }
         Some(resolved)
@@ -178,13 +191,7 @@ impl BibliographySpec {
         ref_type: &str,
         language: Option<&str>,
     ) -> Option<Template> {
-        if let Some(type_variants) = &self.type_variants {
-            for (selector, variant) in type_variants {
-                if selector.matches(ref_type) {
-                    return variant.clone().into_template();
-                }
-            }
-        }
-        self.resolve_template_for_language(language)
+        self.resolve_localized_template_for_type(ref_type, language)
+            .map(|resolved| resolved.template)
     }
 }

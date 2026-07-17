@@ -190,6 +190,8 @@ pub struct TermBlock {
 pub struct VariableBlock {
     pub variable: Variable,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub number_form: Option<citum_schema::template::NumberForm>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub label: Option<LabelOptions>,
     #[serde(flatten)]
     pub formatting: FormattingOptions,

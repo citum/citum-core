@@ -611,6 +611,38 @@ bibliography:
 }
 
 #[test]
+fn bibliography_localized_type_variant_takes_precedence() {
+    let yaml = r#"
+info:
+  title: Localized bibliography type variants
+bibliography:
+  template:
+    - title: primary
+  locales:
+    - locale: [en]
+      template:
+        - title: primary
+      type-variants:
+        book:
+          - number: edition
+  type-variants:
+    book:
+      - variable: publisher
+"#;
+    let style: Style = serde_yaml::from_str(yaml).unwrap();
+    let bibliography = style.bibliography.unwrap();
+
+    assert!(matches!(
+        bibliography.resolve_template_for_type("book", Some("en-US")),
+        Some(template) if matches!(template.first(), Some(template::TemplateComponent::Number(_)))
+    ));
+    assert!(matches!(
+        bibliography.resolve_template_for_type("book", Some("zh-CN")),
+        Some(template) if matches!(template.first(), Some(template::TemplateComponent::Variable(_)))
+    ));
+}
+
+#[test]
 fn test_bibliography_with_groups() {
     let yaml = r#"
 info:

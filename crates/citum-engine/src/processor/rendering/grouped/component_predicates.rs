@@ -8,8 +8,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use crate::reference::Reference;
 use citum_schema::{
+    ResolvedLocalizedTemplate, TemplateVariants,
     reference::NumOrStr,
-    template::{DateVariable, NumberVariable, SimpleVariable, TemplateComponent},
+    template::{DateVariable, NumberVariable, SimpleVariable, Template, TemplateComponent},
 };
 
 /// Returns the first type-variant template whose selector matches `ref_type`,
@@ -31,6 +32,30 @@ pub(in crate::processor::rendering) fn resolve_type_variant<'a>(
             None
         }
     })
+}
+
+/// Resolve locale-owned variants before section-level variants, retaining reference aliases.
+pub(in crate::processor::rendering) fn resolve_localized_type_variant(
+    resolved: ResolvedLocalizedTemplate,
+    type_variants: Option<&TemplateVariants>,
+    ref_type: &str,
+) -> Template {
+    let selector_candidates = crate::values::type_class::type_selector_aliases(ref_type);
+    resolved
+        .type_variants
+        .as_ref()
+        .and_then(|variants| {
+            variants.iter().find_map(|(selector, template)| {
+                selector_candidates
+                    .iter()
+                    .any(|candidate| selector.matches(candidate))
+                    .then(|| template.clone())
+            })
+        })
+        .or_else(|| {
+            resolve_type_variant(type_variants, ref_type).map(<[TemplateComponent]>::to_vec)
+        })
+        .unwrap_or(resolved.template)
 }
 
 pub(super) fn is_term_only_component(component: &TemplateComponent) -> bool {

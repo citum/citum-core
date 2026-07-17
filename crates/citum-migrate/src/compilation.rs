@@ -11,7 +11,7 @@ use crate::{
 };
 use citum_schema::{
     LocalizedTemplateSpec,
-    template::{TemplateComponent, TypeSelector},
+    template::{NumberForm, NumberVariable, TemplateComponent, TypeSelector},
 };
 use std::collections::{BTreeSet, HashSet};
 
@@ -65,8 +65,19 @@ pub fn compile_from_xml(
     tracker: &ProvenanceTracker,
 ) -> XmlCompilationOutput {
     let mut output = compile_single_layouts(legacy_style, options, enable_provenance, tracker);
+    let gb_t_chinese_edition = legacy_style.info.id.contains("GB-T-7714");
+    if gb_t_chinese_edition {
+        normalize_gb_t_chinese_editions(&mut output);
+    }
     let (bibliography_locales, citation_locales, unsupported_localized_layouts) =
-        compile_localized_layouts(legacy_style, options, enable_provenance, tracker, &output);
+        compile_localized_layouts(
+            legacy_style,
+            options,
+            enable_provenance,
+            tracker,
+            &output,
+            gb_t_chinese_edition,
+        );
     output.bibliography_locales = bibliography_locales;
     output.citation_locales = citation_locales;
     output.unsupported_localized_layouts = unsupported_localized_layouts;
@@ -223,6 +234,7 @@ fn compile_localized_layouts(
     enable_provenance: bool,
     tracker: &ProvenanceTracker,
     fallback: &XmlCompilationOutput,
+    gb_t_chinese_edition: bool,
 ) -> (
     Option<Vec<LocalizedTemplateSpec>>,
     Option<Vec<LocalizedTemplateSpec>>,
@@ -236,7 +248,7 @@ fn compile_localized_layouts(
                 .iter()
                 .map(|localized| {
                     if localized.locales.is_empty() {
-                        return localized_spec(localized, fallback.bibliography.clone());
+                        return localized_spec(localized, fallback.bibliography.clone(), None);
                     }
 
                     let mut branch_style = legacy_style.clone();
@@ -246,22 +258,28 @@ fn compile_localized_layouts(
                     }
                     branch_style.citation.localized_layouts.clear();
                     let mut branch_options = options.clone();
-                    let branch = compile_single_layouts(
+                    let mut branch = compile_single_layouts(
                         &branch_style,
                         &mut branch_options,
                         enable_provenance,
                         tracker,
                     );
+                    if gb_t_chinese_edition {
+                        merge_gb_t_edition_labels(&mut branch);
+                    }
+                    let localized_type_variants = (explicit_type_templates_differ(
+                        legacy_style,
+                        &localized.layout,
+                        &bibliography.layout,
+                        branch.type_templates.as_ref(),
+                        fallback.type_templates.as_ref(),
+                    ) || (gb_t_chinese_edition
+                        && localized_uses_english(&localized.locales)))
+                    .then_some(branch.type_templates)
+                    .flatten();
                     unsupported |=
-                        !layout_metadata_matches(&localized.layout, &bibliography.layout)
-                            || explicit_type_templates_differ(
-                                legacy_style,
-                                &localized.layout,
-                                &bibliography.layout,
-                                branch.type_templates.as_ref(),
-                                fallback.type_templates.as_ref(),
-                            );
-                    localized_spec(localized, branch.bibliography)
+                        !layout_metadata_matches(&localized.layout, &bibliography.layout);
+                    localized_spec(localized, branch.bibliography, localized_type_variants)
                 })
                 .collect()
         })
@@ -274,7 +292,7 @@ fn compile_localized_layouts(
             .iter()
             .map(|localized| {
                 if localized.locales.is_empty() {
-                    return localized_spec(localized, fallback.citation.clone());
+                    return localized_spec(localized, fallback.citation.clone(), None);
                 }
 
                 let mut branch_style = legacy_style.clone();
@@ -294,7 +312,7 @@ fn compile_localized_layouts(
                     !layout_metadata_matches(&localized.layout, &legacy_style.citation.layout)
                         || branch.citation_overrides != fallback.citation_overrides
                         || branch.unsupported_mixed_conditions;
-                localized_spec(localized, branch.citation)
+                localized_spec(localized, branch.citation, None)
             })
             .collect()
     });
@@ -302,15 +320,95 @@ fn compile_localized_layouts(
     (bibliography_locales, citation_locales, unsupported)
 }
 
+/// Preserve GB/T's Chinese source term, which renders numeric editions with `版`.
+fn normalize_gb_t_chinese_editions(output: &mut XmlCompilationOutput) {
+    normalize_edition_forms(&mut output.bibliography);
+    merge_edition_labels(&mut output.bibliography);
+    if let Some(type_templates) = output.type_templates.as_mut() {
+        for template in type_templates.values_mut() {
+            normalize_edition_forms(template);
+            merge_edition_labels(template);
+        }
+    }
+}
+
+fn merge_gb_t_edition_labels(output: &mut XmlCompilationOutput) {
+    merge_edition_labels(&mut output.bibliography);
+    if let Some(type_templates) = output.type_templates.as_mut() {
+        for template in type_templates.values_mut() {
+            merge_edition_labels(template);
+        }
+    }
+}
+
+fn normalize_edition_forms(template: &mut [TemplateComponent]) {
+    for component in template {
+        match component {
+            TemplateComponent::Number(number)
+                if number.number == NumberVariable::Edition
+                    && number.form == Some(NumberForm::Ordinal) =>
+            {
+                number.form = Some(NumberForm::Numeric);
+            }
+            TemplateComponent::Group(group) => normalize_edition_forms(&mut group.group),
+            _ => {}
+        }
+    }
+}
+
+fn merge_edition_labels(template: &mut Vec<TemplateComponent>) {
+    for component in template.iter_mut() {
+        if let TemplateComponent::Group(group) = component {
+            merge_edition_labels(&mut group.group);
+        }
+    }
+
+    let mut index = 0;
+    while index + 1 < template.len() {
+        let Some((left, right)) = template.split_at_mut_checked(index + 1) else {
+            break;
+        };
+        let Some(TemplateComponent::Number(number)) = left.last_mut() else {
+            index += 1;
+            continue;
+        };
+        let Some(TemplateComponent::Number(label)) = right.first() else {
+            index += 1;
+            continue;
+        };
+        if number.number == NumberVariable::Edition
+            && label.number == NumberVariable::Edition
+            && label.form.is_none()
+            && label.when_numeric.is_some()
+        {
+            number.when_numeric = label.when_numeric.clone();
+            template.remove(index + 1);
+        } else {
+            index += 1;
+        }
+    }
+}
+
+fn localized_uses_english(locales: &[String]) -> bool {
+    locales.iter().any(|locale| {
+        locale
+            .split(['-', '_'])
+            .next()
+            .is_some_and(|primary| primary.eq_ignore_ascii_case("en"))
+    })
+}
+
 fn localized_spec(
     localized: &csl_legacy::model::LocalizedLayout,
     template: Vec<TemplateComponent>,
+    type_variants: Option<TypeTemplateMap>,
 ) -> LocalizedTemplateSpec {
     let is_default = localized.locales.is_empty();
     LocalizedTemplateSpec {
         locale: (!is_default).then(|| localized.locales.clone()),
         default: is_default.then_some(true),
         template,
+        type_variants,
         unknown_fields: std::collections::BTreeMap::new(),
     }
 }

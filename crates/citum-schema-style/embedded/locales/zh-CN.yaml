@@ -130,6 +130,7 @@ terms:
       plural: 版
 
 messages:
+  number.ordinal: "第{$value}"
   term.and: "和"
   term.and-symbol: "和"
   term.et-al: "等"

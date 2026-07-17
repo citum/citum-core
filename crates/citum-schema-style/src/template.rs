@@ -76,6 +76,12 @@ pub type Template = Vec<TemplateComponent>;
 /// Type-specific template variants keyed by reference-type selector.
 pub type TemplateVariants = IndexMap<TypeSelector, TemplateVariant>;
 
+/// Locale-owned type-specific template replacements keyed by reference-type selector.
+///
+/// Localized variants are complete templates because they select after the section's
+/// main type-variant resolution has completed.
+pub type LocalizedTemplateVariants = IndexMap<TypeSelector, Template>;
+
 /// Vertical text alignment relative to the baseline.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(JsonSchema))]

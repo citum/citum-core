@@ -16,7 +16,7 @@ use citum_schema::reference::{
 };
 use citum_schema::template::DateVariable as TemplateDateVar;
 use citum_schema::template::*;
-use csl_legacy::csl_json::{DateVariable, Name, Reference as LegacyReference};
+use csl_legacy::csl_json::{DateVariable, Name, Reference as LegacyReference, StringOrNumber};
 
 fn make_config() -> Config {
     Config {
@@ -55,6 +55,11 @@ fn make_locale() -> Locale {
 fn make_embedded_english_locale() -> Locale {
     Locale::from_yaml_str(include_str!("../../../../locales/en-US.yaml"))
         .expect("english locale should parse")
+}
+
+fn make_embedded_chinese_locale() -> Locale {
+    Locale::from_yaml_str(include_str!("../../../../locales/zh-CN.yaml"))
+        .expect("Chinese locale should parse")
 }
 
 fn make_reference() -> Reference {
@@ -2934,6 +2939,50 @@ fn test_report_number_variable_uses_report_number_accessor() {
             .value,
         "TR-7"
     );
+}
+
+#[test]
+fn template_number_ordinal_form_uses_the_active_locale_message() {
+    let config = make_config();
+    let english_locale = make_embedded_english_locale();
+    let chinese_locale = make_embedded_chinese_locale();
+    let reference = Reference::from(LegacyReference {
+        id: "edition-ordinal".to_string(),
+        ref_type: "book".to_string(),
+        title: Some("Edition test".to_string()),
+        issued: Some(DateVariable::year(2024)),
+        edition: Some(StringOrNumber::String("2".to_string())),
+        ..Default::default()
+    });
+    let number = TemplateNumber {
+        number: NumberVariable::Edition,
+        form: Some(NumberForm::Ordinal),
+        ..Default::default()
+    };
+
+    for (locale, expected) in [(&english_locale, "2nd"), (&chinese_locale, "第2")] {
+        let options = RenderOptions {
+            config: Arc::new(config.clone()),
+            bibliography_config: None,
+            locale,
+            context: RenderContext::Bibliography,
+            mode: citum_schema::citation::CitationMode::NonIntegral,
+            suppress_author: false,
+            locator_raw: None,
+            ref_type: None,
+            show_semantics: true,
+            current_template_index: None,
+            abbreviation_map: None,
+        };
+
+        assert_eq!(
+            number
+                .values::<PlainText>(&reference, &ProcHints::default(), &options)
+                .expect("numeric edition should render")
+                .value,
+            expected
+        );
+    }
 }
 
 #[test]

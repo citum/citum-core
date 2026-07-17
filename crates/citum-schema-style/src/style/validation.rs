@@ -419,6 +419,15 @@ impl TemplateResourceBudget {
                 &format!("{location}[{index}].template"),
                 depth,
             )?;
+            if let Some(variants) = &locale.type_variants {
+                for (selector, template) in variants {
+                    self.check_template(
+                        template,
+                        &format!("{location}[{index}].type-variants.{selector:?}"),
+                        depth,
+                    )?;
+                }
+            }
         }
         Ok(())
     }

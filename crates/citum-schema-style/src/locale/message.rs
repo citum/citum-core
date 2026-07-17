@@ -12,6 +12,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use std::collections::HashMap;
 
+use icu_locale::Locale as IcuLocale;
+use icu_plurals::{PluralCategory, PluralRules};
+
 /// Arguments passed to message evaluation.
 ///
 /// Contains optional named variables that may be referenced in a message.
@@ -71,6 +74,17 @@ pub trait MessageEvaluator: Send + Sync {
     /// The caller (engine) provides fallback behavior (e.g., returning a
     /// legacy term or a bare message ID) on `None`.
     fn evaluate(&self, message: &str, args: &MessageArgs<'_>) -> Option<String>;
+
+    /// Evaluate a message using ordinal rules for the supplied BCP 47 locale.
+    fn evaluate_for_locale(
+        &self,
+        message: &str,
+        args: &MessageArgs<'_>,
+        locale_id: &str,
+    ) -> Option<String> {
+        let _ = locale_id;
+        self.evaluate(message, args)
+    }
 }
 
 /// MF2 message evaluator for ICU MessageFormat 2 syntax.
@@ -97,10 +111,19 @@ impl MessageEvaluator for NoOpEvaluator {
 
 impl MessageEvaluator for Mf2MessageEvaluator {
     fn evaluate(&self, message: &str, args: &MessageArgs<'_>) -> Option<String> {
+        self.evaluate_for_locale(message, args, "en-US")
+    }
+
+    fn evaluate_for_locale(
+        &self,
+        message: &str,
+        args: &MessageArgs<'_>,
+        locale_id: &str,
+    ) -> Option<String> {
         let trimmed = message.trim();
 
         if trimmed.starts_with(".match") {
-            evaluate_mf2_matcher(trimmed, args)
+            evaluate_mf2_matcher(trimmed, args, locale_id)
         } else {
             substitute_mf2_vars(trimmed, args)
         }
@@ -167,7 +190,7 @@ fn resolve_var<'a>(var_name: &str, args: &'a MessageArgs<'a>) -> Option<&'a str>
 }
 
 /// Evaluate a `.match` statement with selectors and variants.
-fn evaluate_mf2_matcher(message: &str, args: &MessageArgs<'_>) -> Option<String> {
+fn evaluate_mf2_matcher(message: &str, args: &MessageArgs<'_>, locale_id: &str) -> Option<String> {
     let trimmed = message.trim();
     if !trimmed.starts_with(".match") {
         return None;
@@ -176,7 +199,7 @@ fn evaluate_mf2_matcher(message: &str, args: &MessageArgs<'_>) -> Option<String>
     let (selectors, variants_start) = parse_mf2_selectors(trimmed)?;
     let match_keys = selectors
         .iter()
-        .map(|(var_name, function)| determine_match_key(var_name, *function, args))
+        .map(|(var_name, function)| determine_match_key(var_name, *function, args, locale_id))
         .collect::<Option<Vec<_>>>()?;
     let matched_pattern = find_mf2_variant(variants_start, &match_keys)?;
 
@@ -222,6 +245,7 @@ fn determine_match_key(
     var_name: &str,
     function: Option<&str>,
     args: &MessageArgs<'_>,
+    locale_id: &str,
 ) -> Option<String> {
     match function {
         Some("plural") => {
@@ -256,8 +280,28 @@ fn determine_match_key(
             }?;
             Some(value)
         }
+        Some("ordinal") => {
+            if var_name != "count" {
+                return None;
+            }
+            ordinal_category(locale_id, args.count?).map(str::to_string)
+        }
         _ => None,
     }
+}
+
+/// Resolve a CLDR ordinal category for an integer using the active locale.
+fn ordinal_category(locale_id: &str, value: u64) -> Option<&'static str> {
+    let locale = locale_id.parse::<IcuLocale>().ok()?;
+    let rules = PluralRules::try_new_ordinal(locale.into()).ok()?;
+    Some(match rules.category_for(value) {
+        PluralCategory::Zero => "zero",
+        PluralCategory::One => "one",
+        PluralCategory::Two => "two",
+        PluralCategory::Few => "few",
+        PluralCategory::Many => "many",
+        PluralCategory::Other => "other",
+    })
 }
 
 /// Find the matched variant in MF2 when-blocks and return its pattern.
@@ -428,6 +472,23 @@ mod tests {
         };
         let message = ".match {$count :plural}\nwhen one {p.}\nwhen * {pp.}";
         assert_eq!(evaluator.evaluate(message, &args), Some("pp.".to_string()));
+    }
+
+    #[test]
+    fn test_ordinal_uses_cldr_categories_for_the_active_locale() {
+        let evaluator = Mf2MessageEvaluator;
+        let args = MessageArgs {
+            count: Some(22),
+            value: Some("22"),
+            ..MessageArgs::default()
+        };
+        let message = ".match {$count :ordinal}\nwhen one {{$value}st}\nwhen two {{$value}nd}\nwhen few {{$value}rd}\nwhen * {{$value}th}";
+
+        assert_eq!(ordinal_category("en-US", 22), Some("two"));
+        assert_eq!(
+            evaluator.evaluate_for_locale(message, &args, "en-US"),
+            Some("22nd".to_string())
+        );
     }
 
     #[test]

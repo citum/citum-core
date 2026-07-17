@@ -31,6 +31,7 @@ impl Upsampler {
                     }
                     return Some(ir::Node::Variable(ir::VariableBlock {
                         variable: var,
+                        number_form: None,
                         label: None,
                         formatting: self.map_formatting(
                             &t.formatting,
@@ -248,6 +249,11 @@ impl Upsampler {
         let variable = self.map_variable(&n.variable)?;
         Some(ir::Node::Variable(ir::VariableBlock {
             variable,
+            number_form: match n.form.as_deref() {
+                Some("ordinal") => Some(citum::template::NumberForm::Ordinal),
+                Some("roman") => Some(citum::template::NumberForm::Roman),
+                _ => None,
+            },
             label: None,
             formatting: self.map_formatting(&n.formatting, &n.prefix, &n.suffix, None, None),
             overrides: HashMap::new(),
@@ -261,6 +267,7 @@ impl Upsampler {
         {
             return Some(ir::Node::Variable(ir::VariableBlock {
                 variable: var.clone(),
+                number_form: None,
                 label: Some(ir::LabelOptions {
                     variable: var,
                     form: self.map_label_form(&l.form),
@@ -563,6 +570,7 @@ impl Upsampler {
             {
                 return Some(ir::Node::Variable(ir::VariableBlock {
                     variable: var.clone(),
+                    number_form: None,
                     label: Some(ir::LabelOptions {
                         variable: var,
                         form: self.map_label_form(&l.form),

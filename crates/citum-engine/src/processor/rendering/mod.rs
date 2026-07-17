@@ -16,7 +16,7 @@ use citum_schema::citation::CitationLocator;
 use citum_schema::locale::Locale;
 use citum_schema::options::{Config, bibliography::BibliographyConfig};
 use citum_schema::template::TemplateComponent;
-use grouped::component_predicates::resolve_type_variant;
+use grouped::component_predicates::{resolve_localized_type_variant, resolve_type_variant};
 use indexmap::IndexMap;
 use std::borrow::Cow;
 use std::cell::RefCell;
@@ -538,13 +538,17 @@ impl<'a> Renderer<'a> {
             .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
         let ref_type = reference.ref_type();
         let item_language = crate::values::effective_item_language(reference);
-        let template = resolve_type_variant(spec.type_variants.as_ref(), &ref_type)
-            .map(Cow::Borrowed)
+        let localized = spec.resolve_localized_template(item_language.as_deref());
+        let template = localized
+            .as_ref()
+            .filter(|resolved| resolved.type_variants.is_some())
+            .cloned()
+            .map(|resolved| Cow::Owned(resolve_localized_type_variant(resolved, None, &ref_type)))
             .or_else(|| {
-                spec.resolve_template_for_language(item_language.as_deref())
-                    .map(Cow::Owned)
+                resolve_type_variant(spec.type_variants.as_ref(), &ref_type).map(Cow::Borrowed)
             })
-            .unwrap_or(Cow::Borrowed(&[]));
+            .or_else(|| localized.map(|resolved| Cow::Owned(resolved.template)))
+            .unwrap_or(Cow::Borrowed(&[] as &[TemplateComponent]));
 
         Ok(UngroupedItemRenderState {
             reference,

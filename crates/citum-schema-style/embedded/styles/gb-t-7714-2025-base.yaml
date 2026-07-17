@@ -250,6 +250,7 @@ bibliography:
       suppress: false
     - group:
       - number: edition
+        form: ordinal
       delimiter: space
       suppress: false
     - variable: url
@@ -259,6 +260,142 @@ bibliography:
     - variable: doi
       prefix: 'DOI:'
       suppress: false
+    type-variants:
+      chapter,entry-dictionary,entry-encyclopedia:
+      - number: citation-number
+        wrap:
+          punctuation: brackets
+      - contributor: author
+        form: long
+        name-order: family-first
+        delimiter: ，
+        sort-separator: ' '
+        suffix: '. '
+      - group:
+        - group:
+          - title: primary
+          - message: gb-t-7714-type-code
+            args:
+              type: { reference-type: key }
+              carrier: { carrier: { online: OL, absent: '-' } }
+            wrap:
+              punctuation: brackets
+          delimiter: none
+        - contributor: translator
+          form: long
+          name-order: family-first
+          delimiter: ，
+          sort-separator: ' '
+          label:
+            term: translator
+            form: short
+            placement: suffix
+            prefix: ，
+        delimiter: '. '
+        suffix: //
+      - contributor: container-author
+        form: long
+        name-order: family-first
+        delimiter: ，
+        sort-separator: ' '
+        strip-periods: true
+        suffix: '. '
+      - group:
+        - title: container-title
+        - number: volume
+          when-numeric: short
+        delimiter: ：
+        suffix: '. '
+      - group:
+        - number: edition
+          form: ordinal
+          when-numeric: short
+        - group:
+          - group:
+            - group:
+              - variable: publisher-place
+              - variable: publisher
+              delimiter: ：
+            - date: issued
+              form: year
+              fallback: []
+            delimiter: ，
+          - number: pages
+          delimiter: ：
+        delimiter: '. '
+      - variable: url
+        prefix: '. '
+      - identifier: cstr
+        prefix: '. CSTR:'
+      - variable: doi
+        prefix: '. DOI:'
+      book,thesis,map:
+      - number: citation-number
+        wrap:
+          punctuation: brackets
+      - contributor: author
+        form: long
+        name-order: family-first
+        delimiter: ，
+        sort-separator: ' '
+        suffix: '. '
+      - group:
+        - title: primary
+        - group:
+          - number: volume
+            when-numeric: short
+          - variable: volume-title
+          delimiter: ' '
+        delimiter: ：
+      - variable: scale
+        prefix: '. '
+      - message: gb-t-7714-type-code
+        args:
+          type: { reference-type: key }
+          carrier: { carrier: { online: OL, absent: '-' } }
+        wrap:
+          punctuation: brackets
+        suffix: '. '
+      - contributor: translator
+        form: long
+        name-order: family-first
+        delimiter: ，
+        sort-separator: ' '
+        label:
+          term: translator
+          form: short
+          placement: suffix
+          prefix: ，
+        suffix: '. '
+      - group:
+        - number: edition
+          form: ordinal
+          when-numeric: short
+        - group:
+          - group:
+            - group:
+              - variable: publisher-place
+              - variable: publisher
+              delimiter: ：
+            - date: issued
+              form: year
+              fallback:
+              - date: accessed
+                form: year
+                wrap:
+                  punctuation: brackets
+            delimiter: ，
+          - number: pages
+          delimiter: ：
+        delimiter: '. '
+      - variable: dimensions
+        prefix: '. '
+      - variable: url
+        prefix: '. '
+      - identifier: cstr
+        prefix: '. CSTR:'
+      - variable: doi
+        prefix: '. DOI:'
   - default: true
     template:
     - number: citation-number

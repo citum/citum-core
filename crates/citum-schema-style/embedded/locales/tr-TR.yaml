@@ -727,6 +727,7 @@ terms:
     long: versiyon
 
 messages:
+  number.ordinal: "{$value}."
   # Locator labels
   term.page-label: |
     .match {$count :plural}

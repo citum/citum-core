@@ -891,6 +891,12 @@ terms:
     short: v.
 
 messages:
+  number.ordinal: |
+    .match {$count :ordinal}
+    when one {{$value}st}
+    when two {{$value}nd}
+    when few {{$value}rd}
+    when * {{$value}th}
   # Locator labels
   term.page-label: |
     .match {$count :plural}

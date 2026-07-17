@@ -827,6 +827,7 @@ mod tests {
                 variable: SimpleVariable::Publisher,
                 ..TemplateVariable::default()
             })],
+            type_variants: None,
             unknown_fields: Default::default(),
         };
         let migrated = build_final_style(

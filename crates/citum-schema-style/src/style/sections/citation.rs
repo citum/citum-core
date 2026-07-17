@@ -163,6 +163,7 @@ impl CitationSpec {
                     .map(|spec| ResolvedLocalizedTemplate {
                         template: spec.template.clone(),
                         locale: None,
+                        type_variants: spec.type_variants.clone(),
                     })
             })
             .or_else(|| {
@@ -170,6 +171,7 @@ impl CitationSpec {
                     .map(|template| ResolvedLocalizedTemplate {
                         template,
                         locale: None,
+                        type_variants: None,
                     })
             })
     }
@@ -201,14 +203,25 @@ impl CitationSpec {
         language: Option<&str>,
     ) -> Option<ResolvedLocalizedTemplate> {
         let mut resolved = self.resolve_localized_template(language)?;
-        if let Some(template) = self.type_variants.as_ref().and_then(|variants| {
-            variants.iter().find_map(|(selector, variant)| {
-                selector
-                    .matches(ref_type)
-                    .then(|| variant.clone().into_template())
-                    .flatten()
+        if let Some(template) = resolved
+            .type_variants
+            .as_ref()
+            .and_then(|variants| {
+                variants.iter().find_map(|(selector, template)| {
+                    selector.matches(ref_type).then(|| template.clone())
+                })
             })
-        }) {
+            .or_else(|| {
+                self.type_variants.as_ref().and_then(|variants| {
+                    variants.iter().find_map(|(selector, variant)| {
+                        selector
+                            .matches(ref_type)
+                            .then(|| variant.clone().into_template())
+                            .flatten()
+                    })
+                })
+            })
+        {
             resolved.template = template;
         }
         Some(resolved)

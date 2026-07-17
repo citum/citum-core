@@ -302,6 +302,7 @@ mod tests {
     fn variable_node(variable: Variable, source_order: usize) -> Node {
         Node::Variable(VariableBlock {
             variable,
+            number_form: None,
             label: None,
             formatting: FormattingOptions::default(),
             overrides: HashMap::new(),

@@ -731,6 +731,7 @@ terms:
     long: Version
 
 messages:
+  number.ordinal: "{$value}."
   # S. is the same abbreviation for singular and plural in German (confirmed by CSL de-DE locale)
   term.page-label: "S."
   term.page-label-long: |

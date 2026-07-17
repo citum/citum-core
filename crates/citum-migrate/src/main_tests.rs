@@ -174,7 +174,7 @@ fn compile_from_xml_diagnoses_locale_specific_layout_wrapper() {
 }
 
 #[test]
-fn compile_from_xml_diagnoses_locale_specific_type_variant() {
+fn compile_from_xml_preserves_locale_specific_type_variant() {
     let legacy_style = parse_legacy_style(
         r#"
 <style xmlns="http://purl.org/net/xbiblio/csl" version="1.0" class="in-text">
@@ -202,7 +202,13 @@ fn compile_from_xml_diagnoses_locale_specific_type_variant() {
 
     let output = compilation::compile_from_xml(&legacy_style, &mut options, false, &tracker);
 
-    assert!(output.unsupported_localized_layouts);
+    let localized = output
+        .bibliography_locales
+        .as_ref()
+        .and_then(|locales| locales.first())
+        .expect("localized bibliography branch should be emitted");
+    assert!(localized.type_variants.is_some());
+    assert!(!output.unsupported_localized_layouts);
 }
 
 #[test]
