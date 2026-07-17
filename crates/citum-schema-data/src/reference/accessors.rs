@@ -534,6 +534,14 @@ impl InputReference {
         }
     }
 
+    /// Return the title of an individual volume.
+    pub fn volume_title(&self) -> Option<String> {
+        match &self.extension {
+            ClassExtension::Monograph(r) => r.volume_title.clone(),
+            _ => None,
+        }
+    }
+
     fn non_empty_date(date: EdtfString) -> Option<EdtfString> {
         if date.is_empty() { None } else { Some(date) }
     }
@@ -1025,8 +1033,17 @@ impl InputReference {
     /// Return the version.
     pub fn version(&self) -> Option<String> {
         match &self.extension {
+            ClassExtension::Monograph(r) => r.version.clone(),
             ClassExtension::Dataset(r) => r.version.clone(),
             ClassExtension::Software(r) => r.version.clone(),
+            _ => None,
+        }
+    }
+
+    /// Return the cartographic scale.
+    pub fn scale(&self) -> Option<String> {
+        match &self.extension {
+            ClassExtension::Monograph(r) => r.scale.clone(),
             _ => None,
         }
     }
@@ -1122,6 +1139,14 @@ impl InputReference {
                 .volume
                 .clone()
                 .or_else(|| self.find_numbering(NumberingType::Volume))
+                .or_else(|| {
+                    r.container.as_ref().and_then(|container| match container {
+                        WorkRelation::Embedded(parent) => {
+                            parent.volume().map(|volume| volume.to_string())
+                        }
+                        WorkRelation::Id(_) => None,
+                    })
+                })
                 .map(NumOrStr::Str),
             ClassExtension::SerialComponent(r) => r
                 .volume

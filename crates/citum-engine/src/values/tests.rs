@@ -2937,6 +2937,52 @@ fn test_report_number_variable_uses_report_number_accessor() {
 }
 
 #[test]
+fn monograph_metadata_variables_render_their_accessors() {
+    let config = make_config();
+    let locale = make_locale();
+    let options = RenderOptions {
+        config: Arc::new(config),
+        bibliography_config: None,
+        locale: &locale,
+        context: RenderContext::Bibliography,
+        mode: citum_schema::citation::CitationMode::NonIntegral,
+        suppress_author: false,
+        locator_raw: None,
+        ref_type: None,
+        show_semantics: true,
+        current_template_index: None,
+        abbreviation_map: None,
+    };
+    let hints = ProcHints::default();
+    let reference = InputReference::Monograph(Box::new(Monograph {
+        r#type: MonographType::Document,
+        genre: Some("map".to_string()),
+        volume_title: Some("History of Science".to_string()),
+        scale: Some("1:25000".to_string()),
+        version: Some("2".to_string()),
+        ..Default::default()
+    }));
+
+    for (variable, expected) in [
+        (SimpleVariable::VolumeTitle, "History of Science"),
+        (SimpleVariable::Scale, "1:25000"),
+        (SimpleVariable::Version, "2"),
+    ] {
+        let component = TemplateVariable {
+            variable,
+            ..Default::default()
+        };
+        assert_eq!(
+            component
+                .values::<PlainText>(&reference, &hints, &options)
+                .expect("monograph metadata should render")
+                .value,
+            expected
+        );
+    }
+}
+
+#[test]
 fn test_number_variable_excludes_report_number_accessor() {
     let config = make_config();
     let locale = make_locale();

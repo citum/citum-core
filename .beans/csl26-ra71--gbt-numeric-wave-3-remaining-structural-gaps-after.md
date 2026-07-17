@@ -1,7 +1,7 @@
 ---
 # csl26-ra71
 title: 'GB/T numeric wave-3: remaining structural gaps after zmod+49sj'
-status: todo
+status: in-progress
 type: task
 priority: normal
 tags:
@@ -10,7 +10,7 @@ tags:
     - multilingual
     - dates
 created_at: 2026-07-17T10:22:18Z
-updated_at: 2026-07-17T11:01:24Z
+updated_at: 2026-07-17T12:13:48Z
 ---
 
 Remaining ~9 genuine gaps in gb-t-7714-2025-numeric after csl26-zmod (structural long tail) and csl26-49sj (conditional number labels) both landed, bringing the upstream corpus to 190/203. Not counting the 4 ordinal-form entries (tracked separately, see csl26-g49a).
@@ -31,3 +31,10 @@ All style fixes below go in the shared hidden base, `crates/citum-schema-style/e
 6. **CSTR tail dedupe, not a suppression bug — a divergence candidate** (gbt7714.8.14.3:1). Raw fixture: `note: "tex.cstr: 16666.11.nbsdc.tfpbwtqf"` (Zotero's alias spelling) plus a `URL` that happens to contain the same string as part of its path. Citum's csl-legacy parser correctly normalizes `tex.cstr` → canonical `CSTR` (per its own documented design) and the style's `identifier: cstr` component renders it — this is *correct* per Citum's data model. The CSL-M source's own macro (`<if variable="CSTR">...<else>...DOI...</else></if>`) only recognizes the literal `CSTR` variable, not the Zotero `tex.cstr` alias, so citeproc-js's oracle rendering never sees a CSTR value and renders no tail at all. This is a real citeproc-vs-citum divergence (citum arguably more correct), not "citum over-rendering" as previously framed — a registered-divergence candidate for `scripts/report-data/verification-policy.yaml`, not a style fix.
 
 7. **Preprint version prefix** (gbt7714.8.15.2:3, `type: article` with a `version` field). Oracle wants `V2.` rendered before the `arXiv（date）` segment; citum drops it. The `article,dataset,preprint:` variant in base.yaml needs a `variable: version` (or `number: version`) component with a `V` prefix and `.` suffix, positioned before the creation-date group. Check the existing `variable: version, strip-periods: true` component already used elsewhere in base.yaml (flat default template, ~line 152) for the right shape to copy.
+
+
+## Wave A — monograph metadata fidelity
+
+- [ ] Preserve monograph `volume-title`, map scale/dimensions, and preprint version through conversion and rendering.
+- [ ] Tune shared GB/T base templates for container volumes, volume titles, map metadata, and preprint versions.
+- [x] Regenerate schemas and verify the GB/T fidelity, quality, and Rust gates.

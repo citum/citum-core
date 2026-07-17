@@ -110,6 +110,12 @@
                 "null"
               ]
             },
+            "volume-title": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
             "container": {
               "anyOf": [
                 {
@@ -240,6 +246,12 @@
               ]
             },
             "ads-bibcode": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "version": {
               "type": [
                 "string",
                 "null"

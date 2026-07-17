@@ -535,7 +535,11 @@ bibliography:
       sort-separator: ' '
       strip-periods: true
       suffix: '. '
-    - title: container-title
+    - group:
+      - title: container-title
+      - number: volume
+        when-numeric: short
+      delimiter: ：
       suffix: '. '
     - group:
       - number: edition
@@ -646,9 +650,14 @@ bibliography:
       suffix: '. '
     - group:
       - title: primary
-      - number: volume
-        when-numeric: short
+      - group:
+        - number: volume
+          when-numeric: short
+        - variable: volume-title
+        delimiter: ' '
       delimiter: ：
+    - variable: scale
+      prefix: '. '
     - message: gb-t-7714-type-code
       args:
         type: { reference-type: key }
@@ -693,6 +702,8 @@ bibliography:
         - number: pages
         delimiter: ：
       delimiter: '. '
+    - variable: dimensions
+      prefix: '. '
     - variable: url
       prefix: '. '
     - identifier: cstr

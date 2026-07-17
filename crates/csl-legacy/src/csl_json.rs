@@ -939,6 +939,7 @@ fn is_string_variable(key: &str) -> bool {
             | "genre"
             | "medium"
             | "dimensions"
+            | "version"
             | "section"
             | "volume"
             | "issue"
@@ -1085,7 +1086,7 @@ fn handle_string_variable(ref_obj: &mut Reference, key: &str, value: &str) {
         | "archive-collection" | "archive_collection" | "dimensions" | "part-number"
         | "supplement-number" | "references" | "source" | "status" | "reviewed-title"
         | "reviewed-genre" | "call-number" | "jurisdiction" | "citation-number"
-        | "citation-label" | "annote" | "keyword" | "title-short" => {
+        | "citation-label" | "annote" | "keyword" | "title-short" | "version" => {
             let key_to_store = match key {
                 "archive_collection" => "archive-collection",
                 "event-location" => "event-place",
