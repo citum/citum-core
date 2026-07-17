@@ -9,7 +9,9 @@ use super::super::{
     leading_group_affix, remove_first_contributor_with_role, strip_author_component,
     strip_leading_group_affixes,
 };
-use super::component_predicates::{is_term_only_component, resolve_type_variant};
+use super::component_predicates::{
+    is_term_only_component, resolve_localized_type_variant, resolve_type_variant,
+};
 use super::group_citation_items_by_author;
 use crate::error::ProcessorError;
 use crate::reference::Reference;
@@ -604,14 +606,17 @@ impl Renderer<'_> {
             .get(&first_item.id)
             .ok_or_else(|| ProcessorError::ReferenceNotFound(first_item.id.clone()))?;
         let first_language = crate::values::effective_item_language(first_ref);
-        let default_template = spec
-            .resolve_template_for_language(first_language.as_deref())
-            .map(Cow::Owned);
-
         let ref_type = first_ref.ref_type();
-        let first_template = resolve_type_variant(spec.type_variants.as_ref(), &ref_type)
-            .map(Cow::Borrowed)
-            .or(default_template);
+        let localized = spec.resolve_localized_template(first_language.as_deref());
+        let first_template = localized
+            .as_ref()
+            .filter(|resolved| resolved.type_variants.is_some())
+            .cloned()
+            .map(|resolved| Cow::Owned(resolve_localized_type_variant(resolved, None, &ref_type)))
+            .or_else(|| {
+                resolve_type_variant(spec.type_variants.as_ref(), &ref_type).map(Cow::Borrowed)
+            })
+            .or_else(|| localized.map(|resolved| Cow::Owned(resolved.template)));
 
         Ok(GroupRenderState {
             first_item,
@@ -630,14 +635,17 @@ impl Renderer<'_> {
             .get(&item.id)
             .ok_or_else(|| ProcessorError::ReferenceNotFound(item.id.clone()))?;
         let item_language = crate::values::effective_item_language(reference);
-        let default_template = spec
-            .resolve_template_for_language(item_language.as_deref())
-            .map(Cow::Owned);
-
         let ref_type = reference.ref_type();
-        let item_template = resolve_type_variant(spec.type_variants.as_ref(), &ref_type)
-            .map(Cow::Borrowed)
-            .or(default_template);
+        let localized = spec.resolve_localized_template(item_language.as_deref());
+        let item_template = localized
+            .as_ref()
+            .filter(|resolved| resolved.type_variants.is_some())
+            .cloned()
+            .map(|resolved| Cow::Owned(resolve_localized_type_variant(resolved, None, &ref_type)))
+            .or_else(|| {
+                resolve_type_variant(spec.type_variants.as_ref(), &ref_type).map(Cow::Borrowed)
+            })
+            .or_else(|| localized.map(|resolved| Cow::Owned(resolved.template)));
 
         Ok(ItemRenderState {
             item,
@@ -835,14 +843,17 @@ impl Renderer<'_> {
         let bib_spec = self.style.bibliography.as_ref()?;
 
         let item_language = crate::values::effective_item_language(reference);
-        let default_template = bib_spec
-            .resolve_template_for_language(item_language.as_deref())
-            .map(Cow::Owned);
-
         let ref_type = reference.ref_type();
-        let template = resolve_type_variant(bib_spec.type_variants.as_ref(), &ref_type)
-            .map(Cow::Borrowed)
-            .or(default_template)?;
+        let localized = bib_spec.resolve_localized_template(item_language.as_deref());
+        let template = localized
+            .as_ref()
+            .filter(|resolved| resolved.type_variants.is_some())
+            .cloned()
+            .map(|resolved| Cow::Owned(resolve_localized_type_variant(resolved, None, &ref_type)))
+            .or_else(|| {
+                resolve_type_variant(bib_spec.type_variants.as_ref(), &ref_type).map(Cow::Borrowed)
+            })
+            .or_else(|| localized.map(|resolved| Cow::Owned(resolved.template)))?;
 
         let template = self.apply_anonymous_entry_bibliography_policy(reference, template)?;
         let template = self.apply_article_journal_bibliography_policy(reference, template);

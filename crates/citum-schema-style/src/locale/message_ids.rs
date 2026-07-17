@@ -182,7 +182,8 @@ impl Locale {
             return None;
         }
 
-        self.evaluator.evaluate(message, args)
+        self.evaluator
+            .evaluate_for_locale(message, args, &self.locale)
     }
 
     /// Resolve a style-template message call, including term-backed message IDs.

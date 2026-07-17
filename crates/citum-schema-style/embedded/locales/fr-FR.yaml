@@ -809,6 +809,10 @@ terms:
       plural: éd.
 
 messages:
+  number.ordinal: |
+    .match {$count :ordinal}
+    when one {{$value}ᵉʳ}
+    when * {{$value}ᵉ}
   # Locator labels
   term.page-label: "p."
   term.page-label-long: |

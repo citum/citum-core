@@ -6340,6 +6340,19 @@
           "items": {
             "$ref": "#/$defs/TemplateComponent"
           }
+        },
+        "type-variants": {
+          "description": "Locale-owned type-specific template replacements.\n\nThese take precedence over the section-level type variants when this locale matches.",
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/TemplateComponent"
+            }
+          }
         }
       },
       "required": [

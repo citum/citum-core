@@ -22,6 +22,8 @@ sha2 = "0.11"
 cid = { version = "0.11", default-features = false, features = ["alloc"] }
 multihash = { version = "0.19", default-features = false, features = ["alloc"] }
 semver = "1"
+icu_locale = "2.2.0"
+icu_plurals = { version = "2.2.0", features = ["compiled_data"] }
 
 [features]
 default = []

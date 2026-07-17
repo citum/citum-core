@@ -10,7 +10,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::embedded;
-use crate::template::Template;
+use crate::template::{LocalizedTemplateVariants, Template};
 
 /// Available embedded template presets.
 ///
@@ -114,6 +114,11 @@ pub struct LocalizedTemplateSpec {
     pub default: Option<bool>,
     /// Template used when this localized override is selected.
     pub template: Template,
+    /// Locale-owned type-specific template replacements.
+    ///
+    /// These take precedence over the section-level type variants when this locale matches.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub type_variants: Option<LocalizedTemplateVariants>,
     /// Forward-compat: captures unknown keys when an older engine reads a
     /// style produced by a newer schema. Empty by default; treated as a
     /// SoftDegrade signal. See `docs/specs/FORWARD_COMPATIBILITY.md`.
@@ -133,6 +138,8 @@ pub struct ResolvedLocalizedTemplate {
     pub template: Template,
     /// Locale declared by the matching branch, or `None` for a default/base template.
     pub locale: Option<String>,
+    /// Locale-owned type-specific replacements selected with this template.
+    pub type_variants: Option<LocalizedTemplateVariants>,
 }
 
 pub(crate) fn matched_localized_template(
@@ -146,6 +153,7 @@ pub(crate) fn matched_localized_template(
                 .then(|| ResolvedLocalizedTemplate {
                     template: spec.template.clone(),
                     locale: Some(candidate.clone()),
+                    type_variants: spec.type_variants.clone(),
                 })
         })
     });
@@ -163,6 +171,7 @@ pub(crate) fn matched_localized_template(
                 .then(|| ResolvedLocalizedTemplate {
                     template: spec.template.clone(),
                     locale: Some(candidate.clone()),
+                    type_variants: spec.type_variants.clone(),
                 })
         })
     })

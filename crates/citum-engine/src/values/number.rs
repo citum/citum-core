@@ -10,9 +10,9 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use crate::reference::Reference;
 use crate::values::{ComponentValues, ProcHints, ProcValues, RenderOptions};
-use citum_schema::locale::{GeneralTerm, GrammaticalGender, TermForm};
+use citum_schema::locale::{GeneralTerm, GrammaticalGender, MessageArgs, TermForm};
 use citum_schema::reference::ClassExtension;
-use citum_schema::template::{LabelForm, NumberVariable, TemplateNumber};
+use citum_schema::template::{LabelForm, NumberForm, NumberVariable, TemplateNumber};
 
 /// Resolve the raw value string for a number variable from a reference.
 fn resolve_number_value(
@@ -195,6 +195,25 @@ fn split_numeric_term(term: &str) -> (Option<String>, Option<String>) {
     }
 }
 
+/// Render one numeric value through the active locale's ordinal message.
+///
+/// Values that are not a single unsigned integer remain unchanged because MF2
+/// ordinal categories only apply to countable whole numbers.
+fn render_ordinal(value: String, options: &RenderOptions<'_>) -> String {
+    let Ok(count) = value.parse::<u64>() else {
+        return value;
+    };
+    let args = MessageArgs {
+        count: Some(count),
+        value: Some(&value),
+        ..MessageArgs::default()
+    };
+    options
+        .locale
+        .resolve_message("number.ordinal", &args)
+        .unwrap_or(value)
+}
+
 impl ComponentValues for TemplateNumber {
     fn values<F: crate::render::format::OutputFormat<Output = String>>(
         &self,
@@ -223,6 +242,13 @@ impl ComponentValues for TemplateNumber {
             } else {
                 value
             };
+            let value_is_numeric = is_numeric(&value);
+
+            let value = if self.form == Some(NumberForm::Ordinal) {
+                render_ordinal(value, options)
+            } else {
+                value
+            };
 
             // Handle label if label_form is specified
             let label_prefix = if let Some(label_form) = &self.label_form {
@@ -246,7 +272,7 @@ impl ComponentValues for TemplateNumber {
             let (numeric_prefix, numeric_suffix) = self
                 .when_numeric
                 .as_ref()
-                .filter(|_| is_numeric(&value))
+                .filter(|_| value_is_numeric)
                 .and_then(|form| {
                     let general_term = number_var_to_general_term(&self.number)?;
                     options.locale.resolved_general_term(

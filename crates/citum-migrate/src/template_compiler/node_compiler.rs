@@ -305,12 +305,16 @@ impl TemplateCompiler {
             }
 
             // Extract label form if present
-            let label_form = var.label.as_ref().map(|l| map_label_form(&l.form));
+            let mut label_form = var.label.as_ref().map(|l| map_label_form(&l.form));
+            let when_numeric = (num_var == NumberVariable::Edition)
+                .then(|| label_form.take())
+                .flatten();
 
             return Some(TemplateComponent::Number(TemplateNumber {
                 number: num_var,
-                form: None,
+                form: var.number_form.clone(),
                 label_form,
+                when_numeric,
                 rendering,
                 ..Default::default()
             }));
