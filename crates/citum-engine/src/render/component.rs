@@ -250,7 +250,61 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
         output = fmt.semantic_with_attributes(&class, output, &semantic_attributes);
     }
 
+    // 7. Script-aware punctuation remap. Runs last so it also catches full-width
+    // delimiters introduced by literal `prefix`/`suffix`/`delimiter` YAML config
+    // (e.g. a bilingual GB/T-style `prefix: （ suffix: ）`), not just component
+    // value content.
+    if wants_latin_punctuation(component) {
+        output = remap_to_latin_punctuation(output);
+    }
+
     output
+}
+
+/// Whether this component should have its full-width CJK delimiters remapped to
+/// Latin punctuation, per `options.multilingual.scripts.latin.punctuation: latin`.
+///
+/// Exposed crate-wide so citation-level assembly (`render::citation`), which
+/// applies its own `delimiter`/`prefix`/`suffix`/`wrap` outside this component's
+/// own rendering, can apply the same remap to that outer punctuation.
+pub(crate) fn wants_latin_punctuation(component: &ProcTemplateComponent) -> bool {
+    let configured = component
+        .config
+        .as_ref()
+        .and_then(|cfg| cfg.multilingual.as_ref())
+        .and_then(|ml| ml.scripts.get("latin"))
+        .is_some_and(|script| {
+            script.punctuation == Some(citum_schema::options::PunctuationStyle::Latin)
+        });
+
+    configured && crate::values::is_latin_script_language(component.item_language.as_deref())
+}
+
+/// Remap CJK full-width delimiters to their Latin half-width equivalents.
+///
+/// `：`(U+FF1A) → `: `, `，`(U+FF0C) → `, `, `（`(U+FF08) → `(`, `）`(U+FF09) → `)`,
+/// then any resulting doubled space is collapsed. Used for Latin-script items in
+/// otherwise-CJK-punctuated bilingual styles (e.g. GB/T 7714).
+pub(crate) fn remap_to_latin_punctuation(text: String) -> String {
+    if !text.contains(['：', '，', '（', '）']) {
+        return text;
+    }
+
+    let mut mapped = String::with_capacity(text.len());
+    for ch in text.chars() {
+        match ch {
+            '：' => mapped.push_str(": "),
+            '，' => mapped.push_str(", "),
+            '（' => mapped.push('('),
+            '）' => mapped.push(')'),
+            _ => mapped.push(ch),
+        }
+    }
+
+    while mapped.contains("  ") {
+        mapped = mapped.replace("  ", " ");
+    }
+    mapped
 }
 
 /// Get effective rendering, applying global config, then local template settings, then type-specific overrides.

@@ -432,11 +432,11 @@ fn affix_content_normalizes_prefix_and_suffix_spacing() {
     let fmt = crate::render::plain::PlainText;
 
     assert_eq!(
-        renderer.affix_content(&fmt, "body".to_string(), Some("see"), Some("n. 2")),
+        renderer.affix_content(&fmt, "body".to_string(), Some("see"), Some("n. 2"), None),
         "see body n. 2"
     );
     assert_eq!(
-        renderer.affix_content(&fmt, "body".to_string(), Some("see "), Some(", n. 2")),
+        renderer.affix_content(&fmt, "body".to_string(), Some("see "), Some(", n. 2"), None),
         "see body, n. 2"
     );
 }

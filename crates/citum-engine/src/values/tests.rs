@@ -35,6 +35,36 @@ fn make_config() -> Config {
     }
 }
 
+#[test]
+fn latin_script_language_detection_requires_meaningful_language_evidence() {
+    for language in ["en", "en-US", "zh-Latn", "ja-Latn"] {
+        assert!(
+            super::is_latin_script_language(Some(language)),
+            "{language}"
+        );
+    }
+
+    for language in [
+        "zh",
+        "zh-Hans",
+        "ru-RU",
+        "und",
+        "mul",
+        "zxx",
+        "x-private",
+        "x-Latn",
+        "e",
+        "1en",
+        "123",
+    ] {
+        assert!(
+            !super::is_latin_script_language(Some(language)),
+            "{language} must not trigger Latin punctuation remapping"
+        );
+    }
+    assert!(!super::is_latin_script_language(None));
+}
+
 /// A `make_config` variant declaring the APA role-label defaults bundle,
 /// for tests that exercise other behavior through the editor suffix.
 fn make_config_with_apa_role_defaults() -> Config {

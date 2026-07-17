@@ -4266,8 +4266,34 @@
             "string",
             "null"
           ]
+        },
+        "punctuation": {
+          "description": "Punctuation convention to render for items whose effective language\nresolves to this script (e.g. remap CJK full-width delimiters to Latin\nhalf-width for Latin-script items in a bilingual style).",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PunctuationStyle"
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       }
+    },
+    "PunctuationStyle": {
+      "description": "Punctuation convention applied to a script's rendered output.",
+      "oneOf": [
+        {
+          "description": "Half-width Latin delimiters (`: , ( )`), with a trailing space after `:` and `,`.",
+          "type": "string",
+          "const": "latin"
+        },
+        {
+          "description": "Full-width CJK delimiters (`： ， （ ）`), the unmodified default.",
+          "type": "string",
+          "const": "full-width"
+        }
+      ]
     },
     "SortingConfig": {
       "description": "Style-level or bibliography-local bibliography sorting policy.",
