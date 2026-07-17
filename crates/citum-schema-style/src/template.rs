@@ -1501,6 +1501,7 @@ pub enum SimpleVariable {
     References,
     Scale,
     Version,
+    VolumeTitle,
     Locator,
     ContainerTitleShort,
     Authority,

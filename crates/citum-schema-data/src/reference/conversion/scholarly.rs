@@ -197,12 +197,11 @@ pub(super) fn from_monograph_ref(
         part_title.or(ctx.title)
     };
 
-    // Batch 1: volume-title enriches container; part-number adds a Part numbering entry.
+    // Batch 1: part-number adds a Part numbering entry.
     let container = {
         let base_title = legacy.container_title.clone().map(Title::Single);
-        let effective_title = volume_title.map(Title::Single).or(base_title);
         let collection = relation_collection_title(collection_title);
-        if let Some(t) = effective_title {
+        if let Some(t) = base_title {
             Some(WorkRelation::Embedded(Box::new(InputReference::Monograph(
                 Box::new(Monograph {
                     title: Some(t),
@@ -301,6 +300,7 @@ pub(super) fn from_monograph_ref(
         r#type,
         title: build_title(title, ctx.short_title.clone()),
         short_title: None,
+        volume_title,
         container,
         author,
         editor,
@@ -318,6 +318,7 @@ pub(super) fn from_monograph_ref(
         isbn: ctx.isbn,
         doi: ctx.doi,
         ads_bibcode: None,
+        version: None,
         volume,
         issue: None,
         edition,
@@ -874,8 +875,10 @@ pub(super) fn from_document_ref(
     };
     let original = legacy_original_relation(&legacy);
 
-    let volume = legacy.volume.map(|v| v.to_string());
+    let volume = legacy.volume.as_ref().map(ToString::to_string);
     let number = legacy.number.clone();
+    let scale = legacy_extra_str(&legacy, "scale");
+    let dimensions = legacy_extra_str(&legacy, "dimensions");
     // Seed genre from ref_type for CSL types whose round trip through
     // `ref_type()` depends on genre (see `monograph_ref_type`'s Document
     // arm in accessors.rs); never overwrites a user-supplied genre.
@@ -932,6 +935,8 @@ pub(super) fn from_document_ref(
         isbn: ctx.isbn,
         doi: ctx.doi,
         ads_bibcode: None,
+        scale,
+        size: dimensions,
         volume,
         number,
         genre,
@@ -989,6 +994,7 @@ pub(super) fn from_preprint_ref(
             }]
         })
         .unwrap_or_default();
+    let version = legacy_extra_str(&legacy, "version");
 
     InputReference::Monograph(Box::new(Monograph {
         id: ctx.id,
@@ -1010,6 +1016,7 @@ pub(super) fn from_preprint_ref(
         note: ctx.note.map(RichText::Plain),
         doi: ctx.doi,
         isbn: ctx.isbn,
+        version,
         numbering,
         genre: legacy.genre,
         medium: legacy.medium,

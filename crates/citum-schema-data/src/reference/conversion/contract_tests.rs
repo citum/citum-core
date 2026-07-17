@@ -21,6 +21,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 
 use super::*;
 use csl_legacy::csl_json::CSL_TYPES;
+use serde_json::json;
 
 /// Build the minimal legacy reference the contract test converts for a
 /// given CSL type: an id, the type under test, a title, and an issued
@@ -205,4 +206,53 @@ fn manuscript_with_recognized_collection_note_override_converts_to_collection() 
         Some("University of Georgia Library"),
         "archival fields must survive the collection conversion"
     );
+}
+
+#[test]
+fn book_volume_title_note_field_survives_as_monograph_metadata() {
+    let mut legacy = minimal_reference("book");
+    legacy.note = Some("volume-title: History of Science".to_string());
+    legacy.parse_note_field_hacks();
+
+    let converted = InputReference::from(legacy);
+    let crate::reference::ClassExtension::Monograph(monograph) = converted.extension() else {
+        panic!("book must convert to a Monograph");
+    };
+
+    assert_eq!(
+        monograph.volume_title.as_deref(),
+        Some("History of Science")
+    );
+    assert!(monograph.container.is_none());
+}
+
+#[test]
+fn map_scale_and_dimensions_survive_as_monograph_metadata() {
+    let mut legacy = minimal_reference("map");
+    legacy.note = Some("dimensions: 128cm×84cm".to_string());
+    legacy.extra.insert("scale".to_string(), json!("1:25000"));
+    legacy.parse_note_field_hacks();
+
+    let converted = InputReference::from(legacy);
+    let crate::reference::ClassExtension::Monograph(monograph) = converted.extension() else {
+        panic!("map must convert to a Monograph");
+    };
+
+    assert_eq!(monograph.scale.as_deref(), Some("1:25000"));
+    assert_eq!(monograph.size.as_deref(), Some("128cm×84cm"));
+}
+
+#[test]
+fn standalone_article_version_note_field_survives_on_preprint() {
+    let mut legacy = minimal_reference("article");
+    legacy.note = Some("version: 2".to_string());
+    legacy.parse_note_field_hacks();
+
+    let converted = InputReference::from(legacy);
+    assert_eq!(converted.ref_type(), "preprint");
+    let crate::reference::ClassExtension::Monograph(monograph) = converted.extension() else {
+        panic!("standalone article must convert to a preprint Monograph");
+    };
+
+    assert_eq!(monograph.version.as_deref(), Some("2"));
 }

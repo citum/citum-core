@@ -265,6 +265,7 @@ fn resolve_variable_value(
         SimpleVariable::EventPlace => event_place(reference),
         SimpleVariable::Dimensions => dimensions(reference),
         SimpleVariable::References => references(reference),
+        SimpleVariable::Scale => reference.scale(),
         // A genre that merely restates the reference's own type (e.g. an
         // entry-encyclopedia carrying genre "entry-encyclopedia") is the data
         // model's internal type-carrier, round-tripped through `ref_type()` for
@@ -317,6 +318,7 @@ fn resolve_variable_value(
         SimpleVariable::AdsBibcode => reference.ads_bibcode(),
         SimpleVariable::ReportNumber => reference.report_number(),
         SimpleVariable::Version => reference.version(),
+        SimpleVariable::VolumeTitle => reference.volume_title(),
         SimpleVariable::ContainerTitleShort => container_title_short(reference),
         SimpleVariable::Locator => options.locator_raw.map(|loc| {
             // When no explicit locators config is set, derive a default from the

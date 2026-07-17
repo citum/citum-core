@@ -118,6 +118,9 @@ pub struct Monograph {
     /// Optional short form of the title for style-directed rendering.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub short_title: Option<String>,
+    /// Title of an individual volume within the monographic work.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub volume_title: Option<String>,
     /// The primary container for this work (e.g., a multivolume set or series).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub container: Option<WorkRelation>,
@@ -172,6 +175,9 @@ pub struct Monograph {
     /// ADS bibcode identifier.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ads_bibcode: Option<String>,
+    /// Version or revision identifier for the work.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub version: Option<String>,
     /// Volume number (shorthand for numbering).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub volume: Option<String>,
@@ -271,6 +277,7 @@ struct MonographDeser {
     r#type: MonographType,
     title: Option<Title>,
     short_title: Option<String>,
+    volume_title: Option<String>,
     container: Option<WorkRelation>,
     author: Option<Contributor>,
     editor: Option<Contributor>,
@@ -298,6 +305,7 @@ struct MonographDeser {
     #[serde(alias = "DOI")]
     doi: Option<String>,
     ads_bibcode: Option<String>,
+    version: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     volume: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -346,6 +354,7 @@ impl From<MonographDeser> for Monograph {
             r#type: raw.r#type,
             title: raw.title,
             short_title: raw.short_title,
+            volume_title: raw.volume_title,
             container: raw.container,
             author: views.author,
             editor: views.editor,
@@ -363,6 +372,7 @@ impl From<MonographDeser> for Monograph {
             isbn: raw.isbn,
             doi: raw.doi,
             ads_bibcode: raw.ads_bibcode,
+            version: raw.version,
             volume: raw.volume,
             issue: raw.issue,
             edition: raw.edition,
