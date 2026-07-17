@@ -10,6 +10,10 @@ info:
   default-locale: zh-CN
 options:
   processing: numeric
+  multilingual:
+    scripts:
+      latin:
+        punctuation: latin
   messages:
     gb-t-7714-type-code: |-
       .match {$type :select} {$carrier :select}
