@@ -747,6 +747,21 @@ fn handle_date_variable(ref_obj: &mut Reference, key: &str, value: &str) {
         "issued" if ref_obj.issued.is_none() || is_date_range(&date) => {
             ref_obj.issued = Some(date);
         }
+        // A raw (unparsed) override coexisting with an already-structured
+        // issued date is a GB/T-style publication-year substitute
+        // annotation layered on top of the structured date CSL already
+        // exports (e.g. a printing year "1995印刷" or an estimated year
+        // "1936~", GB/T 7714 §7.5.4.3). Preserve the raw text so downstream
+        // conversion can interpret the substitute form; the structured
+        // `issued` value is left untouched.
+        "issued" if date.raw.is_some() => {
+            if let Some(raw) = date.raw {
+                ref_obj.extra.insert(
+                    "issued-note-literal".to_string(),
+                    serde_json::Value::String(raw),
+                );
+            }
+        }
         "accessed" if ref_obj.accessed.is_none() => {
             ref_obj.accessed = Some(date);
         }
@@ -1177,6 +1192,32 @@ mod tests {
         assert_eq!(
             ref_obj.issued.and_then(|date| date.date_parts),
             Some(vec![vec![1957], vec![1990]])
+        );
+    }
+
+    #[test]
+    fn note_field_issued_literal_preserved_alongside_structured_date() {
+        // GB/T 7714 §7.5.4.3 publication-year substitute annotations
+        // ("1995印刷" printing year, "1936~" estimated year) don't parse as
+        // structured dates and shouldn't overwrite an already-structured
+        // `issued`; preserve the raw text for downstream interpretation.
+        let mut ref_obj = Reference {
+            id: "printing-year".to_string(),
+            ref_type: "book".to_string(),
+            issued: Some(DateVariable::year(1995)),
+            note: Some("issued: 1995印刷".to_string()),
+            ..Default::default()
+        };
+
+        ref_obj.parse_note_field_hacks();
+
+        assert_eq!(
+            ref_obj.issued.and_then(|date| date.date_parts),
+            Some(vec![vec![1995]])
+        );
+        assert_eq!(
+            ref_obj.extra.get("issued-note-literal"),
+            Some(&serde_json::Value::String("1995印刷".to_string()))
         );
     }
 

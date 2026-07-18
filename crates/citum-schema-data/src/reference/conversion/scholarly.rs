@@ -338,6 +338,8 @@ pub(super) fn from_monograph_ref(
         event,
         status,
         available_date,
+        copyright: ctx.copyright,
+        printing: ctx.printing,
         size,
         duration,
         references,

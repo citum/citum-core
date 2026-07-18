@@ -465,6 +465,46 @@ struct RefContext {
     edition: Option<String>,
     container_title_short: Option<String>,
     journal_abbreviation: Option<String>,
+    /// Copyright year, a publication-year substitute used when the true
+    /// issue date is unknown. See `copyright_year_from_legacy`.
+    copyright: Option<EdtfString>,
+    /// Printing/impression year, another publication-year substitute. See
+    /// `docs/specs/DATE_MODEL.md`.
+    printing: Option<EdtfString>,
+}
+
+/// Extract a GB/T-style copyright year from a CSL `c<year>` literal issued
+/// date (e.g. `"c1988"`). GB/T 7714 §7.5.4.3 uses this as a
+/// publication-year substitute when the true issue date is unknown; an
+/// earlier revision misread the `c` as EDTF circa (`~`) instead of
+/// copyright — see `docs/specs/DATE_MODEL.md`.
+fn copyright_year_from_legacy(legacy: &csl_legacy::csl_json::Reference) -> Option<EdtfString> {
+    let literal = legacy.issued.as_ref()?.literal.as_deref()?;
+    let year = literal.strip_prefix('c')?.trim();
+    (year.len() == 4 && year.bytes().all(|byte| byte.is_ascii_digit()))
+        .then(|| EdtfString(year.to_string()))
+}
+
+/// Interpret a raw `issued:` note-field override that didn't reduce to a
+/// structured date (see csl-legacy's `issued-note-literal` extra, set when
+/// the override coexists with an already-structured `issued`). GB/T 7714
+/// §7.5.4.3 defines two more publication-year substitutes alongside
+/// copyright: a printing/impression year (Chinese suffix `印刷`) and an
+/// estimated year (EDTF approximate, trailing `~`).
+fn printing_year_from_legacy(legacy: &csl_legacy::csl_json::Reference) -> Option<EdtfString> {
+    let literal = legacy_extra_str(legacy, "issued-note-literal")?;
+    let year = literal.strip_suffix("印刷")?.trim();
+    (year.len() == 4 && year.bytes().all(|byte| byte.is_ascii_digit()))
+        .then(|| EdtfString(year.to_string()))
+}
+
+/// Interpret an estimated-year note-field override (trailing `~`) as an
+/// EDTF approximate `issued` date. See `printing_year_from_legacy`.
+fn estimated_issued_from_legacy(legacy: &csl_legacy::csl_json::Reference) -> Option<EdtfString> {
+    let literal = legacy_extra_str(legacy, "issued-note-literal")?;
+    let year = literal.strip_suffix('~')?.trim();
+    (year.len() == 4 && year.bytes().all(|byte| byte.is_ascii_digit()))
+        .then(|| EdtfString(format!("{year}~")))
 }
 
 fn legacy_type_uses_created(ref_type: &str) -> bool {
@@ -480,9 +520,24 @@ fn legacy_type_uses_created(ref_type: &str) -> bool {
 }
 
 impl From<csl_legacy::csl_json::Reference> for InputReference {
+    #[allow(
+        clippy::too_many_lines,
+        reason = "Legacy CSL mapping requires extensive branching"
+    )]
     fn from(mut legacy: csl_legacy::csl_json::Reference) -> Self {
         legacy.parse_note_field_hacks();
         let cstr = legacy_extra_str(&legacy, "CSTR");
+        // GB/T 7714 §7.5.4.3 publication-year substitutes, used when the
+        // true issue date is unknown. Copyright is a top-level `c<year>`
+        // issued literal; printing and estimated are note-field overrides
+        // that didn't reduce to a structured date (see
+        // `copyright_year_from_legacy` and friends). Copyright and printing
+        // route to their own fields, leaving `issued` empty so a style's
+        // fallback chain renders them; estimated folds into `issued` itself
+        // as an EDTF approximate date.
+        let copyright = copyright_year_from_legacy(&legacy);
+        let printing = printing_year_from_legacy(&legacy);
+        let estimated_issued = estimated_issued_from_legacy(&legacy);
         let ctx = RefContext {
             id: Some(legacy.id.clone().into()),
             title: legacy.title.clone(),
@@ -497,11 +552,17 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             } else {
                 EdtfString(String::new())
             },
-            issued: legacy
-                .issued
-                .clone()
-                .map(EdtfString::from)
-                .unwrap_or(EdtfString(String::new())),
+            issued: if copyright.is_some() || printing.is_some() {
+                EdtfString(String::new())
+            } else if let Some(estimated) = estimated_issued.clone() {
+                estimated
+            } else {
+                legacy
+                    .issued
+                    .clone()
+                    .map(EdtfString::from)
+                    .unwrap_or(EdtfString(String::new()))
+            },
             url: legacy.url.as_ref().and_then(|u| Url::parse(u).ok()),
             accessed: legacy.accessed.clone().map(EdtfString::from),
             language: legacy.language.clone().map(Into::into),
@@ -511,6 +572,8 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
             edition: legacy.edition.as_ref().map(|e| e.to_string()),
             container_title_short: short_title_from_legacy(&legacy, "container-title-short"),
             journal_abbreviation: short_title_from_legacy(&legacy, "journalAbbreviation"),
+            copyright,
+            printing,
         };
 
         let mut reference = match legacy.ref_type.as_str() {
@@ -601,7 +664,7 @@ impl From<csl_legacy::csl_json::Reference> for InputReference {
 impl From<csl_legacy::csl_json::DateVariable> for EdtfString {
     fn from(date: csl_legacy::csl_json::DateVariable) -> Self {
         if let Some(literal) = date.literal {
-            return EdtfString(normalize_csl_circa_literal(&literal).unwrap_or(literal));
+            return EdtfString(literal);
         }
         if let Some(parts) = date.date_parts {
             let mut rendered = parts.iter().map(|part| render_date_part(part));
@@ -616,16 +679,10 @@ impl From<csl_legacy::csl_json::DateVariable> for EdtfString {
             }
         }
         if let Some(raw) = date.raw {
-            return EdtfString(normalize_csl_circa_literal(&raw).unwrap_or(raw));
+            return EdtfString(raw);
         }
         EdtfString(String::new())
     }
-}
-
-/// Convert CSL's common circa spellings into their equivalent EDTF form.
-fn normalize_csl_circa_literal(value: &str) -> Option<String> {
-    let year = value.strip_prefix('c')?.trim();
-    (year.len() == 4 && year.bytes().all(|byte| byte.is_ascii_digit())).then(|| format!("{year}~"))
 }
 
 /// Apply CSL's structured circa flag to an EDTF date that lacks a qualifier.
@@ -810,6 +867,80 @@ mod tests {
         );
         assert_eq!(original_monograph.issued, EdtfString("1925".to_string()));
         assert!(original_monograph.author.is_some());
+    }
+
+    #[test]
+    fn legacy_copyright_year_literal_routes_to_copyright_not_issued() {
+        // GB/T 7714 §7.5.4.3: a `c<year>` issued literal is a copyright
+        // year, a publication-year substitute — not EDTF circa. It must
+        // land on `copyright`, leaving `issued` empty so a style's
+        // issued->copyright fallback chain renders it.
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "book-3".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("A Brief History of Time".to_string()),
+            issued: Some(csl_legacy::csl_json::DateVariable {
+                literal: Some("c1988".to_string()),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        let ClassExtension::Monograph(monograph) = converted.extension() else {
+            panic!("expected monograph");
+        };
+        assert_eq!(monograph.copyright, Some(EdtfString("1988".to_string())));
+        assert_eq!(monograph.issued, EdtfString(String::new()));
+    }
+
+    #[test]
+    fn legacy_printing_year_note_override_routes_to_printing_not_issued() {
+        // GB/T 7714 §7.5.4.3: a note-field "issued: <year>印刷" override is
+        // a printing/impression year, another publication-year substitute.
+        // It must land on `printing`, leaving `issued` empty.
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "book-4".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("Printed Book".to_string()),
+            issued: Some(legacy_year(1995)),
+            note: Some("issued: 1995印刷".to_string()),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        let ClassExtension::Monograph(monograph) = converted.extension() else {
+            panic!("expected monograph");
+        };
+        assert_eq!(monograph.printing, Some(EdtfString("1995".to_string())));
+        assert_eq!(monograph.issued, EdtfString(String::new()));
+    }
+
+    #[test]
+    fn legacy_estimated_year_note_override_folds_into_approximate_issued() {
+        // GB/T 7714 §7.5.4.3: a note-field "issued: <year>~" override is an
+        // estimated year — the same publication date, marked inferred. It
+        // folds into `issued` itself as an EDTF approximate date, not a
+        // separate field.
+        let legacy = csl_legacy::csl_json::Reference {
+            id: "book-5".to_string(),
+            ref_type: "book".to_string(),
+            title: Some("Estimated-Date Book".to_string()),
+            issued: Some(legacy_year(1936)),
+            note: Some("issued: 1936~".to_string()),
+            ..Default::default()
+        };
+
+        let converted = InputReference::from(legacy);
+
+        let ClassExtension::Monograph(monograph) = converted.extension() else {
+            panic!("expected monograph");
+        };
+        assert_eq!(monograph.issued, EdtfString("1936~".to_string()));
+        assert_eq!(monograph.copyright, None);
+        assert_eq!(monograph.printing, None);
     }
 
     #[test]

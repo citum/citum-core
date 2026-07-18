@@ -625,6 +625,24 @@ impl InputReference {
         self.issued().or_else(|| self.created())
     }
 
+    /// Return the copyright year, a publication-year substitute used when
+    /// the true issue date is unknown (GB/T 7714 §7.5.4.3's `c1988`).
+    pub fn copyright(&self) -> Option<EdtfString> {
+        match &self.extension {
+            ClassExtension::Monograph(r) => r.copyright.clone().and_then(Self::non_empty_date),
+            _ => None,
+        }
+    }
+
+    /// Return the printing/impression year, another publication-year
+    /// substitute (GB/T 7714 §7.5.4.3's `1995印刷`).
+    pub fn printing(&self) -> Option<EdtfString> {
+        match &self.extension {
+            ClassExtension::Monograph(r) => r.printing.clone().and_then(Self::non_empty_date),
+            _ => None,
+        }
+    }
+
     /// Return the DOI.
     pub fn doi(&self) -> Option<String> {
         match &self.extension {

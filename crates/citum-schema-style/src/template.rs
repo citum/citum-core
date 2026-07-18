@@ -1014,6 +1014,12 @@ pub enum DateVariable {
     OriginalPublished,
     Submitted,
     EventDate,
+    /// Copyright year, used as a publication-year substitute when the true
+    /// issue date is unknown (e.g. GB/T 7714 §7.5.4.3's `c1988`).
+    Copyright,
+    /// Printing/impression year, another publication-year substitute (e.g.
+    /// GB/T 7714 §7.5.4.3's `1995印刷`).
+    Printing,
 }
 
 crate::str_enum! {

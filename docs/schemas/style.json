@@ -1392,13 +1392,27 @@
     },
     "DateVariable": {
       "description": "Date variables.",
-      "type": "string",
-      "enum": [
-        "issued",
-        "accessed",
-        "original-published",
-        "submitted",
-        "event-date"
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "issued",
+            "accessed",
+            "original-published",
+            "submitted",
+            "event-date"
+          ]
+        },
+        {
+          "description": "Copyright year, used as a publication-year substitute when the true\nissue date is unknown (e.g. GB/T 7714 §7.5.4.3's `c1988`).",
+          "type": "string",
+          "const": "copyright"
+        },
+        {
+          "description": "Printing/impression year, another publication-year substitute (e.g.\nGB/T 7714 §7.5.4.3's `1995印刷`).",
+          "type": "string",
+          "const": "printing"
+        }
       ]
     },
     "DateForm": {
@@ -4945,24 +4959,17 @@
             "null"
           ]
         },
+        "approximation-marker-suffix": {
+          "description": "Optional closing marker paired with `approximation_marker`, for\nbracket-style approximate-date notation (e.g. GB/T 7714's `[1936]`\nestimated year, where the marker is `[` and this is `]`).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "range-delimiter": {
           "description": "Delimiter for date ranges (default: en-dash \"–\").",
           "type": "string",
           "default": "–"
-        },
-        "range-end-prefix": {
-          "description": "Optional prefix applied to the end of a closed date range.",
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "range-end-suffix": {
-          "description": "Optional suffix applied to the end of a closed date range.",
-          "type": [
-            "string",
-            "null"
-          ]
         },
         "open-range-marker": {
           "description": "Marker for open-ended ranges (e.g., \"–present\"). None uses locale default.",
