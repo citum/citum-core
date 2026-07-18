@@ -24,8 +24,39 @@ In many descriptive standards (including archival standards like DACS), the prim
 - `recorded`: For audio-visual works, oral histories, or performances.
 - `filed`: For patents, legal filings, or bureaucratic records.
 - `revised`: For updated editions or versioned documents.
+- `copyright`: A copyright year, used as a publication-year substitute when
+  the true issue date is unknown (e.g. a CSL `c1988` literal). This is a
+  distinct date event, not an approximate/circa qualifier on `issued`.
+- `printing`: A printing/impression year, another publication-year
+  substitute distinct from `copyright` (e.g. a Chinese-suffixed literal like
+  `1995印刷`).
 
 These role-specific dates supplement `created` and `issued`; they do not replace `created` as the canonical creation date.
+
+### Publication-Year Substitutes (GB/T 7714 §7.5.4.3)
+
+When the true publication year is unknown, GB/T 7714 §7.5.4.3 defines three
+substitute forms, which Citum models two different ways:
+
+| Substitute | Citum model | Example |
+|---|---|---|
+| Copyright year | `copyright` field | `c1988` |
+| Printing/impression year | `printing` field | `1995印刷` |
+| Estimated year | `issued` marked EDTF approximate (`~`) | `1936~` → `[1936]` |
+
+Copyright and printing are distinct *date events* standing in for an
+unknown publication year, so each gets its own field; a style can chain them
+into an `issued` fallback (see `gb-t-7714-2025-base.yaml`). An estimated
+year is the *same* publication date, only marked inferred — it stays on
+`issued` as an EDTF approximate date, and a style renders that qualifier
+however it chooses (GB/T wraps it in brackets via
+`approximation-marker`/`approximation-marker-suffix`).
+
+An earlier revision (PR #1064) misread a copyright-year literal like
+`c1988` as EDTF circa and normalized it to `1988~`, conflating copyright
+with genuine approximation. The two are unrelated: circa marks uncertainty
+about an otherwise-known date, while copyright substitutes an entirely
+different date for an unknown one.
 
 ## Mapping & Downstream Compatibility
 
