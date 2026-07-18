@@ -104,15 +104,14 @@ pub struct DateConfig {
     /// Marker for approximate dates (e.g., "ca. " or "~"). None suppresses display.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub approximation_marker: Option<String>,
+    /// Optional closing marker paired with `approximation_marker`, for
+    /// bracket-style approximate-date notation (e.g. GB/T 7714's `[1936]`
+    /// estimated year, where the marker is `[` and this is `]`).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub approximation_marker_suffix: Option<String>,
     /// Delimiter for date ranges (default: en-dash "–").
     #[serde(default = "default_range_delimiter")]
     pub range_delimiter: String,
-    /// Optional prefix applied to the end of a closed date range.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub range_end_prefix: Option<String>,
-    /// Optional suffix applied to the end of a closed date range.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub range_end_suffix: Option<String>,
     /// Marker for open-ended ranges (e.g., "–present"). None uses locale default.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub open_range_marker: Option<String>,
@@ -168,9 +167,8 @@ impl Default for DateConfig {
             month: MonthFormat::Long,
             uncertainty_marker: Some("?".to_string()),
             approximation_marker: Some("ca. ".to_string()),
+            approximation_marker_suffix: None,
             range_delimiter: default_range_delimiter(),
-            range_end_prefix: None,
-            range_end_suffix: None,
             open_range_marker: None,
             no_date_form: None,
             no_date_year_suffix_delimiter: default_no_date_year_suffix_delimiter(),

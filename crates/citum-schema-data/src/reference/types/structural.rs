@@ -240,6 +240,16 @@ pub struct Monograph {
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub available_date: Option<EdtfString>,
+    /// Copyright year, a publication-year substitute used when the true
+    /// issue date is unknown (GB/T 7714 §7.5.4.3's `c1988`).
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub copyright: Option<EdtfString>,
+    /// Printing/impression year, another publication-year substitute
+    /// (GB/T 7714 §7.5.4.3's `1995印刷`).
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub printing: Option<EdtfString>,
     /// Physical dimensions or format (e.g., `"24 x 30 cm"`).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub size: Option<String>,
@@ -335,6 +345,10 @@ struct MonographDeser {
     status: Option<String>,
     #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
     available_date: Option<EdtfString>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    copyright: Option<EdtfString>,
+    #[cfg_attr(feature = "bindings", specta(type = Option<String>))]
+    printing: Option<EdtfString>,
     size: Option<String>,
     duration: Option<String>,
     references: Option<String>,
@@ -392,6 +406,8 @@ impl From<MonographDeser> for Monograph {
             event: raw.event,
             status: raw.status,
             available_date: raw.available_date,
+            copyright: raw.copyright,
+            printing: raw.printing,
             size: raw.size,
             duration: raw.duration,
             references: raw.references,

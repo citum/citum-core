@@ -349,15 +349,7 @@ fn format_closed_range(
     );
 
     match (start, end) {
-        (Some(s), Some(e)) => {
-            let prefix = date_config
-                .and_then(|config| config.range_end_prefix.as_deref())
-                .unwrap_or("");
-            let suffix = date_config
-                .and_then(|config| config.range_end_suffix.as_deref())
-                .unwrap_or("");
-            Some(format!("{s}{delimiter}{prefix}{e}{suffix}"))
-        }
+        (Some(s), Some(e)) => Some(format!("{s}{delimiter}{e}")),
         (Some(s), None) => Some(s),
         (None, Some(e)) => Some(e),
         (None, None) => None,
@@ -405,7 +397,10 @@ fn apply_date_markers(
     if date.is_approximate()
         && let Some(marker) = date_config.and_then(|c| c.approximation_marker.as_ref())
     {
-        result = format!("{marker}{result}");
+        let suffix = date_config
+            .and_then(|c| c.approximation_marker_suffix.as_deref())
+            .unwrap_or("");
+        result = format!("{marker}{result}{suffix}");
     }
     if date.is_uncertain()
         && let Some(marker) = date_config.and_then(|c| c.uncertainty_marker.as_ref())
@@ -742,6 +737,8 @@ impl ComponentValues for TemplateDate {
             TemplateDateVar::Accessed => reference.accessed(),
             TemplateDateVar::OriginalPublished => reference.original_date(),
             TemplateDateVar::EventDate => event_date(reference),
+            TemplateDateVar::Copyright => reference.copyright(),
+            TemplateDateVar::Printing => reference.printing(),
             _ => None,
         };
 

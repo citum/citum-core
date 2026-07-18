@@ -35,10 +35,9 @@ options:
   dates:
     month: numeric
     uncertainty-marker: '?'
-    approximation-marker: c
+    approximation-marker: '['
+    approximation-marker-suffix: ']'
     range-delimiter: —
-    range-end-prefix: '['
-    range-end-suffix: ']'
     no-date-year-suffix-delimiter: '-'
     show-seconds: false
     show-timezone: false

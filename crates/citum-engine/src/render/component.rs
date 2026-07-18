@@ -89,6 +89,8 @@ fn resolve_semantic_class(component: &ProcTemplateComponent) -> Option<String> {
                 DateVariable::OriginalPublished => "original-published",
                 DateVariable::Submitted => "submitted",
                 DateVariable::EventDate => "event-date",
+                DateVariable::Copyright => "copyright",
+                DateVariable::Printing => "printing",
             }
         )),
         TemplateComponent::Number(n) => Some(format!("citum-{}", n.number.as_key())),

@@ -394,6 +394,26 @@
                 }
               ]
             },
+            "copyright": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "printing": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/EdtfString"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "size": {
               "type": [
                 "string",
