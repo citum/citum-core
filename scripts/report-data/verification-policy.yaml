@@ -44,9 +44,18 @@ divergences:
     tags:
       - normalized-tex-cstr
       - duplicate-url-identifier-tail
+      - pending-reviewer-confirmation
     note: Citum normalizes Zotero's tex.cstr alias to canonical CSTR. When the
       same identifier is already embedded in the URL, citeproc-js omits the
-      canonical tail because it does not recognize the alias.
+      canonical tail because it does not recognize the alias. The pull
+      request review raised GB/T 7714 §7.9.1 and §7.9.2 as a possible
+      alternate reading — when the URL already contains the persistent
+      identifier, the identifier tail can be omitted regardless of the
+      tex.cstr/CSTR alias question, meaning Citum's own rendering, not just
+      citeproc-js's alias gap, might need to omit the tail here. Left
+      registered as-is pending reviewer confirmation; if confirmed,
+      implement URL-containment-based omission in the CSTR identifier
+      component and retire this divergence rather than only documenting it.
   div-010:
     scopes:
       - citation
