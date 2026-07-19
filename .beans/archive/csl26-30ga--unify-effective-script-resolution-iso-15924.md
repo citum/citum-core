@@ -8,7 +8,7 @@ tags:
     - multilingual
     - engine
 created_at: 2026-07-18T20:31:57Z
-updated_at: 2026-07-19T12:28:51Z
+updated_at: 2026-07-19T12:57:11Z
 parent: csl26-0ugp
 ---
 
@@ -20,3 +20,7 @@ Replaced the Latin/non-Latin classifier with an ICU4X likely-subtags resolver
 that returns canonical ISO 15924 codes only from positive BCP 47 evidence. Kept
 the existing Latin boolean adapter, added explicit/inferred/unknown-language
 coverage, and verified no-default-feature and punctuation compatibility.
+
+## Review Follow-up
+
+Cached ICU4X extended locale expansion per thread because LocaleExpander is neither Send nor Sync; this removes repeated construction without introducing synchronization or changing resolution behavior.
