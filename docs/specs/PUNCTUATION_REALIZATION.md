@@ -1,15 +1,16 @@
 # Punctuation Realization Layer Specification
 
 **Status:** Draft
-**Version:** 1.0
-**Date:** 2026-07-18
+**Version:** 1.1
+**Date:** 2026-07-19
 **Related:** [`MULTILINGUAL.md`](./MULTILINGUAL.md) §3.2a,
 [`PUNCTUATION_NORMALIZATION.md`](./PUNCTUATION_NORMALIZATION.md),
 [`CALENDAR_DATE_ANNOTATIONS.md`](./CALENDAR_DATE_ANNOTATIONS.md),
 [2026-07-18 multilingual architecture audit](../architecture/audits/2026-07-18_MULTILINGUAL_ARCHITECTURE_AUDIT.md)
-§5; beans `csl26-k2kp` (this feature), `csl26-kneq` (increment 1),
-`csl26-30ga` (script resolution prerequisite), `csl26-fn9x` (the original
-remap), `csl26-p05x` (mixed-script cluster follow-up)
+§5; beans `csl26-k2kp` (this feature, whose first increment absorbs the
+retired draft bean `csl26-kneq`), `csl26-30ga` (script resolution
+prerequisite), `csl26-fn9x` (the original remap), `csl26-p05x`
+(mixed-script cluster follow-up)
 
 ## Purpose
 
@@ -54,8 +55,8 @@ properties make this a dead end as multilingual coverage grows:
 1. **It is one-directional.** A style authored with half-width glyphs (or
    the semantic `wrap: parentheses`, which every output format renders
    half-width unconditionally) has no path to full-width output for CJK
-   items. This is the gap tracked by `csl26-kneq` and blocking
-   `csl26-0kqf`.
+   items. This gap blocks `csl26-0kqf` and is closed by increment 1 of
+   this spec (§8).
 2. **It runs at three insertion points** — component rendering,
    citation-cluster wrap, citation-spec wrap — which must be discovered and
    kept in sync by hand (`MULTILINGUAL.md` §3.2a documents this as a known
@@ -83,7 +84,10 @@ mechanism rather than a per-feature carve-out.)
 
 Literal punctuation remains fully supported and is **never rewritten** by
 this layer. Realization applies only to marks the style expressed
-semantically.
+semantically. Semantic marks are the preferred authoring surface, not a
+mandate: a style with a genuine glyph-level requirement — a house rule that
+pins a specific character regardless of item script — authors the literal
+directly, or pins the mark per script with a `realization` override (§4).
 
 ### 2. Mark vocabulary
 
@@ -102,10 +106,20 @@ vary by script, named by mark rather than by role (matching the existing
 
 Notes:
 
-- Latin realizations include their conventional trailing space; CJK
-  full-width forms carry their own visual spacing and take none. This is
-  why realization must produce the *whole* separator string, not just a
-  character substitution.
+- **Spacing is part of realization, not a separate pass.** Latin
+  realizations include their conventional trailing space; CJK full-width
+  forms carry their own visual spacing and take none. A realization
+  entry is therefore the *whole* separator string — glyph plus all of
+  its spacing — not a character substitution. Three consequences:
+  a doubled space produced at a join remains processor-internal cleanup,
+  exactly as for the existing remap (`MULTILINGUAL.md` §3.2a); overrides
+  may legitimately carry no-break or narrow no-break spaces inside the
+  realization string (a French `colon` as `" : "` with U+00A0/U+202F);
+  and locale-wide spacing *conventions* — the French two-part-punctuation
+  spacing rule with its France/Québec variant — stay a locale-typography
+  concern tracked as the [`PUNCTUATION_NORMALIZATION.md`](./PUNCTUATION_NORMALIZATION.md)
+  follow-up, becoming expressible here as locale-supplied realization
+  strings once locale participation lands (§4).
 - `quotes` is deliberately absent: quote glyphs realize through locale
   `grammar-options` today and continue to. A future revision may unify the
   two tables; v1 does not.
@@ -163,6 +177,13 @@ class `S`:
    ```
 
 2. **Engine default table** — the table in §2, keyed by script class.
+
+The order embodies authority: the published style guide is sovereign. The
+engine default table is *informed by* CLDR and general typographic
+convention but is not bound to either, and a style override always wins —
+codifying, for example, GB/T 7714's own delimiter rules over any general
+CJK convention. When locale participation is added later (below), locale
+realizations slot between the two: style over locale over engine default.
 
 Script classes for v1 are `latin` and `cjk`, matching the existing
 `scripts.<script>` key set; the design extends to `cyrillic`, `arabic`,
@@ -243,10 +264,11 @@ carry marks as the normalization phase is extracted.
 
 ### 8. Phasing
 
-1. **Increment 1 — `csl26-kneq` (independent, first).** Script-aware
-   realization of `WrapPunctuation` only: `parentheses`/`brackets` render
-   full-width for CJK-script items. No new schema surface beyond
-   `realization-default`. Unblocks `csl26-0kqf` (calendar-note wraps).
+1. **Increment 1 (first; absorbs the retired draft bean `csl26-kneq`).**
+   Script-aware realization of `WrapPunctuation` only:
+   `parentheses`/`brackets` render full-width for CJK-script items. No new
+   schema surface beyond `realization-default`. Unblocks `csl26-0kqf`
+   (calendar-note wraps), which depends on this increment alone.
 2. **Increment 2.** The `{ mark: … }` token form for
    `delimiter`/`prefix`/`suffix`, the engine default table, and the
    per-script `realization` override. Schema regeneration.
@@ -306,6 +328,12 @@ Non-normative pointers:
 
 ## Changelog
 
+- v1.1 (2026-07-19): Review revisions. Semantic marks stated as preference
+  with a literal/override escape hatch, not a mandate; explicit
+  style-over-locale-over-CLDR authority order; spacing made an explicit
+  part of realization (whole-string entries, join cleanup, NBSP-capable
+  overrides, French spacing deferral); increment 1 absorbs the retired
+  draft bean `csl26-kneq` under `csl26-k2kp`.
 - v1.0 (2026-07-18): Initial draft, from the 2026-07-18 multilingual
   architecture audit §5. Defines mark vocabulary, token form, realization
   tables, style-declared default, pipeline position, compatibility
