@@ -73,8 +73,7 @@ citation:
   - variable: locator
   - number: pages
   - number: issue
-    prefix: （
-    suffix: ）
+    wrap: parentheses
     suppress: true
   - contributor: container-author
     form: long
@@ -135,8 +134,7 @@ citation:
     - number: pages
       suppress: false
     - number: issue
-      prefix: （
-      suffix: ）
+      wrap: parentheses
       suppress: true
     - contributor: container-author
       form: long
@@ -201,8 +199,7 @@ citation:
     - number: pages
       suppress: false
     - number: issue
-      prefix: （
-      suffix: ）
+      wrap: parentheses
       suppress: true
     - contributor: container-author
       form: long
@@ -228,4 +225,4 @@ citation:
       prefix: 'DOI:'
       suppress: false
   suffix: .
-  multi-cite-delimiter: ；
+  multi-cite-delimiter: { mark: semicolon }
