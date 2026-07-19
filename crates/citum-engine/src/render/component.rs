@@ -230,7 +230,20 @@ pub fn render_component_with_format_and_renderer<F: OutputFormat<Output = String
 
     // 4. Wrap
     if let Some(wrap_config) = rendering.wrap.as_ref() {
-        output = fmt.wrap_punctuation(&wrap_config.punctuation, output, &component.quote_marks);
+        let default_script = crate::values::realization_default_script_class(
+            component
+                .config
+                .as_ref()
+                .and_then(|cfg| cfg.multilingual.as_ref()),
+        );
+        let script =
+            crate::values::wrap_script_class(component.item_language.as_deref(), default_script);
+        output = fmt.wrap_punctuation(
+            &wrap_config.punctuation,
+            output,
+            &component.quote_marks,
+            script,
+        );
     }
 
     // 5. Outer affixes

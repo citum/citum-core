@@ -43,7 +43,7 @@ pub use locators::{
 };
 pub use multilingual::{
     MultilingualConfig, MultilingualMode, MultilingualSegment, MultilingualView, PunctuationStyle,
-    ScriptConfig, SegmentWrap,
+    RealizationDefault, ScriptConfig, SegmentWrap,
 };
 pub use processing::{
     CitationSortPolicy, Disambiguation, GivennameRule, Group, LabelConfig, LabelParams,

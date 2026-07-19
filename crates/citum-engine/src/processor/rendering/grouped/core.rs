@@ -387,7 +387,14 @@ impl Renderer<'_> {
                     .unwrap_or("");
                 let inner = fmt.inner_affix(inner_prefix, joined, inner_suffix);
                 let marks = crate::render::format::QuoteMarks::from(&self.locale.grammar_options);
-                Some(fmt.wrap_punctuation(wrap_punct, inner, &marks))
+                let default_script = crate::values::realization_default_script_class(
+                    self.config.multilingual.as_ref(),
+                );
+                let script = crate::values::wrap_script_class(
+                    crate::values::effective_item_language(first_ref).as_deref(),
+                    default_script,
+                );
+                Some(fmt.wrap_punctuation(wrap_punct, inner, &marks, script))
             } else {
                 None
             };

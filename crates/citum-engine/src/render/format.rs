@@ -8,6 +8,7 @@ SPDX-FileCopyrightText: © 2023-2026 Bruce D'Arcus and Citum contributors
 use std::borrow::Cow;
 use std::ops::Range;
 
+use crate::values::ScriptClass;
 use citum_schema::locale::GrammarOptions;
 use citum_schema::template::WrapPunctuation;
 
@@ -24,7 +25,7 @@ pub fn unicode_quote_marks(depth: usize) -> (&'static str, &'static str) {
 }
 
 /// Locale-resolved quote mark characters, threaded from
-/// [`GrammarOptions`](citum_schema::locale::GrammarOptions) through to rendering so that
+/// [`GrammarOptions`] through to rendering so that
 /// styles using non-English quotation conventions (e.g. fr-FR guillemets) render correctly.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct QuoteMarks {
@@ -84,6 +85,27 @@ pub struct SemanticAttribute {
     pub name: &'static str,
     /// The attribute value.
     pub value: String,
+}
+
+/// Realize a semantic [`WrapPunctuation`] into the `(open, close)` glyph pair
+/// for a script class.
+///
+/// Returns `None` for [`WrapPunctuation::Quotes`], which realizes through
+/// locale-resolved quote marks (`QuoteMarks`) rather than a fixed pair — see
+/// `docs/specs/PUNCTUATION_REALIZATION.md` §2. The table is closed for v1;
+/// new marks or script classes require a spec revision.
+#[must_use]
+pub(crate) fn realize_wrap(
+    wrap: &WrapPunctuation,
+    script: ScriptClass,
+) -> Option<(&'static str, &'static str)> {
+    match (wrap, script) {
+        (WrapPunctuation::Parentheses, ScriptClass::Latin) => Some(("(", ")")),
+        (WrapPunctuation::Parentheses, ScriptClass::Cjk) => Some(("（", "）")),
+        (WrapPunctuation::Brackets, ScriptClass::Latin) => Some(("[", "]")),
+        (WrapPunctuation::Brackets, ScriptClass::Cjk) => Some(("【", "】")),
+        (WrapPunctuation::Quotes, _) => None,
+    }
 }
 
 /// Trait for defining how to render template components into a specific format.
@@ -162,12 +184,16 @@ pub trait OutputFormat: Default + Clone {
 
     /// Wrap the content in specific punctuation (parentheses, brackets, or quotes).
     ///
-    /// `marks` supplies the locale-resolved quote characters for the `Quotes` variant.
+    /// `marks` supplies the locale-resolved quote characters for the `Quotes`
+    /// variant. `script` selects the half-width or full-width glyph form for
+    /// the `Parentheses`/`Brackets` variants — see `realize_wrap` and
+    /// `docs/specs/PUNCTUATION_REALIZATION.md`.
     fn wrap_punctuation(
         &self,
         wrap: &WrapPunctuation,
         content: Self::Output,
         marks: &QuoteMarks,
+        script: ScriptClass,
     ) -> Self::Output;
 
     /// Apply a semantic identifier (class) to the content.
@@ -396,6 +422,7 @@ mod tests {
             _wrap: &WrapPunctuation,
             content: Self::Output,
             _marks: &QuoteMarks,
+            _script: ScriptClass,
         ) -> Self::Output {
             content
         }
@@ -407,6 +434,36 @@ mod tests {
         }
         fn link(&self, url: &str, content: Self::Output) -> Self::Output {
             format!("link[{url}]({content})")
+        }
+    }
+
+    #[test]
+    fn test_realize_wrap() {
+        for (wrap, script, expected) in [
+            (
+                WrapPunctuation::Parentheses,
+                ScriptClass::Latin,
+                Some(("(", ")")),
+            ),
+            (
+                WrapPunctuation::Parentheses,
+                ScriptClass::Cjk,
+                Some(("（", "）")),
+            ),
+            (
+                WrapPunctuation::Brackets,
+                ScriptClass::Latin,
+                Some(("[", "]")),
+            ),
+            (
+                WrapPunctuation::Brackets,
+                ScriptClass::Cjk,
+                Some(("【", "】")),
+            ),
+            (WrapPunctuation::Quotes, ScriptClass::Latin, None),
+            (WrapPunctuation::Quotes, ScriptClass::Cjk, None),
+        ] {
+            assert_eq!(realize_wrap(&wrap, script), expected, "{wrap:?}/{script:?}");
         }
     }
 

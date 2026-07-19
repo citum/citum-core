@@ -29,6 +29,16 @@ pub struct MultilingualConfig {
     /// Script-specific behavior configuration.
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub scripts: HashMap<String, ScriptConfig>,
+    /// Script class to realize semantic wrap punctuation (`wrap: parentheses`/`brackets`)
+    /// as, for items with no usable script evidence. Unset defaults to `latin`,
+    /// matching today's unconditional half-width output. See
+    /// `docs/specs/PUNCTUATION_REALIZATION.md` §5.
+    #[serde(
+        default,
+        rename = "realization-default",
+        skip_serializing_if = "RealizationDefault::is_latin"
+    )]
+    pub realization_default: RealizationDefault,
 }
 
 /// Rendering modes for multilingual content.
@@ -150,6 +160,27 @@ pub enum PunctuationStyle {
     Latin,
     /// Full-width CJK delimiters (`： ， （ ）`), the unmodified default.
     FullWidth,
+}
+
+/// Script class an item with no usable script evidence realizes semantic wrap
+/// punctuation as. See `options.multilingual.realization-default` and
+/// `docs/specs/PUNCTUATION_REALIZATION.md` §5.
+#[derive(Debug, Default, PartialEq, Eq, Clone, Copy, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(JsonSchema))]
+#[serde(rename_all = "kebab-case")]
+pub enum RealizationDefault {
+    /// Untagged items realize half-width Latin delimiters (today's behavior).
+    #[default]
+    Latin,
+    /// Untagged items realize full-width CJK delimiters (e.g. GB/T 7714).
+    Cjk,
+}
+
+impl RealizationDefault {
+    /// Returns `true` for the default variant (`Latin`), used for skip-serializing.
+    pub fn is_latin(&self) -> bool {
+        matches!(self, RealizationDefault::Latin)
+    }
 }
 
 /// Custom deserializer for [`MultilingualMode`].
